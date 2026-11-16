@@ -40,8 +40,8 @@ Estrategia acordada el 15/11/2026: construir todo y probarlo en el juego al fina
 - [ ] Choque: `behavior.closeSkipped` del motor puede cerrar la ventana antes de que "todas las misiones" de Comodidades actúe.
 - [ ] Comodidades: cada grupo viene apagado, porque en Leatrix sus interruptores principales estaban en Off; decidir con Toxic cuáles vienen encendidos.
 - [ ] Páginas propias (Pesca, Comercio, Inicio): sus ajustes no salen en el buscador de opciones.
-- [ ] Mundo: `AlfaMundo.ActivarCapa(id, activa)` para cambiar capas desde otros módulos, y una proyección para pintar pines en el mapa continuo (Recolección solo pinta en mapas de zona).
-- [ ] Acerca de: agregar GatherLite (MIT) y OpenMap (MIT) a los créditos visibles.
+- [~] Mundo: `AlfaMundo.ActivarCapa` ya existe; falta una proyección para pintar pines en el mapa continuo (Recolección solo pinta en mapas de zona).
+- [x] Acerca de: créditos visibles de GatherLite y OpenMap (MIT).
 - [ ] Núcleo: opción `alComando(rest)` en `N.Modulo` para comandos con argumentos (Manada y Pesca lo registran aparte).
 - [ ] Motor: destino "persistente" en `Nav.SetTarget` para que Seguir (La Jauría) no se suelte cuando la guía cambia de paso.
 - [x] La Jauría: oficial para "Quiero unirme" = Toxic-Darunia (revisar el texto del clan en Clan.lua cuando se quiera).
