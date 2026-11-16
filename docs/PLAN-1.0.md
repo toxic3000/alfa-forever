@@ -1,29 +1,40 @@
 # Alfa 1.0: la versión buena
 
-Toxic probó la 0.5 (la versión 0.1.0 del 16/11/2026) y no salió ningún error. Su veredicto: **todavía se ve demasiado al addon en el que nos basamos**. Las listas de zonas y mazmorras, la sección de talentos (con el mismo mensaje), la ventana de guía y varios elementos de muchas pestañas se ven "casi iguales". Además hay cosas mal centradas, espacio desaprovechado, alineación pobre y pantallas revueltas.
+Toxic probó la 0.5 (versión 0.1.0, 16/11/2026) y no tuvo errores. Su veredicto: **sigue viéndose como el addon base** (listas de zonas y mazmorras, Talentos con el mismo mensaje, ventana de guía). Además hay cosas mal centradas y mal alineadas, espacio desaprovechado y la app se siente **confusa**: «parece que solo juntaste todo sin depurar qué tomar de cada cosa». Lo que pide:
 
-Los addons antiguos son nuestra base, pero **vamos más allá**: Alfa 1.0 debe tener una interfaz **propia, distinta y mejor**, más ordenada, más visual y que **guíe**. Con un par de clics eliges qué hacer y Alfa arma la ruta; quien quiera detalle entra a Ajustes.
+> Toma los addons antiguos **como ejemplo**, no como código fuente: decide qué vale la pena de cada uno y créalo **nuevo, diferente y mejor**. Más ordenado, más visual, que **guíe** y que con un par de clics elijas tu camino. Quien quiera detalle se mete a Ajustes. Es un addon para mucha gente.
 
-## Reglas para 1.0
+## Principios (todos los agentes)
 
-1. **Nada de la interfaz del addon base a la vista**, salvo los menús de Ajustes. A esos les cambiamos un poco el tema y los íconos. Las ventanas de funciones (guía, elegir guía, buscador, mazmorras, talentos, raros, personajes, bienvenida, tarjetas de entrenamiento y avisos) se rehacen como **ventanas propias** con el **Kit de Alfa**. Las del motor se dejan de mostrar. El motor sigue trabajando por dentro (guías, pasos, navegación y datos) y solo se usa a través de sus funciones.
-2. **Kit de Alfa:** componentes propios escritos desde cero (no derivados de `Widgets.lua`) en `src/Alfa_Nucleo/Kit/`. Plantillas de página fijas (encabezado, secciones, rejillas de tarjetas, listas) con márgenes, alineación y ritmo consistentes. Todas las páginas de los módulos se pasan al Kit.
-3. **Diseño:** se mantiene el diseño A (grafito, verde #8be04e, color de clase como segundo acento y esquinas cortadas), pero con **identidad renovada**: íconos propios para cada sección y función, el lobo como personaje (estados, huellas como progreso) y nada de estrellas, rieles ni barras laterales.
-4. **Guiar:** cada pantalla dice qué hacer después. Primero va la acción recomendada en grande y luego las alternativas. Nada de muros de opciones.
+1. **Depurar antes de construir.** Por cada área, decide qué hace falta de verdad y quita lo que confunde. Cada pantalla empieza con **una acción recomendada en grande** y después las alternativas.
+2. **Interfaz propia con el Kit** (`src/Alfa_Nucleo/Kit/`, `docs/KIT.md`). Nada de componentes ni acomodos del motor original en las ventanas de funciones. Las ventanas del motor se sustituyen con `AlfaNucleo.Reemplazar(clave, fn)` (tabla en `docs/KIT.md`). Los menús de **Ajustes** se quedan (ya tienen íconos y tema nuevos).
+3. **Identidad Alfa / La Jauría:** lobo, huellas, manada. Íconos de `motor/Alfa/Media/UI/ic-*` y `lobo-*`.
+4. **Ordenado:** plantillas del Kit (`K.Tablero`, `K.ListaFicha`, `K.Asistente`), rejilla de 8 px, todo alineado y centrado.
+5. **Reglas de Forever** (`docs/ARQUITECTURA.md`): nada que decida en combate, valores secretos, acciones protegidas solo con clic y fuera de combate.
 
-## Qué tiene 1.0
+## Áreas y responsables
 
-| Área | Qué es |
-|---|---|
-| **Hoy** | Portada: "¿Qué hacemos hoy?" con 4 caminos grandes (Subir de nivel, Hacer oro, Profesiones y Mazmorra con la manada). Al elegir uno, Alfa propone una ruta y con **Seguir** arranca. También van tu paso actual, tus alertas y la tarjeta de tu clase. |
-| **Ruta y guía** | Reemplaza el selector de guías y la ventana de guía. Muestra la guía recomendada para tu nivel y zona en grande y las demás en tarjetas visuales. El **rastreador de pasos** es propio, compacto, con huellas como progreso y la flecha. Las rutas propias (árbol XP/oro/profesión) y "liberar misiones" viven aquí. |
-| **Talentos** | Builds pasa a ser el lugar de los talentos (también en la sección del motor que se llamaba Talentos). Dice qué talento poner ahora y por qué, con un clic para aplicarlo, más el árbol, el estilo y el objetivo. |
-| **Enciclopedia** | Nueva. Wiki de **todos** los objetos del juego (aunque no los tengas): buscar, filtrar y una ficha con fuentes (quién lo suelta y con qué probabilidad, dónde, vendedores con ubicación y precio, misiones, recetas, pesca y contenedores), ubicación en el mapa y "Guíame". También PNJ, misiones, zonas y raros. Reemplaza al buscador del motor y al catálogo de Rutas. |
-| **Mazmorras** | Una sola: la nuestra (botín por jefe, consejos y modo historia) más las funciones del motor (misiones de cada mazmorra, recoger y entregar, entrada). |
-| **Curación** | Más visible y guiada para sanadores (sacerdote, druida, paladín y chamán): asistente de 3 pasos (elige preajuste, acomoda marcos, prueba) y acceso desde Hoy. |
-| **La Jauría** | **Sin lista de la hermandad.** Solo tu grupo y la gente que **tiene Alfa y aceptó compartir**. Al instalar Alfa sale una ventana que pregunta si quieres compartir tu ubicación con la manada (quienes usan Alfa). No se puede saber desde el juego quién está en el Discord. |
-| **Resto de módulos** | Bolsas, Comercio, Pesca, Recolección, Mundo, Comodidades y Mazmorras pasan al Kit: ordenados, centrados, alineados y sin espacio perdido. |
+Cada agente trabaja **solo** en sus carpetas o archivos. Lo que necesite de otro lo pide en su reporte. Nadie edita `src/Alfa_Nucleo/Kit/` salvo A2 (estilos). Nadie hace commits. Cada uno construye con su propia carpeta: `ALFA_DIST=dist-<área>`.
+
+| Área | Dueño de | Qué entrega |
+|---|---|---|
+| **A1 · Ruta y misiones** | `src/Alfa_Rutas/`, nuevo `src/Alfa_Ruta/` si conviene | Asistente "¿Qué quieres hacer?" (Subir de nivel / Profesiones / Hacer oro / Mazmorras). Biblioteca de guías propia (reemplaza `SHOW_PICKER`). **Rastreador de pasos propio** (reemplaza `GUIDE_FRAME`, `GUIDE_END`, `ROUTE_CHOICE`). **"Liberar misiones"** (completar o entregar las abiertas) y **"Recoger misiones"** bien visibles. Rutas por objetivo: solo subir de nivel, solo profesiones. Opción **"aceptar y entregar solo las misiones de mi ruta"** (para no tomar misiones que no sirven a la ruta). Rutas propias (árbol), sin catálogo: el catálogo pasa a la Enciclopedia. |
+| **A2 · Primer arranque, estilos y sonido** | `src/Alfa_Nucleo/Kit/` (tokens y estilos), `motor/Alfa/Theme/*`, `motor/Alfa/Media/Nav/` y lo de la flecha, nuevo `src/Alfa_Bienvenida/` | **3 estilos** que se cambian en un clic: *Alfa* (el actual), *Clásico WoW* (bordes y fondos del propio juego) y *Cristal* (transparencias y colores elegibles). **Asistente de primer arranque**: estilo; misiones automáticas solo de la ruta o no; compartir ubicación con La Jauría (lo llama `AlfaManada`); aullido sí o no. **Aullido** al abrir Alfa por primera vez en la sesión (sonido del juego o propio; con ajuste para apagarlo). **Flecha de navegación con temática de lobo** (por ejemplo una cabeza de lobo o una huella que apunta), en los 3 estilos. Reemplaza `SHOW_WELCOME` y `SHOW_WHATSNEW`. |
+| **B · Enciclopedia** | nuevo `src/Alfa_Enciclopedia/` | Wiki de **todos** los objetos del juego (también los que no tienes) con búsqueda, filtros y ficha: quién lo suelta y con qué probabilidad y dónde; vendedores con ubicación, precio y reabastecimiento si hay dato; misiones; recetas; pesca; contenedores; mapa; "Guíame" y "Agregar a mi ruta" (contrato con A1). También PNJ, misiones, zonas y raros (reemplaza `SHOW_LOOKUP` y `SHOW_RARES`). |
+| **C1 · Talentos** | `src/Alfa_Builds/` | Reemplaza `SHOW_TALENTS` y `CLASS_CARD` / `SPELL_CARDS` (entrenar). Dice **qué talento poner ahora y por qué**, con un clic para aplicarlo. Estilo y objetivo en dos clics. Página ordenada con el Kit. |
+| **C2 · Combate** | nuevo `src/Alfa_Combate/` (y saca de Builds lo de combate en coordinación con C1) | **Ayuda de rotación mejorada y no invasiva**: qué presionar y en qué orden según la situación, usando lo permitido (`C_AssistedCombat`, datos propios), discreta, movible y apagable. **Medidor de daño** del grupo o banda con **top 10 de DPS**, con lo que permita Forever (revisar `DamageMeter*` y `C_DamageMeter` en la API; sin registro de combate). Si la API no da datos de otros jugadores, mostrar lo que sí se pueda y decirlo. |
+| **D · Mazmorras** | `src/Alfa_Mazmorras/` | Rehacerla **clara**, tomando como ejemplo la experiencia del diario de mazmorras que Toxic usaba (en `C:\Program Files (x86)\World of Warcraft\_forever_\Interface\AddOns\` ya no está instalado: guíate por `src/Alfa_Mazmorras/LEEME.md` y lo que ya existe). Debe tener la lista por nivel, la página por mazmorra (jefes, botín, misiones, entrada y consejos), el progreso, y recoger y entregar sus misiones. Reemplaza `SHOW_DUNGEON` y `DUNGEON_TOAST`. |
+| **E · La Jauría** | `src/Alfa_Manada/` | **Sin lista de hermandad.** Solo tu grupo y quienes **usan Alfa y aceptaron compartir**: un canal oculto propio entre usuarios de Alfa (si la API lo permite; si no, grupo y hermandad solo con Alfa). Expone `AlfaManada.PreguntarCompartir()` para el asistente de A2. Más temática de manada en la página. |
+| **F · Hoy, Curación y avisos** | `src/Alfa_Inicio/`, `src/Alfa_Curacion/` | Hoy con el Kit: "¿Qué hacemos hoy?" (abre el asistente de A1), siguiente paso, alertas, la tarjeta de tu clase, y "Liberar" y "Recoger misiones" a un clic. Curación con asistente de 3 pasos. Reemplaza `WHILE_HERE`, `LEVEL_TIP`, `CLASS_TOAST` y `UPDATE_CARD` con avisos del Kit. |
+| **G · Bolsas, Comercio** | `src/Alfa_Bolsas/`, `src/Alfa_Comercio/` | Bolsas con **3 vistas**: general, por categorías y **por bolsa**; **ver las casillas de las bolsas** (las bolsas equipadas y cambiarlas). Banco con **depositar rápido** (por ejemplo materiales u objetos de una categoría con un clic) y **comprar más espacio en el banco** (lo que permita la API de Forever). Comercio con el Kit. |
+| **H · Mundo, Recolección, Comodidades** | `src/Alfa_Mundo/`, `src/Alfa_Recoleccion/`, `src/Alfa_Comodidades/` | Que el **mapa con zoom de todo el mundo** se use fácil (por ejemplo la tecla M abre el mapa de Alfa, con opción). **Marcadores propios**: poner, nombrar, ícono y color, compartir con el grupo y la flecha hacia ellos. Recolección y Comodidades con el Kit. Comodidades: la opción "todas las misiones" respeta "solo las de mi ruta" de A1 (ajuste `ruta.soloRuta`). |
+
+**Contratos entre áreas** (cada uno los publica como global, si existe):
+- `AlfaRuta.Asistente(camino)` para abrir el asistente. `camino` es `"nivel"`, `"profesiones"`, `"oro"` o `"mazmorras"`. También `AlfaRuta.Liberar()`, `AlfaRuta.Recoger()` y `AlfaRuta.AgregarObjeto(itemID)`.
+- `AlfaManada.PreguntarCompartir()`.
+- `AlfaEnciclopedia.Abrir(tipo, id)`.
+- `AlfaBuilds.SiguienteTalento()`, que devuelve `{ nombre, icono, porque }` o nil.
 
 ## Versión
 
-La 0.1.0 instalada es la que Toxic llama "0.5". La siguiente versión buena será la **1.0.0**. Se interpretó así su "0.1, ya la buena": un número menor confundiría el aviso de versión nueva entre jugadores.
+La 0.1.0 instalada es la que Toxic llama "0.5". La siguiente será la **1.0.0**.
