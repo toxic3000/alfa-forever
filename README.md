@@ -34,3 +34,12 @@ python -I tools/instalar.py --aplicar           # instala (con WoW cerrado)
 ```
 
 Contrato de los módulos y reglas de Forever: `docs/ARQUITECTURA.md`. Plan y pendientes: `docs/PLAN.md`.
+
+## Código fuente y licencia
+
+Alfa es GPL-3.0. Cada versión publicada se arma así:
+- el código y los datos de **Polestar** de la versión indicada en `tools/alfa.json` (`upstream`), tal como los publica su repositorio [fitzforge/polestar](https://github.com/fitzforge/polestar/releases), con su firma SHA256 verificada;
+- los cambios de nombre y los parches de `tools/` (renombrar, parches, marca);
+- los módulos de `src/`, las texturas de terceros de `vendor/` con su licencia, y los textos de `textos/`.
+
+Con este repositorio y `tools/fetch_upstream.py`, cualquiera puede reconstruir exactamente el mismo paquete.
