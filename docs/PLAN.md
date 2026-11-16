@@ -4,6 +4,8 @@
 
 Estrategia acordada el 15/11/2026: construir todo y probarlo en el juego al final. Mientras tanto, cada módulo pasa `revisar.py` y `humo.py`.
 
+**Estado del 16/11/2026:** los 11 módulos y el motor están construidos y en git. Todo junto da 473 archivos Lua en 40 carpetas sin errores de sintaxis, y los 12 módulos cargan juntos en la prueba de humo sin errores ni avisos. Cada módulo tiene su lista "Para verificar en el juego" en su `LEEME.md`. Siguiente paso: instalar con `tools/instalar.py --aplicar` (con WoW cerrado) y probar módulo por módulo.
+
 ## Módulos
 
 | Módulo | Página (orden) | Reemplaza a | Qué hace |
@@ -47,5 +49,5 @@ Estrategia acordada el 15/11/2026: construir todo y probarlo en el juego al fina
 - [x] La Jauría: oficial para "Quiero unirme" = Toxic-Darunia (revisar el texto del clan en Clan.lua cuando se quiera).
 - [ ] Núcleo: `N.Repintar(id)` oficial para volver a dibujar una página propia (Mazmorras, Pesca e Inicio usan piezas internas de Options).
 - [ ] Mazmorras: confirmar en el juego si Forever trae las CVars de avisos de jefes (la variante "Camelot" dice `HasBossWarnings = false`).
-- [ ] Builds y Rutas: quedaron a medias (detenidos por límite de uso el 15/11); sus archivos en `src/Alfa_Builds` y `src/Alfa_Rutas` NO están en git: revisar, terminar y guardar.
+- [x] Builds y Rutas: terminados y en git el 16/11.
 - [ ] Mundo: Recolección debería publicar sus nodos en `Alfa.Pins` (id `recoleccion.<tipo>`) para verse en el mapa continuo.
