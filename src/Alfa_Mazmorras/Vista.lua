@@ -76,8 +76,8 @@ end
 -- Un consejo en el idioma del cliente.
 local function texto2(c)
 	if type(c) ~= "table" then return "" end
-	if N.espanol or not c[2] then return c[1] or "" end
-	return c[2]
+	if not c[1] then return "" end
+	return N.Traducir(c[1], c[2])
 end
 
 local function nivelJugador()

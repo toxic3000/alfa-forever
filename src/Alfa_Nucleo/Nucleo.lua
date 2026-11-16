@@ -17,17 +17,32 @@ N.COLOR = "8be04e"
 N.HEX = "|cff8be04e"
 
 ---------------------------------------------------------------------------
--- Idioma: los textos se escriben en español. En clientes que no son esMX o
--- esES se usa la tabla en inglés del módulo, y si falta, el texto español.
+-- Idioma: los textos se escriben en español. En otros clientes se busca la
+-- traducción en el diccionario de ese idioma (Idiomas/<locale>.lua, generado
+-- con tools/textos.py), luego en la tabla en inglés del módulo, y si falta,
+-- se deja el texto español.
 ---------------------------------------------------------------------------
 local locale = GetLocale and GetLocale() or "esMX"
+N.locale = locale
 N.espanol = (locale == "esMX" or locale == "esES")
+N.idiomas = N.idiomas or {} -- [locale] = { ["texto en español"] = "traducción" }
 
 function N.Textos(en)
-	if N.espanol or type(en) ~= "table" then
+	if N.espanol then
 		return setmetatable({}, { __index = function(_, k) return k end })
 	end
-	return setmetatable({}, { __index = function(_, k) return en[k] or k end })
+	return setmetatable({}, { __index = function(_, k)
+		local d = N.idiomas[locale]
+		return (d and d[k]) or (type(en) == "table" and en[k]) or k
+	end })
+end
+
+-- Un texto suelto que trae su versión en español y en inglés (por ejemplo,
+-- los consejos de Mazmorras): devuelve el del idioma del cliente.
+function N.Traducir(es, en)
+	if N.espanol then return es end
+	local d = N.idiomas[locale]
+	return (d and d[es]) or en or es
 end
 
 ---------------------------------------------------------------------------
