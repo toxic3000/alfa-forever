@@ -1,0 +1,17 @@
+## Interface: 16001
+## Title: |cff8be04eAlfa|r - Bolsas
+## Notes: Tus bolsas y tu banco en una sola ventana, y lo que lleva cada uno de tus personajes.
+## Author: Toxic - La Jauria
+## Version: dev
+## X-License: GPL-3.0-only
+## Dependencies: Alfa, Alfa_Nucleo
+## Category: Alfa
+
+Textos.lua
+Bolsas.lua
+Datos.lua
+Objetos.lua
+Botones.lua
+Ventana.lua
+Reemplazo.lua
+Pagina.lua
