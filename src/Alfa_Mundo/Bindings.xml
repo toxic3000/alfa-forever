@@ -1,0 +1,5 @@
+<Bindings>
+	<Binding name="ALFA_MUNDO_MAPA" category="Alfa" searchTags="BINDING_TAG_ALFA">
+		if AlfaMundo and AlfaMundo.Alternar then AlfaMundo.Alternar() end
+	</Binding>
+</Bindings>

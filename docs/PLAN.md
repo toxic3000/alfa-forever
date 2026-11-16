@@ -47,3 +47,5 @@ Estrategia acordada el 15/11/2026: construir todo y probarlo en el juego al fina
 - [x] La Jauría: oficial para "Quiero unirme" = Toxic-Darunia (revisar el texto del clan en Clan.lua cuando se quiera).
 - [ ] Núcleo: `N.Repintar(id)` oficial para volver a dibujar una página propia (Mazmorras, Pesca e Inicio usan piezas internas de Options).
 - [ ] Mazmorras: confirmar en el juego si Forever trae las CVars de avisos de jefes (la variante "Camelot" dice `HasBossWarnings = false`).
+- [ ] Builds y Rutas: quedaron a medias (detenidos por límite de uso el 15/11); sus archivos en `src/Alfa_Builds` y `src/Alfa_Rutas` NO están en git: revisar, terminar y guardar.
+- [ ] Mundo: Recolección debería publicar sus nodos en `Alfa.Pins` (id `recoleccion.<tipo>`) para verse en el mapa continuo.

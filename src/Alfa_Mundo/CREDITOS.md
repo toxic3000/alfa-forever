@@ -1,0 +1,5 @@
+# Créditos de Alfa_Mundo
+
+- **OpenMap** v0.8.9, de OpenMap contributors (MIT, `LICENSE-OpenMap.txt`; https://github.com/openmap-world/openmap): la idea y la lógica del mapa continuo (cada mapa colocado en el de Azeroth con `GetMapRectOnMap(mapa, 947)`, zoom por escala del lienzo, capas que entran según el zoom, carga escalonada de archivos con fundido, qué zona o ciudad hay bajo un punto con su regla del borde de las ciudades, la flecha del jugador `MinimapArrow` y el punto de grupo `WhiteCircle-RaidBlips`) y las texturas de `VENDOR.md`. El arte de los mapas es de Blizzard.
+- **Polestar** (el motor de Alfa, GPL-3.0): los recuadros de exploración de cada zona (`UI/ZoneArtOverlays.lua`) que revelan las zonas sin descubrir, los rangos de nivel (`Maps/ZoneLevels.lua`, a partir de datos de pfQuest, MIT), el Codex de mazmorras y las capas de íconos (`Nav/Pins.lua`).
+- **Leatrix Maps** no tiene licencia libre: de él solo se imita la función (zonas reveladas, coordenadas, niveles); no se copió código ni datos.

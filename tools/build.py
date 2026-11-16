@@ -128,6 +128,18 @@ def main() -> int:
                 escribir(toc, ajustar_toc(leer(toc), cfg, False))  # version unica
             propios += 1
 
+    # Archivos de terceros que usan los modulos (vendor/<Modulo>/...), con su
+    # licencia al lado: por ejemplo, las texturas de OpenMap (MIT) de Mundo.
+    vendor = RAIZ / "vendor"
+    if vendor.is_dir():
+        for origen in vendor.rglob("*"):
+            if origen.is_file():
+                destino = dist / origen.relative_to(vendor)
+                if not destino.parts[len(dist.parts)] in {p.name for p in dist.iterdir()}:
+                    print(f"AVISO: vendor/{origen.relative_to(vendor)} no tiene modulo en dist/")
+                destino.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(origen, destino)
+
     (dist / "NOTICE-ALFA.txt").write_text(
         f"Alfa {cfg['version']} - Toxic / La Jauria\n\n"
         f"Alfa es software libre bajo la GNU GPL version 3 (ver Alfa/LICENSE).\n"
