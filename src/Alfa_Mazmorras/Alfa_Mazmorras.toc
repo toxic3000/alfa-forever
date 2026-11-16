@@ -1,6 +1,6 @@
 ## Interface: 16001
 ## Title: |cff8be04eAlfa|r - Mazmorras
-## Notes: Diario de mazmorras: botín y consejos por jefe, modo historia, tu progreso y los avisos de jefes del juego.
+## Notes: La mazmorra para tu nivel con un clic para prepararte; jefes, botín, misiones y consejos de cada una, y tu progreso.
 ## Author: Toxic - La Jauria
 ## Version: dev
 ## X-License: GPL-3.0-only
@@ -22,5 +22,9 @@ Consejos\ZahurdaRajacieno.lua
 Consejos\Uldaman.lua
 Datos.lua
 Avisos.lua
+Plan.lua
+Piezas.lua
+Ajustes.lua
 Vista.lua
+Reemplazos.lua
 Capa.lua

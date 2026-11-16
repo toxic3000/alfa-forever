@@ -1,7 +1,8 @@
 -- Alfa - Mazmorras: datos y progreso (Toxic / La Jauría). GPL-3.0.
 --
--- Complementa al diario del motor (Alfa.Dungeons: misiones, jefes, entrada)
--- con lo que el motor no tiene:
+-- Lee el diario del motor (Alfa.Dungeons: misiones, jefes, entrada), que
+-- desde la 1.0 solo se ve a través de esta página (Reemplazos.lua), y le
+-- suma lo que el motor no tiene:
 --   * el botín de cada jefe, del Codex (Codex.Instance(key).bosses[i].items y
 --     las fuentes de cada objeto, Codex.Item(id).sources: "drop" con su PNJ y
 --     su probabilidad);
@@ -82,6 +83,33 @@ function D.Avisar(que)
 		local ok, err = pcall(oyentes[i], que)
 		if not ok and geterrorhandler then geterrorhandler()(err) end
 	end
+end
+
+-- Tu nivel y tu bando ("A", "H" o nil).
+function D.Nivel()
+	local C = A.Compat
+	local info = C and llamar(C.GetPlayerInfo)
+	if type(info) == "table" and type(info.level) == "number" then return info.level end
+	local n = UnitLevel and legible(UnitLevel("player"))
+	return type(n) == "number" and n or 1
+end
+
+function D.Lado()
+	local C = A.Compat
+	local f = C and llamar(C.GetPlayerFaction)
+	return f == "Alliance" and "A" or f == "Horde" and "H" or nil
+end
+
+-- Lo que se le cuenta al jugador al entrar, al descubrir un jefe y al
+-- terminar una mazmorra. La vista lo muestra con un aviso del Kit
+-- (M.Anunciar); sin ella, una línea en el chat.
+local function anunciar(tipo, key, a, b, texto)
+	if M.Anunciar then
+		local ok, err = pcall(M.Anunciar, tipo, key, a, b)
+		if ok then return end
+		if geterrorhandler then geterrorhandler()(err) end
+	end
+	if texto then N.Imprimir(texto) end
 end
 
 local function prog()
@@ -644,13 +672,10 @@ local function alVencer(encId, nombre)
 	if j.final then
 		local h = D.Hecha(key)
 		local veces = h and h.veces or 1
-		if veces <= 1 or primeraVez then
-			N.Imprimir(format(L["¡Completaste %s! Su diario queda abierto en /alfa mazmorras."], nombreM))
-		else
-			N.Imprimir(format(L["¡Completaste %s otra vez! Ya van %d."], nombreM, veces))
-		end
+		anunciar("hecha", key, (primeraVez or veces <= 1) and 1 or veces, nil,
+			format(L["¡Completaste %s!"], nombreM))
 	elseif nuevo and D.Historia() and N.Get(ID, "avisoDescubrir") then
-		N.Imprimir(format(L["Descubriste a %s (%s). Sus consejos y su botín: /alfa mazmorras"], j.nombre or "?", nombreM))
+		anunciar("jefe", key, j, nil, format(L["Descubriste a %s (%s)."], j.nombre or "?", nombreM))
 	end
 	D.Avisar("progreso")
 end
@@ -758,16 +783,10 @@ local function avisoEntrada()
 	if not key or key == ultimaEntrada then return end
 	ultimaEntrada = key
 	D.RevisarMisiones(key)
+	D.Avisar("entrada")
 	if not N.Get(ID, "avisoEntrar") then return end
 	local v, total = D.Cuenta(key)
-	local texto
-	if total > 0 then
-		texto = format(L["Entraste a %s: %d jefes (%d vencidos). Consejos y botín: /alfa mazmorras"], D.Nombre(key), total, v)
-	else
-		texto = format(L["Entraste a %s. Consejos y botín: /alfa mazmorras"], D.Nombre(key))
-	end
-	N.Imprimir(texto)
-	D.Avisar("entrada")
+	anunciar("entrada", key, v, total, format(L["Entraste a %s."], D.Nombre(key)))
 end
 
 A.RegisterEvent("PLAYER_ENTERING_WORLD", function()
