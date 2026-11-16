@@ -199,7 +199,7 @@ local function mostrarResumen(s)
 	end
 	if (modo == "aviso" or modo == "ambos") and M.Aviso then
 		M.Aviso.Mostrar({
-			clave = "resumen", tipo = "info", icono = "hourglass",
+			clave = "resumen", tipo = "info", lobo = "aullando",
 			titulo = L["¡De vuelta con la manada!"],
 			linea = format(L["Tu sesión anterior, %s"], cuando),
 			texto = txt, segundos = 14,

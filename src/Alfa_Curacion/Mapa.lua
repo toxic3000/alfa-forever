@@ -238,8 +238,13 @@ local function ofertas()
 	return t
 end
 
+local function dialogoAbierto()
+	local velo = rawget(_G, "AlfaKitVelo")
+	return type(velo) == "table" and velo.IsShown and velo:IsShown() and true or false
+end
+
 local function ofrecer(lista)
-	local W = A.Widgets
+	local K = N.Kit
 	local lineas = {}
 	for _, o in ipairs(lista) do
 		local nombre = M.NombreHechizo(o.nuevo.id) or "?"
@@ -264,11 +269,11 @@ local function ofrecer(lista)
 		d.rechazos = type(d.rechazos) == "table" and d.rechazos or {}
 		for _, o in ipairs(lista) do d.rechazos[o.clave] = true end
 	end
-	if not (W and W.Modal) then return rechazar() end
-	W.Modal({
-		title = L["¿Usar tu hechizo nuevo?"], icon = "plus", text = texto,
-		action = L["Usarlo"], cancel = L["Ahora no"],
-		onAccept = usar, onCancel = rechazar,
+	if not (K and K.Dialogo) then return rechazar() end
+	K.Dialogo({
+		titulo = L["¿Usar tu hechizo nuevo?"], icono = "ic-curacion", texto = texto,
+		aceptar = L["Usarlo"], cancelar = L["Ahora no"],
+		alAceptar = usar, alCancelar = rechazar,
 	})
 end
 
@@ -276,8 +281,7 @@ function M.RevisarMejoras()
 	if esperando then return end
 	local lista = ofertas()
 	if #lista == 0 then return end
-	local W = A.Widgets
-	if enCombate() or (W and W.ModalShown and W.ModalShown()) then
+	if enCombate() or dialogoAbierto() then
 		esperando = true
 		local function luego()
 			esperando = false

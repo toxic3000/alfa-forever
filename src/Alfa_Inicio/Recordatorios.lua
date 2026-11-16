@@ -146,7 +146,7 @@ local function avisarDurabilidad(peor, otras)
 		txt = txt .. "\n" .. (otras == 1 and L["Y 1 pieza más necesita reparación."] or format(L["Y %d piezas más necesitan reparación."], otras))
 	end
 	Aviso.Mostrar({
-		clave = "durabilidad", tipo = urgente and "peligro" or "aviso", icono = "icon-buy",
+		clave = "durabilidad", tipo = urgente and "peligro" or "aviso", icono = "ic-oficios",
 		titulo = urgente and L["¡Repara tu equipo!"] or L["Tu equipo se está gastando"],
 		linea = linea, texto = txt, sonido = urgente,
 		botones = { { texto = L["Llévame a reparar"], fn = function() irA("repair") end } },
@@ -241,7 +241,7 @@ local function revisarBolsas()
 		table.insert(botones, 1, { texto = L["Abrir bolsas"], fn = function() N.Abrir("bolsas") end })
 	end
 	Aviso.Mostrar({
-		clave = "bolsas", tipo = n == 2 and "peligro" or "aviso", icono = "icon-collect",
+		clave = "bolsas", tipo = n == 2 and "peligro" or "aviso", icono = "ic-bolsas",
 		titulo = n == 2 and L["Tus bolsas están llenas"] or L["Tus bolsas están casi llenas"],
 		linea = libres == 1 and L["Te queda 1 espacio"] or format(L["Te quedan %d de %d espacios"], libres, total or 0),
 		texto = txt, botones = botones,
@@ -315,7 +315,7 @@ local function avisarEntrenar(trainer)
 		linea = L["Tu entrenador tiene algo nuevo para ti"]
 	end
 	Aviso.Mostrar({
-		clave = "entrenar", tipo = "info", icono = "icon-train",
+		clave = "entrenar", tipo = "info", icono = "ic-nivel",
 		titulo = L["Tienes habilidades nuevas"],
 		linea = linea, texto = donde,
 		botones = boton and { { texto = L["Llévame con mi entrenador"], fn = function() irA("class") end } } or nil,
@@ -502,7 +502,7 @@ revisarBuffs = function()
 				buffEn[gi] = ahora()
 				local icono = A.Compat and type(A.Compat.SpellIcon) == "function" and A.Compat.SpellIcon(conocidos[1]) or nil
 				Aviso.Mostrar({
-					clave = "buff" .. gi, tipo = "aviso", textura = icono, icono = "bolt",
+					clave = "buff" .. gi, tipo = "aviso", textura = icono, icono = "ic-aviso",
 					titulo = falta == "poco" and format(L["A %s le queda poco"], nombre) or format(L["Te falta %s"], nombre),
 					linea = L["Fuera de combate es el mejor momento"],
 					texto = g.furia and L["Tienes furia: úsalo antes de la siguiente pelea, te da más poder de ataque a ti y a tu grupo."]
@@ -598,7 +598,7 @@ local function revisarDescanso(entrar)
 	if entrar and resting and descansando == false and activo and ahora() - descansoEn >= 600 then
 		descansoEn = ahora()
 		Aviso.Mostrar({
-			clave = "descanso", tipo = "exito", icono = "icon-sethome",
+			clave = "descanso", tipo = "exito", icono = "ic-hoy",
 			titulo = L["Estás descansando"],
 			linea = format(L["XP descansada: %d%% de un nivel"], floor(pct + 0.5)),
 			texto = L["En posadas y ciudades acumulas XP descansada: ganas el doble de XP por enemigo hasta gastarla. Si cierras sesión aquí, también se acumula."],
@@ -615,7 +615,7 @@ local function revisarDescanso(entrar)
 		end
 		if cruzo then
 			Aviso.Mostrar({
-				clave = "descansoBajo", tipo = "info", icono = "icon-sethome",
+				clave = "descansoBajo", tipo = "info", icono = "ic-hoy",
 				titulo = r <= 0 and L["Se acabó tu XP descansada"] or L["Te queda poca XP descansada"],
 				linea = r <= 0 and L["Ahora ganas la XP normal"] or format(L["%d%% de un nivel"], floor(pct + 0.5)),
 				texto = L["Para volver a acumularla, descansa (o cierra sesión) en una posada o una ciudad."],

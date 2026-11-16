@@ -798,13 +798,17 @@ local function falso(i)
 	f = CreateFrame("Button", nil, prueba)
 	f:EnableMouse(true)
 	f:RegisterForDrag("LeftButton")
+	f:RegisterForClicks("LeftButtonUp", "RightButtonUp", "MiddleButtonUp")
 	f:SetScript("OnDragStart", empezarArrastre)
 	f:SetScript("OnDragStop", terminarArrastre)
+	-- Un clic en un marco de prueba no lanza nada: dice qué lanzaría (el
+	-- asistente lo muestra, M.alProbarClic).
+	f:SetScript("OnClick", function(self, boton) M.ProbarClic(boton, self) end)
 	f:SetScript("OnEnter", function(self)
 		if not GameTooltip then return end
 		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 		GameTooltip:SetText(L["Marco de prueba"], 1, 1, 1)
-		GameTooltip:AddLine(L["Arrastra para mover tus marcos. Cambia el tamaño y las columnas en la página Curación."], 0.8, 0.82, 0.86, true)
+		GameTooltip:AddLine(L["Arrastra para mover tus marcos. Haz clic (con o sin Mayús, Ctrl o Alt) para ver qué lanzaría."], 0.8, 0.82, 0.86, true)
 		GameTooltip:Show()
 	end)
 	f:SetScript("OnLeave", function(self) if GameTooltip and GameTooltip:GetOwner() == self then GameTooltip:Hide() end end)
@@ -863,6 +867,35 @@ local function pintarFalso(f, e)
 	end
 	verBorde(c.objetivo, e[1] == "Colmillo")
 	c:SetAlpha((e.lejos and opt("alcance")) and FUERA or 1)
+end
+
+-- Un clic sobre un marco de prueba: la ranura que tocó (botón y tecla) y lo
+-- que haría de verdad. Lo cuenta M.alProbarClic(ranura, entrada, marco).
+local SUFIJO = { LeftButton = "1", RightButton = "2", MiddleButton = "3" }
+function M.ProbarClic(boton, marco)
+	local s = SUFIJO[boton or ""]
+	if not s then return end
+	local p = ""
+	if IsShiftKeyDown and IsShiftKeyDown() then p = "shift-"
+	elseif IsControlKeyDown and IsControlKeyDown() then p = "ctrl-"
+	elseif IsAltKeyDown and IsAltKeyDown() then p = "alt-" end
+	local r = p .. s
+	local e = M.Mapa()[r]
+	if marco and marco.cuerpo and marco.cuerpo.estado then
+		local c = marco.cuerpo
+		c.estado:SetText(M.NombreAccion and M.NombreAccion(e) or "")
+		c.estado:Show()
+		local token = (marco.alfaToque or 0) + 1
+		marco.alfaToque = token
+		A.After(1.6, function()
+			if marco.alfaToque == token and enPrueba then
+				local i
+				for k, x in ipairs(falsos) do if x == marco then i = k break end end
+				if i and EJEMPLOS[i] then pintarFalso(marco, EJEMPLOS[i]) end
+			end
+		end)
+	end
+	if M.alProbarClic then M.alProbarClic(r, e, marco) end
 end
 
 -- n = 5 o 20 muestra la prueba; nil la quita.

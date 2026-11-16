@@ -12,3 +12,4 @@ Hechizos.lua
 Mapa.lua
 Marcos.lua
 Pagina.lua
+Asistente.lua

@@ -1,248 +1,229 @@
--- Alfa - Inicio: los avisos en pantalla (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Inicio: la tarjeta de aviso (Toxic / La Jauría). GPL-3.0.
 --
--- Una tarjeta pequeña con el estilo de Alfa, como la alerta de raros del
--- motor (Alfa/Rares/Toast.lua): arriba una banda de noche con el glifo en su
--- anillo (o el ícono de un hechizo), el título y una línea; debajo el texto y
--- hasta dos botones (el principal a la derecha). Baja desde arriba, se vacía
--- una línea mientras espera, se queda quieta con el cursor encima y se
--- cierra sola a los inicio.segAviso segundos. Se arrastra para moverla
--- (inicio.avisoPos). Uno a la vez: los demás esperan en una cola corta, y un
--- aviso urgente pasa primero.
+-- Una tarjeta chica hecha con el Kit (docs/KIT.md): la franja del color del
+-- aviso, su ícono en una baldosa (o el de un hechizo, o el lobo), el título,
+-- una línea, un texto corto y hasta dos botones (el principal primero). Se
+-- va sola a los inicio.segAviso segundos (no con el ratón encima), con su X
+-- o con su botón. Se arrastra para moverla (inicio.avisoPos). Una a la vez:
+-- las demás esperan en una cola corta, y una urgente pasa primero. La usan
+-- los recordatorios, el resumen de la sesión anterior y los avisos del
+-- motor que Inicio reemplaza (AvisosMotor.lua).
 --
 --   M.Aviso.Mostrar(spec)
 --     spec = { clave, tipo = "info" | "exito" | "aviso" | "peligro",
---              icono = glifo de Alfa/Media/UI, textura = fileID (un hechizo),
+--              icono = "ic-...", textura = fileID (un hechizo u objeto), lobo = "aullando",
 --              titulo, linea, texto, segundos, sonido = true,
---              botones = { { texto, fn, icono }, ... } }  -- el primero es el principal
---   M.Aviso.Ocultar(todo)   -- todo = true vacía también la cola
+--              botones = { { texto, fn }, ... },   -- el primero es el principal
+--              alCerrar = fn }                     -- al irse, por lo que sea
+--   M.Aviso.Ocultar(todo)    -- el de ahora (todo = true vacía también la cola)
+--   M.Aviso.Quitar(clave)    -- quita ese aviso (en pantalla o en la cola) sin llamar a su alCerrar
 --   M.Aviso.Visible() -> la clave del aviso en pantalla, o nil
+--   M.Aviso.Probar()
+-- Nada corre en OnUpdate: la entrada es una animación del cliente y la
+-- salida, un temporizador.
 
 local ADDON, M = ...
 local N = AlfaNucleo
 local A = N.A
-local W, T, Anim = A.Widgets, A.Theme, A.Anim
+local K = N.Kit
 local L = N.Textos(M.EN)
 
-local floor, max, min, ceil, ipairs, type = math.floor, math.max, math.min, math.ceil, ipairs, type
+local floor, max, min, ipairs, type, tonumber = math.floor, math.max, math.min, ipairs, type, tonumber
 
 local Aviso = {}
 M.Aviso = Aviso
 
-local WIDTH, MAX_W, BAND_H, PAD = 360, 470, 54, 16
-local RING, GLYPH, ICON = 32, 16, 26
-local TEXT_X = PAD + RING + 12
-local BTN_H = 26
+local ANCHO, ANCHO_MAX = 360, 440
+local PAD, BALDOSA = 16, 36
 local COLA_MAX = 5
-local DEFAULT = { "TOP", 0, -250 }
-local COLOR = { info = "accent", exito = "success", aviso = "warning", peligro = "danger" }
+local DEFAULT = { "TOP", 0, -300 }
+local TONO = { info = "acento", exito = "exito", aviso = "aviso", peligro = "peligro" }
 
 local f, actual
+local turno = 0
 local cola = {}
-
-local function casa() return T.SkinKey() == "alfa" end
 
 local function lugar()
 	local p = N.Get("inicio", "avisoPos")
 	if type(p) ~= "table" or type(p[1]) ~= "string" then p = DEFAULT end
-	Anim.Anchor(f, p[1], UIParent, p[1], tonumber(p[2]) or 0, tonumber(p[3]) or 0)
+	f:ClearAllPoints()
+	f:SetPoint(p[1], UIParent, p[1], tonumber(p[2]) or 0, tonumber(p[3]) or 0)
 end
 
--- Degradado vertical: color de arriba, color de abajo.
-local function vgrad(t, r1, g1, b1, a1, r2, g2, b2, a2)
-	if t.SetGradient and CreateColor then
-		t:SetVertexColor(1, 1, 1, 1)
-		t:SetGradient("VERTICAL", CreateColor(r2, g2, b2, a2), CreateColor(r1, g1, b1, a1))
-	else
-		t:SetVertexColor(r2, g2, b2, (a1 + a2) / 2)
-	end
+-- El alCerrar de un aviso, una sola vez.
+local function avisarCierre(spec)
+	if type(spec) ~= "table" or spec.alfaCerrado then return end
+	spec.alfaCerrado = true
+	if type(spec.alCerrar) == "function" then K.Llamar(spec.alCerrar, spec) end
 end
 
-local function clic(self)
-	local b = self.psBoton
-	if not b then return end
-	Aviso.Ocultar()
-	if type(b.fn) == "function" then A.SafeCall(b.fn) end
+-- Un botón: primero su acción (un aviso del motor la lee mientras sigue
+-- abierto), luego el aviso se va si nadie lo quitó ya.
+local function clic(b)
+	local spec, accion = actual, b.alfaAccion
+	if not (spec and accion) then return end
+	if type(accion.fn) == "function" then K.Llamar(accion.fn) end
+	if actual == spec then Aviso.Ocultar() end
 end
 
 local function construir()
-	f = CreateFrame("Frame", "AlfaInicioAviso", A.UIParent)
-	f:SetSize(WIDTH, BAND_H + 80)
+	f = CreateFrame("Frame", "AlfaInicioAviso", K.Raiz())
+	f:SetSize(ANCHO, 80)
 	f:SetFrameStrata("HIGH")
+	f:SetToplevel(true)
 	f:SetClampedToScreen(true)
 	f:SetMovable(true)
 	f:EnableMouse(true)
 	f:RegisterForDrag("LeftButton")
-	-- Un aviso: las apariencias del juego le dan el marco claro de la guía.
-	f.psLight = true
-	T.Skin(f, "window")
+	f.caja = K.Caja(f, { fondo = "panel", borde = "lineaFuerte", corte = K.CORTE.panel })
+	f.Marca = K.Marca(f, K.CORTE.panel, "acento")
+	f.Franja = K.Plano(f, "acento", "ARTWORK", 1)
+	f.Franja:SetWidth(3)
+	f.Franja:SetPoint("TOPLEFT", f, "TOPLEFT", 0, -K.CORTE.panel - 2)
+	f.Franja:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 0, K.CORTE.panel + 2)
 
-	-- La banda de noche: qué es.
-	local head = CreateFrame("Frame", nil, f)
-	head:SetPoint("TOPLEFT", f, "TOPLEFT", 1, -1)
-	head:SetPoint("TOPRIGHT", f, "TOPRIGHT", -1, -1)
-	head:SetHeight(BAND_H)
-	f.Head = head
-	f.Night = head:CreateTexture(nil, "BACKGROUND", nil, -8)
-	f.Night:SetTexture(T.Media("white"))
-	f.Night:SetAllPoints(head)
-	W.Painter(f.Night, function(t)
-		t:SetShown(casa())
-		local tr, tg, tb = T.Color("scrim")
-		local br, bg, bb = T.Color("bg")
-		vgrad(t, tr, tg, tb, 1, br, bg, bb, 1)
-	end)
-	if W.Haze then f.Haze = W.Haze(head, { height = BAND_H, sub = -6 }) end
-	f.Band = T.Band(head, "BACKGROUND", -5)
-	f.Band:SetAllPoints(head)
-	f.Band:SetTexCoord(T.BandCoords(WIDTH - 2, BAND_H))
-	f.BandRule = W.Divider(f)
-	f.BandRule:SetPoint("TOPLEFT", f, "TOPLEFT", 1, -(BAND_H + 1))
-	f.BandRule:SetPoint("TOPRIGHT", f, "TOPRIGHT", -1, -(BAND_H + 1))
+	f.Baldosa = CreateFrame("Frame", nil, f)
+	f.Baldosa:SetSize(BALDOSA, BALDOSA)
+	f.Baldosa:SetPoint("TOPLEFT", f, "TOPLEFT", PAD + 2, -PAD)
+	f.Baldosa.caja = K.Caja(f.Baldosa, { fondo = "acento", alfaFondo = 0.14, borde = "acento", alfaBorde = 0.4, corte = K.CORTE.control })
+	f.Icono = K.Icono(f.Baldosa, "ic-info", 20, "acento")
+	f.Icono:SetPoint("CENTER")
 
-	-- El glifo en su anillo, del color del tipo; o el ícono de un hechizo.
-	f.Ring = W.Tex(head, "ARTWORK", "qol-ring", "accent")
-	f.Ring:SetSize(RING, RING)
-	f.Ring:SetPoint("LEFT", head, "LEFT", PAD - 1, 0)
-	f.Glyph = W.Tex(head, "OVERLAY", "info", "accent")
-	f.Glyph:SetSize(GLYPH, GLYPH)
-	f.Glyph:SetPoint("CENTER", f.Ring, "CENTER", 0, 0)
-	f.Icon = head:CreateTexture(nil, "OVERLAY")
-	f.Icon:SetSize(ICON, ICON)
-	f.Icon:SetPoint("CENTER", f.Ring, "CENTER", 0, 0)
-	f.Icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-	f.Icon:Hide()
+	f.Titulo = K.Texto(f, "encabezado", "texto")
+	f.Linea = K.Texto(f, "pequeno", "textoTenue")
+	f.Texto = K.Texto(f, "nota", "textoSuave")
 
-	f.Title = W.Text(head, "title", "title")
-	f.Title:SetPoint("BOTTOMLEFT", f.Ring, "RIGHT", 12, 1)
-	f.Title:SetPoint("RIGHT", head, "RIGHT", -40, 0)
-	f.Line = W.Text(head, "small", "textDim")
-	f.Line:SetPoint("TOPLEFT", f.Ring, "RIGHT", 12, -3)
-	f.Line:SetPoint("RIGHT", head, "RIGHT", -PAD, 0)
-	for _, fs in ipairs({ f.Title, f.Line }) do
-		W.Painter(fs, function(t)
-			local r, g, b = T.Color("shade")
-			t:SetShadowOffset(0, -1)
-			t:SetShadowColor(r, g, b, 0.85)
-		end)
-	end
+	f.Cerrar = K.BotonIcono(f, "ic-cerrar", function() Aviso.Ocultar() end, { tam = 22, icono = 10, ayuda = L["Cerrar"] })
+	f.Cerrar:SetPoint("TOPRIGHT", f, "TOPRIGHT", -6, -6)
 
-	f.Close = W.IconButton(head, "close", 22, L["Cerrar"], function() Aviso.Ocultar() end, 12)
-	f.Close:SetPoint("TOPRIGHT", head, "TOPRIGHT", -8, -8)
+	f.B1 = K.Boton(f, "", clic, { tipo = "acento", tam = "chico" })
+	f.B2 = K.Boton(f, "", clic, { tipo = "fantasma", tam = "chico" })
 
-	f.Text = W.Text(f, "note", "textDim")
-	f.Text:SetWordWrap(true)
-	f.Text:SetSpacing(2)
-	f.Text:SetJustifyV("TOP")
-	f.Text:SetPoint("TOPLEFT", f, "TOPLEFT", PAD, -(BAND_H + 1 + 12))
+	local ag = f:CreateAnimationGroup()
+	local alfa = ag:CreateAnimation("Alpha")
+	alfa:SetFromAlpha(0)
+	alfa:SetToAlpha(1)
+	alfa:SetDuration(0.2)
+	alfa:SetSmoothing("OUT")
+	f.Entrada = ag
 
-	-- Dos botones: el principal (a la derecha) y uno más.
-	f.Primary = W.Button(f, "", clic, { primary = true, height = BTN_H })
-	f.Second = W.Button(f, "", clic, { height = BTN_H })
-
-	f.Timer = W.ProgressLine(f, 2)
-	f.Timer:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 1, 1)
-	f.Timer:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -1, 1)
-
-	f:SetScript("OnDragStart", function(self) self:StartMoving() end)
+	f:SetScript("OnDragStart", function(self) if not (A.DragLocked and A.DragLocked()) then self:StartMoving() end end)
 	f:SetScript("OnDragStop", function(self)
 		self:StopMovingOrSizing()
 		local point, _, _, x, y = self:GetPoint(1)
-		if point then N.Set("inicio", "avisoPos", { point, floor(x + 0.5), floor(y + 0.5) }) end
+		if point then N.Set("inicio", "avisoPos", { point, floor((x or 0) + 0.5), floor((y or 0) + 0.5) }) end
 	end)
-	-- Solo mientras se ve, y a lo más 20 veces por segundo.
-	f:SetScript("OnUpdate", A.Safe(function(self, elapsed)
-		if self:IsMouseOver() then return end
-		self.psLeft = (self.psLeft or 0) - elapsed
-		self.psTick = (self.psTick or 0) + elapsed
-		if self.psTick >= 0.05 then
-			self.psTick = 0
-			W.SetProgress(self.Timer, max(0, self.psLeft) / (self.psTotal or 1), self:GetWidth() - 2)
-		end
-		if self.psLeft <= 0 then Aviso.Ocultar() end
-	end))
-	if W.Rim then W.Rim(f, { height = BAND_H }) end
 	f:Hide()
 	Aviso.frame = f
 end
 
-local function ponerBoton(b, spec)
-	if not spec then
+local function ponerBoton(b, accion)
+	b.alfaAccion = accion
+	if not accion then
 		b:Hide()
-		b.psBoton = nil
 		return 0
 	end
-	b.psBoton = spec
-	W.SetButtonText(b, spec.texto or "")
+	b:SetTexto(accion.texto or "")
 	b:Show()
-	return b:GetWidth()
+	return b:AnchoNatural()
+end
+
+local function vencer(mio)
+	if mio ~= turno or not (f and f:IsShown()) then return end
+	if f:IsMouseOver() then
+		K.Despues(2, function() vencer(mio) end)
+		return
+	end
+	Aviso.Ocultar()
 end
 
 local function pintar(spec)
 	actual = spec
-	local color = COLOR[spec.tipo] or "accent"
+	turno = turno + 1
+	local mio = turno
+	local tono = TONO[spec.tipo] or "acento"
+	local relleno = K.Tono(tono)
+	K.ColorPlano(f.Franja, relleno)
+	K.ColorPlano(f.Marca, relleno)
+	f.Baldosa.caja:Estilo({ fondo = relleno, borde = relleno })
+	-- El ícono: el de un hechizo tal cual, el lobo o un ícono de Alfa teñido.
 	if spec.textura then
-		f.Icon:SetTexture(spec.textura)
-		f.Icon:Show()
-		f.Glyph:Hide()
-		f.Ring:SetShown(false)
+		f.Icono:SetTexture(spec.textura)
+		f.Icono.alfaColor = nil
+		f.Icono:SetVertexColor(1, 1, 1, 1)
+		f.Icono:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+		f.Icono:SetSize(BALDOSA - 6, BALDOSA - 6)
 	else
-		f.Icon:Hide()
-		f.Glyph:SetTexture(T.Media(spec.icono or "info"))
-		W.Color(f.Glyph, color)
-		f.Glyph:Show()
-		W.Color(f.Ring, color)
-		f.Ring:Show()
+		f.Icono:SetTexCoord(0, 1, 0, 1)
+		if spec.lobo then
+			f.Icono:SetTexture(K.Lobo(spec.lobo))
+			f.Icono.alfaColor = relleno
+			f.Icono:SetVertexColor(K.Color(relleno))
+			f.Icono:SetSize(30, 30)
+		else
+			K.SetIcono(f.Icono, spec.icono or "ic-info", relleno)
+			f.Icono:SetSize(20, 20)
+		end
 	end
-	f.Title:SetText(spec.titulo or "")
-	f.Line:SetText(spec.linea or "")
-	f.Text:SetText(spec.texto or "")
-	f.Text:SetShown((spec.texto or "") ~= "")
 
 	local botones = type(spec.botones) == "table" and spec.botones or {}
-	local w1 = ponerBoton(f.Primary, botones[1])
-	local w2 = ponerBoton(f.Second, botones[2])
-	local bw = w1 + (w2 > 0 and (8 + w2) or 0)
+	local w1 = ponerBoton(f.B1, botones[1])
+	local w2 = ponerBoton(f.B2, botones[2])
+	K.Escribir(f.Titulo, spec.titulo or "")
+	K.Escribir(f.Linea, spec.linea or "")
+	K.Escribir(f.Texto, spec.texto or "")
 
-	local need = max(WIDTH,
-		TEXT_X + ceil(W.TextWidth(f.Title)) + 40,
-		TEXT_X + ceil(W.TextWidth(f.Line)) + PAD,
-		bw + PAD * 2)
-	local width = min(MAX_W, need)
-	f:SetWidth(width)
-	if W.LayoutRim then W.LayoutRim(f) end
-	f.Band:SetTexCoord(T.BandCoords(width - 2, BAND_H))
-	f.Text:SetWidth(width - PAD * 2)
-
-	local y = BAND_H + 1 + 12
-	if f.Text:IsShown() then y = y + ceil(f.Text:GetStringHeight()) end
-	if w1 > 0 then
-		y = y + 12
-		f.Primary:ClearAllPoints()
-		f.Primary:SetPoint("TOPRIGHT", f, "TOPRIGHT", -PAD, -y)
-		if w2 > 0 then
-			f.Second:ClearAllPoints()
-			f.Second:SetPoint("RIGHT", f.Primary, "LEFT", -8, 0)
-		end
-		y = y + BTN_H
+	local x = PAD + 2 + BALDOSA + 12
+	-- Lo justo para el título y los botones, sin pasar de ANCHO_MAX.
+	local ancho = max(ANCHO, min(ANCHO_MAX, x + K.AnchoTexto(f.Titulo) + 34), x + w1 + (w2 > 0 and w2 + 8 or 0) + PAD)
+	ancho = min(ANCHO_MAX, ancho)
+	f:SetWidth(ancho)
+	local tw = ancho - x - 30
+	local y = PAD - 2
+	f.Titulo:ClearAllPoints()
+	f.Titulo:SetPoint("TOPLEFT", f, "TOPLEFT", x, -y)
+	y = y + K.Parrafo(f.Titulo, tw, 2)
+	local conLinea = (spec.linea or "") ~= ""
+	f.Linea:SetShown(conLinea)
+	if conLinea then
+		y = y + 2
+		f.Linea:ClearAllPoints()
+		f.Linea:SetPoint("TOPLEFT", f, "TOPLEFT", x, -y)
+		y = y + K.Parrafo(f.Linea, tw, 2)
 	end
-	f:SetHeight(y + 14)
-
-	local secs = tonumber(spec.segundos) or tonumber(N.Get("inicio", "segAviso")) or 10
-	if w1 > 0 then secs = secs + 4 end
-	f.psTotal, f.psLeft, f.psTick = secs, secs, 0
-	W.SetProgress(f.Timer, 1, width - 2)
+	local conTexto = (spec.texto or "") ~= ""
+	f.Texto:SetShown(conTexto)
+	if conTexto then
+		y = y + 6
+		f.Texto:ClearAllPoints()
+		f.Texto:SetPoint("TOPLEFT", f, "TOPLEFT", x, -y)
+		y = y + K.Parrafo(f.Texto, ancho - x - PAD, 5)
+	end
+	if w1 > 0 then
+		y = y + 10
+		f.B1:ClearAllPoints()
+		f.B1:SetPoint("TOPLEFT", f, "TOPLEFT", x, -y)
+		if w2 > 0 then
+			f.B2:ClearAllPoints()
+			f.B2:SetPoint("LEFT", f.B1, "RIGHT", 8, 0)
+		end
+		y = y + K.ALTO.botonChico
+	end
+	f:SetHeight(max(y, PAD + BALDOSA) + PAD)
 
 	local wasShown = f:IsShown()
 	lugar()
 	f:Show()
 	if not wasShown then
-		local p = f.psAnchor
-		Anim.To(f, "alpha", 0, 1, Anim.SLOW, "out")
-		if p then Anim.To(f, "offset", p[5] + 18, p[5], Anim.SLOW * 1.5, "out") end
+		f.Entrada:Stop()
+		f.Entrada:Play()
 	end
 	if spec.sonido and N.Get("inicio", "sonido") and SOUNDKIT and SOUNDKIT.RAID_WARNING then
 		pcall(A.PlaySound, SOUNDKIT.RAID_WARNING, "Master")
 	end
+	local secs = tonumber(spec.segundos) or tonumber(N.Get("inicio", "segAviso")) or 10
+	if w1 > 0 then secs = secs + 4 end
+	K.Despues(secs, function() vencer(mio) end)
 end
 
 local function siguiente()
@@ -253,26 +234,45 @@ end
 
 function Aviso.Mostrar(spec)
 	if type(spec) ~= "table" then return end
-	if A.Hidden() then return end
+	if A.Hidden and A.Hidden() then
+		avisarCierre(spec)
+		return
+	end
 	if not f then construir() end
 	if f:IsShown() and actual and actual.clave ~= spec.clave then
 		for i = #cola, 1, -1 do
 			if cola[i].clave == spec.clave then table.remove(cola, i) end
 		end
 		if spec.tipo == "peligro" then table.insert(cola, 1, spec) else cola[#cola + 1] = spec end
-		while #cola > COLA_MAX do table.remove(cola) end
+		while #cola > COLA_MAX do avisarCierre(table.remove(cola)) end
 		return
 	end
 	pintar(spec)
 end
 
 function Aviso.Ocultar(todo)
+	local era = actual
 	actual = nil
-	if todo then
-		for i = #cola, 1, -1 do cola[i] = nil end
-	end
+	turno = turno + 1
 	if f and f:IsShown() then f:Hide() end
+	if todo then
+		local resto = cola
+		cola = {}
+		for _, s in ipairs(resto) do avisarCierre(s) end
+	end
+	avisarCierre(era)
 	if #cola > 0 then A.After(0.4, siguiente) end
+end
+
+-- Quita el aviso `clave` (lo cerró quien lo pidió): sin llamar a su alCerrar.
+function Aviso.Quitar(clave)
+	for i = #cola, 1, -1 do
+		if cola[i].clave == clave then table.remove(cola, i) end
+	end
+	if actual and actual.clave == clave then
+		actual.alfaCerrado = true
+		Aviso.Ocultar()
+	end
 end
 
 function Aviso.Visible()
@@ -282,7 +282,7 @@ end
 -- Un aviso de muestra (el botón de los ajustes).
 function Aviso.Probar()
 	Aviso.Mostrar({
-		clave = "prueba", tipo = "info", icono = "house",
+		clave = "prueba", tipo = "info", lobo = "normal",
 		titulo = L["Así se ven tus avisos"],
 		linea = L["Arrástralo para moverlo"],
 		texto = L["Alfa te avisa aquí de lo importante: equipo por reparar, bolsas llenas, habilidades nuevas, tu buff y tu descanso."],
