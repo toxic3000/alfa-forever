@@ -12,9 +12,9 @@
 --   Guias.Def(id, titulo, pasos, extra) -> def    -- la guía con los campos del paquete
 --   Guias.Instalar(def) -> ok, motivo             -- registra (o reemplaza) y la guarda
 --   Guias.Abrir(id) -> índice de pestaña | nil, motivo ("login" | "tabs" | "nada")
---   Guias.Activa() -> rutaId | "liberar" | nil    -- la de la pestaña activa, si es nuestra
+--   Guias.IdEspecial(nombre), Guias.Especial(id) -> "liberar" | "recoger" | "desbloquear" | nil
+--   Guias.Activa() -> rutaId | "liberar" | "recoger" | "desbloquear" | nil  -- la de la pestaña activa, si es nuestra
 --   Guias.Retirar(rutaId)                         -- una ruta borrada
---   Guias.MostrarEnMenu(id)                       -- abre el menú de guías en "Mis rutas"
 
 local ADDON, M = ...
 local A, L = M.A, M.L
@@ -27,8 +27,20 @@ local PACK = M.PACK
 local LIBERAR = PACK .. "/liberar"
 local registrado = false
 
+-- Las guías que no son rutas del árbol: cerrar tus misiones, recoger las de
+-- cerca y desbloquear una misión (lo que pide antes). Se guardan aparte.
+local ESPECIALES = { liberar = true, recoger = true, desbloquear = true }
+
 function G.IdRuta(rutaId) return PACK .. "/" .. tostring(rutaId) end
 function G.IdLiberar() return LIBERAR end
+function G.IdEspecial(nombre) return PACK .. "/" .. nombre end
+
+-- "liberar", "recoger", "desbloquear" o nil, de un id de guía.
+function G.Especial(id)
+	if type(id) ~= "string" or id:sub(1, #PACK + 1) ~= PACK .. "/" then return nil end
+	local resto = id:sub(#PACK + 2)
+	return ESPECIALES[resto] and resto or nil
+end
 
 local function nombreJugador()
 	local n = UnitName and UnitName("player")
@@ -42,7 +54,7 @@ function G.Paquete()
 	local ok = A.RegisterPack({
 		addon = ADDON, id = PACK, format = 9, title = L["Mis rutas"], author = nombreJugador(),
 		version = tostring(M.N.version or "1"), license = "GPL-3.0-only",
-		notes = L["Las rutas que armas en la página Rutas de Alfa."],
+		notes = L["Las rutas y los planes que armas en la página Ruta de Alfa."],
 	})
 	registrado = ok and true or false
 	return registrado
@@ -83,8 +95,10 @@ end
 -- A dónde se guarda una guía de este personaje.
 local function guardar(def)
 	local p = M.Personaje()
-	if def.id == LIBERAR then
-		p.liberar = M.Copia(def)
+	local esp = G.Especial(def.id)
+	if esp then
+		p.especiales = type(p.especiales) == "table" and p.especiales or {}
+		p.especiales[esp] = M.Copia(def)
 	else
 		local rutaId = def.id:sub(#PACK + 2)
 		p.guias[rutaId] = M.Copia(def)
@@ -122,8 +136,7 @@ function G.Activa()
 	local g = E and E.GetGuide and E.GetGuide()
 	local id = g and g.id
 	if type(id) ~= "string" or id:sub(1, #PACK + 1) ~= PACK .. "/" then return nil end
-	if id == LIBERAR then return "liberar" end
-	return id:sub(#PACK + 2)
+	return G.Especial(id) or id:sub(#PACK + 2)
 end
 
 -- ¿Está la guía de esta ruta abierta en alguna pestaña?
@@ -152,19 +165,6 @@ function G.Retirar(rutaId)
 	avisarMotor()
 end
 
-function G.MostrarEnMenu(id)
-	local UI = M.Motor("UI")
-	local Pk = UI and UI.Picker
-	if not (UI and UI.ShowPicker) then return false end
-	if Pk then
-		if Pk.ShowSection then Pk.ShowSection(nil) end
-		if Pk.SetCategory then Pk.SetCategory("pack:" .. PACK) end
-		if id and Pk.Select then Pk.Select(id) end
-	end
-	UI.ShowPicker()
-	return true
-end
-
 ---------------------------------------------------------------------------
 -- Al cargar: el paquete y las guías guardadas de este personaje
 ---------------------------------------------------------------------------
@@ -180,7 +180,12 @@ local function restaurar()
 			p.guias[rutaId] = nil
 		end
 	end
-	if type(p.liberar) == "table" and not registrar(p.liberar) then p.liberar = nil end
+	p.liberar = nil -- (versiones viejas: ahora va en especiales)
+	if type(p.especiales) == "table" then
+		for k, def in pairs(p.especiales) do
+			if not (ESPECIALES[k] and type(def) == "table" and registrar(def)) then p.especiales[k] = nil end
+		end
+	end
 end
 
 local function alCargar(_, nombre)

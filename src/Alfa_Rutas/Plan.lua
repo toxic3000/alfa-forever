@@ -7,8 +7,8 @@
 --   Plan.Armar(ruta, fn(plan | nil, motivo), alAvanzar?)
 --   Plan.Compilar(ruta, plan, fn(def | nil, motivo))   -- la guía del motor de toda la ruta
 --   Plan.Alternativas(ruta, uid, fn(lista))             -- otras misiones para un tramo
---   Plan.Registro(fn(lista))                            -- tus misiones abiertas, revisadas
---   Plan.Liberar(lista, fn(def | nil, motivo))          -- la guía para entregarlas
+--   Plan.PasosDe(partes, desde, costo) -> pasos         -- paradas en el orden más corto
+--   Plan.Abandonar(ids) -> cuántas
 --
 -- plan = { firma, fecha, desde, hasta, xp, oro, misiones, posicion,
 --          tramos = { [uid] = { rama, quests = { id... }, item?, zona?, fuente?, xp, oro, desde, hasta, notas = {...} } } }
@@ -62,15 +62,23 @@ local function titulo(qid)
 end
 P.Titulo = titulo
 
+
 ---------------------------------------------------------------------------
 -- Elegir misiones
 ---------------------------------------------------------------------------
 
+-- nivel: el nivel que se va ganando en el plan (para medir la XP y la
+-- dificultad); real: el de ahora, el único que decide si una misión se
+-- puede tomar (la regla de la ruta: nada que no se pueda tomar ya).
 local function contexto()
 	local p = I.Jugador()
 	local pos = A.PlayerPoint and A.PlayerPoint() or nil
-	return { p = p, nivel = I.NivelDecimal(p), pos = pos, ancla = pos, usadas = {}, puntos = {}, xp = 0, oro = 0 }
+	return { p = p, nivel = I.NivelDecimal(p), real = p.level, pos = pos, ancla = pos, usadas = {}, puntos = {}, xp = 0, oro = 0 }
 end
+
+-- La XP del plan se cuenta a la baja: si el juego da menos, el plan no se
+-- adelanta al nivel de verdad.
+local PRUDENCIA = 0.9
 
 local function puntosDe(ctx, e)
 	local pts = ctx.puntos[e.id]
@@ -96,7 +104,7 @@ local function candidatas(ctx, modo, quitar, idx, ceder, cuantas)
 	local piso = modo == "oro" and 1 or floor(nivel) - 9
 	local pre = {}
 	for i, e in ipairs(idx.lista) do
-		if e.lvl <= techo and e.lvl >= piso and not quitar[e.id] and I.Disponible(e, ctx.usadas, nivel) then
+		if e.lvl <= techo and e.lvl >= piso and not quitar[e.id] and I.Disponible(e, ctx.usadas, ctx.real) then
 			local pts = puntosDe(ctx, e)
 			if pts then
 				local d = pts.dador or ctx.pos
@@ -135,7 +143,7 @@ local function tomar(ctx, pt, e, fin)
 	local ganada = I.XPPara(e, ctx.nivel)
 	ctx.xp = ctx.xp + ganada
 	ctx.oro = ctx.oro + I.Oro(e, false)
-	ctx.nivel = sumarXP(ctx.nivel, ganada)
+	ctx.nivel = sumarXP(ctx.nivel, floor(ganada * PRUDENCIA))
 	if fin then ctx.pos = fin end
 end
 
@@ -144,8 +152,13 @@ local function elegirMisiones(ctx, tramo, pt, modo, idx, ceder)
 	for _, qid in ipairs(tramo.fijas or {}) do
 		local e = idx.porId[qid]
 		if e and not quitar[qid] and #pt.quests < tramo.cantidad and not ctx.usadas[qid] and not I.Hecha(qid) then
-			local pts = puntosDe(ctx, e)
-			tomar(ctx, pt, e, pts and pts.fin)
+			if I.Disponible(e, ctx.usadas, ctx.real) then
+				local pts = puntosDe(ctx, e)
+				tomar(ctx, pt, e, pts and pts.fin)
+			else
+				local _, motivo, info = M.Disp.Estado(qid, { usadas = ctx.usadas, nivel = ctx.real })
+				pt.notas[#pt.notas + 1] = format(L["%s no entra todavía: %s."], M.Citar(titulo(qid)), M.Disp.Texto(motivo, info))
+			end
 		end
 	end
 	while #pt.quests < tramo.cantidad do
@@ -159,6 +172,31 @@ local function elegirMisiones(ctx, tramo, pt, modo, idx, ceder)
 		pt.notas[#pt.notas + 1] = format(L["Solo encontré %d misiones que te sirvan ahora."], #pt.quests)
 	end
 end
+
+-- Lo que falta para llegar a un nivel: las mejores misiones de XP que ya se
+-- pueden tomar, antes de lo que pide ese nivel. -> cuántas agregó
+local function subirHasta(ctx, objetivo, pt, idx, ceder)
+	pt.antes = pt.antes or {}
+	local n = 0
+	while ctx.nivel < objetivo and #pt.antes < 30 do
+		local mejor = candidatas(ctx, "xp", {}, idx, ceder, 8)[1]
+		if not mejor then break end
+		pt.antes[#pt.antes + 1] = mejor.e.id
+		ctx.usadas[mejor.e.id] = true
+		local ganada = I.XPPara(mejor.e, ctx.nivel)
+		ctx.xp = ctx.xp + ganada
+		ctx.nivel = sumarXP(ctx.nivel, floor(ganada * PRUDENCIA))
+		if mejor.fin then ctx.pos = mejor.fin end
+		n = n + 1
+		ceder()
+	end
+	pt.nivel = max(M.num(pt.nivel, 0), objetivo)
+	if ctx.nivel < objetivo then
+		pt.notas[#pt.notas + 1] = format(L["Te faltan niveles para llegar a %d: la guía te lo marca y sigues subiendo con tu ruta."], objetivo)
+	end
+	return n
+end
+P.SubirHasta = subirHasta
 
 -- Misiones de clase: la cadena más corta que termina en una recompensa
 -- (el "objeto único"), con sus misiones previas en orden.
@@ -186,23 +224,27 @@ local function elegirClase(ctx, tramo, pt, idx, ceder)
 		local mejor
 		for _, e in ipairs(idx.lista) do
 			if e.clase and not quitar[e.id] and not ctx.usadas[e.id] and not I.Hecha(e.id) and e.lvl <= floor(ctx.nivel) + margen + 3 then
-				local cadena = Lk.QuestChain and Lk.QuestChain(e.id, ctx.p) or {}
-				local faltan, bien = {}, true
-				for _, q in ipairs(cadena) do
-					if not ctx.usadas[q.id] and not I.Hecha(q.id) then
-						if M.num(q.minLevel, 1) > floor(ctx.nivel) + 2 then bien = false end
-						faltan[#faltan + 1] = q.id
-					end
+				-- Lo que pide: sus previas en orden y el nivel más alto de la
+				-- cadena (Disponible.lua). Una de otra facción, raza o clase,
+				-- o cerrada por otra, no entra.
+				local des = M.Disp.Desbloquear(e.id)
+				local faltan = {}
+				for _, q in ipairs(des.cadena) do
+					if not ctx.usadas[q] and not I.Hecha(q) then faltan[#faltan + 1] = q end
 				end
-				if bien and #faltan > 0 then
+				local necesita = M.num(des.nivel, 1)
+				if not des.motivo and not des.linea and #faltan > 0 and necesita <= ctx.real + 3 then
 					local premio = (#(e.rew or {}) + #(e.cho or {})) > 0 and 3 or 1
-					local s = premio / #faltan / (1 + max(0, e.lvl - ctx.nivel))
-					if not mejor or s > mejor.s then mejor = { s = s, faltan = faltan, e = e } end
+					local s = premio / #faltan / (1 + max(0, e.lvl - ctx.nivel)) / (1 + max(0, necesita - ctx.real))
+					if not mejor or s > mejor.s then mejor = { s = s, faltan = faltan, e = e, nivel = necesita } end
 				end
 				ceder()
 			end
 		end
 		if not mejor then break end
+		-- Si la cadena pide más nivel del que tienes, antes van misiones de XP
+		-- y un paso que espera ese nivel.
+		if mejor.nivel > ctx.real then subirHasta(ctx, mejor.nivel, pt, idx, ceder) end
 		for _, qid in ipairs(mejor.faltan) do
 			if not ctx.usadas[qid] then agregar(qid) end
 		end
@@ -247,6 +289,19 @@ local function textoFuente(item)
 end
 P.TextoFuente = textoFuente
 
+-- La fuente con la que se armaría la guía de un objeto (Lookup.BestSource:
+-- la primera a tu alcance que se pueda guiar).
+local function mejorFuente(item)
+	local Lk = LK()
+	if not (Lk and Lk.Sources and Lk.BestSource) then return nil end
+	local C = CX()
+	local rec = C and C.Item(item)
+	local ok, lista = pcall(Lk.Sources, rec and rec.kind or "item", item)
+	if not ok or type(lista) ~= "table" then return nil end
+	return Lk.BestSource(lista)
+end
+P.MejorFuente = mejorFuente
+
 local function armarPlan(ruta, idx, ceder)
 	local ctx = contexto()
 	local plan = { firma = M.Firma(ruta), fecha = time and time() or 0, desde = ctx.nivel, tramos = {}, xp = 0, oro = 0,
@@ -270,7 +325,24 @@ local function armarPlan(ruta, idx, ceder)
 			if pt.item then ctx.oro = ctx.oro + I.Venta(pt.item) * t.cantidad end
 		elseif t.rama == "objeto" then
 			pt.item = t.item
-			if t.item then pt.fuente = textoFuente(t.item) else pt.notas[#pt.notas + 1] = L["Elige el objeto en el catálogo."] end
+			if t.item then
+				pt.fuente = textoFuente(t.item)
+				-- La mejor forma de conseguirlo que ya está a tu alcance; si
+				-- ninguna lo está, lo que falta (el nivel: misiones de XP antes).
+				local fila = mejorFuente(t.item)
+				if fila and not fila.available then
+					local necesita = fila.why == "level" and tonumber(tostring(fila.whyText or ""):match("(%d+)"))
+					if necesita and necesita > ctx.real then
+						subirHasta(ctx, necesita, pt, idx, ceder)
+					elseif fila.whyText then
+						pt.notas[#pt.notas + 1] = format(L["Todavía no puedes conseguirlo: %s."], fila.whyText)
+					end
+				elseif not fila then
+					pt.notas[#pt.notas + 1] = L["No sé de dónde sale este objeto."]
+				end
+			else
+				pt.notas[#pt.notas + 1] = L["Elige el objeto en la Enciclopedia."]
+			end
 		end
 		pt.xp, pt.oro, pt.hasta = ctx.xp - xp0, ctx.oro - oro0, ctx.nivel
 		plan.misiones = plan.misiones + #pt.quests
@@ -344,7 +416,7 @@ function P.Alternativas(ruta, uid, alTerminar)
 			if tramo.rama == "clase" then
 				local out = {}
 				for _, e in ipairs(idx.lista) do
-					if e.clase and not ctx.usadas[e.id] and not quitar[e.id] and I.Disponible(e, ctx.usadas, ctx.nivel + 3) then
+					if e.clase and not ctx.usadas[e.id] and not quitar[e.id] and I.Disponible(e, ctx.usadas, ctx.real) then
 						out[#out + 1] = { e = e, valor = I.XPPara(e, ctx.nivel) }
 					end
 				end
@@ -391,11 +463,13 @@ local function ordenSimple(paradas, desde)
 	return orden
 end
 
-local function ordenar(paradas, desde)
+-- costo(a, b) -> segundos: el camino entre dos puntos (por omisión, en
+-- línea recta; Cerrar.lua le da uno con vuelos y la piedra de hogar).
+local function ordenar(paradas, desde, costo)
 	if #paradas == 0 then return {} end
 	local D = M.Motor("Dungeons")
 	if D and type(D.PlanStops) == "function" then
-		local ok, orden = pcall(D.PlanStops, paradas, desde, nil, I.Viaje)
+		local ok, orden = pcall(D.PlanStops, paradas, desde, nil, costo or I.Viaje)
 		if ok and type(orden) == "table" and #orden == #paradas then return orden end
 	end
 	return ordenSimple(paradas, desde)
@@ -406,7 +480,7 @@ P.Ordenar = ordenar
 -- -> pasos, punto final. finas: una parada por aceptar, hacer y entregar
 -- (se aceptan juntas las de un mismo PNJ y se entregan juntas); si son
 -- muchas, una parada por misión entera.
-local function pasosDe(partes, desde)
+local function pasosDe(partes, desde, costo)
 	local paradas, porQuest = {}, {}
 	local finas = 0
 	for _, pm in ipairs(partes) do
@@ -453,18 +527,23 @@ local function pasosDe(partes, desde)
 			for _, pid in ipairs(pm.q.preAny or {}) do pide(pid) end
 		end
 	end
-	local orden = ordenar(paradas, desde)
+	local orden = ordenar(paradas, desde, costo)
 	local pasos, ultimo, aqui = {}, nil, desde
 	local function conPnj(meta, tituloPaso)
 		local k = claveNpc(meta)
 		if ultimo and k and ultimo.clave == k then
 			local goals = ultimo.paso.goals
 			goals[#goals + 1] = meta
-			return
+			return ultimo.paso
 		end
 		local paso = { title = meta.npcName or meta.objName or tituloPaso, goals = { meta } }
 		pasos[#pasos + 1] = paso
 		ultimo = k and { clave = k, paso = paso } or nil
+		return paso
+	end
+	-- La nota de la parada (Cerrar.lua: en qué zona y si queda lejos).
+	local function notar(paso, pm)
+		if paso and pm.nota and not paso.note then paso.note = pm.nota end
 	end
 	for _, i in ipairs(orden) do
 		local s = paradas[i]
@@ -475,7 +554,7 @@ local function pasosDe(partes, desde)
 			pasos[#pasos + 1] = { title = pm.q.title, goals = M.Copia(pm.objetivos) }
 			ultimo = nil
 		elseif s.tipo == "T" then
-			conPnj(M.Copia(pm.entregar), pm.q.title)
+			notar(conPnj(M.Copia(pm.entregar), pm.q.title), pm)
 		else
 			local goals = {}
 			if pm.aceptar and not I.EnRegistro(pm.q.id) then goals[#goals + 1] = M.Copia(pm.aceptar) end
@@ -484,6 +563,7 @@ local function pasosDe(partes, desde)
 			end
 			goals[#goals + 1] = M.Copia(pm.entregar)
 			pasos[#pasos + 1] = { title = pm.q.title, goals = goals }
+			notar(pasos[#pasos], pm)
 			ultimo = nil
 		end
 		aqui = s.outP or aqui
@@ -492,7 +572,7 @@ local function pasosDe(partes, desde)
 end
 P.PasosDe = pasosDe
 
-local function pasosMisiones(ids, desde, ceder, notas)
+local function pasosMisiones(ids, desde, ceder, notas, costo)
 	local C = CX()
 	local partes = {}
 	for _, qid in ipairs(ids) do
@@ -508,8 +588,9 @@ local function pasosMisiones(ids, desde, ceder, notas)
 		end
 		ceder()
 	end
-	return pasosDe(partes, desde)
+	return pasosDe(partes, desde, costo)
 end
+P.PasosMisiones = pasosMisiones
 
 local function nombreProfesion(linea)
 	local Lk = LK()
@@ -532,7 +613,7 @@ local function pasosRecoleccion(item, cantidad, desde)
 	if linea and Cp and Cp.GetSkillRank and not Cp.GetSkillRank(linea) then
 		paso.note = format(L["Necesitas %s para juntarlo: apréndela con un instructor de profesiones."], nombreProfesion(linea))
 	elseif not lugar then
-		paso.note = L["No sé dónde se junta: búscalo en el catálogo para ver de dónde sale."]
+		paso.note = L["No sé dónde se junta: búscalo en la Enciclopedia para ver de dónde sale."]
 	else
 		paso.note = L["La flecha te lleva de un lugar al siguiente."]
 	end
@@ -557,16 +638,26 @@ local function pasosObjeto(item, cantidad, notas)
 			end
 			return pasos
 		end
-		notas[#notas + 1] = format(L["Alfa no pudo armar el camino a %s (%s). Míralo en el Buscador."], nombre, tostring(ok and motivo or "error"))
+		notas[#notas + 1] = format(L["Alfa no pudo armar el camino a %s. Míralo en la Enciclopedia."], nombre)
 	end
 	return { { title = nombre, goals = { { t = "collect", item = item, itemName = nombre, count = cantidad } },
-		note = L["Mira en el catálogo de dónde sale."] } }
+		note = L["Mira en la Enciclopedia de dónde sale."] } }
 end
 
 local function anotar(paso, texto)
 	if not (paso and texto and texto ~= "") then return end
 	paso.note = paso.note and (texto .. " " .. paso.note) or texto
 end
+P.Anotar = anotar
+
+-- El paso que espera un nivel (la meta "level" del motor: se cumple sola al
+-- llegar), con lo que falta en XP.
+local function pasoNivel(nivel)
+	return { title = format(L["Llega a nivel %d"], nivel),
+		goals = { { t = "level", level = nivel } },
+		note = L["Lo que sigue pide este nivel: hasta entonces, la guía no te manda allá."] }
+end
+P.PasoNivel = pasoNivel
 
 local function compilar(ruta, plan, ceder)
 	local desde = A.PlayerPoint and A.PlayerPoint() or nil
@@ -576,14 +667,21 @@ local function compilar(ruta, plan, ceder)
 	for i, t in ipairs(ruta.tramos) do
 		local pt = plan.tramos[t.uid] or { quests = {} }
 		local nuevos, notas = {}, {}
+		-- Lo que hace falta antes (misiones de XP hasta el nivel que pide el tramo).
+		if pt.antes and #pt.antes > 0 then
+			nuevos, desde = pasosMisiones(pt.antes, desde, ceder, notas)
+		end
+		if pt.nivel and pt.nivel > I.Jugador().level then nuevos[#nuevos + 1] = pasoNivel(pt.nivel) end
+		local resto
 		if t.rama == "prof" then
 			local item = pt.item or t.item or I.MaterialSugerido()
-			if item then nuevos, desde = pasosRecoleccion(item, t.cantidad, desde) end
+			if item then resto, desde = pasosRecoleccion(item, t.cantidad, desde) end
 		elseif t.rama == "objeto" then
-			if t.item then nuevos = pasosObjeto(t.item, t.cantidad, notas) end
+			if t.item then resto = pasosObjeto(t.item, t.cantidad, notas) end
 		else
-			nuevos, desde = pasosMisiones(pt.quests or {}, desde, ceder, notas)
+			resto, desde = pasosMisiones(pt.quests or {}, desde, ceder, notas)
 		end
+		for _, s in ipairs(resto or {}) do nuevos[#nuevos + 1] = s end
 		local cabeza = format(L["Tramo %d de %d: %s."], i, total, M.TituloTramo(t))
 		if #nuevos == 0 then
 			nuevos = { { title = M.TituloTramo(t), goals = { { t = "note", text = (pt.notas and pt.notas[1]) or L["Este tramo quedó vacío."] } } } }
@@ -601,7 +699,7 @@ local function compilar(ruta, plan, ceder)
 	end
 	if #pasos == 0 then return nil end
 	local ultimo = pasos[#pasos]
-	ultimo.goals[#ultimo.goals + 1] = { t = "note", text = L["Fin de tu ruta. Arma la siguiente en /alfa rutas."] }
+	ultimo.goals[#ultimo.goals + 1] = { t = "note", text = L["Fin de tu ruta: arma la siguiente en la página Ruta de Alfa."] }
 	return { pasos = pasos, avisos = avisos, mapa = primerMapa }
 end
 
@@ -625,107 +723,8 @@ function P.Compilar(ruta, plan, alTerminar)
 end
 
 ---------------------------------------------------------------------------
--- Liberar misiones: tu registro, revisado, y la guía para entregarlo todo
+-- Abandonar (Cerrar.lua arma el plan para cerrar tus misiones)
 ---------------------------------------------------------------------------
-
-local LEJOS_SEG = 900 -- 15 minutos de camino (en línea recta) es "muy lejos"
-
-local function revisar(ceder)
-	local C, Cp = CX(), CP()
-	local desde = A.PlayerPoint and A.PlayerPoint() or nil
-	local p = I.Jugador()
-	local out = {}
-	for _, qid in ipairs(Cp.GetLogQuests() or {}) do
-		local q = C.Quest(qid)
-		local it = { id = qid, titulo = titulo(qid), nivel = (Cp.GetQuestLevel and Cp.GetQuestLevel(qid)) or (q and q.level), razones = {} }
-		it.listo = Cp.IsQuestReadyForTurnIn(qid) or (q ~= nil and #(q.objectives or {}) == 0 and Cp.GetQuestObjectives(qid) == nil)
-		it.fallida = Cp.IsQuestFailed and Cp.IsQuestFailed(qid) or false
-		it.gris = it.nivel and Cp.IsQuestTrivial and Cp.IsQuestTrivial(it.nivel, p.level) or false
-		if not q then
-			it.sinDatos = true
-		else
-			local pm = I.PasosMision(q, desde)
-			if not pm then
-				it.sinEntrega = true
-			else
-				pm.q, pm.listo = q, it.listo
-				it.pm = pm
-				it.grupo, it.dentro = pm.grupo and not it.listo, pm.dentro and not it.listo
-				local destino = (not it.listo and pm.objetivo) or pm.fin
-				it.viaje = I.Viaje(desde, destino)
-				it.lejos = desde ~= nil and it.viaje >= LEJOS_SEG
-			end
-		end
-		local r = it.razones
-		if it.fallida then r[#r + 1] = L["Fallida"] end
-		if it.gris then r[#r + 1] = L["Ya no da XP"] end
-		if it.lejos then r[#r + 1] = L["Muy lejos"] end
-		if it.grupo then r[#r + 1] = L["Pide grupo"] end
-		if it.dentro then r[#r + 1] = L["En mazmorra"] end
-		if it.sinDatos then r[#r + 1] = L["Sin datos"] end
-		if it.sinEntrega then r[#r + 1] = L["Entrega desconocida"] end
-		-- Lo que no vale la pena: fallida, gris o muy lejos sin estar lista.
-		if it.fallida or (not it.listo and (it.gris or it.lejos)) then
-			it.sugerencia = "abandonar"
-		elseif it.dentro or it.grupo then
-			it.sugerencia = "fuera"
-		end
-		out[#out + 1] = it
-		ceder()
-	end
-	table.sort(out, function(a, b)
-		if (a.listo and true or false) ~= (b.listo and true or false) then return a.listo and true or false end
-		return M.num(a.viaje, I.LEJOS) < M.num(b.viaje, I.LEJOS)
-	end)
-	-- Las marcas de misiones que ya no están en el registro se olvidan.
-	local marcas, siguen = M.Personaje().marcas, {}
-	for _, it in ipairs(out) do siguen[it.id] = true end
-	for qid in pairs(marcas) do if not siguen[qid] then marcas[qid] = nil end end
-	return out
-end
-
-function P.Registro(alTerminar)
-	local ok, motivo = I.CodexListo()
-	if not ok then return alTerminar(nil, motivo) end
-	T.Lanzar("registro", revisar, function(lista, err) alTerminar(lista, err and "error" or nil) end)
-end
-
--- lista: la de Plan.Registro; se dejan fuera las marcadas.
-function P.Liberar(lista, alTerminar)
-	local marcas = M.Personaje().marcas
-	local partes, fuera = {}, {}
-	for _, it in ipairs(lista or {}) do
-		if marcas[it.id] then
-			fuera[#fuera + 1] = it
-		elseif it.pm then
-			partes[#partes + 1] = it.pm
-		else
-			fuera[#fuera + 1] = it
-		end
-	end
-	if #partes == 0 then return alTerminar(nil, "nada") end
-	T.Lanzar("liberar", function()
-		local pasos = pasosDe(partes, A.PlayerPoint and A.PlayerPoint() or nil)
-		if #pasos == 0 then return nil end
-		local ultimo = pasos[#pasos]
-		for _, it in ipairs(fuera) do
-			local por = marcas[it.id] == "abandonar" and L["la marcaste para abandonar"] or (it.razones[1] or L["la dejaste fuera"])
-			ultimo.goals[#ultimo.goals + 1] = { t = "note", text = format(L["Fuera de esta ruta: %s (%s)."], A.Quoted and A.Quoted(it.titulo) or it.titulo, por) }
-		end
-		anotar(pasos[1], format(L["%d misiones por entregar, en el orden más corto."], #partes))
-		return pasos
-	end, function(pasos)
-		if not pasos then return alTerminar(nil, "vacio") end
-		local mapa
-		for _, s in ipairs(pasos) do
-			for _, g in ipairs(s.goals) do if g.map then mapa = g.map break end end
-			if mapa then break end
-		end
-		alTerminar(M.Guias.Def(M.Guias.IdLiberar(), L["Liberar mis misiones"], pasos, {
-			zone = mapa, pitch = L["Todas tus misiones abiertas, para completarlas y entregarlas por el camino más corto."],
-		}))
-	end)
-end
 
 -- Abandona estas misiones (ya confirmadas por el jugador) -> cuántas.
 function P.Abandonar(ids)

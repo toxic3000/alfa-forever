@@ -10,7 +10,10 @@
 -- juega (facción, clase, nivel, lugar).
 --   { activa = rutaId?, editando = rutaId?, planes = { [rutaId] = plan },
 --     guias = { [rutaId] = guía compilada }, liberar = guía?, marcas = { [questId] = "abandonar" | "fuera" },
---     progreso = { [rutaId] = { inicio, nivel } } }
+--     progreso = { [rutaId] = { inicio, nivel } },
+--     extra = { questId, ... } (misiones agregadas a mano al plan de misiones),
+--     incluir = { [questId] = true } (las del registro que el filtro deja fuera pero tú pusiste),
+--     filtro = "todas" | "listas" | "zona" }
 
 local ADDON, M = ...
 local N = AlfaNucleo
@@ -18,7 +21,7 @@ local A = N.A
 local L = N.Textos(M.EN)
 
 M.ADDON, M.N, M.A, M.L = ADDON, N, A, L
-M.W, M.T = A.Widgets, A.Theme
+M.K = N.Kit
 M.ID = "rutas"
 M.PACK = "mis-rutas" -- el paquete de guías del motor donde viven las rutas ("Mis rutas")
 
@@ -92,28 +95,17 @@ end
 
 M.RAMAS = { "xp", "oro", "prof", "clase", "objeto" }
 M.RAMA = {
-	xp = { nombre = L["XP"], icono = "icon-level", color = { 0.37, 0.82, 0.41 },
+	xp = { nombre = L["XP"], icono = "ic-nivel", tono = "exito",
 		uno = L["%d misión de XP"], varios = L["%d misiones de XP"], desc = L["Las misiones que más experiencia dan cerca de ti."] },
-	oro = { nombre = L["Oro"], icono = "qol-coin", color = { 1, 0.82, 0.1 },
+	oro = { nombre = L["Oro"], icono = "ic-oro", tono = "oro",
 		uno = L["%d misión de oro"], varios = L["%d misiones de oro"], desc = L["Misiones que dejan dinero u objetos que se venden bien."] },
-	prof = { nombre = L["Profesión"], icono = "icon-craft", color = { 0.95, 0.58, 0.24 },
+	prof = { nombre = L["Profesión"], icono = "ic-oficios", tono = "aviso",
 		uno = L["%d de %s"], varios = L["%d de %s"], desc = L["Junta materiales de tu profesión donde más hay."] },
-	clase = { nombre = L["Clase"], icono = "icon-train", color = { 0.78, 0.61, 0.43 },
+	clase = { nombre = L["Clase"], icono = "ic-talentos", tono = "clase",
 		uno = L["%d misión de clase"], varios = L["%d misiones de clase"], desc = L["Misiones solo para tu clase que dan un objeto o una habilidad única."] },
-	objeto = { nombre = L["Objeto"], icono = "icon-collect", color = { 0.64, 0.52, 1 },
-		uno = L["Conseguir %s"], varios = L["Conseguir %d de %s"], desc = L["Un objeto que quieres: Alfa arma el camino para conseguirlo."] },
+	objeto = { nombre = L["Objeto"], icono = "ic-bolsas", tono = "raro",
+		uno = L["Conseguir %s"], varios = L["Conseguir %d de %s"], desc = L["Un objeto que quieres: Alfa arma el camino para conseguirlo, con lo que haga falta antes."] },
 }
-
--- El color de la rama (la de clase toma el color de tu clase).
-function M.ColorRama(rama)
-	if rama == "clase" then
-		local _, cls = UnitClass and UnitClass("player")
-		local c = type(cls) == "string" and RAID_CLASS_COLORS and RAID_CLASS_COLORS[cls]
-		if type(c) == "table" and M.num(c.r) then return c.r, c.g, c.b end
-	end
-	local c = (M.RAMA[rama] or M.RAMA.xp).color
-	return c[1], c[2], c[3]
-end
 
 -- El nombre de un objeto para mostrar (Codex en tu idioma, o el cliente).
 function M.NombreObjeto(id)
@@ -126,6 +118,46 @@ function M.NombreObjeto(id)
 	n = Cp and Cp.GetItemName and Cp.GetItemName(id)
 	if type(n) == "string" and n ~= "" then return n end
 	return format(L["Objeto %d"], id)
+end
+
+-- El título de una misión en tu idioma (el cliente, el Codex o su número).
+function M.TituloMision(qid)
+	local Cp = M.Motor("Compat")
+	local t = Cp and Cp.GetQuestTitle and Cp.GetQuestTitle(qid)
+	if type(t) == "string" and t ~= "" then return t end
+	local C = M.Motor("Codex")
+	local q = C and C.IsLoaded and C.IsLoaded() and C.Quest(qid)
+	if q and q.title then return q.title end
+	return format(L["Misión %d"], tonumber(qid) or 0)
+end
+
+-- El nombre de un mapa (zona) en tu idioma.
+function M.Zona(map)
+	local Cp = M.Motor("Compat")
+	local n = map and Cp and Cp.MapName and Cp.MapName(map)
+	if type(n) == "string" and n ~= "" then return n end
+	return nil
+end
+
+-- "«Nombre»" como lo cita el motor.
+function M.Citar(s)
+	if A.Quoted then
+		local ok, r = pcall(A.Quoted, s)
+		if ok and type(r) == "string" then return r end
+	end
+	return tostring(s)
+end
+
+-- Un aviso flotante de la ruta (el del Kit), o una línea en el chat si el
+-- Kit no está (no debería pasar).
+function M.Aviso(titulo, texto, extra)
+	local K = M.K
+	if K and K.Aviso then
+		local o = { titulo = titulo, texto = texto, icono = "ic-ruta", tono = "acento" }
+		for k, v in pairs(extra or {}) do o[k] = v end
+		return K.Aviso(o)
+	end
+	A.Print(texto and (titulo .. " " .. texto) or titulo)
 end
 
 -- "3 misiones de XP", "20 de Mena de cobre", "Conseguir Espada de Arcanita".
@@ -178,7 +210,7 @@ end
 
 function M.Personaje()
 	local d = N.DatosPersonaje(M.ID)
-	for _, k in ipairs({ "planes", "guias", "progreso", "marcas" }) do
+	for _, k in ipairs({ "planes", "guias", "progreso", "marcas", "extra", "incluir" }) do
 		if type(d[k]) ~= "table" then d[k] = {} end
 	end
 	return d
@@ -380,27 +412,27 @@ local function material()
 end
 
 M.PLANTILLAS = {
-	{ clave = "rapido", nombre = L["Subir rápido"], icono = "icon-level",
+	{ clave = "rapido", nombre = L["Subir rápido"], icono = "ic-nivel",
 		desc = L["Solo misiones de XP, las mejores cerca de ti, en tres tandas."],
 		tramos = function() return { { rama = "xp", cantidad = 5 }, { rama = "xp", cantidad = 5 }, { rama = "xp", cantidad = 5 } } end },
-	{ clave = "equilibrada", nombre = L["Equilibrada"], icono = "layers",
+	{ clave = "equilibrada", nombre = L["Equilibrada"], icono = "ic-ruta",
 		desc = L["3 de XP, 3 de oro, 3 de XP, 20 de tu profesión y 3 de clase para un objeto único."],
 		tramos = function()
 			return { { rama = "xp", cantidad = 3 }, { rama = "oro", cantidad = 3 }, { rama = "xp", cantidad = 3 },
 				{ rama = "prof", cantidad = 20, item = material() }, { rama = "clase", cantidad = 3 } }
 		end },
-	{ clave = "oro", nombre = L["Hacer oro"], icono = "qol-coin",
+	{ clave = "oro", nombre = L["Hacer oro"], icono = "ic-oro",
 		desc = L["Misiones que dejan dinero y materiales para vender."],
 		tramos = function()
 			return { { rama = "oro", cantidad = 5 }, { rama = "prof", cantidad = 20, item = material() }, { rama = "oro", cantidad = 5 } }
 		end },
-	{ clave = "prof", nombre = L["Profesión"], icono = "icon-craft",
+	{ clave = "prof", nombre = L["Profesión"], icono = "ic-oficios",
 		desc = L["Junta materiales de tu profesión, con unas misiones de XP en medio."],
 		tramos = function()
 			local m = material()
 			return { { rama = "prof", cantidad = 20, item = m }, { rama = "xp", cantidad = 3 }, { rama = "prof", cantidad = 20, item = m } }
 		end },
-	{ clave = "alfa", nombre = L["Recomendada por Alfa"], icono = "star",
+	{ clave = "alfa", nombre = L["Recomendada por Alfa"], icono = "ic-lobo",
 		desc = L["Alfa elige todo: misiones ordenadas por XP por distancia y tus misiones de clase."],
 		tramos = function()
 			local t = { { rama = "xp", cantidad = 6 }, { rama = "xp", cantidad = 6 } }

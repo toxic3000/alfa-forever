@@ -66,9 +66,14 @@ end
 function I.CodexListo()
 	local C = CX()
 	if not (C and C.Load) then return false, "missing" end
-	if C.IsLoaded and C.IsLoaded() then return true end
+	if C.IsLoaded and C.IsLoaded() then
+		if M.Disp then M.Disp.Cargar() end
+		return true
+	end
 	if InCombatLockdown and InCombatLockdown() then return false, "combat" end
 	local ok, motivo = C.Load()
+	-- La base de misiones también: dice previas, excluyentes y profesión.
+	if ok and M.Disp then M.Disp.Cargar() end
 	return ok and true or false, motivo
 end
 
@@ -198,10 +203,16 @@ A.RegisterEvent("PLAYER_LEVEL_UP", function() M.Avisar("NIVEL") end)
 -- Medidas de una misión
 ---------------------------------------------------------------------------
 
--- ¿Se puede tomar ya? usadas: las que la ruta hace antes (cuentan como hechas).
+-- ¿Se puede tomar ya? usadas: las que la ruta hace antes (cuentan como
+-- hechas). nivel: el nivel de verdad del personaje (la regla: nunca una
+-- misión que todavía no se puede tomar). Primero lo barato del índice y
+-- después la revisión completa (Disponible.lua: previas, excluyentes,
+-- profesión, facción, raza y clase).
 function I.Disponible(e, usadas, nivel)
 	if usadas[e.id] or hecha(e.id) then return false end
-	if (e.min or 1) > floor(nivel) and not enRegistro(e.id) then return false end
+	local enLog = enRegistro(e.id)
+	if enLog then return true end
+	if (e.min or 1) > floor(nivel) then return false end
 	for _, pid in ipairs(e.pre or {}) do
 		if not (usadas[pid] or hecha(pid)) then return false end
 	end
@@ -213,6 +224,8 @@ function I.Disponible(e, usadas, nivel)
 		end
 		if not alguna then return false end
 	end
+	local D = M.Disp
+	if D then return (D.Estado(e.id, { usadas = usadas, nivel = nivel })) and true or false end
 	return true
 end
 

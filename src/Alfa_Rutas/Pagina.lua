@@ -1,0 +1,154 @@
+-- Alfa - Rutas: la página Ruta de la ventana de Alfa (Toxic / La Jauría).
+-- GPL-3.0.
+--
+-- Un Tablero del Kit (docs/KIT.md), de arriba abajo:
+--   1. lo que conviene ahora, en grande: entregar tus misiones listas (si
+--      tienes varias), seguir tu guía o, sin guía, "¿Qué quieres hacer?";
+--   2. las otras opciones en tarjetas: el asistente, cerrar tus misiones,
+--      recoger las de cerca, la biblioteca de guías y tu ruta;
+--   3. tu plan de misiones (VistaMisiones.lua);
+--   4. tus rutas propias, en árbol (VistaArbol.lua);
+--   5. los ajustes de la ruta: solo las misiones de tu ruta, aceptar y
+--      entregar solas, evitar las de grupo y cuántos niveles arriba.
+
+local ADDON, M = ...
+local A, L, N = M.A, M.L, M.N
+local K = M.K
+local Cr = M.Cerrar
+
+local format, floor, ipairs = string.format, math.floor, ipairs
+
+local vista
+local function rehacer() if vista then N.RehacerPagina(vista) end end
+M.Rehacer = rehacer
+
+local function E() return A.Engine end
+
+local function guiaActual()
+	local e = E()
+	local g = e and e.GetGuide and e.GetGuide()
+	if not g then return nil end
+	local done, total = 0, 0
+	if e.GetProgress then done, total = e.GetProgress() end
+	return g, done or 0, total or 0
+end
+
+-- 1. La acción grande.
+local function accion()
+	local listas = Cr.ListasAhora()
+	local g, done, total = guiaActual()
+	if listas >= 3 then
+		return { icono = "ic-misiones", tono = "exito", sobre = L["Lo que más conviene ahora"],
+			titulo = format(L["Tienes %d misiones listas para entregar"], listas),
+			texto = L["Alfa arma la ruta más corta para cobrarlas, junta por PNJ. La flecha usa vuelos y tu piedra de hogar cuando conviene, y te avisa si una entrega queda lejos."],
+			estado = { texto = format(L["%d listas"], listas), tono = "exito" },
+			accion = { texto = L["Entregarlas ahora"], icono = "ic-seguir", alClic = function() Cr.Ahora("listas") end },
+			secundaria = { texto = L["Cerrar todas mis misiones"], alClic = function() Cr.Ahora("todas") end } }
+	end
+	if g then
+		local u = A.UI
+		return { icono = "ic-huella", tono = "acento", sobre = L["Tu guía"],
+			titulo = u and u.GuideLabel and u.GuideLabel(g) or g.title,
+			texto = total > 0 and format(L["Llevas %d de %d pasos. El rastreador te dice el siguiente y la flecha te lleva."], done, total)
+				or L["El rastreador te dice el siguiente paso y la flecha te lleva."],
+			progreso = total > 0 and { actual = done, total = total, huellas = true, texto = format("%d %%", floor(done / total * 100)) } or nil,
+			accion = { texto = L["Mostrar mi guía"], icono = "ic-seguir", alClic = function() A.Set("ui.shown", true) end },
+			secundaria = { texto = L["¿Qué quieres hacer?"], alClic = function() M.Asistente.Abrir() end } }
+	end
+	return { lobo = "atento", tono = "acento", sobre = L["Empieza aquí"], titulo = L["¿Qué quieres hacer hoy?"],
+		texto = L["Subir de nivel, profesiones, hacer oro o mazmorras: dos clics y Alfa te lleva."],
+		accion = { texto = L["Elegir mi camino"], icono = "ic-seguir", alClic = function() M.Asistente.Abrir() end } }
+end
+
+-- 2. Las otras opciones.
+local function opciones()
+	local Cp = M.Motor("Compat")
+	local enLog = #(Cp and Cp.GetLogQuests and Cp.GetLogQuests() or {})
+	local listas = Cr.ListasAhora()
+	local out = {}
+	out[#out + 1] = { icono = "ic-lobo", titulo = L["¿Qué quieres hacer?"], texto = L["Subir de nivel, profesiones, oro o mazmorras."],
+		alClic = function() M.Asistente.Abrir() end }
+	if enLog > 0 then
+		out[#out + 1] = { icono = "ic-misiones", tono = "exito", titulo = L["Liberar misiones"],
+			texto = listas > 0 and format(L["%d en tu registro, %d listas: termínalas y entrégalas en el orden más corto."], enLog, listas)
+				or format(L["%d en tu registro: termínalas y entrégalas en el orden más corto."], enLog),
+			alClic = function() Cr.Ahora() end }
+	end
+	out[#out + 1] = { icono = "ic-misiones", titulo = L["Recoger misiones"], texto = L["Toma las mejores de cerca que ya puedes hacer."],
+		alClic = function() M.Recoger.Ahora() end }
+	out[#out + 1] = { icono = "ic-guia", titulo = L["Biblioteca de guías"], texto = L["La recomendada para ti y todas las demás."],
+		alClic = function() M.Biblioteca.Abrir() end }
+	local r = M.RutaActiva() or M.RutaEditada()
+	if r and #r.tramos > 0 then
+		out[#out + 1] = { icono = "ic-ruta", titulo = r.nombre, texto = format(L["Tu ruta de %d tramos."], #r.tramos),
+			alClic = function() M.Seguir(r) end }
+	end
+	return out
+end
+
+-- 5. Los ajustes.
+local function ajustes(padre)
+	local g = K.GrupoAjustes(padre, { titulo = L["Cómo trabaja tu ruta"] })
+	g:Fila({ titulo = L["Aceptar y entregar solo las misiones de mi ruta"],
+		texto = L["Alfa no toma misiones que no sirven a tu ruta, ni las entrega solas. Lo respeta también «todas las misiones» de Comodidades."],
+		control = function(f) return K.Interruptor(f, { clave = "ruta.soloRuta" }) end })
+	g:Fila({ titulo = L["Aceptar solas las misiones de la guía"],
+		texto = L["Al hablar con quien da una misión de tu ruta, se acepta sola. Mayús la deja para ti."],
+		control = function(f) return K.Interruptor(f, { clave = "behavior.autoAccept" }) end })
+	g:Fila({ titulo = L["Entregar solas las misiones de la guía"],
+		texto = L["Si la recompensa tiene varias opciones, eliges tú."],
+		control = function(f) return K.Interruptor(f, { clave = "behavior.autoTurnin" }) end })
+	g:Fila({ titulo = L["Evitar misiones de grupo"],
+		texto = L["Al armar tus rutas, Alfa deja fuera las que piden élites."],
+		control = function(f) return K.Interruptor(f, { clave = M.ID .. ".evitarGrupo" }) end })
+	g:Fila({ titulo = L["Niveles arriba del tuyo"],
+		texto = L["Qué tan difíciles pueden ser las misiones que Alfa elige (siempre de las que ya puedes tomar)."],
+		control = function(f)
+			local d = K.Deslizador(f, { min = 1, max = 4, paso = 1, clave = M.ID .. ".margen", formato = function(v) return format(L["+%d"], v) end })
+			d.alfaAnchoFila = 200
+			return d
+		end })
+	return g
+end
+
+local function construir(view)
+	vista = view
+	local t = K.Tablero(view, { margen = N.MargenPagina(), accion = "estado", tituloOpciones = L["Otras opciones"], min = 200 })
+	local misiones = t:AgregarBloque(M.BloqueMisiones(t.Extra, rehacer))
+	local rutas = t:AgregarBloque(M.BloqueRutas(t.Extra, rehacer), { espacio = K.ESP.xl })
+	local grupo = t:AgregarBloque(ajustes(t.Extra), { espacio = K.ESP.xl })
+	K.EnPagina(view, t, function()
+		t:SetAccion(accion())
+		t:SetOpciones(opciones(), L["Otras opciones"])
+		misiones:Llenar()
+		rutas:Llenar()
+		grupo:Refrescar()
+	end)
+end
+
+-- Lo que cambia en el juego se ve en la página abierta.
+local pendiente = false
+local function luego()
+	if pendiente or not (vista and vista:IsVisible()) then return end
+	pendiente = true
+	A.After(0.4, function() pendiente = false rehacer() end)
+end
+A.RegisterEvent("QUEST_TURNED_IN", luego)
+A.RegisterEvent("QUEST_ACCEPTED", luego)
+A.RegisterEvent("QUEST_REMOVED", luego)
+A.RegisterEvent("BAG_UPDATE_DELAYED", luego)
+A.On("GUIDE_CHANGED", luego)
+A.On("STEP_CHANGED", luego)
+M.Escuchar("NIVEL", luego)
+M.Escuchar("SEGUIR", luego)
+M.Escuchar("CERRAR", luego)
+
+-- ruta.soloRuta: el ajuste que lee Comodidades (y el primer arranque).
+A.RegisterDefaults("ruta", { soloRuta = true })
+
+N.Modulo({
+	id = M.ID, nombre = L["Ruta"], icono = "ic-ruta", orden = 12,
+	subtitulo = L["Qué hacer ahora, tu plan de misiones y tus rutas propias."],
+	ajustes = { margen = 2, evitarGrupo = true },
+	construir = construir,
+})

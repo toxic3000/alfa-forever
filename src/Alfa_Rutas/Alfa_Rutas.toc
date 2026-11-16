@@ -1,6 +1,6 @@
 ## Interface: 16001
 ## Title: |cff8be04eAlfa|r - Rutas
-## Notes: Arma tu propia ruta (XP, oro, profesión, clase y objetos), libera tus misiones abiertas y busca cualquier objeto del juego.
+## Notes: Qué hacer ahora, el rastreador de pasos, la biblioteca de guías, el plan para cerrar tus misiones y tus rutas propias.
 ## Author: Toxic - La Jauria
 ## Version: dev
 ## X-License: GPL-3.0-only
@@ -10,12 +10,18 @@
 Textos.lua
 Base.lua
 Tareas.lua
+Disponible.lua
 Indice.lua
 Plan.lua
 Guias.lua
-Catalogo.lua
-Kit.lua
-VistaRuta.lua
-VistaLiberar.lua
-VistaCatalogo.lua
+Cerrar.lua
+Recoger.lua
 Rutas.lua
+Rastreador.lua
+Camino.lua
+Biblioteca.lua
+Asistente.lua
+VistaMisiones.lua
+VistaArbol.lua
+Pagina.lua
+Contrato.lua

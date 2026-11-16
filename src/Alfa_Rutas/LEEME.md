@@ -1,32 +1,53 @@
-# Alfa - Rutas
+# Alfa - Rutas (área A1 · Ruta y misiones)
 
-Página **Rutas** (orden 12) de la ventana de Alfa, con tres pestañas:
+Todo lo de seguir un camino: qué hacer ahora, el rastreador de pasos, la biblioteca de guías, el plan para cerrar tus misiones, recoger las de cerca y tus rutas propias. La interfaz es del Kit (`docs/KIT.md`); el motor de guías se usa como motor (`Engine`, `Guides`, `Nav`, `Dungeons.PlanStops`, `Lookup`, `QuestDB`) y sus ventanas se reemplazan.
 
-- **Mi ruta**: un árbol de tramos en orden. Cada tramo es una rama (XP, Oro, Profesión, Clase u Objeto) con su cantidad ("3 misiones de XP", "20 de Mena de cobre"). Alfa elige las misiones con el Codex del motor (nivel, facción, raza y clase, cercanía, XP, oro estimado, recompensas, cadenas de clase) y cada una se cambia, se quita o se fija con un clic. Plantillas: Subir rápido, Equilibrada, Hacer oro, Profesión y Recomendada por Alfa. **Seguir esta ruta** la convierte en una guía del motor (paquete `mis-rutas`): flecha, pasos, mapa y pestañas del motor, y en el menú de guías aparece bajo **Mis rutas**.
-- **Liberar misiones**: revisa tu registro y arma una guía con el orden más corto (el planificador de paradas del motor, `Dungeons.PlanStops`) para terminar y entregar todo. Marca las que no valen la pena (fallidas, grises, muy lejos; las de grupo o mazmorra quedan fuera) y las abandona con un clic y confirmación.
-- **Catálogo de objetos**: los ~23 000 objetos del Codex en una lista virtual, con búsqueda y filtros (tipo, subtipo, calidad, nivel, ranura, "Puedo usar"). La ficha muestra calidad, estadísticas y de dónde sale (Lookup del motor), con **Guíame** (guía al momento del motor), **Agregar a mi ruta** (un tramo Objeto; si sigues esa ruta, tu guía se actualiza), **Vincular en el chat** y **Buscador**.
+## La regla de la ruta
 
-Las rutas se guardan en la cuenta (`N.Datos("rutas")`) y se comparten con **Compartir / Importar** (texto `!ALFARUTA1!...`). El plan, la guía compilada y las marcas del registro son de cada personaje (`N.DatosPersonaje("rutas")`); las guías guardadas se registran otra vez al cargar, antes de que el motor reabra las pestañas.
+**Nunca proponer una misión que todavía no se puede tomar.** `Disponible.lua` revisa nivel, previas (todas y "una de"), excluyentes, facción, raza, clase, fiestas y profesión con la base de misiones del motor (`QuestDB.CheckAvailable`) y, si no está cargada, con el Codex. Lo que falta se arma: las previas en orden (`Lookup.QuestChain`), misiones de XP hasta el nivel que pide y un paso "Llega a nivel N" (la meta `level` del motor) antes de mandarte allá. El planificador elige solo con tu nivel de verdad; la XP del plan se cuenta a la baja.
 
-## Comandos
+## Qué hay
 
-- `/alfa rutas`: abre la página.
-- `/alfa rutas liberar`: arma y abre la guía para entregar tus misiones abiertas.
-- `/alfa rutas catalogo`: abre el catálogo.
-- `/alfa rutas seguir`: sigue (o actualiza) tu ruta.
+| Archivo | Qué hace |
+|---|---|
+| `Pagina.lua` | La página **Ruta** (Aventura): la acción grande (entregar tus listas, tu guía o "¿Qué quieres hacer?"), las opciones, tu plan de misiones, tus rutas y los ajustes |
+| `Rastreador.lua` | La ventana de guía de Alfa (`GUIDE_FRAME`, `GUIDE_END`): cabecera con pestañas en su menú, huellas de avance, un aviso a la vez (fin de guía, misión perdida, de grupo, **misión que aún no puedes tomar** con "Armar lo que falta", mirando otro paso), el paso con sus metas (clic: flecha; clic derecho: marcar, omitir, Enciclopedia, a tu plan), el objeto de misión, "Mientras estás aquí", Anterior · Omitir · Siguiente y la lista de pasos |
+| `Camino.lua` | Elegir el camino al terminar una guía (`ROUTE_CHOICE`) |
+| `Biblioteca.lua` | La biblioteca de guías (`SHOW_PICKER`): la recomendada en grande y las demás en tarjetas, con buscador y categorías |
+| `Asistente.lua` | "¿Qué quieres hacer?": Subir de nivel / Profesiones / Hacer oro / Mazmorras, y en el segundo clic la opción en marcha |
+| `Cerrar.lua`, `VistaMisiones.lua` | **Liberar**: el plan para cerrar tus misiones (las listas y las por terminar, con filtro y a mano), ordenado por el camino de verdad (`Nav.EstimateTravel`: vuelos, barcos y la piedra de hogar desde donde estás) con `Dungeons.PlanStops`, junto por PNJ; cada parada dice su zona y si queda lejos. Abandonar las que no valen la pena, con confirmación |
+| `Recoger.lua` | **Recoger**: las mejores misiones que ya puedes tomar cerca (sin pasarte del registro). **Desbloquear**: la guía con lo que pide una misión |
+| `VistaArbol.lua`, `Plan.lua`, `Indice.lua`, `Guias.lua` | Tus rutas propias como árbol de tramos (XP, oro, profesión, clase, objeto), el planificador y su paso a guías del motor (paquete `mis-rutas`) |
+| `Contrato.lua` | `AlfaRuta` y el menú del registro de misiones del juego |
+
+El catálogo de objetos se fue a la Enciclopedia (área B): su "Agregar a mi ruta" llama a `AlfaRuta.AgregarObjeto(itemID)`.
+
+## Contrato (`AlfaRuta`)
+
+- `Asistente(camino)`: `"nivel"`, `"profesiones"`, `"oro"`, `"mazmorras"` o nada.
+- `Liberar(filtro)` (`"todas"`, `"listas"`, `"zona"`; sin él, el del jugador) y `Entregar()` (solo las listas).
+- `Recoger()`, `AgregarObjeto(itemID)`.
+- `AgregarMision(questID)`, `QuitarMision(questID)`, `EnPlan(questID)`, `Desbloquear(questID)`, `Disponible(questID) -> ok, texto`.
+- `EsDeMiRuta(questID, verbo)`: si una guía abierta la toma (`"accept"`) o la entrega (`"turnin"`) de aquí en adelante, o si está en tu plan (también como `EnRuta`). `SoloRuta()`: el ajuste `ruta.soloRuta`.
+- `Listas()`, `Biblioteca()`, `MostrarGuia()`, `RastreadorVisible()`, `Pagina()`.
 
 ## Ajustes
 
-En el botón de ajustes de la pestaña Mi ruta: evitar misiones de grupo (`rutas.evitarGrupo`) y cuántos niveles arriba del tuyo se aceptan (`rutas.margen`, 1 a 4). En el catálogo: solo lo que puedo usar (`rutas.soloUsables`) y mostrar lo que ya no se consigue (`rutas.verRetirados`).
+`ruta.soloRuta` (sí): aceptar y entregar solo las misiones de tu ruta; lo respeta "todas las misiones" de Comodidades. En la página también: `behavior.autoAccept`, `behavior.autoTurnin` (del motor), `rutas.evitarGrupo` y `rutas.margen` (1 a 4 niveles arriba).
+
+Datos: las rutas en la cuenta (`N.Datos("rutas")`); el plan, las guías compiladas, las marcas, las agregadas a mano y el filtro por personaje (`N.DatosPersonaje("rutas")`).
+
+## Comandos
+
+`/alfa rutas` (la página), `liberar`, `entregar`, `recoger`, `asistente`, `guias`, `seguir`, `ayuda`.
 
 ## Para verificar en el juego
 
-1. `/alfa rutas`: la página entra completa sin barra de desplazamiento de la ventana; el árbol, el detalle y el pie no se encimen (skins Alfa, Halo y Blizzard).
-2. Plantilla **Equilibrada**: "Alfa está armando tu ruta..." dura pocos segundos y no congela; las misiones elegidas son de tu facción y nivel, y cerca.
-3. **Seguir esta ruta**: abre una pestaña nueva, la flecha apunta al primer PNJ, y en el menú de guías aparece "Mis rutas" con la ruta. Tras `/reload` la pestaña sigue ahí.
-4. En una misión del tramo: Cambiar por otra / Quitar / Fijar; Recalcular conserva las fijas.
-5. Tramo de Profesión con Minería: la meta "Junta 20 de Mena de cobre" recorre los nodos y se completa al tener 20 en las bolsas.
-6. Liberar misiones: el orden tiene sentido; **Abandonar marcadas** pide confirmación y abandona solo esas (`C_QuestLog.AbandonQuest` sin bloqueo de "AddOn bloqueado").
-7. Catálogo: los tipos y subtipos salen con los nombres del cliente en español; Espadas junta una y dos manos; "Puedo usar" oculta lo que tu clase no lleva.
-8. Guíame, Agregar a mi ruta (con la ruta en seguimiento, la pestaña se actualiza sola) y Vincular en el chat (con y sin la caja de chat abierta).
-9. Compartir una ruta, borrarla e importarla otra vez.
+1. Con 10 o más misiones listas: la página Ruta dice "Tienes N misiones listas para entregar"; **Entregarlas ahora** arma la guía en segundos, las paradas van juntas por PNJ, en orden corto, y las de otra zona o lejos lo dicen (paso y aviso). La flecha toma vuelos y la piedra de hogar cuando conviene.
+2. Clic derecho en una misión del registro del juego y del seguimiento de objetivos: "Alfa: agregar a / quitar de mi plan de misiones".
+3. Filtro Todas / Listas / Esta zona y los interruptores de cada misión; "Armar mi plan" respeta lo que tocaste. Abandonar marcadas pide confirmación y abandona solo esas.
+4. Rastreador: se mueve por la cabecera y recuerda su lugar; Anterior, Omitir, Siguiente; la lista de pasos; clic en una meta lleva la flecha; el menú cambia de pestaña y abre otra guía. Con una guía que manda a una misión que aún no se puede tomar, sale el aviso "Aún no puedes tomar…" con "Armar lo que falta".
+5. Al terminar una guía: el aviso del rastreador y, si hay varios caminos, la ventana "¿Por dónde sigues?".
+6. La biblioteca (`/alfa rutas guias`, el menú del minimapa): la recomendada arriba; categorías; abrir en pestaña nueva desde el + del rastreador.
+7. El asistente: dos clics hasta tener una guía o una ruta en marcha, en los cuatro caminos.
+8. Tus rutas: plantillas, tramos (cantidad, subir, bajar, quitar), misiones (cambiar, fijar, quitar), compartir e importar; una ruta de clase que pide más nivel muestra "+N de XP antes" y el paso "Llega a nivel N".
