@@ -76,8 +76,13 @@ def pares() -> dict:
     return todo
 
 
-def huecos(s: str) -> list:
-    return sorted(HUECOS.findall(s))
+def huecos(s: str):
+    """Los huecos de formato (%s, %d...) en su ORDEN, porque string.format de Lua
+    no admite reordenarlos; los codigos de color, textura y enlace, en cualquier orden."""
+    todos = HUECOS.findall(s)
+    formato = [h for h in todos if h.startswith("%") and h != "%%"]
+    otros = sorted(h for h in todos if not (h.startswith("%") and h != "%%"))
+    return formato, otros
 
 
 def traducciones(loc: str) -> dict:
