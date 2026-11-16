@@ -51,4 +51,4 @@ La 0.1.0 instalada es la que Toxic llama "0.5". La siguiente será la **1.0.0**.
 - **Caso real (prioridad):** Toxic tiene de 10 a 15 misiones completas sin entregar y no sabe por dónde empezar. Necesita un botón que arme una **ruta de entregas** con todas, en el orden más corto. También poder **agregar y quitar misiones de un plan** y **crear un plan para cerrar las que tiene** (las completas para entregar, las incompletas para terminar). (A1, con acceso desde Hoy)
 - **Sin dependencias:** Alfa no lee datos ni usa funciones de otros addons. Solo detecta si hay otro activo para no chocar con él (tablas `Compat.lua`). Se quitaron el respaldo de precios de otro addon (Comercio), la importación de nodos (Recolección) y la importación de ajustes de pesca.
 - **Revisión final ("vuelta de tuerca"):** antes de instalar, revisar todo junto (coherencia, que nada quede vacío, textos, rendimiento) y probar en el banco las pantallas principales.
-- **Nombre:** confirmar con Toxic si se escribe "Alfa" (como hoy) o "Alpha".
+- **Nombre:** confirmado por Toxic el 16/11: se escribe **Alfa** (como hoy). "Alpha" en sus mensajes es el dictado.
