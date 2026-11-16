@@ -1,6 +1,6 @@
 ## Interface: 16001
 ## Title: |cff8be04eAlfa|r - Inicio
-## Notes: La portada de Alfa: tu sesión, tu diario, tus recordatorios y tu siguiente paso.
+## Notes: La portada de Alfa: tu siguiente paso, lo urgente, lo de tu clase, tu sesión y tu diario.
 ## Author: Toxic - La Jauria
 ## Version: dev
 ## X-License: GPL-3.0-only
@@ -11,4 +11,5 @@ Textos.lua
 Avisos.lua
 Sesion.lua
 Recordatorios.lua
+Clase.lua
 Inicio.lua

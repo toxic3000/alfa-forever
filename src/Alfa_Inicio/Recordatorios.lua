@@ -525,6 +525,40 @@ local revisarBuffsPronto = juntar(1, function() revisarBuffs() end)
 
 function R.Buff() return buff end
 
+-- Para la tarjeta de la clase (Clase.lua): lo mismo que usan los avisos.
+R.NombreHechizo, R.Conoce, R.Furia = nombreHechizo, conoce, furia
+
+-- El estado de un grupo (una tabla { ids = { ... } } como las de BUFFS) sin
+-- avisar nada: { estado = "ok" | "falta" | "noaprendido" | "nose", id, nombre
+-- (el del grupo), activo (el nombre del aura puesta), resto (segundos,
+-- math.huge si no se acaba), cargas }. "nose": el cliente no lo dice ahora
+-- (un valor secreto).
+function R.Grupo(g)
+	local out = { estado = "noaprendido", nombre = g.nombre or nombreHechizo(g.ids[1]) }
+	local conocidos = {}
+	for _, id in ipairs(g.ids) do
+		if conoce(id) then conocidos[#conocidos + 1] = id end
+	end
+	if #conocidos == 0 then return out end
+	out.id = conocidos[1]
+	out.nombre = g.nombre or nombreHechizo(conocidos[1]) or out.nombre
+	local incierto = false
+	for _, id in ipairs(conocidos) do
+		local a = aura(id, nombreHechizo(id))
+		if type(a) == "table" then
+			out.estado, out.id = "ok", id
+			out.activo = texto(a.name) or nombreHechizo(id)
+			out.resto = queda(a)
+			out.cargas = num(a.applications)
+			return out
+		elseif a == nil then
+			incierto = true
+		end
+	end
+	out.estado = incierto and "nose" or "falta"
+	return out
+end
+
 A.RegisterEvent("UNIT_AURA", function(_, unit)
 	if unit == "player" and not combate() then revisarBuffsPronto() end
 end)

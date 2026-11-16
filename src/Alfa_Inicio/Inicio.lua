@@ -1,30 +1,34 @@
--- Alfa - Inicio: la portada de Alfa (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Inicio: la página Hoy, la portada de Alfa (Toxic / La Jauría). GPL-3.0.
 --
--- La primera página de la ventana de Alfa (orden 5), de arriba abajo:
---   * la cabecera: tu nombre, nivel, clase y zona, el tiempo de sesión y tu
---     barra de XP con la XP descansada detrás;
---   * el tablero de la sesión: tiempo, XP ganada, XP por hora, tiempo para
---     subir, oro neto, misiones entregadas, niveles y muertes (M.Sesion);
---   * tu siguiente paso: el paso vivo de la guía del motor (Engine.GetLiveStep,
---     GetStepView y UI.GoalText, lo mismo que dibuja la ventana de la guía) y
---     el botón para abrirla (SHOW_FRAME) o elegir otra (SHOW_PICKER);
---   * la revisión rápida: equipo, bolsas, entrenador, buff y descanso (M.Rec);
---   * accesos rápidos: un mosaico por módulo de AlfaNucleo.modulos, por su
---     orden; los que cargan después llegan con ALFA_MODULO;
---   * el diario: una gráfica de barras (XP, XP por hora, oro o tiempo) de las
---     últimas sesiones con la de ahora al final, y las últimas cinco en lista;
---   * los recordatorios: sus ajustes, con las filas de la ventana de opciones
---     (Alfa.UI.Options.Rows), más dos del motor que van con ellos.
+-- La primera página de la ventana de Alfa (sección Hoy), de arriba abajo:
+--   * Tu siguiente paso: una tarjeta grande con el borde de acento a la
+--     izquierda. El paso vivo de la guía del motor (Engine.GetLiveStep,
+--     GetStepView y UI.GoalText, lo mismo que dibuja la ventana de la guía),
+--     la distancia y el rumbo hasta la flecha (Nav.TargetOffset, sin tocar su
+--     lógica de llegada), "paso N de M", el avance, y los botones Seguir ruta
+--     (muestra la guía y la flecha y cierra esta ventana), Ver pasos (la lista
+--     de pasos de la ventana de guía: UI.StepList) y Cambiar guía.
+--   * Alertas: solo lo urgente (equipo gastado, bolsas casi llenas,
+--     habilidades por entrenar, descanso), con su botón donde hay a dónde ir.
+--   * Para tu <clase>: la franja del color de la clase y tres mini tarjetas
+--     de esa clase y su rol (M.Clase), cada una abre su módulo.
+--   * La fila de números: XP por hora, tiempo para subir, oro de hoy (las
+--     sesiones del diario que empezaron hoy más la de ahora) y los lobos de tu
+--     hermandad conectados.
+--   * Debajo, plegables y más compactos: el diario (tu sesión de ahora, la
+--     gráfica y las últimas sesiones), la revisión rápida, los accesos a los
+--     módulos y los ajustes de los recordatorios. Lo abierto se recuerda
+--     (inicio.abrir*).
 -- Mientras la página se ve, los números se repintan una vez por segundo (un
 -- temporizador que se apaga al ocultarla); el resto se acomoda solo cuando
--- algo cambia.
+-- algo cambia (un paso, una alerta nueva, un módulo que llega).
 
 local ADDON, M = ...
 local N = AlfaNucleo
 local A = N.A
 local W, T = A.Widgets, A.Theme
 local L = N.Textos(M.EN)
-local S, R, Aviso = M.Sesion, M.Rec, M.Aviso
+local S, R, Aviso, K = M.Sesion, M.Rec, M.Aviso, M.Clase
 local num, texto, miles = M.num, M.texto, M.miles
 
 local floor, max, min, ceil, format = math.floor, math.max, math.min, math.ceil, string.format
@@ -33,24 +37,24 @@ local ipairs, pairs, type, tostring, tonumber = ipairs, pairs, type, tostring, t
 local P = {}
 M.Pagina = P
 
-local GAP = 10       -- entre mosaicos
-local COLGAP = 24    -- entre las dos columnas (como en Acerca de)
-local HERO_H = 128
+local GAP = 10       -- entre tarjetas
+local BLOQUE = 18    -- entre bloques de la página
+local IZQ = 22       -- texto de las tarjetas con franja: después de la franja
+local FRANJA = 3
 local TILE_H = 66
+local MINI_H = 80
+local ALERTA_H = 44
 local FILA_H = 38    -- una fila de la revisión rápida
-local CHART_H = 172
+local SESION_H = 36
+local CHART_H = 150
 local BARRAS = 12    -- barras de la gráfica (la sesión de ahora es la última)
-local LISTA = 5      -- sesiones en la lista
-local LISTA_H = 34
+local LISTA = 4      -- sesiones en la lista
+local LISTA_H = 30
+local PLEG_H = 40    -- cabecera de un bloque plegable
 local DOT = "  \194\183  "
 local RAYA = "\226\128\148"
 
-local function ancho()
-	local O = A.UI and A.UI.Options
-	local win = type(O) == "table" and O.frame
-	local w = type(win) == "table" and num(win.BodyWidth)
-	return w or 640
-end
+local relayout -- más abajo
 
 ---------------------------------------------------------------------------
 -- Ajustes
@@ -64,6 +68,8 @@ local AJUSTES = {
 	recDescanso = true, descansoBajo = 5,
 	resumen = "ambos", segAviso = 10, sonido = true, diarioMax = 30,
 	grafica = "xp",
+	-- Los bloques plegables de abajo: abiertos o cerrados.
+	abrirDiario = true, abrirRevision = false, abrirAccesos = true, abrirAjustes = false,
 }
 
 local function apagado(clave) return function() return not N.Get("inicio", clave) end end
@@ -170,15 +176,11 @@ end
 -- Piezas
 ---------------------------------------------------------------------------
 
-local TILES = {
-	{ clave = "tiempo", icono = "hourglass", etiqueta = L["Tiempo de sesión"] },
-	{ clave = "xp", icono = "icon-level", etiqueta = L["XP ganada"] },
+local NUMEROS = {
 	{ clave = "ritmo", icono = "bolt", etiqueta = L["XP por hora"] },
 	{ clave = "subir", icono = "hourglass-sand", etiqueta = L["Para subir de nivel"] },
-	{ clave = "oro", icono = "qol-coin", etiqueta = L["Oro de la sesión"] },
-	{ clave = "misiones", icono = "icon-turnin", etiqueta = L["Misiones entregadas"] },
-	{ clave = "niveles", icono = "star", etiqueta = L["Niveles subidos"] },
-	{ clave = "muertes", icono = "cross", etiqueta = L["Muertes"] },
+	{ clave = "oro", icono = "qol-coin", etiqueta = L["Oro de hoy"] },
+	{ clave = "lobos", icono = "flag", etiqueta = L["Lobos conectados"] },
 }
 
 local ESTADOS = {
@@ -196,14 +198,28 @@ local METRICAS = {
 	{ clave = "tiempo", texto = L["Tiempo"], titulo = L["Tiempo de juego por sesión"] },
 }
 
-local function tooltipDe(frame)
+local function conTip(frame)
 	frame:EnableMouse(true)
 	frame:SetScript("OnEnter", W.SimpleTip)
 	frame:SetScript("OnLeave", W.HideTip)
 end
 
+-- La franja de una tarjeta, a la izquierda: de debajo de su esquina cortada
+-- hasta abajo (las otras apariencias no cortan, y va de arriba abajo).
+local function franja(card, color)
+	local t = W.Tex(card, "ARTWORK", nil, color)
+	t:SetWidth(FRANJA)
+	W.Painter(t, function(tex)
+		local tl = T.CutsOf and T.CutsOf(card, "panel") or 0
+		tex:ClearAllPoints()
+		tex:SetPoint("TOPLEFT", card, "TOPLEFT", 0, -(tonumber(tl) or 0))
+		tex:SetPoint("BOTTOMLEFT", card, "BOTTOMLEFT", 0, 0)
+	end)
+	return t
+end
+
 local function nuevoTile(view, def)
-	local t = CreateFrame("Frame", nil, view)
+	local t = CreateFrame("Button", nil, view)
 	t:SetHeight(TILE_H)
 	T.Skin(t, "panel")
 	t.Icon = W.Tex(t, "ARTWORK", def.icono, "accent")
@@ -218,81 +234,9 @@ local function nuevoTile(view, def)
 	t.Value:SetPoint("RIGHT", t, "RIGHT", -10, 0)
 	t.psTip = def.etiqueta
 	t.psTipAnchor = "ANCHOR_TOP"
-	tooltipDe(t)
+	conTip(t)
+	t.def = def
 	return t
-end
-
-local function nuevoHero(view)
-	local h = CreateFrame("Frame", nil, view)
-	h:SetHeight(HERO_H)
-	T.Skin(h, "panel")
-	h.Band = T.Band(h, "BACKGROUND", -5)
-	h.Band:SetPoint("TOPLEFT", h, "TOPLEFT", 1, -1)
-	h.Band:SetPoint("BOTTOMRIGHT", h, "BOTTOMRIGHT", -1, 1)
-	if W.Haze then h.Haze = W.Haze(h, { height = 96, sub = -4 }) end
-	h.Ring = W.Tex(h, "ARTWORK", "qol-ring", "accent")
-	h.Ring:SetSize(40, 40)
-	h.Ring:SetPoint("TOPLEFT", h, "TOPLEFT", 18, -20)
-	h.Glyph = W.Tex(h, "OVERLAY", "house", "accent")
-	h.Glyph:SetSize(18, 18)
-	h.Glyph:SetPoint("CENTER", h.Ring, "CENTER", 0, 0)
-	h.Hola = W.Text(h, "display", "text")
-	h.Hola:SetPoint("TOPLEFT", h, "TOPLEFT", 72, -22)
-	h.Quien = W.Text(h, "note", "textDim")
-	h.Quien:SetPoint("TOPLEFT", h, "TOPLEFT", 72, -46)
-	h.Chip = W.Chip(h)
-	h.Chip:SetPoint("TOPRIGHT", h, "TOPRIGHT", -16, -22)
-	h.XP = W.ProgressLine(h, 8)
-	h.XP:SetPoint("BOTTOMLEFT", h, "BOTTOMLEFT", 18, 20)
-	-- La XP descansada: detrás de la barra, en el azul del descanso.
-	h.Rested = h.XP:CreateTexture(nil, "BORDER")
-	h.Rested:SetTexture(T.Media("white"))
-	h.Rested:SetPoint("TOPLEFT", h.XP, "TOPLEFT", 0, 0)
-	h.Rested:SetPoint("BOTTOMLEFT", h.XP, "BOTTOMLEFT", 0, 0)
-	h.Rested:SetWidth(0.01)
-	W.Color(h.Rested, "npc", 0.5)
-	h.XPText = W.Text(h, "small", "text")
-	h.XPText:SetPoint("BOTTOMLEFT", h.XP, "TOPLEFT", 0, 7)
-	h.RestText = W.Text(h, "small", "npc")
-	h.RestText:SetJustifyH("RIGHT")
-	h.RestText:SetPoint("BOTTOMRIGHT", h.XP, "TOPRIGHT", 0, 7)
-	for _, fs in ipairs({ h.Hola, h.Quien, h.XPText, h.RestText }) do
-		W.Painter(fs, function(t)
-			local r, g, b = T.Color("shade")
-			t:SetShadowOffset(0, -1)
-			t:SetShadowColor(r, g, b, 0.85)
-		end)
-	end
-	if W.Rim then W.Rim(h, { height = 70 }) end
-	return h
-end
-
-local function nuevoPaso(view)
-	local c = CreateFrame("Frame", nil, view)
-	T.Skin(c, "panel")
-	c.Bar = W.Tex(c, "ARTWORK", nil, "accent")
-	c.Bar:SetWidth(2)
-	c.Bar:SetPoint("TOPLEFT", c, "TOPLEFT", 0, 0)
-	c.Bar:SetPoint("BOTTOMLEFT", c, "BOTTOMLEFT", 0, 0)
-	c.Guia = W.Text(c, "small", "textMuted")
-	c.Num = W.Chip(c)
-	c.Icon = W.Tex(c, "ARTWORK", "icon-goto", "accent")
-	c.Icon:SetSize(18, 18)
-	c.Titulo = W.Text(c, "title", "text")
-	c.Titulo:SetWordWrap(true)
-	c.Titulo:SetJustifyV("TOP")
-	c.Lineas = {}
-	c.Prog = W.ProgressLine(c, 3)
-	c.Pct = W.Text(c, "small", "textDim")
-	c.Pct:SetJustifyH("RIGHT")
-	c.Vacio = W.Text(c, "note", "textDim")
-	c.Vacio:SetWordWrap(true)
-	c.Vacio:SetSpacing(3)
-	c.Vacio:SetJustifyV("TOP")
-	c.Abrir = W.Button(c, L["Abrir la guía"], function() A.Fire("SHOW_FRAME") end, { primary = true, icon = "window" })
-	c.Elegir = W.Button(c, L["Elegir otra guía"], function() A.Fire("SHOW_PICKER") end, { icon = "guides" })
-	c.Primera = W.Button(c, L["Elegir una guía"], function() A.Fire("SHOW_PICKER") end, { primary = true, icon = "guides" })
-	return c
 end
 
 local function lineaPaso(c, i)
@@ -308,115 +252,75 @@ local function lineaPaso(c, i)
 	return l
 end
 
-local function nuevaFila(panel, def)
-	local f = CreateFrame("Frame", nil, panel)
-	f:SetHeight(FILA_H)
-	f.Icon = W.Tex(f, "ARTWORK", def.icono, "accent")
-	f.Icon:SetSize(16, 16)
-	f.Icon:SetPoint("LEFT", f, "LEFT", 16, 0)
-	f.Label = W.Text(f, "body", "rowLabel")
-	f.Label:SetPoint("LEFT", f, "LEFT", 44, 0)
-	f.Label:SetWidth(130)
-	f.Label:SetText(def.etiqueta)
-	f.Estado = W.Text(f, "note", "textDim")
-	f.Estado:SetPoint("LEFT", f, "LEFT", 180, 0)
-	f.Rule = W.Divider(f, false, 0.6)
-	f.Rule:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 0, 0)
-	f.Rule:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", 0, 0)
-	if def.boton then
-		f.Boton = W.Button(f, def.boton, function() R.IrA(def.ir) end, { height = 24 })
-		f.Boton:SetPoint("RIGHT", f, "RIGHT", -10, 0)
-		f.Boton:Hide()
-	end
-	f.def = def
-	return f
-end
-
-local function chipBoton(parent, m)
-	local b = CreateFrame("Button", nil, parent)
-	b:SetHeight(W.CHIP_H)
-	b.Chip = W.Chip(b)
-	b.Chip:SetAllPoints(b)
-	b.psMetrica = m
-	b:SetScript("OnClick", function(self) N.Set("inicio", "grafica", self.psMetrica.clave) end)
-	return b
-end
-
----------------------------------------------------------------------------
--- La página
----------------------------------------------------------------------------
-
-local function construir(view)
-	P.view = view
-	P.cache = {}
-	P.hero = nuevoHero(view)
-	P.tiles = {}
-	for i, def in ipairs(TILES) do
-		local t = nuevoTile(view, def)
-		t.def = def
-		P.tiles[i] = t
-	end
-
-	P.hPaso = W.SectionHeader(view)
-	P.paso = nuevoPaso(view)
-
-	P.hEstado = W.SectionHeader(view)
-	P.estado = W.RowPanel(view)
-	P.filas = {}
-	for i, def in ipairs(ESTADOS) do P.filas[i] = nuevaFila(P.estado, def) end
-
-	P.hAccesos = W.SectionHeader(view)
-	P.accesos = {}
-	P.sinAccesos = W.Text(view, "note", "textMuted")
-	P.sinAccesos:SetWordWrap(true)
-	P.sinAccesos:SetText(L["Aquí aparecerán los demás módulos de Alfa (bolsas, rutas, mundo y más) en cuanto estén instalados."])
-
-	P.hDiario = W.SectionHeader(view)
-	local g = CreateFrame("Frame", nil, view)
-	T.Skin(g, "panel")
-	g.Titulo = W.Text(g, "small", "textDim")
-	g.Titulo:SetPoint("TOPLEFT", g, "TOPLEFT", 14, -14)
-	g.Chips = {}
-	for i, m in ipairs(METRICAS) do g.Chips[i] = chipBoton(g, m) end
-	g.Base = W.Divider(g)
-	g.Barras = {}
-	g.Vacio = W.Text(g, "note", "textMuted")
-	g.Vacio:SetText(L["Todavía no hay datos para esta gráfica."])
-	P.grafica = g
-	P.lista = W.RowPanel(view)
-	P.listaFilas = {}
-	P.sinDiario = W.Text(view, "note", "textMuted")
-	P.sinDiario:SetWordWrap(true)
-	P.sinDiario:SetSpacing(3)
-	P.sinDiario:SetText(L["Tu primera sesión entra al diario cuando salgas del juego. La manada te espera: ¡a cazar!"])
-
-	P.hAjustes = W.SectionHeader(view)
-	P.hGrupos, P.paneles = {}, {}
-	for i = 1, #GRUPOS do
-		P.hGrupos[i] = W.SectionHeader(view, { plain = true })
-		P.paneles[i] = W.RowPanel(view)
-	end
-	P.sinAjustes = W.Text(view, "note", "textMuted")
-	P.sinAjustes:SetWordWrap(true)
-	P.sinAjustes:SetText(L["Los ajustes de los recordatorios están en la búsqueda de la ventana de Alfa."])
-
-	view.Refresh = function() return P.Layout(view) end
-	view:HookScript("OnShow", function() P.AlMostrar() end)
-	view:HookScript("OnHide", function() P.AlOcultar() end)
-end
-
-local function encabezado(h, txt, y, w, cuenta)
-	h:ClearAllPoints()
-	h:SetPoint("TOPLEFT", P.view, "TOPLEFT", W.SHELL.pad, -y)
-	h:SetWidth(w)
-	W.SetSection(h, txt, cuenta)
-	h:Show()
-	return y + 44 + 6
-end
-
 ---------------------------------------------------------------------------
 -- Tu siguiente paso
 ---------------------------------------------------------------------------
+
+local function cerrarVentana()
+	local O = A.UI and A.UI.Options
+	local win = type(O) == "table" and O.frame
+	if type(win) == "table" and type(win.Hide) == "function" then win:Hide() end
+end
+
+-- Seguir ruta: la ventana de guía a la vista y la flecha encendida; esta
+-- ventana se cierra para que se vean.
+local function seguirRuta()
+	A.Fire("SHOW_FRAME")
+	if A.Get("nav.arrow") == false then A.Set("nav.arrow", true) end
+	cerrarVentana()
+end
+
+-- Ver pasos: la lista de pasos de la ventana de guía (UI.StepList).
+local function verPasos()
+	A.Fire("SHOW_FRAME")
+	A.After(0.1, function()
+		local SL = A.UI and A.UI.StepList
+		if type(SL) ~= "table" or type(SL.Toggle) ~= "function" then return end
+		if type(SL.On) == "function" and SL.On() then return end
+		pcall(SL.Toggle, true)
+	end)
+	cerrarVentana()
+end
+
+local function nuevoPaso(view)
+	local c = CreateFrame("Frame", nil, view)
+	c:SetFrameLevel(view:GetFrameLevel())
+	T.Skin(c, "panel")
+	c.Bar = franja(c, "accent")
+	c.Eyebrow = W.Text(c, "small", "accent")
+	c.Eyebrow:SetText(L["Tu siguiente paso"])
+	c.Num = W.Chip(c)
+	c.Icon = W.Tex(c, "ARTWORK", "icon-goto", "accent")
+	c.Icon:SetSize(20, 20)
+	c.Titulo = W.Text(c, "display", "text")
+	c.Titulo:SetWordWrap(true)
+	c.Titulo:SetJustifyV("TOP")
+	c.Lineas = {}
+	c.DistIcon = W.Tex(c, "ARTWORK", "icon-goto", "accent")
+	c.DistIcon:SetSize(14, 14)
+	c.Dist = W.Text(c, "body", "text")
+	c.Hacia = W.Text(c, "note", "textDim")
+	c.Guia = W.Text(c, "small", "textMuted")
+	c.Prog = W.ProgressLine(c, 3)
+	c.Pct = W.Text(c, "small", "textDim")
+	c.Pct:SetJustifyH("RIGHT")
+	c.Vacio = W.Text(c, "note", "textDim")
+	c.Vacio:SetWordWrap(true)
+	c.Vacio:SetSpacing(3)
+	c.Vacio:SetJustifyV("TOP")
+	c.Seguir = W.Button(c, L["Seguir ruta"], seguirRuta, { primary = true, icon = "icon-goto", height = 30 })
+	c.Seguir.psTip = L["Seguir ruta"]
+	c.Seguir.psTipLines = { L["Muestra la ventana de guía y la flecha, y cierra esta ventana para que las veas."] }
+	c.Pasos = W.Button(c, L["Ver pasos"], verPasos, { icon = "menu", height = 30 })
+	c.Pasos.psTip = L["Ver pasos"]
+	c.Pasos.psTipLines = { L["Todos los pasos de la guía en la ventana de guía."] }
+	c.Cambiar = W.Button(c, L["Cambiar guía"], function() A.Fire("SHOW_PICKER") end, { icon = "guides", height = 30 })
+	-- Sin paso que mostrar: un solo botón (elegir una guía, la siguiente, o abrirla).
+	c.Primera = W.Button(c, L["Elegir una guía"], function(self)
+		if type(self.psAccion) == "function" then self.psAccion() else A.Fire("SHOW_PICKER") end
+	end, { primary = true, icon = "guides", height = 30 })
+	return c
+end
 
 local ABIERTA = { active = true, pending = true }
 
@@ -481,6 +385,61 @@ local function pasoActual()
 	return info
 end
 
+-- Rumbo de la flecha en ocho vientos: dn hacia el norte, dw hacia el oeste
+-- (yardas del mundo, Nav.TargetOffset).
+local RUMBOS = { L["al norte"], L["al noroeste"], L["al oeste"], L["al suroeste"],
+	L["al sur"], L["al sureste"], L["al este"], L["al noreste"] }
+
+local function rumbo(dn, dw)
+	local grados = math.atan2(dw, dn) * 180 / math.pi -- 0 norte, 90 oeste
+	return RUMBOS[floor(((grados + 22.5) % 360) / 45) + 1]
+end
+
+-- La línea de la distancia: texto, color y a qué (o nil sin flecha).
+local function distancia()
+	local Nav = A.Nav
+	if type(Nav) ~= "table" or type(Nav.GetTarget) ~= "function" then return nil end
+	local t = Nav.GetTarget()
+	if type(t) ~= "table" then return nil end
+	local label = texto(t.label)
+	local Cp = A.Compat
+	if type(Cp) == "table" then
+		if type(Cp.IsInInstance) == "function" and Cp.IsInInstance() then
+			return L["Estás en una instancia: la flecha vuelve al salir."], "textDim", nil
+		end
+		if type(Cp.IsOnTaxi) == "function" and Cp.IsOnTaxi() then
+			return L["En vuelo: la flecha sigue al bajar."], "textDim", label
+		end
+	end
+	local dn, dw
+	if type(Nav.TargetOffset) == "function" then
+		local ok, a, b = pcall(Nav.TargetOffset)
+		if ok then dn, dw = num(a), num(b) end
+	end
+	if not (dn and dw) then
+		local zona = type(Nav.GetTargetZoneName) == "function" and texto(Nav.GetTargetZoneName()) or nil
+		return zona and format(L["Lejos de aquí: %s"], zona) or L["Lejos de aquí"], "textDim", label
+	end
+	local d = math.sqrt(dn * dn + dw * dw)
+	local area = tonumber(t.area)
+	if area and area > 0 then d = d > area and d - area or 0 end
+	if d <= (tonumber(t.r) or 8) then return L["Ya llegaste"], "success", label end
+	local txt = type(A.FormatDistance) == "function" and A.FormatDistance(d) or format("%d yd", floor(d + 0.5))
+	return txt .. " " .. rumbo(dn, dw), "text", label
+end
+
+local function pintarDistancia()
+	local c = P.paso
+	if not (c and c.psConGuia) then return end
+	local txt, color, label = distancia()
+	if not txt then
+		txt, color, label = L["Este paso no tiene punto en el mapa."], "textMuted", nil
+	end
+	c.Dist:SetText(txt)
+	W.Color(c.Dist, color)
+	c.Hacia:SetText(label and label ~= "" and (L["Hacia:"] .. " " .. label) or "")
+end
+
 function P.LayoutPaso(w, x, y)
 	local c = P.paso
 	c:ClearAllPoints()
@@ -491,58 +450,60 @@ function P.LayoutPaso(w, x, y)
 		l.Text:Hide()
 	end
 	local info = pasoActual()
-	local inner = w - 32
+	local inner = w - IZQ - 18
 	local cy = 16
 	local conGuia = info and not info.fin and info.num ~= nil
-	c.Guia:SetShown(info ~= nil)
-	c.Num:SetShown(conGuia)
-	c.Icon:SetShown(conGuia)
-	c.Titulo:SetShown(conGuia)
-	c.Prog:SetShown(info ~= nil and (info.todos or 0) > 0)
-	c.Pct:SetShown(c.Prog:IsShown())
-	c.Vacio:SetShown(not conGuia)
-	c.Abrir:SetShown(info ~= nil)
-	c.Elegir:SetShown(info ~= nil)
-	c.Primera:SetShown(info == nil)
-
-	if info then
-		c.Guia:ClearAllPoints()
-		c.Guia:SetPoint("TOPLEFT", c, "TOPLEFT", 16, -cy)
-		c.Guia:SetText(format(L["Guía: %s"], info.guia ~= "" and info.guia or RAYA))
-		local chipW = 0
-		if conGuia then
-			chipW = W.SetChip(c.Num, info.total and format(L["Paso %d de %d"], info.num, info.total) or format(L["Paso %d"], info.num), "accent")
-			c.Num:ClearAllPoints()
-			c.Num:SetPoint("TOPRIGHT", c, "TOPRIGHT", -14, -(cy - 3))
-		end
-		c.Guia:SetWidth(max(1, inner - chipW - 12))
-		cy = cy + 26
+	c.psConGuia = conGuia and true or false
+	c.Num:SetShown(conGuia and true or false)
+	for _, r in ipairs({ c.Icon, c.Titulo, c.DistIcon, c.Dist, c.Hacia, c.Seguir, c.Pasos, c.Cambiar }) do
+		r:SetShown(conGuia and true or false)
 	end
+	c.Vacio:SetShown(not conGuia)
+	c.Primera:SetShown(not conGuia)
+
+	c.Eyebrow:ClearAllPoints()
+	c.Eyebrow:SetPoint("TOPLEFT", c, "TOPLEFT", IZQ, -cy)
+	if conGuia then
+		W.SetChip(c.Num, info.total and format(L["Paso %d de %d"], info.num, info.total) or format(L["Paso %d"], info.num), "accent")
+		c.Num:ClearAllPoints()
+		c.Num:SetPoint("TOPRIGHT", c, "TOPRIGHT", -16, -(cy - 4))
+	end
+	cy = cy + 24
 
 	if conGuia then
 		c.Icon:SetTexture(T.VerbIcon(info.verbo))
 		c.Icon:ClearAllPoints()
-		c.Icon:SetPoint("TOPLEFT", c, "TOPLEFT", 16, -(cy - 1))
+		c.Icon:SetPoint("TOPLEFT", c, "TOPLEFT", IZQ, -(cy - 1))
 		c.Titulo:SetText(info.titulo)
-		c.Titulo:SetWidth(max(1, inner - 28))
+		c.Titulo:SetWidth(max(1, inner - 32))
 		c.Titulo:ClearAllPoints()
-		c.Titulo:SetPoint("TOPLEFT", c, "TOPLEFT", 44, -cy)
-		cy = cy + max(18, ceil(c.Titulo:GetStringHeight())) + 10
+		c.Titulo:SetPoint("TOPLEFT", c, "TOPLEFT", IZQ + 32, -cy)
+		cy = cy + max(22, ceil(c.Titulo:GetStringHeight())) + 8
 		for i, m in ipairs(info.metas or {}) do
 			local l = lineaPaso(c, i)
 			l.Icon:SetTexture(T.VerbIcon(m.t))
 			l.Icon:ClearAllPoints()
-			l.Icon:SetPoint("TOPLEFT", c, "TOPLEFT", 46, -(cy + 1))
+			l.Icon:SetPoint("TOPLEFT", c, "TOPLEFT", IZQ + 34, -(cy + 1))
 			l.Text:SetText(m.texto)
-			l.Text:SetWidth(max(1, inner - 50))
+			l.Text:SetWidth(max(1, inner - 54))
 			l.Text:ClearAllPoints()
-			l.Text:SetPoint("TOPLEFT", c, "TOPLEFT", 66, -cy)
+			l.Text:SetPoint("TOPLEFT", c, "TOPLEFT", IZQ + 54, -cy)
 			W.Color(l.Text, i == 1 and "text" or "textDim")
 			l.Icon:Show()
 			l.Text:Show()
 			cy = cy + ceil(l.Text:GetStringHeight()) + 6
 		end
 		cy = cy + 6
+		-- La distancia y el rumbo hasta la flecha: se repinta cada segundo.
+		c.DistIcon:ClearAllPoints()
+		c.DistIcon:SetPoint("TOPLEFT", c, "TOPLEFT", IZQ + 3, -(cy + 1))
+		c.Dist:ClearAllPoints()
+		c.Dist:SetPoint("TOPLEFT", c, "TOPLEFT", IZQ + 32, -cy)
+		c.Hacia:ClearAllPoints()
+		c.Hacia:SetPoint("LEFT", c.Dist, "RIGHT", 12, 0)
+		c.Hacia:SetPoint("RIGHT", c, "RIGHT", -18, 0)
+		pintarDistancia()
+		cy = cy + 26
 	else
 		local txt
 		if not info then
@@ -555,45 +516,571 @@ function P.LayoutPaso(w, x, y)
 		c.Vacio:SetText(txt)
 		c.Vacio:SetWidth(max(1, inner))
 		c.Vacio:ClearAllPoints()
-		c.Vacio:SetPoint("TOPLEFT", c, "TOPLEFT", 16, -cy)
+		c.Vacio:SetPoint("TOPLEFT", c, "TOPLEFT", IZQ, -cy)
 		cy = cy + ceil(c.Vacio:GetStringHeight()) + 14
 	end
 
-	if c.Prog:IsShown() then
-		local frac = info.todos > 0 and info.hechos / info.todos or 0
-		local barW = max(1, inner - 56)
-		c.Prog:ClearAllPoints()
-		c.Prog:SetPoint("TOPLEFT", c, "TOPLEFT", 16, -cy)
-		c.Prog:SetWidth(barW)
-		W.SetProgress(c.Prog, frac, barW)
-		c.Pct:SetText(format("%d%%", floor(frac * 100 + 0.5)))
-		c.Pct:ClearAllPoints()
-		c.Pct:SetPoint("RIGHT", c, "TOPRIGHT", -16, -(cy + 1))
-		cy = cy + 16
+	-- La guía y su avance, en una línea.
+	local conProg = info ~= nil and (info.todos or 0) > 0
+	c.Guia:SetShown(info ~= nil)
+	c.Prog:SetShown(conProg)
+	c.Pct:SetShown(conProg)
+	if info then
+		c.Guia:SetText(format(L["Guía: %s"], info.guia ~= "" and info.guia or RAYA))
+		c.Guia:ClearAllPoints()
+		c.Guia:SetPoint("TOPLEFT", c, "TOPLEFT", IZQ, -cy)
+		local guiaW = conProg and floor(inner * 0.42) or inner
+		c.Guia:SetWidth(max(1, guiaW))
+		if conProg then
+			local frac = info.hechos / info.todos
+			local barX = IZQ + guiaW + 16
+			local barW = max(1, w - barX - 18 - 48)
+			c.Prog:ClearAllPoints()
+			c.Prog:SetPoint("TOPLEFT", c, "TOPLEFT", barX, -(cy + 5))
+			c.Prog:SetWidth(barW)
+			W.SetProgress(c.Prog, frac, barW)
+			c.Pct:SetText(format("%d%%", floor(frac * 100 + 0.5)))
+			c.Pct:ClearAllPoints()
+			c.Pct:SetPoint("RIGHT", c, "TOPRIGHT", -18, -(cy + 6))
+		end
+		cy = cy + 26
 	end
 
-	if info then
-		c.Abrir:ClearAllPoints()
-		c.Abrir:SetPoint("TOPLEFT", c, "TOPLEFT", 16, -cy)
-		c.Elegir:ClearAllPoints()
-		c.Elegir:SetPoint("LEFT", c.Abrir, "RIGHT", 8, 0)
-		cy = cy + c.Abrir:GetHeight()
+	-- Los botones.
+	if conGuia then
+		c.Seguir:ClearAllPoints()
+		c.Seguir:SetPoint("TOPLEFT", c, "TOPLEFT", IZQ, -cy)
+		c.Pasos:ClearAllPoints()
+		c.Pasos:SetPoint("LEFT", c.Seguir, "RIGHT", 8, 0)
+		c.Cambiar:ClearAllPoints()
+		c.Cambiar:SetPoint("LEFT", c.Pasos, "RIGHT", 8, 0)
+		cy = cy + c.Seguir:GetHeight()
 	else
+		if not info then
+			W.SetButtonText(c.Primera, L["Elegir una guía"])
+			c.Primera.psAccion = nil
+		elseif info.fin then
+			W.SetButtonText(c.Primera, L["Elegir la siguiente guía"])
+			c.Primera.psAccion = nil
+		else
+			W.SetButtonText(c.Primera, L["Abrir la guía"])
+			c.Primera.psAccion = seguirRuta
+		end
 		c.Primera:ClearAllPoints()
-		c.Primera:SetPoint("TOPLEFT", c, "TOPLEFT", 16, -cy)
+		c.Primera:SetPoint("TOPLEFT", c, "TOPLEFT", IZQ, -cy)
 		cy = cy + c.Primera:GetHeight()
 	end
-	cy = cy + 16
+	cy = cy + 18
 	c:SetHeight(cy)
 	return cy
+end
+
+---------------------------------------------------------------------------
+-- Alertas: lo urgente de M.Rec, del más grave al menos
+---------------------------------------------------------------------------
+
+local COLOR_TIPO = { peligro = "danger", aviso = "warning", info = "accent", exito = "success" }
+local PESO_TIPO = { peligro = 1, aviso = 2, info = 3, exito = 4 }
+
+local function alertas()
+	local st = R.Estado()
+	local lista = {}
+	local durAviso = tonumber(N.Get("inicio", "durAviso")) or 30
+	local durUrg = tonumber(N.Get("inicio", "durUrgente")) or 10
+	local e = st.equipo
+	if e.pct and e.pct <= durAviso then
+		local pct = floor(e.pct + 0.5)
+		local pieza = R.NombrePieza(e.slot) or R.NombreRanura(e.slot)
+		local det = pct <= 0 and format(L["%s está rota"], pieza) or format(L["%s al %d%%"], pieza, pct)
+		local otras = (e.gastadas or 1) - 1
+		if otras > 0 then det = det .. DOT .. (otras == 1 and L["y 1 pieza más"] or format(L["y %d piezas más"], otras)) end
+		local urgente = e.pct <= durUrg
+		lista[#lista + 1] = { clave = "equipo", tipo = urgente and "peligro" or "aviso", icono = "icon-buy",
+			titulo = urgente and L["¡Repara tu equipo!"] or L["Tu equipo se está gastando"], detalle = det,
+			boton = L["Llévame a reparar"], fn = function() R.IrA("repair") end }
+	end
+	local libres, total = st.bolsas.libres, st.bolsas.total
+	local umbral = tonumber(N.Get("inicio", "bolsasLibres")) or 4
+	if libres and libres <= umbral then
+		lista[#lista + 1] = { clave = "bolsas", tipo = libres == 0 and "peligro" or "aviso", icono = "icon-collect",
+			titulo = libres == 0 and L["Tus bolsas están llenas"] or L["Tus bolsas están casi llenas"],
+			detalle = libres == 1 and L["Te queda 1 espacio"] or format(L["Te quedan %d de %d espacios"], libres, total or 0),
+			boton = L["Llévame a un vendedor"], fn = function() R.IrA("vendor") end }
+	end
+	local en = st.entrenar
+	if en.listo and en.n >= (tonumber(N.Get("inicio", "entrenarMin")) or 1) then
+		local det = en.n == 1 and L["1 habilidad por aprender"] or format(L["%d habilidades por aprender"], en.n)
+		if (en.costo or 0) > 0 then det = det .. DOT .. N.Dinero(en.costo) end
+		lista[#lista + 1] = { clave = "entrenar", tipo = "info", icono = "icon-train", titulo = L["Tienes habilidades nuevas"],
+			detalle = det, boton = L["Llévame con mi entrenador"], fn = function() R.IrA("class") end }
+	end
+	local d = st.descanso
+	if not d.maximo then
+		local pct = floor((d.pct or 0) + 0.5)
+		local bajo = tonumber(N.Get("inicio", "descansoBajo")) or 5
+		if d.activo then
+			lista[#lista + 1] = { clave = "descanso", tipo = "exito", icono = "icon-sethome", titulo = L["Estás descansando"],
+				detalle = format(L["XP descansada: %d%% de un nivel"], pct) }
+		elseif (d.xp or 0) > 0 and bajo > 0 and (d.pct or 0) <= bajo then
+			lista[#lista + 1] = { clave = "descansoBajo", tipo = "info", icono = "icon-sethome", titulo = L["Te queda poca XP descansada"],
+				detalle = L["Descansa en una posada o una ciudad para juntar más."] }
+		end
+	end
+	table.sort(lista, function(a, b)
+		local pa, pb = PESO_TIPO[a.tipo] or 9, PESO_TIPO[b.tipo] or 9
+		if pa ~= pb then return pa < pb end
+		return a.clave < b.clave
+	end)
+	return lista
+end
+
+local function firma(lista)
+	local t = {}
+	for i, a in ipairs(lista) do t[i] = a.clave end
+	return table.concat(t, ",")
+end
+
+local function filaAlerta(i)
+	local f = P.alertaFilas[i]
+	if f then return f end
+	f = CreateFrame("Frame", nil, P.alertas)
+	f:SetHeight(ALERTA_H)
+	f.Icon = W.Tex(f, "ARTWORK", "info", "accent")
+	f.Icon:SetSize(16, 16)
+	f.Icon:SetPoint("LEFT", f, "LEFT", 16, 0)
+	f.Titulo = W.Text(f, "body", "text")
+	f.Titulo:SetPoint("LEFT", f, "LEFT", 44, 0)
+	f.Detalle = W.Text(f, "note", "textDim")
+	f.Detalle:SetPoint("LEFT", f.Titulo, "RIGHT", 12, 0)
+	f.Rule = W.Divider(f, false, 0.6)
+	f.Rule:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 0, 0)
+	f.Rule:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", 0, 0)
+	f.Boton = W.Button(f, "", function(self) if type(self.psAccion) == "function" then self.psAccion() end end, { height = 26 })
+	f.Boton:SetPoint("RIGHT", f, "RIGHT", -12, 0)
+	f.Boton:Hide()
+	P.alertaFilas[i] = f
+	return f
+end
+
+local function pintarFilaAlerta(f, a)
+	f.Icon:SetTexture(T.Media(a.icono or "info"))
+	W.Color(f.Icon, COLOR_TIPO[a.tipo] or "accent")
+	f.Titulo:SetText(a.titulo or "")
+	W.Color(f.Titulo, a.tipo == "peligro" and "danger" or "text")
+	f.Detalle:SetText(a.detalle or "")
+	local derecha = 16
+	if a.boton then
+		W.SetButtonText(f.Boton, a.boton)
+		f.Boton.psAccion = a.fn
+		f.Boton:Show()
+		derecha = f.Boton:GetWidth() + 24
+	else
+		f.Boton.psAccion = nil
+		f.Boton:Hide()
+	end
+	f.Detalle:SetPoint("RIGHT", f, "RIGHT", -derecha, 0)
+end
+
+local TODO_BIEN = { clave = "", tipo = "exito", icono = "check" }
+
+local function pintarAlertas()
+	local lista = alertas()
+	if firma(lista) ~= P.firmaAlertas then
+		relayout()
+		return
+	end
+	if #lista == 0 then
+		local f = filaAlerta(1)
+		TODO_BIEN.titulo = L["Todo en orden"]
+		TODO_BIEN.detalle = L["Tu equipo, tus bolsas y tu entrenamiento están al día."]
+		pintarFilaAlerta(f, TODO_BIEN)
+		return
+	end
+	for i, a in ipairs(lista) do pintarFilaAlerta(filaAlerta(i), a) end
+end
+
+function P.LayoutAlertas(w, x, y)
+	local lista = alertas()
+	P.firmaAlertas = firma(lista)
+	local h = P.hAlertas
+	W.SetSection(h, L["Alertas"], #lista > 0 and #lista or nil)
+	h:ClearAllPoints()
+	h:SetPoint("TOPLEFT", P.view, "TOPLEFT", x, -y)
+	h:SetWidth(w)
+	h:Show()
+	y = y + W.PLAIN_SECTION_H
+	local n = max(1, #lista)
+	local panel = P.alertas
+	panel:ClearAllPoints()
+	panel:SetPoint("TOPLEFT", P.view, "TOPLEFT", x, -y)
+	panel:SetSize(w, n * ALERTA_H)
+	for _, f in ipairs(P.alertaFilas) do f:Hide() end
+	for i = 1, n do
+		local f = filaAlerta(i)
+		f:ClearAllPoints()
+		f:SetPoint("TOPLEFT", panel, "TOPLEFT", 0, -(i - 1) * ALERTA_H)
+		f:SetWidth(w)
+		f.Rule:SetShown(i < n)
+		f:Show()
+	end
+	pintarAlertas()
+	return y + n * ALERTA_H
+end
+
+---------------------------------------------------------------------------
+-- Para tu <clase>
+---------------------------------------------------------------------------
+
+local ROLES = { cura = L["Sanador"], tanque = L["Tanque"], dano = L["Daño"] }
+
+local function nuevaMini(parent)
+	local b = CreateFrame("Button", nil, parent)
+	b:SetHeight(MINI_H)
+	T.Skin(b, "tile")
+	b.Icono = b:CreateTexture(nil, "ARTWORK")
+	b.Icono:SetSize(30, 30)
+	b.Icono:SetPoint("TOPLEFT", b, "TOPLEFT", 12, -14)
+	b.Icono:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+	b.Glifo = W.Tex(b, "ARTWORK", "bolt", "accent")
+	b.Glifo:SetSize(18, 18)
+	b.Glifo:SetPoint("CENTER", b.Icono, "CENTER", 0, 0)
+	b.Titulo = W.Text(b, "small", "textMuted")
+	b.Titulo:SetPoint("TOPLEFT", b, "TOPLEFT", 54, -14)
+	b.Titulo:SetPoint("RIGHT", b, "RIGHT", -26, 0)
+	b.Flecha = W.Tex(b, "ARTWORK", "chevron-right", "textMuted")
+	b.Flecha:SetSize(10, 10)
+	b.Flecha:SetPoint("TOPRIGHT", b, "TOPRIGHT", -12, -16)
+	b.Valor = W.Text(b, "title", "text")
+	b.Valor:SetPoint("TOPLEFT", b, "TOPLEFT", 54, -31)
+	b.Valor:SetPoint("RIGHT", b, "RIGHT", -12, 0)
+	b.Detalle = W.Text(b, "small", "textDim")
+	b.Detalle:SetPoint("TOPLEFT", b, "TOPLEFT", 54, -54)
+	b.Detalle:SetPoint("RIGHT", b, "RIGHT", -12, 0)
+	b:SetScript("OnClick", function(self) if self.psAbrir then N.Abrir(self.psAbrir) end end)
+	b:SetScript("OnEnter", function(self)
+		W.Color(self.Flecha, self.psAbrir and "accent" or "textMuted")
+		W.SimpleTip(self)
+	end)
+	b:SetScript("OnLeave", function(self)
+		W.Color(self.Flecha, "textMuted")
+		W.HideTip(self)
+	end)
+	return b
+end
+
+local function pintarMini(b)
+	local def = b.def
+	if not def then return end
+	local r = K.Leer(def)
+	local titulo = K.Titulo(def)
+	b.Titulo:SetText(titulo)
+	b.Valor:SetText(r.valor or RAYA)
+	W.Color(b.Valor, r.color or "text")
+	b.Detalle:SetText(r.detalle or "")
+	if r.textura then
+		b.Icono:SetTexture(r.textura)
+		b.Icono:Show()
+		b.Glifo:Hide()
+	else
+		b.Icono:Hide()
+		b.Glifo:SetTexture(T.Media(def.glifo or "bolt"))
+		b.Glifo:Show()
+	end
+	local destino = K.Destino(def)
+	b.psAbrir = destino
+	b.Flecha:SetShown(destino ~= nil)
+	b.psTip = titulo
+	local lines = {}
+	if r.valor then lines[#lines + 1] = { r.valor, T.Color(r.color or "text") } end
+	if r.detalle and r.detalle ~= "" then lines[#lines + 1] = r.detalle end
+	for _, l in ipairs(r.tip or {}) do lines[#lines + 1] = l end
+	local spec = destino and N.ModuloPorId(destino)
+	if spec then lines[#lines + 1] = format(L["Clic: abre %s."], tostring(spec.nombre or destino)) end
+	b.psTipLines = lines
+end
+
+local function nombreClase()
+	local n
+	if type(T.Clase) == "function" then
+		local ok, c = pcall(T.Clase)
+		n = ok and type(c) == "table" and texto(c.nombre) or nil
+	end
+	if not n and UnitClass then n = texto((UnitClass("player"))) end
+	n = n or ""
+	-- "Para tu guerrero": en minúscula en español y en inglés; en otros
+	-- idiomas (los sustantivos del alemán) se queda como lo dice el cliente.
+	local loc = N.locale
+	local b = n:byte(1)
+	if b and b >= 65 and b <= 90 and (N.espanol or loc == "enUS" or loc == "enGB") then n = string.char(b + 32) .. n:sub(2) end
+	return n
+end
+
+local function nuevaClase(view)
+	local c = CreateFrame("Frame", nil, view)
+	c:SetFrameLevel(view:GetFrameLevel())
+	T.Skin(c, "panel")
+	c.Franja = franja(c, "class")
+	c.Titulo = W.Text(c, "title", "classText")
+	c.Rol = W.Chip(c)
+	c.Minis = {}
+	return c
+end
+
+function P.LayoutClase(w, x, y)
+	local c = P.clase
+	local defs = K.Tarjetas()
+	for _, b in ipairs(c.Minis) do b:Hide() end
+	if #defs == 0 then
+		c:Hide()
+		return y
+	end
+	c:ClearAllPoints()
+	c:SetPoint("TOPLEFT", P.view, "TOPLEFT", x, -y)
+	c:SetWidth(w)
+	c:Show()
+	local cy = 16
+	local rol, rama = K.Rol()
+	c.Titulo:SetText(format(L["Para tu %s"], nombreClase()))
+	c.Titulo:ClearAllPoints()
+	c.Titulo:SetPoint("TOPLEFT", c, "TOPLEFT", IZQ, -cy)
+	local chip = ROLES[rol] or ""
+	if rama and rama ~= "" then chip = rama .. DOT .. chip end
+	W.SetChip(c.Rol, chip, "class")
+	c.Rol:ClearAllPoints()
+	c.Rol:SetPoint("TOPRIGHT", c, "TOPRIGHT", -16, -(cy - 2))
+	cy = cy + 30
+	local n = #defs
+	local area = w - IZQ - 16
+	local mw = (area - GAP * (n - 1)) / n
+	for i, def in ipairs(defs) do
+		local b = c.Minis[i]
+		if not b then
+			b = nuevaMini(c)
+			c.Minis[i] = b
+		end
+		b.def = def
+		b:ClearAllPoints()
+		b:SetPoint("TOPLEFT", c, "TOPLEFT", IZQ + (i - 1) * (mw + GAP), -cy)
+		b:SetSize(mw, MINI_H)
+		b:Show()
+		pintarMini(b)
+	end
+	cy = cy + MINI_H + 16
+	c:SetHeight(cy)
+	return y + cy + BLOQUE
+end
+
+local function pintarClase()
+	local c = P.clase
+	if not (c and c:IsShown()) then return end
+	for _, b in ipairs(c.Minis) do
+		if b:IsShown() then pintarMini(b) end
+	end
+end
+
+---------------------------------------------------------------------------
+-- La fila de números
+---------------------------------------------------------------------------
+
+-- El oro de hoy: las sesiones del diario que empezaron hoy y la de ahora.
+local function mismoDia(a, b) return a.year == b.year and a.yday == b.yday end
+
+local function oroDeHoy(e)
+	local hoy = date("*t")
+	local neto, ganado, gastado = e.oro or 0, e.ganado or 0, e.gastado or 0
+	for _, s in ipairs(S.Sesiones()) do
+		local t = date("*t", tonumber(s.inicio) or 0)
+		if mismoDia(t, hoy) then
+			neto = neto + (tonumber(s.oro) or 0)
+			ganado = ganado + (tonumber(s.ganado) or 0)
+			gastado = gastado + (tonumber(s.gastado) or 0)
+		end
+	end
+	return neto, ganado, gastado
+end
+
+-- Los de tu hermandad conectados, sin contarte: n, total, nombre de la
+-- hermandad; nil fuera de una hermandad. La lista la pide el módulo La
+-- Jauría; aquí se pide a lo más una vez por minuto mientras la página se ve.
+local pedidaEn = -1000
+local function lobos()
+	local ok, en = pcall(function() return IsInGuild and IsInGuild() end)
+	if not ok or not en or (issecretvalue and issecretvalue(en)) then return nil end
+	if not GetNumGuildMembers then return nil end
+	local t = GetTime and GetTime() or 0
+	if t - pedidaEn > 60 and C_GuildInfo and C_GuildInfo.GuildRoster then
+		pedidaEn = t
+		pcall(C_GuildInfo.GuildRoster)
+	end
+	local ok2, total, conectados = pcall(GetNumGuildMembers)
+	total, conectados = ok2 and num(total) or nil, ok2 and num(conectados) or nil
+	if not conectados then return nil end
+	local nombre
+	if GetGuildInfo then
+		local ok3, g = pcall(GetGuildInfo, "player")
+		nombre = ok3 and texto(g) or nil
+	end
+	return max(0, conectados - 1), total, nombre
+end
+
+local function esLaJauria(nombre)
+	if type(nombre) ~= "string" then return false end
+	-- La í primero: con un locale de 8 bits, lower() también cambia los bytes
+	-- de una letra UTF-8 y la rompe.
+	local n = nombre:gsub("\195\173", "i"):gsub("\195\141", "I")
+	return n:lower() == "la jauria"
+end
+
+local function pintarNumeros(e)
+	for _, t in ipairs(P.tiles) do
+		local k = t.def.clave
+		local v, color, lines = RAYA, "text", nil
+		if k == "ritmo" then
+			if e.maximo then
+				v = RAYA
+				lines = { L["Nivel máximo"] }
+			else
+				if e.ritmo and e.ritmo > 0 then v = miles(e.ritmo) end
+				lines = { L["Tu ritmo de los últimos 15 minutos, con el contador de XP de Alfa."],
+					format(L["Promedio de la sesión: %s XP por hora."], miles(e.prom)),
+					format(L["XP ganada en la sesión: %s"], miles(e.xp)) }
+			end
+		elseif k == "subir" then
+			if e.maximo then
+				v = L["Nivel máximo"]
+			elseif e.subir then
+				v = e.subir >= 360000 and L["más de 99 h"] or N.Duracion(e.subir)
+				lines = { format(L["Te faltan %s XP para el nivel %d, a tu ritmo actual."], miles(e.falta), (e.nivel or 1) + 1) }
+			else
+				lines = { L["Gana un poco de XP y Alfa calcula cuánto te falta."] }
+			end
+		elseif k == "oro" then
+			local neto, ganado, gastado = oroDeHoy(e)
+			v = (neto > 0 and "+" or "") .. N.Dinero(neto, true)
+			lines = { { left = L["Ganado"], right = N.Dinero(ganado) }, { left = L["Gastado"], right = N.Dinero(gastado) },
+				L["Suma tus sesiones de hoy con este personaje."] }
+		elseif k == "lobos" then
+			local n, total, nombre = lobos()
+			local jauria = esLaJauria(nombre)
+			t.Label:SetText((nombre and not jauria) and L["Tu hermandad conectada"] or L["Lobos conectados"])
+			if n then
+				v = tostring(n)
+				color = n > 0 and "accent" or "text"
+				lines = { format(L["%d de %d miembros de %s conectados, sin contarte."], n, total or n, nombre or L["tu hermandad"]) }
+			else
+				lines = { L["Todavía no estás en una hermandad. En la página La Jauría ves cómo unirte a la manada."] }
+			end
+			if t.psAbrir then lines[#lines + 1] = L["Clic: abre La Jauría."] end
+		end
+		t.Value:SetText(v)
+		W.Color(t.Value, color)
+		t.psTipLines = lines
+	end
+end
+
+function P.LayoutNumeros(w, x, y)
+	local cols = w >= 520 and 4 or 2
+	local tw = (w - GAP * (cols - 1)) / cols
+	for i, t in ipairs(P.tiles) do
+		local c, r = (i - 1) % cols, floor((i - 1) / cols)
+		t:ClearAllPoints()
+		t:SetPoint("TOPLEFT", P.view, "TOPLEFT", x + c * (tw + GAP), -(y + r * (TILE_H + GAP)))
+		t:SetSize(tw, TILE_H)
+		if t.def.clave == "lobos" then t.psAbrir = N.ModuloPorId("manada") and "manada" or nil end
+	end
+	return y + ceil(#P.tiles / cols) * (TILE_H + GAP) - GAP
+end
+
+---------------------------------------------------------------------------
+-- Bloques plegables
+---------------------------------------------------------------------------
+
+local function abierto(clave) return N.Get("inicio", "abrir" .. clave) and true or false end
+
+local function nuevoPlegable(view, clave, titulo)
+	local b = CreateFrame("Button", nil, view)
+	b:SetHeight(PLEG_H)
+	b.clave = clave
+	b.Chevron = W.Tex(b, "ARTWORK", "chevron-down", "textMuted")
+	b.Chevron:SetSize(12, 12)
+	b.Chevron:SetPoint("BOTTOMLEFT", b, "BOTTOMLEFT", 0, 11)
+	b.Text = W.Text(b, "heading", "text")
+	b.Text:SetPoint("BOTTOMLEFT", b, "BOTTOMLEFT", 20, 10)
+	b.Text:SetText(titulo)
+	b.Count = W.Text(b, "number", "textMuted")
+	b.Count:SetJustifyH("RIGHT")
+	b.Count:SetPoint("BOTTOMRIGHT", b, "BOTTOMRIGHT", 0, 10)
+	b.Rule = W.Divider(b)
+	b.Rule:SetPoint("LEFT", b.Text, "RIGHT", 12, 0)
+	b.Rule:SetPoint("RIGHT", b, "RIGHT", 0, 0)
+	b.psTip = titulo
+	b:SetScript("OnClick", function(self)
+		N.Set("inicio", "abrir" .. self.clave, not abierto(self.clave))
+		relayout()
+	end)
+	b:SetScript("OnEnter", function(self)
+		W.Color(self.Chevron, "accent")
+		self.psTipLines = { abierto(self.clave) and L["Clic para plegar."] or L["Clic para desplegar."] }
+		W.SimpleTip(self)
+	end)
+	b:SetScript("OnLeave", function(self)
+		W.Color(self.Chevron, "textMuted")
+		W.HideTip(self)
+	end)
+	return b
+end
+
+-- La cabecera en y; -> nueva y, y si el bloque está abierto.
+local function plegable(b, y, w, cuenta)
+	b:ClearAllPoints()
+	b:SetPoint("TOPLEFT", P.view, "TOPLEFT", W.SHELL.pad, -y)
+	b:SetWidth(w)
+	b:Show()
+	local open = abierto(b.clave)
+	b.Chevron:SetTexture(T.Media(open and "chevron-down" or "chevron-right"))
+	if cuenta then
+		b.Count:SetText(cuenta)
+		b.Count:Show()
+		b.Rule:SetPoint("RIGHT", b.Count, "LEFT", -12, 0)
+	else
+		b.Count:Hide()
+		b.Rule:SetPoint("RIGHT", b, "RIGHT", 0, 0)
+	end
+	return y + PLEG_H + (open and 6 or 0), open
 end
 
 ---------------------------------------------------------------------------
 -- Revisión rápida
 ---------------------------------------------------------------------------
 
-function P.LayoutEstado(w, x, y)
+local function nuevaFila(panel, def)
+	local f = CreateFrame("Frame", nil, panel)
+	f:SetHeight(FILA_H)
+	f.Icon = W.Tex(f, "ARTWORK", def.icono, "accent")
+	f.Icon:SetSize(16, 16)
+	f.Icon:SetPoint("LEFT", f, "LEFT", 16, 0)
+	f.Label = W.Text(f, "body", "rowLabel")
+	f.Label:SetPoint("LEFT", f, "LEFT", 44, 0)
+	f.Label:SetWidth(130)
+	f.Label:SetText(def.etiqueta)
+	f.Estado = W.Text(f, "note", "textDim")
+	f.Estado:SetPoint("LEFT", f, "LEFT", 180, 0)
+	f.Rule = W.Divider(f, false, 0.6)
+	f.Rule:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 0, 0)
+	f.Rule:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", 0, 0)
+	if def.boton then
+		f.Boton = W.Button(f, def.boton, function() R.IrA(def.ir) end, { height = 24 })
+		f.Boton:SetPoint("RIGHT", f, "RIGHT", -10, 0)
+		f.Boton:Hide()
+	end
+	f.def = def
+	return f
+end
+
+function P.LayoutEstado(w, x, y, open)
 	local panel = P.estado
+	panel:SetShown(open)
+	if not open then return y end
 	panel:ClearAllPoints()
 	panel:SetPoint("TOPLEFT", P.view, "TOPLEFT", x, -y)
 	panel:SetSize(w, #P.filas * FILA_H)
@@ -604,7 +1091,7 @@ function P.LayoutEstado(w, x, y)
 		f.Estado:SetWidth(max(1, w - 180 - (f.Boton and (f.Boton:GetWidth() + 20) or 12)))
 		f.Rule:SetShown(i < #P.filas)
 	end
-	return #P.filas * FILA_H
+	return y + #P.filas * FILA_H
 end
 
 local function pintarFila(f, txt, color, boton)
@@ -614,6 +1101,7 @@ local function pintarFila(f, txt, color, boton)
 end
 
 local function pintarEstado()
+	if not (P.estado and P.estado:IsShown()) then return end
 	local st = R.Estado()
 	local durAviso = tonumber(N.Get("inicio", "durAviso")) or 30
 	local durUrg = tonumber(N.Get("inicio", "durUrgente")) or 10
@@ -700,41 +1188,47 @@ local function modulos()
 	return out
 end
 
-function P.LayoutAccesos(w, x, y)
+function P.LayoutAccesos(w, x, y, open)
 	local lista = modulos()
 	for _, t in pairs(P.accesos) do t:Hide() end
+	P.sinAccesos:Hide()
+	if not open then return y end
 	if #lista == 0 then
 		P.sinAccesos:SetWidth(w)
 		P.sinAccesos:ClearAllPoints()
 		P.sinAccesos:SetPoint("TOPLEFT", P.view, "TOPLEFT", x, -y)
 		P.sinAccesos:Show()
-		return ceil(P.sinAccesos:GetStringHeight()) + 4
+		return y + ceil(P.sinAccesos:GetStringHeight()) + 4
 	end
-	P.sinAccesos:Hide()
-	local cw = (w - COLGAP) / 2
+	-- Compactos: tres por fila, solo el nombre; lo que hace va en su ayuda.
+	local cols = w >= 600 and 3 or 2
+	local cw = (w - GAP * (cols - 1)) / cols
 	local top = y
-	for i = 1, #lista, 2 do
-		local par, h = {}, 0
-		for k = i, min(i + 1, #lista) do
+	for i = 1, #lista, cols do
+		local fila, h = {}, 0
+		for k = i, min(i + cols - 1, #lista) do
 			local spec = lista[k]
 			local t = P.accesos[spec.id]
 			if not t then
-				t = W.ActionTile(P.view, spec.icono or "gear", tostring(spec.nombre or spec.id), tostring(spec.subtitulo or ""),
-					function() N.Abrir(spec.id) end)
+				t = W.ActionTile(P.view, spec.icono or "gear", tostring(spec.nombre or spec.id), "", function() N.Abrir(spec.id) end)
+				t.psTip = tostring(spec.nombre or spec.id)
+				t.psTipLines = (spec.subtitulo and spec.subtitulo ~= "") and { tostring(spec.subtitulo) } or nil
+				t:SetScript("OnEnter", W.SimpleTip)
+				t:SetScript("OnLeave", W.HideTip)
 				P.accesos[spec.id] = t
 			end
-			par[#par + 1] = t
+			fila[#fila + 1] = t
 		end
-		for col, t in ipairs(par) do
+		for col, t in ipairs(fila) do
 			t:ClearAllPoints()
-			t:SetPoint("TOPLEFT", P.view, "TOPLEFT", x + (col - 1) * (cw + COLGAP), -y)
+			t:SetPoint("TOPLEFT", P.view, "TOPLEFT", x + (col - 1) * (cw + GAP), -y)
 			t:Show()
 			h = max(h, W.LayoutTile(t, cw))
 		end
-		for _, t in ipairs(par) do t:SetHeight(h) end
+		for _, t in ipairs(fila) do t:SetHeight(h) end
 		y = y + h + GAP
 	end
-	return y - top - GAP
+	return top + (y - top - GAP)
 end
 
 ---------------------------------------------------------------------------
@@ -778,6 +1272,16 @@ local function detalle(owner, s, ahora)
 		{ left = L["Muertes"], right = tostring(s.muertes or 0) },
 	}
 	W.Tooltip(owner, "ANCHOR_TOP", ahora and L["Tu sesión de ahora"] or S.Cuando(s.inicio), lines)
+end
+
+local function chipBoton(parent, m)
+	local b = CreateFrame("Button", nil, parent)
+	b:SetHeight(W.CHIP_H)
+	b.Chip = W.Chip(b)
+	b.Chip:SetAllPoints(b)
+	b.psMetrica = m
+	b:SetScript("OnClick", function(self) N.Set("inicio", "grafica", self.psMetrica.clave) end)
+	return b
 end
 
 local function barra(g, i)
@@ -871,7 +1375,7 @@ local function dibujarGrafica(w)
 	g.Titulo:SetText(titulo)
 	g.Titulo:SetWidth(max(1, w + right - 28))
 
-	local areaTop, areaBottom = 42, 30
+	local areaTop, areaBottom = 40, 28
 	local areaH = CHART_H - areaTop - areaBottom
 	local areaW = w - 28
 	g.Base:ClearAllPoints()
@@ -911,18 +1415,42 @@ local function dibujarGrafica(w)
 	end
 end
 
-function P.LayoutDiario(w, x, y)
+-- Tu sesión de ahora, en una línea: "Ahora | 1 h 20 min · +12,340 XP · ...".
+local function pintarSesion()
+	local f = P.sesion
+	if not (f and f:IsShown()) then return end
+	local e = S.Estado()
+	f.Texto:SetText(S.Texto(e))
+	f.Cuando:SetText(format(L["Empezó %s"], S.Cuando(e.inicio)))
+end
+
+function P.LayoutDiario(w, x, y, open)
 	local g = P.grafica
-	local top = y
 	local pasadas = S.Sesiones()
+	P.sesion:SetShown(open)
+	g:SetShown(open)
+	for _, f in ipairs(P.listaFilas) do f:Hide() end
+	P.lista:Hide()
+	P.sinDiario:Hide()
+	if not open then return y end
+
+	local f = P.sesion
+	f:ClearAllPoints()
+	f:SetPoint("TOPLEFT", P.view, "TOPLEFT", x, -y)
+	f:SetSize(w, SESION_H)
+	local cw = W.SetChip(f.Chip, L["Ahora"], "accent")
+	pintarSesion()
+	f.Texto:SetPoint("LEFT", f, "LEFT", 14 + cw + 10, 0)
+	f.Texto:SetPoint("RIGHT", f, "RIGHT", -(ceil(W.TextWidth(f.Cuando)) + 32), 0)
+	y = y + SESION_H + GAP
+
 	g:ClearAllPoints()
 	g:SetPoint("TOPLEFT", P.view, "TOPLEFT", x, -y)
 	g:SetSize(w, CHART_H)
 	dibujarGrafica(w)
-	y = y + CHART_H + 10
+	y = y + CHART_H + GAP
 
 	-- La lista: las últimas sesiones, la más nueva arriba.
-	for _, f in ipairs(P.listaFilas) do f:Hide() end
 	local n = min(LISTA, #pasadas)
 	P.lista:SetShown(n > 0)
 	P.sinDiario:SetShown(n == 0)
@@ -930,56 +1458,52 @@ function P.LayoutDiario(w, x, y)
 		P.sinDiario:SetWidth(w)
 		P.sinDiario:ClearAllPoints()
 		P.sinDiario:SetPoint("TOPLEFT", P.view, "TOPLEFT", x, -y)
-		y = y + ceil(P.sinDiario:GetStringHeight()) + 4
-		return y - top
+		return y + ceil(P.sinDiario:GetStringHeight()) + 4
 	end
 	P.lista:ClearAllPoints()
 	P.lista:SetPoint("TOPLEFT", P.view, "TOPLEFT", x, -y)
 	P.lista:SetSize(w, n * LISTA_H)
 	for k = 1, n do
 		local s = pasadas[#pasadas - k + 1]
-		local f = filaLista(k)
-		f:ClearAllPoints()
-		f:SetPoint("TOPLEFT", P.lista, "TOPLEFT", 0, -(k - 1) * LISTA_H)
-		f:SetWidth(w)
-		f.Fecha:SetText(S.Cuando(s.inicio))
-		f.Dur:SetText(N.Duracion(s.dur or 0))
-		f.Resumen:SetText(resumenCorto(s))
-		f.Resumen:SetWidth(max(1, w * 0.55))
-		f.psSesion = s
-		f.Rule:SetShown(k < n)
-		f:Show()
+		local fl = filaLista(k)
+		fl:ClearAllPoints()
+		fl:SetPoint("TOPLEFT", P.lista, "TOPLEFT", 0, -(k - 1) * LISTA_H)
+		fl:SetWidth(w)
+		fl.Fecha:SetText(S.Cuando(s.inicio))
+		fl.Dur:SetText(N.Duracion(s.dur or 0))
+		fl.Resumen:SetText(resumenCorto(s))
+		fl.Resumen:SetWidth(max(1, w * 0.55))
+		fl.psSesion = s
+		fl.Rule:SetShown(k < n)
+		fl:Show()
 	end
-	y = y + n * LISTA_H
-	return y - top
+	return y + n * LISTA_H
 end
 
 ---------------------------------------------------------------------------
 -- Ajustes de los recordatorios
 ---------------------------------------------------------------------------
 
-function P.LayoutAjustes(view, w, x, y)
+function P.LayoutAjustes(view, w, x, y, open)
+	for _, wd in pairs(P.cache) do wd:Hide() end
+	for i = 1, #GRUPOS do
+		P.hGrupos[i]:Hide()
+		P.paneles[i]:Hide()
+	end
+	P.sinAjustes:Hide()
+	if not open then return y end
 	local O = A.UI and A.UI.Options
 	if type(O) ~= "table" or type(O.Rows) ~= "function" then
-		for i = 1, #GRUPOS do
-			P.hGrupos[i]:Hide()
-			P.paneles[i]:Hide()
-		end
 		P.sinAjustes:SetWidth(w)
 		P.sinAjustes:ClearAllPoints()
 		P.sinAjustes:SetPoint("TOPLEFT", view, "TOPLEFT", x, -y)
 		P.sinAjustes:Show()
 		return y + ceil(P.sinAjustes:GetStringHeight()) + 8
 	end
-	P.sinAjustes:Hide()
-	for _, wd in pairs(P.cache) do wd:Hide() end
 	for i, grupo in ipairs(GRUPOS) do
 		local h, panel = P.hGrupos[i], P.paneles[i]
 		local lista = disponibles(grupo[2])
-		if #lista == 0 then
-			h:Hide()
-			panel:Hide()
-		else
+		if #lista > 0 then
 			W.SetSection(h, grupo[1])
 			h:ClearAllPoints()
 			h:SetPoint("TOPLEFT", view, "TOPLEFT", x, -y)
@@ -994,50 +1518,114 @@ function P.LayoutAjustes(view, w, x, y)
 end
 
 ---------------------------------------------------------------------------
--- Pintar y acomodar
+-- La página
 ---------------------------------------------------------------------------
 
+local function construir(view)
+	P.view = view
+	P.cache = {}
+
+	P.paso = nuevoPaso(view)
+
+	P.hAlertas = W.SectionHeader(view, { plain = true })
+	P.alertas = W.RowPanel(view)
+	P.alertaFilas = {}
+
+	P.clase = nuevaClase(view)
+
+	P.tiles = {}
+	for i, def in ipairs(NUMEROS) do
+		local t = nuevoTile(view, def)
+		if def.clave == "lobos" then
+			t.Hover = W.Hover(t, 0.6)
+			t:SetScript("OnClick", function(self) if self.psAbrir then N.Abrir(self.psAbrir) end end)
+		end
+		P.tiles[i] = t
+	end
+
+	-- Diario
+	P.pDiario = nuevoPlegable(view, "Diario", L["Diario"])
+	local f = W.RowPanel(view)
+	f.Chip = W.Chip(f)
+	f.Chip:SetPoint("LEFT", f, "LEFT", 14, 0)
+	f.Texto = W.Text(f, "note", "text")
+	f.Cuando = W.Text(f, "small", "textMuted")
+	f.Cuando:SetJustifyH("RIGHT")
+	f.Cuando:SetPoint("RIGHT", f, "RIGHT", -14, 0)
+	f.Cuando:SetText(format(L["Empezó %s"], S.Cuando()))
+	P.sesion = f
+	local g = CreateFrame("Frame", nil, view)
+	T.Skin(g, "panel")
+	g.Titulo = W.Text(g, "small", "textDim")
+	g.Titulo:SetPoint("TOPLEFT", g, "TOPLEFT", 14, -14)
+	g.Chips = {}
+	for i, m in ipairs(METRICAS) do g.Chips[i] = chipBoton(g, m) end
+	g.Base = W.Divider(g)
+	g.Barras = {}
+	g.Vacio = W.Text(g, "note", "textMuted")
+	g.Vacio:SetText(L["Todavía no hay datos para esta gráfica."])
+	P.grafica = g
+	P.lista = W.RowPanel(view)
+	P.listaFilas = {}
+	P.sinDiario = W.Text(view, "note", "textMuted")
+	P.sinDiario:SetWordWrap(true)
+	P.sinDiario:SetSpacing(3)
+	P.sinDiario:SetText(L["Tu primera sesión entra al diario cuando salgas del juego. La manada te espera: ¡a cazar!"])
+
+	-- Revisión rápida
+	P.pRevision = nuevoPlegable(view, "Revision", L["Revisión rápida"])
+	P.estado = W.RowPanel(view)
+	P.filas = {}
+	for i, def in ipairs(ESTADOS) do P.filas[i] = nuevaFila(P.estado, def) end
+
+	-- Accesos rápidos
+	P.pAccesos = nuevoPlegable(view, "Accesos", L["Accesos rápidos"])
+	P.accesos = {}
+	P.sinAccesos = W.Text(view, "note", "textMuted")
+	P.sinAccesos:SetWordWrap(true)
+	P.sinAccesos:SetText(L["Aquí aparecerán los demás módulos de Alfa (bolsas, rutas, mundo y más) en cuanto estén instalados."])
+
+	-- Recordatorios
+	P.pAjustes = nuevoPlegable(view, "Ajustes", L["Recordatorios"])
+	P.hGrupos, P.paneles = {}, {}
+	for i = 1, #GRUPOS do
+		P.hGrupos[i] = W.SectionHeader(view, { plain = true })
+		P.paneles[i] = W.RowPanel(view)
+	end
+	P.sinAjustes = W.Text(view, "note", "textMuted")
+	P.sinAjustes:SetWordWrap(true)
+	P.sinAjustes:SetText(L["Los ajustes de los recordatorios están en la búsqueda de la ventana de Alfa."])
+
+	view.Refresh = function() return P.Layout(view) end
+	view:HookScript("OnShow", function() P.AlMostrar() end)
+	view:HookScript("OnHide", function() P.AlOcultar() end)
+end
+
 function P.Layout(view)
-	local w = ancho()
+	local w = N.AnchoPagina()
 	local x = W.SHELL.pad
 	local y = 12
 	R.Leer()
 
-	local h = P.hero
-	h:ClearAllPoints()
-	h:SetPoint("TOPLEFT", view, "TOPLEFT", x, -y)
-	h:SetSize(w, HERO_H)
-	h.Band:SetTexCoord(T.BandCoords(w - 2, HERO_H - 2))
-	h.XP:SetWidth(max(1, w - 36))
-	if W.LayoutRim then W.LayoutRim(h) end
-	y = y + HERO_H + 12
+	y = y + P.LayoutPaso(w, x, y) + BLOQUE
+	y = P.LayoutAlertas(w, x, y) + BLOQUE
+	y = P.LayoutClase(w, x, y)
+	y = P.LayoutNumeros(w, x, y) + 8
 
-	local cols = w >= 520 and 4 or 2
-	local tw = (w - GAP * (cols - 1)) / cols
-	for i, t in ipairs(P.tiles) do
-		local c, r = (i - 1) % cols, floor((i - 1) / cols)
-		t:ClearAllPoints()
-		t:SetPoint("TOPLEFT", view, "TOPLEFT", x + c * (tw + GAP), -(y + r * (TILE_H + GAP)))
-		t:SetSize(tw, TILE_H)
-	end
-	y = y + ceil(#P.tiles / cols) * (TILE_H + GAP) - GAP + 10
+	local open
+	local n = #S.Sesiones()
+	y, open = plegable(P.pDiario, y, w, n > 0 and n or nil)
+	y = P.LayoutDiario(w, x, y, open) + (open and 8 or 0)
 
-	y = encabezado(P.hPaso, L["Tu siguiente paso"], y, w)
-	y = y + P.LayoutPaso(w, x, y) + 10
-
-	y = encabezado(P.hEstado, L["Revisión rápida"], y, w)
-	y = y + P.LayoutEstado(w, x, y) + 10
+	y, open = plegable(P.pRevision, y, w)
+	y = P.LayoutEstado(w, x, y, open) + (open and 8 or 0)
 
 	local mods = modulos()
-	y = encabezado(P.hAccesos, L["Accesos rápidos"], y, w, #mods > 0 and #mods or nil)
-	y = y + P.LayoutAccesos(w, x, y) + 10
+	y, open = plegable(P.pAccesos, y, w, #mods > 0 and #mods or nil)
+	y = P.LayoutAccesos(w, x, y, open) + (open and 8 or 0)
 
-	local n = #S.Sesiones()
-	y = encabezado(P.hDiario, L["Diario"], y, w, n > 0 and n or nil)
-	y = y + P.LayoutDiario(w, x, y) + 10
-
-	y = encabezado(P.hAjustes, L["Recordatorios"], y, w)
-	y = P.LayoutAjustes(view, w, x, y)
+	y, open = plegable(P.pAjustes, y, w)
+	y = P.LayoutAjustes(view, w, x, y, open)
 
 	-- La ventana crea la vista ya visible: su primer OnShow no llega, así que
 	-- el temporizador también arranca aquí.
@@ -1049,116 +1637,40 @@ function P.Layout(view)
 	return y + 24
 end
 
-local function claseColoreada()
-	if not UnitClass then return "" end
-	local nombre, file = UnitClass("player")
-	nombre, file = texto(nombre), texto(file)
-	if not nombre then return "" end
-	local r, g, b = T.ClassColor(file)
-	if r then return format("|cff%02x%02x%02x%s|r", floor(r * 255 + 0.5), floor(g * 255 + 0.5), floor(b * 255 + 0.5), nombre) end
-	return nombre
-end
-
-local function pintarHero(e)
-	local h = P.hero
-	local nombre = UnitName and texto((UnitName("player")))
-	h.Hola:SetText(nombre and format(L["¡Hola, %s!"], nombre) or L["¡Hola!"])
-	local partes = { format(L["Nivel %d"], e.nivel or 1) .. " " .. claseColoreada() }
-	local C = A.Compat
-	if type(C) == "table" and type(C.GetZoneText) == "function" then
-		local zona = texto((C.GetZoneText()))
-		if zona then partes[#partes + 1] = zona end
-	end
-	h.Quien:SetText(table.concat(partes, DOT))
-	W.SetChip(h.Chip, format(L["Sesión: %s"], N.Duracion(e.dur)), "accent")
-
-	local barW = h.XP:GetWidth()
-	if e.maximo then
-		W.SetProgress(h.XP, 1, barW)
-		h.Rested:SetShown(false)
-		h.XPText:SetText(L["Nivel máximo"])
-		h.RestText:SetText("")
-		return
-	end
-	local frac = e.xpMax > 0 and e.xpAhora / e.xpMax or 0
-	local rfrac = e.xpMax > 0 and min(1, (e.xpAhora + e.descanso) / e.xpMax) or 0
-	W.SetProgress(h.XP, frac, barW)
-	h.Rested:SetWidth(max(0.01, barW * rfrac))
-	h.Rested:SetShown(rfrac > frac)
-	h.XPText:SetText(format(L["%s%% del nivel %d"], format("%.1f", frac * 100), e.nivel or 1) .. DOT .. format(L["faltan %s XP"], miles(e.falta)))
-	if e.descanso > 0 and e.xpMax > 0 then
-		h.RestText:SetText(format(L["Descansada: %d%% de un nivel"], floor(e.descanso / e.xpMax * 100 + 0.5)))
-	else
-		h.RestText:SetText("")
-	end
-end
-
-local function pintarTiles(e)
-	for _, t in ipairs(P.tiles) do
-		local k = t.def.clave
-		local v, color, lines = RAYA, "text", nil
-		if k == "tiempo" then
-			v = N.Duracion(e.dur)
-			lines = { format(L["Empezó %s."], S.Cuando(e.inicio)), L["Un /reload no la corta."] }
-		elseif k == "xp" then
-			v = miles(e.xp)
-			lines = { format(L["Promedio de la sesión: %s XP por hora."], miles(e.prom)) }
-		elseif k == "ritmo" then
-			if e.ritmo and e.ritmo > 0 then v = miles(e.ritmo) end
-			lines = { L["Tu ritmo de los últimos 15 minutos, con el contador de XP de Alfa."],
-				format(L["Promedio de la sesión: %s XP por hora."], miles(e.prom)) }
-		elseif k == "subir" then
-			if e.maximo then
-				v = L["Nivel máximo"]
-			elseif e.subir then
-				v = e.subir >= 360000 and L["más de 99 h"] or N.Duracion(e.subir)
-				lines = { format(L["Te faltan %s XP para el nivel %d, a tu ritmo actual."], miles(e.falta), (e.nivel or 1) + 1) }
-			else
-				lines = { L["Gana un poco de XP y Alfa calcula cuánto te falta."] }
-			end
-		elseif k == "oro" then
-			v = (e.oro > 0 and "+" or "") .. N.Dinero(e.oro, true)
-			lines = { { left = L["Ganado"], right = N.Dinero(e.ganado) }, { left = L["Gastado"], right = N.Dinero(e.gastado) } }
-		elseif k == "misiones" then
-			v = tostring(e.misiones)
-		elseif k == "niveles" then
-			v = tostring(e.niveles)
-			if e.nivel0 then lines = { format(L["Empezaste la sesión en el nivel %d."], e.nivel0) } end
-		elseif k == "muertes" then
-			v = tostring(e.muertes)
-			if e.muertes > 0 then color = "danger" end
-			lines = { L["Cada muerte gasta un 10% la durabilidad de tu equipo: revisa tu equipo en la revisión rápida."] }
-		end
-		t.Value:SetText(v)
-		W.Color(t.Value, color)
-		t.psTipLines = lines
-	end
-end
-
 local tic = 0
 function P.Pintar()
 	local view = P.view
-	if not (view and view:IsVisible()) then return end
+	if not (view and view:IsVisible()) or P.acomodando then return end
 	local e = S.Estado()
-	pintarHero(e)
-	pintarTiles(e)
+	pintarDistancia()
+	pintarAlertas()
+	pintarClase()
+	pintarNumeros(e)
+	pintarSesion()
 	pintarEstado()
 	-- La barra de ahora crece con la sesión: cada 10 segundos.
 	tic = tic + 1
 	if tic >= 10 then
 		tic = 0
-		dibujarGrafica(P.grafica:GetWidth())
+		if P.grafica:IsShown() then dibujarGrafica(P.grafica:GetWidth()) end
 	end
 end
 
-local function relayout()
+relayout = function()
 	local view = P.view
-	if not (view and view:IsVisible() and view.Refresh) then return end
-	local h = view.Refresh()
+	if not (view and view:IsVisible() and view.Refresh) or P.acomodando then return end
+	P.acomodando = true
+	local ok, h = pcall(view.Refresh)
+	P.acomodando = false
+	if not ok then
+		if geterrorhandler then geterrorhandler()(h) end
+		return
+	end
 	view:SetHeight(h)
 	local O = A.UI and A.UI.Options
 	local win = type(O) == "table" and O.frame
 	if type(win) == "table" then W.ShellBody(win, h) end
+	P.Pintar()
 end
 
 local pendiente = false
@@ -1174,6 +1686,7 @@ P.Relayout = relayoutPronto
 
 function P.AlMostrar()
 	if P.ticker then P.ticker:Cancel() end
+	K.Sucio()
 	P.ticker = A.NewTicker(1, P.Pintar)
 	P.Pintar()
 end
@@ -1188,20 +1701,28 @@ end
 A.On("ALFA_MODULO", function(spec)
 	if type(spec) == "table" and type(spec.id) == "string" and spec.id ~= "inicio" then relayoutPronto() end
 end)
-for _, msg in ipairs({ "STEP_CHANGED", "STEP_UPDATED", "GUIDE_CHANGED", "TABS_CHANGED", "INICIO_DIARIO" }) do
+for _, msg in ipairs({ "STEP_CHANGED", "STEP_UPDATED", "GUIDE_CHANGED", "GUIDE_COMPLETED", "TABS_CHANGED", "INICIO_DIARIO" }) do
 	A.On(msg, relayoutPronto)
 end
-A.On("SETTING_CHANGED", function(path)
-	if path == "inicio.grafica" then relayoutPronto() end
+-- Otra rama (o nivel) cambia el rol y las tarjetas de la clase; lo demás del
+-- equipo solo se repinta (M.Clase cuenta otra vez las mejoras).
+A.On("GEAR_UPDATED", function(what)
+	if what == "spec" or what == "level" then relayoutPronto() end
 end)
+A.On("SETTING_CHANGED", function(path)
+	if path == "inicio.grafica" or path == "curacion.activo" or (type(path) == "string" and path:find("^gear%.spec")) then relayoutPronto() end
+end)
+-- Los talentos cambian la rama, y con ella el rol y las tarjetas de la clase.
+A.RegisterEvent("PLAYER_TALENT_UPDATE", relayoutPronto)
+A.RegisterEvent("TRAIT_CONFIG_UPDATED", relayoutPronto)
 
 ---------------------------------------------------------------------------
 -- El módulo
 ---------------------------------------------------------------------------
 
 N.Modulo({
-	id = "inicio", nombre = L["Inicio"], icono = "house", orden = 5,
-	subtitulo = L["Tu sesión, tus avisos y tu siguiente paso, de un vistazo."],
+	id = "inicio", nombre = L["Hoy"], icono = "house", orden = 5, seccion = "hoy",
+	subtitulo = L["Tu siguiente paso, lo urgente y lo de tu clase, de un vistazo."],
 	comando = "inicio",
 	ajustes = AJUSTES,
 	controles = CONTROLES,

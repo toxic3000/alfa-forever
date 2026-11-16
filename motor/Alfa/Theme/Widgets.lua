@@ -3135,7 +3135,8 @@ local function specLabel()
 	local G = ns.Gear
 	if not (G and G.GetSpec) then return nil end
 	local ok, _, label, source = pcall(G.GetSpec)
-	if ok and type(label) == "string" and label ~= "" and source ~= "default" then return label end
+	-- el nombre de la rama llega en ingles ("Arms"); los paquetes de idioma del motor lo traducen
+	if ok and type(label) == "string" and label ~= "" and source ~= "default" then return L[label] end
 	return nil
 end
 

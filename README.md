@@ -8,8 +8,9 @@ Hecho por Toxic y La Jauría — [Discord](https://discord.gg/hUNjA6BJwh). Softw
 
 | Comando | Módulo | Qué hace |
 |---|---|---|
-| `/alfa` | Guía (motor) | Guías por zona, flecha, rutas, buscador, mazmorras y raros |
-| `/alfa inicio` | Inicio | Sesión, diario, recordatorios y tu siguiente paso |
+| `/alfa` | Ventana principal | Hoy, Aventura, Personaje, Mundo, Oficios y Manada, con Ajustes aparte |
+| `/alfa guia` | Guía (motor) | Guías por zona, flecha, rutas, buscador, mazmorras y raros |
+| `/alfa inicio` | Hoy | Tu siguiente paso, alertas, una tarjeta para tu clase y rol, números del día y diario |
 | `/alfa manada` | La Jauría | Tu grupo, tu hermandad y tus amigos en el mapa, Seguir, y la página del clan |
 | `/alfa rutas` | Rutas | Árbol de ruta propio, liberar misiones y catálogo de objetos |
 | `/alfa curacion` | Curación | Marcos de grupo y banda para curar con clic, con preajustes por clase |
