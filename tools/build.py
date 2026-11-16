@@ -11,6 +11,7 @@ Uso:  python -I tools/build.py            (deja todo en dist/)
 5. Escribe dist/NOTICE-ALFA.txt con la procedencia.
 """
 import json
+import os
 import pathlib
 import re
 import shutil
@@ -77,7 +78,7 @@ def main() -> int:
     if not base.is_dir():
         print(f"Falta {base}: corre tools/fetch_upstream.py {cfg['upstream']}")
         return 1
-    dist = RAIZ / "dist"
+    dist = pathlib.Path(os.environ.get("ALFA_DIST") or RAIZ / "dist")
     if dist.exists():
         shutil.rmtree(dist)
 

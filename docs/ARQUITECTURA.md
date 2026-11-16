@@ -100,6 +100,17 @@ N.Modulo({
 | OpenMap | MIT | Reutilizar su código y sus texturas, con su aviso |
 | Baganator, Syndicator, Sonah, Leatrix Plus, Leatrix Maps, DungeonJournal, Better Fishing, Pawn, DBM | Cerrada o sin licencia | **Solo se imitan sus funciones con código propio.** Se puede leer su código para entender qué hacen, pero no se copia |
 
-Todo código o archivo reutilizado lleva su aviso de licencia dentro de la carpeta del módulo (`LICENSE-<origen>.txt`) y una línea en `docs/CREDITOS.md`.
+Todo código o archivo reutilizado lleva su aviso de licencia dentro de la carpeta del módulo (`LICENSE-<origen>.txt`) y una línea en `CREDITOS.md`, también dentro de la carpeta del módulo.
+
+## Construir un módulo sin pisar a los demás
+
+Varios módulos se construyen a la vez, así que cada uno usa su propia carpeta de salida con `ALFA_DIST`, desde la raíz del proyecto:
+
+```bash
+ALFA_DIST=dist-bolsas python -I tools/build.py
+ALFA_DIST=dist-bolsas .venv/Scripts/python -I tools/revisar.py Alfa_Nucleo Alfa_Bolsas
+ALFA_DIST=dist-bolsas .venv/Scripts/python -I tools/humo.py Alfa_Bolsas
+rm -rf dist-bolsas      # al terminar
+```
 
 Los addons instalados están en `C:\Program Files (x86)\World of Warcraft\_forever_\Interface\AddOns\` y solo se leen, nunca se modifican.

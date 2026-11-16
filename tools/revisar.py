@@ -8,6 +8,7 @@ Uso:  .venv/Scripts/python -I tools/revisar.py [carpeta ...]
 3. Nombre viejo: avisa si queda "Polestar" en el codigo de los modulos propios.
 Sale con codigo 1 si encuentra errores.
 """
+import os
 import pathlib
 import re
 import sys
@@ -18,7 +19,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import renombrar  # noqa: E402
 
 RAIZ = pathlib.Path(__file__).resolve().parent.parent
-DIST = RAIZ / "dist"
+DIST = pathlib.Path(os.environ.get("ALFA_DIST") or RAIZ / "dist")
 _lua = lua51.LuaRuntime(unpack_returned_tuples=True)
 _compilar = _lua.eval("function(src, name) local f, e = loadstring(src, name) return e end")
 

@@ -13,6 +13,7 @@ Reporta:
   ERROR  funciones de Alfa (A.algo) que el motor real no tiene
 Sale con 1 si hay algun ERROR.
 """
+import os
 import pathlib
 import re
 import sys
@@ -20,7 +21,7 @@ import sys
 import lupa.lua51 as lua51
 
 RAIZ = pathlib.Path(__file__).resolve().parent.parent
-DIST = RAIZ / "dist"
+DIST = pathlib.Path(os.environ.get("ALFA_DIST") or RAIZ / "dist")
 
 ENTORNO = r"""
 local real = { string=string, table=table, math=math, pairs=pairs, ipairs=ipairs,
