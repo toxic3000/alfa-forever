@@ -15,6 +15,18 @@
   "en": "%.3g%% chance",
   "origen": "Alfa_Rutas"
  },
+ "%d %% de experiencia": {
+  "en": "%d %% experience",
+  "origen": "Interfaz"
+ },
+ "%d %% descansada": {
+  "en": "%d %% rested",
+  "origen": "Interfaz"
+ },
+ "%d agua · %d comida": {
+  "en": "%d water · %d food",
+  "origen": "Alfa_Inicio"
+ },
  "%d capas ocultas. Al salir vuelven como estaban.": {
   "en": "%d layers hidden. Leaving brings them back as they were.",
   "origen": "Alfa_Mundo"
@@ -30,6 +42,10 @@
  "%d capturas": {
   "en": "%d catches",
   "origen": "Alfa_Pesca"
+ },
+ "%d cargas": {
+  "en": "%d charges",
+  "origen": "Alfa_Inicio"
  },
  "%d coinciden": {
   "en": "%d match",
@@ -58,6 +74,10 @@
  "%d de %d jefes": {
   "en": "%d of %d bosses",
   "origen": "Alfa_Mazmorras"
+ },
+ "%d de %d miembros de %s conectados, sin contarte.": {
+  "en": "%d of %d members of %s online, not counting you.",
+  "origen": "Alfa_Inicio"
  },
  "%d de %d talentos del plan": {
   "en": "%d of %d talents in the plan",
@@ -95,6 +115,10 @@
   "en": "%d slots",
   "origen": "Alfa_Inicio"
  },
+ "%d fragmentos": {
+  "en": "%d shards",
+  "origen": "Alfa_Inicio"
+ },
  "%d h %02d min": {
   "en": "%d h %02d min",
   "origen": "Alfa_Rutas"
@@ -122,6 +146,10 @@
  "%d lobos conectados": {
   "en": "%d wolves online",
   "origen": "Alfa_Manada"
+ },
+ "%d mejoras": {
+  "en": "%d upgrades",
+  "origen": "Alfa_Inicio"
  },
  "%d min": {
   "en": "%d min",
@@ -223,6 +251,10 @@
   "en": "%d s",
   "origen": "Alfa_Comercio"
  },
+ "%d tótems puestos": {
+  "en": "%d totems down",
+  "origen": "Alfa_Inicio"
+ },
  "%d%% de nivel": {
   "en": "%d%% of a level",
   "origen": "Alfa_Inicio"
@@ -259,6 +291,10 @@
   "en": "%s over the vendor",
   "origen": "Alfa_Comercio"
  },
+ "%s de %s": {
+  "en": "%s of %s",
+  "origen": "Alfa_Inicio"
+ },
  "%s de %s objetos": {
   "en": "%s of %s items",
   "origen": "Alfa_Rutas"
@@ -290,10 +326,6 @@
  "%s y %d más": {
   "en": "%s and %d more",
   "origen": "Alfa_Recoleccion"
- },
- "%s%% del nivel %d": {
-  "en": "%s%% of level %d",
-  "origen": "Alfa_Inicio"
  },
  "%s, a tu gusto": {
   "en": "%s, your way",
@@ -375,6 +407,10 @@
   "en": "1 slot",
   "origen": "Alfa_Inicio"
  },
+ "1 fragmento": {
+  "en": "1 shard",
+  "origen": "Alfa_Inicio"
+ },
  "1 habilidad por aprender": {
   "en": "1 skill to learn",
   "origen": "Alfa_Inicio"
@@ -382,6 +418,10 @@
  "1 lobo conectado": {
   "en": "1 wolf online",
   "origen": "Alfa_Manada"
+ },
+ "1 mejora": {
+  "en": "1 upgrade",
+  "origen": "Alfa_Inicio"
  },
  "1 misión": {
   "en": "1 quest",
@@ -393,6 +433,10 @@
  },
  "1 nivel": {
   "en": "1 level",
+  "origen": "Alfa_Inicio"
+ },
+ "1 tótem puesto": {
+  "en": "1 totem down",
   "origen": "Alfa_Inicio"
  },
  "1. ¿Qué quieres hacer?": {
@@ -426,6 +470,10 @@
  "A mitad de la pelea se protege con un escudo y prepara una gran explosión: cuando lo veas brillar, ¡aléjate de él!": {
   "en": "Halfway through he shields himself and charges a big explosion: when you see him glow, get away from him!",
   "origen": "Alfa_Mazmorras/Consejos"
+ },
+ "A un clic": {
+  "en": "One click away",
+  "origen": "Interfaz"
  },
  "A veces el golpe ni te toca.": {
   "en": "Sometimes the blow doesn't even touch you.",
@@ -463,6 +511,10 @@
   "en": "You abandoned %d quests.",
   "origen": "Alfa_Rutas"
  },
+ "Abiertas": {
+  "en": "Open",
+  "origen": "Interfaz"
+ },
  "Abre Heridas profundas.": {
   "en": "Opens Deep Wounds.",
   "origen": "Alfa_Builds"
@@ -498,6 +550,10 @@
  "Abre la ventana de tu profesión una vez y Alfa leerá tus recetas para decirte cuáles te dejan ganancia.": {
   "en": "Open your profession window once and Alfa will read your recipes to tell you which ones make a profit.",
   "origen": "Alfa_Comercio"
+ },
+ "Abre la ventana principal de Alfa.": {
+  "en": "Opens Alfa's main window.",
+  "origen": "Interfaz"
  },
  "Abre o cierra el mapa de Alfa": {
   "en": "Opens or closes Alfa's map",
@@ -542,6 +598,10 @@
  "Abrir la guía": {
   "en": "Open the guide",
   "origen": "Alfa_Inicio"
+ },
+ "Abrir la ventana de Alfa": {
+  "en": "Open the Alfa window",
+  "origen": "Interfaz"
  },
  "Abrir la ventana de talentos": {
   "en": "Open the talent window",
@@ -623,6 +683,10 @@
   "en": "Update my guide",
   "origen": "Alfa_Rutas"
  },
+ "Actualízalo con la app de CurseForge o con el zip más reciente y luego reinicia el juego o usa /reload.": {
+  "en": "Update it with the CurseForge app or the latest zip, then restart the game or /reload.",
+  "origen": "Interfaz"
+ },
  "Aflicción": {
   "en": "Affliction",
   "origen": "Alfa_Builds"
@@ -654,6 +718,10 @@
  "Agregar tramo": {
   "en": "Add leg",
   "origen": "Alfa_Rutas"
+ },
+ "Agua y comida": {
+  "en": "Water and food",
+  "origen": "Alfa_Inicio"
  },
  "Aguante": {
   "en": "Stamina",
@@ -689,7 +757,7 @@
  },
  "Ajustes": {
   "en": "Settings",
-  "origen": "Alfa_Comercio"
+  "origen": "Interfaz"
  },
  "Ajustes de Bolsas": {
   "en": "Bags settings",
@@ -698,6 +766,10 @@
  "Al comerciante": {
   "en": "To a vendor",
   "origen": "Alfa_Comercio"
+ },
+ "Al día": {
+  "en": "Up to date",
+  "origen": "Alfa_Inicio"
  },
  "Al elegir un build, las flechas de mejora usan sus pesos sin que tengas que hacer nada.": {
   "en": "When you choose a build, the upgrade arrows use its weights without you doing anything.",
@@ -763,6 +835,10 @@
   "en": "Zoom the camera out further",
   "origen": "Alfa_Comodidades"
  },
+ "Alertas": {
+  "en": "Alerts",
+  "origen": "Alfa_Inicio"
+ },
  "Alertas de reacción": {
   "en": "Reaction alerts",
   "origen": "Alfa_Builds"
@@ -803,6 +879,10 @@
   "en": "Alfa is choosing...",
   "origen": "Alfa_Rutas"
  },
+ "Alfa está oculto: clic para mostrarlo y abrir su ventana": {
+  "en": "Alfa is hidden: click to show it and open its window",
+  "origen": "Interfaz"
+ },
  "Alfa no conoce de dónde sale. Prueba en el Buscador.": {
   "en": "Alfa does not know where it comes from. Try Lookup.",
   "origen": "Alfa_Rutas"
@@ -822,6 +902,10 @@
  "Alfa te avisa aquí de lo importante: equipo por reparar, bolsas llenas, habilidades nuevas, tu buff y tu descanso.": {
   "en": "Alfa tells you what matters here: gear to repair, full bags, new skills, your buff and your rest.",
   "origen": "Alfa_Inicio"
+ },
+ "Alfa te lleva paso a paso, con la flecha y la ruta en el mapa. Elige la de tu zona y tu nivel.": {
+  "en": "Alfa takes you step by step, with the arrow and the route on the map. Choose the one for your zone and your level.",
+  "origen": "Interfaz"
  },
  "Alfa todavía no tiene builds para tu clase.": {
   "en": "Alfa doesn't have builds for your class yet.",
@@ -902,6 +986,10 @@
  "Apagada": {
   "en": "Off",
   "origen": "Alfa_Pesca"
+ },
+ "Apagado": {
+  "en": "Off",
+  "origen": "Alfa_Inicio"
  },
  "Apagado, solo las acepta y la entrega la haces tú.": {
   "en": "Off, it only accepts them and you turn them in.",
@@ -994,6 +1082,10 @@
  "Arcos": {
   "en": "Bows",
   "origen": "Alfa_Rutas"
+ },
+ "Arma": {
+  "en": "Weapon",
+  "origen": "Alfa_Inicio"
  },
  "Arma de dos manos": {
   "en": "Two-handed weapon",
@@ -1119,6 +1211,10 @@
   "en": "Wizard",
   "origen": "Alfa_Builds"
  },
+ "Aspecto": {
+  "en": "Aspect",
+  "origen": "Alfa_Inicio"
+ },
  "Asusta a todos los que están cerca: si te asusta, intenta no correr hacia otras celdas.": {
   "en": "He fears everyone nearby: if feared, try not to run into other cells.",
   "origen": "Alfa_Mazmorras/Consejos"
@@ -1178,6 +1274,14 @@
  "Aturdimiento a demanda.": {
   "en": "A stun on demand.",
   "origen": "Alfa_Builds"
+ },
+ "Aura": {
+  "en": "Aura",
+  "origen": "Alfa_Inicio"
+ },
+ "Aventura": {
+  "en": "Adventure",
+  "origen": "Interfaz"
  },
  "Avienta a todos los que están cerca: si peleas de lejos, aléjate.": {
   "en": "He knocks back everyone close to him: ranged players, keep away.",
@@ -1295,9 +1399,21 @@
   "en": "Not learned yet",
   "origen": "Alfa_Inicio"
  },
+ "Aún no los aprendes": {
+  "en": "Not learned yet",
+  "origen": "Alfa_Inicio"
+ },
+ "Aún no tienes nada abierto. Mira Todas o usa los filtros de arriba para encontrar una guía.": {
+  "en": "Nothing open yet. Look under All or use the filters above to find a guide.",
+  "origen": "Interfaz"
+ },
  "Aún no tienes precios. Pulsa «Escanear con Alfa».": {
   "en": "No prices yet. Press \"Scan with Alfa\".",
   "origen": "Alfa_Comercio"
+ },
+ "Aún no tienes rutas. Ármalas en la ventana de Alfa: Aventura > Rutas; cada una aparece aquí como guía.": {
+  "en": "No routes yet. Build them in Alfa's window: Adventure > Routes; each one shows up here as a guide.",
+  "origen": "Interfaz"
  },
  "BOTÍN": {
   "en": "LOOT",
@@ -1366,6 +1482,14 @@
  "Bebe cuando te quede poco maná, no esperes a vaciarte.": {
   "en": "Drink when your mana is low; don't wait until it's empty.",
   "origen": "Alfa_Builds"
+ },
+ "Bendición": {
+  "en": "Blessing",
+  "origen": "Alfa_Inicio"
+ },
+ "Bienvenida a Alfa": {
+  "en": "Welcome to Alfa",
+  "origen": "Interfaz"
  },
  "Blizzard no dejó copiar tu mapa desde un addon. Se abrió su ventana de clic para lanzar: arma ahí los mismos clics.": {
   "en": "Blizzard didn't allow an addon to copy your map. Its click casting window opened: set up the same clicks there.",
@@ -1523,6 +1647,10 @@
   "en": "Builds",
   "origen": "Alfa_Builds"
  },
+ "Builds te dice cuál sigue.": {
+  "en": "Builds tells you which one is next.",
+  "origen": "Alfa_Inicio"
+ },
  "Builds: talentos, estadísticas y equipo (/alfa builds mover | aplicar | alerta)": {
   "en": "Builds: talents, stats and gear (/alfa builds mover | aplicar | alerta)",
   "origen": "Alfa_Builds"
@@ -1557,7 +1685,7 @@
  },
  "Buscador": {
   "en": "Lookup",
-  "origen": "Alfa_Rutas"
+  "origen": "Interfaz"
  },
  "Buscando a un oficial...": {
   "en": "Looking for an officer...",
@@ -1578,6 +1706,10 @@
  "Buscar": {
   "en": "Search",
   "origen": "Alfa_Bolsas"
+ },
+ "Buscar ajustes": {
+  "en": "Search settings",
+  "origen": "Interfaz"
  },
  "Buscar equipo para mi nivel": {
   "en": "Find gear for my level",
@@ -1635,10 +1767,6 @@
   "en": "Every known spot where a rare enemy appears.",
   "origen": "Alfa_Mundo"
  },
- "Cada muerte gasta un 10% la durabilidad de tu equipo: revisa tu equipo en la revisión rápida.": {
-  "en": "Each death wears your gear down by 10%: check it in the quick check.",
-  "origen": "Alfa_Inicio"
- },
  "Cada nivel": {
   "en": "Every level",
   "origen": "Alfa_Inicio"
@@ -1670,6 +1798,10 @@
  "Cambiar de forma te quita lentitudes y raíces: úsalo para escapar.": {
   "en": "Shifting forms removes slows and roots: use it to escape.",
   "origen": "Alfa_Builds"
+ },
+ "Cambiar guía": {
+  "en": "Change guide",
+  "origen": "Alfa_Inicio"
  },
  "Cambiar la vista": {
   "en": "Change the view",
@@ -1815,6 +1947,10 @@
   "en": "Right-click: leave it empty.",
   "origen": "Alfa_Curacion"
  },
+ "Clic derecho: opciones de esta guía": {
+  "en": "Right-click: this guide's options",
+  "origen": "Interfaz"
+ },
  "Clic en una casilla para elegir qué hace sobre el compañero bajo tu ratón; clic derecho la deja sin acción. Los cambios se aplican fuera de combate.": {
   "en": "Click a box to choose what it does to the group member under your mouse; right-click leaves it empty. Changes apply out of combat.",
   "origen": "Alfa_Curacion"
@@ -1822,6 +1958,10 @@
  "Clic para cambiarla.": {
   "en": "Click to change it.",
   "origen": "Alfa_Bolsas"
+ },
+ "Clic para desplegar.": {
+  "en": "Click to unfold.",
+  "origen": "Alfa_Inicio"
  },
  "Clic para elegir": {
   "en": "Click to choose",
@@ -1831,9 +1971,33 @@
   "en": "Click to collapse or expand",
   "origen": "Alfa_Bolsas"
  },
+ "Clic para plegar.": {
+  "en": "Click to fold.",
+  "origen": "Alfa_Inicio"
+ },
+ "Clic: abre %s.": {
+  "en": "Click: opens %s.",
+  "origen": "Alfa_Inicio"
+ },
+ "Clic: abre La Jauría.": {
+  "en": "Click: opens La Jauría.",
+  "origen": "Alfa_Inicio"
+ },
+ "Clic: abre su página con sus misiones, jefes y entrada.": {
+  "en": "Click: opens its page with its quests, bosses and entrance.",
+  "origen": "Interfaz"
+ },
+ "Clic: abrir o cerrar la ventana de Alfa": {
+  "en": "Click: open or close the Alfa window",
+  "origen": "Interfaz"
+ },
  "Clic: cambiarla, quitarla o fijarla.": {
   "en": "Click: swap, remove or pin it.",
   "origen": "Alfa_Rutas"
+ },
+ "Clic: elegir otra guía": {
+  "en": "Click: choose another guide",
+  "origen": "Interfaz"
  },
  "Clic: elegir qué hace.": {
   "en": "Click: choose what it does.",
@@ -1842,6 +2006,10 @@
  "Clic: la flecha te lleva aquí.": {
   "en": "Click: the arrow takes you here.",
   "origen": "Alfa_Recoleccion"
+ },
+ "Clic: la lista de pasos. Rueda: mirar otros pasos sin cambiar nada.": {
+  "en": "Click: the step list. Wheel: look at other steps without changing anything.",
+  "origen": "Interfaz"
  },
  "Clic: ocultarlo en el modelo.": {
   "en": "Click: hide it on the model.",
@@ -1983,6 +2151,14 @@
   "en": "Buys the plan's talents that are due up to your level. It shows you what will change first.",
   "origen": "Alfa_Builds"
  },
+ "Comunidad": {
+  "en": "Community",
+  "origen": "Interfaz"
+ },
+ "Con 10 de furia o más lo lanzas.": {
+  "en": "You can cast it with 10 rage or more.",
+  "origen": "Alfa_Inicio"
+ },
  "Con dos armas pega más rápido: guarda maná para el final.": {
   "en": "With two weapons he hits faster: save mana for the end.",
   "origen": "Alfa_Mazmorras/Consejos"
@@ -2047,6 +2223,10 @@
   "en": "You freeze and slow monsters so they never reach you: the safest mage for leveling.",
   "origen": "Alfa_Builds"
  },
+ "Conjúralas fuera de combate.": {
+  "en": "Conjure them out of combat.",
+  "origen": "Alfa_Inicio"
+ },
  "Conseguir %d de %s": {
   "en": "Get %d of %s",
   "origen": "Alfa_Rutas"
@@ -2059,6 +2239,10 @@
   "en": "Advice in item tooltips",
   "origen": "Alfa_Comercio"
  },
+ "Consejos de equipo apagados.": {
+  "en": "Gear advice is off.",
+  "origen": "Alfa_Inicio"
+ },
  "Consejos para jugarlo": {
   "en": "Tips for playing it",
   "origen": "Alfa_Builds"
@@ -2070,6 +2254,14 @@
  "Consumibles": {
   "en": "Consumables",
   "origen": "Alfa_Bolsas"
+ },
+ "Contenta": {
+  "en": "Content",
+  "origen": "Alfa_Inicio"
+ },
+ "Contigo": {
+  "en": "With you",
+  "origen": "Alfa_Inicio"
  },
  "Continuar mi ruta": {
   "en": "Continue my route",
@@ -2235,9 +2427,17 @@
   "en": "She heals her helpers and herself: interrupt her.",
   "origen": "Alfa_Mazmorras/Consejos"
  },
+ "Cura a tu grupo con un clic.": {
+  "en": "Heal your group with one click.",
+  "origen": "Alfa_Inicio"
+ },
  "Curación": {
   "en": "Healing",
   "origen": "Alfa_Curacion"
+ },
+ "Curación con clic": {
+  "en": "Click healing",
+  "origen": "Interfaz"
  },
  "Curación: arrastra para mover": {
   "en": "Healing: drag to move",
@@ -2275,9 +2475,21 @@
   "en": "How many go in each column (or row) before starting another. 5 is one party per column.",
   "origen": "Alfa_Curacion"
  },
+ "Cuéntanos qué te parece en La Jauría.": {
+  "en": "Tell us what you think in La Jauría.",
+  "origen": "Interfaz"
+ },
  "Cámara": {
   "en": "Camera",
   "origen": "Alfa_Comodidades"
+ },
+ "Cómo conseguir cualquier objeto, misión o PNJ, y qué guía te lleva ahí.": {
+  "en": "How to get any item, quest or NPC, and which guide takes you there.",
+  "origen": "Interfaz"
+ },
+ "Cómo conseguir cualquier objeto, montura, PNJ, misión o lugar.": {
+  "en": "How to get any item, mount, NPC, quest or place.",
+  "origen": "Interfaz"
  },
  "Cómo conseguirlo": {
   "en": "How to get it",
@@ -2299,6 +2511,10 @@
   "en": "How undiscovered areas look",
   "origen": "Alfa_Mundo"
  },
+ "Cómprala con un vendedor.": {
+  "en": "Buy it from a vendor.",
+  "origen": "Alfa_Inicio"
+ },
  "Dagas": {
   "en": "Daggers",
   "origen": "Alfa_Rutas"
@@ -2307,13 +2523,17 @@
   "en": "Feed your pet so it's happy and hits harder.",
   "origen": "Alfa_Builds"
  },
+ "Dale de comer para que esté feliz: pega más fuerte.": {
+  "en": "Feed it to keep it happy: it hits harder.",
+  "origen": "Alfa_Inicio"
+ },
  "Datos": {
   "en": "Data",
   "origen": "Alfa_Recoleccion"
  },
  "Daño": {
   "en": "Damage",
-  "origen": "Alfa_Mazmorras"
+  "origen": "Alfa_Inicio"
  },
  "Daño a distancia": {
   "en": "Ranged damage",
@@ -2411,8 +2631,8 @@
   "en": "Disarm more often: you take the weapon from enemies who hit hard.",
   "origen": "Alfa_Builds"
  },
- "Descansada: %d%% de un nivel": {
-  "en": "Rested: %d%% of a level",
+ "Descansa en una posada o una ciudad para juntar más.": {
+  "en": "Rest at an inn or in a town to build more.",
   "origen": "Alfa_Inicio"
  },
  "Descansando%s%d%% de un nivel": {
@@ -2427,6 +2647,10 @@
   "en": "Offline",
   "origen": "Alfa_Curacion"
  },
+ "Descontenta": {
+  "en": "Unhappy",
+  "origen": "Alfa_Inicio"
+ },
  "Descubriste a %s (%s). Sus consejos y su botín: /alfa mazmorras": {
   "en": "You discovered %s (%s). Its tips and loot: /alfa mazmorras",
   "origen": "Alfa_Mazmorras"
@@ -2437,6 +2661,14 @@
  },
  "Desde cuántas habilidades": {
   "en": "From how many skills",
+  "origen": "Alfa_Inicio"
+ },
+ "Desde el nivel 10": {
+  "en": "From level 10",
+  "origen": "Alfa_Inicio"
+ },
+ "Desde el nivel 20": {
+  "en": "From level 20",
   "origen": "Alfa_Inicio"
  },
  "Desencantar ≈ %s": {
@@ -2519,6 +2751,10 @@
   "en": "Journal",
   "origen": "Alfa_Inicio"
  },
+ "Diario de mazmorras": {
+  "en": "Dungeon journal",
+  "origen": "Interfaz"
+ },
  "Dibuja el arte completo de cada zona recortado a su forma, con las texturas de detalle incluidas. Sin ellas el mapa sigue completo, solo más suave entre zona y zona.": {
   "en": "Draws each zone's full art cut to its shape, with the included detail textures. Without them the map is still complete, just softer between zones.",
   "origen": "Alfa_Mundo"
@@ -2599,6 +2835,10 @@
   "en": "Two gathering professions: steady gold without wasting time, right when you need it most.",
   "origen": "Alfa_Builds"
  },
+ "Drenar alma al rematar te da uno.": {
+  "en": "Drain Soul on a kill gives you one.",
+  "origen": "Alfa_Inicio"
+ },
  "Druida": {
   "en": "Druid",
   "origen": "Alfa_Builds"
@@ -2674,6 +2914,10 @@
  "El botón «Escanear con Alfa» bajo la ventana de la subasta.": {
   "en": "The \"Scan with Alfa\" button under the auction house window.",
   "origen": "Alfa_Comercio"
+ },
+ "El camino a la meta en el mapa del mundo y el minimapa: una línea o puntos donde caminas, líneas donde vuelas, navegas o montas, y los tramos que siguen más tenues.": {
+  "en": "The way to the goal on the world map and the minimap: a line or dots where you walk, lines where you fly, sail or ride, the legs after this one fainter.",
+  "origen": "Interfaz"
  },
  "El camino hasta el destino dibujado en el mapa.": {
   "en": "The way to the target drawn on the map.",
@@ -2779,6 +3023,10 @@
   "en": "The game didn't allow buying that rank.",
   "origen": "Alfa_Builds"
  },
+ "El juego no lo dice ahora.": {
+  "en": "The game doesn't say right now.",
+  "origen": "Alfa_Inicio"
+ },
  "El juego rechazó confirmar los cambios. Se deshicieron para que tu árbol quede como estaba.": {
   "en": "The game refused to confirm the changes. They were undone so your tree stays as it was.",
   "origen": "Alfa_Builds"
@@ -2831,6 +3079,10 @@
   "en": "The engine did not accept the guide: %s",
   "origen": "Alfa_Rutas"
  },
+ "El módulo Curación no está cargado.": {
+  "en": "The Healing module is not loaded.",
+  "origen": "Alfa_Inicio"
+ },
  "El nombre de cada zona sobre el mapa de Alfa.": {
   "en": "Each zone's name on Alfa's map.",
   "origen": "Alfa_Mundo"
@@ -2842,6 +3094,10 @@
  "El número arriba de cada ícono es el orden en que se toma. Borde verde: ya lo tienes. Borde dorado: falta tomarlo (el más grueso es el siguiente). Borde naranja: puntos fuera del plan.": {
   "en": "The number above each icon is the order it's taken in. Green border: you have it. Gold border: still to take (the thickest is the next one). Orange border: points outside the plan.",
   "origen": "Alfa_Builds"
+ },
+ "El objeto que usa el paso actual, o el objeto de misión que junta, brilla en tus bolsas. Un objeto que necesita un paso más adelante lleva un candado, para que no lo vendas.": {
+  "en": "The item the current step uses, or a quest item it collects, glows in your bags. An item a later step needs gets a lock, so you don't sell it.",
+  "origen": "Interfaz"
  },
  "El orden importa más que los números: busca piezas con las primeras estadísticas de la lista. Al elegir este build, Alfa usa estos pesos en las flechas de mejora.": {
   "en": "The order matters more than the numbers: look for pieces with the first stats on the list. When you choose this build, Alfa uses these weights for the upgrade arrows.",
@@ -2895,17 +3151,33 @@
   "en": "The kind of nodes the route links.",
   "origen": "Alfa_Recoleccion"
  },
+ "El tono de los fondos: Grafito es el de Alfa, Noche el más oscuro y Pizarra un gris neutro.": {
+  "en": "The tone of the backgrounds: Graphite is Alfa's own, Night the darkest and Slate a neutral grey.",
+  "origen": "Interfaz"
+ },
+ "El árbol de ruta de Alfa, misiones que se liberan y un catálogo de objetos.": {
+  "en": "Alfa's route tree, quests as they unlock and an item catalogue.",
+  "origen": "Interfaz"
+ },
  "El último punto: paras un poco más.": {
   "en": "The last point: you parry a little more.",
   "origen": "Alfa_Builds"
  },
+ "Elegir la siguiente guía": {
+  "en": "Choose the next guide",
+  "origen": "Alfa_Inicio"
+ },
+ "Elegir mi primera guía": {
+  "en": "Choose my first guide",
+  "origen": "Interfaz"
+ },
  "Elegir otra guía": {
   "en": "Choose another guide",
-  "origen": "Alfa_Inicio"
+  "origen": "Interfaz"
  },
  "Elegir una guía": {
   "en": "Choose a guide",
-  "origen": "Alfa_Inicio"
+  "origen": "Interfaz"
  },
  "Elemental": {
   "en": "Elemental",
@@ -2947,6 +3219,10 @@
   "en": "Pick an item from the list to see what it is, where it comes from, and let Alfa take you to get it.",
   "origen": "Alfa_Rutas"
  },
+ "Elige una guía para empezar": {
+  "en": "Choose a guide to start",
+  "origen": "Interfaz"
+ },
  "Ella duerme a todo el grupo y luego resucita a Mograine: es normal, no se asusten.": {
   "en": "She puts the whole group to sleep and then revives Mograine: that's normal, don't panic.",
   "origen": "Alfa_Mazmorras/Consejos"
@@ -2975,12 +3251,8 @@
   "en": "Start over",
   "origen": "Alfa_Pesca"
  },
- "Empezaste la sesión en el nivel %d.": {
-  "en": "You started the session at level %d.",
-  "origen": "Alfa_Inicio"
- },
- "Empezó %s.": {
-  "en": "Started %s.",
+ "Empezó %s": {
+  "en": "Started %s",
   "origen": "Alfa_Inicio"
  },
  "Empieza con tu hechizo más lento desde lejos y termina con los instantáneos.": {
@@ -2990,6 +3262,10 @@
  "Empiezas en nivel %.1f": {
   "en": "You start at level %.1f",
   "origen": "Alfa_Rutas"
+ },
+ "En 9 idiomas": {
+  "en": "In 9 languages",
+  "origen": "Interfaz"
  },
  "En combate no aparece el cuadro de los personajes y criaturas del mundo (el de los marcos sí).": {
   "en": "In combat, the tooltip of characters and creatures in the world does not show (the unit frames' still does).",
@@ -3014,6 +3290,14 @@
  "En el minimapa": {
   "en": "On the minimap",
   "origen": "Alfa_Recoleccion"
+ },
+ "En el nivel 10 domas tu bestia.": {
+  "en": "You tame your beast at level 10.",
+  "origen": "Alfa_Inicio"
+ },
+ "En el nivel 20 aprendes venenos.": {
+  "en": "You learn poisons at level 20.",
+  "origen": "Alfa_Inicio"
  },
  "En grupo casi siempre hay varios enemigos: pegas a dos a la vez.": {
   "en": "In a group there are almost always several enemies: you hit two at once.",
@@ -3051,6 +3335,10 @@
   "en": "For the auction house it counts the lowest price it saw, minus the cut (%d%%, estimated). For disenchanting it uses the classic game's tables, also estimated.",
   "origen": "Alfa_Comercio"
  },
+ "En las dos armas": {
+  "en": "On both weapons",
+  "origen": "Alfa_Inicio"
+ },
  "En mazmorra": {
   "en": "In a dungeon",
   "origen": "Alfa_Rutas"
@@ -3087,9 +3375,17 @@
   "en": "Solo, fight with shocks and heal yourself between monsters.",
   "origen": "Alfa_Builds"
  },
+ "En tu arma": {
+  "en": "On your weapon",
+  "origen": "Alfa_Inicio"
+ },
  "En tu marco": {
   "en": "On your frame",
   "origen": "Alfa_Comodidades"
+ },
+ "En tus bolsas": {
+  "en": "In your bags",
+  "origen": "Alfa_Inicio"
  },
  "En un aviso": {
   "en": "As an alert",
@@ -3106,6 +3402,18 @@
  "En vivo si estás con un banquero; si no, la última foto que guardó Alfa.": {
   "en": "Live while you are at a banker; otherwise the last snapshot Alfa saved.",
   "origen": "Alfa_Bolsas"
+ },
+ "En vuelo: la flecha sigue al bajar.": {
+  "en": "In flight: the arrow carries on when you land.",
+  "origen": "Alfa_Inicio"
+ },
+ "Encanta tu arma antes de pelear.": {
+  "en": "Enchant your weapon before you fight.",
+  "origen": "Alfa_Inicio"
+ },
+ "Encantada": {
+  "en": "Enchanted",
+  "origen": "Alfa_Inicio"
  },
  "Encantamiento": {
   "en": "Enchanting",
@@ -3143,13 +3451,25 @@
   "en": "Turn them on below, under Frames, to see your group's health and heal with one click.",
   "origen": "Alfa_Curacion"
  },
+ "Enciéndelos en la página Curación.": {
+  "en": "Turn them on in the Healing page.",
+  "origen": "Alfa_Inicio"
+ },
  "Enraíza al monstruo y aléjate antes de lanzar tus hechizos largos.": {
   "en": "Root the monster and move away before casting your long spells.",
   "origen": "Alfa_Builds"
  },
  "Entendido": {
   "en": "Got it",
-  "origen": "Alfa_Builds"
+  "origen": "Interfaz"
+ },
+ "Entereza": {
+  "en": "Fortitude",
+  "origen": "Alfa_Inicio"
+ },
+ "Entrada": {
+  "en": "Entrance",
+  "origen": "Interfaz"
  },
  "Entradas de mazmorras": {
   "en": "Dungeon entrances",
@@ -3355,9 +3675,17 @@
   "en": "A very tough turtle, but he only hits: no tricks.",
   "origen": "Alfa_Mazmorras/Consejos"
  },
+ "Esa cadena no trae ninguna estadística que Alfa puntúe.": {
+  "en": "That string has no stat Alfa scores.",
+  "origen": "Interfaz"
+ },
  "Esa fila todavía no se abre: faltan puntos en esa rama.": {
   "en": "That row doesn't open yet: you need more points in that branch.",
   "origen": "Alfa_Builds"
+ },
+ "Escala de estadísticas": {
+  "en": "Stat scale",
+  "origen": "Interfaz"
  },
  "Escalas:": {
   "en": "Stops:",
@@ -3395,6 +3723,18 @@
   "en": "Hides what needs more skill than you have. Without this it shows grey and faded.",
   "origen": "Alfa_Recoleccion"
  },
+ "Escribe %s o haz clic en el lobo del minimapa para abrirla. Empieza en Hoy, con lo que toca a tu clase; %s muestra u oculta la ventana de guía.": {
+  "en": "Type %s or click the wolf on the minimap to open it. It starts on Today, with what your class needs; %s shows or hides the guide window.",
+  "origen": "Interfaz"
+ },
+ "Escribe %s y cuéntanos en el Discord de La Jauría.": {
+  "en": "Type %s and tell us on La Jauría's Discord.",
+  "origen": "Interfaz"
+ },
+ "Escribe arriba el nombre de una mazmorra para buscarla.": {
+  "en": "Type a dungeon's name above to find it.",
+  "origen": "Interfaz"
+ },
  "Escribe el nombre debajo del ícono: útil mientras aprendes.": {
   "en": "Writes the name under the icon: useful while you learn.",
   "origen": "Alfa_Builds"
@@ -3410,6 +3750,10 @@
  "Escribir a %s": {
   "en": "Write to %s",
   "origen": "Alfa_Manada"
+ },
+ "Escudo de relámpagos": {
+  "en": "Lightning Shield",
+  "origen": "Alfa_Inicio"
  },
  "Escudo y defensa: aguantas a todos los monstruos para que tu grupo no sufra.": {
   "en": "Shield and defense: you hold every monster so your group doesn't suffer.",
@@ -3435,6 +3779,10 @@
   "en": "That text is too long for a build.",
   "origen": "Alfa_Builds"
  },
+ "Ese texto es demasiado largo para una cadena de escala.": {
+  "en": "That text is too long for a scale string.",
+  "origen": "Interfaz"
+ },
  "Ese texto no es una ruta de Alfa.": {
   "en": "That text is not an Alfa route.",
   "origen": "Alfa_Rutas"
@@ -3442,6 +3790,10 @@
  "Eso no es una cadena de build de Alfa. Empieza con ALFA1;": {
   "en": "That is not an Alfa build string. It starts with ALFA1;",
   "origen": "Alfa_Builds"
+ },
+ "Eso no es una cadena de escala de estadísticas. Empieza con ( Pawn: v1: \"Nombre\": ...": {
+  "en": "That is not a stat scale string. It starts with ( Pawn: v1: \"Name\": ...",
+  "origen": "Interfaz"
  },
  "Espacio libre": {
   "en": "Free space",
@@ -3454,6 +3806,10 @@
  "Espalda": {
   "en": "Back",
   "origen": "Alfa_Builds"
+ },
+ "Español, inglés y siete idiomas más, en toda la interfaz.": {
+  "en": "Spanish, English and seven more languages, all through the interface.",
+  "origen": "Interfaz"
  },
  "Espera %s": {
   "en": "Wait %s",
@@ -3531,6 +3887,10 @@
   "en": "This client has no Blizzard click casting. Your clicks work on Alfa's frames.",
   "origen": "Alfa_Curacion"
  },
+ "Este paso no tiene punto en el mapa.": {
+  "en": "This step has no point on the map.",
+  "origen": "Alfa_Inicio"
+ },
  "Este personaje: %s en total": {
   "en": "This character: %s in all",
   "origen": "Alfa_Recoleccion"
@@ -3595,6 +3955,10 @@
   "en": "You're in combat: changes apply when you leave it.",
   "origen": "Alfa_Curacion"
  },
+ "Estás en una instancia: la flecha vuelve al salir.": {
+  "en": "You are in an instance: the arrow comes back when you leave.",
+  "origen": "Alfa_Inicio"
+ },
  "Evento": {
   "en": "Event",
   "origen": "Alfa_Mazmorras"
@@ -3635,6 +3999,10 @@
   "en": "The end of the text is missing: copy all of it.",
   "origen": "Alfa_Rutas"
  },
+ "Falta en un arma": {
+  "en": "Missing on one weapon",
+  "origen": "Alfa_Inicio"
+ },
  "Falta la carpeta Alfa_Codex: reinstala Alfa.": {
   "en": "The Alfa_Codex folder is missing: reinstall Alfa.",
   "origen": "Alfa_Rutas"
@@ -3654,6 +4022,10 @@
  "Fantasma": {
   "en": "Ghost",
   "origen": "Alfa_Curacion"
+ },
+ "Feliz": {
+  "en": "Happy",
+  "origen": "Alfa_Inicio"
  },
  "Fijada: Alfa no la cambia al recalcular.": {
   "en": "Pinned: Alfa keeps it when recalculating.",
@@ -3683,13 +4055,25 @@
   "en": "Forever already has boss warnings made by Blizzard: a timeline of the attacks that are coming and big messages when something is dangerous. Alfa doesn't invent warnings of its own: here you turn them on and adjust them, explained plainly.",
   "origen": "Alfa_Mazmorras"
  },
+ "Forma": {
+  "en": "Form",
+  "origen": "Alfa_Inicio"
+ },
  "Forma felina para matar rápido y forma de oso para las peleas difíciles; casi nunca necesitas beber.": {
   "en": "Cat Form to kill fast and Bear Form for the hard fights; you almost never need to drink.",
   "origen": "Alfa_Builds"
  },
+ "Forma normal": {
+  "en": "Normal form",
+  "origen": "Alfa_Inicio"
+ },
  "Foto: %s": {
   "en": "Snapshot: %s",
   "origen": "Alfa_Bolsas"
+ },
+ "Fragmentos de alma": {
+  "en": "Soul shards",
+  "origen": "Alfa_Inicio"
  },
  "Frena a los que huyen y te deja escapar de una mala pelea.": {
   "en": "Slows down those who flee and lets you escape a bad fight.",
@@ -3706,6 +4090,10 @@
  "Fuego": {
   "en": "Fire",
   "origen": "Alfa_Builds"
+ },
+ "Fuego interno": {
+  "en": "Inner Fire",
+  "origen": "Alfa_Inicio"
  },
  "Fuego para subir": {
   "en": "Leveling Fire",
@@ -3839,6 +4227,10 @@
   "en": "You hit two at once: you can pull monsters two by two.",
   "origen": "Alfa_Builds"
  },
+ "Grafito": {
+  "en": "Graphite",
+  "origen": "Interfaz"
+ },
  "Gran aumento de daño para los jefes.": {
   "en": "Big damage boost for bosses.",
   "origen": "Alfa_Builds"
@@ -3854,6 +4246,10 @@
  "Gran golpe de escudo con mucha amenaza.": {
   "en": "A big shield strike with lots of threat.",
   "origen": "Alfa_Builds"
+ },
+ "Grito de batalla": {
+  "en": "Battle Shout",
+  "origen": "Alfa_Inicio"
  },
  "Grito de batalla para el guerrero; Intelecto Arcano y una armadura para el mago; Entereza y Fuego interno para el sacerdote; y lo suyo para cada clase.": {
   "en": "Battle Shout for warriors; Arcane Intellect and an armor for mages; Fortitude and Inner Fire for priests; and the right one for each class.",
@@ -3903,17 +4299,25 @@
   "en": "Guide open: %s. Follow the arrow.",
   "origen": "Alfa_Rutas"
  },
+ "Guía actual": {
+  "en": "Current guide",
+  "origen": "Interfaz"
+ },
  "Guía: %s": {
   "en": "Guide: %s",
   "origen": "Alfa_Inicio"
  },
  "Guíame": {
   "en": "Guide me",
-  "origen": "Alfa_Rutas"
+  "origen": "Interfaz"
  },
  "Guíame a la entrada": {
   "en": "Guide me to the entrance",
   "origen": "Alfa_Mazmorras"
+ },
+ "Guías de la comunidad": {
+  "en": "Community guides",
+  "origen": "Interfaz"
  },
  "Habilidad de pesca": {
   "en": "Fishing skill",
@@ -3958,6 +4362,10 @@
  "Hacia dónde se acomodan tus compañeros.": {
   "en": "Which way your group members are laid out.",
   "origen": "Alfa_Curacion"
+ },
+ "Hacia:": {
+  "en": "To:",
+  "origen": "Alfa_Inicio"
  },
  "Has completado %d de %d mazmorras%s%d jefes vencidos%s%d objetos obtenidos": {
   "en": "You have completed %d of %d dungeons%s%d bosses defeated%s%d items obtained",
@@ -4089,7 +4497,15 @@
  },
  "Hoy": {
   "en": "Today",
-  "origen": "Alfa_Inicio"
+  "origen": "Interfaz"
+ },
+ "Hoy, Aventura, Personaje, Mundo, Oficios y Manada en una sola ventana: %s o el lobo del minimapa.": {
+  "en": "Today, Adventure, Character, World, Trades and Pack in one window: %s or the wolf on the minimap.",
+  "origen": "Interfaz"
+ },
+ "Hoy, a tu clase": {
+  "en": "Today, for your class",
+  "origen": "Interfaz"
  },
  "Iconos de viaje en el minimapa": {
   "en": "Travel icons on the minimap",
@@ -4102,6 +4518,10 @@
  "Igual que los otros señores: lanza rayos y se cura. Interrumpe su curación.": {
   "en": "Like the other lords: he casts lightning and heals. Interrupt his heal.",
   "origen": "Alfa_Mazmorras/Consejos"
+ },
+ "Importa una cadena de escala de estadísticas y usa, renombra, exporta o borra las escalas que tienes.": {
+  "en": "Import a stat scale string, and use, rename, export or delete the scales you have.",
+  "origen": "Interfaz"
  },
  "Importado": {
   "en": "Imported",
@@ -4149,11 +4569,19 @@
  },
  "Inicio": {
   "en": "Home",
-  "origen": "Alfa_Inicio"
+  "origen": "Interfaz"
+ },
+ "Inicio de Alfa": {
+  "en": "Alfa home",
+  "origen": "Interfaz"
  },
  "Intelecto": {
   "en": "Intellect",
   "origen": "Alfa_Builds"
+ },
+ "Intelecto Arcano": {
+  "en": "Arcane Intellect",
+  "origen": "Alfa_Inicio"
  },
  "Interceptar más seguido: el rival no se escapa.": {
   "en": "Intercept more often: your opponent can't get away.",
@@ -4186,6 +4614,10 @@
  "Invoca un espíritu de jabalí: mátenlo o que alguien lo tanquee.": {
   "en": "He summons a boar spirit: kill it or have someone tank it.",
   "origen": "Alfa_Mazmorras/Consejos"
+ },
+ "Invócalo antes de pelear.": {
+  "en": "Summon it before you fight.",
+  "origen": "Alfa_Inicio"
  },
  "Ir": {
   "en": "Go",
@@ -4243,6 +4675,10 @@
   "en": "This character's defeated bosses, finished dungeons and recorded loot. Your settings stay.",
   "origen": "Alfa_Mazmorras"
  },
+ "Jefes, botín y la entrada de cada mazmorra y banda.": {
+  "en": "Bosses, loot and the entrance of every dungeon and raid.",
+  "origen": "Interfaz"
+ },
  "Jefes, botín, consejos y tu progreso en cada mazmorra.": {
   "en": "Bosses, loot, tips and your progress in every dungeon.",
   "origen": "Alfa_Mazmorras"
@@ -4293,7 +4729,11 @@
  },
  "La Jauría": {
   "en": "La Jauría",
-  "origen": "Alfa_Manada"
+  "origen": "Interfaz"
+ },
+ "La Jauría en el mapa": {
+  "en": "La Jauría on the map",
+  "origen": "Interfaz"
  },
  "La Jauría: estado": {
   "en": "La Jauría: status",
@@ -4339,6 +4779,10 @@
   "en": "Each dungeon's entrance on the minimap, in green the ones you've done. The world map already marks them with \"Dungeon entrances\".",
   "origen": "Alfa_Mazmorras"
  },
+ "La flecha sigue caminos por el suelo alrededor de acantilados, agua y muros, con los mapas para caminar de Alfa. Apagado: apunta directo a cada parada.": {
+  "en": "The arrow follows paths on the ground around cliffs, water and walls, on Alfa's walking maps. Off: it points straight at each stop.",
+  "origen": "Interfaz"
+ },
  "La flecha te lleva a %s (%s).": {
   "en": "The arrow takes you to %s (%s).",
   "origen": "Alfa_Mundo"
@@ -4367,9 +4811,17 @@
   "en": "The guide on the minimap",
   "origen": "Alfa_Mundo"
  },
+ "La guía que sigues, tu paso de ahora y todo lo de las guías a un clic.": {
+  "en": "The guide you follow, your step now and everything about guides one click away.",
+  "origen": "Interfaz"
+ },
  "La guía te lleva a entrenar en %d pasos.": {
   "en": "The guide takes you to train in %d steps.",
   "origen": "Alfa_Inicio"
+ },
+ "La letra del aspecto (Inter en el de Alfa, Fira Sans en Halo, la del juego en los demás) o la que elijas.": {
+  "en": "The skin's font (Inter in Alfa's own look, Fira Sans in Halo, the game's in the others) or one you choose.",
+  "origen": "Interfaz"
  },
  "La lista está apagada: enciende \"Tu lista de sonidos\" en Calidad de vida > Interfaz.": {
   "en": "The list is off: turn on \"Your sound list\" in Quality of Life > Interface.",
@@ -4531,6 +4983,10 @@
   "en": "The upgrade arrows now use: %s. Activate this build's weights so Alfa compares gear the way %s wants.",
   "origen": "Alfa_Builds"
  },
+ "Las marca con una flecha.": {
+  "en": "They get an arrow.",
+  "origen": "Alfa_Inicio"
+ },
  "Las misiones de este tramo": {
   "en": "This leg's quests",
   "origen": "Alfa_Rutas"
@@ -4571,6 +5027,14 @@
   "en": "Reads the lowest price of every item in the whole auction house. It buys and posts nothing. It can be used every 15 minutes.",
   "origen": "Alfa_Comercio"
  },
+ "Lejos de aquí": {
+  "en": "Far from here",
+  "origen": "Alfa_Inicio"
+ },
+ "Lejos de aquí: %s": {
+  "en": "Far from here: %s",
+  "origen": "Alfa_Inicio"
+ },
  "Letras grandes en el centro de la pantalla cuando el jefe hace algo importante.": {
   "en": "Big letters in the middle of the screen when the boss does something important.",
   "origen": "Alfa_Mazmorras"
@@ -4607,13 +5071,17 @@
   "en": "Clear his helpers before you start on him.",
   "origen": "Alfa_Mazmorras/Consejos"
  },
+ "Lista de pasos": {
+  "en": "Step list",
+  "origen": "Interfaz"
+ },
  "Lista para entregar": {
   "en": "Ready to turn in",
   "origen": "Alfa_Rutas"
  },
  "Listo": {
   "en": "Done",
-  "origen": "Alfa_Curacion"
+  "origen": "Interfaz"
  },
  "Listo para ayudar a tu grupo": {
   "en": "Ready to help your group",
@@ -4711,6 +5179,10 @@
   "en": "Cry",
   "origen": "Alfa_Comodidades"
  },
+ "Llámala antes de pelear.": {
+  "en": "Call it before you fight.",
+  "origen": "Alfa_Inicio"
+ },
  "Llévame a reparar": {
   "en": "Take me to repair",
   "origen": "Alfa_Inicio"
@@ -4759,9 +5231,17 @@
   "en": "The nearest is in %s. The guide takes you from one node to the next.",
   "origen": "Alfa_Rutas"
  },
+ "Lo nuevo de esta versión, en pocas palabras.": {
+  "en": "What this version brings, in a few words.",
+  "origen": "Interfaz"
+ },
  "Lo pescado en esta sesión": {
   "en": "Caught this session",
   "origen": "Alfa_Pesca"
+ },
+ "Lo pones al empezar a pelear.": {
+  "en": "You put it on as the fight starts.",
+  "origen": "Alfa_Inicio"
  },
  "Lo que encuentras en la manada": {
   "en": "What you'll find in the pack",
@@ -4798,6 +5278,10 @@
  "Lo suma como un tramo de Objeto a tu ruta (si la estás siguiendo, tu guía se actualiza).": {
   "en": "Adds it as an Item leg to your route (if you are following it, your guide updates).",
   "origen": "Alfa_Rutas"
+ },
+ "Lobos conectados": {
+  "en": "Wolves online",
+  "origen": "Alfa_Inicio"
  },
  "Los PNJ dejan de hablar al saludarte o al darte misiones. También calla las voces de error.": {
   "en": "NPCs stop talking when they greet you or give you quests. It also mutes error speech.",
@@ -4895,6 +5379,10 @@
   "en": "Prices change: after these many days Alfa reminds you to scan again.",
   "origen": "Alfa_Comercio"
  },
+ "Los puntos de ruta que ponen otros addons, y el comando /way, apuntan la flecha de Alfa. Un addon que espere los ajustes de otro addon de puntos de ruta puede no funcionar con esto encendido.": {
+  "en": "Waypoints other addons set, and /way, point Alfa's arrow. An addon that expects another waypoint addon's settings may not work with this on.",
+  "origen": "Interfaz"
+ },
  "Los raros están apagados (página Descubrir).": {
   "en": "Rares are turned off (Discovery page).",
   "origen": "Alfa_Mundo"
@@ -4943,6 +5431,10 @@
   "en": "Cast it before the next fight.",
   "origen": "Alfa_Inicio"
  },
+ "Lánzalo antes de pelear.": {
+  "en": "Cast it before you fight.",
+  "origen": "Alfa_Inicio"
+ },
  "Línea de la ruta": {
   "en": "Route line",
   "origen": "Alfa_Mundo"
@@ -4969,7 +5461,7 @@
  },
  "Manada": {
   "en": "Pack",
-  "origen": "Alfa_Manada"
+  "origen": "Interfaz"
  },
  "Mano derecha": {
   "en": "Main hand",
@@ -5009,7 +5501,7 @@
  },
  "Maná": {
   "en": "Mana",
-  "origen": "Alfa_Rutas"
+  "origen": "Alfa_Inicio"
  },
  "Maná cada 5 s": {
   "en": "Mana per 5 s",
@@ -5026,6 +5518,10 @@
  "Marca a los enemigos y empieza por el más peligroso.": {
   "en": "Mark the enemies and start with the most dangerous one.",
   "origen": "Alfa_Builds"
+ },
+ "Marca de lo Salvaje": {
+  "en": "Mark of the Wild",
+  "origen": "Alfa_Inicio"
  },
  "Marca en el minimapa la entrada de cada mazmorra (en verde las que ya hiciste). El mapa del mundo ya las marca solo.": {
   "en": "Marks each dungeon's entrance on the minimap (in green the ones you've done). The world map already marks them.",
@@ -5055,6 +5551,10 @@
   "en": "Frames",
   "origen": "Alfa_Comodidades"
  },
+ "Marcos apagados": {
+  "en": "Frames off",
+  "origen": "Alfa_Inicio"
+ },
  "Marcos de Curación apagados.": {
   "en": "Healing frames off.",
   "origen": "Alfa_Curacion"
@@ -5065,11 +5565,15 @@
  },
  "Marcos de grupo y banda para curar con un clic, con preajustes por clase.": {
   "en": "Party and raid frames to heal with one click, with presets for each class.",
-  "origen": "Alfa_Curacion"
+  "origen": "Interfaz"
  },
  "Marcos en pantalla": {
   "en": "On-screen frames",
   "origen": "Alfa_Builds"
+ },
+ "Marcos encendidos": {
+  "en": "Frames on",
+  "origen": "Alfa_Inicio"
  },
  "Marqué %d misiones. Revisa la lista antes de abandonar.": {
   "en": "I marked %d quests. Check the list before abandoning.",
@@ -5101,7 +5605,7 @@
  },
  "Mazmorras": {
   "en": "Dungeons",
-  "origen": "Alfa_Builds"
+  "origen": "Interfaz"
  },
  "Mazmorras hechas": {
   "en": "Dungeons done",
@@ -5138,6 +5642,10 @@
  "Mejorar el probador": {
   "en": "Enhance the dressing room",
   "origen": "Alfa_Comodidades"
+ },
+ "Mejoras de equipo": {
+  "en": "Gear upgrades",
+  "origen": "Alfa_Inicio"
  },
  "Mensajes": {
   "en": "Messages",
@@ -5197,7 +5705,7 @@
  },
  "Mis rutas": {
   "en": "My routes",
-  "origen": "Alfa_Rutas"
+  "origen": "Interfaz"
  },
  "Misiones": {
   "en": "Quest items",
@@ -5210,10 +5718,6 @@
  "Misiones en el minimapa": {
   "en": "Quests on the minimap",
   "origen": "Alfa_Mundo"
- },
- "Misiones entregadas": {
-  "en": "Quests turned in",
-  "origen": "Alfa_Inicio"
  },
  "Misiones hasta %d nivel arriba del tuyo": {
   "en": "Quests up to %d level above yours",
@@ -5323,9 +5827,17 @@
   "en": "Show the suggestion",
   "origen": "Alfa_Builds"
  },
+ "Mostrar la ventana de guía": {
+  "en": "Show the guide window",
+  "origen": "Interfaz"
+ },
  "Mostrar los que ya no se consiguen": {
   "en": "Show items no longer obtainable",
   "origen": "Alfa_Rutas"
+ },
+ "Mostrar u ocultar la ventana de guía": {
+  "en": "Show or hide the guide window",
+  "origen": "Interfaz"
  },
  "Mostrarlo con Mayús": {
   "en": "Show it with Shift",
@@ -5363,6 +5875,10 @@
   "en": "Dead",
   "origen": "Alfa_Curacion"
  },
+ "Muestra la ventana de guía y la flecha, y cierra esta ventana para que las veas.": {
+  "en": "Shows the guide window and the arrow, and closes this window so you can see them.",
+  "origen": "Alfa_Inicio"
+ },
  "Muestra la vida en número, debajo del nombre.": {
   "en": "Shows health as a number, under the name.",
   "origen": "Alfa_Curacion"
@@ -5385,11 +5901,11 @@
  },
  "Mundo": {
   "en": "World",
-  "origen": "Alfa_Mundo"
+  "origen": "Interfaz"
  },
  "Munición": {
   "en": "Ammo",
-  "origen": "Alfa_Rutas"
+  "origen": "Alfa_Inicio"
  },
  "Muro de escudo dura más.": {
   "en": "Shield Wall lasts longer.",
@@ -5403,9 +5919,17 @@
   "en": "Very far",
   "origen": "Alfa_Rutas"
  },
+ "Muéstrala u ocúltala. También con su tecla o con /alfa guia.": {
+  "en": "Show or hide it. Also with its key or /alfa guia.",
+  "origen": "Interfaz"
+ },
  "Muñecas": {
   "en": "Wrists",
   "origen": "Alfa_Builds"
+ },
+ "Más": {
+  "en": "More",
+  "origen": "Interfaz"
  },
  "Más Abrumar gracias a Desgarrar.": {
   "en": "More Overpowers thanks to Rend.",
@@ -5539,6 +6063,10 @@
   "en": "More options",
   "origen": "Alfa_Mundo"
  },
+ "Más poder de ataque para tu grupo.": {
+  "en": "More attack power for your group.",
+  "origen": "Alfa_Inicio"
+ },
  "Más sangrado; abre Heridas profundas.": {
   "en": "More bleed; opens Deep Wounds.",
   "origen": "Alfa_Builds"
@@ -5562,6 +6090,10 @@
  "Nada en este grupo.": {
   "en": "Nothing in this group.",
   "origen": "Alfa_Comercio"
+ },
+ "Nada nuevo": {
+  "en": "Nothing new",
+  "origen": "Alfa_Inicio"
  },
  "Nada nuevo por aprender": {
   "en": "Nothing new to learn",
@@ -5595,9 +6127,17 @@
   "en": "None of your recipes makes a profit with the prices you have.",
   "origen": "Alfa_Comercio"
  },
+ "Ninguna guía cumple estos filtros. Quita alguno para ver más.": {
+  "en": "No guide matches these filters. Clear one to see more.",
+  "origen": "Interfaz"
+ },
  "Ninguno coincide": {
   "en": "No matches",
   "origen": "Alfa_Bolsas"
+ },
+ "Ninguno puesto": {
+  "en": "None down",
+  "origen": "Alfa_Inicio"
  },
  "Ningún amigo conectado. Tus amigos con Alfa que te compartan su ubicación también salen en el mapa.": {
   "en": "No friends online. Your friends with Alfa who share their location with you also show on the map.",
@@ -5613,11 +6153,11 @@
  },
  "Nivel": {
   "en": "Level",
-  "origen": "Alfa_Rutas"
+  "origen": "Interfaz"
  },
  "Nivel %d": {
   "en": "Level %d",
-  "origen": "Alfa_Bolsas"
+  "origen": "Interfaz"
  },
  "Nivel (mayor primero)": {
   "en": "Level (highest first)",
@@ -5636,8 +6176,8 @@
   "origen": "Alfa_Rutas"
  },
  "Nivel máximo": {
-  "en": "Max level",
-  "origen": "Alfa_Inicio"
+  "en": "Maximum level",
+  "origen": "Interfaz"
  },
  "Niveles": {
   "en": "Levels",
@@ -5645,15 +6185,11 @@
  },
  "Niveles %s": {
   "en": "Levels %s",
-  "origen": "Alfa_Mazmorras"
+  "origen": "Interfaz"
  },
  "Niveles de zona": {
   "en": "Zone levels",
   "origen": "Alfa_Mundo"
- },
- "Niveles subidos": {
-  "en": "Levels gained",
-  "origen": "Alfa_Inicio"
  },
  "No": {
   "en": "Off",
@@ -5739,6 +6275,10 @@
   "en": "There is no way Alfa can guide for this item (it drops at random or inside a dungeon).",
   "origen": "Alfa_Rutas"
  },
+ "No la usas": {
+  "en": "Not used",
+  "origen": "Alfa_Inicio"
+ },
  "No marcaste misiones para abandonar: toca la X de una misión.": {
   "en": "You marked no quests to abandon: tap a quest's X.",
   "origen": "Alfa_Rutas"
@@ -5798,6 +6338,10 @@
  "No se conoce la entrada de esta mazmorra.": {
   "en": "This dungeon's entrance is not known.",
   "origen": "Alfa_Mazmorras"
+ },
+ "No se conoce ningún Alfa más reciente. La app de CurseForge o la página de versiones lo dicen con seguridad.": {
+  "en": "No newer Alfa is known. The CurseForge app or the releases page say for sure.",
+  "origen": "Interfaz"
  },
  "No se encontraron los datos de las mazmorras (la carpeta Alfa_Codex). Reinstala Alfa completo.": {
   "en": "The dungeon data (the Alfa_Codex folder) was not found. Reinstall the whole of Alfa.",
@@ -5875,6 +6419,10 @@
   "en": "You have no free points. The plan's next talent (%s) comes around level %d.",
   "origen": "Alfa_Builds"
  },
+ "Noche": {
+  "en": "Night",
+  "origen": "Interfaz"
+ },
  "Nodos ocultos.": {
   "en": "Nodes hidden.",
   "origen": "Alfa_Recoleccion"
@@ -5902,6 +6450,14 @@
  "Nota de entrenar en la ventana de la guía": {
   "en": "Training note in the guide window",
   "origen": "Alfa_Inicio"
+ },
+ "Novedades de Alfa %s": {
+  "en": "What's new in Alfa %s",
+  "origen": "Interfaz"
+ },
+ "Nuestra manada en Discord: ayuda, avisos y reportes. Haz clic en el enlace y cópialo con Ctrl+C.": {
+  "en": "Our pack on Discord: help, news and reports. Click the link and copy it with Ctrl+C.",
+  "origen": "Interfaz"
  },
  "Nueva ruta vacía": {
   "en": "New empty route",
@@ -5959,6 +6515,10 @@
   "en": "Hides the button with the number of addons in the corner of the minimap. Those addons still open with their command, such as /alfa.",
   "origen": "Alfa_Comodidades"
  },
+ "Oculta el rastreador del juego a la derecha de la pantalla, con sus misiones, logros y profesiones. No con la interfaz de mando.": {
+  "en": "Hides the game's tracker on the right of the screen, with its quests, achievements and professions. Not with the gamepad interface.",
+  "origen": "Interfaz"
+ },
  "Oculta lo que tu clase no puede usar o no le conviene.": {
   "en": "Hides what your class can't use or doesn't want.",
   "origen": "Alfa_Mazmorras"
@@ -5990,6 +6550,10 @@
  "Ocultar el menú de addons": {
   "en": "Hide the addon menu",
   "origen": "Alfa_Comodidades"
+ },
+ "Ocultar la ventana de guía": {
+  "en": "Hide the guide window",
+  "origen": "Interfaz"
  },
  "Ocultar lo de profesiones que no tienes": {
   "en": "Hide what your professions can't gather",
@@ -6030,6 +6594,10 @@
  "Oficiales: %s": {
   "en": "Officers: %s",
   "origen": "Alfa_Manada"
+ },
+ "Oficios": {
+  "en": "Trades",
+  "origen": "Interfaz"
  },
  "Ojo: tu clic para lanzar de Blizzard usa %d de estas teclas, y ese manda también aquí. Para igualarlos, usa «Usar también en los marcos de Blizzard».": {
   "en": "Heads up: Blizzard's click casting uses %d of these clicks, and it wins here too. To match them, use \"Also use on Blizzard's frames\".",
@@ -6075,8 +6643,8 @@
   "en": "Gold",
   "origen": "Alfa_Inicio"
  },
- "Oro de la sesión": {
-  "en": "Session gold",
+ "Oro de hoy": {
+  "en": "Today's gold",
   "origen": "Alfa_Inicio"
  },
  "Oro estimado: %s": {
@@ -6118,6 +6686,10 @@
  "Otros": {
   "en": "Other",
   "origen": "Alfa_Bolsas"
+ },
+ "Otros addons pueden poner puntos de ruta": {
+  "en": "Let other addons set waypoints",
+  "origen": "Interfaz"
  },
  "PNJ %d": {
   "en": "NPC %d",
@@ -6179,9 +6751,17 @@
   "en": "To level up",
   "origen": "Alfa_Inicio"
  },
+ "Para tu %s": {
+  "en": "For your %s",
+  "origen": "Alfa_Inicio"
+ },
  "Para tu nivel": {
   "en": "For your level",
-  "origen": "Alfa_Mazmorras"
+  "origen": "Interfaz"
+ },
+ "Para tu nivel (%d)": {
+  "en": "For your level (%d)",
+  "origen": "Interfaz"
  },
  "Para una montura mira el Buscador: dice qué nivel, equitación y oro pide.": {
   "en": "For a mount check Lookup: it says what level, riding and gold it takes.",
@@ -6233,11 +6813,11 @@
  },
  "Paso %d": {
   "en": "Step %d",
-  "origen": "Alfa_Inicio"
+  "origen": "Interfaz"
  },
  "Paso %d de %d": {
   "en": "Step %d of %d",
-  "origen": "Alfa_Inicio"
+  "origen": "Interfaz"
  },
  "Pasos que siguen, numerados": {
   "en": "Numbered steps ahead",
@@ -6278,6 +6858,14 @@
  "Pega primero una cadena de build de Alfa.": {
   "en": "Paste an Alfa build string first.",
   "origen": "Alfa_Builds"
+ },
+ "Pega primero una cadena de escala de estadísticas.": {
+  "en": "Paste a stat scale string first.",
+  "origen": "Interfaz"
+ },
+ "Pega una cadena de escala de estadísticas (Ctrl+V), la que copiaste desde donde la compartieron.": {
+  "en": "Paste a stat scale string (Ctrl+V), the one you copied from where it was shared.",
+  "origen": "Interfaz"
  },
  "Pega varias veces seguidas: empieza con la vida llena.": {
   "en": "He strikes several times in a row: start at full health.",
@@ -6343,6 +6931,10 @@
   "en": "Lets a double-click cast even while you are mounted.",
   "origen": "Alfa_Pesca"
  },
+ "Personaje": {
+  "en": "Character",
+  "origen": "Interfaz"
+ },
  "Pesca": {
   "en": "Fishing",
   "origen": "Alfa_Pesca"
@@ -6383,6 +6975,10 @@
   "en": "Stat weights",
   "origen": "Alfa_Builds"
  },
+ "Pestaña nueva": {
+  "en": "New tab",
+  "origen": "Interfaz"
+ },
  "Pide al grupo que espere unos segundos antes de atacar.": {
   "en": "Ask the group to wait a few seconds before attacking.",
   "origen": "Alfa_Builds"
@@ -6399,6 +6995,10 @@
   "en": "Asking the auction house for prices...",
   "origen": "Alfa_Comercio"
  },
+ "Piel o armadura demoníaca": {
+  "en": "Demon Skin or Demon Armor",
+  "origen": "Alfa_Inicio"
+ },
  "Piernas": {
   "en": "Legs",
   "origen": "Alfa_Builds"
@@ -6410,6 +7010,10 @@
  "Pinta del color de la clase el fondo del nombre en tu marco y en el del objetivo cuando es un jugador.": {
   "en": "Paints the name background of your frame, and of the target's when it is a player, in the class colour.",
   "origen": "Alfa_Comodidades"
+ },
+ "Pizarra": {
+  "en": "Slate",
+  "origen": "Interfaz"
  },
  "Plantillas": {
   "en": "Templates",
@@ -6486,6 +7090,10 @@
  "Ponlo de espaldas al grupo y aguanta: la pelea es corta.": {
   "en": "Turn him away from the group and hold on: the fight is short.",
   "origen": "Alfa_Mazmorras/Consejos"
+ },
+ "Ponlos al empezar a pelear.": {
+  "en": "Drop them as the fight starts.",
+  "origen": "Alfa_Inicio"
  },
  "Ponte un escudo antes de empezar cada pelea.": {
   "en": "Put a shield on before every fight.",
@@ -6763,9 +7371,21 @@
   "en": "Leveling Marksmanship",
   "origen": "Alfa_Builds"
  },
+ "Puntos de ruta": {
+  "en": "Waypoints",
+  "origen": "Interfaz"
+ },
+ "Puntos por gastar": {
+  "en": "Points to spend",
+  "origen": "Alfa_Inicio"
+ },
  "Pícaro": {
   "en": "Rogue",
   "origen": "Alfa_Builds"
+ },
+ "Quedan %s": {
+  "en": "%s left",
+  "origen": "Alfa_Inicio"
  },
  "Quiero unirme": {
   "en": "I want to join",
@@ -6791,6 +7411,10 @@
   "en": "Remove this leg",
   "origen": "Alfa_Rutas"
  },
+ "Quitar filtros": {
+  "en": "Clear filters",
+  "origen": "Interfaz"
+ },
  "Quitar la prueba": {
   "en": "End test",
   "origen": "Alfa_Curacion"
@@ -6798,6 +7422,10 @@
  "Quiénes somos": {
   "en": "Who we are",
   "origen": "Alfa_Manada"
+ },
+ "Qué es Alfa": {
+  "en": "What Alfa is",
+  "origen": "Interfaz"
  },
  "Qué mensajes mostrar": {
   "en": "Which messages to show",
@@ -6875,6 +7503,10 @@
   "en": "Lightning and fire from afar: lots of burst damage.",
   "origen": "Alfa_Builds"
  },
+ "Razas": {
+  "en": "Races",
+  "origen": "Interfaz"
+ },
  "Reactivos %s  ·  el producto vale %s": {
   "en": "Reagents %s  ·  the product is worth %s",
   "origen": "Alfa_Comercio"
@@ -6893,7 +7525,7 @@
  },
  "Recientes": {
   "en": "Recent",
-  "origen": "Alfa_Bolsas"
+  "origen": "Interfaz"
  },
  "Recoger todo lo que pesques": {
   "en": "Loot everything you catch",
@@ -6911,9 +7543,17 @@
   "en": "Gathering: brought over %d nodes you gathered with another addon.",
   "origen": "Alfa_Recoleccion"
  },
+ "Recomendada para ti": {
+  "en": "Recommended for you",
+  "origen": "Interfaz"
+ },
  "Recomendada por Alfa": {
   "en": "Recommended by Alfa",
   "origen": "Alfa_Rutas"
+ },
+ "Recomendadas para ti": {
+  "en": "Recommended for you",
+  "origen": "Interfaz"
  },
  "Recomendado por Alfa": {
   "en": "Recommended by Alfa",
@@ -7123,6 +7763,10 @@
   "en": "Ready-made routes to start with.",
   "origen": "Alfa_Rutas"
  },
+ "Rutas propias": {
+  "en": "Our own routes",
+  "origen": "Interfaz"
+ },
  "Sacerdote": {
   "en": "Priest",
   "origen": "Alfa_Builds"
@@ -7166,6 +7810,10 @@
  "Sanación": {
   "en": "Healing",
   "origen": "Alfa_Builds"
+ },
+ "Sanador": {
+  "en": "Healer",
+  "origen": "Alfa_Inicio"
  },
  "Sangrado fuerte desde el nivel 13; lo necesitas para Heridas profundas.": {
   "en": "Strong bleed from level 13; you need it for Deep Wounds.",
@@ -7331,6 +7979,10 @@
   "en": "Follow works with your group and with people who share their location with Alfa. Inside dungeons the game gives no positions and nothing is shared.",
   "origen": "Alfa_Manada"
  },
+ "Seguir ruta": {
+  "en": "Follow route",
+  "origen": "Alfa_Inicio"
+ },
  "Seguir: la flecha y la ruta de Alfa te llevan hasta su posición.": {
   "en": "Follow: Alfa's arrow and route take you to them.",
   "origen": "Alfa_Manada"
@@ -7347,6 +7999,10 @@
   "en": "Select all",
   "origen": "Alfa_Rutas"
  },
+ "Sello": {
+  "en": "Seal",
+  "origen": "Alfa_Inicio"
+ },
  "Servicios": {
   "en": "Services",
   "origen": "Alfa_Mundo"
@@ -7361,10 +8017,6 @@
  },
  "Sesiones que guarda el diario": {
   "en": "Sessions the journal keeps",
-  "origen": "Alfa_Inicio"
- },
- "Sesión: %s": {
-  "en": "Session: %s",
   "origen": "Alfa_Inicio"
  },
  "Señalar": {
@@ -7463,6 +8115,10 @@
   "en": "Stealth and ambushes: you choose when to fight and vanish whenever you want.",
   "origen": "Alfa_Builds"
  },
+ "Sigue donde ibas": {
+  "en": "Pick up where you were",
+  "origen": "Interfaz"
+ },
  "Siguiendo": {
   "en": "Following",
   "origen": "Alfa_Manada"
@@ -7515,6 +8171,10 @@
   "en": "Nothing",
   "origen": "Alfa_Curacion"
  },
+ "Sin cambiar de forma.": {
+  "en": "Not shapeshifted.",
+  "origen": "Alfa_Inicio"
+ },
  "Sin cambios": {
   "en": "No change",
   "origen": "Alfa_Inicio"
@@ -7531,9 +8191,29 @@
   "en": "No data",
   "origen": "Alfa_Rutas"
  },
+ "Sin demonio": {
+  "en": "No demon",
+  "origen": "Alfa_Inicio"
+ },
+ "Sin encantar": {
+  "en": "Not enchanted",
+  "origen": "Alfa_Inicio"
+ },
  "Sin hermandad": {
   "en": "No guild",
   "origen": "Alfa_Manada"
+ },
+ "Sin límite de tiempo": {
+  "en": "No time limit",
+  "origen": "Alfa_Inicio"
+ },
+ "Sin mascota": {
+  "en": "No pet",
+  "origen": "Alfa_Inicio"
+ },
+ "Sin munición": {
+  "en": "No ammo",
+  "origen": "Alfa_Inicio"
  },
  "Sin objeto": {
   "en": "No item",
@@ -7551,9 +8231,17 @@
   "en": "No free points",
   "origen": "Alfa_Builds"
  },
+ "Sin sello": {
+  "en": "No seal",
+  "origen": "Alfa_Inicio"
+ },
  "Sin tecla": {
   "en": "No key",
   "origen": "Alfa_Curacion"
+ },
+ "Sin veneno": {
+  "en": "No poison",
+  "origen": "Alfa_Inicio"
  },
  "Solo": {
   "en": "Solo",
@@ -7614,6 +8302,10 @@
  "Solo puedes tener dos principales a la vez; las secundarias son libres. Aprende cualquiera con su entrenador en las ciudades.": {
   "en": "You can only have two primary professions at once; secondary ones are free. Learn any of them from its trainer in the cities.",
   "origen": "Alfa_Builds"
+ },
+ "Solo se admite la versión 1 de la cadena de escala.": {
+  "en": "Only version 1 of the scale string is supported.",
+  "origen": "Interfaz"
  },
  "Solo se puede seguir a tu grupo y a quien comparte su ubicación con Alfa.": {
   "en": "You can only follow your group and people who share their location with Alfa.",
@@ -7739,6 +8431,14 @@
   "en": "Blizzard's suggestion",
   "origen": "Alfa_Builds"
  },
+ "Sugerida para ti: %s": {
+  "en": "Suggested for you: %s",
+  "origen": "Interfaz"
+ },
+ "Suma tus sesiones de hoy con este personaje.": {
+  "en": "Adds up today's sessions with this character.",
+  "origen": "Alfa_Inicio"
+ },
  "Supervivencia": {
   "en": "Survival",
   "origen": "Alfa_Builds"
@@ -7855,8 +8555,16 @@
   "en": "Gives you attack power: every hit lands harder. For warriors it also raises shield block.",
   "origen": "Alfa_Builds"
  },
+ "Te damos la bienvenida a Alfa, el todo en uno de La Jauría.": {
+  "en": "Welcome to Alfa, La Jauría's all-in-one.",
+  "origen": "Interfaz"
+ },
  "Te dice qué pieza está por romperse, para que la repares a tiempo.": {
   "en": "Tells you which piece is about to break, so you repair it in time.",
+  "origen": "Alfa_Inicio"
+ },
+ "Te falta": {
+  "en": "Missing",
   "origen": "Alfa_Inicio"
  },
  "Te falta %s": {
@@ -7870,6 +8578,14 @@
  "Te faltan niveles: cada nivel desde el 10 te da un punto.": {
   "en": "You need more levels: each level from 10 gives you one point.",
   "origen": "Alfa_Builds"
+ },
+ "Te lo enseña tu entrenador.": {
+  "en": "Your trainer teaches it.",
+  "origen": "Alfa_Inicio"
+ },
+ "Te los enseña tu entrenador.": {
+  "en": "Your trainer teaches them.",
+  "origen": "Alfa_Inicio"
  },
  "Te queda 1 espacio": {
   "en": "1 slot left",
@@ -7899,6 +8615,10 @@
   "en": "Always keep a health potion at hand: this build doesn't forgive mistakes.",
   "origen": "Alfa_Builds"
  },
+ "Terminaste esta guía. Elige la siguiente para seguir subiendo.": {
+  "en": "You finished this guide. Choose the next one to keep levelling.",
+  "origen": "Interfaz"
+ },
  "Tesoros": {
   "en": "Treasures",
   "origen": "Alfa_Recoleccion"
@@ -7917,10 +8637,6 @@
  },
  "Tiempo de juego por sesión": {
   "en": "Play time per session",
-  "origen": "Alfa_Inicio"
- },
- "Tiempo de sesión": {
-  "en": "Session time",
   "origen": "Alfa_Inicio"
  },
  "Tiempo máximo entre los dos clics. Súbelo si tus dobles clics no lanzan.": {
@@ -8001,7 +8717,7 @@
  },
  "Tipo": {
   "en": "Type",
-  "origen": "Alfa_Rutas"
+  "origen": "Interfaz"
  },
  "Toca para ver de dónde sale": {
   "en": "Tap to see where it comes from",
@@ -8013,15 +8729,23 @@
  },
  "Todas": {
   "en": "All",
-  "origen": "Alfa_Mazmorras"
+  "origen": "Interfaz"
+ },
+ "Todas las guías por zona y nivel, con la que Alfa te sugiere para ti.": {
+  "en": "Every guide by zone and level, with the one Alfa suggests for you.",
+  "origen": "Interfaz"
  },
  "Todas las mazmorras": {
   "en": "All dungeons",
-  "origen": "Alfa_Mazmorras"
+  "origen": "Interfaz"
  },
  "Todas las misiones": {
   "en": "All quests",
   "origen": "Alfa_Comodidades"
+ },
+ "Todas las zonas y razas": {
+  "en": "All zones and races",
+  "origen": "Interfaz"
  },
  "Todas sus fuentes en el Buscador de Alfa.": {
   "en": "All its sources in Alfa's Lookup.",
@@ -8034,6 +8758,10 @@
  "Todavía no conoces sus hechizos: se llenan al aprenderlos.": {
   "en": "You don't know its spells yet: they fill in as you learn them.",
   "origen": "Alfa_Curacion"
+ },
+ "Todavía no estás en una hermandad. En la página La Jauría ves cómo unirte a la manada.": {
+  "en": "You are not in a guild yet. The La Jauría page shows how to join the pack.",
+  "origen": "Alfa_Inicio"
  },
  "Todavía no gastas puntos de talento": {
   "en": "You haven't spent talent points yet",
@@ -8083,6 +8811,14 @@
   "en": "You can't fish yet",
   "origen": "Alfa_Pesca"
  },
+ "Todavía no sigues ninguna guía. Elige una y Alfa te lleva paso a paso, con la flecha y la ruta.": {
+  "en": "You are not following a guide yet. Choose one and Alfa takes you step by step, with the arrow and the route.",
+  "origen": "Interfaz"
+ },
+ "Todavía no tienes escalas propias. Pega una cadena de escala arriba.": {
+  "en": "No custom scales yet. Paste a scale string above.",
+  "origen": "Interfaz"
+ },
  "Todavía no tienes talentos para exportar.": {
   "en": "You don't have talents to export yet.",
   "origen": "Alfa_Builds"
@@ -8091,6 +8827,10 @@
   "en": "You have no guide open yet. Pick one and Alfa takes you step by step: where to go, what to do and who to talk to.",
   "origen": "Alfa_Inicio"
  },
+ "Todo": {
+  "en": "Everything",
+  "origen": "Interfaz"
+ },
  "Todo bien (lo más gastado: %d%%)": {
   "en": "All good (most worn: %d%%)",
   "origen": "Alfa_Inicio"
@@ -8098,6 +8838,10 @@
  "Todo el botín": {
   "en": "All loot",
   "origen": "Alfa_Mazmorras"
+ },
+ "Todo en orden": {
+  "en": "All good",
+  "origen": "Alfa_Inicio"
  },
  "Todo para el daño: críticos, sangrados y Abrumar muy seguido. Matas rapidísimo, pero no hay defensa extra: si se te juntan muchos, corre.": {
   "en": "Everything for damage: crits, bleeds and Overpower very often. You kill super fast, but there's no extra defense: if many gang up on you, run.",
@@ -8111,13 +8855,25 @@
   "en": "All of that kind, or just one (for example, only copper). In brackets, how many are in your zone.",
   "origen": "Alfa_Recoleccion"
  },
+ "Todos los niveles": {
+  "en": "All levels",
+  "origen": "Interfaz"
+ },
  "Todos los objetos del juego: busca, filtra y consíguelos.": {
   "en": "Every item in the game: search, filter and get them.",
   "origen": "Alfa_Rutas"
  },
+ "Todos los pasos de esta guía; clic en uno para verlo.": {
+  "en": "Every step of this guide; click one to see it.",
+  "origen": "Interfaz"
+ },
+ "Todos los pasos de la guía en la ventana de guía.": {
+  "en": "Every step of the guide, in the guide window.",
+  "origen": "Alfa_Inicio"
+ },
  "Todos los tipos": {
   "en": "All types",
-  "origen": "Alfa_Rutas"
+  "origen": "Interfaz"
  },
  "Todos tus puntos ya están gastados y parte de ellos fuera de este build. Para cambiarte a este build, reinicia tus talentos con tu entrenador de clase; después Alfa te los aplica con un clic.": {
   "en": "All your points are already spent, part of them outside this build. To switch to this build, reset your talents with your class trainer; then Alfa applies them for you in one click.",
@@ -8159,9 +8915,17 @@
   "en": "Your Voidwalker takes the hits for you: let it start the fight.",
   "origen": "Alfa_Builds"
  },
+ "Tu arma no usa munición.": {
+  "en": "Your weapon uses no ammo.",
+  "origen": "Alfa_Inicio"
+ },
  "Tu arma secundaria pega más.": {
   "en": "Your off-hand weapon hits harder.",
   "origen": "Alfa_Builds"
+ },
+ "Tu avance arriba, el paso en una tarjeta, los dos siguientes a la vista y los botones abajo.": {
+  "en": "Your progress on top, the step on a card, the next two in sight and the buttons below.",
+  "origen": "Interfaz"
  },
  "Tu banco: en vivo si estás con un banquero, si no, la última foto.": {
   "en": "Your bank: live while you are at a banker, otherwise the last snapshot.",
@@ -8211,6 +8975,14 @@
   "en": "Your client has the official button highlight; Alfa leaves it to the game.",
   "origen": "Alfa_Builds"
  },
+ "Tu compañera de caza": {
+  "en": "Your hunting partner",
+  "origen": "Alfa_Inicio"
+ },
+ "Tu demonio": {
+  "en": "Your demon",
+  "origen": "Alfa_Inicio"
+ },
  "Tu demonio es más fuerte y tú más resistente: el brujo más seguro.": {
   "en": "Your demon is stronger and you're tougher: the safest warlock.",
   "origen": "Alfa_Builds"
@@ -8230,6 +9002,14 @@
  "Tu equipo se está gastando": {
   "en": "Your gear is wearing down",
   "origen": "Alfa_Inicio"
+ },
+ "Tu equipo, tus bolsas y tu entrenamiento están al día.": {
+  "en": "Your gear, bags and training are all up to date.",
+  "origen": "Alfa_Inicio"
+ },
+ "Tu facción (%s)": {
+  "en": "Your faction (%s)",
+  "origen": "Interfaz"
  },
  "Tu golpe más fuerte desde el nivel 40 hasta el 60.": {
   "en": "Your strongest strike from level 40 to 60.",
@@ -8271,8 +9051,20 @@
   "en": "Your party and raid with their health, to heal with one click. Changes out of combat.",
   "origen": "Alfa_Curacion"
  },
+ "Tu grupo, tu hermandad y tus amigos en el mapa, con Seguir y la página del clan.": {
+  "en": "Your party, your guild and your friends on the map, with Follow and the clan's page.",
+  "origen": "Interfaz"
+ },
+ "Tu guía": {
+  "en": "Your guide",
+  "origen": "Interfaz"
+ },
  "Tu guía está lista. Ábrela para ver tu paso.": {
   "en": "Your guide is ready. Open it to see your step.",
+  "origen": "Alfa_Inicio"
+ },
+ "Tu hermandad conectada": {
+  "en": "Your guild online",
   "origen": "Alfa_Inicio"
  },
  "Tu hermandad te ve en el mapa y te puede seguir. Se envía tu posición, nivel y clase cada 10 segundos mientras te mueves.": {
@@ -8282,6 +9074,10 @@
  "Tu hermandad: quienes comparten su ubicación con Alfa.": {
   "en": "Your guild: those who share their location with Alfa.",
   "origen": "Alfa_Manada"
+ },
+ "Tu instalación está mezclada o incompleta (%s). Cierra el juego, borra todas las carpetas de Alfa en Interface/AddOns e instala Alfa de nuevo con la app de CurseForge o el zip más reciente (no \"Source code\").": {
+  "en": "Your install is mixed or incomplete (%s). Close the game, delete every Alfa folder in Interface/AddOns and install Alfa again with the CurseForge app or the latest zip (not \"Source code\").",
+  "origen": "Interfaz"
  },
  "Tu libro no tiene hechizos para aliados": {
   "en": "Your spellbook has no spells for allies",
@@ -8307,9 +9103,17 @@
   "en": "Your mouse map is empty: pick something for a slot first.",
   "origen": "Alfa_Curacion"
  },
+ "Tu mascota": {
+  "en": "Your pet",
+  "origen": "Alfa_Inicio"
+ },
  "Tu mascota hace gran parte del trabajo y aguanta los golpes: la forma más fácil y segura de subir con cazador.": {
   "en": "Your pet does much of the work and takes the hits: the easiest and safest way to level a hunter.",
   "origen": "Alfa_Builds"
+ },
+ "Tu munición": {
+  "en": "Your ammo",
+  "origen": "Alfa_Inicio"
  },
  "Tu objetivo esquivó: Abrumar no se puede esquivar y pega fuerte. Necesita actitud de batalla.": {
   "en": "Your target dodged: Overpower can't be dodged and hits hard. It needs Battle Stance.",
@@ -8327,6 +9131,10 @@
   "en": "Your fishing is maxed out.",
   "origen": "Alfa_Pesca"
  },
+ "Tu plan está en Builds.": {
+  "en": "Your plan is in Builds.",
+  "origen": "Alfa_Inicio"
+ },
  "Tu posición en la parte de abajo del minimapa.": {
   "en": "Your position at the bottom of the minimap.",
   "origen": "Alfa_Mundo"
@@ -8334,6 +9142,14 @@
  "Tu posición y la del cursor bajo el mapa.": {
   "en": "Your position and the cursor's under the map.",
   "origen": "Alfa_Mundo"
+ },
+ "Tu primer punto, en el nivel 10.": {
+  "en": "Your first point, at level 10.",
+  "origen": "Alfa_Inicio"
+ },
+ "Tu primera guía": {
+  "en": "Your first guide",
+  "origen": "Interfaz"
  },
  "Tu primera sesión entra al diario cuando salgas del juego. La manada te espera: ¡a cazar!": {
   "en": "Your first session goes into the journal when you leave the game. The pack is waiting: go hunt!",
@@ -8346,6 +9162,10 @@
  "Tu propio marco aparece aunque no estés en grupo, para curarte con un clic.": {
   "en": "Your own frame shows even when you're not in a group, so you can heal yourself with a click.",
   "origen": "Alfa_Curacion"
+ },
+ "Tu rama: %s": {
+  "en": "Your tree: %s",
+  "origen": "Alfa_Inicio"
  },
  "Tu ratón": {
   "en": "Your mouse",
@@ -8391,12 +9211,16 @@
   "en": "Your current session",
   "origen": "Alfa_Inicio"
  },
- "Tu sesión, tus avisos y tu siguiente paso, de un vistazo.": {
-  "en": "Your session, your reminders and your next step, at a glance.",
-  "origen": "Alfa_Inicio"
+ "Tu sesión, tu diario, recordatorios y tu siguiente paso, con el color de tu clase.": {
+  "en": "Your session, your journal, reminders and your next step, in your class's colour.",
+  "origen": "Interfaz"
  },
  "Tu siguiente paso": {
   "en": "Your next step",
+  "origen": "Alfa_Inicio"
+ },
+ "Tu siguiente paso, lo urgente y lo de tu clase, de un vistazo.": {
+  "en": "Your next step, what's urgent and your class, at a glance.",
   "origen": "Alfa_Inicio"
  },
  "Tu tecla y tus ajustes del juego quedan como siempre. Enciéndela abajo para pescar con una sola tecla.": {
@@ -8414,6 +9238,10 @@
  "Tu ubicación es privada: no la compartes con nadie.": {
   "en": "Your location is private: you share it with no one.",
   "origen": "Alfa_Manada"
+ },
+ "Tu ventana de Alfa": {
+  "en": "Your Alfa window",
+  "origen": "Interfaz"
  },
  "Tu ventana de bolsas de Alfa. También con la B.": {
   "en": "Your Alfa bag window. Also with B.",
@@ -8571,6 +9399,10 @@
   "en": "Your earlier sessions with something gathered show here.",
   "origen": "Alfa_Recoleccion"
  },
+ "Tótems": {
+  "en": "Totems",
+  "origen": "Alfa_Inicio"
+ },
  "Tú": {
   "en": "You",
   "origen": "Alfa_Mundo"
@@ -8582,10 +9414,6 @@
  "Ubicación de %s": {
   "en": "Location from %s",
   "origen": "Alfa_Manada"
- },
- "Un /reload no la corta.": {
-  "en": "A /reload does not end it.",
-  "origen": "Alfa_Inicio"
  },
  "Un arma en cada mano y mucha ira: el que más daño hace en grupo.": {
   "en": "A weapon in each hand and lots of rage: the one that does the most damage in a group.",
@@ -8683,6 +9511,10 @@
   "en": "A question mark over whoever takes a finished quest.",
   "origen": "Alfa_Mundo"
  },
+ "Un solo addon con todo lo que usas al jugar: guías paso a paso con flecha y ruta, mapa, bolsas, builds, curación con clic, recolección, mazmorras, pesca y comercio. Todo con el mismo estilo.": {
+  "en": "One addon with everything you use while playing: step-by-step guides with an arrow and a route, the map, bags, builds, click healing, gathering, dungeons, fishing and trading. All in one style.",
+  "origen": "Interfaz"
+ },
  "Un solo mapa continuo: acerca, aleja y pasa de una zona a otra sin cambiar de mapa.": {
   "en": "One seamless map: zoom in, zoom out and move from zone to zone without switching maps.",
   "origen": "Alfa_Mundo"
@@ -8698,6 +9530,10 @@
  "Una barra con los ataques que el jefe va a hacer y cuánto falta para cada uno. Así sabes cuándo moverte o defenderte.": {
   "en": "A bar with the attacks the boss is about to use and how long until each one, so you know when to move or defend.",
   "origen": "Alfa_Mazmorras"
+ },
+ "Una flecha verde en cada objeto de tus bolsas que es una mejora para tu especialización.": {
+  "en": "A green arrow on each item in your bags that is an upgrade for your spec.",
+  "origen": "Interfaz"
  },
  "Una flecha verde en el equipo que es mejor que lo que llevas puesto, según tu clase y nivel.": {
   "en": "A green arrow on gear better than what you wear, for your class and level.",
@@ -8815,6 +9651,10 @@
   "en": "Use in my leg",
   "origen": "Alfa_Rutas"
  },
+ "Usar esta guía": {
+  "en": "Use this guide",
+  "origen": "Interfaz"
+ },
  "Usar la base de datos incluida": {
   "en": "Use the included database",
   "origen": "Alfa_Recoleccion"
@@ -8903,6 +9743,10 @@
   "en": "Vendor",
   "origen": "Alfa_Comercio"
  },
+ "Venenos": {
+  "en": "Poisons",
+  "origen": "Alfa_Inicio"
+ },
  "Venenos y críticos: matas rápido, sobre todo atacando por la espalda.": {
   "en": "Poisons and crits: you kill fast, especially attacking from behind.",
   "origen": "Alfa_Builds"
@@ -8910,6 +9754,18 @@
  "Ventana": {
   "en": "Window",
   "origen": "Alfa_Bolsas"
+ },
+ "Ventana de guía oculta. Escribe /alfa guia para volver a verla.": {
+  "en": "Guide window hidden. Type /alfa guia to bring it back.",
+  "origen": "Interfaz"
+ },
+ "Ventana de guía propia": {
+  "en": "Our own guide window",
+  "origen": "Interfaz"
+ },
+ "Ventana principal nueva": {
+  "en": "A new main window",
+  "origen": "Interfaz"
  },
  "Ver": {
   "en": "Show",
@@ -8947,6 +9803,14 @@
   "en": "See my journal",
   "origen": "Alfa_Inicio"
  },
+ "Ver mi plan": {
+  "en": "See my plan",
+  "origen": "Alfa_Inicio"
+ },
+ "Ver pasos": {
+  "en": "See steps",
+  "origen": "Alfa_Inicio"
+ },
  "Ver sus consejos de todos modos": {
   "en": "Show its tips anyway",
   "origen": "Alfa_Mazmorras"
@@ -8962,6 +9826,10 @@
  "Ver tu lista": {
   "en": "Show your list",
   "origen": "Alfa_Comodidades"
+ },
+ "Verde de La Jauría": {
+  "en": "La Jauría green",
+  "origen": "Interfaz"
  },
  "Verde si ya lo conoces, ámbar si te falta descubrirlo.": {
   "en": "Green when known, amber when not discovered yet.",
@@ -9043,6 +9911,10 @@
   "en": "Flights, boats and inns on the minimap too.",
   "origen": "Alfa_Mundo"
  },
+ "Vuelve con /alfa guia o desde Aventura > Tu guía.": {
+  "en": "Bring it back with /alfa guia or from Adventure > Your guide.",
+  "origen": "Interfaz"
+ },
  "XP": {
   "en": "XP",
   "origen": "Alfa_Inicio"
@@ -9053,6 +9925,10 @@
  },
  "XP ganada": {
   "en": "XP gained",
+  "origen": "Alfa_Inicio"
+ },
+ "XP ganada en la sesión: %s": {
+  "en": "XP gained this session: %s",
   "origen": "Alfa_Inicio"
  },
  "XP por hora": {
@@ -9087,6 +9963,10 @@
   "en": "Already in your group",
   "origen": "Alfa_Manada"
  },
+ "Ya está seleccionada: cópiala con Ctrl+C (Cmd+C en Mac) y pégala donde importes escalas, o compártela.": {
+  "en": "Selected for you: copy it with Ctrl+C (Cmd+C on a Mac), then paste it wherever you import scales, or share it.",
+  "origen": "Interfaz"
+ },
  "Ya la completaste": {
   "en": "You've completed it",
   "origen": "Alfa_Mazmorras"
@@ -9106,6 +9986,10 @@
  "Ya la tienes en tu registro.": {
   "en": "It is already in your log.",
   "origen": "Alfa_Rutas"
+ },
+ "Ya llegaste": {
+  "en": "You're there",
+  "origen": "Alfa_Inicio"
  },
  "Ya no compartes tu ubicación con tu hermandad.": {
   "en": "You no longer share your location with your guild.",
@@ -9151,9 +10035,13 @@
   "en": "Zone %d",
   "origen": "Alfa_Recoleccion"
  },
+ "Zona o raza": {
+  "en": "Zone or race",
+  "origen": "Interfaz"
+ },
  "Zonas": {
   "en": "Zones",
-  "origen": "Alfa_Mundo"
+  "origen": "Interfaz"
  },
  "Zonas de enemigos, objetos y lugares de las misiones de tu registro.": {
   "en": "Enemy areas, items and places for the quests in your log.",
@@ -9187,6 +10075,10 @@
   "en": "opens your route",
   "origen": "Alfa_Rutas"
  },
+ "abrir o cerrar esta ventana": {
+  "en": "open or close this window",
+  "origen": "Interfaz"
+ },
  "ahora": {
   "en": "just now",
   "origen": "Alfa_Manada"
@@ -9194,6 +10086,38 @@
  "al comerciante": {
   "en": "to a vendor",
   "origen": "Alfa_Comercio"
+ },
+ "al este": {
+  "en": "east",
+  "origen": "Alfa_Inicio"
+ },
+ "al noreste": {
+  "en": "northeast",
+  "origen": "Alfa_Inicio"
+ },
+ "al noroeste": {
+  "en": "northwest",
+  "origen": "Alfa_Inicio"
+ },
+ "al norte": {
+  "en": "north",
+  "origen": "Alfa_Inicio"
+ },
+ "al oeste": {
+  "en": "west",
+  "origen": "Alfa_Inicio"
+ },
+ "al sur": {
+  "en": "south",
+  "origen": "Alfa_Inicio"
+ },
+ "al sureste": {
+  "en": "southeast",
+  "origen": "Alfa_Inicio"
+ },
+ "al suroeste": {
+  "en": "southwest",
+  "origen": "Alfa_Inicio"
  },
  "apagada": {
   "en": "off",
@@ -9327,10 +10251,6 @@
   "en": "this quest",
   "origen": "Alfa_Comodidades"
  },
- "faltan %s XP": {
-  "en": "%s XP to go",
-  "origen": "Alfa_Inicio"
- },
  "gris": {
   "en": "grey",
   "origen": "Alfa_Bolsas"
@@ -9415,6 +10335,10 @@
   "en": "material",
   "origen": "Alfa_Rutas"
  },
+ "mejor en %d": {
+  "en": "best at %d",
+  "origen": "Interfaz"
+ },
  "mejora": {
   "en": "upgrade",
   "origen": "Alfa_Bolsas"
@@ -9430,6 +10354,10 @@
  "morado": {
   "en": "purple",
   "origen": "Alfa_Bolsas"
+ },
+ "mostrar u ocultar la ventana de guía": {
+  "en": "show or hide the guide window",
+  "origen": "Interfaz"
  },
  "más de 99 h": {
   "en": "over 99 h",
@@ -9543,6 +10471,10 @@
   "en": "yes",
   "origen": "Alfa_Manada"
  },
+ "tu hermandad": {
+  "en": "your guild",
+  "origen": "Alfa_Inicio"
+ },
  "tu piel o armadura demoníaca": {
   "en": "your Demon Skin or Demon Armor",
   "origen": "Alfa_Inicio"
@@ -9599,9 +10531,17 @@
   "en": "and %d more not seen for a while",
   "origen": "Alfa_Manada"
  },
+ "y %d piezas más": {
+  "en": "and %d more pieces",
+  "origen": "Alfa_Inicio"
+ },
  "y %d recursos más": {
   "en": "and %d more resources",
   "origen": "Alfa_Recoleccion"
+ },
+ "y 1 pieza más": {
+  "en": "and 1 more piece",
+  "origen": "Alfa_Inicio"
  },
  "ya la habías hecho": {
   "en": "done before",
@@ -9648,12 +10588,12 @@
   "origen": "Alfa_Builds"
  },
  "¡Hola!": {
-  "en": "Hi!",
-  "origen": "Alfa_Inicio"
+  "en": "Hello!",
+  "origen": "Interfaz"
  },
  "¡Hola, %s!": {
-  "en": "Hi, %s!",
-  "origen": "Alfa_Inicio"
+  "en": "Hello, %s!",
+  "origen": "Interfaz"
  },
  "¡Listo! %s precios guardados.": {
   "en": "Done! %s prices saved.",
@@ -9690,6 +10630,10 @@
  "¿Abandonar %d misión?": {
   "en": "Abandon %d quest?",
   "origen": "Alfa_Rutas"
+ },
+ "¿Algo raro?": {
+  "en": "Something off?",
+  "origen": "Interfaz"
  },
  "¿Aplicar estos talentos?": {
   "en": "Apply these talents?",
@@ -9738,6 +10682,10 @@
  "¿Quieres cazar con nosotros? Pulsa el botón: Alfa busca a un oficial conectado y te abre un susurro con tu mensaje listo para que lo envíes con Intro.": {
   "en": "Want to hunt with us? Press the button: Alfa looks for an online officer and opens a whisper with your message ready to send with Enter.",
   "origen": "Alfa_Manada"
+ },
+ "¿Qué buscas?": {
+  "en": "What are you looking for?",
+  "origen": "Interfaz"
  },
  "¿Qué hago con mis objetos?": {
   "en": "What should I do with my items?",
