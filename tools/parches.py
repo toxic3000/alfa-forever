@@ -92,7 +92,8 @@ def _fijo(texto):
 
 
 INTERFAZ = [
-    ("Alfa/Alfa.toc", "Theme\\Theme.xml\n", _fijo("Interfaz\\Textos.lua\nTheme\\Theme.xml\n")),
+    ("Alfa/Alfa.toc", "Theme\\Theme.xml\n",
+     _fijo("Interfaz\\Textos.lua\nInterfaz\\TextosGuia.lua\nInterfaz\\TextosVentanas.lua\nTheme\\Theme.xml\n")),
     # Sin nombrar addons de terceros: las opciones de los que Alfa reemplaza
     # solo se ven con ese addon cargado, y los demas textos van en neutro.
     # Los textos en espanol de las opciones los traduce la ventana al dibujarlos.

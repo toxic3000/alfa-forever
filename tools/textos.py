@@ -52,7 +52,7 @@ def pares() -> dict:
     lua = _lua()
     todo = {}
     # Textos de la interfaz propia del motor (motor/**/Textos.lua, mismo formato M.EN).
-    for textos in sorted((RAIZ / "motor").rglob("Textos.lua")) if (RAIZ / "motor").is_dir() else []:
+    for textos in sorted((RAIZ / "motor").rglob("Textos*.lua")) if (RAIZ / "motor").is_dir() else []:
         M = lua.table()
         lua.globals().cargar(textos.read_bytes().decode("utf-8-sig"), M)
         if M.EN:
