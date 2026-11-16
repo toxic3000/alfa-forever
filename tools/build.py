@@ -119,6 +119,26 @@ def main() -> int:
             print("  -", e)
         return 1
 
+    # Interfaz propia de Alfa: archivos del motor reescritos por completo (motor/).
+    # Si la base de Polestar de un archivo cambio, se avisa para revisarlo.
+    motor = RAIZ / "motor"
+    if motor.is_dir():
+        import hashlib
+        base_json = motor / "BASE.json"
+        bases = json.loads(base_json.read_text(encoding="utf-8")) if base_json.exists() else {}
+        for origen in sorted(motor.rglob("*")):
+            if not origen.is_file() or origen == base_json:
+                continue
+            rel = origen.relative_to(motor).as_posix()
+            destino = dist / rel
+            esperado = bases.get(rel)
+            if esperado and destino.exists() and hashlib.sha256(destino.read_bytes()).hexdigest() != esperado:
+                print(f"AVISO: Polestar cambio {rel}; revisar motor/{rel} por si hay algo que traer")
+            if rel not in bases:
+                print(f"AVISO: motor/{rel} no esta en motor/BASE.json (usa tools/motor.py)")
+            destino.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(origen, destino)
+
     propios = 0
     src = RAIZ / "src"
     if src.is_dir():
