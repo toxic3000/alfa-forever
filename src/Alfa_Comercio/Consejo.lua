@@ -179,12 +179,13 @@ end
 -- El consejo
 ---------------------------------------------------------------------------
 
+-- chip: su nombre; color: el del tema (cuadro del objeto); tono: el del Kit (insignias).
 M.TIPOS = {
-	vender = { chip = "Vender", color = "quest" },
-	subastar = { chip = "Subastar", color = "success" },
-	desencantar = { chip = "Transformar", color = "dungeon" },
-	receta = { chip = "Transformar", color = "dungeon" },
-	guardar = { chip = "Guardar", color = "textDim" },
+	vender = { chip = "Vender", color = "quest", tono = "oro" },
+	subastar = { chip = "Subastar", color = "success", tono = "exito" },
+	desencantar = { chip = "Transformar", color = "dungeon", tono = "mazmorra" },
+	receta = { chip = "Transformar", color = "dungeon", tono = "mazmorra" },
+	guardar = { chip = "Guardar", color = "textDim", tono = "neutro" },
 }
 
 -- opts = { ligado = bool (nil: según el tipo de ligado), link = string }
@@ -207,7 +208,7 @@ function M.Consejo(id, opts)
 		return c
 	end
 	if not ligado then
-		local bruto, fecha, cantidad, fuente = M.PrecioSubasta(id, opts.link)
+		local bruto, fecha, cantidad, fuente = M.PrecioSubasta(id)
 		if bruto then
 			c.subasta = { bruto = bruto, neto = M.NetoSubasta(bruto), fecha = fecha, cantidad = cantidad, fuente = fuente, viejo = M.Viejo(fecha) }
 		end
@@ -260,7 +261,20 @@ function M.TextoMejor(c)
 	return L["guardar"]
 end
 
+-- -> nombre, color del tema, tono del Kit
 function M.ChipDe(c)
 	local t = M.TIPOS[c.mejor] or M.TIPOS.guardar
-	return L[t.chip], t.color
+	return L[t.chip], t.color, t.tono
 end
+
+---------------------------------------------------------------------------
+-- Para los demás módulos de Alfa (Bolsas sugiere qué vender con esto):
+--   AlfaComercio.Consejo(id, opts) -> c | nil ; AlfaComercio.TextoMejor(c) -> texto
+--   AlfaComercio.ValorVenta(id) -> cobre, conPrecio ; AlfaComercio.PrecioSubasta(id) -> bruto, fecha
+---------------------------------------------------------------------------
+AlfaComercio = type(AlfaComercio) == "table" and AlfaComercio or {}
+AlfaComercio.Consejo = M.Consejo
+AlfaComercio.TextoMejor = M.TextoMejor
+AlfaComercio.ChipDe = M.ChipDe
+AlfaComercio.ValorVenta = M.ValorVenta
+AlfaComercio.PrecioSubasta = M.PrecioSubasta

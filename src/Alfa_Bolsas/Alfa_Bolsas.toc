@@ -5,6 +5,7 @@
 ## Version: dev
 ## X-License: GPL-3.0-only
 ## Dependencies: Alfa, Alfa_Nucleo
+## OptionalDeps: Alfa_Comercio
 ## Category: Alfa
 
 Textos.lua
@@ -13,6 +14,10 @@ Bolsas.lua
 Datos.lua
 Objetos.lua
 Botones.lua
+Lotes.lua
+Banco.lua
+Sugerencias.lua
+Barra.lua
 Ventana.lua
 Reemplazo.lua
 Pagina.lua

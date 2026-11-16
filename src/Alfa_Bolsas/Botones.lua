@@ -362,7 +362,7 @@ function B.Pintar(b, ent)
 		p.nivel:SetText("")
 	end
 
-	if M.Get("marcaChatarra") and q == 0 and not rec.sinValor then
+	if M.Get("marcaChatarra") and (q == 0 or rec.basura) and not rec.sinValor then
 		p.chatarra:SetVertexColor(1, 0.82, 0.25, 1)
 		p.chatarra:Show()
 	else

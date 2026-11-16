@@ -1,18 +1,24 @@
 -- Alfa - Bolsas (Toxic / La Jauría). GPL-3.0.
 --
--- Tus bolsas y tu banco en una sola ventana de Alfa, con dos vistas (una
--- sola bolsa o por categorías), ordenar, buscar, marcas sobre cada objeto y
--- el inventario de todos tus personajes (también en el cuadro de cada
--- objeto). Todo con código propio.
+-- Tus bolsas y tu banco en una sola ventana de Alfa, con tres vistas (todo
+-- junto, por categorías o por bolsa), la barra de las bolsas equipadas,
+-- ordenar, buscar, marcas sobre cada objeto, el inventario de todos tus
+-- personajes (también en el cuadro de cada objeto), depositar rápido y
+-- comprar espacio en el banco, y qué vender o conservar cuando las bolsas se
+-- empiezan a llenar. Todo con código propio.
 --
 -- Archivos (en el orden del .toc):
---   Bolsas.lua     registro del módulo, ajustes y utilidades comunes (este)
---   Datos.lua      el registro por personaje y los conteos del cuadro de objeto
---   Objetos.lua    datos de cada objeto, categorías y búsqueda
---   Botones.lua    los botones de objeto (seguros en vivo, de foto) y sus marcas
---   Ventana.lua    las ventanas de bolsas y de banco
---   Reemplazo.lua  abrir la ventana de Alfa en lugar de las bolsas de Blizzard
---   Pagina.lua     la página "Bolsas" en la ventana de Alfa
+--   Bolsas.lua       registro del módulo, ajustes y utilidades comunes (este)
+--   Datos.lua        el registro por personaje y los conteos del cuadro de objeto
+--   Objetos.lua      datos de cada objeto, categorías y búsqueda
+--   Botones.lua      los botones de objeto (seguros en vivo, de foto) y sus marcas
+--   Lotes.lua        mover objetos por lotes tras un clic (depositar, vender)
+--   Banco.lua        depositar rápido y comprar espacio en el banco
+--   Sugerencias.lua  qué vender o conservar cuando las bolsas se llenan
+--   Barra.lua        la barra de las bolsas equipadas (ver, cambiar, resaltar)
+--   Ventana.lua      las ventanas de bolsas y de banco
+--   Reemplazo.lua    abrir la ventana de Alfa en lugar de las bolsas de Blizzard
+--   Pagina.lua       la página "Bolsas" en la ventana de Alfa
 
 local ADDON, M = ...
 local N = AlfaNucleo
@@ -29,7 +35,7 @@ local type, tonumber, pairs, pcall = type, tonumber, pairs, pcall
 ---------------------------------------------------------------------------
 
 M.AJUSTES = {
-	vista = "categorias",     -- "categorias" | "una"
+	vista = "categorias",     -- "una" (todo junto) | "categorias" | "bolsa"
 	tamIcono = 36,            -- lado de cada casilla, en puntos
 	columnas = 10,            -- casillas por fila
 	reemplazar = true,        -- abrir la ventana de Alfa en lugar de las bolsas de Blizzard
@@ -44,10 +50,16 @@ M.AJUSTES = {
 	marcaMejora = true,       -- flecha de mejora
 	marcaMision = true,       -- marca de objeto de misión
 	cuadroConteo = true,      -- "Tienes 12 (...)" en el cuadro de cada objeto
+	barra = true,             -- la barra de las bolsas equipadas en la ventana
+	avisoLleno = true,        -- avisar (y sugerir qué vender) cuando se llenan
+	avisoLibres = 4,          -- ... al quedar estas casillas libres o menos
+	deposito = "banco",       -- lo último que elegiste en "Depositar"
 }
 
+M.VISTAS = { una = true, categorias = true, bolsa = true }
+
 N.Modulo({
-	id = M.ID, nombre = L["Bolsas"], icono = "icon-collect", orden = 40,
+	id = M.ID, nombre = L["Bolsas"], icono = "ic-bolsas", orden = 40,
 	subtitulo = L["Tus bolsas y tu banco en una sola ventana, y lo que lleva cada uno de tus personajes."],
 	comando = "bolsas",
 	ajustes = M.AJUSTES,
@@ -61,6 +73,14 @@ function M.Get(clave)
 end
 
 function M.Set(clave, valor) N.Set(M.ID, clave, valor) end
+
+-- La vista de la ventana: "una", "categorias" o "bolsa".
+function M.Vista()
+	local v = M.Get("vista")
+	return M.VISTAS[v] and v or "categorias"
+end
+
+function M.EnCombate() return InCombatLockdown and InCombatLockdown() and true or false end
 
 -- Un número del ajuste, dentro de [lo, hi].
 function M.Numero(clave, lo, hi)

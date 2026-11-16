@@ -2,11 +2,9 @@
 --
 -- Guarda, por reino y facción, el precio mínimo por unidad de cada objeto en
 -- la casa de subastas, con su fecha y un historial corto (un precio por día,
--- 14 días). Los precios llegan de tres lados:
+-- 14 días). Los precios son solo de Alfa y llegan de dos lados:
 --   * el escaneo completo (Subasta.lua: C_AuctionHouse.ReplicateItems),
---   * lo que el jugador ya busca a mano (eventos de resultados de búsqueda),
---   * otro addon de subastas, si está instalado, solo como respaldo y por su
---     API pública (Compat.lua).
+--   * lo que el jugador ya busca a mano (eventos de resultados de búsqueda).
 -- También anota lo que cuesta comprar cada objeto a un comerciante (al abrir
 -- su ventana), para el costo de los reactivos de las recetas.
 --
@@ -246,72 +244,17 @@ function M.Anotar(id, precio, cantidad, fuente, fecha, r)
 end
 
 ---------------------------------------------------------------------------
--- Respaldo: otro addon de subastas (Compat.lua), solo por su API pública.
----------------------------------------------------------------------------
-
-local OTROS = M.OTROS and M.OTROS.precios or {}
-
--- La tabla al final de una ruta de globales ({ "A", "B" } -> A.B), o nil.
-local function resolver(ruta)
-	local t = _G
-	for _, k in ipairs(ruta or {}) do
-		if type(t) ~= "table" then return nil end
-		t = t[k]
-	end
-	return type(t) == "table" and t or nil
-end
-
--- La API del primer addon de la lista que esté presente, y su entrada.
--- Con `exigir`, solo si trae la función de precio por ID.
-local function buscarOtro(exigir)
-	for _, o in ipairs(OTROS) do
-		local api = resolver(o.api)
-		if api and (not exigir or type(api[o.porId]) == "function") then return api, o end
-	end
-	return nil
-end
-
-function M.HayOtroPrecio()
-	return buscarOtro(true) ~= nil
-end
-
-local function precioOtro(id, link)
-	if not M.Ajuste("respaldo") then return nil end
-	local api, o = buscarOtro(false)
-	if not api then return nil end
-	local p
-	local porEnlace, porId, edad = api[o.porEnlace], api[o.porId], api[o.edad]
-	if type(link) == "string" and type(porEnlace) == "function" then
-		local ok, v = pcall(porEnlace, "Alfa", link)
-		if ok and type(v) == "number" then p = v end
-	end
-	if not p and type(porId) == "function" then
-		local ok, v = pcall(porId, "Alfa", id)
-		if ok and type(v) == "number" then p = v end
-	end
-	if not p or p <= 0 then return nil end
-	local fecha
-	if type(edad) == "function" then
-		local ok, dias = pcall(edad, "Alfa", id)
-		if ok and type(dias) == "number" then fecha = M.Ahora() - dias * DIA end
-	end
-	return p, fecha
-end
-
----------------------------------------------------------------------------
 -- Lectura de precios
 ---------------------------------------------------------------------------
 
 -- Precio de subasta por unidad (bruto), fecha, cantidad vista y fuente
--- ("alfa", "busqueda", "otro"). nil si no hay.
-function M.PrecioSubasta(id, link)
+-- ("alfa": el escaneo completo; "busqueda": lo que buscaste). nil si no hay.
+function M.PrecioSubasta(id)
 	if type(id) ~= "number" then return nil end
 	local e = M.Reino().p[id]
 	if type(e) == "table" and type(e[1]) == "number" then
 		return e[1], e[2], e[3], e[4] == 1 and "alfa" or "busqueda"
 	end
-	local p, fecha = precioOtro(id, link)
-	if p then return p, fecha, nil, "otro" end
 	return nil
 end
 

@@ -149,10 +149,10 @@ end)
 -- Categorías
 ---------------------------------------------------------------------------
 
--- rec: { i, c, l, q, nuevo, mision, sinValor }; e: O.Info.
+-- rec: { i, c, l, q, nuevo, mision, sinValor, basura (marcado como chatarra) }; e: O.Info.
 function O.Categoria(rec, e, bolsa)
 	if rec.nuevo then return "recientes" end
-	if rec.q == 0 and not rec.sinValor then return "chatarra" end
+	if (rec.q == 0 or rec.basura) and not rec.sinValor then return "chatarra" end
 	local c, s = e.clase, e.subclase
 	if rec.mision or c == 12 then return "misiones" end
 	if c == 2 or c == 4 then return "equipo" end
@@ -161,6 +161,26 @@ function O.Categoria(rec, e, bolsa)
 	if c == 7 or c == 9 or c == 19 or c == 3 or c == 8 or c == 16 then return "artesania" end
 	if c == 17 or (c == 15 and (s == 2 or s == 5 or s == 6)) then return "monturas" end
 	return "otros"
+end
+
+-- La categoría de un objeto por lo que es, sin "Recientes" (para depositar
+-- por categoría): la misma regla que O.Categoria.
+function O.CategoriaFija(rec, e, bolsa)
+	if rec.nuevo then
+		local r = {}
+		for k, v in pairs(rec) do r[k] = v end
+		r.nuevo = nil
+		return O.Categoria(r, e, bolsa)
+	end
+	return O.Categoria(rec, e, bolsa)
+end
+
+-- Materiales de oficio: artículos comerciables (7), componentes (5 y 15/1)
+-- y gemas (3). Lo que se deposita con "Todos los materiales".
+function O.EsMaterial(e)
+	if type(e) ~= "table" then return false end
+	local c, s = e.clase, e.subclase
+	return c == 7 or c == 5 or c == 3 or (c == 15 and s == 1)
 end
 
 -- Dentro de una categoría: mejor calidad, mayor nivel, por nombre, por objeto,

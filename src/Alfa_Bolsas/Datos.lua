@@ -4,8 +4,10 @@
 -- N.Datos("bolsas").personajes["Nombre-Reino"] = {
 --   nombre, reino, faccion ("Alliance" | "Horde"), clase ("WARRIOR"), nivel,
 --   dinero (cobre), visto (time()),
---   bolsas = { [bolsa] = { n = casillas, [casilla] = { i = id, c = cantidad, l = enlace, q = calidad } } },
+--   bolsas = { [bolsa] = { n = casillas, b = { i, l, ic } (la bolsa misma), nb = su nombre,
+--              [casilla] = { i = id, c = cantidad, l = enlace, q = calidad } } },
 --   banco  = { igual, con las pestañas del banco },  bancoVisto = time() de la última foto,
+--   compra = { c = casillas compradas, m = máximo, p = costo de la siguiente, t = time() },
 --   equipo = { [ranura] = { i = id, l = enlace, q = calidad } },
 --   v = versión (sube con cada cambio: los conteos del cuadro se rehacen),
 -- }
@@ -94,11 +96,89 @@ end
 
 local C = C_Container
 
--- Casillas de una bolsa en vivo: -> { n = casillas, [casilla] = { i, c, l, q } }
+---------------------------------------------------------------------------
+-- La bolsa misma (no lo que lleva): su nombre, su ícono y el objeto.
+--   Mochila (0) y llavero (-1): fijos. Bolsas 1 a 4 y la de componentes (5):
+--   su ranura de inventario (C_Container.ContainerIDToInventoryID) y
+--   PickupBagFromSlot / PutItemInBag para cambiarla, como los botones de
+--   bolsa del juego (Blizzard_MainMenuBarBagButtons, Shared/
+--   MainMenuBarBagButtons.lua: BagSlotOnDragStart / PutItemInBag).
+--   Banco (6 a 14): la pestaña 1 es el banco base; de la 2 en adelante cada
+--   pestaña comprada es una casilla de bolsa del banco, en
+--   (Enum.BagIndex.Characterbanktab, casilla): la recoge y la pone
+--   C_Container.PickupContainerItem, como BankItemButtonBagMixin de Forever
+--   (Blizzard_UIPanels_Game/Camelot/BankFrame.lua).
+---------------------------------------------------------------------------
+
+D.ICONO_MOCHILA = "Interface\\Icons\\ui-hud-actionbar-bag"
+D.ICONO_LLAVERO = "Interface\\Icons\\ui-hud-actionbar-keyring"
+D.BANCO_BOLSAS = (Enum and Enum.BagIndex and Enum.BagIndex.Characterbanktab) or -2
+
+-- La casilla de bolsa del banco de una pestaña (6 -> 1, 7 -> 2...).
+function D.CasillaBanco(bolsa) return bolsa - D.BANCO[1] + 1 end
+
+local function objetoEnCasillaBanco(casilla)
+	local IL = ItemLocation
+	local CI = C_Item
+	if type(IL) == "table" and IL.CreateFromBagAndSlot and CI and CI.DoesItemExist then
+		local ok, loc = pcall(IL.CreateFromBagAndSlot, IL, D.BANCO_BOLSAS, casilla)
+		if ok and loc and M.Leer(M.Llamar(CI.DoesItemExist, loc)) then
+			return M.Num(M.Llamar(CI.GetItemID, loc)), M.Texto(M.Llamar(CI.GetItemLink, loc)), M.Leer(M.Llamar(CI.GetItemIcon, loc))
+		end
+	end
+	local info = C and M.Llamar(C.GetContainerItemInfo, D.BANCO_BOLSAS, casilla)
+	if type(info) == "table" and M.Num(info.itemID) then
+		return M.Num(info.itemID), M.Texto(info.hyperlink), M.Leer(info.iconFileID)
+	end
+	return nil
+end
+
+local function nombreDeEnlace(link)
+	return type(link) == "string" and link:match("%[(.-)%]") or nil
+end
+
+-- En vivo: -> { nombre, icono, id, link, inv (ranura de inventario), casilla
+-- (del banco), fija (no se cambia), base (el banco base) }
+function D.InfoBolsa(bolsa)
+	local nombre = C and M.Texto(M.Llamar(C.GetBagName, bolsa))
+	if bolsa == 0 then
+		return { nombre = nombre or L["Mochila"], icono = D.ICONO_MOCHILA, fija = true }
+	elseif bolsa == D.LLAVERO then
+		return { nombre = L["Llavero"], icono = D.ICONO_LLAVERO, fija = true }
+	elseif esBanco[bolsa] then
+		local casilla = D.CasillaBanco(bolsa)
+		if casilla == 1 then return { nombre = L["Banco"], fija = true, base = true, casilla = 1 } end
+		local id, link, icono = objetoEnCasillaBanco(casilla)
+		return { nombre = nombre or nombreDeEnlace(link), icono = icono, id = id, link = link, casilla = casilla }
+	end
+	local inv = C and M.Num(M.Llamar(C.ContainerIDToInventoryID, bolsa))
+	local id = inv and GetInventoryItemID and M.Num(GetInventoryItemID("player", inv)) or nil
+	local link = inv and GetInventoryItemLink and M.Texto(GetInventoryItemLink("player", inv)) or nil
+	local icono = inv and GetInventoryItemTexture and M.Leer(GetInventoryItemTexture("player", inv)) or nil
+	return { nombre = nombre or nombreDeEnlace(link), icono = icono, id = id, link = link, inv = inv }
+end
+
+-- Lo mismo, de una foto guardada (otro personaje, el banco cerrado).
+function D.InfoGuardada(bolsa, t)
+	t = type(t) == "table" and t or {}
+	if bolsa == 0 then return { nombre = t.nb or L["Mochila"], icono = D.ICONO_MOCHILA, fija = true } end
+	if bolsa == D.LLAVERO then return { nombre = L["Llavero"], icono = D.ICONO_LLAVERO, fija = true } end
+	if esBanco[bolsa] and D.CasillaBanco(bolsa) == 1 then return { nombre = L["Banco"], fija = true, base = true, casilla = 1 } end
+	local b = type(t.b) == "table" and t.b or {}
+	return { nombre = t.nb or nombreDeEnlace(b.l), icono = b.ic, id = b.i, link = b.l,
+		casilla = esBanco[bolsa] and D.CasillaBanco(bolsa) or nil }
+end
+
+-- Casillas de una bolsa en vivo: -> { n = casillas, b, nb, [casilla] = { i, c, l, q } }
 function D.Escanear(bolsa)
 	local n = C and M.Num(M.Llamar(C.GetContainerNumSlots, bolsa)) or 0
 	n = n or 0
 	local t = { n = n }
+	if bolsa ~= D.LLAVERO then
+		local info = D.InfoBolsa(bolsa)
+		if info.id then t.b = { i = info.id, l = info.link, ic = info.icono } end
+		if info.nombre and not info.base and bolsa ~= 0 then t.nb = info.nombre end
+	end
 	for s = 1, n do
 		local info = M.Llamar(C.GetContainerItemInfo, bolsa, s)
 		if type(info) == "table" then
@@ -208,6 +288,52 @@ function D.GuardarCabecera()
 end
 
 ---------------------------------------------------------------------------
+-- Comprar espacio en el banco (BankDocumentation.lua): Forever vende casillas
+-- de bolsa del banco, una tras otra (C_Bank.PurchaseBankTab). Su costo y si te
+-- alcanza: C_Bank.FetchNextPurchasableBankTabData. Se guarda lo último que
+-- se vio, para decírtelo lejos del banco.
+---------------------------------------------------------------------------
+
+D.TIPO_BANCO = (Enum and Enum.BankType and Enum.BankType.Character) or 0
+
+-- En vivo: -> { compradas, maximo, costo, alcanza, puede, completo } | nil
+function D.Compra()
+	local B = C_Bank
+	if type(B) ~= "table" then return nil end
+	local tipo = D.TIPO_BANCO
+	local maximo = M.Num(M.Llamar(B.FetchMaxNumBankTabs, tipo))
+	if not maximo or maximo <= 0 then return nil end
+	local compradas = M.Num(M.Llamar(B.FetchNumPurchasedBankTabs, tipo)) or 0
+	local sig = M.Llamar(B.FetchNextPurchasableBankTabData, tipo)
+	local costo, alcanza
+	if type(sig) == "table" then
+		costo = M.Num(sig.tabCost)
+		alcanza = M.Leer(sig.canAfford) and true or false
+	end
+	local completo = (M.Leer(M.Llamar(B.HasMaxBankTabs, tipo)) and true) or compradas >= maximo
+	local puede = M.Leer(M.Llamar(B.CanPurchaseBankTab, tipo))
+	return { compradas = compradas, maximo = maximo, costo = costo, alcanza = alcanza, puede = puede ~= false, completo = completo }
+end
+
+local function guardarCompra()
+	local r = D.Actual()
+	local c = D.Compra()
+	if not (r and c) then return end
+	r.compra = { c = c.compradas, m = c.maximo, p = c.costo, t = time and time() or nil }
+	M.Avisar("COMPRA")
+end
+D.GuardarCompra = guardarCompra
+
+-- Lo guardado de un personaje (nil: el actual): -> { compradas, maximo, costo, fecha, completo } | nil
+function D.CompraGuardada(k)
+	local r = k and D.Personaje(k) or D.Actual()
+	local c = r and type(r.compra) == "table" and r.compra
+	if not c then return nil end
+	local compradas, maximo = tonumber(c.c) or 0, tonumber(c.m) or 0
+	return { compradas = compradas, maximo = maximo, costo = tonumber(c.p), fecha = c.t, completo = maximo > 0 and compradas >= maximo }
+end
+
+---------------------------------------------------------------------------
 -- Eventos
 ---------------------------------------------------------------------------
 
@@ -232,6 +358,7 @@ A.RegisterEvent("PLAYER_LEVEL_UP", function() M.Luego(0.5, D.GuardarCabecera) en
 A.RegisterEvent("BANKFRAME_OPENED", function()
 	bancoAbierto = true
 	D.TodoElBanco()
+	M.Luego(0.3, guardarCompra)
 end)
 A.RegisterEvent("BANKFRAME_CLOSED", function()
 	bancoAbierto = false
@@ -245,7 +372,11 @@ A.RegisterEvent("PLAYERBANKSLOTS_CHANGED", function(_, pestana)
 	if bolsa then sucias[bolsa] = true else for _, b in ipairs(D.BANCO) do sucias[b] = true end end
 	programar()
 end)
-A.RegisterEvent("BANK_TABS_CHANGED", function() D.TodoElBanco() end)
+A.RegisterEvent("BANK_TABS_CHANGED", function()
+	D.TodoElBanco()
+	if bancoAbierto then M.Luego(0.2, guardarCompra) end
+end)
+A.RegisterEvent("PLAYER_MONEY", function() if bancoAbierto then guardarCompra() end end)
 
 ---------------------------------------------------------------------------
 -- Consultas

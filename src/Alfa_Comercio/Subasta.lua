@@ -21,7 +21,7 @@
 local _, M = ...
 local N = AlfaNucleo
 local A = N.A
-local W, T = A.Widgets, A.Theme
+local K = N.Kit
 local L = M.L
 
 local type, floor, max, min, tonumber, tostring = type, math.floor, math.max, math.min, tonumber, tostring
@@ -34,7 +34,6 @@ local estado = "listo" -- "listo" | "esperando" | "procesando"
 local progreso, mensaje = 0, nil
 local abierta = false
 local temporizador
-local ultimoProcesado = 0
 
 local function api()
 	local AH = C_AuctionHouse
@@ -85,7 +84,6 @@ local function procesar()
 	if temporizador and temporizador.Cancel then temporizador:Cancel() end
 	temporizador = nil
 	estado, progreso, mensaje = "procesando", 0, nil
-	ultimoProcesado = M.Ahora()
 	if refrescarBarra then refrescarBarra() end
 	M.Tarea("escaneo", function()
 		local n = AH.GetNumReplicateItems()
@@ -161,62 +159,62 @@ function M.Escanear()
 	return true
 end
 
+-- Solo se leen los escaneos que pidió Alfa (su botón o /alfa comercio escanear).
 A.RegisterEvent("REPLICATE_ITEM_LIST_UPDATE", function()
 	if estado == "esperando" then return procesar() end
-	-- Otro addon pidió el escaneo: también sirve, si no se leyó hace poco.
-	if estado == "listo" and abierta and M.Ahora() - ultimoProcesado > 60 then
-		if M.EsperaEscaneo() == 0 then M.Reino().pedido = M.Ahora() end
-		procesar()
-	end
 end)
 
 ---------------------------------------------------------------------------
--- La barra bajo la ventana de la subasta
+-- La barra bajo la ventana de la subasta (hecha con el Kit)
 ---------------------------------------------------------------------------
 
 local barra
-local BARRA_W, BARRA_H = 430, 40
+local BARRA_W, BARRA_H = 440, 44
 
 local function marcoSubasta()
 	return AuctionHouseFrame
 end
 
 local function textoEstado()
-	if estado == "esperando" then return L["Pidiendo los precios a la subasta..."], "textDim" end
+	if estado == "esperando" then return L["Pidiendo los precios a la subasta..."], "textoSuave" end
 	if estado == "procesando" then
-		return L["Leyendo precios... %d%%"]:format(floor(progreso * 100 + 0.5)), "textDim"
+		return L["Leyendo precios... %d%%"]:format(floor(progreso * 100 + 0.5)), "textoSuave"
 	end
-	if mensaje then return mensaje, "text" end
+	if mensaje then return mensaje, "texto" end
 	local fecha, objetos = M.Escaneo()
-	if not fecha then return L["Aún no tienes precios. Pulsa «Escanear con Alfa»."], "warning" end
+	if not fecha then return L["Aún no tienes precios. Pulsa «Escanear con Alfa»."], "aviso" end
 	local texto = L["Precios %s · %s objetos"]:format(M.Hace(fecha), miles(objetos or 0))
-	return texto, M.Viejo(fecha) and "warning" or "textDim"
+	return texto, M.Viejo(fecha) and "aviso" or "textoSuave"
 end
+
+-- El texto y el estado del botón de escanear (también lo usa la página).
+function M.BotonEscaneo()
+	local espera = M.EsperaEscaneo()
+	if estado ~= "listo" then return L["Escaneando..."], false end
+	if espera > 0 then return L["Espera %s"]:format(minutos(espera)), false end
+	return L["Escanear con Alfa"], true
+end
+
+local reloj -- refresca la barra mientras se ve
 
 function refrescarBarra()
 	if not barra then return end
 	local mostrar = abierta and M.Ajuste("boton") and api() ~= nil
 	barra:SetShown(mostrar and true or false)
-	if not mostrar then return end
-	local texto, color = textoEstado()
-	barra.Estado:SetText(texto)
-	W.Color(barra.Estado, color)
-	local espera = M.EsperaEscaneo()
-	local boton = barra.Boton
-	if estado ~= "listo" then
-		W.SetButtonText(boton, L["Escaneando..."])
-		boton:Disable()
-	elseif espera > 0 then
-		W.SetButtonText(boton, L["Espera %s"]:format(minutos(espera)))
-		boton:Disable()
-	else
-		W.SetButtonText(boton, L["Escanear con Alfa"])
-		boton:Enable()
+	if not mostrar then
+		if reloj then reloj:Cancel() reloj = nil end
+		return
 	end
-	boton:SetAlpha(boton:IsEnabled() and 1 or 0.55)
+	if not reloj and C_Timer and C_Timer.NewTicker then reloj = C_Timer.NewTicker(0.5, function() refrescarBarra() end) end
+	local texto, color = textoEstado()
+	K.Escribir(barra.Estado, texto)
+	K.ColorTexto(barra.Estado, color)
+	local t, activo = M.BotonEscaneo()
+	barra.Boton:SetTexto(t)
+	barra.Boton:SetActivo(activo)
 	local enCurso = estado == "procesando"
 	barra.Progreso:SetShown(enCurso)
-	if enCurso then W.SetProgress(barra.Progreso, progreso, BARRA_W - 2) end
+	if enCurso then barra.Progreso:Set(progreso) end
 end
 M.RefrescarBarra = function() if refrescarBarra then refrescarBarra() end end
 
@@ -227,33 +225,26 @@ local function crearBarra()
 	barra = CreateFrame("Frame", nil, padre)
 	barra:SetSize(BARRA_W, BARRA_H)
 	barra:SetPoint("TOPRIGHT", padre, "BOTTOMRIGHT", 0, -2)
-	T.Skin(barra, "panel")
-	barra.Emblema = W.Tex(barra, "ARTWORK", "emblem", "accent")
-	barra.Emblema:SetSize(18, 18)
-	barra.Emblema:SetPoint("LEFT", barra, "LEFT", 10, 0)
-	barra.Titulo = W.Text(barra, "label", "text")
-	barra.Titulo:SetText("Alfa")
-	barra.Titulo:SetPoint("LEFT", barra.Emblema, "RIGHT", 6, 0)
-	barra.Estado = W.Text(barra, "small", "textDim")
-	barra.Estado:SetPoint("LEFT", barra.Titulo, "RIGHT", 8, 0)
-	barra.Boton = W.Button(barra, L["Escanear con Alfa"], function() M.Escanear() end, { primary = true, height = 26, icon = "search" })
-	barra.Boton:SetPoint("RIGHT", barra, "RIGHT", -8, 0)
-	barra.Boton.psTip = L["Escanear con Alfa"]
-	barra.Boton.psTipLines = { L["Lee el precio más bajo de cada objeto en toda la subasta. No compra ni publica nada. Se puede usar cada 15 minutos."] }
-	barra.Abrir = W.IconButton(barra, "qol-coin", 24, L["¿Qué hago con mis objetos?"], function() N.Abrir(M.ID) end)
-	barra.Abrir:SetPoint("RIGHT", barra.Boton, "LEFT", -6, 0)
-	barra.Estado:SetPoint("RIGHT", barra.Abrir, "LEFT", -6, 0)
-	barra.Progreso = W.ProgressLine(barra, 2)
-	barra.Progreso:SetPoint("BOTTOMLEFT", barra, "BOTTOMLEFT", 1, 1)
-	barra.Progreso:SetPoint("BOTTOMRIGHT", barra, "BOTTOMRIGHT", -1, 1)
+	barra.caja = K.Caja(barra, { fondo = "fondo", borde = "linea", corte = K.CORTE.panel })
+	barra.Marca = K.Marca(barra, K.CORTE.panel, "acento")
+	barra.Icono = K.Icono(barra, "ic-comercio", 18, "acento")
+	barra.Icono:SetPoint("LEFT", barra, "LEFT", K.ESP.m, 0)
+	barra.Titulo = K.Texto(barra, "encabezado", "texto")
+	K.Escribir(barra.Titulo, "Alfa")
+	barra.Titulo:SetPoint("LEFT", barra.Icono, "RIGHT", K.ESP.s, 0)
+	barra.Boton = K.Boton(barra, L["Escanear con Alfa"], function() M.Escanear() end, { tipo = "primario", tam = "chico", icono = "ic-buscar" })
+	barra.Boton:SetPoint("RIGHT", barra, "RIGHT", -K.ESP.m, 0)
+	K.ConInfo(barra.Boton, L["Escanear con Alfa"], L["Lee el precio más bajo de cada objeto en toda la subasta. No compra ni publica nada. Se puede usar cada 15 minutos."])
+	barra.Abrir = K.BotonIcono(barra, "ic-comercio", function() N.Abrir(M.ID) end, { tam = 24, ayuda = L["¿Qué hago con mis objetos?"] })
+	barra.Abrir:SetPoint("RIGHT", barra.Boton, "LEFT", -K.ESP.s, 0)
+	barra.Estado = K.Texto(barra, "pequeno", "textoSuave")
+	barra.Estado:SetPoint("LEFT", barra.Titulo, "RIGHT", K.ESP.s, 0)
+	barra.Estado:SetPoint("RIGHT", barra.Abrir, "LEFT", -K.ESP.s, 0)
+	barra.Progreso = K.Progreso(barra, { alto = 2 })
+	barra.Progreso:SetPoint("BOTTOMLEFT", barra, "BOTTOMLEFT", K.CORTE.panel, 1)
+	barra.Progreso:Acomodar(BARRA_W - 2 * K.CORTE.panel)
 	barra.Progreso:Hide()
-	local acumulado = 0
-	barra:SetScript("OnUpdate", function(_, dt)
-		acumulado = acumulado + (dt or 0)
-		if acumulado < 0.5 then return end
-		acumulado = 0
-		refrescarBarra()
-	end)
+	barra:SetScript("OnHide", function() if reloj then reloj:Cancel() reloj = nil end end)
 	return barra
 end
 

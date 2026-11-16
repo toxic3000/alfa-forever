@@ -4,15 +4,16 @@ Responde la pregunta "¿lo vendo al comerciante, lo subasto o lo convierto en al
 
 ## Qué hace
 
-- **Precios de la subasta.** Con la casa de subastas abierta aparece una barra de Alfa bajo su ventana con el botón **Escanear con Alfa**. El escaneo completo (`C_AuctionHouse.ReplicateItems`) guarda el precio más bajo por unidad de cada objeto, con su fecha, por reino y facción, y un historial de 14 días (un precio por día) para ver si sube o baja. Se lee por lotes, sin congelar el juego. Entre escaneos hay que esperar 15 minutos.
+- **Precios de la subasta, solo de Alfa.** Con la casa de subastas abierta aparece una barra de Alfa (hecha con el Kit) bajo su ventana con el botón **Escanear con Alfa**. El escaneo completo (`C_AuctionHouse.ReplicateItems`) guarda el precio más bajo por unidad de cada objeto, con su fecha, por reino y facción, y un historial de 14 días (un precio por día) para ver si sube o baja. Se lee por lotes, sin congelar el juego. Entre escaneos hay que esperar 15 minutos.
 - **Lo que ya buscas.** Cuando buscas algo en la subasta, Alfa también guarda el precio más bajo que ves.
 - **Comerciante.** Al abrir un comerciante, anota lo que cuesta comprarle cada cosa (por ejemplo, el hilo), para calcular el costo de las recetas.
 - **Recetas.** Al abrir la ventana de una profesión, Alfa lee tus recetas aprendidas (reactivos y producto). Sirven en todos tus personajes del mismo reino y facción ("créalo con Fulano").
 - **Desencantar.** Si tú u otro personaje tuyo tiene Encantamiento con nivel suficiente, calcula el valor esperado de los materiales según la calidad y el nivel del objeto.
 - **Consejo.** Para cada objeto compara vender, subastar (menos la comisión) y transformar (receta o desencantar). Recomienda lo que más oro deja si gana por lo menos un 10 % a venderlo; si nada da oro, dice que lo guardes.
 - **Cuadro del objeto.** Dos líneas al pasar el ratón: `Subasta: 1o 20p (hace 3 h) · Comerciante: 15p` y `Mejor: subastar 1o 14p (+660%)`.
-- **Página "Comercio".** Lo que llevas en las bolsas, ordenado por lo que más ganas, con un chip de color (Vender, Subastar, Transformar, Guardar), filtros por chip, el total si sigues los consejos contra venderlo todo, la antigüedad de los precios (con aviso para escanear) y tus recetas que dejan ganancia.
-- **Otro addon de subastas.** Si hay uno instalado de la lista de `Compat.lua`, sus precios se usan solo cuando Alfa no tiene uno, a través de su API pública.
+- **Página "Comercio"** (Oficios > Comercio, hecha con el Kit, plantilla Tablero): arriba y en grande, **qué hacer con lo que llevas** (cuánto ganas si sigues los consejos, cuántas cosas vender, subastar, transformar o guardar, y la acción que toca: escanear, *Llévame a la subasta* o *al comerciante*, con la flecha del motor); tus números; lo que llevas, ordenado por lo que más ganas, con insignias de color y filtros (los 10 primeros y "Ver todo"); los precios de la subasta (al día, viejos o sin precios, con su acción); tus recetas que dejan ganancia; cómo decide Alfa y los ajustes.
+- **Para Bolsas.** Publica `AlfaComercio.Consejo`, `TextoMejor`, `ValorVenta`, `PrecioSubasta` y `AnalizarBolsas`: Bolsas los usa para sugerir qué vender y qué conservar cuando se llenan.
+- **Sin otros addons.** Alfa usa solo sus propios escaneos y lo que ves al buscar; no lee precios de otros addons.
 
 ## Comandos
 
@@ -20,7 +21,7 @@ Responde la pregunta "¿lo vendo al comerciante, lo subasto o lo convierto en al
 - `/alfa comercio escanear`: escaneo completo (con la subasta abierta).
 - `/alfa comercio precio <enlace>`: escribe el consejo de un objeto en el chat.
 
-## Ajustes (en la página, sección Ajustes)
+## Ajustes (al final de la página: En el juego, Las cuentas, Tus datos)
 
 | Ajuste | Por omisión | Qué hace |
 |---|---|---|
@@ -30,7 +31,6 @@ Responde la pregunta "¿lo vendo al comerciante, lo subasto o lo convierto en al
 | Comisión de la subasta | 5 % | Lo que se queda la subasta de cada venta (estimado) |
 | Considerar desencantar | Si tú o tus personajes pueden | O Siempre (un amigo te ayuda) o Nunca |
 | Avisar cuando los precios tengan más de | 3 días | Cuándo un precio cuenta como viejo |
-| Usar los precios de otro addon de subastas si faltan | sí | Solo aparece si hay uno instalado |
 | Borrar los precios de este reino | — | Pide confirmación |
 
 Datos: `N.Datos("comercio")` (`AlfaNucleoDB.comercio`): `reinos["Reino-Facción"]` con precios (`p`), historial (`h`), último escaneo y última petición; `comprar` (precios del comerciante); `recetas` y `encantar` por personaje.
@@ -53,5 +53,5 @@ Datos: `N.Datos("comercio")` (`AlfaNucleoDB.comercio`): `reinos["Reino-Facción"
 7. Abrir la ventana de una profesión: en la página aparecen recetas en "Tus recetas que dejan ganancia" (o el aviso de precios faltantes). Confirmar que `C_TradeSkillUI.GetFilteredRecipeIDs` devuelve las recetas aprendidas y que `GetRecipeSchematic` trae reactivos y producto.
 8. Con Encantamiento: un objeto verde o azul muestra "Desencantar ≈ ..." y comparar con lo que sale de verdad al desencantar algunos.
 9. Pasar el ratón por objetos de las bolsas, del comerciante y de la subasta: las dos líneas de Alfa aparecen una sola vez y sin errores.
-10. En la página: filtros por chip, totales, orden por ganancia, aviso de precios viejos y la sección Ajustes (cada ajuste se guarda tras `/reload`).
-11. Con otro addon de subastas instalado: un objeto sin precio de Alfa toma el suyo y el ajuste aparece.
+10. En la página: la tarjeta de arriba (qué hacer y su acción: escanear con la subasta abierta, o la flecha a la subasta o al comerciante), los filtros, "Ver todo", el orden por ganancia, la tarjeta de precios y los ajustes (cada uno se guarda tras `/reload`).
+11. Con otro addon de subastas instalado, Alfa no toma sus precios ni reacciona a sus escaneos: solo lee los que pide su botón.

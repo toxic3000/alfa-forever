@@ -1,10 +1,15 @@
--- Alfa - Comercio: la página "¿Qué hago con mis objetos?" (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Comercio: la página "Comercio" (Toxic / La Jauría). GPL-3.0.
 --
--- Lo que llevas en las bolsas, ordenado por lo que más ganas, con la
--- recomendación en un chip de color (Vender, Subastar, Transformar, Guardar),
--- el total si sigues los consejos, la antigüedad de los precios, tus recetas
--- que dejan ganancia y los ajustes del módulo. Todo es información: nada se
--- vende, compra ni publica solo.
+-- Hecha con el Kit (docs/KIT.md), plantilla Tablero:
+--   1. arriba y en grande, qué hacer con lo que llevas: cuánto ganas si sigues
+--      los consejos, cuántas cosas vender, subastar, transformar o guardar, y
+--      la acción que toca ahora (escanear, ir a la subasta o al comerciante);
+--   2. los números: con los consejos, vendiéndolo todo y la diferencia;
+--   3. lo que llevas, ordenado por lo que más ganas, con filtros;
+--   4. los precios de la subasta (al día o no, y escanear);
+--   5. tus recetas que dejan ganancia;
+--   6. cómo decide Alfa y los ajustes.
+-- Todo es información: Alfa nunca vende, compra ni publica nada por ti.
 --
 -- Bolsas: C_Container.GetContainerNumSlots / GetContainerItemInfo
 -- (ContainerDocumentation.lua: ContainerItemInfo.itemID, stackCount,
@@ -14,85 +19,20 @@
 local _, M = ...
 local N = AlfaNucleo
 local A = N.A
-local W, T = A.Widgets, A.Theme
+local K = N.Kit
+local ESP = K.ESP
 local L = M.L
 
-local type, pairs, ipairs, floor, max, min = type, pairs, ipairs, math.floor, math.max, math.min
+local type, pairs, ipairs, floor, max, min, format = type, pairs, ipairs, math.floor, math.max, math.min, string.format
 
-local FILA_H, ICONO, VALOR_W = 46, 30, 120
-local GAP = 12
+local VISIBLES = 10   -- filas de "Lo que llevas" antes de "Ver todo"
 local MAX_RECETAS = 8
+local FILA_H = 48
+local DOT = "  \194\183  "
 
-local pagina -- la vista, cuando ya se armó
+local pagina          -- la vista, cuando ya se armó
 local filtro = "todos"
-
----------------------------------------------------------------------------
--- Piezas
----------------------------------------------------------------------------
-
-local function opciones() return A.UI and A.UI.Options end
-
-local function anchoCuerpo()
-	local O = opciones()
-	local win = O and O.frame
-	local w = win and win.BodyWidth
-	return type(w) == "number" and w > 0 and w or 640
-end
-
-local function pad() return W.SHELL.pad end
-
-local function relayout(view)
-	view = view or pagina
-	if not (view and view.Refresh) then return end
-	local h = view.Refresh()
-	view:SetHeight(h)
-	local O = opciones()
-	local win = O and O.frame
-	if win and view:IsShown() then W.ShellBody(win, h) end
-end
-
-local pendienteRelayout = false
-local function relayoutLuego()
-	if not (pagina and pagina:IsVisible()) or pendienteRelayout then return end
-	pendienteRelayout = true
-	local function ir()
-		pendienteRelayout = false
-		if pagina and pagina:IsVisible() then relayout(pagina) end
-	end
-	if C_Timer and C_Timer.After then C_Timer.After(0.4, ir) else ir() end
-end
-
--- Un chip en un color de la paleta (los de W.SetChip y cualquier otro);
--- sin color o "textDim": el chip neutro.
-local function pintarChip(chip, texto, color)
-	if color == "accent" then return W.SetChip(chip, texto, "accent") end
-	local w = W.SetChip(chip, texto, "neutral")
-	if color and color ~= "textDim" then
-		local r, g, b = T.Color(color)
-		chip.Bg:SetColor(r, g, b, 0.16)
-		W.Color(chip.Text, color)
-	end
-	return w
-end
-
-local function hexColor(nombre) return "|c" .. T.Hex(nombre) end
-
-local function colorCalidad(calidad)
-	local C = A.Compat
-	local h = C and C.ItemQualityHex and C.ItemQualityHex(calidad)
-	return type(h) == "string" and ("|c" .. h) or hexColor("text")
-end
-
-local function nombreObjeto(id)
-	local C = A.Compat
-	return (C and C.GetItemName and C.GetItemName(id)) or ("#" .. tostring(id))
-end
-
-local function iconoObjeto(id, info)
-	if info and info.icono then return info.icono end
-	local C = A.Compat
-	return C and C.ItemIcon and C.ItemIcon(id) or 134400
-end
+local verTodo = false
 
 ---------------------------------------------------------------------------
 -- Bolsas
@@ -127,11 +67,14 @@ local function leerBolsas()
 end
 
 -- Consejo de cada grupo y totales. -> lista, totales, pendientes
--- (También como M.AnalizarBolsas.)
 local function analizar()
 	local lista = leerBolsas()
 	local out, pendientes = {}, 0
-	local tot = { consejo = 0, comerciante = 0, cuenta = { todos = 0, vender = 0, subastar = 0, transformar = 0, guardar = 0 }, sinPrecio = 0 }
+	local tot = {
+		consejo = 0, comerciante = 0, sinPrecio = 0,
+		cuenta = { todos = 0, vender = 0, subastar = 0, transformar = 0, guardar = 0 },
+		valor = { vender = 0, subastar = 0, transformar = 0, guardar = 0 },
+	}
 	for _, g in ipairs(lista) do
 		local c = M.Consejo(g.id, { ligado = g.ligado, link = g.link })
 		if not c then
@@ -145,6 +88,7 @@ local function analizar()
 			local cat = (c.mejor == "desencantar" or c.mejor == "receta") and "transformar" or c.mejor
 			g.cat = cat
 			tot.cuenta[cat] = (tot.cuenta[cat] or 0) + 1
+			tot.valor[cat] = (tot.valor[cat] or 0) + g.total
 			tot.cuenta.todos = tot.cuenta.todos + 1
 			if not c.ligado and not c.subasta and c.info.clase ~= M.CLASE_MISION then tot.sinPrecio = tot.sinPrecio + 1 end
 		end
@@ -158,10 +102,42 @@ local function analizar()
 	return out, tot, pendientes
 end
 M.AnalizarBolsas = analizar
+if type(AlfaComercio) == "table" then AlfaComercio.AnalizarBolsas = analizar end
 
 ---------------------------------------------------------------------------
--- Filas
+-- Ir a un lugar con la flecha del motor (Alfa.Nav.nearby)
 ---------------------------------------------------------------------------
+
+local function irA(clase)
+	local Nav = A.Nav
+	local cerca = Nav and Nav.nearby
+	if cerca and cerca.Go then
+		local ok, r = pcall(cerca.Go, clase)
+		if ok then return r end
+	end
+	N.Imprimir(L["No se pudo buscar el lugar más cercano."])
+	return false
+end
+
+---------------------------------------------------------------------------
+-- Piezas de texto
+---------------------------------------------------------------------------
+
+local function colorCalidad(calidad)
+	local r, g, b
+	if K.ColorDeCalidad then r, g, b = K.ColorDeCalidad(calidad) end
+	if r and A.Theme and A.Theme.Legible then
+		local ok, x, y, z = pcall(A.Theme.Legible, r, g, b)
+		if ok and type(x) == "number" then r, g, b = x, y, z end
+	end
+	if not r then return K.Hex("texto") end
+	return ("ff%02x%02x%02x"):format(floor(r * 255 + 0.5), floor(g * 255 + 0.5), floor(b * 255 + 0.5))
+end
+
+local function nombreObjeto(id)
+	local C = A.Compat
+	return (C and C.GetItemName and C.GetItemName(id)) or ("#" .. tostring(id))
+end
 
 local function detalleDe(c)
 	local partes = {}
@@ -173,7 +149,8 @@ local function detalleDe(c)
 	if c.subasta then
 		local s = L["Subasta"] .. " " .. M.Dinero(c.subasta.bruto)
 		if c.subasta.fecha then
-			s = s .. " " .. (c.subasta.viejo and hexColor("warning") or "") .. "(" .. M.Hace(c.subasta.fecha) .. ")" .. (c.subasta.viejo and "|r" or "")
+			local edad = "(" .. M.Hace(c.subasta.fecha) .. ")"
+			s = s .. " " .. (c.subasta.viejo and K.Tenir("aviso", edad) or edad)
 		end
 		local t = M.Tendencia(c.id)
 		if t and math.abs(t) >= 0.05 then
@@ -184,195 +161,483 @@ local function detalleDe(c)
 	elseif c.ligado then
 		partes[#partes + 1] = L["Ligado: no se subasta"]
 	end
-	if c.desencantar then
-		partes[#partes + 1] = L["Desencantar ≈ %s"]:format(M.Dinero(c.desencantar.valor))
-	end
-	if c.receta then
-		partes[#partes + 1] = L["Crear %s ≈ %s"]:format(nombreObjeto(c.receta.producto), M.Dinero(c.receta.valor))
-	end
+	if c.desencantar then partes[#partes + 1] = L["Desencantar ≈ %s"]:format(M.Dinero(c.desencantar.valor)) end
+	if c.receta then partes[#partes + 1] = L["Crear %s ≈ %s"]:format(nombreObjeto(c.receta.producto), M.Dinero(c.receta.valor)) end
 	if c.mejor == "guardar" and c.motivo then partes[#partes + 1] = c.motivo end
-	return table.concat(partes, "  ·  ")
+	return table.concat(partes, DOT)
 end
 
-local function extraCuadro(g)
-	return function(tip)
-		local c = g.c
-		if not c then return end
-		local r, gg, b = T.Color("textDim")
-		tip:AddLine(" ")
-		if g.cantidad > 1 then
-			tip:AddDoubleLine(L["Tienes"], tostring(g.cantidad), r, gg, b, 1, 1, 1)
+-- Lo que el cuadro del objeto agrega en la lista.
+local function lineasExtra(tip, g)
+	local c = g.c
+	if not c then return end
+	local r, gg, b = K.Color("textoSuave")
+	tip:AddLine(" ")
+	if g.cantidad > 1 then tip:AddDoubleLine(L["Tienes"], tostring(g.cantidad), r, gg, b, 1, 1, 1) end
+	if c.mejor ~= "guardar" then tip:AddDoubleLine(L["Si sigues el consejo"], M.Dinero(g.total), r, gg, b, 1, 1, 1) end
+	if c.venta > 0 and g.cantidad > 0 then tip:AddDoubleLine(L["Al comerciante"], M.Dinero(c.venta * g.cantidad), r, gg, b, 1, 1, 1) end
+	local de = c.desencantar
+	if de then
+		local quien = (de.propio or not de.quien) and "" or (" " .. L["(con %s)"]:format(de.quien))
+		tip:AddLine(L["Desencantar: ≈ %s por objeto%s. Pide Encantamiento %d."]:format(M.Dinero(de.valor), quien, de.habilidad or 1), r, gg, b, true)
+		if de.incompleto then
+			local wr, wg, wb = K.Color("aviso")
+			tip:AddLine(L["Faltan precios de algunos materiales."], wr, wg, wb, true)
 		end
-		if c.mejor ~= "guardar" then
-			tip:AddDoubleLine(L["Si sigues el consejo"], M.Dinero(g.total), r, gg, b, 1, 1, 1)
-		end
-		if c.venta > 0 and g.cantidad > 0 then
-			tip:AddDoubleLine(L["Al comerciante"], M.Dinero(c.venta * g.cantidad), r, gg, b, 1, 1, 1)
-		end
-		local de = c.desencantar
-		if de then
-			local quien = (de.propio or not de.quien) and "" or (" " .. L["(con %s)"]:format(de.quien))
-			tip:AddLine(L["Desencantar: ≈ %s por objeto%s. Pide Encantamiento %d."]:format(M.Dinero(de.valor), quien, de.habilidad or 1), r, gg, b, true)
-			if de.incompleto then
-				local wr, wg, wb = T.Color("warning")
-				tip:AddLine(L["Faltan precios de algunos materiales."], wr, wg, wb, true)
-			end
-		end
-		local re = c.receta
-		if re then
-			local quien = (re.propio or not re.quien) and "" or (" " .. L["(con %s)"]:format(re.quien))
-			tip:AddLine(L["Receta: %s%s. Cada unidad rinde ≈ %s."]:format(re.rec.n or "?", quien, M.Dinero(re.valor)), r, gg, b, true)
-		end
-		if c.subasta and c.subasta.fuente == "otro" then
-			tip:AddLine(L["Precio de la subasta tomado de otro addon de subastas."], r, gg, b, true)
-		end
-		tip:AddLine(L["Comisión de la subasta estimada: %d%%."]:format(floor(M.Comision() * 100 + 0.5)), r, gg, b, true)
 	end
+	local re = c.receta
+	if re then
+		local quien = (re.propio or not re.quien) and "" or (" " .. L["(con %s)"]:format(re.quien))
+		tip:AddLine(L["Receta: %s%s. Cada unidad rinde ≈ %s."]:format(re.rec.n or "?", quien, M.Dinero(re.valor)), r, gg, b, true)
+	end
+	tip:AddLine(L["Comisión de la subasta estimada: %d%%."]:format(floor(M.Comision() * 100 + 0.5)), r, gg, b, true)
 end
 
-local function nuevaFila(view)
-	local f = CreateFrame("Button", nil, view)
+---------------------------------------------------------------------------
+-- 1. Qué hacer con lo que llevas
+---------------------------------------------------------------------------
+
+local function precios()
+	local fecha = M.Escaneo()
+	local cuantos = M.CuantosPrecios()
+	if cuantos == 0 then return "sin" end
+	if not fecha then return "pocos" end
+	if M.Viejo(fecha) then return "viejos" end
+	return "aldia"
+end
+
+local function accionEscanear()
+	local texto, activo = M.BotonEscaneo()
+	if not activo then return nil end
+	return { texto = L["Escanear ahora"], icono = "ic-buscar", alClic = function() M.Escanear() M.Cambio() end }
+end
+
+local function queHacer(datos, tot, pendientes)
+	local d = { icono = "ic-comercio", sobre = L["Qué hacer con lo que llevas"] }
+	if #datos == 0 then
+		if pendientes > 0 then
+			d.titulo, d.tono = L["Leyendo tus bolsas…"], "neutro"
+			d.texto = L["El juego todavía no tiene los datos de algunos objetos. En un momento aparecen."]
+		else
+			d.titulo, d.tono = L["Tus bolsas están vacías"], "neutro"
+			d.texto = L["Cuando lleves algo, Alfa te dice si conviene venderlo, subastarlo o transformarlo, y cuánto ganas."]
+		end
+		return d
+	end
+	local cu, va = tot.cuenta, tot.valor
+	d.tono = "acento"
+	d.titulo = tot.consejo > 0 and format(L["Si sigues los consejos ganas %s"], M.Dinero(tot.consejo)) or L["Por ahora, guárdalo todo"]
+	local partes = {}
+	if cu.vender > 0 then partes[#partes + 1] = format(L["vende %d al comerciante (%s)"], cu.vender, M.Dinero(va.vender)) end
+	if cu.subastar > 0 then partes[#partes + 1] = format(L["subasta %d (%s)"], cu.subastar, M.Dinero(va.subastar)) end
+	if cu.transformar > 0 then partes[#partes + 1] = format(L["transforma %d (%s)"], cu.transformar, M.Dinero(va.transformar)) end
+	if cu.guardar > 0 then partes[#partes + 1] = format(L["guarda %d"], cu.guardar) end
+	local texto = ""
+	if #partes > 0 then
+		local ultimo = table.remove(partes)
+		texto = #partes > 0 and (table.concat(partes, ", ") .. " " .. L["y"] .. " " .. ultimo) or ultimo
+		texto = texto:gsub("^%l", string.upper) .. "."
+	end
+	local extra = tot.consejo - tot.comerciante
+	if extra > 0 then texto = texto .. " " .. format(L["Son %s más que venderlo todo al comerciante."], M.Dinero(extra)) end
+	local p = precios()
+	if p == "sin" then
+		texto = texto .. " " .. L["Aún no tienes precios de la subasta: escanéala para saber cuánto vale de verdad."]
+	elseif p == "viejos" then
+		texto = texto .. " " .. L["Tus precios de la subasta son viejos: escanéala otra vez."]
+	end
+	d.texto = texto
+	d.lineas = 4
+	local insignias = {}
+	if cu.vender > 0 then insignias[#insignias + 1] = { format(L["Vender %d"], cu.vender), "oro" } end
+	if cu.subastar > 0 then insignias[#insignias + 1] = { format(L["Subastar %d"], cu.subastar), "exito" } end
+	if cu.transformar > 0 then insignias[#insignias + 1] = { format(L["Transformar %d"], cu.transformar), "mazmorra" } end
+	if cu.guardar > 0 then insignias[#insignias + 1] = { format(L["Guardar %d"], cu.guardar), "neutro" } end
+	d.insignias = insignias
+	-- La acción que toca ahora.
+	local abierta = M.SubastaAbierta()
+	local escanear = abierta and accionEscanear()
+	if escanear and (p ~= "aldia") then
+		d.accion = escanear
+	elseif cu.subastar > 0 and not abierta and p ~= "sin" then
+		d.accion = { texto = L["Llévame a la subasta"], icono = "ic-flecha", alClic = function() irA("auction") end }
+		if cu.vender > 0 then d.secundaria = { texto = L["Llévame al comerciante"], alClic = function() irA("vendor") end } end
+	elseif p == "sin" or p == "viejos" then
+		d.accion = abierta and escanear or { texto = L["Llévame a la subasta"], icono = "ic-flecha", alClic = function() irA("auction") end }
+		if cu.vender > 0 then d.secundaria = { texto = L["Llévame al comerciante"], alClic = function() irA("vendor") end } end
+	elseif cu.vender > 0 then
+		d.accion = { texto = L["Llévame al comerciante"], icono = "ic-flecha", alClic = function() irA("vendor") end }
+	end
+	return d
+end
+
+-- 2. Los números, en tarjetas compactas.
+local function numeros(tot)
+	if tot.cuenta.todos == 0 then return {} end
+	local extra = tot.consejo - tot.comerciante
+	local lista = {
+		{ variante = "compacta", icono = "ic-oro", titulo = L["Si sigues los consejos"], valor = M.Dinero(tot.consejo), tono = "acento",
+			texto = format(L["%d objetos distintos"], tot.cuenta.todos) },
+		{ variante = "compacta", icono = "ic-comercio", titulo = L["Si vendes todo al comerciante"], valor = M.Dinero(tot.comerciante),
+			texto = L["lo más fácil"] },
+	}
+	-- La diferencia, solo si la hay.
+	if extra > 0 then
+		lista[#lista + 1] = { variante = "compacta", icono = "ic-nivel", titulo = L["Ganas de más"], valor = "+" .. M.Dinero(extra), tono = "exito",
+			texto = tot.comerciante > 0 and format(L["%s contra el comerciante"], M.Porcentaje(extra / tot.comerciante)) or nil }
+	end
+	return lista
+end
+
+---------------------------------------------------------------------------
+-- Filas de objetos (lo que llevas y las recetas)
+---------------------------------------------------------------------------
+
+local function nuevaFila(padre)
+	local f = CreateFrame("Button", nil, padre)
 	f:SetHeight(FILA_H)
-	W.Hover(f, 0.6)
-	f.Regla = W.Divider(f, false, 0.6)
-	f.Regla:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 0, 0)
-	f.Regla:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", 0, 0)
-	f.Icono = f:CreateTexture(nil, "ARTWORK")
-	f.Icono:SetSize(ICONO, ICONO)
-	f.Icono:SetPoint("LEFT", f, "LEFT", 12, 0)
-	f.Icono:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-	f.Cuenta = W.Text(f, "number", "text", "OVERLAY")
-	f.Cuenta:SetJustifyH("RIGHT")
-	f.Cuenta:SetPoint("BOTTOMRIGHT", f.Icono, "BOTTOMRIGHT", 1, 0)
-	T.SetShadow(f.Cuenta, true)
-	f.Nombre = W.Text(f, "body", "text")
-	f.Nombre:SetPoint("TOPLEFT", f.Icono, "TOPRIGHT", 10, 1)
-	f.Detalle = W.Text(f, "small", "textMuted")
-	f.Detalle:SetPoint("BOTTOMLEFT", f.Icono, "BOTTOMRIGHT", 10, -1)
-	f.Valor = W.Text(f, "number", "text")
-	f.Valor:SetJustifyH("RIGHT")
-	f.Valor:SetPoint("TOPRIGHT", f, "TOPRIGHT", -12, -9)
-	f.Extra = W.Text(f, "small", "success")
-	f.Extra:SetJustifyH("RIGHT")
-	f.Extra:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -12, 9)
-	f.Chip = W.Chip(f)
-	f.Chip:SetPoint("RIGHT", f, "RIGHT", -(12 + VALOR_W + GAP), 0)
 	f:RegisterForClicks("LeftButtonUp")
+	f.velo = K.Velo(f, K.CORTE.chico, 0.04)
+	f.Icono = K.IconoObjeto(f, 32)
+	f.Icono:EnableMouse(false)
+	f.Icono:SetPoint("LEFT", f, "LEFT", ESP.base, 0)
+	f.Nombre = K.Texto(f, "cuerpo", "texto")
+	f.Detalle = K.Texto(f, "pequeno", "textoTenue")
+	f.Valor = K.Texto(f, "numero", "texto")
+	f.Valor:SetJustifyH("RIGHT")
+	f.Extra = K.Texto(f, "pequeno", "exito")
+	f.Extra:SetJustifyH("RIGHT")
+	f.Chip = K.Insignia(f, "", "neutro")
 	f:SetScript("OnEnter", function(self)
-		if self.psID then W.ItemTip(self, self.psID, self.psExtra) end
+		self.velo:Show()
+		local d = self.dato
+		if not (d and d.id and GameTooltip) then return end
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		GameTooltip:SetHyperlink("item:" .. d.id)
+		if d.grupo then lineasExtra(GameTooltip, d.grupo) end
+		GameTooltip:Show()
 	end)
-	f:SetScript("OnLeave", function(self) W.HideTooltip(self) end)
-	f:SetScript("OnClick", function(self) if self.psID then W.ItemClick(self.psID) end end)
+	f:SetScript("OnLeave", function(self)
+		self.velo:Hide()
+		if GameTooltip and GameTooltip:GetOwner() == self then GameTooltip:Hide() end
+	end)
+	f:SetScript("OnClick", function(self)
+		local d = self.dato
+		if not (d and d.id and IsModifiedClick and IsModifiedClick()) then return end
+		local C = A.Compat
+		local link = (d.grupo and d.grupo.link) or (C and C.ItemLink and C.ItemLink(d.id))
+		if link and HandleModifiedItemClick then HandleModifiedItemClick(link) end
+	end)
+	function f:Set(d)
+		self.dato = d
+		self.Icono:SetObjeto({ id = d.id, cantidad = d.cantidad })
+		K.Escribir(self.Nombre, d.nombre or "")
+		K.Escribir(self.Detalle, d.detalle or "")
+		K.Escribir(self.Valor, d.valor or "")
+		K.Escribir(self.Extra, d.extra or "")
+		K.ColorTexto(self.Extra, d.colorExtra or "exito")
+		self.Chip:Set(d.chip, d.tono or "neutro")
+	end
+	function f:Acomodar(ancho)
+		self:SetSize(ancho, FILA_H)
+		local x = ESP.base + 32 + ESP.m
+		local vw = max(K.Ajustar(self.Valor, 140), K.Ajustar(self.Extra, 140))
+		self.Valor:ClearAllPoints()
+		self.Valor:SetPoint("TOPRIGHT", self, "TOPRIGHT", -ESP.base, -9)
+		self.Extra:ClearAllPoints()
+		self.Extra:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", -ESP.base, 9)
+		local cw = self.Chip:IsShown() and K.num(self.Chip:GetWidth(), 0) or 0
+		self.Chip:ClearAllPoints()
+		self.Chip:SetPoint("RIGHT", self, "RIGHT", -(ESP.base + vw + ESP.base), 0)
+		local tw = max(60, ancho - x - ESP.base - vw - ESP.base - (cw > 0 and cw + ESP.m or 0))
+		self.Nombre:ClearAllPoints()
+		self.Nombre:SetPoint("TOPLEFT", self, "TOPLEFT", x, -9)
+		self.Nombre:SetWidth(tw)
+		self.Detalle:ClearAllPoints()
+		self.Detalle:SetPoint("BOTTOMLEFT", self, "BOTTOMLEFT", x, 9)
+		self.Detalle:SetWidth(tw)
+		return FILA_H
+	end
 	return f
 end
 
--- Lay out a row: chip, value and the two text lines in `width`.
-local function pintarFila(f, ancho, d)
-	f:SetWidth(ancho)
-	f.psID, f.psExtra = d.id, d.extra
-	f.Icono:SetTexture(d.icono)
-	f.Cuenta:SetText(d.cuenta and d.cuenta > 1 and tostring(d.cuenta) or "")
-	f.Nombre:SetText(d.nombre)
-	f.Detalle:SetText(d.detalle or "")
-	f.Valor:SetText(d.valor or "")
-	f.Extra:SetText(d.extra2 or "")
-	W.Color(f.Extra, d.colorExtra or "success")
-	local chipW = d.chip and pintarChip(f.Chip, d.chip, d.colorChip) or 0
-	f.Chip:SetShown(d.chip ~= nil)
-	local texto = max(40, ancho - (12 + ICONO + 10) - (12 + VALOR_W + GAP + chipW + 10))
-	f.Nombre:SetWidth(texto)
-	f.Detalle:SetWidth(texto)
-	f:Show()
-	return FILA_H
+-- Un panel con filas: -> bloque con :Llenar(datos) y :Acomodar(ancho)
+local function panelDeFilas(padre)
+	local p = CreateFrame("Frame", nil, padre)
+	p.caja = K.Caja(p, { fondo = "panel", borde = "linea", corte = K.CORTE.panel })
+	p.filas, p.lineas, p.datos = {}, {}, {}
+	function p:Llenar(datos)
+		self.datos = datos or {}
+		for i, d in ipairs(self.datos) do
+			local f = self.filas[i] or nuevaFila(self)
+			self.filas[i] = f
+			f:Set(d)
+			f:Show()
+		end
+		for i = #self.datos + 1, #self.filas do self.filas[i]:Hide() end
+	end
+	function p:Acomodar(ancho)
+		local y = 0
+		for i = 1, #self.datos do
+			local f = self.filas[i]
+			if i > 1 then
+				local ln = self.lineas[i - 1] or K.Linea(self, "linea")
+				self.lineas[i - 1] = ln
+				ln:ClearAllPoints()
+				ln:SetPoint("TOPLEFT", self, "TOPLEFT", ESP.base, -y)
+				ln:SetPoint("TOPRIGHT", self, "TOPRIGHT", -ESP.base, -y)
+				ln:Show()
+			end
+			f:ClearAllPoints()
+			f:SetPoint("TOPLEFT", self, "TOPLEFT", 0, -y)
+			y = y + f:Acomodar(ancho)
+		end
+		for i = max(1, #self.datos), #self.lineas do self.lineas[i]:Hide() end
+		self:SetSize(ancho, max(1, y))
+		return y
+	end
+	return p
+end
+
+local function filaDeObjeto(g)
+	local c = g.c
+	local chip, _, tono = M.ChipDe(c)
+	local d = {
+		id = g.id, cantidad = g.cantidad, grupo = g, chip = chip, tono = tono,
+		nombre = "|c" .. colorCalidad(c.info.calidad) .. tostring(c.info.nombre) .. "|r"
+			.. ((c.mejor ~= "vender" and c.mejor ~= "guardar") and K.Tenir("textoTenue", DOT .. M.TextoMejor(c)) or ""),
+		detalle = detalleDe(c),
+	}
+	if c.mejor == "guardar" then
+		d.valor = K.Tenir("textoTenue", "—")
+	else
+		d.valor = M.Dinero(g.total)
+		if c.ganancia and c.ganancia > 0.005 then
+			d.extra = M.Porcentaje(c.ganancia)
+		elseif c.mejor == "vender" then
+			d.extra, d.colorExtra = L["al comerciante"], "textoTenue"
+		end
+	end
+	return d
 end
 
 ---------------------------------------------------------------------------
--- Tarjetas de resumen y filtros
+-- 3. Lo que llevas
 ---------------------------------------------------------------------------
-
-local function nuevaTarjeta(view)
-	local t = CreateFrame("Frame", nil, view)
-	t:SetHeight(70)
-	T.Skin(t, "panel")
-	t.Etiqueta = W.Text(t, "small", "textMuted")
-	t.Etiqueta:SetPoint("TOPLEFT", t, "TOPLEFT", 14, -12)
-	t.Valor = W.Text(t, "display", "text")
-	t.Valor:SetPoint("TOPLEFT", t.Etiqueta, "BOTTOMLEFT", 0, -6)
-	t.Nota = W.Text(t, "small", "textDim")
-	t.Nota:SetPoint("BOTTOMLEFT", t, "BOTTOMLEFT", 14, 10)
-	return t
-end
-
-local function pintarTarjeta(t, ancho, etiqueta, valor, nota, colorNota)
-	t:SetWidth(ancho)
-	t.Etiqueta:SetText(etiqueta)
-	t.Etiqueta:SetWidth(ancho - 28)
-	t.Valor:SetText(valor)
-	t.Valor:SetWidth(ancho - 28)
-	t.Nota:SetText(nota or "")
-	t.Nota:SetWidth(ancho - 28)
-	W.Color(t.Nota, colorNota or "textDim")
-	t:Show()
-end
 
 local FILTROS = {
-	{ "todos", "Todos", "accent" },
-	{ "vender", "Vender", "quest" },
-	{ "subastar", "Subastar", "success" },
-	{ "transformar", "Transformar", "dungeon" },
-	{ "guardar", "Guardar", "text" },
+	{ "todos", "Todos" }, { "vender", "Vender" }, { "subastar", "Subastar" }, { "transformar", "Transformar" }, { "guardar", "Guardar" },
 }
 
-local function nuevoFiltro(view, def)
-	local b = CreateFrame("Button", nil, view)
-	b:SetHeight(W.CHIP_H + 4)
-	b.Chip = W.Chip(b)
-	b.Chip:SetPoint("LEFT", b, "LEFT", 0, 0)
-	b.psClave = def[1]
-	b:SetScript("OnClick", function(self)
-		filtro = self.psClave
-		relayout(view)
-	end)
-	b:SetScript("OnEnter", function(self) self.Chip:SetAlpha(1) end)
-	b:SetScript("OnLeave", function(self) self.Chip:SetAlpha(filtro == self.psClave and 1 or 0.7) end)
+local function bloqueLista(ui, padre)
+	local b = K.Pila(padre, { espacio = ESP.m })
+	b.Seccion = b:Agregar(K.Seccion(b, L["Lo que llevas"]))
+	b.Filtros = b:Agregar(K.Segmentos(b, { estilo = "pildoras", valor = filtro, opciones = {}, alCambiar = function(v)
+		filtro = v
+		verTodo = false
+		M.Cambio()
+	end }))
+	b.Panel = b:Agregar(panelDeFilas(b), { espacio = ESP.s })
+	b.Vacio = b:Agregar(K.Vacio(b, { lobo = "vacio", titulo = L["Nada en este grupo"], texto = L["Prueba con otro filtro."] }), { espacio = ESP.base })
+	b.Mas = b:Agregar(K.Boton(b, "", function() verTodo = not verTodo M.Cambio() end, { tipo = "fantasma", tam = "chico" }), { espacio = ESP.s })
+	b.Mas.alfaAnchoPropio = true
+	function b:Llenar(datos, tot)
+		local ops = {}
+		for _, f in ipairs(FILTROS) do
+			local n = f[1] == "todos" and tot.cuenta.todos or (tot.cuenta[f[1]] or 0)
+			if f[1] == "todos" or n > 0 then ops[#ops + 1] = { valor = f[1], texto = L[f[2]], cuenta = n } end
+		end
+		local valido = false
+		for _, o in ipairs(ops) do if o.valor == filtro then valido = true end end
+		if not valido then filtro = "todos" end
+		self.Filtros:SetOpciones(ops)
+		self.Filtros:SetValor(filtro)
+		local visibles = {}
+		for _, g in ipairs(datos) do
+			if filtro == "todos" or g.cat == filtro then visibles[#visibles + 1] = g end
+		end
+		self.Seccion:Set(L["Lo que llevas"], { cuenta = #visibles > 0 and #visibles or nil })
+		local n = verTodo and #visibles or min(#visibles, VISIBLES)
+		local filas = {}
+		for i = 1, n do filas[i] = filaDeObjeto(visibles[i]) end
+		self.Panel:Llenar(filas)
+		K.Mostrar(self.Panel, n > 0)
+		K.Mostrar(self.Vacio, #visibles == 0)
+		local mas = #visibles > VISIBLES
+		K.Mostrar(self.Mas, mas)
+		if mas then self.Mas:SetTexto(verTodo and L["Ver menos"] or format(L["Ver todo (%d)"], #visibles)) end
+		-- Sin nada en las bolsas, la tarjeta de arriba ya lo dice: el bloque no se muestra.
+		K.Mostrar(self, #datos > 0)
+	end
 	return b
 end
 
 ---------------------------------------------------------------------------
--- Ajustes (las filas estándar de la ventana de opciones)
+-- 4. Los precios de la subasta
 ---------------------------------------------------------------------------
 
-local function controles()
-	local lista = {
-		{ kind = "toggle", key = M.ID .. ".tooltip", label = L["Consejo en el cuadro de los objetos"],
-			help = L["Al pasar el ratón sobre un objeto: su precio en la subasta, lo que paga el comerciante y qué te conviene."] },
-		{ kind = "toggle", key = M.ID .. ".boton", label = L["Barra de Alfa en la casa de subastas"],
-			help = L["El botón «Escanear con Alfa» bajo la ventana de la subasta."] },
-		{ kind = "toggle", key = M.ID .. ".busquedas", label = L["Aprender de tus búsquedas"],
-			help = L["Cuando buscas algo en la subasta, Alfa guarda el precio más bajo que ves."] },
-		{ kind = "slider", key = M.ID .. ".comision", label = L["Comisión de la subasta"], min = 0, max = 15, step = 1,
-			format = function(v) return ("%d%%"):format(floor((v or 0) + 0.5)) end,
-			help = L["Lo que se queda la subasta de cada venta. Suele ser 5 % en la de tu facción y 15 % en la neutral. Es un estimado."] },
-		{ kind = "dropdown", key = M.ID .. ".desencantar", label = L["Considerar desencantar"],
-			choices = {
-				{ value = "auto", text = L["Si tú o tus personajes pueden"] },
-				{ value = "siempre", text = L["Siempre"] },
-				{ value = "nunca", text = L["Nunca"] },
-			},
-			help = L["«Siempre» sirve si un amigo encantador te ayuda. Las tablas de desencantar son estimadas."] },
-		{ kind = "slider", key = M.ID .. ".diasViejo", label = L["Avisar cuando los precios tengan más de"], min = 1, max = 14, step = 1,
-			format = function(v) return L["%d días"]:format(floor((v or 0) + 0.5)) end,
-			help = L["Los precios cambian: después de estos días Alfa te recuerda escanear otra vez."] },
-	}
-	if M.HayOtroPrecio() then
-		lista[#lista + 1] = { kind = "toggle", key = M.ID .. ".respaldo", label = L["Usar los precios de otro addon de subastas si faltan"],
-			help = L["Solo cuando Alfa no tiene precio para un objeto."] }
+local function bloquePrecios(padre)
+	local b = K.Pila(padre, { espacio = ESP.m })
+	b.Seccion = b:Agregar(K.Seccion(b, L["Precios de la subasta"]))
+	b.Tarjeta = b:Agregar(K.Tarjeta(b, { variante = "estado" }))
+	function b:Llenar(tot)
+		local fecha, objetos = M.Escaneo()
+		local cuantos = M.CuantosPrecios()
+		local d = { icono = "ic-oro" }
+		local p = precios()
+		if p == "sin" then
+			d.titulo, d.tono = L["Sin precios todavía"], "aviso"
+			d.texto = L["Abre la casa de subastas y pulsa «Escanear con Alfa» para saber cuánto valen tus objetos."]
+			d.estado = { texto = L["Sin precios"], tono = "aviso" }
+		elseif p == "pocos" then
+			d.titulo, d.tono = L["Pocos precios"], "aviso"
+			d.texto = L["Tienes %s precios de tus búsquedas. Para conocer todos, escanea en la casa de subastas."]:format(M.Miles(cuantos))
+			d.estado = { texto = L["Pocos"], tono = "aviso" }
+		elseif p == "viejos" then
+			d.titulo, d.tono = L["Precios viejos"], "aviso"
+			d.texto = L["Tu último escaneo fue %s. Escanea otra vez en la casa de subastas para tener precios al día."]:format(M.Hace(fecha))
+			d.estado = { texto = L["Viejos"], tono = "aviso" }
+		else
+			d.titulo, d.tono = L["Precios al día"], "exito"
+			d.texto = L["Último escaneo %s · %s objetos con precio."]:format(M.Hace(fecha), M.Miles(objetos or cuantos))
+			d.estado = { texto = L["Al día"], tono = "exito" }
+		end
+		if tot.sinPrecio > 0 then
+			d.texto = d.texto .. " " .. L["%d de tus objetos aún no tienen precio de subasta."]:format(tot.sinPrecio)
+		end
+		if M.SubastaAbierta() then
+			local texto, activo = M.BotonEscaneo()
+			d.accion = { texto = activo and L["Escanear ahora"] or texto, icono = "ic-buscar", alClic = function() M.Escanear() M.Cambio() end }
+		elseif p ~= "aldia" then
+			d.accion = { texto = L["Llévame a la subasta"], icono = "ic-flecha", alClic = function() irA("auction") end }
+		end
+		self.Tarjeta:Set(d)
+		if d.accion and self.Tarjeta.Accion then self.Tarjeta.Accion:SetActivo(not M.SubastaAbierta() or (select(2, M.BotonEscaneo()))) end
 	end
-	lista[#lista + 1] = { kind = "button", label = L["Borrar los precios de este reino"], button = L["Borrar"], danger = true,
-		icon = "reset", confirm = true, confirmTitle = L["¿Borrar los precios?"],
-		confirmText = L["Se borran los precios guardados de la subasta de este reino y facción. Tus recetas se quedan."],
-		confirmAction = L["Borrar"], onClick = function() M.Olvidar() end }
-	return lista
+	return b
+end
+
+---------------------------------------------------------------------------
+-- 5. Tus recetas que dejan ganancia
+---------------------------------------------------------------------------
+
+local function bloqueRecetas(padre)
+	local b = K.Pila(padre, { espacio = ESP.m })
+	b.Seccion = b:Agregar(K.Seccion(b, L["Tus recetas que dejan ganancia"]))
+	b.Panel = b:Agregar(panelDeFilas(b), { espacio = ESP.s })
+	b.Nota = b:Agregar(K.Vacio(b, { lobo = "dormido" }), { espacio = ESP.base })
+	function b:Llenar()
+		local todas = M.TodasLasRecetas()
+		local buenas, incompletas = {}, 0
+		for _, e in ipairs(todas) do
+			local valor, costo, completo = M.CuentaReceta(e.rec)
+			if completo then
+				if valor > costo then buenas[#buenas + 1] = { e = e, valor = valor, costo = costo, gana = valor - costo } end
+			else
+				incompletas = incompletas + 1
+			end
+		end
+		table.sort(buenas, function(x, y) return x.gana > y.gana end)
+		local filas = {}
+		for i = 1, min(#buenas, MAX_RECETAS) do
+			local x = buenas[i]
+			local rec, e = x.e.rec, x.e
+			local quien = e.propio and "" or (DOT .. L["con %s"]:format(e.quien or "?"))
+			filas[i] = {
+				id = rec.o, cantidad = rec.q and floor(rec.q) or 1, chip = L["Transformar"], tono = "mazmorra",
+				nombre = tostring(rec.n) .. K.Tenir("textoTenue", DOT .. tostring(rec.p or "") .. quien),
+				detalle = L["Reactivos %s  ·  el producto vale %s"]:format(M.Dinero(x.costo), M.Dinero(x.valor)),
+				valor = "+" .. M.Dinero(x.gana), extra = x.costo > 0 and M.Porcentaje(x.gana / x.costo) or nil,
+			}
+		end
+		self.Panel:Llenar(filas)
+		K.Mostrar(self.Panel, #filas > 0)
+		local nota
+		if #todas == 0 then
+			nota = { titulo = L["Todavía no conozco tus recetas"], texto = L["Abre la ventana de tu profesión una vez y Alfa leerá tus recetas para decirte cuáles te dejan ganancia."] }
+		elseif #filas == 0 then
+			nota = { titulo = L["Ninguna receta deja ganancia"], texto = L["Ninguna de tus recetas deja ganancia con los precios que tienes."] }
+		end
+		if incompletas > 0 then
+			local t = L["%d recetas no se pueden calcular porque faltan precios de sus reactivos o su producto."]:format(incompletas)
+			if nota then nota.texto = nota.texto .. " " .. t else nota = { titulo = L["Faltan precios"], texto = t } end
+		end
+		if nota then
+			nota.lobo = #filas > 0 and "atento" or "dormido"
+			self.Nota:Set(nota)
+		end
+		K.Mostrar(self.Nota, nota ~= nil)
+	end
+	return b
+end
+
+---------------------------------------------------------------------------
+-- 6. Cómo decide Alfa y los ajustes
+---------------------------------------------------------------------------
+
+local function bloqueComo(padre)
+	local b = K.Pila(padre, { espacio = ESP.m })
+	b.Seccion = b:Agregar(K.Seccion(b, L["Cómo decide Alfa"]))
+	b.Tarjeta = b:Agregar(K.Tarjeta(b, { variante = "normal" }))
+	function b:Llenar()
+		self.Tarjeta:Set({
+			icono = "ic-info", tono = "neutro", titulo = L["Tres caminos para cada objeto"], lineas = 10,
+			texto = table.concat({
+				L["Para cada objeto Alfa compara tres caminos: venderlo al comerciante, ponerlo en la subasta o transformarlo (con una receta que conoces o desencantándolo)."],
+				L["En la subasta cuenta el precio más bajo que vio, menos la comisión (%d%%, estimada). Al desencantar usa tablas del juego clásico, también estimadas."]:format(floor(M.Comision() * 100 + 0.5)),
+				L["Recomienda el camino que te deja más oro, si gana por lo menos un 10 % a venderlo. Si nada da oro, te dice que lo guardes. Alfa nunca vende ni compra por ti."],
+			}, " "),
+		})
+	end
+	return b
+end
+
+local function ruta(clave) return M.ID .. "." .. clave end
+
+local function grupos(padre)
+	local juego = K.GrupoAjustes(padre, { titulo = L["En el juego"] })
+	juego:Fila({ titulo = L["Consejo en el cuadro de los objetos"], control = function(f) return K.Interruptor(f, { clave = ruta("tooltip") }) end,
+		texto = L["Al pasar el ratón sobre un objeto: su precio en la subasta, lo que paga el comerciante y qué te conviene."] })
+	juego:Fila({ titulo = L["Barra de Alfa en la casa de subastas"], control = function(f) return K.Interruptor(f, { clave = ruta("boton") }) end,
+		texto = L["El botón «Escanear con Alfa» bajo la ventana de la subasta."] })
+	juego:Fila({ titulo = L["Aprender de tus búsquedas"], control = function(f) return K.Interruptor(f, { clave = ruta("busquedas") }) end,
+		texto = L["Cuando buscas algo en la subasta, Alfa guarda el precio más bajo que ves."] })
+
+	local cuentas = K.GrupoAjustes(padre, { titulo = L["Las cuentas"] })
+	cuentas:Fila({ titulo = L["Comisión de la subasta"],
+		texto = L["Lo que se queda la subasta de cada venta. Suele ser 5 % en la de tu facción y 15 % en la neutral. Es un estimado."],
+		control = function(f)
+			local d = K.Deslizador(f, { min = 0, max = 15, paso = 1, clave = ruta("comision"), formato = function(v) return ("%d %%"):format(floor((v or 0) + 0.5)) end })
+			d.alfaAnchoFila = 220
+			return d
+		end })
+	cuentas:Fila({ titulo = L["Considerar desencantar"], texto = L["«Siempre» sirve si un amigo encantador te ayuda. Las tablas de desencantar son estimadas."],
+		control = function(f)
+			return K.Desplegable(f, { clave = ruta("desencantar"), ancho = 220, opciones = {
+				{ valor = "auto", texto = L["Si tú o tus personajes pueden"] },
+				{ valor = "siempre", texto = L["Siempre"] },
+				{ valor = "nunca", texto = L["Nunca"] },
+			} })
+		end })
+	cuentas:Fila({ titulo = L["Avisar cuando los precios tengan más de"], texto = L["Los precios cambian: después de estos días Alfa te recuerda escanear otra vez."],
+		control = function(f)
+			local d = K.Deslizador(f, { min = 1, max = 14, paso = 1, clave = ruta("diasViejo"), formato = function(v) return L["%d días"]:format(floor((v or 0) + 0.5)) end })
+			d.alfaAnchoFila = 220
+			return d
+		end })
+
+	local datos = K.GrupoAjustes(padre, { titulo = L["Tus datos"] })
+	datos:Fila({ titulo = L["Borrar los precios de este reino"], texto = L["Se borran los precios guardados de la subasta de este reino y facción. Tus recetas se quedan."],
+		control = function(f)
+			return K.Boton(f, L["Borrar"], function()
+				K.Dialogo({
+					titulo = L["¿Borrar los precios?"],
+					texto = L["Se borran los precios guardados de la subasta de este reino y facción. Tus recetas se quedan."],
+					aceptar = L["Borrar"], peligro = true, alAceptar = function() M.Olvidar() end,
+				})
+			end, { tipo = "peligro", icono = "ic-cerrar" })
+		end })
+	return { juego, cuentas, datos }
 end
 
 ---------------------------------------------------------------------------
@@ -381,285 +646,35 @@ end
 
 local function construir(view)
 	pagina = view
-	local filas, filasRecetas = {}, {}
-	local resumenH = W.SectionHeader(view)
-	local tarjetas = { nuevaTarjeta(view), nuevaTarjeta(view), nuevaTarjeta(view) }
-	local estadoChip = W.Chip(view)
-	local estadoTexto = W.Text(view, "note", "textDim")
-	estadoTexto:SetWordWrap(true)
-	estadoTexto:SetJustifyV("TOP")
-	local escanear = W.Button(view, L["Escanear ahora"], function()
-		M.Escanear()
-		relayout(view)
-	end, { primary = true, icon = "search" })
-	local filtros = {}
-	for i, def in ipairs(FILTROS) do filtros[i] = nuevoFiltro(view, def) end
-	local listaH = W.SectionHeader(view)
-	local vacio = W.Text(view, "note", "textMuted")
-	vacio:SetWordWrap(true)
-	local recetasH = W.SectionHeader(view)
-	W.SetSection(recetasH, L["Tus recetas que dejan ganancia"])
-	local recetasNota = W.Text(view, "note", "textMuted")
-	recetasNota:SetWordWrap(true)
-	local comoH = W.SectionHeader(view)
-	W.SetSection(comoH, L["Cómo decide Alfa"])
-	local comoTexto = W.Text(view, "note", "textDim")
-	comoTexto:SetWordWrap(true)
-	comoTexto:SetSpacing(3)
-	comoTexto:SetJustifyV("TOP")
-	local ajustesH = W.SectionHeader(view)
-	W.SetSection(ajustesH, L["Ajustes"])
-	local panel = W.RowPanel(view)
-	local cache = {}
-	local lista
-
-	view.Refresh = function()
-		local ancho = anchoCuerpo()
-		local x = pad()
-		local y = 8
+	local ui = {}
+	local t = K.Tablero(view, { margen = N.MargenPagina(), accion = "accion", tituloOpciones = L["Tus números"], min = 240 })
+	ui.lista = t:AgregarBloque(bloqueLista(ui, t.Extra))
+	ui.precios = t:AgregarBloque(bloquePrecios(t.Extra))
+	ui.recetas = t:AgregarBloque(bloqueRecetas(t.Extra))
+	ui.como = t:AgregarBloque(bloqueComo(t.Extra))
+	ui.ajustes = grupos(t.Extra)
+	for i, g in ipairs(ui.ajustes) do t:AgregarBloque(g, { espacio = i == 1 and ESP.xl or ESP.l }) end
+	K.EnPagina(view, t, function()
 		local datos, tot, pendientes = analizar()
+		t:SetAccion(queHacer(datos, tot, pendientes))
+		t:SetOpciones(numeros(tot), L["Tus números"])
+		ui.lista:Llenar(datos, tot)
+		ui.precios:Llenar(tot)
+		ui.recetas:Llenar()
+		ui.como:Llenar()
+		for _, g in ipairs(ui.ajustes) do g:Refrescar() end
+	end)
+end
 
-		-- Resumen
-		resumenH:ClearAllPoints()
-		resumenH:SetPoint("TOPLEFT", view, "TOPLEFT", x, -y)
-		resumenH:SetWidth(ancho)
-		W.SetSection(resumenH, L["Tus bolsas"])
-		y = y + 44 + 4
-		local tw = floor((ancho - 2 * GAP) / 3)
-		local extra = tot.consejo - tot.comerciante
-		local pct = tot.comerciante > 0 and M.Porcentaje(extra / tot.comerciante) or nil
-		pintarTarjeta(tarjetas[1], tw, L["Si sigues los consejos"], M.Dinero(tot.consejo), L["%d objetos distintos"]:format(tot.cuenta.todos))
-		pintarTarjeta(tarjetas[2], tw, L["Si vendes todo al comerciante"], M.Dinero(tot.comerciante), L["lo más fácil"])
-		pintarTarjeta(tarjetas[3], tw, L["Ganas de más"], (extra > 0 and "+" or "") .. M.Dinero(max(0, extra)),
-			pct and extra > 0 and L["%s contra el comerciante"]:format(pct) or L["sin diferencia"], extra > 0 and "success" or "textDim")
-		for i, t in ipairs(tarjetas) do
-			t:ClearAllPoints()
-			t:SetPoint("TOPLEFT", view, "TOPLEFT", x + (i - 1) * (tw + GAP), -y)
-		end
-		y = y + 70 + 14
-
-		-- Estado de los precios
-		local fecha, objetos = M.Escaneo()
-		local cuantos = M.CuantosPrecios()
-		local chipTexto, chipColor, texto
-		if cuantos == 0 and not M.HayOtroPrecio() then
-			chipTexto, chipColor = L["Sin precios"], "warning"
-			texto = L["Abre la casa de subastas y pulsa «Escanear con Alfa» para saber cuánto valen tus objetos."]
-		elseif not fecha then
-			chipTexto, chipColor = L["Pocos precios"], "warning"
-			texto = L["Tienes %s precios de tus búsquedas. Para conocer todos, escanea en la casa de subastas."]:format(M.Miles(cuantos))
-		elseif M.Viejo(fecha) then
-			chipTexto, chipColor = L["Precios viejos"], "warning"
-			texto = L["Tu último escaneo fue %s. Escanea otra vez en la casa de subastas para tener precios al día."]:format(M.Hace(fecha))
-		else
-			chipTexto, chipColor = L["Precios al día"], "success"
-			texto = L["Último escaneo %s · %s objetos con precio."]:format(M.Hace(fecha), M.Miles(objetos or cuantos))
-		end
-		if tot.sinPrecio > 0 then
-			texto = texto .. " " .. L["%d de tus objetos aún no tienen precio de subasta."]:format(tot.sinPrecio)
-		end
-		if M.HayOtroPrecio() and M.Ajuste("respaldo") then
-			texto = texto .. " " .. L["Si falta un precio, Alfa usa el de tu otro addon de subastas."]
-		end
-		local cw = pintarChip(estadoChip, chipTexto, chipColor)
-		estadoChip:ClearAllPoints()
-		estadoChip:SetPoint("TOPLEFT", view, "TOPLEFT", x, -y)
-		local abierta = M.SubastaAbierta()
-		escanear:SetShown(abierta)
-		local derecha = 0
-		if abierta then
-			local espera = M.EsperaEscaneo()
-			local est = M.EstadoEscaneo()
-			if est ~= "listo" then
-				W.SetButtonText(escanear, L["Escaneando..."])
-				escanear:Disable()
-			elseif espera > 0 then
-				W.SetButtonText(escanear, L["Espera %s"]:format(L["%d min"]:format(math.ceil(espera / 60))))
-				escanear:Disable()
-			else
-				W.SetButtonText(escanear, L["Escanear ahora"])
-				escanear:Enable()
-			end
-			escanear:SetAlpha(escanear:IsEnabled() and 1 or 0.55)
-			escanear:ClearAllPoints()
-			escanear:SetPoint("TOPRIGHT", view, "TOPRIGHT", -(x), -(y - 4))
-			derecha = escanear:GetWidth() + GAP
-		end
-		estadoTexto:ClearAllPoints()
-		estadoTexto:SetPoint("TOPLEFT", view, "TOPLEFT", x + cw + 10, -(y + 3))
-		estadoTexto:SetWidth(max(80, ancho - cw - 10 - derecha))
-		estadoTexto:SetText(texto)
-		y = y + max(W.CHIP_H, estadoTexto:GetStringHeight() + 3, abierta and 28 or 0) + 18
-
-		-- Filtros
-		local fx = x
-		for i, def in ipairs(FILTROS) do
-			local b = filtros[i]
-			local activo = filtro == def[1]
-			local n = tot.cuenta[def[1]] or 0
-			local w = pintarChip(b.Chip, L[def[2]] .. "  " .. n, activo and def[3] or nil)
-			b.Chip:SetAlpha(activo and 1 or 0.7)
-			b:SetWidth(w)
-			b:ClearAllPoints()
-			b:SetPoint("TOPLEFT", view, "TOPLEFT", fx, -y)
-			b:Show()
-			fx = fx + w + 6
-		end
-		y = y + W.CHIP_H + 14
-
-		-- Lista
-		listaH:ClearAllPoints()
-		listaH:SetPoint("TOPLEFT", view, "TOPLEFT", x, -y)
-		listaH:SetWidth(ancho)
-		local visibles = {}
-		for _, g in ipairs(datos) do
-			if filtro == "todos" or g.cat == filtro then visibles[#visibles + 1] = g end
-		end
-		W.SetSection(listaH, L["¿Qué hago con mis objetos?"], #visibles)
-		y = y + 44 + 4
-		for i, g in ipairs(visibles) do
-			local f = filas[i]
-			if not f then
-				f = nuevaFila(view)
-				filas[i] = f
-			end
-			local c = g.c
-			local chip, colorChip = M.ChipDe(c)
-			local valor, extra2, colorExtra
-			if c.mejor == "guardar" then
-				valor, extra2, colorExtra = hexColor("textMuted") .. "—|r", nil, nil
-			else
-				valor = M.Dinero(g.total)
-				if c.ganancia and c.ganancia > 0.005 then
-					extra2 = M.Porcentaje(c.ganancia)
-				elseif c.mejor == "vender" then
-					extra2, colorExtra = L["al comerciante"], "textMuted"
-				end
-			end
-			f:ClearAllPoints()
-			f:SetPoint("TOPLEFT", view, "TOPLEFT", x, -y)
-			y = y + pintarFila(f, ancho, {
-				id = g.id, icono = iconoObjeto(g.id, c.info), cuenta = g.cantidad,
-				nombre = colorCalidad(c.info.calidad) .. tostring(c.info.nombre) .. "|r"
-					.. (c.mejor ~= "vender" and c.mejor ~= "guardar" and (hexColor("textMuted") .. "  ·  " .. M.TextoMejor(c) .. "|r") or ""),
-				detalle = detalleDe(c), valor = valor, extra2 = extra2, colorExtra = colorExtra,
-				chip = chip, colorChip = colorChip, extra = extraCuadro(g),
-			})
-		end
-		for i = #visibles + 1, #filas do filas[i]:Hide() end
-		if #visibles == 0 then
-			if pendientes > 0 then
-				vacio:SetText(L["Cargando la información de tus objetos..."])
-			elseif tot.cuenta.todos == 0 then
-				vacio:SetText(L["Tus bolsas están vacías."])
-			else
-				vacio:SetText(L["Nada en este grupo."])
-			end
-			vacio:SetWidth(ancho)
-			vacio:ClearAllPoints()
-			vacio:SetPoint("TOPLEFT", view, "TOPLEFT", x, -y)
-			vacio:Show()
-			y = y + vacio:GetStringHeight() + 12
-		else
-			vacio:Hide()
-		end
-		y = y + 18
-
-		-- Recetas
-		recetasH:ClearAllPoints()
-		recetasH:SetPoint("TOPLEFT", view, "TOPLEFT", x, -y)
-		recetasH:SetWidth(ancho)
-		y = y + 44 + 4
-		local todas = M.TodasLasRecetas()
-		local buenas, incompletas = {}, 0
-		for _, e in ipairs(todas) do
-			local valor, costo, completo = M.CuentaReceta(e.rec)
-			if completo then
-				if valor > costo then
-					buenas[#buenas + 1] = { e = e, valor = valor, costo = costo, gana = valor - costo }
-				end
-			else
-				incompletas = incompletas + 1
-			end
-		end
-		table.sort(buenas, function(a, b) return a.gana > b.gana end)
-		local nr = min(#buenas, MAX_RECETAS)
-		for i = 1, nr do
-			local b = buenas[i]
-			local f = filasRecetas[i]
-			if not f then
-				f = nuevaFila(view)
-				filasRecetas[i] = f
-			end
-			local rec, e = b.e.rec, b.e
-			local quien = e.propio and "" or ("  ·  " .. L["con %s"]:format(e.quien or "?"))
-			f:ClearAllPoints()
-			f:SetPoint("TOPLEFT", view, "TOPLEFT", x, -y)
-			y = y + pintarFila(f, ancho, {
-				id = rec.o, icono = iconoObjeto(rec.o, M.InfoObjeto(rec.o)), cuenta = rec.q and floor(rec.q) or 1,
-				nombre = tostring(rec.n) .. hexColor("textMuted") .. "  ·  " .. tostring(rec.p or "") .. quien .. "|r",
-				detalle = L["Reactivos %s  ·  el producto vale %s"]:format(M.Dinero(b.costo), M.Dinero(b.valor)),
-				valor = "+" .. M.Dinero(b.gana),
-				extra2 = b.costo > 0 and M.Porcentaje(b.gana / b.costo) or nil,
-				chip = L["Transformar"], colorChip = "dungeon",
-			})
-		end
-		for i = nr + 1, #filasRecetas do filasRecetas[i]:Hide() end
-		local nota
-		if #todas == 0 then
-			nota = L["Abre la ventana de tu profesión una vez y Alfa leerá tus recetas para decirte cuáles te dejan ganancia."]
-		elseif nr == 0 then
-			nota = L["Ninguna de tus recetas deja ganancia con los precios que tienes."]
-		else
-			nota = nil
-		end
-		if incompletas > 0 then
-			local t = L["%d recetas no se pueden calcular porque faltan precios de sus reactivos o su producto."]:format(incompletas)
-			nota = nota and (nota .. " " .. t) or t
-		end
-		if nota then
-			recetasNota:SetText(nota)
-			recetasNota:SetWidth(ancho)
-			recetasNota:ClearAllPoints()
-			recetasNota:SetPoint("TOPLEFT", view, "TOPLEFT", x, -(y + 6))
-			recetasNota:Show()
-			y = y + 6 + recetasNota:GetStringHeight() + 12
-		else
-			recetasNota:Hide()
-		end
-		y = y + 18
-
-		-- Cómo decide
-		comoH:ClearAllPoints()
-		comoH:SetPoint("TOPLEFT", view, "TOPLEFT", x, -y)
-		comoH:SetWidth(ancho)
-		y = y + 44 + 6
-		comoTexto:SetText(table.concat({
-			L["Para cada objeto Alfa compara tres caminos: venderlo al comerciante, ponerlo en la subasta o transformarlo (con una receta que conoces o desencantándolo)."],
-			L["En la subasta cuenta el precio más bajo que vio, menos la comisión (%d%%, estimada). Al desencantar usa tablas del juego clásico, también estimadas."]:format(floor(M.Comision() * 100 + 0.5)),
-			L["Recomienda el camino que te deja más oro, si gana por lo menos un 10 % a venderlo. Si nada da oro, te dice que lo guardes. Alfa nunca vende ni compra por ti."],
-		}, "\n\n"))
-		comoTexto:SetWidth(ancho)
-		comoTexto:ClearAllPoints()
-		comoTexto:SetPoint("TOPLEFT", view, "TOPLEFT", x, -y)
-		y = y + comoTexto:GetStringHeight() + 22
-
-		-- Ajustes
-		local O = opciones()
-		if O and type(O.Rows) == "function" then
-			ajustesH:ClearAllPoints()
-			ajustesH:SetPoint("TOPLEFT", view, "TOPLEFT", x, -y)
-			ajustesH:SetWidth(ancho)
-			ajustesH:Show()
-			y = y + 44 + 4
-			lista = lista or controles()
-			y = O.Rows(view, lista, y, cache, panel)
-		else
-			ajustesH:Hide()
-			panel:Hide()
-		end
-		return y + 24
+local pendienteRehacer = false
+local function rehacerLuego()
+	if not (pagina and pagina:IsVisible()) or pendienteRehacer then return end
+	pendienteRehacer = true
+	local function ir()
+		pendienteRehacer = false
+		if pagina then N.RehacerPagina(pagina) end
 	end
+	if C_Timer and C_Timer.After then C_Timer.After(0.4, ir) else ir() end
 end
 
 ---------------------------------------------------------------------------
@@ -667,10 +682,10 @@ end
 ---------------------------------------------------------------------------
 
 N.Modulo({
-	id = M.ID, nombre = L["Comercio"], icono = "qol-coin", orden = 45, comando = M.ID,
+	id = M.ID, nombre = L["Comercio"], icono = "ic-comercio", orden = 45, comando = M.ID,
 	subtitulo = L["¿Vender, subastar o transformar? Lo que más oro te deja con cada objeto."],
 	ajustes = {
-		tooltip = true, boton = true, busquedas = true, respaldo = true,
+		tooltip = true, boton = true, busquedas = true,
 		comision = 5, desencantar = "auto", diasViejo = 3,
 	},
 	construir = construir,
@@ -705,13 +720,13 @@ local function comando(resto)
 end
 A.RegisterCommand(M.ID, comando, L["¿Vender, subastar o transformar? (escanear, precio <objeto>)"])
 
-A.On("ALFA_COMERCIO", relayoutLuego)
+A.On("ALFA_COMERCIO", rehacerLuego)
 A.On("SETTING_CHANGED", function(path)
 	if type(path) ~= "string" or path == "" or path:sub(1, #M.ID + 1) == M.ID .. "." then
 		M.Cambio()
 	end
 end)
-A.RegisterEvent("BAG_UPDATE_DELAYED", relayoutLuego)
-A.RegisterEvent("GET_ITEM_INFO_RECEIVED", relayoutLuego)
-A.RegisterEvent("AUCTION_HOUSE_SHOW", relayoutLuego)
-A.RegisterEvent("AUCTION_HOUSE_CLOSED", relayoutLuego)
+A.RegisterEvent("BAG_UPDATE_DELAYED", rehacerLuego)
+A.RegisterEvent("GET_ITEM_INFO_RECEIVED", rehacerLuego)
+A.RegisterEvent("AUCTION_HOUSE_SHOW", rehacerLuego)
+A.RegisterEvent("AUCTION_HOUSE_CLOSED", rehacerLuego)

@@ -8,7 +8,6 @@
 ## Category: Alfa
 
 Textos.lua
-Compat.lua
 Datos.lua
 Precios.lua
 Subasta.lua

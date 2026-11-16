@@ -1,12 +1,17 @@
 -- Alfa - Bolsas: las ventanas de bolsas y de banco. GPL-3.0.
 --
--- Una ventana con el aspecto de Alfa (Theme.Skin "window", la banda con
--- estrellas, el borde dorado): cabecera con título y botones, una franja con
--- la búsqueda y Ordenar, el cuerpo con las casillas (se desplaza si no
--- cabe) y un pie con tu dinero, el de toda la cuenta y el espacio libre.
+-- Hechas con el Kit de Alfa (docs/KIT.md): la caja con sus esquinas
+-- cortadas y la marca de acento; una cabecera con el título, las tres vistas
+-- y sus botones; una franja con la búsqueda, Ordenar y, en el banco,
+-- Depositar; la barra de las bolsas equipadas (Barra.lua); cuando las bolsas
+-- se llenan, la sugerencia de qué vender (Sugerencias.lua); el cuerpo con
+-- las casillas (se desplaza si no cabe) y un pie con tu dinero, el de toda la
+-- cuenta y el espacio libre. Vive en UIParent (no en la capa de Alfa): tus
+-- bolsas se abren aunque ocultes Alfa.
 --
--- Dos vistas (ajuste "vista"): una sola bolsa (todas las casillas en su
--- orden) o por categorías (encabezados plegables, Espacio libre al final).
+-- Tres vistas (ajuste "vista"): todo junto ("una": cada casilla en su
+-- orden), por categorías (encabezados plegables, Espacio libre al final) y
+-- por bolsa (cada bolsa en su bloque, con su ícono, nombre y espacio).
 --
 -- En vivo (tus bolsas; tu banco mientras está abierto) cada casilla es un
 -- botón seguro de Blizzard (Botones.lua); de foto (el banco cerrado, otro
@@ -21,17 +26,18 @@
 local ADDON, M = ...
 local N, A, L = M.N, M.A, M.L
 local D, O, B = M.Datos, M.Objetos, M.Botones
-local W, T = A.Widgets, A.Theme
+local K = N.Kit
+local ESP = K.ESP
 
-local type, pairs, ipairs, tonumber, tostring, next = type, pairs, ipairs, tonumber, tostring, next
+local type, pairs, ipairs, tonumber, tostring, next, format = type, pairs, ipairs, tonumber, tostring, next, string.format
 local floor, max, min = math.floor, math.max, math.min
 
 local V = {}
 M.Ventana = V
 
-local CAB_H, BUS_H, PIE_H = 44, 40, 34
-local PAD, GAP, CAB_CAT = 14, 4, 26
-local MIN_W = 392
+local CAB_H, FRANJA_H, PIE_H = 48, 44, 36
+local PAD, GAP, CAB_CAT = ESP.m, 4, 26
+local MIN_W = 400
 local TOPE_PINTAR, TOPE_CREAR = 48, 40
 
 local CC = C_Container
@@ -59,6 +65,7 @@ local function contenedores(f)
 end
 
 local function propia(f) return f.clave == nil or D.EsActual(f.clave) end
+V.Propia = propia
 
 -- En vivo: tus bolsas siempre; tu banco solo mientras lo tienes abierto.
 local function enVivo(f)
@@ -72,6 +79,12 @@ local function esMejora(link)
 	local Bg = G and G.Bags
 	if not (Bg and Bg.IsUpgrade) then return false end
 	return M.Leer(M.Llamar(Bg.IsUpgrade, link)) and true or false
+end
+
+local function esChatarraMarcada(id)
+	local Q = A.QoL
+	local Mk = Q and Q.Marks
+	return Mk and Mk.Junk and M.Leer(M.Llamar(Mk.Junk, id)) and true or false
 end
 
 -- Cuántas casillas del llavero se muestran (como el llavero de Blizzard).
@@ -99,7 +112,7 @@ local function leerCasilla(f, bolsa, s)
 	local rec = {
 		i = id, c = M.Num(info.stackCount) or 1, l = M.Texto(info.hyperlink), q = M.Num(info.quality),
 		icono = M.Leer(info.iconFileID), bloq = M.Leer(info.isLocked) and true or false,
-		sinValor = M.Leer(info.hasNoValue) and true or false,
+		sinValor = M.Leer(info.hasNoValue) and true or false, basura = esChatarraMarcada(id),
 	}
 	local q = M.Llamar(CC and CC.GetContainerItemQuestInfo, bolsa, s)
 	if type(q) == "table" then
@@ -203,12 +216,12 @@ local function firma(ent)
 	local r = ent.rec
 	if not r then return "v" .. tostring(ent.libre or "") .. (ent.reagentes and "r" or "") end
 	return r.i .. ":" .. (r.c or 1) .. ":" .. (r.l or "") .. ":" .. (r.bloq and 1 or 0) .. (r.nuevo and 1 or 0)
-		.. (r.mision and 1 or 0) .. (r.bang and 1 or 0) .. (ent.mejora and 1 or 0) .. ":" .. (ent.nivel or 0)
+		.. (r.mision and 1 or 0) .. (r.bang and 1 or 0) .. (ent.mejora and 1 or 0) .. (r.basura and 1 or 0) .. ":" .. (ent.nivel or 0)
 		.. ":" .. tostring(r.icono or 0) .. ((ent.e and ent.e.listo) and "+" or "-")
 end
 
 ---------------------------------------------------------------------------
--- Encabezados de categoría (plegables)
+-- Encabezados de categoría o de bolsa (plegables)
 ---------------------------------------------------------------------------
 
 local function despertar(f) end -- se define abajo
@@ -223,28 +236,27 @@ local function cabecera(f, i)
 	h = CreateFrame("Button", nil, f.Contenido)
 	h:SetHeight(CAB_CAT)
 	h:SetFrameLevel(f.Contenido:GetFrameLevel() + 2)
-	W.Hover(h, 0.6)
-	h.Flecha = h:CreateTexture(nil, "ARTWORK")
-	h.Flecha:SetSize(10, 10)
+	h.velo = K.Velo(h, K.CORTE.chico, 0.05)
+	h.Flecha = K.Icono(h, "chevron-down", 10, "textoSuave")
 	h.Flecha:SetPoint("LEFT", h, "LEFT", 4, 0)
-	W.Color(h.Flecha, "textDim")
-	h.Texto = W.Text(h, "heading", "text")
-	h.Texto:SetPoint("LEFT", h.Flecha, "RIGHT", 7, 0)
-	h.Cuenta = W.Text(h, "small", "textMuted")
-	h.Cuenta:SetPoint("LEFT", h.Texto, "RIGHT", 7, 0)
-	h.Linea = W.Divider(h)
-	h.Linea:SetPoint("LEFT", h.Cuenta, "RIGHT", 10, 0)
-	h.Linea:SetPoint("RIGHT", h, "RIGHT", -2, 0)
+	h.Bolsa = h:CreateTexture(nil, "ARTWORK")
+	h.Bolsa:SetSize(18, 18)
+	h.Bolsa:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+	h.Simbolo = K.Icono(h, "ic-bolsas", 16, "textoSuave")
+	h.Texto = K.Texto(h, "encabezado", "texto")
+	h.Cuenta = K.Texto(h, "pequeno", "textoTenue")
+	h.Linea = K.Linea(h, "linea")
 	h:SetScript("OnClick", function(self)
+		if not self.plegable then return end
 		local d = D.Raiz().ui.plegadas
 		local k = f.tipo .. ":" .. tostring(self.cat)
 		d[k] = (not d[k]) or nil
 		f.reacomodar, f.forzar = true, true
 		despertar(f)
 	end)
-	h.psTip = L["Clic para plegar o desplegar"]
-	h:SetScript("OnEnter", W.SimpleTip)
-	h:SetScript("OnLeave", W.HideTip)
+	h:SetScript("OnEnter", function(self) if self.plegable then self.velo:Show() end end)
+	h:SetScript("OnLeave", function(self) self.velo:Hide() end)
+	K.ConInfo(h, function(self) if self.plegable then return nil, L["Clic para plegar o desplegar"] end end)
 	f.cabs[i] = h
 	return h
 end
@@ -255,46 +267,187 @@ end
 
 local function titulo(f)
 	local r = f.clave and D.Personaje(f.clave)
-	local propio = propia(f)
 	local base = f.tipo == "banco" and L["Banco"] or L["Bolsas"]
-	if propio or not r then
-		f.Titulo:SetText(base)
+	if propia(f) or not r then
+		K.Escribir(f.Titulo, base)
 	else
 		local cr, cg, cb = M.ColorClase(r.clase)
-		f.Titulo:SetText((f.tipo == "banco" and L["Banco de %s"] or L["Bolsas de %s"]):format(M.Pintado(r.nombre or f.clave, cr, cg, cb)))
+		K.Escribir(f.Titulo, (f.tipo == "banco" and L["Banco de %s"] or L["Bolsas de %s"]):format(M.Pintado(r.nombre or f.clave, cr, cg, cb)))
 	end
 end
 
--- La franja: búsqueda, y Ordenar (en vivo) o la fecha de la foto y Volver.
+-- La vista elegida se ve como un segmento elevado (con el ícono en el acento).
+local function pintarVistas(f)
+	local v = M.Vista()
+	for clave, b in pairs(f.Vistas) do
+		b.alfaTipo = clave == v and "secundario" or "fantasma"
+		b:SetMarcado(clave == v)
+	end
+end
+
+local function textoDepositar(f)
+	if not f.Depositar then return end
+	local hechos, total = M.Lotes.Avance("depositar")
+	if hechos then
+		f.Depositar:SetTexto(format(L["Detener (%d/%d)"], hechos, total))
+		f.Depositar:SetIcono("ic-cerrar")
+	else
+		f.Depositar:SetTexto(L["Depositar"])
+		f.Depositar:SetIcono("chevron-down")
+	end
+end
+
+-- La franja: búsqueda, y Ordenar / Depositar (en vivo) o la fecha de la foto y Volver.
 local function franja(f)
 	local vivo = f.esVivo
-	local derecha = f.Franja
+	local fr = f.Franja
+	local combate = M.EnCombate()
 	f.Ordenar:SetShown(vivo and M.Get("ordenar") and true or false)
+	f.Ordenar:SetActivo(not combate)
+	if f.Depositar then
+		f.Depositar:SetShown(vivo and true or false)
+		f.Depositar:SetActivo(not combate)
+		textoDepositar(f)
+	end
 	f.Volver:SetShown(not propia(f))
-	local foto = not vivo
-	if foto then
+	if not vivo then
 		local r = D.Personaje(f.clave or D.Clave())
 		local cuando = r and (f.tipo == "banco" and r.bancoVisto or r.visto)
-		W.SetChip(f.Chip, (L["Foto: %s"]):format(M.Hace(cuando)), "warning")
+		f.Foto:Set((L["Foto: %s"]):format(M.Hace(cuando)), "aviso", "ic-reloj")
 	else
-		f.Chip:Hide()
+		f.Foto:Hide()
 	end
-	local ancla = derecha
-	for _, w in ipairs({ f.Ordenar, f.Volver, f.Chip }) do
-		if w:IsShown() then
+	local x = -PAD
+	for _, w in ipairs({ f.Depositar or false, f.Ordenar, f.Volver, f.Foto }) do
+		if w and w:IsShown() then
 			w:ClearAllPoints()
-			w:SetPoint("RIGHT", ancla, ancla == derecha and "RIGHT" or "LEFT", ancla == derecha and -PAD or -8, 0)
-			ancla = w
+			w:SetPoint("RIGHT", fr, "RIGHT", x, 0)
+			x = x - K.num(w:GetWidth(), 60) - ESP.s
 		end
 	end
 	f.Busca:ClearAllPoints()
-	f.Busca:SetPoint("LEFT", derecha, "LEFT", PAD, 0)
-	if ancla == derecha then
-		f.Busca:SetPoint("RIGHT", derecha, "RIGHT", -PAD, 0)
-	else
-		f.Busca:SetPoint("RIGHT", ancla, "LEFT", -8, 0)
+	f.Busca:SetPoint("LEFT", fr, "LEFT", PAD, 0)
+	f.Busca:SetPoint("RIGHT", fr, "RIGHT", x, 0)
+end
+
+---------------------------------------------------------------------------
+-- La sugerencia cuando las bolsas se llenan (solo tus bolsas, en vivo)
+---------------------------------------------------------------------------
+
+local function crearConsejo(f)
+	local c = CreateFrame("Frame", nil, f)
+	c.caja = K.Caja(c, { fondo = "panel", borde = "aviso", alfaBorde = 0.45, corte = K.CORTE.control })
+	c.Franja = K.Plano(c, "aviso", "ARTWORK", 1)
+	c.Franja:SetWidth(3)
+	c.Franja:SetPoint("TOPLEFT", c, "TOPLEFT", 0, -K.CORTE.control - 2)
+	c.Franja:SetPoint("BOTTOMLEFT", c, "BOTTOMLEFT", 0, K.CORTE.control + 2)
+	c.Icono = K.Icono(c, "ic-alerta", 18, "aviso")
+	c.Icono:SetPoint("TOPLEFT", c, "TOPLEFT", ESP.m, -ESP.m)
+	c.Titulo = K.Texto(c, "encabezado", "texto")
+	c.Texto = K.Texto(c, "nota", "textoSuave")
+	c.Cerrar = K.BotonIcono(c, "ic-cerrar", function()
+		f.consejoCerrado = true
+		f.reacomodar, f.forzar = true, true
+		despertar(f)
+	end, { tam = 20, icono = 10, ayuda = L["Ocultar hasta que vuelvan a llenarse"] })
+	c.Cerrar:SetPoint("TOPRIGHT", c, "TOPRIGHT", -4, -4)
+	local S = M.Sugerencias
+	c.Marcar = K.Boton(c, "", function() S.MarcarChatarra() end, { tipo = "acento", tam = "chico" })
+	c.Vender = K.Boton(c, "", function() S.VenderChatarra() end, { tipo = "primario", tam = "chico" })
+	c.Llevar = K.Boton(c, L["Llévame al comerciante"], function() S.LlevarComerciante() end, { tipo = "secundario", tam = "chico", icono = "ic-flecha" })
+	c.Banco = K.Boton(c, L["Llévame al banco"], function() S.LlevarBanco() end, { tipo = "secundario", tam = "chico", icono = "ic-flecha" })
+	K.ConInfo(c.Marcar, function()
+		local est = S.Estado()
+		local lista = {}
+		for _, g in ipairs(est.vender) do if not g.chatarra then lista[#lista + 1] = g end end
+		return L["Se marcan como chatarra"], S.Lineas(lista, 10)
+	end)
+	K.ConInfo(c.Vender, function()
+		return L["Se vende ahora"], L["Lo gris y lo que marcaste como chatarra. Nunca lo que marcaste para conservar ni lo que pide una misión."]
+	end)
+	c:EnableMouse(true)
+	K.ConInfo(c, function()
+		local est = S.Estado()
+		local lineas = {}
+		if #est.vender > 0 then
+			lineas[#lineas + 1] = K.Tenir("texto", L["Para vender"])
+			for _, l in ipairs(S.Lineas(est.vender, 8)) do lineas[#lineas + 1] = l end
+		end
+		if #est.conservar > 0 then
+			if #lineas > 0 then lineas[#lineas + 1] = " " end
+			lineas[#lineas + 1] = K.Tenir("texto", L["Para conservar"])
+			for _, l in ipairs(S.Lineas(est.conservar, 6)) do lineas[#lineas + 1] = l end
+		end
+		return L["Lo que sugiere Alfa"], lineas
+	end)
+	c:Hide()
+	return c
+end
+
+-- -> alto (0: no se muestra)
+local function acomodarConsejo(f, ancho)
+	local c = f.Consejo
+	local S = M.Sugerencias
+	local est = f.tipo == "bolsas" and f.esVivo and M.Get("avisoLleno") and S.Estado() or nil
+	if est and not est.lleno then f.consejoCerrado = nil end
+	if not (est and est.lleno) or f.consejoCerrado then
+		c:Hide()
+		return 0
 	end
-	f.Ordenar:SetAlpha(InCombatLockdown and InCombatLockdown() and 0.45 or 1)
+	local w = ancho - 2 * PAD
+	local x = ESP.m + 18 + ESP.s
+	local tw = w - x - 28
+	K.Escribir(c.Titulo, est.libres == 1 and L["Tus bolsas se están llenando: queda 1 casilla."]
+		or format(L["Tus bolsas se están llenando: quedan %d casillas."], est.libres))
+	c.Titulo:ClearAllPoints()
+	c.Titulo:SetPoint("TOPLEFT", c, "TOPLEFT", x, -ESP.m)
+	c.Titulo:SetWidth(tw)
+	local y = ESP.m + K.AltoTexto(c.Titulo) + 3
+	local texto
+	if #est.vender > 0 then
+		texto = format(L["Puedes vender %s (unos %s)."], S.Nombres(est.vender, 3), N.Dinero(est.valorVenta, true))
+	else
+		texto = L["No llevas nada que convenga vender: guarda algo en el banco."]
+	end
+	if #est.conservar > 0 then
+		texto = texto .. " " .. format(L["Conserva %s: vale más de otra forma."], S.Nombres(est.conservar, 2))
+	end
+	K.Escribir(c.Texto, texto)
+	c.Texto:ClearAllPoints()
+	c.Texto:SetPoint("TOPLEFT", c, "TOPLEFT", x, -y)
+	y = y + K.Parrafo(c.Texto, tw, 3) + ESP.s
+	-- Los botones, en una fila.
+	local enComerciante = S.ComercianteAbierto()
+	local chatarra = enComerciante and #S.ChatarraAhora() or 0
+	local botones = {}
+	c.Vender:SetShown(chatarra > 0 or S.Vendiendo())
+	if c.Vender:IsShown() then
+		c.Vender:SetTexto(S.Vendiendo() and L["Detener"] or format(L["Vender la chatarra (%d)"], chatarra))
+		botones[#botones + 1] = c.Vender
+	end
+	c.Marcar:SetShown(est.sinMarcar > 0)
+	if c.Marcar:IsShown() then
+		c.Marcar:SetTexto(format(L["Marcar como chatarra (%d)"], est.sinMarcar))
+		botones[#botones + 1] = c.Marcar
+	end
+	c.Llevar:SetShown(#est.vender > 0 and not enComerciante)
+	if c.Llevar:IsShown() then botones[#botones + 1] = c.Llevar end
+	c.Banco:SetShown(#est.vender == 0)
+	if c.Banco:IsShown() then botones[#botones + 1] = c.Banco end
+	local bx, by = x, y
+	for _, b in ipairs(botones) do
+		local bw = b:AnchoNatural()
+		if bx > x and bx + bw > w - ESP.s then bx, by = x, by + K.ALTO.botonChico + ESP.xs end
+		b:SetAncho(nil)
+		b:ClearAllPoints()
+		b:SetPoint("TOPLEFT", c, "TOPLEFT", bx, -by)
+		bx = bx + bw + ESP.s
+	end
+	if #botones > 0 then y = by + K.ALTO.botonChico end
+	local alto = y + ESP.m
+	c:SetSize(w, alto)
+	c:Show()
+	return alto
 end
 
 ---------------------------------------------------------------------------
@@ -312,6 +465,11 @@ local function datosDe(f, vivo)
 	return r.bolsas
 end
 
+local function infoDe(f, bolsa, datos)
+	if f.esVivo then return D.InfoBolsa(bolsa) end
+	return D.InfoGuardada(bolsa, datos and datos[bolsa])
+end
+
 local function acomodar(f)
 	local tam = M.Numero("tamIcono", 26, 52)
 	local cols = M.Numero("columnas", 4, 24)
@@ -323,18 +481,20 @@ local function acomodar(f)
 	f.esVivo = vivo
 	local propio = propia(f)
 	local datos = datosDe(f, vivo)
-	local porCategorias = M.Get("vista") ~= "una"
+	local vista = M.Vista()
 	local filtro = f.filtro
 	local lista = contenedores(f)
+	f.Contenido:SetWidth(ancho)
 
 	local usados = {}
 	local colocados = {}
+	local puestos = {}
 	local cola = vaciar(f.cola)
 	f.colaI = 1
 	local nFoto, nCab = 0, 0
 	local coinciden = 0
 	local libres, total, libresR, totalR = 0, 0, 0, 0
-	local y = 6
+	local y = ESP.s
 
 	local function boton(bolsa, s)
 		if vivo then
@@ -355,18 +515,20 @@ local function acomodar(f)
 		B.Medir(b, tam)
 		b:Show()
 		usados[b] = true
+		puestos[b] = ent
 		if esVivo then colocados[b] = ent end
 		if filtro then
 			ent.coincide = ent.rec and O.Coincide(filtro, ent) or false
 			if ent.coincide then coinciden = coinciden + 1 end
 		end
+		local estado = V.Estado(f, ent)
 		local fi = firma(ent)
 		local p = B.Partes[b]
 		if p and p.firma == fi then
 			p.ent = ent
-			B.Buscar(b, ent.coincide)
+			B.Buscar(b, estado)
 		else
-			cola[#cola + 1] = { b = b, ent = ent, fi = fi, vivo = esVivo }
+			cola[#cola + 1] = { b = b, ent = ent, fi = fi, vivo = esVivo, estado = estado }
 		end
 	end
 
@@ -381,33 +543,80 @@ local function acomodar(f)
 		return y
 	end
 
-	local function encabezado(cat, texto, cuenta, plegable)
+	-- opts = { plegable, icono (de la bolsa), simbolo (ícono de Alfa) }
+	local function encabezado(cat, texto, cuenta, o)
+		o = o or {}
 		nCab = nCab + 1
 		local h = cabecera(f, nCab)
-		h.cat = cat
+		h.cat, h.plegable = cat, o.plegable and true or false
 		h:ClearAllPoints()
 		h:SetPoint("TOPLEFT", f.Contenido, "TOPLEFT", x0, -y)
 		h:SetWidth(gridW)
-		h.Texto:SetText(texto)
-		h.Cuenta:SetText(cuenta and ("(" .. cuenta .. ")") or "")
-		local cerrada = plegable and plegada(f, cat) and not filtro
-		if T and T.Media then h.Flecha:SetTexture(T.Media(cerrada and "chevron-right" or "chevron-down")) end
-		h.Flecha:SetShown(plegable and true or false)
-		h:EnableMouse(plegable and true or false)
+		local cerrada = o.plegable and plegada(f, cat) and not filtro
+		K.SetIcono(h.Flecha, cerrada and "chevron-right" or "chevron-down", "textoSuave")
+		h.Flecha:SetShown(h.plegable)
+		local ancla, ax = h.Flecha, 6
+		if not h.plegable then ancla, ax = nil, 2 end
+		h.Bolsa:ClearAllPoints()
+		h.Simbolo:ClearAllPoints()
+		if o.icono then
+			h.Bolsa:SetTexture(o.icono)
+			h.Bolsa:Show()
+			h.Simbolo:Hide()
+			if ancla then h.Bolsa:SetPoint("LEFT", ancla, "RIGHT", ax, 0) else h.Bolsa:SetPoint("LEFT", h, "LEFT", ax, 0) end
+			ancla, ax = h.Bolsa, 7
+		elseif o.simbolo then
+			K.SetIcono(h.Simbolo, o.simbolo, "textoSuave")
+			h.Simbolo:Show()
+			h.Bolsa:Hide()
+			if ancla then h.Simbolo:SetPoint("LEFT", ancla, "RIGHT", ax, 0) else h.Simbolo:SetPoint("LEFT", h, "LEFT", ax, 0) end
+			ancla, ax = h.Simbolo, 7
+		else
+			h.Bolsa:Hide()
+			h.Simbolo:Hide()
+		end
+		h.Texto:ClearAllPoints()
+		if ancla then h.Texto:SetPoint("LEFT", ancla, "RIGHT", ax, 0) else h.Texto:SetPoint("LEFT", h, "LEFT", ax, 0) end
+		K.Escribir(h.Texto, texto)
+		K.Ajustar(h.Texto, gridW - 120)
+		K.Escribir(h.Cuenta, cuenta or "")
+		h.Cuenta:ClearAllPoints()
+		h.Cuenta:SetPoint("LEFT", h.Texto, "RIGHT", ESP.s, 0)
+		h.Linea:ClearAllPoints()
+		h.Linea:SetPoint("LEFT", (cuenta and cuenta ~= "") and h.Cuenta or h.Texto, "RIGHT", ESP.m, 0)
+		h.Linea:SetPoint("RIGHT", h, "RIGHT", -2, 0)
+		h:EnableMouse(h.plegable)
 		h:Show()
 		y = y + CAB_CAT + 2
 		return cerrada
 	end
 
+	-- Cuenta libres y totales de una casilla.
+	local function contar(bolsa, rec)
+		if bolsa == D.LLAVERO then return end
+		if bolsa == D.REAGENTES then
+			totalR = totalR + 1
+			if not rec then libresR = libresR + 1 end
+		else
+			total = total + 1
+			if not rec then libres = libres + 1 end
+		end
+	end
+
 	if not datos then
-		f.Vacio:SetText(f.tipo == "banco"
-			and L["Todavía no hay foto de este banco. Visita a un banquero con ese personaje y Alfa la guardará."]
-			or L["Todavía no hay datos de este personaje. Entra al juego con él una vez."])
+		f.Vacio:Set({
+			lobo = "dormido",
+			titulo = f.tipo == "banco" and L["Todavía no hay foto de este banco"] or L["Todavía no hay datos de este personaje"],
+			texto = f.tipo == "banco" and L["Visita a un banquero con ese personaje y Alfa la guardará."] or L["Entra al juego con él una vez."],
+		})
+		local vh = f.Vacio:Acomodar(ancho - 2 * PAD)
+		f.Vacio:ClearAllPoints()
+		f.Vacio:SetPoint("TOP", f.Contenido, "TOP", 0, -ESP.l)
 		f.Vacio:Show()
-		y = 70
+		y = ESP.l + vh + ESP.l
 	else
 		f.Vacio:Hide()
-		if not porCategorias then
+		if vista == "una" then
 			local ents, llavero = {}, {}
 			for _, bolsa in ipairs(lista) do
 				local t = datos[bolsa]
@@ -421,21 +630,41 @@ local function acomodar(f)
 					else
 						ents[#ents + 1] = ent
 						if not rec then ent.reagentes = bolsa == D.REAGENTES end
-						if bolsa == D.REAGENTES then
-							totalR = totalR + 1
-							if not rec then libresR = libresR + 1 end
-						else
-							total = total + 1
-							if not rec then libres = libres + 1 end
-						end
+						contar(bolsa, rec)
 					end
 				end
 			end
 			cuadricula(ents)
 			if #llavero > 0 then
-				y = y + 8
-				encabezado("llavero", L["Llavero"], nil, false)
+				y = y + ESP.s
+				encabezado("llavero", L["Llavero"], nil, { icono = D.ICONO_LLAVERO })
 				cuadricula(llavero)
+			end
+		elseif vista == "bolsa" then
+			for _, bolsa in ipairs(lista) do
+				local t = datos[bolsa]
+				local n = type(t) == "table" and tonumber(t.n) or 0
+				if bolsa == D.LLAVERO then n = tamLlavero(n) end
+				if n > 0 then
+					local ents, vacias = {}, 0
+					for s = 1, n do
+						local rec = type(t[s]) == "table" and t[s] or nil
+						local ent = entrada(bolsa, s, rec, propio)
+						if not rec then
+							vacias = vacias + 1
+							ent.reagentes = bolsa == D.REAGENTES
+						end
+						ents[#ents + 1] = ent
+						contar(bolsa, rec)
+					end
+					local info = infoDe(f, bolsa, datos)
+					local nombre = info.nombre or (bolsa == D.REAGENTES and L["Bolsa de componentes"]) or L["Bolsa"]
+					local cuenta = (vacias == 0 and L["llena"]) or (vacias == 1 and L["1 libre"]) or format(L["%d libres de %d"], vacias, n)
+					local cerrada = encabezado("bolsa" .. bolsa, nombre, cuenta,
+						{ plegable = true, icono = info.icono, simbolo = not info.icono and "ic-bolsas" or nil })
+					if not cerrada then cuadricula(ents) end
+					y = y + GAP
+				end
 			end
 		else
 			local grupos = {}
@@ -454,18 +683,10 @@ local function acomodar(f)
 						end
 						g[#g + 1] = ent
 					end
-					if bolsa == D.REAGENTES then
-						totalR = totalR + 1
-						if not rec then
-							libresR = libresR + 1
-							primeroR = primeroR or s
-						end
-					elseif bolsa ~= D.LLAVERO then
-						total = total + 1
-						if not rec then
-							libres = libres + 1
-							primero = primero or { bolsa, s }
-						end
+					contar(bolsa, rec)
+					if not rec then
+						if bolsa == D.REAGENTES then primeroR = primeroR or s
+						elseif bolsa ~= D.LLAVERO then primero = primero or { bolsa, s } end
 					end
 				end
 			end
@@ -473,9 +694,9 @@ local function acomodar(f)
 				local g = grupos[c.clave]
 				if g and #g > 0 then
 					table.sort(g, O.Antes)
-					local cerrada = encabezado(c.clave, c.nombre, #g, true)
+					local cerrada = encabezado(c.clave, c.nombre, tostring(#g), { plegable = true })
 					if not cerrada then cuadricula(g) end
-					y = y + 4
+					y = y + GAP
 				end
 			end
 			local vacias = {}
@@ -490,7 +711,7 @@ local function acomodar(f)
 				vacias[#vacias + 1] = ent
 			end
 			if #vacias > 0 then
-				encabezado("libre", O.NOMBRE.libre, libres + libresR, false)
+				encabezado("libre", O.NOMBRE.libre, tostring(libres + libresR), {})
 				cuadricula(vacias)
 			end
 		end
@@ -508,28 +729,49 @@ local function acomodar(f)
 	end
 	for i = nCab + 1, #f.cabs do f.cabs[i]:Hide() end
 
+	-- La parte de arriba: cabecera, franja, barra de bolsas y sugerencia.
+	local arriba = CAB_H + FRANJA_H
+	local hb = 0
+	if M.Get("barra") then
+		hb = M.Barra.Llenar(f.Barra, M.Barra.Datos(f, datos, lista, vivo, propio), ancho, x0)
+	end
+	f.Barra:SetShown(hb > 0)
+	if hb > 0 then
+		f.Barra:ClearAllPoints()
+		f.Barra:SetPoint("TOPLEFT", f, "TOPLEFT", 0, -arriba)
+		arriba = arriba + hb
+	end
+	local hc = acomodarConsejo(f, ancho)
+	if hc > 0 then
+		f.Consejo:ClearAllPoints()
+		f.Consejo:SetPoint("TOPLEFT", f, "TOPLEFT", PAD, -(arriba + ESP.xs))
+		arriba = arriba + hc + ESP.s
+	end
+
 	-- Tamaño de la ventana.
-	local alto = y + 8
-	f.Contenido:SetWidth(ancho)
+	local alto = y + ESP.s
 	local pantalla = (UIParent and tonumber(UIParent:GetHeight())) or 768
-	local maxCuerpo = max(140, floor(pantalla * 0.78) - CAB_H - BUS_H - PIE_H)
+	local maxCuerpo = max(140, floor(pantalla * 0.78) - arriba - PIE_H)
 	local cuerpo = min(alto, maxCuerpo)
-	f:SetSize(ancho, CAB_H + BUS_H + cuerpo + PIE_H)
-	W.SetScrollContent(f.Scroll, alto, cuerpo)
-	if T and T.BandCoords then f.Banda:SetTexCoord(T.BandCoords(ancho - 2, CAB_H)) end
+	f:SetSize(ancho, arriba + cuerpo + PIE_H)
+	f.Desp:ClearAllPoints()
+	f.Desp:SetPoint("TOPLEFT", f, "TOPLEFT", 0, -arriba)
+	f.Desp:Acomodar(ancho - 2, cuerpo)
+	f.Contenido:SetWidth(ancho)
+	f.Desp:SetAltoContenido(alto)
 	f.ancho = ancho
-	f.colocados, f.vistaCat = colocados, porCategorias
+	f.colocados, f.puestos, f.vistaCat = colocados, puestos, vista == "categorias"
 
 	-- Pie y búsqueda.
 	f.libres, f.total, f.libresR, f.totalR = libres, total, libresR, totalR
 	V.Pie(f)
 	if filtro then
-		f.Coinciden:SetText(coinciden > 0 and (L["%d coinciden"]):format(coinciden) or L["Ninguno coincide"])
+		K.Escribir(f.Coinciden, coinciden > 0 and (L["%d coinciden"]):format(coinciden) or L["Ninguno coincide"])
 		f.Coinciden:Show()
 	else
-		f.Coinciden:SetText("")
 		f.Coinciden:Hide()
 	end
+	pintarVistas(f)
 	franja(f)
 end
 
@@ -540,7 +782,7 @@ local function pintarLote(f)
 		B.Pintar(q.b, q.ent)
 		local p = B.Partes[q.b]
 		if p then p.firma = q.fi end
-		B.Buscar(q.b, q.ent.coincide)
+		B.Buscar(q.b, q.estado)
 		if q.vivo then B.Enfriar(q.b, q.ent.bolsa, q.ent.casilla) end
 		i = i + 1
 		n = n + 1
@@ -548,9 +790,9 @@ local function pintarLote(f)
 	f.colaI = i
 end
 
--- Por categorías, con el ratón sobre la ventana (vendiendo, usando), las
--- casillas no cambian de lugar: cada botón se repinta donde está y el
--- acomodo espera a que el ratón salga.
+-- Con el ratón sobre la ventana (vendiendo, usando), las casillas no cambian
+-- de lugar: cada botón se repinta donde está y el acomodo espera a que el
+-- ratón salga (en las vistas por categorías y por bolsa).
 local function enSitio(f)
 	local propio = propia(f)
 	local cola = f.cola
@@ -565,9 +807,10 @@ local function enSitio(f)
 		if p and p.firma == fi then
 			p.ent = ent
 		else
-			cola[#cola + 1] = { b = b, ent = ent, fi = fi, vivo = true }
+			cola[#cola + 1] = { b = b, ent = ent, fi = fi, vivo = true, estado = V.Estado(f, ent) }
 		end
 		f.colocados[b] = ent
+		f.puestos[b] = ent
 	end
 end
 
@@ -627,6 +870,27 @@ local function ya(f)
 end
 
 ---------------------------------------------------------------------------
+-- Resaltar lo que lleva una bolsa (desde la barra de bolsas)
+---------------------------------------------------------------------------
+
+-- Cómo se ve una casilla: nil (normal), true (resaltada) o false (atenuada),
+-- según la bolsa resaltada o, si no hay, la búsqueda.
+function V.Estado(f, ent)
+	if f.resaltada ~= nil then return ent.bolsa == f.resaltada end
+	if f.filtro then return ent.coincide and true or false end
+	return nil
+end
+
+function V.Resaltar(f, bolsa)
+	if not f then return end
+	f.resaltada = bolsa
+	for b, ent in pairs(f.puestos or {}) do
+		if b:IsShown() then B.Buscar(b, V.Estado(f, ent)) end
+	end
+	if f.Barra then M.Barra.Repintar(f.Barra) end
+end
+
+---------------------------------------------------------------------------
 -- La ventana
 ---------------------------------------------------------------------------
 
@@ -655,8 +919,8 @@ local function ponerPos(f)
 end
 
 local function sonido(abrir)
-	local K = SOUNDKIT
-	local id = K and (abrir and K.IG_BACKPACK_OPEN or K.IG_BACKPACK_CLOSE)
+	local SK = SOUNDKIT
+	local id = SK and (abrir and SK.IG_BACKPACK_OPEN or SK.IG_BACKPACK_CLOSE)
 	if id and PlaySound then pcall(PlaySound, id) end
 end
 
@@ -669,51 +933,72 @@ function V.Pie(f)
 		local r = D.Personaje(f.clave)
 		dinero = r and tonumber(r.dinero)
 	end
-	f.Dinero:SetText(N.Dinero(dinero or 0, true))
-	f.Cuenta:SetText(L["Cuenta:"] .. " " .. N.Dinero(D.DineroCuenta(), true))
-	f.Libre:SetText((L["Libre: %d de %d"]):format(f.libres or 0, f.total or 0))
+	K.Escribir(f.Dinero, N.Dinero(dinero or 0, true))
+	K.Escribir(f.Cuenta, L["Cuenta:"] .. " " .. N.Dinero(D.DineroCuenta(), true))
+	K.Escribir(f.Libre, (L["Libre: %d de %d"]):format(f.libres or 0, f.total or 0))
 	local poco = (f.total or 0) > 0 and (f.libres or 0) <= 2
-	W.Color(f.Libre, poco and "warning" or "textDim")
+	K.ColorTexto(f.Libre, poco and "aviso" or "textoSuave")
 end
 
-local function tooltipDinero(self)
-	if not GameTooltip then return end
+local function infoPie(self)
 	local f = self:GetParent()
-	GameTooltip:SetOwner(self, "ANCHOR_TOP")
-	GameTooltip:SetText(L["Espacio libre"], 1, 1, 1)
-	local dr, dg, db = M.Color("textDim")
-	GameTooltip:AddDoubleLine(L["Bolsas"], (L["%d de %d"]):format(f.libres or 0, f.total or 0), dr, dg, db, 1, 1, 1)
+	local lineas = { (L["Bolsas: %d de %d libres"]):format(f.libres or 0, f.total or 0) }
 	if (f.totalR or 0) > 0 then
-		GameTooltip:AddDoubleLine(L["Bolsa de componentes"], (L["%d de %d"]):format(f.libresR or 0, f.totalR or 0), dr, dg, db, 1, 1, 1)
+		lineas[#lineas + 1] = (L["Bolsa de componentes: %d de %d libres"]):format(f.libresR or 0, f.totalR or 0)
 	end
-	GameTooltip:AddLine(" ")
-	GameTooltip:AddLine(L["Dinero de tus personajes"], 1, 1, 1)
+	lineas[#lineas + 1] = " "
+	lineas[#lineas + 1] = K.Tenir("texto", L["Dinero de tus personajes"])
 	local actual = D.Clave()
 	for _, p in ipairs(D.Lista()) do
 		local r, g, b = M.ColorClase(p.r.clase)
 		local d = (p.clave == actual and M.Num(GetMoney and GetMoney())) or tonumber(p.r.dinero) or 0
-		GameTooltip:AddDoubleLine(M.Pintado(p.r.nombre or p.clave, r, g, b), N.Dinero(d, true), 1, 1, 1, 1, 1, 1)
+		lineas[#lineas + 1] = M.Pintado(p.r.nombre or p.clave, r, g, b) .. "  ·  " .. N.Dinero(d, true)
 	end
-	local ar, ag, ab = M.Acento()
-	GameTooltip:AddLine(" ")
-	GameTooltip:AddDoubleLine(L["Toda la cuenta"], N.Dinero(D.DineroCuenta(), true), ar, ag, ab, 1, 1, 1)
-	GameTooltip:Show()
+	lineas[#lineas + 1] = " "
+	lineas[#lineas + 1] = K.Tenir("acento", L["Toda la cuenta"]) .. "  ·  " .. N.Dinero(D.DineroCuenta(), true)
+	return L["Espacio y dinero"], lineas
 end
 
 local function menuPersonajes(f, ancla)
-	local items = {}
+	local ops = {}
 	local actual = D.Clave()
 	for _, p in ipairs(D.Lista()) do
 		local r, g, b = M.ColorClase(p.r.clase)
 		local nombre = M.Pintado(p.r.nombre or p.clave, r, g, b)
 		if p.clave == actual then nombre = nombre .. " " .. L["(tú)"] end
-		local elegido = (f.clave or actual) == p.clave
-		items[#items + 1] = { text = nombre, checked = elegido, onClick = function()
-			V.Ver(f, p.clave ~= actual and p.clave or nil)
-		end }
+		ops[#ops + 1] = { valor = p.clave, texto = nombre }
 	end
-	if #items == 0 then items[1] = { text = L["Aún no hay personajes guardados"], disabled = true } end
-	W.ShowMenu(ancla, items, { minWidth = 200 })
+	if #ops == 0 then ops[1] = { valor = "", texto = L["Aún no hay personajes guardados"] } end
+	K.Menu(ancla, ops, f.clave or actual, function(clave)
+		if clave == "" then return end
+		V.Ver(f, clave ~= actual and clave or nil)
+	end, 220)
+end
+
+local function menuDepositar(f, ancla)
+	local Bc = M.Banco
+	if Bc.Depositando() then
+		Bc.Depositar()
+		return
+	end
+	if M.EnCombate() then N.Imprimir(L["No se puede en combate."]) return end
+	local cuentas, cats = Bc.Cuentas()
+	local ops = {}
+	for _, o in ipairs(Bc.OPCIONES) do
+		local n = cuentas[o.clave] or 0
+		if n > 0 then ops[#ops + 1] = { valor = o.clave, texto = format("%s  ·  %d", o.texto, n) } end
+	end
+	if #ops == 0 then ops[1] = { valor = "", texto = L["No llevas nada que depositar"] } end
+	K.Menu(ancla, ops, M.Get("deposito"), function(clave)
+		if clave == "" then return end
+		if clave ~= "categoria" then
+			Bc.Depositar(clave)
+			return
+		end
+		local cops = {}
+		for _, c in ipairs(cats) do cops[#cops + 1] = { valor = c.clave, texto = format("%s  ·  %d", c.nombre, c.n) } end
+		M.Luego(0, function() K.Menu(ancla, cops, nil, function(cat) Bc.Depositar("categoria", cat) end, 240) end)
+	end, 260)
 end
 
 local function crear(tipo)
@@ -727,14 +1012,15 @@ local function crear(tipo)
 	f:SetMovable(true)
 	f:SetSize(MIN_W, 300)
 	f:Hide()
-	T.Skin(f, "window")
+	f.caja = K.Caja(f, { fondo = "fondo", borde = "linea", corte = K.CORTE.ventana })
+	f.Marca = K.Marca(f, K.CORTE.ventana, "acento", 44)
 	f.vivo, f.vivos, f.portas, f.fotos, f.cabs = {}, {}, {}, {}, {}
-	f.porEscanear, f.cola, f.colaI = {}, {}, 1
+	f.porEscanear, f.cola, f.colaI, f.puestos = {}, {}, 1, {}
 
-	-- Cabecera: la banda, el título y los botones; se arrastra desde aquí.
+	-- Cabecera: el ícono, el título, las vistas y los botones; se arrastra desde aquí.
 	local cab = CreateFrame("Frame", nil, f)
-	cab:SetPoint("TOPLEFT", f, "TOPLEFT", 1, -1)
-	cab:SetPoint("TOPRIGHT", f, "TOPRIGHT", -1, -1)
+	cab:SetPoint("TOPLEFT", f, "TOPLEFT", 0, 0)
+	cab:SetPoint("TOPRIGHT", f, "TOPRIGHT", 0, 0)
 	cab:SetHeight(CAB_H)
 	cab:EnableMouse(true)
 	cab:RegisterForDrag("LeftButton")
@@ -746,96 +1032,100 @@ local function crear(tipo)
 		ponerPos(f)
 	end)
 	f.Cabeza = cab
-	f.Banda = T.Band(cab, "BACKGROUND", -5)
-	f.Banda:SetAllPoints(cab)
-	W.Haze(cab, { height = CAB_H * 2 })
-	W.Rim(f, { height = 60 })
+	cab.Linea = K.Linea(cab, "linea")
+	cab.Linea:SetPoint("BOTTOMLEFT", cab, "BOTTOMLEFT", 0, 0)
+	cab.Linea:SetPoint("BOTTOMRIGHT", cab, "BOTTOMRIGHT", 0, 0)
+	f.Icono = K.Icono(cab, "ic-bolsas", 18, "acento")
+	f.Icono:SetPoint("LEFT", cab, "LEFT", PAD + 2, 0)
 
-	f.Icono = cab:CreateTexture(nil, "ARTWORK")
-	f.Icono:SetTexture(T.Media(tipo == "banco" and "icon-treasure" or "icon-collect"))
-	f.Icono:SetSize(18, 18)
-	f.Icono:SetPoint("LEFT", cab, "LEFT", PAD, 0)
-	W.Color(f.Icono, "accent")
-
-	local function boton(icono, tip, fn)
-		return W.IconButton(cab, icono, 26, tip, fn, 14)
-	end
-	f.Cerrar = boton("close", L["Cerrar"], function() f:Hide() end)
-	f.Cerrar:SetPoint("RIGHT", cab, "RIGHT", -8, 0)
-	f.Ajustes = boton("gear", L["Ajustes de Bolsas"], function() N.Abrir(M.ID) end)
+	f.Cerrar = K.BotonIcono(cab, "ic-cerrar", function() f:Hide() end, { tam = 28, icono = 14, ayuda = L["Cerrar"] })
+	f.Cerrar:SetPoint("RIGHT", cab, "RIGHT", -ESP.s, 0)
+	f.Ajustes = K.BotonIcono(cab, "ic-ajustes", function() N.Abrir(M.ID) end, { tam = 28, ayuda = L["Ajustes de Bolsas"] })
 	f.Ajustes:SetPoint("RIGHT", f.Cerrar, "LEFT", -2, 0)
-	f.Personajes = boton("menu", L["Tus personajes"], function(self) menuPersonajes(f, self) end)
+	f.Personajes = K.BotonIcono(cab, "ic-personajes", function(self) menuPersonajes(f, self) end, { tam = 28, ayuda = L["Tus personajes"],
+		ayudaTexto = L["Mira las bolsas o el banco de otro de tus personajes."] })
 	f.Personajes:SetPoint("RIGHT", f.Ajustes, "LEFT", -2, 0)
 	local ultimo = f.Personajes
 	if tipo == "bolsas" then
-		f.BotonBanco = boton("icon-treasure", L["Banco"], function() V.MostrarBanco(f.clave) end)
-		f.BotonBanco.psTipLines = { L["Tu banco: en vivo si estás con un banquero, si no, la última foto."] }
-		f.BotonBanco:SetPoint("RIGHT", ultimo, "LEFT", -2, 0)
+		f.BotonBanco = K.Boton(cab, L["Banco"], function() V.MostrarBanco(f.clave) end, { tipo = "fantasma", tam = "chico" })
+		K.ConInfo(f.BotonBanco, L["Tu banco"], L["En vivo si estás con un banquero; si no, la última foto."])
+		f.BotonBanco:SetPoint("RIGHT", ultimo, "LEFT", -ESP.xs, 0)
 		ultimo = f.BotonBanco
 	end
-	f.Vista = boton("layers", L["Cambiar la vista"], function()
-		M.Set("vista", M.Get("vista") == "una" and "categorias" or "una")
-	end)
-	f.Vista:SetPoint("RIGHT", ultimo, "LEFT", -2, 0)
+	-- Las tres vistas, como un grupo de segmentos de ícono.
+	local grupo = CreateFrame("Frame", nil, cab)
+	grupo.caja = K.Caja(grupo, { fondo = "hundido", borde = "linea", corte = K.CORTE.control })
+	grupo:SetSize(3 * 26 + 2 * 2 + 6, 32)
+	grupo:SetPoint("RIGHT", ultimo, "LEFT", -ESP.s, 0)
+	f.Vistas = {}
+	local VISTAS = {
+		{ "una", "ic-rejilla", L["Todo junto"], L["Cada casilla en su lugar, como en tus bolsas."] },
+		{ "categorias", "ic-lista", L["Por categorías"], L["Equipo, consumibles, misiones, materiales... con encabezados que se pliegan."] },
+		{ "bolsa", "ic-bolsas", L["Por bolsa"], L["Cada bolsa en su bloque, con su nombre y su espacio."] },
+	}
+	for i, v in ipairs(VISTAS) do
+		local b = K.BotonIcono(grupo, v[2], function() M.Set("vista", v[1]) end, { tam = 26, icono = 14, ayuda = v[3], ayudaTexto = v[4] })
+		b:SetPoint("LEFT", grupo, "LEFT", 3 + (i - 1) * 28, 0)
+		f.Vistas[v[1]] = b
+	end
+	f.Titulo = K.Texto(cab, "subtitulo", "texto")
+	f.Titulo:SetPoint("LEFT", f.Icono, "RIGHT", ESP.s, 0)
+	f.Titulo:SetPoint("RIGHT", grupo, "LEFT", -ESP.s, 0)
 
-	f.Titulo = W.Text(cab, "title", "text")
-	f.Titulo:SetPoint("LEFT", f.Icono, "RIGHT", 8, 0)
-	f.Titulo:SetPoint("RIGHT", f.Vista, "LEFT", -8, 0)
-	f.Titulo:SetJustifyH("LEFT")
-
-	-- La franja: buscar y ordenar.
+	-- La franja: buscar, ordenar y depositar.
 	local fr = CreateFrame("Frame", nil, f)
 	fr:SetPoint("TOPLEFT", f, "TOPLEFT", 0, -CAB_H)
 	fr:SetPoint("TOPRIGHT", f, "TOPRIGHT", 0, -CAB_H)
-	fr:SetHeight(BUS_H)
+	fr:SetHeight(FRANJA_H)
 	f.Franja = fr
-	f.Busca = W.SearchBox(fr, { L["Buscar: nombre, tipo, calidad o nivel"], L["Buscar"] }, function(texto) V.Buscar(f, texto) end)
-	f.Busca:SetHeight(28)
-	f.Busca.psTip = L["Buscar"]
-	f.Ordenar = W.Button(fr, L["Ordenar"], function() V.Ordenar(f) end, { height = 28 })
-	f.Ordenar.psTip = L["Ordenar"]
-	f.Ordenar.psTipLines = { L["Junta los montones y acomoda tus objetos. No funciona en combate."] }
-	f.Volver = W.Button(fr, L["Volver"], function() V.Ver(f, nil) end, { height = 28, ghost = true })
-	f.Volver.psTip = L["Volver a tus propias cosas"]
-	f.Chip = W.Chip(fr)
-	f.Chip:Hide()
-	f.Coinciden = W.Text(f.Busca, "small", "textMuted")
-	f.Coinciden:SetPoint("RIGHT", f.Busca, "RIGHT", -28, 0)
+	f.Busca = K.Buscador(fr, { ayuda = L["Buscar"], alCambiar = function(texto) V.Buscar(f, texto) end })
+	K.ConInfo(f.Busca, L["Buscar"], L["Por nombre, tipo o calidad (verde, azul...) y por nivel de objeto: 20, >20, 20-30. Lo que coincide se resalta."])
+	f.Coinciden = K.Texto(f.Busca, "pequeno", "textoTenue")
+	f.Coinciden:SetPoint("RIGHT", f.Busca, "RIGHT", -30, 0)
 	f.Coinciden:SetJustifyH("RIGHT")
+	f.Coinciden:Hide()
+	f.Ordenar = K.Boton(fr, L["Ordenar"], function() V.Ordenar(f) end, { tipo = "secundario" })
+	K.ConInfo(f.Ordenar, L["Ordenar"], L["Junta los montones y acomoda tus objetos. No funciona en combate."])
+	if tipo == "banco" then
+		f.Depositar = K.Boton(fr, L["Depositar"], function(self) menuDepositar(f, self) end, { tipo = "primario", icono = "chevron-down" })
+		K.ConInfo(f.Depositar, L["Depositar rápido"], L["Elige qué guardar: lo que ya tienes en el banco, los materiales, una categoría o todo lo que no sea equipo. Se mueve de una vez, fuera de combate."])
+	end
+	f.Volver = K.Boton(fr, L["Volver"], function() V.Ver(f, nil) end, { tipo = "fantasma" })
+	K.ConInfo(f.Volver, nil, L["Volver a tus propias cosas"])
+	f.Foto = K.Insignia(fr, "", "aviso")
+
+	-- La barra de bolsas y la sugerencia.
+	f.Barra = M.Barra.Crear(f)
+	f.Barra:Hide()
+	f.Consejo = crearConsejo(f)
 
 	-- El cuerpo.
-	f.Scroll = W.Scroll(f)
-	f.Scroll:SetPoint("TOPLEFT", f, "TOPLEFT", 0, -(CAB_H + BUS_H))
-	f.Scroll:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", 0, PIE_H)
-	f.Contenido = f.Scroll.Child
-	f.Contenido:SetFrameLevel(f.Scroll:GetFrameLevel() + 1)
-	f.Vacio = W.Text(f.Contenido, "note", "textMuted")
-	f.Vacio:SetWordWrap(true)
-	f.Vacio:SetPoint("TOPLEFT", f.Contenido, "TOPLEFT", PAD + 4, -16)
-	f.Vacio:SetPoint("RIGHT", f, "RIGHT", -PAD - 4, 0)
+	f.Desp = K.Desplazable(f)
+	f.Contenido = f.Desp.Contenido
+	f.Contenido:SetFrameLevel(f.Desp:GetFrameLevel() + 1)
+	f.Vacio = K.Vacio(f.Contenido, { lobo = "dormido" })
 	f.Vacio:Hide()
 
 	-- El pie: dinero (con el de la cuenta al pasar el ratón) y espacio libre.
-	local pie = CreateFrame("Button", nil, f)
-	pie:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 1, 1)
-	pie:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -1, 1)
-	pie:SetHeight(PIE_H - 1)
-	local fondo = pie:CreateTexture(nil, "BACKGROUND")
-	fondo:SetAllPoints(pie)
-	fondo:SetTexture(T.Media("white"))
-	W.Color(fondo, "footer", 0.9)
-	local linea = W.Divider(pie)
-	linea:SetPoint("TOPLEFT", pie, "TOPLEFT", 0, 0)
-	linea:SetPoint("TOPRIGHT", pie, "TOPRIGHT", 0, 0)
-	f.Dinero = W.Text(pie, "number", "text")
-	f.Dinero:SetPoint("LEFT", pie, "LEFT", PAD, 0)
-	f.Cuenta = W.Text(pie, "small", "textMuted")
-	f.Cuenta:SetPoint("LEFT", f.Dinero, "RIGHT", 12, 0)
-	f.Libre = W.Text(pie, "small", "textDim")
-	f.Libre:SetPoint("RIGHT", pie, "RIGHT", -PAD, 0)
+	local pie = CreateFrame("Frame", nil, f)
+	pie:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 0, 0)
+	pie:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", 0, 0)
+	pie:SetHeight(PIE_H)
+	pie.Fondo = K.Forma(pie, 0, "BACKGROUND", -4)
+	K.Pintar(pie.Fondo, function(x) x:Color("pie") end)
+	pie.Fondo:Corte(0, K.CORTE.ventana)
+	pie.Linea = K.Linea(pie, "linea")
+	pie.Linea:SetPoint("TOPLEFT", pie, "TOPLEFT", 0, 0)
+	pie.Linea:SetPoint("TOPRIGHT", pie, "TOPRIGHT", 0, 0)
+	f.Dinero = K.Texto(pie, "numero", "texto")
+	f.Dinero:SetPoint("LEFT", pie, "LEFT", PAD + 2, 0)
+	f.Cuenta = K.Texto(pie, "pequeno", "textoTenue")
+	f.Cuenta:SetPoint("LEFT", f.Dinero, "RIGHT", ESP.m, 0)
+	f.Libre = K.Texto(pie, "pequeno", "textoSuave")
+	f.Libre:SetPoint("RIGHT", pie, "RIGHT", -(PAD + 2), 0)
 	f.Libre:SetJustifyH("RIGHT")
-	pie:SetScript("OnEnter", tooltipDinero)
-	pie:SetScript("OnLeave", function(self) W.HideTooltip(self) end)
+	pie:EnableMouse(true)
+	K.ConInfo(pie, infoPie)
 	f.Pie = pie
 
 	f:SetScript("OnShow", function(self)
@@ -848,9 +1138,10 @@ local function crear(tipo)
 	end)
 	f:SetScript("OnHide", function(self)
 		self:SetScript("OnUpdate", nil)
-		if W.MenuShown and W.MenuShown(self.Personajes) then W.HideMenu() end
-		if self.Busca:GetText() ~= "" then self.Busca:SetText("") end
-		self.filtro = nil
+		K.CerrarMenu()
+		K.OcultarInfo()
+		if self.Busca:Texto() ~= "" then self.Busca:SetTexto("", true) end
+		self.filtro, self.fijada, self.resaltada = nil, nil, nil
 		if self.tipo == "bolsas" then
 			-- Lo nuevo deja de serlo al cerrar, como en las bolsas de Blizzard.
 			for k in pairs(recientes) do
@@ -885,7 +1176,8 @@ V.Ventana = ventana
 function V.Ver(f, clave)
 	if clave ~= nil and D.EsActual(clave) then clave = nil end
 	f.clave = clave
-	if f.Busca:GetText() ~= "" then f.Busca:SetText("") end
+	f.fijada, f.resaltada = nil, nil
+	if f.Busca:Texto() ~= "" then f.Busca:SetTexto("", true) f.filtro = nil end
 	titulo(f)
 	if f:IsShown() then
 		todo(f, true)
@@ -939,14 +1231,14 @@ function V.Buscar(f, texto)
 end
 
 function V.Ordenar(f)
-	if InCombatLockdown and InCombatLockdown() then
+	if M.EnCombate() then
 		N.Imprimir(L["No se puede ordenar en combate."])
 		return
 	end
 	if not CC then return end
 	if CC.SetSortBagsRightToLeft then pcall(CC.SetSortBagsRightToLeft, not M.Get("ordenarInverso")) end
 	if f.tipo == "banco" then
-		local tipo = Enum and Enum.BankType and Enum.BankType.Character
+		local tipo = D.TIPO_BANCO
 		if CC.SortBank and tipo then
 			pcall(CC.SortBank, tipo)
 		elseif CC.SortBankBags then
@@ -959,7 +1251,8 @@ end
 
 -- Un ajuste de Bolsas cambió.
 function V.Ajuste(clave)
-	if clave == "vista" or clave == "tamIcono" or clave == "columnas" or clave == "llavero" or clave == nil then
+	if clave == "vista" or clave == "tamIcono" or clave == "columnas" or clave == "llavero" or clave == "barra"
+		or clave == "avisoLleno" or clave == "avisoLibres" or clave == nil then
 		for _, f in pairs(ventanas) do
 			if clave == "llavero" or clave == nil then todo(f, true) else ya(f) end
 		end
@@ -967,12 +1260,6 @@ function V.Ajuste(clave)
 	if clave == nil or clave:find("^marca") then V.RepintarTodo() end
 	if clave == "ordenar" or clave == nil then
 		for _, f in pairs(ventanas) do if f:IsShown() then franja(f) end end
-	end
-	for _, f in pairs(ventanas) do
-		if f.Vista then
-			f.Vista.psTip = M.Get("vista") == "una" and L["Vista: una sola bolsa"] or L["Vista: por categorías"]
-			f.Vista.psTipLines = { L["Clic para cambiarla."] }
-		end
 	end
 end
 
@@ -1004,6 +1291,18 @@ A.RegisterEvent("BAG_UPDATE", function(_, bolsa)
 end)
 
 A.RegisterEvent("BAG_CONTAINER_UPDATE", function() enCada(todo) end)
+A.RegisterEvent("PLAYERBANKSLOTS_CHANGED", function(_, pestana)
+	local f = ventanas.banco
+	if not (f and f:IsShown() and f.esVivo) then return end
+	pestana = M.Num(pestana)
+	local bolsa = pestana and D.BANCO[pestana]
+	if bolsa then
+		f.porEscanear[bolsa] = true
+		despertar(f)
+	else
+		todo(f)
+	end
+end)
 A.RegisterEvent("BAG_NEW_ITEMS_UPDATED", function()
 	local f = ventanas.bolsas
 	if f and f:IsShown() and f.esVivo then todo(f) end
@@ -1051,21 +1350,9 @@ A.RegisterEvent("BANKFRAME_CLOSED", function()
 	local f = ventanas.banco
 	if f and f:IsShown() and f.esVivo then f:Hide() end
 end)
-A.RegisterEvent("PLAYERBANKSLOTS_CHANGED", function(_, pestana)
-	local f = ventanas.banco
-	if not (f and f:IsShown() and f.esVivo) then return end
-	pestana = M.Num(pestana)
-	local bolsa = pestana and D.BANCO[pestana]
-	if bolsa then
-		f.porEscanear[bolsa] = true
-		despertar(f)
-	else
-		todo(f)
-	end
-end)
 A.RegisterEvent("BANK_TABS_CHANGED", function()
 	local f = ventanas.banco
-	if f and f:IsShown() and f.esVivo then todo(f) end
+	if f and f:IsShown() and f.esVivo then todo(f, true) end
 end)
 
 A.On("GEAR_UPDATED", function()
@@ -1073,6 +1360,10 @@ A.On("GEAR_UPDATED", function()
 		f.reacomodar = true
 		despertar(f)
 	end)
+end)
+
+A.On("ITEM_MARKS", function()
+	enCada(function(f) if f.esVivo then todo(f) end end)
 end)
 
 A.On("SETTING_CHANGED", function(ruta)
@@ -1089,7 +1380,7 @@ M.Escuchar("ITEM", function()
 	end)
 end)
 
-M.Escuchar("DATOS", function(clave)
+M.Escuchar("DATOS", function()
 	enCada(function(f)
 		if not f.esVivo then
 			f.reacomodar = true
@@ -1098,11 +1389,17 @@ M.Escuchar("DATOS", function(clave)
 	end)
 end)
 
+-- La sugerencia y la compra del banco cambiaron: la parte de arriba otra vez.
+local function arriba(f) f.reacomodar = true despertar(f) end
+M.Escuchar("SUGERENCIAS", function() enCada(arriba) end)
+M.Escuchar("COMPRA", function() enCada(arriba) end)
+M.Escuchar("LOTE", function() enCada(function(f) textoDepositar(f) if f.Consejo:IsShown() then arriba(f) end end) end)
+A.RegisterEvent("MERCHANT_SHOW", function() enCada(arriba) end)
+A.RegisterEvent("MERCHANT_CLOSED", function() enCada(arriba) end)
+
 M.Escuchar("DINERO", function() enCada(V.Pie) end)
 
-if T and T.OnChanged then
-	T.OnChanged(function()
-		B.Tema()
-		enCada(ya)
-	end)
-end
+K.AlRepintar(function()
+	B.Tema()
+	enCada(ya)
+end)
