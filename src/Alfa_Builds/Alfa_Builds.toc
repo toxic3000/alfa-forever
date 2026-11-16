@@ -1,6 +1,6 @@
 ## Interface: 16001
 ## Title: |cff8be04eAlfa|r - Builds
-## Notes: Te ayuda a armar tu personaje: talentos, estadísticas, equipo, profesiones y ayudas de combate.
+## Notes: Qué talento poner ahora y por qué, tu build en dos clics, tu árbol y tu equipo.
 ## Author: Toxic - La Jauria
 ## Version: dev
 ## X-License: GPL-3.0-only
@@ -21,7 +21,8 @@ Builds\Druid.lua
 Arbol.lua
 Pesos.lua
 Equipo.lua
-Combate.lua
 Compartir.lua
-Vista.lua
+Lienzo.lua
+Pagina.lua
+Avisos.lua
 Builds.lua

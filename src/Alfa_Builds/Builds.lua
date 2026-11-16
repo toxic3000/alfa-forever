@@ -1,25 +1,33 @@
 -- Alfa - Builds: el módulo (Toxic / La Jauría). GPL-3.0.
 --
--- Guía de talentos, ayuda de rotación y comparar equipo, con piezas propias:
--- asistente de builds por objetivo y estilo, talentos aplicables con un clic
--- fuera de combate, pesos que alimentan las flechas de mejora del motor,
--- equipo meta con "cómo conseguirlo", ayudas de combate oficiales y builds
--- para compartir.
+-- La página Talentos de Alfa: qué talento poner ahora y por qué, con
+-- Aplicar en un clic fuera de combate; tu objetivo y tu estilo en dos clics;
+-- el árbol y el plan por nivel. También el equipo y las estadísticas de tu
+-- build y compartirlo con la manada.
 --
---   M.Eleccion() -> { objetivo, estilo, spec, build, exacto }
+--   M.Eleccion() -> { objetivo, estilo, build }
 --   M.ElegirBuild(objetivo, estilo, spec?)  ;  M.UsarBuild(id)
 --   M.BuildElegido() -> build | nil
 --   M.SpecActual() -> clave de rama con más puntos | nil
---   M.PedirAplicar()   vista previa en un W.Modal y, si aceptas, aplica
+--   M.Estado() -> { build, vivo, foto, res, st, plan }   (lo que leen la página y los avisos)
+--   M.PorQue(build, pick) -> texto, propio (true: lo dice el build; false: lo que hace según el juego)
+--   M.Siguiente() -> el siguiente talento, con todo lo que hace falta para mostrarlo
+--   M.PedirAplicar()   vista previa en un diálogo del Kit y, si aceptas, aplica
+--
+-- Contrato con otras áreas (docs/PLAN-1.0.md):
+--   AlfaBuilds.SiguienteTalento() -> { nombre, icono, porque, ... } | nil
+--   AlfaBuilds.Abrir(vista?)  ;  AlfaBuilds.Aplicar()
+-- Al cambiar tus talentos, tu build o tus puntos se avisa ALFA_TALENTOS.
 
 local ADDON, M = ...
 local N, A, L = M.N, M.A, M.L
-local W = A.Widgets
+local K = N.Kit
 local T = M.Arbol
 
-local format = string.format
+local format, max, floor = string.format, math.max, math.floor
 
 local function datos() return N.DatosPersonaje(M.ID) end
+local function nivel() return A.Compat.Readable(UnitLevel("player")) or 1 end
 
 ---------------------------------------------------------------------------
 -- Elección del build
@@ -64,13 +72,17 @@ function M.BuildElegido()
 	return (M.Elegir(e.objetivo, e.estilo, spec))
 end
 
+local function avisarCambio()
+	if A.Fire then A.Fire("ALFA_TALENTOS") end
+end
+
 local function alCambiarBuild(b, anterior)
 	if not b or (anterior and anterior == b.id) then return end
 	if N.Get(M.ID, "escalaAuto") then
 		local ok, msg = M.Pesos.Activar(b)
 		if not ok then N.Imprimir(msg) end
 	end
-	if M.Combate then M.Combate.Refrescar() end
+	avisarCambio()
 end
 
 function M.ElegirBuild(objetivo, estilo, spec)
@@ -105,16 +117,94 @@ function M.UsarBuild(id)
 end
 
 ---------------------------------------------------------------------------
+-- El estado de tus talentos frente a tu build
+---------------------------------------------------------------------------
+
+function M.Estado()
+	local b = M.BuildElegido()
+	local vivo, razon = T.Actual()
+	local foto = false
+	if not vivo then
+		vivo = T.VivoDeFoto()
+		foto = vivo ~= nil
+	end
+	local res = b and vivo and T.Resolver(b, vivo) or nil
+	local st = res and T.Estado(b, vivo, res) or nil
+	local plan = (res and not foto) and T.PlanCompra(b, vivo, res) or nil
+	return { build = b, vivo = vivo, razon = razon, foto = foto, res = res, st = st, plan = plan }
+end
+
+-- Por qué tomar un talento: lo que dice el build (los del guerrero lo traen),
+-- si no, lo que hace según el juego, y si no, su lugar en el build.
+local function limpiar(s)
+	s = tostring(s or ""):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub("[\r\n]+", " "):gsub("%s+", " ")
+	s = s:gsub("^%s+", ""):gsub("%s+$", "")
+	if #s > 220 then
+		local corte = s:sub(1, 220):match("^(.*)[%s,;]") or s:sub(1, 220)
+		s = corte .. "…"
+	end
+	return s
+end
+
+function T.Descripcion(spell)
+	if not (spell and C_Spell and C_Spell.GetSpellDescription) then return nil end
+	local ok, d = pcall(C_Spell.GetSpellDescription, spell)
+	d = ok and A.Compat.Readable(d) or nil
+	if type(d) ~= "string" or d == "" then return nil end
+	return limpiar(d)
+end
+
+function M.PorQue(b, p)
+	if not (b and p) then return nil end
+	local t = b.talentos and b.talentos[p.entrada]
+	local por = p.por or (t and t[4])
+	if not por then
+		-- Una entrada que sube un talento ya empezado: el porqué de la primera.
+		for _, x in ipairs(b.talentos or {}) do
+			if x[1] == p.spell and x[4] then por = x[4] break end
+		end
+	end
+	if por then return por, true end
+	local desc = T.Descripcion(p.spell)
+	if desc then return format(L["Qué hace: %s"], desc), false end
+	return format(L["Es el punto %d de %d de tu build."], p.i, b.total or p.i), false
+end
+
+-- El siguiente talento del plan, listo para mostrarlo.
+-- -> { pick, nombre, icono, porque, rango, max, spell, nivel, libres, ahora,
+--      compras, build } | nil (sin build, árbol sin cargar o plan completo)
+function M.Siguiente(e)
+	e = e or M.Estado()
+	local b, st = e.build, e.st
+	if e.foto or not (b and st and st.siguiente) then return nil end
+	local p = st.siguiente
+	local id = e.res.nodo[p.spell]
+	local n = id and e.vivo.nodos[id]
+	local libres = e.vivo.libres or 0
+	local compras = e.plan and #e.plan.compras or 0
+	local nv = nivel()
+	return {
+		pick = p, spell = p.spell, rango = p.rank, max = n and n.max or p.rank,
+		nombre = (n and n.nombre) or T.Nombre(p.spell) or p.nombre or "?",
+		icono = (n and n.icono) or T.Icono(p.spell),
+		porque = M.PorQue(b, p),
+		libres = libres, compras = compras, ahora = libres > 0 and compras > 0,
+		nivel = libres > 0 and nv or max(10, nv + 1),
+		build = b.titulo,
+	}
+end
+
+---------------------------------------------------------------------------
 -- Aplicar con un clic (fuera de combate, con confirmación)
 ---------------------------------------------------------------------------
 
 local function aviso(titulo, texto_)
-	W.Modal({ title = titulo, text = texto_, icon = "info", action = L["Entendido"], cancel = L["Cerrar"] })
+	K.Dialogo({ titulo = titulo, texto = texto_, icono = "ic-info", aceptar = L["Entendido"], cancelar = false })
 end
 
-local function rangoTxt(n, desde, hasta, max)
-	if desde == 0 then return format("%s %d/%d", n, hasta, max) end
-	return format("%s %d/%d \226\134\146 %d/%d", n, desde, max, hasta, max)
+local function rangoTxt(n, desde, hasta, max_)
+	if desde == 0 then return format("%s %d/%d", n, hasta, max_) end
+	return format("%s %d/%d \226\134\146 %d/%d", n, desde, max_, hasta, max_)
 end
 
 -- Las compras juntas por talento: "Golpe heroico mejorado 0 -> 3/3".
@@ -128,12 +218,12 @@ local function resumenCompras(plan, vivo)
 			por[c.nodo] = g
 			orden[#orden + 1] = g
 		end
-		g.hasta = math.max(g.hasta, c.rank)
+		g.hasta = max(g.hasta, c.rank)
 	end
 	local lineas = {}
 	for i, g in ipairs(orden) do
-		if i > 10 then
-			lineas[#lineas + 1] = format(L["... y %d talentos más"], #orden - 10)
+		if i > 8 then
+			lineas[#lineas + 1] = format(L["... y %d talentos más"], #orden - 8)
 			break
 		end
 		lineas[#lineas + 1] = "\226\128\162 " .. rangoTxt(g.nombre, g.desde, g.hasta, g.max)
@@ -154,17 +244,25 @@ local function textoFallos(resumen)
 	return format(L["No se pudo comprar: %s"], table.concat(out, "; "))
 end
 
+local function refrescar()
+	T.Invalidar()
+	if M.Pagina then M.Pagina.Rehacer() end
+	avisarCambio()
+end
+M.Refrescar = refrescar
+
 local function alTerminar(bien, resumen)
 	T.Invalidar()
 	if bien then
-		N.Imprimir(format(L["Listo: aprendiste %d rangos de talento."], resumen and resumen.compradas or 0))
-		local f = textoFallos(resumen)
-		if f then N.Imprimir(f) end
+		local n = resumen and resumen.compradas or 0
+		K.Aviso({ lobo = "aullando", tono = "exito", duracion = 6,
+			titulo = n == 1 and L["Listo: aprendiste 1 rango de talento"] or format(L["Listo: aprendiste %d rangos de talento"], n),
+			texto = textoFallos(resumen) })
 		if A.PlaySound and SOUNDKIT then pcall(A.PlaySound, SOUNDKIT.UI_TALENT_COMMIT or SOUNDKIT.IG_QUEST_LIST_COMPLETE or 878, "SFX") end
 	else
 		aviso(L["No se aplicaron los talentos"], T.RAZONES.confirmar)
 	end
-	if M.Vista then M.Vista.Relayout() end
+	refrescar()
 end
 
 function M.PedirAplicar()
@@ -195,16 +293,16 @@ function M.PedirAplicar()
 		elseif (vivo.libres or 0) == 0 and #st.fuera > 0 then
 			msg = L["Todos tus puntos ya están gastados y parte de ellos fuera de este build. Para cambiarte a este build, reinicia tus talentos con tu entrenador de clase; después Alfa te los aplica con un clic."]
 		elseif (vivo.libres or 0) == 0 then
-			local nivel = math.max(9 + st.siguiente.i, (UnitLevel("player") or 1) + 1)
-			msg = format(L["No tienes puntos libres. El siguiente talento del plan (%s) te toca hacia el nivel %d."], T.Nombre(st.siguiente.spell) or st.siguiente.nombre or "?", nivel)
+			msg = format(L["No tienes puntos libres. El siguiente talento del plan (%s) te toca en el nivel %d."], T.Nombre(st.siguiente.spell) or st.siguiente.nombre or "?", max(10, nivel() + 1))
 		else
-			msg = L["Los talentos que siguen en el plan no están en tu árbol o no se pueden tomar todavía. Revisa la pestaña Talentos."]
+			msg = L["Los talentos que siguen en el plan no están en tu árbol o no se pueden tomar todavía. Ponlos a mano en la ventana de talentos del juego o elige otro build."]
 		end
 		aviso(L["Nada que aplicar"], msg)
 		return
 	end
 	local partes = {}
-	partes[#partes + 1] = format(L["Con tus %d puntos libres se compran %d rangos de %s:"], vivo.libres or 0, #plan.compras, b.titulo or "")
+	partes[#partes + 1] = #plan.compras == 1 and format(L["Con tu punto libre se compra 1 rango de %s:"], b.titulo or "")
+		or format(L["Con tus %d puntos libres se compran %d rangos de %s:"], vivo.libres or 0, #plan.compras, b.titulo or "")
 	partes[#partes + 1] = resumenCompras(plan, vivo)
 	if plan.pendientes > 0 then
 		partes[#partes + 1] = format(L["Los otros %d puntos del plan llegan con tus próximos niveles."], plan.pendientes)
@@ -219,10 +317,10 @@ function M.PedirAplicar()
 		partes[#partes + 1] = L["Tienes cambios sin confirmar en la ventana de talentos: se descartan antes de aplicar."]
 	end
 	partes[#partes + 1] = L["Los talentos confirmados no se quitan gratis: revisa la lista antes de aceptar."]
-	W.Modal({
-		title = L["¿Aplicar estos talentos?"], icon = "icon-learn", text = table.concat(partes, "\n\n"),
-		action = L["Aplicar"], cancel = L["Cancelar"],
-		onAccept = function()
+	K.Dialogo({
+		titulo = L["¿Aplicar estos talentos?"], icono = "ic-talentos", texto = table.concat(partes, "\n\n"),
+		aceptar = L["Aplicar"], cancelar = L["Cancelar"], ancho = 460,
+		alAceptar = function()
 			-- Se vuelve a leer: entre la vista previa y el clic pudo cambiar algo.
 			if InCombatLockdown() then aviso(L["Ahora no se puede"], T.RAZONES.combate) return end
 			T.Invalidar()
@@ -240,62 +338,79 @@ function M.PedirAplicar()
 end
 
 ---------------------------------------------------------------------------
--- Recordatorio al subir de nivel
+-- El aviso del talento que toca (al subir de nivel y, una vez, al entrar)
 ---------------------------------------------------------------------------
 
-local function recordar()
-	if not N.Get(M.ID, "aviso") then return end
-	local b = M.BuildElegido()
-	local vivo = T.Actual()
-	if not (b and vivo) or (vivo.libres or 0) <= 0 then return end
-	local st = T.Estado(b, vivo, T.Resolver(b, vivo))
-	local p = st.siguiente
-	if not p then return end
-	local libres = vivo.libres or 1
-	local cabeza = libres == 1 and L["Tienes un punto de talento."] or format(L["Tienes %d puntos de talento."], libres)
-	N.Imprimir(cabeza .. " " .. format(L["Tu build %s sugiere %s (rango %d). Escribe /alfa builds para aplicarlo con un clic."],
-		b.titulo or "", T.Nombre(p.spell) or p.nombre or "?", p.rank))
+-- El ícono del juego en un aviso del Kit (que tiñe los suyos).
+function M.IconoEnAviso(a, tex)
+	if not (a and a.Icono and tex) then return end
+	a.Icono:SetTexture(tex)
+	a.Icono:SetVertexColor(1, 1, 1, 1)
 end
 
+local avisadoAlEntrar = false
+
+local function avisarTalento(alEntrar)
+	if not N.Get(M.ID, "aviso") then return end
+	local s = M.Siguiente()
+	if not (s and s.ahora) then return end
+	local titulo
+	if s.libres == 1 then
+		titulo = format(L["Tienes un punto de talento: %s"], s.nombre)
+	else
+		titulo = format(L["Tienes %d puntos de talento: empieza por %s"], s.libres, s.nombre)
+	end
+	local a = K.Aviso({
+		titulo = titulo, texto = s.porque, icono = "ic-talentos", tono = "acento", duracion = alEntrar and 10 or 14,
+		accion = { texto = s.compras > 1 and format(L["Aplicar %d puntos"], s.compras) or L["Aplicar"], alClic = function() M.PedirAplicar() end },
+	})
+	M.IconoEnAviso(a, s.icono)
+end
+M.AvisarTalento = avisarTalento
+
 ---------------------------------------------------------------------------
--- La página
+-- La página y el contrato
 ---------------------------------------------------------------------------
 
 N.Modulo({
-	id = M.ID, nombre = L["Builds"], icono = "icon-skill", orden = 14,
-	subtitulo = L["Te ayuda a armar tu personaje aunque no sepas por dónde empezar: talentos, estadísticas, equipo y profesiones, con el porqué de cada cosa."],
-	ajustes = {
-		sugerencia = true, sugerenciaFuera = false, sugerenciaNombre = false, resaltado = true, tamSugerencia = 52,
-		alertas = true, alertasSonido = true, alertasPorque = true,
-		golpe = true, panel = false,
-		aviso = true, escalaAuto = true,
-	},
-	construir = function(view) M.Vista.Construir(view) end,
+	id = M.ID, nombre = L["Talentos"], icono = "ic-talentos", orden = 14,
+	subtitulo = L["Qué talento poner ahora y por qué, tu build en dos clics, tu árbol y tu equipo."],
+	ajustes = { aviso = true, escalaAuto = true },
+	construir = function(view) M.Pagina.Construir(view) end,
 })
+
+AlfaBuilds = AlfaBuilds or {}
+-- -> { nombre, icono, porque, rango, max, spell, nivel, libres, ahora, build } | nil
+function AlfaBuilds.SiguienteTalento()
+	local ok, s = pcall(M.Siguiente)
+	if not (ok and s) then return nil end
+	return { nombre = s.nombre, icono = s.icono, porque = s.porque, rango = s.rango, max = s.max, spell = s.spell,
+		nivel = s.nivel, libres = s.libres, ahora = s.ahora, build = s.build }
+end
+-- vista: nil (Talentos), "equipo", "compartir"
+function AlfaBuilds.Abrir(vista) M.Pagina.Ir(vista or "talentos") N.Abrir(M.ID) end
+function AlfaBuilds.Aplicar() M.PedirAplicar() end
 
 A.RegisterCommand("builds", function(resto)
 	local sub = type(resto) == "string" and resto:match("^%s*(%a+)") or nil
 	sub = sub and sub:lower()
-	if sub == "mover" then
-		M.Combate.Desbloquear(not M.Combate.Desbloqueado())
+	if sub == "mover" and AlfaCombate and AlfaCombate.Mover then
+		-- Las ayudas de combate son del área de combate: se le pasa.
+		AlfaCombate.Mover()
 	elseif sub == "aplicar" then
 		N.Abrir(M.ID)
 		M.PedirAplicar()
-	elseif sub == "alerta" then
-		M.Combate.ProbarAlerta()
+	elseif sub == "equipo" or sub == "compartir" then
+		AlfaBuilds.Abrir(sub)
 	else
-		N.Abrir(M.ID)
+		AlfaBuilds.Abrir()
 	end
-end, L["Builds: talentos, estadísticas y equipo (/alfa builds mover | aplicar | alerta)"])
+end, L["Talentos: qué poner ahora y tu build (/alfa builds aplicar | equipo | compartir)"])
+A.RegisterCommand("talentos", function() AlfaBuilds.Abrir() end, L["abre Talentos"])
 
 ---------------------------------------------------------------------------
 -- Eventos
 ---------------------------------------------------------------------------
-
-local function refrescar()
-	T.Invalidar()
-	if M.Vista then M.Vista.Relayout() end
-end
 
 A.RegisterEvent("TRAIT_CONFIG_UPDATED", function(ev, id) T.OnConfigActualizada(ev, id); refrescar() end)
 A.RegisterEvent("CONFIG_COMMIT_FAILED", function(ev, id) T.OnConfirmacionFallida(ev, id); refrescar() end)
@@ -306,24 +421,34 @@ A.RegisterEvent("PLAYER_LEVEL_UP", function()
 	A.After(1.5, function()
 		T.Invalidar()
 		if not InCombatLockdown() then M.Pesos.Renovar() end
-		recordar()
-		if M.Vista then M.Vista.Relayout() end
+		avisarTalento(false)
+		refrescar()
 	end)
 end)
-A.RegisterEvent("PLAYER_REGEN_DISABLED", function() M.Combate.EntrarCombate() end)
-A.RegisterEvent("PLAYER_REGEN_ENABLED", function() M.Combate.SalirCombate() end)
-A.RegisterEvent("PLAYER_SWING", function(ev, dur, tipo) M.Combate.OnGolpe(ev, dur, tipo) end)
-A.RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", function(ev, id) M.Combate.OnBrillo(ev, id) end)
-A.RegisterEvent("SPELLS_CHANGED", function() if not InCombatLockdown() then M.Combate.PrepararReacciones() end end)
-A.RegisterEvent("PLAYER_TARGET_CHANGED", function() if not InCombatLockdown() then M.Combate.Refrescar() end end)
-A.RegisterEvent("ACTIONBAR_SLOT_CHANGED", function() M.Combate.OlvidarResaltado() end)
-A.RegisterEvent("PLAYER_EQUIPMENT_CHANGED", function() if M.Vista then M.Vista.Relayout() end end)
+-- Una vez por sesión, al entrar con puntos sin gastar.
+A.RegisterEvent("PLAYER_ENTERING_WORLD", function()
+	if avisadoAlEntrar then return end
+	avisadoAlEntrar = true
+	A.After(8, function() T.Invalidar() avisarTalento(true) end)
+end)
+-- Aplicar se puede o no según el combate: la página lo dice.
+A.RegisterEvent("PLAYER_REGEN_DISABLED", function() if M.Pagina then M.Pagina.Rehacer() end end)
+A.RegisterEvent("PLAYER_REGEN_ENABLED", function() if M.Pagina then M.Pagina.Rehacer() end end)
+A.RegisterEvent("PLAYER_EQUIPMENT_CHANGED", function() if M.Pagina then M.Pagina.Rehacer() end end)
+-- Las descripciones de los talentos llegan después la primera vez.
+A.RegisterEvent("SPELL_TEXT_UPDATE", function() if M.Pagina then M.Pagina.Rehacer() end end)
 
 A.On("SETTING_CHANGED", function(path)
-	if path == "" or (type(path) == "string" and path:find("^builds%.")) then M.Combate.Refrescar() end
-	if type(path) == "string" and path:find("^gear%.") and M.Vista then M.Vista.Relayout() end
+	if type(path) == "string" and path:find("^gear%.") and M.Pagina then M.Pagina.Rehacer() end
 end)
 
 A.OnLogin(function()
-	M.Combate.Iniciar()
+	-- Alfa avisa el talento que toca con su propio aviso: el recordatorio del
+	-- motor en el chat decía lo mismo otra vez (a veces de otro plan). Se apaga
+	-- una sola vez; quien lo quiera lo vuelve a encender en Ajustes.
+	local d = N.Datos(M.ID)
+	if not d.recordatorioMotor then
+		d.recordatorioMotor = true
+		if A.Get("talents.reminder") then A.Set("talents.reminder", false) end
+	end
 end)

@@ -36,17 +36,6 @@ M.Clase({
 		solo = "arms-solo-equilibrado", mazmorras = "fury-mazmorras-equilibrado",
 		tanque = "prot-tanque-equilibrado", jcj = "arms-jcj-equilibrado",
 	},
-	-- Reacción del guerrero (Combate.lua): rangos de menor a mayor.
-	reacciones = {
-		{ clave = "overpower", ids = { 7384, 7887, 11584, 11585 }, texto = L["¡Abrumar!"],
-			porque = L["Tu objetivo esquivó: Abrumar no se puede esquivar y pega fuerte. Necesita actitud de batalla."] },
-		{ clave = "revenge", ids = { 6572, 6574, 7379, 11600, 11601, 25288 }, texto = L["¡Revancha!"],
-			porque = L["Bloqueaste, esquivaste o paraste: Revancha es barata y genera mucha amenaza. Necesita actitud defensiva."] },
-		{ clave = "execute", ids = { 5308, 20658, 20660, 20661, 20662 }, texto = L["¡Ejecutar!"],
-			porque = L["Al objetivo le queda poca vida: Ejecutar lo remata usando toda tu ira."] },
-		{ clave = "victoryrush", ids = { 402927 }, texto = L["¡Ataque victorioso!"],
-			porque = L["Acabas de matar a un enemigo: este ataque es gratis y te cura."] },
-	},
 	builds = {
 		-------------------------------------------------------------------
 		{

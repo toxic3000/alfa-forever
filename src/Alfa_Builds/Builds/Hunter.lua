@@ -19,12 +19,6 @@ M.Clase({
 		survival = { nombre = L["Supervivencia"], indice = 3, icono = 1310533, rol = "dps" },
 	},
 	recomendados = { solo = "beastmastery-solo-equilibrado" },
-	reacciones = {
-		{ clave = "mongoose", ids = { 1495, 14269, 14270, 14271 }, texto = L["¡Mordedura de mangosta!"],
-			porque = L["El enemigo esquivó: este golpe cuerpo a cuerpo está listo."] },
-		{ clave = "counterattack", ids = { 19306 }, texto = L["¡Contraataque!"],
-			porque = L["Paraste un golpe: tu contraataque inmoviliza al enemigo."] },
-	},
 	builds = {
 		{
 			id = "beastmastery-solo-equilibrado", spec = "beastmastery", objetivo = "solo", estilo = "equilibrado",

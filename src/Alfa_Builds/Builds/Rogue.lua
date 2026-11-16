@@ -19,10 +19,6 @@ M.Clase({
 		subtlety = { nombre = L["Sutileza"], indice = 3, icono = 1310721, rol = "dps" },
 	},
 	recomendados = { solo = "combat-solo-equilibrado" },
-	reacciones = {
-		{ clave = "riposte", ids = { 14251 }, texto = L["¡Contraataque!"],
-			porque = L["Paraste un golpe: tu talento de contraataque está listo y desarma al enemigo."] },
-	},
 	builds = {
 		{
 			id = "assassination-solo-equilibrado", spec = "assassination", objetivo = "solo", estilo = "equilibrado", armas = "dual",
