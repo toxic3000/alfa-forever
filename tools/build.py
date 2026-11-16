@@ -101,6 +101,17 @@ def main() -> int:
             shutil.copy2(origen, destino)
         archivos += 1
 
+    # La marca de Alfa (tools/marca.py) reemplaza imagenes del motor.
+    marca = RAIZ / "marca"
+    if marca.is_dir():
+        for origen in marca.rglob("*"):
+            if origen.is_file():
+                destino = dist / origen.relative_to(marca)
+                if not destino.exists():
+                    print(f"AVISO: marca/{origen.relative_to(marca)} no reemplaza nada del motor")
+                destino.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(origen, destino)
+
     errores = parches.aplicar(dist, cfg)
     if errores:
         print("PARCHES QUE NO ENCAJARON (Polestar cambio ese codigo):")
