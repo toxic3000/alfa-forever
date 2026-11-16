@@ -1,0 +1,19 @@
+## Interface: 16001
+## Title: |cff8be04eAlfa|r - La Jauría
+## Notes: Tu manada en el mapa (grupo, hermandad y amigos), el botón Seguir y la página del clan.
+## Author: Toxic - La Jauria
+## Version: dev
+## X-License: GPL-3.0-only
+## Dependencies: Alfa, Alfa_Nucleo
+## OptionalDeps: Alfa_Mundo
+## Category: Alfa
+
+Textos.lua
+Clan.lua
+Util.lua
+Red.lua
+Gente.lua
+Seguir.lua
+Mapa.lua
+Pagina.lua
+Manada.lua
