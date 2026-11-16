@@ -1,6 +1,6 @@
 -- Alfa - Recolección: saber qué recolectaste y dónde (Toxic / La Jauría, GPL-3.0).
 --
--- Como GatherLite (scripts/main.lua y scripts/methods.lua, MIT, de Wuild):
+-- Método adaptado de código MIT (ver CREDITOS.md):
 --   UNIT_SPELLCAST_SENT     el hechizo de minar, herborizar, abrir o forzar,
 --                           con el nombre de lo que tocas: se anota dónde estás
 --   UNIT_SPELLCAST_SUCCEEDED terminó: el nodo cuenta una vez más
@@ -9,7 +9,7 @@
 -- GUID trae el ID del objeto). Así se reconoce un nodo aunque su nombre no
 -- esté en el catálogo (y se aprende ese nombre para la próxima), y también
 -- los bancos de peces, que se pescan sin un hechizo propio.
--- Nada de esto corre en instancias, como en GatherLite.
+-- Nada de esto corre en instancias.
 
 local _, M = ...
 local N = AlfaNucleo

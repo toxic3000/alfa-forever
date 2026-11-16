@@ -3,7 +3,7 @@
 -- Tus bolsas y tu banco en una sola ventana de Alfa, con dos vistas (una
 -- sola bolsa o por categorías), ordenar, buscar, marcas sobre cada objeto y
 -- el inventario de todos tus personajes (también en el cuadro de cada
--- objeto). Reemplaza a Baganator y Syndicator con código propio.
+-- objeto). Todo con código propio.
 --
 -- Archivos (en el orden del .toc):
 --   Bolsas.lua     registro del módulo, ajustes y utilidades comunes (este)

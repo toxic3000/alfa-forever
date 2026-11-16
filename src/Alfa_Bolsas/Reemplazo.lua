@@ -15,7 +15,7 @@
 --     la ventana cambia una sola vez, al cuadro siguiente.
 --   * CloseAllBags(marco) solo cierra si ese marco las abrió (como Blizzard).
 --   * Las bolsas de Blizzard siguen abriéndose y cerrándose por dentro, pero
---     dentro de un marco oculto (SetParent, como Baganator): no se ven ni se
+--     dentro de un marco oculto (SetParent): no se ven ni se
 --     tocan. Se vuelven a ocultar si Blizzard las cambia de padre
 --     (ContainerFrame_SetFullScreenFrame).
 --   * El banco: BankFrame va al mismo marco oculto antes de abrirlo (si se
@@ -24,7 +24,7 @@
 --     la primera pestaña, que es gratis); desde la siguiente, el de Alfa. Al
 --     abrir el banco se abren también tus bolsas.
 --   * No se reemplaza nada con la interfaz para mando (sus menús se
---     contaminan) ni si hay otro addon de bolsas activo.
+--     contaminan) ni si hay otro addon de bolsas activo (Compat.lua).
 
 local ADDON, M = ...
 local N, A, L = M.N, M.A, M.L
@@ -35,9 +35,9 @@ local type, pairs, ipairs = type, pairs, ipairs
 local R = {}
 M.Reemplazo = R
 
-local OTROS = { "Baganator", "Bagnon", "AdiBags", "ArkInventory", "BetterBags", "Combuctor", "EllesmereUIBags", "LiteBag", "Inventorian" }
+local OTROS = M.OTROS and M.OTROS.bolsas or {}
 
-local conflicto -- nombre del otro addon de bolsas, o false
+local conflicto -- carpeta del otro addon de bolsas, o false
 function R.Conflicto()
 	if conflicto == nil then
 		conflicto = false

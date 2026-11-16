@@ -1,6 +1,5 @@
 -- Alfa - Comodidades: colores de clase en los marcos, los grifos de la barra
--- de acción y la distancia de la cámara (como ClassColFrames, la barra sin
--- grifos y MaxCameraZoom de Leatrix Plus, con código propio). GPL-3.0.
+-- de acción y la distancia de la cámara. GPL-3.0.
 --
 --   Colores de clase:
 --     * Tu marco: Forever usa el marco moderno (PlayerFrame.PlayerFrameContent.

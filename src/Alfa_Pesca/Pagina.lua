@@ -50,9 +50,9 @@ end
 local function estado()
 	local tecla = teclaTexto()
 	local clic = M.Opt("dobleClic")
-	if M.E.bf then
-		return L["Better Fishing está activo"],
-			L["Para que no choquen, Alfa no toma tu tecla ni cambia tus ajustes. Desactiva uno de los dos en la lista de addons (pantalla de personajes) y recarga. Si dejas Alfa, tomará sola la tecla que usabas en Better Fishing."],
+	if M.E.otro then
+		return L["Otro addon de pesca está activo"],
+			L["Para que no choquen, Alfa no toma tu tecla ni cambia tus ajustes. Desactiva uno de los dos en la lista de addons (pantalla de personajes) y recarga. Si dejas Alfa, tomará sola la tecla que usabas en el otro addon."],
 			L["En pausa"], "warning"
 	end
 	if not M.Opt("activo") then
@@ -472,7 +472,7 @@ end
 
 N.Modulo({
 	id = ID, nombre = L["Pesca"], icono = "icon-interact", orden = 55,
-	subtitulo = L["Lanza con una tecla y recoge con la misma, con las ayudas de Better Fishing."],
+	subtitulo = L["Lanza con una tecla y recoge con la misma, con autobotín, sonido amplificado y doble clic."],
 	comando = "pesca",
 	ajustes = M.AJUSTES,
 	construir = construir,

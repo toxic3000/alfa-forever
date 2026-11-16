@@ -1,10 +1,10 @@
 -- Alfa - Comodidades (Toxic / La Jauría). GPL-3.0.
 --
--- Las comodidades de Leatrix Plus que el motor de Alfa todavía no tiene,
--- hechas con código propio (Leatrix no tiene licencia libre: solo se imitan
--- sus funciones). Lo que el motor ya hace (vender grises, reparar con fondos
--- de la hermandad y sus resúmenes, aceptar resurrecciones fuera de combate,
--- la hermandad como amigos, texto instantáneo...) no se repite: ver LEEME.md.
+-- Las comodidades de calidad de vida que el motor de Alfa todavía no tiene,
+-- hechas con código propio. Lo que el motor ya hace (vender grises, reparar
+-- con fondos de la hermandad y sus resúmenes, aceptar resurrecciones fuera
+-- de combate, la hermandad como amigos, texto instantáneo...) no se repite:
+-- ver LEEME.md.
 --
 -- Sus ajustes viven en la página "Calidad de vida" que ya existe en la
 -- ventana de Alfa (Opciones.lua), en sus pestañas o en la pestaña nueva
@@ -20,27 +20,23 @@ local ID = "comodidades"
 M.ID = ID
 
 ---------------------------------------------------------------------------
--- Ajustes. Los interruptores principales vienen como quien juega los tiene
--- en Leatrix Plus (apagados: ClassColFrames, MinimapModder, TipModEnable,
--- EnhanceDressup, AutomateQuests, MaxCameraZoom y MuteGameSounds están en
--- Off), y las opciones de dentro como allí (ClassColPlayer, SquareMinimap,
--- TipShowTarget, DressupItemButtons, AutoQuestDaily... en On). Así, al
--- encender un grupo queda igual que en Leatrix.
+-- Ajustes. Los interruptores principales vienen apagados y las opciones de
+-- dentro encendidas: al encender un grupo queda listo para usar.
 ---------------------------------------------------------------------------
 M.AJUSTES = {
-	-- Misiones (AutomateQuests y sus AutoQuest*)
+	-- Misiones: aceptar y entregar todas (normales, diarias, semanales y completadas)
 	misiones = false, misionesNormales = true, misionesDiarias = true, misionesSemanales = true, misionesEntregar = true,
-	-- Vuelo: la siguiente parada bajo el temporizador del motor (FlightBarNextHop)
+	-- Vuelo: la siguiente parada bajo el temporizador del motor
 	vueloParada = true,
-	-- Minimapa (MinimapModder: SquareMinimap, HideMiniAddonButtons, HideMiniAddonMenu)
+	-- Minimapa: cuadrado, sin botones de addons a la vista y sin su menú
 	minimapa = false, minimapaCuadrado = true, minimapaBotones = true, minimapaMenu = true,
-	-- Colores de clase (ClassColFrames: ClassColPlayer, ClassColTarget)
+	-- Colores de clase: tu marco y el del objetivo
 	colores = false, coloresJugador = true, coloresObjetivo = true,
-	-- Cuadro de información (TipModEnable: TipShowTarget, TipShowRank, TipHideInCombat, TipHideShiftOverride)
+	-- Cuadro de información: a quién apunta, rango de hermandad, ocultarlo en combate y verlo con Mayús
 	cuadro = false, cuadroObjetivo = true, cuadroRango = true, cuadroCombate = false, cuadroShift = true,
-	-- Probador (EnhanceDressup: DressupItemButtons, DressupAnimControl)
+	-- Probador: botones de objetos y control de la animación
 	probador = false, probadorBotones = true, probadorAnimacion = true,
-	-- Favoritos de Leatrix que no estaban encendidos
+	-- Sueltos, apagados de fábrica: cámara, grifos y sonidos
 	camara = false, grifos = false,
 	silenciarErrores = false, silenciarDialogos = false, silenciarMascotas = false, silenciarGestos = false, silenciarLista = false,
 }

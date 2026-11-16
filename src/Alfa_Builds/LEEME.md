@@ -1,6 +1,6 @@
 # Alfa - Builds
 
-Página **Builds** de la ventana de Alfa (orden 14, ícono `icon-skill`). Ayuda a armar el personaje aunque no sepas ni por dónde empezar, y reemplaza a **Sonah** (rotación y guía de talentos) y a **Pawn** (comparar equipo).
+Página **Builds** de la ventana de Alfa (orden 14, ícono `icon-skill`). Ayuda a armar el personaje aunque no sepas ni por dónde empezar: guía de talentos, ayuda de rotación y comparar equipo.
 
 ## Qué hace
 

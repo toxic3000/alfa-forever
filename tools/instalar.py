@@ -10,10 +10,19 @@ Pasos:
 3. Copia dist/Alfa* a Interface/AddOns (reemplaza solo carpetas Alfa*).
 4. Pasa tus ajustes de Polestar a Alfa (Polestar.lua -> Alfa.lua, de la cuenta
    y de cada personaje), solo si Alfa.lua no existe todavia.
-5. En AddOns.txt de cada personaje: activa Alfa* y desactiva los addons que
-   Alfa reemplaza. No desinstala nada: se quitan desde la app de CurseForge.
+5. En AddOns.txt de cada personaje: activa Alfa* y desactiva los addons de la
+   lista local (ver abajo). No desinstala nada: se quitan desde la app de
+   CurseForge.
+
+Los addons que se desactivan son cosa de cada PC, asi que no estan en el
+codigo: van en tools/instalar_local.json (ignorado por git), con la forma
+  {"desactivar": ["NombreDeCarpeta", "Prefijo-.*"]}
+Cada entrada es una expresion regular que debe coincidir con el nombre
+completo de la carpeta en Interface/AddOns. Sin ese archivo no se desactiva
+ninguno.
 """
 import datetime
+import json
 import pathlib
 import re
 import shutil
@@ -28,10 +37,32 @@ RAIZ = pathlib.Path(__file__).resolve().parent.parent
 JUEGO = pathlib.Path(r"C:\Program Files (x86)\World of Warcraft\_forever_")
 ADDONS = JUEGO / "Interface" / "AddOns"
 WTF = JUEGO / "WTF"
-REEMPLAZADOS = [
-    r"Polestar.*", "Baganator", "Syndicator", "BetterFishing", "GatherLite", "OpenMap",
-    "Leatrix_Maps", "Leatrix_Plus", "Pawn", "ForeverDungeonJournal", r"DBM-.*", "Sonah",
-]
+LOCAL = RAIZ / "tools" / "instalar_local.json"
+# Por omision no se desactiva ningun otro addon: la lista va en LOCAL.
+DESACTIVAR: list[str] = []
+
+
+def desactivar() -> list[str] | None:
+    """Los patrones de tools/instalar_local.json, o DESACTIVAR si no existe.
+    None si el archivo esta mal escrito (para no instalar a medias)."""
+    if not LOCAL.exists():
+        print(f"- sin {LOCAL.relative_to(RAIZ)}: no se desactiva ningun otro addon. "
+              "Para desactivar algunos, crea ese archivo con "
+              '{"desactivar": ["NombreDeCarpeta", "Prefijo-.*"]}')
+        return list(DESACTIVAR)
+    try:
+        datos = json.loads(LOCAL.read_text(encoding="utf-8"))
+        lista = datos["desactivar"]
+        if not (isinstance(lista, list) and all(isinstance(x, str) and x for x in lista)):
+            raise ValueError("'desactivar' debe ser una lista de textos")
+        for x in lista:
+            re.compile(x)
+    except (OSError, ValueError, KeyError, TypeError, re.error) as e:
+        print(f"{LOCAL.relative_to(RAIZ)} esta mal escrito ({e}). "
+              'Debe ser {"desactivar": ["NombreDeCarpeta", "Prefijo-.*"]}.')
+        return None
+    print(f"- lista de addons a desactivar: {LOCAL.relative_to(RAIZ)} ({len(lista)} patrones)")
+    return lista
 
 
 def juego_abierto() -> bool:
@@ -51,6 +82,9 @@ def main() -> int:
         print("WoW esta abierto: cierralo y vuelve a correr esto.")
         return 1
     print("APLICANDO" if aplicar else "SIMULACION (nada cambia; usa --aplicar)")
+    patrones = desactivar()
+    if patrones is None:
+        return 1
 
     fecha = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     respaldo = RAIZ / "respaldos" / f"WTF-{fecha}.zip"
@@ -82,9 +116,11 @@ def main() -> int:
             nuevo.write_bytes(renombrar.cambiar(texto).encode("latin-1"))
 
     nombres = [c.name for c in carpetas]
-    patron = re.compile("^(" + "|".join(REEMPLAZADOS) + ")$")
     instalados = [p.name for p in ADDONS.iterdir() if p.is_dir()]
-    apagar = [n for n in instalados if patron.match(n)]
+    apagar = []
+    if patrones:
+        patron = re.compile("^(" + "|".join(patrones) + ")$")
+        apagar = [n for n in instalados if patron.match(n)]
     for lista in WTF.glob("Account/*/*/*/AddOns.txt"):
         lineas = lista.read_text(encoding="utf-8", errors="replace").splitlines()
         estado = {}

@@ -1,6 +1,6 @@
 # Alfa - Bolsas
 
-Reemplaza a Baganator y Syndicator con código propio (los dos son "All Rights Reserved": aquí no hay nada copiado de ellos).
+Tus bolsas, tu banco y el inventario de todos tus personajes en una ventana de Alfa. Todo es código propio.
 
 ## Qué hace
 
@@ -24,11 +24,11 @@ Reemplaza a Baganator y Syndicator con código propio (los dos son "All Rights R
 
 Vista, tamaño de los iconos, columnas, usar las bolsas de Alfa (apagado: vuelven las de Blizzard), usar el banco de Alfa, mostrar el llavero, botón Ordenar, ordenar de derecha a izquierda, cada marca, el conteo en el cuadro de los objetos, y la lista de tus personajes (ver sus bolsas o su banco, u olvidarlos).
 
-Si hay otro addon de bolsas activo (Baganator, Bagnon, AdiBags...) o la interfaz para mando, Alfa no reemplaza las bolsas del juego; su ventana se sigue abriendo desde la página.
+Si hay otro addon de bolsas activo (la lista está en `Compat.lua`) o la interfaz para mando, Alfa no reemplaza las bolsas del juego; su ventana se sigue abriendo desde la página.
 
 ## Cómo está hecho (lo seguro)
 
-- Los botones de tus bolsas y de tu banco abierto son `ContainerFrameItemButtonTemplate` de Blizzard, hijos de un marco con `SetID(bolsa)` y con `SetID(casilla)` propio, como hace Baganator: su clic es el de Blizzard, así que el clic derecho usa o equipa también en combate. Alfa nunca escribe en la tabla del botón: pinta regiones propias y guarda lo suyo aparte.
+- Los botones de tus bolsas y de tu banco abierto son `ContainerFrameItemButtonTemplate` de Blizzard, hijos de un marco con `SetID(bolsa)` y con `SetID(casilla)` propio: su clic es el de Blizzard, así que el clic derecho usa o equipa también en combate. Alfa nunca escribe en la tabla del botón: pinta regiones propias y guarda lo suyo aparte.
 - Nada reemplaza funciones de Blizzard: `hooksecurefunc` en ToggleAllBags, ToggleBackpack, ToggleBag, OpenAllBags, OpenBackpack, OpenBag, CloseAllBags y CloseBackpack. Las bolsas y el banco de Blizzard siguen funcionando por dentro, dentro de un marco oculto.
 - Por lotes: un cambio solo marca qué falta; se leen las bolsas marcadas, se crean a lo sumo 40 botones y se pintan a lo sumo 48 casillas por cuadro, y una casilla que no cambió no se vuelve a pintar.
 

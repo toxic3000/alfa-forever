@@ -2,9 +2,9 @@
 --
 -- Todo el mundo se dibuja en "unidades de mundo": el mapa de Azeroth (947)
 -- normalizado, 0..1 de izquierda a derecha y de arriba abajo. Cada mapa
--- (continente, zona, ciudad) se coloca con C_Map.GetMapRectOnMap(mapa, 947),
--- la misma idea que usa OpenMap (MIT, ver LICENSE-OpenMap.txt). Nada aquí
--- escribe en el mapa de Blizzard: solo se leen datos del cliente.
+-- (continente, zona, ciudad) se coloca con C_Map.GetMapRectOnMap(mapa, 947)
+-- (ver CREDITOS.md). Nada aquí escribe en el mapa de Blizzard: solo se leen
+-- datos del cliente.
 --
 --   Geo.Rect(mapa) -> l, r, t, b            su rectángulo en 947 (o nil)
 --   Geo.DeMapa(mapa, x, y) -> u, v          x, y en porcentaje (0..100)
@@ -207,9 +207,9 @@ function Geo.DeYardas(c, wx, wy)
 end
 
 ---------------------------------------------------------------------------
--- Qué hay bajo un punto: continente y zona (o ciudad). Basado en
--- OpenMap S.ChainAt (MIT): una ciudad cuenta solo en el centro de su
--- rectángulo, porque el continente la da para todo su rectángulo.
+-- Qué hay bajo un punto: continente y zona (o ciudad). Una ciudad cuenta
+-- solo en el centro de su rectángulo, porque el continente la da para todo
+-- su rectángulo (ver CREDITOS.md).
 ---------------------------------------------------------------------------
 
 local BORDE_CIUDAD = 0.25

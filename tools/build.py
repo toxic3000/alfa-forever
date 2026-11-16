@@ -149,7 +149,8 @@ def main() -> int:
             propios += 1
 
     # Archivos de terceros que usan los modulos (vendor/<Modulo>/...), con su
-    # licencia al lado: por ejemplo, las texturas de OpenMap (MIT) de Mundo.
+    # licencia al lado: por ejemplo, las texturas de detalle de Mundo (MIT, ver
+    # su VENDOR.md).
     vendor = RAIZ / "vendor"
     if vendor.is_dir():
         for origen in vendor.rglob("*"):

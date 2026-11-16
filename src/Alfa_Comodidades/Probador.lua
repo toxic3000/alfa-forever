@@ -1,5 +1,5 @@
--- Alfa - Comodidades: el probador (como DressupItemButtons y
--- DressupAnimControl de Leatrix Plus, con código propio). GPL-3.0.
+-- Alfa - Comodidades: el probador (botones de objetos y control de la
+-- animación). GPL-3.0.
 --
 --   Botones de objetos: a los lados del modelo, un botón por ranura (como en
 --     la hoja de personaje: cabeza a muñecas a la izquierda, manos a armas a

@@ -1,0 +1,21 @@
+{
+ "Copia los nodos que recolectaste con otro addon de recolección (debe estar activo). Ya se hace solo la primera vez.": "다른 채집 애드온으로 채집한 지점을 복사합니다(그 애드온이 활성화되어 있어야 합니다). 처음 한 번은 자동으로 이미 복사됩니다.",
+ "Dibuja el arte completo de cada zona recortado a su forma, con las texturas de detalle incluidas. Sin ellas el mapa sigue completo, solo más suave entre zona y zona.": "포함된 세부 텍스처로 각 지역의 전체 그림을 지역 모양에 맞게 잘라 그립니다. 텍스처가 없어도 지도는 다 나오지만, 지역 사이가 더 흐릿하게 이어집니다.",
+ "Faltan las texturas de detalle en la carpeta Media de Alfa_Mundo: el mapa se dibuja solo con el arte del juego.": "Alfa_Mundo의 Media 폴더에 세부 텍스처가 없습니다. 지도는 게임 그림만으로 그려집니다.",
+ "Importar nodos de otro addon de recolección": "다른 채집 애드온에서 지점 가져오기",
+ "La tecla que usabas en tu otro addon de pesca (%s) ahora pesca con Alfa.": "다른 낚시 애드온에서 쓰던 단축키(%s)로 이제 Alfa 낚시를 합니다.",
+ "Lanza con una tecla y recoge con la misma, con autobotín, sonido amplificado y doble clic.": "한 키로 던지고 같은 키로 낚아 올립니다. 자동 전리품 획득, 소리 증폭, 더블 클릭도 지원합니다.",
+ "Los nodos que trae Alfa. Sin esto solo ves los que tú descubriste.": "Alfa에 들어 있는 채집 지점입니다. 끄면 내가 찾은 지점만 보입니다.",
+ "No hay otro addon de recolección activo.": "활성화된 다른 채집 애드온이 없습니다.",
+ "Otro addon de pesca está activo": "다른 낚시 애드온 활성화됨",
+ "Otro addon de pesca está activo. Para que no choquen, la pesca de Alfa queda en pausa: desactiva uno de los dos en la lista de addons.": "다른 낚시 애드온이 활성화되어 있습니다. 서로 충돌하지 않도록 Alfa 낚시는 일시 정지됩니다. 애드온 목록에서 둘 중 하나를 끄세요.",
+ "Otro addon de recolección sigue activo: Alfa ya hace lo mismo, así que puedes desactivarlo para no ver los nodos dos veces.": "다른 채집 애드온이 아직 활성화되어 있습니다. Alfa가 같은 일을 하므로, 채집 지점이 두 번 보이지 않게 그 애드온을 꺼도 됩니다.",
+ "Para que no choquen, Alfa no toma tu tecla ni cambia tus ajustes. Desactiva uno de los dos en la lista de addons (pantalla de personajes) y recarga. Si dejas Alfa, tomará sola la tecla que usabas en el otro addon.": "서로 충돌하지 않도록 Alfa는 단축키를 가져가지 않고 설정도 바꾸지 않습니다. 애드온 목록(캐릭터 선택 화면)에서 둘 중 하나를 끄고 UI를 다시 불러오세요. Alfa를 남기면 다른 애드온에서 쓰던 키를 알아서 가져옵니다.",
+ "Pesca de Alfa encendida, pero en pausa mientras otro addon de pesca esté activo.": "Alfa 낚시 켜짐. 단, 다른 낚시 애드온이 활성화된 동안은 일시 정지됩니다.",
+ "Precio de la subasta tomado de otro addon de subastas.": "다른 경매장 애드온에서 가져온 경매장 가격입니다.",
+ "Recolección: se trajeron %d nodos que recolectaste con otro addon.": "채집: 다른 애드온으로 채집한 지점 %d곳을 가져왔습니다.",
+ "Se trajeron %d nodos de otro addon de recolección.": "다른 채집 애드온에서 채집 지점 %d곳을 가져왔습니다.",
+ "Si falta un precio, Alfa usa el de tu otro addon de subastas.": "가격이 없으면 Alfa가 다른 경매장 애드온의 가격을 씁니다.",
+ "Tienes otro addon de bolsas activo: mientras lo esté, Alfa no reemplaza tus bolsas. Igual puedes abrir la ventana de Alfa desde aquí.": "다른 가방 애드온이 활성화되어 있습니다. 그 애드온이 켜져 있는 동안 Alfa는 가방을 바꾸지 않습니다. 그래도 여기서 Alfa 창을 열 수 있습니다.",
+ "Usar los precios de otro addon de subastas si faltan": "가격이 없으면 다른 경매장 애드온 가격 사용"
+}

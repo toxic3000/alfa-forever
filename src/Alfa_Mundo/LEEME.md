@@ -1,6 +1,6 @@
 # Alfa - Mundo
 
-Reemplaza a OpenMap y Leatrix Maps. Página **Mundo** (orden 31) de la ventana de Alfa.
+Página **Mundo** (orden 31) de la ventana de Alfa: un mapa continuo y limpio, con un solo control para todo lo que se pinta.
 
 - **Mapa del mundo continuo**: una ventana propia (no toca el mapa de Blizzard) con todo Azeroth en un solo lienzo. Rueda: zoom donde está el cursor; arrastrar: mover; doble clic: acercar; clic derecho: alejar; Mayús+clic: la flecha te lleva ahí. Abre centrado en tu zona.
 - **Zonas sin descubrir reveladas** con los recuadros de exploración del motor (con tono frío si quieres), en el mapa de Alfa y en el del juego (`maps.reveal`).
@@ -16,7 +16,7 @@ Reemplaza a OpenMap y Leatrix Maps. Página **Mundo** (orden 31) de la ventana d
 
 ## Ajustes (`mundo.*`)
 
-`grupo` (tu grupo en el mapa), `nombres` (nombres de zona), `detalle` (arte fino con las texturas de OpenMap), `botonMapa`, `menuMapa`, `teclaM`, `ventana` (tamaño y lugar), `limpio`, `antes` y `suprimidas` (lo que el modo limpio apagó), `capas.<id>` (capas de otros módulos). El resto son los del motor (`nav.*`, `qol.*`, `rares.*`, `maps.*`).
+`grupo` (tu grupo en el mapa), `nombres` (nombres de zona), `detalle` (arte fino con las texturas de detalle de `VENDOR.md`), `botonMapa`, `menuMapa`, `teclaM`, `ventana` (tamaño y lugar), `limpio`, `antes` y `suprimidas` (lo que el modo limpio apagó), `capas.<id>` (capas de otros módulos). El resto son los del motor (`nav.*`, `qol.*`, `rares.*`, `maps.*`).
 
 ## Contrato de capas (para otros módulos)
 

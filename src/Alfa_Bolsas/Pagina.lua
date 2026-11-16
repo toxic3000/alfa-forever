@@ -172,7 +172,7 @@ function M.ConstruirPagina(view)
 
 		local motivo
 		if R.Conflicto() then
-			motivo = (L["Tienes otro addon de bolsas activo (%s): mientras lo esté, Alfa no reemplaza tus bolsas. Igual puedes abrir la ventana de Alfa desde aquí."]):format(R.Conflicto())
+			motivo = L["Tienes otro addon de bolsas activo: mientras lo esté, Alfa no reemplaza tus bolsas. Igual puedes abrir la ventana de Alfa desde aquí."]
 		elseif R.Mando() then
 			motivo = L["Con la interfaz para mando, Alfa deja las bolsas del juego. Igual puedes abrir la ventana de Alfa desde aquí."]
 		end

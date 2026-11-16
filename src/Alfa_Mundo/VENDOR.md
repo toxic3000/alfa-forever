@@ -14,7 +14,7 @@ El código de Mundo funciona sin ellas: el mapa continuo se dibuja con el arte d
 
 ## Qué se copia y a dónde
 
-Origen: `OpenMap/Media/Textures/Forever/`. Destino: `Alfa_Mundo/Media/OpenMap/` (la ruta que usa el código: `Interface\AddOns\Alfa_Mundo\Media\OpenMap\...`, en `Lienzo.lua`).
+Origen: `OpenMap/Media/Textures/Forever/`. Destino: `Alfa_Mundo/Media/Territorios/` (la ruta que usa el código: `Interface\AddOns\Alfa_Mundo\Media\Territorios\...`, en `Lienzo.lua`).
 
 | Carpeta o archivo | Tamaño | Para qué | Origen según su NOTICE.md |
 |---|---|---|---|
@@ -33,4 +33,4 @@ Total: unos 12,4 MB (de los ~361 MB de OpenMap). Si se cambia la lista de `TERRI
 
 ## Comprobación
 
-La primera vez que lo necesita, Mundo pone `MapFeatherRound` en una textura de prueba: si el cliente responde que no existe, se queda con el arte del juego y la página Mundo lo dice ("Las texturas de OpenMap no están..."). El ajuste "Detalle fino de cada zona" (`mundo.detalle`) apaga el detalle aunque estén.
+La primera vez que lo necesita, Mundo pone `MapFeatherRound` en una textura de prueba: si el cliente responde que no existe, se queda con el arte del juego y la página Mundo lo dice ("Faltan las texturas de detalle..."). El ajuste "Detalle fino de cada zona" (`mundo.detalle`) apaga el detalle aunque estén.

@@ -11,7 +11,7 @@
 
 ## Español
 
-¿Cansado de tener 12 addons que se encima uno con otro y te llenan el mapa de marcas? Alfa los reemplaza con uno solo.
+¿Cansado de tener un montón de addons que se enciman uno con otro y te llenan el mapa de marcas? Alfa lo hace todo en uno solo.
 
 | Módulo | Qué hace |
 |---|---|
@@ -33,7 +33,7 @@
 
 ## English
 
-Tired of a dozen addons stepping on each other and filling your map with icons? Alfa replaces them with one.
+Tired of a pile of addons stepping on each other and filling your map with icons? Alfa does it all in one.
 
 - **Guides** — zone leveling guides with arrow and route, a "how do I get it" lookup, dungeons with their quests, rares and treasures.
 - **Home** — your session (XP/hour, time to level, gold, quests), a session diary and reminders (durability before your gear breaks, full bags, spells to train, buffs, rest).

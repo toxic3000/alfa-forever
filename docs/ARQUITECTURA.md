@@ -1,6 +1,6 @@
 # Arquitectura de Alfa
 
-Alfa es un solo addon para WoW Forever (cliente 1.60.1, `## Interface: 16001`) hecho por Toxic / La Jauría. Junta en un solo lugar las funciones de Polestar Guides, Baganator, Syndicator, Better Fishing, DBM, DungeonJournal, GatherLite, Leatrix Maps, Leatrix Plus, OpenMap, Pawn y Sonah, y agrega funciones propias. Es software libre bajo la GPL-3.0.
+Alfa es un solo addon para WoW Forever (cliente 1.60.1, `## Interface: 16001`) hecho por Toxic / La Jauría. Junta en un solo lugar guías, mapa, bolsas, builds, curación, recolección, mazmorras, pesca, comercio y comodidades, sobre el motor de Polestar. Es software libre bajo la GPL-3.0.
 
 ## Cómo se construye
 
@@ -91,16 +91,11 @@ N.Modulo({
 6. `C_Map.GetPlayerMapPosition` solo funciona para el jugador y su grupo.
 7. La API de Forever vive en `referencia/wow-ui-source/Interface/AddOns/Blizzard_APIDocumentationGenerated/`, de la rama `forever` de Gethe/wow-ui-source. Si una función no aparece ahí, no se usa (salvo las globales clásicas que el motor ya usa, como `GetInventoryItemDurability`). Para más código de Blizzard: `git -C referencia/wow-ui-source sparse-checkout add Interface/AddOns/<carpeta>`.
 
-## Licencias de los addons que Alfa reemplaza
+## Código de terceros
 
-| Addon | Licencia | Qué se puede hacer |
-|---|---|---|
-| Polestar (y sus datos) | GPL-3.0 (datos: pfQuest MIT y otros) | Es el motor de Alfa |
-| GatherLite | MIT + navegación GPL | Reutilizar su código y su base `plugins/database/data/forever.lua`, con su aviso |
-| OpenMap | MIT | Reutilizar su código y sus texturas, con su aviso |
-| Baganator, Syndicator, Sonah, Leatrix Plus, Leatrix Maps, DungeonJournal, Better Fishing, Pawn, DBM | Cerrada o sin licencia | **Solo se imitan sus funciones con código propio.** Se puede leer su código para entender qué hacen, pero no se copia |
-
-Todo código o archivo reutilizado lleva su aviso de licencia dentro de la carpeta del módulo (`LICENSE-<origen>.txt`) y una línea en `CREDITOS.md`, también dentro de la carpeta del módulo.
+- **Solo se reutiliza código o datos con licencia libre** (GPL o MIT), como el motor de Polestar (GPL-3.0, con datos de pfQuest MIT y otros). Todo código o archivo reutilizado lleva su aviso de licencia dentro de la carpeta del módulo (`LICENSE-<origen>.txt`) y una línea en `CREDITOS.md`, también dentro de la carpeta del módulo. Los créditos visibles van en «Acerca de».
+- **Lo que no tiene licencia libre no se copia:** las funciones se escriben con código propio.
+- **Ni el código ni los textos nombran a otros addons**, salvo esos avisos y créditos. Cuando un módulo necesita saber si hay otro addon cargado (para no chocar con él o para importar sus datos), los nombres técnicos van en una sola tabla en el `Compat.lua` del módulo (`M.OTROS`).
 
 ## Construir un módulo sin pisar a los demás
 

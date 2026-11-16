@@ -1,8 +1,8 @@
 # Alfa - Mazmorras
 
-Reemplaza a DungeonJournal y a DBM. Complementa el diario de mazmorras del motor
-(`Alfa.Dungeons`: misiones, jefes en orden y entrada) con lo que no tiene, y enlaza a
-sus páginas en lugar de repetirlas.
+Diario de mazmorras con botín, consejos y avisos de jefes. Complementa el diario de
+mazmorras del motor (`Alfa.Dungeons`: misiones, jefes en orden y entrada) con lo que no
+tiene, y enlaza a sus páginas en lugar de repetirlas.
 
 ## Qué hace
 

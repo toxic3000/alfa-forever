@@ -1,18 +1,18 @@
 -- Alfa - Recolección: los nodos, los filtros y el historial (Toxic / La Jauría, GPL-3.0).
 --
 -- Los nodos de cada zona se arman la primera vez que hacen falta (al abrir
--- el mapa en esa zona o al pasar cerca en el minimapa): los de la base de
--- GatherLite (Base.lua) sin repetidos, más los que tú descubres al
+-- el mapa en esa zona o al pasar cerca en el minimapa): los de la base
+-- incluida (Base.lua) sin repetidos, más los que tú descubres al
 -- recolectar, guardados en N.Datos("recoleccion").nodos[mapa]. Cada zona
 -- queda en una cuadrícula de CELDAS x CELDAS para que el mapa y el minimapa
 -- lean solo lo que está a la vista.
 --
--- Coordenadas: x, y de 0 a 1 en el mapa de la zona (como GatherLite). Para
--- distancias se pasan a yardas del mundo con los bordes del mapa
--- (Compat.MapToWorld de dos esquinas): wx crece al norte, wy al oeste.
+-- Coordenadas: x, y de 0 a 1 en el mapa de la zona. Para distancias se
+-- pasan a yardas del mundo con los bordes del mapa (Compat.MapToWorld de dos
+-- esquinas): wx crece al norte, wy al oeste.
 --
 -- La regla de "el mismo nodo" (0.0065 del mapa) y los colores del nivel de
--- habilidad vienen de GatherLite (scripts/methods.lua), MIT, de Wuild.
+-- habilidad están adaptados de código MIT (ver CREDITOS.md).
 
 local _, M = ...
 local N = AlfaNucleo
@@ -28,7 +28,7 @@ M.R = R
 
 local CELDAS = 32         -- celdas por lado de la cuadrícula de cada zona
 local DUPLICADO = 0.003   -- dos puntos de la base más cerca que esto son uno
-local RANGO = 0.0065      -- lo que GatherLite considera el mismo nodo
+local RANGO = 0.0065      -- hasta esta distancia del mapa es el mismo nodo
 local RANGO_PESCA = 0.012 -- al pescar estás lejos del banco
 local MAX_SESIONES = 12
 
@@ -430,7 +430,7 @@ function R.ParaRuta(idx, i)
 end
 
 -- Color del nivel necesario con tu habilidad (rojo, naranja, amarillo,
--- verde, gris), como el juego y GatherLite.
+-- verde, gris), como el juego.
 function R.ColorNivel(g)
 	local gr = M.GRUPOS[g]
 	local lv = gr and gr.niveles
@@ -604,31 +604,51 @@ function R.BorrarHistorial()
 end
 
 ---------------------------------------------------------------------------
--- GatherLite: si sigue activo, sus nodos recolectados pasan a Alfa una vez
--- (o con el botón de la página). Solo se lee GatherLiteSettings.
+-- Otro addon de recolección (Compat.lua): si sigue activo, sus nodos
+-- recolectados pasan a Alfa una vez (o con el botón de la página). Solo se
+-- leen sus datos guardados.
 ---------------------------------------------------------------------------
-local TIPO_GL = { mining = true, herbalism = true, containers = true, fishing = true }
+local OTROS = M.OTROS and M.OTROS.recoleccion or {}
 
-function R.HayGatherLite()
-	local S = rawget(_G, "GatherLiteSettings")
-	return type(S) == "table" and type(S.global) == "table" and type(S.global.nodes) == "table"
+-- Las listas de nodos por tipo de un addon de la lista, o nil.
+local function nodosDe(o)
+	local t = o.guardado and rawget(_G, o.guardado)
+	for _, k in ipairs(o.ruta or {}) do
+		if type(t) ~= "table" then return nil end
+		t = t[k]
+	end
+	return type(t) == "table" and t or nil
 end
 
-function R.ImportarGatherLite()
-	if not R.HayGatherLite() then return nil end
-	local S = rawget(_G, "GatherLiteSettings")
+-- El primer addon de la lista con nodos guardados, y sus nodos.
+local function otroActivo()
+	for _, o in ipairs(OTROS) do
+		local nodos = nodosDe(o)
+		if nodos then return o, nodos end
+	end
+	return nil
+end
+
+function R.HayOtro()
+	return otroActivo() ~= nil
+end
+
+function R.ImportarOtro()
+	local o, nodos = otroActivo()
+	if not o then return nil end
 	local n = 0
-	for tipo, lista in pairs(S.global.nodes) do
-		if TIPO_GL[tipo] and type(lista) == "table" then
+	for tipo, lista in pairs(nodos) do
+		if o.tipos and o.tipos[tipo] and type(lista) == "table" then
 			for _, nodo in ipairs(lista) do
 				if type(nodo) == "table" then
-					local obj = tonumber(nodo.object)
+					local obj = tonumber(nodo[o.objeto])
 					local g = obj and M.porObjeto[obj]
-					local mapID, x, y = tonumber(nodo.mapID), tonumber(nodo.posX), tonumber(nodo.posY)
+					local mapID, x, y = tonumber(nodo[o.mapa]), tonumber(nodo[o.x]), tonumber(nodo[o.y])
 					if g and mapID and x and y and x >= 0 and x <= 1 and y >= 0 and y <= 1 then
 						local cuando
-						if type(nodo.date) == "table" then
-							local ok, t = pcall(time, nodo.date)
+						local fecha = nodo[o.fecha]
+						if type(fecha) == "table" then
+							local ok, t = pcall(time, fecha)
 							if ok and type(t) == "number" then cuando = t end
 						end
 						anotarNodo(g, mapID, x, y, obj, 0, cuando)
@@ -638,7 +658,7 @@ function R.ImportarGatherLite()
 			end
 		end
 	end
-	datos().importadoGL = true
+	datos().importadoOtro = true
 	R.Avisar("nodos")
 	return n
 end

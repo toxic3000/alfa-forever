@@ -84,8 +84,8 @@ local AJUSTES = {
 		help = L["Ocultas como en el juego, reveladas, o reveladas con un tono más frío para saber dónde no has estado."],
 		choices = { { value = "off", label = L["Ocultas"] }, { value = "on", label = L["Reveladas"] }, { value = "tint", label = L["Reveladas con otro tono"] } } },
 	{ kind = "toggle", key = "mundo.detalle", label = L["Detalle fino de cada zona"],
-		help = L["Dibuja el arte completo de cada zona recortado a su forma, con las texturas de OpenMap. Sin ellas el mapa sigue completo, solo más suave entre zona y zona."],
-		disabled = function() return not Lz.HayOpenMap() end },
+		help = L["Dibuja el arte completo de cada zona recortado a su forma, con las texturas de detalle incluidas. Sin ellas el mapa sigue completo, solo más suave entre zona y zona."],
+		disabled = function() return not Lz.HayTexturas() end },
 }
 
 local AYUDA = {
@@ -110,8 +110,8 @@ local function construir(view)
 	ayuda:SetSpacing(4)
 	ayuda:SetText("·  " .. table.concat(AYUDA, "\n·  "))
 	local O = A.UI and A.UI.Options
-	local sinOpenMap = W.Text(view, "small", "textMuted")
-	sinOpenMap:SetWordWrap(true)
+	local sinTexturas = W.Text(view, "small", "textMuted")
+	sinTexturas:SetWordWrap(true)
 
 	local function seccion(n, nombre, controlesSec, y, ancho, pad)
 		local h = view.headers[n]
@@ -173,15 +173,15 @@ local function construir(view)
 		-- El mapa de Alfa
 		s = s + 1
 		y = seccion(s, L["El mapa de Alfa"], AJUSTES, y, ancho, pad)
-		if not Lz.HayOpenMap() then
-			sinOpenMap:SetText(L["Las texturas de OpenMap no están en Alfa_Mundo (carpeta Media/OpenMap): el mapa se dibuja solo con el arte del juego."])
-			sinOpenMap:ClearAllPoints()
-			sinOpenMap:SetPoint("TOPLEFT", view, "TOPLEFT", pad, -(y - 14))
-			sinOpenMap:SetWidth(ancho)
-			sinOpenMap:Show()
-			y = y + (tonumber(sinOpenMap:GetStringHeight()) or 14) + 8
+		if not Lz.HayTexturas() then
+			sinTexturas:SetText(L["Faltan las texturas de detalle en la carpeta Media de Alfa_Mundo: el mapa se dibuja solo con el arte del juego."])
+			sinTexturas:ClearAllPoints()
+			sinTexturas:SetPoint("TOPLEFT", view, "TOPLEFT", pad, -(y - 14))
+			sinTexturas:SetWidth(ancho)
+			sinTexturas:Show()
+			y = y + (tonumber(sinTexturas:GetStringHeight()) or 14) + 8
 		else
-			sinOpenMap:Hide()
+			sinTexturas:Hide()
 		end
 		for i = s + 1, #view.headers do view.headers[i]:Hide() end
 		for i = s + 1, #view.panels do view.panels[i]:Hide() end
@@ -232,7 +232,7 @@ N.Modulo({
 	ajustes = {
 		grupo = true,       -- tu grupo en el mapa de Alfa (esencial)
 		nombres = true,     -- nombres de zona en el mapa de Alfa
-		detalle = true,     -- arte base de cada zona con las texturas de OpenMap
+		detalle = true,     -- arte base de cada zona con las texturas de detalle
 		botonMapa = true,   -- botones de Alfa junto a la lupa del mapa del juego
 		menuMapa = true,    -- las capas en el menú de la lupa
 		teclaM = false,     -- la tecla del mapa abre el de Alfa

@@ -1,5 +1,5 @@
--- Alfa - Comodidades: silenciar sonidos molestos (como MuteGameSounds y
--- MuteCustomSounds de Leatrix Plus, con código propio). GPL-3.0.
+-- Alfa - Comodidades: silenciar sonidos molestos (grupos del juego y una
+-- lista propia). GPL-3.0.
 --
 -- Cuatro grupos de sonidos se apagan con las variables de sonido del propio
 -- juego, las mismas casillas de Opciones > Audio de Forever
@@ -12,8 +12,8 @@
 -- Además, una lista propia de sonidos por su número de archivo (FileDataID):
 -- /alfa silenciar <número> lo agrega, /alfa silenciar quitar <número> lo
 -- quita y /alfa silenciar muestra la lista. Se silencian con MuteSoundFile y
--- vuelven con UnmuteSoundFile (no están en la documentación generada; los
--- usan Leatrix Plus, Baganator y DBM en Forever). El juego olvida lo
+-- vuelven con UnmuteSoundFile (no están en la documentación generada; otros
+-- addons los usan en Forever). El juego olvida lo
 -- silenciado al salir, así que se vuelve a aplicar al entrar.
 
 local ADDON, M = ...

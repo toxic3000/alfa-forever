@@ -1,5 +1,5 @@
--- Alfa - Bolsas: el registro de lo que lleva cada personaje (como Syndicator,
--- con código propio). GPL-3.0.
+-- Alfa - Bolsas: el registro de lo que lleva cada personaje de la cuenta.
+-- GPL-3.0.
 --
 -- N.Datos("bolsas").personajes["Nombre-Reino"] = {
 --   nombre, reino, faccion ("Alliance" | "Horde"), clase ("WARRIOR"), nivel,

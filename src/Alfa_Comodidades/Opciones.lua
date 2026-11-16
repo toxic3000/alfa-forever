@@ -44,7 +44,7 @@ end
 registrar(AL["Quests"], L["Todas las misiones"], {
 	{ kind = "toggle", key = clave("misiones"), label = L["Aceptar y entregar todas las misiones"],
 		help = L["También las que no son de la guía (de esas se encarga \"Aceptar misiones de la guía\"). No toma misiones grises, no entrega las que piden oro, monedas o materiales de oficio, y si hay varias recompensas eliges tú. Mantén presionado Mayús para hacerlo tú."],
-		search = "automate quests, auto accept all quests, auto turn in, quest automation, leatrix, daily, weekly" },
+		search = "automate quests, auto accept all quests, auto turn in, quest automation, daily, weekly" },
 	hija("misionesNormales", "misiones", L["Misiones normales"], L["Las que se hacen una sola vez."], "regular quests"),
 	hija("misionesDiarias", "misiones", L["Misiones diarias"], L["Las que se repiten cada día."], "daily quests, dailies"),
 	hija("misionesSemanales", "misiones", L["Misiones semanales"], L["Las que se repiten cada semana."], "weekly quests"),
@@ -58,7 +58,7 @@ registrar(AL["Quests"], L["Todas las misiones"], {
 registrar(AL["Travel"], AL["Flight timer"], {
 	{ kind = "toggle", key = clave("vueloParada"), label = L["Mostrar la siguiente parada"],
 		help = L["En un vuelo con escalas, una línea bajo el temporizador dice dónde es la siguiente parada y cuánto falta para llegar. Necesita el temporizador de vuelo encendido."],
-		search = "flight bar, next stop, next hop, taxi, flight path, leatrix",
+		search = "flight bar, next stop, next hop, taxi, flight path",
 		disabled = function() return not A.Get("maps.flightTimer") end },
 })
 
@@ -69,7 +69,7 @@ registrar(AL["Travel"], AL["Flight timer"], {
 registrar(AL["Map"], AL["Minimap"], {
 	{ kind = "toggle", key = clave("minimapa"), label = L["Mejorar el minimapa"],
 		help = L["Enciende los cambios de abajo; cada uno se puede apagar por separado. Algunos addons acomodan sus botones al cuadrado después de /reload."],
-		search = "enhance minimap, minimap modder, leatrix" },
+		search = "enhance minimap, square minimap, minimap buttons" },
 	hija("minimapaCuadrado", "minimapa", L["Minimapa cuadrado"],
 		L["El minimapa pasa de redondo a cuadrado, con un borde fino. No se recomienda junto con girar el minimapa."],
 		"square minimap, minimap shape"),
@@ -90,7 +90,7 @@ local INTERFAZ = L["Interfaz"]
 registrar(INTERFAZ, L["Marcos"], {
 	{ kind = "toggle", key = clave("colores"), label = L["Colores de clase en los marcos"],
 		help = L["Pinta del color de la clase el fondo del nombre en tu marco y en el del objetivo cuando es un jugador."],
-		search = "class colored frames, class colours, unit frames, player frame, target frame, leatrix" },
+		search = "class colored frames, class colours, unit frames, player frame, target frame" },
 	hija("coloresJugador", "colores", L["En tu marco"], L["Un fondo del color de tu clase bajo tu nombre."], "player frame"),
 	hija("coloresObjetivo", "colores", L["En el marco del objetivo"], L["Si tu objetivo es un jugador, su fondo toma el color de su clase en lugar del de su reacción."], "target frame"),
 	{ kind = "toggle", key = clave("grifos"), label = L["Ocultar los grifos de la barra de acción"],
@@ -101,7 +101,7 @@ registrar(INTERFAZ, L["Marcos"], {
 registrar(INTERFAZ, L["Cuadro de información"], {
 	{ kind = "toggle", key = clave("cuadro"), label = L["Mejorar el cuadro de información"],
 		help = L["Enciende los cambios de abajo en el cuadro que sale al pasar el ratón por un personaje o criatura."],
-		search = "enhance tooltip, tooltip, leatrix" },
+		search = "enhance tooltip, tooltip" },
 	hija("cuadroObjetivo", "cuadro", L["Mostrar a quién apunta"], L["Agrega una línea con el objetivo de esa unidad; si te tiene a ti, lo dice."], "tooltip target, show target, unit target"),
 	hija("cuadroRango", "cuadro", L["Mostrar el rango de tu hermandad"], L["Para alguien de tu hermandad, agrega su rango."], "guild rank, tooltip rank"),
 	hija("cuadroCombate", "cuadro", L["Ocultarlo en combate"], L["En combate no aparece el cuadro de los personajes y criaturas del mundo (el de los marcos sí)."], "hide tooltip in combat"),
@@ -112,7 +112,7 @@ registrar(INTERFAZ, L["Cuadro de información"], {
 registrar(INTERFAZ, L["Probador"], {
 	{ kind = "toggle", key = clave("probador"), label = L["Mejorar el probador"],
 		help = L["Enciende los cambios de abajo en el probador (Ctrl + clic en un objeto)."],
-		search = "enhance dressup, dressing room, dress up, leatrix", needs = function() return M.HayProbador() end },
+		search = "enhance dressup, dressing room, dress up", needs = function() return M.HayProbador() end },
 	hija("probadorBotones", "probador", L["Botones de objetos"], L["A los lados del modelo, un botón por ranura: un clic oculta esa pieza y otro la vuelve a poner."], "dressup item buttons, hide items, undress slot"),
 	hija("probadorAnimacion", "probador", L["Control de animación"], L["Abajo del modelo, elige lo que hace tu personaje (caminar, bailar, saludar...) y páusalo."], "dressup animation, animation slider, pause model"),
 })
@@ -120,7 +120,7 @@ registrar(INTERFAZ, L["Probador"], {
 registrar(INTERFAZ, L["Cámara"], {
 	{ kind = "toggle", key = clave("camara"), label = L["Alejar más la cámara"],
 		help = L["Lleva al máximo la distancia de la cámara (la de Opciones > Controles). Al apagarlo vuelve la que tenías."],
-		search = "max camera zoom, camera distance, zoom out, leatrix", needs = function() return M.ExisteCVar(M.CVAR_CAMARA) end },
+		search = "max camera zoom, camera distance, zoom out", needs = function() return M.ExisteCVar(M.CVAR_CAMARA) end },
 })
 
 local function cvarDe(k)

@@ -113,8 +113,8 @@ function Av.LineaActiva() return activa("C_EncounterTimeline") end
 function Av.MensajesActivos() return activa("C_EncounterWarnings") end
 
 ---------------------------------------------------------------------------
--- Probar la línea de tiempo: tres marcas falsas (AddScriptEvent, el mismo
--- camino que usa DBM para sus pruebas) que se borran solas. Solo fuera de
+-- Probar la línea de tiempo: tres marcas falsas (AddScriptEvent: eventos
+-- puestos por un script) que se borran solas. Solo fuera de
 -- combate y fuera de instancias, para no mezclarse con un jefe de verdad.
 ---------------------------------------------------------------------------
 

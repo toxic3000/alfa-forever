@@ -1367,14 +1367,6 @@
   "en": "Drink when your mana is low; don't wait until it's empty.",
   "origen": "Alfa_Builds"
  },
- "Better Fishing está activo": {
-  "en": "Better Fishing is enabled",
-  "origen": "Alfa_Pesca"
- },
- "Better Fishing también está activo. Para que no choquen, la pesca de Alfa queda en pausa: desactiva uno de los dos en la lista de addons.": {
-  "en": "Better Fishing is also enabled. So they don't clash, Alfa's fishing is paused: disable one of the two in the AddOns list.",
-  "origen": "Alfa_Pesca"
- },
  "Blizzard no dejó copiar tu mapa desde un addon. Se abrió su ventana de clic para lanzar: arma ahí los mismos clics.": {
   "en": "Blizzard didn't allow an addon to copy your map. Its click casting window opened: set up the same clicks there.",
   "origen": "Alfa_Curacion"
@@ -2115,8 +2107,8 @@
   "en": "Copy this text (Ctrl+C) and paste it to your friend. They paste it in Import.",
   "origen": "Alfa_Rutas"
  },
- "Copia los nodos que recolectaste con GatherLite (debe estar activo). Ya se hace solo la primera vez.": {
-  "en": "Copies the nodes you gathered with GatherLite (it must be enabled). It already happens on its own the first time.",
+ "Copia los nodos que recolectaste con otro addon de recolección (debe estar activo). Ya se hace solo la primera vez.": {
+  "en": "Copies the nodes you gathered with another gathering addon (it must be enabled). It already happens on its own the first time.",
   "origen": "Alfa_Recoleccion"
  },
  "Copia tu mapa al clic para lanzar de Blizzard, así curas igual en sus marcos de grupo. Si el juego no lo deja, abre su ventana para que lo hagas ahí.": {
@@ -2527,8 +2519,8 @@
   "en": "Journal",
   "origen": "Alfa_Inicio"
  },
- "Dibuja el arte completo de cada zona recortado a su forma, con las texturas de OpenMap. Sin ellas el mapa sigue completo, solo más suave entre zona y zona.": {
-  "en": "Draws each zone's full art cut to its shape, with OpenMap's textures. Without them the map is still complete, just softer between zones.",
+ "Dibuja el arte completo de cada zona recortado a su forma, con las texturas de detalle incluidas. Sin ellas el mapa sigue completo, solo más suave entre zona y zona.": {
+  "en": "Draws each zone's full art cut to its shape, with the included detail textures. Without them the map is still complete, just softer between zones.",
   "origen": "Alfa_Mundo"
  },
  "Dinero de toda la cuenta": {
@@ -3647,6 +3639,10 @@
   "en": "The Alfa_Codex folder is missing: reinstall Alfa.",
   "origen": "Alfa_Rutas"
  },
+ "Faltan las texturas de detalle en la carpeta Media de Alfa_Mundo: el mapa se dibuja solo con el arte del juego.": {
+  "en": "The detail textures are missing from Alfa_Mundo's Media folder: the map is drawn with the game's art only.",
+  "origen": "Alfa_Mundo"
+ },
  "Faltan precios de algunos materiales.": {
   "en": "Some materials have no price yet.",
   "origen": "Alfa_Comercio"
@@ -3778,14 +3774,6 @@
  "Gastado": {
   "en": "Spent",
   "origen": "Alfa_Inicio"
- },
- "GatherLite no está activo.": {
-  "en": "GatherLite is not enabled.",
-  "origen": "Alfa_Recoleccion"
- },
- "GatherLite sigue activo: Alfa ya hace lo mismo, así que puedes desactivarlo para no ver los nodos dos veces.": {
-  "en": "GatherLite is still enabled: Alfa does the same, so you can turn it off to avoid seeing nodes twice.",
-  "origen": "Alfa_Recoleccion"
  },
  "Golpe (%)": {
   "en": "Hit (%)",
@@ -4127,6 +4115,10 @@
   "en": "Import",
   "origen": "Alfa_Builds"
  },
+ "Importar nodos de otro addon de recolección": {
+  "en": "Import nodes from another gathering addon",
+  "origen": "Alfa_Recoleccion"
+ },
  "Importar un build": {
   "en": "Import a build",
   "origen": "Alfa_Builds"
@@ -4439,6 +4431,10 @@
   "en": "The key that opens the game's map opens Alfa's instead. Turn it off to get the game's map back. You can also give it its own key in Options > Keybindings > Alfa.",
   "origen": "Alfa_Mundo"
  },
+ "La tecla que usabas en tu otro addon de pesca (%s) ahora pesca con Alfa.": {
+  "en": "The key you used in your other fishing addon (%s) now fishes with Alfa.",
+  "origen": "Alfa_Pesca"
+ },
  "La trituradora tira a la gente: vuelve a llamar su atención rápido.": {
   "en": "The shredder knocks people around: get its attention back fast.",
   "origen": "Alfa_Mazmorras/Consejos"
@@ -4451,8 +4447,8 @@
   "en": "He throws smoke bombs that stun: get out of the smoke.",
   "origen": "Alfa_Mazmorras/Consejos"
  },
- "Lanza con una tecla y recoge con la misma, con las ayudas de Better Fishing.": {
-  "en": "Cast with one key and reel in with the same one, with Better Fishing's helpers.",
+ "Lanza con una tecla y recoge con la misma, con autobotín, sonido amplificado y doble clic.": {
+  "en": "Cast with one key and reel in with the same one, with auto loot, enhanced sound and double click.",
   "origen": "Alfa_Pesca"
  },
  "Lanza enredaderas que tumban a todos los que están cerca: si peleas de lejos, quédate lejos.": {
@@ -4570,10 +4566,6 @@
  "Las sesiones y lo recolectado por zona de este personaje.": {
   "en": "This character's sessions and what was gathered in each zone.",
   "origen": "Alfa_Recoleccion"
- },
- "Las texturas de OpenMap no están en Alfa_Mundo (carpeta Media/OpenMap): el mapa se dibuja solo con el arte del juego.": {
-  "en": "OpenMap's textures are not in Alfa_Mundo (Media/OpenMap folder): the map is drawn with the game's art only.",
-  "origen": "Alfa_Mundo"
  },
  "Lee el precio más bajo de cada objeto en toda la subasta. No compra ni publica nada. Se puede usar cada 15 minutos.": {
   "en": "Reads the lowest price of every item in the whole auction house. It buys and posts nothing. It can be used every 15 minutes.",
@@ -4883,8 +4875,8 @@
   "en": "The nodes near you. The game's tracking dot tells whether something is there now.",
   "origen": "Alfa_Recoleccion"
  },
- "Los nodos que trae Alfa (los de GatherLite). Sin esto solo ves los que tú descubriste.": {
-  "en": "The nodes Alfa ships with (GatherLite's). Without it you only see the ones you found.",
+ "Los nodos que trae Alfa. Sin esto solo ves los que tú descubriste.": {
+  "en": "The nodes Alfa ships with. Without it you only see the ones you found.",
   "origen": "Alfa_Recoleccion"
  },
  "Los objetos se juntan al final de tus bolsas en lugar de al principio.": {
@@ -5735,6 +5727,10 @@
   "en": "No known nodes in this zone.",
   "origen": "Alfa_Recoleccion"
  },
+ "No hay otro addon de recolección activo.": {
+  "en": "No other gathering addon is enabled.",
+  "origen": "Alfa_Recoleccion"
+ },
  "No hay un build con este estilo para lo que elegiste: Alfa usa el más cercano.": {
   "en": "There's no build with this style for what you chose: Alfa uses the closest one.",
   "origen": "Alfa_Builds"
@@ -6095,6 +6091,18 @@
   "en": "Other weapons",
   "origen": "Alfa_Rutas"
  },
+ "Otro addon de pesca está activo": {
+  "en": "Another fishing addon is enabled",
+  "origen": "Alfa_Pesca"
+ },
+ "Otro addon de pesca está activo. Para que no choquen, la pesca de Alfa queda en pausa: desactiva uno de los dos en la lista de addons.": {
+  "en": "Another fishing addon is enabled. So they don't clash, Alfa's fishing is paused: disable one of the two in the AddOns list.",
+  "origen": "Alfa_Pesca"
+ },
+ "Otro addon de recolección sigue activo: Alfa ya hace lo mismo, así que puedes desactivarlo para no ver los nodos dos veces.": {
+  "en": "Another gathering addon is still enabled: Alfa does the same, so you can turn it off to avoid seeing nodes twice.",
+  "origen": "Alfa_Recoleccion"
+ },
  "Otro golpe fuerte para tu rotación.": {
   "en": "Another strong strike for your rotation.",
   "origen": "Alfa_Builds"
@@ -6151,8 +6159,8 @@
   "en": "You need a fishing pole in your hands to fish. Once it's equipped, you can cast.",
   "origen": "Alfa_Pesca"
  },
- "Para que no choquen, Alfa no toma tu tecla ni cambia tus ajustes. Desactiva uno de los dos en la lista de addons (pantalla de personajes) y recarga. Si dejas Alfa, tomará sola la tecla que usabas en Better Fishing.": {
-  "en": "So they don't clash, Alfa doesn't take your key or change your settings. Disable one of the two in the AddOns list (character screen) and reload. If you keep Alfa, it takes the key you used in Better Fishing by itself.",
+ "Para que no choquen, Alfa no toma tu tecla ni cambia tus ajustes. Desactiva uno de los dos en la lista de addons (pantalla de personajes) y recarga. Si dejas Alfa, tomará sola la tecla que usabas en el otro addon.": {
+  "en": "So they don't clash, Alfa doesn't take your key or change your settings. Disable one of the two in the AddOns list (character screen) and reload. If you keep Alfa, it takes the key you used in the other addon by itself.",
   "origen": "Alfa_Pesca"
  },
  "Para que no dejes botín tirado por falta de espacio.": {
@@ -6343,8 +6351,8 @@
   "en": "Alfa fishing is off. Your key and your settings stay as they always are.",
   "origen": "Alfa_Pesca"
  },
- "Pesca de Alfa encendida, pero en pausa mientras Better Fishing esté activo.": {
-  "en": "Alfa fishing is on, but paused while Better Fishing is enabled.",
+ "Pesca de Alfa encendida, pero en pausa mientras otro addon de pesca esté activo.": {
+  "en": "Alfa fishing is on, but paused while another fishing addon is enabled.",
   "origen": "Alfa_Pesca"
  },
  "Pesca de Alfa encendida.": {
@@ -6543,8 +6551,8 @@
   "en": "Ready-to-use presets",
   "origen": "Alfa_Curacion"
  },
- "Precio de la subasta tomado de Auctionator.": {
-  "en": "Auction price taken from Auctionator.",
+ "Precio de la subasta tomado de otro addon de subastas.": {
+  "en": "Auction price taken from another auction addon.",
   "origen": "Alfa_Comercio"
  },
  "Precios %s · %s objetos": {
@@ -6899,8 +6907,8 @@
   "en": "Gathering",
   "origen": "Alfa_Recoleccion"
  },
- "Recolección: se trajeron %d nodos que recolectaste con GatherLite.": {
-  "en": "Gathering: brought over %d nodes you gathered with GatherLite.",
+ "Recolección: se trajeron %d nodos que recolectaste con otro addon.": {
+  "en": "Gathering: brought over %d nodes you gathered with another addon.",
   "origen": "Alfa_Recoleccion"
  },
  "Recomendada por Alfa": {
@@ -7291,8 +7299,8 @@
   "en": "He teleports to the edges of the room: melee players, follow him.",
   "origen": "Alfa_Mazmorras/Consejos"
  },
- "Se trajeron %d nodos de GatherLite.": {
-  "en": "Brought over %d nodes from GatherLite.",
+ "Se trajeron %d nodos de otro addon de recolección.": {
+  "en": "Brought over %d nodes from another gathering addon.",
   "origen": "Alfa_Recoleccion"
  },
  "Se ve cuando tienes un enemigo seleccionado, antes de empezar la pelea.": {
@@ -7375,8 +7383,8 @@
   "en": "If they're out of your range, their frame looks faded.",
   "origen": "Alfa_Curacion"
  },
- "Si falta un precio, Alfa usa el de Auctionator.": {
-  "en": "When a price is missing, Alfa uses Auctionator's.",
+ "Si falta un precio, Alfa usa el de tu otro addon de subastas.": {
+  "en": "When a price is missing, Alfa uses the one from your other auction addon.",
   "origen": "Alfa_Comercio"
  },
  "Si la pelea va mal, desvanécete y vuelve a empezar.": {
@@ -7975,8 +7983,8 @@
   "en": "You have more ranks than the build asks for",
   "origen": "Alfa_Builds"
  },
- "Tienes otro addon de bolsas activo (%s): mientras lo esté, Alfa no reemplaza tus bolsas. Igual puedes abrir la ventana de Alfa desde aquí.": {
-  "en": "Another bag addon is enabled (%s): while it is, Alfa does not replace your bags. You can still open Alfa's window from here.",
+ "Tienes otro addon de bolsas activo: mientras lo esté, Alfa no reemplaza tus bolsas. Igual puedes abrir la ventana de Alfa desde aquí.": {
+  "en": "Another bag addon is enabled: while it is, Alfa does not replace your bags. You can still open Alfa's window from here.",
   "origen": "Alfa_Bolsas"
  },
  "Tienes puntos fuera del plan en: %s. Alfa no quita talentos: para seguir el build exacto, reinicia tus talentos con tu entrenador de clase.": {
@@ -8122,10 +8130,6 @@
  "Toma el botín de la pesca enseguida, aunque tengas apagado el botín automático del juego.": {
   "en": "Takes fishing loot right away, even with the game's auto loot turned off.",
   "origen": "Alfa_Pesca"
- },
- "Traer lo de GatherLite": {
-  "en": "Bring over GatherLite's",
-  "origen": "Alfa_Recoleccion"
  },
  "Tramo %d de %d": {
   "en": "Leg %d of %d",
@@ -8394,10 +8398,6 @@
  "Tu siguiente paso": {
   "en": "Your next step",
   "origen": "Alfa_Inicio"
- },
- "Tu tecla de Better Fishing (%s) ahora pesca con Alfa.": {
-  "en": "Your Better Fishing key (%s) now fishes with Alfa.",
-  "origen": "Alfa_Pesca"
  },
  "Tu tecla y tus ajustes del juego quedan como siempre. Enciéndela abajo para pescar con una sola tecla.": {
   "en": "Your key and game settings stay as they always are. Turn it on below to fish with a single key.",
@@ -8831,8 +8831,8 @@
   "en": "Use Alfa's frames",
   "origen": "Alfa_Curacion"
  },
- "Usar los precios de Auctionator si faltan": {
-  "en": "Use Auctionator's prices when missing",
+ "Usar los precios de otro addon de subastas si faltan": {
+  "en": "Use another auction addon's prices when missing",
   "origen": "Alfa_Comercio"
  },
  "Usar mis talentos de ahora": {

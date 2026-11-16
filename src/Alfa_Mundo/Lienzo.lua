@@ -1,24 +1,24 @@
 -- Alfa - Mundo: el arte del mapa continuo (Toxic / La Jauría). GPL-3.0.
 --
 -- Un lienzo del tamaño del arte del mundo (947), escalado para el zoom
--- (SetScale, como el ScrollContainer de Blizzard y OpenMap). Capas, de
+-- (SetScale, como el ScrollContainer de Blizzard). Capas, de
 -- abajo arriba, y el zoom en que entra cada una (1 = el mundo entero cabe):
 --   mundo        el arte del mapa del mundo, siempre
 --   continentes  su arte (CONT); cubren el mundo con más detalle
 --   bases        el arte base de cada zona recortado a su territorio: solo
---                con las texturas de OpenMap (MapTerritory) presentes
+--                con las texturas de detalle (MapTerritory) presentes
 --   zonas        los recuadros de exploración de cada zona (DETALLE), todos
 --                si "Zonas sin descubrir" está encendido (datos del motor,
 --                UI/ZoneArtOverlays.lua), o solo los explorados
 --   ciudades     el mapa de cada ciudad cuando llena parte de la vista
--- Sin las texturas de OpenMap el mapa sigue completo: entre zona y zona se
+-- Sin las texturas de detalle el mapa sigue completo: entre zona y zona se
 -- ve el arte del continente (más suave), nunca un hueco.
 --
 -- Una zona arma sus texturas la primera vez que entra en la vista, y sus
 -- archivos se cargan unos pocos por cuadro (POR_CUADRO), apareciendo con
--- un fundido, para que abrir el mapa no trabe el juego (la idea es de
--- OpenMap, MIT). Una zona fuera de la vista se guarda en un marco oculto
--- sin anclas, así el juego no la vuelve a acomodar en cada zoom.
+-- un fundido, para que abrir el mapa no trabe el juego (ver CREDITOS.md).
+-- Una zona fuera de la vista se guarda en un marco oculto sin anclas, así
+-- el juego no la vuelve a acomodar en cada zoom.
 
 local ADDON, M = ...
 local N = AlfaNucleo
@@ -30,10 +30,11 @@ local type, pairs, ipairs, pcall, min, max, ceil, floor = type, pairs, ipairs, p
 local Lz = {}
 M.Lienzo = Lz
 
--- Texturas de OpenMap (VENDOR.md), dentro de este addon.
-local OM = "Interface\\AddOns\\" .. ADDON .. "\\Media\\OpenMap\\"
-Lz.MEDIA_OPENMAP = OM
--- Zonas con máscara de territorio (OpenMap Media\Textures\Forever\MapTerritory).
+-- Texturas de detalle de terceros incluidas en este addon con su licencia
+-- (VENDOR.md); su carpeta conserva el nombre de su origen.
+local TX = "Interface\\AddOns\\" .. ADDON .. "\\Media\\Territorios\\"
+Lz.MEDIA_TEXTURAS = TX
+-- Zonas con máscara de territorio (MapTerritory).
 local TERRITORIOS = {}
 for _, id in ipairs({ 1411, 1412, 1413, 1416, 1417, 1418, 1419, 1420, 1421, 1422, 1423, 1424, 1425, 1426, 1427,
 	1428, 1429, 1430, 1431, 1432, 1433, 1434, 1435, 1436, 1437, 1438, 1439, 1440, 1441, 1442, 1443, 1444, 1445,
@@ -59,7 +60,7 @@ local ahora = { k = 1, z = 1, x0 = 0, y0 = 0, x1 = 1, y1 = 1, vw = 1, vh = 1 }
 local cola, colaEn = {}, 1
 local fundiendo, nFundiendo = {}, 0
 local cargador
-local hayOpenMap
+local hayTexturas
 local presupuesto, pendiente = ZONAS_POR_CUADRO, false
 
 local function rampa(v, r)
@@ -118,22 +119,22 @@ local function cargar()
 	if #cola == 0 and nFundiendo == 0 and cargador then cargador:Hide() end
 end
 
--- Si las texturas de OpenMap están en la carpeta de Alfa_Mundo. El cliente
+-- Si las texturas de detalle están en la carpeta de Alfa_Mundo. El cliente
 -- dice false al poner un archivo que no existe (SetTexture -> success).
 local sonda
-function Lz.HayOpenMap()
-	if hayOpenMap ~= nil then return hayOpenMap end
+function Lz.HayTexturas()
+	if hayTexturas ~= nil then return hayTexturas end
 	sonda = sonda or CreateFrame("Frame")
 	sonda:Hide()
 	local t = sonda:CreateTexture()
-	local ok, si = pcall(t.SetTexture, t, OM .. "MapFeatherRound")
-	hayOpenMap = ok and si ~= false and si ~= nil
+	local ok, si = pcall(t.SetTexture, t, TX .. "MapFeatherRound")
+	hayTexturas = ok and si ~= false and si ~= nil
 	t:SetTexture(nil)
-	return hayOpenMap
+	return hayTexturas
 end
 
-local function detalleOpenMap()
-	return A.Get("mundo.detalle") ~= false and Lz.HayOpenMap()
+local function detalleFino()
+	return A.Get("mundo.detalle") ~= false and Lz.HayTexturas()
 end
 
 ---------------------------------------------------------------------------
@@ -227,24 +228,24 @@ local function armarZona(z)
 	end
 	local tw, th = info.tileWidth, info.tileHeight
 	z.sx, z.sy = z.w / info.layerWidth, z.h / info.layerHeight
-	-- Ciudad: su mapa entero, con su máscara o el borde redondo de OpenMap.
+	-- Ciudad: su mapa entero, con su máscara o el borde redondo.
 	if z.ciudad then
 		if not z.base then
 			local m
-			if Lz.HayOpenMap() then
-				m = mascara(z.marco, CIUDAD_MASCARA[z.id] and (OM .. "MapCityMask\\" .. z.id) or (OM .. "MapFeatherRound"))
+			if Lz.HayTexturas() then
+				m = mascara(z.marco, CIUDAD_MASCARA[z.id] and (TX .. "MapCityMask\\" .. z.id) or (TX .. "MapFeatherRound"))
 			end
 			mosaicos(z.marco, z.id, 0, 0, z.w, z.h, m, 0)
 			z.base = true
 		end
 		return
 	end
-	-- El arte base recortado a su territorio, con las texturas de OpenMap.
-	if detalleOpenMap() and TERRITORIOS[z.id] and not z.baseMarco then
+	-- El arte base recortado a su territorio, con las texturas de detalle.
+	if detalleFino() and TERRITORIOS[z.id] and not z.baseMarco then
 		local b = CreateFrame("Frame", nil, sotano)
 		b:SetSize(z.w, z.h)
 		z.baseMarco = b
-		mosaicos(b, z.id, 0, 0, z.w, z.h, mascara(b, OM .. "MapTerritory\\" .. z.id), 0)
+		mosaicos(b, z.id, 0, 0, z.w, z.h, mascara(b, TX .. "MapTerritory\\" .. z.id), 0)
 	end
 	local ZA = A.UI and A.UI.ZoneArt
 	local cada = ZA and type(ZA.EachOverlayTile) == "function" and ZA.EachOverlayTile
@@ -426,7 +427,7 @@ function Lz.Colocar(cu, cv, k, vw, vh, z)
 	capa.zonas:SetAlpha(ad)
 	capa.bases:SetAlpha(ad)
 	capa.zonas:SetShown(ad > 0.003)
-	capa.bases:SetShown(ad > 0.003 and detalleOpenMap())
+	capa.bases:SetShown(ad > 0.003 and detalleFino())
 	for _, zz in ipairs(zonas) do
 		if ad > 0.003 and cruza(zz, x0, y0, x1, y1) then sacar(zz, capa.zonas) else guardar(zz) end
 	end
@@ -455,9 +456,9 @@ end
 -- Quedan zonas por armar: la vista se vuelve a colocar en el siguiente cuadro.
 function Lz.Pendiente() return pendiente end
 
--- Detalle de OpenMap encendido o apagado: las bases se muestran o no.
+-- Detalle fino encendido o apagado: las bases se muestran o no.
 function Lz.Detalle()
-	local on = detalleOpenMap()
+	local on = detalleFino()
 	capa.bases:SetShown(on and capa.zonas:IsShown())
 	if on then Lz.Rehacer() end
 end

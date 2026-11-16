@@ -223,8 +223,8 @@ local function extraCuadro(g)
 			local quien = (re.propio or not re.quien) and "" or (" " .. L["(con %s)"]:format(re.quien))
 			tip:AddLine(L["Receta: %s%s. Cada unidad rinde ≈ %s."]:format(re.rec.n or "?", quien, M.Dinero(re.valor)), r, gg, b, true)
 		end
-		if c.subasta and c.subasta.fuente == "auctionator" then
-			tip:AddLine(L["Precio de la subasta tomado de Auctionator."], r, gg, b, true)
+		if c.subasta and c.subasta.fuente == "otro" then
+			tip:AddLine(L["Precio de la subasta tomado de otro addon de subastas."], r, gg, b, true)
 		end
 		tip:AddLine(L["Comisión de la subasta estimada: %d%%."]:format(floor(M.Comision() * 100 + 0.5)), r, gg, b, true)
 	end
@@ -364,8 +364,8 @@ local function controles()
 			format = function(v) return L["%d días"]:format(floor((v or 0) + 0.5)) end,
 			help = L["Los precios cambian: después de estos días Alfa te recuerda escanear otra vez."] },
 	}
-	if M.HayAuctionator() then
-		lista[#lista + 1] = { kind = "toggle", key = M.ID .. ".auctionator", label = L["Usar los precios de Auctionator si faltan"],
+	if M.HayOtroPrecio() then
+		lista[#lista + 1] = { kind = "toggle", key = M.ID .. ".respaldo", label = L["Usar los precios de otro addon de subastas si faltan"],
 			help = L["Solo cuando Alfa no tiene precio para un objeto."] }
 	end
 	lista[#lista + 1] = { kind = "button", label = L["Borrar los precios de este reino"], button = L["Borrar"], danger = true,
@@ -442,7 +442,7 @@ local function construir(view)
 		local fecha, objetos = M.Escaneo()
 		local cuantos = M.CuantosPrecios()
 		local chipTexto, chipColor, texto
-		if cuantos == 0 and not M.HayAuctionator() then
+		if cuantos == 0 and not M.HayOtroPrecio() then
 			chipTexto, chipColor = L["Sin precios"], "warning"
 			texto = L["Abre la casa de subastas y pulsa «Escanear con Alfa» para saber cuánto valen tus objetos."]
 		elseif not fecha then
@@ -458,8 +458,8 @@ local function construir(view)
 		if tot.sinPrecio > 0 then
 			texto = texto .. " " .. L["%d de tus objetos aún no tienen precio de subasta."]:format(tot.sinPrecio)
 		end
-		if M.HayAuctionator() and M.Ajuste("auctionator") then
-			texto = texto .. " " .. L["Si falta un precio, Alfa usa el de Auctionator."]
+		if M.HayOtroPrecio() and M.Ajuste("respaldo") then
+			texto = texto .. " " .. L["Si falta un precio, Alfa usa el de tu otro addon de subastas."]
 		end
 		local cw = pintarChip(estadoChip, chipTexto, chipColor)
 		estadoChip:ClearAllPoints()
@@ -670,7 +670,7 @@ N.Modulo({
 	id = M.ID, nombre = L["Comercio"], icono = "qol-coin", orden = 45, comando = M.ID,
 	subtitulo = L["¿Vender, subastar o transformar? Lo que más oro te deja con cada objeto."],
 	ajustes = {
-		tooltip = true, boton = true, busquedas = true, auctionator = true,
+		tooltip = true, boton = true, busquedas = true, respaldo = true,
 		comision = 5, desencantar = "auto", diasViejo = 3,
 	},
 	construir = construir,

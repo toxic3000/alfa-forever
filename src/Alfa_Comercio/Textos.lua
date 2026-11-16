@@ -28,7 +28,7 @@ M.EN = {
 	["Precios al día"] = "Prices up to date",
 	["Último escaneo %s · %s objetos con precio."] = "Last scan %s · %s items with a price.",
 	["%d de tus objetos aún no tienen precio de subasta."] = "%d of your items have no auction price yet.",
-	["Si falta un precio, Alfa usa el de Auctionator."] = "When a price is missing, Alfa uses Auctionator's.",
+	["Si falta un precio, Alfa usa el de tu otro addon de subastas."] = "When a price is missing, Alfa uses the one from your other auction addon.",
 	["Escanear ahora"] = "Scan now",
 	["Escaneando..."] = "Scanning...",
 	["Espera %s"] = "Wait %s",
@@ -59,7 +59,7 @@ M.EN = {
 	["Desencantar: ≈ %s por objeto%s. Pide Encantamiento %d."] = "Disenchant: ≈ %s per item%s. Needs Enchanting %d.",
 	["Faltan precios de algunos materiales."] = "Some materials have no price yet.",
 	["Receta: %s%s. Cada unidad rinde ≈ %s."] = "Recipe: %s%s. Each unit yields ≈ %s.",
-	["Precio de la subasta tomado de Auctionator."] = "Auction price taken from Auctionator.",
+	["Precio de la subasta tomado de otro addon de subastas."] = "Auction price taken from another auction addon.",
 	["Comisión de la subasta estimada: %d%%."] = "Estimated auction house cut: %d%%.",
 
 	-- Recetas
@@ -93,7 +93,7 @@ M.EN = {
 	["Avisar cuando los precios tengan más de"] = "Warn when prices are older than",
 	["%d días"] = "%d days",
 	["Los precios cambian: después de estos días Alfa te recuerda escanear otra vez."] = "Prices change: after these many days Alfa reminds you to scan again.",
-	["Usar los precios de Auctionator si faltan"] = "Use Auctionator's prices when missing",
+	["Usar los precios de otro addon de subastas si faltan"] = "Use another auction addon's prices when missing",
 	["Solo cuando Alfa no tiene precio para un objeto."] = "Only when Alfa has no price for an item.",
 	["Borrar los precios de este reino"] = "Delete this realm's prices",
 	["Borrar"] = "Delete",

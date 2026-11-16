@@ -76,7 +76,7 @@ M.EN = {
 	["Juntar nodos cercanos al alejar"] = "Group nearby nodes when zoomed out",
 	["Los nodos que se pisarían en pantalla van en un solo pin con su cantidad. Al acercar el mapa se separan."] = "Nodes that would overlap on screen share one pin with their count. Zoom in and they split.",
 	["Usar la base de datos incluida"] = "Use the included database",
-	["Los nodos que trae Alfa (los de GatherLite). Sin esto solo ves los que tú descubriste."] = "The nodes Alfa ships with (GatherLite's). Without it you only see the ones you found.",
+	["Los nodos que trae Alfa. Sin esto solo ves los que tú descubriste."] = "The nodes Alfa ships with. Without it you only see the ones you found.",
 	["Con el módulo Mundo, estos tipos también son capas en su control de capas."] = "With the World module these kinds are also layers in its layer control.",
 
 	-- Resumen e historial
@@ -101,9 +101,9 @@ M.EN = {
 
 	-- Datos
 	["Datos"] = "Data",
-	["Traer lo de GatherLite"] = "Bring over GatherLite's",
-	["Copia los nodos que recolectaste con GatherLite (debe estar activo). Ya se hace solo la primera vez."] = "Copies the nodes you gathered with GatherLite (it must be enabled). It already happens on its own the first time.",
-	["Se trajeron %d nodos de GatherLite."] = "Brought over %d nodes from GatherLite.",
+	["Importar nodos de otro addon de recolección"] = "Import nodes from another gathering addon",
+	["Copia los nodos que recolectaste con otro addon de recolección (debe estar activo). Ya se hace solo la primera vez."] = "Copies the nodes you gathered with another gathering addon (it must be enabled). It already happens on its own the first time.",
+	["Se trajeron %d nodos de otro addon de recolección."] = "Brought over %d nodes from another gathering addon.",
 	["Borrar lo que descubrí"] = "Delete what I found",
 	["Quita los nodos que anotaste tú. La base incluida se queda."] = "Removes the nodes you recorded. The included database stays.",
 	["¿Borrar lo que descubriste?"] = "Delete what you found?",
@@ -113,15 +113,15 @@ M.EN = {
 	["¿Borrar el historial?"] = "Delete the history?",
 	["Se borran las sesiones, las zonas y los objetos de este personaje. No se puede deshacer."] = "This character's sessions, zones and items are deleted. This can't be undone.",
 	["La base incluida trae %s lugares en %d zonas. Tú descubriste %s."] = "The included database has %s spots in %d zones. You found %s.",
-	["GatherLite sigue activo: Alfa ya hace lo mismo, así que puedes desactivarlo para no ver los nodos dos veces."] = "GatherLite is still enabled: Alfa does the same, so you can turn it off to avoid seeing nodes twice.",
+	["Otro addon de recolección sigue activo: Alfa ya hace lo mismo, así que puedes desactivarlo para no ver los nodos dos veces."] = "Another gathering addon is still enabled: Alfa does the same, so you can turn it off to avoid seeing nodes twice.",
 
 	-- Módulo y comandos
 	["Minería, hierbas, pesca y tesoros en tu mapa y minimapa, con rutas de farmeo e historial."] = "Mining, herbs, fishing and treasures on your map and minimap, with farming routes and history.",
 	["Primero crea una ruta: /alfa recoleccion ruta"] = "Create a route first: /alfa recoleccion ruta",
 	["Nodos visibles."] = "Nodes shown.",
 	["Nodos ocultos."] = "Nodes hidden.",
-	["GatherLite no está activo."] = "GatherLite is not enabled.",
+	["No hay otro addon de recolección activo."] = "No other gathering addon is enabled.",
 	["Uso: /alfa recoleccion [ruta [mineria|hierbas|pesca|tesoros] | guiar | parar | mapa | minimapa | importar]"] = "Usage: /alfa recoleccion [ruta [mineria|hierbas|pesca|tesoros] | guiar | parar | mapa | minimapa | importar]",
 	["Abre Recolección. Con «ruta», crea y sigue una ruta de farmeo en tu zona."] = "Opens Gathering. With \"ruta\", creates and follows a farming route in your zone.",
-	["Recolección: se trajeron %d nodos que recolectaste con GatherLite."] = "Gathering: brought over %d nodes you gathered with GatherLite.",
+	["Recolección: se trajeron %d nodos que recolectaste con otro addon."] = "Gathering: brought over %d nodes you gathered with another addon.",
 }

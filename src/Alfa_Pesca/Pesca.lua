@@ -1,9 +1,8 @@
 -- Alfa - Pesca (Toxic / La Jauría). GPL-3.0.
 --
 -- Pescar con una sola tecla: la tecla lanza Pesca y, mientras el corcho está
--- en el agua, esa misma tecla lo recoge. Tiene las funciones y las opciones de
--- Better Fishing, escritas desde cero (Better Fishing no tiene licencia libre:
--- se leyó para saber qué hace, no se copió nada).
+-- en el agua, esa misma tecla lo recoge. Además: autobotín, sonido amplificado,
+-- nombres ocultos mientras pescas, doble clic derecho e ícono sobre el corcho.
 --
 -- Cómo funciona (todo con una tecla o un clic del jugador, nunca solo):
 --   * AlfaPescaBoton es un botón seguro con "/cast [nocombat,noflying] Pesca".
@@ -17,8 +16,9 @@
 --     recargar o al salir. Los valores originales también se guardan en disco
 --     mientras se pesca: si el juego se cierra de golpe, se restauran al entrar.
 --   * Doble clic derecho (opcional): AlfaPescaClic y BUTTON2, el mismo truco.
---   * Si Better Fishing está cargado, Alfa no liga nada ni cambia ajustes y
---     avisa una vez. Recuerda su tecla y la toma sola cuando lo desactives.
+--   * Si otro addon de pesca está cargado (Compat.lua), Alfa no liga nada ni
+--     cambia ajustes y avisa una vez. Recuerda su tecla y la toma sola cuando
+--     lo desactives.
 
 local ADDON, M = ...
 local N = AlfaNucleo
@@ -30,7 +30,7 @@ local ID = "pesca"
 local ACCION = "CLICK AlfaPescaBoton:LeftButton"
 M.ID, M.ACCION = ID, ACCION
 
--- Valores por omisión: las opciones que Toxic tiene en Better Fishing.
+-- Valores por omisión: los que usa Toxic al pescar.
 M.AJUSTES = {
 	activo = true,          -- interruptor general
 	autobotin = true,       -- recoger todo lo pescado aunque el botín automático esté apagado
@@ -61,7 +61,7 @@ local RANGOS = { 18248, 7732, 7731, 7620 }
 
 -- Estado de la sesión de pesca (nada de esto se guarda salvo `respaldo`).
 local E = {
-	bf = false,             -- Better Fishing cargado: Alfa en pausa
+	otro = false,           -- otro addon de pesca cargado (su entrada de Compat.lua): Alfa en pausa
 	respaldo = nil,         -- CVar -> valor original, mientras están cambiados
 	puestos = {},           -- cvar en minúsculas -> { nombre, valor } que puso Alfa
 	teclaPuesta = false,    -- la tecla está en INTERACTTARGET
@@ -85,7 +85,7 @@ end
 
 local function enCombate() return InCombatLockdown and InCombatLockdown() and true or false end
 
-local function habilitado() return opt("activo") and not E.bf and true or false end
+local function habilitado() return opt("activo") and not E.otro and true or false end
 M.Habilitado = habilitado
 
 -- La página se vuelve a dibujar cuando algo cambia (Pagina.lua pone M.alCambiar).
@@ -464,7 +464,7 @@ local function restaurarLuego()
 	end)
 end
 
--- Todo fuera: CVars, tecla y doble clic (apagar, Better Fishing, combate).
+-- Todo fuera: CVars, tecla y doble clic (apagar, otro addon de pesca, combate).
 function M.Soltar()
 	cancelarRestaurar()
 	if E.respaldo then M.Restaurar() end
@@ -699,53 +699,68 @@ end)
 A.RegisterEvent("PLAYER_EQUIPMENT_CHANGED", function() M.Avisar() end)
 
 ---------------------------------------------------------------------------
--- Better Fishing: no chocar, tomar sus opciones y, al dejarlo, su tecla
+-- Otro addon de pesca (Compat.lua): no chocar, tomar sus opciones y, al
+-- dejarlo, su tecla
 ---------------------------------------------------------------------------
 
-local function detectarBF()
+local OTROS = M.OTROS and M.OTROS.pesca or {}
+
+local function cargado(carpeta)
 	local f = C_AddOns and C_AddOns.IsAddOnLoaded
-	if not f then return false end
-	local ok, cargado = pcall(f, "BetterFishing")
-	return ok and cargado == true
+	if not (f and carpeta) then return false end
+	local ok, si = pcall(f, carpeta)
+	return ok and si == true
+end
+
+-- La entrada del primer addon de pesca cargado, o false.
+local function detectarOtro()
+	for _, o in ipairs(OTROS) do
+		if cargado(o.carpeta) then return o end
+	end
+	return false
+end
+
+-- La acción de tecla de algún addon de pesca conocido.
+local function accionDeOtro(accion)
+	for _, o in ipairs(OTROS) do
+		if o.accion and o.accion == accion then return true end
+	end
+	return false
 end
 
 -- Sus opciones, una sola vez, como punto de partida.
-local DE_BF = {
-	{ "autoLoot", "autobotin" }, { "hideNamePlates", "ocultarNombres" }, { "enhanceSounds", "sonido" },
-	{ "doubleClickEnabled", "dobleClic" }, { "doubleClickForce", "montado" }, { "recastOnDoubleClick", "relanzar" },
-}
-local function importarBF()
+local function importarOtro(o)
 	local d = N.Datos(ID)
-	local db = rawget(_G, "BetterFishingDB")
-	if d.importadoBF or type(db) ~= "table" then return end
-	for _, par in ipairs(DE_BF) do N.Set(ID, par[2], db[par[1]] == true) end
-	if type(db.enhanceSoundsScale) == "number" then
-		N.Set(ID, "volumen", math.max(0, math.min(1, db.enhanceSoundsScale)))
+	local db = o.guardado and rawget(_G, o.guardado)
+	if d.importadoOtro or type(db) ~= "table" then return end
+	for _, par in ipairs(o.opciones or {}) do N.Set(ID, par[2], db[par[1]] == true) end
+	if o.volumen and type(db[o.volumen]) == "number" then
+		N.Set(ID, "volumen", math.max(0, math.min(1, db[o.volumen])))
 	end
-	if type(db.doubleClickSpeed) == "number" then
-		N.Set(ID, "velocidad", math.max(0.1, math.min(0.8, db.doubleClickSpeed)))
+	if o.velocidad and type(db[o.velocidad]) == "number" then
+		N.Set(ID, "velocidad", math.max(0.1, math.min(0.8, db[o.velocidad])))
 	end
-	N.Set(ID, "iconoCorcho", db.objectIconDisabled ~= true)
-	d.importadoBF = true
+	if o.sinIcono then N.Set(ID, "iconoCorcho", db[o.sinIcono] ~= true) end
+	d.importadoOtro = true
 end
 
-local function recordarTeclasBF()
-	if not GetBindingKey then return end
-	local ok, k1, k2 = pcall(GetBindingKey, "BETTERFISHINGKEY")
+local function recordarTeclasOtro(o)
+	if not (GetBindingKey and o.accion) then return end
+	local ok, k1, k2 = pcall(GetBindingKey, o.accion)
 	if not ok then return end
 	local t = {}
 	if type(k1) == "string" and k1 ~= "" then t[#t + 1] = k1 end
 	if type(k2) == "string" and k2 ~= "" then t[#t + 1] = k2 end
-	if #t > 0 then N.Datos(ID).teclasBF = t end
+	if #t > 0 then N.Datos(ID).teclasOtro = t end
 end
 
--- Sin Better Fishing y sin tecla propia: la que usabas allá, si sigue libre.
-local function tomarTeclasBF()
+-- Sin el otro addon y sin tecla propia: la que usabas allá, si sigue libre.
+local function tomarTeclasOtro()
 	local d = N.Datos(ID)
-	local lista = d.teclasBF
+	local lista = d.teclasOtro
 	if type(lista) ~= "table" then return end
 	if #M.Teclas() > 0 or not (SetBinding and GetBindingAction) then
-		d.teclasBF = nil
+		d.teclasOtro = nil
 		return
 	end
 	N.FueraDeCombate(function()
@@ -754,37 +769,37 @@ local function tomarTeclasBF()
 			if type(k) == "string" then
 				local ok, accion = pcall(GetBindingAction, k)
 				accion = ok and type(accion) == "string" and accion or ""
-				if accion == "" or accion == "BETTERFISHINGKEY" then
+				if accion == "" or accionDeOtro(accion) then
 					local okB, res = pcall(SetBinding, k, ACCION)
 					if okB and res ~= false then hechas[#hechas + 1] = M.TextoTecla(k) end
 				end
 			end
 		end
-		d.teclasBF = nil
+		d.teclasOtro = nil
 		if #hechas == 0 then return end
 		if SaveBindings then
 			local okS, set = pcall(GetCurrentBindingSet)
 			pcall(SaveBindings, okS and set or 1)
 		end
-		N.Imprimir(string.format(L["Tu tecla de Better Fishing (%s) ahora pesca con Alfa."], table.concat(hechas, ", ")))
+		N.Imprimir(string.format(L["La tecla que usabas en tu otro addon de pesca (%s) ahora pesca con Alfa."], table.concat(hechas, ", ")))
 		M.Avisar()
 	end)
 end
 
 A.OnLogin(function()
-	E.bf = detectarBF()
+	E.otro = detectarOtro()
 	local d = N.Datos(ID)
-	if E.bf then
-		importarBF()
-		recordarTeclasBF()
-		if not d.avisoBF then
-			d.avisoBF = true
-			N.Imprimir(L["Better Fishing también está activo. Para que no choquen, la pesca de Alfa queda en pausa: desactiva uno de los dos en la lista de addons."])
+	if E.otro then
+		importarOtro(E.otro)
+		recordarTeclasOtro(E.otro)
+		if not d.avisoOtro then
+			d.avisoOtro = true
+			N.Imprimir(L["Otro addon de pesca está activo. Para que no choquen, la pesca de Alfa queda en pausa: desactiva uno de los dos en la lista de addons."])
 		end
 		M.Soltar()
 	else
-		d.avisoBF = nil
-		tomarTeclasBF()
+		d.avisoOtro = nil
+		tomarTeclasOtro()
 	end
 	M.PrepararBotones()
 	M.Avisar()
@@ -827,7 +842,7 @@ function M.Comando(resto)
 	resto = (type(resto) == "string" and resto or ""):lower():gsub("^%s+", ""):gsub("%s+$", "")
 	if ENCENDER[resto] then
 		N.Set(ID, "activo", true)
-		N.Imprimir(E.bf and L["Pesca de Alfa encendida, pero en pausa mientras Better Fishing esté activo."] or L["Pesca de Alfa encendida."])
+		N.Imprimir(E.otro and L["Pesca de Alfa encendida, pero en pausa mientras otro addon de pesca esté activo."] or L["Pesca de Alfa encendida."])
 	elseif APAGAR[resto] then
 		N.Set(ID, "activo", false)
 		N.Imprimir(L["Pesca de Alfa apagada. Tu tecla y tus ajustes quedan como siempre."])

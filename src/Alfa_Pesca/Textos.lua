@@ -5,9 +5,9 @@ local ADDON, M = ...
 M.EN = {
 	-- Tecla y chat
 	["Pescar: lanzar y recoger"] = "Fishing: cast and reel in",
-	["Tu tecla de Better Fishing (%s) ahora pesca con Alfa."] = "Your Better Fishing key (%s) now fishes with Alfa.",
-	["Better Fishing también está activo. Para que no choquen, la pesca de Alfa queda en pausa: desactiva uno de los dos en la lista de addons."] = "Better Fishing is also enabled. So they don't clash, Alfa's fishing is paused: disable one of the two in the AddOns list.",
-	["Pesca de Alfa encendida, pero en pausa mientras Better Fishing esté activo."] = "Alfa fishing is on, but paused while Better Fishing is enabled.",
+	["La tecla que usabas en tu otro addon de pesca (%s) ahora pesca con Alfa."] = "The key you used in your other fishing addon (%s) now fishes with Alfa.",
+	["Otro addon de pesca está activo. Para que no choquen, la pesca de Alfa queda en pausa: desactiva uno de los dos en la lista de addons."] = "Another fishing addon is enabled. So they don't clash, Alfa's fishing is paused: disable one of the two in the AddOns list.",
+	["Pesca de Alfa encendida, pero en pausa mientras otro addon de pesca esté activo."] = "Alfa fishing is on, but paused while another fishing addon is enabled.",
 	["Pesca de Alfa encendida."] = "Alfa fishing is on.",
 	["Pesca de Alfa apagada. Tu tecla y tus ajustes quedan como siempre."] = "Alfa fishing is off. Your key and your settings stay as they always are.",
 	["Registro de pesca nuevo."] = "New fishing log started.",
@@ -15,12 +15,12 @@ M.EN = {
 
 	-- Página
 	["Pesca"] = "Fishing",
-	["Lanza con una tecla y recoge con la misma, con las ayudas de Better Fishing."] = "Cast with one key and reel in with the same one, with Better Fishing's helpers.",
+	["Lanza con una tecla y recoge con la misma, con autobotín, sonido amplificado y doble clic."] = "Cast with one key and reel in with the same one, with auto loot, enhanced sound and double click.",
 	["%.2f s"] = "%.2f s",
 
 	-- Tarjeta de estado
-	["Better Fishing está activo"] = "Better Fishing is enabled",
-	["Para que no choquen, Alfa no toma tu tecla ni cambia tus ajustes. Desactiva uno de los dos en la lista de addons (pantalla de personajes) y recarga. Si dejas Alfa, tomará sola la tecla que usabas en Better Fishing."] = "So they don't clash, Alfa doesn't take your key or change your settings. Disable one of the two in the AddOns list (character screen) and reload. If you keep Alfa, it takes the key you used in Better Fishing by itself.",
+	["Otro addon de pesca está activo"] = "Another fishing addon is enabled",
+	["Para que no choquen, Alfa no toma tu tecla ni cambia tus ajustes. Desactiva uno de los dos en la lista de addons (pantalla de personajes) y recarga. Si dejas Alfa, tomará sola la tecla que usabas en el otro addon."] = "So they don't clash, Alfa doesn't take your key or change your settings. Disable one of the two in the AddOns list (character screen) and reload. If you keep Alfa, it takes the key you used in the other addon by itself.",
 	["En pausa"] = "Paused",
 	["La pesca de Alfa está apagada"] = "Alfa fishing is off",
 	["Tu tecla y tus ajustes del juego quedan como siempre. Enciéndela abajo para pescar con una sola tecla."] = "Your key and game settings stay as they always are. Turn it on below to fish with a single key.",

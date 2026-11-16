@@ -1,0 +1,21 @@
+{
+ "Copia los nodos que recolectaste con otro addon de recolección (debe estar activo). Ya se hace solo la primera vez.": "Kopiert die Vorkommen, die du mit einem anderen Sammel-Addon gesammelt hast (es muss aktiv sein). Beim ersten Mal passiert das schon von selbst.",
+ "Dibuja el arte completo de cada zona recortado a su forma, con las texturas de detalle incluidas. Sin ellas el mapa sigue completo, solo más suave entre zona y zona.": "Zeichnet die vollständige Grafik jedes Gebiets, auf seine Form zugeschnitten, mit den mitgelieferten Detailtexturen. Ohne sie ist die Karte trotzdem vollständig, nur weicher zwischen den Gebieten.",
+ "Faltan las texturas de detalle en la carpeta Media de Alfa_Mundo: el mapa se dibuja solo con el arte del juego.": "Die Detailtexturen fehlen im Media-Ordner von Alfa_Mundo: Die Karte wird nur mit der Grafik des Spiels gezeichnet.",
+ "Importar nodos de otro addon de recolección": "Vorkommen aus einem anderen Sammel-Addon importieren",
+ "La tecla que usabas en tu otro addon de pesca (%s) ahora pesca con Alfa.": "Die Taste, die du in deinem anderen Angel-Addon benutzt hast (%s), angelt jetzt mit Alfa.",
+ "Lanza con una tecla y recoge con la misma, con autobotín, sonido amplificado y doble clic.": "Mit einer Taste auswerfen und mit derselben einholen, mit automatischem Plündern, verstärktem Ton und Doppelklick.",
+ "Los nodos que trae Alfa. Sin esto solo ves los que tú descubriste.": "Die Vorkommen, die Alfa mitbringt. Ohne diese Option siehst du nur die, die du selbst entdeckt hast.",
+ "No hay otro addon de recolección activo.": "Kein anderes Sammel-Addon ist aktiv.",
+ "Otro addon de pesca está activo": "Ein anderes Angel-Addon ist aktiv",
+ "Otro addon de pesca está activo. Para que no choquen, la pesca de Alfa queda en pausa: desactiva uno de los dos en la lista de addons.": "Ein anderes Angel-Addon ist aktiv. Damit sie sich nicht in die Quere kommen, pausiert Alfas Angeln: Deaktiviere eines der beiden in der AddOn-Liste.",
+ "Otro addon de recolección sigue activo: Alfa ya hace lo mismo, así que puedes desactivarlo para no ver los nodos dos veces.": "Ein anderes Sammel-Addon ist noch aktiv: Alfa macht dasselbe, du kannst es also deaktivieren, damit du die Vorkommen nicht doppelt siehst.",
+ "Para que no choquen, Alfa no toma tu tecla ni cambia tus ajustes. Desactiva uno de los dos en la lista de addons (pantalla de personajes) y recarga. Si dejas Alfa, tomará sola la tecla que usabas en el otro addon.": "Damit sie sich nicht in die Quere kommen, übernimmt Alfa weder deine Taste noch ändert es deine Einstellungen. Deaktiviere eines der beiden in der AddOn-Liste (Charakterauswahl) und lade neu. Behältst du Alfa, übernimmt es von selbst die Taste, die du im anderen Addon benutzt hast.",
+ "Pesca de Alfa encendida, pero en pausa mientras otro addon de pesca esté activo.": "Alfas Angeln ist an, aber pausiert, solange ein anderes Angel-Addon aktiv ist.",
+ "Precio de la subasta tomado de otro addon de subastas.": "Auktionspreis aus einem anderen Auktions-Addon übernommen.",
+ "Recolección: se trajeron %d nodos que recolectaste con otro addon.": "Sammeln: %d Vorkommen übernommen, die du mit einem anderen Addon gesammelt hast.",
+ "Se trajeron %d nodos de otro addon de recolección.": "%d Vorkommen aus einem anderen Sammel-Addon übernommen.",
+ "Si falta un precio, Alfa usa el de tu otro addon de subastas.": "Fehlt ein Preis, nutzt Alfa den aus deinem anderen Auktions-Addon.",
+ "Tienes otro addon de bolsas activo: mientras lo esté, Alfa no reemplaza tus bolsas. Igual puedes abrir la ventana de Alfa desde aquí.": "Du hast ein anderes Taschen-Addon aktiv: Solange es aktiv ist, ersetzt Alfa deine Taschen nicht. Du kannst Alfas Fenster trotzdem von hier öffnen.",
+ "Usar los precios de otro addon de subastas si faltan": "Preise eines anderen Auktions-Addons nutzen, wenn welche fehlen"
+}

@@ -1,0 +1,21 @@
+{
+ "Copia los nodos que recolectaste con otro addon de recolección (debe estar activo). Ya se hace solo la primera vez.": "Copia os pontos que você coletou com outro addon de coleta (ele precisa estar ativo). Isso já é feito sozinho na primeira vez.",
+ "Dibuja el arte completo de cada zona recortado a su forma, con las texturas de detalle incluidas. Sin ellas el mapa sigue completo, solo más suave entre zona y zona.": "Desenha a arte completa de cada zona recortada no formato dela, com as texturas de detalhe incluídas. Sem elas o mapa continua completo, só mais suave entre uma zona e outra.",
+ "Faltan las texturas de detalle en la carpeta Media de Alfa_Mundo: el mapa se dibuja solo con el arte del juego.": "Faltam as texturas de detalhe na pasta Media de Alfa_Mundo: o mapa é desenhado só com a arte do jogo.",
+ "Importar nodos de otro addon de recolección": "Importar pontos de outro addon de coleta",
+ "La tecla que usabas en tu otro addon de pesca (%s) ahora pesca con Alfa.": "A tecla que você usava no seu outro addon de pesca (%s) agora pesca com o Alfa.",
+ "Lanza con una tecla y recoge con la misma, con autobotín, sonido amplificado y doble clic.": "Lance com uma tecla e recolha com a mesma, com saque automático, som amplificado e clique duplo.",
+ "Los nodos que trae Alfa. Sin esto solo ves los que tú descubriste.": "Os pontos que vêm com o Alfa. Sem isto, você só vê os que descobriu.",
+ "No hay otro addon de recolección activo.": "Não há outro addon de coleta ativo.",
+ "Otro addon de pesca está activo": "Outro addon de pesca está ativo",
+ "Otro addon de pesca está activo. Para que no choquen, la pesca de Alfa queda en pausa: desactiva uno de los dos en la lista de addons.": "Outro addon de pesca está ativo. Para eles não entrarem em conflito, a pesca do Alfa fica em pausa: desative um dos dois na lista de addons.",
+ "Otro addon de recolección sigue activo: Alfa ya hace lo mismo, así que puedes desactivarlo para no ver los nodos dos veces.": "Outro addon de coleta continua ativo: o Alfa já faz a mesma coisa, então você pode desativá-lo para não ver os pontos duas vezes.",
+ "Para que no choquen, Alfa no toma tu tecla ni cambia tus ajustes. Desactiva uno de los dos en la lista de addons (pantalla de personajes) y recarga. Si dejas Alfa, tomará sola la tecla que usabas en el otro addon.": "Para eles não entrarem em conflito, o Alfa não pega sua tecla nem muda suas opções. Desative um dos dois na lista de addons (tela de personagens) e recarregue. Se ficar com o Alfa, ele vai pegar sozinho a tecla que você usava no outro addon.",
+ "Pesca de Alfa encendida, pero en pausa mientras otro addon de pesca esté activo.": "Pesca do Alfa ativada, mas em pausa enquanto outro addon de pesca estiver ativo.",
+ "Precio de la subasta tomado de otro addon de subastas.": "Preço de leilão tirado de outro addon de leilão.",
+ "Recolección: se trajeron %d nodos que recolectaste con otro addon.": "Coleta: foram trazidos %d pontos que você coletou com outro addon.",
+ "Se trajeron %d nodos de otro addon de recolección.": "Foram trazidos %d pontos de outro addon de coleta.",
+ "Si falta un precio, Alfa usa el de tu otro addon de subastas.": "Se faltar um preço, o Alfa usa o do seu outro addon de leilão.",
+ "Tienes otro addon de bolsas activo: mientras lo esté, Alfa no reemplaza tus bolsas. Igual puedes abrir la ventana de Alfa desde aquí.": "Você tem outro addon de bolsas ativo: enquanto ele estiver ativo, o Alfa não substitui suas bolsas. Mesmo assim, você pode abrir a janela do Alfa por aqui.",
+ "Usar los precios de otro addon de subastas si faltan": "Usar os preços de outro addon de leilão se faltarem"
+}

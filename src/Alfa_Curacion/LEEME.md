@@ -1,6 +1,6 @@
 # Alfa - Curación
 
-Página **Curación** de la ventana de Alfa (orden 16, ícono `plus`). Marcos de grupo y banda para curar con un clic, como Clique, HealBot o VuhDo pero sencillo: cualquier curandero (Sacerdote, Druida, Paladín, Chamán) lo usa sin configurar nada, y las demás clases lo usan para buffs y para seleccionar.
+Página **Curación** de la ventana de Alfa (orden 16, ícono `plus`). Marcos de grupo y banda para curar con un clic, de la forma más sencilla: cualquier curandero (Sacerdote, Druida, Paladín, Chamán) lo usa sin configurar nada, y las demás clases lo usan para buffs y para seleccionar.
 
 ## Qué hace
 

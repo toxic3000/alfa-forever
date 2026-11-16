@@ -1,10 +1,10 @@
 -- Alfa - Builds: el módulo (Toxic / La Jauría). GPL-3.0.
 --
--- Reemplaza a Sonah (rotación y guía de talentos) y a Pawn (comparar
--- equipo) con piezas propias: asistente de builds por objetivo y estilo,
--- talentos aplicables con un clic fuera de combate, pesos que alimentan las
--- flechas de mejora del motor, equipo meta con "cómo conseguirlo", ayudas
--- de combate oficiales y builds para compartir.
+-- Guía de talentos, ayuda de rotación y comparar equipo, con piezas propias:
+-- asistente de builds por objetivo y estilo, talentos aplicables con un clic
+-- fuera de combate, pesos que alimentan las flechas de mejora del motor,
+-- equipo meta con "cómo conseguirlo", ayudas de combate oficiales y builds
+-- para compartir.
 --
 --   M.Eleccion() -> { objetivo, estilo, spec, build, exacto }
 --   M.ElegirBuild(objetivo, estilo, spec?)  ;  M.UsarBuild(id)

@@ -1,6 +1,6 @@
--- Alfa - Comodidades: el cuadro de información de las unidades (como
--- TipShowTarget, TipShowRank, TipHideInCombat y TipHideShiftOverride de
--- Leatrix Plus, con código propio). GPL-3.0.
+-- Alfa - Comodidades: el cuadro de información de las unidades (a quién
+-- apunta, rango de hermandad, ocultarlo en combate y verlo con Mayús).
+-- GPL-3.0.
 --
 --   A quién apunta: una línea "Objetivo: ..." con el objetivo de la unidad
 --     (tú, en el color del acento; un jugador, en el color de su clase; una
@@ -19,7 +19,7 @@
 --
 -- Cliente: UnitExists, UnitIsUnit, UnitName, UnitIsPlayer, UnitClass,
 -- UnitReaction (UnitDocumentation); GetGuildInfo no está en la documentación
--- generada (la usa Leatrix Plus en Forever): va protegida con pcall.
+-- generada (otros addons la usan en Forever): va protegida con pcall.
 -- MODIFIER_STATE_CHANGED (KeyBindingsDocumentation); GameTooltip_SetDefaultAnchor
 -- (Blizzard_SharedXML/SharedTooltipTemplates.lua).
 

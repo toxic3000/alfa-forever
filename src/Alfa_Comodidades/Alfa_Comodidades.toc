@@ -1,6 +1,6 @@
 ## Interface: 16001
 ## Title: |cff8be04eAlfa|r - Comodidades
-## Notes: Comodidades de Leatrix Plus dentro de Alfa: minimapa, colores de clase, cuadro de información, probador, vuelo, misiones y sonidos.
+## Notes: Comodidades dentro de Alfa: minimapa, colores de clase, cuadro de información, probador, vuelo, misiones y sonidos.
 ## Author: Toxic - La Jauria
 ## Version: dev
 ## X-License: GPL-3.0-only

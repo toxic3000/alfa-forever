@@ -7,8 +7,7 @@
 -- con el reino ("Ana Smith-CAMWOWUS1Realm2PvP") o con guion ("Ana-Smith").
 -- U.Clave los deja en una sola forma para compararlos: sin el reino cuando
 -- es el propio o uno de los reinos numerados de Forever, en minúsculas y con
--- un solo espacio entre las partes. La idea de juntar las dos formas del
--- apellido viene de OpenMap (MIT, ver LICENSE-OpenMap.txt).
+-- un solo espacio entre las partes (de dónde viene la idea: CREDITOS.md).
 --
 -- Toda llamada al juego se comprueba antes y lo que llega "secreto" (en
 -- combate o en mazmorras) se trata como desconocido.

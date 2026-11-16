@@ -1,5 +1,4 @@
--- Alfa - Comodidades: la siguiente parada del vuelo (como FlightBarNextHop
--- de Leatrix Plus, con código propio). GPL-3.0.
+-- Alfa - Comodidades: la siguiente parada del vuelo. GPL-3.0.
 --
 -- El motor ya muestra, mientras vuelas, el destino, el tiempo que falta y la
 -- barra de progreso (Maps/FlightTimer.lua, ajuste maps.flightTimer). Lo que

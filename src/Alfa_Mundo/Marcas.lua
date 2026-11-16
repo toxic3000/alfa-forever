@@ -416,7 +416,7 @@ local function punto(i)
 	f:SetFrameLevel(encima:GetFrameLevel() + 60)
 	f.t = f:CreateTexture(nil, "ARTWORK")
 	f.t:SetAllPoints()
-	-- El punto de grupo del juego (atlas de Forever, como lo usa OpenMap);
+	-- El punto de grupo del juego (atlas de Forever);
 	-- si falta, el disco de los pines del motor.
 	if not (f.t.SetAtlas and f.t:SetAtlas("WhiteCircle-RaidBlips")) then f.t:SetTexture(NAV .. "pin-fill") end
 	f:SetScript("OnEnter", function(self)

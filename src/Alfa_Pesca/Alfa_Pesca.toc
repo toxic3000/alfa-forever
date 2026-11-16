@@ -1,6 +1,6 @@
 ## Interface: 16001
 ## Title: |cff8be04eAlfa|r - Pesca
-## Notes: Lanza con una tecla y recoge con la misma, como en Better Fishing.
+## Notes: Lanza con una tecla y recoge con la misma.
 ## Author: Toxic - La Jauria
 ## Version: dev
 ## X-License: GPL-3.0-only
@@ -8,5 +8,6 @@
 ## Category: Alfa
 
 Textos.lua
+Compat.lua
 Pesca.lua
 Pagina.lua

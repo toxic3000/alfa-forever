@@ -12,7 +12,7 @@ Responde la pregunta "¿lo vendo al comerciante, lo subasto o lo convierto en al
 - **Consejo.** Para cada objeto compara vender, subastar (menos la comisión) y transformar (receta o desencantar). Recomienda lo que más oro deja si gana por lo menos un 10 % a venderlo; si nada da oro, dice que lo guardes.
 - **Cuadro del objeto.** Dos líneas al pasar el ratón: `Subasta: 1o 20p (hace 3 h) · Comerciante: 15p` y `Mejor: subastar 1o 14p (+660%)`.
 - **Página "Comercio".** Lo que llevas en las bolsas, ordenado por lo que más ganas, con un chip de color (Vender, Subastar, Transformar, Guardar), filtros por chip, el total si sigues los consejos contra venderlo todo, la antigüedad de los precios (con aviso para escanear) y tus recetas que dejan ganancia.
-- **Auctionator.** Si está instalado, sus precios se usan solo cuando Alfa no tiene uno, a través de su API pública (`Auctionator.API.v1`).
+- **Otro addon de subastas.** Si hay uno instalado de la lista de `Compat.lua`, sus precios se usan solo cuando Alfa no tiene uno, a través de su API pública.
 
 ## Comandos
 
@@ -30,7 +30,7 @@ Responde la pregunta "¿lo vendo al comerciante, lo subasto o lo convierto en al
 | Comisión de la subasta | 5 % | Lo que se queda la subasta de cada venta (estimado) |
 | Considerar desencantar | Si tú o tus personajes pueden | O Siempre (un amigo te ayuda) o Nunca |
 | Avisar cuando los precios tengan más de | 3 días | Cuándo un precio cuenta como viejo |
-| Usar los precios de Auctionator si faltan | sí | Solo aparece si Auctionator está instalado |
+| Usar los precios de otro addon de subastas si faltan | sí | Solo aparece si hay uno instalado |
 | Borrar los precios de este reino | — | Pide confirmación |
 
 Datos: `N.Datos("comercio")` (`AlfaNucleoDB.comercio`): `reinos["Reino-Facción"]` con precios (`p`), historial (`h`), último escaneo y última petición; `comprar` (precios del comerciante); `recetas` y `encantar` por personaje.
@@ -54,4 +54,4 @@ Datos: `N.Datos("comercio")` (`AlfaNucleoDB.comercio`): `reinos["Reino-Facción"
 8. Con Encantamiento: un objeto verde o azul muestra "Desencantar ≈ ..." y comparar con lo que sale de verdad al desencantar algunos.
 9. Pasar el ratón por objetos de las bolsas, del comerciante y de la subasta: las dos líneas de Alfa aparecen una sola vez y sin errores.
 10. En la página: filtros por chip, totales, orden por ganancia, aviso de precios viejos y la sección Ajustes (cada ajuste se guarda tras `/reload`).
-11. Con Auctionator instalado: un objeto sin precio de Alfa toma el de Auctionator y el ajuste aparece.
+11. Con otro addon de subastas instalado: un objeto sin precio de Alfa toma el suyo y el ajuste aparece.

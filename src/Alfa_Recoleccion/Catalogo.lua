@@ -7,7 +7,7 @@
 --
 -- Cada grupo es un recurso tal como lo ve quien juega ("Filón de cobre"):
 --   tipo     "mineria" | "hierbas" | "pesca" | "tesoros"
---   clave    nombre estable (el de GatherLite), se guarda en los datos
+--   clave    nombre estable (el de los datos originales), se guarda en los datos
 --   ids      IDs de objeto del juego que son este recurso
 --   niveles  { mínimo, amarillo, verde, gris } de la habilidad (o solo el mínimo)
 --   item     objeto cuyo ícono lo representa en el mapa (C_Item.GetItemIconByID)
@@ -62,7 +62,7 @@ R("mineria", "small_thorium_vein", { 324, 150082, 176643, 123848 }, { 245, 270, 
 	"Filón pequeño de torio", "Small Thorium Vein", { "Filón de torio cubierto de moco", "Ooze Covered Thorium Vein" })
 R("mineria", "rich_thorium_vein", { 175404, 176644, 177388 }, { 275, 290, 300, 350 }, 10620,
 	"Filón de torio enriquecido", "Rich Thorium Vein", { "Filón de torio enriquecido cubierto de moco", "Ooze Covered Rich Thorium Vein" })
--- Recursos de Forever: GatherLite solo conoce su nivel mínimo.
+-- Recursos de Forever: los datos originales solo traen su nivel mínimo.
 R("mineria", "cold_iron_deposit", { 439558 }, { 125 }, 2772, "Depósito de hierro frío", "Cold Iron Deposit")
 R("mineria", "fools_gold_vein", { 439628 }, { 175 }, 2776, "Filón de oro de tontos", "Fool's Gold Vein", { "Filón de oro falso" })
 R("mineria", "starsilver_vein", { 439778 }, { 245 }, 7911, "Veta de plata estelar", "Starsilver Vein", { "Filón de plataestelar" })
@@ -141,7 +141,7 @@ R("tesoros", "mossy_footlocker", { 179493, 179497 }, nil, nil, "Baúl mohoso", "
 R("tesoros", "scarlet_footlocker", { 179498 }, nil, nil, "Baúl Escarlata", "Scarlet Footlocker")
 R("tesoros", "alliance_strongbox", { 3714, 105570 }, nil, nil, "Caja fuerte de la Alianza", "Alliance Strongbox")
 R("tesoros", "large_mithril_bound_chest", { 153468, 131978, 153469 }, nil, nil, "Cofre reforzado con mitril grande", "Large Mithril Bound Chest")
--- Los dos cofres comparten nombre en coreano; GatherLite reconoce este solo en la isla Zephras.
+-- Los dos cofres comparten nombre en coreano; los datos originales reconocen este solo en la isla Zephras.
 R("tesoros", "dented_chest", { 626718, 626752 }, nil, nil, "Cofre abollado", "Dented Chest", nil, 2521)
 
 ---------------------------------------------------------------------------

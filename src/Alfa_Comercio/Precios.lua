@@ -5,7 +5,8 @@
 -- 14 días). Los precios llegan de tres lados:
 --   * el escaneo completo (Subasta.lua: C_AuctionHouse.ReplicateItems),
 --   * lo que el jugador ya busca a mano (eventos de resultados de búsqueda),
---   * Auctionator, si está instalado, solo como respaldo (Auctionator.API.v1).
+--   * otro addon de subastas, si está instalado, solo como respaldo y por su
+--     API pública (Compat.lua).
 -- También anota lo que cuesta comprar cada objeto a un comerciante (al abrir
 -- su ventana), para el costo de los reactivos de las recetas.
 --
@@ -245,37 +246,53 @@ function M.Anotar(id, precio, cantidad, fuente, fecha, r)
 end
 
 ---------------------------------------------------------------------------
--- Respaldo: Auctionator (solo su API pública, si existe).
+-- Respaldo: otro addon de subastas (Compat.lua), solo por su API pública.
 ---------------------------------------------------------------------------
 
-local function auctionator()
-	if not M.Ajuste("auctionator") then return nil end
-	local api = type(Auctionator) == "table" and type(Auctionator.API) == "table" and Auctionator.API.v1
-	if type(api) ~= "table" then return nil end
-	return api
+local OTROS = M.OTROS and M.OTROS.precios or {}
+
+-- La tabla al final de una ruta de globales ({ "A", "B" } -> A.B), o nil.
+local function resolver(ruta)
+	local t = _G
+	for _, k in ipairs(ruta or {}) do
+		if type(t) ~= "table" then return nil end
+		t = t[k]
+	end
+	return type(t) == "table" and t or nil
 end
 
-function M.HayAuctionator()
-	local api = type(Auctionator) == "table" and type(Auctionator.API) == "table" and Auctionator.API.v1
-	return type(api) == "table" and type(api.GetAuctionPriceByItemID) == "function"
+-- La API del primer addon de la lista que esté presente, y su entrada.
+-- Con `exigir`, solo si trae la función de precio por ID.
+local function buscarOtro(exigir)
+	for _, o in ipairs(OTROS) do
+		local api = resolver(o.api)
+		if api and (not exigir or type(api[o.porId]) == "function") then return api, o end
+	end
+	return nil
 end
 
-local function precioAuctionator(id, link)
-	local api = auctionator()
+function M.HayOtroPrecio()
+	return buscarOtro(true) ~= nil
+end
+
+local function precioOtro(id, link)
+	if not M.Ajuste("respaldo") then return nil end
+	local api, o = buscarOtro(false)
 	if not api then return nil end
 	local p
-	if type(link) == "string" and type(api.GetAuctionPriceByItemLink) == "function" then
-		local ok, v = pcall(api.GetAuctionPriceByItemLink, "Alfa", link)
+	local porEnlace, porId, edad = api[o.porEnlace], api[o.porId], api[o.edad]
+	if type(link) == "string" and type(porEnlace) == "function" then
+		local ok, v = pcall(porEnlace, "Alfa", link)
 		if ok and type(v) == "number" then p = v end
 	end
-	if not p and type(api.GetAuctionPriceByItemID) == "function" then
-		local ok, v = pcall(api.GetAuctionPriceByItemID, "Alfa", id)
+	if not p and type(porId) == "function" then
+		local ok, v = pcall(porId, "Alfa", id)
 		if ok and type(v) == "number" then p = v end
 	end
 	if not p or p <= 0 then return nil end
 	local fecha
-	if type(api.GetAuctionAgeByItemID) == "function" then
-		local ok, dias = pcall(api.GetAuctionAgeByItemID, "Alfa", id)
+	if type(edad) == "function" then
+		local ok, dias = pcall(edad, "Alfa", id)
 		if ok and type(dias) == "number" then fecha = M.Ahora() - dias * DIA end
 	end
 	return p, fecha
@@ -286,15 +303,15 @@ end
 ---------------------------------------------------------------------------
 
 -- Precio de subasta por unidad (bruto), fecha, cantidad vista y fuente
--- ("alfa", "busqueda", "auctionator"). nil si no hay.
+-- ("alfa", "busqueda", "otro"). nil si no hay.
 function M.PrecioSubasta(id, link)
 	if type(id) ~= "number" then return nil end
 	local e = M.Reino().p[id]
 	if type(e) == "table" and type(e[1]) == "number" then
 		return e[1], e[2], e[3], e[4] == 1 and "alfa" or "busqueda"
 	end
-	local p, fecha = precioAuctionator(id, link)
-	if p then return p, fecha, nil, "auctionator" end
+	local p, fecha = precioOtro(id, link)
+	if p then return p, fecha, nil, "otro" end
 	return nil
 end
 

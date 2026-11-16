@@ -1,6 +1,6 @@
 # Alfa — guía a tu manada
 
-El todo en uno de **La Jauría** para World of Warcraft: Forever. Junta en un solo addon las guías, el mapa, las bolsas, los builds, la pesca, el comercio y tu manada. Reemplaza a Polestar Guides, Baganator, Syndicator, Better Fishing, DBM, DungeonJournal, GatherLite, Leatrix Maps, Leatrix Plus, OpenMap, Pawn y Sonah.
+El todo en uno de **La Jauría** para World of Warcraft: Forever. Junta en un solo addon las guías, el mapa, las bolsas, los builds, la curación, la recolección, las mazmorras, la pesca, el comercio y tu manada, con un solo estilo.
 
 Hecho por Toxic y La Jauría — [Discord](https://discord.gg/hUNjA6BJwh). Software libre bajo la GPL-3.0, construido sobre [Polestar](https://github.com/fitzforge/polestar) (GPL-3.0). Los créditos completos están en `NOTICE-ALFA.txt`, en la página «Acerca de» del juego y en el `CREDITOS.md` de cada módulo.
 
@@ -20,7 +20,7 @@ Hecho por Toxic y La Jauría — [Discord](https://discord.gg/hUNjA6BJwh). Softw
 | `/alfa comercio` | Comercio | Precios de la subasta y qué hacer con cada objeto |
 | `/alfa mazmorras` | Mazmorras | Botín por jefe, consejos y modo historia |
 | `/alfa pesca` | Pesca | Una tecla para lanzar y recoger |
-| (Calidad de vida) | Comodidades | Lo de Leatrix Plus que el motor no hacía |
+| (Calidad de vida) | Comodidades | Minimapa, colores de clase, cuadro de información, probador, vuelo, misiones y sonidos |
 
 ## Construir e instalar
 
@@ -32,6 +32,8 @@ python -I tools/build.py                        # arma dist/
 python -I tools/instalar.py                     # simula la instalación
 python -I tools/instalar.py --aplicar           # instala (con WoW cerrado)
 ```
+
+Los addons que el instalador desactiva en tu PC van en `tools/instalar_local.json` (`{"desactivar": ["Carpeta", "Prefijo-.*"]}`), que no se sube a git.
 
 Contrato de los módulos y reglas de Forever: `docs/ARQUITECTURA.md`. Plan y pendientes: `docs/PLAN.md`.
 

@@ -1,5 +1,5 @@
--- Alfa - Comodidades: el minimapa (como SquareMinimap, HideMiniAddonButtons
--- y HideMiniAddonMenu de Leatrix Plus, con código propio). GPL-3.0.
+-- Alfa - Comodidades: el minimapa (cuadrado, botones de addons ocultos y
+-- sin el menú de addons). GPL-3.0.
 --
 --   Cuadrado: la máscara del minimapa pasa a ser un cuadrado (la misma
 --     textura blanca que usa el motor para sus capas en un minimapa

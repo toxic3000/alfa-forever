@@ -1,12 +1,11 @@
--- Alfa - Comodidades: aceptar y entregar todas las misiones (como
--- AutomateQuests de Leatrix Plus, con código propio). GPL-3.0.
+-- Alfa - Comodidades: aceptar y entregar todas las misiones. GPL-3.0.
 --
 -- El motor ya acepta y entrega las misiones de la guía (behavior.autoAccept
 -- y behavior.autoTurnin, Core/Automation.lua). Esto hace lo mismo con las
 -- demás: normales, diarias y semanales, cada una con su opción. Nunca toca
 -- una ventana en la que el motor va a actuar, así los dos no se pisan.
 --
--- Reglas (las mismas ideas que el motor y que Leatrix):
+-- Reglas (las mismas ideas que el motor):
 --   * Mantener Mayús deja todo en tus manos.
 --   * No acepta misiones grises (triviales), ni las que piden confirmar JcJ,
 --     ni las que cierran otra misión para siempre (Alfa.Closes).
@@ -28,7 +27,7 @@
 -- SelectActiveQuest / SelectAvailableQuest (GossipInfoDocumentation);
 -- C_QuestLog.IsQuestTrivial (QuestLogDocumentation); C_Item.GetItemInfoInstant
 -- (ItemDocumentation). QuestIsDaily y QuestIsWeekly no están en la
--- documentación; los usa Leatrix Plus en Forever y aquí van protegidos.
+-- documentación; otros addons los usan en Forever y aquí van protegidos.
 
 local ADDON, M = ...
 local N, A, L = M.N, M.A, M.L

@@ -8,6 +8,7 @@
 ## Category: Alfa
 
 Textos.lua
+Compat.lua
 Bolsas.lua
 Datos.lua
 Objetos.lua

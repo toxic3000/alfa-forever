@@ -14,8 +14,8 @@
 --       owner, ownerFullName, saleStatus, itemID, hasAllInfo
 --   AUCTION_HOUSE_SHOW / AUCTION_HOUSE_CLOSED
 -- La API no dice cuánto hay que esperar entre escaneos completos. Se usan
--- 15 minutos desde la última petición (lo mismo que en el cliente moderno,
--- donde Auctionator usa esa espera): ESTIMADO, se verifica en el juego.
+-- 15 minutos desde la última petición (la espera habitual del cliente
+-- moderno): ESTIMADO, se verifica en el juego.
 -- Si la subasta no responde en 90 s, se avisa y se puede intentar después.
 
 local _, M = ...

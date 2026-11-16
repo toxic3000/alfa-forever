@@ -1,4 +1,4 @@
--- Alfa - Recolección (Toxic / La Jauría, GPL-3.0): reemplaza a GatherLite.
+-- Alfa - Recolección (Toxic / La Jauría, GPL-3.0): nodos, rutas de farmeo e historial.
 --
 -- Esta parte: la página del módulo (resumen de la sesión, ruta de farmeo,
 -- qué se muestra, historial y datos), las capas de Alfa_Mundo, el comando
@@ -83,7 +83,7 @@ end
 
 local function interruptorTipo(tipo, etiqueta, ayuda)
 	return control("toggle", tipo, etiqueta, ayuda, {
-		search = "gatherlite, capas, layers, " .. tipo,
+		search = "capas, layers, nodos, " .. tipo,
 		get = function() return R.TipoActivo(tipo) end,
 		set = function(v) ponerTipo(tipo, v) end,
 	})
@@ -91,8 +91,8 @@ end
 
 local SECCIONES = {
 	{ nombre = L["Dónde se ven"], controles = {
-		control("toggle", "mapa", L["En el mapa del mundo"], L["Los nodos de la zona que miras, con su nombre, nivel y cuántas veces los recolectaste al pasar el ratón."], { search = "gatherlite, mapa, world map, pins, nodos" }),
-		control("toggle", "minimapa", L["En el minimapa"], L["Los nodos que tienes cerca. El punto del rastreo del juego dice si ahora hay algo ahí."], { search = "gatherlite, minimap, nodos, cerca" }),
+		control("toggle", "mapa", L["En el mapa del mundo"], L["Los nodos de la zona que miras, con su nombre, nivel y cuántas veces los recolectaste al pasar el ratón."], { search = "mapa, world map, pins, nodos" }),
+		control("toggle", "minimapa", L["En el minimapa"], L["Los nodos que tienes cerca. El punto del rastreo del juego dice si ahora hay algo ahí."], { search = "minimap, nodos, cerca" }),
 		control("slider", "tamanoMapa", L["Tamaño en el mapa"], nil, { min = 0.6, max = 1.8, step = 0.05, format = porciento }),
 		control("slider", "tamanoMinimapa", L["Tamaño en el minimapa"], nil, { min = 0.6, max = 1.8, step = 0.05, format = porciento }),
 	} },
@@ -106,7 +106,7 @@ local SECCIONES = {
 	} },
 	{ nombre = L["Mapa"], controles = {
 		control("toggle", "agrupar", L["Juntar nodos cercanos al alejar"], L["Los nodos que se pisarían en pantalla van en un solo pin con su cantidad. Al acercar el mapa se separan."]),
-		control("toggle", "base", L["Usar la base de datos incluida"], L["Los nodos que trae Alfa (los de GatherLite). Sin esto solo ves los que tú descubriste."]),
+		control("toggle", "base", L["Usar la base de datos incluida"], L["Los nodos que trae Alfa. Sin esto solo ves los que tú descubriste."]),
 	} },
 }
 
@@ -679,10 +679,10 @@ local function armarDatos(view)
 	V.datosTexto = W.Text(view, "note", "textDim")
 	V.datosTexto:SetWordWrap(true)
 	V.datosTexto:SetJustifyV("TOP")
-	V.tImportar = W.ActionTile(view, "icon-collect", L["Traer lo de GatherLite"],
-		L["Copia los nodos que recolectaste con GatherLite (debe estar activo). Ya se hace solo la primera vez."], function()
-			local n = R.ImportarGatherLite()
-			if n then N.Imprimir(L["Se trajeron %d nodos de GatherLite."]:format(n)) end
+	V.tImportar = W.ActionTile(view, "icon-collect", L["Importar nodos de otro addon de recolección"],
+		L["Copia los nodos que recolectaste con otro addon de recolección (debe estar activo). Ya se hace solo la primera vez."], function()
+			local n = R.ImportarOtro()
+			if n then N.Imprimir(L["Se trajeron %d nodos de otro addon de recolección."]:format(n)) end
 			M.Pagina.Actualizar()
 		end)
 	V.tBorrarNodos = W.ActionTile(view, "reset", L["Borrar lo que descubrí"],
@@ -706,8 +706,8 @@ local function layoutDatos(view, y, w)
 	y = y + SECCION_H
 	local base, propios, zonas = R.Conteos()
 	local texto = L["La base incluida trae %s lugares en %d zonas. Tú descubriste %s."]:format(miles(base), zonas, miles(propios))
-	if R.HayGatherLite() then
-		texto = texto .. " " .. L["GatherLite sigue activo: Alfa ya hace lo mismo, así que puedes desactivarlo para no ver los nodos dos veces."]
+	if R.HayOtro() then
+		texto = texto .. " " .. L["Otro addon de recolección sigue activo: Alfa ya hace lo mismo, así que puedes desactivarlo para no ver los nodos dos veces."]
 	end
 	V.datosTexto:SetText(texto)
 	V.datosTexto:SetWidth(w)
@@ -715,7 +715,7 @@ local function layoutDatos(view, y, w)
 	V.datosTexto:SetPoint("TOPLEFT", view, "TOPLEFT", pad(), -y)
 	y = y + math.ceil(V.datosTexto:GetStringHeight()) + 12
 	local tiles = { V.tBorrarNodos, V.tBorrarHist }
-	if R.HayGatherLite() then
+	if R.HayOtro() then
 		table.insert(tiles, 1, V.tImportar)
 		V.tImportar:Show()
 	else
@@ -829,8 +829,8 @@ A.RegisterCommand("recoleccion", function(resto)
 		N.Set(ID, orden, N.Get(ID, orden) == false)
 		N.Imprimir(N.Get(ID, orden) ~= false and L["Nodos visibles."] or L["Nodos ocultos."])
 	elseif orden == "importar" then
-		local n = R.ImportarGatherLite()
-		N.Imprimir(n and L["Se trajeron %d nodos de GatherLite."]:format(n) or L["GatherLite no está activo."])
+		local n = R.ImportarOtro()
+		N.Imprimir(n and L["Se trajeron %d nodos de otro addon de recolección."]:format(n) or L["No hay otro addon de recolección activo."])
 	else
 		N.Imprimir(L["Uso: /alfa recoleccion [ruta [mineria|hierbas|pesca|tesoros] | guiar | parar | mapa | minimapa | importar]"])
 	end
@@ -878,13 +878,13 @@ A.OnLogin(function()
 	R.Sesion()
 	M.Mapa.Instalar()
 	M.Mini.Instalar()
-	-- Las habilidades pueden llegar tarde; y lo de GatherLite pasa una vez.
+	-- Las habilidades pueden llegar tarde; y lo de otro addon pasa una vez.
 	A.After(3, function()
 		releer()
 		local D = R.Datos()
-		if not D.importadoGL and R.HayGatherLite() then
-			local n = R.ImportarGatherLite()
-			if n and n > 0 then N.Imprimir(L["Recolección: se trajeron %d nodos que recolectaste con GatherLite."]:format(n)) end
+		if not D.importadoOtro and R.HayOtro() then
+			local n = R.ImportarOtro()
+			if n and n > 0 then N.Imprimir(L["Recolección: se trajeron %d nodos que recolectaste con otro addon."]:format(n)) end
 		end
 	end)
 end)

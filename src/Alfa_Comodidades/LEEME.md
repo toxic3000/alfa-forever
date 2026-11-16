@@ -1,6 +1,6 @@
 # Alfa - Comodidades
 
-Reemplaza a **Leatrix Plus** dentro de Alfa. Solo hace lo que el motor de Alfa todavía no tenía; lo demás ya viene en Alfa y no se repite. Todo es código propio (Leatrix no tiene licencia libre: solo se imitan sus funciones).
+Comodidades de calidad de vida dentro de Alfa. Solo hace lo que el motor de Alfa todavía no tenía; lo demás ya viene en Alfa y no se repite. Todo es código propio.
 
 ## Dónde está
 
@@ -20,19 +20,19 @@ Ventana de Alfa > **Calidad de vida** (la página que ya existía):
 
 ## Ajustes (`comodidades.*`) y cómo vienen
 
-Cada grupo tiene un interruptor principal y sus opciones dentro, como en Leatrix. En la configuración de Leatrix de quien juega **los interruptores principales están apagados** (ClassColFrames, MinimapModder, TipModEnable, EnhanceDressup, AutomateQuests, ShowFlightTimes, MaxCameraZoom y MuteGameSounds en Off) y las opciones de dentro están en On (los valores de fábrica de Leatrix). Alfa los copia igual: los principales vienen apagados y las de dentro encendidas, así al encender un grupo queda como en Leatrix.
+Cada grupo tiene un interruptor principal y sus opciones dentro. **Los interruptores principales vienen apagados** y las opciones de dentro encendidas: así, al encender un grupo queda listo para usar.
 
-| Clave | Por omisión | Leatrix |
+| Clave | Por omisión | Qué hace |
 |---|---|---|
-| `misiones` (`misionesNormales`, `misionesDiarias`, `misionesSemanales`, `misionesEntregar`) | apagado (dentro: sí) | AutomateQuests (AutoQuestRegular, Daily, Weekly, Completed) |
-| `vueloParada` | sí (necesita el temporizador del motor, `maps.flightTimer`) | FlightBarNextHop |
-| `minimapa` (`minimapaCuadrado`, `minimapaBotones`, `minimapaMenu`) | apagado (dentro: sí) | MinimapModder (SquareMinimap, HideMiniAddonButtons, HideMiniAddonMenu) |
-| `colores` (`coloresJugador`, `coloresObjetivo`) | apagado (dentro: sí) | ClassColFrames (ClassColPlayer, ClassColTarget) |
-| `cuadro` (`cuadroObjetivo`, `cuadroRango`, `cuadroCombate`, `cuadroShift`) | apagado (dentro: sí, sí, no, sí) | TipModEnable (TipShowTarget, TipShowRank, TipHideInCombat, TipHideShiftOverride) |
-| `probador` (`probadorBotones`, `probadorAnimacion`) | apagado (dentro: sí) | EnhanceDressup (DressupItemButtons, DressupAnimControl) |
-| `camara` | no | MaxCameraZoom |
-| `grifos` | no | (favorito de Leatrix) |
-| `silenciarErrores`, `silenciarDialogos`, `silenciarMascotas`, `silenciarGestos`, `silenciarLista` | no | MuteGameSounds / MuteCustomSounds |
+| `misiones` (`misionesNormales`, `misionesDiarias`, `misionesSemanales`, `misionesEntregar`) | apagado (dentro: sí) | Aceptar y entregar todas las misiones: normales, diarias, semanales y entregar las completadas |
+| `vueloParada` | sí (necesita el temporizador del motor, `maps.flightTimer`) | La siguiente parada en vuelos con escalas |
+| `minimapa` (`minimapaCuadrado`, `minimapaBotones`, `minimapaMenu`) | apagado (dentro: sí) | Minimapa cuadrado, botones de addons ocultos (salen con el ratón) y sin el menú de addons |
+| `colores` (`coloresJugador`, `coloresObjetivo`) | apagado (dentro: sí) | Colores de clase en tu marco y en el del objetivo |
+| `cuadro` (`cuadroObjetivo`, `cuadroRango`, `cuadroCombate`, `cuadroShift`) | apagado (dentro: sí, sí, no, sí) | Cuadro de información: a quién apunta, rango de hermandad, ocultarlo en combate y verlo con Mayús |
+| `probador` (`probadorBotones`, `probadorAnimacion`) | apagado (dentro: sí) | Probador: botones de objetos y control de la animación |
+| `camara` | no | Alejar más la cámara |
+| `grifos` | no | Ocultar los grifos de la barra de acción |
+| `silenciarErrores`, `silenciarDialogos`, `silenciarMascotas`, `silenciarGestos`, `silenciarLista` | no | Silenciar grupos de sonidos del juego y tu lista propia |
 
 Para que un grupo venga encendido de fábrica basta cambiar su valor en `M.AJUSTES` (Comodidades.lua).
 
@@ -41,8 +41,8 @@ Para que un grupo venga encendido de fábrica basta cambiar su valor en `M.AJUST
 - Vender objetos grises y su resumen en el chat; reparar, primero con el banco de la hermandad, y su resumen (Calidad de vida > Mercaderes).
 - Recordatorios de entrenador y hechizos nuevos al subir de nivel (Mercaderes > Entrenadores).
 - Aceptar y entregar las misiones de la guía, texto instantáneo, saltar diálogos de una opción, botín rápido, ocultar errores de combate (Misiones).
-- Aceptar resurrecciones salvo que quien resucita esté en combate (AutoResNoCombat), aceptar invocaciones, liberar en campos de batalla.
-- Invitaciones de amigos y hermandad, rechazar desconocidos, invitaciones de hermandad y duelos: la hermandad **siempre** cuenta como amiga (FriendlyGuild, que en Leatrix está en On).
+- Aceptar resurrecciones salvo que quien resucita esté en combate, aceptar invocaciones, liberar en campos de batalla.
+- Invitaciones de amigos y hermandad, rechazar desconocidos, invitaciones de hermandad y duelos: la hermandad **siempre** cuenta como amiga.
 - Abrir el mapa de vuelo y el temporizador de vuelo con destino, tiempo y barra (Viajes).
 - El zoom del minimapa con la rueda del ratón ya lo trae el juego en Forever.
 

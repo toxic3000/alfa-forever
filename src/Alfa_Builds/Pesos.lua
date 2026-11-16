@@ -3,8 +3,8 @@
 -- Cada build trae su escala: los pesos del motor para su rama y tu nivel
 -- (Gear.WeightsFor) ajustados por su estilo y su objetivo (M.AJUSTE_PESOS) y
 -- por los suyos propios (build.pesos.mult). Al activarla se guarda como una
--- escala personalizada del motor (Gear.Scales, la misma que importa cadenas de
--- Pawn) y se elige en gear.spec.<CLASE>: así las flechas de mejora de las
+-- escala personalizada del motor (Gear.Scales, que la importa como cadena de
+-- texto) y se elige en gear.spec.<CLASE>: así las flechas de mejora de las
 -- bolsas, los cuadros de los objetos y las recompensas de misión la usan.
 --
 --   P.Pesos(build) -> weights | nil
@@ -18,6 +18,10 @@ local P = {}
 M.Pesos = P
 
 local function gear() return A.Gear end
+
+-- La parte del motor que escribe las cadenas de escala (así se llama su tabla
+-- en el código de Polestar).
+local function escritor(G) return G and G.Pawn end
 
 local function datos() return N.DatosPersonaje(M.ID) end
 
@@ -54,7 +58,8 @@ end
 
 function P.Activar(b)
 	local G = gear()
-	if not (G and G.Scales and G.Pawn and G.Pawn.Build) then return false, L["El sistema de equipo de Alfa no está disponible."] end
+	local E = escritor(G)
+	if not (G and G.Scales and E and E.Build) then return false, L["El sistema de equipo de Alfa no está disponible."] end
 	local w = P.Pesos(b)
 	if not w then return false, L["Esta clase no tiene pesos de estadísticas en Alfa."] end
 	local d = datos()
@@ -63,7 +68,7 @@ function P.Activar(b)
 	if d.escala and d.escalaClase == clase and G.Scales.Get(clase, d.escala) then
 		G.Scales.Delete(clase, d.escala)
 	end
-	local texto = G.Pawn.Build(nombreEscala(b), clase, w)
+	local texto = E.Build(nombreEscala(b), clase, w)
 	local ok, res = G.Scales.Import(texto, clase)
 	if not ok then
 		return false, G.Scales.ErrorText and G.Scales.ErrorText(res) or tostring(res)
