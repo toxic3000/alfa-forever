@@ -82,6 +82,29 @@ def logo() -> Image.Image:
     return im.resize((tam, tam), Image.LANCZOS)
 
 
+def logo_grande(tam: int) -> Image.Image:
+    """El logo de 64 px redibujado a cualquier tamano (para CurseForge)."""
+    f = 4
+    t = tam * f
+    fondo = degradado(t, (24, 30, 26), (8, 10, 9))
+    mascara = Image.new("L", (t, t), 0)
+    ImageDraw.Draw(mascara).rounded_rectangle([0, 0, t - 1, t - 1], radius=t // 5, fill=255)
+    im = Image.new("RGBA", (t, t), (0, 0, 0, 0))
+    im.paste(fondo, (0, 0), mascara)
+    borde = max(2, t // 64)
+    ImageDraw.Draw(im).rounded_rectangle([borde, borde, t - borde - 1, t - borde - 1], radius=t // 5 - borde,
+                                         outline=VERDE_OSCURO + (255,), width=borde * 2)
+    figura = lobo(int(t * 0.74))
+    color = degradado(figura.size[0], VERDE_CLARO, VERDE_OSCURO)
+    color.putalpha(figura.getchannel("A"))
+    brillo = color.filter(ImageFilter.GaussianBlur(t // 60))
+    brillo.putalpha(brillo.getchannel("A").point(lambda a: a * 55 // 100))
+    pos = ((t - figura.size[0]) // 2, (t - figura.size[1]) // 2 + t // 60)
+    im.alpha_composite(brillo, pos)
+    im.alpha_composite(color, pos)
+    return im.resize((tam, tam), Image.LANCZOS)
+
+
 def marca_de_agua() -> Image.Image:
     f, tam = 4, 256
     t = tam * f
@@ -123,6 +146,11 @@ def main() -> int:
     }
     for nombre, im in piezas.items():
         im.save(SALIDA / f"{nombre}.tga")
+    # Avatar del proyecto en CurseForge (400x400): el mismo logo, dibujado en grande.
+    curse = RAIZ / "curseforge"
+    curse.mkdir(exist_ok=True)
+    grande = logo_grande(400)
+    grande.save(curse / "avatar.png")
     if len(sys.argv) > 1:
         hoja = Image.new("RGBA", (560, 300), (30, 32, 38, 255))
         for nombre, pos in [("logo", (10, 10)), ("emblem", (90, 10)), ("watermark", (230, 10)),
