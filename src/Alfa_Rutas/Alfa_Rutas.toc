@@ -1,0 +1,21 @@
+## Interface: 16001
+## Title: |cff8be04eAlfa|r - Rutas
+## Notes: Arma tu propia ruta (XP, oro, profesión, clase y objetos), libera tus misiones abiertas y busca cualquier objeto del juego.
+## Author: Toxic - La Jauria
+## Version: dev
+## X-License: GPL-3.0-only
+## Dependencies: Alfa, Alfa_Nucleo
+## Category: Alfa
+
+Textos.lua
+Base.lua
+Tareas.lua
+Indice.lua
+Plan.lua
+Guias.lua
+Catalogo.lua
+Kit.lua
+VistaRuta.lua
+VistaLiberar.lua
+VistaCatalogo.lua
+Rutas.lua
