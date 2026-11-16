@@ -1,17 +1,17 @@
--- Alfa - La Jauría: quién es quién. Tu grupo (con la API del juego), tu
--- hermandad (su lista), tus amigos (su lista) y lo que llega de los Alfa que
--- comparten (Red.lua). Toxic / La Jauría. GPL-3.0.
+-- Alfa - La Jauría: quién es quién. Tu grupo o banda (con la API del juego) y
+-- los usuarios de Alfa que aceptaron compartir su ubicación (lo que llega por
+-- Red.lua). Nada más: ni la lista de la hermandad ni la de amigos.
+-- Toxic / La Jauría. GPL-3.0.
 --
 --   G.LeerGrupo()        el grupo ahora: una fila por miembro con su posición
---   G.Hermandad(), G.Amigos(), G.Grupo()   las listas para la página
 --   G.Oido(clave, remitente, via, datos)   un mensaje de un Alfa
+--   G.Manada()           la gente a la vista para la página, ya ordenada
+--   G.ParaElMapa()       lo mismo con su capa, solo quien tiene posición
 --   G.PosicionDe(fila)   map, x, y, edad: dónde está alguien (o nil)
 --
--- Una posición recibida caduca a los CADUCA segundos sin noticias (el que la
--- envía refresca cada 4 minutos aunque esté quieto). Quien dejó de hablar
--- más de OLVIDA segundos se olvida del todo. La última vez que viste a cada
--- miembro de la hermandad se guarda por cuenta (N.Datos("manada").visto),
--- para decir "hace cuánto lo viste" entre sesiones.
+-- Una posición recibida caduca a los CADUCA segundos sin noticias (quien la
+-- envía refresca cada 4 minutos aunque esté quieto); quien no habla en
+-- OLVIDA segundos se olvida del todo. Como mucho se recuerdan MAX personas.
 
 local ADDON, M = ...
 local N = AlfaNucleo
@@ -23,13 +23,12 @@ local G = {}
 M.Gente = G
 
 G.CADUCA = 300
-G.VIEJA = 60   -- una posición de más de un minuto se dibuja tenue
-local OLVIDA = 3600
-local VISTO_DIAS = 90
+G.VIEJA = 60   -- una posición de más de un minuto se dice "de hace..."
+local OLVIDA = 900
+local MAX = 200
 
-local alfa = {}       -- clave -> lo oído de un Alfa: { clave, nombre, envio, via = {}, version, comparte, map, x, y, nivel, clase, at, oido }
-local hermandad = {}  -- clave -> fila de la lista de la hermandad
-local amigos = {}     -- clave -> fila de la lista de amigos (conectados y no)
+local alfa = {}       -- clave -> { clave, nombre, envio, via, version, map, x, y, at, oido, nivel, clase }
+local cuantos = 0
 local grupo = {}      -- filas del grupo, en orden
 local enGrupo = {}    -- clave -> fila del grupo
 
@@ -41,30 +40,50 @@ G.Cambio = cambio
 -- Lo que llega de los Alfa
 ---------------------------------------------------------------------------
 
+-- Hace lugar para alguien nuevo: olvida a quien lleva más tiempo callado.
+local function hacerLugar()
+	if cuantos < MAX then return true end
+	local viejo, cuando
+	for clave, e in pairs(alfa) do
+		if not cuando or (e.oido or 0) < cuando then viejo, cuando = clave, e.oido or 0 end
+	end
+	if not viejo then return false end
+	alfa[viejo] = nil
+	cuantos = cuantos - 1
+	return true
+end
+
 function G.Oido(clave, remitente, via, d)
 	local e = alfa[clave]
 	if not e then
-		e = { clave = clave, via = {} }
+		if not hacerLugar() then return end
+		e = { clave = clave }
 		alfa[clave] = e
+		cuantos = cuantos + 1
 	end
 	e.nombre = U.Mostrar(remitente)
 	e.envio = remitente
-	e.via[via] = true
+	e.via = via
 	e.oido = U.Ahora()
 	if d.version then e.version = d.version end
-	if d.comparte ~= nil then e.comparte = d.comparte end
-	if d.quitar then
-		e.map, e.x, e.y, e.at = nil, nil, nil, nil
-	elseif d.map then
+	if d.map then
 		e.map, e.x, e.y, e.at = d.map, d.x, d.y, U.Ahora()
 		if d.nivel then e.nivel = d.nivel end
 		if d.clase then e.clase = d.clase end
 	end
-	if via == "hermandad" then G.Visto(clave, e.nombre) end
 	cambio()
 end
 
 function G.Alfa(clave) return clave and alfa[clave] end
+
+-- Dejó de compartir (1X): su pin se va ya.
+function G.Olvidar(clave)
+	if clave and alfa[clave] then
+		alfa[clave] = nil
+		cuantos = cuantos - 1
+		cambio()
+	end
+end
 
 -- Borra posiciones viejas y a quien no habla hace mucho.
 function G.Limpiar()
@@ -76,64 +95,17 @@ function G.Limpiar()
 		end
 		if ahora - (e.oido or 0) > OLVIDA then
 			alfa[clave] = nil
+			cuantos = cuantos - 1
 			hubo = true
 		end
 	end
 	if hubo then cambio() end
 end
 
--- Al salir de la hermandad o apagar la red: se olvida lo oído por ese medio.
-function G.OlvidarVia(via)
-	for clave, e in pairs(alfa) do
-		e.via[via] = nil
-		if not next(e.via) then alfa[clave] = nil end
-	end
-	cambio()
-end
-
+-- Al dejar de compartir: no queda nada de nadie.
 function G.OlvidarTodo()
 	wipe(alfa)
-	cambio()
-end
-
----------------------------------------------------------------------------
--- "Hace cuánto lo viste" (guardado por cuenta)
----------------------------------------------------------------------------
-
-local function vistos()
-	local d = N.Datos(ID)
-	d.visto = type(d.visto) == "table" and d.visto or {}
-	return d.visto
-end
-
-function G.Visto(clave, nombre)
-	if not clave then return end
-	local v = vistos()
-	local e = v[clave]
-	if type(e) ~= "table" then
-		e = {}
-		v[clave] = e
-	end
-	e.t = U.Reloj()
-	if nombre then e.n = nombre end
-end
-
-function G.VistoHace(clave)
-	local e = clave and vistos()[clave]
-	if type(e) ~= "table" or type(e.t) ~= "number" then return nil end
-	return math.max(0, U.Reloj() - e.t)
-end
-
-function G.PodarVistos()
-	local v, limite = vistos(), U.Reloj() - VISTO_DIAS * 86400
-	for clave, e in pairs(v) do
-		if type(e) ~= "table" or type(e.t) ~= "number" or e.t < limite then v[clave] = nil end
-	end
-end
-
-function G.OlvidarVistos()
-	local d = N.Datos(ID)
-	d.visto = {}
+	cuantos = 0
 	cambio()
 end
 
@@ -178,10 +150,6 @@ local function leerUnidad(unit)
 	local map, x, y = U.PosUnidad(unit)
 	if map then
 		fila.map, fila.x, fila.y, fila.at = map, x, y, U.Ahora()
-		fila.zona = U.ZonaDe(map)
-	elseif C.GetUnitZone then
-		local okz, z = pcall(C.GetUnitZone, unit)
-		fila.zona = okz and U.Numero(z) or nil
 	end
 	return fila
 end
@@ -202,7 +170,7 @@ function G.LeerGrupo()
 	if not distinto then
 		for i, f in ipairs(nuevo) do
 			local o = grupo[i]
-			if o.clave ~= f.clave or o.map ~= f.map or o.conectado ~= f.conectado or o.nivel ~= f.nivel
+			if o.clave ~= f.clave or o.map ~= f.map or o.conectado ~= f.conectado or o.nivel ~= f.nivel or o.muerto ~= f.muerto
 				or math.abs((o.x or 0) - (f.x or 0)) + math.abs((o.y or 0) - (f.y or 0)) > 0.05 then
 				distinto = true
 				break
@@ -217,7 +185,7 @@ end
 function G.Grupo() return grupo end
 function G.EnGrupo(clave) return clave and enGrupo[clave] or nil end
 
--- La fila del grupo con su unidad, leída otra vez ahora (para seguir).
+-- La unidad del grupo de alguien, leída otra vez ahora (para seguir).
 function G.UnidadDe(clave)
 	for _, unit in ipairs(unidades()) do
 		local C = A.Compat
@@ -226,125 +194,6 @@ function G.UnidadDe(clave)
 		if full and U.Clave(full) == clave then return unit end
 	end
 	return nil
-end
-
----------------------------------------------------------------------------
--- La hermandad (su lista)
----------------------------------------------------------------------------
-
-local pedidoEn = -math.huge
--- Pide al servidor la lista de la hermandad (el juego la limita sola).
-function G.PedirHermandad(forzar)
-	if not U.EnHermandad() then return end
-	local ahora = U.Ahora()
-	if not forzar and ahora - pedidoEn < 30 then return end
-	pedidoEn = ahora
-	if C_GuildInfo and C_GuildInfo.GuildRoster then
-		pcall(C_GuildInfo.GuildRoster)
-	elseif GuildRoster then
-		pcall(GuildRoster)
-	end
-end
-
--- "hace 3 días" de la lista de la hermandad (si el juego lo da).
-local function ultimaConexion(i)
-	if not GetGuildRosterLastOnline then return nil end
-	local ok, anos, meses, dias, horas = pcall(GetGuildRosterLastOnline, i)
-	if not ok then return nil end
-	anos, meses, dias, horas = U.Numero(anos), U.Numero(meses), U.Numero(dias), U.Numero(horas)
-	if not (anos or meses or dias or horas) then return nil end
-	return (((anos or 0) * 365 + (meses or 0) * 30 + (dias or 0)) * 24 + (horas or 0)) * 3600
-end
-
-function G.LeerHermandad()
-	local nueva = {}
-	if U.EnHermandad() and GetNumGuildMembers and GetGuildRosterInfo then
-		local mia = U.MiClave()
-		local total = U.Numero((GetNumGuildMembers())) or 0
-		for i = 1, total do
-			local ok, name, rango, rangoN, nivel, claseNombre, zona, _, _, conectado, _, clase, _, _, movil = pcall(GetGuildRosterInfo, i)
-			if not ok then break end
-			name = U.Texto(name)
-			local clave = U.Clave(name)
-			if clave and clave ~= mia and not nueva[clave] then
-				local fila = {
-					tipo = "hermandad", clave = clave, nombre = U.Mostrar(name), envio = name,
-					rango = U.Texto(rango), rangoN = U.Numero(rangoN), nivel = U.Numero(nivel),
-					claseNombre = U.Texto(claseNombre), clase = U.Texto(clase), zonaTexto = U.Texto(zona),
-					conectado = U.Leer(conectado) and not U.Leer(movil) and true or false,
-				}
-				if fila.conectado then
-					G.Visto(clave, fila.nombre)
-				else
-					fila.desde = ultimaConexion(i)
-				end
-				nueva[clave] = fila
-			end
-		end
-	end
-	hermandad = nueva
-	cambio()
-end
-
-function G.Hermandad() return hermandad end
-function G.DeHermandad(clave) return clave and hermandad[clave] or nil end
-
----------------------------------------------------------------------------
--- Amigos (su lista; Battle.net queda fuera por ahora)
----------------------------------------------------------------------------
-
-function G.PedirAmigos()
-	if C_FriendList and C_FriendList.ShowFriends then pcall(C_FriendList.ShowFriends) end
-end
-
-function G.LeerAmigos()
-	local nuevos, conectados = {}, {}
-	local FL = C_FriendList
-	if FL and FL.GetNumFriends and FL.GetFriendInfoByIndex then
-		local okN, total = pcall(FL.GetNumFriends)
-		total = okN and U.Numero(total) or 0
-		for i = 1, total do
-			local ok, f = pcall(FL.GetFriendInfoByIndex, i)
-			if ok and type(f) == "table" then
-				local name = U.Texto(f.name)
-				local clave = U.Clave(name)
-				if clave and not nuevos[clave] then
-					local con = U.Leer(f.connected) and true or false
-					local fila = {
-						tipo = "amigo", clave = clave, nombre = U.Mostrar(name), envio = name,
-						nivel = U.Numero(f.level), claseNombre = U.Texto(f.className),
-						zonaTexto = U.Texto(f.area), conectado = con,
-					}
-					if fila.nivel and fila.nivel <= 0 then fila.nivel = nil end
-					fila.clase = U.ClaseDeNombre(fila.claseNombre)
-					nuevos[clave] = fila
-					if con then conectados[#conectados + 1] = { clave = clave, envio = name } end
-				end
-			end
-		end
-	end
-	amigos = nuevos
-	cambio()
-	-- Amigos que no están en mi hermandad: un saludo a quien se conectó (Red.lua).
-	local fuera = {}
-	for _, f in ipairs(conectados) do
-		if not hermandad[f.clave] then fuera[#fuera + 1] = f end
-	end
-	M.Red.SaludarAmigos(fuera)
-end
-
-function G.Amigos() return amigos end
-function G.EsAmigo(clave) return clave ~= nil and amigos[clave] ~= nil end
-
--- Los amigos con Alfa conectados que no están en mi hermandad: clave ->
--- nombre para susurrar (a ellos les va mi posición si les comparto).
-function G.AmigosConAlfa()
-	local out = {}
-	for clave, f in pairs(amigos) do
-		local e = alfa[clave]
-		if f.conectado and e and e.via.amigo and not hermandad[clave] then out[clave] = e.envio or f.envio end
-	end
-	return out
 end
 
 ---------------------------------------------------------------------------
@@ -365,59 +214,81 @@ function G.PosicionDe(fila)
 	return nil
 end
 
--- Completa una fila con lo que dicen los Alfa (nivel, clase, zona).
-function G.Completar(fila)
-	local e = alfa[fila.clave]
-	fila.alfa = e ~= nil
-	fila.comparte = e and e.comparte and true or false
+-- Una fila lista para mostrar: dónde, a qué distancia, de hace cuánto.
+local function completar(f)
+	local e = alfa[f.clave]
+	f.alfa = e ~= nil
 	if e then
-		fila.nivel = fila.nivel or e.nivel
-		fila.clase = fila.clase or e.clase
+		f.nivel = f.nivel or e.nivel
+		f.clase = f.clase or e.clase
 	end
-	local map = G.PosicionDe(fila)
-	if map and not fila.zona then fila.zona = U.ZonaDe(map) end
-	return fila
+	local map, x, y, edad = G.PosicionDe(f)
+	f.map, f.x, f.y, f.edad = map, x, y, edad
+	f.dist, f.otro, f.zona = nil, nil, nil
+	if map then
+		f.zona = U.NombreMapa(U.ZonaDe(map))
+		local yd, otro = U.Distancia(map, x, y)
+		f.dist, f.otro = yd, otro == "otro" or nil
+	end
+	return f
 end
 
--- Todos los Alfa que comparten y tienen posición fresca, con su capa:
--- "grupo", "hermandad" o "amigo". El grupo va primero; nadie sale dos veces.
-function G.ParaElMapa()
+-- La gente a la vista: tu grupo (siempre) y quienes comparten con posición
+-- fresca. Nadie sale dos veces. Orden: a quien sigues, luego por distancia
+-- (los de otro continente y sin posición al final), y por nombre.
+function G.Manada()
 	local out, puesto = {}, {}
 	for _, f in ipairs(grupo) do
-		if f.map then
-			out[#out + 1] = { capa = "grupo", fila = f }
-			puesto[f.clave] = true
-		end
+		local fila = {}
+		for k, v in pairs(f) do fila[k] = v end
+		out[#out + 1] = completar(fila)
+		puesto[f.clave] = true
 	end
-	local ahora = U.Ahora()
-	for clave, e in pairs(alfa) do
-		if not puesto[clave] and e.map and e.at and ahora - e.at <= G.CADUCA then
-			local capa = (e.via.hermandad or hermandad[clave]) and "hermandad" or (e.via.amigo and "amigo") or nil
-			if capa then
-				local base = hermandad[clave] or amigos[clave]
-				local fila = {
-					tipo = capa, clave = clave, nombre = (base and base.nombre) or e.nombre, envio = (base and base.envio) or e.envio,
-					nivel = e.nivel or (base and base.nivel), clase = e.clase or (base and base.clase),
-					claseNombre = base and base.claseNombre, rango = base and base.rango,
-				}
-				out[#out + 1] = { capa = capa, fila = fila }
+	if N.Get(ID, "compartir") then
+		local ahora = U.Ahora()
+		for clave, e in pairs(alfa) do
+			if not puesto[clave] and e.map and e.at and ahora - e.at <= G.CADUCA then
+				out[#out + 1] = completar({
+					tipo = "manada", clave = clave, nombre = e.nombre, envio = e.envio,
+					nivel = e.nivel, clase = e.clase, conectado = true, via = e.via,
+				})
 				puesto[clave] = true
 			end
 		end
 	end
+	local S = M.Seguir
+	local sigue = S and S.Actual()
+	local sclave = sigue and sigue.clave
+	table.sort(out, function(a, b)
+		local sa, sb = a.clave == sclave, b.clave == sclave
+		if sa ~= sb then return sa end
+		local da, db = a.dist ~= nil, b.dist ~= nil
+		if da ~= db then return da end
+		if da and a.dist ~= b.dist then return a.dist < b.dist end
+		local ma, mb = a.map ~= nil, b.map ~= nil
+		if ma ~= mb then return ma end
+		return (a.nombre or "") < (b.nombre or "")
+	end)
 	return out
 end
 
--- Cuántos usan Alfa en la hermandad (lo oído) y cuántos están conectados.
+-- Para el mapa: { capa = "grupo" | "manada", fila } de quien tiene posición.
+function G.ParaElMapa()
+	local out = {}
+	for _, f in ipairs(G.Manada()) do
+		if f.map then out[#out + 1] = { capa = f.tipo == "grupo" and "grupo" or "manada", fila = f } end
+	end
+	return out
+end
+
+-- Cuántos se ven: de la manada (sin tu grupo) y de tu grupo.
 function G.Cuentas()
-	local con, usan = 0, 0
-	for clave, f in pairs(hermandad) do
-		if f.conectado then con = con + 1 end
-		local e = alfa[clave]
-		if e and e.via.hermandad then usan = usan + 1 end
+	local manada, enElGrupo = 0, #grupo
+	if N.Get(ID, "compartir") then
+		local ahora = U.Ahora()
+		for clave, e in pairs(alfa) do
+			if not enGrupo[clave] and e.map and e.at and ahora - e.at <= G.CADUCA then manada = manada + 1 end
+		end
 	end
-	for clave, e in pairs(alfa) do
-		if e.via.hermandad and not hermandad[clave] then usan = usan + 1 end
-	end
-	return con, usan
+	return manada, enElGrupo
 end

@@ -142,6 +142,17 @@ function U.Plegar(s)
 	return (s:lower():gsub("%s+", " "):gsub("^ ", ""):gsub(" $", ""))
 end
 
+-- En mayúsculas, también las letras con acento ("Lo más cerca" -> "LO MÁS
+-- CERCA"): string.upper solo cambia las de ASCII.
+function U.Mayus(s)
+	s = tostring(s or ""):upper()
+	return (s:gsub("\195([\160-\190])", function(c)
+		local b = c:byte()
+		if b == 183 then return "\195" .. c end -- ÷
+		return "\195" .. string.char(b - 32)
+	end))
+end
+
 -- Mi propia clave.
 function U.MiClave()
 	local C = A.Compat
@@ -185,23 +196,6 @@ function U.NombreClase(file)
 	local t = LOCALIZED_CLASS_NAMES_MALE
 	if type(t) == "table" and type(t[file]) == "string" then return t[file] end
 	return nil
-end
-
--- La clase en archivo ("MAGE") a partir de su nombre en el idioma del cliente
--- (la lista de amigos solo da el nombre).
-local porNombre
-function U.ClaseDeNombre(nombre)
-	nombre = texto(nombre)
-	if not nombre then return nil end
-	if not porNombre then
-		porNombre = {}
-		for _, t in ipairs({ LOCALIZED_CLASS_NAMES_MALE, LOCALIZED_CLASS_NAMES_FEMALE }) do
-			if type(t) == "table" then
-				for file, n in pairs(t) do porNombre[n] = file end
-			end
-		end
-	end
-	return porNombre[nombre]
 end
 
 ---------------------------------------------------------------------------
@@ -369,9 +363,10 @@ end
 -- Cuenta
 ---------------------------------------------------------------------------
 
--- Las cuentas de prueba no pueden enviar mensajes de addon.
+-- Las cuentas de prueba (y las restringidas) no pueden enviar mensajes de
+-- addon ni usar canales propios.
 function U.CuentaDePrueba()
-	for _, fn in ipairs({ IsTrialAccount or false, IsVeteranTrialAccount or false }) do
+	for _, fn in ipairs({ IsTrialAccount or false, IsVeteranTrialAccount or false, IsRestrictedAccount or false }) do
 		if fn then
 			local ok, v = pcall(fn)
 			if ok and U.Leer(v) then return true end

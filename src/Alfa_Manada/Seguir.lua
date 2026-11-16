@@ -1,5 +1,6 @@
--- Alfa - La Jauría: "Seguir" a alguien de la manada con la flecha y la ruta
--- de Alfa. Toxic / La Jauría. GPL-3.0.
+-- Alfa - La Jauría: "Seguir" a alguien de la manada con la flecha de Alfa
+-- (la del motor: el estilo de la flecha de lobo lo pone la apariencia) y su
+-- ruta. Toxic / La Jauría. GPL-3.0.
 --
 -- Pone su posición como destino de la navegación del motor (Alfa.Nav.SetTarget,
 -- lo mismo que "/alfa way" y el seguir del grupo de Quests/Party.lua), como un
@@ -29,14 +30,14 @@ local sig -- { clave, nombre, tipo, objetivo, ticker, map, c, wx, wy, perdidoDes
 local function nav() return A.Nav end
 
 local function etiqueta(tipo)
-	if tipo == "grupo" then return L["Grupo"] end
-	if tipo == "amigo" then return L["Amigo"] end
+	if tipo == "grupo" then return L["Tu grupo"] end
 	return L["La Jauría"]
 end
 
 local function avisar()
 	M.Gente.Cambio()
 	if M.Mapa then M.Mapa.Refrescar(true) end
+	if M.Avisar then M.Avisar() end
 end
 
 local function soltar()
@@ -164,11 +165,7 @@ end
 function S.PorNombre(texto)
 	local buscar = U.Plegar(texto)
 	if buscar == "" then return false end
-	local G = M.Gente
-	local candidatos = {}
-	for _, f in ipairs(G.Grupo()) do candidatos[#candidatos + 1] = f end
-	for _, p in ipairs(G.ParaElMapa()) do candidatos[#candidatos + 1] = p.fila end
-	for _, f in ipairs(candidatos) do
+	for _, f in ipairs(M.Gente.Manada()) do
 		local n = U.Plegar(f.nombre)
 		if n == buscar or n:sub(1, #buscar) == buscar then return S.A(f) end
 	end

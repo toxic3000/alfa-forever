@@ -1,17 +1,16 @@
 -- Alfa - La Jauría: la manada en el mapa del mundo y el minimapa.
 -- Toxic / La Jauría. GPL-3.0.
 --
--- Tres capas de pines del motor (Alfa.Pins.SetLayer), una por grupo de gente:
---   manada.grupo    tu grupo (posiciones del juego)
---   manada.jauria   tu hermandad, quienes comparten su ubicación con Alfa
---   manada.amigos   tus amigos que te comparten su ubicación
--- Cada pin es una marca de mapa de Alfa (el medallión de la casa) con el
--- alfiler del color de la clase y el nombre en su etiqueta; los amigos llevan
--- además un aro azul. El cuadro al pasar el ratón dice nombre, nivel, clase,
--- zona, distancia y hace cuánto se supo; un clic lo sigue (Seguir.lua). Una
--- posición de más de un minuto se dibuja tenue. A quien sigues se le ve más
--- grande, con el aro de Alfa y un halo.
--- Con Alfa_Mundo, las tres capas se registran en su control de capas
+-- Dos capas de pines del motor (Alfa.Pins.SetLayer):
+--   manada.grupo    tu grupo o banda (posiciones del juego)
+--   manada.jauria   los usuarios de Alfa que comparten su ubicación contigo
+-- Cada pin es una marca de mapa de Alfa (el medallón de la casa) con el
+-- alfiler del color de la clase y el nombre en su etiqueta. El cuadro al
+-- pasar el ratón dice nombre, nivel, clase, zona, distancia y hace cuánto se
+-- supo; un clic lo sigue (Seguir.lua). Una posición de más de un minuto se
+-- dibuja tenue. A quien sigues se le ve más grande, con el aro de Alfa y un
+-- halo.
+-- Con Alfa_Mundo, las dos capas se registran en su control de capas
 -- (AlfaMundo.RegistrarCapa); apagar una allí apaga el ajuste aquí y al revés.
 
 local ADDON, M = ...
@@ -24,14 +23,12 @@ local ID = M.ID
 local Mapa = {}
 M.Mapa = Mapa
 
--- anillo: el aro de color alrededor del medallión (solo los amigos lo
--- llevan, para distinguirlos de la hermandad); icono: el de Alfa_Mundo.
+-- icono: el de la capa en el control de Alfa_Mundo.
 local CAPAS = {
-	grupo = { id = "manada.grupo", ajuste = "capaGrupo", nombre = "Grupo", icono = "star" },
-	hermandad = { id = "manada.jauria", ajuste = "capaJauria", nombre = "La Jauría", icono = "flag" },
-	amigo = { id = "manada.amigos", ajuste = "capaAmigos", nombre = "Amigos", icono = "icon-talk", anillo = "link" },
+	grupo = { id = "manada.grupo", ajuste = "capaGrupo", nombre = "Tu grupo", icono = "ic-personajes" },
+	manada = { id = "manada.jauria", ajuste = "capaJauria", nombre = "La Jauría", icono = "ic-manada" },
 }
-local ORDEN = { "grupo", "hermandad", "amigo" }
+local ORDEN = { "grupo", "manada" }
 Mapa.CAPAS, Mapa.ORDEN = CAPAS, ORDEN
 
 local function themeRGB(nombre)
@@ -40,13 +37,6 @@ local function themeRGB(nombre)
 	if nombre == "accent" then ok, r, g, b = pcall(T.Accent) else ok, r, g, b = pcall(T.Color, nombre) end
 	if ok and type(r) == "number" then return r, g, b end
 	return 0.545, 0.878, 0.306
-end
-
-local function anillo(capa)
-	local a = CAPAS[capa].anillo
-	if not a then return nil end
-	local r, g, b = themeRGB(a)
-	return { r, g, b, 0.95 }
 end
 
 -- El nombre corto para la etiqueta del pin: el nombre sin el apellido, como
@@ -70,7 +60,6 @@ local function media(nombre)
 	if ok and type(p) == "string" then return p end
 	return "Interface\\AddOns\\Alfa\\Media\\UI\\" .. nombre
 end
-Mapa.Media = media
 
 ---------------------------------------------------------------------------
 -- El cuadro del pin
@@ -79,7 +68,7 @@ Mapa.Media = media
 local function lineaNivel(f)
 	local partes = {}
 	if f.nivel then partes[#partes + 1] = L["Nivel %d"]:format(f.nivel) end
-	local clase = f.claseNombre or U.NombreClase(f.clase)
+	local clase = U.NombreClase(f.clase)
 	if clase then partes[#partes + 1] = clase end
 	return #partes > 0 and table.concat(partes, " · ") or nil
 end
@@ -105,10 +94,8 @@ local function cuadro(f, capa)
 			if lugar ~= "" then tip:AddLine(lugar, 0.8, 0.8, 0.8) end
 			if capa ~= "grupo" and edad and edad >= 20 then tip:AddLine(L["Ubicación de %s"]:format(U.Hace(edad)), 0.6, 0.6, 0.6) end
 		end
-		local etiqueta = capa == "grupo" and L["Tu grupo"] or capa == "amigo" and L["Amigo"] or L["La Jauría"]
-		if f.rango then etiqueta = etiqueta .. " · " .. f.rango end
 		local ar, ag, ab = themeRGB("accent")
-		tip:AddLine(etiqueta, ar, ag, ab)
+		tip:AddLine(capa == "grupo" and L["Tu grupo"] or L["La Jauría"], ar, ag, ab)
 		if M.Seguir.Sigue(f.clave) then
 			tip:AddLine(L["Lo estás siguiendo."], themeRGB("success"))
 		else
@@ -137,36 +124,27 @@ function Mapa.Refrescar(forzar)
 	-- Las posiciones envejecen solas: se redibuja al menos cada 20 s.
 	if not forzar and hecho == G.version and sigHecho == (sigue and sigue.clave) and ahora - ultimoDibujo < 20 then return end
 	hecho, sigHecho, ultimoDibujo = G.version, sigue and sigue.clave, ahora
-	local porCapa = { grupo = {}, hermandad = {}, amigo = {} }
-	local red = N.Get(ID, "red")
+	local porCapa = { grupo = {}, manada = {} }
 	for _, p in ipairs(G.ParaElMapa()) do
 		local f, capa = p.fila, p.capa
-		if capa == "grupo" or red then
-			local map, x, y, edad = G.PosicionDe(f)
-			if map then
-				local r, g, b = U.ColorClase(f.clase)
-				local alfa = (capa ~= "grupo" and edad and edad > G.VIEJA) and 0.55 or 1
-				local seguido = sigue and sigue.clave == f.clave
-				local lista = porCapa[capa]
-				-- Una marca de mapa de Alfa: el medallión con el alfiler del
-				-- color de la clase y el nombre en su etiqueta.
-				lista[#lista + 1] = {
-					map = map, x = x, y = y,
-					icon = "map:pin-small",
-					color = { r, g, b, alfa },
-					ring = anillo(capa),
-					badge = corto(f.nombre),
-					state = seguido and "focus" or nil,
-					size = 15, minimapSize = 13,
-					glow = seguido or nil,
-					priority = seguido and 10 or 2,
-					tooltip = cuadro(f, capa),
-					onClick = function(button)
-						if button == "LeftButton" or button == nil then M.Seguir.A(f) end
-					end,
-				}
-			end
-		end
+		local r, g, b = U.ColorClase(f.clase)
+		local alfa = (capa ~= "grupo" and f.edad and f.edad > G.VIEJA) and 0.55 or 1
+		local seguido = sigue and sigue.clave == f.clave
+		local lista = porCapa[capa]
+		lista[#lista + 1] = {
+			map = f.map, x = f.x, y = f.y,
+			icon = "map:pin-small",
+			color = { r, g, b, alfa },
+			badge = corto(f.nombre),
+			state = seguido and "focus" or nil,
+			size = 15, minimapSize = 13,
+			glow = seguido or nil,
+			priority = seguido and 10 or 2,
+			tooltip = cuadro(f, capa),
+			onClick = function(button)
+				if button == "LeftButton" or button == nil then M.Seguir.A(f) end
+			end,
+		}
 	end
 	local mini = N.Get(ID, "minimapa") and true or false
 	for _, capa in ipairs(ORDEN) do

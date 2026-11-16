@@ -1,45 +1,55 @@
 # Alfa - La Jauría (`Alfa_Manada`)
 
-La página de La Jauría en la ventana de Alfa (orden 8, ícono `flag`): tu manada en el mapa, un botón **Seguir** que te lleva con la flecha y la ruta de Alfa hasta alguien, y la cara del clan para que la gente lo conozca y se una.
+La página de La Jauría en la ventana de Alfa (sección Manada, orden 8, ícono `ic-manada`), hecha con el Kit (`docs/KIT.md`). Muestra **solo** a tu grupo o banda y a los **usuarios de Alfa que aceptaron compartir su ubicación**: ni la lista de la hermandad ni la de amigos. Desde el juego no se puede saber quién está en el Discord, así que La Jauría son quienes usan Alfa.
 
-## Qué hace
+## La página (un Tablero)
 
-- **Tu grupo**: posición de cada miembro con la API del juego, en una lista con nivel, clase, zona y distancia.
-- **Tu hermandad y tus amigos con Alfa**: mensajes de addon ocultos con el prefijo `AlfaManada`, por el canal de la hermandad y por susurro a amigos de tu lista. Un saludo dice quién usa Alfa; quien comparte manda su posición (mapa, x, y), nivel y clase cada 10 s solo si se movió, y cada 4 min si está quieto. Nada sale dentro de instancias. Hay una cola con tope de 2 mensajes por segundo que espera y reintenta si el servidor frena. Lo recibido caduca a los 5 min.
-- **Pines** en el mapa del mundo y el minimapa (`Alfa.Pins`): la marca de Alfa con el alfiler del color de la clase y el nombre en su etiqueta. Al pasar el ratón se ve nivel, zona, distancia y hace cuánto se supo; un clic lo sigue. Son tres capas: Grupo, La Jauría y Amigos. Si está `Alfa_Mundo`, se registran en su control de capas.
-- **Seguir**: pone a la persona como destino de la navegación de Alfa (`Alfa.Nav.SetTarget` + `StartTrip`) y mueve el destino cada 3 s mientras camina (`Alfa.Nav.MoveTarget`). Se detiene al llegar, al cancelar o si se pierde su rastro.
-- **Lista de la hermandad**: quién está conectado, nivel, clase, zona, si usa Alfa y hace cuánto lo viste (se guarda por cuenta). Tiene Seguir, Susurrar e Invitar al grupo, todo con un clic. Susurrar abre el chat: nada se envía solo.
-- **El clan**: nombre, lema, descripción y lo que ofrece (`Clan.lua`), el Discord en un cuadro para copiar (`Alfa.DiscordURL`) y el botón **Quiero unirme**. Ese botón pregunta en silencio a los oficiales si están conectados y abre un susurro al primero que responde, con el mensaje listo para enviar con Intro. Si nadie responde, explica cómo pedir invitación y ofrece escribirles a mano.
+1. **Lo que toca ahora**, en grande: compartir tu rastro (si aún no), a quién sigues (Dejar de seguir), en pausa (instancia, bloqueo del juego, cuenta de prueba), quién anda más cerca (Seguir a…, Invitar al grupo) o, si no hay nadie, cómo hacer crecer la manada (Copiar el Discord).
+2. **La manada a la vista**: una tarjeta por persona con la huella y el nombre en el color de su clase, nivel, clase, zona, distancia y hace cuánto se supo, con **Seguir** (la flecha del motor; el estilo de lobo lo pone la apariencia) e **Invitar**. Seis y "Ver todos". Si no hay nadie, la sección no sale.
+3. **El clan**: el lobo aullando, nombre, lema, descripción, lo que ofrece (`Clan.lua`), el Discord para copiar y **Quiero unirme** (solo si aún no eres de la hermandad del clan).
+4. **Ajustes**: compartir (con lo que se envía y por dónde va ahora) y qué se ve en el mapa.
+
+## Cómo viaja la ubicación
+
+- **Canal oculto propio** `AlfaJauria` (`Canal.lua`): temporal, sin contraseña y sin ventana de chat; un filtro oculta cualquier cosa que diga en el chat. Se entra cuando ya están los canales del juego (el General sigue siendo /1). `JoinTemporaryChannel` o `JoinChannelByName` se buscan al vuelo: no están en la documentación de Forever, pero la interfaz de Forever usa `JoinPermanentChannel`, `LeaveChannelByName` y `GetChannelName` (`Blizzard_ChatFrameBase/Shared`), y `SendAddonMessage` documenta el destino de canal y sus respuestas `InvalidChannel` y `ChannelThrottle`.
+- **Sin canal** (el juego no deja entrar, o todavía no se entró): la hermandad, y solo se ve a quien usa Alfa y comparte.
+- Mensajes con el prefijo `AlfaManada` (`Red.lua`): `1H` (estoy aquí, al entrar al canal; los demás responden con su posición tras una espera al azar, una vez cada 30 s como mucho), `1P` (mapa, x, y, nivel, clase: cada 10 s si te moviste 10 yardas, cada 4 min quieto), `1X` (dejé de compartir), y `1J`/`1K` por susurro para **Quiero unirme**. Cola con tope de 1 mensaje por segundo (ráfaga de 3) que espera si el servidor frena.
+- Nada sale dentro de instancias, con el bloqueo de mensajes del juego (`InChatMessagingLockdown`) ni desde una cuenta de prueba o restringida. Lo recibido caduca a los 5 min y se olvida a los 15; como mucho 200 personas.
 
 ## Privacidad
 
-La primera vez (al abrir la página o un minuto después de entrar, si estás en una hermandad) se pregunta con un diálogo si compartes tu ubicación. **Por defecto no se comparte nada**, y al aceptar solo se comparte con la hermandad. Compartir con amigos es un ajuste aparte. Todo se apaga cuando quieras. Nunca se usan canales públicos.
+**Por defecto no se comparte nada.** Al instalar sale la pregunta "¿Compartes tu ubicación con La Jauría?" (un `K.Dialogo`), una sola vez, fuera de combate y de instancias; si está el asistente de primer arranque (`Alfa_Bienvenida`), lo pregunta él. Quien no comparte no entra al canal ni envía ni recibe nada: se ve entre quienes comparten. Tu grupo siempre se ve (posiciones del juego). La respuesta de la 0.1.0 ("compartir con la hermandad") no cuenta: se vuelve a preguntar.
+
+## Contrato (global `AlfaManada`)
+
+- `AlfaManada.PreguntarCompartir(alTerminar)`: la pregunta; `alTerminar(comparte)` al responder o cerrarla.
+- `AlfaManada.Compartir(si)`, `AlfaManada.Comparte()`.
+- `AlfaManada.Abrir()`.
+- `AlfaManada.Resumen()` → `{ comparte, manada, grupo, siguiendo, via }` (para Hoy, por ejemplo).
 
 ## Comandos
 
 - `/alfa manada` abre la página.
 - `/alfa manada seguir <nombre>` te lleva con alguien del grupo o que comparte. `/alfa manada parar` deja de seguir.
 - `/alfa manada compartir sí|no`
-- `/alfa manada clan`, `/alfa manada ajustes`
-- `/alfa manada estado` muestra qué se envía y qué se recibe, con la cola y los frenos.
+- `/alfa manada estado`: qué se envía y por dónde, el canal (estado, número, intentos), la cola y los frenos.
 
 ## Ajustes (`manada.*`)
 
-`red` (conectar con la manada), `compartir` (hermandad, se pregunta), `compartirAmigos`, `verAmigos`, `capaGrupo`, `capaJauria`, `capaAmigos`, `minimapa`, `verDesconectados`. Datos: `AlfaNucleoDB.manada` (`preguntado`, `visto`).
+`compartir` (se pregunta), `capaGrupo`, `capaJauria`, `minimapa`. Datos: `AlfaNucleoDB.manada` (`preguntado`, `consentimiento`).
 
 ## Para el clan: `Clan.lua`
 
-Edita el nombre exacto de la hermandad (`hermandad`), el lema, la descripción, lo que ofrecen y, sobre todo, **`oficiales`**: nombres completos de personaje como salen en el juego (con apellido, por ejemplo "Nombre Apellido"). También puedes cambiar el mensaje para pedir invitación. `discord = nil` usa el enlace de Alfa.
+Nombre exacto de la hermandad (`hermandad`), lema, descripción, lo que ofrecen y **`oficiales`** (nombres completos de personaje, con apellido). `discord = nil` usa el enlace de Alfa.
 
 ## Para verificar en el juego
 
-1. `/alfa manada`: la insignia, las tres secciones y que todo quepa sin cortarse. Pruébalo también con la apariencia Hearth.
-2. Con alguien de la hermandad con Alfa, los dos aceptan compartir: ¿se ven en el mapa y el minimapa con nombre y color de clase? ¿Sale su zona y distancia en la lista? ¿Hace cuánto se supo?
-3. **Seguir** a esa persona: ¿la flecha y la ruta la siguen mientras camina? ¿Se detiene al llegar con "Llegaste con..."? ¿"Dejar de seguir" y "Volver a la guía" la sueltan?
-4. Grupo: Seguir a alguien del grupo sin que comparta nada. En banda (raid), ¿el juego da posiciones? La documentación dice "solo grupo".
-5. Entrar a una mazmorra: el estado dice "En pausa" y nada sale (`/alfa manada estado`). Al salir, la posición vuelve a salir sola.
-6. Amigos: con "Compartir con mis amigos" en los dos lados, ¿se ven? ¿Llega algún aviso "no hay ningún jugador llamado..." al saludar? No debería, porque solo se saluda a amigos conectados.
-7. **Quiero unirme** desde un personaje sin hermandad, con un oficial de `Clan.lua` conectado y con Alfa: ¿se abre el susurro con el mensaje? ¿Se ocultan los avisos de "no está conectado" de los oficiales desconectados?
-8. Susurrar e Invitar desde la lista con nombres con apellido ("Ana Smith"): ¿el susurro va a la persona correcta? ¿La invitación llega?
-9. "Hace cuánto lo viste" para desconectados (usa `GetGuildRosterLastOnline` si existe, o lo guardado).
-10. Con `Alfa_Mundo` instalado, las capas Grupo, La Jauría y Amigos aparecen en su control y apagarlas allí las apaga aquí.
+1. Al entrar por primera vez: ¿sale la pregunta a los ~20 s (sin el asistente de primer arranque)? Esc no comparte; "Sí, compartir" sí.
+2. Con compartir encendido: `/alfa manada estado` dice "canal oculto AlfaJauria (dentro, número N)". ¿El General sigue en /1? ¿Nada del canal sale en el chat ni al entrar?
+3. Dos personajes con Alfa **fuera de grupo y de hermandad**, los dos comparten: ¿se ven en la página y en el mapa con nombre, zona y distancia? Si no: `/alfa manada estado` en los dos (respuesta del último envío) y anotar el número del resultado.
+4. **Seguir** a esa persona: ¿la flecha la sigue mientras camina y se detiene al llegar? "Dejar de seguir" la suelta.
+5. Apagar compartir: el otro deja de verte enseguida (llega `1X`) y `/chatlist` ya no muestra AlfaJauria.
+6. Entrar a una mazmorra: la tarjeta dice "En pausa"; al salir la posición vuelve a salir sola.
+7. Cuenta de prueba: la tarjeta lo dice y no intenta nada.
+8. **Quiero unirme** desde un personaje sin la hermandad del clan, con un oficial de `Clan.lua` conectado y con Alfa.
+9. Copiar el Discord: el botón de la tarjeta lleva al enlace y lo deja elegido; Ctrl+C lo copia.
