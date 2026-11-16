@@ -56,6 +56,23 @@ PARCHES = [
     ("Alfa/UI/Options.lua",
      'local credH, credText = block(L["Credits"], ',
      lambda c: 'local credH, credText = block(L["Credits"], ' + _creditos(c)),
+    # Menu del boton del minimapa: un acceso por cada modulo de Alfa cargado.
+    ("Alfa/Maps/MinimapButton.lua",
+     '\titems[#items + 1] = { text = L["Options"], icon = "sliders", onClick = open("SHOW_OPTIONS") }\n',
+     lambda c: (
+         '\titems[#items + 1] = { text = L["Options"], icon = "sliders", onClick = open("SHOW_OPTIONS") }\n'
+         '\tlocal mods = AlfaNucleo and AlfaNucleo.modulos\n'
+         '\tif mods and #mods > 0 then\n'
+         '\t\tlocal lista = {}\n'
+         '\t\tfor i = 1, #mods do lista[i] = mods[i] end\n'
+         '\t\ttable.sort(lista, function(a, b) return (a.orden or 99) < (b.orden or 99) end)\n'
+         '\t\titems[#items + 1] = { separator = true }\n'
+         '\t\tfor _, m in ipairs(lista) do\n'
+         '\t\t\tlocal id = m.id\n'
+         '\t\t\titems[#items + 1] = { text = m.nombre, icon = m.icono,\n'
+         '\t\t\t\tonClick = function() ns.SetHidden(false) ns.Fire("SHOW_OPTIONS", id) end }\n'
+         '\t\tend\n'
+         '\tend\n')),
 ] + [
     ("Alfa/UI/Options.lua", f'L["{viejo}"]', (lambda n: lambda c: f'L["{n}"]')(nuevo))
     for viejo, nuevo, _ in ACERCA
