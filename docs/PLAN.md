@@ -31,3 +31,12 @@ Estrategia acordada el 15/11/2026: construir todo y probarlo en el juego al fina
 - [ ] Pasar tus ajustes de Polestar a Alfa (`PolestarDB` → `AlfaDB`) al instalar.
 - [ ] Prueba en el juego, módulo por módulo, con /reload.
 - [ ] Página de CurseForge en español e inglés, repositorio público (GPL: el código debe estar disponible).
+
+## Integración pendiente (sale de los reportes de cada módulo)
+
+- [ ] Núcleo: `N.Modulo` dentro de una página que ya existe del motor (Comodidades lo hace a mano reenviando `SHOW_OPTIONS`), y que `N.Abrir(id)` llegue a esa página.
+- [ ] Núcleo: vía pública entre módulos (por ejemplo, que Bolsas e Inicio pregunten a Comercio el valor y el consejo de un objeto).
+- [ ] Motor: forma estable de obtener el marco del temporizador de vuelo (hoy Comodidades usa el global `AlfaFlightTimer`).
+- [ ] Choque: `behavior.closeSkipped` del motor puede cerrar la ventana antes de que "todas las misiones" de Comodidades actúe.
+- [ ] Comodidades: cada grupo viene apagado, porque en Leatrix sus interruptores principales estaban en Off; decidir con Toxic cuáles vienen encendidos.
+- [ ] Páginas propias (Pesca, Comercio, Inicio): sus ajustes no salen en el buscador de opciones.
