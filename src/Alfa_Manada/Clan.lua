@@ -35,9 +35,10 @@ M.Clan = {
 		"Un Discord activo para organizarnos",
 	},
 
-	-- A quién pedirle la invitación (ejemplo: cámbialo por los oficiales reales).
+	-- A quién pedirle la invitación. Se escribe como lo da el juego; la
+	-- comparación acepta "Toxic-Darunia" y "Toxic Darunia" por igual.
 	oficiales = {
-		"Toxic",
+		"Toxic-Darunia",
 	},
 
 	-- Lo que se escribe en el susurro de "Quiero unirme". Quien juega lo ve

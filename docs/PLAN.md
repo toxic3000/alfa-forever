@@ -44,4 +44,4 @@ Estrategia acordada el 15/11/2026: construir todo y probarlo en el juego al fina
 - [ ] Acerca de: agregar GatherLite (MIT) y OpenMap (MIT) a los créditos visibles.
 - [ ] Núcleo: opción `alComando(rest)` en `N.Modulo` para comandos con argumentos (Manada y Pesca lo registran aparte).
 - [ ] Motor: destino "persistente" en `Nav.SetTarget` para que Seguir (La Jauría) no se suelte cuando la guía cambia de paso.
-- [ ] La Jauría: nombres completos de los oficiales en `src/Alfa_Manada/Clan.lua` (hoy dice "Toxic" de ejemplo) y revisar el texto del clan.
+- [x] La Jauría: oficial para "Quiero unirme" = Toxic-Darunia (revisar el texto del clan en Clan.lua cuando se quiera).
