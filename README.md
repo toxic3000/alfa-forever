@@ -12,6 +12,7 @@ Hecho por Toxic y La Jauría — [Discord](https://discord.gg/hUNjA6BJwh). Softw
 | `/alfa inicio` | Inicio | Sesión, diario, recordatorios y tu siguiente paso |
 | `/alfa manada` | La Jauría | Tu grupo, tu hermandad y tus amigos en el mapa, Seguir, y la página del clan |
 | `/alfa rutas` | Rutas | Árbol de ruta propio, liberar misiones y catálogo de objetos |
+| `/alfa curacion` | Curación | Marcos de grupo y banda para curar con clic, con preajustes por clase |
 | `/alfa builds` | Builds | Talentos por objetivo y estilo, pesos, equipo meta y ayuda en combate |
 | `/alfa mapa` | Mundo | Mapa continuo con un solo control de capas y modo limpio |
 | `/alfa recoleccion` | Recolección | Nodos, pines y ruta de farmeo |
