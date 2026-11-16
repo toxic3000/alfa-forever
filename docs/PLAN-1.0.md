@@ -38,3 +38,13 @@ Cada agente trabaja **solo** en sus carpetas o archivos. Lo que necesite de otro
 ## Versión
 
 La 0.1.0 instalada es la que Toxic llama "0.5". La siguiente será la **1.0.0**.
+
+## Pedidos agregados (16/11, tarde)
+
+- **Nunca mandar a una misión que todavía no puedes tomar.** En la captura de Toxic, la guía lo mandó a "Acepta Lingotes Forjaluz" sin que esa misión estuviera habilitada. Antes de proponer un paso, la ruta comprueba que la misión esté disponible: nivel, misiones previas, facción, clase y profesión. Si no lo está, **arma el plan con lo necesario** (las misiones previas o los requisitos) para llegar al objetivo. Lo mismo vale al elegir un objetivo: si falta contenido, el plan incluye cómo conseguirlo. (A1)
+- **Plan para cerrar las misiones que tienes** (Liberar) o elegir una y armar su plan. (A1)
+- **Bolsas llenándose:** sugerir qué vender, qué conservar o ir al comerciante, con datos de Comercio (valor, consejo) y Bolsas. (G)
+- **Seguir al marcador:** opción de flecha y ruta hacia cualquier marcador del mapa. (H)
+- **Nada vacío sin sentido:** si una sección o tarjeta no tiene contenido útil, no se muestra, o muestra qué hacer para llenarla. (Todos)
+- **Alfa ya es el addon:** no dependemos de otros addons; todo lo que hace falta está en Alfa.
+- **Control de versiones** (ver `docs/VERSIONES.md`): cada versión publicada lleva número, notas y etiqueta en git.
