@@ -1,0 +1,5 @@
+# Créditos de Alfa - Builds
+
+- **Polestar** (el motor de Alfa, GPL-3.0, The Polestar authors; aviso completo en `LICENSE-Polestar.txt`): el orden de talentos de los builds "Subir solo / Equilibrado" de paladín, cazador, pícaro, sacerdote, chamán, mago, brujo y druida (`Builds/*.lua` salvo `Warrior.lua`) sale de sus planes de nivelación (`talents/forever`, en el motor `Alfa/Talents/Builds.lua`), convertidos al formato de Alfa (spellID y rango). En el juego también se usan la foto del árbol del motor (filas, columnas y flechas), sus pesos de estadísticas (`Gear.WeightsFor`), sus escalas personalizadas (`Gear.Scales`, `Gear.Pawn`), su Codex de objetos y su buscador "Guíame" (`Lookup`).
+- Los builds del guerrero, los textos en español y todo el código del módulo son de Alfa (Toxic / La Jauría).
+- **Sonah** y **Pawn** no tienen licencia libre: de ellos solo se imitan las funciones (guía de talentos, ayuda de rotación, alertas, temporizador de golpe, panel de estadísticas, comparar equipo). No se copió código ni selecciones de builds. Los spellID de los rangos de Abrumar, Revancha, Ejecutar y demás son datos del juego.

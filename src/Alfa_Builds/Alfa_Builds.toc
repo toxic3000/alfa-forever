@@ -1,0 +1,27 @@
+## Interface: 16001
+## Title: |cff8be04eAlfa|r - Builds
+## Notes: Te ayuda a armar tu personaje: talentos, estadísticas, equipo, profesiones y ayudas de combate.
+## Author: Toxic - La Jauria
+## Version: dev
+## X-License: GPL-3.0-only
+## Dependencies: Alfa, Alfa_Nucleo
+## Category: Alfa
+
+Textos.lua
+Datos.lua
+Builds\Warrior.lua
+Builds\Paladin.lua
+Builds\Hunter.lua
+Builds\Rogue.lua
+Builds\Priest.lua
+Builds\Shaman.lua
+Builds\Mage.lua
+Builds\Warlock.lua
+Builds\Druid.lua
+Arbol.lua
+Pesos.lua
+Equipo.lua
+Combate.lua
+Compartir.lua
+Vista.lua
+Builds.lua
