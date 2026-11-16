@@ -1,0 +1,26 @@
+## Interface: 16001
+## Title: |cff8be04eAlfa|r - Mazmorras
+## Notes: Diario de mazmorras: botín y consejos por jefe, modo historia, tu progreso y los avisos de jefes del juego.
+## Author: Toxic - La Jauria
+## Version: dev
+## X-License: GPL-3.0-only
+## Dependencies: Alfa, Alfa_Nucleo
+## OptionalDeps: Alfa_Mundo
+## Category: Alfa
+
+Textos.lua
+Consejos\SimaIgnea.lua
+Consejos\CuevasDeLosLamentos.lua
+Consejos\MinasDeLaMuerte.lua
+Consejos\CastilloDeColmilloOscuro.lua
+Consejos\MazmorrasDeVentormenta.lua
+Consejos\CavernasDeBrazanegra.lua
+Consejos\Gnomeregan.lua
+Consejos\HoradoRajacieno.lua
+Consejos\MonasterioEscarlata.lua
+Consejos\ZahurdaRajacieno.lua
+Consejos\Uldaman.lua
+Datos.lua
+Avisos.lua
+Vista.lua
+Capa.lua

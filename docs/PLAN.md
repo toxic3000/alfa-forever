@@ -45,3 +45,5 @@ Estrategia acordada el 15/11/2026: construir todo y probarlo en el juego al fina
 - [ ] Núcleo: opción `alComando(rest)` en `N.Modulo` para comandos con argumentos (Manada y Pesca lo registran aparte).
 - [ ] Motor: destino "persistente" en `Nav.SetTarget` para que Seguir (La Jauría) no se suelte cuando la guía cambia de paso.
 - [x] La Jauría: oficial para "Quiero unirme" = Toxic-Darunia (revisar el texto del clan en Clan.lua cuando se quiera).
+- [ ] Núcleo: `N.Repintar(id)` oficial para volver a dibujar una página propia (Mazmorras, Pesca e Inicio usan piezas internas de Options).
+- [ ] Mazmorras: confirmar en el juego si Forever trae las CVars de avisos de jefes (la variante "Camelot" dice `HasBossWarnings = false`).
