@@ -51,6 +51,8 @@ def main() -> int:
                 return 1
             destino = MOTOR / r
             if destino.exists():
+                if not base.get(r):
+                    base[r] = huella(origen)  # se toma de nuevo su base (por si otro proceso la perdio)
                 print(f"motor/{r} ya existe: no se sobrescribe")
                 continue
             destino.parent.mkdir(parents=True, exist_ok=True)

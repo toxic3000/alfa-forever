@@ -72,6 +72,7 @@ function N.Modulo(spec)
 	local ok, err = A.RegisterOptions({
 		page = spec.nombre, key = spec.id, icon = spec.icono, order = spec.orden,
 		subtitle = spec.subtitulo, custom = spec.construir, controls = spec.controles or {},
+		seccion = spec.seccion, -- hoy, aventura, personaje, mundo, oficios, manada o ajustes (docs/INTERFAZ.md)
 	})
 	if not ok and geterrorhandler then geterrorhandler()(err) end
 	if spec.comando then

@@ -1,0 +1,20 @@
+{
+ "Alfa/Interfaz/Textos.lua": null,
+ "Alfa/Maps/MinimapButton.lua": "1d6a5512a1b248da4770742c3d975e33fea383fe6537222b0c2b570221fb3d05",
+ "Alfa/Media/UI/cut-line10.tga": null,
+ "Alfa/Media/UI/cut-line4.tga": null,
+ "Alfa/Media/UI/cut-line6.tga": null,
+ "Alfa/Media/UI/cut-line8.tga": null,
+ "Alfa/Media/UI/cut.tga": null,
+ "Alfa/Media/UI/knob.tga": null,
+ "Alfa/Media/UI/sec-ajustes.tga": null,
+ "Alfa/Media/UI/sec-aventura.tga": null,
+ "Alfa/Media/UI/sec-hoy.tga": null,
+ "Alfa/Media/UI/sec-manada.tga": null,
+ "Alfa/Media/UI/sec-mundo.tga": null,
+ "Alfa/Media/UI/sec-oficios.tga": null,
+ "Alfa/Media/UI/sec-personaje.tga": null,
+ "Alfa/Theme/Theme.lua": "a51d81a80627fbc38580a90721f67c02aa75dfc5eb077fb32d6d67af127567c1",
+ "Alfa/Theme/Widgets.lua": "0493f942b1e1c24ebbda5d8c24370203e9ef6fecc8a84b86364e914cd2f66ad1",
+ "Alfa/UI/Options.lua": "b1766abd1622437d70eb7774659d7d6af414e5072479914a8ab164225a7cfc68"
+}
