@@ -69,6 +69,24 @@ end
 function N.ModuloPorId(id) return porId[id] end
 function N.Abrir(id) A.Fire("SHOW_OPTIONS", id) end
 
+-- Ancho útil de una página de la ventana de Alfa.
+function N.AnchoPagina()
+	local O = A.UI and A.UI.Options
+	local win = O and O.frame
+	return (win and win.BodyWidth) or 560
+end
+
+-- Dentro de una página propia (construir), dibuja controles estándar del motor
+-- (toggle, slider, dropdown, button, binding; los mismos de A.RegisterOptions)
+-- desde la altura y. Devuelve la nueva altura. Los controles con `key` leen y
+-- guardan "id.clave" en los ajustes, como los de cualquier página del motor.
+function N.FilasDeAjustes(view, controles, y)
+	local O = A.UI and A.UI.Options
+	if not (O and O.Rows) then return y end
+	view.alfaFilas = view.alfaFilas or {}
+	return O.Rows(view, controles, y, view.alfaFilas)
+end
+
 -- Ajustes del módulo, guardados en AlfaDB.settings[id].
 function N.Get(id, clave) return A.Get(id .. "." .. clave) end
 function N.Set(id, clave, valor) A.Set(id .. "." .. clave, valor) end
@@ -93,16 +111,17 @@ end
 ---------------------------------------------------------------------------
 function N.Imprimir(...) A.Print(...) end
 
--- 123456 cobre -> "12o 34p 56c" con los colores del juego.
+-- 123456 cobre -> "12o 34p 56c" (o "12g 34s 56c" en inglés) con los colores del juego.
+local LETRAS = N.espanol and { "o", "p", "c" } or { "g", "s", "c" }
 function N.Dinero(cobre, corto)
 	cobre = math.floor(tonumber(cobre) or 0)
 	local signo = cobre < 0 and "-" or ""
 	cobre = math.abs(cobre)
 	local o, p, c = math.floor(cobre / 10000), math.floor(cobre / 100) % 100, cobre % 100
 	local partes = {}
-	if o > 0 then partes[#partes + 1] = ("|cffffd700%d|ro"):format(o) end
-	if p > 0 and not (corto and o >= 100) then partes[#partes + 1] = ("|cffc7c7cf%d|rp"):format(p) end
-	if (c > 0 and not (corto and o > 0)) or #partes == 0 then partes[#partes + 1] = ("|cffeda55f%d|rc"):format(c) end
+	if o > 0 then partes[#partes + 1] = ("|cffffd700%d|r%s"):format(o, LETRAS[1]) end
+	if p > 0 and not (corto and o >= 100) then partes[#partes + 1] = ("|cffc7c7cf%d|r%s"):format(p, LETRAS[2]) end
+	if (c > 0 and not (corto and o > 0)) or #partes == 0 then partes[#partes + 1] = ("|cffeda55f%d|r%s"):format(c, LETRAS[3]) end
 	return signo .. table.concat(partes, " ")
 end
 

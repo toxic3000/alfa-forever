@@ -1,0 +1,17 @@
+## Interface: 16001
+## Title: |cff8be04eAlfa|r - Comercio
+## Notes: ¿Vender, subastar o transformar? Precios de la subasta y consejo por objeto.
+## Author: Toxic - La Jauria
+## Version: dev
+## X-License: GPL-3.0-only
+## Dependencies: Alfa, Alfa_Nucleo
+## Category: Alfa
+
+Textos.lua
+Datos.lua
+Precios.lua
+Subasta.lua
+Recetas.lua
+Consejo.lua
+Tooltip.lua
+Pagina.lua
