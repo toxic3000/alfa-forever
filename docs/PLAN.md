@@ -24,7 +24,7 @@ Estrategia acordada el 15/11/2026: construir todo y probarlo en el juego al fina
 
 ## Pendientes antes del lanzamiento
 
-- [ ] Enlace de Discord de La Jauría (`tools/alfa.json` → `urls.discord`).
+- [x] Enlace de Discord de La Jauría: https://discord.gg/hUNjA6BJwh
 - [ ] Logo y marca de Alfa (`Alfa/Media/UI/logo`, `wordmark`), con colores de La Jauría.
 - [ ] Textos del motor que mencionan "Polestar Client" (avisos de actualización) y la página "Novedades", que hoy son de Polestar.
 - [ ] Texto de "Acerca de" con la historia de Alfa y La Jauría.
