@@ -25,7 +25,8 @@ IDIOMAS = ["deDE", "frFR", "ptBR", "ruRU", "koKR", "zhCN", "zhTW"]
 NOMBRES = {"deDE": "Deutsch", "frFR": "Français", "ptBR": "Português (Brasil)", "ruRU": "Русский",
            "koKR": "한국어", "zhCN": "简体中文", "zhTW": "繁體中文"}
 SALIDA = SRC / "Alfa_Nucleo" / "Idiomas"
-HUECOS = re.compile(r"%[-+ #0]*\d*(?:\.\d+)?[sdifgxXq%]|\|c[0-9a-fA-F]{8}|\|r|\|T[^|]*\|t|\|n|\n")
+# Sin la bandera de espacio: "0 % se rompe" es texto normal, no un hueco "% s".
+HUECOS = re.compile(r"%[-+#0]*\d*(?:\.\d+)?[sdifgxXq%]|\|c[0-9a-fA-F]{8}|\|r|\|T[^|]*\|t|\|n|\n")
 
 
 def _lua():
