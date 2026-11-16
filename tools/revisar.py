@@ -14,6 +14,9 @@ import sys
 
 import lupa.lua51 as lua51
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import renombrar  # noqa: E402
+
 RAIZ = pathlib.Path(__file__).resolve().parent.parent
 DIST = RAIZ / "dist"
 _lua = lua51.LuaRuntime(unpack_returned_tuples=True)
@@ -78,8 +81,10 @@ def main() -> int:
             manifiesto(toc, errores)
         if (RAIZ / "src" / carpeta.name).is_dir():
             for archivo in carpeta.rglob("*.lua"):
-                if re.search(r"(?i)polestar", archivo.read_bytes().decode("latin-1")):
-                    errores.append(f"{archivo.relative_to(DIST)} todavia dice Polestar")
+                codigo = "".join(t for tipo, t in renombrar.trozos_lua(
+                    archivo.read_bytes().decode("latin-1")) if tipo != "comentario")
+                if re.search(r"(?i)polestar", codigo):
+                    errores.append(f"{archivo.relative_to(DIST)} dice Polestar fuera de comentarios")
     for e in errores:
         print("ERROR", e)
     print(f"{total} archivos Lua revisados en {len(carpetas)} carpetas: "

@@ -112,6 +112,8 @@ def main() -> int:
     if src.is_dir():
         for carpeta in sorted(p for p in src.iterdir() if p.is_dir()):
             shutil.copytree(carpeta, dist / carpeta.name)
+            for toc in (dist / carpeta.name).glob("*.toc"):
+                escribir(toc, ajustar_toc(leer(toc), cfg, False))  # version unica
             propios += 1
 
     (dist / "NOTICE-ALFA.txt").write_text(
