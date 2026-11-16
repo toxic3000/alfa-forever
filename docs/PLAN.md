@@ -40,3 +40,5 @@ Estrategia acordada el 15/11/2026: construir todo y probarlo en el juego al fina
 - [ ] Choque: `behavior.closeSkipped` del motor puede cerrar la ventana antes de que "todas las misiones" de Comodidades actúe.
 - [ ] Comodidades: cada grupo viene apagado, porque en Leatrix sus interruptores principales estaban en Off; decidir con Toxic cuáles vienen encendidos.
 - [ ] Páginas propias (Pesca, Comercio, Inicio): sus ajustes no salen en el buscador de opciones.
+- [ ] Mundo: `AlfaMundo.ActivarCapa(id, activa)` para cambiar capas desde otros módulos, y una proyección para pintar pines en el mapa continuo (Recolección solo pinta en mapas de zona).
+- [ ] Acerca de: agregar GatherLite (MIT) y OpenMap (MIT) a los créditos visibles.

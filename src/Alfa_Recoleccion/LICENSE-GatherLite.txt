@@ -1,0 +1,37 @@
+Alfa - Recoleccion reutiliza codigo y datos originales de GatherLite
+(https://www.curseforge.com/wow/addons/gatherlite), de Wuild, bajo la licencia MIT
+que se reproduce abajo sin cambios:
+
+  - Base.lua: la base de nodos de Forever (plugins/database/data/forever.lua).
+  - Catalogo.lua: la lista de recursos, sus IDs de objeto, niveles de habilidad y
+    nombres en espanol e ingles (scripts/nodes.lua y scripts/locales/*.lua).
+  - Nodos.lua y Deteccion.lua: la forma de detectar la recoleccion (hechizo enviado,
+    terminado y botin abierto), de normalizar nombres y de colorear el nivel
+    necesario (scripts/methods.lua y scripts/main.lua), reescrita para Alfa.
+
+No se usa la navegacion de Shortest Path Forever que GatherLite incluye bajo GPL:
+Alfa trae la suya en el motor.
+
+----------------------------------------------------------------------------
+
+MIT License
+
+Copyright (c) 2019 Wuild
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
