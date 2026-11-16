@@ -10,3 +10,10 @@
 ## Category: Alfa
 
 Nucleo.lua
+Idiomas\deDE.lua
+Idiomas\frFR.lua
+Idiomas\ptBR.lua
+Idiomas\ruRU.lua
+Idiomas\koKR.lua
+Idiomas\zhCN.lua
+Idiomas\zhTW.lua
