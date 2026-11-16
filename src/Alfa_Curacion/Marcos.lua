@@ -1,0 +1,1052 @@
+-- Alfa - Curación: los marcos de grupo y banda (Toxic / La Jauría). GPL-3.0.
+--
+-- Una cabecera segura (SecureGroupHeaderTemplate) arma un botón seguro
+-- (SecureUnitButtonTemplate) por compañero: tú y tu grupo, o tu banda de
+-- hasta 40. La cabecera reordena y cambia de unidad sola, también en combate.
+-- Los 40 botones se crean de una vez fuera de combate (startingIndex), así
+-- ninguno nace en una pelea; si alguno naciera, initialConfigFunction le da
+-- su tamaño y sus clics (Mapa.lua) desde el entorno seguro.
+--
+-- Lo que se ve (barras, textos, bordes) son marcos normales dentro de cada
+-- botón y se pintan por eventos de unidad. Con valores secretos (combate,
+-- mazmorras) nada se compara ni se suma:
+--   * Vida y curas entrantes van directo a StatusBar:SetMinMaxValues/SetValue.
+--     Las entrantes son una segunda barra pegada al final de la vida.
+--   * El alcance (UnitInRange, siempre secreto) va con SetAlphaFromBoolean.
+--   * El objetivo, si UnitIsUnit llega secreto, también con SetAlphaFromBoolean.
+--   * Los perjuicios que puedes quitar: C_UnitAuras.GetUnitAuraInstanceIDs con
+--     el filtro "HARMFUL|RAID" (los que tú puedes disipar, AuraUtil de
+--     Forever) y su color con C_UnitAuras.GetAuraDispelTypeColor y una curva.
+--   * Rol, amenaza y estado (muerto, desconectado) solo si llegan legibles; el
+--     rol secreto usa UnitFrameUtil.UpdateUnitFrameRoleIcon, la vía de Blizzard.
+-- Nada decide a quién curar: eso lo decide tu clic.
+
+local ADDON, M = ...
+local N = AlfaNucleo
+local A = N.A
+local T = A.Theme
+local L = M.L
+local ID = M.ID
+local secreto = M.Secreto
+
+local floor, ceil, max, min = math.floor, math.ceil, math.max, math.min
+
+M.AJUSTES = {
+	activo = true,           -- usar los marcos de Alfa
+	solo = false,            -- verte a ti estando solo
+	ocultarBlizzard = true,  -- ocultar los marcos de grupo de Blizzard
+	ancho = 88,
+	alto = 36,
+	porColumna = 5,          -- miembros por columna (o por fila)
+	crecer = "abajo",        -- "abajo" | "derecha"
+	orden = "grupo",         -- "grupo" | "rol" | "clase" | "nombre"
+	colorClase = true,
+	entrantes = true,        -- curas que van llegando
+	amenaza = true,
+	disipar = true,          -- perjuicios que puedes quitar
+	porcentaje = false,      -- porcentaje de vida
+	alcance = true,          -- atenuar a quien está lejos
+	descripcion = true,      -- cuadro del jugador al pasar el ratón (fuera de combate)
+}
+
+local function opt(k) return N.Get(ID, k) end
+
+local BLANCO = "Interface\\Buttons\\WHITE8x8"
+local ROLES_TEX = "Interface\\LFGFrame\\UI-LFG-ICON-PORTRAITROLES"
+local ROLES = {
+	TANK = { 0, 19 / 64, 22 / 64, 41 / 64 },
+	HEALER = { 20 / 64, 39 / 64, 1 / 64, 20 / 64 },
+	DAMAGER = { 20 / 64, 39 / 64, 22 / 64, 41 / 64 },
+}
+local VERDE = { 0.545, 0.878, 0.306 } -- #8be04e, el verde de Alfa
+local GRIS = { 0.36, 0.37, 0.4 }
+local DISIPAR = { 0.72, 0.38, 1 }     -- si el juego no da el color del perjuicio
+local AMENAZA = { 1, 0.24, 0.2 }
+local FUERA = 0.4                      -- opacidad de quien está fuera de alcance
+local MAX = 40
+local ESPACIO = 3
+local TOPE_ALCANCE = 8                 -- botones revisados por vuelta del temporizador
+local CADA_ALCANCE = 0.5
+
+local porUnidad = {}                   -- "raid3" -> botón
+M.porUnidad = porUnidad
+
+---------------------------------------------------------------------------
+-- Curvas: color del perjuicio (tipo de disipación -> color) y porcentaje
+---------------------------------------------------------------------------
+
+local curvaDisipar, curvaPorcentaje
+do
+	local CU = C_CurveUtil
+	if CU and CU.CreateColorCurve and CreateColor then
+		local ok, c = pcall(CU.CreateColorCurve)
+		if ok and c then
+			local bien = pcall(function()
+				if c.SetType and Enum and Enum.LuaCurveType and Enum.LuaCurveType.Step then c:SetType(Enum.LuaCurveType.Step) end
+				c:AddPoint(0, CreateColor(DISIPAR[1], DISIPAR[2], DISIPAR[3], 1))
+				c:AddPoint(1, CreateColor(0.2, 0.6, 1, 1))    -- magia
+				c:AddPoint(2, CreateColor(0.6, 0, 1, 1))      -- maldición
+				c:AddPoint(3, CreateColor(0.6, 0.4, 0, 1))    -- enfermedad
+				c:AddPoint(4, CreateColor(0, 0.6, 0, 1))      -- veneno
+			end)
+			if bien then curvaDisipar = c end
+		end
+	end
+	if CU and CU.CreateCurve then
+		local ok, c = pcall(CU.CreateCurve)
+		if ok and c and pcall(function() c:AddPoint(0, 0); c:AddPoint(1, 100) end) then curvaPorcentaje = c end
+	end
+end
+
+---------------------------------------------------------------------------
+-- Lo que se ve de un compañero (también en los marcos de prueba)
+---------------------------------------------------------------------------
+
+local function textura(padre, capa, sub)
+	local t = padre:CreateTexture(nil, capa or "ARTWORK", nil, sub)
+	t:SetTexture(BLANCO)
+	return t
+end
+
+-- Cuatro texturas de `g` px por dentro del marco.
+local function borde(padre, g, capa)
+	local e = {}
+	for i = 1, 4 do e[i] = textura(padre, capa or "OVERLAY") end
+	e[1]:SetPoint("TOPLEFT", padre, "TOPLEFT", 0, 0)
+	e[1]:SetPoint("TOPRIGHT", padre, "TOPRIGHT", 0, 0)
+	e[1]:SetHeight(g)
+	e[2]:SetPoint("BOTTOMLEFT", padre, "BOTTOMLEFT", 0, 0)
+	e[2]:SetPoint("BOTTOMRIGHT", padre, "BOTTOMRIGHT", 0, 0)
+	e[2]:SetHeight(g)
+	e[3]:SetPoint("TOPLEFT", e[1], "BOTTOMLEFT", 0, 0)
+	e[3]:SetPoint("BOTTOMLEFT", e[2], "TOPLEFT", 0, 0)
+	e[3]:SetWidth(g)
+	e[4]:SetPoint("TOPRIGHT", e[1], "BOTTOMRIGHT", 0, 0)
+	e[4]:SetPoint("BOTTOMRIGHT", e[2], "TOPRIGHT", 0, 0)
+	e[4]:SetWidth(g)
+	return e
+end
+
+local function colorBorde(e, r, g, b, a)
+	for i = 1, 4 do e[i]:SetVertexColor(r, g, b, a or 1) end
+end
+
+local function verBorde(e, si)
+	for i = 1, 4 do
+		e[i]:SetAlpha(1)
+		if si then e[i]:Show() else e[i]:Hide() end
+	end
+end
+
+local function texto(padre, rol)
+	local fs = padre:CreateFontString(nil, "OVERLAY")
+	if T and T.Font then T.Font(fs, rol) end
+	fs:SetTextColor(1, 1, 1, 1)
+	fs:SetShadowOffset(1, -1)
+	fs:SetShadowColor(0, 0, 0, 1)
+	fs:SetJustifyH("CENTER")
+	fs:SetWordWrap(false)
+	return fs
+end
+
+function M.CrearCuerpo(padre)
+	local c = CreateFrame("Frame", nil, padre)
+	c:SetAllPoints(padre)
+	c.fondo = textura(c, "BACKGROUND")
+	c.fondo:SetAllPoints(c)
+	c.fondo:SetVertexColor(0.02, 0.025, 0.04, 0.92)
+
+	local barra = CreateFrame("StatusBar", nil, c)
+	barra:SetPoint("TOPLEFT", c, "TOPLEFT", 1, -1)
+	barra:SetPoint("BOTTOMRIGHT", c, "BOTTOMRIGHT", -1, 1)
+	barra:SetStatusBarTexture(BLANCO)
+	barra:SetMinMaxValues(0, 1)
+	barra:SetValue(1)
+	barra:SetStatusBarColor(VERDE[1], VERDE[2], VERDE[3], 1)
+	barra.fondo = textura(barra, "BACKGROUND")
+	barra.fondo:SetAllPoints(barra)
+	barra.fondo:SetVertexColor(VERDE[1] * 0.2, VERDE[2] * 0.2, VERDE[3] * 0.2, 1)
+	-- Un brillo apenas visible arriba, para que no se vea plano.
+	barra.brillo = textura(barra, "ARTWORK", 3)
+	barra.brillo:SetPoint("TOPLEFT", barra, "TOPLEFT", 0, 0)
+	barra.brillo:SetPoint("TOPRIGHT", barra, "TOPRIGHT", 0, 0)
+	barra.brillo:SetHeight(1)
+	barra.brillo:SetVertexColor(1, 1, 1, 0.18)
+	c.barra = barra
+
+	-- Las curas entrantes: otra barra que empieza donde termina la vida, recortada.
+	local recorte = CreateFrame("Frame", nil, c)
+	recorte:SetAllPoints(barra)
+	recorte:SetFrameLevel(barra:GetFrameLevel() + 1)
+	if recorte.SetClipsChildren then recorte:SetClipsChildren(true) end
+	local inc = CreateFrame("StatusBar", nil, recorte)
+	inc:SetStatusBarTexture(BLANCO)
+	inc:SetStatusBarColor(VERDE[1], VERDE[2], VERDE[3], 0.45)
+	local fin = barra:GetStatusBarTexture()
+	inc:SetPoint("TOPLEFT", fin, "TOPRIGHT", 0, 0)
+	inc:SetPoint("BOTTOMLEFT", fin, "BOTTOMRIGHT", 0, 0)
+	inc:SetWidth(80)
+	inc:SetMinMaxValues(0, 1)
+	inc:SetValue(0)
+	inc:Hide()
+	c.entrantes = inc
+
+	local capa = CreateFrame("Frame", nil, c)
+	capa:SetAllPoints(c)
+	capa:SetFrameLevel(barra:GetFrameLevel() + 3)
+	c.capa = capa
+	c.nombre = texto(capa, "label")
+	c.estado = texto(capa, "caption")
+	c.estado:SetTextColor(0.85, 0.87, 0.9, 1)
+	c.rol = capa:CreateTexture(nil, "OVERLAY")
+	c.rol:SetSize(11, 11)
+	c.rol:SetPoint("TOPLEFT", c, "TOPLEFT", 3, -3)
+	c.rol:Hide()
+	c.amenaza = textura(capa, "OVERLAY")
+	c.amenaza:SetPoint("TOPLEFT", c, "TOPLEFT", 1, -1)
+	c.amenaza:SetPoint("TOPRIGHT", c, "TOPRIGHT", -1, -1)
+	c.amenaza:SetHeight(2)
+	c.amenaza:SetVertexColor(AMENAZA[1], AMENAZA[2], AMENAZA[3], 1)
+	c.amenaza:Hide()
+	c.disipar = borde(capa, 2, "OVERLAY")
+	colorBorde(c.disipar, DISIPAR[1], DISIPAR[2], DISIPAR[3], 1)
+	verBorde(c.disipar, false)
+	c.objetivo = borde(capa, 1, "OVERLAY")
+	colorBorde(c.objetivo, 1, 1, 1, 0.9)
+	verBorde(c.objetivo, false)
+	return c
+end
+
+-- El tamaño de las piezas que no siguen solas al marco.
+local function ajustarCuerpo(c, w, h)
+	c.entrantes:SetWidth(max(1, w - 2))
+	c.nombre:SetWidth(max(1, w - 8))
+	c.estado:SetWidth(max(1, w - 8))
+	c.nombre:ClearAllPoints()
+	c.estado:ClearAllPoints()
+	if h >= 30 then
+		c.nombre:SetPoint("CENTER", c, "CENTER", 0, 5)
+		c.estado:SetPoint("CENTER", c, "CENTER", 0, -8)
+	else
+		c.nombre:SetPoint("CENTER", c, "CENTER", 0, 0)
+		c.estado:SetPoint("BOTTOM", c, "BOTTOM", 0, 2)
+	end
+end
+M.AjustarCuerpo = ajustarCuerpo
+
+---------------------------------------------------------------------------
+-- Pintar con los datos de la unidad (solo lo que llega o se pasa sin leer)
+---------------------------------------------------------------------------
+
+-- El resultado de fn(...) si se puede leer; nil si falla o es secreto.
+local function leer(fn, ...)
+	if type(fn) ~= "function" then return nil end
+	local ok, v = pcall(fn, ...)
+	if not ok or secreto(v) then return nil end
+	return v
+end
+
+local function colorDeClase(clase)
+	local t = type(RAID_CLASS_COLORS) == "table" and RAID_CLASS_COLORS[clase]
+	if type(t) == "table" and type(t.r) == "number" then return t.r, t.g, t.b end
+	local CC = C_ClassColor
+	if CC and CC.GetClassColor then
+		local ok, c = pcall(CC.GetClassColor, clase)
+		if ok and type(c) == "table" and type(c.r) == "number" then return c.r, c.g, c.b end
+	end
+	return nil
+end
+M.ColorDeClase = colorDeClase
+
+local function pintarBarra(c, r, g, b)
+	c.barra:SetStatusBarColor(r, g, b, 1)
+	c.barra.fondo:SetVertexColor(r * 0.22, g * 0.22, b * 0.22, 1)
+end
+M.PintarBarra = pintarBarra
+
+local function vida(b)
+	local c, u = b.cuerpo, b.unidad
+	local okM, mx = pcall(UnitHealthMax, u)
+	local okV, v = pcall(UnitHealth, u)
+	if okM and okV then
+		c.barra:SetMinMaxValues(0, mx)
+		c.barra:SetValue(v)
+	end
+	if opt("entrantes") and UnitGetIncomingHeals and okM then
+		local okI, inc = pcall(UnitGetIncomingHeals, u)
+		if okI then
+			c.entrantes:SetMinMaxValues(0, mx)
+			if secreto(inc) or type(inc) == "number" then c.entrantes:SetValue(inc) else c.entrantes:SetValue(0) end
+			c.entrantes:Show()
+		end
+	else
+		c.entrantes:Hide()
+	end
+	if opt("porcentaje") and not b.alfaEstado and curvaPorcentaje and UnitHealthPercent then
+		local ok, p = pcall(UnitHealthPercent, u, true, curvaPorcentaje)
+		if ok then
+			c.estado:SetFormattedText("%.0f%%", p)
+			c.estado:Show()
+		end
+	elseif not b.alfaEstado then
+		c.estado:Hide()
+	end
+end
+
+-- Muerto, fantasma o desconectado: barra gris y su palabra. Color de clase.
+local function aspecto(b, forzar)
+	local c, u = b.cuerpo, b.unidad
+	local conectado = leer(UnitIsConnected, u)
+	local fantasma = leer(UnitIsGhost, u)
+	local muerto = leer(UnitIsDeadOrGhost, u)
+	local estado
+	if conectado == false then
+		estado = L["Desconectado"]
+	elseif fantasma == true then
+		estado = L["Fantasma"]
+	elseif muerto == true then
+		estado = L["Muerto"]
+	end
+	if not forzar and estado == b.alfaEstado and b.alfaPintado then return end
+	b.alfaEstado, b.alfaPintado = estado, true
+	if estado then
+		c.estado:SetText(estado)
+		c.estado:Show()
+		pintarBarra(c, GRIS[1], GRIS[2], GRIS[3])
+		c.nombre:SetTextColor(0.7, 0.7, 0.72, 1)
+		return
+	end
+	c.estado:Hide()
+	local okC, _, clase = pcall(UnitClass, u)
+	local r, g, bb
+	if okC and not secreto(clase) and type(clase) == "string" then r, g, bb = colorDeClase(clase) end
+	if opt("colorClase") then
+		if r then
+			pintarBarra(c, r, g, bb)
+		elseif okC and secreto(clase) then
+			-- Un compañero cuya clase llega secreta: el color va sin leerse.
+			local bien = pcall(function()
+				local col = C_ClassColor.GetClassColor(clase)
+				c.barra:SetStatusBarColor(col.r, col.g, col.b, 1)
+				c.barra.fondo:SetVertexColor(0.1, 0.1, 0.12, 1)
+			end)
+			if not bien then pintarBarra(c, VERDE[1], VERDE[2], VERDE[3]) end
+		else
+			pintarBarra(c, VERDE[1], VERDE[2], VERDE[3])
+		end
+		c.nombre:SetTextColor(1, 1, 1, 1)
+	else
+		pintarBarra(c, VERDE[1], VERDE[2], VERDE[3])
+		if r then c.nombre:SetTextColor(r, g, bb, 1) else c.nombre:SetTextColor(1, 1, 1, 1) end
+	end
+end
+
+local function nombre(b)
+	local ok, n = pcall(UnitName, b.unidad)
+	if ok then b.cuerpo.nombre:SetText(n) end
+end
+
+local OPC_ROL = { displayRoleIcon = true }
+local function rol(b)
+	local c, u = b.cuerpo, b.unidad
+	if not UnitGroupRolesAssigned then return c.rol:Hide() end
+	local ok, r = pcall(UnitGroupRolesAssigned, u)
+	if not ok then return c.rol:Hide() end
+	if not secreto(r) then
+		local coords = ROLES[r or ""]
+		if coords then
+			c.rol:SetTexture(ROLES_TEX)
+			c.rol:SetTexCoord(coords[1], coords[2], coords[3], coords[4])
+			c.rol:SetSize(11, 11)
+			c.rol:Show()
+		else
+			c.rol:Hide()
+		end
+		return
+	end
+	-- Rol secreto: Blizzard lo pinta por su vía segura.
+	local U = rawget(_G, "UnitFrameUtil")
+	if type(U) == "table" and type(U.UpdateUnitFrameRoleIcon) == "function" then
+		if not pcall(U.UpdateUnitFrameRoleIcon, { roleIcon = c.rol, unit = u, optionTable = OPC_ROL }) then c.rol:Hide() end
+	else
+		c.rol:Hide()
+	end
+end
+
+local function amenaza(b)
+	local c = b.cuerpo
+	if not opt("amenaza") then return c.amenaza:Hide() end
+	local s = leer(UnitThreatSituation, b.unidad)
+	if type(s) == "number" and s >= 2 then c.amenaza:Show() else c.amenaza:Hide() end
+end
+
+local function objetivo(b)
+	local c = b.cuerpo
+	local ok, es = pcall(UnitIsUnit, b.unidad, "target")
+	if not ok then return verBorde(c.objetivo, false) end
+	if secreto(es) then
+		for i = 1, 4 do
+			local t = c.objetivo[i]
+			t:Show()
+			if not pcall(t.SetAlphaFromBoolean, t, es, 1, 0) then t:Hide() end
+		end
+		return
+	end
+	verBorde(c.objetivo, es == true)
+end
+
+-- El perjuicio que tú puedes quitar: -> hay, auraInstanceID (si se puede usar)
+local FILTRO = "HARMFUL|RAID"
+local function disipable(u)
+	local U = C_UnitAuras
+	if not U then return false end
+	if U.GetUnitAuraInstanceIDs then
+		local ok, ids = pcall(U.GetUnitAuraInstanceIDs, u, FILTRO, 1)
+		if ok and not secreto(ids) and type(ids) == "table" then
+			local id = ids[1]
+			if secreto(id) then return true, nil end
+			if id ~= nil then return true, id end
+			return false
+		end
+	end
+	if U.GetAuraDataByIndex then
+		local ok, aura = pcall(U.GetAuraDataByIndex, u, 1, FILTRO)
+		if ok and not secreto(aura) and type(aura) == "table" then
+			local id = aura.auraInstanceID
+			return true, (not secreto(id) and type(id) == "number") and id or nil
+		end
+	end
+	return false
+end
+
+local function disipar(b)
+	local c, u = b.cuerpo, b.unidad
+	if not opt("disipar") then return verBorde(c.disipar, false) end
+	local hay, id = disipable(u)
+	if not hay then return verBorde(c.disipar, false) end
+	local pintado = false
+	if id and curvaDisipar and C_UnitAuras.GetAuraDispelTypeColor then
+		pintado = pcall(function()
+			local col = C_UnitAuras.GetAuraDispelTypeColor(u, id, curvaDisipar)
+			local r, g, bb = col:GetRGB()
+			colorBorde(c.disipar, r, g, bb, 1)
+		end)
+	end
+	if not pintado then colorBorde(c.disipar, DISIPAR[1], DISIPAR[2], DISIPAR[3], 1) end
+	verBorde(c.disipar, true)
+end
+
+local function alcancePor(b, dentro, revisado)
+	local c = b.cuerpo
+	if not opt("alcance") or b.esJugador then return c:SetAlpha(1) end
+	if secreto(dentro) then
+		if not pcall(c.SetAlphaFromBoolean, c, dentro, 1, FUERA) then c:SetAlpha(1) end
+		return
+	end
+	if dentro == nil or revisado == false then return c:SetAlpha(1) end
+	c:SetAlpha(dentro == true and 1 or FUERA)
+end
+
+local function alcance(b)
+	if not UnitInRange then return end
+	local ok, dentro, revisado = pcall(UnitInRange, b.unidad)
+	if not ok then return b.cuerpo:SetAlpha(1) end
+	if secreto(revisado) then revisado = nil end
+	alcancePor(b, dentro, revisado)
+end
+
+function M.ActualizarTodo(b)
+	if not (b and b.cuerpo and b.unidad) then return end
+	nombre(b)
+	aspecto(b, true)
+	vida(b)
+	rol(b)
+	disipar(b)
+	amenaza(b)
+	objetivo(b)
+	alcance(b)
+end
+
+---------------------------------------------------------------------------
+-- Los botones seguros
+---------------------------------------------------------------------------
+
+local function soltar(b)
+	local viejo = b.unidad
+	if viejo and porUnidad[viejo] == b then porUnidad[viejo] = nil end
+	if b.esJugador and porUnidad.player == b then porUnidad.player = nil end
+	b.unidad, b.esJugador = nil, false
+end
+
+local function asignar(b, u)
+	soltar(b)
+	if type(u) ~= "string" or u == "" then return end
+	b.unidad = u
+	porUnidad[u] = b
+	if u == "player" then
+		b.esJugador = true
+	else
+		local ok, es = pcall(UnitIsUnit, u, "player")
+		if ok and not secreto(es) and es == true then
+			b.esJugador = true
+			porUnidad.player = b
+		end
+	end
+	b.alfaPintado = false
+	M.ActualizarTodo(b)
+end
+
+local function alCambiarAtributo(self, nombreAtributo, valor)
+	if nombreAtributo == "unit" then asignar(self, valor) end
+end
+
+local function alEntrar(self)
+	if M.EnCombate() or not opt("descripcion") or not self.unidad or not GameTooltip then return end
+	GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+	if not pcall(GameTooltip.SetUnit, GameTooltip, self.unidad) then return GameTooltip:Hide() end
+	GameTooltip:Show()
+end
+
+local function alSalir(self)
+	if GameTooltip and GameTooltip:GetOwner() == self then GameTooltip:Hide() end
+end
+
+local function registrarClics(b)
+	if b.RegisterForClicks then pcall(b.RegisterForClicks, b, "AnyUp") end
+end
+
+function M.PrepararBoton(b)
+	if not b or rawget(b, "alfaListo") then return end
+	b.alfaListo = true
+	if M.EnCombate() then N.FueraDeCombate(function() registrarClics(b) end) else registrarClics(b) end
+	b.cuerpo = M.CrearCuerpo(b)
+	local hl = b:CreateTexture(nil, "HIGHLIGHT")
+	hl:SetTexture(BLANCO)
+	hl:SetAllPoints(b)
+	hl:SetVertexColor(1, 1, 1, 0.08)
+	local w, h = M.Medidas()
+	ajustarCuerpo(b.cuerpo, w, h)
+	b:HookScript("OnAttributeChanged", alCambiarAtributo)
+	b:HookScript("OnEnter", alEntrar)
+	b:HookScript("OnLeave", alSalir)
+	M.botones[#M.botones + 1] = b
+	if not M.EnCombate() then M.AplicarABoton(b) end
+	local ok, u = pcall(b.GetAttribute, b, "unit")
+	if ok then asignar(b, u) end
+end
+
+---------------------------------------------------------------------------
+-- El ancla (lo que se mueve), la cabecera y el asa para moverlos
+---------------------------------------------------------------------------
+
+local ancla, cabecera, asa, prueba
+local moviendo, enPrueba = false, nil
+
+function M.Medidas()
+	local w = tonumber(opt("ancho")) or 88
+	local h = tonumber(opt("alto")) or 36
+	local porCol = tonumber(opt("porColumna")) or 5
+	w = max(40, min(240, floor(w + 0.5)))
+	h = max(16, min(100, floor(h + 0.5)))
+	porCol = max(1, min(MAX, floor(porCol + 0.5)))
+	return w, h, ESPACIO, porCol, opt("crecer") == "derecha" and "derecha" or "abajo"
+end
+
+local POS = { punto = "TOPLEFT", rel = "TOPLEFT", x = 24, y = -260 }
+
+local function posicion()
+	local d = N.Datos(ID)
+	local p = type(d.pos) == "table" and d.pos or POS
+	local x, y = tonumber(p.x) or POS.x, tonumber(p.y) or POS.y
+	return type(p.punto) == "string" and p.punto or POS.punto, type(p.rel) == "string" and p.rel or POS.rel, x, y
+end
+
+local function colocarAncla()
+	if not ancla or M.EnCombate() then return end
+	local punto, rel, x, y = posicion()
+	ancla:ClearAllPoints()
+	ancla:SetPoint(punto, UIParent, rel, x, y)
+end
+
+local function guardarPosicion()
+	if not ancla then return end
+	local punto, _, rel, x, y = ancla:GetPoint(1)
+	if type(punto) ~= "string" or type(x) ~= "number" then return end
+	N.Datos(ID).pos = { punto = punto, rel = rel or punto, x = floor(x + 0.5), y = floor(y + 0.5) }
+end
+
+local function empezarArrastre()
+	if M.EnCombate() or not ancla then return end
+	ancla:StartMoving()
+end
+
+local function terminarArrastre()
+	if not ancla then return end
+	if not M.EnCombate() then ancla:StopMovingOrSizing() end
+	guardarPosicion()
+	M.Avisar()
+end
+
+local function crearAsa()
+	asa = CreateFrame("Button", nil, ancla)
+	asa:SetHeight(22)
+	asa:SetPoint("BOTTOMLEFT", ancla, "TOPLEFT", 0, 4)
+	asa:SetWidth(240)
+	asa:EnableMouse(true)
+	asa:RegisterForDrag("LeftButton")
+	asa:SetScript("OnDragStart", empezarArrastre)
+	asa:SetScript("OnDragStop", terminarArrastre)
+	asa.fondo = textura(asa, "BACKGROUND")
+	asa.fondo:SetAllPoints(asa)
+	asa.fondo:SetVertexColor(0.04, 0.05, 0.08, 0.92)
+	asa.raya = textura(asa, "ARTWORK")
+	asa.raya:SetPoint("TOPLEFT", asa, "TOPLEFT", 0, 0)
+	asa.raya:SetPoint("BOTTOMLEFT", asa, "BOTTOMLEFT", 0, 0)
+	asa.raya:SetWidth(3)
+	asa.raya:SetVertexColor(VERDE[1], VERDE[2], VERDE[3], 1)
+	asa.texto = texto(asa, "small")
+	asa.texto:SetJustifyH("LEFT")
+	asa.texto:SetPoint("LEFT", asa, "LEFT", 10, 0)
+	asa.texto:SetPoint("RIGHT", asa, "RIGHT", -60, 0)
+	asa.listo = CreateFrame("Button", nil, asa)
+	asa.listo:SetSize(50, 18)
+	asa.listo:SetPoint("RIGHT", asa, "RIGHT", -2, 0)
+	asa.listo.fondo = textura(asa.listo, "BACKGROUND")
+	asa.listo.fondo:SetAllPoints(asa.listo)
+	asa.listo.fondo:SetVertexColor(VERDE[1], VERDE[2], VERDE[3], 1)
+	asa.listo.texto = texto(asa.listo, "caption")
+	asa.listo.texto:SetPoint("CENTER", asa.listo, "CENTER", 0, 0)
+	asa.listo.texto:SetTextColor(0.04, 0.05, 0.08, 1)
+	asa.listo.texto:SetShadowOffset(0, 0)
+	asa.listo.texto:SetText(L["Listo"])
+	asa.listo:SetScript("OnClick", function()
+		M.Prueba(nil)
+		M.Mover(false)
+	end)
+	asa:Hide()
+end
+
+-- Se ejecuta en el entorno seguro al crear un botón nuevo (aunque sea en combate).
+local INICIAL = [[
+	local h = self:GetParent()
+	self:SetWidth(h:GetAttribute("alfa-ancho") or 88)
+	self:SetHeight(h:GetAttribute("alfa-alto") or 36)
+	h:CallMethod("alfaNuevoBoton", self:GetName())
+]]
+
+local function crearCabecera()
+	cabecera = CreateFrame("Frame", "AlfaCuracionGrupo", ancla, "SecureGroupHeaderTemplate")
+	M.cabecera = cabecera
+	cabecera:SetPoint("TOPLEFT", ancla, "TOPLEFT", 0, 0)
+	cabecera.alfaNuevoBoton = function(_, nombreBoton)
+		local b = type(nombreBoton) == "string" and rawget(_G, nombreBoton) or nil
+		if b then M.PrepararBoton(b) end
+	end
+	cabecera:SetAttribute("template", "SecureUnitButtonTemplate")
+	cabecera:SetAttribute("templateType", "Button")
+	cabecera:SetAttribute("showRaid", true)
+	cabecera:SetAttribute("showParty", true)
+	cabecera:SetAttribute("showPlayer", true)
+	cabecera:SetAttribute("initialConfigFunction", INICIAL)
+end
+
+local ORDENES = {
+	grupo = { groupBy = "GROUP", groupingOrder = "1,2,3,4,5,6,7,8", sortMethod = "INDEX" },
+	rol = { groupBy = "ASSIGNEDROLE", groupingOrder = "TANK,HEALER,DAMAGER,NONE", sortMethod = "NAME" },
+	clase = { groupBy = "CLASS", groupingOrder = "WARRIOR,PALADIN,PRIEST,DRUID,SHAMAN,HUNTER,ROGUE,MAGE,WARLOCK", sortMethod = "NAME" },
+	nombre = { sortMethod = "NAME" },
+}
+
+-- Los atributos de la cabecera desde tus ajustes. Solo fuera de combate.
+local revision = 0
+local function configurarCabecera()
+	local w, h, esp, porCol, crecer = M.Medidas()
+	local orden = ORDENES[opt("orden") or ""] or ORDENES.grupo
+	cabecera:SetAttribute("_ignore", "alfa")
+	cabecera:SetAttribute("showSolo", opt("solo") and true or false)
+	cabecera:SetAttribute("alfa-ancho", w)
+	cabecera:SetAttribute("alfa-alto", h)
+	if crecer == "derecha" then
+		cabecera:SetAttribute("point", "LEFT")
+		cabecera:SetAttribute("xOffset", esp)
+		cabecera:SetAttribute("yOffset", 0)
+		cabecera:SetAttribute("columnAnchorPoint", "TOP")
+	else
+		cabecera:SetAttribute("point", "TOP")
+		cabecera:SetAttribute("xOffset", 0)
+		cabecera:SetAttribute("yOffset", -esp)
+		cabecera:SetAttribute("columnAnchorPoint", "LEFT")
+	end
+	cabecera:SetAttribute("columnSpacing", esp)
+	cabecera:SetAttribute("unitsPerColumn", porCol)
+	cabecera:SetAttribute("maxColumns", ceil(MAX / porCol))
+	cabecera:SetAttribute("groupBy", orden.groupBy)
+	cabecera:SetAttribute("groupingOrder", orden.groupingOrder)
+	cabecera:SetAttribute("sortMethod", orden.sortMethod)
+	for _, b in ipairs(M.botones) do
+		b:SetSize(w, h)
+		if b.cuerpo then ajustarCuerpo(b.cuerpo, w, h) end
+	end
+	cabecera:SetAttribute("_ignore", nil)
+	revision = revision + 1
+	cabecera:SetAttribute("alfa-revision", revision)
+end
+
+-- Los 40 botones de una vez, fuera de combate (con la cabecera a la vista).
+local creados = false
+local function crearBotones()
+	if creados or not cabecera:IsVisible() then return end
+	creados = true
+	cabecera:SetAttribute("startingIndex", 1 - MAX)
+	cabecera:SetAttribute("startingIndex", 1)
+	for i = 1, MAX do
+		local ok, b = pcall(cabecera.GetAttribute, cabecera, "child" .. i)
+		if ok and b then M.PrepararBoton(b) end
+	end
+end
+
+local iniciado = false
+function M.Iniciar()
+	N.FueraDeCombate(function()
+		if not iniciado then
+			iniciado = true
+			ancla = CreateFrame("Frame", "AlfaCuracionAncla", UIParent)
+			ancla:SetSize(10, 10)
+			ancla:SetMovable(true)
+			ancla:SetClampedToScreen(true)
+			ancla:SetFrameStrata("LOW")
+			M.ancla = ancla
+			colocarAncla()
+			crearAsa()
+			crearCabecera()
+		end
+		M.Disponer()
+	end)
+end
+
+-- Tus ajustes, en los marcos. Fuera de combate (si no, una vez al salir).
+local disponerPendiente = false
+function M.Disponer()
+	if disponerPendiente then return end
+	disponerPendiente = true
+	N.FueraDeCombate(function()
+		disponerPendiente = false
+		if not cabecera then return end
+		M.AplicarACabecera(cabecera)
+		configurarCabecera()
+		if opt("activo") then
+			cabecera:Show()
+			crearBotones()
+		else
+			cabecera:Hide()
+		end
+		M.Blizzard()
+		if enPrueba then M.Prueba(enPrueba) end
+		for _, b in ipairs(M.botones) do
+			if b.unidad then
+				b.alfaPintado = false
+				M.ActualizarTodo(b)
+			end
+		end
+		M.Avisar()
+	end)
+end
+
+function M.Mover(si)
+	if M.EnCombate() then
+		N.Imprimir(L["Los marcos se mueven fuera de combate."])
+		return
+	end
+	moviendo = si and true or false
+	if asa then
+		asa.texto:SetText(L["Curación: arrastra para mover"])
+		if moviendo or enPrueba then asa:Show() else asa:Hide() end
+	end
+	M.Avisar()
+end
+
+function M.Moviendo() return moviendo end
+
+function M.ReiniciarPosicion()
+	N.Datos(ID).pos = nil
+	N.FueraDeCombate(colocarAncla)
+	M.Avisar()
+end
+
+---------------------------------------------------------------------------
+-- Modo prueba: marcos de ejemplo, no seguros, para acomodarlos estando solo
+---------------------------------------------------------------------------
+
+local EJEMPLOS = {
+	{ "Toxic", "PRIEST", 1.0, "HEALER" }, { "Colmillo", "WARRIOR", 0.62, "TANK", amenaza = true },
+	{ "Luna", "DRUID", 0.35, nil, disipar = { 0.2, 0.6, 1 } }, { "Aullido", "MAGE", 0.9, "DAMAGER", lejos = true },
+	{ "Sombra", "ROGUE", 0, "DAMAGER", muerto = true }, { "Garra", "HUNTER", 0.78 },
+	{ "Brasa", "WARLOCK", 0.55, nil, disipar = { 0.6, 0, 1 } }, { "Trueno", "SHAMAN", 0.84, "HEALER" },
+	{ "Escudo", "PALADIN", 0.97, "TANK" }, { "Niebla", "MAGE", 0.4, nil, entrantes = 0.3 },
+	{ "Hoja", "ROGUE", 1.0 }, { "Ceniza", "WARLOCK", 0.7, nil, desconectado = true },
+	{ "Rocío", "DRUID", 0.88, "HEALER" }, { "Acero", "WARRIOR", 0.5, "DAMAGER", entrantes = 0.25 },
+	{ "Ámbar", "PALADIN", 0.66 }, { "Rayo", "SHAMAN", 0.92 },
+	{ "Eco", "HUNTER", 0.25, nil, disipar = { 0, 0.6, 0 } }, { "Lince", "DRUID", 1.0, "TANK" },
+	{ "Nube", "PRIEST", 0.81, "HEALER" }, { "Vela", "MAGE", 0.58, nil, lejos = true },
+}
+
+local falsos = {}
+
+local function falso(i)
+	local f = falsos[i]
+	if f then return f end
+	f = CreateFrame("Button", nil, prueba)
+	f:EnableMouse(true)
+	f:RegisterForDrag("LeftButton")
+	f:SetScript("OnDragStart", empezarArrastre)
+	f:SetScript("OnDragStop", terminarArrastre)
+	f:SetScript("OnEnter", function(self)
+		if not GameTooltip then return end
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		GameTooltip:SetText(L["Marco de prueba"], 1, 1, 1)
+		GameTooltip:AddLine(L["Arrastra para mover tus marcos. Cambia el tamaño y las columnas en la página Curación."], 0.8, 0.82, 0.86, true)
+		GameTooltip:Show()
+	end)
+	f:SetScript("OnLeave", function(self) if GameTooltip and GameTooltip:GetOwner() == self then GameTooltip:Hide() end end)
+	f.cuerpo = M.CrearCuerpo(f)
+	falsos[i] = f
+	return f
+end
+
+local function pintarFalso(f, e)
+	local c = f.cuerpo
+	c.nombre:SetText(e[1])
+	c.barra:SetMinMaxValues(0, 1)
+	c.barra:SetValue(e[3])
+	local r, g, b = colorDeClase(e[2])
+	if e.muerto or e.desconectado then
+		pintarBarra(c, GRIS[1], GRIS[2], GRIS[3])
+		c.estado:SetText(e.muerto and L["Muerto"] or L["Desconectado"])
+		c.estado:Show()
+		c.nombre:SetTextColor(0.7, 0.7, 0.72, 1)
+	else
+		if opt("colorClase") and r then
+			pintarBarra(c, r, g, b)
+			c.nombre:SetTextColor(1, 1, 1, 1)
+		else
+			pintarBarra(c, VERDE[1], VERDE[2], VERDE[3])
+			if r then c.nombre:SetTextColor(r, g, b, 1) end
+		end
+		if opt("porcentaje") then
+			c.estado:SetFormattedText("%.0f%%", e[3] * 100)
+			c.estado:Show()
+		else
+			c.estado:Hide()
+		end
+	end
+	local coords = ROLES[e[4] or ""]
+	if coords then
+		c.rol:SetTexture(ROLES_TEX)
+		c.rol:SetTexCoord(coords[1], coords[2], coords[3], coords[4])
+		c.rol:Show()
+	else
+		c.rol:Hide()
+	end
+	if e.amenaza and opt("amenaza") then c.amenaza:Show() else c.amenaza:Hide() end
+	if e.disipar and opt("disipar") then
+		colorBorde(c.disipar, e.disipar[1], e.disipar[2], e.disipar[3], 1)
+		verBorde(c.disipar, true)
+	else
+		verBorde(c.disipar, false)
+	end
+	if e.entrantes and opt("entrantes") then
+		c.entrantes:SetMinMaxValues(0, 1)
+		c.entrantes:SetValue(e.entrantes)
+		c.entrantes:Show()
+	else
+		c.entrantes:Hide()
+	end
+	verBorde(c.objetivo, e[1] == "Colmillo")
+	c:SetAlpha((e.lejos and opt("alcance")) and FUERA or 1)
+end
+
+-- n = 5 o 20 muestra la prueba; nil la quita.
+function M.Prueba(n)
+	if n and M.EnCombate() then
+		N.Imprimir(L["El modo prueba se usa fuera de combate."])
+		return
+	end
+	if not ancla then return end
+	enPrueba = n
+	if not prueba then
+		prueba = CreateFrame("Frame", nil, ancla)
+		prueba:SetPoint("TOPLEFT", ancla, "TOPLEFT", 0, 0)
+		prueba:SetSize(10, 10)
+		prueba:SetFrameStrata("MEDIUM")
+	end
+	if not n then
+		prueba:Hide()
+		if asa and not moviendo then asa:Hide() end
+		M.Avisar()
+		return
+	end
+	local w, h, esp, porCol, crecer = M.Medidas()
+	for i = 1, #EJEMPLOS do
+		local f = falso(i)
+		if i <= n then
+			local col, fila = floor((i - 1) / porCol), (i - 1) % porCol
+			local x, y
+			if crecer == "derecha" then
+				x, y = fila * (w + esp), -col * (h + esp)
+			else
+				x, y = col * (w + esp), -fila * (h + esp)
+			end
+			f:ClearAllPoints()
+			f:SetPoint("TOPLEFT", prueba, "TOPLEFT", x, y)
+			f:SetSize(w, h)
+			ajustarCuerpo(f.cuerpo, w, h)
+			pintarFalso(f, EJEMPLOS[i])
+			f:Show()
+		else
+			f:Hide()
+		end
+	end
+	prueba:Show()
+	if asa then
+		asa.texto:SetText(string.format(L["Prueba con %d: arrastra para mover"], n))
+		asa:Show()
+	end
+	M.Avisar()
+end
+
+function M.EnPrueba() return enPrueba end
+
+---------------------------------------------------------------------------
+-- Ocultar los marcos de grupo de Blizzard (fuera de combate)
+---------------------------------------------------------------------------
+
+local oculto = CreateFrame("Frame")
+oculto:Hide()
+local padres = {}
+local BLIZZARD = { "PartyFrame", "CompactRaidFrameContainer" }
+
+local blizzardPendiente = false
+function M.Blizzard()
+	if blizzardPendiente then return end
+	blizzardPendiente = true
+	N.FueraDeCombate(function()
+		blizzardPendiente = false
+		local quiere = opt("activo") and opt("ocultarBlizzard") and true or false
+		for _, nombreMarco in ipairs(BLIZZARD) do
+			local f = rawget(_G, nombreMarco)
+			if type(f) == "table" and f.GetParent and f.SetParent then
+				if quiere and not padres[f] then
+					local okP, p = pcall(f.GetParent, f)
+					padres[f] = okP and p or UIParent
+					pcall(f.SetParent, f, oculto)
+				elseif not quiere and padres[f] then
+					pcall(f.SetParent, f, padres[f])
+					padres[f] = nil
+				end
+			end
+		end
+	end)
+end
+
+---------------------------------------------------------------------------
+-- Eventos de unidad y el temporizador de alcance
+---------------------------------------------------------------------------
+
+local sucias, flushPendiente = {}, false
+local function limpiarAuras()
+	flushPendiente = false
+	for b in pairs(sucias) do
+		sucias[b] = nil
+		if b.unidad then disipar(b) end
+	end
+end
+
+local function boton(u)
+	if type(u) ~= "string" then return nil end
+	local b = porUnidad[u]
+	if b and b.unidad and b.cuerpo then return b end
+	return nil
+end
+
+local POR_UNIDAD = {
+	UNIT_HEALTH = function(b) aspecto(b) vida(b) end,
+	UNIT_MAXHEALTH = function(b) vida(b) end,
+	UNIT_HEAL_PREDICTION = function(b) vida(b) end,
+	UNIT_CONNECTION = function(b) aspecto(b, true) vida(b) end,
+	UNIT_FLAGS = function(b) aspecto(b) end,
+	UNIT_NAME_UPDATE = function(b) nombre(b) aspecto(b, true) end,
+	UNIT_THREAT_SITUATION_UPDATE = function(b) amenaza(b) end,
+	UNIT_AURA = function(b)
+		sucias[b] = true
+		if not flushPendiente then
+			flushPendiente = true
+			A.After(0.1, limpiarAuras)
+		end
+	end,
+	UNIT_IN_RANGE_UPDATE = function(b, dentro) alcancePor(b, dentro) end,
+}
+
+for ev, fn in pairs(POR_UNIDAD) do
+	A.RegisterEvent(ev, function(_, u, ...)
+		local b = boton(u)
+		if b then fn(b, ...) end
+	end)
+end
+
+local function todos(fn)
+	for _, b in ipairs(M.botones) do
+		if b.unidad and b.cuerpo then fn(b) end
+	end
+end
+
+A.RegisterEvent("PLAYER_TARGET_CHANGED", function() todos(objetivo) end)
+A.RegisterEvent("PLAYER_ROLES_ASSIGNED", function() todos(rol) end)
+A.RegisterEvent("GROUP_ROSTER_UPDATE", function()
+	todos(rol)
+	M.Blizzard()
+	M.Avisar()
+end)
+A.RegisterEvent("PLAYER_REGEN_DISABLED", function()
+	-- La prueba no sirve en una pelea: se quita y quedan tus marcos de verdad.
+	if enPrueba and prueba then
+		enPrueba = nil
+		prueba:Hide()
+		if asa and not moviendo then asa:Hide() end
+	end
+	M.Avisar()
+end)
+A.RegisterEvent("PLAYER_REGEN_ENABLED", function() M.Avisar() end)
+A.RegisterEvent("ADDON_LOADED", function(_, nombreAddon)
+	if nombreAddon == "Blizzard_CompactRaidFrames" then M.Blizzard() end
+end)
+
+-- El alcance cambia sin evento si el cliente no trae UNIT_IN_RANGE_UPDATE:
+-- cada medio segundo se revisan unos pocos botones (TOPE_ALCANCE) por turno.
+local turno = 0
+A.NewTicker(CADA_ALCANCE, function()
+	local lista = M.botones
+	local n = #lista
+	if n == 0 or not opt("alcance") or not (cabecera and cabecera:IsVisible()) then return end
+	local hechos, vistos = 0, 0
+	while hechos < TOPE_ALCANCE and vistos < n do
+		turno = turno % n + 1
+		vistos = vistos + 1
+		local b = lista[turno]
+		if b.unidad and b.cuerpo and b:IsVisible() then
+			alcance(b)
+			hechos = hechos + 1
+		end
+	end
+end)
+
+A.RegisterEvent("PLAYER_ENTERING_WORLD", function()
+	M.Iniciar()
+	A.After(3, function() M.Inicial() end)
+end)
+
+-- Tus ajustes: los marcos se rehacen (fuera de combate).
+A.On("SETTING_CHANGED", function(path)
+	path = type(path) == "string" and path or ""
+	if path ~= "" and path ~= ID and path:sub(1, #ID + 1) ~= ID .. "." then return end
+	M.Disponer()
+end)

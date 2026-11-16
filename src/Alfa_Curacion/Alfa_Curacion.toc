@@ -1,0 +1,14 @@
+## Interface: 16001
+## Title: |cff8be04eAlfa|r - Curación
+## Notes: Marcos de grupo y banda para curar con un clic, con preajustes por clase.
+## Author: Toxic - La Jauria
+## Version: dev
+## X-License: GPL-3.0-only
+## Dependencies: Alfa, Alfa_Nucleo
+## Category: Alfa
+
+Textos.lua
+Hechizos.lua
+Mapa.lua
+Marcos.lua
+Pagina.lua
