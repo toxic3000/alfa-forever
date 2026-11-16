@@ -1,0 +1,20 @@
+{
+  "version": "0.1.0",
+  "upstream": "0.3.7.2",
+  "color": "8be04e",
+  "urls": {
+    "repo": "https://github.com/fitzforge/polestar",
+    "issues": "https://www.curseforge.com/wow/addons/alfa-forever/issues",
+    "releases": "https://www.curseforge.com/wow/addons/alfa-forever/files",
+    "discord": ""
+  },
+  "toc": {
+    "Title": "|cff8be04eAlfa|r",
+    "Notes": "All-in-one for WoW Forever: guides, map, bags, builds, fishing and more. By La Jauria.",
+    "Notes-esMX": "Todo en uno para WoW Forever: guías, mapa, bolsas, builds, pesca y más. Hecho por La Jauría.",
+    "Notes-esES": "Todo en uno para WoW Forever: guías, mapa, bolsas, builds, pesca y más. Hecho por La Jauría.",
+    "Author": "Toxic - La Jauria (basado en Polestar)",
+    "X-Website": "https://www.curseforge.com/wow/addons/alfa-forever",
+    "Category": "Alfa"
+  }
+}
