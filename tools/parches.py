@@ -12,6 +12,9 @@ def _creditos(cfg):
         '"Alfa: Toxic - La Jauría. Basado en Polestar de The Polestar authors '
         f'({cfg["urls"]["repo"]}), GPL-3.0, con la navegación de Shortest Path '
         'Forever de Cillian Berragan (GPL-3.0-or-later)." .. "\\n"\n\t\t.. '
+        '"Recolección usa la base de nodos de GatherLite de Wuild (MIT). Mundo usa la lógica '
+        'y las máscaras de territorio de OpenMap de OpenMap contributors (MIT); el arte del '
+        'mapa es de Blizzard." .. "\\n"\n\t\t.. '
     )
 
 
