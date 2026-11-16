@@ -51,6 +51,13 @@ def pares() -> dict:
     """{espanol: {"en": ingles, "origen": modulo}} de todos los modulos."""
     lua = _lua()
     todo = {}
+    # Textos de la interfaz propia del motor (motor/**/Textos.lua, mismo formato M.EN).
+    for textos in sorted((RAIZ / "motor").rglob("Textos.lua")) if (RAIZ / "motor").is_dir() else []:
+        M = lua.table()
+        lua.globals().cargar(textos.read_bytes().decode("utf-8-sig"), M)
+        if M.EN:
+            for es, en in M.EN.items():
+                todo.setdefault(str(es), {"en": str(en), "origen": "Interfaz"})
     for carpeta in sorted(SRC.glob("Alfa_*")):
         textos = carpeta / "Textos.lua"
         if textos.exists():
