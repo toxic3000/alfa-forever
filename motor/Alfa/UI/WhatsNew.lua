@@ -310,6 +310,12 @@ local function open(why)
 	end
 	pending = nil
 	ns.DB().whatsNewSeen = WN.LATEST -- shown: a reload or logout from here does not repeat it
+	-- Alfa: con las novedades reemplazadas (SHOW_WHATSNEW, Core/Reemplazos.lua)
+	-- se abren las de Alfa, con las notas de esta version.
+	if ns.Reemplazos and ns.Reemplazos.Llamar("SHOW_WHATSNEW", { motivo = why, version = WN.LATEST, notas = WN.NOTES }) then
+		if F then F:Hide() end
+		return
+	end
 	if not F then build() end
 	render()
 	F:Show()
@@ -330,7 +336,7 @@ function WN.Hide()
 end
 
 function WN.IsShown()
-	return F ~= nil and F:IsShown()
+	return (F ~= nil and F:IsShown()) or ns.ReemplazoVisible("SHOW_WHATSNEW") == true
 end
 
 -- A fresh install marks the newest notes seen: it gets the welcome instead.
@@ -354,6 +360,7 @@ ns.RegisterEvent("PLAYER_ENTERING_WORLD", function()
 	if pending and C_Timer and C_Timer.After then ns.After(DELAY, try) end
 end)
 ns.On("WELCOME_CLOSED", function() try() end)
+ns.On("ROUTE_CHOICE_HIDDEN", function() try() end) -- una eleccion de ruta de Alfa que se cierra
 ns.On("SHOW_WHATSNEW", function() WN.Show() end)
 Theme.OnChanged(function()
 	if F and F:IsShown() then render() end

@@ -2426,16 +2426,16 @@ function DS.Enter()
 end
 
 -- SHOW_DUNGEON(key): the hub at the page (nil: Home).
+-- Con el diario reemplazado (SHOW_DUNGEON, Core/Reemplazos.lua) se abre la
+-- ventana de Alfa con { mazmorra = key }.
 function DS.Show(key)
+	if ns.Reemplazos and ns.Reemplazos.Llamar("SHOW_DUNGEON", { mazmorra = key }) then return end
 	page = key
 	tab = "quests"
 	filter = ""
-	local P = UI.Picker
 	local win = AlfaPicker
-	local was = win and win:IsShown()
 	if win and win.Search then win.Search:SetText("") end
-	if P and P.ShowSection then P.ShowSection("Dungeons") end
-	if not was and UI.ShowPicker then UI.ShowPicker() end
+	if UI.AbrirCentro then UI.AbrirCentro("Dungeons") end
 	if pg then W.ScrollTo(pg.Scroll, 0) end
 	if home then W.ScrollTo(home.Scroll, 0) end
 end

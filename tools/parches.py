@@ -161,6 +161,136 @@ INTERFAZ = [
 ]
 PARCHES += INTERFAZ
 
+# Reemplazos (docs/KIT.md): una ventana o un aviso del motor que un modulo de
+# Alfa tomo (Alfa.Reemplazar, motor/Alfa/Core/Reemplazos.lua) no se dibuja; el
+# motor llama a la ventana de Alfa en el mismo punto donde dibujaba la suya.
+# Sin reemplazo todo sigue igual.
+_AQUI = "-- Alfa: con esta ventana reemplazada (Core/Reemplazos.lua) se muestra la de Alfa.\n"
+REEMPLAZOS = [
+    # El registro, justo despues del bus de mensajes.
+    ("Alfa/Core/Core.xml", '\t<Script file="Init.lua"/>\n',
+     _fijo('\t<Script file="Init.lua"/>\n\t<Script file="Reemplazos.lua"/>\n')),
+    # Un mensaje que abre una ventana reemplazada va primero a la de Alfa.
+    ("Alfa/Core/Init.lua", "function ns.Fire(msg, ...)\n\tlocal list = listeners[msg]\n",
+     _fijo("-- Alfa: un mensaje que abre una ventana reemplazada (Core/Reemplazos.lua) va a la\n"
+           "-- ventana de Alfa que la tomo; si no la atiende, sigue a los oyentes del motor.\n"
+           "ns.DesviosDeMensajes = ns.DesviosDeMensajes or {}\n\n"
+           "function ns.Fire(msg, ...)\n\tlocal desvio = ns.DesviosDeMensajes[msg]\n"
+           "\tif desvio and desvio(...) then return end\n\tlocal list = listeners[msg]\n")),
+    # Las secciones del centro abren el centro del motor sin pasar por el
+    # reemplazo del selector (UI.AbrirCentro, motor/Alfa/UI/Picker.lua).
+] + [
+    (archivo, "\tif UI.ShowPicker then UI.ShowPicker() end\n",
+     _fijo("\tif UI.AbrirCentro then UI.AbrirCentro() elseif UI.ShowPicker then UI.ShowPicker() end\n"))
+    for archivo in ("Alfa/Talents/View.lua", "Alfa/Rares/View.lua", "Alfa/Alts/View.lua", "Alfa/UI/Import.lua")
+] + [
+    # La tarjeta de avisos (mision de clase, hechizos, rangos, mazmorra, version).
+    ("Alfa/UI/ClassToast.lua", "function CT.ShowCard(m)\n\tif not (m and window()) then return false end\n",
+     _fijo("function CT.ShowCard(m)\n\t" + _AQUI.replace("\n", "\n\t")
+           + "if m and ns.Reemplazos and ns.Reemplazos.Aviso(m) then\n\t\tif f then f:Hide() end\n\t\treturn true\n\tend\n"
+           "\tif not (m and window()) then return false end\n")),
+    ("Alfa/UI/ClassToast.lua", "function CT.Place(animate)\n\tlocal w = window()\n",
+     _fijo("function CT.Place(animate)\n\tlocal w = window()\n"
+           "\tif CT.current and CT.current.alfaReemplazo then\n\t\tif f then f:Hide() end\n\t\treturn\n\tend\n")),
+    ("Alfa/UI/ClassToast.lua", "\tCT.current = nil\n\tif f then f:Hide() end\n\tif was and ns.Fire then",
+     _fijo("\tCT.current = nil\n\tif f then f:Hide() end\n"
+           "\tif was and ns.Reemplazos then ns.Reemplazos.AvisoFuera(was) end\n\tif was and ns.Fire then")),
+    # El fin de una guia.
+    ("Alfa/UI/GuideEnd.lua", "\tshown = m\n\tlayout(m)\n",
+     _fijo("\tshown = m\n\t" + _AQUI.replace("\n", "\n\t")
+           + 'if ns.Reemplazos and ns.Reemplazos.Llamar("GUIDE_END", { accion = "mostrar", info = info, modelo = m,\n'
+           "\t\tEmpezar = GE.Start, Despues = GE.Later, Cerrar = GE.Hide }) then\n\t\tF:Hide()\n\t\treturn true\n\tend\n"
+           "\tlayout(m)\n")),
+    ("Alfa/UI/GuideEnd.lua", "\tshown = nil\n\tif F then F:Hide() end\n",
+     _fijo("\tshown = nil\n\tif F then F:Hide() end\n"
+           '\tif ns.Reemplazos then ns.Reemplazos.Llamar("GUIDE_END", { accion = "ocultar" }) end\n')),
+    ("Alfa/UI/GuideEnd.lua", "function GE.IsShown()\n\treturn F ~= nil and F:IsShown()\n",
+     _fijo('function GE.IsShown()\n\treturn (F ~= nil and F:IsShown()) or ns.ReemplazoVisible("GUIDE_END") == true\n')),
+    ("Alfa/UI/GuideEnd.lua", "\tif shown and F and F:IsShown() and E and E.GetTabs then\n",
+     _fijo("\tif shown and GE.IsShown() and E and E.GetTabs then\n")),
+    # Elegir el camino.
+    ("Alfa/UI/RouteChoice.lua",
+     "\tchoice.offeredAgain = E.PendingRouteChoice and E.PendingRouteChoice() ~= id or false\n\tlayout(choice)\n",
+     _fijo("\tchoice.offeredAgain = E.PendingRouteChoice and E.PendingRouteChoice() ~= id or false\n\t"
+           + _AQUI.replace("\n", "\n\t")
+           + 'if ns.Reemplazos and ns.Reemplazos.Llamar("ROUTE_CHOICE", { accion = "mostrar", desde = id, eleccion = choice,\n'
+           "\t\tsolo = byItself and true or false, Elegir = RC.Choose, Despues = RC.Hide }) then\n"
+           "\t\tF:Hide()\n\t\treturn true\n\tend\n\tlayout(choice)\n")),
+    ("Alfa/UI/RouteChoice.lua", "function RC.Hide()\n\twaiting = nil\n\tif F then F:Hide() end\nend\n",
+     _fijo("function RC.Hide()\n\twaiting = nil\n\tif F then F:Hide() end\n"
+           '\tif ns.Reemplazo and ns.Reemplazo("ROUTE_CHOICE") then\n'
+           '\t\tns.Reemplazos.Llamar("ROUTE_CHOICE", { accion = "ocultar" })\n'
+           '\t\tns.Fire("ROUTE_CHOICE_HIDDEN")\n\tend\nend\n')),
+    ("Alfa/UI/RouteChoice.lua", "function RC.IsShown()\n\treturn F ~= nil and F:IsShown()\n",
+     _fijo('function RC.IsShown()\n\treturn (F ~= nil and F:IsShown()) or ns.ReemplazoVisible("ROUTE_CHOICE") == true\n')),
+    ("Alfa/UI/RouteChoice.lua", 'ns.On("ROUTE_CHOSEN", function()\n\tif F and F:IsShown() then F:Hide() end\n',
+     _fijo('ns.On("ROUTE_CHOSEN", function()\n\tif F and F:IsShown() then F:Hide() end\n'
+           '\tif ns.Reemplazos then ns.Reemplazos.Llamar("ROUTE_CHOICE", { accion = "ocultar" }) end\n')),
+    # "Mientras estas aqui" con la ventana de guia oculta.
+    ("Alfa/UI/WhileHere.lua", "function T.Show(v)\n\tif not f then build() end\n",
+     _fijo("function T.Show(v)\n\t" + _AQUI.replace("\n", "\n\t")
+           + 'if ns.Reemplazos and ns.Reemplazos.Llamar("WHILE_HERE", { accion = "mostrar", linea = v, texto = text(v),\n'
+           "\t\tGuiar = function() local E = ns.Engine if E and E.AimWhileHere then E.AimWhileHere(shownIndex()) end end,\n"
+           "\t\tDescartar = function() local E = ns.Engine if E and E.DismissWhileHere then E.DismissWhileHere(shownIndex()) end end,\n"
+           "\t}) then\n\t\tif f then f:Hide() end\n\t\treturn\n\tend\n\tif not f then build() end\n")),
+    ("Alfa/UI/WhileHere.lua", "function T.Hide()\n\tif not (f and f:IsShown()) then return end\n",
+     _fijo('function T.Hide()\n\tif ns.Reemplazos then ns.Reemplazos.Llamar("WHILE_HERE", { accion = "ocultar" }) end\n'
+           "\tif not (f and f:IsShown()) then return end\n")),
+    ("Alfa/UI/WhileHere.lua", "\t\t\tif f and f:IsShown() then f.Text:SetText(text(cur)) end\n",
+     _fijo("\t\t\tif f and f:IsShown() then f.Text:SetText(text(cur)) end\n"
+           '\t\t\tif ns.Reemplazos then ns.Reemplazos.Llamar("WHILE_HERE", { accion = "actualizar", linea = cur, texto = text(cur) }) end\n')),
+    # El panel de niveles de una ruta.
+    ("Alfa/UI/LevelTip.lua", "function LevelTip.Show(chip)\n\tif not (chip and chip.psXP) then return end\n",
+     _fijo("function LevelTip.Show(chip)\n\tif not (chip and chip.psXP) then return end\n"
+           '\tif ns.Reemplazos and ns.Reemplazos.Llamar("LEVEL_TIP", { accion = "mostrar", chip = chip, resumen = chip.psXP, textos = chip.psTexts }) then return end\n')),
+    ("Alfa/UI/LevelTip.lua", "function LevelTip.Hide()\n\towner = nil\n",
+     _fijo('function LevelTip.Hide()\n\towner = nil\n\tif ns.Reemplazos then ns.Reemplazos.Llamar("LEVEL_TIP", { accion = "ocultar" }) end\n')),
+    # La tarjeta de mision de clase de la ventana de guia: su modelo sin
+    # dibujar (CC.Modelo) y, reemplazada, la ventana de Alfa la dibuja.
+    ("Alfa/UI/ClassCard.lua", "function CC.Fill(guide, index, view)\n\tshown = nil\n\tCC.shown = nil\n",
+     _fijo("function CC.Fill(guide, index, view)\n\tshown = nil\n\tCC.shown = nil\n\t" + _AQUI.replace("\n", "\n\t")
+           + 'if ns.Reemplazo and ns.Reemplazo("CLASS_CARD") then\n'
+           "\t\tif F then F:Hide() end\n"
+           "\t\tlocal m = CC.Modelo(guide, index, view)\n"
+           "\t\tif m then\n"
+           '\t\t\tshown = { key = tostring(guide.id) .. ":" .. tostring(chainOf(m.mision)), class = m.clase, quest = m.mision, reward = m.recompensa, slim = m.tomada }\n'
+           "\t\t\tCC.shown = shown\n\t\tend\n"
+           '\t\tif ns.Reemplazos.Llamar("CLASS_CARD", { modelo = m, guia = guide, indice = index, vista = view }) then return m and m.hex or nil end\n'
+           "\t\tshown = nil\n\t\tCC.shown = nil\n\tend\n")),
+    ("Alfa/UI/ClassCard.lua", "function CC.Layout(width)\n",
+     _fijo("-- Alfa (docs/KIT.md, CLASS_CARD): lo que dice la tarjeta para el paso `index`\n"
+           "-- de `guide`, sin dibujarla, para una ventana de Alfa. -> modelo | nil\n"
+           "--   { clase, nombreClase, nivel, mision, meta (indice de la meta), titulo,\n"
+           "--     recompensa, nombreRecompensa, linea (\"Aprende ...\"), insignia, icono,\n"
+           "--     hex (color de la clase para texto), zonas, pasos, aceptar (meta que\n"
+           "--     se pliega en la tarjeta), tomada, entregaA, entregaLuego }\n"
+           "function CC.Modelo(guide, index, view)\n"
+           "\tlocal step = guide and index and guide.steps and guide.steps[index]\n"
+           "\tlocal p = player()\n"
+           "\tlocal gi = step and view and p and p.class and cardGoal(step, view, p)\n"
+           "\tif not gi then return nil end\n"
+           "\tlocal goal, gv = step.goals[gi], view.goals[gi]\n"
+           "\tlocal e = entry(goal.quest)\n"
+           "\tlocal d = ns.ClassRewards\n"
+           "\tlocal reward = e and e[3] and e[3] > 0 and d.rewards[e[3]] or nil\n"
+           "\tlocal hex = hexOf(textColor(p.class))\n"
+           "\tlocal chain = chainOf(goal.quest)\n"
+           "\tlocal zones, n = trip(guide, index, chain, goal.quest, p)\n"
+           "\tlocal fold = CC.Fold(guide, view)\n"
+           "\tlocal m = {\n"
+           "\t\tclase = p.class, nombreClase = UI.ClassName(p.class), nivel = goal.minLevel or goal.qlvl,\n"
+           "\t\tmision = goal.quest, meta = gi, titulo = (gv and gv.subject) or goal.title or \"\",\n"
+           "\t\trecompensa = reward, nombreRecompensa = (CC.RewardName(reward)), linea = CC.RewardLine(reward, hex),\n"
+           "\t\tinsignia = CC.BadgeText(reward), icono = CC.Icon(reward, p.class), hex = hex,\n"
+           "\t\tzonas = zones, pasos = n, aceptar = fold, tomada = fold ~= nil and gv and gv.status == \"done\" or false,\n"
+           "\t}\n"
+           "\tif m.tomada then m.entregaA, m.entregaLuego = handIn(guide, index, view, goal.quest, chain, p) end\n"
+           "\treturn m\n"
+           "end\n\n"
+           "function CC.Layout(width)\n")),
+]
+PARCHES += REEMPLAZOS
+
 # Textos que se agregan al final de un archivo: las traducciones de lo nuevo.
 AGREGADOS = [
     (f"Alfa_{loc}/Interface.lua",

@@ -1,6 +1,6 @@
 ## Interface: 16001
 ## Title: |cff8be04eAlfa|r - Núcleo
-## Notes: Piezas comunes de los módulos de Alfa.
+## Notes: Piezas comunes de los módulos de Alfa y el Kit de su interfaz.
 ## Author: Toxic - La Jauria
 ## Version: dev
 ## X-License: GPL-3.0-only
@@ -9,7 +9,14 @@
 ## SavedVariablesPerCharacter: AlfaNucleoCharDB
 ## Category: Alfa
 
+Textos.lua
 Nucleo.lua
+Kit\Tokens.lua
+Kit\Formas.lua
+Kit\Basicos.lua
+Kit\Bloques.lua
+Kit\Ventanas.lua
+Kit\Plantillas.lua
 Idiomas\deDE.lua
 Idiomas\frFR.lua
 Idiomas\ptBR.lua

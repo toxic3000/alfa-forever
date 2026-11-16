@@ -74,11 +74,31 @@ local TAIL = { [L["Recorder"]] = 1, [L["About"]] = 2 }
 -- key: the page's stable key (`/polestar options <key>`, O.Select), the
 -- spec's own or else made from the name. Built-in pages give theirs, so a
 -- translated title does not move them.
+-- Alfa: los iconos propios de las paginas (tools/iconos.py, el mismo trazo
+-- que las secciones; docs/KIT.md). Mandan sobre el que traiga el registro de
+-- la pagina, salvo un icono propio de Alfa ("ic-...") que un modulo elija.
+local ICONOS = {
+	guia = "ic-guia", guide = "ic-ventana", appearance = "ic-apariencia", map = "ic-mapa",
+	questing = "ic-misiones", discovery = "ic-descubrir", qualityoflife = "ic-comodidades",
+	integrations = "ic-conexiones", guidepacks = "ic-comunidad", gamepad = "ic-mando",
+	recorder = "ic-grabar", about = "ic-info", thanks = "ic-huella",
+	inicio = "ic-hoy", rutas = "ic-ruta", mazmorras = "ic-mazmorra", builds = "ic-talentos",
+	curacion = "ic-curacion", bolsas = "ic-bolsas", mundo = "ic-mundo", recoleccion = "ic-recoleccion",
+	comercio = "ic-comercio", pesca = "ic-pesca", manada = "ic-manada", comodidades = "ic-comodidades",
+}
+O.ICONOS = ICONOS
+
+local function iconoDe(k, dado)
+	if type(dado) == "string" and dado:find("^ic%-") then return dado end
+	return ICONOS[k] or dado
+end
+
 local function pageOf(name, icon, order, builtin, key)
 	local p = pages[name]
 	if not p then
 		seq = seq + 1
-		p = { name = name, key = keyOf(key or name), icon = icon or "gear", order = order or 100, builtin = builtin, seq = seq, tabs = {} }
+		local k = keyOf(key or name)
+		p = { name = name, key = k, icon = iconoDe(k, icon) or "gear", order = order or 100, builtin = builtin, seq = seq, tabs = {} }
 		pages[name] = p
 		pageList[#pageList + 1] = p
 		-- By order (built-in pages first on a tie), Recorder and About last.
@@ -90,7 +110,7 @@ local function pageOf(name, icon, order, builtin, key)
 			return a.seq < b.seq
 		end)
 	else
-		if icon and not p.builtin then p.icon = icon end
+		if icon and not p.builtin then p.icon = iconoDe(p.key, icon) end
 	end
 	return p
 end

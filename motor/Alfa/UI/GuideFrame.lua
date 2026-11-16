@@ -4175,6 +4175,14 @@ function GF.ApplyVisibility()
 	ns.Fire("GUIDE_VISIBILITY")
 	if not F then return end
 	local show = ns.Get("ui.shown") and not GF.RulesHide()
+	-- Alfa: con la ventana de guia reemplazada (GUIDE_FRAME, Core/Reemplazos.lua)
+	-- esta no se muestra: la de Alfa sigue a ui.shown y a estas mismas reglas.
+	local R = ns.Reemplazos
+	if R and ns.Reemplazo("GUIDE_FRAME") then
+		F:Hide()
+		if R.Llamar("GUIDE_FRAME", { mostrar = show and true or false, combate = inCombat and ns.Get("ui.combat") == "hide" or false,
+			instancia = hiddenInside() and true or false }) then return end
+	end
 	F:SetShown(show and true or false)
 end
 

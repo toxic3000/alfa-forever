@@ -365,6 +365,14 @@ local function open(why, deferred)
 	if why == "login" then
 		ns.CharState().welcomeSeen = SEEN -- shown: a reload or logout from here does not repeat it
 	end
+	-- Alfa: con la bienvenida reemplazada (SHOW_WELCOME, Core/Reemplazos.lua)
+	-- se abre la de Alfa; al cerrarse llama a pedido.Listo() (WELCOME_CLOSED).
+	local R = ns.Reemplazos
+	if R and R.Llamar("SHOW_WELCOME", { motivo = why, solo = deferred and true or false,
+		Listo = function() ns.Fire("WELCOME_CLOSED") end }) then
+		if F then F:Hide() end
+		return
+	end
 	if not F then build() end
 	unasked = deferred and true or false
 	render()
@@ -384,7 +392,7 @@ function WEL.Hide()
 end
 
 function WEL.IsShown()
-	return F ~= nil and F:IsShown()
+	return (F ~= nil and F:IsShown()) or ns.ReemplazoVisible("SHOW_WELCOME") == true
 end
 
 -- Up, or due and waiting (for the login delay, a fight, a cinematic or the
@@ -448,6 +456,9 @@ ns.RegisterEvent("CINEMATIC_STOP", function()
 	if C_Timer and C_Timer.After then ns.After(1, try) else try() end
 end)
 ns.On("ROUTE_CHOICE", yieldToRouteChoice)
+-- Una eleccion de ruta de Alfa (ROUTE_CHOICE reemplazada) que se cierra: la
+-- bienvenida que esperaba sale ahora.
+ns.On("ROUTE_CHOICE_HIDDEN", function() try() end)
 ns.On("SHOW_WELCOME", function(page) WEL.Show(page) end)
 -- A theme or language change: the texts and the cards again.
 Theme.OnChanged(function()

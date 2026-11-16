@@ -1,0 +1,474 @@
+-- Alfa - Kit: ventanas, diálogos y avisos (Toxic / La Jauría). GPL-3.0.
+--
+--   K.Ventana(opts)        ventana flotante que se mueve, recuerda su lugar y se cierra con Esc
+--   K.Desplazable(padre)   un área que se desplaza con la rueda (y su barra fina)
+--   K.Dialogo(opts)        diálogo modal sobre un velo (uno a la vez)
+--   K.Aviso(opts)          aviso flotante arriba al centro (hasta 3, se van solos)
+-- Nada de esto es un marco protegido: se puede abrir y cerrar en combate.
+
+local _, N = ...
+local K = N.Kit
+local A = N.A
+local L = K.L
+
+local floor, max, min, type, ipairs = math.floor, math.max, math.min, type, ipairs
+local ESP = K.ESP
+
+local function datos() return N.Datos("kit") end
+
+local function cerrarConEsc(nombre)
+	if not nombre then return end
+	if A and type(A.CloseOnEscape) == "function" then
+		A.CloseOnEscape(nombre)
+	elseif type(UISpecialFrames) == "table" then
+		table.insert(UISpecialFrames, nombre)
+	end
+end
+
+---------------------------------------------------------------------------
+-- Área desplazable
+--   d = K.Desplazable(padre) ; d.Contenido (el hijo) ; d:SetAltoContenido(h)
+--   d:Acomodar(ancho, alto) ; d:IrArriba()
+---------------------------------------------------------------------------
+function K.Desplazable(padre)
+	local d = CreateFrame("ScrollFrame", nil, padre)
+	d.Contenido = CreateFrame("Frame", nil, d)
+	d.Contenido:SetSize(1, 1)
+	d:SetScrollChild(d.Contenido)
+	d:EnableMouseWheel(true)
+	d.alfaAltoContenido = 0
+	local barra = CreateFrame("Slider", nil, d)
+	d.Barra = barra
+	barra:SetOrientation("VERTICAL")
+	barra:SetWidth(6)
+	barra:SetPoint("TOPRIGHT", d, "TOPRIGHT", 0, 0)
+	barra:SetPoint("BOTTOMRIGHT", d, "BOTTOMRIGHT", 0, 0)
+	barra:SetMinMaxValues(0, 1)
+	barra.Pista = K.Plano(barra, "hundido", "BACKGROUND", 0)
+	barra.Pista:SetAllPoints(barra)
+	barra:SetThumbTexture(K.Ruta("knob"))
+	local pulgar = barra.GetThumbTexture and barra:GetThumbTexture()
+	if pulgar then
+		pulgar:SetSize(6, 32)
+		K.Pintar(pulgar, function(t) t:SetVertexColor(K.Color("lineaFuerte")) end)
+	end
+	barra:Hide()
+	local function rango() return max(0, d.alfaAltoContenido - K.num(d:GetHeight(), 0)) end
+	barra:SetScript("OnValueChanged", function(_, v)
+		if d.alfaQuieto then return end
+		d:SetVerticalScroll(v)
+	end)
+	d:SetScript("OnMouseWheel", function(self, delta)
+		local v = max(0, min(rango(), K.num(self:GetVerticalScroll(), 0) - delta * 48))
+		self:SetVerticalScroll(v)
+		self.alfaQuieto = true
+		barra:SetValue(v)
+		self.alfaQuieto = nil
+	end)
+	function d:SetAltoContenido(h)
+		self.alfaAltoContenido = h or 0
+		self.Contenido:SetHeight(max(1, self.alfaAltoContenido))
+		local r = rango()
+		barra:SetShown(r > 0)
+		barra:SetMinMaxValues(0, max(1, r))
+		if K.num(self:GetVerticalScroll(), 0) > r then self:SetVerticalScroll(r) end
+	end
+	function d:Acomodar(ancho, alto)
+		if ancho then self:SetWidth(ancho) self.Contenido:SetWidth(ancho - 12) end
+		if alto then self:SetHeight(alto) end
+		self:SetAltoContenido(self.alfaAltoContenido)
+		return K.num(self:GetHeight(), 0)
+	end
+	function d:AnchoUtil() return K.num(self:GetWidth(), 0) - 12 end
+	function d:IrArriba()
+		self:SetVerticalScroll(0)
+		self.alfaQuieto = true
+		barra:SetValue(0)
+		self.alfaQuieto = nil
+	end
+	return d
+end
+
+---------------------------------------------------------------------------
+-- Ventana flotante
+--   opts = { nombre = "AlfaRuta" (global, para Esc y su lugar), titulo, subtitulo,
+--            icono = "ic-ruta", ancho = 760, alto = 560, cerrar = true,
+--            desplazar = false (un área desplazable como cuerpo),
+--            alAbrir = fn(v), alCerrar = fn(v) }
+--   v.Cuerpo (marco del contenido; con desplazar, v.Cuerpo es el Contenido)
+--   v:Abrir() v:Cerrar() v:Alternar() v:SetTitulo(t, sub, icono) v:SetTamano(w, h)
+--   v:AnchoCuerpo() v:AltoCuerpo() v:SetAltoContenido(h) v:SetPie(botones)
+--   v.margen: el margen a los lados del cuerpo (24)
+---------------------------------------------------------------------------
+local CABECERA, PIE, MARGEN = K.ALTO.cabecera, K.ALTO.pie, ESP.l
+
+local function guardarLugar(v)
+	if not v.alfaNombre then return end
+	local p, _, rp, x, y = v:GetPoint(1)
+	if not p then return end
+	local d = datos()
+	d.ventanas = type(d.ventanas) == "table" and d.ventanas or {}
+	d.ventanas[v.alfaNombre] = { p, rp, floor(K.num(x, 0) + 0.5), floor(K.num(y, 0) + 0.5) }
+end
+
+local function ponerEnSuLugar(v)
+	v:ClearAllPoints()
+	local d = v.alfaNombre and datos().ventanas
+	local l = type(d) == "table" and d[v.alfaNombre]
+	if type(l) == "table" and type(l[3]) == "number" then
+		v:SetPoint(l[1], UIParent, l[2], l[3], l[4])
+	else
+		v:SetPoint("CENTER", UIParent, "CENTER", 0, 40)
+	end
+end
+
+function K.Ventana(opts)
+	opts = opts or {}
+	local v = CreateFrame("Frame", opts.nombre, K.Raiz())
+	v.alfaNombre = opts.nombre
+	v:SetSize(opts.ancho or 760, opts.alto or 560)
+	v:SetFrameStrata(opts.capa or "HIGH")
+	v:SetToplevel(true)
+	v:SetClampedToScreen(true)
+	v:SetMovable(true)
+	v:EnableMouse(true)
+	v.margen = MARGEN
+	v.caja = K.Caja(v, { fondo = "fondo", borde = "linea", corte = K.CORTE.ventana })
+	v.Marca = K.Marca(v, K.CORTE.ventana, "acento", 44)
+
+	-- Cabecera: la baldosa con el ícono, el título y el subtítulo; se arrastra.
+	local c = CreateFrame("Frame", nil, v)
+	v.Cabecera = c
+	c:SetPoint("TOPLEFT", v, "TOPLEFT", 0, 0)
+	c:SetPoint("TOPRIGHT", v, "TOPRIGHT", 0, 0)
+	c:SetHeight(CABECERA)
+	c:EnableMouse(true)
+	c:RegisterForDrag("LeftButton")
+	c:SetScript("OnDragStart", function() if not (A and A.DragLocked and A.DragLocked()) then v:StartMoving() end end)
+	c:SetScript("OnDragStop", function() v:StopMovingOrSizing() guardarLugar(v) end)
+	c.Icono = K.Icono(c, opts.icono or "ic-lobo", 20, "acento")
+	c.Icono:SetPoint("LEFT", c, "LEFT", MARGEN, 0)
+	c.Titulo = K.Texto(c, "subtitulo", "texto")
+	c.Subtitulo = K.Texto(c, "pequeno", "textoTenue")
+	c.Linea = K.Linea(c, "linea")
+	c.Linea:SetPoint("BOTTOMLEFT", c, "BOTTOMLEFT", 0, 0)
+	c.Linea:SetPoint("BOTTOMRIGHT", c, "BOTTOMRIGHT", 0, 0)
+	if opts.cerrar ~= false then
+		c.Cerrar = K.BotonIcono(c, "ic-cerrar", function() v:Cerrar() end, { tam = 28, icono = 14, ayuda = L["Cerrar"] })
+		c.Cerrar:SetPoint("RIGHT", c, "RIGHT", -ESP.m, 0)
+	end
+
+	local cuerpo = CreateFrame("Frame", nil, v)
+	v.Marco = cuerpo
+	cuerpo:SetPoint("TOPLEFT", c, "BOTTOMLEFT", 0, 0)
+	cuerpo:SetPoint("BOTTOMRIGHT", v, "BOTTOMRIGHT", 0, 0)
+	if opts.desplazar then
+		v.Desplazable = K.Desplazable(cuerpo)
+		v.Desplazable:SetPoint("TOPLEFT", cuerpo, "TOPLEFT", 0, -1)
+		v.Cuerpo = v.Desplazable.Contenido
+	else
+		v.Cuerpo = cuerpo
+	end
+
+	function v:SetTitulo(t, sub, icono)
+		K.Escribir(c.Titulo, t or "")
+		K.Escribir(c.Subtitulo, sub or "")
+		if icono then K.SetIcono(c.Icono, icono, "acento") end
+		local conSub = (sub or "") ~= ""
+		c.Titulo:ClearAllPoints()
+		c.Titulo:SetPoint("LEFT", c.Icono, "RIGHT", ESP.m, conSub and 8 or 0)
+		c.Subtitulo:ClearAllPoints()
+		c.Subtitulo:SetPoint("TOPLEFT", c.Titulo, "BOTTOMLEFT", 0, -2)
+		c.Subtitulo:SetShown(conSub)
+	end
+	function v:AnchoCuerpo() return K.num(self:GetWidth(), 0) - 2 * MARGEN end
+	function v:AltoCuerpo()
+		return K.num(self:GetHeight(), 0) - CABECERA - ((self.Pie and self.Pie:IsShown()) and PIE or 0)
+	end
+	function v:SetTamano(w, h)
+		self:SetSize(w or K.num(self:GetWidth(), 760), h or K.num(self:GetHeight(), 560))
+		self:Reacomodar()
+	end
+	-- El cuerpo cambió de alto (con desplazar): ajusta la barra.
+	function v:SetAltoContenido(h)
+		if self.Desplazable then self.Desplazable:SetAltoContenido(h) end
+	end
+	function v:Reacomodar()
+		local abajo = (self.Pie and self.Pie:IsShown()) and PIE or 0
+		cuerpo:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", 0, abajo)
+		if self.Desplazable then
+			self.Desplazable:Acomodar(K.num(self:GetWidth(), 0) - 8, self:AltoCuerpo() - 2)
+			self.Cuerpo:SetWidth(K.num(self:GetWidth(), 0) - 20)
+		end
+		if self.alAcomodar then K.Llamar(self.alAcomodar, self) end
+	end
+	-- El pie: botones a la derecha (el primero, el principal, queda al final).
+	function v:SetPie(botones, izquierda)
+		if not self.Pie then
+			local p = CreateFrame("Frame", nil, self)
+			p:SetPoint("BOTTOMLEFT", self, "BOTTOMLEFT", 0, 0)
+			p:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", 0, 0)
+			p:SetHeight(PIE)
+			p.Fondo = K.Forma(p, 0, "BACKGROUND", -4)
+			K.Pintar(p.Fondo, function(f) f:Color("pie") end)
+			p.Fondo:Corte(0, K.CORTE.ventana)
+			p.Linea = K.Linea(p, "linea")
+			p.Linea:SetPoint("TOPLEFT", p, "TOPLEFT", 0, 0)
+			p.Linea:SetPoint("TOPRIGHT", p, "TOPRIGHT", 0, 0)
+			self.Pie = p
+		end
+		local p = self.Pie
+		p.botones = botones or {}
+		p.izquierda = izquierda or {}
+		local x = MARGEN
+		for i = #p.botones, 1, -1 do
+			local b = p.botones[i]
+			K.Adoptar(b, p)
+			b:ClearAllPoints()
+			b:SetPoint("RIGHT", p, "RIGHT", -x, 0)
+			x = x + K.num(b:GetWidth(), 80) + ESP.s
+		end
+		local xi = MARGEN
+		for _, b in ipairs(p.izquierda) do
+			K.Adoptar(b, p)
+			b:ClearAllPoints()
+			b:SetPoint("LEFT", p, "LEFT", xi, 0)
+			xi = xi + K.num(b:GetWidth(), 80) + ESP.s
+		end
+		p:SetShown(#p.botones + #p.izquierda > 0)
+		self:Reacomodar()
+	end
+	function v:Abrir()
+		if not self:IsShown() then ponerEnSuLugar(self) end
+		self:Show()
+		self:Raise()
+	end
+	function v:Cerrar() self:Hide() end
+	function v:Alternar() if self:IsShown() then self:Cerrar() else self:Abrir() end end
+	v:SetScript("OnShow", function(self) if opts.alAbrir then K.Llamar(opts.alAbrir, self) end end)
+	v:SetScript("OnHide", function(self)
+		K.CerrarMenu()
+		K.OcultarInfo()
+		if opts.alCerrar then K.Llamar(opts.alCerrar, self) end
+	end)
+	v:SetTitulo(opts.titulo, opts.subtitulo, opts.icono)
+	v:Hide()
+	cerrarConEsc(opts.nombre)
+	v:Reacomodar()
+	return v
+end
+
+---------------------------------------------------------------------------
+-- Diálogo modal (uno a la vez)
+--   K.Dialogo({ titulo, texto, icono = "ic-alerta", lobo = "atento", peligro = false,
+--               aceptar = "Aceptar", alAceptar = fn, cancelar = "Cancelar", alCancelar = fn })
+---------------------------------------------------------------------------
+local dialogo
+
+local function armarDialogo()
+	local velo = CreateFrame("Frame", "AlfaKitVelo", UIParent)
+	velo:SetAllPoints(UIParent)
+	velo:SetFrameStrata("DIALOG")
+	velo:EnableMouse(true)
+	velo.Fondo = K.Plano(velo, "velo", "BACKGROUND", 0)
+	velo.Fondo:SetAllPoints(velo)
+	K.Pintar(velo.Fondo, function(t) t:SetVertexColor(K.ConAlfa("velo", 0.6)) end)
+	velo:Hide()
+	local d = CreateFrame("Frame", "AlfaKitDialogo", velo)
+	d:SetFrameStrata("DIALOG")
+	d:SetFrameLevel(velo:GetFrameLevel() + 5)
+	d:SetPoint("CENTER", UIParent, "CENTER", 0, 60)
+	d:EnableMouse(true)
+	d.caja = K.Caja(d, { fondo = "fondo", borde = "lineaFuerte", corte = K.CORTE.ventana })
+	d.Marca = K.Marca(d, K.CORTE.ventana, "acento", 44)
+	d.Icono = d:CreateTexture(nil, "ARTWORK")
+	d.Icono:SetSize(40, 40)
+	d.Icono:SetPoint("TOPLEFT", d, "TOPLEFT", ESP.l, -ESP.l)
+	d.Titulo = K.Texto(d, "titulo", "texto")
+	d.Texto = K.Texto(d, "texto", "textoSuave")
+	d.Aceptar = K.Boton(d, "", function()
+		local fn = d.alAceptar
+		d.velo:Hide()
+		if fn then K.Llamar(fn) end
+	end, { tipo = "primario" })
+	d.Cancelar = K.Boton(d, "", function()
+		local fn = d.alCancelar
+		d.velo:Hide()
+		if fn then K.Llamar(fn) end
+	end, { tipo = "fantasma" })
+	d.velo = velo
+	velo:SetScript("OnHide", function() d.alAceptar, d.alCancelar = nil, nil end)
+	cerrarConEsc("AlfaKitVelo")
+	return d
+end
+
+function K.Dialogo(o)
+	o = o or {}
+	dialogo = dialogo or armarDialogo()
+	local d = dialogo
+	local ancho = o.ancho or K.ANCHO.dialogo
+	d.alAceptar, d.alCancelar = o.alAceptar, o.alCancelar
+	if o.lobo then
+		d.Icono:SetTexture(K.Lobo(o.lobo))
+		d.Icono:SetVertexColor(K.Color(o.peligro and "peligro" or "acento"))
+	else
+		d.Icono:SetTexture(K.Ruta(o.icono or (o.peligro and "ic-alerta" or "ic-info")))
+		d.Icono:SetVertexColor(K.Color(o.peligro and "peligro" or "acento"))
+	end
+	local x = ESP.l + 40 + ESP.base
+	local tw = ancho - x - ESP.l
+	K.Escribir(d.Titulo, o.titulo or "")
+	d.Titulo:ClearAllPoints()
+	d.Titulo:SetPoint("TOPLEFT", d, "TOPLEFT", x, -ESP.l)
+	d.Titulo:SetWidth(tw)
+	d.Titulo:SetWordWrap(true)
+	local y = ESP.l + K.AltoTexto(d.Titulo)
+	K.Escribir(d.Texto, o.texto or "")
+	if (o.texto or "") ~= "" then
+		y = y + ESP.s
+		d.Texto:ClearAllPoints()
+		d.Texto:SetPoint("TOPLEFT", d, "TOPLEFT", x, -y)
+		y = y + K.Parrafo(d.Texto, tw)
+	end
+	y = max(y, ESP.l + 40) + ESP.l
+	d.Aceptar:SetTipo(o.peligro and "peligro" or "primario")
+	d.Aceptar:SetTexto(o.aceptar or L["Aceptar"])
+	d.Cancelar:SetTexto(o.cancelar or L["Cancelar"])
+	d.Cancelar:SetShown(o.cancelar ~= false)
+	d.Aceptar:ClearAllPoints()
+	d.Aceptar:SetPoint("TOPRIGHT", d, "TOPRIGHT", -ESP.l, -y)
+	d.Cancelar:ClearAllPoints()
+	d.Cancelar:SetPoint("RIGHT", d.Aceptar, "LEFT", -ESP.s, 0)
+	y = y + K.ALTO.boton + ESP.l
+	d:SetSize(ancho, y)
+	d.velo:Show()
+	return d
+end
+
+function K.CerrarDialogo() if dialogo then dialogo.velo:Hide() end end
+
+---------------------------------------------------------------------------
+-- Avisos flotantes (toasts): arriba al centro, el más nuevo arriba, hasta 3.
+-- Se van solos (no mientras el ratón está encima) o con su X.
+--   K.Aviso({ titulo, texto, icono, lobo, tono = "acento", duracion = 6,
+--             accion = { texto, alClic } }) -> aviso
+---------------------------------------------------------------------------
+local avisos, MAX_AVISOS = {}, 3
+local ancla
+
+local function recolocar()
+	local y = 0
+	for _, a in ipairs(avisos) do
+		if a:IsShown() then
+			a:ClearAllPoints()
+			a:SetPoint("TOP", ancla, "TOP", 0, -y)
+			y = y + K.num(a:GetHeight(), 64) + ESP.s
+		end
+	end
+end
+
+local function quitar(a)
+	a.alfaVivo = nil
+	a:Hide()
+	recolocar()
+end
+
+local function armarAviso()
+	if not ancla then
+		ancla = CreateFrame("Frame", nil, K.Raiz())
+		ancla:SetSize(K.ANCHO.aviso, 1)
+		ancla:SetPoint("TOP", UIParent, "TOP", 0, -110)
+	end
+	local a = CreateFrame("Button", nil, ancla)
+	a:SetFrameStrata("HIGH")
+	a:SetWidth(K.ANCHO.aviso)
+	a.caja = K.Caja(a, { fondo = "panel", borde = "lineaFuerte", corte = K.CORTE.panel })
+	a.Franja = K.Plano(a, "acento", "ARTWORK", 1)
+	a.Franja:SetWidth(3)
+	a.Franja:SetPoint("TOPLEFT", a, "TOPLEFT", 0, -K.CORTE.panel - 2)
+	a.Franja:SetPoint("BOTTOMLEFT", a, "BOTTOMLEFT", 0, K.CORTE.panel + 2)
+	a.Icono = a:CreateTexture(nil, "ARTWORK")
+	a.Icono:SetSize(28, 28)
+	a.Icono:SetPoint("TOPLEFT", a, "TOPLEFT", ESP.base, -ESP.m - 2)
+	a.Titulo = K.Texto(a, "encabezado", "texto")
+	a.Texto = K.Texto(a, "nota", "textoSuave")
+	a.Cerrar = K.BotonIcono(a, "ic-cerrar", function() quitar(a) end, { tam = 22, icono = 10 })
+	a.Cerrar:SetPoint("TOPRIGHT", a, "TOPRIGHT", -6, -6)
+	local ag = a:CreateAnimationGroup()
+	local alfa = ag:CreateAnimation("Alpha")
+	alfa:SetFromAlpha(0)
+	alfa:SetToAlpha(1)
+	alfa:SetDuration(0.2)
+	alfa:SetSmoothing("OUT")
+	a.entrada = ag
+	a:SetScript("OnClick", function(self)
+		local ac = self.alfaAccion
+		if ac and ac.alClic then K.Llamar(ac.alClic, self) quitar(self) end
+	end)
+	return a
+end
+
+function K.Aviso(o)
+	o = o or {}
+	local a
+	for _, x in ipairs(avisos) do if not x.alfaVivo then a = x break end end
+	if not a then
+		if #avisos >= MAX_AVISOS then
+			a = avisos[#avisos] -- el más viejo cede su lugar
+			table.remove(avisos, #avisos)
+		else
+			a = armarAviso()
+		end
+	else
+		for i, x in ipairs(avisos) do if x == a then table.remove(avisos, i) break end end
+	end
+	table.insert(avisos, 1, a)
+	local relleno, texto = K.Tono(o.tono or "acento")
+	K.ColorPlano(a.Franja, relleno)
+	if o.lobo then a.Icono:SetTexture(K.Lobo(o.lobo)) else a.Icono:SetTexture(K.Ruta(o.icono or "ic-aviso")) end
+	a.Icono:SetVertexColor(K.Color(relleno))
+	local x = ESP.base + 28 + ESP.m
+	local tw = K.ANCHO.aviso - x - 30
+	K.Escribir(a.Titulo, o.titulo or "")
+	a.Titulo:ClearAllPoints()
+	a.Titulo:SetPoint("TOPLEFT", a, "TOPLEFT", x, -ESP.m - 2)
+	a.Titulo:SetWidth(tw)
+	local y = ESP.m + 2 + K.AltoTexto(a.Titulo)
+	K.Escribir(a.Texto, o.texto or "")
+	if (o.texto or "") ~= "" then
+		y = y + 3
+		a.Texto:ClearAllPoints()
+		a.Texto:SetPoint("TOPLEFT", a, "TOPLEFT", x, -y)
+		y = y + K.Parrafo(a.Texto, tw, 3)
+	end
+	a.alfaAccion = o.accion
+	if o.accion then
+		a.Boton = a.Boton or K.Boton(a, "", nil, { tipo = "acento", tam = "chico" })
+		a.Boton:SetTexto(o.accion.texto)
+		a.Boton.alClic = function() K.Llamar(o.accion.alClic, a) quitar(a) end
+		a.Boton:ClearAllPoints()
+		a.Boton:SetPoint("TOPLEFT", a, "TOPLEFT", x, -(y + ESP.s))
+		a.Boton:Show()
+		y = y + ESP.s + K.ALTO.botonChico
+	elseif a.Boton then
+		a.Boton:Hide()
+	end
+	a:SetHeight(max(y, ESP.m + 30) + ESP.m + 2)
+	a.alfaVivo = true
+	a.alfaTurno = (a.alfaTurno or 0) + 1
+	local turno = a.alfaTurno
+	a:Show()
+	a.entrada:Stop()
+	a.entrada:Play()
+	recolocar()
+	local function vencer()
+		if not a.alfaVivo or a.alfaTurno ~= turno then return end
+		if a.IsMouseOver and a:IsMouseOver() then
+			if C_Timer and C_Timer.After then C_Timer.After(2, vencer) end
+			return
+		end
+		quitar(a)
+	end
+	if C_Timer and C_Timer.After then C_Timer.After(o.duracion or 6, vencer) end
+	return a
+end

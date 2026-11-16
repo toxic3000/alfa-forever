@@ -1540,10 +1540,16 @@ end
 
 -- opts: { query, kind, id }: the hub at this section. With an id and no
 -- query the search is the entity's name, and it is selected.
+-- Con el buscador reemplazado (SHOW_LOOKUP, Core/Reemplazos.lua) se abre la
+-- ventana de Alfa con { buscar, tipo, id }.
 function UI.ShowLookup(opts)
 	opts = type(opts) == "table" and opts or {}
 	local P = UI.Picker
-	if not (P and UI.ShowPicker and P.ShowSection) then return end
+	if ns.Reemplazos and ns.Reemplazos.Llamar("SHOW_LOOKUP", { buscar = opts.query, tipo = opts.kind, id = opts.id }) then
+		if P and P.frame and P.frame:IsShown() and P.Section and P.Section() == "Lookup" then P.frame:Hide() end
+		return
+	end
+	if not (P and UI.AbrirCentro and P.ShowSection) then return end
 	local q, k, id = opts.query, opts.kind, opts.id
 	if id ~= nil and k then
 		if q == nil or q == "" then
@@ -1565,8 +1571,7 @@ function UI.ShowLookup(opts)
 		kind = "all"
 	end
 	opening = true
-	UI.ShowPicker()
-	P.ShowSection("Lookup")
+	UI.AbrirCentro("Lookup")
 	-- The hub's box shows the search (this section has it already).
 	if q ~= nil and P.SetQuery then
 		P.SetQuery(q)
@@ -1583,6 +1588,7 @@ function UI.ShowLookup(opts)
 end
 
 function UI.ToggleLookup()
+	if ns.Reemplazos and ns.Reemplazos.Llamar("SHOW_LOOKUP", { alternar = true }) then return end
 	local P = UI.Picker
 	if P and P.frame and P.frame:IsShown() and P.Section and P.Section() == "Lookup" then
 		P.frame:Hide()

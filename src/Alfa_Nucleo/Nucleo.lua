@@ -89,7 +89,45 @@ function N.Abrir(id) A.Fire("SHOW_OPTIONS", id) end
 function N.AnchoPagina()
 	local O = A.UI and A.UI.Options
 	local win = O and O.frame
-	return (win and win.BodyWidth) or 560
+	local w = win and win.BodyWidth
+	return type(w) == "number" and w or 874
+end
+
+-- Alto visible de una página (sin desplazarla): para las plantillas que
+-- llenan la página (lista con ficha, asistente).
+function N.AltoPagina()
+	local O = A.UI and A.UI.Options
+	local win = O and O.frame
+	local h = win and win.psViewH
+	return type(h) == "number" and h or 470
+end
+
+-- Margen a los lados de una página (el contenido empieza ahí).
+function N.MargenPagina()
+	local W = A.Widgets
+	local p = W and W.SHELL and W.SHELL.pad
+	return type(p) == "number" and p or 32
+end
+
+-- Mide otra vez una página que está a la vista (cambió algo) y ajusta el
+-- desplazamiento de la ventana.
+function N.RehacerPagina(view)
+	if not (view and view.Refresh and view.IsVisible and view:IsVisible()) then return end
+	local h = view.Refresh()
+	if type(h) ~= "number" then return end
+	view:SetHeight(h)
+	local O = A.UI and A.UI.Options
+	local W = A.Widgets
+	if O and O.frame and W and W.ShellBody then W.ShellBody(O.frame, h) end
+end
+
+-- Una ventana o un aviso del motor que toma un módulo de Alfa (docs/KIT.md,
+-- "Reemplazos"): desde ese momento el motor llama a fn(pedido) en lugar de
+-- mostrar la suya. visible(): opcional, si tu ventana está a la vista.
+-- -> true | false, por qué
+function N.Reemplazar(clave, fn, visible)
+	if not (A and A.Reemplazar) then return false, "el motor no tiene reemplazos" end
+	return A.Reemplazar(clave, fn, visible)
 end
 
 -- Dentro de una página propia (construir), dibuja controles estándar del motor

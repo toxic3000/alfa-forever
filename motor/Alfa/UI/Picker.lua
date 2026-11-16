@@ -2145,7 +2145,19 @@ function P.Query() return query end
 
 -- Show a section ("Guides" or nil: the guide list). The hub search starts
 -- empty in every section.
+-- Alfa: una seccion cuya ventana reemplaza Alfa (Core/Reemplazos.lua) abre
+-- esa ventana y cierra el centro (el centro del motor queda solo como respaldo
+-- de las secciones sin ventana propia).
+P.SECCION_REEMPLAZO = { Guides = "SHOW_PICKER", Lookup = "SHOW_LOOKUP", Dungeons = "SHOW_DUNGEON",
+	Talents = "SHOW_TALENTS", Rares = "SHOW_RARES", Characters = "SHOW_ALTS", Import = "SHOW_IMPORT" }
+
 function P.ShowSection(key)
+	local clave = P.SECCION_REEMPLAZO[key or GUIDES.key]
+	if clave and win and win:IsShown() and ns.Reemplazo and ns.Reemplazo(clave) then
+		win:Hide()
+		if ns.Reemplazos.Llamar(clave, {}) then return end
+		win:Show()
+	end
 	if key == GUIDES.key then key = nil end
 	Kit.HideGrid()
 	if key ~= section and win then
@@ -3028,8 +3040,11 @@ local function build()
 	end
 end
 
--- opts: { newTab = true } when loading should open a new tab.
-function UI.ShowPicker(opts)
+-- El centro del motor, sin pasar por los reemplazos (Core/Reemplazos.lua):
+-- lo usan sus secciones (Buscador, Mazmorras, Talentos, Raros, Personajes,
+-- Importar) cuando no tienen ventana de Alfa propia, aunque el selector de
+-- guias si la tenga. opts: { newTab = true } when loading should open a new tab.
+local function abrirCentro(opts)
 	if not win then build() end
 	newTabMode = type(opts) == "table" and opts.newTab and true or false
 	-- Remember the last selection; without one, start on the open guide or
@@ -3060,6 +3075,25 @@ function UI.ShowPicker(opts)
 	if settings then settings:Hide() end
 end
 
+-- El centro del motor en la seccion `seccion` (nil: la que tenia).
+function UI.AbrirCentro(seccion, opts)
+	abrirCentro(opts)
+	if seccion then P.ShowSection(seccion) end
+end
+
+-- El selector de guias. Con su ventana reemplazada (SHOW_PICKER) abre la de
+-- Alfa con { pestanaNueva, opciones }; el centro del motor, si estaba
+-- abierto, se cierra.
+function UI.ShowPicker(opts)
+	local R = ns.Reemplazos
+	local nueva = type(opts) == "table" and opts.newTab and true or false
+	if R and R.Llamar("SHOW_PICKER", { pestanaNueva = nueva, opciones = opts }) then
+		if win and win:IsShown() then win:Hide() end
+		return
+	end
+	abrirCentro(opts)
+end
+
 -- A new font measures the pills, the cards and the ficha's label column
 -- anew: the hub on screen renders again.
 W.OnFontChanged(function()
@@ -3076,7 +3110,11 @@ end
 function P.ShowQuest(id)
 	id = readable(id)
 	if type(id) ~= "number" or id <= 0 or id >= math.huge or id % 1 ~= 0 then return false end
-	UI.ShowPicker()
+	if ns.Reemplazos and ns.Reemplazos.Llamar("SHOW_PICKER", { mision = id }) then
+		if win and win:IsShown() then win:Hide() end
+		return true
+	end
+	abrirCentro()
 	P.ShowSection("Guides")
 	-- Every guide that has the quest: no filter of the list hides one.
 	place, lband, fits = nil, nil, false
