@@ -16,7 +16,7 @@ Lo que hay en esta carpeta:
 | Main category | Quests & Leveling |
 | Additional categories | Map & Minimap, Bags & Inventory, Auction & Economy, Professions, Dungeons & Raids, Healer, Guild |
 | License | GNU General Public License version 3 (GPLv3) |
-| Source / Issues | El repositorio público de GitHub (la GPL pide que el código esté disponible) |
+| Source / Issues | https://github.com/toxic3000/alfa-forever y https://github.com/toxic3000/alfa-forever/issues (la GPL pide que el código esté disponible) |
 | Logo | `avatar.png` |
 
 ## Subir un archivo
