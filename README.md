@@ -8,20 +8,24 @@ Hecho por Toxic y La Jauría — [Discord](https://discord.gg/hUNjA6BJwh). Softw
 
 | Comando | Módulo | Qué hace |
 |---|---|---|
-| `/alfa` | Ventana principal | Hoy, Aventura, Personaje, Mundo, Oficios y Manada, con Ajustes aparte |
-| `/alfa guia` | Guía (motor) | Guías por zona, flecha, rutas, buscador, mazmorras y raros |
-| `/alfa inicio` | Hoy | Tu siguiente paso, alertas, una tarjeta para tu clase y rol, números del día y diario |
-| `/alfa manada` | La Jauría | Tu grupo, tu hermandad y tus amigos en el mapa, Seguir, y la página del clan |
-| `/alfa rutas` | Rutas | Árbol de ruta propio, liberar misiones y catálogo de objetos |
-| `/alfa curacion` | Curación | Marcos de grupo y banda para curar con clic, con preajustes por clase |
-| `/alfa builds` | Builds | Talentos por objetivo y estilo, pesos, equipo meta y ayuda en combate |
-| `/alfa mapa` | Mundo | Mapa continuo con un solo control de capas y modo limpio |
+| `/alfa` | Ventana principal | Hoy, Aventura, Personaje, Mundo, Oficios y Manada, con Ajustes aparte; 3 estilos (Alfa, Clásico WoW, Cristal) |
+| `/alfa bienvenida` | Bienvenida | Primer arranque guiado: estilo, misiones solo de tu ruta, compartir con La Jauría, aullido |
+| `/alfa inicio` | Hoy | "¿Qué hacemos hoy?", tu siguiente paso, entregar o recoger misiones, alertas, tu clase y tus números |
+| `/alfa rutas` | Ruta | Asistente de 4 caminos, rastreador propio, biblioteca de guías, **entregar todas tus misiones listas**, plan de misiones a mano y misiones que sí puedes tomar |
+| `/alfa enciclopedia` | Enciclopedia | Todos los objetos, PNJ, misiones, zonas y raros, con sus fuentes y "Guíame" |
+| `/alfa mazmorras` | Mazmorras | Para tu nivel con "Prepárame"; jefes, botín, misiones y consejos |
+| `/alfa builds` | Talentos | Qué poner ahora y por qué, con un clic; equipo y compartir |
+| `/alfa combate` · `/alfa dps` | Combate | Ayuda de rotación discreta, avisos de reacción y medidor de daño del grupo |
+| `/alfa curacion` | Curación | Marcos para curar con clic y asistente de 3 pasos |
+| `/alfa bolsas` | Bolsas | Tres vistas (todo, categorías, por bolsa), barra de bolsas, banco con depositar rápido y comprar espacio, qué vender |
+| `/alfa mapa` (o M) | Mundo | Mapa de todo el mundo con zoom, marcadores propios para seguir y compartir, capas |
 | `/alfa recoleccion` | Recolección | Nodos, pines y ruta de farmeo |
-| `/alfa bolsas` | Bolsas | Bolsas, banco e inventario de todos tus personajes |
 | `/alfa comercio` | Comercio | Precios de la subasta y qué hacer con cada objeto |
-| `/alfa mazmorras` | Mazmorras | Botín por jefe, consejos y modo historia |
 | `/alfa pesca` | Pesca | Una tecla para lanzar y recoger |
-| (Calidad de vida) | Comodidades | Minimapa, colores de clase, cuadro de información, probador, vuelo, misiones y sonidos |
+| `/alfa manada` | La Jauría | Tu grupo y quienes usan Alfa y aceptan compartir; Seguir; el clan |
+| (Ajustes) | Comodidades | Minimapa, colores de clase, cuadro de información, probador, vuelo, misiones y sonidos |
+
+Alfa no depende de ningún otro addon. Versiones y notas: [`docs/VERSIONES.md`](docs/VERSIONES.md) y [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Construir e instalar
 
