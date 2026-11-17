@@ -129,6 +129,11 @@ def wrap(draw, text, fnt, width):
     return lines
 
 
+# Textos que no cupieron al dibujarlos (cortados con «…» o con renglones de más):
+# run.py los lista como CORTADO para que no se cuelen en la interfaz.
+CORTES = []
+
+
 def render(entries, rect, out_path, fonts_dir, scale=1.25):
     l0, b0, w0, h0 = rect
     W, H = int(w0 * scale), int(h0 * scale)
@@ -249,6 +254,8 @@ def render(entries, rect, out_path, fonts_dir, scale=1.25):
             else:
                 lines = text.split("\n")
             if e.get("maxl"):
+                if len(lines) > e["maxl"]:
+                    CORTES.append((out_path.stem if hasattr(out_path, "stem") else str(out_path), plain(text)[:90], "renglones"))
                 lines = lines[: e["maxl"]]
             lh = (e["size"] + 3) * scale
             total = lh * len(lines)
@@ -261,7 +268,8 @@ def render(entries, rect, out_path, fonts_dir, scale=1.25):
                 ty = (y0 + y1) / 2 - total / 2
             for line in lines:
                 pl = plain(line)
-                if width > 0 and not e["wrap"] and d.textlength(pl, font=fnt) > width:
+                if width > 0 and not e["wrap"] and d.textlength(pl, font=fnt) > width + 1:
+                    CORTES.append((out_path.stem if hasattr(out_path, "stem") else str(out_path), pl[:90], "ancho"))
                     while pl and d.textlength(pl + "\u2026", font=fnt) > width:
                         pl = pl[:-1]
                     line = pl + "\u2026"

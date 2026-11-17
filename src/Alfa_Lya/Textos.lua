@@ -4,7 +4,7 @@ local ADDON, M = ...
 
 M.ID = "lya"
 -- Ajustes (AlfaDB.settings.lya); lya.pos se guarda al arrastrarla.
-M.AJUSTES = { mostrar = true, frecuencia = "muchos", minutos = 5, tamano = 64, sonido = false, bloqueado = false,
+M.AJUSTES = { mostrar = true, frecuencia = "muchos", minutos = 4, tamano = 64, sonido = false, bloqueado = false,
 	-- Historias.lua: siempre | aveces | pedir | nunca; minutos entre historias; el final al entregar
 	historias = "aveces", minutosHistoria = 10, epilogo = true }
 M.Avisar = function() end -- Pagina.lua la cambia: rehace la página si está a la vista
@@ -180,6 +180,30 @@ M.EN = {
 	["Gracias por dejarme acompañarte."] = "Thank you for letting me come along with you.",
 	["Me gusta cuidarte la espalda. Para eso estoy."] = "I like watching your back. That's what I'm here for.",
 	["Aquí estoy, como siempre. Nunca dejo a nadie atrás."] = "Here I am, as always. I never leave anyone behind.",
+	-- Saludos según la hora, hambre y comentarios del momento (1.1.2)
+	["¡Buenos días, %s! Me estiro, bostezo y estoy lista."] = "Good morning, %s! A stretch, a yawn and I'm ready.",
+	["¡Buen día, %s! El sol ya salió en Azeroth. ¿Vamos?"] = "Morning, %s! The sun is up over Azeroth. Shall we?",
+	["¡Buenas tardes, %s! Buena hora para unas misiones."] = "Good afternoon, %s! A fine time for some quests.",
+	["¡Hola, %s! La tarde pinta tranquila. ¿Qué cazamos hoy?"] = "Hi, %s! The afternoon looks calm. What are we hunting today?",
+	["¡Buenas noches, %s! Las lobas cazamos mejor de noche."] = "Good evening, %s! We she-wolves hunt best at night.",
+	["¡Hola, %s! Noche de luna: perfecta para la manada."] = "Hi, %s! A moonlit night: perfect for the pack.",
+	["Tengo hambre… ¿me compartes algo de tu mochila?"] = "I'm hungry… will you share something from your bag?",
+	["Se me antoja un buen filete de jabalí. Solo digo."] = "I could really go for a boar steak. Just saying.",
+	["¿Paramos a comer? Mi panza ya está aullando."] = "Shall we stop to eat? My tummy is howling already.",
+	["Huele a pan recién hecho por aquí… se me antoja."] = "Smells like fresh bread around here… I want some.",
+	["Si encuentras un hueso, es mío. ¿Trato hecho?"] = "If you find a bone, it's mine. Deal?",
+	["Un pescadito asado no me caería nada mal."] = "A little grilled fish wouldn't hurt at all.",
+	["%s… me gusta este lugar."] = "%s… I like this place.",
+	["¿Ya exploraste todo %s? Siempre queda un rincón por ver."] = "Have you explored all of %s? There's always a corner left to see.",
+	["Ojo por aquí: %s tiene sus sorpresas."] = "Careful around here: %s has its surprises.",
+	["*mueve la cola* Aquí sigo, atenta."] = "*wags her tail* Still here, watching.",
+	["¿Oíste eso? Nada… solo el viento. Sigamos."] = "Did you hear that? Nothing… just the wind. Let's go on.",
+	["*se estira y bosteza* Listo, ¡a seguir!"] = "*stretches and yawns* Okay, onward!",
+	["Me gusta ir contigo. Se nota que sabes lo que haces."] = "I like traveling with you. You clearly know what you're doing.",
+	["*olfatea el aire* Huele a aventura."] = "*sniffs the air* Smells like adventure.",
+	["Si necesitas silencio, con clic derecho me callas un rato."] = "If you need some quiet, right-click me to hush me for a while.",
+	["*persigue su cola un ratito* …¡Casi la atrapo!"] = "*chases her tail for a bit* …Almost got it!",
+	["¿Una carrerita hasta allá? Yo gano."] = "Race you over there? I'll win.",
 	["Ya te conté todo lo que sé por ahora. Con clic derecho puedo empezar de nuevo."] = "I've told you everything I know for now. Right-click me and I can start over.",
 	["¿Sabías que…? Buscar cerca te lleva al herrero, al banco o al vuelo más cercano."] = "Did you know…? Search nearby takes you to the closest blacksmith, bank or flight master.",
 	["¿Sabías que…? En Mis planes armas tu propia lista de metas y la flecha te guía."] = "Did you know…? In My plans you build your own list of goals and the arrow guides you.",

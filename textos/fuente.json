@@ -851,6 +851,10 @@
   "en": "%s: usable right now",
   "origen": "Alfa_Combate"
  },
+ "%s… me gusta este lugar.": {
+  "en": "%s… I like this place.",
+  "origen": "Alfa_Lya"
+ },
  "(con %s)": {
   "en": "(with %s)",
   "origen": "Alfa_Comercio"
@@ -870,6 +874,22 @@
  "(tú)": {
   "en": "(you)",
   "origen": "Alfa_Bolsas"
+ },
+ "*mueve la cola* Aquí sigo, atenta.": {
+  "en": "*wags her tail* Still here, watching.",
+  "origen": "Alfa_Lya"
+ },
+ "*olfatea el aire* Huele a aventura.": {
+  "en": "*sniffs the air* Smells like adventure.",
+  "origen": "Alfa_Lya"
+ },
+ "*persigue su cola un ratito* …¡Casi la atrapo!": {
+  "en": "*chases her tail for a bit* …Almost got it!",
+  "origen": "Alfa_Lya"
+ },
+ "*se estira y bosteza* Listo, ¡a seguir!": {
+  "en": "*stretches and yawns* Okay, onward!",
+  "origen": "Alfa_Lya"
  },
  "+%d": {
   "en": "+%d",
@@ -9671,6 +9691,10 @@
   "en": "Today, for your class",
   "origen": "Interfaz"
  },
+ "Huele a pan recién hecho por aquí… se me antoja.": {
+  "en": "Smells like fresh bread around here… I want some.",
+  "origen": "Alfa_Lya"
+ },
  "Huella": {
   "en": "Paw print",
   "origen": "Alfa_Mundo"
@@ -12299,6 +12323,10 @@
   "en": "I like watching your back. That's what I'm here for.",
   "origen": "Alfa_Lya"
  },
+ "Me gusta ir contigo. Se nota que sabes lo que haces.": {
+  "en": "I like traveling with you. You clearly know what you're doing.",
+  "origen": "Alfa_Lya"
+ },
  "Media": {
   "en": "Medium",
   "origen": "Alfa_Vista"
@@ -14126,6 +14154,10 @@
  "Ojo de pescador": {
   "en": "Angler's eye",
   "origen": "Alfa_Pesca"
+ },
+ "Ojo por aquí: %s tiene sus sorpresas.": {
+  "en": "Careful around here: %s has its surprises.",
+  "origen": "Alfa_Lya"
  },
  "Ojo: tu clic para lanzar de Blizzard usa %d de estas teclas, y ese manda también aquí. Para igualarlos, usa «Usar también en los marcos de Blizzard».": {
   "en": "Heads up: Blizzard's click casting uses %d of these clicks, and it wins here too. To match them, use \"Also use on Blizzard's frames\".",
@@ -16695,6 +16727,10 @@
   "en": "Marked as junk",
   "origen": "Alfa_Bolsas"
  },
+ "Se me antoja un buen filete de jabalí. Solo digo.": {
+  "en": "I could really go for a boar steak. Just saying.",
+  "origen": "Alfa_Lya"
+ },
  "Se pelea bajo el agua: vigila tu barra de respiración y sube a tomar aire si hace falta.": {
   "en": "You fight him under water: watch your breath bar and come up for air if needed.",
   "origen": "Alfa_Mazmorras/Consejos"
@@ -16927,6 +16963,10 @@
   "en": "A fleeing enemy can bring more prisoners: stop it with a snare.",
   "origen": "Alfa_Mazmorras/Consejos"
  },
+ "Si encuentras un hueso, es mío. ¿Trato hecho?": {
+  "en": "If you find a bone, it's mine. Deal?",
+  "origen": "Alfa_Lya"
+ },
  "Si está fuera de tu alcance, su marco se ve más tenue.": {
   "en": "If they're out of your range, their frame looks faded.",
   "origen": "Alfa_Curacion"
@@ -16970,6 +17010,10 @@
  "Si mueres seguido, cambia al estilo Tranquilo.": {
   "en": "If you die often, switch to the Steady style.",
   "origen": "Alfa_Builds"
+ },
+ "Si necesitas silencio, con clic derecho me callas un rato.": {
+  "en": "If you need some quiet, right-click me to hush me for a while.",
+  "origen": "Alfa_Lya"
  },
  "Si no tienes ninguna abierta, abre la recomendada para tu nivel.": {
   "en": "If you have none open, opens the recommended one for your level.",
@@ -18202,6 +18246,10 @@
  "Tenga o no": {
   "en": "Owned or not",
   "origen": "Alfa_Enciclopedia"
+ },
+ "Tengo hambre… ¿me compartes algo de tu mochila?": {
+  "en": "I'm hungry… will you share something from your bag?",
+  "origen": "Alfa_Lya"
  },
  "Termina la configuración para usar Alfa (2 minutos).": {
   "en": "Finish the setup to use Alfa (2 minutes).",
@@ -20022,6 +20070,10 @@
  "Un paisaje más bonito": {
   "en": "Prettier scenery",
   "origen": "Alfa_Bienvenida"
+ },
+ "Un pescadito asado no me caería nada mal.": {
+  "en": "A little grilled fish wouldn't hurt at all.",
+  "origen": "Alfa_Lya"
  },
  "Un pin pequeño con su número donde te llevan los próximos pasos.": {
   "en": "A small numbered pin where the next steps take you.",
@@ -22359,8 +22411,24 @@
   "en": "Well done! %s",
   "origen": "Alfa_Rutas"
  },
+ "¡Buen día, %s! El sol ya salió en Azeroth. ¿Vamos?": {
+  "en": "Morning, %s! The sun is up over Azeroth. Shall we?",
+  "origen": "Alfa_Lya"
+ },
+ "¡Buenas noches, %s! Las lobas cazamos mejor de noche.": {
+  "en": "Good evening, %s! We she-wolves hunt best at night.",
+  "origen": "Alfa_Lya"
+ },
+ "¡Buenas tardes, %s! Buena hora para unas misiones.": {
+  "en": "Good afternoon, %s! A fine time for some quests.",
+  "origen": "Alfa_Lya"
+ },
  "¡Buenas, %s! Paso a paso se llega lejos.": {
   "en": "Hey, %s! Step by step you get far.",
+  "origen": "Alfa_Lya"
+ },
+ "¡Buenos días, %s! Me estiro, bostezo y estoy lista.": {
+  "en": "Good morning, %s! A stretch, a yawn and I'm ready.",
   "origen": "Alfa_Lya"
  },
  "¡Completaste %s!": {
@@ -22397,6 +22465,14 @@
  },
  "¡Hola, %s! Hoy huele a buena cacería.": {
   "en": "Hi, %s! Today smells like a good hunt.",
+  "origen": "Alfa_Lya"
+ },
+ "¡Hola, %s! La tarde pinta tranquila. ¿Qué cazamos hoy?": {
+  "en": "Hi, %s! The afternoon looks calm. What are we hunting today?",
+  "origen": "Alfa_Lya"
+ },
+ "¡Hola, %s! Noche de luna: perfecta para la manada.": {
+  "en": "Hi, %s! A moonlit night: perfect for the pack.",
   "origen": "Alfa_Lya"
  },
  "¡Listo! %s precios guardados.": {
@@ -22663,6 +22739,14 @@
   "en": "Again?",
   "origen": "Alfa_Pesca"
  },
+ "¿Oíste eso? Nada… solo el viento. Sigamos.": {
+  "en": "Did you hear that? Nothing… just the wind. Let's go on.",
+  "origen": "Alfa_Lya"
+ },
+ "¿Paramos a comer? Mi panza ya está aullando.": {
+  "en": "Shall we stop to eat? My tummy is howling already.",
+  "origen": "Alfa_Lya"
+ },
  "¿Por dónde sigues?": {
   "en": "Where do you go next?",
   "origen": "Alfa_Rutas"
@@ -22795,6 +22879,10 @@
   "en": "Did you know…? Gathering marks ore, herbs and fish pools on the map.",
   "origen": "Alfa_Lya"
  },
+ "¿Una carrerita hasta allá? Yo gano.": {
+  "en": "Race you over there? I'll win.",
+  "origen": "Alfa_Lya"
+ },
  "¿Usar tu hechizo nuevo?": {
   "en": "Use your new spell?",
   "origen": "Alfa_Curacion"
@@ -22814,6 +22902,10 @@
  "¿Volver a lo de antes?": {
   "en": "Restore previous values?",
   "origen": "Alfa_Vista"
+ },
+ "¿Ya exploraste todo %s? Siempre queda un rincón por ver.": {
+  "en": "Have you explored all of %s? There's always a corner left to see.",
+  "origen": "Alfa_Lya"
  },
  "¿Ya hiciste esta mazmorra?": {
   "en": "Did you already do this dungeon?",

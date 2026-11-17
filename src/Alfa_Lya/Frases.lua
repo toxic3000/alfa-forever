@@ -149,6 +149,49 @@ F.carino = {
 	"Aquí estoy, como siempre. Nunca dejo a nadie atrás.",
 }
 
+-- Al entrar, según la hora (%s: tu nombre).
+F.saludoManana = {
+	"¡Buenos días, %s! Me estiro, bostezo y estoy lista.",
+	"¡Buen día, %s! El sol ya salió en Azeroth. ¿Vamos?",
+}
+F.saludoTarde = {
+	"¡Buenas tardes, %s! Buena hora para unas misiones.",
+	"¡Hola, %s! La tarde pinta tranquila. ¿Qué cazamos hoy?",
+}
+F.saludoNoche = {
+	"¡Buenas noches, %s! Las lobas cazamos mejor de noche.",
+	"¡Hola, %s! Noche de luna: perfecta para la manada.",
+}
+
+-- Tiene hambre o se le antoja algo (se sienta a pedir).
+F.hambre = {
+	"Tengo hambre… ¿me compartes algo de tu mochila?",
+	"Se me antoja un buen filete de jabalí. Solo digo.",
+	"¿Paramos a comer? Mi panza ya está aullando.",
+	"Huele a pan recién hecho por aquí… se me antoja.",
+	"Si encuentras un hueso, es mío. ¿Trato hecho?",
+	"Un pescadito asado no me caería nada mal.",
+}
+
+-- Comentarios del momento (%s: la zona donde están).
+F.zona = {
+	"%s… me gusta este lugar.",
+	"¿Ya exploraste todo %s? Siempre queda un rincón por ver.",
+	"Ojo por aquí: %s tiene sus sorpresas.",
+}
+
+-- Comentarios sueltos, para que se sienta que va contigo.
+F.ambiente = {
+	"*mueve la cola* Aquí sigo, atenta.",
+	"¿Oíste eso? Nada… solo el viento. Sigamos.",
+	"*se estira y bosteza* Listo, ¡a seguir!",
+	"Me gusta ir contigo. Se nota que sabes lo que haces.",
+	"*olfatea el aire* Huele a aventura.",
+	"Si necesitas silencio, con clic derecho me callas un rato.",
+	"*persigue su cola un ratito* …¡Casi la atrapo!",
+	"¿Una carrerita hasta allá? Yo gano.",
+}
+
 -- Cuando ya dijo todo (no se cuenta).
 M.AGOTADOS = "Ya te conté todo lo que sé por ahora. Con clic derecho puedo empezar de nuevo."
 

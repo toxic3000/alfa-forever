@@ -208,10 +208,10 @@ end
 --   tarjeta:Acomodar(ancho, altoMinimo) -> alto
 ---------------------------------------------------------------------------
 local VARIANTE = {
-	accion = { baldosa = 64, icono = 34, pad = ESP.l, titulo = "titulo", texto = "texto", lineas = 3, corte = K.CORTE.tarjeta },
-	normal = { baldosa = 40, icono = 22, pad = ESP.base, titulo = "subtitulo", texto = "nota", lineas = 3, corte = K.CORTE.tarjeta },
+	accion = { baldosa = 64, icono = 34, pad = ESP.l, titulo = "titulo", texto = "texto", lineas = 6, corte = K.CORTE.tarjeta },
+	normal = { baldosa = 40, icono = 22, pad = ESP.base, titulo = "subtitulo", texto = "nota", lineas = 6, corte = K.CORTE.tarjeta },
 	compacta = { baldosa = 28, icono = 16, pad = ESP.m, titulo = "cuerpo", texto = "pequeno", lineas = 1, corte = K.CORTE.control },
-	estado = { baldosa = 56, icono = 30, pad = ESP.l, titulo = "titulo", texto = "texto", lineas = 4, corte = K.CORTE.tarjeta },
+	estado = { baldosa = 56, icono = 30, pad = ESP.l, titulo = "titulo", texto = "texto", lineas = 8, corte = K.CORTE.tarjeta },
 }
 
 local function pintarTarjeta(c)
@@ -427,7 +427,13 @@ function K.Tarjeta(padre, opts)
 		if d.progreso then
 			y = y + ESP.m
 			local tb = self.TextoBarra
-			local tbw = (tb:GetText() or "") ~= "" and (K.Ajustar(tb, 200) + ESP.m) or 0
+			-- El texto va junto a la barra si cabe; si es largo, en su propio
+			-- renglón debajo, completo (nunca cortado con "…").
+			local tiene = (tb:GetText() or "") ~= ""
+			tb:SetWordWrap(false)
+			local mide = tiene and K.Ajustar(tb) or 0
+			local alLado = tiene and mide <= floor(tw * 0.5)
+			local tbw = alLado and (mide + ESP.m) or 0
 			if self.Huellas and self.Huellas:IsShown() then
 				local _, hh = self.Huellas:Acomodar()
 				self.Huellas:ClearAllPoints()
@@ -440,8 +446,13 @@ function K.Tarjeta(padre, opts)
 				self.Barra:SetPoint("TOPLEFT", self, "TOPLEFT", x, -(y + 5))
 				self.Barra:Acomodar(max(40, tw - tbw))
 				tb:ClearAllPoints()
-				tb:SetPoint("LEFT", self.Barra, "RIGHT", ESP.m, 0)
-				y = y + 16
+				if alLado or not tiene then
+					tb:SetPoint("LEFT", self.Barra, "RIGHT", ESP.m, 0)
+					y = y + 16
+				else
+					tb:SetPoint("TOPLEFT", self, "TOPLEFT", x, -(y + 16))
+					y = y + 16 + K.Parrafo(tb, tw) + 2
+				end
 			end
 		end
 		local abajo = y

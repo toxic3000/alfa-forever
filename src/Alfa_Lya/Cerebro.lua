@@ -40,7 +40,7 @@ M.Cerebro = Ce
 local MAX_VECES = 3
 local ESPERA_IMPORTANTE = 600   -- s que algo importante puede esperar
 local DORMIR_DESCANSANDO = 300  -- s descansando sin hacer nada para dormirse
-local SIN_HABLAR = { muchos = 15 * 60, pocos = 40 * 60 } -- un consejo suelto tras tanto silencio
+local SIN_HABLAR = { muchos = 4 * 60, pocos = 12 * 60 } -- algo suelto tras tanto silencio (se siente viva)
 
 local function ahora() return GetTime and GetTime() or 0 end
 local function reloj() return (GetServerTime and GetServerTime()) or (time and time()) or 0 end
@@ -106,9 +106,20 @@ local ultimo = -1e9 -- GetTime del último globo
 local espera        -- { c, hasta }: algo importante que espera su momento
 local reintento
 
+-- Lo que nunca se agota: saludos, reacciones a lo que pasa, ánimo, cariño y
+-- los comentarios del momento. Entre ellas sale la que hace más que no dice
+-- (nunca la misma dos veces seguidas). Los consejos y el "¿Sabías que…?"
+-- siguen saliendo 3 veces como mucho: enseñan algo y repetirlos cansa.
+local LIBRES = {
+	bienvenida = true, volver = true, saludoManana = true, saludoTarde = true, saludoNoche = true,
+	nivel = true, muerte = true, reparar = true, bolsas = true, entrenar = true, entregar = true,
+	descanso = true, misionesHoy = true, animo = true, carino = true, ambiente = true, zona = true,
+}
+local function libre(id) return type(id) == "string" and LIBRES[id:match("^(%a+)") or ""] or false end
+
 local function motivo(c)
 	if not Ce.Activa() or (A.Hidden and A.Hidden()) or not UI.Visible() then return "oculta" end
-	if c.id and veces(c.id) >= MAX_VECES then return "vista" end
+	if c.id and not libre(c.id) and veces(c.id) >= MAX_VECES then return "vista" end
 	if Ce.Silenciada() and not c.pedido then return "silencio" end
 	if not c.importante and not c.pedido and Ce.Frecuencia() == "importantes" then return "modo" end
 	if enCombate() or enInstancia() or escribiendo() then return "esperar" end
@@ -149,18 +160,33 @@ function Ce.Decir(c)
 end
 
 -- La frase de una categoría que menos ha dicho (y menos de 3 veces): id, texto.
+local function cuando(id)
+	local d = datos()
+	d.cuando = type(d.cuando) == "table" and d.cuando or {}
+	return tonumber(d.cuando[id]) or 0, d.cuando
+end
+
 local function frase(cat)
 	local lista = F[cat]
-	if type(lista) ~= "table" then return nil end
+	if type(lista) ~= "table" or #lista == 0 then return nil end
 	local mejor, mejorN
 	local inicio = random(#lista)
 	for k = 0, #lista - 1 do
 		local i = (inicio + k - 1) % #lista + 1
 		local id = cat .. i
-		local n = veces(id)
-		if n < MAX_VECES and (not mejorN or n < mejorN) then mejor, mejorN = i, n end
+		if LIBRES[cat] then
+			local t = cuando(id)
+			if not mejorN or t < mejorN then mejor, mejorN = i, t end
+		else
+			local n = veces(id)
+			if n < MAX_VECES and (not mejorN or n < mejorN) then mejor, mejorN = i, n end
+		end
 	end
 	if not mejor then return nil end
+	if LIBRES[cat] then
+		local _, t = cuando(cat .. mejor)
+		t[cat .. mejor] = reloj()
+	end
 	return cat .. mejor, L[lista[mejor]]
 end
 
@@ -375,6 +401,30 @@ local function suelto(pedido)
 	return false
 end
 
+-- Algo del momento (nunca se agota): que tiene hambre o se le antoja algo
+-- (se sienta a pedir), un comentario de la zona donde están o uno suelto.
+local function zonaActual()
+	local z = GetSubZoneText and GetSubZoneText() or ""
+	if (z or "") == "" and GetZoneText then z = GetZoneText() end
+	if type(z) ~= "string" or (issecretvalue and issecretvalue(z)) then return "" end
+	return z
+end
+local function delMomento()
+	local r = random()
+	if r < 0.3 and decirDe("hambre", { pose = "pedir" }) then return true end
+	local z = zonaActual()
+	if r < 0.6 and z ~= "" and decirDe("zona", {}, z) then return true end
+	return decirDe("ambiente", {})
+end
+
+-- El saludo al entrar, según la hora (y a veces uno de los de siempre).
+local function saludar(nombre)
+	local h = tonumber(date and date("%H")) or 12
+	local cat = (h >= 5 and h < 12 and "saludoManana") or (h >= 12 and h < 19 and "saludoTarde") or "saludoNoche"
+	if random() < 0.35 then cat = "bienvenida" end
+	return decirDe(cat, { salto = true }, nombre)
+end
+
 -- Clic en Lya o /alfa lya consejo.
 function Ce.Pedir()
 	if not Ce.Activa() then return end
@@ -459,11 +509,23 @@ local function latido(mio)
 		if not revisarSesion() and not revisarContexto(false) then
 			local gap = SIN_HABLAR[Ce.Frecuencia()]
 			if gap and ahora() - ultimo >= gap then
-				-- Rara vez, en lugar del consejo: un dato curioso de la zona o del mundo (Historias.lua).
-				local Hi = M.Historias
-				local ok, hablo = false, false
-				if Hi and Hi.Suelto then ok, hablo = pcall(Hi.Suelto) end
-				if not (ok and hablo) then suelto(false) end
+				-- Va rotando: algo del momento (la zona, la hora, que tiene hambre),
+				-- un dato curioso (Historias.lua) o un consejo; si no queda nada que
+				-- enseñar, siempre tiene algo del momento.
+				local hablo = false
+				if random() < 0.45 then hablo = delMomento() end
+				if not hablo then
+					local Hi = M.Historias
+					local ok, h = false, false
+					if Hi and Hi.Suelto then ok, h = pcall(Hi.Suelto) end
+					hablo = ok and h
+				end
+				if not hablo then hablo = suelto(false) end
+				if not hablo then delMomento() end
+			elseif not UI.Hablando() and random() < 0.5 then
+				-- Entre globos, un gesto sin palabras (y a veces una pose: correr,
+				-- buscarse la cola, sentarse a pedir).
+				if UI.Pose and random() < 0.5 then UI.Pose() else UI.Gesto() end
 			end
 		end
 	end
@@ -545,7 +607,7 @@ A.RegisterEvent("PLAYER_ENTERING_WORLD", function(_, esLogin, esRecarga)
 		if antes and reloj() - antes > 3 * 86400 then
 			decirDe("volver", { salto = true, acciones = N.ModuloPorId("inicio") and { { texto = L["Abrir Hoy"], fn = function() N.Abrir("inicio") end } } or nil }, nombre)
 		else
-			decirDe("bienvenida", { salto = true }, nombre)
+			saludar(nombre)
 		end
 	end)
 end)

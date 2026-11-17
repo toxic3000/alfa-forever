@@ -3174,9 +3174,34 @@ local function specLabel()
 	local G = ns.Gear
 	if not (G and G.GetSpec) then return nil end
 	local ok, _, label, source = pcall(G.GetSpec)
-	-- el nombre de la rama llega en ingles ("Arms"); los paquetes de idioma del motor lo traducen
-	if ok and type(label) == "string" and label ~= "" and source ~= "default" then return L[label] end
+	-- el nombre de la rama llega en ingles ("Arms"); los paquetes de idioma del motor lo traducen.
+	-- Una escala de equipo personalizada no es una rama: no se muestra aquí.
+	if ok and type(label) == "string" and label ~= "" and source ~= "default" and source ~= "custom" then return L[label] end
 	return nil
+end
+
+-- Pone "a · b · c" en `fs` sin que se corte: si no cabe, quita partes en el
+-- orden de `quitar` (índices de `parts`) hasta que quepa. Nunca deja "…".
+function W.FitParts(fs, parts, quitar)
+	local sep = "  \194\183  "
+	local vivas = {}
+	for i = 1, #parts do vivas[i] = true end
+	local function armar()
+		local out = {}
+		for i = 1, #parts do if vivas[i] then out[#out + 1] = parts[i] end end
+		return table.concat(out, sep)
+	end
+	fs:SetText(armar())
+	local ancho = fs.GetWidth and fs:GetWidth() or 0
+	local mide = fs.GetUnboundedStringWidth or fs.GetStringWidth
+	if not (mide and ancho and ancho > 1) then return end
+	for _, i in ipairs(quitar or {}) do
+		if mide(fs) <= ancho + 0.5 then return end
+		if vivas[i] then
+			vivas[i] = false
+			fs:SetText(armar())
+		end
+	end
 end
 
 function W.ShellCharacter(f)
@@ -3185,13 +3210,17 @@ function W.ShellCharacter(f)
 	local c = Theme.Clase()
 	local name = UnitName and UnitName("player")
 	local level = UnitLevel and UnitLevel("player")
-	local parts = {}
+	local parts, quitar = {}, {}
 	if type(name) == "string" and name ~= "" then parts[#parts + 1] = name end
-	if c.nombre ~= "" then parts[#parts + 1] = c.nombre end
+	local iClase, iRama
+	if c.nombre ~= "" then parts[#parts + 1] = c.nombre iClase = #parts end
 	local spec = specLabel()
-	if spec then parts[#parts + 1] = spec end
+	if spec then parts[#parts + 1] = spec iRama = #parts end
 	if type(level) == "number" and level > 0 then parts[#parts + 1] = string.format(T("Nivel %d"), level) end
-	card.Line:SetText(table.concat(parts, "  \194\183  "))
+	-- Si no cabe: primero se va la rama, luego la clase (el color ya la dice).
+	if iRama then quitar[#quitar + 1] = iRama end
+	if iClase then quitar[#quitar + 1] = iClase end
+	W.FitParts(card.Line, parts, quitar)
 	local maxLevel = GetMaxPlayerLevel and GetMaxPlayerLevel()
 	local cur, top = UnitXP and UnitXP("player") or 0, UnitXPMax and UnitXPMax("player") or 0
 	local off = (IsXPUserDisabled and IsXPUserDisabled()) or (type(maxLevel) == "number" and type(level) == "number" and level >= maxLevel)

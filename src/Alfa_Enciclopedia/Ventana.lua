@@ -441,7 +441,7 @@ local function filaFicha(padre)
 		end
 		local vw = 0
 		if (self.Valor:GetText() or "") ~= "" then
-			vw = K.Ajustar(self.Valor, 110) + 4 + ESP.s
+			vw = K.Ajustar(self.Valor, floor(w * 0.35)) + 4 + ESP.s
 			self.Valor:SetWidth(vw - ESP.s)
 			self.Valor:ClearAllPoints()
 			self.Valor:SetPoint("RIGHT", self, "RIGHT", -der - 2, 0)
@@ -449,14 +449,19 @@ local function filaFicha(padre)
 		local x = 4 + 26 + ESP.s + 2
 		local tw = max(40, w - x - der - vw - 4)
 		local conTexto = (self.Texto:GetText() or "") ~= ""
+		-- El título y el texto bajan de renglón si no caben (nunca "…"); la
+		-- fila crece con ellos.
+		local th = K.Parrafo(self.Titulo, tw)
+		local xh = conTexto and K.Parrafo(self.Texto, tw) or 0
+		local contenido = th + (conTexto and (2 + xh) or 0)
+		local alto = max(32, contenido + 8)
+		self:SetHeight(alto)
 		self.Titulo:ClearAllPoints()
-		self.Titulo:SetWidth(tw)
-		self.Titulo:SetPoint("LEFT", self, "LEFT", x, conTexto and 7 or 0)
+		self.Titulo:SetPoint("TOPLEFT", self, "TOPLEFT", x, -floor((alto - contenido) / 2))
 		self.Texto:ClearAllPoints()
-		self.Texto:SetWidth(tw)
 		self.Texto:SetPoint("TOPLEFT", self.Titulo, "BOTTOMLEFT", 0, -2)
 		self.Texto:SetShown(conTexto)
-		return K.num(self:GetHeight(), 32)
+		return alto
 	end
 	return r
 end

@@ -4,7 +4,7 @@
 
 ## Qué hace
 
-- **En pantalla** (`Lya.lua`): 64 px, se arrastra y recuerda su lugar; con «Bloquear posición» se queda fija. Respira (un `AnimationGroup` en bucle), parpadea (un temporizador al azar), salta con las buenas noticias, aúlla al subir de nivel, se pone atenta cuando te ofrece algo y se duerme si estás ausente o llevas 5 minutos descansando. En combate se queda quieta y tenue. Su contorno toma el acento del estilo (el oro en Clásico WoW) y su placa es una caja del Kit: cambia sola con Alfa, Clásico WoW y Cristal.
+- **En pantalla** (`Lya.lua`): una loba negra de cuerpo completo en pixel art que mira hacia el centro de la pantalla; se arrastra y recuerda su lugar, y con «Bloquear posición» se queda fija. Está viva: respira y mueve la cola, parpadea, se pone atenta (las orejas paradas) cuando te ofrece algo, se sienta a pedir comida (la manita arriba, la lengua de fuera y un huesito) cuando dice que tiene hambre, aúlla al subir de nivel, salta con las buenas noticias y se duerme enroscada (con sus «z») si estás ausente o llevas 5 minutos descansando. Entre globos, de vez en cuando, se busca la cola, sale corriendo y regresa a su lugar, se estira con un bostezo o se sienta un rato. En combate se queda quieta y tenue. Su contorno toma el acento del estilo (el oro en Clásico WoW) y va parada sobre su lugar: una elipse fina del mismo color con el rombo de Alfa que respira despacio, y su sombra. Sin cuadro de fondo; cambia sola con Alfa, Clásico WoW y Cristal.
 - **Su globo**: «Lya: …» en hasta 3 líneas, con hasta dos botones que llevan a algo de verdad (Buscar cerca, entregar tus misiones, abrir una página de Alfa...). Se va solo a los 8 s (12 con botones; no con el ratón encima). Clic en Lya: un consejo cuando quieras.
 - **Clic derecho**: Silenciar 1 hora · Cuéntame algo de aquí · Historias de tus misiones · Consejos: muchos / pocos / solo importantes · Bloquear posición · Volver a mostrar los consejos vistos · Ajustes de Lya · Ocultar a Lya (10 filas: las líneas entre grupos, mientras quepan).
 
@@ -52,7 +52,7 @@ Los consejos del momento se revisan con los eventos del juego (`UPDATE_INVENTORY
 | `mostrar` | sí | Lya en pantalla |
 | `frecuencia` | `muchos` | `muchos`, `pocos` o `importantes` |
 | `minutos` | 5 | Lo menos entre un consejo y otro |
-| `tamano` | 64 | Su tamaño en px (48 a 96) |
+| `tamano` | 64 | Su tamaño (48 a 96): a 64, cada pixel del dibujo mide 2 px y ella ocupa 104 x 84 |
 | `sonido` | no | Un clic bajito al hablar |
 | `bloqueado` | no | Fija su lugar |
 | `pos` | — | Su lugar (se guarda al arrastrarla) |
@@ -72,24 +72,28 @@ Datos por personaje (`N.DatosPersonaje("lya")`): `vistos`, `presentada`, `silenc
 
 ## Las texturas
 
-`Media/lya-<pose>.tga` (el pelaje, con sus colores) y `Media/lya-<pose>-borde.tga` (el contorno y los adornos en blanco, que el juego tiñe con el acento), con las poses `normal`, `atenta`, `aullando`, `dormida` y `parpadeo`. Las dibuja `Media/dibujar_lya.py` a partir de la cabeza de lobo de la marca de Alfa (`tools/marca.py`), más suave y redonda, con el pelaje casi negro y los ojos ámbar:
+- `Media/lya-cuerpo.tga` (el pelaje, con sus colores) y `Media/lya-cuerpo-borde.tga` (en blanco, que el juego tiñe con el acento: un contorno de un pixel por fuera del oscuro y los adornos, las «z», el aullido, el huesito y las rayitas de la vuelta). Dos hojas de 1024 x 512 con 39 cuadros de 52 x 42 pixeles (escalados x2, celdas de 104 x 84, 9 por fila), todos mirando a la derecha: `Lya.lua` elige cada uno con `SetTexCoord` (y lo voltea igual) en el mismo orden que `ORDEN` en el dibujador. Poses y cuadros: quieta 4 (+4 con los ojos cerrados), atenta 2 (+2), sentada 2 (+2), pedir 3, correr 6, cola 4 (de lado, de espaldas, del otro lado y de frente), dormir 2, aullar 2, saltar 3 y estirarse 3. Las dibuja `tools/lya_cuerpo.py`: pixel art de verdad (polígonos sin suavizado a 48 x 40, sombreado plano de 4 tonos con luz de arriba a la izquierda, una orilla oscura entre lo de enfrente y lo de atrás y contorno oscuro), con el pelaje casi negro con matices carbón y azulados, los ojos ámbar y la misma Lya gordita de su cara.
+- `Media/lya-sombra.tga` y `Media/lya-suelo.tga`: su sombra ovalada y su lugar en el suelo (la elipse con el rombo de Alfa, que se tiñe). Las dibuja `tools/lya_marco.py`.
+- `Media/lya-<pose>.tga` y `-borde.tga` (`normal`, `atenta`, `aullando`, `dormida`, `parpadeo`): la cara de antes (`tools/lya.py`), por si otra página la quiere mostrar; la loba en pantalla ya no la usa.
 
 ```bash
-.venv/Scripts/python -I src/Alfa_Lya/Media/dibujar_lya.py [carpeta-para-una-hoja-png]
+.venv/Scripts/python -I tools/lya_cuerpo.py [carpeta-para-una-hoja-de-muestra]
+.venv/Scripts/python -I tools/lya_marco.py [hoja-de-muestra.png]
 ```
 
 ## Para verificar en el juego
 
 1. Personaje nuevo: Lya no aparece hasta terminar la bienvenida de Alfa; al terminarla sale y se presenta una sola vez.
 2. Arrástrala, recarga: sigue en su lugar. Bloquéala desde el clic derecho: ya no se mueve.
-3. Cambia el estilo (Alfa, Clásico WoW, Cristal): su borde y su placa cambian al momento.
+3. Cambia el estilo (Alfa, Clásico WoW, Cristal): su contorno y su elipse cambian al momento. Muévela de un lado al otro de la pantalla: siempre mira hacia el centro y el globo sale del lado de su cabeza. Los pixeles se ven nítidos (sin borrones) en 48, 64 y 96.
 4. Sube de nivel peleando: el aullido sale al terminar el combate. Muere: «¡Arriba, lobo!» (no dentro de una mazmorra).
 5. Deja el equipo bajo 30 %, llena las bolsas, junta 3 misiones listas: cada consejo sale a lo más cada 5 minutos y sus botones llevan al lugar (flecha y ventanas cerradas).
 6. Escribe en el chat mientras algo importante espera: sale al dejar de escribir.
 7. Clic en Lya varias veces: consejos distintos; después de agotarlos, «Ya te conté todo lo que sé por ahora».
-8. Ausente (`/afk`) o 5 minutos en una posada: se duerme. Clic: se despierta con un salto.
+8. Ausente (`/afk`) o 5 minutos en una posada: se duerme enroscada. Clic: se despierta con un salto.
 9. Silenciar 1 hora, Ocultar a Lya, `/alfa lya`, `/alfa lobito`.
 10. Con la guía y la aceptación automática: toma varias misiones sin leerlas; a veces Lya dice «Esta va de <PNJ> y …», nunca en combate ni en mazmorra, y no más de una cada 10 minutos. *Contármela* abre Historias en esa misión con su texto completo. Entrégala: «¿Te cuento el final?» y la ventana baja al final.
 11. `/alfa historias`: busca por PNJ o palabra, filtra por zona, *Seguir* en una misión de tu registro (flecha y ventanas cerradas), clic en una zona (sus datos curiosos). Recarga: todo sigue guardado. Una misión que ya tenías en el registro aparece con su historia tras entrar.
 12. Entra a una zona nueva con un personaje: a veces Lya cuenta un dato de ahí; clic derecho > *Cuéntame algo de aquí* y *Otro dato* sin repetir hasta agotarlos. Con el cliente en inglés, los datos salen en inglés y las historias en el idioma del juego.
 13. En su página, *Lya cuenta historias*: Siempre / A veces / Solo si le pido / Nunca (con Nunca desaparece *Cuéntame algo de aquí* del menú) y los minutos.
+14. Déjala a la vista unos minutos sin globos: de vez en cuando se busca la cola, corre hacia el centro y regresa a su lugar (sin salirse de la pantalla y sin cambiar su lugar guardado), se estira o se sienta. Cuando dice que tiene hambre, se sienta a pedir. En combate se queda quieta y tenue, y al salir sigue.

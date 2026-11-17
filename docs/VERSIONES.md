@@ -25,6 +25,7 @@ La versión vive en un solo lugar, `tools/alfa.json` (`version`). `tools/build.p
 1. Subir `version` en `tools/alfa.json` y agregar su sección a `CHANGELOG.md` (español e inglés).
 2. Repasar `docs/REGLAS-BLIZZARD.md` (sin donaciones ni anuncios en el juego, nada que escriba solo en el chat de otros, créditos al día).
 3. `python -I tools/build.py`, `revisar.py`, `humo.py` y `textos.py estado` sin errores ni textos faltantes.
+   Después, el banco con las escenas de la galería (`tools/banco/galeria.lua` y `galeria110.lua`, ver `curseforge/LEEME.md`): no debe listar ninguna línea `CORTADO` (un texto que no cupo y saldría con "…" o con renglones de menos). Si sale alguna, el texto tiene que caber: que la caja crezca o que el texto baje de renglón, nunca cortarlo. Corre el banco con el vigilante de memoria, porque un marco de Blizzard que el banco no simula puede comérsela.
 4. Probar en el juego con `tools/instalar.py --aplicar` (con WoW cerrado).
 5. `python -I tools/empaquetar.py` → `paquetes/Alfa-<versión>.zip`.
 6. Commit "Alfa <versión>", etiqueta `git tag -a v<versión> -m "Alfa <versión>"` y `git push --follow-tags`.

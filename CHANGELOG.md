@@ -1,5 +1,23 @@
 # Cambios de Alfa
 
+## 1.1.2 — Lya de cuerpo completo (17/11/2026)
+
+**Español**
+- Lya ahora es una loba negra de cuerpo completo en pixel art, con 39 cuadros de animación: respira y mueve la cola, se pone atenta, se sienta, se busca la cola, corre de ida y vuelta, se estira y bosteza, salta, aúlla y duerme enroscada. Mira siempre hacia el centro de la pantalla.
+- Ya no está sobre un cuadro negro: la acompaña una sombra suave y una elipse fina del color de tu estilo con el rombo de Alfa, que respira despacio.
+- Lya se siente más viva: te saluda en cada sesión según la hora (buenos días, buenas tardes o buenas noches), habla cada 4 o 5 minutos, comenta la zona donde andan, a veces tiene hambre o se le antoja algo (y se sienta a pedir con su huesito) y, entre globos, hace gestos sin hablar. Los saludos, el ánimo y las reacciones ya no se agotan.
+- Arreglado: la línea de tu personaje (arriba en la ventana de Alfa) mostraba el nombre de una escala de equipo personalizada como si fuera tu rama, y se cortaba. Ahora, si no cabe, quita partes en orden y nunca corta tu nombre ni tu nivel.
+- Arreglado: textos que se cortaban con «…» en Hoy (el avance de tu guía), La Jauría, Buscar cerca y las fichas de la Enciclopedia. Las tarjetas y las filas ahora crecen para que el texto quepa completo.
+- Incluye lo de la 1.1.1: el scroll de la bienvenida llega hasta abajo y la bienvenida ocupa toda la pantalla.
+
+**English**
+- Lya is now a full-body black she-wolf in pixel art with 39 animation frames: she breathes and wags her tail, perks up, sits, chases her tail, runs back and forth, stretches and yawns, jumps, howls and sleeps curled up. She always faces the center of the screen.
+- No more black box behind her: a soft shadow and a thin ellipse in your style's color with Alfa's diamond, gently breathing.
+- Lya feels more alive: she greets you every session by time of day, talks every 4–5 minutes, comments on the zone, sometimes gets hungry or craves something (and sits begging with her little bone), and makes small gestures between bubbles. Greetings, encouragement and reactions no longer run out.
+- Fixed: your character line at the top of the Alfa window showed a custom gear scale as if it were your spec, and got cut off. It now drops parts in order if it doesn't fit and never cuts your name or level.
+- Fixed: texts cut with "…" in Today (your guide progress), La Jauría, Find nearby and Encyclopedia entries. Cards and rows now grow so the text fits.
+- Includes 1.1.1: the first-run setup scrolls all the way down and fills the whole screen.
+
 ## 1.1.1 — Bienvenida a pantalla completa (17/11/2026)
 
 **Español**

@@ -96,6 +96,10 @@ def main() -> int:
                 import json
                 (HERE / ('shot-%s.json' % name)).write_text(json.dumps([{k: (dict(v.items()) if hasattr(v, 'items') else v) for k, v in e.items()} for e in entries], default=str), encoding='utf-8')
             print("PNG", out)
+        for vista, texto, por in render.CORTES:
+            print("CORTADO %s (%s): %s" % (vista, por, texto))
+        if render.CORTES:
+            print("cortados:", len(render.CORTES))
     errs = list(g.ERRORS.values())
     seen = {}
     for e in errs:
