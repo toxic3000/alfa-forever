@@ -21,3 +21,4 @@ Barra.lua
 Ventana.lua
 Reemplazo.lua
 Pagina.lua
+Personajes.lua
