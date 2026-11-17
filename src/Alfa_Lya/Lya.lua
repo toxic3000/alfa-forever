@@ -1,24 +1,27 @@
 -- Alfa - Lya: la loba en pantalla y su globo (toxic3000 / La Jauría). GPL-3.0.
 --
--- Lya es una loba negra de cuerpo completo en pixel art (tools/lya_cuerpo.py):
--- dos hojas de 1024 x 512 con 39 cuadros de 52 x 42 px (escalados x2), una con
--- el pelaje (Media/lya-cuerpo) y otra en blanco con un contorno de un pixel y
--- sus adornos (Media/lya-cuerpo-borde), que se tiñe con el acento del estilo
--- (el oro en Clásico WoW) para que se lea sobre fondos oscuros. Cada cuadro se
+-- Lya es una loba negra de perfil, con su pañoleta verde de Alfa, en pixel art
+-- (tools/lya_cuerpo.py): dos hojas de 1024 x 256 con 39 cuadros de 60 x 54 px
+-- (sin escalar: un texel = un pixel del dibujo), una con el pelaje, la pañoleta
+-- y la salchicha (Media/lya-cuerpo) y otra en blanco con un contorno de un
+-- pixel y sus adornos (Media/lya-cuerpo-borde), que se tiñe con el acento del
+-- estilo (el oro en Clásico WoW) para que se lea sobre fondos oscuros. Cada cuadro se
 -- elige con SetTexCoord (y se voltea igual): mira siempre hacia el centro de
 -- la pantalla. Su marco (tools/lya_marco.py): una sombra ovalada bajo las
 -- patas, que va con ella, y en el suelo, en su lugar, una elipse fina del
 -- color del acento con el rombo de Alfa que respira despacio. Sin cuadro de
 -- fondo. Es un marco chico que se arrastra y recuerda su lugar (lya.pos;
 -- lya.bloqueado lo fija); lya.tamano (64) es la escala: a 64, cada pixel del
--- dibujo mide 2 px. Todo se repinta solo al cambiar de estilo (K.Pintar).
+-- dibujo mide 1 px (ella, unos 57 x 50 parada), con filtro NEAREST para que
+-- se vea nítida. Todo se repinta solo al cambiar de estilo (K.Pintar).
 --
 -- Vida (nada en OnUpdate): un solo temporizador (C_Timer.NewTicker, de 1 a 10
 -- cuadros por segundo según la pose) pasa los cuadros, y solo corre con Lya a
 -- la vista y fuera de combate. Poses:
 --   quieta (respira y mueve la cola), atenta (las orejas paradas, la cola
---   rápida), sentada, pedir (sentada, la manita arriba, la lengua y un
---   huesito), correr (va y vuelve hacia el centro y regresa a su lugar; nunca
+--   rápida), sentada, pedir (sentada, la manita arriba, la lengua y una
+--   salchicha; al final, con las dos manos), correr (un galope de 6 tiempos;
+--   va y vuelve hacia el centro y regresa a su lugar; nunca
 --   cambia su lugar guardado), cola (se busca la cola dando vueltas), dormir
 --   (enroscada, con sus "z"), aullar, saltar y estirarse (la reverencia y un
 --   bostezo). Parpadea con otro temporizador al azar. En combate se queda
@@ -55,8 +58,9 @@ local ANCHO_MAX, ANCHO_MIN, PAD = 300, 170, 12
 ---------------------------------------------------------------------------
 -- La hoja de cuadros (el mismo orden que ORDEN en tools/lya_cuerpo.py)
 ---------------------------------------------------------------------------
-local CW, CH, HOJA_W, HOJA_H, COLS = 104, 84, 1024, 512, 9 -- celda y hoja, en px de la textura
-local DIBUJO_W, DIBUJO_H = 52, 42                          -- el cuadro, en pixeles del dibujo
+local CW, CH, HOJA_W, HOJA_H, COLS = 60, 54, 1024, 256, 17 -- celda y hoja, en px de la textura
+local DIBUJO_W, DIBUJO_H = 60, 54                          -- el cuadro, en pixeles del dibujo
+local PISO = 3                     -- de abajo del cuadro a donde pisan las patas (pixeles del dibujo)
 local ORDEN = {
 	"quieta1", "quieta2", "quieta3", "quieta4",
 	"quieta1-parpadeo", "quieta2-parpadeo", "quieta3-parpadeo", "quieta4-parpadeo",
@@ -110,8 +114,8 @@ local function tam()
 	local t = tonumber(N.Get(ID, "tamano")) or 64
 	return max(40, min(128, floor(t + 0.5)))
 end
--- Un pixel del dibujo, en px de la pantalla (2 a tamaño 64).
-local function px() return tam() / 32 end
+-- Un pixel del dibujo, en px de la pantalla (1 a tamaño 64).
+local function px() return tam() / 64 end
 
 function UI.Frame() return f end
 function UI.Visible() return f and f:IsShown() and true or false end
@@ -359,22 +363,27 @@ local function menu()
 	local silencio = Ce.Silenciada()
 	local bloqueado = N.Get(ID, "bloqueado") and true or false
 	local Hi = M.Historias
+	local Ch = M.Charla
+	-- Cuántos consejos: una sola fila que va pasando de muchos a pocos y a solo importantes.
+	local FREC = { muchos = "Consejos: muchos", pocos = "Consejos: pocos", importantes = "Consejos: solo importantes" }
+	local SIGUE = { muchos = "pocos", pocos = "importantes", importantes = "muchos" }
+	local frec = Ce.Frecuencia()
 	local grupos = {
 		{ { valor = "silencio", texto = silencio and L["Quitar el silencio"] or L["Silenciar 1 hora"], icono = "ic-reloj" } },
 		{},
-		{ { valor = "frec:muchos", texto = L["Consejos: muchos"] },
-		  { valor = "frec:pocos", texto = L["Consejos: pocos"] },
-		  { valor = "frec:importantes", texto = L["Consejos: solo importantes"] } },
+		{ { valor = "frec", texto = L[FREC[frec]], icono = "ic-filtro" } },
 		{ { valor = "bloquear", texto = bloqueado and L["Desbloquear posición"] or L["Bloquear posición"], icono = "ic-seguir" },
 		  { valor = "vistos", texto = L["Volver a mostrar los consejos vistos"], icono = "ic-lista" },
 		  { valor = "ajustes", texto = L["Ajustes de Lya"], icono = "ic-ajustes" },
 		  { valor = "ocultar", texto = L["Ocultar a Lya"], icono = "ic-cerrar" } },
 	}
-	if Hi then
-		local hist = grupos[2]
-		if Hi.Modo() ~= "nunca" then hist[#hist + 1] = { valor = "dato", texto = L["Cuéntame algo de aquí"], icono = "ic-mundo" } end
-		hist[#hist + 1] = { valor = "historias", texto = L["Historias de tus misiones"], icono = "ic-misiones" }
+	local hist = grupos[2]
+	if Hi and Hi.Modo() ~= "nunca" then hist[#hist + 1] = { valor = "dato", texto = L["Cuéntame algo de aquí"], icono = "ic-mundo" } end
+	if Ch then
+		hist[#hist + 1] = { valor = "algo", texto = L["Cuéntame algo"], icono = "ic-info" }
+		hist[#hist + 1] = { valor = "gente", texto = L["Háblame de mi gente"], icono = "ic-manada" }
 	end
+	if Hi then hist[#hist + 1] = { valor = "historias", texto = L["Historias de tus misiones"], icono = "ic-misiones" } end
 	-- El menú muestra 10 filas sin desplazarse: las líneas entre grupos, mientras quepan.
 	local n, hay = 0, 0
 	for _, gr in ipairs(grupos) do if #gr > 0 then n = n + #gr hay = hay + 1 end end
@@ -389,9 +398,15 @@ local function menu()
 			for _, o in ipairs(gr) do opciones[#opciones + 1] = o end
 		end
 	end
-	K.Menu(f, opciones, "frec:" .. Ce.Frecuencia(), function(v)
+	K.Menu(f, opciones, nil, function(v)
 		if v == "silencio" then Ce.Silenciar(not silencio)
 		elseif v == "dato" then Hi.Contar()
+		elseif v == "algo" then Ch.Contar()
+		elseif v == "gente" then Ch.Gente()
+		elseif v == "frec" then
+			local nueva = SIGUE[frec] or "muchos"
+			N.Set(ID, "frecuencia", nueva)
+			N.Imprimir(L[FREC[nueva]])
 		elseif v == "historias" then Hi.Abrir()
 		elseif v == "bloquear" then N.Set(ID, "bloqueado", not bloqueado)
 		elseif v == "vistos" then Ce.OlvidarVistos()
@@ -428,17 +443,17 @@ local function medir()
 	f:SetSize(w, h)
 	f.Andar:SetSize(w, h)
 	f.Cuerpo:SetSize(w, h)
-	-- Las patas tocan el suelo a 3.5 pixeles del dibujo del borde de abajo; la
-	-- sombra y la elipse (64 x 16 pixeles del dibujo) se centran ahí.
-	local sw, sh, sy = floor(64 * u + 0.5), floor(16 * u + 0.5), floor(3.5 * u + 0.5)
+	-- Las patas tocan el suelo a PISO pixeles del dibujo del borde de abajo; la
+	-- sombra y la elipse (64 x 16 pixeles, como los del dibujo) se centran ahí.
+	local sw, sh, sy = floor(64 * u + 0.5), floor(16 * u + 0.5), floor(PISO * u + 0.5)
 	f.Sombra:SetSize(sw, sh)
 	f.Sombra:ClearAllPoints()
 	f.Sombra:SetPoint("CENTER", f.Andar, "BOTTOM", 0, sy)
 	f.Suelo:SetSize(sw, sh)
 	f.Suelo:ClearAllPoints()
 	f.Suelo:SetPoint("CENTER", f, "BOTTOM", 0, sy)
-	f.Salto1:SetOffset(0, floor(t * 0.16))
-	f.Salto2:SetOffset(0, -floor(t * 0.16))
+	f.Salto1:SetOffset(0, floor(t * 0.14))
+	f.Salto2:SetOffset(0, -floor(t * 0.14))
 end
 
 local function construirLya()
@@ -616,15 +631,17 @@ local function ponerBoton(b, a)
 	return b:AnchoNatural()
 end
 
--- Del lado al que mira (hacia el centro de la pantalla), arriba de su cabeza.
+-- Del lado al que mira (hacia el centro de la pantalla), arriba de su cabeza:
+-- la esquina del globo queda frente a su nariz, 4 pixeles del dibujo bajo el
+-- borde de arriba del cuadro (sin tapar la salchicha cuando pide).
 function UI.Acomodar()
 	if not (g and f) then return end
 	g:ClearAllPoints()
-	local u = px()
+	local y = -floor(4 * px() + 0.5)
 	if alReves then
-		g:SetPoint("BOTTOMRIGHT", f, "TOPLEFT", floor(8 * u), -floor(10 * u))
+		g:SetPoint("BOTTOMRIGHT", f, "TOPLEFT", 0, y)
 	else
-		g:SetPoint("BOTTOMLEFT", f, "TOPRIGHT", -floor(8 * u), -floor(10 * u))
+		g:SetPoint("BOTTOMLEFT", f, "TOPRIGHT", 0, y)
 	end
 end
 

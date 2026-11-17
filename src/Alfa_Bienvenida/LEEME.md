@@ -16,7 +16,9 @@ La configuración de Alfa (obligatoria la primera vez), las novedades, el aullid
   - Cada respuesta se guarda al elegirla y cada interruptor lee el ajuste real: quien ya usaba Alfa ve lo suyo. Solo salen las filas cuyo módulo está cargado y cuyo ajuste existe. "Ir al resumen" deja el resto como está.
 - **Obligatoria**: mientras falte, `AlfaBienvenida.Pendiente()` es true y la puerta del núcleo (`N.Permitido`, `Alfa.Puerta`) llama a `AlfaBienvenida.Abrir()`, que abre la configuración donde la dejaste y dice en el chat "Termina la configuración para usar Alfa (2 minutos)." (también al cerrarla sin terminar). No bloquea el juego: solo las ventanas de Alfa. Sale sola a los pocos segundos de cada entrada mientras falte (fuera de combate, de instancias, de cinemáticas y de la elección de camino).
 - **Quien ya terminó el asistente de antes** (`M.VERSION` 1) ve la nueva configuración una vez (`M.VERSION` = 2), con sus ajustes de ahora ya elegidos, y no recibe las recomendaciones por rol.
-- **Página Ajustes > Estilo y sonido:** tu estilo con "Mi configuración", los tres estilos, el acento de Cristal, el aullido, la configuración, "Reportar" y lo nuevo de la versión.
+- **Página Ajustes > Estilo y sonido:** tu estilo con "Mi configuración", los tres estilos, el acento de Cristal, el aullido, la configuración, "Reportar" y lo nuevo de la versión (abre las notas).
+- **La intro del lobo** (`Intro.lua`, texturas de `tools/intro.py` en `Media/`): estrellas que titilan, la luna que sube con su halo, el lobo sentado en su peña recortado contra la luna con el contorno encendido, el aullido con tres ondas, A L F A con su resplandor, una raya de luz y un brillo que recorre las letras hasta un destello; luego el lema. 4,6 s, se salta con clic, Esc, espacio o Enter y se corta si entras en combate. Sale antes de la configuración pendiente y antes de las notas de una versión nueva, una vez por sesión.
+- **Notas de cada versión** (`Notas.lua`, la tabla `M.NOTAS` de `Novedades.lua`): al entrar con una versión de Alfa más nueva que la última que viste (`AlfaNucleoDB.bienvenida.versionVista`; una vez por versión y por cuenta), unos segundos después de los demás avisos y fuera de combate, de instancias, de cinemáticas y de la elección de camino: la intro y luego una ventana chica en el centro, "Lo nuevo en Alfa X.Y.Z", con "Seguir jugando" y "Ver todo lo nuevo" (la portada, que lista las notas de cada versión). Quien no tenía Alfa ve la configuración, no las notas; al terminarla su versión queda vista. Quien ya había configurado y no tiene registro, viene de una versión anterior: ve las notas. En combate la ventana se esconde y vuelve al terminar la pelea. Una versión sin entrada en `M.NOTAS` no muestra ventana.
 
 ## Reportar un error, una mejora o un comentario (`Reporte.lua`)
 
@@ -55,6 +57,7 @@ De dónde salen: el listado de archivos de la comunidad, [wowdev/wow-listfile](h
 | `AlfaBienvenida.Pendiente()` | true mientras la configuración no se terminó |
 | `AlfaBienvenida.Exigir()` | Si está pendiente: la abre, lo dice y devuelve true |
 | `AlfaBienvenida.Aullar()`, `AlfaBienvenida.Visto()` | El aullido ahora; si ya salió la configuración de esta versión |
+| `AlfaBienvenida.Notas()` | La ventana con las notas de tu versión de Alfa |
 | `AlfaReporte.Abrir(tipo)` | La ventana de reportes (`"error"`, `"mejora"`, `"comentario"`) |
 | Mensaje `ALFA_CONFIGURADO` | Se dispara al pulsar Listo |
 
@@ -75,7 +78,7 @@ De dónde salen: el listado de archivos de la comunidad, [wowdev/wow-listfile](h
 
 | Dónde | Qué |
 |---|---|
-| `AlfaNucleoDB.bienvenida` | `respondio` (la versión de la configuración terminada), `paso` (dónde va, mientras falta), `recomendado` (ya se aplicó lo recomendado por rol), `visto`, `cuando` |
+| `AlfaNucleoDB.bienvenida` | `respondio` (la versión de la configuración terminada), `paso` (dónde va, mientras falta), `recomendado` (ya se aplicó lo recomendado por rol), `visto`, `cuando`, `versionVista` (la versión de Alfa cuyas notas ya viste) |
 | `AlfaNucleoCharDB.bienvenida.aulloSesion` | Ya aulló en esta sesión |
 | `AlfaNucleoDB.kit.acentos` | El acento propio que recuerda cada estilo |
 
@@ -90,3 +93,4 @@ De dónde salen: el listado de archivos de la comunidad, [wowdev/wow-listfile](h
 7. Cuenta que ya había terminado el asistente de antes: ve la nueva configuración una vez, con sus ajustes de siempre.
 8. `/alfa reportar`: escribe un texto, "Elegir todo", Ctrl+C y pégalo en Discord: debe verse el título en negritas y los datos en un bloque de código, en un solo mensaje. Provoca un error de Lua de Alfa y revisa que salga en el reporte.
 9. Revisa que el texto largo del cuadro se desplace con la rueda y que "Comentario" se lea completo en los segmentos.
+10. Notas de versión: con Alfa ya configurada, `/run AlfaNucleoDB.bienvenida.versionVista = "1.0.0"` y `/reload`: a los ~6 s sale la intro y luego "Lo nuevo en Alfa X.Y.Z" en el centro. Esc o "Seguir jugando" la cierran; otro `/reload` ya no la muestra. Pruébalo en los tres estilos y pega a un enemigo con la ventana abierta: se esconde y vuelve al salir del combate.

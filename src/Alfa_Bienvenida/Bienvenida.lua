@@ -31,7 +31,21 @@
 --                                 antes de abrir cualquier ventana de Alfa)
 --   AlfaBienvenida.Aullar()       el aullido ahora (si está encendido)
 --   AlfaBienvenida.Visto()        true si ya salió la configuración de esta versión
+--   AlfaBienvenida.Notas()        las notas de tu versión de Alfa (Notas.lua)
 -- Al terminar se dispara el mensaje del motor ALFA_CONFIGURADO.
+--
+-- Las notas de cada versión (Notas.lua, M.NOTAS en Novedades.lua): al entrar
+-- al juego, unos segundos después de los demás avisos de entrada y fuera de
+-- combate, de instancias, de cinemáticas y de la elección de camino:
+--   - con la configuración pendiente (quien no tenía Alfa): la intro del lobo
+--     y la configuración, como siempre; al terminarla, la versión de ahora
+--     queda vista (todo es nuevo para quien empieza: no hay notas que ver);
+--   - ya configurada y con una versión de Alfa más nueva que la última que
+--     viste (datos().versionVista; sin registro, quien ya configuró viene de
+--     una versión anterior): la intro del lobo y luego la ventana de notas.
+-- Una vez por versión y por cuenta (AlfaNucleoDB): las notas hablan del
+-- addon, no del personaje, y verlas otra vez en cada personaje cansaría. Si
+-- entras en combate durante la intro, la ventana espera a que termine.
 
 local ADDON, M = ...
 local N = AlfaNucleo
@@ -46,8 +60,38 @@ M.ID, M.L = ID, L
 -- era el asistente de cuatro preguntas; la 2 es la configuración completa.
 M.VERSION = 2
 local ESPERA = 4 -- segundos después de entrar (tras la bienvenida del motor, 2, y sus novedades, 3)
+local ESPERA_NOTAS = 6 -- las notas de una versión nueva: después de todo lo demás al entrar
 
 local function datos() return N.Datos(ID) end
+
+---------------------------------------------------------------------------
+-- La versión de Alfa que ya viste (sus notas)
+---------------------------------------------------------------------------
+function M.VersionVista()
+	local v = datos().versionVista
+	return type(v) == "string" and v or nil
+end
+
+function M.MarcarNotasVistas(version)
+	version = version or (M.VersionAlfa and M.VersionAlfa())
+	if version then datos().versionVista = version end
+end
+
+-- Las notas que te tocan al entrar, o nil. La de tu versión (o la más nueva
+-- con notas que no pase de ella) si es más nueva que la última que viste.
+function M.NotasPorVer()
+	if M.Pendiente() or not (M.VersionAlfa and M.NOTAS) then return nil end
+	local actual = M.VersionAlfa()
+	if not actual then return nil end
+	local vista = M.VersionVista()
+	if vista and M.CompararVersion(vista, actual) >= 0 then return nil end
+	for _, n in ipairs(M.NOTAS) do
+		if M.CompararVersion(n.version, actual) <= 0 and (not vista or M.CompararVersion(n.version, vista) > 0) then
+			return n
+		end
+	end
+	return nil
+end
 
 function M.Visto() return (tonumber(datos().visto) or 0) >= M.VERSION end
 -- true mientras la configuración de esta versión no se terminó.
@@ -140,7 +184,15 @@ function M.Abrir(motivo, vista)
 	M.vistaPendiente = nil
 	-- falta la configuracion: primero la intro del lobo (una vez por sesion), luego el asistente
 	if cual == "asistente" and M.Pendiente() and M.Intro then
-		M.Intro(function() M.AbrirVentana(cual) end)
+		M.Intro(function(por)
+			-- la intro se cortó porque entraste en combate: el asistente espera
+			if por == "combate" then
+				pendiente = (pendiente == "pedido" or motivo == "pedido") and "pedido" or "login"
+				M.vistaPendiente = cual
+				return
+			end
+			M.AbrirVentana(cual)
+		end)
 	else
 		M.AbrirVentana(cual)
 	end
@@ -149,6 +201,46 @@ end
 
 local function intentar()
 	if pendiente == "pedido" or (pendiente == "login" and M.Pendiente()) then M.Abrir(pendiente) end
+end
+
+-- Las notas de la versión nueva: la intro y luego la ventana, cuando se pueda.
+local notasPendientes
+
+local function intentarNotas()
+	if not notasPendientes then return end
+	if M.Pendiente() then notasPendientes = nil return end -- primero la configuración
+	if not libre("login") or (M.Visible and M.Visible()) then return end -- espera
+	if M.NotasVisibles and M.NotasVisibles() then notasPendientes = nil return end
+	local nota = M.NotasPorVer()
+	notasPendientes = nil
+	if not nota then
+		M.MarcarNotasVistas()
+		return
+	end
+	local function abrir(por)
+		if por == "combate" or (InCombatLockdown and InCombatLockdown()) then
+			notasPendientes = true -- al salir del combate (PLAYER_REGEN_ENABLED)
+			return
+		end
+		if M.AbrirNotas then M.AbrirNotas(nota) end
+	end
+	if M.Intro then M.Intro(abrir, { version = M.VersionAlfa() }) else abrir() end
+end
+M.IntentarNotas = intentarNotas
+
+-- Al entrar al juego: ¿hay notas nuevas que ver? (Sin notas para tu versión,
+-- queda vista y no sale nada.)
+function M.RevisarNotas(espera)
+	if M.Pendiente() then return false end
+	if not M.NotasPorVer() then
+		local actual = M.VersionAlfa and M.VersionAlfa()
+		local vista = M.VersionVista()
+		if actual and (not vista or M.CompararVersion(vista, actual) < 0) then M.MarcarNotasVistas(actual) end
+		return false
+	end
+	notasPendientes = true
+	if espera and espera > 0 and C_Timer and C_Timer.After then C_Timer.After(espera, intentarNotas) else intentarNotas() end
+	return true
 end
 
 -- La línea que explica por qué Alfa no abre todavía.
@@ -193,19 +285,27 @@ N.Reemplazar("SHOW_WHATSNEW", function(p)
 end, visible)
 
 A.OnLogin(function()
-	if not M.Pendiente() then return end
+	if not M.Pendiente() then
+		M.RevisarNotas(ESPERA_NOTAS)
+		return
+	end
 	pendiente = pendiente or "login"
 	if C_Timer and C_Timer.After then C_Timer.After(ESPERA, intentar) else intentar() end
 end)
 
-A.RegisterEvent("PLAYER_REGEN_ENABLED", function() intentar() end)
+local function intentarTodo()
+	intentar()
+	intentarNotas()
+end
+A.RegisterEvent("PLAYER_REGEN_ENABLED", function() intentarTodo() end)
 A.RegisterEvent("CINEMATIC_STOP", function()
-	if C_Timer and C_Timer.After then C_Timer.After(1, intentar) else intentar() end
+	if C_Timer and C_Timer.After then C_Timer.After(1, intentarTodo) else intentarTodo() end
 end)
 A.RegisterEvent("PLAYER_ENTERING_WORLD", function()
 	if pendiente and C_Timer and C_Timer.After then C_Timer.After(ESPERA, intentar) end
+	if notasPendientes and C_Timer and C_Timer.After then C_Timer.After(ESPERA_NOTAS, intentarNotas) end
 end)
-A.On("ROUTE_CHOICE_HIDDEN", function() intentar() end)
+A.On("ROUTE_CHOICE_HIDDEN", function() intentarTodo() end)
 
 ---------------------------------------------------------------------------
 -- Comando y contrato
@@ -229,3 +329,4 @@ function AlfaBienvenida.Pendiente() return M.Pendiente() end
 function AlfaBienvenida.Exigir() return M.Exigir() end
 function AlfaBienvenida.Aullar() return M.Aullar() end
 function AlfaBienvenida.Visto() return M.Visto() end
+function AlfaBienvenida.Notas() return M.AbrirNotas and M.AbrirNotas() or false end

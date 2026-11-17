@@ -40,7 +40,7 @@ M.Cerebro = Ce
 local MAX_VECES = 3
 local ESPERA_IMPORTANTE = 600   -- s que algo importante puede esperar
 local DORMIR_DESCANSANDO = 300  -- s descansando sin hacer nada para dormirse
-local SIN_HABLAR = { muchos = 4 * 60, pocos = 12 * 60 } -- algo suelto tras tanto silencio (se siente viva)
+local SIN_HABLAR = { muchos = 3 * 60, pocos = 10 * 60 } -- algo suelto tras tanto silencio (se siente viva)
 
 local function ahora() return GetTime and GetTime() or 0 end
 local function reloj() return (GetServerTime and GetServerTime()) or (time and time()) or 0 end
@@ -114,6 +114,7 @@ local LIBRES = {
 	bienvenida = true, volver = true, saludoManana = true, saludoTarde = true, saludoNoche = true,
 	nivel = true, muerte = true, reparar = true, bolsas = true, entrenar = true, entregar = true,
 	descanso = true, misionesHoy = true, animo = true, carino = true, ambiente = true, zona = true,
+	hambre = true, salchichas = true,
 }
 local function libre(id) return type(id) == "string" and LIBRES[id:match("^(%a+)") or ""] or false end
 
@@ -411,11 +412,15 @@ local function zonaActual()
 end
 local function delMomento()
 	local r = random()
-	if r < 0.3 and decirDe("hambre", { pose = "pedir" }) then return true end
+	if r < 0.25 and decirDe("hambre", { pose = "pedir" }) then return true end
+	if r < 0.4 and decirDe("salchichas", { pose = "pedir" }) then return true end
 	local z = zonaActual()
 	if r < 0.6 and z ~= "" and decirDe("zona", {}, z) then return true end
 	return decirDe("ambiente", {})
 end
+-- Para la plática (Charla.lua): algo del momento y un consejo de los de siempre.
+Ce.DelMomento = delMomento
+Ce.Suelto = suelto
 
 -- El saludo al entrar, según la hora (y a veces uno de los de siempre).
 local function saludar(nombre)
@@ -430,7 +435,16 @@ function Ce.Pedir()
 	if not Ce.Activa() then return end
 	if enCombate() then return end
 	if revisarContexto(true) then return end
+	-- A veces, en vez de un consejo, algo de la plática (lore, tu gente, un consejo de amiga).
+	local Ch = M.Charla
+	local function platica()
+		if not (Ch and Ch.Pedido) then return false end
+		local ok, h = pcall(Ch.Pedido)
+		return ok and h == true
+	end
+	if random() < 0.4 and platica() then return end
 	if suelto(true) then return end
+	if platica() then return end
 	Ce.Decir({ texto = L[M.AGOTADOS], pedido = true,
 		acciones = { { texto = L["Volver a empezar"], fn = function() Ce.OlvidarVistos() end } } })
 end
@@ -509,19 +523,24 @@ local function latido(mio)
 		if not revisarSesion() and not revisarContexto(false) then
 			local gap = SIN_HABLAR[Ce.Frecuencia()]
 			if gap and ahora() - ultimo >= gap then
-				-- Va rotando: algo del momento (la zona, la hora, que tiene hambre),
-				-- un dato curioso (Historias.lua) o un consejo; si no queda nada que
-				-- enseñar, siempre tiene algo del momento.
-				local hablo = false
-				if random() < 0.45 then hablo = delMomento() end
-				if not hablo then
+				-- La plática (Charla.lua): rondas entre el lugar, el lore, lo de tu
+				-- raza, clase y profesiones, consejos, el momento y las salchichas.
+				-- Sin ella, lo de antes: un dato curioso, algo del momento o un consejo.
+				local Ch = M.Charla
+				if Ch and Ch.Algo then
+					local ok, h = pcall(Ch.Algo)
+					if not ok and geterrorhandler then geterrorhandler()(h) end
+				else
+					local hablo = false
 					local Hi = M.Historias
-					local ok, h = false, false
-					if Hi and Hi.Suelto then ok, h = pcall(Hi.Suelto) end
-					hablo = ok and h
+					if random() < 0.65 and Hi and Hi.Suelto then
+						local ok, h = pcall(Hi.Suelto)
+						hablo = ok and h
+					end
+					if not hablo then hablo = delMomento() end
+					if not hablo then hablo = suelto(false) end
+					if not hablo then delMomento() end
 				end
-				if not hablo then hablo = suelto(false) end
-				if not hablo then delMomento() end
 			elseif not UI.Hablando() and random() < 0.5 then
 				-- Entre globos, un gesto sin palabras (y a veces una pose: correr,
 				-- buscarse la cola, sentarse a pedir).

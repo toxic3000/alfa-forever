@@ -198,7 +198,7 @@ local function menuGuia(dueno)
 	op[#op + 1] = { valor = function() M.Cerrar.Ahora() end, texto = L["Cerrar mis misiones"], icono = "ic-misiones" }
 	-- Buscar cerca: en el menú solo si su lupa no está en la cabecera.
 	if M.Cerca and A.Get(M.ID .. ".cercaBoton") == false then
-		op[#op + 1] = { valor = function() M.Cerca.Menu(dueno) end, texto = L["Buscar cerca..."], icono = "ic-buscar" }
+		op[#op + 1] = { valor = function() M.Cerca.Menu(dueno) end, texto = L["Buscar cerca..."], icono = "ic-cerca" }
 	end
 	if activa and e then
 		op[#op + 1] = { valor = function() engine("CloseTab", activa) end, texto = L["Cerrar esta pestaña"], icono = "ic-cerrar" }
@@ -641,8 +641,9 @@ local function construir()
 	c.Menu = K.BotonIcono(c, "ic-mas", function(self) menuGuia(self) end, { tam = 22, icono = 12, ayuda = L["Guías y planes"] })
 	c.Menu:SetPoint("RIGHT", c.Cerrar, "LEFT", -2, 0)
 	-- Buscar cerca (Cerca.lua): el vuelo, la posada, reparar... con la flecha.
-	c.Cerca = K.BotonIcono(c, "ic-buscar", function(self) if M.Cerca then M.Cerca.Menu(self) end end,
-		{ tam = 22, icono = 12, ayuda = L["Buscar cerca"], ayudaTexto = L["El maestro de vuelo, la posada, reparar, el banco y más: el más cercano, con la flecha y la ruta."] })
+	-- Con el pin de ubicación (no una lupa: se confundía con buscar texto).
+	c.Cerca = K.BotonIcono(c, "ic-cerca", function(self) if M.Cerca then M.Cerca.Menu(self) end end,
+		{ tam = 22, icono = 14, ayuda = L["Buscar cerca"], ayudaTexto = L["El maestro de vuelo, la posada, reparar, el banco y más: el más cercano, con la flecha y la ruta."] })
 	c.Cerca:SetPoint("RIGHT", c.Menu, "LEFT", -2, 0)
 	c.Titulo = K.Texto(c, "encabezado", "texto")
 	c.Titulo:SetPoint("TOPLEFT", c, "TOPLEFT", PAD + 24, -7)

@@ -10,8 +10,11 @@
 Textos.lua
 Frases.lua
 Lore.lua
+LoreMas.lua
+Saberes.lua
 Lya.lua
 Cerebro.lua
 Historias.lua
+Charla.lua
 VentanaHistorias.lua
 Pagina.lua

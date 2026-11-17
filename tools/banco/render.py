@@ -132,6 +132,8 @@ def wrap(draw, text, fnt, width):
 # Textos que no cupieron al dibujarlos (cortados con «…» o con renglones de más):
 # run.py los lista como CORTADO para que no se cuelen en la interfaz.
 CORTES = []
+# Textos que se salen de la caja que los contiene (desalineados o desbordados).
+SALEN = []
 
 
 def render(entries, rect, out_path, fonts_dir, scale=1.25):
@@ -266,6 +268,7 @@ def render(entries, rect, out_path, fonts_dir, scale=1.25):
                 ty = y1 - total
             else:
                 ty = (y0 + y1) / 2 - total / 2
+            caja_texto = None
             for line in lines:
                 pl = plain(line)
                 if width > 0 and not e["wrap"] and d.textlength(pl, font=fnt) > width + 1:
@@ -282,11 +285,22 @@ def render(entries, rect, out_path, fonts_dir, scale=1.25):
                     tx = x1 - tw
                 else:
                     tx = (x0 + x1) / 2 - tw / 2
+                caja_texto = (min(tx, caja_texto[0]) if caja_texto else tx, max(tx + tw, caja_texto[1]) if caja_texto else tx + tw)
                 x = tx
                 for seg, c in segments(line, col):
                     d.text((x, ty + lh / 2), seg, font=fnt, fill=c, anchor="lm")
                     x += d.textlength(seg, font=fnt)
                 ty += lh
+            # ¿se sale de su caja? (el marco que lo contiene), con 2 px de holgura
+            if caja_texto and e.get("pw"):
+                px0 = (e["pl"] - l0) * scale
+                py0 = (b0 + h0 - (e["pb"] + e["ph"])) * scale
+                px1, py1 = px0 + e["pw"] * scale, py0 + e["ph"] * scale
+                ty0 = ty - total
+                hol, holv = 2 * scale, 5 * scale
+                if e["pw"] > 8 and e["ph"] > 8 and (caja_texto[0] < px0 - hol or caja_texto[1] > px1 + hol
+                                                     or ty0 < py0 - holv or ty > py1 + holv):
+                    SALEN.append((out_path.stem if hasattr(out_path, "stem") else str(out_path), plain(text)[:90]))
     restaurar()
     base.save(out_path)
     return out_path

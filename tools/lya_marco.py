@@ -6,7 +6,8 @@ Uso (desde la raíz del proyecto):
 Lya (tools/lya_cuerpo.py) no lleva cuadro de fondo: va parada sobre dos piezas
 en pixel art de 64 x 16 pixeles (TGA de 32 bits sin comprimir, escaladas con
 NEAREST) en src/Alfa_Lya/Media. El juego las muestra a 64 x 16 pixeles del
-dibujo de Lya (2 px cada uno a tamaño 64), centradas bajo sus patas:
+dibujo de Lya (1 px cada uno a tamaño 64), centradas donde pisan sus patas
+(PIES en lya_cuerpo.py: 3 pixeles arriba del borde de abajo del cuadro):
   lya-sombra.tga  una sombra ovalada, oscura al centro y con orillas en
                   escalones (128 x 32). No se tiñe; va con ella al correr.
   lya-suelo.tga   una elipse fina en blanco, con el rombo de la marca de Alfa
@@ -79,8 +80,8 @@ def main() -> int:
         Z = 6
         hoja = Image.new("RGB", (W * Z * 2, 40 * Z), (24, 28, 26))
         hoja.paste(Image.new("RGB", (W * Z, 40 * Z), (190, 196, 190)), (W * Z, 0))
-        cuerpo = Image.open(AQUI / "lya-cuerpo.tga").convert("RGBA").crop((0, 0, 104, 84)).resize((52, 42), Image.NEAREST)
-        borde = Image.open(AQUI / "lya-cuerpo-borde.tga").convert("RGBA").crop((0, 0, 104, 84)).resize((52, 42), Image.NEAREST)
+        cuerpo = Image.open(AQUI / "lya-cuerpo.tga").convert("RGBA").crop((0, 0, 60, 54))
+        borde = Image.open(AQUI / "lya-cuerpo-borde.tga").convert("RGBA").crop((0, 0, 60, 54))
         for ox in (0, W):
             capa = Image.new("RGBA", (W, 40), (0, 0, 0, 0))
             s = piezas["lya-suelo"].resize((W, H), Image.NEAREST)
@@ -88,13 +89,13 @@ def main() -> int:
             verde.putalpha(s.getchannel("A").point(lambda v: v * 0.7))
             capa.alpha_composite(verde, (0, 40 - H - 1))
             capa.alpha_composite(piezas["lya-sombra"].resize((W, H), Image.NEAREST), (0, 40 - H - 1))
-            v2 = Image.new("RGBA", (52, 42), (139, 224, 78, 255))
+            v2 = Image.new("RGBA", (60, 54), (139, 224, 78, 255))
             v2.putalpha(borde.getchannel("A").point(lambda v: v * 0.6))
-            dibujo = Image.new("RGBA", (52, 42), (0, 0, 0, 0))
+            dibujo = Image.new("RGBA", (60, 54), (0, 0, 0, 0))
             dibujo.alpha_composite(v2)
             dibujo.alpha_composite(cuerpo)
-            # las patas (fila 38 del cuadro) al centro de la elipse (fila 31 de la hoja)
-            capa.alpha_composite(dibujo.crop((0, 7, 52, 42)), (6, 0))
+            # donde pisan las patas (fila 51 del cuadro) al centro de la elipse (fila 31 de la hoja)
+            capa.alpha_composite(dibujo.crop((0, 20, 60, 54)), (2, 0))
             fondo = hoja.crop((ox * Z, 0, ox * Z + W * Z, 40 * Z)).convert("RGBA")
             fondo.alpha_composite(capa.resize((W * Z, 40 * Z), Image.NEAREST))
             hoja.paste(fondo.convert("RGB"), (ox * Z, 0))

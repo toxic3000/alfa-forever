@@ -63,6 +63,15 @@ VISTAS = [
      "Build your own goals: items, gold, professions, places, quests or levels."),
     ("shot-monturas.png", "Monturas y mascotas", "Cómo conseguir cada una, si ya la tienes y \"Guíame\".",
      "How to get each one, whether you already have it, and \"Guide me\"."),
+    # 1.1.4 (las escenas de Lya y de la intro: ver curseforge/LEEME.md)
+    ("shot-lya-poses.png", "Lya, tu loba compañera", "Negrita, con su pañoleta de Alfa: corre, se busca la cola, duerme, aúlla y pide salchichas.",
+     "Black, with her Alfa bandana: she runs, chases her tail, sleeps, howls and begs for sausages."),
+    ("shot-lya-globo.png", "Lya platica contigo", "Lore de Warcraft, datos de cada zona, de tu raza y tus profesiones, y consejos de amiga.",
+     "Warcraft lore, facts about every zone, your race and professions, and friendly tips."),
+    ("shot-intro.png", "Cada versión, una bienvenida", "La intro del lobo y la luna, y después lo nuevo de la versión.",
+     "The wolf and moon intro, then what's new in the version."),
+    ("shot-notas.png", "Lo nuevo, a la vista", "Al actualizar, una ventana te cuenta qué cambió. La cierras y sigues jugando.",
+     "After an update, a window tells you what changed. Close it and keep playing."),
 ]
 
 
@@ -149,6 +158,66 @@ def portada(vistas):
     return im
 
 
+def lya_sprite(cuadro=0, escala=4):
+    """Lya (src/Alfa_Lya/Media/lya-cuerpo*.tga, celda `cuadro`) con su borde verde, en pixel art."""
+    media = RAIZ / "src" / "Alfa_Lya" / "Media"
+    pelo = Image.open(media / "lya-cuerpo.tga").convert("RGBA")
+    borde = Image.open(media / "lya-cuerpo-borde.tga").convert("RGBA")
+    cw, ch, cols = 60, 54, 17
+    x, y = (cuadro % cols) * cw, (cuadro // cols) * ch
+    caja = (x, y, x + cw, y + ch)
+    p, b = pelo.crop(caja), borde.crop(caja)
+    verde = Image.new("RGBA", b.size, ACENTO + (255,))
+    tenido = Image.new("RGBA", b.size, (0, 0, 0, 0))
+    tenido.paste(verde, (0, 0), b.split()[3].point(lambda v: int(v * 0.85)))
+    tenido.alpha_composite(p)
+    return tenido.resize((cw * escala, ch * escala), Image.NEAREST)
+
+
+def banner():
+    """El encabezado ancho de CurseForge y del README: la marca, lo que es y lo
+    mejor de Alfa a la vista (tres ventanas y Lya)."""
+    ancho, alto = 1600, 600
+    im = Image.new("RGB", (ancho, alto), FONDO)
+    brillo = Image.new("L", (ancho, alto), 0)
+    dd = ImageDraw.Draw(brillo)
+    dd.ellipse([-400, -500, 900, 520], fill=80)
+    dd.ellipse([900, 200, 2000, 1100], fill=40)
+    brillo = brillo.filter(ImageFilter.GaussianBlur(200))
+    im.paste(Image.new("RGB", (ancho, alto), (40, 70, 30)), (0, 0), brillo)
+    d = ImageDraw.Draw(im)
+    lg = logo(96)
+    im.paste(lg, (80, 70), lg)
+    d.text((80, 180), "Alfa", font=fuente("Inter-SemiBold.ttf", 96), fill=TEXTO)
+    d.text((84, 300), "Guía a tu manada · Lead your pack", font=fuente("Inter-Medium.ttf", 30), fill=ACENTO)
+    d.multiline_text((84, 356), "El todo en uno para WoW Forever:\nguías, mapa, pesca, Lya y mucho más.",
+                     font=fuente("Inter-Regular.ttf", 26), fill=TENUE, spacing=10)
+    x = 84
+    for chip in ("Gratis", "10 idiomas", "Hecho por toxic3000"):
+        f = fuente("Inter-SemiBold.ttf", 20)
+        w = d.textlength(chip, font=f) + 28
+        d.rounded_rectangle([x, 470, x + w, 508], radius=6, outline=ACENTO, width=2)
+        d.text((x + 14, 489), chip, font=f, fill=TEXTO, anchor="lm")
+        x += w + 12
+    # tres ventanas encimadas a la derecha
+    capas = [("shot-g-mundo.png", (900, 40, 600)), ("shot-pesca-diario.png", (1000, 230, 520)), ("shot-g-inicio.png", (760, 280, 560))]
+    for archivo, (vx, vy, vw) in capas:
+        if not (BANCO / archivo).exists():
+            continue
+        v = Image.open(BANCO / archivo).convert("RGB")
+        v.thumbnail((vw, 1000), Image.LANCZOS)
+        s = sombra(v, 26, 190)
+        im.paste(s, (vx - 52, vy - 52), s)
+        im.paste(v, (vx, vy))
+        ImageDraw.Draw(im).rectangle([vx - 1, vy - 1, vx + v.width, vy + v.height], outline=(52, 70, 56))
+    try:
+        ly = lya_sprite(0, 3)
+        im.paste(ly, (590, alto - ly.height - 24), ly)
+    except FileNotFoundError:
+        pass
+    return im
+
+
 def main() -> int:
     SALIDA.mkdir(parents=True, exist_ok=True)
     faltan = [a for a, *_ in VISTAS if not (BANCO / a).exists()]
@@ -158,6 +227,7 @@ def main() -> int:
     for viejo in SALIDA.glob("*.png"):
         viejo.unlink()
     portada([Image.open(BANCO / "shot-g-rutas.png"), Image.open(BANCO / "shot-g-inicio.png")]).save(SALIDA / "00-portada.png")
+    banner().save(SALIDA / "00-banner.png")
     for i, (archivo, titulo, es, en) in enumerate(VISTAS, 1):
         nombre = archivo[len("shot-"):]
         for prefijo in ("g-", "v-"):

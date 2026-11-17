@@ -50,7 +50,7 @@ M.Historias = H
 local MAX_MISIONES = 500
 local MAX_LETRAS = 450000
 local MAX_CAMPO = 4000            -- letras por texto, a lo más
-local ESPACIO_DATO = 20 * 60      -- s entre un dato curioso automático y otro
+local ESPACIO_DATO = 6 * 60       -- s entre un dato curioso automático y otro (habla del lugar seguido)
 local REINTENTOS, CADA = 6, 30    -- un gancho que no pudo salir: cada 30 s, 6 veces
 
 local MODOS = { siempre = true, aveces = true, pedir = true, nunca = true }
@@ -497,6 +497,8 @@ end
 local function notaDelMundo(pedido) return notaDe(M.LORE, "l", personaje(), pedido) end
 
 function H.NotasDeZona(mapa) return mapa and M.DATOS_ZONA and M.DATOS_ZONA[mapa] or nil end
+-- Lo de este personaje (hist): Charla.lua comparte hist.datos y hist.ultimaDato.
+H.Personaje = personaje
 
 local function decirNota(id, es, pedido)
 	local t = L[es]
@@ -536,7 +538,7 @@ end
 -- -> true si habló.
 function H.Suelto()
 	local modo = H.Modo()
-	local prob = (modo == "siempre" and 0.35) or (modo == "aveces" and 0.15) or 0
+	local prob = (modo == "siempre" and 0.9) or (modo == "aveces" and 0.6) or 0
 	if prob <= 0 or random() >= prob or not puedeDato() then return false end
 	local id, es = notaDeZona(zonaActual(), false)
 	if not id or random() < 0.3 then
@@ -556,9 +558,16 @@ local function revisarZona(mio)
 	local z = zonaActual()
 	if not (z and M.DATOS_ZONA and M.DATOS_ZONA[z]) then return end
 	local hp = personaje()
-	if hp.zonas[z] then return end
-	if not puedeDato() then return end -- otra vez será (sigue sin marcar)
-	if modo == "aveces" and random() >= 0.5 then hp.zonas[z] = true return end
+	if hp.zonas[z] then
+		-- De vuelta en una zona que ya conoces: si le queda algo por contarte de
+		-- ahí, va primero (con el espacio entre datos, para no apurarla).
+		if not puedeDato() then return end
+		local id, es = notaDeZona(z, false)
+		if id then decirNota(id, es, false) end
+		return
+	end
+	-- Al llegar a una zona nueva siempre cuenta algo de ella: es lo que más se
+	-- disfruta (Cerebro sigue cuidando que no hable encima de otra cosa).
 	local id, es = notaDeZona(z, false)
 	if not id then hp.zonas[z] = true return end
 	if decirNota(id, es, false) == true then hp.zonas[z] = true end

@@ -3108,6 +3108,16 @@ local function layoutPillRow(f)
 		f.Subtitle:SetPoint("LEFT", f.Title, "RIGHT", 14, -1)
 	end
 	f.Subtitle:SetPoint("RIGHT", row, "RIGHT", -pad, last and 0 or -1)
+	-- Alfa: junto a las pestañas, la descripción va completa o no va (nunca
+	-- cortada con "…" ni saliéndose de la ventana).
+	if last and row:GetRight() and last:GetRight() then
+		local libre = row:GetRight() - pad - (last:GetRight() + 16)
+		local mide = f.Subtitle.GetUnboundedStringWidth and f.Subtitle:GetUnboundedStringWidth() or 0
+		if mide > libre then
+			f.Subtitle:Hide()
+			return
+		end
+	end
 	f.Subtitle:SetShown((f.psSubtitle or "") ~= "")
 end
 
@@ -3139,9 +3149,9 @@ function W.ShellPills(f, pills, active, onSelect)
 	if not f.psPillHook then
 		f.psPillHook = true
 		f.PillRow:HookScript("OnSizeChanged", function()
-			local antes = f.psPillRows
 			placePills(f)
-			if antes ~= f.psPillRows then layoutPillRow(f) end
+			-- siempre: con otro ancho, la descripción puede caber o dejar de caber
+			layoutPillRow(f)
 		end)
 	end
 end

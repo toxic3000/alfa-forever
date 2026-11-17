@@ -56,6 +56,14 @@ PARCHES = [
     ("Alfa/Quests/Party.lua",
      'panelPos = false, chat = true,',
      lambda c: 'panelPos = false, chat = false,'),
+    # Los puntos de vuelo y los de viaje (barcos, zepelines, tranvia) se ven en
+    # el mapa de fabrica: son como se llega a los destinos (Toxic, 1.1.4).
+    ("Alfa/Maps/Maps.lua",
+     'taxiPins = false,       -- flight masters',
+     lambda c: 'taxiPins = true,        -- flight masters (Alfa: a la vista de fabrica)'),
+    ("Alfa/Maps/Maps.lua",
+     'dockPins = false,       -- boats, zeppelins, tram',
+     lambda c: 'dockPins = true,        -- boats, zeppelins, tram (Alfa: a la vista de fabrica)'),
     # El Discord de Alfa es el de La Jauria.
     ("Alfa/Core/Init.lua",
      'ns.DiscordURL = "https://discord.gg/polestar"',

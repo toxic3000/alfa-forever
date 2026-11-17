@@ -62,7 +62,10 @@ local function grupos(ui, padre)
 		control = function(fila) return K.Boton(fila, L["Reportar"], function() M.AbrirReporte() end, { tipo = "secundario" }) end })
 	bienvenida:Fila({ titulo = format(L["Lo nuevo en Alfa %s"], M.VERSION_ALFA),
 		texto = L["La bienvenida con las novedades de esta versión."],
-		control = function(fila) return K.Boton(fila, L["Ver"], function() M.Abrir("pedido", "portada") end, { tipo = "secundario" }) end })
+		control = function(fila) return K.Boton(fila, L["Ver"], function()
+			if M.AbrirNotas and M.AbrirNotas() then return end
+			M.Abrir("pedido", "portada")
+		end, { tipo = "secundario" }) end })
 	return { sonido, bienvenida }
 end
 

@@ -171,6 +171,26 @@ F.hambre = {
 	"Huele a pan recién hecho por aquí… se me antoja.",
 	"Si encuentras un hueso, es mío. ¿Trato hecho?",
 	"Un pescadito asado no me caería nada mal.",
+	"¿Eso que huele es pan de la posada? Mi nariz nunca se equivoca.",
+	"Una loba gordita como yo necesita sus tres comidas... y sus botanas.",
+	"Si te sobra un pedacito de carne, aquí hay una panza que lo recibe con gusto.",
+	"Mi panza hizo un ruido. No fui yo, fue la panza.",
+	"Pausa para el lunch: tú comes, yo miro con ojitos tiernos.",
+}
+
+-- Le encantan las salchichas (se sienta a pedir).
+F.salchichas = {
+	"¿Te conté que mi comida favorita son las salchichas? Ninguna otra cosa se le acerca.",
+	"Si alguna vez ves salchichas en una posada, guárdame una… o dos.",
+	"Huele a salchichas asadas por aquí… ¿o es mi imaginación?",
+	"Mi plan perfecto: una buena cacería y luego salchichas junto a la fogata.",
+	"Por una salchicha te sigo hasta Rasganorte. Bueno, te seguiría igual.",
+	"Sueño con una montaña de salchichas... y yo en la punta, feliz.",
+	"Dicen que en Thelsamar venden morcilla. ¡Es casi una salchicha! Solo digo.",
+	"Si un día ganamos mucho oro, yo ya sé en qué gastarlo: salchichas.",
+	"Una salchicha al día mantiene a la loba feliz. Es ciencia.",
+	"Cuando huelo salchichas se me olvida todo. Bueno, menos tú.",
+	"Mi oreja derecha se para sola cuando alguien dice «salchicha». Pruébalo.",
 }
 
 -- Comentarios del momento (%s: la zona donde están).
@@ -178,6 +198,9 @@ F.zona = {
 	"%s… me gusta este lugar.",
 	"¿Ya exploraste todo %s? Siempre queda un rincón por ver.",
 	"Ojo por aquí: %s tiene sus sorpresas.",
+	"%s huele distinto a todo lo demás. Me gusta olfatearlo.",
+	"Si nos perdemos en %s, tú lees el mapa y yo sigo el rastro.",
+	"De todo %s, ¿qué rincón te gusta más?",
 }
 
 -- Comentarios sueltos, para que se sienta que va contigo.
@@ -190,6 +213,14 @@ F.ambiente = {
 	"Si necesitas silencio, con clic derecho me callas un rato.",
 	"*persigue su cola un ratito* …¡Casi la atrapo!",
 	"¿Una carrerita hasta allá? Yo gano.",
+	"*olfatea el suelo* Por aquí pasó un jabalí... hace rato.",
+	"*se rasca la oreja* Listo, ya me quedé tranquila.",
+	"¿Sabías que las lobas tenemos el mejor oído de la manada? Bueno, eso digo yo.",
+	"*se echa un ratito* No estoy dormida, estoy vigilando con los ojos cerrados.",
+	"Me gusta este paso tranquilo. Así se disfruta el camino.",
+	"*mueve la cola despacito* Todo bien por aquí.",
+	"Si ves a otro lobo por ahí, salúdalo de mi parte.",
+	"*bosteza* Cazar contigo es lo mejor de mi día.",
 }
 
 -- Cuando ya dijo todo (no se cuenta).

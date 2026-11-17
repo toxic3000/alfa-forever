@@ -293,6 +293,16 @@ def i_buscar(l):
     l.linea((20.5, 20.5), (27, 27), w=3.2)
 
 
+def i_cerca(l):
+    # Pin de ubicacion: "lo que hay cerca" (vuelo, banco, subasta, reparar...).
+    cx, cy, r = 16, 12.5, 8.5
+    l.arco(cx, cy, r, 135, 405)
+    a = (cx - r * math.cos(math.radians(45)), cy + r * math.sin(math.radians(45)))
+    b = (cx + r * math.cos(math.radians(45)), cy + r * math.sin(math.radians(45)))
+    l.linea(a, (cx, 28.5), b)
+    l.punto(cx, cy, 3.2)
+
+
 def i_flecha(l):
     # La flecha de la guia, llena y con su muesca.
     l.lleno((16, 3.5), (26.5, 27), (16, 21), (5.5, 27))
@@ -463,7 +473,7 @@ ICONOS = {
     "ic-manada": i_manada, "ic-mundo": i_mundo, "ic-mapa": i_mapa, "ic-bolsas": i_bolsas,
     "ic-comercio": i_comercio, "ic-oro": i_oro, "ic-pesca": i_pesca, "ic-recoleccion": i_recoleccion,
     "ic-ajustes": i_ajustes, "ic-aventura": i_aventura, "ic-personaje": i_personaje, "ic-oficios": i_oficios,
-    "ic-buscar": i_buscar, "ic-flecha": i_flecha, "ic-raros": i_raros, "ic-personajes": i_personajes,
+    "ic-buscar": i_buscar, "ic-cerca": i_cerca, "ic-flecha": i_flecha, "ic-raros": i_raros, "ic-personajes": i_personajes,
     "ic-aviso": i_aviso, "ic-info": i_info, "ic-exito": i_exito, "ic-alerta": i_alerta,
     "ic-cerrar": i_cerrar, "ic-mas": i_mas, "ic-filtro": i_filtro, "ic-lista": i_lista,
     "ic-rejilla": i_rejilla, "ic-seguir": i_seguir, "ic-nivel": i_nivel, "ic-comodidades": i_comodidades,

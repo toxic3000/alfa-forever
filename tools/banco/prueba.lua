@@ -63,6 +63,48 @@ if AlfaBienvenida and AlfaBienvenida.Pendiente and AlfaBienvenida.Pendiente() th
 end
 step("bienvenida: portada", function() B.AbrirVentana("portada") T(1) bv:Hide() end)
 
+-- Las notas de una versión nueva: alguien que ya configuró Alfa y vio una
+-- versión vieja entra al juego: la intro del lobo y luego la ventana de notas.
+step("notas: actualización (versión vista vieja)", function()
+  if not (hay(B, "RevisarNotas") and B.VersionAlfa and B.VersionAlfa()) then
+    print("AVISO: el banco no tiene versión de Alfa; las notas no se prueban") return
+  end
+  local d = N.Datos("bienvenida")
+  d.versionVista = "1.0.0"
+  if not B.RevisarNotas(0) then error("no hay notas que ver con una versión vista vieja") end
+  local intro = _G.AlfaIntro
+  if not (intro and intro:IsShown()) then error("la intro del lobo no salió antes de las notas") end
+  for _, t in ipairs({ 0.3, 1, 1.6, 2.2, 2.8, 3.3, 3.9, 4.2, 4.7 }) do B.CuadroIntro(t) end
+  T(2)
+  if intro:IsShown() then error("la intro no terminó") end
+  if not B.NotasVisibles() then error("la ventana de notas no se abrió tras la intro") end
+  if B.CompararVersion(d.versionVista, B.VersionAlfa()) ~= 0 then error("la versión vista no se guardó") end
+  _G.AlfaNotasVersion:Hide()
+  if B.RevisarNotas(0) or B.NotasVisibles() then error("las notas salieron dos veces en la misma versión") end
+end)
+step("notas: abrir y cerrar en los 3 estilos", function()
+  for _, estilo in ipairs({ "alfa", "clasico", "cristal" }) do
+    K.SetEstilo(estilo) T(1)
+    if not B.AbrirNotas() then error("no abrió las notas en " .. estilo) end
+    T(1)
+    _G.AlfaNotasVersion:Hide()
+  end
+  K.SetEstilo("alfa")
+end)
+step("notas: se esconden en combate y vuelven después", function()
+  B.AbrirNotas() T(1)
+  FIRE_EVENT("PLAYER_REGEN_DISABLED")
+  if B.NotasVisibles() then error("las notas siguen abiertas en combate") end
+  FIRE_EVENT("PLAYER_REGEN_ENABLED") T(3)
+  if not B.NotasVisibles() then error("las notas no volvieron al salir del combate") end
+  _G.AlfaNotasVersion:Hide()
+end)
+step("notas: ver todo lo nuevo (la portada)", function()
+  B.AbrirNotas() T(1)
+  B.Abrir("pedido", "portada") T(1)
+  if bv then bv:Hide() end
+end)
+
 ---------------------------------------------------------------------------
 -- 2. Todas las páginas, en los 3 estilos
 ---------------------------------------------------------------------------

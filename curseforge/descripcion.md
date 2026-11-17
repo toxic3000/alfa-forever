@@ -1,9 +1,39 @@
 # Alfa — lead your pack / guía a tu manada
 
-**The all-in-one for World of Warcraft: Forever.** Guides, route, map, bags, talents, encyclopedia, dungeons, healing, fishing, trading and your guild, in one addon with one look. Made by **toxic3000** for **La Jauría**.
+![Alfa — lead your pack](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/00-banner.png)
 
-> 🐺 **New in 1.1.0:** a new first-run setup with a wolf intro and 10 languages, Lya (a companion she-wolf with tips and stories), re-engineered fishing, scenery and graphics, real terrain on the map, flight points, entrances and exits, Find nearby, My plans, mounts and pets, and only quests you can actually do.
+**The all-in-one for World of Warcraft: Forever.** Guides, route, map, bags, talents, encyclopedia, dungeons, healing, fishing, trading and your guild, in one addon with one look — and **Lya**, a black she-wolf companion who chats with you about lore, your zone and your adventures. Made by **toxic3000** for **La Jauría**. Free, open source, 10 languages.
+
+> 🐺 **New in 1.1.4:** Lya has a brand-new look and chats a lot more (Warcraft lore, every zone, your race, class and professions, event and farming tips — and she loves sausages); a "find nearby" button by your guide; flight points and travel spots on the map; and every update now greets you with the wolf intro and its notes.
 > If something breaks, tell us with `/alfa reportar`, on [Discord](https://discord.gg/hUNjA6BJwh), in the comments or on [GitHub](https://github.com/toxic3000/alfa-forever/issues).
+
+## A quick look / Un vistazo
+
+![Lya, the Alfa companion](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/16-lya-poses.png)
+
+**Lya, your companion she-wolf / tu loba compañera** — runs, chases her tail, sleeps, howls, begs for sausages and tells you stories.
+
+![Lya chats with you](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/17-lya-globo.png)
+
+![Your route](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/03-rutas.png)
+
+**Your route / Tu ruta** — the guide that fits you, quests you can actually do, and the arrow that takes you there.
+
+![Fishing](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/11-pesca-diario.png)
+
+**Fishing / Pesca** — one key for everything, a catch journal, achievements and a 1–300 guide.
+
+![Encyclopedia](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/05-enciclopedia.png)
+
+**Encyclopedia / Enciclopedia** — every item, NPC, quest, mount and pet in the game, with "Guide me".
+
+![Scenery and graphics](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/13-vista.png)
+
+**Scenery / Paisaje** — the game's graphics settings explained, with presets and one-click undo.
+
+![What's new](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/19-notas.png)
+
+**Every version, a welcome / Cada versión, una bienvenida** — the wolf and moon intro, then what changed.
 
 ---
 
@@ -40,7 +70,7 @@ It doesn't switch your brain off: Alfa backs you up and you decide. The first ti
 
 **El todo en uno para World of Warcraft: Forever.** Guías, ruta, mapa, bolsas, talentos, enciclopedia, mazmorras, curación, pesca, comercio y tu clan, en un solo addon y con un solo estilo. Hecho por **toxic3000** para **La Jauría**.
 
-> **Novedades de la 1.1.0:** bienvenida nueva con la intro del lobo y 10 idiomas, Lya (una loba compañera que da consejos y cuenta historias), reingeniería de la pesca, paisaje y gráficos, mapa con el terreno real, puntos de vuelo, entradas y salidas, Buscar cerca, Mis planes, monturas y mascotas, y solo misiones que sí puedes hacer.
+> **Novedades de la 1.1.4:** Lya estrena look y platica mucho más (lore de Warcraft, cada zona, tu raza, clase y profesiones, consejos de eventos y farmeo, ¡y le encantan las salchichas!); un botón para buscar lo que tienes cerca junto a tu guía; los puntos de vuelo y de viaje en el mapa; y cada actualización te recibe con la intro del lobo y sus notas.
 > Si algo falla, avísanos con `/alfa reportar`, en el [Discord de La Jauría](https://discord.gg/hUNjA6BJwh), en los comentarios o en [GitHub](https://github.com/toxic3000/alfa-forever/issues).
 
 ¿Cansado de tener un montón de addons que se enciman y te llenan el mapa de marcas? Alfa los junta en uno solo, ordenado y guiado, que se adapta a tu clase. **No necesita ningún otro addon.**

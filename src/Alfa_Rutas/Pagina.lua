@@ -82,7 +82,7 @@ local function opciones()
 	out[#out + 1] = { icono = "ic-guia", titulo = L["Biblioteca de guías"], texto = L["La recomendada para ti y todas las demás."],
 		alClic = function() M.Biblioteca.Abrir() end }
 	if M.Cerca then
-		out[#out + 1] = { icono = "ic-buscar", titulo = L["Buscar cerca"], texto = L["El maestro de vuelo, la posada, reparar, el banco y más, con la flecha."],
+		out[#out + 1] = { icono = "ic-cerca", titulo = L["Buscar cerca"], texto = L["El maestro de vuelo, la posada, reparar, el banco y más, con la flecha."],
 			alClic = function(tarjeta) M.Cerca.Menu(tarjeta) end }
 	end
 	local r = M.RutaActiva() or M.RutaEditada()

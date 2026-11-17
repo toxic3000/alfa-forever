@@ -437,6 +437,8 @@ local function terminar(despues)
 	d.paso = nil
 	d.cuando = time and time() or nil
 	M.MarcarVisto()
+	-- Quien recién configura Alfa ya tiene todo lo nuevo: las notas de esta versión no le salen.
+	if M.MarcarNotasVistas then M.MarcarNotasVistas() end
 	if v then v:Cerrar() end
 	K.Aviso({
 		lobo = "aullando", tono = "acento", duracion = 8,
@@ -575,6 +577,21 @@ local function armar()
 	v.alAcomodar = acomodar
 
 	ui.portada = K.Tablero(v.Cuerpo, { margen = v.margen, accion = "accion", tituloOpciones = L["Lo nuevo en Alfa 1.0"], min = 230 })
+	-- Debajo de la tarjeta, las notas de cada versión (la más nueva primero) y
+	-- al final lo que trajo la 1.0. Solo las versiones hasta la tuya.
+	local tuya = M.VersionAlfa and M.VersionAlfa()
+	local primera = true
+	for _, n in ipairs(M.NOTAS or {}) do
+		if not tuya or M.CompararVersion(n.version, tuya) <= 0 then
+			ui.portada:AgregarBloque(K.Seccion(ui.portada.Extra, "Alfa " .. n.version .. DOT .. L[n.titulo]), { espacio = not primera and ESP.xl or nil })
+			local b = M.BloquePuntos(ui.portada.Extra)
+			b:Set(n)
+			ui.portada:AgregarBloque(b, { espacio = ESP.m })
+			primera = false
+		end
+	end
+	ui.portada:AgregarBloque(K.Seccion(ui.portada.Extra, L["Lo nuevo en Alfa 1.0"]), { espacio = ESP.xl })
+	ui.rejilla10 = ui.portada:AgregarBloque(K.Rejilla(ui.portada.Extra, { min = 230 }), { espacio = ESP.m })
 	ui.asistente = K.Asistente(v.Cuerpo, { margen = v.margen, textoTerminar = L["Listo"], alTerminar = function() terminar() end, pasos = pasos() })
 	ajustarPie(ui.asistente)
 	ui.asistente.alCambiar = function(i)
@@ -656,7 +673,8 @@ function M.AbrirVentana(vista)
 		ui.asistente:Hide()
 		ui.portada:Show()
 		ui.portada:SetAccion(accionPortada())
-		ui.portada:SetOpciones(novedades(), L["Lo nuevo en Alfa 1.0"])
+		ui.portada:SetOpciones({}, false)
+		ui.rejilla10:Llenar(novedades())
 		v:SetTitulo(format(L["Bienvenida a Alfa %s"], M.VERSION_ALFA), L["Lo nuevo de esta versión"], "ic-lobo")
 	end
 	v:Abrir()

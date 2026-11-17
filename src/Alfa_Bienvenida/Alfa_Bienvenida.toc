@@ -12,6 +12,7 @@ Textos.lua
 Bienvenida.lua
 Intro.lua
 Novedades.lua
+Notas.lua
 Pasos.lua
 Asistente.lua
 Reporte.lua

@@ -656,7 +656,7 @@ local function construir()
 	F.Cuenta = K.Texto(F.BMarcas, "insignia", "acento")
 	F.Cuenta:SetPoint("BOTTOMRIGHT", F.BMarcas, "BOTTOMRIGHT", 2, -1)
 	-- Buscar cerca (Alfa_Rutas): solo se ve si su API está; se mira otra vez al hacer clic.
-	F.BCerca = botonCab("ic-buscar", L["Buscar cerca: vuelo, posada, banco…"], function(self)
+	F.BCerca = botonCab("ic-cerca", L["Buscar cerca: vuelo, posada, banco…"], function(self)
 		if hayCerca() then K.Llamar(AlfaCerca.Menu, self) end
 	end)
 	F.BCerca:SetPoint("RIGHT", F.BMarcas, "LEFT", -ESP.xs, 0)

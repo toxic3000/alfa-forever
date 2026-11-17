@@ -100,6 +100,8 @@ def main() -> int:
             print("CORTADO %s (%s): %s" % (vista, por, texto))
         if render.CORTES:
             print("cortados:", len(render.CORTES))
+        for vista, texto in render.SALEN:
+            print("SALE %s: %s" % (vista, texto))
     errs = list(g.ERRORS.values())
     seen = {}
     for e in errs:

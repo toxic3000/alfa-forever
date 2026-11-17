@@ -1,21 +1,35 @@
 # Alfa — guía a tu manada
 
-![Alfa — guía a tu manada](curseforge/galeria/00-portada.png)
+![Alfa — guía a tu manada](curseforge/galeria/00-banner.png)
+
+<p align="center">
+<a href="https://www.curseforge.com/wow/addons/alfa-forever"><img src="https://img.shields.io/badge/CurseForge-Alfa_Forever-F16436?style=for-the-badge&logo=curseforge&logoColor=white" alt="CurseForge"></a>
+<a href="https://github.com/toxic3000/alfa-forever/releases/latest/download/Instalar-Alfa.exe"><img src="https://img.shields.io/badge/Descargar-Instalar--Alfa.exe-8BE04E?style=for-the-badge&logo=windows&logoColor=white" alt="Descargar el instalador"></a>
+<a href="https://discord.gg/hUNjA6BJwh"><img src="https://img.shields.io/badge/Discord-La_Jaur%C3%ADa-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord de La Jauría"></a>
+</p>
 
 El todo en uno de **La Jauría** para World of Warcraft: Forever. Junta en un solo addon las guías, el mapa, las bolsas, los builds, la curación, la recolección, las mazmorras, la pesca, el comercio y tu manada, con un solo estilo.
 
 Hecho por **toxic3000** y La Jauría — [Discord](https://discord.gg/hUNjA6BJwh). Software libre bajo la GPL-3.0, construido sobre [Polestar](https://github.com/fitzforge/polestar) (GPL-3.0). Los créditos completos están en `NOTICE-ALFA.txt`, en la página «Acerca de» del juego y en el `CREDITOS.md` de cada módulo.
 
-## Galería
+## Un vistazo
+
+<p align="center"><img src="curseforge/galeria/16-lya-poses.png" alt="Lya, la loba compañera de Alfa" width="900"></p>
+
+**Lya, tu loba compañera.** Negrita, con su pañoleta de Alfa: te acompaña, corre, se busca la cola, duerme y te pide salchichas. Y platica: lore de Warcraft, datos de cada zona, de tu raza y tus profesiones, y consejos de amiga.
 
 | | |
 |---|---|
-| ![Lya y sus historias](curseforge/galeria/10-lya-historias.png) | ![Reingeniería de la pesca](curseforge/galeria/11-pesca-diario.png) |
+| ![Lya platica contigo](curseforge/galeria/17-lya-globo.png) | ![Tu ruta](curseforge/galeria/03-rutas.png) |
+| **Lya platica contigo** — sin estorbar, cuando hay calma. | **Tu ruta** — la guía que te toca y entregar todo lo listo. |
+| ![Reingeniería de la pesca](curseforge/galeria/11-pesca-diario.png) | ![Enciclopedia](curseforge/galeria/05-enciclopedia.png) |
+| **Pesca** — una tecla para todo, diario, logros y guía de 1 a 300. | **Enciclopedia** — todo el juego, aunque no lo tengas, con "Guíame". |
 | ![Paisaje y gráficos](curseforge/galeria/13-vista.png) | ![Mis planes](curseforge/galeria/14-planes.png) |
-| ![Monturas y mascotas](curseforge/galeria/15-monturas.png) | ![Tu ruta](curseforge/galeria/03-rutas.png) |
-| ![Enciclopedia](curseforge/galeria/05-enciclopedia.png) | ![Bolsas y banco](curseforge/galeria/07-bolsas.png) |
+| **Paisaje** — los gráficos explicados, con preajustes. | **Mis planes** — tus propias metas, y la flecha te lleva. |
+| ![Cada versión, una bienvenida](curseforge/galeria/18-intro.png) | ![Lo nuevo, a la vista](curseforge/galeria/19-notas.png) |
+| **Cada versión, una bienvenida** — la intro del lobo y la luna. | **Lo nuevo, a la vista** — qué cambió, en una ventana. |
 
-Todas las imágenes están en [`curseforge/galeria/`](curseforge/galeria).
+Más imágenes en [`curseforge/galeria/`](curseforge/galeria).
 
 ## Instalar
 

@@ -1,5 +1,23 @@
 # Cambios de Alfa
 
+## 1.1.4 — Lya tiene mucho que contar (18/11/2026)
+
+**Español**
+- Lya estrena look: una loba negrita de perfil, más chica y con su pañoleta verde de Alfa, con 39 cuadros de animación (corre, se busca la cola, duerme, aúlla, se estira y pide salchichas).
+- Lya platica mucho más y sin estorbar: unas 200 notas de lore de Warcraft, unos 6 datos de cada zona de Kalimdor y los Reinos del Este, cosas de tu raza, tu clase y tus profesiones, y consejos de eventos, farmeo, economía, viajes y WoW Forever. Te saluda según la hora, prioriza el lugar donde estás al llegar y nunca repite lo mismo seguido. Nuevo en su menú: «Cuéntame algo» y «Háblame de mi gente». ¡Y le encantan las salchichas!
+- Junto a tu guía hay un botón con un pin de ubicación para buscar lo que tienes cerca: vuelo, posada, reparar, banco, buzón, subasta, comerciantes y entrenadores, con la flecha y la ruta.
+- Los puntos de vuelo y los de viaje (barcos, zepelines y tranvía) ya se ven en el mapa de fábrica.
+- Cada versión nueva te recibe con la intro del lobo y la luna, renovada (estrellas, halo, aullido con ondas y la marca con su brillo), y una ventana con lo nuevo que cierras para seguir jugando. Quien empieza sigue entrando por la bienvenida.
+- Textos y cajas mejor alineados: la descripción junto a las pestañas de una página ya no se sale de la ventana, y la prueba de cada versión ahora también avisa si algún texto se sale de su caja.
+
+**English**
+- Lya's new look: a black she-wolf in profile, smaller, with her green Alfa bandana and 39 animation frames (runs, chases her tail, sleeps, howls, stretches and begs for sausages).
+- Lya chats a lot more without getting in the way: about 200 Warcraft lore notes, around 6 facts for every zone in Kalimdor and the Eastern Kingdoms, things about your race, class and professions, and tips on events, farming, economy, travel and WoW Forever. New in her menu: "Tell me something" and "Tell me about my people". And she loves sausages!
+- A location-pin button next to your guide finds what's nearby: flights, inn, repairs, bank, mailbox, auction house, vendors and trainers.
+- Flight points and travel spots (boats, zeppelins, tram) now show on the map by default.
+- Every new version greets you with a renewed wolf and moon intro and a window with what's new.
+- Better aligned texts and boxes; the release test now also flags any text that spills out of its box.
+
 ## 1.1.3 — Mapa estable y 46 arreglos (17/11/2026)
 
 **Español**

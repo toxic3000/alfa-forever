@@ -77,6 +77,7 @@ def main() -> int:
         print("Falta dist/: corre tools/build.py")
         return 1
     malo = False
+    salen = 0
     salida, cortado = correr("prueba.lua")
     for l in salida:
         if l.startswith(("FALLA EN", "   ", "AVISO", "PRUEBA:", "errores al entrar", "ERROR")):
@@ -92,9 +93,15 @@ def main() -> int:
             if l.startswith("CORTADO"):
                 print(l)
                 malo = True
+            if l.startswith("SALE"):
+                print(l)
+                salen += 1
         if cortado:
             print("GALERÍA CORTADA:", escena, cortado)
             malo = True
+    if salen:
+        print(f"{salen} textos se salen de su caja (revisar: alineación)")
+        malo = True
     print("RESULTADO:", "con problemas" if malo else "todo bien")
     return 1 if malo else 0
 

@@ -53,6 +53,9 @@ function DUMP(root, extra)
             e.wrap = c._wrap and true or false
             e.setw = c._w or 0
             e.maxl = c._max or 0
+            -- la caja del texto: el marco que lo contiene (para avisar si se sale)
+            local pl, pb, pw, ph = f:GetRect()
+            e.pl, e.pb, e.pw, e.ph = pl, pb, pw, ph
           end
           local clip = clipOf(c)
           if clip then e.cl, e.cb, e.cw, e.ch = clip[1], clip[2], clip[3], clip[4] end
