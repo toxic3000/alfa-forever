@@ -2,7 +2,7 @@
 
 Lo que hay en esta carpeta:
 
-- `descripcion.md`: la descripción del proyecto (español, inglés y una línea en cada idioma). Se pega en "Description" en modo Markdown.
+- `descripcion.md`: la descripción del proyecto (inglés primero, luego español y una línea en cada idioma). Se pega en "Description" en modo Markdown.
 - `avatar.png`: el logo del proyecto, en 400x400.
 - `galeria/`: las imágenes para la pestaña "Media" (portada + 15 vistas, 1600x1000). Títulos con el inglés primero. Se arman con `tools/galeria.py` (ver abajo).
 - El zip se arma con `python -I tools/build.py` y luego `python -I tools/empaquetar.py`, y queda en `paquetes/Alfa-<versión>.zip`.
@@ -46,7 +46,7 @@ Para rehacerlas:
 ```bash
 python -I tools/build.py
 .venv/Scripts/python -I tools/banco/run.py dist Alfa,Alfa_esMX,Alfa_Idioma,Alfa_Nucleo,Alfa_Guides,Alfa_Guides_Horde,Alfa_Guides_Orc,Alfa_Codex,Alfa_ItemDB,Alfa_QuestDB,Alfa_Nav,Alfa_Nav_Kalimdor,Alfa_Inicio,Alfa_Rutas,Alfa_Enciclopedia,Alfa_Builds,Alfa_Bolsas,Alfa_Manada,Alfa_Mazmorras,Alfa_Mundo,Alfa_Comodidades,Alfa_Comercio,Alfa_Recoleccion,Alfa_Pesca,Alfa_Combate,Alfa_Curacion,Alfa_Bienvenida,Alfa_Lya,Alfa_Vista galeria.lua
-.venv/Scripts/python -I tools/banco/run.py dist <los mismos módulos y Alfa_Idioma> galeria110.lua
+.venv/Scripts/python -I tools/banco/run.py dist <los mismos módulos> galeria110.lua
 .venv/Scripts/python -I tools/galeria.py
 ```
 
