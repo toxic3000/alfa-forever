@@ -8,9 +8,13 @@ local function step(name, fn, ...)
   local ok, e = xpcall(fn, debug.traceback, ...)
   if not ok then NOTE("step " .. name, e) end
 end
+BANCO_LETRA = 0.64 -- margen: el banco mide las letras a ojo
+Alfa.Hidden = function() return false end
 FIRE_EVENT("PLAYER_LOGIN")
 FIRE_EVENT("PLAYER_ENTERING_WORLD", true, false)
 RUN_TIMERS(10)
+-- Lobato ya terminó su bienvenida: sin la puerta de la configuración.
+if AlfaBienvenida then AlfaBienvenida.Pendiente = function() return false end end
 local A = Alfa
 local before = #ERRORS
 for _, id in ipairs(rawget(_G, "BANCO_PAGINAS") or { "inicio", "rutas", "enciclopedia", "builds", "bolsas", "manada", "mazmorras", "mundo" }) do

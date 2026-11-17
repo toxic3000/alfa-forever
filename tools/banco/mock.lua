@@ -156,10 +156,12 @@ end
 function Frame:SetShown(on) if on then self:Show() else self:Hide() end end
 function Frame:IsShown() return self._shown end
 function Frame:IsVisible()
+  -- rawget: un padre "comodín" (marco de Blizzard que el banco no simula) crea
+  -- otro comodín en cada lectura y la cadena de padres no terminaría nunca.
   local f = self
   while f do
-    if not f._shown then return false end
-    f = f._parent
+    if not rawget(f, "_shown") then return false end
+    f = rawget(f, "_parent")
   end
   return true
 end
@@ -271,7 +273,8 @@ local function textW(self)
     local n = #line:gsub("[\128-\191]", "")
     if n > longest then longest = n end
   end
-  return longest * size * 0.57
+  -- ancho medio de una letra; una escena puede subirlo (BANCO_LETRA) para dejar margen
+  return longest * size * (rawget(_G, "BANCO_LETRA") or 0.57)
 end
 function Frame:GetUnboundedStringWidth() return textW(self) end
 function Frame:GetStringWidth()

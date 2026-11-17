@@ -1,8 +1,21 @@
 # Alfa — guía a tu manada
 
+![Alfa — guía a tu manada](curseforge/galeria/00-portada.png)
+
 El todo en uno de **La Jauría** para World of Warcraft: Forever. Junta en un solo addon las guías, el mapa, las bolsas, los builds, la curación, la recolección, las mazmorras, la pesca, el comercio y tu manada, con un solo estilo.
 
 Hecho por **toxic3000** y La Jauría — [Discord](https://discord.gg/hUNjA6BJwh). Software libre bajo la GPL-3.0, construido sobre [Polestar](https://github.com/fitzforge/polestar) (GPL-3.0). Los créditos completos están en `NOTICE-ALFA.txt`, en la página «Acerca de» del juego y en el `CREDITOS.md` de cada módulo.
+
+## Galería
+
+| | |
+|---|---|
+| ![Lya y sus historias](curseforge/galeria/10-lya-historias.png) | ![Reingeniería de la pesca](curseforge/galeria/11-pesca-diario.png) |
+| ![Paisaje y gráficos](curseforge/galeria/13-vista.png) | ![Mis planes](curseforge/galeria/14-planes.png) |
+| ![Monturas y mascotas](curseforge/galeria/15-monturas.png) | ![Tu ruta](curseforge/galeria/03-rutas.png) |
+| ![Enciclopedia](curseforge/galeria/05-enciclopedia.png) | ![Bolsas y banco](curseforge/galeria/07-bolsas.png) |
+
+Todas las imágenes están en [`curseforge/galeria/`](curseforge/galeria).
 
 ## Instalar
 

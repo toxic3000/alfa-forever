@@ -48,6 +48,21 @@ VISTAS = [
      "Three views, your bank from anywhere and what to sell when they fill up."),
     ("shot-g-manada.png", "La Jauría", "Tu grupo en el mapa, con permiso, y el clan a un clic.",
      "Your group on the map, with consent, and the guild one click away."),
+    # 1.1.0 (tools/banco/galeria110.lua)
+    ("shot-bv-quees.png", "Una bienvenida que te pregunta", "Elige el idioma de Alfa y decide, una por una, qué hace solo. Tú mandas.",
+     "Pick Alfa's language and decide, one by one, what it does for you. You're in charge."),
+    ("shot-lya-historias.png", "Lya y sus historias", "Tu loba compañera guarda la historia de cada misión y te cuenta datos de cada zona.",
+     "Your companion she-wolf keeps every quest's story and tells you about each zone."),
+    ("shot-pesca-diario.png", "Reingeniería de la pesca", "Una tecla para todo, diario de capturas, logros, metas y guía de 1 a 300.",
+     "One key for everything, a catch journal, achievements, goals and a 1–300 guide."),
+    ("shot-pesca-guia.png", "Guía de pesca", "Dónde pescar según tu habilidad, instructores, vendedores y el concurso.",
+     "Where to fish for your skill, trainers, vendors and the contest."),
+    ("shot-vista.png", "Paisaje y gráficos", "Los ajustes del juego en palabras simples, con preajustes y deshacer de un clic.",
+     "The game's graphics settings in plain words, with presets and one-click undo."),
+    ("shot-planes.png", "Mis planes", "Arma tus propias metas: objetos, oro, profesiones, lugares, misiones o niveles.",
+     "Build your own goals: items, gold, professions, places, quests or levels."),
+    ("shot-monturas.png", "Monturas y mascotas", "Cómo conseguir cada una, si ya la tienes y \"Guíame\".",
+     "How to get each one, whether you already have it, and \"Guide me\"."),
 ]
 
 
@@ -119,10 +134,10 @@ def portada(vistas):
     im.paste(lg, (90, 150), lg)
     d.text((90, 330), "Alfa", font=fuente("Inter-SemiBold.ttf", 110), fill=TEXTO)
     d.text((94, 470), "Guía a tu manada", font=fuente("Inter-Medium.ttf", 40), fill=ACENTO)
-    d.multiline_text((94, 540), "El todo en uno para WoW Forever:\nguías, mapa, bolsas, talentos,\nenciclopedia, mazmorras y tu clan.",
+    d.multiline_text((94, 540), "El todo en uno para WoW Forever:\nguías, mapa, pesca, Lya, talentos,\nenciclopedia, mazmorras y tu clan.",
                      font=fuente("Inter-Regular.ttf", 28), fill=TENUE, spacing=10)
     d.text((94, 720), "Hecho por toxic3000", font=fuente("Inter-SemiBold.ttf", 30), fill=TEXTO)
-    d.text((94, 762), "para La Jauría · 9 idiomas · GPL-3.0", font=fuente("Inter-Regular.ttf", 24), fill=TENUE)
+    d.text((94, 762), "para La Jauría · 10 idiomas · GPL-3.0", font=fuente("Inter-Regular.ttf", 24), fill=TENUE)
     atras, frente = vistas
     for v, (x, y, w) in ((atras, (820, 90, 700)), (frente, (700, 380, 760))):
         v = v.convert("RGB").copy()
@@ -144,7 +159,10 @@ def main() -> int:
         viejo.unlink()
     portada([Image.open(BANCO / "shot-g-rutas.png"), Image.open(BANCO / "shot-g-inicio.png")]).save(SALIDA / "00-portada.png")
     for i, (archivo, titulo, es, en) in enumerate(VISTAS, 1):
-        nombre = archivo.replace("shot-", "").replace("g-", "").replace("v-", "")
+        nombre = archivo[len("shot-"):]
+        for prefijo in ("g-", "v-"):
+            if nombre.startswith(prefijo):
+                nombre = nombre[len(prefijo):]
         enmarcar(Image.open(BANCO / archivo), titulo, es, en).save(SALIDA / f"{i:02d}-{nombre}")
     # capturas del juego, si las hay: curseforge/capturas/<nombre>.png|jpg -> galeria/juego-<nombre>.png
     if CAPTURAS.is_dir():

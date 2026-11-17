@@ -25,6 +25,7 @@ RAIZ = pathlib.Path(__file__).resolve().parent.parent
 LOCAL = RAIZ / "tools" / "anunciar_local.json"
 REPO = "https://github.com/toxic3000/alfa-forever"
 INSTALADOR = f"{REPO}/releases/latest/download/Instalar-Alfa.exe"
+DONAR = "https://www.paypal.com/donate/?hosted_button_id=7J5BYWH9DVT9C"
 LOGO = "https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/avatar.png"
 VERDE = 0x8BE04E
 API = "https://discord.com/api/v10"
@@ -57,7 +58,7 @@ def _instalar():
 def _falla(ayuda):
     """Dónde reportar: el canal "ayuda" de anunciar_local.json (mencionar un canal no notifica a nadie)."""
     donde = f"<#{ayuda}>" if ayuda else "el Discord de La Jauría"
-    return {"name": "🐛 ¿Algo falla?", "value": f"Escríbenos en {donde}. ¡Gracias!", "inline": True}
+    return {"name": "🐛 ¿Algo falla?", "value": f"Escríbenos en {donde} o usa `/alfa reportar` en el juego. ¡Gracias!", "inline": True}
 
 
 def tarjeta(tipo: str, version: str, ayuda=None) -> dict:
@@ -78,22 +79,40 @@ def tarjeta(tipo: str, version: str, ayuda=None) -> dict:
                         "inline": False}],
         }
     else:
-        lineas = _cambios(version)
-        cuerpo = ""
-        for l in lineas:
-            if len(cuerpo) + len(l) + 1 > 1500:
-                cuerpo += "\n…y más en las notas completas."
-                break
-            cuerpo += ("\n" if cuerpo else "") + l
+        resumen = RAIZ / "docs" / "anuncios" / f"{version}.md"  # el resumen hecho a mano, si lo hay
+        if resumen.exists():
+            cuerpo = resumen.read_text(encoding="utf-8").strip()
+        else:
+            cuerpo = ""
+            for l in _cambios(version):
+                if len(cuerpo) + len(l) + 1 > 1500:
+                    cuerpo += "\n…y más en las notas completas."
+                    break
+                cuerpo += ("\n" if cuerpo else "") + l
         embed = {
             "title": f"🔄 Salió Alfa {version}",
             "url": f"{REPO}/releases/tag/v{version}",
             "description": cuerpo,
-            "fields": [_instalar(), _falla(ayuda)],
+            "fields": [_instalar(), _falla(ayuda),
+                       {"name": "💛 Apoya a Alfa",
+                        "value": "Alfa es gratis y lo seguirá siendo. Donar es opcional: es una forma de "
+                                 "agradecer el trabajo de toxic3000 y no desbloquea nada.", "inline": False}],
         }
     embed.update(color=VERDE, thumbnail={"url": LOGO},
                  timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
     return embed
+
+
+def botones(version: str) -> list:
+    """Botones de enlace (no necesitan que el bot escuche clics). Donar va solo aquí, en Discord,
+    nunca dentro del juego (regla 5 de Blizzard, docs/REGLAS-BLIZZARD.md)."""
+    def enlace(texto, url, emoji):
+        return {"type": 2, "style": 5, "label": texto, "url": url, "emoji": {"name": emoji}}
+    return [{"type": 1, "components": [
+        enlace("Instalar Alfa", INSTALADOR, "📥"),
+        enlace("Notas completas", f"{REPO}/releases/tag/v{version}", "📜"),
+        enlace("Donar con PayPal", DONAR, "💛"),
+    ]}]
 
 
 def main(argv) -> int:
@@ -117,7 +136,7 @@ def main(argv) -> int:
         sys.stdout.reconfigure(encoding="utf-8")
         print(json.dumps(embed, ensure_ascii=False, indent=2))
         return 0
-    cuerpo = {"embeds": [embed], "allowed_mentions": {"parse": []}}
+    cuerpo = {"embeds": [embed], "allowed_mentions": {"parse": []}, "components": botones(version)}
     if "--editar" in argv:  # corrige un aviso ya publicado en vez de mandar otro
         mid = argv[argv.index("--editar") + 1]
         msg = _api(token, "PATCH", f"/channels/{canal}/messages/{mid}", cuerpo)

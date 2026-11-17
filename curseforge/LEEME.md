@@ -4,7 +4,7 @@ Lo que hay en esta carpeta:
 
 - `descripcion.md`: la descripción del proyecto (español, inglés y una línea en cada idioma). Se pega en "Description" en modo Markdown.
 - `avatar.png`: el logo del proyecto, en 400x400.
-- `galeria/`: las imágenes para la pestaña "Images" (portada + 8 vistas, 1600x1000). Se arman con `tools/galeria.py` (ver abajo).
+- `galeria/`: las imágenes para la pestaña "Media" (portada + 15 vistas, 1600x1000). Títulos con el inglés primero. Se arman con `tools/galeria.py` (ver abajo).
 - El zip se arma con `python -I tools/build.py` y luego `python -I tools/empaquetar.py`, y queda en `paquetes/Alfa-<versión>.zip`.
 
 ## Datos para crear el proyecto
@@ -37,7 +37,7 @@ Para subir una versión nueva: en el panel de autores, proyecto Alfa Forever, pe
 
 ## Imágenes de la galería
 
-`curseforge/galeria/` tiene la portada (`00-portada.png`, la que conviene marcar como destacada) y 8 vistas de la 1.0: Hoy, el asistente, la ruta, la biblioteca de guías, la enciclopedia, mazmorras, bolsas y La Jauría. En cada imagen, el título va en "Title" y la línea de abajo en "Description".
+`curseforge/galeria/` tiene la portada (`00-portada.png`, la que conviene marcar como destacada), 8 vistas de lo básico (01–08) y 7 de la 1.1.0 (09–15: bienvenida, Lya, pesca, guía de pesca, paisaje, Mis planes y monturas). Las de lo básico son: Hoy, el asistente, la ruta, la biblioteca de guías, la enciclopedia, mazmorras, bolsas y La Jauría. En cada imagen, el título va en "Title" y la línea de abajo en "Description".
 
 Salen del código real de Alfa dibujado en el banco de pruebas (`tools/banco/`), con un personaje de ejemplo ("Lobato") y sin ningún dato tuyo. Lo único que el banco no tiene es el arte del juego (íconos de objetos y retratos de mazmorras), que se ve como una ficha con un rombo.
 
@@ -45,8 +45,11 @@ Para rehacerlas:
 
 ```bash
 python -I tools/build.py
-.venv/Scripts/python -I tools/banco/run.py dist Alfa,Alfa_esMX,Alfa_Nucleo,Alfa_Guides,Alfa_Guides_Horde,Alfa_Guides_Orc,Alfa_Codex,Alfa_ItemDB,Alfa_QuestDB,Alfa_Nav,Alfa_Nav_Kalimdor,Alfa_Inicio,Alfa_Rutas,Alfa_Enciclopedia,Alfa_Builds,Alfa_Bolsas,Alfa_Manada,Alfa_Mazmorras,Alfa_Mundo,Alfa_Comodidades,Alfa_Comercio,Alfa_Recoleccion,Alfa_Pesca,Alfa_Combate,Alfa_Curacion,Alfa_Bienvenida galeria.lua
+.venv/Scripts/python -I tools/banco/run.py dist Alfa,Alfa_esMX,Alfa_Idioma,Alfa_Nucleo,Alfa_Guides,Alfa_Guides_Horde,Alfa_Guides_Orc,Alfa_Codex,Alfa_ItemDB,Alfa_QuestDB,Alfa_Nav,Alfa_Nav_Kalimdor,Alfa_Inicio,Alfa_Rutas,Alfa_Enciclopedia,Alfa_Builds,Alfa_Bolsas,Alfa_Manada,Alfa_Mazmorras,Alfa_Mundo,Alfa_Comodidades,Alfa_Comercio,Alfa_Recoleccion,Alfa_Pesca,Alfa_Combate,Alfa_Curacion,Alfa_Bienvenida,Alfa_Lya,Alfa_Vista galeria.lua
+.venv/Scripts/python -I tools/banco/run.py dist <los mismos módulos y Alfa_Idioma> galeria110.lua
 .venv/Scripts/python -I tools/galeria.py
 ```
 
 Capturas del juego: ponlas en `curseforge/capturas/` con un nombre como `01-mapa_del_mundo.jpg` y `tools/galeria.py` las enmarca igual (`galeria/juego-*.png`). Antes de subirlas, revisa que no se vean el nombre de tu personaje, tu reino ni tu chat si no quieres que aparezcan.
+
+CurseForge pide la descripción **con el inglés antes que cualquier otro idioma** (17/11/2026, aviso del moderador): `descripcion.md` va en ese orden.
