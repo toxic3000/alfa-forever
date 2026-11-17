@@ -1,5 +1,5 @@
 -- La ventana principal de Alfa (docs/INTERFAZ.md). Basada en la ventana de
--- opciones de Polestar (GPL-3.0, The Polestar authors); reescrita por Toxic /
+-- opciones de Polestar (GPL-3.0, The Polestar authors); reescrita por toxic3000 /
 -- La Jauria. Arriba, en el armazon W.Shell({ top = true }): el lobo, ALFA, tu
 -- personaje con su barra de experiencia y el buscador de ajustes; debajo, las
 -- seis secciones (Hoy, Aventura, Personaje, Mundo, Oficios, Manada) y Ajustes;
@@ -773,7 +773,7 @@ local function buildAbout(view)
 	local paras = {
 		L["Alfa is La Jauría's all-in-one for WoW Forever: guides, map, bags, builds, fishing, trading and your pack, in one place and with one look."],
 		hex .. L["It is built on Polestar, the free and open-source leveling guide by The Polestar authors. Alfa is free and open source too, under the GPL-3.0."] .. "|r",
-		L["Made by Toxic and La Jauría. Come play with the pack: our Discord is open to everyone."],
+		L["Made by toxic3000 and La Jauría. Come play with the pack: our Discord is open to everyone."],
 	}
 	if ns.stage then
 		paras[#paras + 1] = L["It is young and still in beta, so expect the odd wrong step, waypoint or quest. Every report and every fix tunes it, and together we'll get it where it should be."]
@@ -796,7 +796,7 @@ local function buildAbout(view)
 	view.Welcome = welcome
 	local whatsNew = W.Button(view, L["What's new"], function() ns.Fire("SHOW_WHATSNEW") end)
 	view.WhatsNew = whatsNew
-	local credH, credText = block(L["Credits"], "Alfa: Toxic - La Jauría. Basado en Polestar de The Polestar authors (https://github.com/fitzforge/polestar), GPL-3.0, con la navegación de Shortest Path Forever de Cillian Berragan (GPL-3.0-or-later)." .. "\n"
+	local credH, credText = block(L["Credits"], "Alfa: toxic3000 - La Jauría. Basado en Polestar de The Polestar authors (https://github.com/fitzforge/polestar), GPL-3.0, con la navegación de Shortest Path Forever de Cillian Berragan (GPL-3.0-or-later)." .. "\n"
 		.. "Recolección usa la base de nodos de GatherLite de Wuild (MIT). Mundo usa la lógica y las máscaras de territorio de OpenMap de OpenMap contributors (MIT); el arte del mapa es de Blizzard." .. "\n"
 		.. L["Inter typeface by The Inter Project Authors, SIL Open Font License 1.1."] .. "\n"
 		.. L["Quest and map data includes pfQuest by shagu (MIT License)."] .. "\n"

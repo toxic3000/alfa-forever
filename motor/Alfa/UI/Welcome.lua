@@ -9,7 +9,7 @@
 -- tarjetas de esquinas cortadas en dos filas y un pie:
 --
 --   [lobo] A L F A  BETA                                         ✕
---          ¡Hola, Toxic! Te damos la bienvenida a Alfa...
+--          ¡Hola, Lobato! Te damos la bienvenida a Alfa...
 --   ┌ Que es Alfa ───────────┐  ┌ Tu ventana de Alfa ─────┐
 --   │ todo lo que usas...    │  │ /alfa o el lobo del     │
 --   └────────────────────────┘  └ minimapa; /alfa guia ───┘

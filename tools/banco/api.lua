@@ -16,7 +16,7 @@ date = os.date
 function GetLocale() return "esMX" end
 function GetRealmName() return "Forever" end
 function GetNormalizedRealmName() return "Forever" end
-function UnitName(u) if u == "player" then return "Toxic", nil end return nil end
+function UnitName(u) if u == "player" then return "Lobato", nil end return nil end
 function UnitLevel(u) return 23 end
 function UnitEffectiveLevel(u) return 23 end
 function UnitFactionGroup() return "Horde", "Horda" end
@@ -170,10 +170,11 @@ C_AddOns = {
   EnableAddOn = function() end, DisableAddOn = function() end,
   DoesAddOnExist = function(n) return ADDON_META[n] ~= nil end,
 }
+BANCO_ZONAS = {[1411] = "Durotar", [1412] = "Mulgore", [1413] = "Los Baldíos", [1414] = "Kalimdor", [1415] = "Reinos del Este", [1416] = "Montañas de Alterac", [1417] = "Tierras Altas de Arathi", [1418] = "Tierras Inhóspitas", [1419] = "Las Tierras Devastadas", [1420] = "Claros de Tirisfal", [1421] = "Bosque de Argénteos", [1422] = "Tierras de la Peste del Oeste", [1423] = "Tierras de la Peste del Este", [1424] = "Laderas de Trabalomas", [1425] = "Tierras del Interior", [1426] = "Dun Morogh", [1427] = "La Garganta de Fuego", [1428] = "Las Estepas Ardientes", [1429] = "Bosque de Elwynn", [1430] = "Paso de la Muerte", [1431] = "Bosque del Ocaso", [1432] = "Loch Modan", [1433] = "Montañas Crestagrana", [1434] = "Vega de Tuercespina", [1435] = "Pantano de las Penas", [1436] = "Páramos de Poniente", [1437] = "Los Humedales", [1438] = "Teldrassil", [1439] = "Costa Oscura", [1440] = "Vallefresno", [1441] = "Las Mil Agujas", [1442] = "Sierra Espolón", [1443] = "Desolace", [1444] = "Feralas", [1445] = "Marjal Revolcafango", [1446] = "Tanaris", [1447] = "Azshara", [1448] = "Frondavil", [1449] = "Cráter de Un'Goro", [1450] = "Claro de la Luna", [1451] = "Silithus", [1452] = "Cuna del Invierno", [1453] = "Ventormenta", [1454] = "Orgrimmar", [1455] = "Forjaz", [1456] = "Cima del Trueno", [1457] = "Darnassus", [1458] = "Entrañas"}
 C_Map = {
   GetBestMapForUnit = function() return 1411 end,
   GetPlayerMapPosition = function() return { x = 0.5, y = 0.5, GetXY = function() return 0.5, 0.5 end } end,
-  GetMapInfo = function(id) return { mapID = id, name = "Zona " .. tostring(id), mapType = 3, parentMapID = 1414 } end,
+  GetMapInfo = function(id) return { mapID = id, name = BANCO_ZONAS[id] or ("Zona " .. tostring(id)), mapType = 3, parentMapID = 1414 } end,
   GetMapArtLayers = function() return nil end,
   GetMapArtLayerTextures = function() return nil end,
   GetMapChildrenInfo = function() return {} end,

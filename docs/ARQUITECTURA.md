@@ -1,6 +1,6 @@
 # Arquitectura de Alfa
 
-Alfa es un solo addon para WoW Forever (cliente 1.60.1, `## Interface: 16001`) hecho por Toxic / La Jauría. Junta en un solo lugar guías, mapa, bolsas, builds, curación, recolección, mazmorras, pesca, comercio y comodidades, sobre el motor de Polestar. Es software libre bajo la GPL-3.0.
+Alfa es un solo addon para WoW Forever (cliente 1.60.1, `## Interface: 16001`) hecho por toxic3000 / La Jauría. Junta en un solo lugar guías, mapa, bolsas, builds, curación, recolección, mazmorras, pesca, comercio y comodidades, sobre el motor de Polestar. Es software libre bajo la GPL-3.0.
 
 ## Cómo se construye
 
@@ -48,7 +48,7 @@ Cada módulo es una carpeta `src/Alfa_<Nombre>/` con su `.toc`, y es un addon ap
 ## Interface: 16001
 ## Title: |cff8be04eAlfa|r - <Nombre>
 ## Notes: <una línea en español>
-## Author: Toxic - La Jauria
+## Author: toxic3000 - La Jauria
 ## Version: dev
 ## X-License: GPL-3.0-only
 ## Dependencies: Alfa, Alfa_Nucleo

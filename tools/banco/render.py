@@ -58,6 +58,61 @@ def plain(text):
     return re.sub(r"\|c[0-9a-fA-F]{8}|\|r|\|T[^|]*\|t", "", text)
 
 
+TEXTURAS = {}
+USADAS = {}
+
+
+def textura(ruta: str, dist: pathlib.Path):
+    """La imagen real de una textura propia de un addon (archivo .tga o .png) o None."""
+    if ruta in TEXTURAS:
+        return TEXTURAS[ruta]
+    img = None
+    partes = ruta.replace("\\", "/").split("/")
+    if len(partes) > 3 and partes[0].lower() == "interface" and partes[1].lower() == "addons":
+        base = dist.joinpath(*partes[2:])
+        for cand in (base, base.with_name(base.name + ".tga"), base.with_name(base.name + ".png")):
+            if cand.is_file() and cand.suffix.lower() in (".tga", ".png"):
+                try:
+                    img = Image.open(cand).convert("RGBA")
+                except OSError:
+                    img = None
+                break
+    TEXTURAS[ruta] = img
+    return img
+
+
+def pegar(base, img, caja, color, tc):
+    """Pega la textura recortada por sus coordenadas y teñida por su color de vértice."""
+    x0, y0, x1, y1 = caja
+    w, h = int(round(x1 - x0)), int(round(y1 - y0))
+    if w <= 0 or h <= 0:
+        return
+    W, H = img.size
+    if tc and len(tc) >= 4:
+        if len(tc) == 8:  # ULx,ULy,LLx,LLy,URx,URy,LRx,LRy
+            l, t, r, b = tc[0], tc[1], tc[6], tc[7]
+        else:
+            l, r, t, b = tc[0], tc[1], tc[2], tc[3]
+        flipx, flipy = l > r, t > b
+        cl, cr = sorted((l, r))
+        ct, cb = sorted((t, b))
+        img = img.crop((int(cl * W), int(ct * H), max(int(cl * W) + 1, int(cr * W)), max(int(ct * H) + 1, int(cb * H))))
+        if flipx:
+            img = img.transpose(Image.FLIP_LEFT_RIGHT)
+        if flipy:
+            img = img.transpose(Image.FLIP_TOP_BOTTOM)
+    img = img.resize((w, h), Image.LANCZOS)
+    r, g, b, a = img.split()
+    cr, cg, cb, ca = color
+    r = r.point(lambda v: v * cr // 255)
+    g = g.point(lambda v: v * cg // 255)
+    b = b.point(lambda v: v * cb // 255)
+    a = a.point(lambda v: v * ca // 255)
+    img = Image.merge("RGBA", (r, g, b, a))
+    # pegar con su alfa como máscara mezcla sobre el fondo (ImageDraw en RGB también)
+    base.paste(img.convert("RGB"), (int(round(x0)), int(round(y0))), a)
+
+
 def wrap(draw, text, fnt, width):
     lines = []
     for para in text.split("\n"):
@@ -79,6 +134,7 @@ def render(entries, rect, out_path, fonts_dir, scale=1.25):
     W, H = int(w0 * scale), int(h0 * scale)
     base = Image.new("RGB", (W, H), (34, 40, 48))
     d = ImageDraw.Draw(base, "RGBA")
+    dist = pathlib.Path(fonts_dir).parents[2]
     entries = sorted(entries, key=lambda e: (e["strata"], e["level"], e["layer"], e["sub"], e["seq"]))
 
     def box(e):
@@ -86,7 +142,16 @@ def render(entries, rect, out_path, fonts_dir, scale=1.25):
         y0 = (b0 + h0 - (e["b"] + e["h"])) * scale
         return x0, y0, x0 + e["w"] * scale, y0 + e["h"] * scale
 
+    def restaurar():
+        while recortes:
+            caja, viejo, (cx0, cy0, cx1, cy1) = recortes.pop()
+            mascara = Image.new("L", viejo.size, 255)
+            ImageDraw.Draw(mascara).rectangle([cx0 - caja[0], cy0 - caja[1], cx1 - caja[0] - 1, cy1 - caja[1] - 1], fill=0)
+            base.paste(viejo, caja[:2], mascara)
+
+    recortes = []
     for e in entries:
+        restaurar()
         a = e.get("a", 1) * e.get("alpha", 1)
         if a <= 0.01:
             continue
@@ -98,6 +163,12 @@ def render(entries, rect, out_path, fonts_dir, scale=1.25):
             cx1, cy1 = cx0 + e["cw"] * scale, cy0 + e["ch"] * scale
             if y1 < cy0 or y0 > cy1 or x1 < cx0 or x0 > cx1:
                 continue
+            # lo que se sale del area con desplazamiento no se ve: se dibuja y luego
+            # se devuelve el fondo que habia fuera del recorte
+            if y0 < cy0 or y1 > cy1 or x0 < cx0 or x1 > cx1:
+                caja = (max(0, int(x0) - 6), max(0, int(y0) - 6), min(W, int(x1) + 6), min(H, int(y1) + 6))
+                if caja[2] > caja[0] and caja[3] > caja[1]:
+                    recortes.append((caja, base.crop(caja), (cx0, cy0, cx1, cy1)))
         if e["kind"] == "Texture" and e.get("g1") is not None and (e.get("tex") or "").endswith("white"):
             g1, g2 = e["g1"], e["g2"]
             g1 = list(g1.values()) if hasattr(g1, "values") else list(g1)
@@ -120,7 +191,14 @@ def render(entries, rect, out_path, fonts_dir, scale=1.25):
             if e["w"] <= 0 or e["h"] <= 0:
                 continue
             tex = (e.get("tex") or "").replace("\\", "/").split("/")[-1]
-            if tex in ("white", "color") or tex.startswith("band"):
+            real = None if (tex in ("white", "color", "cut", "circle") or tex.startswith("cut-line")) else textura(e.get("tex") or "", dist)
+            if real is not None:
+                USADAS[e.get('tex')] = USADAS.get(e.get('tex'), 0) + 1
+                tc = e.get("tc")
+                tc = list(tc.values()) if hasattr(tc, "values") else (list(tc) if tc else None)
+                pegar(base, real, (x0, y0, x1, y1), col, tc)
+                d = ImageDraw.Draw(base, "RGBA")
+            elif tex in ("white", "color") or tex.startswith("band"):
                 d.rectangle([x0, y0, x1 - 1, y1 - 1], fill=col)
             elif tex == "cut":
                 if e.get("flip"):
@@ -139,9 +217,13 @@ def render(entries, rect, out_path, fonts_dir, scale=1.25):
                     d.ellipse([x0, y0, x1, y1], fill=col)
             elif tex in ("shadow", "glow", "emblem-hot", "veil-soft", "watermark", "wordmark", "wordmark-small", "band-stars"):
                 pass
-            elif tex.isdigit():
-                d.rectangle([x0, y0, x1 - 1, y1 - 1], fill=(90, 80, 60, 255))
-                d.rectangle([x0 + 2, y0 + 2, x1 - 3, y1 - 3], outline=(160, 140, 90, 255))
+            elif tex.isdigit() or ("/" in (e.get("tex") or "").replace("\\", "/") and "addons/" not in (e.get("tex") or "").replace("\\", "/").lower()):
+                # arte o icono del juego (el simulador no lo tiene): una ficha sobria
+                d.rectangle([x0, y0, x1 - 1, y1 - 1], fill=(30, 38, 32, 255))
+                d.rectangle([x0, y0, x1 - 1, y1 - 1], outline=(70, 96, 64, 255), width=max(1, int(scale)))
+                r = min(x1 - x0, y1 - y0) * 0.22
+                cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+                d.polygon([(cx, cy - r), (cx + r, cy), (cx, cy + r), (cx - r, cy)], outline=(120, 170, 90, 255), width=max(1, int(scale)))
             else:
                 g = GLYPH.get(tex)
                 size = (y1 - y0) * 0.95
@@ -197,5 +279,6 @@ def render(entries, rect, out_path, fonts_dir, scale=1.25):
                     d.text((x, ty + lh / 2), seg, font=fnt, fill=c, anchor="lm")
                     x += d.textlength(seg, font=fnt)
                 ty += lh
+    restaurar()
     base.save(out_path)
     return out_path

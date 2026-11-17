@@ -1,0 +1,160 @@
+"""Arma las imágenes de la galería de CurseForge (curseforge/galeria/).
+
+Uso:
+  python -I tools/build.py
+  .venv/Scripts/python -I tools/banco/run.py dist <módulos> galeria.lua   (dibuja tools/banco/shot-*.png)
+  .venv/Scripts/python -I tools/galeria.py
+
+Las vistas salen del banco (tools/banco/): el código real de Alfa dibujado
+sobre el cliente simulado, con las texturas propias de Alfa. Lo que es arte
+del juego (íconos de objetos, retratos de mazmorras) se ve como una ficha
+sobria, porque el simulador no lo tiene. En cuanto haya capturas del juego,
+van en curseforge/capturas/ y este script las enmarca igual (ver CAPTURAS).
+"""
+import pathlib
+import sys
+
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
+
+RAIZ = pathlib.Path(__file__).resolve().parent.parent
+BANCO = RAIZ / "tools" / "banco"
+FUENTES = RAIZ / "dist" / "Alfa" / "Media" / "Fonts"
+MARCA = RAIZ / "marca" / "Alfa" / "Media" / "UI"
+SALIDA = RAIZ / "curseforge" / "galeria"
+CAPTURAS = RAIZ / "curseforge" / "capturas"
+
+ANCHO, ALTO = 1600, 1000
+FONDO = (16, 20, 18)
+PANEL = (24, 32, 27)
+ACENTO = (139, 224, 78)
+TEXTO = (232, 238, 230)
+TENUE = (150, 165, 150)
+
+# (archivo del banco, título, línea en español, línea en inglés)
+VISTAS = [
+    ("shot-g-inicio.png", "¿Qué hacemos hoy?", "Tu siguiente paso, tus misiones listas y tu clase en una sola página.",
+     "Your next step, ready quests and your class on one page."),
+    ("shot-v-asistente.png", "Dos clics y Alfa te lleva", "Elige subir de nivel, profesiones, oro o mazmorras y Alfa arma el plan.",
+     "Pick leveling, professions, gold or dungeons and Alfa builds the plan."),
+    ("shot-g-rutas.png", "Tu ruta", "La guía que te toca, tu plan de misiones y entregar todas las que tienes listas.",
+     "Your guide, your quest plan and a route to turn in every ready quest."),
+    ("shot-v-biblioteca.png", "Biblioteca de guías", "La recomendada para tu nivel y zona, y todas las demás.",
+     "The guide that fits your level and zone, and all the others."),
+    ("shot-v-enciclopedia.png", "Enciclopedia", "Todos los objetos, PNJ, misiones, zonas y raros, aunque no los tengas.",
+     "Every item, NPC, quest, zone and rare, even if you don't own it."),
+    ("shot-g-mazmorras.png", "Mazmorras", "La que te toca, qué misiones llevar y cómo llegar a la entrada.",
+     "The dungeon for your level, which quests to bring and how to get there."),
+    ("shot-g-bolsas.png", "Bolsas y banco", "Tres vistas, banco desde cualquier lugar y qué vender cuando se llenan.",
+     "Three views, your bank from anywhere and what to sell when they fill up."),
+    ("shot-g-manada.png", "La Jauría", "Tu grupo en el mapa, con permiso, y el clan a un clic.",
+     "Your group on the map, with consent, and the guild one click away."),
+]
+
+
+def fuente(nombre, tam):
+    return ImageFont.truetype(str(FUENTES / nombre), tam)
+
+
+def fondo_marca():
+    """Fondo oscuro con un brillo verde suave arriba a la izquierda."""
+    im = Image.new("RGB", (ANCHO, ALTO), FONDO)
+    brillo = Image.new("L", (ANCHO, ALTO), 0)
+    d = ImageDraw.Draw(brillo)
+    d.ellipse([-500, -600, 900, 500], fill=70)
+    d.ellipse([1100, 600, 2200, 1500], fill=35)
+    brillo = brillo.filter(ImageFilter.GaussianBlur(220))
+    verde = Image.new("RGB", (ANCHO, ALTO), (40, 70, 30))
+    im.paste(verde, (0, 0), brillo)
+    return im
+
+
+def logo(tam):
+    p = MARCA / "logo.tga"
+    if not p.exists():
+        p = RAIZ / "curseforge" / "avatar.png"
+    im = Image.open(p).convert("RGBA")
+    im.thumbnail((tam, tam), Image.LANCZOS)
+    return im
+
+
+def sombra(im, radio=24, opacidad=170):
+    w, h = im.size
+    s = Image.new("RGBA", (w + radio * 4, h + radio * 4), (0, 0, 0, 0))
+    ImageDraw.Draw(s).rectangle([radio * 2, radio * 2 + 10, radio * 2 + w, radio * 2 + h + 10], fill=(0, 0, 0, opacidad))
+    return s.filter(ImageFilter.GaussianBlur(radio))
+
+
+def cabecera(im, titulo, es, en):
+    d = ImageDraw.Draw(im)
+    lg = logo(64)
+    im.paste(lg, (56, 40), lg)
+    d.text((140, 44), titulo, font=fuente("Inter-SemiBold.ttf", 40), fill=TEXTO)
+    d.text((140, 96), es, font=fuente("Inter-Regular.ttf", 22), fill=TENUE)
+    d.rectangle([56, 128 + 14, 56 + 44, 128 + 17], fill=ACENTO)
+    d.text((ANCHO - 56, 52), "ALFA", font=fuente("Inter-SemiBold.ttf", 22), fill=ACENTO, anchor="ra")
+    d.text((ANCHO - 56, 84), "toxic3000 · La Jauría", font=fuente("Inter-Regular.ttf", 18), fill=TENUE, anchor="ra")
+    d.text((ANCHO // 2, ALTO - 34), en, font=fuente("Inter-Regular.ttf", 18), fill=TENUE, anchor="mm")
+
+
+def enmarcar(vista, titulo, es, en):
+    im = fondo_marca()
+    cabecera(im, titulo, es, en)
+    caja_w, caja_h = ANCHO - 160, ALTO - 170 - 80
+    v = vista.convert("RGB")
+    v.thumbnail((caja_w, caja_h), Image.LANCZOS)
+    x = (ANCHO - v.width) // 2
+    y = 170 + (caja_h - v.height) // 2
+    s = sombra(v)
+    im.paste(s, (x - 48, y - 48), s)
+    im.paste(v, (x, y))
+    ImageDraw.Draw(im).rectangle([x - 1, y - 1, x + v.width, y + v.height], outline=(52, 70, 56))
+    return im
+
+
+def portada(vistas):
+    """La imagen principal: marca a la izquierda, dos vistas encimadas a la derecha."""
+    im = fondo_marca()
+    d = ImageDraw.Draw(im)
+    lg = logo(150)
+    im.paste(lg, (90, 150), lg)
+    d.text((90, 330), "Alfa", font=fuente("Inter-SemiBold.ttf", 110), fill=TEXTO)
+    d.text((94, 470), "Guía a tu manada", font=fuente("Inter-Medium.ttf", 40), fill=ACENTO)
+    d.multiline_text((94, 540), "El todo en uno para WoW Forever:\nguías, mapa, bolsas, talentos,\nenciclopedia, mazmorras y tu clan.",
+                     font=fuente("Inter-Regular.ttf", 28), fill=TENUE, spacing=10)
+    d.text((94, 720), "Hecho por toxic3000", font=fuente("Inter-SemiBold.ttf", 30), fill=TEXTO)
+    d.text((94, 762), "para La Jauría · 9 idiomas · GPL-3.0", font=fuente("Inter-Regular.ttf", 24), fill=TENUE)
+    atras, frente = vistas
+    for v, (x, y, w) in ((atras, (820, 90, 700)), (frente, (700, 380, 760))):
+        v = v.convert("RGB").copy()
+        v.thumbnail((w, 1000), Image.LANCZOS)
+        s = sombra(v, 30, 200)
+        im.paste(s, (x - 60, y - 60), s)
+        im.paste(v, (x, y))
+        ImageDraw.Draw(im).rectangle([x - 1, y - 1, x + v.width, y + v.height], outline=(52, 70, 56))
+    return im
+
+
+def main() -> int:
+    SALIDA.mkdir(parents=True, exist_ok=True)
+    faltan = [a for a, *_ in VISTAS if not (BANCO / a).exists()]
+    if faltan:
+        print("Faltan vistas del banco (corre tools/banco/run.py ... galeria.lua):", ", ".join(faltan))
+        return 1
+    for viejo in SALIDA.glob("*.png"):
+        viejo.unlink()
+    portada([Image.open(BANCO / "shot-g-rutas.png"), Image.open(BANCO / "shot-g-inicio.png")]).save(SALIDA / "00-portada.png")
+    for i, (archivo, titulo, es, en) in enumerate(VISTAS, 1):
+        nombre = archivo.replace("shot-", "").replace("g-", "").replace("v-", "")
+        enmarcar(Image.open(BANCO / archivo), titulo, es, en).save(SALIDA / f"{i:02d}-{nombre}")
+    # capturas del juego, si las hay: curseforge/capturas/<nombre>.png|jpg -> galeria/juego-<nombre>.png
+    if CAPTURAS.is_dir():
+        for c in sorted(CAPTURAS.iterdir()):
+            if c.suffix.lower() in (".png", ".jpg", ".jpeg"):
+                titulo = c.stem.split("-", 1)[-1].replace("_", " ").capitalize()
+                enmarcar(Image.open(c), titulo, "", "").save(SALIDA / f"juego-{c.stem}.png")
+    print(f"OK {SALIDA}: {len(list(SALIDA.glob('*.png')))} imágenes")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

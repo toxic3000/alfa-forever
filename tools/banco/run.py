@@ -1,5 +1,6 @@
 """Load Alfa's engine (dist-ventanas) in a mocked client and drive the hub:
 the guide selector, Lookup and the dungeon journal. Prints every Lua error."""
+import os
 import pathlib
 import re
 import sys
@@ -91,6 +92,9 @@ def main() -> int:
             rect = (snap.l, snap.b, snap.w, snap.h)
             out = HERE / ("shot-%s.png" % name)
             render.render(entries, rect, out, fonts)
+            if os.environ.get('BANCO_VOLCAR'):
+                import json
+                (HERE / ('shot-%s.json' % name)).write_text(json.dumps([{k: (dict(v.items()) if hasattr(v, 'items') else v) for k, v in e.items()} for e in entries], default=str), encoding='utf-8')
             print("PNG", out)
     errs = list(g.ERRORS.values())
     seen = {}

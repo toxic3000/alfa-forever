@@ -38,6 +38,7 @@ function DUMP(root, extra)
             e.r, e.g, e.bb, e.a = vc[1], vc[2], vc[3], vc[4] or 1
             e.tex = type(c._tex) == "string" and c._tex or tostring(c._tex)
             local tc = c._tc4
+            e.tc = tc
             e.flip = tc and tc[1] == 1 and tc[2] == 0 or false
             e.half = tc and ((tc[1] == 0 and tc[2] == 0.5) and "L" or (tc[1] == 0.5 and tc[2] == 1) and "R") or nil
             local gr = c._grad
