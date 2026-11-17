@@ -28,3 +28,4 @@ La versión vive en un solo lugar, `tools/alfa.json` (`version`). `tools/build.p
 4. `python -I tools/empaquetar.py` → `paquetes/Alfa-<versión>.zip`.
 5. Commit "Alfa <versión>", etiqueta `git tag -a v<versión> -m "Alfa <versión>"` y `git push --follow-tags`.
 6. Subir el zip a CurseForge (Beta o Release) con las notas del `CHANGELOG.md`, y crear la versión en GitHub (Releases) con el mismo zip **y `paquetes/Instalar-Alfa.exe`** (`python -I instalador/construir.py`). El enlace del instalador apunta siempre a la última versión publicada, así que las dos cosas tienen que ir en cada una.
+7. Avisar a la manada: `python -I tools/anunciar.py version <versión>` publica la sección del CHANGELOG en #wow-addon-alfa-actualizaciones del Discord de La Jauría con el bot Jesus GPT (sin menciones). Necesita `tools/anunciar_local.json`, que no se sube a git.
