@@ -5,7 +5,7 @@ Uso:
   python -I tools/anunciar.py activo [--vista]       Alfa ya está activo (la 1.0.0)
   python -I tools/anunciar.py version 1.0.1 [--vista] Salió una versión: su sección del CHANGELOG
 
---vista imprime la tarjeta sin publicarla.
+--vista imprime la tarjeta sin publicarla; --editar ID corrige un aviso ya publicado.
 
 Lee tools/anunciar_local.json (no se sube a git):
   {"bot": "C:/.../toxichost/dist_package/data/discord.json", "canal": "<id del canal>"}
@@ -63,7 +63,11 @@ def tarjeta(tipo: str, version: str) -> dict:
             "fields": [_instalar(),
                        {"name": "🎮 En el juego", "value": "Escribe `/alfa`", "inline": True},
                        {"name": "🔄 Para actualizar", "value": "Abre otra vez el instalador", "inline": True},
-                       {"name": "🐛 ¿Algo falla?", "value": "Avísanos en este canal", "inline": True}],
+                       {"name": "🐛 ¿Algo falla?", "value": "Avísanos en este canal", "inline": True},
+                       {"name": "📦 Dónde está",
+                        "value": f"Ya está publicado en **[GitHub]({REPO}/releases/latest)**. En **CurseForge** "
+                                 "está pendiente de validación: en cuanto lo aprueben, también sale ahí.",
+                        "inline": False}],
         }
     else:
         lineas = _cambios(version)
@@ -105,8 +109,14 @@ def main(argv) -> int:
         sys.stdout.reconfigure(encoding="utf-8")
         print(json.dumps(embed, ensure_ascii=False, indent=2))
         return 0
-    msg = _api(token, "POST", f"/channels/{canal}/messages", {"embeds": [embed], "allowed_mentions": {"parse": []}})
-    print(f"Publicado en el canal {canal}: mensaje {msg['id']}")
+    cuerpo = {"embeds": [embed], "allowed_mentions": {"parse": []}}
+    if "--editar" in argv:  # corrige un aviso ya publicado en vez de mandar otro
+        mid = argv[argv.index("--editar") + 1]
+        msg = _api(token, "PATCH", f"/channels/{canal}/messages/{mid}", cuerpo)
+        print(f"Editado en el canal {canal}: mensaje {msg['id']}")
+    else:
+        msg = _api(token, "POST", f"/channels/{canal}/messages", cuerpo)
+        print(f"Publicado en el canal {canal}: mensaje {msg['id']}")
     return 0
 
 
