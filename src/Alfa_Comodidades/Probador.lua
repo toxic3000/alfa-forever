@@ -220,7 +220,7 @@ end
 local function pintarBarra()
 	if not barra then return end
 	barra.Nombre:SetText(ANIMACIONES[animacion][2])
-	W.SetButtonText(barra.Pausa, pausado and L["Seguir"] or L["Pausa"])
+	W.SetButtonText(barra.Pausa, pausado and L["Reanudar"] or L["Pausa"])
 end
 
 local function cambiarAnimacion(paso)

@@ -212,7 +212,7 @@ local function datoPersona(f)
 		sobre = U.Mayus(siguiendo and L["Siguiendo"] or (f.tipo == "grupo" and L["Tu grupo"] or L["La Jauría"])),
 		titulo = f.nombre or "?",
 		texto = (nc ~= "" and (nc .. "\n") or "") .. lugar(f),
-		accion = { texto = siguiendo and L["Parar"] or L["Seguir"], icono = siguiendo and "ic-cerrar" or "ic-seguir", alClic = function() seguir(f) end },
+		accion = { texto = siguiendo and L["Dejar de seguir"] or L["Seguir"], icono = siguiendo and "ic-cerrar" or "ic-seguir", alClic = function() seguir(f) end },
 		secundaria = invitable(f) and { texto = L["Invitar"], alClic = function() invitar(f) end } or nil,
 		persona = f,
 	}

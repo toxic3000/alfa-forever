@@ -35,7 +35,6 @@ M.EN = {
 	["Llegaste con %s."] = "You reached %s.",
 	["La flecha tomó otro destino: dejaste de seguir a %s."] = "The arrow took another destination: you stopped following %s.",
 	["Seguir"] = "Follow",
-	["Parar"] = "Stop",
 	["Dejar de seguir"] = "Stop following",
 	["Siguiendo"] = "Following",
 	["Buscando su rastro..."] = "Looking for their trail...",
