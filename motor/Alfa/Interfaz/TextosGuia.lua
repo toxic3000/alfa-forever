@@ -56,3 +56,8 @@ EN["En 9 idiomas"] = "In 9 languages"
 EN["Español, inglés y siete idiomas más, en toda la interfaz."] = "Spanish, English and seven more languages, all through the interface."
 EN["¿Algo raro?"] = "Something off?"
 EN["Escribe %s y cuéntanos en el Discord de La Jauría."] = "Type %s and tell us on La Jauría's Discord."
+
+-- Ajustes > Apariencia (1.0)
+EN["Alfa (el estilo propio, por omisión), Clásico WoW (marcos y letras del juego) o Cristal (transparente, con el acento que elijas). El modo compacto y tus colores funcionan en los tres."] = "Alfa (its own look, the default), Classic WoW (the game's frames and fonts) or Glass (see-through, with the accent you pick). Compact mode and your colours work in all three."
+EN["Lobo"] = "Wolf"
+EN["El medallón bajo cada marca del mapa y del minimapa: el de Alfa o solo el símbolo, sin medallón."] = "The medallion under every mark on the map and minimap: Alfa's, or the glyph alone with no medallion."

@@ -466,7 +466,7 @@ local BUILTIN = {
 	} },
 	{ page = LOOK, tab = L["Windows"], section = L["Frame"], controls = {
 		{ kind = "dropdown", key = "ui.skin", label = L["Skin"], search = "theme, look, style, frame",
-			help = L["Alfa's own look (the default), Halo (no frame, a soft dark veil, Fira Sans), Hearth (warm game colours), or the game's own art: WoW Forever, Blizzard and Classic. Style, compact mode and the colours you pick work in each."],
+			help = T("Alfa (el estilo propio, por omisión), Clásico WoW (marcos y letras del juego) o Cristal (transparente, con el acento que elijas). El modo compacto y tus colores funcionan en los tres."),
 			choices = function()
 				local list = {}
 				for i, c in ipairs(Theme.SkinChoices()) do list[i] = { value = c.value, label = c.text } end
@@ -506,8 +506,8 @@ local BUILTIN = {
 			search = "game menu, escape, esc, main menu, button, open alfa" },
 	} },
 	{ page = LOOK, tab = L["Arrow"], section = L["Arrow"], controls = {
-		H({ kind = "dropdown", key = "nav.arrowStyle", label = L["Arrow style"], choices = { { value = "skin", label = L["The skin's arrow"] }, { value = "3d", label = L["3D"] }, { value = "flat", label = L["Flat"] },
-			{ value = "halo", label = L["Halo"] }, { value = "hearth", label = L["Hearth"] } } }),
+		H({ kind = "dropdown", key = "nav.arrowStyle", label = L["Arrow style"], choices = { { value = "skin", label = L["The skin's arrow"] }, { value = "lobo", label = T("Lobo") },
+			{ value = "3d", label = L["3D"] }, { value = "flat", label = L["Flat"] } } }),
 		H({ kind = "slider", key = "nav.arrowScale", label = L["Arrow scale"], min = 0.5, max = 2, step = 0.05, format = percent, search = "arrow size, bigger arrow, smaller arrow" }),
 		H({ kind = "slider", key = "nav.arrowAlpha", label = L["Arrow opacity"], min = 0.2, max = 1, step = 0.05, format = percent, search = "arrow transparency, alpha" }),
 	} },
@@ -523,9 +523,9 @@ local BUILTIN = {
 	} },
 	{ page = LOOK, tab = L["Arrow"], section = L["Map icons"], controls = {
 		{ kind = "dropdown", key = "nav.mapIcons", label = L["Icon pack"],
-			help = L["The medallion under every mark on the world map and the minimap. The skin's: Alfa's, Halo's, or Hearth's for Hearth and the game's own looks. Glyphs only: no medallion."],
+			help = T("El medallón bajo cada marca del mapa y del minimapa: el de Alfa o solo el símbolo, sin medallón."),
 			choices = { { value = "skin", label = L["The skin's icons"] }, { value = "alfa", label = L["Alfa"] },
-				{ value = "halo", label = L["Halo"] }, { value = "hearth", label = L["Hearth"] }, { value = "bare", label = L["Glyphs only"] } } },
+				{ value = "bare", label = L["Glyphs only"] } } },
 		{ kind = "slider", key = "nav.minimapIconSize", label = L["Minimap icon size"], min = 0.5, max = 1.5, step = 0.05, format = percent,
 			help = L["Alfa's marks on the minimap; the world map keeps its own. A mark over your arrow fades so the arrow shows through it. Right-click to reset."] },
 	} },
@@ -1831,15 +1831,15 @@ end
 
 local SECCIONES = {
 	{ key = "hoy", label = "Hoy", icon = "sec-hoy", pages = { "inicio" } },
-	{ key = "aventura", label = "Aventura", icon = "sec-aventura", pages = { "guia", "rutas", "mazmorras" } },
-	{ key = "personaje", label = "Personaje", icon = "sec-personaje", pages = { "builds", "curacion", "bolsas" } },
+	{ key = "aventura", label = "Aventura", icon = "sec-aventura", pages = { "rutas", "mazmorras", "enciclopedia" } },
+	{ key = "personaje", label = "Personaje", icon = "sec-personaje", pages = { "builds", "combate", "curacion", "bolsas" } },
 	{ key = "mundo", label = "Mundo", icon = "sec-mundo", pages = { "mundo", "recoleccion" } },
 	{ key = "oficios", label = "Oficios", icon = "sec-oficios", pages = { "comercio", "pesca" } },
 	{ key = "manada", label = "Manada", icon = "sec-manada", pages = { "manada" } },
 }
 local AJUSTES = { key = "ajustes", label = "Ajustes", icon = "sec-ajustes", right = true }
 O.SECCIONES, O.AJUSTES = SECCIONES, AJUSTES
-local OCULTAS = { thanks = true }
+local OCULTAS = { thanks = true, guia = true } -- "Tu guia" quedo en Ruta (src/Alfa_Rutas)
 local seccionDe, posicion = {}, {} -- page key -> section key, its place in the section
 local porSeccion = { [AJUSTES.key] = AJUSTES }
 for _, s in ipairs(SECCIONES) do
