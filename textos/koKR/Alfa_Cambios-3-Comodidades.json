@@ -1,0 +1,15 @@
+{
+ "%d de %d encendidas": "%d/%d개 켜짐",
+ "Colores de clase en los marcos, un cuadro de información más útil, el probador mejorado, la siguiente parada en los vuelos y sin voces de error. Cada una se apaga abajo cuando quieras.": "프레임에 직업 색상, 더 유용한 툴팁, 개선된 미리보기 창, 비행 중 다음 경유지, 오류 음성 끄기. 각각 아래에서 언제든 끌 수 있습니다.",
+ "Comodidades": "편의 기능",
+ "Encender las recomendadas": "추천 기능 켜기",
+ "Enciende las comodidades recomendadas": "추천 편의 기능을 켜세요",
+ "La lista está apagada: enciende «Tu lista de sonidos» en Comodidades (/alfa comodidades).": "목록이 꺼져 있습니다. 편의 기능에서 \"내 소리 목록\"을 켜세요(/alfa comodidades).",
+ "Lo pequeño que hace el juego más cómodo: misiones, vuelos, minimapa, marcos, cuadro de información, probador, cámara y sonidos.": "게임을 더 편하게 해 주는 작은 기능: 퀘스트, 비행, 미니맵, 프레임, 툴팁, 미리보기 창, 카메라, 소리.",
+ "Marcos y barra": "프레임과 행동 단축바",
+ "Minimapa": "미니맵",
+ "Tienes %d encendidas. Abajo está cada una, con lo que hace, por si quieres cambiar algo.": "%d개가 켜져 있습니다. 바꾸고 싶으면 아래에서 각 기능과 설명을 보세요.",
+ "Tienes encendido «solo las misiones de mi ruta»: solo acepta las de tu ruta.": "\"내 경로의 퀘스트만\"이 켜져 있어 경로의 퀘스트만 수락합니다.",
+ "Tus comodidades están listas": "편의 기능 준비 완료",
+ "Viajes": "이동"
+}

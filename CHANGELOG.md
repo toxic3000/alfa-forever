@@ -1,6 +1,6 @@
 # Cambios de Alfa
 
-## 1.0.0 — la versión buena
+## 1.0.0 — la versión buena (16/11/2026)
 
 **Español**
 - **Interfaz propia de punta a punta**: un Kit visual nuevo, 64 íconos y 5 lobos propios, todo ordenado y alineado. Elige entre 3 estilos: Alfa, Clásico WoW y Cristal.

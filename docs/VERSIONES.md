@@ -16,7 +16,7 @@ La versión vive en un solo lugar, `tools/alfa.json` (`version`). `tools/build.p
 | Versión | Fecha | Etiqueta en git | Qué fue |
 |---|---|---|---|
 | 0.1.0 | 16/11/2026 | `v0.1.0` | Primera beta interna, la que Toxic llama "0.5": 12 módulos sobre el motor de Polestar renombrado, interfaz con el diseño A. Probada en el juego sin errores. |
-| 1.0.0 | (en curso) | `v1.0.0` | Interfaz propia con el Kit, ruta guiada, Enciclopedia, Talentos, Combate, La Jauría solo con usuarios de Alfa ([PLAN-1.0](PLAN-1.0.md)). |
+| 1.0.0 | 16/11/2026 (se etiqueta tras la prueba en el juego) | `v1.0.0` | Interfaz propia con el Kit, ruta guiada, Enciclopedia, Talentos, Combate, La Jauría solo con usuarios de Alfa ([PLAN-1.0](PLAN-1.0.md)). |
 
 ## Cómo se publica una versión
 
