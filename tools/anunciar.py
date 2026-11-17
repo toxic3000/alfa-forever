@@ -4,6 +4,7 @@ Jesus GPT (el mismo de ToxicHost).
 Uso:
   python -I tools/anunciar.py activo [--vista]       Alfa ya está activo (la 1.0.0)
   python -I tools/anunciar.py version 1.1.0 [--vista] Salió una versión: su sección del CHANGELOG
+  python -I tools/anunciar.py curseforge [--vista]   CurseForge ya aprobó Alfa: el enlace
 
 --vista imprime la tarjeta sin publicarla; --editar ID corrige un aviso ya publicado;
 --borrar ID publica el nuevo y borra el anterior.
@@ -26,6 +27,7 @@ LOCAL = RAIZ / "tools" / "anunciar_local.json"
 REPO = "https://github.com/toxic3000/alfa-forever"
 INSTALADOR = f"{REPO}/releases/latest/download/Instalar-Alfa.exe"
 DONAR = "https://www.paypal.com/donate/?hosted_button_id=7J5BYWH9DVT9C"
+CURSEFORGE = "https://www.curseforge.com/wow/addons/alfa-forever"
 LOGO = "https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/avatar.png"
 VERDE = 0x8BE04E
 API = "https://discord.com/api/v10"
@@ -74,9 +76,20 @@ def tarjeta(tipo: str, version: str, ayuda=None) -> dict:
                        {"name": "🔄 Para actualizar", "value": "Abre otra vez el instalador", "inline": True},
                        _falla(ayuda),
                        {"name": "📦 Dónde está",
-                        "value": f"Ya está publicado en **[GitHub]({REPO}/releases/latest)**. En **CurseForge** "
-                                 "está pendiente de validación: en cuanto lo aprueben, también sale ahí.",
+                        "value": f"En **[CurseForge]({CURSEFORGE})** (ya aprobado) y en "
+                                 f"**[GitHub]({REPO}/releases/latest)**.",
                         "inline": False}],
+        }
+    elif tipo == "curseforge":
+        embed = {
+            "title": "🎉 ¡Alfa ya está en CurseForge!",
+            "url": CURSEFORGE,
+            "description": f"CurseForge aprobó Alfa y la **{version}** ya se puede bajar desde ahí:\n**{CURSEFORGE}**\n\n"
+                           "Con la app de CurseForge se instala con un clic y te avisa sola cuando sale una versión nueva. "
+                           "Gracias a todos los que lo están probando. 🐺",
+            "fields": [{"name": "📥 Sin la app", "value": f"El **[instalador]({INSTALADOR})** sigue funcionando igual.",
+                        "inline": True},
+                       _falla(ayuda)],
         }
     else:
         resumen = RAIZ / "docs" / "anuncios" / f"{version}.md"  # el resumen hecho a mano, si lo hay
@@ -103,11 +116,17 @@ def tarjeta(tipo: str, version: str, ayuda=None) -> dict:
     return embed
 
 
-def botones(version: str) -> list:
+def botones(version: str, tipo: str = "version") -> list:
     """Botones de enlace (no necesitan que el bot escuche clics). Donar va solo aquí, en Discord,
     nunca dentro del juego (regla 5 de Blizzard, docs/REGLAS-BLIZZARD.md)."""
     def enlace(texto, url, emoji):
         return {"type": 2, "style": 5, "label": texto, "url": url, "emoji": {"name": emoji}}
+    if tipo == "curseforge":
+        return [{"type": 1, "components": [
+            enlace("Ver en CurseForge", CURSEFORGE, "🔥"),
+            enlace("Instalar sin la app", INSTALADOR, "📥"),
+            enlace("Donar con PayPal", DONAR, "💛"),
+        ]}]
     return [{"type": 1, "components": [
         enlace("Instalar Alfa", INSTALADOR, "📥"),
         enlace("Notas completas", f"{REPO}/releases/tag/v{version}", "📜"),
@@ -116,12 +135,12 @@ def botones(version: str) -> list:
 
 
 def main(argv) -> int:
-    if not argv or argv[0] not in ("activo", "version"):
+    if not argv or argv[0] not in ("activo", "version", "curseforge"):
         print(__doc__)
         return 1
     tipo = argv[0]
     cfg_alfa = json.loads((RAIZ / "tools" / "alfa.json").read_text(encoding="utf-8"))
-    version = argv[1] if tipo == "version" and len(argv) > 1 and not argv[1].startswith("--") else cfg_alfa["version"]
+    version = argv[1] if tipo in ("version", "activo") and len(argv) > 1 and not argv[1].startswith("--") else cfg_alfa["version"]
     local = json.loads(LOCAL.read_text(encoding="utf-8"))
     embed = tarjeta(tipo, version, local.get("ayuda"))
     bot = json.loads(pathlib.Path(local["bot"]).read_text(encoding="utf-8"))
@@ -136,7 +155,7 @@ def main(argv) -> int:
         sys.stdout.reconfigure(encoding="utf-8")
         print(json.dumps(embed, ensure_ascii=False, indent=2))
         return 0
-    cuerpo = {"embeds": [embed], "allowed_mentions": {"parse": []}, "components": botones(version)}
+    cuerpo = {"embeds": [embed], "allowed_mentions": {"parse": []}, "components": botones(version, tipo)}
     if "--editar" in argv:  # corrige un aviso ya publicado en vez de mandar otro
         mid = argv[argv.index("--editar") + 1]
         msg = _api(token, "PATCH", f"/channels/{canal}/messages/{mid}", cuerpo)
