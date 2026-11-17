@@ -1,5 +1,13 @@
 # Cambios de Alfa
 
+## 1.0.1 — en preparación
+
+**Español**
+- La app de CurseForge reconoce Alfa (proyecto 1811544) para avisarte de versiones nuevas.
+
+**English**
+- The CurseForge app recognizes Alfa (project 1811544) to tell you about new versions.
+
 ## 1.0.0 — la versión buena (16/11/2026)
 
 **Español**

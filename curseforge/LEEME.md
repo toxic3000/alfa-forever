@@ -30,7 +30,9 @@ Lo que hay en esta carpeta:
 | Game version | La de WoW Forever (1.60.1, interfaz 16001) |
 | Changelog | La sección de esa versión en `CHANGELOG.md` |
 
-Cuando CurseForge asigne el número del proyecto, va en `tools/alfa.json` como `X-Curse-Project-ID` dentro de `toc`, para que la app de CurseForge lo reconozca.
+El proyecto ya existe: **https://www.curseforge.com/wow/addons/alfa-forever** (número **1811544**, creado el 16/11/2026 con la cuenta toxic3000). El número ya está en `tools/alfa.json` como `X-Curse-Project-ID` y sale a partir de la 1.0.1. La 1.0.0 se subió como Beta, para 1.60.1, y queda pendiente de la revisión de CurseForge.
+
+Para subir una versión nueva: en el panel de autores, proyecto Alfa Forever, pestaña **Files**, suelta `paquetes/Alfa-<versión>.zip`, nombre `Alfa <versión>`, versión de juego 1.60.1, el tipo que toque y las notas del CHANGELOG.
 
 ## Imágenes de la galería
 

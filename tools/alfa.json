@@ -22,6 +22,7 @@
     "Notes-zhTW": "WoW Forever 一體化插件：指南、地圖、背包、天賦、釣魚等。La Jauría 出品。",
     "Author": "toxic3000 - La Jauria (basado en Polestar)",
     "X-Website": "https://www.curseforge.com/wow/addons/alfa-forever",
-    "Category": "Alfa"
+    "Category": "Alfa",
+    "X-Curse-Project-ID": "1811544"
   }
 }
