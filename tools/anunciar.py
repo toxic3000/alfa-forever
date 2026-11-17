@@ -5,10 +5,12 @@ Uso:
   python -I tools/anunciar.py activo [--vista]       Alfa ya está activo (la 1.0.0)
   python -I tools/anunciar.py version 1.0.1 [--vista] Salió una versión: su sección del CHANGELOG
 
---vista imprime la tarjeta sin publicarla; --editar ID corrige un aviso ya publicado.
+--vista imprime la tarjeta sin publicarla; --editar ID corrige un aviso ya publicado;
+--borrar ID publica el nuevo y borra el anterior.
 
 Lee tools/anunciar_local.json (no se sube a git):
-  {"bot": "C:/.../toxichost/dist_package/data/discord.json", "canal": "<id del canal>"}
+  {"bot": "C:/.../toxichost/dist_package/data/discord.json", "canal": "<id del canal>",
+   "ayuda": "<id del canal donde reportar fallas>"}
 El token del bot se queda en el archivo de ToxicHost; aquí solo se lee para publicar.
 Nunca menciona a nadie (sin @everyone).
 """
@@ -52,7 +54,13 @@ def _instalar():
                      "Si Windows avisa: *Más información* → *Ejecutar de todas formas*.", "inline": False}
 
 
-def tarjeta(tipo: str, version: str) -> dict:
+def _falla(ayuda):
+    """Dónde reportar: el canal "ayuda" de anunciar_local.json (mencionar un canal no notifica a nadie)."""
+    donde = f"<#{ayuda}>" if ayuda else "el Discord de La Jauría"
+    return {"name": "🐛 ¿Algo falla?", "value": f"Escríbenos en {donde}. ¡Gracias!", "inline": True}
+
+
+def tarjeta(tipo: str, version: str, ayuda=None) -> dict:
     if tipo == "activo":
         embed = {
             "title": f"🐺 ¡Alfa {version} ya está activo!",
@@ -63,7 +71,7 @@ def tarjeta(tipo: str, version: str) -> dict:
             "fields": [_instalar(),
                        {"name": "🎮 En el juego", "value": "Escribe `/alfa`", "inline": True},
                        {"name": "🔄 Para actualizar", "value": "Abre otra vez el instalador", "inline": True},
-                       {"name": "🐛 ¿Algo falla?", "value": "Avísanos en este canal", "inline": True},
+                       _falla(ayuda),
                        {"name": "📦 Dónde está",
                         "value": f"Ya está publicado en **[GitHub]({REPO}/releases/latest)**. En **CurseForge** "
                                  "está pendiente de validación: en cuanto lo aprueben, también sale ahí.",
@@ -81,7 +89,7 @@ def tarjeta(tipo: str, version: str) -> dict:
             "title": f"🔄 Salió Alfa {version}",
             "url": f"{REPO}/releases/tag/v{version}",
             "description": cuerpo,
-            "fields": [_instalar()],
+            "fields": [_instalar(), _falla(ayuda)],
         }
     embed.update(color=VERDE, thumbnail={"url": LOGO},
                  timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
@@ -95,8 +103,8 @@ def main(argv) -> int:
     tipo = argv[0]
     cfg_alfa = json.loads((RAIZ / "tools" / "alfa.json").read_text(encoding="utf-8"))
     version = argv[1] if tipo == "version" and len(argv) > 1 and not argv[1].startswith("--") else cfg_alfa["version"]
-    embed = tarjeta(tipo, version)
     local = json.loads(LOCAL.read_text(encoding="utf-8"))
+    embed = tarjeta(tipo, version, local.get("ayuda"))
     bot = json.loads(pathlib.Path(local["bot"]).read_text(encoding="utf-8"))
     token, canal = bot["token"], str(local["canal"])
     if bot.get("guild_id"):  # el pie con el nombre y el icono del servidor, como las tarjetas de ToxicHost
@@ -117,6 +125,12 @@ def main(argv) -> int:
     else:
         msg = _api(token, "POST", f"/channels/{canal}/messages", cuerpo)
         print(f"Publicado en el canal {canal}: mensaje {msg['id']}")
+        if "--borrar" in argv:  # reemplaza un aviso anterior: se borra después de publicar el nuevo
+            viejo = argv[argv.index("--borrar") + 1]
+            req = urllib.request.Request(f"{API}/channels/{canal}/messages/{viejo}", method="DELETE",
+                                         headers={"Authorization": "Bot " + token, "User-Agent": f"DiscordBot ({REPO}, 1.0)"})
+            urllib.request.urlopen(req, timeout=20).close()
+            print(f"Borrado el aviso anterior {viejo}")
     return 0
 
 
