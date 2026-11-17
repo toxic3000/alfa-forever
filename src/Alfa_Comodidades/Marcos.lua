@@ -47,6 +47,7 @@ local function crearFondo()
 	local main = contenidoJugador()
 	if not (main and main.CreateTexture) then return nil end
 	local t = main:CreateTexture(nil, "BACKGROUND")
+	if not t then return nil end
 	local info = C_Texture and C_Texture.GetAtlasInfo and C_Texture.GetAtlasInfo(ATLAS_FONDO)
 	if type(info) == "table" and info.file and info.width then
 		-- El arte en espejo: el del objetivo mira hacia su retrato, a la derecha.

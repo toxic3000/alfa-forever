@@ -5,7 +5,6 @@ local ADDON, M = ...
 
 M.EN = {
 	-- Comodidades.lua
-	["Interfaz"] = "Interface",
 	["Abrir las comodidades (minimapa, cuadro de información, probador...)"] = "Open the conveniences (minimap, tooltip, dressing room...)",
 
 	-- Cuadro.lua
@@ -18,8 +17,7 @@ M.EN = {
 	["No entregué %s: pide oro o monedas. Entrégala tú si quieres."] = "Did not turn in %s: it asks for gold or currency. Turn it in yourself if you want to.",
 	["No entregué %s: pide materiales de oficio. Entrégala tú si quieres."] = "Did not turn in %s: it asks for trade goods. Turn it in yourself if you want to.",
 
-	-- Opciones.lua: Misiones
-	["Todas las misiones"] = "All quests",
+	-- Pagina.lua: Misiones
 	["Aceptar y entregar todas las misiones"] = "Accept and turn in all quests",
 	["También las que no son de la guía (de esas se encarga \"Aceptar misiones de la guía\"). No toma misiones grises, no entrega las que piden oro, monedas o materiales de oficio, y si hay varias recompensas eliges tú. Mantén presionado Mayús para hacerlo tú."] = "Also the ones that are not in the guide (\"Accept guide quests\" handles those). Grey quests are left alone, quests that ask for gold, currency or trade goods are not turned in, and when there are several rewards you choose. Hold Shift to do it yourself.",
 	["Misiones normales"] = "Regular quests",
@@ -31,11 +29,11 @@ M.EN = {
 	["Entregar las completadas"] = "Turn in completed quests",
 	["Apagado, solo las acepta y la entrega la haces tú."] = "Off, it only accepts them and you turn them in.",
 
-	-- Opciones.lua: Viajes
+	-- Pagina.lua: Viajes
 	["Mostrar la siguiente parada"] = "Show the next stop",
 	["En un vuelo con escalas, una línea bajo el temporizador dice dónde es la siguiente parada y cuánto falta para llegar. Necesita el temporizador de vuelo encendido."] = "On a flight with stops, a line under the timer says where the next stop is and how long until you get there. Needs the flight timer on.",
 
-	-- Opciones.lua: Minimapa
+	-- Pagina.lua: Minimapa
 	["Mejorar el minimapa"] = "Enhance the minimap",
 	["Enciende los cambios de abajo; cada uno se puede apagar por separado. Algunos addons acomodan sus botones al cuadrado después de /reload."] = "Turns on the changes below; each can be turned off on its own. Some addons move their buttons to the square after a /reload.",
 	["Minimapa cuadrado"] = "Square minimap",
@@ -45,8 +43,7 @@ M.EN = {
 	["Ocultar el menú de addons"] = "Hide the addon menu",
 	["Oculta el botón con el número de addons en la esquina del minimapa. Esos addons se siguen abriendo con su comando, como /alfa."] = "Hides the button with the number of addons in the corner of the minimap. Those addons still open with their command, such as /alfa.",
 
-	-- Opciones.lua: Interfaz
-	["Marcos"] = "Frames",
+	-- Pagina.lua: Interfaz
 	["Colores de clase en los marcos"] = "Class colours on the frames",
 	["Pinta del color de la clase el fondo del nombre en tu marco y en el del objetivo cuando es un jugador."] = "Paints the name background of your frame, and of the target's when it is a player, in the class colour.",
 	["En tu marco"] = "On your frame",
@@ -87,9 +84,7 @@ M.EN = {
 	["Calla las voces de /bailar, /reír, /aplaudir y otros gestos."] = "Mutes the voices of /dance, /laugh, /applaud and other emotes.",
 	["Tu lista de sonidos"] = "Your sound list",
 	["Silencia los sonidos que agregues por su número de archivo (FileDataID): /alfa silenciar <número>; /alfa silenciar quitar <número> lo quita."] = "Mutes the sounds you add by their file number (FileDataID): /alfa silenciar <number>; /alfa silenciar quitar <number> removes it.",
-	["Ver"] = "Show",
 	["Ver tu lista"] = "Show your list",
-	["Escribe en el chat los sonidos de tu lista."] = "Prints the sounds on your list in chat.",
 
 	-- Probador.lua
 	["Cabeza"] = "Head", ["Hombros"] = "Shoulder", ["Espalda"] = "Back", ["Pecho"] = "Chest",
@@ -112,7 +107,6 @@ M.EN = {
 	-- Sonidos.lua
 	["Tu lista de sonidos está vacía. Agrega uno con /alfa silenciar <número>."] = "Your sound list is empty. Add one with /alfa silenciar <number>.",
 	["Sonidos en tu lista (%d): %s"] = "Sounds on your list (%d): %s",
-	["La lista está apagada: enciende \"Tu lista de sonidos\" en Calidad de vida > Interfaz."] = "The list is off: turn on \"Your sound list\" in Quality of Life > Interface.",
 	["Tu lista de sonidos quedó vacía."] = "Your sound list is now empty.",
 	["Uso: /alfa silenciar <número>, /alfa silenciar quitar <número>, /alfa silenciar borrar."] = "Usage: /alfa silenciar <number>, /alfa silenciar quitar <number>, /alfa silenciar borrar.",
 	["Se quitó el sonido %d de tu lista."] = "Removed sound %d from your list.",
@@ -122,4 +116,21 @@ M.EN = {
 	-- Vuelo.lua
 	["Escalas:"] = "Stops:",
 	["Siguiente parada:"] = "Next stop:",
+
+	-- Pagina.lua
+	["Tienes encendido «solo las misiones de mi ruta»: solo acepta las de tu ruta."] = "You have \"only my route's quests\" on: it only accepts your route's quests.",
+	["Misiones"] = "Quests",
+	["Viajes"] = "Travel",
+	["Minimapa"] = "Minimap",
+	["Marcos y barra"] = "Frames and action bar",
+	["Enciende las comodidades recomendadas"] = "Turn on the recommended conveniences",
+	["Colores de clase en los marcos, un cuadro de información más útil, el probador mejorado, la siguiente parada en los vuelos y sin voces de error. Cada una se apaga abajo cuando quieras."] = "Class colours on the frames, a more useful tooltip, the improved dressing room, the next stop on flights and no error voices. Each one can be turned off below whenever you like.",
+	["%d de %d encendidas"] = "%d of %d on",
+	["Encender las recomendadas"] = "Turn on the recommended ones",
+	["Tus comodidades están listas"] = "Your conveniences are ready",
+	["Tienes %d encendidas. Abajo está cada una, con lo que hace, por si quieres cambiar algo."] = "You have %d on. Each one is below, with what it does, in case you want to change something.",
+	["Listo"] = "Ready",
+	["Comodidades"] = "Conveniences",
+	["Lo pequeño que hace el juego más cómodo: misiones, vuelos, minimapa, marcos, cuadro de información, probador, cámara y sonidos."] = "The small things that make the game more comfortable: quests, flights, minimap, frames, tooltip, dressing room, camera and sounds.",
+	["La lista está apagada: enciende «Tu lista de sonidos» en Comodidades (/alfa comodidades)."] = "The list is off: turn on \"Your sound list\" in Conveniences (/alfa comodidades).",
 }

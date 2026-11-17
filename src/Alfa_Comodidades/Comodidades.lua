@@ -6,9 +6,9 @@
 -- de combate, la hermandad como amigos, texto instantáneo...) no se repite:
 -- ver LEEME.md.
 --
--- Sus ajustes viven en la página "Calidad de vida" que ya existe en la
--- ventana de Alfa (Opciones.lua), en sus pestañas o en la pestaña nueva
--- "Interfaz". Este archivo guarda lo que comparten las demás partes.
+-- Sus ajustes viven en su propia página de la ventana de Alfa, hecha con el
+-- Kit (Pagina.lua, en Ajustes > Comodidades). Este archivo guarda lo que
+-- comparten las demás partes.
 
 local ADDON, M = ...
 local N = AlfaNucleo
@@ -41,11 +41,9 @@ M.AJUSTES = {
 	silenciarErrores = false, silenciarDialogos = false, silenciarMascotas = false, silenciarGestos = false, silenciarLista = false,
 }
 
--- El módulo en el núcleo, sin página propia: sus controles van a la página
--- "Calidad de vida" del motor (Opciones.lua). Con el nombre de esa página,
--- el registro la encuentra (pageOf en UI/Options.lua) y no crea otra; sin
--- subtítulo ni vista propia, no cambia nada de ella.
-N.Modulo({ id = ID, nombre = A.L["Quality of Life"], ajustes = M.AJUSTES })
+-- Los valores por omisión, desde el principio (las partes los leen al
+-- cargar); la página se registra al final (Pagina.lua).
+A.RegisterDefaults(ID, M.AJUSTES)
 
 -- Un ajuste del módulo como verdadero o falso.
 function M.Get(clave)
@@ -159,23 +157,9 @@ A.OnLogin(function()
 end)
 
 ---------------------------------------------------------------------------
--- Abrir sus ajustes: /alfa comodidades, o N.Abrir("comodidades") desde
--- otro módulo. La página es la del motor ("qualityoflife"), en la pestaña
--- Interfaz, que es la de este módulo.
+-- Abrir su página: /alfa comodidades, o N.Abrir("comodidades") desde otro
+-- módulo.
 ---------------------------------------------------------------------------
-function M.AbrirAjustes()
-	A.Fire("SHOW_OPTIONS", "qualityoflife")
-	local O = A.UI and A.UI.Options
-	if O and O.Select then M.Seguro(O.Select, "qualityoflife", L["Interfaz"]) end
-end
-
--- N.Abrir(ID) busca una página con esa clave, que no existe: el motor
--- muestra la primera; aquí se lleva a la nuestra (este manejador corre
--- después del de la ventana, que se registró antes).
-A.On("SHOW_OPTIONS", function(section)
-	if section ~= ID then return end
-	local O = A.UI and A.UI.Options
-	if O and O.Select then M.Seguro(O.Select, "qualityoflife", L["Interfaz"]) end
-end)
+function M.AbrirAjustes() N.Abrir(ID) end
 
 A.RegisterCommand("comodidades", function() M.AbrirAjustes() end, L["Abrir las comodidades (minimapa, cuadro de información, probador...)"])

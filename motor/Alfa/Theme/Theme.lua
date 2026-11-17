@@ -20,6 +20,12 @@
 -- Whatever they pick, the text ladder stays legible: a ground that would
 -- drop text below 7:1 (primary) or 4.5:1 (the rest) is darkened until it
 -- reads. The other skins (Halo, Hearth and the game's own looks) are kept.
+--
+-- Alfa 1.0: tres estilos (docs/KIT.md, "Estilos"; Theme.EstiloKey): Alfa
+-- (la casa), Clasico WoW (la piel "classic": el arte, la letra y los botones
+-- del juego) y Cristal (ui.skin = "cristal": la casa, SkinKey "alfa", con los
+-- fondos de cristal de CRISTAL_GROUNDS y lineas claras). Halo, Hearth, WoW
+-- Forever y Blizzard quedan ocultas (HIDDEN_SKINS).
 
 local ADDON, ns = ...
 local Theme = {}
@@ -227,7 +233,11 @@ Theme.SKIN_ORDER = { "alfa", "halo", "hearth", "forever", "blizzard", "classic" 
 -- See issue #306.
 -- Each entry holds the skin's label so its translations survive in every locale
 -- until the skin returns (the i18n scanner would otherwise flag it as stale).
-local HIDDEN_SKINS = {}
+-- Alfa 1.0: tres estilos y nada mas (docs/KIT.md, "Estilos"): Alfa (la casa),
+-- Clasico WoW (la piel "classic", el arte del propio juego) y Cristal (la casa
+-- con fondos de cristal, ui.skin = "cristal"). Las otras pieles de Polestar
+-- se guardan aqui, ocultas: un valor guardado con una de ellas se ve como Alfa.
+local HIDDEN_SKINS = { halo = "Halo", hearth = "Hearth", forever = "WoW Forever", blizzard = "Blizzard" }
 -- Tests may set Theme._testShowHidden = true to render hidden skins directly.
 Theme._testShowHidden = false
 -- The skins drawn in game colours and controls (the client's check boxes,
@@ -247,7 +257,17 @@ local SCHEME_WASH = {
 	dusk = { border = 0.1, divider = 0.1, selected = 0.12, hover = 0.07 },
 	graphite = { border = 0.1, divider = 0.1, selected = 0.12, hover = 0.07 },
 	ellesmere = { border = 0.1, divider = 0.1, selected = 0.12, hover = 0.07 },
+	cristal = { border = 0.16, divider = 0.14, selected = 0.14, hover = 0.08 },
 }
+
+-- Cristal (ui.skin "cristal"): la opacidad de cada fondo del esquema y de
+-- sus lineas (el texto del esquema, tenue: el borde claro de un vidrio). Las
+-- ventanas del motor toman la opacidad del jugador por CRISTAL_WINDOW
+-- (Theme.GroundAlpha).
+local CRISTAL_GROUNDS = { bg = 0.74, panel = 0.5, panelAlt = 0.62, sidebar = 0.42, footer = 0.46, sky = 0.5 }
+local CRISTAL_LINES = { line = 0.16, lineStrong = 0.28 }
+local CRISTAL_WINDOW = 0.72
+Theme.CRISTAL_GROUNDS = CRISTAL_GROUNDS
 
 -- Text roles held to the legibility floor, and their minimum contrast.
 Theme.LEGIBLE = { text = 7, textDim = 4.5, textMuted = 4.5 }
@@ -506,15 +526,29 @@ function Theme.GameSkin(key)
 	return GAME_SKINS[key or Theme.SkinKey()] or false
 end
 
+-- El estilo de Alfa en uso (docs/KIT.md, "Estilos"): "alfa", "clasico" o
+-- "cristal". Cristal es la casa ("alfa" en SkinKey: sus formas y piezas)
+-- con fondos de cristal; Clasico, la piel "classic".
+function Theme.EstiloKey()
+	if get("ui.skin") == "cristal" then return "cristal" end
+	if Theme.SkinKey() == "classic" then return "clasico" end
+	return "alfa"
+end
+
+function Theme.EsCristal() return get("ui.skin") == "cristal" end
+
+-- Los nombres de los estilos salen del Kit (AlfaNucleo.Kit.ESTILOS, con su
+-- ingles en src/Alfa_Nucleo/Textos.lua); sin el nucleo, los de aqui.
+local ESTILO_DE_PIEL = { alfa = "alfa", classic = "clasico", cristal = "cristal" }
 function Theme.SkinChoices()
-	return {
-		{ value = "alfa", text = ns.L["Alfa"] },
-		{ value = "halo", text = ns.L["Halo"] },
-		{ value = "hearth", text = ns.L["Hearth"] },
-		{ value = "forever", text = ns.L["WoW Forever"] },
-		{ value = "blizzard", text = ns.L["Blizzard"] },
-		{ value = "classic", text = ns.L["Classic"] },
-	}
+	local K = AlfaNucleo and AlfaNucleo.Kit
+	local list = {}
+	for _, value in ipairs({ "alfa", "classic", "cristal" }) do
+		local text
+		if K and K.NombreEstilo then text = K.NombreEstilo(ESTILO_DE_PIEL[value]) end
+		list[#list + 1] = { value = value, text = text or ns.T(value == "alfa" and "Alfa" or value == "classic" and "Clásico WoW" or "Cristal") }
+	end
+	return list
 end
 
 -- The tokens the skins added, in the house style: what each one stands for
@@ -608,6 +642,17 @@ local function resolve()
 		out.line, out.lineStrong = shifted(out.line, bright * 0.2), shifted(out.lineStrong, bright * 0.2)
 	end
 	keepLegible(out)
+	-- Cristal: los mismos fondos del esquema, de cristal (se ve el mundo a
+	-- traves), y las lineas como el borde claro de un vidrio.
+	if Theme.EsCristal() then
+		for gname, a in pairs(CRISTAL_GROUNDS) do
+			if out[gname] then out[gname][4] = a end
+		end
+		local t = out.text
+		out.line = { t[1], t[2], t[3], CRISTAL_LINES.line }
+		out.lineStrong = { t[1], t[2], t[3], CRISTAL_LINES.lineStrong }
+		out.shadow = { 0, 0, 0, 0.3 }
+	end
 	out.star = copy(out.line)
 	-- Hairlines and frames in the line colour, not a white wash.
 	out.border, out.divider = copy(out.line), copy(out.line)
@@ -627,7 +672,7 @@ local function resolve()
 	if Theme.Contrast(out.text, out.accent) > Theme.Contrast(out.onAccent, out.accent) then out.onAccent = copy(out.text) end
 	out.scheme = key
 	-- The washes as colours too (Theme.Color("border") for 1px borders).
-	local own = SCHEME_WASH[key]
+	local own = Theme.EsCristal() and SCHEME_WASH.cristal or SCHEME_WASH[key]
 	for name, a in pairs(WASH) do
 		if not out[name] then out[name] = { out.ink[1], out.ink[2], out.ink[3], (own and own[name]) or a } end
 	end
@@ -745,6 +790,7 @@ end
 function Theme.GroundAlpha()
 	local a = get("ui.bgOpacity")
 	if type(a) ~= "number" then a = 0.94 end
+	if Theme.EsCristal() then a = a * CRISTAL_WINDOW end
 	return a
 end
 

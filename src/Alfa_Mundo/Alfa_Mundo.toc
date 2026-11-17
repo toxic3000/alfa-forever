@@ -1,8 +1,8 @@
 ## Interface: 16001
 ## Title: |cff8be04eAlfa|r - Mundo
-## Notes: Mapa continuo con zoom y un solo control de capas para todo lo que se pinta en tus mapas.
-## Notes-esMX: Mapa continuo con zoom y un solo control de capas para todo lo que se pinta en tus mapas.
-## Notes-esES: Mapa continuo con zoom y un solo control de capas para todo lo que se pinta en tus mapas.
+## Notes: El mapa del mundo entero con zoom, tus marcadores y un solo control de capas para todo lo que se pinta.
+## Notes-esMX: El mapa del mundo entero con zoom, tus marcadores y un solo control de capas para todo lo que se pinta.
+## Notes-esES: El mapa del mundo entero con zoom, tus marcadores y un solo control de capas para todo lo que se pinta.
 ## Author: Toxic - La Jauria
 ## Version: dev
 ## X-License: GPL-3.0-only
@@ -14,7 +14,11 @@ Datos.lua
 Capas.lua
 Lienzo.lua
 Marcas.lua
+Emergente.lua
 PanelCapas.lua
+Marcadores.lua
+Editor.lua
+PanelMarcadores.lua
 Ventana.lua
 MapaJuego.lua
 Mundo.lua

@@ -16,6 +16,7 @@ local A = N.A            -- el motor (datos y funciones)
 | `src/Alfa_Nucleo/Kit/Bloques.lua` | Pila, encabezado, sección, tarjeta, rejilla, lista virtual, estado vacío, filas de ajustes |
 | `src/Alfa_Nucleo/Kit/Ventanas.lua` | Ventana flotante, área desplazable, diálogo, aviso flotante |
 | `src/Alfa_Nucleo/Kit/Plantillas.lua` | Tablero, Lista con ficha, Asistente, y cómo ponerlas en una página |
+| `src/Alfa_Nucleo/Kit/Estilos.lua` | Los selectores de estilo y de acento (los estilos viven en `Tokens.lua`) |
 | `src/Alfa_Nucleo/Textos.lua` | El inglés de los textos del Kit (`M.EN`) |
 | `motor/Alfa/Core/Reemplazos.lua` | El registro de reemplazos de ventanas del motor |
 | `tools/iconos.py` (lo llama `tools/interfaz.py`) | Los íconos `ic-*`, `sec-*` y los lobos `lobo-*` |
@@ -61,7 +62,32 @@ local A = N.A            -- el motor (datos y funciones)
 | `exito`, `aviso`, `peligro`, `peligroRelleno` | verde, `#f0b34a`, `#e86b5a`, `#e05a4f` | Estados |
 | `oro`, `mision`, `pnj`, `objeto`, `lugar`, `mazmorra`, `raro` | los del tema | Temas del juego |
 
-Los resuelve el tema (`Alfa.Theme`): siguen el esquema (Grafito, Noche, Pizarra), el acento propio y la regla de legibilidad del jugador, y se repintan solos al cambiar. Otras ayudas: `K.ConAlfa(token, a)`, `K.Hex(token)`, `K.Tenir(token, texto)` (`|c...|r`), `K.Clase()`, `K.Tono(tono) -> relleno, texto`.
+Los resuelve el tema (`Alfa.Theme`): siguen el estilo (ver "Estilos"), el esquema (Grafito, Noche, Pizarra), el acento propio y la regla de legibilidad del jugador, y se repintan solos al cambiar. `titulo` es el color de los títulos: el texto en Alfa y Cristal, el oro del juego en Clásico WoW. Otras ayudas: `K.ConAlfa(token, a)`, `K.Hex(token)`, `K.Tenir(token, texto)` (`|c...|r`), `K.Clase()`, `K.Tono(tono) -> relleno, texto`.
+
+### Estilos
+
+Tres maneras de verse que se cambian en un clic y repintan todo, el Kit y las ventanas del motor. Una página o ventana hecha con el Kit **no tiene que hacer nada**: las piezas se adaptan solas.
+
+| Estilo | `K.Estilo()` | `ui.skin` | Cómo se ve |
+|---|---|---|---|
+| Alfa | `"alfa"` | `alfa` | El diseño A: grafito, esquinas cortadas, el verde de La Jauría, letra Inter |
+| Clásico WoW | `"clasico"` | `classic` | El propio juego: esquinas rectas; las ventanas con el marco y el fondo del cuadro de diálogo (`UI-DialogBox-Border`, `UI-DialogBox-Background-Dark`), los paneles y tarjetas con el de los cuadros de información (`UI-Tooltip-Border`), los botones rojos (`UI-Panel-Button-*`), la letra del juego con su sombra y los títulos en oro. Sin marca de acento ni facetas. Las texturas están verificadas en `referencia/` (`Blizzard_SharedXML/Backdrop.lua`, `SharedUIPanelTemplates.xml`) |
+| Cristal | `"cristal"` | `cristal` | El diseño A con los fondos de cristal (el mundo se ve detrás), líneas claras de vidrio, una sombra suave en el texto y el acento que elijas |
+
+```lua
+K.Estilo()                -- "alfa" | "clasico" | "cristal" ; K.Clasico(), K.Cristal()
+K.SetEstilo("cristal")    -- lo cambia (cada estilo recuerda su acento propio)
+K.ESTILOS                 -- { id, piel, nombre, texto, icono } ; K.NombreEstilo(id), K.DatosEstilo(id)
+K.ACENTOS                 -- { id, nombre, color } ; K.SetAcento(id | { r, g, b } | nil), K.AcentoActual()
+K.SelectorEstilo(padre, { alCambiar = fn(id) })   -- los tres con su muestra; un clic lo aplica
+K.SelectorAcento(padre, { alCambiar = fn(id) })   -- las muestras de color y el de tu clase
+```
+
+Si una pieza propia necesita otra cosa en un estilo: `K.Clasico()` al pintarla (desde `K.Pintar`, que se vuelve a llamar al cambiar). `K.SoloCasa(region)` deja transparente algo que en Clásico WoW no va. `K.Caja(..., { rol = "ventana" | "panel" | "control" })` dice qué marco del juego le toca (por omisión sale del corte: 10 ventana, 8 panel, menos control); `K.MarcoJuego(marco, "dialogo" | "info")` lo pone a mano.
+
+### Mayúsculas
+
+`K.Mayus(texto)`: mayúsculas que entienden las letras con acento (á é í ó ú ü ñ, à è ç ö ä, ł ś ż č ř...) y el cirílico; el chino y el coreano quedan igual, y los códigos del juego (`|c...|r`, `|T...|t`, `|H...|h`) también. `string.upper` solo cambia la A-Z ("LA JAURíA"): en el Kit se usa siempre `K.Mayus`.
 
 ### Letra (`K.TIPO`)
 
@@ -101,8 +127,8 @@ Todas las piezas se repintan solas al cambiar el aspecto. Los bloques tienen `:A
 ### Formas
 
 ```lua
-local caja = K.Caja(marco, { fondo = "panel", borde = "linea", corte = K.CORTE.panel })
-caja:Estilo({ borde = "acento", alfaBorde = 0.6 })  -- cambia y repinta
+local caja = K.Caja(marco, { fondo = "panel", borde = "linea", corte = K.CORTE.panel, rol = nil })
+caja:Estilo({ borde = "acento", alfaBorde = 0.6 })  -- cambia y repinta; un alfa que no pasas junto a su color vuelve al del token
 K.Marca(marco, K.CORTE.panel)                       -- la raya de acento de 28 x 2 tras el corte
 K.Velo(marco, corte)                                -- el velo blanco al pasar el ratón
 K.Faceta(padre, "acento")                           -- la faceta de 4 x 14 de las secciones
@@ -138,7 +164,13 @@ K.Desplegable(padre, { opciones = { { valor = "g", texto = L["Grafito"] } }, val
 K.Atajo(padre, { accion = "CLICK AlfaPescaBoton:LeftButton" })  -- clic y pulsa una tecla; clic derecho la quita; atajo:Capturar()
 ```
 
-Un control con `clave` se vuelve a leer solo cuando ese ajuste cambia en otra parte.
+Un control con `clave` se vuelve a leer solo cuando ese ajuste cambia en otra parte. Sin `clave`, el interruptor, el deslizador y el desplegable aceptan `get = fn() -> valor` y `set = fn(valor)` propios (`ctrl:Leer()` vuelve a llamar a `get`). Todos los controles tienen `:SetActivo(bool)` (las filas de ajustes lo usan).
+
+```lua
+K.Menu(dueno, { { valor = "a", texto = L["Uno"] }, { separador = true },
+	{ valor = "b", texto = L["Otro"], apagada = true, motivo = L["Necesitas nivel 20"] } }, valor, alElegir)
+-- un separador es una línea; una opción apagada se ve atenuada, no se elige y dice su motivo al pasar el ratón
+```
 
 ### Avance
 
@@ -171,6 +203,8 @@ t:Set({
 	progreso = { actual = 3, total = 8, texto = L["3 de 8"], huellas = true },
 	accion = { texto = L["Seguir"], icono = "ic-seguir", alClic = fn }, secundaria = { texto = L["Ver"], alClic = fn },
 	alClic = fn, ayuda = L["..."],
+	elegida = true,                                                               -- la opción marcada de un grupo (borde de acento)
+	tenir = false,                                                                -- el ícono con sus colores (hechizo u objeto del juego)
 })
 -- variantes: accion (la recomendada, grande: botones a la derecha si cabe), normal (rejilla),
 --            compacta (una fila de 48: ícono, título, valor), estado (cómo está algo y qué hacer)
@@ -216,8 +250,9 @@ v:SetPie({ K.Boton(v, L["Cerrar"], ...), K.Boton(v, L["Seguir"], ..., { tipo = "
 -- se mueve por su cabecera, recuerda su lugar (AlfaNucleoDB.kit.ventanas), se cierra con Esc,
 -- se oculta con "Ocultar Alfa" (vive en la capa Alfa.UIParent)
 K.Dialogo({ titulo = ..., texto = ..., aceptar = L["Borrar"], peligro = true, alAceptar = fn })
-K.Aviso({ titulo = ..., texto = ..., icono = "ic-nivel" | lobo = "aullando", tono = "acento", duracion = 6,
-	accion = { texto = L["Llévame"], alClic = fn } })
+local a = K.Aviso({ titulo = ..., texto = ..., icono = "ic-nivel" | lobo = "aullando", tono = "acento", duracion = 6,
+	accion = { texto = L["Llévame"], alClic = fn }, alCerrar = fn })   -- alCerrar: una vez, se cierre como se cierre
+a:Cerrar(a.turno)   -- lo cierra desde fuera (el marco se reutiliza: con el turno, solo si sigue mostrando ese aviso)
 local d = K.Desplazable(padre) ; d.Contenido ; d:SetAltoContenido(h) ; d:Acomodar(ancho, alto)
 ```
 

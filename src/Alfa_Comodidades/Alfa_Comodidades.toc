@@ -16,4 +16,4 @@ Marcos.lua
 Cuadro.lua
 Probador.lua
 Sonidos.lua
-Opciones.lua
+Pagina.lua

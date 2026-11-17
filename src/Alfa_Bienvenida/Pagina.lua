@@ -1,0 +1,88 @@
+-- Alfa - Bienvenida: la página "Estilo y sonido" en Ajustes (Toxic / La
+-- Jauría). GPL-3.0.
+--
+-- Un Tablero del Kit:
+--   1. tu estilo de ahora, con "Repetir el asistente";
+--   2. los tres estilos para cambiar en un clic (y, en Cristal, el acento);
+--   3. el sonido: el aullido al abrir Alfa y un botón para escucharlo;
+--   4. la bienvenida y lo nuevo de la 1.0.
+
+local ADDON, M = ...
+local N = AlfaNucleo
+local A = N.A
+local K = N.Kit
+local L = M.L
+local ID = M.ID
+local ESP = K.ESP
+
+local format = string.format
+
+local function estado()
+	local e = K.DatosEstilo()
+	return {
+		icono = e and e.icono or "ic-apariencia", tono = "acento", sobre = L["Tu estilo"],
+		titulo = K.NombreEstilo(K.Estilo()) or "",
+		texto = e and L[e.texto] or nil,
+		accion = { texto = L["Repetir el asistente"], icono = "ic-seguir", alClic = function() M.Abrir("pedido", "asistente") end },
+	}
+end
+
+local function bloqueEstilos(ui, padre)
+	local b = K.Pila(padre, { espacio = ESP.m })
+	b.Seccion = b:Agregar(K.Seccion(b, L["Elige tu estilo"]))
+	b.Selector = b:Agregar(K.SelectorEstilo(b, { min = 220, alCambiar = function() M.alCambiar() end }))
+	b.SecAcento = b:Agregar(K.Seccion(b, L["Tu color de acento"]), { espacio = ESP.l })
+	b.Acento = b:Agregar(K.SelectorAcento(b, {}), { espacio = ESP.s })
+	function b:Refrescar()
+		local cristal = K.Cristal()
+		K.Mostrar(self.SecAcento, cristal)
+		K.Mostrar(self.Acento, cristal)
+		self.Selector:Leer()
+		self.Acento:Leer()
+	end
+	return b
+end
+
+local function grupos(ui, padre)
+	local sonido = K.GrupoAjustes(padre, { titulo = L["Sonido"] })
+	sonido:Fila({ titulo = L["Aullido al abrir Alfa"],
+		texto = L["Un aullido de lobo, del propio juego, la primera vez que abres Alfa en cada sesión."],
+		control = function(fila) return K.Interruptor(fila, { clave = ID .. ".aullido" }) end })
+	sonido:Fila({ titulo = L["Escuchar el aullido"], texto = L["Suena ahora, aunque el aullido esté apagado."],
+		control = function(fila) return K.Boton(fila, L["Escuchar"], function() M.Aullar(true) end, { tipo = "secundario", icono = "ic-lobo" }) end })
+
+	local bienvenida = K.GrupoAjustes(padre, { titulo = L["Bienvenida"] })
+	bienvenida:Fila({ titulo = format(L["Lo nuevo en Alfa %s"], M.VERSION_ALFA),
+		texto = L["La bienvenida con las novedades de esta versión."],
+		control = function(fila) return K.Boton(fila, L["Ver"], function() M.Abrir("pedido", "portada") end, { tipo = "secundario" }) end })
+	return { sonido, bienvenida }
+end
+
+local function construir(view)
+	local ui = {}
+	local t = K.Tablero(view, { margen = N.MargenPagina(), accion = "estado" })
+	ui.estilos = t:AgregarBloque(bloqueEstilos(ui, t.Extra))
+	ui.grupos = grupos(ui, t.Extra)
+	for i, g in ipairs(ui.grupos) do t:AgregarBloque(g, { espacio = i == 1 and ESP.xl or ESP.l }) end
+	K.EnPagina(view, t, function()
+		t:SetAccion(estado())
+		ui.estilos:Refrescar()
+		for _, g in ipairs(ui.grupos) do g:Refrescar() end
+	end)
+	M.vista = view
+end
+
+-- Algo cambió (el estilo, el acento): la página se rehace si está a la vista.
+function M.alCambiar()
+	local view = M.vista
+	if view then N.RehacerPagina(view) end
+end
+K.AlRepintar(function() M.alCambiar() end)
+
+N.Modulo({
+	id = ID, nombre = L["Estilo y sonido"], icono = "ic-apariencia", orden = 90, seccion = "ajustes",
+	subtitulo = L["Tu estilo (Alfa, Clásico WoW o Cristal), el color de acento y el aullido."],
+	comando = "estilo",
+	ajustes = { aullido = true },
+	construir = construir,
+})

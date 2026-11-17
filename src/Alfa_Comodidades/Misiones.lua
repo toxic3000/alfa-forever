@@ -15,6 +15,9 @@
 --     mejor recompensa" del motor, si la tienes encendida).
 --   * Lo que dejó de lado una vez no lo vuelve a abrir en esa sesión, para
 --     no repetirse si vuelves atrás en la ventana del PNJ.
+--   * Con "solo las misiones de mi ruta" encendido (ruta.soloRuta, el ajuste
+--     de la ruta de Alfa) no acepta nada que no sea de tu ruta. Entregar lo
+--     que ya llevas sigue igual: no toma nada nuevo.
 --
 -- Cliente (Forever, verificado en Mainline QuestFrame.lua / QuestInfo.lua y
 -- en el motor): GetQuestID, AcceptQuest, QuestGetAutoAccept,
@@ -67,6 +70,27 @@ local function motorEntrega(q)
 	if C and C.IsOnQuest and C.IsOnQuest(q) then return quiere("turnin", q) end
 	return quiere("direct", q)
 end
+
+---------------------------------------------------------------------------
+-- Solo las de tu ruta
+---------------------------------------------------------------------------
+
+local function soloRuta() return A.Get("ruta.soloRuta") == true end
+
+-- Si la misión es de tu ruta: lo dice la ruta de Alfa (AlfaRuta.EnRuta, si
+-- la publica) y, si no, la guía que sigues en el motor (Engine.WantsQuest).
+local function enRuta(q)
+	q = legible(q)
+	if not (q and q ~= 0) then return false end
+	local Ru = AlfaRuta
+	if type(Ru) == "table" and type(Ru.EnRuta) == "function" then
+		local ok, si = pcall(Ru.EnRuta, q)
+		if ok then return si and true or false end
+	end
+	return quiere("accept", q)
+end
+
+local function puedeAceptar(q) return not soloRuta() or enRuta(q) end
 
 ---------------------------------------------------------------------------
 -- Qué misiones toma
@@ -159,6 +183,7 @@ local function alDetalle()
 	if not activo() then return end
 	local q = idActual()
 	if (q and dejadas[q]) or motorAcepta(q) then return end
+	if not puedeAceptar(q) then return end -- sin marcarla: si cambias de ruta, vale
 	local function dejar() if q then dejadas[q] = true end end
 	if not quiereFrecuencia(frecuenciaDetalle()) then return end -- sin marcarla: puedes encender ese tipo luego
 	if trivial(q) then return dejar() end
@@ -230,7 +255,7 @@ local function alSaludo()
 	for i = 1, disponibles do
 		local esTrivial, frecuencia, _, _, q = GetAvailableQuestInfo(i)
 		q = legible(q)
-		if not legible(esTrivial) and not (q and dejadas[q]) and quiereFrecuencia(frecuencia) then
+		if not legible(esTrivial) and not (q and dejadas[q]) and quiereFrecuencia(frecuencia) and puedeAceptar(q) then
 			SelectAvailableQuest(i)
 			return
 		end
@@ -262,7 +287,7 @@ local function alDialogo()
 	for _, info in ipairs(disponibles) do
 		local q = legible(info.questID)
 		if q and not dejadas[q] and not legible(info.isTrivial) and not legible(info.isIgnored)
-			and quiereFrecuencia(info.frequency) then
+			and quiereFrecuencia(info.frequency) and puedeAceptar(q) then
 			G.SelectAvailableQuest(q)
 			return
 		end
@@ -280,4 +305,5 @@ A.RegisterEvent("QUEST_GREETING", evento(alSaludo))
 A.RegisterEvent("GOSSIP_SHOW", evento(alDialogo))
 
 -- Para pruebas.
-M.Misiones = { Detalle = alDetalle, Progreso = alProgreso, Completar = alCompletar, Saludo = alSaludo, Dialogo = alDialogo, Dejadas = dejadas }
+M.Misiones = { Detalle = alDetalle, Progreso = alProgreso, Completar = alCompletar, Saludo = alSaludo, Dialogo = alDialogo, Dejadas = dejadas,
+	SoloRuta = soloRuta, EnRuta = enRuta }

@@ -97,7 +97,7 @@ function K.Encabezado(padre, opts)
 		self.alfaDatos = o
 		K.Mostrar(self.Baldosa, o.icono ~= nil)
 		if o.icono then K.SetIcono(self.Icono, o.icono, o.tono or "acento") end
-		K.Escribir(self.Sobre, o.sobre and o.sobre:upper() or "")
+		K.Escribir(self.Sobre, o.sobre and K.Mayus(o.sobre) or "")
 		K.Escribir(self.Titulo, o.titulo or "")
 		K.Escribir(self.Subtitulo, o.subtitulo or "")
 	end
@@ -202,6 +202,8 @@ end
 --     progreso = { actual, total, texto, huellas = true },
 --     accion = { texto, alClic, icono }, secundaria = { texto, alClic },
 --     alClic = fn (toda la tarjeta), ayuda = "texto del cuadro de información",
+--     elegida = true (la opción marcada de un grupo: borde de acento),
+--     tenir = false (el ícono con sus colores: uno de hechizo u objeto del juego),
 --   })
 --   tarjeta:Acomodar(ancho, altoMinimo) -> alto
 ---------------------------------------------------------------------------
@@ -217,7 +219,8 @@ local function pintarTarjeta(c)
 	local v = c.alfaVariante
 	local relleno = K.Tono(d.tono or "acento")
 	local sobre = c.alfaSobre and d.alClic
-	c.caja:Estilo({ fondo = "panel", borde = sobre and "lineaFuerte" or "linea" })
+	-- elegida: la opción marcada de un grupo de tarjetas (un asistente), con borde de acento.
+	c.caja:Estilo({ fondo = "panel", borde = d.elegida and "acento" or (sobre and "lineaFuerte" or "linea"), alfaBorde = d.elegida and 0.9 or false })
 	c.velo:SetShown(sobre and true or false)
 	c.Baldosa.caja:Estilo({ fondo = (v == "accion" or v == "estado") and relleno or "elevado", alfaFondo = (v == "accion" or v == "estado") and 0.14 or nil,
 		borde = (v == "accion" or v == "estado") and relleno or "linea", alfaBorde = (v == "accion" or v == "estado") and 0.4 or nil })
@@ -237,13 +240,14 @@ function K.Tarjeta(padre, opts)
 	local c = CreateFrame("Button", nil, padre)
 	c.alfaVariante = v
 	c:RegisterForClicks("LeftButtonUp")
-	c.caja = K.Caja(c, { corte = cfg.corte })
+	c.caja = K.Caja(c, { corte = cfg.corte, rol = "panel" })
 	c.velo = K.Velo(c, cfg.corte, 0.035)
 	if v == "accion" or v == "estado" then
 		c.Franja = K.Plano(c, "acento", "ARTWORK", 1)
 		c.Franja:SetWidth(3)
 		c.Franja:SetPoint("TOPLEFT", c, "TOPLEFT", 0, -cfg.corte - 4)
 		c.Franja:SetPoint("BOTTOMLEFT", c, "BOTTOMLEFT", 0, cfg.corte + 4)
+		K.SoloCasa(c.Franja)
 		c.Marca = K.Marca(c, cfg.corte, "acento")
 	end
 	c.Baldosa = CreateFrame("Frame", nil, c)
@@ -273,10 +277,15 @@ function K.Tarjeta(padre, opts)
 			self.Icono.alfaColor = relleno
 			self.Icono:SetVertexColor(K.Color(relleno))
 		else
-			K.SetIcono(self.Icono, d.icono or "ic-lobo", (v == "compacta" or v == "normal") and (d.tono and relleno or "acento") or relleno)
+			local color = (v == "compacta" or v == "normal") and (d.tono and relleno or "acento") or relleno
+			if d.tenir == false then color = nil end
+			K.SetIcono(self.Icono, d.icono or "ic-lobo", color)
 		end
+		-- Un ícono del juego (un número o una ruta) sin su marco gris de los bordes.
+		local delJuego = d.tenir == false and not d.lobo and (type(d.icono) == "number" or (type(d.icono) == "string" and d.icono:find("\\", 1, true) ~= nil))
+		if delJuego then self.Icono:SetTexCoord(0.08, 0.92, 0.08, 0.92) else self.Icono:SetTexCoord(0, 1, 0, 1) end
 		K.Mostrar(self.Baldosa, (d.icono or d.lobo) ~= nil)
-		K.Escribir(self.Sobre, d.sobre and tostring(d.sobre):upper() or "")
+		K.Escribir(self.Sobre, d.sobre and K.Mayus(d.sobre) or "")
 		K.ColorTexto(self.Sobre, texto)
 		K.Escribir(self.Titulo, d.titulo or "")
 		K.Escribir(self.Texto, d.texto or "")
@@ -545,7 +554,7 @@ end
 local function pintarFila(f)
 	local l = f.alfaLista
 	local on = l.alfaElegir ~= false and f.alfaI ~= nil and f.alfaI == l.alfaElegida
-	f.Fondo:SetShown(on or (f.alfaSobre and true or false))
+	f.Fondo:SetShown(on or (f.alfaSobre and not f.alfaInerte and true or false))
 	f.Fondo:SetColorTexture(1, 1, 1, 1)
 	if on then f.Fondo:SetVertexColor(K.Color("elevado")) else f.Fondo:SetVertexColor(1, 1, 1, 0.04) end
 	f.Barra:SetShown(on)
@@ -786,10 +795,20 @@ function K.FilaAjuste(padre, opts)
 		K.Escribir(self.Texto, d.texto or "")
 		local activa = not d.activa or d.activa()
 		self:SetAlpha(activa and 1 or 0.45)
-		if self.Control and self.Control.SetActivo then self.Control:SetActivo(activa) elseif self.Control then
-			if activa then self.Control:Enable() else self.Control:Disable() end
+		-- El control: su SetActivo (la fila ya lo atenúa: el control queda a su
+		-- alfa), si no Enable / Disable, y si no tiene, solo deja de tomar el ratón.
+		local c = self.Control
+		if c then
+			if c.SetActivo then
+				c:SetActivo(activa)
+				c:SetAlpha(1)
+			elseif c.Enable and c.Disable then
+				if activa then c:Enable() else c:Disable() end
+			elseif c.EnableMouse then
+				c:EnableMouse(activa and true or false)
+			end
+			if c.Leer then c:Leer() end
 		end
-		if self.Control and self.Control.Leer then self.Control:Leer() end
 	end
 	function f:Acomodar(ancho)
 		local d = self.alfaDatos

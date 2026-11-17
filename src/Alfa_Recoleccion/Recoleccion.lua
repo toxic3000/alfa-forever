@@ -1,20 +1,30 @@
 -- Alfa - Recolección (Toxic / La Jauría, GPL-3.0): nodos, rutas de farmeo e historial.
 --
--- Esta parte: la página del módulo (resumen de la sesión, ruta de farmeo,
--- qué se muestra, historial y datos), las capas de Alfa_Mundo, el comando
--- /alfa recoleccion y el arranque. Los nodos están en Nodos.lua, la
--- detección en Deteccion.lua, el mapa en Mapa.lua, el minimapa en
--- Minimapa.lua y la ruta en Ruta.lua.
+-- Esta parte: la página del módulo, hecha con el Kit (docs/KIT.md, plantilla
+-- Tablero), las capas de Alfa_Mundo, el comando /alfa recoleccion y el
+-- arranque. Los nodos están en Nodos.lua, la detección en Deteccion.lua,
+-- el mapa en Mapa.lua, el minimapa en Minimapa.lua y la ruta en Ruta.lua.
+--
+-- La página, de arriba abajo:
+--   1. tu ruta de farmeo: qué hacer ahora (crearla, seguirla, detenerla),
+--      con su avance en huellas, y qué recolectar (tipo y recurso);
+--   2. esta sesión en números (solo si ya recolectaste algo);
+--   3. lo recolectado: por recurso, los objetos, por zona y las sesiones
+--      anteriores (cada lista solo si tiene algo; sin nada, el lobo dormido);
+--   4. los ajustes: dónde y qué se ve, y el mapa;
+--   5. tus datos: lo que trae la base y lo que descubriste, y borrar.
 
 local ADDON, M = ...
 local N = AlfaNucleo
 local A = N.A
-local W, T = A.Widgets, A.Theme
+local K = N.Kit
 local R, Ruta = M.R, M.Ruta
 local L = N.Textos(M.EN)
 
-local floor, max, min = math.floor, math.max, math.min
+local floor, max, min, format = math.floor, math.max, math.min, string.format
 local ID = R.ID
+local ESP = K.ESP
+local DOT = "  \194\183  "
 
 ---------------------------------------------------------------------------
 -- Capas de Alfa_Mundo (si está): un interruptor por tipo en su control.
@@ -23,16 +33,11 @@ local function hayMundo()
 	return type(AlfaMundo) == "table" and type(AlfaMundo.RegistrarCapa) == "function"
 end
 
-local function iconoCapa(tipo)
-	local tex = R.IconoTipo(tipo)
-	return tex
-end
-
 if hayMundo() then
 	for _, tipo in ipairs(M.TIPOS) do
 		local ok = pcall(AlfaMundo.RegistrarCapa, {
 			id = "recoleccion." .. tipo, grupo = L["Recolección"], nombre = R.NombreTipo(tipo),
-			icono = iconoCapa(tipo), activa = N.Get(ID, tipo) ~= false,
+			icono = (R.IconoTipo(tipo)), activa = N.Get(ID, tipo) ~= false,
 			alCambiar = function(activa)
 				-- Se guarda también aquí, para cuando Alfa_Mundo no esté.
 				N.Set(ID, tipo, activa and true or false)
@@ -43,25 +48,18 @@ if hayMundo() then
 	end
 end
 
--- Encender o apagar un tipo: con Alfa_Mundo, en su capa (si su control no
--- se puede mover desde aquí, se abre la página de Mundo).
+-- Encender o apagar un tipo: con Alfa_Mundo, en su capa.
 local function ponerTipo(tipo, valor)
 	if valor == nil then valor = true end
-	if R.mundo and type(AlfaMundo) == "table" then
-		if type(AlfaMundo.ActivarCapa) == "function" then
-			pcall(AlfaMundo.ActivarCapa, "recoleccion." .. tipo, valor)
-		else
-			N.Imprimir(L["Las capas de Recolección se encienden y apagan en la página Mundo."])
-			N.Abrir("mundo")
-			return
-		end
+	if R.mundo and type(AlfaMundo) == "table" and type(AlfaMundo.ActivarCapa) == "function" then
+		pcall(AlfaMundo.ActivarCapa, "recoleccion." .. tipo, valor)
 	end
 	N.Set(ID, tipo, valor and true or false)
 	R.Refiltrar()
 end
 
 ---------------------------------------------------------------------------
--- Ajustes y controles (los mismos sirven a la página y a la búsqueda)
+-- Ajustes y su búsqueda (la ventana de Alfa los encuentra por su nombre)
 ---------------------------------------------------------------------------
 local AJUSTES = {
 	mapa = true, minimapa = true,
@@ -72,101 +70,36 @@ local AJUSTES = {
 	rutaTipo = "mineria", rutaRecurso = "todos",
 }
 
-local function porciento(v) return floor(v * 100 + 0.5) .. "%" end
+local function porciento(v) return floor(v * 100 + 0.5) .. " %" end
 local function clave(k) return ID .. "." .. k end
 
-local function control(tipo, k, etiqueta, ayuda, extra)
+local function buscable(tipo, k, etiqueta, ayuda, extra)
 	local c = { kind = tipo, key = clave(k), label = etiqueta, help = ayuda }
 	for a, b in pairs(extra or {}) do c[a] = b end
 	return c
 end
 
-local function interruptorTipo(tipo, etiqueta, ayuda)
-	return control("toggle", tipo, etiqueta, ayuda, {
+local BUSCAR = {
+	buscable("toggle", "mapa", L["En el mapa del mundo"], nil, { search = "mapa, world map, pins, nodos" }),
+	buscable("toggle", "minimapa", L["En el minimapa"], nil, { search = "minimap, nodos, cerca" }),
+	buscable("slider", "tamanoMapa", L["Tamaño en el mapa"], nil, { min = 0.6, max = 1.8, step = 0.05, format = porciento }),
+	buscable("slider", "tamanoMinimapa", L["Tamaño en el minimapa"], nil, { min = 0.6, max = 1.8, step = 0.05, format = porciento }),
+	buscable("toggle", "soloProfesiones", L["Ocultar lo de profesiones que no tienes"]),
+	buscable("toggle", "soloHabilidad", L["Solo lo que ya puedes recolectar"]),
+	buscable("toggle", "agrupar", L["Juntar nodos cercanos al alejar"]),
+	buscable("toggle", "base", L["Usar la base de datos incluida"]),
+}
+for _, tipo in ipairs(M.TIPOS) do
+	BUSCAR[#BUSCAR + 1] = buscable("toggle", tipo, R.NombreTipo(tipo), nil, {
 		search = "capas, layers, nodos, " .. tipo,
 		get = function() return R.TipoActivo(tipo) end,
 		set = function(v) ponerTipo(tipo, v) end,
 	})
 end
 
-local SECCIONES = {
-	{ nombre = L["Dónde se ven"], controles = {
-		control("toggle", "mapa", L["En el mapa del mundo"], L["Los nodos de la zona que miras, con su nombre, nivel y cuántas veces los recolectaste al pasar el ratón."], { search = "mapa, world map, pins, nodos" }),
-		control("toggle", "minimapa", L["En el minimapa"], L["Los nodos que tienes cerca. El punto del rastreo del juego dice si ahora hay algo ahí."], { search = "minimap, nodos, cerca" }),
-		control("slider", "tamanoMapa", L["Tamaño en el mapa"], nil, { min = 0.6, max = 1.8, step = 0.05, format = porciento }),
-		control("slider", "tamanoMinimapa", L["Tamaño en el minimapa"], nil, { min = 0.6, max = 1.8, step = 0.05, format = porciento }),
-	} },
-	{ nombre = L["Qué se ve"], mundo = true, controles = {
-		interruptorTipo("mineria", L["Minería"], L["Filones y depósitos de mineral."]),
-		interruptorTipo("hierbas", L["Hierbas"], L["Las plantas de herboristería."]),
-		interruptorTipo("pesca", L["Bancos de peces"], L["Bancos y restos flotantes donde pescar."]),
-		interruptorTipo("tesoros", L["Tesoros"], L["Cofres, baúles y almejas que se abren."]),
-		control("toggle", "soloProfesiones", L["Ocultar lo de profesiones que no tienes"], L["Sin Minería no ves filones; sin Herboristería, hierbas; sin Pesca, bancos. Los tesoros siempre se ven."]),
-		control("toggle", "soloHabilidad", L["Solo lo que ya puedes recolectar"], L["Esconde lo que pide más habilidad de la que tienes. Sin esto se ve gris y tenue."]),
-	} },
-	{ nombre = L["Mapa"], controles = {
-		control("toggle", "agrupar", L["Juntar nodos cercanos al alejar"], L["Los nodos que se pisarían en pantalla van en un solo pin con su cantidad. Al acercar el mapa se separan."]),
-		control("toggle", "base", L["Usar la base de datos incluida"], L["Los nodos que trae Alfa. Sin esto solo ves los que tú descubriste."]),
-	} },
-}
-
-local TODOS = {}
-for _, s in ipairs(SECCIONES) do
-	for _, c in ipairs(s.controles) do TODOS[#TODOS + 1] = c end
-end
-
-local TIPOS_RUTA = {
-	{ value = "mineria", text = L["Minería"] }, { value = "hierbas", text = L["Hierbas"] },
-	{ value = "pesca", text = L["Bancos de peces"] }, { value = "tesoros", text = L["Tesoros"] },
-}
-
-local function recursosRuta()
-	local tipo = N.Get(ID, "rutaTipo") or "mineria"
-	local out = { { value = "todos", text = L["Todos"] } }
-	local elegido, esta = N.Get(ID, "rutaRecurso"), false
-	for _, r in ipairs(Ruta.RecursosEn(Ruta.ZonaActual(), tipo)) do
-		out[#out + 1] = { value = r.clave, text = ("%s (%d)"):format(r.nombre, r.cuenta) }
-		if r.clave == elegido then esta = true end
-	end
-	if elegido and elegido ~= "todos" and not esta and M.porClave[elegido] then
-		out[#out + 1] = { value = elegido, text = ("%s (0)"):format(R.Nombre(M.porClave[elegido])) }
-	end
-	return out
-end
-
 ---------------------------------------------------------------------------
--- La página
+-- Utilidades de la página
 ---------------------------------------------------------------------------
-local SH = W.SHELL
-local SECCION_H = type(W.PLAIN_SECTION_H) == "number" and W.PLAIN_SECTION_H or 30
-local HUECO = 22        -- entre secciones
-local PAD = 16          -- dentro de un panel
-local FILA = 30         -- una fila de lista
-local MAX_FILAS = 10
-
-local pagina            -- la vista, una vez armada
-local V = {}            -- sus piezas
-
-local function pad()
-	local p = type(SH) == "table" and SH.pad
-	return type(p) == "number" and p or 32
-end
-
-local function opciones()
-	local UI = A.UI
-	return type(UI) == "table" and UI.Options or nil
-end
-
-local function ancho()
-	local O = opciones()
-	local win = O and O.frame
-	local w = type(win) == "table" and win.BodyWidth
-	if type(w) == "number" and w > 0 then return w end
-	local vw = pagina and pagina:GetWidth()
-	if type(vw) == "number" and vw > 2 * pad() then return vw - 2 * pad() end
-	return 600
-end
-
 local function miles(n)
 	local s = tostring(floor(tonumber(n) or 0))
 	local sep = N.espanol and "." or ","
@@ -182,136 +115,9 @@ local function nombreZona(mapID)
 	return (C and C.MapName and C.MapName(mapID)) or L["Zona %d"]:format(tonumber(mapID) or 0)
 end
 
--- Una insignia redonda con un ícono (el de un tipo o un recurso).
-local function insignia(parent, tam)
-	local f = CreateFrame("Frame", nil, parent)
-	f:SetSize(tam, tam)
-	M.P.Construir(f)
-	f:EnableMouse(false)
-	return f
-end
-
-local function pintarInsigniaTipo(f, tipo, tam)
-	local tex, glifo = R.IconoTipo(tipo)
-	f:SetSize(tam, tam)
-	f.icono:SetTexture(tex)
-	local c = M.TIPO[tipo].color
-	if glifo then
-		f.icono:SetTexCoord(0, 1, 0, 1)
-		f.icono:SetSize(tam * 0.78, tam * 0.78)
-		f.icono:SetVertexColor(c[1], c[2], c[3], 1)
-	else
-		f.icono:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-		f.icono:SetSize(tam, tam)
-		f.icono:SetVertexColor(1, 1, 1, 1)
-	end
-	f.fondo:SetSize(tam * 1.2, tam * 1.2)
-	f.fondo:SetVertexColor(0, 0, 0, 0.6)
-	f.aro:SetSize(tam * 1.42, tam * 1.42)
-	f.aro:SetVertexColor(c[1], c[2], c[3], 0.95)
-	f.cuenta:Hide()
-end
-
--- Listas del historial: filas reutilizables (ícono, nombre, detalle, valor).
-local function fila(lista, k, parent)
-	local f = lista.filas[k]
-	if f then return f end
-	f = CreateFrame("Frame", nil, parent)
-	f:SetHeight(FILA)
-	f.Icono = f:CreateTexture(nil, "ARTWORK")
-	f.Icono:SetSize(18, 18)
-	f.Icono:SetPoint("LEFT", f, "LEFT", PAD, 0)
-	f.Icono:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-	f.Nombre = W.Text(f, "body", "text")
-	f.Nombre:SetPoint("LEFT", f.Icono, "RIGHT", 10, 0)
-	f.Detalle = W.Text(f, "small", "textMuted")
-	f.Valor = W.Text(f, "number", "text")
-	f.Valor:SetJustifyH("RIGHT")
-	f.Valor:SetPoint("RIGHT", f, "RIGHT", -PAD, 0)
-	f.Detalle:SetPoint("RIGHT", f.Valor, "LEFT", -12, 0)
-	f.Detalle:SetJustifyH("RIGHT")
-	f.Linea = W.Divider(f, false, 0.6)
-	f.Linea:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", PAD, 0)
-	f.Linea:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -PAD, 0)
-	lista.filas[k] = f
-	return f
-end
-
-local function nuevaLista(view, titulo)
-	local l = { filas = {}, titulo = titulo }
-	l.Panel = W.RowPanel(view)
-	l.Titulo = W.Text(view, "label", "textDim")
-	l.Titulo:SetText(titulo)
-	l.Vacio = W.Text(view, "note", "textMuted")
-	l.Vacio:SetWordWrap(true)
-	l.Vacio:SetJustifyV("TOP")
-	return l
-end
-
--- Pinta `datos` = { { icono, nombre, detalle, valor }, ... } en la lista,
--- desde y; -> nueva y.
-local function pintarLista(l, view, datos, y, w, vacio)
-	l.Titulo:ClearAllPoints()
-	l.Titulo:SetPoint("TOPLEFT", view, "TOPLEFT", pad(), -y)
-	l.Titulo:Show()
-	y = y + 22
-	local n = min(#datos, MAX_FILAS)
-	if n == 0 then
-		for _, f in ipairs(l.filas) do f:Hide() end
-		l.Panel:Hide()
-		l.Vacio:SetText(vacio or "")
-		l.Vacio:SetWidth(w)
-		l.Vacio:ClearAllPoints()
-		l.Vacio:SetPoint("TOPLEFT", view, "TOPLEFT", pad(), -y)
-		l.Vacio:Show()
-		return y + math.ceil(l.Vacio:GetStringHeight()) + 6
-	end
-	l.Vacio:Hide()
-	local top = y
-	for k = 1, n do
-		local d = datos[k]
-		local f = fila(l, k, view)
-		f:ClearAllPoints()
-		f:SetPoint("TOPLEFT", view, "TOPLEFT", pad(), -y)
-		f:SetWidth(w)
-		if d.icono then
-			f.Icono:SetTexture(d.icono)
-			if d.glifo then
-				local c = M.TIPO.tesoros.color
-				f.Icono:SetTexCoord(0, 1, 0, 1)
-				f.Icono:SetVertexColor(c[1], c[2], c[3], 1)
-			else
-				f.Icono:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-				f.Icono:SetVertexColor(1, 1, 1, 1)
-			end
-			f.Icono:Show()
-			f.Nombre:SetPoint("LEFT", f.Icono, "RIGHT", 10, 0)
-		else
-			f.Icono:Hide()
-			f.Nombre:SetPoint("LEFT", f, "LEFT", PAD, 0)
-		end
-		f.Nombre:SetText(d.nombre or "")
-		f.Detalle:SetText(d.detalle or "")
-		f.Valor:SetText(d.valor or "")
-		f.Nombre:SetWidth(max(60, w - PAD * 2 - 28 - (d.detalle and 190 or 70)))
-		f.Linea:SetShown(k < n)
-		f:Show()
-		y = y + FILA
-	end
-	for k = n + 1, #l.filas do l.filas[k]:Hide() end
-	l.Panel:ClearAllPoints()
-	l.Panel:SetPoint("TOPLEFT", view, "TOPLEFT", pad(), -top)
-	l.Panel:SetSize(w, y - top)
-	l.Panel:Show()
-	if #datos > n then
-		l.Vacio:SetText(L["y %d más"]:format(#datos - n))
-		l.Vacio:SetWidth(w)
-		l.Vacio:ClearAllPoints()
-		l.Vacio:SetPoint("TOPLEFT", view, "TOPLEFT", pad(), -(y + 4))
-		l.Vacio:Show()
-		y = y + 22
-	end
-	return y
+local function porHora(total, seg)
+	if seg < 300 or total == 0 then return nil end
+	return floor(total / (seg / 3600) + 0.5)
 end
 
 local function ordenadoPorValor(t)
@@ -324,269 +130,253 @@ local function ordenadoPorValor(t)
 	return out
 end
 
-local function porHora(total, seg)
-	if seg < 300 or total == 0 then return nil end
-	return floor(total / (seg / 3600) + 0.5)
-end
+-- Los íconos del Kit para cada tipo (las tarjetas los tiñen).
+local ICONO_TIPO = {
+	mineria = "ic-oficios", hierbas = "ic-recoleccion", pesca = "ic-pesca",
+	tesoros = "Interface\\AddOns\\Alfa\\Media\\Map\\icon-treasure",
+}
+
+local V = { esperaObjetos = false }
 
 ---------------------------------------------------------------------------
--- Piezas de la página
+-- 1. La ruta de farmeo
 ---------------------------------------------------------------------------
-local function armarResumen(view)
-	local p = W.RowPanel(view)
-	V.resumen = p
-	V.resEtiqueta = W.Text(p, "caption", "textMuted")
-	V.resEtiqueta:SetText(L["ESTA SESIÓN"])
-	V.resNumero = W.Text(p, "hero", "text")
-	V.resPalabra = W.Text(p, "body", "textDim")
-	V.resLinea = W.Text(p, "note", "textMuted")
-	V.resTotal = W.Text(p, "small", "textMuted")
-	V.resTotal:SetJustifyH("RIGHT")
-	V.tipos = {}
-	for _, tipo in ipairs(M.TIPOS) do
-		local b = CreateFrame("Frame", nil, p)
-		b:SetHeight(44)
-		b.Insignia = insignia(b, 20)
-		b.Insignia:SetPoint("LEFT", b, "LEFT", 4, 0)
-		b.Cuenta = W.Text(b, "title", "text")
-		b.Cuenta:SetPoint("TOPLEFT", b.Insignia, "TOPRIGHT", 12, 4)
-		b.Nombre = W.Text(b, "small", "textMuted")
-		b.Nombre:SetPoint("TOPLEFT", b.Cuenta, "BOTTOMLEFT", 0, -2)
-		b.Nombre:SetText(R.NombreTipo(tipo))
-		b.tipo = tipo
-		V.tipos[#V.tipos + 1] = b
-	end
+local function nombreRecurso(tipo, recurso)
+	if recurso and recurso ~= "todos" and M.porClave[recurso] then return R.Nombre(M.porClave[recurso]) end
+	return R.NombreTipo(tipo)
 end
 
-local function layoutResumen(view, y, w)
-	local s = R.Sesion()
-	local P = R.Personaje()
-	local dur = max(0, time() - (tonumber(s.inicio) or time()))
-	local total = tonumber(s.total) or 0
-	local p = V.resumen
-	p:ClearAllPoints()
-	p:SetPoint("TOPLEFT", view, "TOPLEFT", pad(), -y)
-	p:SetWidth(w)
-	V.resEtiqueta:ClearAllPoints()
-	V.resEtiqueta:SetPoint("TOPLEFT", p, "TOPLEFT", PAD + 2, -14)
-	V.resNumero:SetText(miles(total))
-	V.resNumero:ClearAllPoints()
-	V.resNumero:SetPoint("TOPLEFT", V.resEtiqueta, "BOTTOMLEFT", 0, -6)
-	V.resPalabra:SetText(total == 1 and L["nodo recolectado"] or L["nodos recolectados"])
-	V.resPalabra:ClearAllPoints()
-	V.resPalabra:SetPoint("BOTTOMLEFT", V.resNumero, "BOTTOMRIGHT", 10, 3)
-	local partes = { L["en %s"]:format(N.Duracion(dur)) }
-	local ph = porHora(total, dur)
-	if ph then partes[#partes + 1] = L["%s por hora"]:format(miles(ph)) end
-	local zona = R.PosicionJugador()
-	if zona then partes[#partes + 1] = nombreZona(zona) end
-	V.resLinea:SetText(table.concat(partes, "  ·  "))
-	V.resLinea:ClearAllPoints()
-	V.resLinea:SetPoint("TOPLEFT", V.resNumero, "BOTTOMLEFT", 0, -6)
-	V.resTotal:SetText(L["Este personaje: %s en total"]:format(miles(P.total or 0)))
-	V.resTotal:ClearAllPoints()
-	V.resTotal:SetPoint("TOPRIGHT", p, "TOPRIGHT", -PAD - 2, -14)
-	local fila0 = 14 + 14 + 6 + 30 + 6 + 16 + 14
-	local cw = (w - PAD * 2) / #V.tipos
-	for k, b in ipairs(V.tipos) do
-		b:ClearAllPoints()
-		b:SetPoint("TOPLEFT", p, "TOPLEFT", PAD + (k - 1) * cw, -fila0)
-		b:SetWidth(cw)
-		pintarInsigniaTipo(b.Insignia, b.tipo, 20)
-		local n = tonumber(s.tipos[b.tipo]) or 0
-		b.Cuenta:SetText(miles(n))
-		W.Color(b.Cuenta, n > 0 and "text" or "textMuted")
-		b:SetAlpha(R.TipoActivo(b.tipo) and 1 or 0.55)
-	end
-	local h = fila0 + 44 + 14
-	p:SetHeight(h)
-	return y + h
-end
-
-local function armarRuta(view)
-	V.rutaH = W.SectionHeader(view, { plain = true })
-	W.SetSection(V.rutaH, L["Ruta de farmeo"])
-	V.rutaPanel = W.RowPanel(view)
-	-- Los textos van en el panel: así quedan sobre su fondo.
-	V.rutaZona = W.Text(V.rutaPanel, "body", "text")
-	V.rutaEstado = W.Text(V.rutaPanel, "note", "textDim")
-	V.rutaEstado:SetWordWrap(true)
-	V.rutaEstado:SetJustifyV("TOP")
-	V.rutaTipo = W.Dropdown(view, L["Qué recolectar"], clave("rutaTipo"), TIPOS_RUTA,
-		L["El tipo de nodos que une la ruta."])
-	V.rutaRecurso = W.Dropdown(view, L["Recurso"], clave("rutaRecurso"), recursosRuta,
-		L["Todos los de ese tipo, o solo uno (por ejemplo, solo cobre). Entre paréntesis, cuántos hay en tu zona."])
-	for _, r in ipairs({ V.rutaTipo, V.rutaRecurso }) do W.RowDetails(r, { inset = PAD, marks = false }) end
-	V.bCrear = W.Button(view, L["Crear ruta"], function()
-		local zona = Ruta.ZonaActual()
-		local ok, motivo = Ruta.Crear(N.Get(ID, "rutaTipo") or "mineria", N.Get(ID, "rutaRecurso") or "todos", zona, function(r)
-			if r and r.n then N.Imprimir(L["Ruta lista en %s: %s"]:format(nombreZona(r.mapa), Ruta.Resumen(r) or "")) end
-		end)
-		if not ok then
-			V.aviso = motivo
-			M.Pagina.Actualizar()
-		else
-			V.aviso = nil
-		end
-	end, { primary = true, icon = "icon-goto" })
-	V.bGuiar = W.Button(view, L["Guiarme"], function()
-		local r = Ruta.Actual()
-		if r and r.guiando then Ruta.Detener() else Ruta.Guiar() end
-	end)
-	V.bMapa = W.Button(view, L["Ver en el mapa"], function()
-		local r = Ruta.Actual()
-		local C = A.Compat
-		local mapa = (r and r.mapa) or Ruta.ZonaActual()
-		if mapa and C and C.OpenWorldMap then C.OpenWorldMap(mapa) end
-	end)
-	V.bBorrar = W.Button(view, L["Borrar"], function() Ruta.Borrar() end, { ghost = true })
-end
-
-local function habilitar(b, on)
-	if on then b:Enable() else b:Disable() end
-	b:SetAlpha(on and 1 or 0.4)
-end
-
-local function textoRuta()
-	local r = Ruta.Actual()
-	if Ruta.Calculando() then return L["Calculando la vuelta más corta..."] end
-	if V.aviso then return V.aviso end
-	if not r then
-		return L["Elige qué recolectar y crea la ruta: une los nodos de tu zona en una vuelta corta, la dibuja en el mapa y la flecha te lleva de parada en parada."]
-	end
-	local recurso = r.recurso and r.recurso ~= "todos" and M.porClave[r.recurso] and R.Nombre(M.porClave[r.recurso]) or R.NombreTipo(r.tipo)
-	local linea = L["%s en %s: %s."]:format(recurso, nombreZona(r.mapa), Ruta.Resumen(r) or "")
-	if r.guiando then
-		linea = linea .. " " .. L["La flecha te lleva a la parada %d."]:format(r.siguiente or 1)
-	else
-		linea = linea .. " " .. L["Pulsa Guiarme para que la flecha te lleve."]
-	end
-	return linea
-end
-
-local function layoutRuta(view, y, w)
-	V.rutaH:ClearAllPoints()
-	V.rutaH:SetPoint("TOPLEFT", view, "TOPLEFT", pad(), -y)
-	V.rutaH:SetWidth(w)
-	y = y + SECCION_H
-	local top = y
+local function crearRuta()
 	local zona = Ruta.ZonaActual()
-	V.rutaZona:SetText(zona and L["Tu zona: %s"]:format(nombreZona(zona)) or L["Tu zona: (desconocida)"])
-	V.rutaZona:ClearAllPoints()
-	V.rutaZona:SetPoint("TOPLEFT", view, "TOPLEFT", pad() + PAD, -(y + 14))
-	y = y + 14 + 18
-	V.rutaEstado:SetText(textoRuta())
-	V.rutaEstado:SetWidth(w - PAD * 2)
-	V.rutaEstado:ClearAllPoints()
-	V.rutaEstado:SetPoint("TOPLEFT", view, "TOPLEFT", pad() + PAD, -(y + 4))
-	y = y + 4 + math.ceil(V.rutaEstado:GetStringHeight()) + 10
-	for _, r in ipairs({ V.rutaTipo, V.rutaRecurso }) do
-		r:ClearAllPoints()
-		r:SetPoint("TOPLEFT", view, "TOPLEFT", pad(), -y)
-		if r.Refresh then r:Refresh() end
-		y = y + W.LayoutRow(r, w)
-		if r.Rule then r.Rule:Show() end
-	end
-	y = y + 12
-	local x = pad() + PAD
-	local ruta = Ruta.Actual()
-	local calculando = Ruta.Calculando()
-	W.SetButtonText(V.bGuiar, ruta and ruta.guiando and L["Detener"] or L["Guiarme"])
-	habilitar(V.bCrear, not calculando and zona ~= nil)
-	habilitar(V.bGuiar, ruta ~= nil and not calculando)
+	local ok, motivo = Ruta.Crear(N.Get(ID, "rutaTipo") or "mineria", N.Get(ID, "rutaRecurso") or "todos", zona, function(r)
+		if r and r.n then N.Imprimir(L["Ruta lista en %s: %s"]:format(nombreZona(r.mapa), Ruta.Resumen(r) or "")) end
+	end)
+	V.aviso = not ok and motivo or nil
+	M.Pagina.Actualizar()
+end
+
+local function verEnMapa()
+	local r = Ruta.Actual()
+	local mapa = (r and r.mapa) or Ruta.ZonaActual()
+	if not mapa then return end
+	-- El mapa del juego dibuja la ruta; el de Alfa, si M lo abre.
 	local C = A.Compat
-	habilitar(V.bMapa, (ruta or zona) ~= nil and C and C.CanOpenWorldMap and C.CanOpenWorldMap() and true or false)
-	habilitar(V.bBorrar, ruta ~= nil and not calculando)
-	for _, b in ipairs({ V.bCrear, V.bGuiar, V.bMapa, V.bBorrar }) do
-		b:ClearAllPoints()
-		b:SetPoint("TOPLEFT", view, "TOPLEFT", x, -y)
-		b:Show()
-		x = x + b:GetWidth() + 8
-	end
-	y = y + (V.bCrear:GetHeight() or 28) + PAD
-	V.rutaPanel:ClearAllPoints()
-	V.rutaPanel:SetPoint("TOPLEFT", view, "TOPLEFT", pad(), -top)
-	V.rutaPanel:SetSize(w, y - top)
-	V.rutaPanel:Show()
-	return y
+	if C and C.CanOpenWorldMap and C.CanOpenWorldMap() and C.OpenWorldMap(mapa) then return end
+	if AlfaMundo and AlfaMundo.Abrir then AlfaMundo.Abrir(mapa) end
 end
 
--- Filas de ajustes: las del menú de Alfa (UI.Options.Rows) si están; si no,
--- las mismas piezas del kit a mano.
-local cache = {}
-local function filasAjustes(view, controles, y, panel, w)
-	local O = opciones()
-	if O and type(O.Rows) == "function" and type(O.frame) == "table" then
-		return O.Rows(view, controles, y, cache, panel)
+local function tarjetaRuta()
+	local r = Ruta.Actual()
+	local zona = Ruta.ZonaActual()
+	local tipo = N.Get(ID, "rutaTipo") or "mineria"
+	local recurso = N.Get(ID, "rutaRecurso") or "todos"
+	local d = { icono = "ic-ruta" }
+	if Ruta.Calculando() then
+		d.titulo, d.tono = L["Calculando la vuelta más corta…"], "aviso"
+		d.texto = L["Alfa ordena las paradas para que no camines de más. Tarda unos segundos y no traba el juego."]
+		d.estado = { texto = L["Calculando"], tono = "aviso" }
+		return d
 	end
-	local top = y
-	for i, c in ipairs(controles) do
-		local fw = cache[c]
-		if not fw then
-			local opts = (c.get or c.set) and { get = c.get, set = c.set } or nil
-			if c.kind == "slider" then
-				fw = W.Slider(view, c.label, c.key, c.min or 0, c.max or 1, c.step or 0.1, c.format, c.help, nil, opts)
-			else
-				fw = W.Toggle(view, c.label, c.key, c.help, nil, opts)
+	if r and r.n and r.n > 0 then
+		local nombre = nombreRecurso(r.tipo, r.recurso)
+		if r.guiando then
+			d.titulo, d.tono = L["Siguiendo tu ruta de %s"]:format(nombre), "acento"
+			d.texto = L["%s. La flecha te lleva a la parada %d; al llegar o recolectar ahí pasa sola a la siguiente."]:format(Ruta.Resumen(r) or "", r.siguiente or 1)
+			d.estado = { texto = L["En camino"], tono = "acento" }
+			d.progreso = { actual = max(0, (r.siguiente or 1) - 1), total = r.n, huellas = true, texto = L["Parada %d de %d"]:format(r.siguiente or 1, r.n) }
+			d.accion = { texto = L["Detener"], icono = "ic-cerrar", alClic = function() Ruta.Detener() end }
+			d.secundaria = { texto = L["Ver en el mapa"], alClic = verEnMapa }
+		else
+			d.titulo, d.tono = L["Tu ruta de %s en %s está lista"]:format(nombre, nombreZona(r.mapa)), "exito"
+			d.texto = (Ruta.Resumen(r) or "") .. ". " .. L["Pulsa Guiarme y la flecha te lleva de parada en parada desde la más cercana."]
+			d.estado = { texto = L["Lista"], tono = "exito" }
+			d.accion = { texto = L["Guiarme"], icono = "ic-seguir", alClic = function() Ruta.Guiar() end }
+			d.secundaria = { texto = L["Borrar la ruta"], alClic = function() Ruta.Borrar() end }
+		end
+		return d
+	end
+	if not zona or R.EnInstancia() then
+		d.titulo, d.tono = L["Aquí no hay nodos que recolectar"], "neutro"
+		d.texto = L["Dentro de mazmorras y ciudades no hay nodos. Sal al mundo y tu ruta se arma en un clic."]
+		d.estado = { texto = L["Sin zona"], tono = "neutro" }
+		return d
+	end
+	local hay = 0
+	for _, x in ipairs(Ruta.RecursosEn(zona, tipo)) do
+		if recurso == "todos" or x.clave == recurso then hay = hay + x.cuenta end
+	end
+	local nombre = nombreRecurso(tipo, recurso)
+	if hay < 3 then
+		d.titulo, d.tono = L["Pocos lugares de %s en %s"]:format(nombre, nombreZona(zona)), "aviso"
+		d.texto = L["Una ruta necesita al menos 3 lugares que tu habilidad alcance. Elige otro tipo o recurso abajo, o recolecta aquí: Alfa anota cada nodo que encuentras."]
+		d.estado = { texto = hay == 1 and L["1 lugar"] or L["%d lugares"]:format(hay), tono = "aviso" }
+		return d
+	end
+	d.titulo, d.tono = L["Arma una ruta de %s en %s"]:format(nombre, nombreZona(zona)), "acento"
+	d.texto = V.aviso or L["Une los %d lugares que tu habilidad alcanza en una vuelta corta, la dibuja en el mapa y la flecha te lleva de parada en parada."]:format(hay)
+	if V.aviso then d.tono = "aviso" end
+	d.estado = { texto = L["%d lugares"]:format(hay), tono = V.aviso and "aviso" or "acento" }
+	d.accion = { texto = L["Crear ruta"], icono = "ic-ruta", alClic = crearRuta }
+	return d
+end
+
+local function opcionesRecurso()
+	local tipo = N.Get(ID, "rutaTipo") or "mineria"
+	local out = { { valor = "todos", texto = L["Todos"] } }
+	local elegido, esta = N.Get(ID, "rutaRecurso"), false
+	for _, r in ipairs(Ruta.RecursosEn(Ruta.ZonaActual(), tipo)) do
+		out[#out + 1] = { valor = r.clave, texto = ("%s (%d)"):format(r.nombre, r.cuenta) }
+		if r.clave == elegido then esta = true end
+	end
+	if elegido and elegido ~= "todos" and not esta and M.porClave[elegido] then
+		out[#out + 1] = { valor = elegido, texto = ("%s (0)"):format(R.Nombre(M.porClave[elegido])) }
+	end
+	return out
+end
+
+local function grupoQueRecolectar(padre)
+	local g = K.GrupoAjustes(padre, { titulo = L["Qué recolectar"] })
+	local CORTO = { mineria = L["Minería"], hierbas = L["Hierbas"], pesca = L["Pesca"], tesoros = L["Tesoros"] }
+	local tipos = {}
+	for _, tipo in ipairs(M.TIPOS) do tipos[#tipos + 1] = { valor = tipo, texto = CORTO[tipo] or R.NombreTipo(tipo) } end
+	g:Fila({ titulo = L["Tipo"], texto = L["El tipo de nodos que une la ruta."],
+		control = function(fila)
+			local s = K.Segmentos(fila, { estilo = "segmentos", opciones = tipos, valor = N.Get(ID, "rutaTipo") or "mineria",
+				alCambiar = function(v) N.Set(ID, "rutaTipo", v) end })
+			function s:Leer() self:SetValor(N.Get(ID, "rutaTipo") or "mineria") end
+			V.segTipo = s
+			return s
+		end })
+	g:Fila({ titulo = L["Recurso"], texto = L["Todos los de ese tipo, o solo uno (por ejemplo, solo cobre). Entre paréntesis, cuántos hay en tu zona."],
+		control = function(fila)
+			local d = K.Desplegable(fila, { clave = clave("rutaRecurso"), ancho = 220, opciones = opcionesRecurso() })
+			V.desRecurso = d
+			return d
+		end })
+	return g
+end
+
+---------------------------------------------------------------------------
+-- 2. Esta sesión, en números
+---------------------------------------------------------------------------
+local function numeros()
+	local s = R.Sesion()
+	local total = tonumber(s.total) or 0
+	if total == 0 then return {} end
+	local dur = max(0, time() - (tonumber(s.inicio) or time()))
+	local ph = porHora(total, dur)
+	local out = {
+		{ variante = "compacta", icono = "ic-recoleccion", titulo = L["Recolectado"], valor = miles(total),
+			texto = L["en %s"]:format(N.Duracion(dur)) },
+	}
+	if ph then out[#out + 1] = { variante = "compacta", icono = "ic-reloj", titulo = L["Por hora"], valor = miles(ph) } end
+	for _, tipo in ipairs(M.TIPOS) do
+		local n = tonumber(s.tipos[tipo]) or 0
+		if n > 0 then out[#out + 1] = { variante = "compacta", icono = ICONO_TIPO[tipo], titulo = R.NombreTipo(tipo), valor = miles(n) } end
+	end
+	return out
+end
+
+---------------------------------------------------------------------------
+-- 3. Lo recolectado: listas que solo se ven si tienen algo
+---------------------------------------------------------------------------
+local MAX_FILAS, FILA = 8, 36
+
+-- datos = { { icono, glifo, objeto, nombre, detalle, valor }, ... }
+local function bloqueLista(padre, titulo)
+	local b = CreateFrame("Frame", nil, padre)
+	b.Seccion = K.Seccion(b, titulo)
+	b.Panel = CreateFrame("Frame", nil, b)
+	b.Panel.caja = K.Caja(b.Panel, { fondo = "panel", borde = "linea", corte = K.CORTE.panel })
+	b.Mas = K.Texto(b, "pequeno", "textoTenue")
+	b.filas, b.lineas, b.datos = {}, {}, {}
+	local function fila(i)
+		local f = b.filas[i]
+		if f then return f end
+		f = CreateFrame("Frame", nil, b.Panel)
+		f:SetHeight(FILA)
+		f.Tex = f:CreateTexture(nil, "ARTWORK")
+		f.Tex:SetSize(20, 20)
+		f.Tex:SetPoint("LEFT", f, "LEFT", ESP.base, 0)
+		f.Objeto = K.IconoObjeto(f, 22)
+		f.Objeto:SetPoint("LEFT", f, "LEFT", ESP.base - 1, 0)
+		f.Nombre = K.Texto(f, "cuerpo", "texto")
+		f.Nombre:SetPoint("LEFT", f, "LEFT", ESP.base + 20 + ESP.m, 0)
+		f.Valor = K.Texto(f, "numero", "texto")
+		f.Valor:SetJustifyH("RIGHT")
+		f.Valor:SetPoint("RIGHT", f, "RIGHT", -ESP.base, 0)
+		f.Detalle = K.Texto(f, "pequeno", "textoTenue")
+		f.Detalle:SetJustifyH("RIGHT")
+		f.Detalle:SetPoint("RIGHT", f.Valor, "RIGHT", -64, 0)
+		b.filas[i] = f
+		return f
+	end
+	function b:Set(datos) self.datos = datos or {} end
+	function b:Acomodar(ancho)
+		local y = self.Seccion:Acomodar(ancho)
+		self.Seccion:ClearAllPoints()
+		self.Seccion:SetPoint("TOPLEFT", self, "TOPLEFT", 0, 0)
+		self.Seccion:SetWidth(ancho)
+		y = y + ESP.s
+		local n = min(#self.datos, MAX_FILAS)
+		for i = 1, n do
+			local d = self.datos[i]
+			local f = fila(i)
+			f:ClearAllPoints()
+			f:SetPoint("TOPLEFT", self.Panel, "TOPLEFT", 0, -(i - 1) * FILA)
+			f:SetWidth(ancho)
+			f.Objeto:SetShown(d.objeto ~= nil)
+			f.Tex:SetShown(d.objeto == nil and d.icono ~= nil)
+			if d.objeto then
+				f.Objeto:SetObjeto(d.objeto)
+			elseif d.icono then
+				f.Tex:SetTexture(d.icono)
+				if d.glifo then
+					f.Tex:SetTexCoord(0, 1, 0, 1)
+					f.Tex:SetVertexColor(K.Color("oro"))
+				else
+					f.Tex:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+					f.Tex:SetVertexColor(1, 1, 1, 1)
+				end
 			end
-			W.RowDetails(fw, { inset = PAD })
-			cache[c] = fw
+			local conIcono = d.objeto ~= nil or d.icono ~= nil
+			f.Nombre:ClearAllPoints()
+			f.Nombre:SetPoint("LEFT", f, "LEFT", conIcono and (ESP.base + 22 + ESP.m) or ESP.base, 0)
+			K.Escribir(f.Nombre, d.nombre or "")
+			K.Escribir(f.Detalle, d.detalle or "")
+			K.Escribir(f.Valor, d.valor or "")
+			local dw = (d.detalle and d.detalle ~= "") and (K.Ajustar(f.Detalle, floor(ancho * 0.45)) + ESP.base) or 0
+			f.Nombre:SetWidth(max(60, ancho - (conIcono and 54 or 16) - 80 - dw))
+			f.Nombre:SetWordWrap(false)
+			f:Show()
+			if i > 1 then
+				local ln = self.lineas[i - 1] or K.Linea(self.Panel, "linea")
+				self.lineas[i - 1] = ln
+				ln:ClearAllPoints()
+				ln:SetPoint("TOPLEFT", self.Panel, "TOPLEFT", ESP.base, -(i - 1) * FILA)
+				ln:SetPoint("TOPRIGHT", self.Panel, "TOPRIGHT", -ESP.base, -(i - 1) * FILA)
+				ln:Show()
+			end
 		end
-		fw:ClearAllPoints()
-		fw:SetPoint("TOPLEFT", view, "TOPLEFT", pad(), -y)
-		fw:Show()
-		if fw.Refresh then fw:Refresh() end
-		y = y + W.LayoutRow(fw, w)
-		if fw.Rule then fw.Rule:SetShown(i < #controles) end
-	end
-	if panel then
-		panel:ClearAllPoints()
-		panel:SetPoint("TOPLEFT", view, "TOPLEFT", pad(), -top)
-		panel:SetSize(w, max(1, y - top))
-		panel:Show()
-	end
-	return y
-end
-
-local function armarAjustes(view)
-	V.secciones = {}
-	for _, s in ipairs(SECCIONES) do
-		local h = W.SectionHeader(view, { plain = true })
-		W.SetSection(h, s.nombre)
-		V.secciones[#V.secciones + 1] = { h = h, panel = W.RowPanel(view), controles = s.controles, mundo = s.mundo }
-	end
-	V.notaMundo = W.Text(view, "note", "textMuted")
-	V.notaMundo:SetWordWrap(true)
-	V.notaMundo:SetText(L["Con el módulo Mundo, estos tipos también son capas en su control de capas."])
-end
-
-local function layoutAjustes(view, y, w)
-	for _, s in ipairs(V.secciones) do
-		s.h:ClearAllPoints()
-		s.h:SetPoint("TOPLEFT", view, "TOPLEFT", pad(), -y)
-		s.h:SetWidth(w)
-		y = y + SECCION_H
-		y = filasAjustes(view, s.controles, y, s.panel, w)
-		if s.mundo and R.mundo then
-			V.notaMundo:SetWidth(w)
-			V.notaMundo:ClearAllPoints()
-			V.notaMundo:SetPoint("TOPLEFT", view, "TOPLEFT", pad(), -(y + 6))
-			V.notaMundo:Show()
-			y = y + 6 + math.ceil(V.notaMundo:GetStringHeight())
+		for i = n + 1, #self.filas do self.filas[i]:Hide() end
+		for i = max(1, n), #self.lineas do self.lineas[i]:Hide() end
+		self.Panel:ClearAllPoints()
+		self.Panel:SetPoint("TOPLEFT", self, "TOPLEFT", 0, -y)
+		self.Panel:SetSize(ancho, max(1, n * FILA))
+		y = y + n * FILA
+		if #self.datos > n then
+			K.Escribir(self.Mas, L["y %d más"]:format(#self.datos - n))
+			self.Mas:ClearAllPoints()
+			self.Mas:SetPoint("TOPLEFT", self, "TOPLEFT", 2, -(y + ESP.s))
+			self.Mas:Show()
+			y = y + ESP.s + 14
+		else
+			self.Mas:Hide()
 		end
-		y = y + HUECO
+		self:SetSize(ancho, y)
+		return y
 	end
-	if not R.mundo then V.notaMundo:Hide() end
-	return y
-end
-
-local function armarHistorial(view)
-	V.histH = W.SectionHeader(view, { plain = true })
-	W.SetSection(V.histH, L["Historial"])
-	V.lRecursos = nuevaLista(view, L["Esta sesión, por recurso"])
-	V.lObjetos = nuevaLista(view, L["Lo que obtuviste en esta sesión"])
-	V.lZonas = nuevaLista(view, L["Por zona (este personaje)"])
-	V.lSesiones = nuevaLista(view, L["Sesiones anteriores"])
+	return b
 end
 
 local function datosRecursos(s)
@@ -611,18 +401,17 @@ local function datosObjetos(s)
 			local nombre = C.GetItemName and C.GetItemName(id)
 			if not nombre then
 				if C.RequestItem then C.RequestItem(id) end
-				nombre = L["Cargando..."]
+				nombre = L["Cargando…"]
 				V.esperaObjetos = true
 			end
-			out[#out + 1] = { icono = C.ItemIcon and C.ItemIcon(id), nombre = nombre, valor = "×" .. miles(e.v) }
+			out[#out + 1] = { objeto = id, nombre = nombre, valor = "\195\151" .. miles(e.v) }
 		end
 	end
 	return out
 end
 
 local function datosZonas(P)
-	local out = {}
-	local lista = {}
+	local out, lista = {}, {}
 	for mapID, z in pairs(P.zonas or {}) do
 		if type(z) == "table" then lista[#lista + 1] = { m = mapID, z = z, v = tonumber(z.total) or 0 } end
 	end
@@ -636,7 +425,7 @@ local function datosZonas(P)
 			local n = tonumber(e.z.tipos and e.z.tipos[tipo]) or 0
 			if n > 0 then partes[#partes + 1] = R.NombreTipo(tipo) .. " " .. miles(n) end
 		end
-		out[#out + 1] = { nombre = nombreZona(e.m), detalle = table.concat(partes, "  ·  "), valor = miles(e.v) }
+		out[#out + 1] = { nombre = nombreZona(e.m), detalle = table.concat(partes, DOT), valor = miles(e.v) }
 	end
 	return out
 end
@@ -651,111 +440,150 @@ local function datosSesiones(P)
 			local dur = max(0, (tonumber(s.fin) or 0) - (tonumber(s.inicio) or 0))
 			local detalle = N.Duracion(dur)
 			local ph = porHora(tonumber(s.total) or 0, dur)
-			if ph then detalle = detalle .. "  ·  " .. L["%s por hora"]:format(miles(ph)) end
+			if ph then detalle = detalle .. DOT .. L["%s por hora"]:format(miles(ph)) end
 			out[#out + 1] = { nombre = date("%d/%m/%Y %H:%M", tonumber(s.inicio) or 0), detalle = detalle, valor = miles(s.total) }
 		end
 	end
 	return out
 end
 
-local function layoutHistorial(view, y, w)
-	V.histH:ClearAllPoints()
-	V.histH:SetPoint("TOPLEFT", view, "TOPLEFT", pad(), -y)
-	V.histH:SetWidth(w)
-	y = y + SECCION_H
-	local s, P = R.Sesion(), R.Personaje()
-	V.esperaObjetos = false
-	y = pintarLista(V.lRecursos, view, datosRecursos(s), y, w,
-		L["Todavía no recolectas nada en esta sesión. Mina, herboriza, pesca en un banco o abre un cofre y aparece aquí."]) + 14
-	y = pintarLista(V.lObjetos, view, datosObjetos(s), y, w, L["Aquí verás los objetos que te dio cada nodo."]) + 14
-	y = pintarLista(V.lZonas, view, datosZonas(P), y, w, L["Cuando recolectes, aquí verás cuánto en cada zona."]) + 14
-	y = pintarLista(V.lSesiones, view, datosSesiones(P), y, w, L["Tus sesiones anteriores con algo recolectado aparecen aquí."])
-	return y + HUECO
-end
-
-local function armarDatos(view)
-	V.datosH = W.SectionHeader(view, { plain = true })
-	W.SetSection(V.datosH, L["Datos"])
-	V.datosTexto = W.Text(view, "note", "textDim")
-	V.datosTexto:SetWordWrap(true)
-	V.datosTexto:SetJustifyV("TOP")
-	V.tImportar = W.ActionTile(view, "icon-collect", L["Importar nodos de otro addon de recolección"],
-		L["Copia los nodos que recolectaste con otro addon de recolección (debe estar activo). Ya se hace solo la primera vez."], function()
-			local n = R.ImportarOtro()
-			if n then N.Imprimir(L["Se trajeron %d nodos de otro addon de recolección."]:format(n)) end
-			M.Pagina.Actualizar()
-		end)
-	V.tBorrarNodos = W.ActionTile(view, "reset", L["Borrar lo que descubrí"],
-		L["Quita los nodos que anotaste tú. La base incluida se queda."], function()
-			W.Modal({ title = L["¿Borrar lo que descubriste?"], icon = "reset", danger = true, action = L["Borrar"],
-				text = L["Se quitan los nodos que anotaste al recolectar y cuántas veces los recolectaste. No se puede deshacer."],
-				onAccept = function() R.BorrarDescubiertos() end })
-		end, { danger = true })
-	V.tBorrarHist = W.ActionTile(view, "reset", L["Borrar el historial"],
-		L["Las sesiones y lo recolectado por zona de este personaje."], function()
-			W.Modal({ title = L["¿Borrar el historial?"], icon = "reset", danger = true, action = L["Borrar"],
-				text = L["Se borran las sesiones, las zonas y los objetos de este personaje. No se puede deshacer."],
-				onAccept = function() R.BorrarHistorial() end })
-		end, { danger = true })
-end
-
-local function layoutDatos(view, y, w)
-	V.datosH:ClearAllPoints()
-	V.datosH:SetPoint("TOPLEFT", view, "TOPLEFT", pad(), -y)
-	V.datosH:SetWidth(w)
-	y = y + SECCION_H
-	local base, propios, zonas = R.Conteos()
-	local texto = L["La base incluida trae %s lugares en %d zonas. Tú descubriste %s."]:format(miles(base), zonas, miles(propios))
-	if R.HayOtro() then
-		texto = texto .. " " .. L["Otro addon de recolección sigue activo: Alfa ya hace lo mismo, así que puedes desactivarlo para no ver los nodos dos veces."]
-	end
-	V.datosTexto:SetText(texto)
-	V.datosTexto:SetWidth(w)
-	V.datosTexto:ClearAllPoints()
-	V.datosTexto:SetPoint("TOPLEFT", view, "TOPLEFT", pad(), -y)
-	y = y + math.ceil(V.datosTexto:GetStringHeight()) + 12
-	local tiles = { V.tBorrarNodos, V.tBorrarHist }
-	if R.HayOtro() then
-		table.insert(tiles, 1, V.tImportar)
-		V.tImportar:Show()
-	else
-		V.tImportar:Hide()
-	end
-	local cols = 2
-	local cw = (w - 12) / cols
-	local filaH = 0
-	for k, t in ipairs(tiles) do
-		local col = (k - 1) % cols
-		if col == 0 and k > 1 then
-			y = y + filaH + 12
-			filaH = 0
+local function bloqueHistorial(padre)
+	local b = K.Pila(padre, { espacio = ESP.l })
+	b.Recursos = b:Agregar(bloqueLista(b, L["Esta sesión, por recurso"]))
+	b.Objetos = b:Agregar(bloqueLista(b, L["Lo que obtuviste en esta sesión"]))
+	b.Zonas = b:Agregar(bloqueLista(b, L["Por zona (este personaje)"]))
+	b.Sesiones = b:Agregar(bloqueLista(b, L["Sesiones anteriores"]))
+	b.Vacio = b:Agregar(K.Vacio(b, {
+		lobo = "dormido", titulo = L["Todavía no recolectas nada"],
+		texto = L["Mina, herboriza, pesca en un banco o abre un cofre: aquí verás cuánto, qué te dio cada nodo y en qué zona."],
+	}))
+	function b:Llenar()
+		local s, P = R.Sesion(), R.Personaje()
+		V.esperaObjetos = false
+		local hay = false
+		for _, par in ipairs({ { self.Recursos, datosRecursos(s) }, { self.Objetos, datosObjetos(s) },
+			{ self.Zonas, datosZonas(P) }, { self.Sesiones, datosSesiones(P) } }) do
+			par[1]:Set(par[2])
+			K.Mostrar(par[1], #par[2] > 0)
+			if #par[2] > 0 then hay = true end
 		end
-		local h = W.LayoutTile(t, cw)
-		t:ClearAllPoints()
-		t:SetPoint("TOPLEFT", view, "TOPLEFT", pad() + col * (cw + 12), -y)
-		t:Show()
-		filaH = max(filaH, h)
+		K.Mostrar(self.Vacio, not hay)
 	end
-	return y + filaH + 24
+	return b
 end
+
+---------------------------------------------------------------------------
+-- 4. Los ajustes y 5. tus datos
+---------------------------------------------------------------------------
+local function interruptor(k) return function(fila) return K.Interruptor(fila, { clave = clave(k) }) end end
+local function deslizador(k)
+	return function(fila)
+		local d = K.Deslizador(fila, { min = 0.6, max = 1.8, paso = 0.05, clave = clave(k), formato = porciento })
+		d.alfaAnchoFila = 220
+		return d
+	end
+end
+local function interruptorTipo(tipo)
+	return function(fila)
+		-- Su ajuste (recoleccion.<tipo>) copia la capa de Mundo; manda la capa.
+		local s = K.Interruptor(fila, { clave = clave(tipo), alCambiar = function(v) ponerTipo(tipo, v) end })
+		function s:Leer() self:SetValor(R.TipoActivo(tipo)) end
+		s:Leer()
+		return s
+	end
+end
+local function on(k) return function() return N.Get(ID, k) ~= false end end
+
+local function grupos(padre)
+	local donde = K.GrupoAjustes(padre, { titulo = L["Dónde se ven"] })
+	donde:Fila({ titulo = L["En el mapa del mundo"], control = interruptor("mapa"),
+		texto = L["Los nodos de la zona que miras, con su nombre, nivel y cuántas veces los recolectaste al pasar el ratón. Clic en uno: la flecha te lleva."] })
+	donde:Fila({ titulo = L["Tamaño en el mapa"], hija = true, activa = on("mapa"), control = deslizador("tamanoMapa") })
+	donde:Fila({ titulo = L["En el minimapa"], control = interruptor("minimapa"),
+		texto = L["Los nodos que tienes cerca. El punto del rastreo del juego dice si ahora hay algo ahí."] })
+	donde:Fila({ titulo = L["Tamaño en el minimapa"], hija = true, activa = on("minimapa"), control = deslizador("tamanoMinimapa") })
+
+	local que = K.GrupoAjustes(padre, { titulo = L["Qué se ve"] })
+	local AYUDA = {
+		mineria = L["Filones y depósitos de mineral."], hierbas = L["Las plantas de herboristería."],
+		pesca = L["Bancos y restos flotantes donde pescar."], tesoros = L["Cofres, baúles y almejas que se abren."],
+	}
+	for _, tipo in ipairs(M.TIPOS) do
+		que:Fila({ titulo = R.NombreTipo(tipo), texto = AYUDA[tipo], control = interruptorTipo(tipo) })
+	end
+	que:Fila({ titulo = L["Ocultar lo de profesiones que no tienes"], control = interruptor("soloProfesiones"),
+		texto = L["Sin Minería no ves filones; sin Herboristería, hierbas; sin Pesca, bancos. Los tesoros siempre se ven."] })
+	que:Fila({ titulo = L["Solo lo que ya puedes recolectar"], control = interruptor("soloHabilidad"),
+		texto = L["Esconde lo que pide más habilidad de la que tienes. Sin esto se ve gris y tenue."] })
+
+	local mapa = K.GrupoAjustes(padre, { titulo = L["En el mapa"] })
+	mapa:Fila({ titulo = L["Juntar nodos cercanos al alejar"], control = interruptor("agrupar"),
+		texto = L["Los nodos que se pisarían en pantalla van en un solo pin con su cantidad. Al acercar el mapa se separan."] })
+	mapa:Fila({ titulo = L["Usar la base de datos incluida"], control = interruptor("base"),
+		texto = L["Los nodos que trae Alfa. Sin esto solo ves los que tú descubriste."] })
+
+	local datos = K.GrupoAjustes(padre, { titulo = L["Tus datos"] })
+	datos.conteo = datos:Fila({ titulo = L["Lo que conoce Alfa"], texto = "",
+		control = function(fila)
+			V.bDescubiertos = K.Boton(fila, L["Borrar lo que descubrí"], function()
+				K.Dialogo({ titulo = L["¿Borrar lo que descubriste?"], peligro = true, aceptar = L["Borrar"],
+					texto = L["Se quitan los nodos que anotaste al recolectar y cuántas veces los recolectaste. La base incluida se queda. No se puede deshacer."],
+					alAceptar = function() R.BorrarDescubiertos() end })
+			end, { tipo = "peligro", tam = "chico" })
+			return V.bDescubiertos
+		end })
+	datos.historial = datos:Fila({ titulo = L["Tu historial"], texto = L["Las sesiones, las zonas y los objetos de este personaje."],
+		control = function(fila)
+			return K.Boton(fila, L["Borrar el historial"], function()
+				K.Dialogo({ titulo = L["¿Borrar el historial?"], peligro = true, aceptar = L["Borrar"],
+					texto = L["Se borran las sesiones, las zonas y los objetos de este personaje. No se puede deshacer."],
+					alAceptar = function() R.BorrarHistorial() end })
+			end, { tipo = "peligro", tam = "chico" })
+		end })
+	return { donde, que, mapa, datos }
+end
+
+-- -> texto, cuántos descubriste
+local function textoConteo()
+	local base, propios, zonas = R.Conteos()
+	return L["La base incluida trae %s lugares en %d zonas. Tú descubriste %s."]:format(miles(base), zonas, miles(propios)), propios
+end
+
+local function hayHistorial()
+	local P = R.Personaje()
+	if (tonumber(P.total) or 0) > 0 then return true end
+	for _, s in ipairs(P.sesiones or {}) do if type(s) == "table" and (tonumber(s.total) or 0) > 0 then return true end end
+	return false
+end
+
+---------------------------------------------------------------------------
+-- La página
+---------------------------------------------------------------------------
+local pagina
 
 local function construir(view)
 	pagina = view
-	armarResumen(view)
-	armarRuta(view)
-	armarAjustes(view)
-	armarHistorial(view)
-	armarDatos(view)
-	view.Refresh = function()
-		local w = ancho()
-		local y = 16
-		y = layoutResumen(view, y, w) + HUECO
-		y = layoutRuta(view, y, w) + HUECO
-		y = layoutAjustes(view, y, w)
-		y = layoutHistorial(view, y, w)
-		y = layoutDatos(view, y, w)
-		return y
-	end
+	local t = K.Tablero(view, { margen = N.MargenPagina(), accion = "estado", tituloOpciones = L["Esta sesión"], min = 200 })
+	V.que = t:AgregarBloque(grupoQueRecolectar(t.Extra), { espacio = ESP.base })
+	V.historial = t:AgregarBloque(bloqueHistorial(t.Extra))
+	V.grupos = grupos(t.Extra)
+	for i, g in ipairs(V.grupos) do t:AgregarBloque(g, { espacio = i == 1 and ESP.xl or ESP.l }) end
+	K.EnPagina(view, t, function()
+		t:SetAccion(tarjetaRuta())
+		t:SetOpciones(numeros(), L["Esta sesión"])
+		-- "Qué recolectar" solo donde hay nodos (fuera de instancias).
+		if V.desRecurso then V.desRecurso:SetOpciones(opcionesRecurso()) end
+		V.que:Refrescar()
+		K.Mostrar(V.que, Ruta.ZonaActual() ~= nil and not R.EnInstancia() and not Ruta.Calculando())
+		V.historial:Llenar()
+		-- Borrar solo cuando hay algo que borrar.
+		local datos = V.grupos[4]
+		local texto, propios = textoConteo()
+		datos.conteo.alfaDatos.texto = texto
+		for _, g in ipairs(V.grupos) do g:Refrescar() end
+		if V.bDescubiertos then V.bDescubiertos:SetShown(propios > 0) end
+		K.Mostrar(datos.historial, hayHistorial())
+	end)
 	view:HookScript("OnShow", function() M.Pagina.Actualizar() end)
 end
 
@@ -767,13 +595,7 @@ local pendiente = false
 
 local function rehacer()
 	pendiente = false
-	if not (pagina and pagina:IsVisible() and pagina.Refresh) then return end
-	local h = pagina.Refresh()
-	if type(h) ~= "number" then return end
-	pagina:SetHeight(h)
-	local O = opciones()
-	local win = O and O.frame
-	if type(win) == "table" and W.ShellBody then W.ShellBody(win, h) end
+	if pagina then N.RehacerPagina(pagina) end
 end
 
 function M.Pagina.Actualizar()
@@ -792,15 +614,15 @@ A.RegisterEvent("ZONE_CHANGED_NEW_AREA", function() M.Pagina.Actualizar() end)
 -- El módulo
 ---------------------------------------------------------------------------
 N.Modulo({
-	id = ID, nombre = L["Recolección"], icono = "icon-craft", orden = 32,
+	id = ID, nombre = L["Recolección"], icono = "ic-recoleccion", orden = 32,
 	subtitulo = L["Minería, hierbas, pesca y tesoros en tu mapa y minimapa, con rutas de farmeo e historial."],
 	comando = "recoleccion",
 	ajustes = AJUSTES,
-	controles = TODOS,
+	controles = BUSCAR,
 	construir = construir,
 })
 
--- /alfa recoleccion [ruta [tipo] | guiar | parar | mapa | minimapa | importar]
+-- /alfa recoleccion [ruta [tipo] | guiar | parar | mapa | minimapa]
 local TIPO_POR_PALABRA = {
 	mineria = "mineria", ["minería"] = "mineria", mining = "mineria", minar = "mineria",
 	hierbas = "hierbas", herboristeria = "hierbas", ["herboristería"] = "hierbas", herbs = "hierbas",
@@ -828,11 +650,8 @@ A.RegisterCommand("recoleccion", function(resto)
 	elseif orden == "mapa" or orden == "minimapa" then
 		N.Set(ID, orden, N.Get(ID, orden) == false)
 		N.Imprimir(N.Get(ID, orden) ~= false and L["Nodos visibles."] or L["Nodos ocultos."])
-	elseif orden == "importar" then
-		local n = R.ImportarOtro()
-		N.Imprimir(n and L["Se trajeron %d nodos de otro addon de recolección."]:format(n) or L["No hay otro addon de recolección activo."])
 	else
-		N.Imprimir(L["Uso: /alfa recoleccion [ruta [mineria|hierbas|pesca|tesoros] | guiar | parar | mapa | minimapa | importar]"])
+		N.Imprimir(L["Uso: /alfa recoleccion [ruta [mineria|hierbas|pesca|tesoros] | guiar | parar | mapa | minimapa]"])
 	end
 end, L["Abre Recolección. Con «ruta», crea y sigue una ruta de farmeo en tu zona."])
 
@@ -878,13 +697,6 @@ A.OnLogin(function()
 	R.Sesion()
 	M.Mapa.Instalar()
 	M.Mini.Instalar()
-	-- Las habilidades pueden llegar tarde; y lo de otro addon pasa una vez.
-	A.After(3, function()
-		releer()
-		local D = R.Datos()
-		if not D.importadoOtro and R.HayOtro() then
-			local n = R.ImportarOtro()
-			if n and n > 0 then N.Imprimir(L["Recolección: se trajeron %d nodos que recolectaste con otro addon."]:format(n)) end
-		end
-	end)
+	-- Las habilidades pueden llegar tarde.
+	A.After(3, releer)
 end)

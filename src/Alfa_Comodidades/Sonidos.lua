@@ -83,7 +83,7 @@ function M.MostrarListaSonidos()
 		N.Imprimir(string.format(L["Sonidos en tu lista (%d): %s"], #ids, table.concat(partes, ", ")))
 	end
 	if not M.Get("silenciarLista") then
-		N.Imprimir(L["La lista está apagada: enciende \"Tu lista de sonidos\" en Calidad de vida > Interfaz."])
+		N.Imprimir(L["La lista está apagada: enciende «Tu lista de sonidos» en Comodidades (/alfa comodidades)."])
 	end
 end
 

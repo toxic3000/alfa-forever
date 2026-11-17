@@ -8,7 +8,9 @@
 --     (misiones, raros, mazmorras, vuelos, servicios, la guía...): las
 --     mismas que en el mapa del juego, con su cuadro y su clic, encendidas
 --     o apagadas por sus propios ajustes (Capas.lua);
+--   * tus marcadores (Marcadores.lua), que llegan como una capa más;
 --   * tu grupo (esencial.grupo) y tú.
+-- Clic derecho en un pin que no es tuyo: seguirlo o guardarlo como marcador.
 -- Cada capa del motor entra a partir de un zoom (ZOOM) para no llenar el
 -- mundo entero de íconos.
 
@@ -111,9 +113,19 @@ local function ruedaAlMapa(_, delta)
 	if V and V.Rueda then V.Rueda(nil, delta) end
 end
 
+-- Clic derecho en cualquier pin que no sea uno de tus marcadores: el menú
+-- para seguirlo (flecha y ruta) o guardarlo como marcador (Marcadores.lua).
+-- Los pines del motor no usan el botón derecho (en el mapa del juego lo
+-- dejan pasar al mapa).
 local function alClic(self, boton)
 	local p = self.amPin
-	if p and type(p.onClick) == "function" then
+	if not p then return end
+	if boton == "RightButton" and not p.amMarcador then
+		local Mk = M.Marcadores
+		if Mk and Mk.MenuPin then Mk.MenuPin(self, p) end
+		return
+	end
+	if type(p.onClick) == "function" then
 		local ok, err = pcall(p.onClick, boton, self)
 		if not ok and geterrorhandler then geterrorhandler()(err) end
 	end
@@ -129,6 +141,10 @@ local function nuevoPin()
 	f.fondo:SetPoint("CENTER")
 	f.icono = f:CreateTexture(nil, "ARTWORK")
 	f.icono:SetPoint("CENTER")
+	f.aro = f:CreateTexture(nil, "OVERLAY")
+	f.aro:SetTexture(NAV .. "ring")
+	f.aro:SetPoint("CENTER")
+	f.aro:Hide()
 	f.texto = f:CreateFontString(nil, "OVERLAY")
 	f.texto:SetPoint("CENTER", 0, 0)
 	f:SetScript("OnEnter", alEntrar)
@@ -227,6 +243,15 @@ local function vestir(f, p, tam)
 		f.brillo:SetSize(tam * 1.8, tam * 1.8)
 	end
 	f.brillo:SetVertexColor(r, g, b, 0.5)
+	-- El aro fino de color (los marcadores): `ring = { r, g, b, a }`.
+	if type(p.ring) == "table" then
+		local ar, ag, ab, aa = rgba(p.ring)
+		f.aro:SetSize(tam * 1.3, tam * 1.3)
+		f.aro:SetVertexColor(ar, ag, ab, aa)
+		f.aro:Show()
+	else
+		f.aro:Hide()
+	end
 	if p.text then
 		local T = A.Theme
 		local alto = max(8, tam * 0.6)

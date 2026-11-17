@@ -53,6 +53,7 @@ local DEL_TEMA = {
 	exito = "success", aviso = "warning", peligro = "danger", peligroRelleno = "dangerFill",
 	oro = "gold", mision = "quest", pnj = "npc", objeto = "item", lugar = "place",
 	mazmorra = "dungeon", raro = "rare", clase = "class", claseTexto = "classText", velo = "scrim",
+	titulo = "title", -- los títulos: el texto en Alfa y Cristal, el oro del juego en Clásico WoW
 }
 K.DEL_TEMA = DEL_TEMA
 
@@ -64,7 +65,7 @@ local DISENO_A = {
 	exito = { 0.42, 0.85, 0.6, 1 }, aviso = hex("f0b34a"), peligro = hex("e86b5a"), peligroRelleno = hex("e05a4f"),
 	oro = hex("f2d06b"), mision = hex("f2d06b"), pnj = { 0.58, 0.79, 1, 1 }, objeto = { 0.78, 0.68, 1, 1 },
 	lugar = { 0.96, 0.68, 0.52, 1 }, mazmorra = { 0.64, 0.52, 1, 1 }, raro = { 1, 0.5, 0.32, 1 },
-	clase = hex("8be04e"), claseTexto = hex("8be04e"), velo = hex("0b0e0c"),
+	clase = hex("8be04e"), claseTexto = hex("8be04e"), velo = hex("0b0e0c"), titulo = hex("e6efe4"),
 }
 K.DISENO_A = DISENO_A
 
@@ -128,7 +129,15 @@ function K.Pintar(obj, fn)
 	return obj
 end
 
+-- Lo que se rehace antes de repintar (las formas que cambian de corte con el estilo).
+local antes = {}
+function K.AntesDeRepintar(fn) antes[#antes + 1] = fn end
+
 function K.Repintar()
+	for i = 1, #antes do
+		local ok, err = pcall(antes[i])
+		if not ok and geterrorhandler then geterrorhandler()(err) end
+	end
 	for obj, fn in pairs(pintores) do
 		local ok, err = pcall(fn, obj)
 		if not ok and geterrorhandler then geterrorhandler()(err) end
@@ -145,6 +154,113 @@ function K.AlRepintar(fn)
 end
 
 if T and type(T.OnChanged) == "function" then T.OnChanged(K.Repintar) end
+
+---------------------------------------------------------------------------
+-- Estilos (docs/KIT.md, "Estilos"): tres maneras de verse que se cambian en
+-- un clic y lo repintan todo, el Kit y las ventanas del motor.
+--   alfa     el diseño A: grafito, esquinas cortadas, el verde de La Jauría
+--   clasico  el propio juego: los marcos y fondos del cuadro de diálogo y de
+--            los cuadros de información, los botones rojos y la letra del
+--            juego con sus títulos en oro (la piel "classic" del motor)
+--   cristal  el diseño A con fondos de cristal (se ve el mundo detrás) y el
+--            acento que elijas (K.ACENTOS)
+-- Cada estilo recuerda su acento: al volver a uno, vuelve el suyo.
+---------------------------------------------------------------------------
+K.ESTILOS = {
+	{ id = "alfa", piel = "alfa", nombre = "Alfa", icono = "ic-lobo",
+		texto = "Grafito con esquinas cortadas y el verde de La Jauría. El de siempre." },
+	{ id = "clasico", piel = "classic", nombre = "Clásico WoW", icono = "ic-ventana",
+		texto = "Los marcos, fondos, botones y letras del propio juego, con títulos en oro." },
+	{ id = "cristal", piel = "cristal", nombre = "Cristal", icono = "ic-apariencia",
+		texto = "Fondos transparentes para ver el mundo detrás y el color de acento que elijas." },
+}
+local ESTILO = {}
+for _, e in ipairs(K.ESTILOS) do ESTILO[e.id] = e end
+
+-- -> "alfa" | "clasico" | "cristal"
+function K.Estilo()
+	if T and T.EstiloKey then
+		local ok, v = pcall(T.EstiloKey)
+		if ok and ESTILO[v] then return v end
+	end
+	return "alfa"
+end
+function K.Clasico() return K.Estilo() == "clasico" end
+function K.Cristal() return K.Estilo() == "cristal" end
+
+function K.DatosEstilo(id) return ESTILO[id or K.Estilo()] end
+function K.NombreEstilo(id)
+	local e = ESTILO[id]
+	return e and K.L[e.nombre] or nil
+end
+
+local function memoria()
+	local d = N.Datos and N.Datos("kit") or {}
+	d.acentos = type(d.acentos) == "table" and d.acentos or {}
+	return d.acentos
+end
+
+local function esColor(c) return type(c) == "table" and type(c[1]) == "number" and type(c[2]) == "number" and type(c[3]) == "number" end
+
+-- Cambia de estilo. El acento propio del estilo que dejas se guarda y vuelve
+-- el del estilo nuevo (nada si sigues el color de tu clase).
+function K.SetEstilo(id)
+	local e = ESTILO[id]
+	if not (e and A and A.Set and A.Get) then return false end
+	local antes = K.Estilo()
+	if antes == id and A.Get("ui.skin") == e.piel then return true end
+	if not A.Get("ui.classAccent") then
+		local mem = memoria()
+		local propio = A.Get("ui.accent")
+		mem[antes] = esColor(propio) and { propio[1], propio[2], propio[3] } or false
+		local nuevo = mem[id]
+		if esColor(nuevo) then
+			A.Set("ui.accent", { nuevo[1], nuevo[2], nuevo[3] })
+		elseif esColor(propio) then
+			A.Set("ui.accent", nil)
+		end
+	end
+	A.Set("ui.skin", e.piel)
+	return true
+end
+
+-- Los acentos para elegir (sobre todo en Cristal). El primero es el verde de
+-- La Jauría: el acento de Alfa y de Cristal por omisión.
+K.ACENTOS = {
+	{ id = "jauria", nombre = "Verde de La Jauría", color = hex("8be04e") },
+	{ id = "hielo", nombre = "Hielo", color = hex("6fd3ff") },
+	{ id = "lavanda", nombre = "Lavanda", color = hex("b39cff") },
+	{ id = "ambar", nombre = "Ámbar", color = hex("f0b34a") },
+	{ id = "coral", nombre = "Coral", color = hex("ff7a68") },
+	{ id = "rosa", nombre = "Rosa", color = hex("f590c8") },
+	{ id = "luna", nombre = "Luna", color = hex("e6efe4") },
+}
+
+local function igual(a, b)
+	if not (esColor(a) and esColor(b)) then return false end
+	for i = 1, 3 do if math.abs(a[i] - b[i]) > 0.004 then return false end end
+	return true
+end
+K.MismoColor = igual
+
+-- Pone el acento: un { r, g, b } o un id de K.ACENTOS; nil vuelve al del estilo.
+function K.SetAcento(c)
+	if not (A and A.Set) then return end
+	if type(c) == "string" then
+		for _, a in ipairs(K.ACENTOS) do if a.id == c then c = a.color end end
+	end
+	if not esColor(c) then A.Set("ui.accent", nil) return end
+	-- El verde de La Jauría ya es el de Alfa y Cristal: no se guarda como propio.
+	if not K.Clasico() and igual(c, K.ACENTOS[1].color) then A.Set("ui.accent", nil) return end
+	A.Set("ui.accent", { c[1], c[2], c[3] })
+end
+
+-- El id de K.ACENTOS del acento de ahora, o nil (uno propio de otro color).
+function K.AcentoActual()
+	local r, g, b = K.Color("acento")
+	for _, a in ipairs(K.ACENTOS) do if igual(a.color, { r, g, b }) then return a.id end end
+	return nil
+end
 
 ---------------------------------------------------------------------------
 -- Letra: Inter (Alfa/Media/Fonts), con la escala de texto del jugador.
@@ -178,7 +294,10 @@ K.TIPO = {
 	cifra = { "semibold", 22 },      -- números grandes
 }
 
-local function letraDelJuego() return STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF" end
+local function letraDelJuego()
+	return type(STANDARD_TEXT_FONT) == "string" and STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF"
+end
+K.LetraDelJuego = letraDelJuego
 
 function K.Cara(peso)
 	local loc = GetLocale and GetLocale()
@@ -211,12 +330,34 @@ function K.Fuente(fs, rol)
 	local ruta = fs.alfaEscritura or K.Cara(spec[1])
 	local ok, cargo = pcall(fs.SetFont, fs, ruta, tam, "")
 	if not (ok and cargo) then fs:SetFont(letraDelJuego(), tam, "") end
-	fs:SetShadowOffset(0, 0)
+	-- La sombra: ninguna en Alfa; la dura del juego en Clásico WoW; una suave
+	-- en Cristal, para leer sobre el mundo que se ve detrás.
+	local estilo = K.Estilo()
+	if estilo == "clasico" then
+		fs:SetShadowOffset(1, -1)
+		fs:SetShadowColor(0, 0, 0, 1)
+	elseif estilo == "cristal" then
+		fs:SetShadowOffset(1, -1)
+		fs:SetShadowColor(0, 0, 0, 0.55)
+	else
+		fs:SetShadowOffset(0, 0)
+	end
+end
+
+-- Los roles de título: en Clásico WoW, el texto principal de estos roles va
+-- en el oro de los títulos del juego (GameFontNormal).
+local TITULARES = { portada = true, titulo = true, subtitulo = true, encabezado = true }
+K.TITULARES = TITULARES
+
+function K.ColorDeTexto(fs)
+	local c = fs.alfaColor or "texto"
+	if c == "texto" and TITULARES[fs.alfaRol] and K.Clasico() then return "titulo" end
+	return c
 end
 
 local function pintarTexto(fs)
 	K.Fuente(fs)
-	fs:SetTextColor(K.Color(fs.alfaColor or "texto"))
+	fs:SetTextColor(K.Color(K.ColorDeTexto(fs)))
 end
 
 -- Un texto del Kit: rol de K.TIPO y color (token). Una línea por omisión.
@@ -231,7 +372,61 @@ end
 
 function K.ColorTexto(fs, color)
 	fs.alfaColor = color
-	fs:SetTextColor(K.Color(color))
+	fs:SetTextColor(K.Color(K.ColorDeTexto(fs)))
+end
+
+---------------------------------------------------------------------------
+-- Mayúsculas que entienden UTF-8 (string.upper solo cambia la A-Z): las
+-- letras con acento y las de otros alfabetos latinos (á é í ó ú ü ñ à è ç ö
+-- ä ł ś ż č ř...) y el cirílico. Lo que no tiene mayúsculas (chino, coreano)
+-- queda igual, y los códigos del juego (|c...|r, |T...|t, |H...|h) también.
+--   K.Mayus("La Jauría") -> "LA JAURÍA"
+---------------------------------------------------------------------------
+local schar = string.char
+
+local function mayusDe(c)
+	local a, b = c:byte(1, 2)
+	local cp = (a - 192) * 64 + (b - 128)
+	local up = cp
+	if cp >= 0xE0 and cp <= 0xFE and cp ~= 0xF7 then up = cp - 32      -- à..þ (sin ÷)
+	elseif cp == 0xFF then up = 0x178                                   -- ÿ
+	elseif cp == 0x131 then return "I"                                  -- ı (sin punto)
+	elseif cp >= 0x100 and cp <= 0x137 then if cp % 2 == 1 then up = cp - 1 end   -- ā..ķ
+	elseif cp >= 0x139 and cp <= 0x148 then if cp % 2 == 0 then up = cp - 1 end   -- ĺ..ň
+	elseif cp >= 0x14A and cp <= 0x177 then if cp % 2 == 1 then up = cp - 1 end   -- ŋ..ŷ
+	elseif cp >= 0x179 and cp <= 0x17E then if cp % 2 == 0 then up = cp - 1 end   -- ź ż ž
+	elseif cp >= 0x430 and cp <= 0x44F then up = cp - 32                -- а..я
+	elseif cp >= 0x450 and cp <= 0x45F then up = cp - 80                -- ѐ..џ (ё)
+	end
+	if up == cp then return c end
+	return schar(192 + floor(up / 64), 128 + up % 64)
+end
+
+-- La A-Z por bytes (string.upper depende del locale de C y podría tocar
+-- bytes de otras letras), y luego las letras de dos bytes.
+local function mayusAscii(c) return schar(c:byte() - 32) end
+local function mayusTexto(t)
+	return (t:gsub("[a-z]", mayusAscii):gsub("[\195-\197\208\209][\128-\191]", mayusDe))
+end
+
+function K.Mayus(s)
+	if s == nil then return "" end
+	s = tostring(s)
+	if not s:find("|", 1, true) then return mayusTexto(s) end
+	local out, i, n = {}, 1, #s
+	while i <= n do
+		local j = s:find("|", i, true)
+		if not j then
+			out[#out + 1] = mayusTexto(s:sub(i))
+			break
+		end
+		if j > i then out[#out + 1] = mayusTexto(s:sub(i, j - 1)) end
+		local codigo = s:match("^|c%x%x%x%x%x%x%x%x", j) or s:match("^|T.-|t", j) or s:match("^|H.-|h", j)
+			or s:match("^|[rhn|]", j) or "|"
+		out[#out + 1] = codigo
+		i = j + #codigo
+	end
+	return table.concat(out)
 end
 
 -- Pone el texto; un nombre en coreano o chino en un cliente latino toma la

@@ -155,7 +155,12 @@ function K.Ventana(opts)
 	c.Linea:SetPoint("BOTTOMRIGHT", c, "BOTTOMRIGHT", 0, 0)
 	if opts.cerrar ~= false then
 		c.Cerrar = K.BotonIcono(c, "ic-cerrar", function() v:Cerrar() end, { tam = 28, icono = 14, ayuda = L["Cerrar"] })
-		c.Cerrar:SetPoint("RIGHT", c, "RIGHT", -ESP.m, 0)
+		-- En Clásico WoW, un poco más adentro: el marco del cuadro de diálogo es más ancho.
+		c.alfaCerrar = { c.Cerrar }
+		K.Pintar(c.alfaCerrar, function(x)
+			x[1]:ClearAllPoints()
+			x[1]:SetPoint("RIGHT", c, "RIGHT", K.Clasico() and -ESP.base - 2 or -ESP.m, K.Clasico() and -2 or 0)
+		end)
 	end
 
 	local cuerpo = CreateFrame("Frame", nil, v)
@@ -351,7 +356,12 @@ function K.CerrarDialogo() if dialogo then dialogo.velo:Hide() end end
 -- Avisos flotantes (toasts): arriba al centro, el más nuevo arriba, hasta 3.
 -- Se van solos (no mientras el ratón está encima) o con su X.
 --   K.Aviso({ titulo, texto, icono, lobo, tono = "acento", duracion = 6,
---             accion = { texto, alClic } }) -> aviso
+--             accion = { texto, alClic }, alCerrar = fn(aviso) }) -> aviso
+--   aviso:Cerrar()   lo cierra desde fuera. El marco se reutiliza: Cerrar()
+--   cierra el mensaje que muestra ahora (aviso.turno dice cuál es; con
+--   aviso:Cerrar(turno) solo cierra si sigue mostrando ese).
+-- alCerrar se llama una vez, se cierre como se cierre (X, tiempo, su acción,
+-- Cerrar() o un aviso nuevo que toma su lugar).
 ---------------------------------------------------------------------------
 local avisos, MAX_AVISOS = {}, 3
 local ancla
@@ -368,9 +378,13 @@ local function recolocar()
 end
 
 local function quitar(a)
+	local vivo = a.alfaVivo
 	a.alfaVivo = nil
 	a:Hide()
 	recolocar()
+	local fn = a.alfaAlCerrar
+	a.alfaAlCerrar = nil
+	if vivo and fn then K.Llamar(fn, a) end
 end
 
 local function armarAviso()
@@ -401,6 +415,10 @@ local function armarAviso()
 	alfa:SetDuration(0.2)
 	alfa:SetSmoothing("OUT")
 	a.entrada = ag
+	function a:Cerrar(turno)
+		if turno and turno ~= self.turno then return end
+		if self.alfaVivo then quitar(self) end
+	end
 	a:SetScript("OnClick", function(self)
 		local ac = self.alfaAccion
 		if ac and ac.alClic then K.Llamar(ac.alClic, self) quitar(self) end
@@ -416,6 +434,9 @@ function K.Aviso(o)
 		if #avisos >= MAX_AVISOS then
 			a = avisos[#avisos] -- el más viejo cede su lugar
 			table.remove(avisos, #avisos)
+			local fn = a.alfaAlCerrar
+			a.alfaAlCerrar, a.alfaVivo = nil, nil
+			if fn then K.Llamar(fn, a) end
 		else
 			a = armarAviso()
 		end
@@ -455,7 +476,9 @@ function K.Aviso(o)
 	end
 	a:SetHeight(max(y, ESP.m + 30) + ESP.m + 2)
 	a.alfaVivo = true
+	a.alfaAlCerrar = o.alCerrar
 	a.alfaTurno = (a.alfaTurno or 0) + 1
+	a.turno = a.alfaTurno
 	local turno = a.alfaTurno
 	a:Show()
 	a.entrada:Stop()

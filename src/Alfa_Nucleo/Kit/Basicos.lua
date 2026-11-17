@@ -56,7 +56,7 @@ local function armarInfo()
 	local f = CreateFrame("Frame", "AlfaKitInfo", UIParent)
 	f:SetFrameStrata("TOOLTIP")
 	f:SetClampedToScreen(true)
-	f.caja = K.Caja(f, { fondo = "panel", borde = "lineaFuerte", corte = K.CORTE.control })
+	f.caja = K.Caja(f, { fondo = "panel", borde = "lineaFuerte", corte = K.CORTE.control, rol = "panel" })
 	f.Titulo = K.Texto(f, "encabezado", "texto")
 	f.Titulo:SetPoint("TOPLEFT", f, "TOPLEFT", 12, -10)
 	f.Cuerpo = K.Texto(f, "nota", "textoSuave")
@@ -150,7 +150,57 @@ local ESTILO = {
 	acento = { { fondo = "acento", alfaFondo = 0.12, borde = "acento", alfaBorde = 0.5 }, "acento", 0.06 },
 }
 
+-- Clásico WoW: el botón rojo del juego (UIPanelButtonTemplate: la izquierda
+-- y la derecha de 12 y el centro de UI-Panel-Button-*, con su brillo al pasar
+-- el ratón) y el texto en oro (GameFontNormal), blanco bajo el ratón.
+local ROJO = {
+	arriba = "Interface\\Buttons\\UI-Panel-Button-Up", abajo = "Interface\\Buttons\\UI-Panel-Button-Down",
+	apagado = "Interface\\Buttons\\UI-Panel-Button-Disabled", brillo = "Interface\\Buttons\\UI-Panel-Button-Highlight",
+}
+local function botonRojo(b, on)
+	if not on then
+		if b.rojo then for i = 1, 3 do b.rojo[i]:Hide() end b.rojo.brillo:Hide() end
+		return
+	end
+	if not b.rojo then
+		local r = {}
+		for i, c in ipairs({ { 0, 0.09375 }, { 0.09375, 0.53125 }, { 0.53125, 0.625 } }) do
+			local t = b:CreateTexture(nil, "BACKGROUND", nil, -6)
+			t:SetTexCoord(c[1], c[2], 0, 0.6875)
+			r[i] = t
+		end
+		r[1]:SetPoint("TOPLEFT", b, "TOPLEFT", 0, 0); r[1]:SetPoint("BOTTOMLEFT", b, "BOTTOMLEFT", 0, 0); r[1]:SetWidth(12)
+		r[3]:SetPoint("TOPRIGHT", b, "TOPRIGHT", 0, 0); r[3]:SetPoint("BOTTOMRIGHT", b, "BOTTOMRIGHT", 0, 0); r[3]:SetWidth(12)
+		r[2]:SetPoint("TOPLEFT", r[1], "TOPRIGHT", 0, 0); r[2]:SetPoint("BOTTOMRIGHT", r[3], "BOTTOMLEFT", 0, 0)
+		r.brillo = b:CreateTexture(nil, "HIGHLIGHT")
+		r.brillo:SetTexture(ROJO.brillo)
+		r.brillo:SetTexCoord(0, 0.625, 0, 0.6875)
+		r.brillo:SetBlendMode("ADD")
+		r.brillo:SetAllPoints(b)
+		b.rojo = r
+	end
+	local activo = b:IsEnabled()
+	local archivo = not activo and ROJO.apagado or (b.alfaAbajo and ROJO.abajo or ROJO.arriba)
+	for i = 1, 3 do
+		b.rojo[i]:SetTexture(archivo)
+		b.rojo[i]:Show()
+	end
+	b.rojo.brillo:SetShown(activo and true or false)
+end
+
 local function pintarBoton(b)
+	if K.Clasico() then
+		local fantasma = b.alfaTipo == "fantasma"
+		b.caja:Estilo({ fondo = false, borde = false })
+		botonRojo(b, not fantasma)
+		local color = b.alfaTipo == "peligro" and "peligro" or ((b.alfaSobre or b.alfaMarcado) and "texto" or "titulo")
+		if not b:IsEnabled() then color = "textoTenue" end
+		K.ColorTexto(b.Texto, color)
+		if b.Icono then K.SetIcono(b.Icono, b.alfaIcono, color) end
+		b.velo:Hide()
+		return
+	end
+	botonRojo(b, false)
 	local e = ESTILO[b.alfaTipo] or ESTILO.secundario
 	local caja = {}
 	for k, v in pairs(e[1]) do caja[k] = v end
@@ -208,8 +258,17 @@ function K.Boton(padre, texto, alClic, opts)
 	end)
 	b:SetScript("OnEnter", function(self) self.alfaSobre = true pintarBoton(self) end)
 	b:SetScript("OnLeave", function(self) self.alfaSobre = nil pintarBoton(self) end)
-	b:SetScript("OnMouseDown", function(self) if self:IsEnabled() then self.alfaAbajo = true acomodarBoton(self) end end)
-	b:SetScript("OnMouseUp", function(self) self.alfaAbajo = nil acomodarBoton(self) end)
+	b:SetScript("OnMouseDown", function(self)
+		if not self:IsEnabled() then return end
+		self.alfaAbajo = true
+		acomodarBoton(self)
+		if self.rojo then botonRojo(self, K.Clasico() and self.alfaTipo ~= "fantasma") end
+	end)
+	b:SetScript("OnMouseUp", function(self)
+		self.alfaAbajo = nil
+		acomodarBoton(self)
+		if self.rojo then botonRojo(self, K.Clasico() and self.alfaTipo ~= "fantasma") end
+	end)
 	if opts.ancho then b:SetWidth(opts.ancho) end
 	if opts.ayuda then K.ConInfo(b, opts.ayudaTitulo, opts.ayuda) end
 
@@ -425,7 +484,31 @@ local function pintarInterruptor(s)
 	if on then s.Perilla:SetPoint("RIGHT", s, "RIGHT", -3, 0) else s.Perilla:SetPoint("LEFT", s, "LEFT", 3, 0) end
 end
 
--- opts = { valor, clave ("id.clave"), alCambiar = fn(valor), ayuda }
+-- Un control lee su valor de su `get` propio, si no de su `clave`; guarda con
+-- su `set` propio, si no en su `clave`. Sin ninguno, solo su valor y alCambiar.
+local function leerControl(c)
+	if c.alfaGet then
+		local ok, v = pcall(c.alfaGet)
+		if ok then return true, v end
+		if geterrorhandler then geterrorhandler()(v) end
+		return false
+	end
+	if c.alfaClave then return true, leerAjuste(c.alfaClave) end
+	return false
+end
+
+local function guardarControl(c, v)
+	if c.alfaSet then K.Llamar(c.alfaSet, v, c)
+	elseif c.alfaClave then guardarAjuste(c.alfaClave, v) end
+end
+
+-- Apagar o encender un control que no es un botón (se atenúa y no responde).
+local function activoDe(c, on)
+	c.alfaApagado = on == false or nil
+	c:SetAlpha(on == false and 0.45 or 1)
+end
+
+-- opts = { valor, clave ("id.clave"), get = fn() -> valor, set = fn(valor), alCambiar = fn(valor), ayuda }
 function K.Interruptor(padre, opts)
 	opts = opts or {}
 	local s = CreateFrame("Button", nil, padre)
@@ -436,13 +519,21 @@ function K.Interruptor(padre, opts)
 	s.Perilla:SetTexture(K.Ruta("knob"))
 	s.Perilla:SetSize(14, 14)
 	s.alCambiar = opts.alCambiar
+	s.alfaGet, s.alfaSet = opts.get, opts.set
 	function s:SetValor(v) self.alfaValor = v and true or false pintarInterruptor(self) end
 	function s:Valor() return self.alfaValor end
-	function s:Leer() if self.alfaClave then self:SetValor(leerAjuste(self.alfaClave)) end end
+	function s:Leer()
+		local ok, v = leerControl(self)
+		if ok then self:SetValor(v) end
+	end
+	function s:SetActivo(on)
+		if on == false then self:Disable() else self:Enable() end
+		self:SetAlpha(on == false and 0.45 or 1)
+	end
 	s:SetScript("OnClick", function(self)
 		local v = not self.alfaValor
 		self:SetValor(v)
-		if self.alfaClave then guardarAjuste(self.alfaClave, v) end
+		guardarControl(self, v)
 		if self.alCambiar then K.Llamar(self.alCambiar, v, self) end
 	end)
 	s:SetScript("OnEnter", function(self) self.alfaSobre = true pintarInterruptor(self) end)
@@ -450,7 +541,8 @@ function K.Interruptor(padre, opts)
 	ligar(s, opts.clave)
 	if opts.ayuda then K.ConInfo(s, nil, opts.ayuda) end
 	s.alfaValor = opts.valor and true or false
-	if s.alfaClave then s.alfaValor = leerAjuste(s.alfaClave) and true or false end
+	local ok, v = leerControl(s)
+	if ok then s.alfaValor = v and true or false end
 	K.Pintar(s, pintarInterruptor)
 	return s
 end
@@ -472,13 +564,14 @@ local function rellenoDeslizador(d)
 	d.Cifra:SetText(d.alfaFormato and d.alfaFormato(d.alfaValor) or tostring(d.alfaValor))
 end
 
--- opts = { min, max, paso, valor, formato = fn(v) -> texto, clave, alCambiar = fn(v), ancho }
+-- opts = { min, max, paso, valor, formato = fn(v) -> texto, clave, get, set, alCambiar = fn(v), ancho }
 function K.Deslizador(padre, opts)
 	opts = opts or {}
 	local d = CreateFrame("Frame", nil, padre)
 	d:SetSize(opts.ancho or 200, K.ALTO.control)
 	d.alfaMin, d.alfaMax, d.alfaPaso = opts.min or 0, opts.max or 1, opts.paso or 0.05
 	d.alfaFormato, d.alCambiar = opts.formato, opts.alCambiar
+	d.alfaGet, d.alfaSet = opts.get, opts.set
 	d.Cifra = K.Texto(d, "numero", "texto")
 	d.Cifra:SetJustifyH("RIGHT")
 	d.Cifra:SetPoint("RIGHT", d, "RIGHT", 0, 0)
@@ -512,7 +605,7 @@ function K.Deslizador(padre, opts)
 		if v == d.alfaValor then return end
 		d.alfaValor = v
 		rellenoDeslizador(d)
-		if d.alfaClave then guardarAjuste(d.alfaClave, v) end
+		guardarControl(d, v)
 		if d.alCambiar then K.Llamar(d.alCambiar, v, d) end
 	end)
 	s:SetScript("OnSizeChanged", function() rellenoDeslizador(d) end)
@@ -525,7 +618,10 @@ function K.Deslizador(padre, opts)
 		rellenoDeslizador(self)
 	end
 	function d:Valor() return self.alfaValor end
-	function d:Leer() if self.alfaClave then self:SetValor(leerAjuste(self.alfaClave)) end end
+	function d:Leer()
+		local ok, v = leerControl(self)
+		if ok then self:SetValor(v) end
+	end
 	function d:SetActivo(on)
 		if on == false then self.Barra:Disable() else self.Barra:Enable() end
 		self:SetAlpha(on == false and 0.45 or 1)
@@ -536,7 +632,8 @@ function K.Deslizador(padre, opts)
 		return K.ALTO.control
 	end
 	ligar(d, opts.clave)
-	d:SetValor(d.alfaClave and leerAjuste(d.alfaClave) or opts.valor)
+	local ok, v = leerControl(d)
+	d:SetValor(ok and v or opts.valor)
 	K.Pintar(d, rellenoDeslizador)
 	return d
 end
@@ -618,6 +715,10 @@ function K.Segmentos(padre, opts)
 		for _, b in ipairs(self.botones) do pintarSegmento(b) end
 	end
 	function seg:Valor() return self.alfaValor end
+	function seg:SetActivo(on)
+		activoDe(self, on)
+		for _, b in ipairs(self.botones) do if on == false then b:Disable() else b:Enable() end end
+	end
 	function seg:Acomodar(ancho)
 		local alto = self.alfaEstilo == "segmentos" and K.ALTO.control or K.ALTO.pildora
 		local dentro = self.alfaEstilo == "segmentos" and 3 or 0
@@ -720,7 +821,7 @@ function K.Buscador(padre, opts)
 	e:SetScript("OnEditFocusGained", function() b.alfaFoco = true pintarBuscador(b) end)
 	e:SetScript("OnEditFocusLost", function() b.alfaFoco = nil pintarBuscador(b) end)
 	b:EnableMouse(true)
-	b:SetScript("OnMouseDown", function() e:SetFocus() end)
+	b:SetScript("OnMouseDown", function() if not b.alfaApagado then e:SetFocus() end end)
 	b:SetScript("OnEnter", function() b.alfaSobre = true pintarBuscador(b) end)
 	b:SetScript("OnLeave", function() b.alfaSobre = nil pintarBuscador(b) end)
 	function b:Texto() return strtrim and strtrim(self.Campo:GetText() or "") or (self.Campo:GetText() or "") end
@@ -734,13 +835,22 @@ function K.Buscador(padre, opts)
 	end
 	function b:SetAyuda(t) K.Escribir(self.Ayuda, t) end
 	function b:Foco() self.Campo:SetFocus() end
+	function b:SetActivo(on)
+		activoDe(self, on)
+		self.Campo:EnableMouse(on ~= false)
+		if on == false then self.Campo:ClearFocus() end
+	end
 	K.Pintar(b, pintarBuscador)
 	return b
 end
 
 ---------------------------------------------------------------------------
 -- Menú (el de los desplegables): una lista que se cierra al hacer clic fuera.
---   K.Menu(dueno, opciones, valor, alElegir)   opciones = { { valor, texto, icono } }
+--   K.Menu(dueno, opciones, valor, alElegir, ancho)
+--   opciones = { { valor, texto, icono }, { separador = true },
+--                { valor, texto, apagada = true, motivo = "por qué no se puede" } }
+-- Un separador es una línea; una opción apagada se ve atenuada, no se elige y,
+-- con motivo, lo dice en el cuadro de información al pasar el ratón.
 ---------------------------------------------------------------------------
 local menu, atrapa
 
@@ -761,7 +871,7 @@ local function armarMenu()
 	menu:SetFrameStrata("FULLSCREEN_DIALOG")
 	menu:SetFrameLevel(atrapa:GetFrameLevel() + 10)
 	menu:SetClampedToScreen(true)
-	menu.caja = K.Caja(menu, { fondo = "panel", borde = "lineaFuerte", corte = K.CORTE.control })
+	menu.caja = K.Caja(menu, { fondo = "panel", borde = "lineaFuerte", corte = K.CORTE.control, rol = "panel" })
 	menu.lista = K.Lista(menu, {
 		alto = K.ALTO.filaCompacta,
 		crear = function(f)
@@ -770,17 +880,31 @@ local function armarMenu()
 			f.Texto = K.Texto(f, "etiqueta", "texto")
 			f.Marca = K.Icono(f, "ic-exito", 14, "acento")
 			f.Marca:SetPoint("RIGHT", f, "RIGHT", -10, 0)
+			f.Separador = K.Linea(f, "linea")
+			f.Separador:SetPoint("LEFT", f, "LEFT", 8, 0)
+			f.Separador:SetPoint("RIGHT", f, "RIGHT", -8, 0)
 		end,
 		pintar = function(f, o)
-			f.Icono:SetShown(o.icono ~= nil)
-			if o.icono then K.SetIcono(f.Icono, o.icono, "textoSuave") end
+			local sep = o.separador and true or false
+			-- Un separador o una opción apagada no se ilumina bajo el ratón (K.Lista).
+			f.alfaInerte = (sep or o.apagada) and true or nil
+			f.Separador:SetShown(sep)
+			f.Texto:SetShown(not sep)
+			f.Icono:SetShown(not sep and o.icono ~= nil)
+			if o.icono and not sep then K.SetIcono(f.Icono, o.icono, o.apagada and "textoTenue" or "textoSuave") end
 			f.Texto:ClearAllPoints()
 			f.Texto:SetPoint("LEFT", f, "LEFT", o.icono and 32 or 12, 0)
 			f.Texto:SetPoint("RIGHT", f.Marca, "LEFT", -8, 0)
-			K.Escribir(f.Texto, o.texto or tostring(o.valor))
-			f.Marca:SetShown(menu.valor ~= nil and o.valor == menu.valor)
+			K.Escribir(f.Texto, sep and "" or (o.texto or tostring(o.valor)))
+			K.ColorTexto(f.Texto, o.apagada and "textoTenue" or "texto")
+			f.Texto:SetAlpha(o.apagada and 0.7 or 1)
+			f.Marca:SetShown(not sep and menu.valor ~= nil and o.valor == menu.valor)
+		end,
+		alEntrar = function(f, o)
+			if o and o.apagada and o.motivo and o.motivo ~= "" then K.MostrarInfo(f, o.texto, o.motivo) end
 		end,
 		alClic = function(o)
+			if not o or o.separador or o.apagada then return end
 			local fn = menu.alElegir
 			cerrarMenu()
 			if fn then K.Llamar(fn, o.valor, o) end
@@ -803,7 +927,7 @@ function K.Menu(dueno, opciones, valor, alElegir, ancho)
 	menu:SetSize(w, h + 8)
 	menu.lista:Acomodar(w - 8, h)
 	menu.lista:SetDatos(opciones)
-	for i, o in ipairs(opciones) do if o.valor == valor then menu.lista:IrA(i) end end
+	for i, o in ipairs(opciones) do if o.valor ~= nil and o.valor == valor then menu.lista:IrA(i) end end
 	menu:ClearAllPoints()
 	menu:SetPoint("TOPLEFT", dueno, "BOTTOMLEFT", 0, -4)
 	atrapa:Show()
@@ -839,19 +963,28 @@ function K.Desplegable(padre, opts)
 		K.Escribir(self.Texto, texto)
 	end
 	function d:Valor() return self.alfaValor end
-	function d:Leer() if self.alfaClave then self:SetValor(leerAjuste(self.alfaClave)) end end
+	function d:Leer()
+		local ok, v = leerControl(self)
+		if ok then self:SetValor(v) end
+	end
+	function d:SetActivo(on)
+		if on == false then self:Disable() else self:Enable() end
+		self:SetAlpha(on == false and 0.45 or 1)
+	end
 	d:SetScript("OnClick", function(self)
 		K.Menu(self, self.opciones or {}, self.alfaValor, function(v)
 			self:SetValor(v)
-			if self.alfaClave then guardarAjuste(self.alfaClave, v) end
+			guardarControl(self, v)
 			if self.alCambiar then K.Llamar(self.alCambiar, v, self) end
 		end)
 	end)
 	d:SetScript("OnEnter", function(self) self.alfaSobre = true pintarDesplegable(self) end)
 	d:SetScript("OnLeave", function(self) self.alfaSobre = nil pintarDesplegable(self) end)
+	d.alfaGet, d.alfaSet = opts.get, opts.set
 	ligar(d, opts.clave)
 	d.opciones = opts.opciones or {}
-	d:SetValor(d.alfaClave and leerAjuste(d.alfaClave) or opts.valor)
+	local ok, v = leerControl(d)
+	d:SetValor(ok and v or opts.valor)
 	K.Pintar(d, pintarDesplegable)
 	return d
 end
@@ -919,7 +1052,7 @@ local function huella(h, i)
 end
 
 local function pintarHuellas(h)
-	local n, hechas = h.alfaN or 0, h.alfaHechas or 0
+	local n, hechas = tonumber(h.alfaN) or 0, tonumber(h.alfaHechas) or 0
 	for i = 1, n do
 		local t = huella(h, i)
 		local color = i <= hechas and (h.alfaTono or "acento") or (i == hechas + 1 and h.alfaSigue and (h.alfaTono or "acento") or "lineaFuerte")
@@ -955,7 +1088,7 @@ function K.Huellas(padre, opts)
 	-- Un rastro que camina: izquierda y derecha alternadas, un poco giradas.
 	function h:Acomodar()
 		local tam, gap = self.alfaTam, self.alfaGap
-		local n = self.alfaN or 0
+		local n = tonumber(self.alfaN) or 0
 		for i = 1, n do
 			local t = huella(self, i)
 			t:SetSize(tam, tam)

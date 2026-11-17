@@ -9,7 +9,6 @@
 ## Category: Alfa
 
 Textos.lua
-Compat.lua
 Catalogo.lua
 Base.lua
 Nodos.lua

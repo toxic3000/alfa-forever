@@ -1,37 +1,50 @@
 -- Alfa - Mundo: la ventana del mapa continuo (Toxic / La Jauría). GPL-3.0.
 --
--- Una ventana propia de Alfa, aparte del mapa de Blizzard: no toca
+-- Una ventana del Kit (K.Ventana), aparte del mapa de Blizzard: no toca
 -- WorldMapFrame ni reemplaza ninguna de sus funciones, así que no puede
--- contaminarlo. Rueda del ratón: acercar y alejar donde está el cursor.
--- Arrastrar: mover. Doble clic: acercar. Clic derecho: alejar. Mayús+clic:
--- poner ahí el destino de la flecha. Abajo, la zona bajo el cursor con su
--- rango de niveles y las coordenadas tuyas y del cursor.
+-- contaminarlo. En la vista:
+--   rueda          acercar y alejar donde está el cursor (suave)
+--   arrastrar      mover, con inercia al soltar
+--   doble clic     acercar
+--   clic derecho   (o Mayús+clic) poner ahí un marcador
+--   Ctrl+clic      la flecha y la ruta te llevan ahí, sin marcador
+-- Arriba: tus marcadores, las capas, el modo limpio, el mapa del juego y
+-- los ajustes. Abajo a la derecha: +, – y centrar en mí. En el pie, la zona
+-- bajo el cursor con su rango de niveles y las coordenadas tuyas y del
+-- cursor. La ventana se mueve por su cabecera y cambia de tamaño por su
+-- esquina; recuerda los dos.
 
 local ADDON, M = ...
 local N = AlfaNucleo
 local A = N.A
+local K = N.Kit
 local L = N.Textos(M.EN)
-local W, T = A.Widgets, A.Theme
 local Geo, Lz, Mc, Capas, Panel = M.Geo, M.Lienzo, M.Marcas, M.Capas, M.Panel
+local Mk, PM = M.Marcadores, M.PanelMarcadores
 
-local type, pairs, ipairs, pcall, tonumber, min, max, floor, abs = type, pairs, ipairs, pcall, tonumber, math.min, math.max, math.floor, math.abs
+local type, pairs, ipairs, pcall, tonumber, min, max, floor, abs, exp, sqrt = type, pairs, ipairs, pcall, tonumber, math.min, math.max, math.floor, math.abs, math.exp, math.sqrt
 local format = string.format
+local ESP = K.ESP
 
 local V = {}
 M.Ventana = V
 
 local NOMBRE = "AlfaMundoMapa"
-local CAB, PIE, BORDE = 48, 28, 1
+local PIE, BORDE = 32, 1
 local Z_MIN, Z_MAX = 0.9, 90
 local PASO = 1.4          -- zoom por golpe de rueda
 local SUAVE = 14          -- qué tan rápido llega el zoom a su meta
 local LATIDO = 0.1        -- segundos entre repintados de lo que se mueve solo
 local DOBLE = 0.32        -- segundos para un doble clic
+local FRENO = 5.5         -- qué tan rápido se detiene la inercia
+local INERCIA_MIN = 40    -- unidades de la vista por segundo para que siga sola
+local ANCHO_MIN, ALTO_MIN = 600, 420
 
 local F, vista
 local cu, cv, z = 0.5, 0.5, 1          -- la vista: centro y zoom
 local meta = { z = 1 }                 -- a dónde va: zoom (y ancla) o centro
 local arrastre                          -- { x, y, cu, cv, movido }
+local inercia                           -- { vu, vv } al soltar un arrastre rápido
 local sucio = true
 local reloj, relojTitulo = 0, 0
 local ultimoClic = { t = 0, x = 0, y = 0 }
@@ -106,12 +119,14 @@ local function zoomEn(nuevo, x, y)
 		x, y = vw / 2, vh / 2
 	end
 	local u, v = aMundo(x, y)
+	inercia = nil
 	meta.z, meta.x, meta.y, meta.u, meta.v = nuevo, x, y, u, v
 	meta.cu, meta.cv = nil, nil
 end
 
 -- Desliza la vista hasta (u, v) con el zoom dado.
 local function irA(u, v, zoom)
+	inercia = nil
 	meta.cu, meta.cv = Geo.Encajar(u, v)
 	meta.z = max(Z_MIN, min(Z_MAX, zoom or z))
 	meta.u = nil
@@ -151,6 +166,15 @@ end
 local function animar(dt)
 	local f = min(1, dt * SUAVE)
 	local cambio = false
+	if inercia then
+		cu, cv = cu + inercia.vu * dt, cv + inercia.vv * dt
+		local freno = exp(-FRENO * dt)
+		inercia.vu, inercia.vv = inercia.vu * freno, inercia.vv * freno
+		local Wm, Hm = Lz.Tamano()
+		local k = escala(z)
+		if sqrt((inercia.vu * k * Wm) ^ 2 + (inercia.vv * k * Hm) ^ 2) < 8 then inercia = nil end
+		cambio = true
+	end
 	if meta.cu then
 		local du, dv = meta.cu - cu, meta.cv - cv
 		cu, cv = cu + du * f, cv + dv * f
@@ -174,15 +198,10 @@ local function animar(dt)
 end
 
 ---------------------------------------------------------------------------
--- La barra de abajo: la zona bajo el cursor y las coordenadas
+-- El pie: la zona bajo el cursor y las coordenadas
 ---------------------------------------------------------------------------
 
-local function textoCoords(x, y)
-	local Maps = A.Maps
-	if Maps and type(Maps.FormatCoords) == "function" then return Maps.FormatCoords(x, y) end
-	return format("%.1f, %.1f", x or 0, y or 0)
-end
-
+local textoCoords = Mk.TextoCoords
 local mostrado = {}
 
 local function actualizarPie()
@@ -198,19 +217,21 @@ local function actualizarPie()
 	if zona ~= mostrado.zona then
 		mostrado.zona = zona
 		if zona then
-			local nombre = Geo.Nombre(zona) or ""
+			K.Escribir(F.Zona, Geo.Nombre(zona) or "")
 			local lo, hi = Geo.Niveles(zona)
 			local texto, col = Geo.TextoNiveles(lo, hi)
-			F.Zona:SetText(nombre)
 			if texto and A.Get("maps.zoneLevels") then
-				F.Niveles:SetText(format(L["Niveles %s"], texto))
-				W.Color(F.Niveles, col or "quest")
+				K.Escribir(F.Niveles, format(L["Niveles %s"], texto))
+				local T = A.Theme
+				local r, g, b = 1, 1, 1
+				if T and T.Color then r, g, b = T.Color(col or "quest") end
+				F.Niveles:SetTextColor(r or 1, g or 1, b or 1)
 			else
-				F.Niveles:SetText("")
+				K.Escribir(F.Niveles, "")
 			end
 		else
-			F.Zona:SetText("")
-			F.Niveles:SetText("")
+			K.Escribir(F.Zona, "")
+			K.Escribir(F.Niveles, "")
 		end
 		F.Ayuda:SetShown(not zona)
 	end
@@ -237,7 +258,7 @@ local function actualizarTitulo()
 			texto = Geo.Nombre(zona)
 			local lo, hi = Geo.Niveles(zona)
 			local niveles = Geo.TextoNiveles(lo, hi)
-			if texto and niveles then texto = texto .. "  ·  " .. niveles end
+			if texto and niveles then texto = texto .. "  \194\183  " .. niveles end
 		end
 	end
 	if not texto and z >= 1.5 then
@@ -245,34 +266,50 @@ local function actualizarTitulo()
 		texto = cont and Geo.Nombre(cont)
 	end
 	texto = texto or Geo.Nombre(Geo.MUNDO) or L["Azeroth"]
-	if Capas.Limpio() then texto = texto .. "  ·  " .. L["Modo limpio"] end
-	F.Sub:SetText(texto)
+	if Capas.Limpio() then texto = texto .. "  \194\183  " .. L["Modo limpio"] end
+	K.Escribir(F.Cabecera.Subtitulo, texto)
 end
 
 local function pintarBotones()
 	if not F then return end
-	W.SetIconState(F.BLimpio, Capas.Limpio())
-	W.SetIconState(F.BCapas, Panel.Visible())
+	F.BLimpio:SetMarcado(Capas.Limpio())
+	F.BCapas:SetMarcado(Panel.Visible())
+	F.BMarcas:SetMarcado(PM.Visible())
+	local n = Mk.Cuantos()
+	F.Cuenta:SetText(n > 0 and tostring(n) or "")
 end
 
 ---------------------------------------------------------------------------
 -- Ratón
 ---------------------------------------------------------------------------
 
-local function ponerDestino(x, y)
+-- El punto de la vista en el mapa de su zona (o del continente): mapa, x, y, nombre
+local function lugarEn(x, y)
 	local u, v = aMundo(x, y)
-	local _, zona = Geo.Cadena(u, v)
-	local Nav = A.Nav
-	if not (zona and Nav and type(Nav.SetTarget) == "function") then
-		N.Imprimir(L["Ahí no se puede poner un destino."])
+	local cont, zona = Geo.Cadena(u, v)
+	local mapa = zona or cont
+	if not mapa then return nil end
+	local px, py = Geo.AMapa(mapa, u, v)
+	if not px then return nil end
+	return mapa, px, py, Geo.Nombre(mapa)
+end
+
+local function nuevoMarcador(x, y)
+	local mapa, px, py = lugarEn(x, y)
+	if not mapa then
+		N.Imprimir(L["Ahí no hay ninguna zona: pon el marcador sobre tierra."])
 		return
 	end
-	local px, py = Geo.AMapa(zona, u, v)
-	local nombre = Geo.Nombre(zona) or L["Destino"]
-	if Nav.SetTarget(zona, px, py, nombre) then
-		N.Imprimir(format(L["La flecha te lleva a %s (%s)."], nombre, textoCoords(px, py)))
-		Mc.Latido()
+	M.Editor.Abrir({ nuevo = { mapa = mapa, x = px, y = py } })
+end
+
+local function llevarme(x, y)
+	local mapa, px, py, nombre = lugarEn(x, y)
+	if not mapa then
+		N.Imprimir(L["Ahí no se puede poner la flecha."])
+		return
 	end
+	if Mk.SeguirPunto(mapa, px, py, format(L["%s (%s)"], nombre or L["Destino"], textoCoords(px, py))) then Mc.Latido() end
 end
 
 local function rueda(_, delta)
@@ -283,27 +320,44 @@ end
 V.Rueda = rueda
 
 local function alPresionar(_, boton)
-	if boton ~= "LeftButton" or sinArte then return end
+	if sinArte then return end
 	local x, y = cursor()
 	if not x then return end
-	arrastre = { x = x, y = y, cu = cu, cv = cv, movido = false }
-	meta.cu, meta.cv, meta.u = nil, nil, nil
-	meta.z = z
+	if boton == "LeftButton" then
+		arrastre = { x = x, y = y, cu = cu, cv = cv, movido = false, vu = 0, vv = 0 }
+		inercia = nil
+		meta.cu, meta.cv, meta.u = nil, nil, nil
+		meta.z = z
+	elseif boton == "RightButton" then
+		arrastre = { derecho = true, x = x, y = y }
+	end
 end
 
 local function alSoltar(_, boton)
 	if sinArte then return end
 	local x, y = cursor()
-	if boton == "RightButton" then
-		if x then zoomEn(meta.z / 2, x, y) end
-		return
-	end
-	if boton ~= "LeftButton" then return end
 	local a = arrastre
 	arrastre = nil
-	if not a or a.movido or not x then return end
+	if boton == "RightButton" then
+		if x and a and a.derecho and abs(x - a.x) + abs(y - a.y) < 6 then nuevoMarcador(x, y) end
+		return
+	end
+	if boton ~= "LeftButton" or not a or a.derecho then return end
+	if a.movido then
+		-- Un arrastre rápido sigue solo un poco y se frena.
+		local Wm, Hm = Lz.Tamano()
+		local k = escala(z)
+		local rapidez = sqrt((a.vu * k * Wm) ^ 2 + (a.vv * k * Hm) ^ 2)
+		if rapidez > INERCIA_MIN and not (A.Get("ui.reduceMotion")) then inercia = { vu = a.vu, vv = a.vv } end
+		return
+	end
+	if not x then return end
 	if IsShiftKeyDown and IsShiftKeyDown() then
-		ponerDestino(x, y)
+		nuevoMarcador(x, y)
+		return
+	end
+	if IsControlKeyDown and IsControlKeyDown() then
+		llevarme(x, y)
 		return
 	end
 	local ahora = GetTime and GetTime() or 0
@@ -315,9 +369,9 @@ local function alSoltar(_, boton)
 	end
 end
 
-local function arrastrar()
+local function arrastrar(dt)
 	local a = arrastre
-	if not a then return false end
+	if not a or a.derecho then return false end
 	if not (IsMouseButtonDown and IsMouseButtonDown("LeftButton")) then
 		arrastre = nil
 		return false
@@ -329,7 +383,14 @@ local function arrastrar()
 	a.movido = true
 	local Wm, Hm = Lz.Tamano()
 	local k = escala(z)
-	cu, cv = a.cu - dx / (k * Wm), a.cv - dy / (k * Hm)
+	local nu, nv = a.cu - dx / (k * Wm), a.cv - dy / (k * Hm)
+	-- La rapidez del arrastre (suavizada), para la inercia al soltar.
+	if dt > 0 then
+		local f = min(1, dt * 18)
+		a.vu = a.vu + ((nu - cu) / dt - a.vu) * f
+		a.vv = a.vv + ((nv - cv) / dt - a.vv) * f
+	end
+	cu, cv = nu, nv
 	return true
 end
 
@@ -338,7 +399,7 @@ local encuadrar -- (abajo, con V.Abrir)
 local function alActualizar(_, dt)
 	dt = type(dt) == "number" and dt or 0
 	if porEncuadrar and encuadrar then encuadrar() end
-	if arrastrar() then sucio = true end
+	if arrastrar(dt) then sucio = true end
 	if animar(dt) then sucio = true end
 	if sucio then colocar() end
 	reloj = reloj + dt
@@ -359,191 +420,181 @@ end
 -- Ventana
 ---------------------------------------------------------------------------
 
--- Como Maps.CompactFrame del motor: el centro respecto al de la pantalla.
-local function guardarGeometria()
-	local cx, cy = F:GetCenter()
-	local ux, uy = UIParent:GetCenter()
-	if not (cx and ux) then return end
-	local s = F:GetEffectiveScale() / UIParent:GetEffectiveScale()
-	A.Set("mundo.ventana", { "CENTER", floor(cx * s - ux + 0.5), floor(cy * s - uy + 0.5), floor(F:GetWidth() + 0.5), floor(F:GetHeight() + 0.5) })
+-- El tamaño se guarda en mundo.ventana ({ ancho, alto }); el lugar lo
+-- guarda la ventana del Kit. (El formato viejo era { punto, x, y, ancho, alto }.)
+local function tamanoGuardado()
+	local g = A.Get("mundo.ventana")
+	if type(g) ~= "table" then return nil end
+	if type(g[1]) == "string" then return tonumber(g[4]), tonumber(g[5]) end
+	return tonumber(g.ancho), tonumber(g.alto)
 end
 
-local function colocarVentana()
-	local g = A.Get("mundo.ventana")
-	local uw, uh = UIParent:GetWidth() or 1280, UIParent:GetHeight() or 800
-	local w = min(1120, floor(uw * 0.72))
-	local h = min(floor(uh * 0.8), floor(w * 0.66))
-	F:ClearAllPoints()
-	if type(g) == "table" and type(g[1]) == "string" then
-		F:SetSize(max(560, tonumber(g[4]) or w), max(380, tonumber(g[5]) or h))
-		F:SetPoint(g[1], UIParent, g[1], tonumber(g[2]) or 0, tonumber(g[3]) or 0)
-	else
-		F:SetSize(w, h)
-		F:SetPoint("CENTER", UIParent, "CENTER", 0, 20)
+local function guardarTamano()
+	A.Set("mundo.ventana", { ancho = floor(F:GetWidth() + 0.5), alto = floor(F:GetHeight() + 0.5) })
+	-- Cambiar el tamaño mueve el ancla de la ventana: su lugar se guarda como
+	-- lo guarda la ventana del Kit al arrastrarla (AlfaNucleoDB.kit.ventanas).
+	local p, _, rp, x, y = F:GetPoint(1)
+	if p then
+		local d = N.Datos("kit")
+		d.ventanas = type(d.ventanas) == "table" and d.ventanas or {}
+		d.ventanas[NOMBRE] = { p, rp, floor((tonumber(x) or 0) + 0.5), floor((tonumber(y) or 0) + 0.5) }
 	end
 end
 
-local function botonCab(icono, tip, fn)
-	local b = W.IconButton(F.Cab, icono, 30, tip, fn, 16)
+local function tamanoInicial()
+	local uw, uh = UIParent:GetWidth() or 1280, UIParent:GetHeight() or 800
+	local w, h = tamanoGuardado()
+	if not w then
+		w = min(1120, floor(uw * 0.72))
+		h = min(floor(uh * 0.82), floor(w * 0.68))
+	end
+	return max(ANCHO_MIN, min(w, uw)), max(ALTO_MIN, min(h or ALTO_MIN, uh))
+end
+
+local function botonCab(icono, ayuda, fn, texto)
+	local b = K.BotonIcono(F.Cabecera, icono, fn, { tam = 30, icono = 16, ayuda = ayuda, ayudaTexto = texto })
+	return b
+end
+
+local function botonZoom(padre, texto, fn, ayuda)
+	local b = K.Boton(padre, texto, fn, { tipo = "secundario", ancho = 32 })
+	b:SetAncho(32)
+	b:SetHeight(32)
+	K.ConInfo(b, ayuda, nil)
 	return b
 end
 
 local function construir()
-	F = CreateFrame("Frame", NOMBRE, A.UIParent)
-	F:SetFrameStrata("HIGH")
-	F:SetToplevel(true)
-	F:SetClampedToScreen(true)
-	F:EnableMouse(true)
-	F:SetMovable(true)
+	local w, h = tamanoInicial()
+	F = K.Ventana({ nombre = NOMBRE, titulo = L["Mapa del mundo"], subtitulo = " ", icono = "ic-mundo",
+		ancho = w, alto = h,
+		alAbrir = function(self)
+			mostrado.zona, mostrado.coords = -1, nil
+			pintarBotones()
+			actualizarTitulo()
+		end,
+		alCerrar = function()
+			arrastre, inercia = nil, nil
+			M.CerrarEmergentes()
+			if M.Editor and M.Editor.Visible() then M.Editor.Cerrar() end
+		end })
 	F:SetResizable(true)
-	if F.SetResizeBounds then F:SetResizeBounds(560, 380) end
-	F:Hide()
-	T.Skin(F, "window")
-	W.Rim(F, { width = 520 })
+	if F.SetResizeBounds then F:SetResizeBounds(ANCHO_MIN, ALTO_MIN) elseif F.SetMinResize then F:SetMinResize(ANCHO_MIN, ALTO_MIN) end
+	local c = F.Cabecera
 
-	-- Cabecera: título, lo que hay al centro, y los botones.
-	local cab = CreateFrame("Frame", nil, F)
-	cab:SetPoint("TOPLEFT", F, "TOPLEFT", 0, 0)
-	cab:SetPoint("TOPRIGHT", F, "TOPRIGHT", 0, 0)
-	cab:SetHeight(CAB)
-	cab:EnableMouse(true)
-	cab:RegisterForDrag("LeftButton")
-	cab:SetScript("OnDragStart", function() F:StartMoving() end)
-	cab:SetScript("OnDragStop", function()
-		F:StopMovingOrSizing()
-		guardarGeometria()
-	end)
-	F.Cab = cab
-	F.Emblema = cab:CreateTexture(nil, "ARTWORK")
-	F.Emblema:SetTexture(T.Media("icon-explore"))
-	F.Emblema:SetSize(22, 22)
-	F.Emblema:SetPoint("LEFT", cab, "LEFT", 16, 0)
-	W.Color(F.Emblema, "accent")
-	F.Titulo = W.Text(cab, "title", "text")
-	F.Titulo:SetPoint("TOPLEFT", F.Emblema, "TOPRIGHT", 10, 4)
-	F.Titulo:SetText(L["Mapa del mundo"])
-	F.Sub = W.Text(cab, "small", "textDim")
-	F.Sub:SetPoint("TOPLEFT", F.Titulo, "BOTTOMLEFT", 0, -2)
-
-	F.BCerrar = botonCab("close", L["Cerrar"], function() F:Hide() end)
-	F.BCerrar:SetPoint("RIGHT", cab, "RIGHT", -10, 0)
-	F.BOpciones = botonCab("gear", L["Opciones de Mundo"], function() N.Abrir("mundo") end)
-	F.BOpciones:SetPoint("RIGHT", F.BCerrar, "LEFT", -2, 0)
-	F.BJuego = botonCab("window", L["Abrir el mapa del juego"], function()
-		local C = A.Compat
-		if C and type(C.CanOpenWorldMap) == "function" and C.CanOpenWorldMap() and type(C.OpenWorldMap) == "function" then
-			local _, zona = Geo.Cadena(cu, cv)
-			if not C.OpenWorldMap(zona) then N.Imprimir(L["El mapa del juego no se abre en combate."]) end
-		end
-	end)
-	F.BJuego:SetPoint("RIGHT", F.BOpciones, "LEFT", -2, 0)
-	F.BCentrar = botonCab("qol-target", L["Centrar en mí"], function()
-		if not centrarEnMi(true) then N.Imprimir(L["Aquí el juego no da tu posición (por ejemplo, dentro de una mazmorra)."]) end
-	end)
-	F.BCentrar:SetPoint("RIGHT", F.BJuego, "LEFT", -10, 0)
-	F.BLimpio = botonCab("compact", L["Modo limpio: solo tú, tu grupo y la guía"], function()
-		Capas.AlternarLimpio()
-	end)
-	F.BLimpio:SetPoint("RIGHT", F.BCentrar, "LEFT", -2, 0)
-	F.BCapas = botonCab("layers", L["Capas: elige qué se ve en el mapa"], function(self)
-		Panel.Alternar(self, { punto = "TOPRIGHT", relativo = "BOTTOMRIGHT", x = 0, y = -4, sinMapa = true })
+	-- Los botones de la cabecera, de derecha a izquierda junto a la X.
+	F.BAjustes = botonCab("ic-ajustes", L["Opciones de Mundo"], function() N.Abrir("mundo") end)
+	F.BAjustes:SetPoint("RIGHT", c.Cerrar, "LEFT", -ESP.xs, 0)
+	F.BJuego = botonCab("ic-mapa", L["Ir al mapa del juego"], function() V.AlMapaDelJuego() end,
+		L["Abre el mapa del juego en esta misma zona. En combate el mapa del juego no se abre desde Alfa."])
+	F.BJuego:SetPoint("RIGHT", F.BAjustes, "LEFT", -ESP.xs, 0)
+	F.Sep = K.Linea(c, "linea", true)
+	F.Sep:SetHeight(22)
+	F.Sep:SetPoint("RIGHT", F.BJuego, "LEFT", -ESP.s, 0)
+	F.BLimpio = botonCab("ic-descubrir", L["Modo limpio"], function() Capas.AlternarLimpio() end,
+		L["Deja solo lo esencial: tú, tu grupo, tus marcadores y el siguiente paso de la guía."])
+	F.BLimpio:SetPoint("RIGHT", F.Sep, "LEFT", -ESP.s, 0)
+	F.BCapas = botonCab("ic-comunidad", L["Capas del mapa"], function(self)
+		Panel.Alternar(self, { punto = "TOPRIGHT", relativo = "BOTTOMRIGHT", x = 0, y = -6, sinMapa = true })
 		pintarBotones()
-	end)
-	F.BCapas:SetPoint("RIGHT", F.BLimpio, "LEFT", -2, 0)
-	F.Sub:SetPoint("RIGHT", F.BCapas, "LEFT", -12, 0)
+	end, L["Elige qué se ve en el mapa: guía, misiones, raros, viajes, zonas y lo que agregan otros módulos."])
+	F.BCapas:SetPoint("RIGHT", F.BLimpio, "LEFT", -ESP.xs, 0)
+	F.BMarcas = botonCab("ic-huella", L["Tus marcadores"], function(self)
+		PM.Alternar(self)
+		pintarBotones()
+	end, L["Tu lista: síguelos con la flecha, compártelos con el grupo, cámbialos o bórralos."])
+	F.BMarcas:SetPoint("RIGHT", F.BCapas, "LEFT", -ESP.xs, 0)
+	F.Cuenta = K.Texto(F.BMarcas, "insignia", "acento")
+	F.Cuenta:SetPoint("BOTTOMRIGHT", F.BMarcas, "BOTTOMRIGHT", 2, -1)
+	c.Subtitulo:SetPoint("RIGHT", F.BMarcas, "LEFT", -ESP.base, 0)
+	c.Titulo:SetPoint("RIGHT", F.BMarcas, "LEFT", -ESP.base, 0)
+	c.Subtitulo:SetWordWrap(false)
 
 	-- La vista del mapa
-	vista = CreateFrame("Frame", nil, F)
-	vista:SetPoint("TOPLEFT", F, "TOPLEFT", BORDE, -CAB)
-	vista:SetPoint("BOTTOMRIGHT", F, "BOTTOMRIGHT", -BORDE, PIE)
+	vista = CreateFrame("Frame", nil, F.Cuerpo)
+	vista:SetPoint("TOPLEFT", F.Cuerpo, "TOPLEFT", BORDE, 0)
+	vista:SetPoint("BOTTOMRIGHT", F.Cuerpo, "BOTTOMRIGHT", -BORDE, PIE)
 	vista:EnableMouse(true)
 	vista:EnableMouseWheel(true)
-	local fondo = vista:CreateTexture(nil, "BACKGROUND", nil, -8)
-	fondo:SetAllPoints(vista)
-	fondo:SetTexture(T.Media("white"))
-	W.Color(fondo, "shade")
+	vista.Fondo = K.Plano(vista, "hundido", "BACKGROUND", -8)
+	vista.Fondo:SetAllPoints(vista)
 	vista:SetScript("OnMouseWheel", A.Safe(rueda))
 	vista:SetScript("OnMouseDown", A.Safe(alPresionar))
 	vista:SetScript("OnMouseUp", A.Safe(alSoltar))
 	vista:SetScript("OnSizeChanged", function() sucio = true end)
+	vista:SetScript("OnUpdate", A.Safe(alActualizar))
 	F.Vista = vista
 	local lienzo = Lz.Crear(vista)
 	Mc.Crear(vista)
 	if not lienzo then
 		sinArte = true
-		F.SinArte = W.Text(vista, "body", "textDim")
+		F.SinArte = K.Vacio(vista, { lobo = "vacio", titulo = L["Este cliente no da el arte del mapa"],
+			texto = L["No se puede dibujar el mapa continuo. El mapa del juego sigue funcionando con todas las capas de Alfa."],
+			accion = { texto = L["Ir al mapa del juego"], icono = "ic-mapa", alClic = function() V.AlMapaDelJuego() end } })
+		F.SinArte:Acomodar(420)
 		F.SinArte:SetPoint("CENTER", vista, "CENTER", 0, 0)
-		F.SinArte:SetText(L["Este cliente no da el arte del mapa: no se puede dibujar el mapa continuo."])
 	end
 
-	-- Zoom con botones, abajo a la derecha de la vista.
+	-- Zoom y centrar, abajo a la derecha de la vista.
 	local zoom = CreateFrame("Frame", nil, vista)
-	zoom:SetSize(30, 64)
-	zoom:SetPoint("BOTTOMRIGHT", vista, "BOTTOMRIGHT", -10, 10)
+	zoom:SetSize(32, 32 * 3 + ESP.xs * 2)
+	zoom:SetPoint("BOTTOMRIGHT", vista, "BOTTOMRIGHT", -ESP.m, ESP.m)
 	zoom:SetFrameLevel(vista:GetFrameLevel() + 80)
-	F.Mas = W.Button(zoom, "+", function() zoomEn(meta.z * 2) end, { width = 30, height = 30 })
+	F.Mas = botonZoom(zoom, "+", function() zoomEn(meta.z * 2) end, L["Acercar"])
 	F.Mas:SetPoint("TOP", zoom, "TOP", 0, 0)
-	F.Mas:SetWidth(30)
-	F.Mas.psTip = L["Acercar"]
-	F.Menos = W.Button(zoom, "–", function() zoomEn(meta.z / 2) end, { width = 30, height = 30 })
-	F.Menos:SetPoint("BOTTOM", zoom, "BOTTOM", 0, 0)
-	F.Menos:SetWidth(30)
-	F.Menos.psTip = L["Alejar"]
+	F.Menos = botonZoom(zoom, "\226\128\147", function() zoomEn(meta.z / 2) end, L["Alejar"])
+	F.Menos:SetPoint("TOP", F.Mas, "BOTTOM", 0, -ESP.xs)
+	F.Centrar = K.BotonIcono(zoom, "ic-raros", function()
+		if not centrarEnMi(true) then N.Imprimir(L["Aquí el juego no da tu posición (por ejemplo, dentro de una mazmorra)."]) end
+	end, { tam = 32, icono = 16, tipo = "secundario", ayuda = L["Centrar en mí"] })
+	F.Centrar:SetPoint("TOP", F.Menos, "BOTTOM", 0, -ESP.xs)
 
 	-- Pie: zona bajo el cursor, ayuda y coordenadas.
-	local pie = CreateFrame("Frame", nil, F)
-	pie:SetPoint("BOTTOMLEFT", F, "BOTTOMLEFT", BORDE, BORDE)
-	pie:SetPoint("BOTTOMRIGHT", F, "BOTTOMRIGHT", -BORDE, BORDE)
+	local pie = CreateFrame("Frame", nil, F.Cuerpo)
+	pie:SetPoint("BOTTOMLEFT", F.Cuerpo, "BOTTOMLEFT", BORDE, BORDE)
+	pie:SetPoint("BOTTOMRIGHT", F.Cuerpo, "BOTTOMRIGHT", -BORDE, BORDE)
 	pie:SetHeight(PIE - BORDE)
-	local regla = W.Divider(pie)
-	regla:SetPoint("TOPLEFT", pie, "TOPLEFT", 0, 0)
-	regla:SetPoint("TOPRIGHT", pie, "TOPRIGHT", 0, 0)
-	F.Zona = W.Text(pie, "label", "text")
-	F.Zona:SetPoint("LEFT", pie, "LEFT", 14, 0)
-	F.Niveles = W.Text(pie, "number", "quest")
-	F.Niveles:SetPoint("LEFT", F.Zona, "RIGHT", 10, 0)
-	F.Ayuda = W.Text(pie, "small", "textMuted")
-	F.Ayuda:SetPoint("LEFT", pie, "LEFT", 14, 0)
-	F.Ayuda:SetText(L["Rueda: acercar · Arrastra: mover · Doble clic: acercar · Mayús+clic: destino de la flecha"])
-	F.Coords = W.Text(pie, "number", "textDim")
-	F.Coords:SetPoint("RIGHT", pie, "RIGHT", -34, 0)
+	pie.Linea = K.Linea(pie, "linea")
+	pie.Linea:SetPoint("TOPLEFT", pie, "TOPLEFT", 0, 0)
+	pie.Linea:SetPoint("TOPRIGHT", pie, "TOPRIGHT", 0, 0)
+	F.Zona = K.Texto(pie, "etiqueta", "texto")
+	F.Zona:SetPoint("LEFT", pie, "LEFT", ESP.base, 0)
+	F.Niveles = K.Texto(pie, "numero", "mision")
+	F.Niveles:SetPoint("LEFT", F.Zona, "RIGHT", ESP.m, 0)
+	F.Ayuda = K.Texto(pie, "pequeno", "textoTenue")
+	F.Ayuda:SetPoint("LEFT", pie, "LEFT", ESP.base, 0)
+	F.Ayuda:SetWordWrap(false)
+	K.Escribir(F.Ayuda, L["Rueda: zoom  \194\183  Arrastra: mover  \194\183  Clic derecho: marcador  \194\183  Ctrl+clic: llévame"])
+	F.Coords = K.Texto(pie, "numero", "textoSuave")
+	F.Coords:SetPoint("RIGHT", pie, "RIGHT", -36, 0)
 	F.Coords:SetJustifyH("RIGHT")
-	F.Ayuda:SetPoint("RIGHT", F.Coords, "LEFT", -12, 0)
+	F.Ayuda:SetPoint("RIGHT", F.Coords, "LEFT", -ESP.m, 0)
 
 	-- Asa para cambiar el tamaño.
 	local asa = CreateFrame("Button", nil, F)
-	asa:SetSize(18, 18)
-	asa:SetPoint("BOTTOMRIGHT", F, "BOTTOMRIGHT", -4, 4)
+	asa:SetSize(16, 16)
+	asa:SetPoint("BOTTOMRIGHT", F, "BOTTOMRIGHT", -6, 6)
 	asa:SetFrameLevel(F:GetFrameLevel() + 40)
-	asa.t = asa:CreateTexture(nil, "OVERLAY")
+	asa.t = K.Icono(asa, "resize", 16, "textoTenue", "OVERLAY")
 	asa.t:SetAllPoints()
-	asa.t:SetTexture(T.Media("resize"))
-	W.Color(asa.t, "textMuted")
+	asa:SetScript("OnEnter", function(self) K.SetIcono(self.t, "resize", "texto") end)
+	asa:SetScript("OnLeave", function(self) K.SetIcono(self.t, "resize", "textoTenue") end)
 	asa:SetScript("OnMouseDown", function() F:StartSizing("BOTTOMRIGHT") end)
 	asa:SetScript("OnMouseUp", function()
 		F:StopMovingOrSizing()
-		guardarGeometria()
+		guardarTamano()
 		sucio = true
 	end)
+	K.ConInfo(asa, L["Cambiar el tamaño"], nil)
 
-	F:SetScript("OnUpdate", A.Safe(alActualizar))
-	F:SetScript("OnShow", function(self)
-		local An = A.Anim
-		if An and An.To then An.To(self, "alpha", 0, 1, An.FAST, "out") end
-		mostrado.zona, mostrado.coords = -1, nil
-		pintarBotones()
-		actualizarTitulo()
-	end)
-	F:SetScript("OnHide", function()
-		arrastre = nil
-		if Panel.Visible() then Panel.Ocultar() end
-	end)
-	if A.CloseOnEscape then A.CloseOnEscape(NOMBRE) end
-	colocarVentana()
 	Capas.AlCambiar(function()
 		sucio = true
 		pintarBotones()
 		if F:IsShown() then actualizarTitulo() end
+	end)
+	Mk.AlCambiar(function()
+		sucio = true
+		pintarBotones()
 	end)
 end
 
@@ -562,8 +613,7 @@ end
 function V.Abrir(mapa)
 	if not F then construir() end
 	F:SetFrameStrata(estrato())
-	F:Show()
-	F:Raise()
+	F:Abrir()
 	if sinArte then return end
 	Mc.PrepararDatos()
 	-- El encuadre espera a que la vista tenga su tamaño (el primer cuadro).
@@ -576,6 +626,12 @@ function encuadrar()
 	local vw = tamVista()
 	if not p or vw < 20 then return end
 	porEncuadrar = nil
+	if p.u then
+		cu, cv, z = p.u, p.v, max(Z_MIN, min(Z_MAX, p.z or 14))
+		meta.z, meta.cu, meta.cv, meta.u = z, nil, nil, nil
+		sucio = true
+		return
+	end
 	local zz, u, v = nil, nil, nil
 	if type(p.mapa) == "number" then zz, u, v = zoomPara(p.mapa) end
 	if zz then
@@ -588,10 +644,39 @@ function encuadrar()
 	sucio = true
 end
 
-function V.Cerrar() if F then F:Hide() end end
+function V.Cerrar() if F then F:Cerrar() end end
 function V.Visible() return F and F:IsShown() or false end
 function V.Alternar(mapa)
 	if V.Visible() then V.Cerrar() else V.Abrir(mapa) end
+end
+
+-- La vista va hasta un marcador (abre el mapa si hace falta).
+function V.IrAMarcador(m)
+	local u, v = Geo.DeMapa(m.mapa, m.x, m.y)
+	if not u then return end
+	local zz = max(z, min(26, zoomPara(m.mapa) or 12))
+	if not V.Visible() then
+		V.Abrir()
+		porEncuadrar = { u = u, v = v, z = zz }
+		return
+	end
+	irA(u, v, zz)
+end
+
+-- Al mapa del juego en la zona que ves (desde un addon no se abre en combate:
+-- su abridor del cliente, Compat.OpenWorldMap, no contamina el mapa).
+function V.AlMapaDelJuego()
+	local C = A.Compat
+	if not (C and type(C.CanOpenWorldMap) == "function" and C.CanOpenWorldMap() and type(C.OpenWorldMap) == "function") then
+		N.Imprimir(L["Con la interfaz de mando el mapa del juego se abre con su tecla."])
+		return
+	end
+	local _, zona = Geo.Cadena(cu, cv)
+	if C.OpenWorldMap(zona or (z >= 1.5 and Geo.Cadena(cu, cv)) or nil) then
+		V.Cerrar()
+	else
+		N.Imprimir(L["En combate el mapa del juego no se abre desde Alfa: usa el de Alfa."])
+	end
 end
 
 -- Lo que cambia el arte (exploración, zonas sin descubrir, detalle).

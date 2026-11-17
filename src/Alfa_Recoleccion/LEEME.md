@@ -11,7 +11,8 @@ Muestra en el mapa del mundo y en el minimapa los nodos de **minería**, **hierb
 - **Detección** por el hechizo (enviado, terminado y botín) y además por el objeto que da el botín, así reconoce nodos con nombres que no conoce (y los aprende) y los bancos de peces.
 - **Ruta de farmeo**: en tu zona, junta los nodos del tipo o recurso elegido en paradas, los ordena en una vuelta cerrada corta (vecino más cercano + 2-opt, sin trabar el juego) y la dibuja en el mapa. "Guiarme" pone la flecha en la parada más cercana y pasa a la siguiente al llegar o al recolectar ahí. No incluye lo que tu habilidad aún no alcanza.
 - **Historial** (por personaje): esta sesión por recurso y por tipo, por hora, lo que obtuviste, por zona y las sesiones anteriores. Una sesión sigue tras un `/reload`.
-- **Otro addon de recolección** (la lista está en `Compat.lua`): si sigue activo, sus nodos recolectados se copian solos la primera vez (y con el botón "Importar nodos de otro addon de recolección").
+- **Sin otros addons**: Alfa no depende de ningún addon de recolección ni importa de ellos; la base incluida (con su aviso de licencia MIT) y lo que tú descubres son todo lo que usa.
+- **Página con el Kit** (`Recoleccion.lua`): arriba tu ruta de farmeo con la acción de ahora (crearla, guiarte con su avance en huellas, detenerla o borrarla) y qué recolectar (tipo y recurso); después esta sesión en números (solo si ya recolectaste algo); lo recolectado en listas que solo aparecen con datos (por recurso, objetos, por zona, sesiones anteriores; sin nada, el lobo dormido con qué hacer); los ajustes y tus datos (borrar lo descubierto o el historial, con confirmación).
 - **Alfa_Mundo**: si está, cada tipo es una capa en su control de capas (`recoleccion.mineria`, `recoleccion.hierbas`, `recoleccion.pesca`, `recoleccion.tesoros`).
 
 ## Comandos
@@ -20,17 +21,16 @@ Muestra en el mapa del mundo y en el minimapa los nodos de **minería**, **hierb
 - `/alfa recoleccion ruta [mineria|hierbas|pesca|tesoros]` crea la ruta en tu zona y empieza a guiar.
 - `/alfa recoleccion guiar` · `/alfa recoleccion parar` siguen o detienen la ruta.
 - `/alfa recoleccion mapa` · `/alfa recoleccion minimapa` muestran u ocultan los pines.
-- `/alfa recoleccion importar` trae los nodos de otro addon de recolección.
 
 ## Ajustes (`recoleccion.*`)
 
 `mapa`, `minimapa`, `tamanoMapa`, `tamanoMinimapa`, `mineria`, `hierbas`, `pesca`, `tesoros`, `soloProfesiones` (sí), `soloHabilidad` (no), `agrupar` (sí), `base` (sí), `rutaTipo`, `rutaRecurso`. Todos están en la página y en la búsqueda del menú.
 
-Datos: `N.Datos("recoleccion")` guarda los nodos descubiertos (`nodos[mapa] = { {x, y, k, o, n, t}, ... }`), los nombres aprendidos y si ya se importó otro addon (`importadoOtro`); `N.DatosPersonaje("recoleccion")` el historial.
+Datos: `N.Datos("recoleccion")` guarda los nodos descubiertos (`nodos[mapa] = { {x, y, k, o, n, t}, ... }`) y los nombres aprendidos; `N.DatosPersonaje("recoleccion")` el historial. (Un `importadoOtro` que haya quedado de la versión 0.1 ya no se usa.)
 
 ## Para verificar en el juego
 
-1. Con otro addon de recolección activo la primera vez: sale "se trajeron N nodos" y en la página aparecen en "Tú descubriste". Después se puede desactivar ese addon.
+1. La página: en tu zona, la tarjeta de arriba dice cuántos lugares hay y "Crear ruta"; en una ciudad o mazmorra, que ahí no hay nodos (sin botón). Sin nada recolectado, las listas no aparecen: solo el lobo dormido.
 2. Abrir el mapa en Elwynn (o donde estés): se ven los pines, el cuadro de información dice nombre, "Requiere Minería (N)" con color, y cuántas veces. Hacer zoom: los grupos con número se separan. Pasar el mapa a otra zona y volver.
 3. Clic izquierdo en un pin: la flecha va ahí. Clic derecho sobre un pin: el mapa se aleja como siempre (el botón pasa al mapa).
 4. Minimapa: los pines siguen al caminar y al girar (probar con "Girar minimapa" encendido), al hacer zoom y en un minimapa cuadrado. No tapan la flecha del jugador.

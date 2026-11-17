@@ -55,6 +55,7 @@ local function grupo(nombre, orden)
 end
 
 local G_ESENCIAL = grupo(L["Lo esencial"], 1)
+local G_MARCAS = grupo(L["Tus marcadores"], 1.5)
 local G_GUIA = grupo(L["Guía"], 2)
 local G_MISIONES = grupo(L["Misiones"], 3)
 local G_RAROS = grupo(L["Raros y tesoros"], 4)
@@ -62,7 +63,7 @@ local G_VIAJE = grupo(L["Viaje y servicios"], 5)
 local G_ZONAS = grupo(L["Zonas"], 6)
 -- Nombres que otros módulos pueden usar para caer en un grupo de aquí.
 local ALIAS = {
-	esencial = G_ESENCIAL, guia = G_GUIA, ["guía"] = G_GUIA, misiones = G_MISIONES,
+	esencial = G_ESENCIAL, marcadores = G_MARCAS, guia = G_GUIA, ["guía"] = G_GUIA, misiones = G_MISIONES,
 	raros = G_RAROS, viaje = G_VIAJE, zonas = G_ZONAS,
 }
 

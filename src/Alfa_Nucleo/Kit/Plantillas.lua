@@ -241,7 +241,7 @@ function K.Asistente(padre, opts)
 		local i = self.alfaPaso
 		local paso = self.pasos[i] or {}
 		self.Huellas:Set(i - 1, n)
-		K.Escribir(self.Numero, (L["Paso %d de %d"]):format(i, n):upper())
+		K.Escribir(self.Numero, K.Mayus((L["Paso %d de %d"]):format(i, n)))
 		K.Escribir(self.Titulo, paso.titulo or "")
 		K.Escribir(self.Texto, paso.texto or "")
 		self.BotonAtras:SetShown(i > 1)

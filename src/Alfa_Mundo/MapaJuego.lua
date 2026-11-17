@@ -5,11 +5,18 @@
 --   * en su menú de rastreo (la lupa), "Alfa: capas del mapa", por el punto
 --     de extensión oficial Menu.ModifyMenu("MENU_WORLD_MAP_TRACKING"), como
 --     hace el motor con los servicios (Maps/Services.lua);
---   * dos botones pequeños junto a esa lupa (mundo.botonMapa): las capas y
---     el mapa de Alfa. Son marcos de Alfa hijos del mapa, fuera de su lienzo,
---     que solo leen el mapa (GetMapID, la posición de la lupa).
+--   * junto a esa lupa (mundo.botonMapa): las capas, el modo limpio y
+--     "Mapa de Alfa" para cambiar al de Alfa en la misma zona. Son marcos de
+--     Alfa hijos del mapa, fuera de su lienzo, que solo leen el mapa
+--     (GetMapID, la posición de la lupa);
+--   * Mayús+clic derecho en el mapa pone un marcador ahí (el clic derecho
+--     solo sigue alejando el mapa, como siempre). Es un manejador de clics
+--     del lienzo (AddCanvasClickHandler), igual que el que ya pone el motor
+--     para Mayús+clic (Nav/Journey.lua): solo toma ese clic y devuelve
+--     false para todos los demás.
 -- Con la interfaz de mando (gamepad) no se agrega nada al mapa del juego:
--- el motor explica por qué en Core/Init.lua (A.GamepadUI).
+-- el motor explica por qué en Core/Init.lua (A.GamepadUI) y
+-- Nav/MapCanvas.lua.
 --
 -- La tecla del mapa (mundo.teclaM): sus teclas abren el mapa de Alfa con
 -- SetOverrideBinding, fuera de combate; apagarlo las devuelve al juego.
@@ -18,7 +25,8 @@ local ADDON, M = ...
 local N = AlfaNucleo
 local A = N.A
 local L = N.Textos(M.EN)
-local W, T = A.Widgets, A.Theme
+local K = N.Kit
+local T = A.Theme
 local Capas, Panel, V, Mc = M.Capas, M.Panel, M.Ventana, M.Marcas
 
 local type, ipairs, pcall, tostring = type, ipairs, pcall, tostring
@@ -99,30 +107,26 @@ local function mostrarBarra()
 	if not barra then return end
 	local on = A.Get("mundo.botonMapa") ~= false and not oculto() and not mando()
 	barra:SetShown(on)
-	if on then W.SetIconState(barra.Limpio, Capas.Limpio()) end
+	if on then barra.Limpio:SetMarcado(Capas.Limpio()) end
 end
 
 local function crearBarra()
 	if barra or mando() or not WorldMapFrame then return end
 	local crear = A.CreateFrameUnder or function(k, n, p) return CreateFrame(k, n, p) end
 	barra = crear("Frame", "AlfaMundoBotonesMapa", WorldMapFrame)
-	barra:SetSize(3 * 28 + 4, 28)
-	local fondo = barra:CreateTexture(nil, "BACKGROUND")
-	fondo:SetAllPoints(barra)
-	fondo:SetTexture(T.Media("white"))
-	W.Color(fondo, "bg", 0.85)
-	barra.Capas = W.IconButton(barra, "layers", 28, L["Capas de Alfa: elige qué se ve en el mapa"], function(self)
-		Panel.Alternar(self, { punto = "TOPRIGHT", relativo = "BOTTOMRIGHT", x = 0, y = -4 })
-	end, 15)
+	barra.caja = K.Caja(barra, { fondo = "fondo", borde = "linea", corte = K.CORTE.chico })
+	barra.Capas = K.BotonIcono(barra, "ic-comunidad", function(self)
+		Panel.Alternar(self, { punto = "TOPRIGHT", relativo = "BOTTOMRIGHT", x = 0, y = -4, mapa = mapaDelJuego() })
+	end, { tam = 26, icono = 15, ayuda = L["Capas de Alfa: elige qué se ve en el mapa"] })
 	barra.Capas:SetPoint("LEFT", barra, "LEFT", 2, 0)
-	barra.Limpio = W.IconButton(barra, "compact", 28, L["Modo limpio: solo tú, tu grupo y la guía"], function()
-		Capas.AlternarLimpio()
-	end, 15)
+	barra.Limpio = K.BotonIcono(barra, "ic-descubrir", function() Capas.AlternarLimpio() end,
+		{ tam = 26, icono = 15, ayuda = L["Modo limpio: solo tú, tu grupo, tus marcadores y la guía"] })
 	barra.Limpio:SetPoint("LEFT", barra.Capas, "RIGHT", 0, 0)
-	barra.Abrir = W.IconButton(barra, "icon-explore", 28, L["Abrir el mapa de Alfa (continuo, con zoom)"], function()
-		V.Abrir(mapaDelJuego())
-	end, 15)
-	barra.Abrir:SetPoint("LEFT", barra.Limpio, "RIGHT", 0, 0)
+	barra.Abrir = K.Boton(barra, L["Mapa de Alfa"], function() V.Abrir(mapaDelJuego()) end,
+		{ tipo = "acento", tam = "chico", icono = "ic-mundo",
+		  ayuda = L["Cambia al mapa de Alfa en esta zona: todo el mundo en un solo mapa, con zoom y tus marcadores."] })
+	barra.Abrir:SetPoint("LEFT", barra.Limpio, "RIGHT", 4, 0)
+	barra:SetSize(2 + 26 * 2 + 4 + barra.Abrir:GetWidth() + 3, 30)
 	colocarBarra()
 	mostrarBarra()
 	-- La lupa se recoloca al abrir el mapa o cambiar su tamaño: los botones la
@@ -133,11 +137,47 @@ local function crearBarra()
 			if que == "show" or que == "size" then
 				colocarBarra()
 				mostrarBarra()
+			elseif que == "hide" then
+				-- La ficha de un marcador abierta desde este mapa se va con él.
+				local E = M.Editor
+				if E and E.Visible() and not V.Visible() then E.Cerrar() end
+				if Panel.Visible() and not V.Visible() then Panel.Ocultar() end
 			end
 		end)
 	end
 end
 MJ.CrearBarra = crearBarra
+
+---------------------------------------------------------------------------
+-- Mayús+clic derecho en el mapa del juego: un marcador ahí
+---------------------------------------------------------------------------
+
+local enganchado = false
+
+local function chatAbierto()
+	local activo = (ChatFrameUtil and ChatFrameUtil.GetActiveWindow) or ChatEdit_GetActiveWindow
+	return activo ~= nil and activo() ~= nil
+end
+
+local function alClicLienzo(lienzo, boton)
+	if boton ~= "RightButton" or not (IsShiftKeyDown and IsShiftKeyDown()) then return false end
+	if (IsControlKeyDown and IsControlKeyDown()) or (IsAltKeyDown and IsAltKeyDown()) or chatAbierto() then return false end
+	if oculto() or A.Get("mundo.marcarEnMapaJuego") == false then return false end
+	local ok, mapa = pcall(lienzo.GetMapID, lienzo)
+	local ok2, x, y = pcall(lienzo.GetNormalizedCursorPosition, lienzo)
+	if not (ok and ok2 and type(mapa) == "number" and type(x) == "number" and type(y) == "number") then return false end
+	local E = M.Editor
+	if not (E and E.Abrir) then return false end
+	E.Abrir({ nuevo = { mapa = mapa, x = x * 100, y = y * 100 } })
+	return true
+end
+
+local function engancharLienzo()
+	local mapa = WorldMapFrame
+	if enganchado or mando() or not (mapa and mapa.AddCanvasClickHandler and mapa.GetNormalizedCursorPosition) then return end
+	mapa:AddCanvasClickHandler(alClicLienzo)
+	enganchado = true
+end
 
 ---------------------------------------------------------------------------
 -- La tecla del mapa
@@ -150,7 +190,12 @@ local function aplicarTecla()
 	if not (SetOverrideBinding and ClearOverrideBindings and GetBindingKey) then return end
 	dueno = dueno or CreateFrame("Frame", "AlfaMundoTeclas", UIParent)
 	local quiero = A.Get("mundo.teclaM") == true and not oculto() and not mando()
-	local teclas = quiero and { GetBindingKey("TOGGLEWORLDMAP") } or {}
+	local teclas = {}
+	if quiero then
+		for _, k in ipairs({ GetBindingKey("TOGGLEWORLDMAP") }) do
+			if type(k) == "string" and k ~= "" then teclas[#teclas + 1] = k end
+		end
+	end
 	local firma = table.concat(teclas, ",")
 	if firma == aplicadas then return end
 	N.FueraDeCombate(function()
@@ -172,13 +217,17 @@ local function alEntrar()
 		Menu.ModifyMenu("MENU_WORLD_MAP_TRACKING", menu)
 	end
 	crearBarra()
+	engancharLienzo()
 	aplicarTecla()
 end
 
 if type(A.OnLogin) == "function" then A.OnLogin(alEntrar) end
 
 A.RegisterEvent("ADDON_LOADED", function(_, nombre)
-	if nombre == "Blizzard_WorldMap" and type(A.IsLoggedIn) == "function" and A.IsLoggedIn() then crearBarra() end
+	if nombre == "Blizzard_WorldMap" and type(A.IsLoggedIn) == "function" and A.IsLoggedIn() then
+		crearBarra()
+		engancharLienzo()
+	end
 end)
 
 A.RegisterEvent("UPDATE_BINDINGS", function() aplicarTecla() end)

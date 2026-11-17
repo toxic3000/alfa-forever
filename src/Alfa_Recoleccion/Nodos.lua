@@ -289,8 +289,8 @@ end
 
 local function redondear(v) return floor(v * 10000 + 0.5) / 10000 end
 
--- Un nodo recolectado (o importado) en (x, y) del mapa: lo une al nodo que
--- ya estaba ahí o crea uno. cuenta: cuántas veces sumar (0 al importar).
+-- Un nodo recolectado en (x, y) del mapa: lo une al nodo que ya estaba ahí
+-- o crea uno. cuenta: cuántas veces sumar.
 -- -> índice del nodo en la zona, lo guardado
 local function anotarNodo(g, mapID, x, y, objectID, cuenta, cuando)
 	local D = datos()
@@ -309,7 +309,6 @@ local function anotarNodo(g, mapID, x, y, objectID, cuenta, cuando)
 		if not enConocidos[mapID] then conocidos = nil end
 	end
 	rec.n = (tonumber(rec.n) or 0) + (cuenta or 1)
-	if cuenta == 0 and rec.n < 1 then rec.n = 1 end
 	if cuando and (not rec.t or cuando > rec.t) then rec.t = cuando end
 	return j, rec
 end
@@ -495,7 +494,7 @@ function R.PosicionJugador()
 	local C = A.Compat
 	if not (C and C.GetPlayerMapPosition) then return nil end
 	local map, x, y = C.GetPlayerMapPosition()
-	if not map then return nil end
+	if not (type(map) == "number" and type(x) == "number" and type(y) == "number") then return nil end
 	local c, wx, wy = C.MapToWorld(map, x, y)
 	local zona = C.GetUnitZone and C.GetUnitZone("player")
 	if zona and zona ~= map and c and C.WorldToMap then
@@ -601,64 +600,4 @@ function R.BorrarHistorial()
 	sesion = nil
 	R.Sesion()
 	R.Avisar("historial")
-end
-
----------------------------------------------------------------------------
--- Otro addon de recolección (Compat.lua): si sigue activo, sus nodos
--- recolectados pasan a Alfa una vez (o con el botón de la página). Solo se
--- leen sus datos guardados.
----------------------------------------------------------------------------
-local OTROS = M.OTROS and M.OTROS.recoleccion or {}
-
--- Las listas de nodos por tipo de un addon de la lista, o nil.
-local function nodosDe(o)
-	local t = o.guardado and rawget(_G, o.guardado)
-	for _, k in ipairs(o.ruta or {}) do
-		if type(t) ~= "table" then return nil end
-		t = t[k]
-	end
-	return type(t) == "table" and t or nil
-end
-
--- El primer addon de la lista con nodos guardados, y sus nodos.
-local function otroActivo()
-	for _, o in ipairs(OTROS) do
-		local nodos = nodosDe(o)
-		if nodos then return o, nodos end
-	end
-	return nil
-end
-
-function R.HayOtro()
-	return otroActivo() ~= nil
-end
-
-function R.ImportarOtro()
-	local o, nodos = otroActivo()
-	if not o then return nil end
-	local n = 0
-	for tipo, lista in pairs(nodos) do
-		if o.tipos and o.tipos[tipo] and type(lista) == "table" then
-			for _, nodo in ipairs(lista) do
-				if type(nodo) == "table" then
-					local obj = tonumber(nodo[o.objeto])
-					local g = obj and M.porObjeto[obj]
-					local mapID, x, y = tonumber(nodo[o.mapa]), tonumber(nodo[o.x]), tonumber(nodo[o.y])
-					if g and mapID and x and y and x >= 0 and x <= 1 and y >= 0 and y <= 1 then
-						local cuando
-						local fecha = nodo[o.fecha]
-						if type(fecha) == "table" then
-							local ok, t = pcall(time, fecha)
-							if ok and type(t) == "number" then cuando = t end
-						end
-						anotarNodo(g, mapID, x, y, obj, 0, cuando)
-						n = n + 1
-					end
-				end
-			end
-		end
-	end
-	datos().importadoOtro = true
-	R.Avisar("nodos")
-	return n
 end

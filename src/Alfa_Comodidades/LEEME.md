@@ -4,18 +4,26 @@ Comodidades de calidad de vida dentro de Alfa. Solo hace lo que el motor de Alfa
 
 ## Dónde está
 
-Ventana de Alfa > **Calidad de vida** (la página que ya existía):
+Su propia página, hecha con el Kit (`Pagina.lua`): **Ajustes > Comodidades** (`/alfa comodidades`). Arriba, el estado y un botón para **encender las recomendadas** (colores de clase, cuadro de información, probador, siguiente parada del vuelo y sin voces de error); debajo, un grupo por comodidad con su interruptor principal y sus opciones dentro, atenuadas mientras está apagado. Lo que este cliente no tiene (probador, la variable de la cámara, los grifos, un sonido) no se muestra. Todos sus controles también salen en la búsqueda de ajustes de la ventana de Alfa.
 
-| Pestaña > sección | Qué hay |
+| Grupo | Qué hay |
 |---|---|
-| Misiones > **Todas las misiones** | Aceptar y entregar todas las misiones, con opciones para normales, diarias, semanales y entregar las completadas |
-| Viajes > Temporizador de vuelo | **Mostrar la siguiente parada** en vuelos con escalas |
-| Mapa > Minimapa | **Mejorar el minimapa**: cuadrado, ocultar los botones de addons (aparecen con el ratón) y ocultar el menú de addons |
-| **Interfaz** (pestaña nueva) | Colores de clase en tu marco y en el del objetivo · ocultar los grifos de la barra · cuadro de información (a quién apunta, rango de tu hermandad, ocultarlo en combate y verlo con Mayús) · probador (botones de objetos y control de animación) · alejar más la cámara · silenciar sonidos |
+| Misiones | **Aceptar y entregar todas las misiones**, con normales, diarias, semanales y entregar las completadas. Con «solo las misiones de mi ruta» (`ruta.soloRuta`, de la ruta de Alfa) encendido, **no acepta nada fuera de tu ruta** (lo dice en la fila) |
+| Viajes | **Mostrar la siguiente parada** en vuelos con escalas |
+| Minimapa | Cuadrado, ocultar los botones de addons (aparecen con el ratón) y el menú de addons |
+| Marcos y barra | Colores de clase en tu marco y en el del objetivo · ocultar los grifos |
+| Cuadro de información | A quién apunta, rango de tu hermandad, ocultarlo en combate y verlo con Mayús |
+| Probador | Botones de objetos y control de animación |
+| Cámara | Alejar más la cámara |
+| Silenciar sonidos | Voces de error, diálogos, mascotas, gestos y tu lista (con "Ver tu lista") |
+
+### Solo las misiones de tu ruta
+
+`Misiones.lua` pregunta si una misión es de tu ruta a `AlfaRuta.EnRuta(questID)` cuando la ruta de Alfa lo publica; si no, a la guía del motor (`Engine.WantsQuest("accept", q)`). Lo que deja por no ser de la ruta no queda marcado: si cambias de ruta, la vuelve a ofrecer. Entregar las que ya llevas sigue igual.
 
 ## Comandos
 
-- `/alfa comodidades`: abre la pestaña Interfaz de Calidad de vida (también `N.Abrir("comodidades")` desde otro módulo).
+- `/alfa comodidades`: abre su página (también `N.Abrir("comodidades")` desde otro módulo).
 - `/alfa silenciar <número>`: agrega un sonido a tu lista por su número de archivo (FileDataID). `/alfa silenciar quitar <número>`, `/alfa silenciar borrar` y `/alfa silenciar` (muestra la lista).
 
 ## Ajustes (`comodidades.*`) y cómo vienen
@@ -34,7 +42,7 @@ Cada grupo tiene un interruptor principal y sus opciones dentro. **Los interrupt
 | `grifos` | no | Ocultar los grifos de la barra de acción |
 | `silenciarErrores`, `silenciarDialogos`, `silenciarMascotas`, `silenciarGestos`, `silenciarLista` | no | Silenciar grupos de sonidos del juego y tu lista propia |
 
-Para que un grupo venga encendido de fábrica basta cambiar su valor en `M.AJUSTES` (Comodidades.lua).
+Para que un grupo venga encendido de fábrica basta cambiar su valor en `M.AJUSTES` (Comodidades.lua). Lo que enciende "Encender las recomendadas" está en `RECOMENDADAS` (Pagina.lua).
 
 ## Lo que ya hace el motor (no se duplica)
 
@@ -48,8 +56,8 @@ Para que un grupo venga encendido de fábrica basta cambiar su valor en `M.AJUST
 
 ## Para verificar en el juego
 
-1. `/reload` y abrir `/alfa comodidades`: la pestaña Interfaz y las secciones nuevas en Misiones, Viajes y Mapa se ven con el estilo de Alfa.
-2. **Misiones**: con "Aceptar y entregar todas las misiones" encendido, hablar con un PNJ que da misiones que no son de la guía; que acepte y entregue solo. Mayús lo detiene. Una misión que pide tela no se entrega y lo dice una vez. Una misión con varias recompensas espera a que elijas. Con una misión de la guía no debe pasar nada raro (la hace el motor).
+1. `/reload` y abrir `/alfa comodidades`: la página propia en Ajustes, con el botón "Encender las recomendadas" (al pulsarlo, la tarjeta dice que están listas) y cada grupo con sus opciones atenuadas mientras está apagado.
+2. **Misiones**: con «solo las misiones de mi ruta» encendido en la ruta, un PNJ con una misión que no es de tu ruta no se la acepta (la fila de Misiones lo avisa). Con él apagado y "Aceptar y entregar todas las misiones" encendido, hablar con un PNJ que da misiones que no son de la guía; que acepte y entregue solo. Mayús lo detiene. Una misión que pide tela no se entrega y lo dice una vez. Una misión con varias recompensas espera a que elijas. Con una misión de la guía no debe pasar nada raro (la hace el motor).
 3. **Vuelo**: un vuelo con escalas (uno en el que el mapa de vuelo dibuja varios tramos): bajo el temporizador sale "Siguiente parada" con el lugar y el tiempo, cambia al pasar cada escala y desaparece en el último tramo. Probar un `/reload` en el aire.
 4. **Minimapa**: cuadrado con borde fino; el aro de Blizzard desaparece; los botones de addons (también el de Alfa) aparecen al pasar el ratón; el número de addons de la esquina no está. Al apagarlo, todo vuelve. Revisar que no se oculte nada de Blizzard (correo, rastreo, reloj, cola de grupo) ni pines de mapas.
 5. **Colores de clase**: el fondo bajo tu nombre en tu marco (que encaje con el arte del marco, en espejo del objetivo) y el de un jugador objetivo en su color de clase; una criatura sigue en rojo/amarillo/verde.
