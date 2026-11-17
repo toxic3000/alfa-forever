@@ -128,6 +128,7 @@ def botones(version: str, tipo: str = "version") -> list:
             enlace("Donar con PayPal", DONAR, "💛"),
         ]}]
     return [{"type": 1, "components": [
+        enlace("CurseForge", CURSEFORGE, "🔥"),
         enlace("Instalar Alfa", INSTALADOR, "📥"),
         enlace("Notas completas", f"{REPO}/releases/tag/v{version}", "📜"),
         enlace("Donar con PayPal", DONAR, "💛"),
