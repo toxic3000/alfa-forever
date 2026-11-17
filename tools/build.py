@@ -161,6 +161,31 @@ def main() -> int:
                 destino.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(origen, destino)
 
+    # Los textos de los modulos en cada idioma van en el paquete de ese idioma
+    # del motor (Alfa_<loc>, LoadOnDemand): asi al entrar solo se lee uno, no 7.
+    idiomas = dist / "Alfa_Nucleo" / "Idiomas"
+    if idiomas.is_dir():
+        for origen in sorted(idiomas.glob("*.lua")):
+            paquete = dist / f"Alfa_{origen.stem}"
+            toc = paquete / f"Alfa_{origen.stem}.toc"
+            if not toc.exists():
+                print(f"AVISO: no hay paquete Alfa_{origen.stem} para {origen.name}; se queda fuera")
+                continue
+            shutil.copy2(origen, paquete / "AlfaModulos.lua")
+            escribir(toc, leer(toc).rstrip(SALTO) + SALTO + "AlfaModulos.lua" + SALTO)
+        shutil.rmtree(idiomas)
+
+    # El idioma de Alfa puede no ser el del juego (src/Alfa_Idioma): toda
+    # pregunta por el idioma pasa por AlfaIdioma, y sin ese addon, por el juego.
+    cambiadas = 0
+    for lua in dist.rglob("*.lua"):
+        if lua.parts[len(dist.parts)] == "Alfa_Idioma":
+            continue
+        texto = leer(lua)
+        if "GetLocale()" in texto:
+            escribir(lua, texto.replace("GetLocale()", "(AlfaIdioma or GetLocale)()"))
+            cambiadas += 1
+
     (dist / "NOTICE-ALFA.txt").write_text(
         f"Alfa {cfg['version']} - toxic3000 / La Jauria\n\n"
         f"Alfa es software libre bajo la GNU GPL version 3 (ver Alfa/LICENSE).\n"
@@ -174,7 +199,7 @@ def main() -> int:
     if not cfg["urls"].get("discord"):
         print("AVISO: falta el enlace de Discord de La Jauria en tools/alfa.json")
     print(f"OK dist/: {archivos} archivos de Polestar convertidos, "
-          f"{len(parches.PARCHES)} parches, {propios} modulos propios")
+          f"{len(parches.PARCHES)} parches, {propios} modulos propios, idioma elegible en {cambiadas} archivos")
     return 0
 
 

@@ -3,7 +3,7 @@ Jesus GPT (el mismo de ToxicHost).
 
 Uso:
   python -I tools/anunciar.py activo [--vista]       Alfa ya está activo (la 1.0.0)
-  python -I tools/anunciar.py version 1.0.1 [--vista] Salió una versión: su sección del CHANGELOG
+  python -I tools/anunciar.py version 1.1.0 [--vista] Salió una versión: su sección del CHANGELOG
 
 --vista imprime la tarjeta sin publicarla; --editar ID corrige un aviso ya publicado;
 --borrar ID publica el nuevo y borra el anterior.

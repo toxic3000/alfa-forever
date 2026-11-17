@@ -19,6 +19,7 @@ Lo que hay en esta carpeta:
 | License | GNU General Public License version 3 (GPLv3) |
 | Source / Issues | https://github.com/toxic3000/alfa-forever y https://github.com/toxic3000/alfa-forever/issues (la GPL pide que el código esté disponible) |
 | Logo | `avatar.png` |
+| Donation | PayPal: `https://www.paypal.com/donate/?hosted_button_id=7J5BYWH9DVT9C` (CurseForge lo permite en el proyecto; dentro del juego no hay donaciones) |
 
 ## Subir un archivo
 
@@ -26,11 +27,11 @@ Lo que hay en esta carpeta:
 |---|---|
 | File | `paquetes/Alfa-<versión>.zip` |
 | Display name | `Alfa <versión>` |
-| Release type | **Beta** mientras no se haya probado a fondo en el juego |
+| Release type | **Release** desde la 1.1.0 (la 1.0.0 fue Beta) |
 | Game version | La de WoW Forever (1.60.1, interfaz 16001) |
 | Changelog | La sección de esa versión en `CHANGELOG.md` |
 
-El proyecto ya existe: **https://www.curseforge.com/wow/addons/alfa-forever** (número **1811544**, creado el 16/11/2026 con la cuenta toxic3000). El número ya está en `tools/alfa.json` como `X-Curse-Project-ID` y sale a partir de la 1.0.1. La 1.0.0 se subió como Beta, para 1.60.1, y queda pendiente de la revisión de CurseForge.
+El proyecto ya existe: **https://www.curseforge.com/wow/addons/alfa-forever** (número **1811544**, creado el 16/11/2026 con la cuenta toxic3000). El número ya está en `tools/alfa.json` como `X-Curse-Project-ID` y sale a partir de la 1.1.0. La 1.0.0 se subió como Beta, para 1.60.1, y queda pendiente de la revisión de CurseForge.
 
 Para subir una versión nueva: en el panel de autores, proyecto Alfa Forever, pestaña **Files**, suelta `paquetes/Alfa-<versión>.zip`, nombre `Alfa <versión>`, versión de juego 1.60.1, el tipo que toque y las notas del CHANGELOG.
 

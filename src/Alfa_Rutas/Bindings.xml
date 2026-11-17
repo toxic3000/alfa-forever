@@ -1,0 +1,5 @@
+<Bindings>
+	<Binding name="ALFA_RUTAS_CERCA" category="Alfa" searchTags="BINDING_TAG_ALFA">
+		if AlfaCerca and AlfaCerca.Menu then AlfaCerca.Menu() end
+	</Binding>
+</Bindings>

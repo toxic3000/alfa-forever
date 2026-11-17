@@ -1,0 +1,17 @@
+## Interface: 16001
+## Title: |cff8be04eAlfa|r - Lya
+## Notes: Lya, la loba de confianza del Alfa: te acompaña en pantalla con consejos y ánimo.
+## Author: toxic3000 - La Jauria
+## Version: dev
+## X-License: GPL-3.0-only
+## Dependencies: Alfa, Alfa_Nucleo
+## Category: Alfa
+
+Textos.lua
+Frases.lua
+Lore.lua
+Lya.lua
+Cerebro.lua
+Historias.lua
+VentanaHistorias.lua
+Pagina.lua

@@ -21,6 +21,8 @@
 --   Cat.Contar(texto) -> { [tipo] = n }  cuántos encuentra cada tipo
 --   Cat.Facetas(), Cat.Avance(nombre), Cat.Clase(i), Cat.Subtipo(i), Cat.Inv(i), Cat.Req(i)
 --   Cat.OpcionesTipo(), Cat.OpcionesSubtipo(clase), Cat.OpcionesRanura()
+-- Monturas y mascotas (Coleccion.lua) suman sus filas y columnas al armar
+-- (TIPO.completar) y filtran con M.Col.Filtro.
 
 local ADDON, M = ...
 local A, L, K = M.A, M.L, M.K
@@ -58,6 +60,8 @@ local function localName(kind, id)
 	local ok, n = pcall(S.LocalName, kind, id)
 	return ok and type(n) == "string" and n ~= "" and n or nil
 end
+
+Cat.NombreLocal = localName
 
 -- El grupo del Codex de la fila i.
 local function kindDe(c, i)
@@ -127,6 +131,8 @@ local function armar(tipo)
 			g = g + 1
 			local kind = t.kinds[g]
 			if not kind then
+				-- Un tipo puede sumar filas propias y sus datos (Coleccion.lua).
+				if t.completar then t.completar(c, C) end
 				ordenar(c)
 				col[tipo] = c
 				avance["cat:" .. tipo] = 1
@@ -630,7 +636,12 @@ FILTROS.raro = function(c, i, f, ctx)
 	return true
 end
 
+-- Monturas y mascotas: sus filtros viven en Coleccion.lua.
+FILTROS.montura = function(c, i, f, ctx) return M.Col.Filtro(c, i, f, ctx) end
+FILTROS.mascota = FILTROS.montura
+
 local function contexto(tipo, f)
+	if tipo == "montura" or tipo == "mascota" then return M.Col.Contexto(tipo, f) end
 	local ctx = {}
 	if tipo == "objeto" then
 		if f.ranura then

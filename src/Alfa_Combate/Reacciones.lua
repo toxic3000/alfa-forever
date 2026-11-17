@@ -8,6 +8,10 @@
 --   * SPELL_ACTIVATION_OVERLAY_GLOW_SHOW, el brillo oficial del hechizo (y,
 --     si lo pides, el de cualquier otra habilidad tuya).
 -- Solo en combate. El aviso aparece y se va solo (una animación del cliente).
+-- Sin llenar la pantalla de texto: el aviso con su título y su porqué sale a
+-- lo sumo 4 veces por habilidad y personaje (M.TextoPuede), uno a la vez y
+-- nunca el mismo en 30 s; después, solo el ícono que late. Su × o el clic
+-- derecho lo callan para siempre ("Volver a mostrar" en Combate los enciende).
 
 local ADDON, M = ...
 local N, A, K, L = M.N, M.A, M.K, M.L
@@ -17,6 +21,8 @@ M.Reacciones = Rc
 local type, ipairs, pairs, pcall, max, floor = type, ipairs, pairs, pcall, math.max, math.floor
 local ESP = K.ESP
 local ANCHO = 300
+local CHICO = 44   -- el aviso sin texto: solo el ícono
+local DUR = 2.2    -- lo que se queda a la vista
 local ESPERA = 1.5 -- segundos entre dos avisos de la misma habilidad
 
 local activas = {} -- { def, id } de las que conoces
@@ -73,6 +79,16 @@ local function crear()
 	f.Icono:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 	f.Titulo = K.Texto(f.Cuerpo, "subtitulo", "acento")
 	f.Porque = K.Texto(f.Cuerpo, "nota", "textoSuave")
+	-- "No volver a mostrar": su × (el resto del aviso no recibe el ratón, para
+	-- no tapar clics en el mundo).
+	local function callar()
+		if f.alfaClave then M.Callar(f.alfaClave) end
+		f.anim:Stop()
+		f:Hide()
+	end
+	f.Cerrar = K.BotonIcono(f.Cuerpo, "ic-cerrar", callar, { tam = 18,
+		ayuda = L["No volver a mostrar"], ayudaTexto = L["Este aviso ya no mostrará texto: solo el ícono. En Combate puedes volver a encenderlos."] })
+	f.Cerrar:SetPoint("TOPRIGHT", f.Cuerpo, "TOPRIGHT", -4, -4)
 	-- Aparece, se queda y se va: todo con la animación del cliente.
 	local ag = f.Cuerpo:CreateAnimationGroup()
 	local entra = ag:CreateAnimation("Alpha")
@@ -83,23 +99,45 @@ local function crear()
 	local sale = ag:CreateAnimation("Alpha")
 	sale:SetFromAlpha(1)
 	sale:SetToAlpha(0)
-	sale:SetStartDelay(1.7)
+	sale:SetStartDelay(DUR - 0.5)
 	sale:SetDuration(0.35)
 	sale:SetOrder(2)
 	ag:SetScript("OnFinished", function()
 		if M.Desbloqueado() then f.Cuerpo:SetAlpha(1) return end
 		f:Hide()
 	end)
+	f:SetScript("OnHide", function()
+		if f.alfaClave then M.TextoFin(f.alfaClave) end
+	end)
 	f.anim = ag
 	f:Hide()
 	return f
 end
 
+-- Solo el ícono, en un cuadro pequeño (cuando el texto ya salió bastante).
+local function pintarChico(icono)
+	f.Icono:SetTexture(icono or K.Lobo("atento"))
+	if icono then f.Icono:SetVertexColor(1, 1, 1, 1) else f.Icono:SetVertexColor(K.Color("acento")) end
+	f.Icono:ClearAllPoints()
+	f.Icono:SetPoint("CENTER", f.Cuerpo, "CENTER", 1, 0)
+	f.Titulo:Hide()
+	f.Porque:Hide()
+	f.Cerrar:Hide()
+	f.Cuerpo.Franja:Hide()
+	f:SetSize(CHICO, CHICO)
+end
+
 local function pintar(icono, titulo, porque)
+	f:SetWidth(ANCHO)
+	f.Titulo:Show()
+	f.Cerrar:Show()
+	f.Cuerpo.Franja:Show()
+	f.Icono:ClearAllPoints()
+	f.Icono:SetPoint("TOPLEFT", f.Cuerpo, "TOPLEFT", ESP.m, -ESP.s - 2)
 	f.Icono:SetTexture(icono or K.Lobo("atento"))
 	if icono then f.Icono:SetVertexColor(1, 1, 1, 1) else f.Icono:SetVertexColor(K.Color("acento")) end
 	local x = ESP.m + 32 + ESP.m
-	local tw = ANCHO - x - ESP.m
+	local tw = ANCHO - x - ESP.m - 18
 	K.Escribir(f.Titulo, titulo or "")
 	f.Titulo:ClearAllPoints()
 	f.Titulo:SetWidth(tw)
@@ -115,6 +153,8 @@ local function pintar(icono, titulo, porque)
 	end
 	local alto = max(32 + 2 * ESP.s + 4, h + (conPorque and (2 + hp) or 0) + 2 * ESP.m)
 	local y = floor((alto - (h + (conPorque and (2 + hp) or 0))) / 2)
+	f.Icono:ClearAllPoints()
+	f.Icono:SetPoint("LEFT", f.Cuerpo, "LEFT", ESP.m, 0)
 	f.Titulo:SetPoint("TOPLEFT", f.Cuerpo, "TOPLEFT", x, -y)
 	f.Porque:ClearAllPoints()
 	f.Porque:SetPoint("TOPLEFT", f.Titulo, "BOTTOMLEFT", 0, -2)
@@ -129,8 +169,19 @@ function Rc.Mostrar(r, prueba)
 	if not prueba and ultimo[clave] and ahora - ultimo[clave] < ESPERA then return end
 	ultimo[clave] = ahora
 	crear()
-	pintar(M.IconoHechizo(r.id), r.def and r.def.texto, M.Opt("avisosPorque") and r.def and r.def.porque or nil)
 	f.anim:Stop()
+	local texto = "aviso:" .. clave
+	if f.alfaClave and f.alfaClave ~= texto then M.TextoFin(f.alfaClave) end
+	f.alfaClave = nil
+	if prueba or M.TextoPuede(texto) then
+		pintar(M.IconoHechizo(r.id), r.def and r.def.texto, M.Opt("avisosPorque") and r.def and r.def.porque or nil)
+		if not prueba then
+			f.alfaClave = texto
+			M.TextoMostrado(texto, DUR)
+		end
+	else
+		pintarChico(M.IconoHechizo(r.id))
+	end
 	f.Cuerpo:SetAlpha(1)
 	f:Show()
 	if not M.Desbloqueado() then f.anim:Play() end
@@ -210,6 +261,7 @@ function Rc.Ver()
 	if M.Desbloqueado() then
 		crear()
 		pintar(nil, L["¡Abrumar!"], M.Opt("avisosPorque") and L["Aquí sale por qué se activó la habilidad."] or nil)
+		f.Cerrar:Hide()
 		f.anim:Stop()
 		f.Cuerpo:SetAlpha(1)
 		f:Show()

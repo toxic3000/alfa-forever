@@ -1,0 +1,10 @@
+## Interface: 16001
+## Title: |cff8be04eAlfa|r - Idioma
+## Notes: El idioma que eliges para Alfa, aunque tu juego esté en otro.
+## Author: toxic3000 - La Jauria
+## Version: dev
+## X-License: GPL-3.0-only
+## SavedVariables: AlfaIdiomaDB
+## Category: Alfa
+
+Idioma.lua

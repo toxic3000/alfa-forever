@@ -1,6 +1,6 @@
 ## Interface: 16001
 ## Title: |cff8be04eAlfa|r - Enciclopedia
-## Notes: Todos los objetos, PNJ, misiones, zonas y raros del juego, con dónde conseguirlos y cómo llegar.
+## Notes: Todos los objetos, monturas, mascotas, PNJ, misiones, zonas y raros del juego, con dónde conseguirlos y cómo llegar.
 ## Author: toxic3000 - La Jauria
 ## Version: dev
 ## X-License: GPL-3.0-only
@@ -13,5 +13,7 @@ Base.lua
 Catalogo.lua
 Indices.lua
 Fichas.lua
+Coleccion.lua
+Legado.lua
 Ventana.lua
 Pagina.lua

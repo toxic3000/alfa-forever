@@ -7,7 +7,8 @@ La página de La Jauría en la ventana de Alfa (sección Manada, orden 8, ícono
 1. **Lo que toca ahora**, en grande: compartir tu rastro (si aún no), a quién sigues (Dejar de seguir), en pausa (instancia, bloqueo del juego, cuenta de prueba), quién anda más cerca (Seguir a…, Invitar al grupo) o, si no hay nadie, cómo hacer crecer la manada (Copiar el Discord).
 2. **La manada a la vista**: una tarjeta por persona con la huella y el nombre en el color de su clase, nivel, clase, zona, distancia y hace cuánto se supo, con **Seguir** (la flecha del motor; el estilo de lobo lo pone la apariencia) e **Invitar**. Seis y "Ver todos". Si no hay nadie, la sección no sale.
 3. **El clan**: el lobo aullando, nombre, lema, descripción, lo que ofrece (`Clan.lua`), el Discord para copiar y **Quiero unirme** (solo si aún no eres de la hermandad del clan).
-4. **Ajustes**: compartir (con lo que se envía y por dónde va ahora) y qué se ve en el mapa.
+4. **Apoya a Alfa**: donar es totalmente opcional, una forma de agradecer el trabajo del desarrollador; no desbloquea nada. El enlace sale de `Clan.lua` (`donar`, el enlace del botón de donar de PayPal: `https://www.paypal.com/donate/?hosted_button_id=...`). Vacío (como ahora): la insignia "Muy pronto" y ningún botón; con enlace: un cuadro para copiar. Nunca un correo. La configuración (Alfa_Bienvenida) enlaza aquí desde su resumen.
+5. **Ajustes**: compartir (con lo que se envía y por dónde va ahora) y qué se ve en el mapa.
 
 ## Cómo viaja la ubicación
 
@@ -18,13 +19,14 @@ La página de La Jauría en la ventana de Alfa (sección Manada, orden 8, ícono
 
 ## Privacidad
 
-**Por defecto no se comparte nada.** Al instalar sale la pregunta "¿Compartes tu ubicación con La Jauría?" (un `K.Dialogo`), una sola vez, fuera de combate y de instancias; si está el asistente de primer arranque (`Alfa_Bienvenida`), lo pregunta él. Quien no comparte no entra al canal ni envía ni recibe nada: se ve entre quienes comparten. Tu grupo siempre se ve (posiciones del juego). La respuesta de la 0.1.0 ("compartir con la hermandad") no cuenta: se vuelve a preguntar.
+**Por defecto no se comparte nada.** Al instalar sale la pregunta "¿Compartes tu ubicación con La Jauría?" (un `K.Dialogo`), una sola vez, fuera de combate y de instancias; si está la configuración de Alfa (`Alfa_Bienvenida`), lo pregunta ella en su paso de La Jauría, con "No compartir" elegido hasta que pulses el sí. Quien no comparte no entra al canal ni envía ni recibe nada: se ve entre quienes comparten. Tu grupo siempre se ve (posiciones del juego). La respuesta de la 0.1.0 ("compartir con la hermandad") no cuenta: se vuelve a preguntar.
 
 ## Contrato (global `AlfaManada`)
 
 - `AlfaManada.PreguntarCompartir(alTerminar)`: la pregunta; `alTerminar(comparte)` al responder o cerrarla.
 - `AlfaManada.Compartir(si)`, `AlfaManada.Comparte()`.
 - `AlfaManada.Abrir()`.
+- `AlfaManada.Apoyar()`: abre la página en "Apoya a Alfa".
 - `AlfaManada.Resumen()` → `{ comparte, manada, grupo, siguiendo, via }` (para Hoy, por ejemplo).
 
 ## Comandos
@@ -40,7 +42,7 @@ La página de La Jauría en la ventana de Alfa (sección Manada, orden 8, ícono
 
 ## Para el clan: `Clan.lua`
 
-Nombre exacto de la hermandad (`hermandad`), lema, descripción, lo que ofrecen y **`oficiales`** (nombres completos de personaje, con apellido). `discord = nil` usa el enlace de Alfa.
+Nombre exacto de la hermandad (`hermandad`), lema, descripción, lo que ofrecen y **`oficiales`** (nombres completos de personaje, con apellido). `discord = nil` usa el enlace de Alfa. `donar = ""` es el enlace para donar de "Apoya a Alfa" (vacío: "Muy pronto").
 
 ## Para verificar en el juego
 
@@ -53,3 +55,4 @@ Nombre exacto de la hermandad (`hermandad`), lema, descripción, lo que ofrecen 
 7. Cuenta de prueba: la tarjeta lo dice y no intenta nada.
 8. **Quiero unirme** desde un personaje sin la hermandad del clan, con un oficial de `Clan.lua` conectado y con Alfa.
 9. Copiar el Discord: el botón de la tarjeta lleva al enlace y lo deja elegido; Ctrl+C lo copia.
+10. Apoya a Alfa: con `donar` vacío dice "Muy pronto" sin botón; con un enlace, el cuadro lo deja elegido y Ctrl+C lo copia. Desde el resumen de la configuración, "Ver cómo" abre la página justo en ese bloque.

@@ -1,17 +1,31 @@
 # Alfa - Bienvenida
 
-El primer arranque de Alfa 1.0, las novedades y el aullido. Todo es código propio de Alfa.
+La configuración de Alfa (obligatoria la primera vez), las novedades, el aullido y los reportes al desarrollador. Todo es código propio de Alfa.
 
-- **Reemplaza la bienvenida y las novedades del motor** (`SHOW_WELCOME` y `SHOW_WHATSNEW`): las dos abren la misma ventana del Kit.
-- **Portada:** arriba la acción grande ("Empezar", o "Todo listo" con tus respuestas) y abajo lo nuevo de la 1.0 (`Novedades.lua`, que debe decir lo mismo que la sección 1.0.0 de `CHANGELOG.md`).
-- **Asistente** (`K.Asistente`), en este orden:
-  1. el estilo: Alfa, Clásico WoW o Cristal (y en Cristal, el color de acento);
-  2. las misiones automáticas: solo las de tu ruta (recomendado) o todas, el ajuste `ruta.soloRuta` de Ruta y misiones;
-  3. compartir tu ubicación con La Jauría: lo pregunta `AlfaManada.PreguntarCompartir()` al llegar al paso (sin La Jauría, el paso no sale);
-  4. el aullido.
-  Cada respuesta se guarda al elegirla. "Listo" cierra con un aviso y el aullido.
-- **Cuándo sale sola:** una vez por cuenta, también a quien ya vio la bienvenida de antes. Unos segundos después de entrar, fuera de combate, de instancias, de cinemáticas y de la elección de camino. Mostrarla la marca vista (`AlfaNucleoDB.bienvenida.visto`), así que un `/reload` no la repite. Subir `M.VERSION` en `Bienvenida.lua` la vuelve a mostrar una vez a todos.
-- **Página Ajustes > Estilo y sonido:** tu estilo con "Repetir el asistente", los tres estilos en un clic, el acento de Cristal, el aullido y la bienvenida.
+- **Reemplaza la bienvenida y las novedades del motor** (`SHOW_WELCOME` y `SHOW_WHATSNEW`): abren la misma ventana del Kit.
+- **Configuración** (`K.Asistente`, `Asistente.lua` + `Pasos.lua`), una decisión por pantalla:
+  1. **Idioma** de Alfa: los diez, cada uno escrito en el suyo; ya elegido el de Alfa ahora (el del juego si nunca elegiste). Cambiarlo llama a `N.PonerIdioma(loc)` (Alfa_Idioma) y, si pide recargar, el botón dice "Recargar y seguir": guarda el paso siguiente, avisa en el chat y llama a `ReloadUI()`; al entrar, la configuración sigue en el paso 2. La elección también queda en `bienvenida.idioma`.
+  2. **Estilo** (Alfa, Clásico WoW, Cristal) con su muestra; se aplica al instante en esta misma ventana. En Cristal, el acento. Debajo, el aullido.
+  3. **Misiones**: aceptar y entregar las de la guía, solo las de tu ruta, también las demás (Comodidades), saltar grises, cerrar lo que la guía salta, avisar de misiones que cierran otras, mejor recompensa, ponerte la recompensa, **resaltar lo de misión**.
+  4. **Tu guía**: elegir guía, seguir con la siguiente, zona recomendada, "Mientras estás aquí", misiones de clase, recordatorio del instructor, charla de una opción, lo que pide el paso.
+  5. **Comerciantes y viajes**: vender lo gris, reparar (y con la hermandad), comprar lo de la guía, despojo rápido, mapa de vuelo, tomar el vuelo, fijar el hogar.
+  6. **Otros jugadores**: invocaciones, resurrecciones, grupos de amigos, liberar en JcJ; rechazar grupos de desconocidos, hermandades y duelos; compartir el avance con el grupo y los horarios de barcos.
+  7. **Tu personaje**: curar con un clic, **ayuda de rotación**, avisos de reacción, recolección en el mapa. La primera vez que alguien configura Alfa se escribe lo recomendado para su rol: quien cura, curar con un clic encendido y la rotación apagada; tanque y daño, la rotación encendida.
+  8. **La Jauría**: "No compartir" o "Sí, compartir mi ubicación". Nunca está elegido el sí hasta que lo pulsas (`AlfaManada.Compartir`). Sin Alfa_Manada, el paso no sale.
+  9. **Resumen**: cada pantalla con lo que Alfa hará sola y "Cambiar"; la rotación y resaltar lo de misión con su propia fila; "Apoya a Alfa" (termina y abre Manada en ese bloque); un solo botón, **Listo**.
+  - Cada respuesta se guarda al elegirla y cada interruptor lee el ajuste real: quien ya usaba Alfa ve lo suyo. Solo salen las filas cuyo módulo está cargado y cuyo ajuste existe. "Ir al resumen" deja el resto como está.
+- **Obligatoria**: mientras falte, `AlfaBienvenida.Pendiente()` es true y la puerta del núcleo (`N.Permitido`, `Alfa.Puerta`) llama a `AlfaBienvenida.Abrir()`, que abre la configuración donde la dejaste y dice en el chat "Termina la configuración para usar Alfa (2 minutos)." (también al cerrarla sin terminar). No bloquea el juego: solo las ventanas de Alfa. Sale sola a los pocos segundos de cada entrada mientras falte (fuera de combate, de instancias, de cinemáticas y de la elección de camino).
+- **Quien ya terminó el asistente de antes** (`M.VERSION` 1) ve la nueva configuración una vez (`M.VERSION` = 2), con sus ajustes de ahora ya elegidos, y no recibe las recomendaciones por rol.
+- **Página Ajustes > Estilo y sonido:** tu estilo con "Mi configuración", los tres estilos, el acento de Cristal, el aullido, la configuración, "Reportar" y lo nuevo de la versión.
+
+## Reportar un error, una mejora o un comentario (`Reporte.lua`)
+
+Un addon no puede enviar nada fuera del juego. La ventana arma el reporte y tú lo pegas en el buzón privado del Discord de La Jauría (canal `📮-buzon-alfa`: los miembros escriben pero no leen lo de los demás; solo lo lee el desarrollador).
+
+1. Eliges Error, Mejora o Comentario y lo escribes (hasta 1000 letras).
+2. El reporte se arma solo mientras escribes: tipo, tu texto y, en un bloque de código, la versión de Alfa, la del cliente y su compilación, el idioma del juego y el de Alfa, tu clase y nivel, la zona con su mapa y coordenadas y, si es un error, los últimos errores de Lua que el motor atrapó (`Alfa.Errors`) y las acciones que el juego le bloqueó (`Alfa.Blocked`). Cabe en un mensaje de Discord (se quitan los errores más viejos si no). **No lleva el nombre del personaje ni el reino**, ni ningún dato del desarrollador.
+3. El reporte y la invitación (`Alfa.DiscordURL`, https://discord.gg/hUNjA6BJwh) van en cuadros para copiar: "Elegir todo" y Ctrl+C.
+4. "Pégalo en #buzon-alfa del Discord de La Jauría." y "Lo revisa el desarrollador de Alfa." En el juego el canal se escribe sin el emoji (las letras del juego no lo tienen).
 
 ## El aullido
 
@@ -28,30 +42,51 @@ De dónde salen: el listado de archivos de la comunidad, [wowdev/wow-listfile](h
 
 ## Comandos
 
-- `/alfa bienvenida`: abre la portada. `/alfa bienvenida asistente`: abre las preguntas.
+- `/alfa bienvenida`: abre la configuración (pendiente: donde la dejaste; terminada: el resumen). `/alfa bienvenida novedades`: lo nuevo de la versión.
+- `/alfa reportar [error | mejora | comentario]`: la ventana de reportes.
 - `/alfa estilo`: abre Ajustes > Estilo y sonido.
-- `/alfa welcome` y Acerca de > "Mostrar la bienvenida otra vez" (del motor) abren la portada.
-
-## Ajustes y datos
-
-| Dónde | Qué |
-|---|---|
-| `AlfaDB.settings.bienvenida.aullido` | El aullido al abrir Alfa (sí por omisión) |
-| `AlfaDB.settings.ui.skin` | El estilo: `alfa`, `classic` (Clásico WoW) o `cristal` |
-| `AlfaDB.settings.ruta.soloRuta` | Misiones automáticas solo de la ruta (lo usa Ruta y misiones) |
-| `AlfaNucleoDB.bienvenida` | `visto` (la versión del asistente que ya salió), `respondio`, `cuando` |
-| `AlfaNucleoCharDB.bienvenida.aulloSesion` | Ya aulló en esta sesión |
-| `AlfaNucleoDB.kit.acentos` | El acento propio que recuerda cada estilo |
+- `/alfa welcome` y Acerca de > "Mostrar la bienvenida otra vez" (del motor) abren lo nuevo de la versión.
 
 ## Contrato
 
-`AlfaBienvenida.Abrir(vista)` (`"portada"` o `"asistente"`), `AlfaBienvenida.Aullar()` y `AlfaBienvenida.Visto()`.
+| Global | Qué |
+|---|---|
+| `AlfaBienvenida.Abrir(vista)` | La configuración (pendiente: con la línea de por qué) o `"portada"` (solo ya terminada) |
+| `AlfaBienvenida.Pendiente()` | true mientras la configuración no se terminó |
+| `AlfaBienvenida.Exigir()` | Si está pendiente: la abre, lo dice y devuelve true |
+| `AlfaBienvenida.Aullar()`, `AlfaBienvenida.Visto()` | El aullido ahora; si ya salió la configuración de esta versión |
+| `AlfaReporte.Abrir(tipo)` | La ventana de reportes (`"error"`, `"mejora"`, `"comentario"`) |
+| Mensaje `ALFA_CONFIGURADO` | Se dispara al pulsar Listo |
+
+## Ajustes que escribe
+
+| Pantalla | Claves |
+|---|---|
+| Idioma | `AlfaIdiomaDB.idioma` (por `N.PonerIdioma`), `bienvenida.idioma` |
+| Estilo | `ui.skin` (por `K.SetEstilo`), el acento (`K.SetAcento`, `ui.classAccent`), `bienvenida.aullido` |
+| Misiones | `behavior.autoAccept`, `behavior.autoTurnin`, `ruta.soloRuta`, `comodidades.misiones`, `behavior.skipGrey`, `behavior.closeSkipped`, `behavior.warnClosing`, `qol.rewardAutoPick`, `qol.rewardEquip`, `combate.marcaMision` + `bolsas.brilloMision` |
+| Tu guía | `behavior.autoSelectGuide`, `behavior.guideEnd` (`continue`/`ask`), `behavior.routeChoice` (`recommended`/`ask`), `behavior.whileHere`, `behavior.offerClassQuests`, `behavior.trainReminder` (`2`/`1`/`off`), `qol.skipGossip`, `qol.stepGossip` |
+| Comerciantes y viajes | `qol.sellJunk`, `qol.autoRepair`, `qol.repairGuild`, `qol.buyGoals`, `qol.fastLoot`, `qol.flightAutoOpen`, `qol.flightAutoTake`, `qol.autoBind` |
+| Otros jugadores | `qol.acceptSummon`, `qol.acceptResurrect`, `qol.acceptPartyFriends`, `qol.autoReleasePvP`, `qol.declinePartyStrangers`, `qol.declineGuildInvites`, `qol.declineDuels`, `party.share`, `nav.shareTransit` |
+| Tu personaje | `curacion.activo`, `combate.rotacion`, `combate.avisos`, `recoleccion.mapa` + `recoleccion.minimapa` |
+| La Jauría | `manada.compartir` (por `AlfaManada.Compartir`) |
+
+## Datos
+
+| Dónde | Qué |
+|---|---|
+| `AlfaNucleoDB.bienvenida` | `respondio` (la versión de la configuración terminada), `paso` (dónde va, mientras falta), `recomendado` (ya se aplicó lo recomendado por rol), `visto`, `cuando` |
+| `AlfaNucleoCharDB.bienvenida.aulloSesion` | Ya aulló en esta sesión |
+| `AlfaNucleoDB.kit.acentos` | El acento propio que recuerda cada estilo |
 
 ## Para verificar en el juego
 
-1. Con una cuenta que ya tenía Alfa 0.1.0: al entrar, a los pocos segundos sale la bienvenida de la 1.0 una sola vez; ni la bienvenida ni las novedades viejas del motor aparecen. Tras `/reload` no vuelve.
-2. "Empezar": los tres estilos cambian todo al instante (ventana de Alfa, esta ventana, la flecha). En Cristal aparecen los acentos; elegir uno cambia el color en el momento.
-3. Paso de misiones: elegir una opción la marca. Con La Jauría instalada, al llegar a su paso sale su pregunta; la tarjeta muestra lo que respondiste.
-4. Paso del aullido: "Sí" suena el aullido; "Escuchar el aullido" también. Confirma que se oye un lobo (si suena otra cosa o nada, cambia `M.SONIDOS`).
-5. Cierra el juego, entra de nuevo y abre Alfa: aúlla una vez. Ábrelo otra vez: no. Con el aullido apagado: nada.
-6. Entra en combate antes de que salga la bienvenida: espera a que termine el combate.
+1. Personaje nuevo: a los pocos segundos de entrar sale la configuración. Ciérrala: el chat dice "Termina la configuración…" y `/alfa`, el botón del minimapa o cualquier ventana de Alfa la vuelven a abrir en el mismo paso. Bolsas, combate y el juego siguen normales.
+2. Idioma: elige English. El botón dice "Recargar y seguir"; al pulsarlo recarga y la configuración sigue en el paso 2, ya en inglés. Revisa que 한국어 y los chinos se lean (letra del juego para esas escrituras).
+3. Estilo: los tres cambian esta misma ventana al instante; en Cristal salen los acentos.
+4. Un sacerdote sagrado o un druida de restauración: curar con un clic encendido y la rotación apagada; un guerrero: la rotación encendida.
+5. La Jauría: "No compartir" elegido; "Sí" solo al pulsarlo. Con Sí, `/alfa manada estado` dice que compartes.
+6. Resumen: "Cambiar" lleva a su pantalla; Listo cierra con el aviso y el aullido; `/alfa bienvenida` abre el resumen.
+7. Cuenta que ya había terminado el asistente de antes: ve la nueva configuración una vez, con sus ajustes de siempre.
+8. `/alfa reportar`: escribe un texto, "Elegir todo", Ctrl+C y pégalo en Discord: debe verse el título en negritas y los datos en un bloque de código, en un solo mensaje. Provoca un error de Lua de Alfa y revisa que salga en el reporte.
+9. Revisa que el texto largo del cuadro se desplace con la rueda y que "Comentario" se lea completo en los segmentos.

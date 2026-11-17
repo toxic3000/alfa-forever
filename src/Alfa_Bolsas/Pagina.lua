@@ -376,7 +376,10 @@ local function grupos(padre)
 	marcas:Fila({ titulo = L["Chatarra"], control = interruptor("marcaChatarra"), texto = L["Una moneda sobre lo gris y lo que marcaste como chatarra."] })
 	marcas:Fila({ titulo = L["Objetos nuevos"], control = interruptor("marcaNuevos"), texto = L["Brillan los objetos que acabas de conseguir, hasta que cierras las bolsas."] })
 	marcas:Fila({ titulo = L["Flecha de mejora"], control = interruptor("marcaMejora"), texto = L["Una flecha verde en el equipo que es mejor que lo que llevas puesto, según tu clase y nivel."] })
-	marcas:Fila({ titulo = L["Objetos de misión"], control = interruptor("marcaMision"), texto = L["Un marco dorado en lo que sirve para una misión (con «!» si empieza una)."] })
+	marcas:Fila({ titulo = L["Objetos de misión que brillan"], control = interruptor("brilloMision"),
+		texto = L["Un borde dorado que late y una insignia «!» en lo que sirve para una misión; la insignia va llena si el objeto empieza una."] })
+	marcas:Fila({ titulo = L["Objetos de misión"], control = interruptor("marcaMision"), activa = function() return not M.Get("brilloMision") end,
+		texto = L["Sin el brillo: un marco dorado fijo en lo que sirve para una misión (con «!» si empieza una)."] })
 	marcas:Fila({ titulo = L["Cuántos tienes, en el cuadro de cada objeto"], control = interruptor("cuadroConteo"),
 		texto = L["Al pasar el ratón por un objeto: «Tienes 12 (Toxic: 7 en bolsas, Alt: 5 en banco)», con todos tus personajes."] })
 	return { ventana, juego, ordenar, lleno, marcas }

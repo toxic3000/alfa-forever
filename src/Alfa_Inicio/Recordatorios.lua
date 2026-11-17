@@ -70,11 +70,21 @@ local function juntar(espera, fn)
 	end
 end
 
+-- Con la ruta cargada, su Buscar cerca (AlfaCerca.Ir: mensajes de Alfa, el
+-- aviso con el lugar, el rastreador a la vista y las ventanas cerradas); sin
+-- ella, el motor directo y N.EmpezarRuta.
 local function irA(tipo)
+	local Ce = rawget(_G, "AlfaCerca")
+	if type(Ce) == "table" and type(Ce.Ir) == "function" then
+		local ok, err = pcall(Ce.Ir, tipo)
+		if not ok and geterrorhandler then geterrorhandler()(err) end
+		return
+	end
 	local Nav = A.Nav
 	local near = type(Nav) == "table" and Nav.nearby
 	if type(near) == "table" and type(near.Go) == "function" then
-		near.Go(tipo)
+		local ok, puesto = pcall(near.Go, tipo)
+		if ok and puesto and N.EmpezarRuta then N.EmpezarRuta() end
 	else
 		N.Imprimir(L["La búsqueda de lugares cercanos no está disponible."])
 	end

@@ -12,8 +12,11 @@
 --      Al terminar una guía: elegir qué sigue.
 --   3. Liberar misiones y Recoger misiones a un clic (AlfaRuta.Liberar() y
 --      AlfaRuta.Recoger(), si la ruta los tiene; Liberar, si tienes misiones).
+--      Tu plan: la meta de ahora del plan que sigues (AlfaPlanes.Tarjeta()).
 --   4. Alertas: equipo gastado, bolsas casi llenas, habilidades por
 --      entrenar, tu buff y, si curas, preparar tus marcos de curación.
+--      Debajo, Buscar cerca: vuelo, posada, reparar, banco, buzón y tu
+--      entrenador a un clic (AlfaCerca, de la ruta; con rutas.cercaHoy).
 --   5. Para tu <clase>: el talento que toca (AlfaBuilds.SiguienteTalento) y
 --      tres tarjetas de tu clase (M.Clase), cada una abre su módulo.
 --   6. Hoy en números: XP por hora, para subir, oro de hoy, esta sesión.
@@ -249,16 +252,26 @@ end
 -- 2. Tu siguiente paso
 ---------------------------------------------------------------------------
 
+-- Empezar a seguir: el rastreador a la vista y las ventanas de Alfa cerradas
+-- (N.EmpezarRuta del núcleo; sin él, como antes).
+local function empezar()
+	if N.EmpezarRuta then
+		N.EmpezarRuta()
+	else
+		A.Fire("SHOW_FRAME")
+		cerrarVentana()
+	end
+end
+
 -- Seguir: tu guía y la flecha a la vista; la ventana de Alfa se cierra para que se vean.
 local function seguirRuta()
-	A.Fire("SHOW_FRAME")
 	if A.Get("nav.arrow") == false then A.Set("nav.arrow", true) end
-	cerrarVentana()
+	empezar()
 end
 
 -- Ver pasos: la lista de pasos de tu guía.
 local function verPasos()
-	A.Fire("SHOW_FRAME")
+	empezar()
 	A.After(0.1, function()
 		local SL = A.UI and A.UI.StepList
 		if type(SL) ~= "table" or type(SL.Toggle) ~= "function" then return end
@@ -538,6 +551,137 @@ local function nuevoAlertas(padre)
 end
 
 ---------------------------------------------------------------------------
+-- 3b. Tu plan: la meta de ahora de Mis planes (AlfaPlanes, de la ruta)
+---------------------------------------------------------------------------
+
+local function planes()
+	local Pl = rawget(_G, "AlfaPlanes")
+	if type(Pl) == "table" and type(Pl.Tarjeta) == "function" then return Pl end
+	return nil
+end
+
+local function nuevoPlan(padre)
+	local b = K.Pila(padre, { espacio = ESP.m })
+	b.Seccion = b:Agregar(K.Seccion(b, L["Tu plan"]))
+	b.Tarjeta = b:Agregar(K.Tarjeta(b, { variante = "normal" }), { espacio = ESP.s })
+	function b:Llenar()
+		local Pl = planes()
+		local ok, d = false, nil
+		if Pl then ok, d = pcall(Pl.Tarjeta) end
+		if not (ok and type(d) == "table" and d.plan) then
+			K.Mostrar(self, false)
+			return
+		end
+		local id = d.plan.id
+		local abrir = function() if type(Pl.Abrir) == "function" then K.Llamar(Pl.Abrir, id) end end
+		self.Seccion:Set(L["Tu plan"], { cuenta = d.total > 0 and format(L["%d de %d"], d.hechas, d.total) or nil,
+			enlace = { texto = L["Ver el plan"], alClic = abrir } })
+		local t = { icono = d.icono or "ic-lista", tono = d.fin and "exito" or "acento", sobre = tostring(d.nombre or ""),
+			titulo = d.titulo or "", texto = d.texto, alClic = abrir }
+		if d.frac then t.progreso = { actual = floor(d.frac * 100 + 0.5), total = 100, texto = d.texto } t.texto = nil end
+		if d.ir then t.accion = { texto = d.ir[1], icono = "ic-flecha", alClic = d.ir[2] } end
+		if d.hecha then t.secundaria = { texto = L["Ya la hice"], alClic = d.hecha } end
+		self.Tarjeta:Set(t)
+		K.Mostrar(self, true)
+	end
+	return b
+end
+
+---------------------------------------------------------------------------
+-- 4b. Buscar cerca: los lugares de siempre, a un clic (AlfaCerca, de la ruta)
+---------------------------------------------------------------------------
+
+-- Los de la fila, en este orden y con su nombre corto; el menú tiene los demás.
+local RAPIDOS = { "flight", "innkeeper", "repair", "bank", "mailbox", "class" }
+local CORTO = { flight = L["Vuelo"], innkeeper = L["Posada"], repair = L["Reparar"], bank = L["Banco"],
+	mailbox = L["Buzón"], class = L["Mi entrenador"] }
+
+local function cercaApi()
+	local Ce = rawget(_G, "AlfaCerca")
+	if type(Ce) == "table" and type(Ce.Ir) == "function" and type(Ce.Tipos) == "function" then return Ce end
+	return nil
+end
+
+-- Los de la fila que sirven a este personaje: { tipo, nombre, icono }.
+local function rapidos()
+	local Ce = cercaApi()
+	if not Ce or A.Get("rutas.cercaHoy") == false then return {} end
+	local ok, tipos = pcall(Ce.Tipos)
+	local hay = {}
+	for _, t in ipairs(ok and type(tipos) == "table" and tipos or {}) do
+		if type(t) == "table" and type(t.tipo) == "string" then hay[t.tipo] = t end
+	end
+	local out = {}
+	for _, tipo in ipairs(RAPIDOS) do
+		if hay[tipo] then out[#out + 1] = hay[tipo] end
+	end
+	return out
+end
+
+-- Lo que dice al pasar el ratón: el más cercano si ya se sabe (sin buscar).
+local function infoCerca(tipo, nombre)
+	return function()
+		local Ce = cercaApi()
+		local ok, ya = false, nil
+		if Ce and type(Ce.Texto) == "function" then ok, ya = pcall(Ce.Texto, tipo) end
+		if ok and type(ya) == "string" and ya ~= "" then return nombre, format(L["El más cercano: %s"], ya) end
+		return nombre, L["Clic: la flecha te lleva al más cercano, por tiempo de camino."]
+	end
+end
+
+local function nuevoCerca(padre)
+	local b = CreateFrame("Frame", nil, padre)
+	b.Seccion = K.Seccion(b, L["Buscar cerca"])
+	b.botones = {}
+	function b:Llenar()
+		local lista = rapidos()
+		self.Seccion:Set(L["Buscar cerca"], { enlace = { texto = L["Más lugares"], alClic = function(boton)
+			local Ce = cercaApi()
+			if Ce and type(Ce.Menu) == "function" then K.Llamar(Ce.Menu, boton) end
+		end } })
+		for i, t in ipairs(lista) do
+			local bt = self.botones[i]
+			if not bt then
+				bt = K.Boton(self, "", nil, { tipo = "secundario", tam = "chico", conIcono = true })
+				self.botones[i] = bt
+			end
+			local tipo = t.tipo
+			bt:SetTexto(CORTO[tipo] or tostring(t.nombre or tipo))
+			bt:SetIcono(type(t.icono) == "string" and t.icono or "ic-flecha")
+			bt.alClic = function()
+				local Ce = cercaApi()
+				if Ce then K.Llamar(Ce.Ir, tipo) end
+			end
+			K.ConInfo(bt, infoCerca(tipo, tostring(t.nombre or CORTO[tipo] or tipo)))
+			bt:Show()
+		end
+		for i = #lista + 1, #self.botones do self.botones[i]:Hide() end
+		self.alfaN = #lista
+		K.Mostrar(self, #lista > 0)
+	end
+	function b:Acomodar(ancho)
+		self.Seccion:ClearAllPoints()
+		self.Seccion:SetPoint("TOPLEFT", self, "TOPLEFT", 0, 0)
+		self.Seccion:SetWidth(ancho)
+		local y = self.Seccion:Acomodar(ancho) + ESP.s
+		local x, fila = 0, y
+		for i = 1, self.alfaN or 0 do
+			local bt = self.botones[i]
+			bt:SetAncho(nil)
+			local w = bt:AnchoNatural()
+			if x > 0 and x + w > ancho then x, fila = 0, fila + K.ALTO.botonChico + ESP.s end
+			bt:ClearAllPoints()
+			bt:SetPoint("TOPLEFT", self, "TOPLEFT", x, -fila)
+			x = x + w + ESP.s
+		end
+		local alto = fila + K.ALTO.botonChico
+		self:SetSize(ancho, alto)
+		return alto
+	end
+	return b
+end
+
+---------------------------------------------------------------------------
 -- 5. Para tu <clase>
 ---------------------------------------------------------------------------
 
@@ -663,7 +807,7 @@ local function manada()
 	if not r.comparte then
 		if type(Ma.PreguntarCompartir) ~= "function" then return nil end
 		return { variante = "compacta", icono = "ic-manada", titulo = L["Tu manada"],
-			texto = L["Comparte tu ubicación y ve a la manada"], valor = L["Compartir"], colorValor = "acento",
+			texto = L["Deja que la manada te vea en el mapa"], valor = L["Compartir"], colorValor = "acento",
 			alClic = function() K.Llamar(Ma.PreguntarCompartir, function() P.Relayout() end) end,
 			ayuda = L["Solo con quienes usan Alfa y aceptaron compartir. Tú decides."] }
 	end
@@ -674,7 +818,7 @@ local function manada()
 	return { variante = "compacta", icono = "ic-manada", titulo = L["Tu manada"], texto = texto,
 		valor = tostring(enManada + enGrupo), colorValor = (enManada + enGrupo) > 0 and "acento" or "texto",
 		alClic = abrir and function() K.Llamar(abrir) end or nil,
-		ayuda = L["Los lobos que usan Alfa y comparten su ubicación, y tu grupo, que ves ahora."] }
+		ayuda = L["Los lobos que usan Alfa y se dejan ver en el mapa, y tu grupo, que ves ahora."] }
 end
 
 local function numeros()
@@ -1044,7 +1188,9 @@ local function llenarTodo()
 	P.tablero:SetOpciones(misiones(), false)
 	local lista = alertas()
 	P.firmaAlertas = firmaAlertas(lista)
+	P.plan:Llenar()
 	P.alertas:Llenar(lista)
+	P.cerca:Llenar()
 	P.clase:Llenar()
 	P.numeros:Llenar()
 	P.revision:Llenar(lista)
@@ -1060,7 +1206,9 @@ local function construir(view)
 	-- La portada va antes que la tarjeta grande: es lo primero de la pila del tablero.
 	P.portada = nuevaPortada(t)
 	table.insert(t.bloques, 1, { b = P.portada, sangria = 0 })
+	P.plan = t:AgregarBloque(nuevoPlan(t.Extra))
 	P.alertas = t:AgregarBloque(nuevoAlertas(t.Extra))
+	P.cerca = t:AgregarBloque(nuevoCerca(t.Extra))
 	P.clase = t:AgregarBloque(nuevaClase(t.Extra))
 	P.numeros = t:AgregarBloque(nuevoNumeros(t.Extra))
 	P.revision = t:AgregarBloque(nuevaRevision(t.Extra), { espacio = ESP.xl })
@@ -1134,7 +1282,7 @@ end
 A.On("ALFA_MODULO", function(spec)
 	if type(spec) == "table" and type(spec.id) == "string" and spec.id ~= "inicio" then relayoutPronto() end
 end)
-for _, msg in ipairs({ "STEP_CHANGED", "GUIDE_CHANGED", "GUIDE_COMPLETED", "TABS_CHANGED", "INICIO_DIARIO", "ALFA_REEMPLAZO", "ALFA_CURACION_ASISTENTE" }) do
+for _, msg in ipairs({ "STEP_CHANGED", "GUIDE_CHANGED", "GUIDE_COMPLETED", "TABS_CHANGED", "INICIO_DIARIO", "ALFA_REEMPLAZO", "ALFA_CURACION_ASISTENTE", "ALFA_PLAN" }) do
 	A.On(msg, relayoutPronto)
 end
 -- Otra rama (o nivel) cambia el rol y las tarjetas de la clase.
@@ -1144,6 +1292,7 @@ end)
 A.On("SETTING_CHANGED", function(path)
 	if type(path) ~= "string" then return end
 	if path == "inicio.verDiario" or path == "inicio.verAjustes" or path == "curacion.activo" or path == "manada.compartir"
+		or path == "rutas.cercaHoy"
 		or path:find("^gear%.spec") then
 		relayoutPronto()
 	elseif path:find("^inicio%.") and P.ajustes and P.ajustes.grupos then

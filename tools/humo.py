@@ -100,6 +100,7 @@ G._G = G
 G.Alfa = A
 G.CreateFrame = function() return Marco() end
 G.GetLocale = function() return "esMX" end
+G.AlfaIdioma = function() return "esMX" end  -- src/Alfa_Idioma (tools/build.py)
 G.GetTime = function() return 1000 end
 G.time = os.time
 G.date = os.date

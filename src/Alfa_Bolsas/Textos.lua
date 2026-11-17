@@ -272,4 +272,7 @@ M.EN = {
 	["Un marco dorado en lo que sirve para una misión (con «!» si empieza una)."] = "A gold frame on items for a quest (with \"!\" when it starts one).",
 	["Cuántos tienes, en el cuadro de cada objeto"] = "How many you have, in each item's tooltip",
 	["Al pasar el ratón por un objeto: «Tienes 12 (Toxic: 7 en bolsas, Alt: 5 en banco)», con todos tus personajes."] = "On an item's tooltip: \"You have 12 (Toxic: 7 in bags, Alt: 5 in bank)\", across all your characters.",
+	["Objetos de misión que brillan"] = "Quest items that glow",
+	["Un borde dorado que late y una insignia «!» en lo que sirve para una misión; la insignia va llena si el objeto empieza una."] = "A pulsing golden border and a “!” badge on anything a quest needs; the badge is filled when the item starts a quest.",
+	["Sin el brillo: un marco dorado fijo en lo que sirve para una misión (con «!» si empieza una)."] = "Without the glow: a fixed golden frame on anything a quest needs (with “!” if it starts one).",
 }

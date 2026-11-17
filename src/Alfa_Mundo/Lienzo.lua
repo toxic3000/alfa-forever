@@ -10,9 +10,24 @@
 --   zonas        los recuadros de exploración de cada zona (DETALLE), todos
 --                si "Zonas sin descubrir" está encendido (datos del motor,
 --                UI/ZoneArtOverlays.lua), o solo los explorados
---   ciudades     el mapa de cada ciudad cuando llena parte de la vista
+--   terreno      los mosaicos del minimapa (TERRENO), con el estilo "terreno"
+--                (mundo.estiloMapa): el mismo suelo, tonos y montañas que el
+--                minimapa. Donde no hay mosaico (mar abierto) se sigue viendo
+--                el arte de Blizzard de abajo
+--   ciudades     el mapa de cada ciudad cuando llena parte de la vista (encima
+--                del terreno: los mosaicos no traen el interior de las ciudades)
 -- Sin las texturas de detalle el mapa sigue completo: entre zona y zona se
 -- ve el arte del continente (más suave), nunca un hueco.
+--
+-- El terreno (datos en TerrenoDatos.lua, de TerrainWorldMap, ver CREDITOS.md):
+-- cada mosaico mapCC_FF mide 533,33 yardas en una rejilla de 64 x 64; su
+-- esquina está en Y = (32 - CC) * 533,33 y X = (32 - FF) * 533,33 del mundo.
+-- Se coloca en el lienzo por el mapa del continente (1414, 1415): sus dos
+-- esquinas en yardas (C_Map.GetWorldPosFromMapPos, por Compat.MapToWorld) y
+-- su rectángulo en 947 (Geo.Rect). Los de la orilla se recortan al
+-- rectángulo del continente con SetTexCoord. En Forever los mosaicos solo
+-- cargan por su fileID numérico. Solo se cargan los que se ven (por la cola
+-- de POR_CUADRO, con su fundido) y se sueltan los que quedan lejos.
 --
 -- Una zona arma sus texturas la primera vez que entra en la vista, y sus
 -- archivos se cargan unos pocos por cuadro (POR_CUADRO), apareciendo con
@@ -25,7 +40,7 @@ local N = AlfaNucleo
 local A = N.A
 local Geo = M.Geo
 
-local type, pairs, ipairs, pcall, min, max, ceil, floor = type, pairs, ipairs, pcall, math.min, math.max, math.ceil, math.floor
+local type, pairs, ipairs, pcall, min, max, ceil, floor, abs = type, pairs, ipairs, pcall, math.min, math.max, math.ceil, math.floor, math.abs
 
 local Lz = {}
 M.Lienzo = Lz
@@ -45,6 +60,12 @@ local CIUDAD_MASCARA = { [1454] = true, [1455] = true, [1456] = true, [1458] = t
 local CONT = { 1.12, 1.6 }      -- zoom en que entra el arte de los continentes
 local DETALLE = { 2.4, 3.6 }    -- ... y el de las zonas
 local CIUDAD = { 0.16, 0.36 }   -- parte del ancho de la vista que llena una ciudad para mostrarse
+local TERRENO = { 4.5, 7 }      -- zoom en que entra el terreno (los mosaicos del minimapa)
+local YARDAS = 1600 / 3         -- lado de un mosaico del minimapa (533,33 yardas)
+local TEXELES = 256             -- lado de la textura de un mosaico
+local GUARDAR = 0.35            -- parte de la vista, más allá de lo que se arma, en que un mosaico sigue cargado
+local TOPE_MOSAICOS = 600       -- con más cargados, se sueltan todos los que no se ven (~43 KB cada uno)
+local PRUEBA = 16               -- si fallan los primeros mosaicos, todos, el terreno se apaga solo
 local MARGEN = 0.12             -- parte de la vista que se arma de más a cada lado
 local POR_CUADRO = 40           -- archivos que se piden por cuadro
 local ZONAS_POR_CUADRO = 3      -- zonas que se arman por cuadro (crear sus texturas)
@@ -62,6 +83,7 @@ local fundiendo, nFundiendo = {}, 0
 local cargador
 local hayTexturas
 local presupuesto, pendiente = ZONAS_POR_CUADRO, false
+local estilo = "terreno"        -- mundo.estiloMapa: "terreno" | "clasico"
 
 local function rampa(v, r)
 	if v <= r[1] then return 0 end
@@ -95,11 +117,12 @@ local function cargar()
 		local t = cola[colaEn]
 		colaEn = colaEn + 1
 		if t.amArchivo then
-			t:SetTexture(t.amArchivo, nil, nil, "TRILINEAR")
+			local ok = t:SetTexture(t.amArchivo, nil, nil, "TRILINEAR")
 			t.amArchivo = nil
 			fundiendo[t] = t0
 			nFundiendo = nFundiendo + 1
 			n = n + 1
+			if t.amComprobar then t.amComprobar(t, ok) end
 		end
 	end
 	if colaEn > #cola then
@@ -282,6 +305,169 @@ local function armarZona(z)
 	for i = z.n + 1, #z.tex do z.tex[i]:Hide() end
 end
 
+
+---------------------------------------------------------------------------
+-- Terreno: los mosaicos del minimapa (estilo "terreno")
+---------------------------------------------------------------------------
+
+local terreno             -- { registro de cada continente } (armarTerreno)
+local terrenoMalo = false -- ningún mosaico cargó: la capa queda apagada
+local probados, buenos = 0, 0
+local activos, nActivos = {}, 0 -- mosaicos con su archivo puesto o pedido
+local vuelta = 0          -- sube en cada Colocar: qué mosaicos se vieron
+
+local function terrenoActivo() return estilo == "terreno" and not terrenoMalo end
+
+local function soltarMosaico(m)
+	if activos[m] then
+		activos[m] = nil
+		nActivos = nActivos - 1
+	end
+	m.cargado = false
+	local t = m.tex
+	if not t then return end
+	if fundiendo[t] then
+		fundiendo[t] = nil
+		nFundiendo = nFundiendo - 1
+	end
+	t.amArchivo = nil
+	t:SetTexture(nil)
+	t:Hide()
+end
+
+local function soltarTerreno()
+	for m in pairs(activos) do soltarMosaico(m) end
+end
+
+-- Al llegar el archivo de un mosaico: si el cliente no lo pudo poner (false)
+-- o la textura quedó sin fileID, ese mosaico se oculta y abajo queda el arte.
+-- Si fallan los primeros PRUEBA, todos, el terreno se apaga sin avisar.
+local function comprobar(t, ok)
+	local m = t.amMosaico
+	if not m then return end
+	local bien = ok ~= false
+	if bien and t.GetTextureFileID then
+		local si, id = pcall(t.GetTextureFileID, t)
+		if si and id == nil then bien = false end
+	end
+	probados = probados + 1
+	if bien then
+		buenos = buenos + 1
+		return
+	end
+	m.malo = true
+	soltarMosaico(m)
+	if buenos == 0 and probados >= PRUEBA then
+		terrenoMalo = true
+		soltarTerreno()
+		if capa.terreno then capa.terreno:Hide() end
+		if type(A.Debug) == "function" then A.Debug("Alfa_Mundo: los mosaicos del terreno no cargan; queda el arte del juego") end
+	end
+end
+
+-- Cada continente con datos: dónde cae la rejilla de mosaicos en el lienzo.
+--   x = ax + bx * col, y = ay + by * fila (la esquina de arriba a la izquierda)
+local function armarTerreno()
+	if terreno then return terreno end
+	terreno = {}
+	local datos, C = M.TERRENO, A.Compat
+	if type(datos) ~= "table" or not (C and type(C.MapToWorld) == "function") then return terreno end
+	for cont, lista in pairs(datos) do
+		local l, r, t, b = Geo.Rect(cont)
+		-- Las esquinas del mapa del continente en yardas: X (norte) e Y (oeste).
+		local ok1, c1, xa, ya = pcall(C.MapToWorld, cont, 0, 0)
+		local ok2, c2, xb, yb = pcall(C.MapToWorld, cont, 100, 100)
+		if l and ok1 and ok2 and c1 ~= nil and c1 == c2 and type(xa) == "number" and type(ya) == "number"
+			and type(xb) == "number" and type(yb) == "number" and xb ~= xa and yb ~= ya then
+			local cx0, cy0, cw, ch = l * W, t * H, (r - l) * W, (b - t) * H
+			local reg = {
+				bx = -YARDAS / (yb - ya) * cw, ax = cx0 + (32 * YARDAS - ya) / (yb - ya) * cw,
+				by = -YARDAS / (xb - xa) * ch, ay = cy0 + (32 * YARDAS - xa) / (xb - xa) * ch,
+				x0 = cx0, x1 = cx0 + cw, y0 = cy0, y1 = cy0 + ch, mos = {},
+			}
+			for i = 1, #lista - 3, 4 do
+				local col, fila, n, id = lista[i], lista[i + 1], lista[i + 2], lista[i + 3]
+				for j = 0, n - 1 do reg.mos[col * 64 + fila + j] = { col = col, fila = fila + j, id = id + j } end
+			end
+			reg.marco = CreateFrame("Frame", nil, capa.terreno)
+			reg.marco:SetPoint("TOPLEFT", lienzo, "TOPLEFT", 0, 0)
+			reg.marco:SetSize(1, 1)
+			terreno[#terreno + 1] = reg
+		end
+	end
+	return terreno
+end
+
+-- El mosaico en la vista: su textura se arma la primera vez (recortada al
+-- rectángulo del continente) y su archivo se pide por la cola.
+local function ponerMosaico(reg, m)
+	local t = m.tex
+	if not t then
+		local tx0, ty0 = reg.ax + reg.bx * m.col, reg.ay + reg.by * m.fila
+		local tx1, ty1 = tx0 + reg.bx, ty0 + reg.by
+		if tx1 < tx0 then tx0, tx1 = tx1, tx0 end
+		if ty1 < ty0 then ty0, ty1 = ty1, ty0 end
+		local ix0, ix1 = max(tx0, reg.x0), min(tx1, reg.x1)
+		local iy0, iy1 = max(ty0, reg.y0), min(ty1, reg.y1)
+		if ix1 - ix0 < 1e-3 or iy1 - iy0 < 1e-3 then
+			m.malo = true -- fuera del mapa del continente
+			return
+		end
+		t = textura(reg.marco, 0)
+		local dw, dh = tx1 - tx0, ty1 - ty0
+		t:SetTexCoord((ix0 - tx0) / dw, (ix1 - tx0) / dw, (iy0 - ty0) / dh, (iy1 - ty0) / dh)
+		t:SetSize(ix1 - ix0, iy1 - iy0)
+		t:SetPoint("TOPLEFT", reg.marco, "TOPLEFT", ix0, -iy0)
+		t.amMosaico, t.amComprobar = m, comprobar
+		m.tex, m.cx, m.cy = t, (tx0 + tx1) / 2, (ty0 + ty1) / 2
+	end
+	m.visto = vuelta
+	if not m.cargado then
+		m.cargado = true
+		activos[m] = true
+		nActivos = nActivos + 1
+		t:Show()
+		encolar(t, m.id)
+	elseif not t:IsShown() then
+		t:Show()
+	end
+end
+
+-- a: el fundido del terreno; x0..y1: lo que se arma; g*: hasta dónde se guarda.
+local function colocarTerreno(a, x0, y0, x1, y1, gx0, gy0, gx1, gy1)
+	vuelta = vuelta + 1
+	if a > 0.003 then
+		for _, reg in ipairs(armarTerreno()) do
+			local vx0, vx1 = max(x0, reg.x0), min(x1, reg.x1)
+			local vy0, vy1 = max(y0, reg.y0), min(y1, reg.y1)
+			if vx1 > vx0 and vy1 > vy0 then
+				local c0, c1 = floor((vx0 - reg.ax) / reg.bx), floor((vx1 - reg.ax) / reg.bx)
+				local f0, f1 = floor((vy0 - reg.ay) / reg.by), floor((vy1 - reg.ay) / reg.by)
+				if c1 < c0 then c0, c1 = c1, c0 end
+				if f1 < f0 then f0, f1 = f1, f0 end
+				local mos = reg.mos
+				for col = max(0, c0), min(63, c1) do
+					for fila = max(0, f0), min(63, f1) do
+						local m = mos[col * 64 + fila]
+						if m and not m.malo then ponerMosaico(reg, m) end
+					end
+				end
+			end
+		end
+	end
+	-- Lo que ya no se ve se oculta; si quedó lejos, o hay demasiados, se suelta.
+	local todos = a <= 0.003 or nActivos > TOPE_MOSAICOS
+	for m in pairs(activos) do
+		if m.visto ~= vuelta then
+			if todos or m.cx < gx0 or m.cx > gx1 or m.cy < gy0 or m.cy > gy1 then
+				soltarMosaico(m)
+			elseif m.tex:IsShown() then
+				m.tex:Hide()
+			end
+		end
+	end
+end
+
 ---------------------------------------------------------------------------
 -- Armado
 ---------------------------------------------------------------------------
@@ -338,7 +524,7 @@ function Lz.Crear(padre)
 	sotano = CreateFrame("Frame", nil, vista)
 	sotano:Hide()
 	local base = lienzo:GetFrameLevel()
-	for i, nombre in ipairs({ "mundo", "cont", "bases", "zonas", "ciudades" }) do
+	for i, nombre in ipairs({ "mundo", "cont", "bases", "zonas", "terreno", "ciudades" }) do
 		local f = CreateFrame("Frame", nil, lienzo)
 		f:SetAllPoints(lienzo)
 		f:SetFrameLevel(base + i * 2)
@@ -347,6 +533,7 @@ function Lz.Crear(padre)
 	cargador = CreateFrame("Frame", nil, vista)
 	cargador:Hide()
 	cargador:SetScript("OnUpdate", A.Safe and A.Safe(cargar) or cargar)
+	Lz.Estilo()
 	if not armarRegistros() then return nil end
 	return lienzo
 end
@@ -431,6 +618,12 @@ function Lz.Colocar(cu, cv, k, vw, vh, z)
 	for _, zz in ipairs(zonas) do
 		if ad > 0.003 and cruza(zz, x0, y0, x1, y1) then sacar(zz, capa.zonas) else guardar(zz) end
 	end
+	-- Terreno: encima de las zonas, debajo de las ciudades
+	local at = terrenoActivo() and rampa(z, TERRENO) or 0
+	capa.terreno:SetAlpha(at)
+	capa.terreno:SetShown(at > 0.003)
+	local gx, gy = (x1 - x0) * GUARDAR, (y1 - y0) * GUARDAR
+	colocarTerreno(at, x0, y0, x1, y1, x0 - gx, y0 - gy, x1 + gx, y1 + gy)
 	-- Ciudades: cuando llenan parte de la vista
 	for _, c in ipairs(ciudades) do
 		local a = rampa(c.w * k / max(1, vw), CIUDAD)
@@ -461,6 +654,55 @@ function Lz.Detalle()
 	local on = detalleFino()
 	capa.bases:SetShown(on and capa.zonas:IsShown())
 	if on then Lz.Rehacer() end
+end
+
+---------------------------------------------------------------------------
+-- Estilo del mapa y nitidez
+---------------------------------------------------------------------------
+
+-- mundo.estiloMapa: "terreno" (como el minimapa) o "clasico" (solo el arte
+-- pintado de Blizzard). Se lee al crear el lienzo y al cambiar el ajuste.
+function Lz.Estilo()
+	local e = A.Get("mundo.estiloMapa")
+	estilo = (e == "clasico") and "clasico" or "terreno"
+	if not terrenoActivo() then
+		soltarTerreno()
+		if capa.terreno then capa.terreno:Hide() end
+	end
+	return estilo
+end
+
+-- El terreno se apagó solo porque sus archivos no cargan en este cliente.
+function Lz.TerrenoRoto() return terrenoMalo end
+
+-- El registro del continente si hay mosaico de terreno en (x, y) del lienzo.
+local function mosaicoEn(x, y)
+	for _, reg in ipairs(armarTerreno()) do
+		if x >= reg.x0 and x <= reg.x1 and y >= reg.y0 and y <= reg.y1 then
+			local m = reg.mos[floor((x - reg.ax) / reg.bx) * 64 + floor((y - reg.ay) / reg.by)]
+			if m and not m.malo then return reg end
+		end
+	end
+	return nil
+end
+
+-- Texeles por unidad del lienzo de la mejor capa que hay en el punto (u, v
+-- del mundo): el terreno donde lo hay; si no, el arte de la zona (o ciudad),
+-- el del continente o el del mundo. Así el zoom nunca agranda un texel a más
+-- de ~2 píxeles de la pantalla (Ventana.lua).
+function Lz.Densidad(u, v)
+	if not hecho or type(u) ~= "number" or type(v) ~= "number" then return nil end
+	if terrenoActivo() then
+		local reg = mosaicoEn(u * W, v * H)
+		if reg then return TEXELES / abs(reg.bx) end
+	end
+	local cont, zona = Geo.Cadena(u, v)
+	for _, mapa in ipairs({ zona or cont or Geo.MUNDO, cont or Geo.MUNDO, Geo.MUNDO }) do
+		local info = Geo.Capa(mapa)
+		local l, r = Geo.Rect(mapa)
+		if info and l and r > l then return info.layerWidth / ((r - l) * W) end
+	end
+	return nil
 end
 
 -- La zona más pequeña que contiene el punto, por rectángulo (para el zoom).

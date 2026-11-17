@@ -201,8 +201,9 @@ local function mostrarResumen(s)
 		M.Aviso.Mostrar({
 			clave = "resumen", tipo = "info", lobo = "aullando",
 			titulo = L["¡De vuelta con la manada!"],
-			linea = format(L["Tu sesión anterior, %s"], cuando),
-			texto = txt, segundos = 14,
+			-- arriba cuándo y cuánto jugaste; abajo lo que lograste (el oro con sus monedas)
+			linea = format(L["Tu última sesión: %s · %s"], cuando, N.Duracion(s.dur or 0)),
+			texto = S.Logros(s) or L["Una sesión tranquila: nada nuevo que contar."], segundos = 14,
 			botones = { { texto = L["Ver mi diario"], fn = function() N.Abrir("inicio") end } },
 		})
 	end
@@ -343,6 +344,24 @@ function S.Estado()
 end
 
 -- Una sesión del diario (o la de ahora) en una línea corta.
+-- Lo logrado en una sesión, sin la duración: "+9,546 XP · 8 misiones · +1 94 · 3 muertes"
+-- (o nil si no hubo nada).
+function S.Logros(s)
+	local parts = {}
+	local xp = tonumber(s.xp) or 0
+	if xp > 0 then parts[#parts + 1] = "+" .. miles(xp) .. " XP" end
+	local nv = tonumber(s.niveles) or 0
+	if nv > 0 then parts[#parts + 1] = nv == 1 and L["1 nivel"] or format(L["%d niveles"], nv) end
+	local mis = tonumber(s.misiones) or 0
+	if mis > 0 then parts[#parts + 1] = mis == 1 and L["1 misión"] or format(L["%d misiones"], mis) end
+	local oro = tonumber(s.oro) or 0
+	if oro ~= 0 then parts[#parts + 1] = (oro > 0 and "+" or "") .. N.Dinero(oro) end
+	local mu = tonumber(s.muertes) or 0
+	if mu > 0 then parts[#parts + 1] = mu == 1 and L["1 muerte"] or format(L["%d muertes"], mu) end
+	if #parts == 0 then return nil end
+	return table.concat(parts, "  \194\183  ")
+end
+
 function S.Texto(s)
 	local parts = { N.Duracion(s.dur or 0) }
 	local xp = tonumber(s.xp) or 0

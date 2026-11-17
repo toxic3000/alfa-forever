@@ -148,6 +148,18 @@ function M.Citar(s)
 	return tostring(s)
 end
 
+-- El jugador empezó algo que se sigue (una guía, una ruta, un plan, un
+-- viaje de Buscar cerca, un Llévame): el rastreador a la vista y las
+-- ventanas de Alfa cerradas (N.EmpezarRuta del núcleo). No para lo que pasa
+-- solo (el paso siguiente, la flecha que avanza sola).
+function M.Empezar()
+	if N.EmpezarRuta then
+		N.EmpezarRuta()
+	else
+		A.Set("ui.shown", true)
+	end
+end
+
 -- Un aviso flotante de la ruta (el del Kit), o una línea en el chat si el
 -- Kit no está (no debería pasar).
 function M.Aviso(titulo, texto, extra)

@@ -1137,6 +1137,8 @@ local function load(id, inNewTab)
 		E.SetGuide(id)
 	end
 	ns.Set("ui.shown", true)
+	-- Alfa: se cierran las demas ventanas de Alfa y queda el seguimiento (Alfa_Nucleo)
+	if AlfaNucleo and AlfaNucleo.EmpezarRuta then AlfaNucleo.EmpezarRuta() end
 	if win then win:Hide() end
 end
 P.Load = load

@@ -151,9 +151,11 @@ def main() -> int:
                 continue
             lineas = [f"-- Alfa: textos de los modulos en {NOMBRES[loc]} ({loc}). GPL-3.0.",
                       "-- Generado por tools/textos.py desde textos/" + loc + "/*.json: no editar a mano.",
+                      "-- Va en el paquete de idioma del motor (Alfa_" + loc + ", que solo se carga en ese",
+                      "-- idioma): tools/build.py lo mueve ahi y Alfa_Nucleo lo lee de AlfaNucleoIdiomas.",
                       f'if not (GetLocale and GetLocale() == "{loc}") then return end',
-                      "local N = AlfaNucleo",
-                      f"N.idiomas.{loc} = {{"]
+                      "AlfaNucleoIdiomas = AlfaNucleoIdiomas or {}",
+                      f"AlfaNucleoIdiomas.{loc} = {{"]
             lineas += [f"\t[{lua_str(es)}] = {lua_str(tx)}," for es, tx in sorted(buenas.items())]
             lineas.append("}")
             (SALIDA / f"{loc}.lua").write_text("\n".join(lineas) + "\n", encoding="utf-8")
@@ -161,8 +163,9 @@ def main() -> int:
             print(f"{loc}: {len(buenas)} textos ({len(malas)} descartados por huecos distintos)")
         toc = SRC / "Alfa_Nucleo" / "Alfa_Nucleo.toc"
         texto = toc.read_text(encoding="utf-8")
+        # ya no van en el TOC del nucleo (se cargaban los 7 al entrar): build.py
+        # pone cada uno en el paquete de su idioma
         texto = re.sub(r"(?m)^Idiomas\\.*\n?", "", texto).rstrip("\n") + "\n"
-        texto += "".join(f"Idiomas\\{loc}.lua\n" for loc in generados)
         toc.write_text(texto, encoding="utf-8")
         return 0
     print(__doc__)

@@ -1,0 +1,691 @@
+-- Alfa - Lya: cuándo habla y qué dice (toxic3000 / La Jauría). GPL-3.0.
+--
+-- Reglas contra el spam (lo primero):
+--   * Un globo cada lya.minutos (5) a lo más; con "pocos", el doble. Solo lo
+--     importante (morir, subir de nivel, un logro) se salta la espera.
+--   * Cada frase sale 3 veces por personaje como mucho y luego nunca más
+--     (N.DatosPersonaje("lya").vistos). "Volver a mostrar los consejos
+--     vistos" las devuelve.
+--   * Nunca en combate, en instancias ni mientras escribes: lo importante
+--     espera a que se pueda (10 minutos como mucho); lo demás se pierde.
+--   * Nunca encima del aviso de Hoy (Alfa_Inicio) ni de otro globo suyo.
+--   * Silenciar 1 hora calla todo menos lo que pides tú (clic).
+--   * Mientras falte la bienvenida de Alfa (AlfaBienvenida.Pendiente), Lya
+--     no aparece.
+--
+-- Lo que mira (eventos, sin OnUpdate; un latido de 60 s solo con Lya a la
+-- vista): entrar (presentarse la primera vez, saludar, "hace días que no te
+-- veía"), subir de nivel (aúlla; 10, 20, 30, 40 la montura, 50 y 60), morir,
+-- durabilidad, bolsas, habilidades por entrenar al llegar a una ciudad,
+-- misiones listas para entregar, misiones entregadas hoy (10 y 25), la sesión
+-- larga (2 y 4 horas), ausente (se duerme) y descansando un rato (también).
+-- De vez en cuando y al pedirlo: "¿Sabías que…?" de Alfa, consejos del juego,
+-- ánimo y, muy de vez en cuando, una frase de cariño.
+
+local ADDON, M = ...
+local N = AlfaNucleo
+local A = N.A
+local K = N.Kit
+local L = M.L
+local ID = M.ID
+local UI = M.UI
+local F = M.FRASES
+
+local type, tonumber, ipairs, pairs, pcall, rawget, format = type, tonumber, ipairs, pairs, pcall, rawget, string.format
+local floor, max, min, random = math.floor, math.max, math.min, math.random
+
+local Ce = {}
+M.Cerebro = Ce
+
+local MAX_VECES = 3
+local ESPERA_IMPORTANTE = 600   -- s que algo importante puede esperar
+local DORMIR_DESCANSANDO = 300  -- s descansando sin hacer nada para dormirse
+local SIN_HABLAR = { muchos = 15 * 60, pocos = 40 * 60 } -- un consejo suelto tras tanto silencio
+
+local function ahora() return GetTime and GetTime() or 0 end
+local function reloj() return (GetServerTime and GetServerTime()) or (time and time()) or 0 end
+local function num(v) if issecretvalue and issecretvalue(v) then return nil end return tonumber(v) end
+local function si(v) if issecretvalue and issecretvalue(v) then return false end return v == true end
+
+local function datos()
+	local d = N.DatosPersonaje(ID)
+	d.vistos = type(d.vistos) == "table" and d.vistos or {}
+	return d
+end
+
+---------------------------------------------------------------------------
+-- Estado y puertas
+---------------------------------------------------------------------------
+local function bienvenidaPendiente()
+	local B = rawget(_G, "AlfaBienvenida")
+	if not (type(B) == "table" and type(B.Pendiente) == "function") then return false end
+	local ok, p = pcall(B.Pendiente)
+	return ok and p == true
+end
+
+function Ce.Activa() return N.Get(ID, "mostrar") ~= false and not bienvenidaPendiente() end
+
+function Ce.Frecuencia()
+	local v = N.Get(ID, "frecuencia")
+	return (v == "pocos" or v == "importantes") and v or "muchos"
+end
+
+function Ce.Silenciada() return (tonumber(datos().silencio) or 0) > reloj() end
+
+local function enCombate()
+	return (InCombatLockdown and InCombatLockdown()) or (UnitAffectingCombat and si(UnitAffectingCombat("player"))) or false
+end
+local function enInstancia()
+	if not IsInInstance then return false end
+	local ok, dentro = pcall(IsInInstance)
+	return ok and si(dentro)
+end
+local function escribiendo() return GetCurrentKeyBoardFocus and GetCurrentKeyBoardFocus() ~= nil or false end
+local function avisoDeHoy()
+	local a = rawget(_G, "AlfaInicioAviso")
+	return type(a) == "table" and a.IsShown and a:IsShown() and true or false
+end
+
+local function intervalo()
+	local m = tonumber(N.Get(ID, "minutos")) or 5
+	if Ce.Frecuencia() == "pocos" then m = m * 2 end
+	return max(1, m) * 60
+end
+
+local function veces(id) return tonumber(datos().vistos[id]) or 0 end
+local function contar(id) local d = datos() d.vistos[id] = veces(id) + 1 end
+
+---------------------------------------------------------------------------
+-- Decir
+--   c = { id (para contar; nil = no se cuenta), texto, acciones, cara,
+--         salto, aullar, importante, pedido (lo pidió el jugador),
+--         alDecir = fn (cuando de verdad sale) }
+--   -> true (lo dijo), "espera" (importante: lo dirá en cuanto se pueda) o false, motivo
+---------------------------------------------------------------------------
+local ultimo = -1e9 -- GetTime del último globo
+local espera        -- { c, hasta }: algo importante que espera su momento
+local reintento
+
+local function motivo(c)
+	if not Ce.Activa() or (A.Hidden and A.Hidden()) or not UI.Visible() then return "oculta" end
+	if c.id and veces(c.id) >= MAX_VECES then return "vista" end
+	if Ce.Silenciada() and not c.pedido then return "silencio" end
+	if not c.importante and not c.pedido and Ce.Frecuencia() == "importantes" then return "modo" end
+	if enCombate() or enInstancia() or escribiendo() then return "esperar" end
+	if not c.importante and not c.pedido then
+		if UI.Hablando() or avisoDeHoy() then return "ocupada" end
+		if ahora() - ultimo < intervalo() then return "pronto" end
+	end
+	return nil
+end
+
+local function reintentar()
+	if not espera then return end
+	if ahora() > espera.hasta then espera = nil return end
+	if escribiendo() and not enCombate() and not enInstancia() and not reintento then
+		reintento = K.Despues(4, function() reintento = nil reintentar() end)
+		return
+	end
+	local c = espera.c
+	if motivo(c) == "esperar" then return end
+	espera = nil
+	Ce.Decir(c)
+end
+
+function Ce.Decir(c)
+	if type(c) ~= "table" or type(c.texto) ~= "string" or c.texto == "" then return false end
+	local por = motivo(c)
+	if por == "esperar" and c.importante then
+		espera = { c = c, hasta = ahora() + ESPERA_IMPORTANTE }
+		reintentar()
+		return "espera", por -- verdadero: ya lo dirá en cuanto se pueda
+	end
+	if por then return false, por end
+	if c.id then contar(c.id) end
+	ultimo = ahora()
+	UI.Hablar(c)
+	if type(c.alDecir) == "function" then K.Llamar(c.alDecir) end
+	return true
+end
+
+-- La frase de una categoría que menos ha dicho (y menos de 3 veces): id, texto.
+local function frase(cat)
+	local lista = F[cat]
+	if type(lista) ~= "table" then return nil end
+	local mejor, mejorN
+	local inicio = random(#lista)
+	for k = 0, #lista - 1 do
+		local i = (inicio + k - 1) % #lista + 1
+		local id = cat .. i
+		local n = veces(id)
+		if n < MAX_VECES and (not mejorN or n < mejorN) then mejor, mejorN = i, n end
+	end
+	if not mejor then return nil end
+	return cat .. mejor, L[lista[mejor]]
+end
+
+-- Di una frase de esa categoría (los %s/%d con ...). -> true si habló
+local function decirDe(cat, c, ...)
+	local id, texto = frase(cat)
+	if not id then return false end
+	c = c or {}
+	c.id = id
+	c.texto = select("#", ...) > 0 and format(texto, ...) or texto
+	return Ce.Decir(c)
+end
+Ce.DecirDe = decirDe
+
+---------------------------------------------------------------------------
+-- Acciones de los botones
+---------------------------------------------------------------------------
+local function irA(tipo)
+	local Cerca = rawget(_G, "AlfaCerca")
+	if type(Cerca) == "table" and type(Cerca.Ir) == "function" then
+		local ok, puesto = pcall(Cerca.Ir, tipo)
+		if ok and puesto then N.EmpezarRuta() end
+		return
+	end
+	local Nav = A.Nav
+	local near = type(Nav) == "table" and Nav.nearby
+	if type(near) == "table" and type(near.Go) == "function" then
+		local ok, puesto = pcall(near.Go, tipo)
+		if ok and puesto then N.EmpezarRuta() end
+		return
+	end
+	N.Imprimir(L["La búsqueda de lugares cercanos no está disponible."])
+end
+
+local function abrirBolsas()
+	if InCombatLockdown and InCombatLockdown() then return end
+	if OpenAllBags then pcall(OpenAllBags) elseif ToggleAllBags then pcall(ToggleAllBags) end
+end
+
+local function entregarTodas()
+	local R = rawget(_G, "AlfaRuta")
+	if type(R) == "table" and type(R.Entregar) == "function" then
+		R.Entregar()
+		N.EmpezarRuta()
+	end
+end
+
+---------------------------------------------------------------------------
+-- Lo que mira del juego
+---------------------------------------------------------------------------
+local RANURAS = { 1, 3, 5, 6, 7, 8, 9, 10, 16, 17, 18 }
+local function peorDurabilidad()
+	if not GetInventoryItemDurability then return nil end
+	local peor
+	for _, slot in ipairs(RANURAS) do
+		local ok, cur, mx = pcall(GetInventoryItemDurability, slot)
+		cur, mx = ok and num(cur) or nil, ok and num(mx) or nil
+		if cur and mx and mx > 0 then
+			local pct = cur / mx * 100
+			if not peor or pct < peor then peor = pct end
+		end
+	end
+	return peor
+end
+
+local function bolsasLibres()
+	local Q = A.QoL
+	local Sp = type(Q) == "table" and Q.Space
+	if type(Sp) == "table" and type(Sp.Free) == "function" then
+		local ok, fr, t = pcall(Sp.Free)
+		fr, t = ok and num(fr) or nil, ok and num(t) or nil
+		if fr and t and t > 0 then return fr, t end
+	end
+	local C = C_Container
+	if not (C and C.GetContainerNumFreeSlots and C.GetContainerNumSlots) then return nil end
+	local fr, t = 0, 0
+	for bag = 0, NUM_BAG_SLOTS or 4 do
+		local libres, familia = C.GetContainerNumFreeSlots(bag)
+		libres, familia = num(libres) or 0, num(familia)
+		if not familia or familia == 0 then
+			fr = fr + libres
+			t = t + (num(C.GetContainerNumSlots(bag)) or 0)
+		end
+	end
+	return fr, t
+end
+
+local function porEntrenar()
+	local Q = A.QoL
+	local Sp = type(Q) == "table" and Q.Spells
+	local lv = num(UnitLevel and UnitLevel("player"))
+	if type(Sp) ~= "table" or type(Sp.NewAt) ~= "function" or not lv then return 0 end
+	local n = 0
+	for l = 1, lv do
+		local ok, lista = pcall(Sp.NewAt, l)
+		if ok and type(lista) == "table" then n = n + #lista end
+	end
+	return n
+end
+
+local function listas()
+	local R = rawget(_G, "AlfaRuta")
+	if type(R) == "table" and type(R.Listas) == "function" then
+		local ok, n = pcall(R.Listas)
+		if ok and tonumber(n) then return tonumber(n) end
+	end
+	local Q = C_QuestLog
+	if not (Q and Q.GetNumQuestLogEntries and Q.GetInfo and Q.ReadyForTurnIn) then return 0 end
+	local n = 0
+	for i = 1, num(Q.GetNumQuestLogEntries()) or 0 do
+		local info = Q.GetInfo(i)
+		if type(info) == "table" and not info.isHeader and info.questID and Q.ReadyForTurnIn(info.questID) then n = n + 1 end
+	end
+	return n
+end
+
+-- Los consejos según cómo estás ahora; el primero que tenga algo que decir.
+-- -> true si habló. pedido: lo pidió el jugador (sin espera ni modo).
+local listasDichas = 0
+local CONTEXTO = {
+	function(c)
+		local pct = peorDurabilidad()
+		if not pct or pct > 30 then return false end
+		c.cara = "atenta"
+		c.acciones = { { texto = L["Llévame a reparar"], fn = function() irA("repair") end } }
+		return decirDe("reparar", c, floor(pct + 0.5))
+	end,
+	function(c)
+		local fr, t = bolsasLibres()
+		if not fr or not t or t <= 0 or fr > 2 then return false end
+		c.cara = "atenta"
+		c.acciones = { { texto = L["Abrir bolsas"], fn = abrirBolsas },
+			{ texto = L["Llévame a un vendedor"], fn = function() irA("vendor") end } }
+		return decirDe("bolsas", c, fr)
+	end,
+	function(c)
+		if not (IsResting and si(IsResting())) then return false end
+		local d = datos()
+		local lv = num(UnitLevel and UnitLevel("player"))
+		if not lv or (d.entrenarNivel == lv and not c.pedido) then return false end
+		local n = porEntrenar()
+		if n <= 0 then return false end
+		c.cara = "atenta"
+		c.acciones = { { texto = L["Llévame con mi entrenador"], fn = function() irA("class") end } }
+		local ok = decirDe("entrenar", c, n)
+		if ok then d.entrenarNivel = lv end
+		return ok
+	end,
+	function(c)
+		local n = listas()
+		if n < 3 or (n <= listasDichas and not c.pedido) then return false end
+		local R = rawget(_G, "AlfaRuta")
+		if type(R) == "table" and type(R.Entregar) == "function" then
+			c.acciones = { { texto = L["Entregar todas"], fn = entregarTodas } }
+		end
+		c.cara = "atenta"
+		local ok = decirDe("entregar", c, n)
+		if ok then listasDichas = n end
+		return ok
+	end,
+}
+
+local function revisarContexto(pedido)
+	for _, fn in ipairs(CONTEXTO) do
+		local ok, hablo = pcall(fn, { pedido = pedido })
+		if not ok and geterrorhandler then geterrorhandler()(hablo) end
+		if ok and hablo then return true end
+	end
+	return false
+end
+
+-- Un "¿Sabías que…?" que aplique a este personaje: id, datos.
+local function sabias()
+	local mejor, mejorN
+	local lista = M.SABIAS
+	local inicio = random(#lista)
+	for k = 0, #lista - 1 do
+		local i = (inicio + k - 1) % #lista + 1
+		local s = lista[i]
+		local n = veces("sabias" .. i)
+		local ok, sirve = pcall(s.cond)
+		if ok and sirve and n < MAX_VECES and (not mejorN or n < mejorN) then mejor, mejorN = i, n end
+	end
+	if not mejor then return nil end
+	return "sabias" .. mejor, lista[mejor]
+end
+
+local function decirSabias(c)
+	local id, s = sabias()
+	if not id then return false end
+	c.id, c.texto = id, L[s.t]
+	if s.accion then
+		local fn = s.accion[2]
+		c.acciones = { { texto = L[s.accion[1]], fn = fn } }
+	end
+	return Ce.Decir(c)
+end
+
+-- Un consejo suelto: rota entre lo de Alfa, el juego y el ánimo (y rara vez cariño).
+local function suelto(pedido)
+	local d = datos()
+	if random() < 0.12 and decirDe("carino", { pedido = pedido, salto = true }) then return true end
+	local orden = { "sabias", "consejo", "animo" }
+	d.giro = ((tonumber(d.giro) or 0) % #orden) + 1
+	for k = 0, #orden - 1 do
+		local cat = orden[(d.giro + k - 1) % #orden + 1]
+		local c = { pedido = pedido }
+		local ok
+		if cat == "sabias" then ok = decirSabias(c) else ok = decirDe(cat, c) end
+		if ok then return true end
+	end
+	return false
+end
+
+-- Clic en Lya o /alfa lya consejo.
+function Ce.Pedir()
+	if not Ce.Activa() then return end
+	if enCombate() then return end
+	if revisarContexto(true) then return end
+	if suelto(true) then return end
+	Ce.Decir({ texto = L[M.AGOTADOS], pedido = true,
+		acciones = { { texto = L["Volver a empezar"], fn = function() Ce.OlvidarVistos() end } } })
+end
+
+---------------------------------------------------------------------------
+-- Ajustes de bolsillo (el menú)
+---------------------------------------------------------------------------
+function Ce.Silenciar(on)
+	datos().silencio = on and (reloj() + 3600) or nil
+	if on then
+		UI.Callar()
+		N.Imprimir(L["Lya se queda calladita una hora. Aquí sigue, cuidándote."])
+	else
+		N.Imprimir(L["Lya vuelve a hablar."])
+	end
+	M.Avisar()
+end
+
+function Ce.OlvidarVistos()
+	datos().vistos = {}
+	N.Imprimir(L["Lya vuelve a contarte sus consejos desde el principio."])
+	M.Avisar()
+end
+
+function Ce.Mostrar(on)
+	N.Set(ID, "mostrar", on ~= false)
+end
+
+function Ce.Vistos()
+	local n, total = 0, 0
+	local vistos = datos().vistos
+	for _, v in pairs(vistos) do if tonumber(v) and v >= MAX_VECES then n = n + 1 end end
+	for cat, lista in pairs(F) do if type(lista) == "table" then total = total + #lista end end
+	total = total + #M.SABIAS
+	return n, total
+end
+
+---------------------------------------------------------------------------
+-- Sueño: ausente, o descansando un rato sin nada que hacer
+---------------------------------------------------------------------------
+local descansoDesde
+
+local function revisarSueno()
+	if not UI.Visible() then return end
+	local afk = UnitIsAFK and si(UnitIsAFK("player"))
+	local descansando = IsResting and si(IsResting())
+	if descansando then descansoDesde = descansoDesde or ahora() else descansoDesde = nil end
+	local dormir = afk or (descansando and not enCombate() and ahora() - descansoDesde >= DORMIR_DESCANSANDO and not UI.Hablando())
+	UI.Dormir(dormir)
+end
+
+---------------------------------------------------------------------------
+-- El latido (solo con Lya a la vista): sueño, sesión larga y un consejo
+-- suelto tras un buen rato sin hablar.
+---------------------------------------------------------------------------
+local latidoTurno = 0
+
+local function revisarSesion()
+	local d = datos()
+	d.ultimaVez = reloj()
+	local inicio = tonumber(d.sesionInicio)
+	if not inicio then return false end
+	local dur = reloj() - inicio
+	local dichos = tonumber(d.sesionAvisos) or 0
+	local umbral = (dichos == 0 and 2 * 3600) or (dichos == 1 and 4 * 3600) or nil
+	if not umbral or dur < umbral then return false end
+	local ok = decirDe("descanso", { cara = "normal" }, N.Duracion(dur))
+	if ok then d.sesionAvisos = dichos + 1 end
+	return ok
+end
+
+local function latido(mio)
+	if mio ~= latidoTurno or not UI.Visible() then return end
+	revisarSueno()
+	if not UI.Dormida() and not enCombate() then
+		if not revisarSesion() and not revisarContexto(false) then
+			local gap = SIN_HABLAR[Ce.Frecuencia()]
+			if gap and ahora() - ultimo >= gap then
+				-- Rara vez, en lugar del consejo: un dato curioso de la zona o del mundo (Historias.lua).
+				local Hi = M.Historias
+				local ok, hablo = false, false
+				if Hi and Hi.Suelto then ok, hablo = pcall(Hi.Suelto) end
+				if not (ok and hablo) then suelto(false) end
+			end
+		end
+	end
+	K.Despues(60, function() latido(mio) end)
+end
+
+local function arrancarLatido()
+	latidoTurno = latidoTurno + 1
+	local mio = latidoTurno
+	K.Despues(60, function() latido(mio) end)
+end
+
+---------------------------------------------------------------------------
+-- Mostrar / ocultar
+---------------------------------------------------------------------------
+local presentarPendiente = false
+
+local function presentarse()
+	local d = datos()
+	if d.presentada or not UI.Visible() then return false end
+	return Ce.Decir({ id = "presentacion1", texto = L[F.presentacion[1]], importante = true, salto = true, segundos = 12,
+		alDecir = function() datos().presentada = true end })
+end
+
+function Ce.Aplicar()
+	local antes = UI.Visible()
+	UI.Aplicar()
+	local ahoraVisible = UI.Visible()
+	if ahoraVisible and not antes then
+		arrancarLatido()
+		UI.Combate(enCombate())
+		revisarSueno()
+		if presentarPendiente then
+			presentarPendiente = false
+			K.Despues(3, presentarse)
+		end
+	elseif not ahoraVisible then
+		latidoTurno = latidoTurno + 1
+	end
+	M.Avisar()
+end
+
+---------------------------------------------------------------------------
+-- Eventos
+---------------------------------------------------------------------------
+local function juntar(espera, fn)
+	local pendiente = false
+	return function()
+		if pendiente then return end
+		pendiente = true
+		A.After(espera, function()
+			pendiente = false
+			fn()
+		end)
+	end
+end
+
+local entrado = false
+A.RegisterEvent("PLAYER_ENTERING_WORLD", function(_, esLogin, esRecarga)
+	reintentar()
+	if entrado then return end
+	entrado = true
+	local d = datos()
+	local antes = tonumber(d.ultimaVez)
+	-- La sesión: empieza al entrar al juego (una recarga la conserva).
+	if esLogin == true or not tonumber(d.sesionInicio) or (antes and reloj() - antes > 900) then
+		d.sesionInicio, d.sesionAvisos = reloj(), 0
+	end
+	Ce.Aplicar()
+	-- Después de los avisos del motor y de Hoy al entrar.
+	A.After(18, function()
+		if not d.presentada then
+			if UI.Visible() then presentarse() else presentarPendiente = true end
+			return
+		end
+		if esLogin ~= true then return end
+		local nombre = UnitName and UnitName("player") or ""
+		if issecretvalue and issecretvalue(nombre) then nombre = "" end
+		if antes and reloj() - antes > 3 * 86400 then
+			decirDe("volver", { salto = true, acciones = N.ModuloPorId("inicio") and { { texto = L["Abrir Hoy"], fn = function() N.Abrir("inicio") end } } or nil }, nombre)
+		else
+			decirDe("bienvenida", { salto = true }, nombre)
+		end
+	end)
+end)
+
+-- Terminó la bienvenida de Alfa: Lya aparece y se presenta.
+A.On("ALFA_CONFIGURADO", function()
+	presentarPendiente = not datos().presentada
+	Ce.Aplicar()
+end)
+A.On("WELCOME_CLOSED", function() Ce.Aplicar() end)
+
+A.On("SETTING_CHANGED", function(path)
+	if type(path) ~= "string" then return end
+	if path == ID .. ".mostrar" or path == ID or path == "" then Ce.Aplicar()
+	elseif path:sub(1, #ID + 1) == ID .. "." then M.Avisar() end
+end)
+
+-- Subir de nivel: aúlla; los niveles especiales traen su consejo.
+local HITOS = {
+	[10] = function() return N.ModuloPorId("builds") and { { texto = L["Ver Talentos"], fn = function() N.Abrir("builds") end } } or nil end,
+	[20] = function() return N.ModuloPorId("mazmorras") and { { texto = L["Ver Mazmorras"], fn = function() N.Abrir("mazmorras") end } } or nil end,
+	[30] = function() return nil end,
+	[40] = function()
+		local E = rawget(_G, "AlfaEnciclopedia")
+		if type(E) == "table" and type(E.Abrir) == "function" then
+			return { { texto = L["Cómo conseguirla"], fn = function() E.Abrir("guia", "montura") end } }
+		end
+	end,
+	[50] = function() return nil end,
+	[60] = function() return nil end,
+}
+A.RegisterEvent("PLAYER_LEVEL_UP", function(_, nivel)
+	nivel = num(nivel)
+	if not nivel then return end
+	local c = { importante = true, aullar = true, segundos = 10 }
+	if HITOS[nivel] then
+		c.acciones = HITOS[nivel]()
+		if decirDe("hito" .. nivel, c) then return end
+	end
+	decirDe("nivel", { importante = true, aullar = true }, nivel)
+end)
+
+A.RegisterEvent("PLAYER_DEAD", function()
+	decirDe("muerte", { importante = true, cara = "atenta", segundos = 10 })
+end)
+
+-- Misiones entregadas hoy: 10 y 25 son un logro.
+A.RegisterEvent("QUEST_TURNED_IN", function()
+	local d = datos()
+	local hoy = date and date("%Y-%m-%d") or "?"
+	if type(d.hoy) ~= "table" or d.hoy.fecha ~= hoy then d.hoy = { fecha = hoy, n = 0 } end
+	d.hoy.n = (tonumber(d.hoy.n) or 0) + 1
+	if d.hoy.n == 10 or d.hoy.n == 25 then
+		decirDe("misionesHoy", { importante = true, salto = true }, d.hoy.n)
+	end
+end)
+
+local revisarPronto = juntar(3, function()
+	if UI.Visible() and not enCombate() then revisarContexto(false) end
+end)
+A.RegisterEvent("UPDATE_INVENTORY_DURABILITY", revisarPronto)
+A.RegisterEvent("BAG_UPDATE_DELAYED", revisarPronto)
+A.RegisterEvent("QUEST_LOG_UPDATE", revisarPronto)
+A.RegisterEvent("PLAYER_UPDATE_RESTING", function()
+	revisarSueno()
+	revisarPronto()
+end)
+A.RegisterEvent("PLAYER_FLAGS_CHANGED", function(_, unit)
+	if unit == nil or unit == "player" then revisarSueno() end
+end)
+
+A.RegisterEvent("PLAYER_REGEN_DISABLED", function()
+	UI.Combate(true)
+	UI.Dormir(false)
+end)
+A.RegisterEvent("PLAYER_REGEN_ENABLED", function()
+	UI.Combate(false)
+	A.After(1, reintentar)
+end)
+A.RegisterEvent("ZONE_CHANGED_NEW_AREA", function() A.After(2, reintentar) end)
+A.RegisterEvent("PLAYER_LOGOUT", function() datos().ultimaVez = reloj() end)
+
+---------------------------------------------------------------------------
+-- Comando
+---------------------------------------------------------------------------
+local function comando(resto)
+	local palabra = type(resto) == "string" and resto:lower():match("^%s*(%S*)") or ""
+	if not N.Permitido() then return end
+	if palabra == "consejo" then
+		if not Ce.Activa() then Ce.Mostrar(true) end
+		Ce.Pedir()
+	elseif palabra == "ajustes" then
+		N.Abrir(ID)
+	elseif palabra == "historias" and M.Historias then
+		M.Historias.Abrir()
+	elseif palabra == "dato" and M.Historias then
+		if not Ce.Activa() then Ce.Mostrar(true) end
+		M.Historias.Contar()
+	else
+		local mostrar = N.Get(ID, "mostrar") == false
+		Ce.Mostrar(mostrar)
+		if mostrar then
+			N.Imprimir(L["Lya volvió. Dale clic cuando quieras un consejo."])
+			K.Despues(0.3, function() UI.Saltar() end)
+		else
+			N.Imprimir(L["Lya se fue a descansar. Vuelve con /alfa lya."])
+		end
+	end
+end
+A.RegisterCommand("lya", comando, L["muestra u oculta a Lya, tu loba compañera (también: consejo, dato, historias, ajustes)"])
+A.RegisterCommand("lobito", comando, L["lo mismo que /alfa lya"], true)
+
+---------------------------------------------------------------------------
+-- Lo que usan los demás módulos
+--   AlfaLya.Decir(texto, { importante = true, accion = { texto, fn }, id = "mio1" })
+--   AlfaLya.Mostrar(si)   AlfaLya.Consejo()   AlfaLya.Visible()   AlfaLya.Recuerdo()
+---------------------------------------------------------------------------
+local API = type(AlfaLya) == "table" and AlfaLya or {}
+AlfaLya = API
+AlfaLobito = API
+API.version = 1
+
+function API.Decir(texto, opts)
+	opts = type(opts) == "table" and opts or {}
+	if type(texto) ~= "string" then return false end
+	local acciones
+	if type(opts.accion) == "table" then
+		local a = opts.accion
+		acciones = { { texto = a.texto or a[1], fn = a.fn or a[2] } }
+	elseif type(opts.acciones) == "table" then
+		acciones = opts.acciones
+	end
+	return Ce.Decir({
+		texto = texto, importante = opts.importante and true or nil, acciones = acciones,
+		id = type(opts.id) == "string" and ("otro:" .. opts.id) or nil,
+		salto = opts.salto, cara = opts.cara, aullar = opts.aullar,
+	})
+end
+function API.Mostrar(on) Ce.Mostrar(on ~= false) end
+function API.Consejo() Ce.Pedir() end
+function API.Visible() return UI.Visible() end
+-- El recuerdo de Lya (para una línea en otra página): titulo, texto, pie.
+function API.Recuerdo() return L[M.RECUERDO_TITULO], L[M.RECUERDO], L[M.RECUERDO_PIE] end

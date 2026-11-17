@@ -9,7 +9,9 @@ Cada pieza sale solo si tiene algo útil o una acción; lo vacío no se muestra.
 1. **¿Qué hacemos hoy?** El título grande y cuatro caminos: *Subir de nivel*, *Profesiones*, *Hacer oro* y *Mazmorras*. Cada uno abre el asistente de la ruta (`AlfaRuta.Asistente(camino)`); sin él, la página Rutas (Mazmorras para su camino). En el nivel máximo, *Subir de nivel* no sale.
 2. **Tu siguiente paso** (la tarjeta grande): el paso vivo de tu guía, hasta tres metas, el número de paso, la distancia y el rumbo hasta la flecha, a quién vas y el avance de la guía. *Seguir* muestra tu guía y la flecha y cierra la ventana; *Ver pasos* abre la lista de pasos. Sin guía no sale (los caminos la eligen). Al terminar una guía: *Elegir qué sigue*.
 3. **Liberar misiones** y **Recoger misiones**, a un clic (`AlfaRuta.Liberar()` y `AlfaRuta.Recoger()`). Liberar solo si tienes misiones en tu registro.
-4. **Alertas** (solo lo urgente, con su botón): equipo gastado (*Llévame a reparar*), bolsas casi llenas (*Llévame a un vendedor*, *Abrir bolsas*), habilidades por entrenar (*Llévame con mi entrenador*), tu buff que falta y, si eres sacerdote, druida, paladín o chamán, **preparar tus marcos de curación** (el asistente de Curación, o *Ahora no*).
+   **Tu plan** (solo si sigues uno de *Mis planes*): la meta de ahora, su avance, *Llévame* / *Guíame* y *Ya la hice*; *Ver el plan* abre el editor (`AlfaPlanes.Tarjeta()`; se acomoda con el mensaje `ALFA_PLAN`).
+4. **Alertas** (solo lo urgente, con su botón; los *Llévame...* usan `AlfaCerca.Ir`, con sus mensajes y su aviso): equipo gastado (*Llévame a reparar*), bolsas casi llenas (*Llévame a un vendedor*, *Abrir bolsas*), habilidades por entrenar (*Llévame con mi entrenador*), tu buff que falta y, si eres sacerdote, druida, paladín o chamán, **preparar tus marcos de curación** (el asistente de Curación, o *Ahora no*).
+   **Buscar cerca** (con `rutas.cercaHoy`): seis botones chicos (Vuelo, Posada, Reparar, Banco, Buzón, Mi entrenador) que ponen la flecha al más cercano (`AlfaCerca.Ir`); al pasar el ratón, el más cercano si ya se sabe; *Más lugares* abre el menú completo (`AlfaCerca.Menu`).
 5. **Para tu <clase>**, con tu rama y tu rol: el talento que toca (`AlfaBuilds.SiguienteTalento()`, con *Ver en Talentos*) y las tarjetas de tu clase (`M.Clase`), cada una abre su módulo. Una tarjeta sin dato (el juego no lo dice ahora) no sale.
 6. **Hoy en números:** XP por hora, para subir de nivel (los dos, si no eres nivel máximo), oro de hoy, esta sesión y **tu manada** (`AlfaManada.Resumen()`: los que comparten y tu grupo; si no compartes, *Compartir* abre `AlfaManada.PreguntarCompartir()`).
 7. Abajo y compacto:
@@ -61,6 +63,8 @@ Todos opcionales: sin ellos, la pieza se cambia por otra o no sale.
 | `AlfaBuilds.SiguienteTalento()` | Sin tarjeta del talento; queda la de Talentos de la clase |
 | `AlfaManada.Resumen()`, `.PreguntarCompartir()`, `.Abrir()` | Sin tarjeta de tu manada |
 | `AlfaCuracion` (de Alfa_Curacion) | Sin la alerta de preparar los marcos |
+| `AlfaCerca.Ir`, `.Tipos`, `.Texto`, `.Menu` (de la ruta) | Sin la fila Buscar cerca; las alertas van directo al motor (`Alfa.Nav.nearby.Go`) |
+| `AlfaPlanes.Tarjeta`, `.Abrir` (de la ruta) | Sin la tarjeta Tu plan |
 
 ## Para verificar en el juego
 
@@ -72,3 +76,5 @@ Todos opcionales: sin ellos, la pieza se cambia por otra o no sale.
 6. Para tu clase con varias clases: tarjetas con dato y su color; el talento que toca con la ruta de Talentos (C1).
 7. Tu manada: sin compartir, *Compartir* abre la pregunta de La Jauría; compartiendo, cuenta la manada y tu grupo.
 8. Los avisos: probar uno desde *Tus avisos*, moverlo y devolverlo. La misión de clase al subir de nivel (`/alfa classtoast`), la versión nueva, "Mientras estás aquí" con la guía oculta y la ficha de niveles en el selector de guías y en una mazmorra.
+9. Buscar cerca en Hoy: los seis botones en una fila (o dos, en angosto), cada uno pone la flecha; *Más lugares* abre el menú arriba o abajo según haya lugar. Apagar `rutas.cercaHoy` en la página Ruta la quita sin dejar hueco.
+10. Tu plan: con un plan seguido sale arriba de Alertas con la meta de ahora; *Ya la hice* y cumplir la meta la cambian; sin plan no sale.

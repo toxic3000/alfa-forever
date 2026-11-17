@@ -152,8 +152,24 @@ local function interruptor(clave)
 	return function(fila) return K.Interruptor(fila, { clave = clave }) end
 end
 
+-- Los dos estilos del mapa de Alfa (también en el engrane del mapa).
+local function opcionesEstilo()
+	local roto = Lz.TerrenoRoto()
+	return {
+		{ valor = "terreno", texto = L["Terreno, como el minimapa"], icono = "ic-mundo",
+			apagada = roto or nil, motivo = roto and L["Este cliente no carga los mosaicos del minimapa: se ve el arte pintado."] or nil },
+		{ valor = "clasico", texto = L["Clásico, el arte pintado del juego"], icono = "ic-mapa" },
+	}
+end
+M.OpcionesEstilo = opcionesEstilo
+
 local function ajustesMapa(padre)
 	local g = K.GrupoAjustes(padre, { titulo = L["El mapa de Alfa"] })
+	g:Fila({ titulo = L["Estilo del mapa"],
+		texto = L["Terreno: al acercarte se ve el suelo real del minimapa, con sus montañas, ríos y tonos. Clásico: solo el mapa pintado del juego."],
+		control = function(fila)
+			return K.Desplegable(fila, { clave = "mundo.estiloMapa", ancho = 260, opciones = opcionesEstilo() })
+		end })
 	g:Fila({ titulo = L["Abrir el mapa de Alfa con la tecla del mapa"], control = interruptor("mundo.teclaM"),
 		texto = L["La tecla que abre el mapa del juego (M) abre el de Alfa; en él, un botón te lleva al del juego. Apágalo y la tecla vuelve a abrir el del juego. También puedes darle una tecla propia en Opciones > Teclado > Alfa."] })
 	g:Fila({ titulo = L["Botones de Alfa en el mapa del juego"], control = interruptor("mundo.botonMapa"),
@@ -297,9 +313,12 @@ local function construir(view)
 		t:SetOpciones(tarjetas(), L["El mapa a tu gusto"])
 		ui.marcadores:Llenar()
 		ui.ajustes:Refrescar()
-		local faltan = not Lz.HayTexturas()
-		K.Mostrar(ui.sinTexturas, faltan)
-		if faltan then K.Escribir(ui.sinTexturas, L["Faltan las texturas de detalle en la carpeta Media de Alfa_Mundo: el mapa se dibuja solo con el arte del juego."]) end
+		local faltan, roto = not Lz.HayTexturas(), Lz.TerrenoRoto()
+		K.Mostrar(ui.sinTexturas, faltan or roto)
+		local notas = {}
+		if faltan then notas[#notas + 1] = L["Faltan las texturas de detalle en la carpeta Media de Alfa_Mundo: el mapa se dibuja solo con el arte del juego."] end
+		if roto then notas[#notas + 1] = L["Este cliente no carga los mosaicos del minimapa: se ve el arte pintado."] end
+		if #notas > 0 then K.Escribir(ui.sinTexturas, table.concat(notas, " ")) end
 		ui.capas:Llenar()
 	end)
 	M.vista = view
@@ -321,6 +340,9 @@ N.Modulo({
 		grupo = true,       -- tu grupo en el mapa de Alfa (esencial)
 		nombres = true,     -- nombres de zona en el mapa de Alfa
 		detalle = true,     -- arte base de cada zona con las texturas de detalle
+		estiloMapa = "terreno", -- "terreno" (los mosaicos del minimapa) | "clasico" (solo el arte pintado)
+		salidas = true,     -- salidas de zona (Entradas.lua)
+		portales = true,    -- portales a pie (Entradas.lua)
 		botonMapa = true,   -- botones de Alfa junto a la lupa del mapa del juego
 		menuMapa = true,    -- las capas en el menú de la lupa
 		teclaM = true,      -- la tecla del mapa abre el de Alfa
@@ -338,6 +360,9 @@ N.Modulo({
 		{ kind = "toggle", key = "mundo.recibirMarcadores", label = L["Recibir marcadores de tu grupo"], search = "share waypoints, party, compartir" },
 		{ kind = "toggle", key = "mundo.menuMapa", label = L["Capas en la lupa del mapa del juego"], search = "tracking menu, layers" },
 		{ kind = "toggle", key = "mundo.detalle", label = L["Detalle fino de cada zona"], search = "map detail, textures" },
+		{ kind = "dropdown", key = "mundo.estiloMapa", label = L["Estilo del mapa"],
+			choices = { { value = "terreno", label = L["Terreno, como el minimapa"] }, { value = "clasico", label = L["Clásico, el arte pintado del juego"] } },
+			search = "map style, terrain, minimap, classic, estilo, terreno, minimapa" },
 	},
 	construir = construir,
 })
@@ -348,13 +373,24 @@ A.RegisterCommand("limpio", function()
 	N.Imprimir(Capas.Limpio() and L["Modo limpio encendido: solo tú, tu grupo, tus marcadores y la guía."] or L["Modo limpio apagado: tus capas volvieron como estaban."])
 end, L["Cambia el modo limpio del mapa"])
 
--- La primera vez: las entradas de mazmorras se marcan (el motor las trae
--- apagadas). Si después las apagas, se quedan apagadas.
+-- La primera vez: las entradas de mazmorras, los puntos de vuelo y los
+-- barcos se marcan (el motor los trae apagados). Si después los apagas, se
+-- quedan apagados. (`vuelos` y `entradas` llegaron después: las cuentas que
+-- ya tenían `iniciado` también los pasan.)
 if type(A.OnLogin) == "function" then
 	A.OnLogin(function()
 		local d = N.Datos(ID)
-		if d.iniciado then return end
-		d.iniciado = 1
-		if A.Get("maps.dungeonPins") == false then A.Set("maps.dungeonPins", true) end
+		if not d.iniciado then
+			d.iniciado = 1
+			if A.Get("maps.dungeonPins") == false then A.Set("maps.dungeonPins", true) end
+		end
+		if not d.vuelos then
+			d.vuelos = 1
+			if A.Get("maps.taxiPins") == false then A.Set("maps.taxiPins", true) end
+		end
+		if not d.entradas then
+			d.entradas = 1
+			if A.Get("maps.dockPins") == false then A.Set("maps.dockPins", true) end
+		end
 	end)
 end

@@ -119,6 +119,7 @@ function S.A(fila)
 	local objetivo = Nav.SetTarget(map, x, y, s.nombre)
 	if type(objetivo) ~= "table" then return false end
 	if Nav.StartTrip then Nav.StartTrip(objetivo, s.nombre, etiqueta(s.tipo)) end
+	if N.EmpezarRuta then N.EmpezarRuta() end -- cierra las ventanas de Alfa y muestra el seguimiento
 	s.objetivo = objetivo
 	s.map = map
 	s.c, s.wx, s.wy = U.AlMundo(map, x, y)

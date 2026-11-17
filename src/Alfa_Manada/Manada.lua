@@ -62,6 +62,7 @@ function AlfaManada.Comparte() return on("compartir") end
 
 function AlfaManada.Abrir() P.Abrir() end
 
+
 function AlfaManada.Resumen()
 	local manada, grupo = G.Cuentas()
 	local s = S.Actual()
@@ -79,7 +80,7 @@ local function ayuda()
 		{ "/alfa manada", L["abre la página de La Jauría"] },
 		{ "/alfa manada seguir <nombre>", L["la flecha te lleva con esa persona"] },
 		{ "/alfa manada parar", L["deja de seguir"] },
-		{ "/alfa manada compartir sí|no", L["compartir tu ubicación con La Jauría"] },
+		{ "/alfa manada compartir sí|no", L["que la manada vea a tu personaje en el mapa"] },
 		{ "/alfa manada estado", L["qué se envía y qué se recibe ahora"] },
 	}) do
 		DEFAULT_CHAT_FRAME:AddMessage("  " .. hex .. l[1] .. "|r  " .. l[2])
@@ -98,7 +99,7 @@ local function estado()
 	local ce, cr = C.Estado()
 	U.Decir(L["La Jauría: estado"])
 	local lineas = {
-		L["Compartes tu ubicación: %s"]:format(on("compartir") and L["sí"] or L["no"]),
+		L["La manada te ve en el mapa: %s"]:format(on("compartir") and L["sí"] or L["no"]),
 		L["Se puede enviar ahora: %s"]:format(puede and L["sí"] or (L["no"] .. " (" .. tostring(por) .. ")")),
 		L["Por dónde sale: %s"]:format(via and L[VIAS[via]] or (L["ninguno"] .. " (" .. tostring(porVia) .. ")")),
 		L["Canal oculto: %s (%s, número %s, intentos %d)"]:format(C.NOMBRE, tostring(ce) .. (cr and ("/" .. tostring(cr)) or ""), tostring(C.Id() or "-"), C.Intentos()),
@@ -131,12 +132,12 @@ A.RegisterCommand("manada", function(rest)
 		local v = U.Plegar(arg)
 		if SI[v] then
 			AlfaManada.Compartir(true)
-			U.Decir(L["Compartes tu ubicación con La Jauría."])
+			U.Decir(L["La manada ya ve a tu personaje en el mapa del juego."])
 		elseif NO[v] then
 			AlfaManada.Compartir(false)
-			U.Decir(L["Ya no compartes tu ubicación con La Jauría."])
+			U.Decir(L["La manada ya no ve a tu personaje en el mapa."])
 		else
-			U.Decir(on("compartir") and L["Compartes tu ubicación con La Jauría."] or L["No compartes tu ubicación con La Jauría."])
+			U.Decir(on("compartir") and L["La manada ya ve a tu personaje en el mapa del juego."] or L["La manada no ve a tu personaje en el mapa."])
 		end
 	elseif cmd == "estado" or cmd == "status" then
 		estado()

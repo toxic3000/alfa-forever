@@ -1,12 +1,78 @@
 # Cambios de Alfa
 
-## 1.0.1 — en preparación
+## 1.1.0 — La manada crece (17/11/2026)
 
 **Español**
+
+Gracias a todos los que instalaron Alfa, lo probaron y reportaron lo que encontraron: esta versión existe por ustedes. Es la actualización más grande desde la 1.0.0.
+
+*Primer inicio y configuración*
+- Nueva bienvenida obligatoria en 9 pasos, con una intro animada del lobo: primero eliges el idioma de Alfa (10 idiomas, aunque el juego esté en otro) y después cada opción automática del addon como una pregunta, con un resumen final. Mientras no se termina, las ventanas de Alfa abren la bienvenida; las bolsas y el combate nunca se bloquean.
+- "Que la manada te vea en el mapa" reemplaza a "compartir ubicación": es opcional y solo comparte el lugar de tu personaje dentro del juego.
+
+*Mapa*
+- El mapa de Alfa muestra el terreno real, igual que el minimapa, y ya no se pixela al acercar. Se puede elegir entre "Terreno" y "Clásico".
+- Nuevos puntos de vuelo (conocidos y por descubrir) y un grupo "Entradas y salidas": mazmorras, salidas de zona con su destino, barcos, zepelines y portales.
+
+*Rutas y misiones*
+- "Buscar cerca": maestro de vuelo, posada, reparar, banco, buzón, subastas y entrenadores, con flecha y ruta, desde el seguimiento, la página Hoy, el mapa o /alfa cerca.
+- "Mis planes": arma tu propio plan con metas (un objeto, oro, una profesión, un lugar, una misión, un nivel o una nota); se marcan solas y la flecha te lleva. Incluye plantillas.
+- Alfa solo te manda a misiones que puedes hacer: si falta una misión previa, la agrega sola antes; lo que no puedes cumplir (otra clase, facción, profesión o reputación) se oculta con su motivo. Las misiones de mazmorra llevan a la entrada.
+- Seguimiento compacto: solo lo que estás haciendo ahora; el paso completo, en "Ver detalle". Al empezar una ruta se cierran las ventanas de Alfa y queda el seguimiento.
+
+*Enciclopedia*
+- Monturas y mascotas de Forever, con cómo conseguirlas, filtros, si ya las tienes y "Guíame"; guía "Mi primera montura".
+- Guía de los puntos del Legado: qué son, cómo se ganan y en qué se usan.
+
+*Combate*
+- Ayuda de rotación renovada para las 9 clases y sus 27 especializaciones: recurso, recargas, efectos y número de enemigos. Los textos explicativos salen como máximo 4 veces y se pueden ocultar.
+- Lo de misión se resalta: los enemigos que necesitas, en su placa de nombre, y los objetos de misión brillan en las bolsas.
+
+*Reingeniería de la pesca*
+- Nuevo modo pesca: una sola tecla te pone la caña y el equipo de pesca, aplica el cebo, lanza y recoge, un paso por pulsación, siempre con tu tecla y fuera de combate. La tecla se elige (teclado, botones del ratón o rueda) y al moverte vuelve a ser la de siempre.
+- Barra de pesca horizontal o vertical con tu habilidad, el estado y el tiempo del lanzamiento; sonido de la boya más claro mientras pescas, que se restaura al salir.
+- Diario de capturas con maestrías, estadísticas por sesión y de siempre, metas y 22 logros propios.
+- Guía de 1 a 300 con bancos, instructores y vendedores en el mapa, misiones y el concurso de Tuercespina, y una cola para cocinar lo pescado junto al agua.
+
+*Lya*
+- Lya, una loba negra compañera que da consejos y ánimo sin estorbar. En memoria de una gran perrita.
+- Lya guarda la historia de cada misión que tomas, aunque la aceptes sin leerla, y te la ofrece con un mensaje corto; al entregarla, te cuenta el final. La nueva ventana Historias (/alfa historias) reúne todos los textos por zona, con buscador.
+- Datos curiosos originales de cada zona de Kalimdor y los Reinos del Este (145 notas) y del lore de Warcraft, sin repetirse y con su propio freno para no llenar la pantalla. Se elige cada cuánto habla: siempre, a veces, solo si le pides o nunca.
+
+*Paisaje y gráficos*
+- Nueva ventana /alfa paisaje: 68 ajustes gráficos del juego explicados en palabras simples, con preajustes (bajo, medio, alto, ultra y "Paisaje de la manada"), deshacer de un clic y filtros de pantalla opcionales (tinte, viñeta, grano y barras de cine) que nunca tapan la interfaz. La bienvenida pregunta si quieres el paisaje de la manada.
+
+*Interfaz y estilo*
+- El estilo de Alfa también viste el chat, el minimapa y, si lo eliges, las barras de abajo.
+- Nuevas monedas de oro, plata y cobre en alta resolución según el estilo, y aviso de regreso rediseñado con el logo de Alfa.
+- Las pestañas de Ajustes ya no se salen de la ventana y su orden es más claro.
+
+*Comunidad*
+- Reportes de errores, mejoras y comentarios con /alfa reportar, para pegarlos en el buzón privado del Discord de La Jauría.
+
+*Rendimiento y reglas*
+- Al entrar al juego Alfa carga mucho menos (las traducciones van en el paquete de cada idioma).
+- Nueva sección "Créditos y licencias" en Acerca de, con cada proyecto en el que se basa Alfa. Alfa cumple las reglas de Blizzard para addons: sin donaciones ni anuncios dentro del juego y nada escribe solo en el chat de otros (el avance de misiones en el chat del grupo viene apagado).
 - La app de CurseForge reconoce Alfa (proyecto 1811544) para avisarte de versiones nuevas.
+- Sin la etiqueta "Beta".
 
 **English**
-- The CurseForge app recognizes Alfa (project 1811544) to tell you about new versions.
+
+Thanks to everyone who installed Alfa, tried it and reported what they found: this release exists because of you. It is the biggest update since 1.0.0.
+
+- New mandatory 9-step first-run setup with an animated wolf intro: choose Alfa's language first (10 languages, even if the game uses another), then every automatic option as a question, with a final summary.
+- The Alfa map shows real terrain like the minimap and no longer pixelates; flight points and a new "Entrances and exits" group (dungeons, zone exits, boats, zeppelins, portals).
+- "Find nearby" services with arrow and route; "My plans" with custom goals and templates.
+- Alfa only sends you to quests you can do: missing prerequisites are added automatically; impossible ones are hidden with the reason. Dungeon quests lead to the entrance.
+- Compact tracker with a separate "See details" window.
+- Mounts, pets and Legacy points guides in the Encyclopedia.
+- Rotation helper rebuilt for all 27 specializations; quest mobs and quest items highlighted.
+- Fishing re-engineered: a fishing mode where one key equips your pole and gear, applies a lure, casts and loots; a fishing bar, catch journal with mastery, session stats, goals, 22 achievements, a 1–300 guide and a cooking queue.
+- New scenery and graphics window (/alfa paisaje): 68 game settings in plain words, presets, one-click undo and optional screen filters.
+- Alfa's style for chat, minimap and (optionally) the action bars; HD coins.
+- Lya, a black companion she-wolf in memory of a great little dog: tips, encouragement, the story of every quest you take (with the ending when you turn it in), a new Stories window and 145 original fun facts about the zones and Warcraft lore.
+- In-game reports (/alfa reportar) for La Jauría's private Discord mailbox.
+- Lighter load at login, a full "Credits and licenses" section, compliance with Blizzard's add-on policy (no in-game donations or ads; party-chat progress off by default) and no more "Beta" tag. The CurseForge app now recognizes Alfa (project 1811544).
 
 ## 1.0.0 — la versión buena (16/11/2026)
 

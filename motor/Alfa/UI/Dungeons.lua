@@ -2354,6 +2354,8 @@ local function openPlanned(open, key, nothing)
 	local gid, reason = open(key)
 	if gid then
 		ns.Set("ui.shown", true)
+		-- Alfa: se cierran las demas ventanas de Alfa y queda el seguimiento (Alfa_Nucleo)
+		if AlfaNucleo and AlfaNucleo.EmpezarRuta then AlfaNucleo.EmpezarRuta() end
 		if hub then hub:Hide() end
 		return gid
 	end

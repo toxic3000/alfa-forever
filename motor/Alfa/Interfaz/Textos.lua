@@ -87,4 +87,17 @@ M.EN = {
 	["Actualízalo con la app de CurseForge o con el zip más reciente y luego reinicia el juego o usa /reload."] = "Update it with the CurseForge app or the latest zip, then restart the game or /reload.",
 	["No se conoce ningún Alfa más reciente. La app de CurseForge o la página de versiones lo dicen con seguridad."] = "No newer Alfa is known. The CurseForge app or the releases page say for sure.",
 	["Tu instalación está mezclada o incompleta (%s). Cierra el juego, borra todas las carpetas de Alfa en Interface/AddOns e instala Alfa de nuevo con la app de CurseForge o el zip más reciente (no \"Source code\")."] = "Your install is mixed or incomplete (%s). Close the game, delete every Alfa folder in Interface/AddOns and install Alfa again with the CurseForge app or the latest zip (not \"Source code\").",
+	-- Créditos y licencias (UI/Options.lua, Acerca de)
+	["Créditos y licencias"] = "Credits and licenses",
+	["Alfa lo hace toxic3000 para La Jauría. Es software libre (GPL-3.0) y su código está en github.com/toxic3000/alfa-forever."] = "Alfa is made by toxic3000 for La Jauría. It is free software (GPL-3.0) and its source is at github.com/toxic3000/alfa-forever.",
+	["Alfa usa código y datos de estos proyectos libres, con sus avisos de autor y sus licencias incluidos en cada carpeta:"] = "Alfa uses code and data from these free projects, with their copyright notices and licenses included in each folder:",
+	["• Polestar, de The Polestar authors (GPL-3.0): el motor de guías, navegación y datos (github.com/fitzforge/polestar)."] = "• Polestar, by The Polestar authors (GPL-3.0): the guide, navigation and data engine (github.com/fitzforge/polestar).",
+	["• Shortest Path Forever, de Cillian Berragan (GPL-3.0-or-later): la navegación y los servicios cercanos."] = "• Shortest Path Forever, by Cillian Berragan (GPL-3.0-or-later): navigation and nearby services.",
+	["• pfQuest, de shagu (MIT): datos de misiones, PNJ y objetos."] = "• pfQuest, by shagu (MIT): quest, NPC and object data.",
+	["• GatherLite, de Wuild (MIT): la base de nodos de recolección."] = "• GatherLite, by Wuild (MIT): the gathering node database.",
+	["• OpenMap, de OpenMap contributors (MIT): la lógica del mapa continuo y las máscaras de territorio."] = "• OpenMap, by OpenMap contributors (MIT): the seamless map logic and territory masks.",
+	["• TerrainWorldMap, de Dramacydal (MIT): la tabla de mosaicos del terreno del mapa."] = "• TerrainWorldMap, by Dramacydal (MIT): the map terrain tile table.",
+	["• Letras Inter, Fira Sans y Open Sans (SIL Open Font License 1.1)."] = "• Inter, Fira Sans and Open Sans typefaces (SIL Open Font License 1.1).",
+	["Alfa no está afiliado a esos proyectos ni ellos lo respaldan; gracias a todos por compartir su trabajo."] = "Alfa is not affiliated with or endorsed by those projects; thanks to all of them for sharing their work.",
+	["World of Warcraft, Warcraft y Blizzard Entertainment son marcas de Blizzard Entertainment, Inc. El arte del juego y del mapa es de Blizzard. Alfa no está afiliado a Blizzard. Discord es marca de Discord Inc."] = "World of Warcraft, Warcraft and Blizzard Entertainment are trademarks of Blizzard Entertainment, Inc. The game and map art belong to Blizzard. Alfa is not affiliated with Blizzard. Discord is a trademark of Discord Inc.",
 }

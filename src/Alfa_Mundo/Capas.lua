@@ -59,12 +59,13 @@ local G_MARCAS = grupo(L["Tus marcadores"], 1.5)
 local G_GUIA = grupo(L["Guía"], 2)
 local G_MISIONES = grupo(L["Misiones"], 3)
 local G_RAROS = grupo(L["Raros y tesoros"], 4)
+local G_ENTRADAS = grupo(L["Entradas y salidas"], 4.5)
 local G_VIAJE = grupo(L["Viaje y servicios"], 5)
 local G_ZONAS = grupo(L["Zonas"], 6)
 -- Nombres que otros módulos pueden usar para caer en un grupo de aquí.
 local ALIAS = {
 	esencial = G_ESENCIAL, marcadores = G_MARCAS, guia = G_GUIA, ["guía"] = G_GUIA, misiones = G_MISIONES,
-	raros = G_RAROS, viaje = G_VIAJE, zonas = G_ZONAS,
+	raros = G_RAROS, viaje = G_VIAJE, zonas = G_ZONAS, entradas = G_ENTRADAS, ["entradas y salidas"] = G_ENTRADAS,
 }
 
 local function agregar(g, e)
@@ -377,14 +378,25 @@ motor(G_RAROS, "raros.minimapa", "rares.minimapRares", L["Raros en el minimapa"]
 motor(G_RAROS, "raros.tesorosMinimapa", "rares.minimapTreasures", L["Tesoros en el minimapa"],
 	L["Los tesoros también en el minimapa."], MAPA .. "treasure", "textDim", { requiere = conRaros })
 
--- Viaje y servicios
-motor(G_VIAJE, "viaje.mazmorras", "maps.dungeonPins", L["Entradas de mazmorras"],
+-- Entradas y salidas: mazmorras y barcos (capas del motor, con sus ids de
+-- siempre), las salidas de cada zona y los portales (Entradas.lua).
+motor(G_ENTRADAS, "viaje.mazmorras", "maps.dungeonPins", L["Entradas de mazmorras"],
 	L["Cada entrada de mazmorra y banda con su rango de niveles. Clic: su página; Mayús+clic: la flecha te lleva."],
-	MAPA .. "dungeon", "dungeon")
-motor(G_VIAJE, "viaje.vuelo", "maps.taxiPins", L["Maestros de vuelo"],
-	L["Verde si ya lo conoces, ámbar si te falta descubrirlo."], MAPA .. "flightmaster", "success")
-motor(G_VIAJE, "viaje.barcos", "maps.dockPins", L["Barcos, zepelines y tranvía"],
-	L["Muelles y torres de zepelín, con a dónde van."], MAPA .. "boat", "link")
+	MAPA .. "dungeon", "dungeon", { orden = 1 })
+motor(G_ENTRADAS, "entradas.salidas", ID .. ".salidas", L["Salidas de zona"],
+	L["Por dónde se pasa a otra zona (caminos, pasos, túneles y puertas), con una flecha hacia ella y su rango de niveles. Se ven al acercarte a una zona."],
+	MAPA .. "pass", "link", { propia = true, orden = 2,
+	  requiere = function()
+		local E = M.Entradas
+		return (E and E.HayDatos()) and true or false, L["Necesita las rutas a pie de Alfa (Alfa_Nav), que se cargan solas con «Seguir caminos reales» encendido."]
+	  end })
+motor(G_ENTRADAS, "entradas.portales", ID .. ".portales", L["Portales"],
+	L["Los portales a pie que puedes usar, con a dónde llevan."], MAPA .. "portal", "link", { propia = true, orden = 4 })
+motor(G_VIAJE, "viaje.vuelo", "maps.taxiPins", L["Puntos de vuelo"],
+	L["Los maestros de vuelo de tu facción y los neutrales: verdes si ya los conoces, ámbar con «?» si te falta descubrirlos. Clic: seguirlo con la flecha."],
+	MAPA .. "flightmaster", "success")
+motor(G_ENTRADAS, "viaje.barcos", "maps.dockPins", L["Barcos, zepelines y tranvía"],
+	L["Muelles y torres de zepelín, con a dónde van."], MAPA .. "boat", "link", { orden = 3 })
 motor(G_VIAJE, "viaje.posadas", "maps.innPins", L["Posadas"],
 	L["Posaderos; se marca el de tu piedra de hogar."], MAPA .. "inn", "place")
 motor(G_VIAJE, "viaje.servicios", "maps.servicePins", L["Servicios"],

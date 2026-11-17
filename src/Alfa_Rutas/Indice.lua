@@ -312,11 +312,68 @@ local function fuenteObjeto(itemId, desde)
 	return mejor, rec, tipo, fid, spawns
 end
 
+-- Las misiones de mazmorra (la lista de misiones de cada mazmorra del
+-- motor): sus objetivos se hacen DENTRO, aunque el dato del objeto o del PNJ
+-- traiga un punto en el mapa de afuera (el cofre del Manuscrito de Lorgalis,
+-- en Cavernas de Brazanegra, mandaba la flecha a ese punto). -> clave, nombre
+local porMision -- [qid] = clave de la mazmorra
+function I.Mazmorra(qid)
+	qid = tonumber(qid)
+	if not qid then return nil end
+	if not porMision then
+		local D = M.Motor("Dungeons")
+		if not (D and D.List and D.Quests) then return nil end
+		if D.Load then pcall(D.Load) end
+		local ok, lista = pcall(D.List)
+		if not (ok and type(lista) == "table" and #lista > 0) then return nil end
+		porMision = {}
+		for _, d in ipairs(lista) do
+			local okq, qs = pcall(D.Quests, d.key)
+			for _, mq in ipairs(okq and type(qs) == "table" and qs or {}) do
+				if mq.id and not porMision[mq.id] then porMision[mq.id] = d.key end
+			end
+		end
+	end
+	local clave = porMision[qid]
+	if not clave then return nil end
+	local D = M.Motor("Dungeons")
+	local d = D and D.Get and D.Get(clave)
+	return clave, d and d.name or clave
+end
+
+-- Si el registro del juego marca la misión como de mazmorra o banda (el
+-- "(Calabozo)" junto al nombre): se hace dentro aunque el motor no la liste.
+local ETIQUETA_DENTRO = { [81] = true, [62] = true, [88] = true, [89] = true } -- calabozo, banda, banda (10/25)
+function I.EtiquetaMazmorra(qid)
+	qid = tonumber(qid)
+	local QL = C_QuestLog
+	if not (qid and QL and QL.GetQuestTagInfo) then return false end
+	local ok, info = pcall(QL.GetQuestTagInfo, qid)
+	if not (ok and type(info) == "table") then return false end
+	local id = tonumber(info.tagID)
+	return id ~= nil and ETIQUETA_DENTRO[id] == true
+end
+
+-- La entrada de esa mazmorra como punto { map, x, y, f } (o nil).
+function I.EntradaMazmorra(clave)
+	local D = M.Motor("Dungeons")
+	if not (clave and D and D.Entrance) then return nil end
+	local map, x, y, f = D.Entrance(clave)
+	if not (map and x and y) then return nil end
+	return { map = map, x = x, y = y, f = f }
+end
+
 -- El primer lugar de sus objetivos, si piden grupo y si algo queda dentro
 -- de una mazmorra (sin lugar en el mundo).
 function I.Objetivo(e, desde)
 	local C, Lk = CX(), LK()
 	local q = C and C.Quest(e.id)
+	-- una misión de mazmorra: dentro, con la entrada como lugar
+	local mz = I.Mazmorra(e.id)
+	if q and mz then
+		local entrada = I.EntradaMazmorra(mz)
+		return entrada and punto(entrada) or nil, true, true
+	end
 	if not q then return nil end
 	local lugar, grupo, dentro
 	for _, o in ipairs(q.objectives or {}) do
@@ -492,6 +549,20 @@ function I.PasosMision(q, desde)
 		local g = en({ t = "complete", quest = q.id, title = q.title, text = evento.text }, evento.map and evento or nil)
 		out.objetivos[#out.objetivos + 1] = g
 		if g.map and not out.objetivo then out.objetivo = { map = g.map, x = g.x, y = g.y, f = g.f } end
+	end
+	-- Misión de mazmorra: lo que pide se consigue dentro; la flecha lleva a la
+	-- entrada (nunca al punto de afuera que trae el dato) y queda marcada para
+	-- que el plan no la meta sin que la pidas.
+	local clave, nombreMz = I.Mazmorra(q.id)
+	if clave then
+		out.dentro, out.grupo, out.mazmorra = true, true, nombreMz
+		local entrada = I.EntradaMazmorra(clave)
+		for _, g in ipairs(out.objetivos) do
+			g.map, g.x, g.y, g.f, g.z, g.spots, g.spread = nil, nil, nil, nil, nil, nil, nil
+			if entrada then en(g, entrada) end
+			g.dentroDe = nombreMz
+		end
+		out.objetivo = entrada and { map = entrada.map, x = entrada.x, y = entrada.y, f = entrada.f } or nil
 	end
 	out.entregar = metaNpc("turnin", q, fin)
 	return out

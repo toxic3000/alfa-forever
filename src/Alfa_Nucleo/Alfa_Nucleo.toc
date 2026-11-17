@@ -18,10 +18,3 @@ Kit\Bloques.lua
 Kit\Ventanas.lua
 Kit\Plantillas.lua
 Kit\Estilos.lua
-Idiomas\deDE.lua
-Idiomas\frFR.lua
-Idiomas\ptBR.lua
-Idiomas\ruRU.lua
-Idiomas\koKR.lua
-Idiomas\zhCN.lua
-Idiomas\zhTW.lua

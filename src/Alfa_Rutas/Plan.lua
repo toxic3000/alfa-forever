@@ -248,6 +248,9 @@ local function elegirClase(ctx, tramo, pt, idx, ceder)
 		for _, qid in ipairs(mejor.faltan) do
 			if not ctx.usadas[qid] then agregar(qid) end
 		end
+		-- La misión de clase dice lo que se agregó antes (sus previas, el nivel).
+		pt.antesDe = pt.antesDe or {}
+		pt.antesDe[mejor.e.id] = M.Disp.TextoAntes(mejor.faltan, mejor.nivel > ctx.real and mejor.nivel or nil)
 		for _, id in ipairs(mejor.e.rew or {}) do premios[#premios + 1] = id end
 		for _, id in ipairs(mejor.e.cho or {}) do premios[#premios + 1] = id end
 	end
@@ -650,6 +653,17 @@ local function anotar(paso, texto)
 end
 P.Anotar = anotar
 
+-- Lo que la ruta agregó antes de una misión (Disp.TextoAntes), en su meta de
+-- aceptar: el rastreador lo dice ("Antes: ..."). marcas: { [qid] = texto }.
+function P.MarcarAntes(pasos, marcas)
+	if type(marcas) ~= "table" or next(marcas) == nil then return end
+	for _, s in ipairs(pasos or {}) do
+		for _, g in ipairs(s.goals or {}) do
+			if g.t == "accept" and g.quest and marcas[g.quest] then g.antes = marcas[g.quest] end
+		end
+	end
+end
+
 -- El paso que espera un nivel (la meta "level" del motor: se cumple sola al
 -- llegar), con lo que falta en XP.
 local function pasoNivel(nivel)
@@ -680,6 +694,7 @@ local function compilar(ruta, plan, ceder)
 			if t.item then resto = pasosObjeto(t.item, t.cantidad, notas) end
 		else
 			resto, desde = pasosMisiones(pt.quests or {}, desde, ceder, notas)
+			P.MarcarAntes(resto, pt.antesDe)
 		end
 		for _, s in ipairs(resto or {}) do nuevos[#nuevos + 1] = s end
 		local cabeza = format(L["Tramo %d de %d: %s."], i, total, M.TituloTramo(t))

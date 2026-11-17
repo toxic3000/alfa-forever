@@ -51,7 +51,7 @@ local function elegir(id)
 	pedido = nil
 	if v then v:Cerrar() end
 	if p and p.Elegir then p.Elegir(id) end
-	A.Set("ui.shown", true)
+	M.Empezar()
 end
 
 local function mostrar(p)

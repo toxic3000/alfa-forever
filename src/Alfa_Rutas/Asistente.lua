@@ -1,7 +1,8 @@
 -- Alfa - Rutas: el asistente "¿Qué quieres hacer?" (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Dos clics y estás en marcha:
---   1. eliges tu camino: Subir de nivel, Profesiones, Hacer oro o Mazmorras;
+--   1. eliges tu camino: Subir de nivel, Profesiones, Hacer oro, Mazmorras o
+--      Mi propio plan (Planes.lua: uno nuevo, una plantilla o uno tuyo);
 --   2. eliges cómo: la opción recomendada en grande (la guía para tu nivel y
 --      tu zona, tu plan de misiones si tienes muchas listas, la ruta de
 --      Alfa...) y las demás en tarjetas. Un clic la pone en marcha.
@@ -26,6 +27,7 @@ local CAMINOS = {
 	{ clave = "profesiones", icono = "ic-oficios", tono = "aviso", titulo = L["Profesiones"], texto = L["Sube tu profesión o junta sus materiales donde más hay."] },
 	{ clave = "oro", icono = "ic-oro", tono = "oro", titulo = L["Hacer oro"], texto = L["Misiones que dejan dinero y materiales que se venden bien."] },
 	{ clave = "mazmorras", icono = "ic-mazmorra", tono = "mazmorra", titulo = L["Mazmorras"], texto = L["La mazmorra para tu nivel, sus misiones y cómo llegar."] },
+	{ clave = "planes", icono = "ic-lista", tono = "acento", titulo = L["Mi propio plan"], texto = L["Tus metas en tu orden: un objeto, oro, una profesión, un lugar..."] },
 }
 
 local function cerrar() if v then v:Cerrar() end end
@@ -143,6 +145,35 @@ local function opciones(camino)
 		end
 		out[#out + 1] = { icono = "ic-misiones", tono = "acento", titulo = L["Cerrar mis misiones antes"], texto = L["Entra con el registro limpio: entrega lo que ya tienes."],
 			alClic = hacer(function() M.Cerrar.Ahora("listas") end) }
+	elseif camino == "planes" then
+		-- Mis planes (Planes.lua): seguir el tuyo, armar uno o empezar una plantilla.
+		local Pl, VP = M.Planes, M.VistaPlanes
+		local activo = Pl.Activo()
+		if activo then
+			local m = Pl.Actual(activo, true)
+			out[#out + 1] = { icono = "ic-lista", tono = "acento", titulo = activo.nombre,
+				texto = (#activo.metas == 0 and L["Sin metas todavía: ábrelo y agrégale una."]) or (m and format(L["Sigue: %s"], Pl.Titulo(m)))
+					or L["Terminado: cumpliste todas sus metas."],
+				accion = { texto = L["Ver mi plan"], icono = "ic-seguir" }, alClic = hacer(function() VP.Abrir(activo.id) end) }
+		end
+		out[#out + 1] = { icono = "ic-mas", tono = "acento", titulo = L["Armar un plan nuevo"],
+			texto = L["Primero un objeto, luego oro, luego una profesión y al final el banco: tú eliges el orden."],
+			accion = { texto = L["Nuevo plan"], icono = "ic-mas" }, alClic = hacer(function() VP.Nuevo() end) }
+		for _, p in ipairs(Pl.Plantillas()) do
+			local clave = p.clave
+			out[#out + 1] = { icono = p.icono, tono = "neutro", titulo = p.nombre, texto = p.texto,
+				alClic = hacer(function()
+					local pl = Pl.DesdePlantilla(clave)
+					if pl then Pl.Seguir(pl.id) end
+				end) }
+		end
+		for _, pl in ipairs(Pl.Lista()) do
+			if not (activo and activo.id == pl.id) and #out < 8 then
+				local id = pl.id
+				out[#out + 1] = { icono = "ic-lista", tono = "neutro", titulo = pl.nombre, texto = #pl.metas == 1 and L["1 meta"] or format(L["%d metas"], #pl.metas),
+					alClic = hacer(function() VP.Abrir(id) end) }
+			end
+		end
 	end
 	return out
 end
@@ -196,7 +227,7 @@ local function construir()
 	v.alAcomodar()
 end
 
--- camino: "nivel" | "profesiones" | "oro" | "mazmorras" | nil (empieza en el paso 1)
+-- camino: "nivel" | "profesiones" | "oro" | "mazmorras" | "planes" | nil (empieza en el paso 1)
 function As.Abrir(camino)
 	if not v then construir() end
 	local valido = false

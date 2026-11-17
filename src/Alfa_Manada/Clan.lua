@@ -48,6 +48,7 @@ M.Clan = {
 
 	discord = nil,
 
+
 	en = {
 		lema = "No one hunts alone.",
 		descripcion = {

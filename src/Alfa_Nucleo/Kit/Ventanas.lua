@@ -122,10 +122,23 @@ local function ponerEnSuLugar(v)
 	end
 end
 
+-- Todas las ventanas del Kit, para cerrar de una vez las que tapan la
+-- pantalla al empezar a seguir algo (N.EmpezarRuta). No tapan: las de
+-- opts.fija (la configuración obligatoria, un reporte a medio escribir) ni
+-- las de la capa MEDIUM (piezas que acompañan al jugar, como el medidor).
+K.VENTANAS = K.VENTANAS or {}
+function K.CerrarLasQueTapan()
+	for _, v in ipairs(K.VENTANAS) do
+		if v.alfaTapa and v:IsShown() then v:Cerrar() end
+	end
+end
+
 function K.Ventana(opts)
 	opts = opts or {}
 	local v = CreateFrame("Frame", opts.nombre, K.Raiz())
 	v.alfaNombre = opts.nombre
+	v.alfaTapa = not opts.fija and (opts.capa or "HIGH") ~= "MEDIUM"
+	K.VENTANAS[#K.VENTANAS + 1] = v
 	v:SetSize(opts.ancho or 760, opts.alto or 560)
 	v:SetFrameStrata(opts.capa or "HIGH")
 	v:SetToplevel(true)

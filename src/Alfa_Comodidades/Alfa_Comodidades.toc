@@ -1,6 +1,6 @@
 ## Interface: 16001
 ## Title: |cff8be04eAlfa|r - Comodidades
-## Notes: Comodidades dentro de Alfa: minimapa, colores de clase, cuadro de información, probador, vuelo, misiones y sonidos.
+## Notes: Comodidades dentro de Alfa: minimapa, chat y barras con el estilo de Alfa, colores de clase, cuadro de información, probador, vuelo, misiones y sonidos.
 ## Author: toxic3000 - La Jauria
 ## Version: dev
 ## X-License: GPL-3.0-only
@@ -9,10 +9,14 @@
 
 Textos.lua
 Comodidades.lua
+Estilo.lua
 Misiones.lua
 Vuelo.lua
 Minimapa.lua
+MinimapaEstilo.lua
+Chat.lua
 Marcos.lua
+Barras.lua
 Cuadro.lua
 Probador.lua
 Sonidos.lua

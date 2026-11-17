@@ -11,7 +11,9 @@
 
 Textos.lua
 Datos.lua
+TerrenoDatos.lua
 Capas.lua
+Entradas.lua
 Lienzo.lua
 Marcas.lua
 Emergente.lua

@@ -79,6 +79,8 @@ N.Modulo({
 - **Datos que no son ajustes** (historiales, precios, inventarios): `N.Datos(id)` para la cuenta y `N.DatosPersonaje(id)` para el personaje. Siempre se leen con esas funciones y nunca se guarda la referencia, porque el juego puede devolverlas en nil al arrancar.
 - **Textos:** se escriben en español dentro de `L["..."]`. `Textos.lua` define `M.EN = { ["texto en español"] = "English text" }`. El español es el idioma principal.
 - **Utilidades:** `N.Dinero(cobre)`, `N.Duracion(seg)`, `N.Imprimir(...)`, `N.FueraDeCombate(fn)` y `N.Abrir(id)`.
+- **Lya:** `src/Alfa_Lya` es la loba compañera en pantalla; cualquier módulo puede hacerla hablar con `AlfaLya.Decir(texto, { importante, accion = { texto, fn } })`, que respeta sus reglas contra el spam (ver su `LEEME.md`).
+- **Paisaje y gráficos:** `src/Alfa_Vista` (Mundo > Paisaje y gráficos, `/alfa paisaje`) expone ajustes escondidos del juego (CVars), preajustes y filtros propios; otros módulos usan `AlfaVista.Abrir()`, `AlfaVista.AplicarPreset(nombre)` y `AlfaVista.Presets()` (ver su `LEEME.md`).
 - **Archivos:** cada módulo toca solo su carpeta. Si necesita algo del motor o del núcleo que no existe, lo dice en su reporte en lugar de editar otra carpeta.
 
 ## Reglas de Forever (no negociables)

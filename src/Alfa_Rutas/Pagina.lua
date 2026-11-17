@@ -5,11 +5,14 @@
 --   1. lo que conviene ahora, en grande: entregar tus misiones listas (si
 --      tienes varias), seguir tu guía o, sin guía, "¿Qué quieres hacer?";
 --   2. las otras opciones en tarjetas: el asistente, cerrar tus misiones,
---      recoger las de cerca, la biblioteca de guías y tu ruta;
+--      recoger las de cerca, la biblioteca de guías, buscar cerca (Cerca.lua)
+--      y tu ruta;
 --   3. tu plan de misiones (VistaMisiones.lua);
---   4. tus rutas propias, en árbol (VistaArbol.lua);
+--   4. tus planes (VistaPlanes.lua: listas de metas propias y plantillas)
+--      y tus rutas propias, en árbol (VistaArbol.lua);
 --   5. los ajustes de la ruta: solo las misiones de tu ruta, aceptar y
---      entregar solas, evitar las de grupo y cuántos niveles arriba.
+--      entregar solas, evitar las de grupo y cuántos niveles arriba; y los
+--      de buscar cerca (el botón del rastreador, la fila de Hoy, el aviso).
 
 local ADDON, M = ...
 local A, L, N = M.A, M.L, M.N
@@ -52,7 +55,7 @@ local function accion()
 			texto = total > 0 and format(L["Llevas %d de %d pasos. El rastreador te dice el siguiente y la flecha te lleva."], done, total)
 				or L["El rastreador te dice el siguiente paso y la flecha te lleva."],
 			progreso = total > 0 and { actual = done, total = total, huellas = true, texto = format("%d %%", floor(done / total * 100)) } or nil,
-			accion = { texto = L["Mostrar mi guía"], icono = "ic-seguir", alClic = function() A.Set("ui.shown", true) end },
+			accion = { texto = L["Mostrar mi guía"], icono = "ic-seguir", alClic = function() M.Empezar() end },
 			secundaria = { texto = L["¿Qué quieres hacer?"], alClic = function() M.Asistente.Abrir() end } }
 	end
 	return { lobo = "atento", tono = "acento", sobre = L["Empieza aquí"], titulo = L["¿Qué quieres hacer hoy?"],
@@ -78,6 +81,10 @@ local function opciones()
 		alClic = function() M.Recoger.Ahora() end }
 	out[#out + 1] = { icono = "ic-guia", titulo = L["Biblioteca de guías"], texto = L["La recomendada para ti y todas las demás."],
 		alClic = function() M.Biblioteca.Abrir() end }
+	if M.Cerca then
+		out[#out + 1] = { icono = "ic-buscar", titulo = L["Buscar cerca"], texto = L["El maestro de vuelo, la posada, reparar, el banco y más, con la flecha."],
+			alClic = function(tarjeta) M.Cerca.Menu(tarjeta) end }
+	end
 	local r = M.RutaActiva() or M.RutaEditada()
 	if r and #r.tramos > 0 then
 		out[#out + 1] = { icono = "ic-ruta", titulo = r.nombre, texto = format(L["Tu ruta de %d tramos."], #r.tramos),
@@ -111,18 +118,43 @@ local function ajustes(padre)
 	return g
 end
 
+-- Los de buscar cerca (Cerca.lua).
+local function ajustesCerca(padre)
+	local g = K.GrupoAjustes(padre, { titulo = L["Buscar cerca y tus planes"] })
+	g:Fila({ titulo = L["Mostrar más en el seguimiento"],
+		texto = L["De fábrica el seguimiento muestra solo lo que estás haciendo; encendido, muestra el paso completo con sus notas."],
+		control = function(f) return K.Interruptor(f, { clave = M.ID .. ".seguimientoCompleto" }) end })
+	g:Fila({ titulo = L["Botón «Buscar cerca» en el rastreador"],
+		texto = L["La lupa de la cabecera del rastreador abre el menú. También: /alfa cerca o tu tecla."],
+		control = function(f) return K.Interruptor(f, { clave = M.ID .. ".cercaBoton" }) end })
+	g:Fila({ titulo = L["«Buscar cerca» en la página Hoy"],
+		texto = L["Una fila con vuelo, posada, reparar, banco, buzón y tu entrenador, a un clic."],
+		control = function(f) return K.Interruptor(f, { clave = M.ID .. ".cercaHoy" }) end })
+	g:Fila({ titulo = L["Aviso al poner la flecha"],
+		texto = L["Un aviso corto con el lugar, su zona y el tiempo de camino."],
+		control = function(f) return K.Interruptor(f, { clave = M.ID .. ".cercaAviso" }) end })
+	g:Fila({ titulo = L["Mis planes: la flecha va sola al siguiente lugar"],
+		texto = L["Cuando la meta de ahora de tu plan es un lugar, la flecha lo toma sin que hagas clic."],
+		control = function(f) return K.Interruptor(f, { clave = M.ID .. ".planFlecha" }) end })
+	return g
+end
+
 local function construir(view)
 	vista = view
 	local t = K.Tablero(view, { margen = N.MargenPagina(), accion = "estado", tituloOpciones = L["Otras opciones"], min = 200 })
 	local misiones = t:AgregarBloque(M.BloqueMisiones(t.Extra, rehacer))
+	local planes = t:AgregarBloque(M.BloquePlanes(t.Extra, rehacer), { espacio = K.ESP.xl })
 	local rutas = t:AgregarBloque(M.BloqueRutas(t.Extra, rehacer), { espacio = K.ESP.xl })
 	local grupo = t:AgregarBloque(ajustes(t.Extra), { espacio = K.ESP.xl })
+	local grupoCerca = M.Cerca and t:AgregarBloque(ajustesCerca(t.Extra), { espacio = K.ESP.l }) or nil
 	K.EnPagina(view, t, function()
 		t:SetAccion(accion())
 		t:SetOpciones(opciones(), L["Otras opciones"])
 		misiones:Llenar()
+		planes:Llenar()
 		rutas:Llenar()
 		grupo:Refrescar()
+		if grupoCerca then grupoCerca:Refrescar() end
 	end)
 end
 

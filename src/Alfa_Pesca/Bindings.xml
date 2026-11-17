@@ -1,3 +1,7 @@
 <Bindings>
 	<Binding name="CLICK AlfaPescaBoton:LeftButton" category="Alfa" searchTags="BINDING_TAG_ALFA"/>
+	<Binding name="CLICK AlfaPescaRelanzar:LeftButton" category="Alfa" searchTags="BINDING_TAG_ALFA"/>
+	<Binding name="ALFA_PESCA_MODO" category="Alfa" searchTags="BINDING_TAG_ALFA">
+		if AlfaPesca and AlfaPesca.Alternar then AlfaPesca.Alternar() end
+	</Binding>
 </Bindings>

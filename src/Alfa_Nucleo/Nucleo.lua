@@ -25,14 +25,21 @@ N.HEX = "|cff8be04e"
 local locale = GetLocale and GetLocale() or "esMX"
 N.locale = locale
 N.espanol = (locale == "esMX" or locale == "esES")
-N.idiomas = N.idiomas or {} -- [locale] = { ["texto en español"] = "traducción" }
+-- [locale] = { ["texto en español"] = "traducción" }. Los diccionarios viven
+-- en el paquete de idioma del motor (Alfa_<locale>, que solo se carga en su
+-- idioma; tools/build.py los pone ahí) y llegan en AlfaNucleoIdiomas, que
+-- se lee en cada consulta por si el paquete cargó después.
+N.idiomas = N.idiomas or {}
+local function diccionario()
+	return N.idiomas[locale] or (AlfaNucleoIdiomas and AlfaNucleoIdiomas[locale])
+end
 
 function N.Textos(en)
 	if N.espanol then
 		return setmetatable({}, { __index = function(_, k) return k end })
 	end
 	return setmetatable({}, { __index = function(_, k)
-		local d = N.idiomas[locale]
+		local d = diccionario()
 		return (d and d[k]) or (type(en) == "table" and en[k]) or k
 	end })
 end
@@ -41,7 +48,7 @@ end
 -- los consejos de Mazmorras): devuelve el del idioma del cliente.
 function N.Traducir(es, en)
 	if N.espanol then return es end
-	local d = N.idiomas[locale]
+	local d = diccionario()
 	return (d and d[es]) or en or es
 end
 
@@ -84,6 +91,82 @@ end
 
 function N.ModuloPorId(id) return porId[id] end
 function N.Abrir(id) A.Fire("SHOW_OPTIONS", id) end
+
+---------------------------------------------------------------------------
+-- El idioma de Alfa (src/Alfa_Idioma) y la bienvenida obligatoria
+---------------------------------------------------------------------------
+-- -> true si hace falta /reload para verlo. loc nil: el idioma del juego.
+function N.PonerIdioma(loc)
+	if type(AlfaPonerIdioma) ~= "function" then return false end
+	return AlfaPonerIdioma(loc) and true or false
+end
+function N.Idiomas() return AlfaIdiomas or { { N.locale, N.locale } } end
+
+---------------------------------------------------------------------------
+-- Empezar una ruta o seguir algo desde una ventana de Alfa ("Seguir",
+-- "Guíame", "Llévame"...): se cierran las ventanas de Alfa que tapan la
+-- pantalla y queda la de seguimiento con la flecha hacia el objetivo.
+-- Se llama desde el clic del jugador, nunca por un avance automático.
+---------------------------------------------------------------------------
+local TAPAN = { "AlfaEnciclopediaVentana", "AlfaAsistente", "AlfaBiblioteca", "AlfaCamino",
+	"AlfaRutaTexto", "AlfaMundoMapa" }
+function N.EmpezarRuta()
+	if A and A.Set then A.Set("ui.shown", true) end
+	local function cerrar()
+		local UI = A and A.UI
+		for _, parte in ipairs({ "Options", "Picker" }) do
+			local f = UI and UI[parte] and UI[parte].frame
+			if f and f.IsShown and f:IsShown() then f:Hide() end
+		end
+		for _, nombre in ipairs(TAPAN) do
+			local f = rawget(_G, nombre)
+			if f and f.IsShown and f:IsShown() then f:Hide() end
+		end
+		-- Y cualquier otra ventana del Kit que tape (Kit/Ventanas.lua): así
+		-- una ventana nueva no tiene que anotarse en TAPAN.
+		local K = N.Kit
+		if K and K.CerrarLasQueTapan then pcall(K.CerrarLasQueTapan) end
+	end
+	-- en el siguiente cuadro: no cerrar la ventana a mitad de su propio clic
+	if C_Timer and C_Timer.After then C_Timer.After(0, cerrar) else cerrar() end
+end
+
+-- Mientras falte terminar la bienvenida (Alfa_Bienvenida), Alfa no se usa:
+-- abrir cualquier ventana suya abre la bienvenida. Los módulos que abren una
+-- ventana sin pasar por el motor preguntan antes con N.Permitido().
+local function pendiente()
+	local B = rawget(_G, "AlfaBienvenida")
+	if not (B and type(B.Pendiente) == "function") then return false end
+	local ok, si = pcall(B.Pendiente)
+	return ok and si == true
+end
+function N.Permitido()
+	if not pendiente() then return true end
+	local B = rawget(_G, "AlfaBienvenida")
+	if B and type(B.Abrir) == "function" then pcall(B.Abrir) end
+	return false
+end
+if A then
+	-- Reportar un problema (y copiar su texto o la invitación al Discord)
+	-- sigue abierto aunque falte la configuración: quien se atora en ella
+	-- tiene que poder decirlo.
+	local SIEMPRE = { SHOW_REPORT = true, SHOW_COPY = true, SHOW_DISCORD = true }
+	A.Puerta = function(msg)
+		if SIEMPRE[msg] then return false end
+		return not N.Permitido()
+	end
+	-- "Reportar un problema" del motor (botón del bicho, menú del minimapa,
+	-- /alfa report) abre el reporte de Alfa (Alfa_Manada: va al buzón privado
+	-- del Discord de La Jauría); sin ese módulo, sigue el del motor.
+	if A.DesviosDeMensajes then
+		A.DesviosDeMensajes.SHOW_REPORT = function()
+			local R = rawget(_G, "AlfaReporte")
+			if not (R and type(R.Abrir) == "function") then return false end
+			local ok = pcall(R.Abrir, "error")
+			return ok
+		end
+	end
+end
 
 -- Ancho útil de una página de la ventana de Alfa.
 function N.AnchoPagina()
@@ -165,19 +248,43 @@ end
 ---------------------------------------------------------------------------
 function N.Imprimir(...) A.Print(...) end
 
--- 123456 cobre -> "12o 34p 56c" (o "12g 34s 56c" en inglés) con los colores del juego.
+-- 123456 cobre -> "12 34 56" con el ícono de cada moneda y los colores del
+-- juego. Las monedas siguen el estilo de Alfa: en Alfa y Cristal, las propias
+-- (Media/moneda-<metal>-<estilo>, tools/monedas.py); en Clásico WoW, las del
+-- juego. N.DineroTexto da "12o 34p 56c" sin íconos, para textos que se copian
+-- (una caja de texto muestra los códigos de los íconos tal cual).
 local LETRAS = N.espanol and { "o", "p", "c" } or { "g", "s", "c" }
-function N.Dinero(cobre, corto)
+local COLOR = { "|cffffd700", "|cffc7c7cf", "|cffeda55f" }
+local METAL = { "oro", "plata", "cobre" }
+local DEL_JUEGO = { "Interface\\MoneyFrame\\UI-GoldIcon", "Interface\\MoneyFrame\\UI-SilverIcon", "Interface\\MoneyFrame\\UI-CopperIcon" }
+local PROPIAS = "Interface\\AddOns\\Alfa_Nucleo\\Media\\moneda-%s-%s"
+
+local function iconoMoneda(i)
+	local K = N.Kit
+	local estilo = K and K.Estilo and K.Estilo() or "alfa"
+	local ruta = estilo == "clasico" and DEL_JUEGO[i] or PROPIAS:format(METAL[i], estilo == "cristal" and "cristal" or "alfa")
+	return "|T" .. ruta .. ":0:0:1:0|t"
+end
+
+local function dinero(cobre, corto, conIconos)
 	cobre = math.floor(tonumber(cobre) or 0)
 	local signo = cobre < 0 and "-" or ""
 	cobre = math.abs(cobre)
-	local o, p, c = math.floor(cobre / 10000), math.floor(cobre / 100) % 100, cobre % 100
+	local valores = { math.floor(cobre / 10000), math.floor(cobre / 100) % 100, cobre % 100 }
 	local partes = {}
-	if o > 0 then partes[#partes + 1] = ("|cffffd700%d|r%s"):format(o, LETRAS[1]) end
-	if p > 0 and not (corto and o >= 100) then partes[#partes + 1] = ("|cffc7c7cf%d|r%s"):format(p, LETRAS[2]) end
-	if (c > 0 and not (corto and o > 0)) or #partes == 0 then partes[#partes + 1] = ("|cffeda55f%d|r%s"):format(c, LETRAS[3]) end
+	local function poner(i)
+		local marca = conIconos and iconoMoneda(i) or LETRAS[i]
+		partes[#partes + 1] = COLOR[i] .. valores[i] .. "|r" .. marca
+	end
+	local o, p, c = valores[1], valores[2], valores[3]
+	if o > 0 then poner(1) end
+	if p > 0 and not (corto and o >= 100) then poner(2) end
+	if (c > 0 and not (corto and o > 0)) or #partes == 0 then poner(3) end
 	return signo .. table.concat(partes, " ")
 end
+
+function N.Dinero(cobre, corto) return dinero(cobre, corto, true) end
+function N.DineroTexto(cobre, corto) return dinero(cobre, corto, false) end
 
 -- Segundos -> "1 h 05 min" / "4 min 10 s".
 function N.Duracion(seg)

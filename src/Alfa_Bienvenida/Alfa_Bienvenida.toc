@@ -1,15 +1,18 @@
 ## Interface: 16001
 ## Title: |cff8be04eAlfa|r - Bienvenida
-## Notes: El primer arranque de Alfa 1.0: tu estilo, tus misiones, La Jauría y el aullido.
+## Notes: La configuración de Alfa (idioma, estilo, lo que hace sola, La Jauría), las novedades, el aullido y los reportes.
 ## Author: toxic3000 - La Jauria
 ## Version: dev
 ## X-License: GPL-3.0-only
 ## Dependencies: Alfa, Alfa_Nucleo
-## OptionalDeps: Alfa_Manada, Alfa_Rutas
+## OptionalDeps: Alfa_Manada, Alfa_Rutas, Alfa_Comodidades, Alfa_Combate, Alfa_Curacion, Alfa_Bolsas, Alfa_Recoleccion
 ## Category: Alfa
 
 Textos.lua
 Bienvenida.lua
+Intro.lua
 Novedades.lua
+Pasos.lua
 Asistente.lua
+Reporte.lua
 Pagina.lua

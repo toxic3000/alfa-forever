@@ -34,3 +34,17 @@ Total: unos 12,4 MB (de los ~361 MB de OpenMap). Si se cambia la lista de `TERRI
 ## Comprobación
 
 La primera vez que lo necesita, Mundo pone `MapFeatherRound` en una textura de prueba: si el cliente responde que no existe, se queda con el arte del juego y la página Mundo lo dice ("Faltan las texturas de detalle..."). El ajuste "Detalle fino de cada zona" (`mundo.detalle`) apaga el detalle aunque estén.
+
+# Datos de TerrainWorldMap que usa Alfa_Mundo (el terreno)
+
+| | |
+|---|---|
+| Addon | TerrainWorldMap **v2.4.0** (`## Version: 2.4.0` en `TerrainWorldMap_Camelot.toc`), de Dramacydal |
+| Licencia | MIT (`LICENSE-TerrainWorldMap.txt`, junto a los datos en `src/Alfa_Mundo/`) |
+| Código fuente | https://github.com/Dramacydal/TerrainWorldMap |
+| Archivo de origen | `Data_Forever/mapdata_tiles_continents.lua`, tablas `Twm_TileFileID["Kalimdor"]` y `["Azeroth"]` (generadas por su `scripts/parse_wdt.js --bake-tile-fileids` desde los WDT del cliente 1.60.1 y el listfile de la comunidad; coinciden 1:1 con `Twm_WDTValidTiles`) |
+| Destino | `src/Alfa_Mundo/TerrenoDatos.lua` (2,4 KB, en el `.toc`: no hace falta cargarlo aparte) |
+
+**Formato propio:** `M.TERRENO[uiMapID] = { col, fila, n, fileID, ... }`, de cuatro en cuatro: n mosaicos seguidos de la columna `col` desde la fila `fila`, con fileID consecutivos. 1414 = Kalimdor (988 mosaicos, 36 rachas), 1415 = Reinos del Este (736, 70 rachas). El mapa 2991 de TerrainWorldMap (72 mosaicos) no se incluye: no está en el mapa 947. Se convirtió con un script de una sola vez (leer las tablas, ordenar por columna y fila, juntar las rachas); para otra versión del cliente se repite desde el archivo nuevo de TerrainWorldMap.
+
+**Aviso (NOTICE):** las imágenes de los mosaicos (`World/Minimaps/...`) son arte de Blizzard que ya trae el cliente; ni TerrainWorldMap ni Alfa las copian: Alfa solo guarda sus fileID (números) y el juego las carga. No se copia nada más de TerrainWorldMap (ni su código, ni sus íconos, ni sus mapas de mazmorras).

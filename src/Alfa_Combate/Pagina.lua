@@ -7,7 +7,8 @@
 --      resaltado en tu barra, cada una con su acción.
 --   3. El top de daño de tu grupo o banda, con anunciar en el chat.
 --   4. Tu prioridad: en qué orden y en qué situación (solo si hay una).
---   5. Los ajustes, en tres grupos.
+--   5. Los ajustes, en cuatro grupos (rotación, avisos y explicaciones,
+--      marca de misión, medidor).
 -- Lo que no tiene nada útil no se muestra, o dice qué hacer para llenarlo.
 
 local ADDON, M = ...
@@ -20,6 +21,7 @@ local ESP = K.ESP
 local FILA, GAP = 26, 2
 
 local LANZADORES = { MAGE = true, PRIEST = true, WARLOCK = true }
+local situacion -- más abajo
 
 local function nombreClase()
 	local n = M.Legible(M.Llamar(UnitClass, "player"))
@@ -54,7 +56,9 @@ local function estado()
 			d.texto = format(despues > 0 and L["En combate, el ícono muestra la habilidad que sugiere la ayuda de Blizzard y las %d que siguen. Tú decides qué presionar: Alfa nunca aprieta nada por ti."]
 				or L["En combate, el ícono muestra la habilidad que sugiere la ayuda de Blizzard. Tú decides qué presionar: Alfa nunca aprieta nada por ti."], despues)
 		else
-			d.texto = format(L["El juego no trae la ayuda de Blizzard, así que Alfa sugiere con su prioridad para %s, leyendo solo tu personaje: tu recurso, tus efectos y lo que el juego te deja usar. Con 3 o más enemigos cambia a las de área. Tú decides qué presionar."], nombreClase())
+			local rama = P.Rama()
+			local quien = rama and rama.nombre and format("%s (%s)", nombreClase(), rama.nombre) or nombreClase()
+			d.texto = format(L["Alfa sugiere con su prioridad para %s, leyendo solo tu personaje: tu recurso, tus recargas, los efectos que el juego activa y la vida del enemigo cuando se puede leer. Con varios enemigos cambia a las de área. Tú decides qué presionar."], quien)
 		end
 		d.estado = { texto = L["Lista"], tono = "exito" }
 		d.accion = { texto = L["Mover el ícono"], icono = "ic-seguir", alClic = function() M.Desbloquear(true) end }
@@ -273,6 +277,20 @@ local function celda(padre)
 	return c
 end
 
+-- La insignia de situación de una entrada.
+situacion = function(x)
+	local d = x.def
+	if d.aoe or d.minEnemigos then return { L["Área"], "aviso" } end
+	if d.corta then return { L["Cortar"], "peligro" } end
+	if d.remate or d.bajoVida then return { L["Remate"], "peligro" } end
+	if d.vidaPropia or d.vidaMascota then return { L["Vida baja"], "exito" } end
+	if x.con then return { L["Efecto activo"], "acento" } end
+	if d.enGrupo then return { L["En grupo"], "clase" } end
+	if d.fueraCombate then return { L["Antes de pelear"], "neutro" } end
+	if d.solo then return { L["Un enemigo"], "neutro" } end
+	return nil
+end
+
 local function bloquePrioridad(padre)
 	local b = K.Pila(padre, { espacio = ESP.m })
 	b.Seccion = b:Agregar(K.Seccion(b, L["Tu prioridad"]))
@@ -288,11 +306,13 @@ local function bloquePrioridad(padre)
 			local rama = P.Rama()
 			for i, x in ipairs(P.Lista()) do
 				local d = x.def
-				datos[#datos + 1] = { orden = i, id = x.id, nombre = x.nombre, porque = d.porque,
-					situacion = d.aoe and { L["Área"], "aviso" } or (d.solo and { L["Un enemigo"], "neutro" }) or nil }
+				datos[#datos + 1] = { orden = i, id = x.id, nombre = x.nombre, porque = d.porque, situacion = situacion(x) }
 			end
 			self.Seccion:Set(rama and rama.nombre and format(L["Tu prioridad: %s"], rama.nombre) or L["Tu prioridad"], { cuenta = #datos })
-			self.Nota:SetText(L["De arriba abajo: la primera que el juego te deja usar es la que sale en el ícono; las de área, solo con 3 o más enemigos peleando."])
+			local _, origen = P.Rama()
+			local de = origen == "ajuste" and L["Elegida por ti en los ajustes."]
+				or origen == "talentos" and L["Elegida por tus talentos."] or L["La de tu clase mientras subes: cambia sola cuando pongas talentos."]
+			self.Nota:SetText(de .. " " .. L["De arriba abajo: la primera que el juego te deja usar es la que sale en el ícono. Lo que el juego hace brillar pasa al frente; las de área salen con varios enemigos peleando. Solo aparecen las que ya aprendiste."])
 		elseif fuente == "blizzard" then
 			for i, id in ipairs(R.Hechizos()) do
 				datos[#datos + 1] = { orden = i, id = id, nombre = M.NombreHechizo(id) }
@@ -362,6 +382,18 @@ local function grupos(padre)
 		texto = L["La tecla del botón de tu barra con esa habilidad, sobre el ícono."] })
 	g1:Fila({ titulo = L["Nombre de la habilidad"], control = interruptor("nombre"), hija = true, activa = si("rotacion"),
 		texto = L["Debajo del ícono: útil mientras aprendes."] })
+	g1:Fila({ titulo = L["Explicar por qué, unas pocas veces"], control = interruptor("porque"), hija = true, activa = si("rotacion"),
+		texto = L["Una línea corta debajo del ícono, como «Golpe mortal: recarga lista». Cada una sale hasta 4 veces y luego se calla; su × la calla antes."] })
+	g1:Fila({ titulo = L["Barrido de recarga"], control = interruptor("barrido"), hija = true, activa = si("rotacion"),
+		texto = L["Un barrido oscuro y suave sobre los íconos mientras su recarga corre."] })
+	local rama = g1:Fila({ titulo = L["Tu especialización"], hija = true, activa = si("rotacion"),
+		texto = L["Con qué prioridad sugiere Alfa. Automática: la de tus talentos o, mientras subes, la de tu clase."],
+		control = function(fila)
+			local o = { { valor = "auto", texto = L["Automática"] } }
+			for _, r in ipairs(P.Ramas()) do o[#o + 1] = { valor = r.clave, texto = r.nombre or r.clave } end
+			local d = K.Desplegable(fila, { opciones = o, clave = ID .. ".rama", ancho = 160 })
+			return d
+		end })
 	g1:Fila({ titulo = L["Resaltar el botón en tu barra"], hija = true, activa = si("rotacion"),
 		texto = L["Marca el botón de tu barra que tiene la habilidad sugerida."],
 		control = function(fila)
@@ -383,10 +415,26 @@ local function grupos(padre)
 		texto = L["Una línea debajo del aviso con lo que pasó."] })
 	g2:Fila({ titulo = L["También cuando el juego hace brillar otra habilidad"], control = interruptor("avisosOtros"), hija = true, activa = si("avisos"),
 		texto = L["Cualquier habilidad tuya que el juego resalte por un efecto."] })
+	local function textoExplicaciones()
+		local n = M.TextosCallados()
+		local t = format(L["Cada aviso y cada porqué sale con texto hasta %d veces y luego solo queda el ícono."], M.LIMITE_TEXTO)
+		if n > 0 then t = t .. " " .. (n == 1 and L["Ya hay 1 callada."] or format(L["Ya hay %d calladas."], n)) end
+		return t
+	end
+	local expl = g2:Fila({ titulo = L["Explicaciones"], texto = textoExplicaciones(),
+		control = function(fila) return K.Boton(fila, L["Volver a mostrarlas"], function() M.ReiniciarTextos() end, { tipo = "secundario", tam = "chico" }) end })
 	local golpe = g2:Fila({ titulo = L["Barra de golpe"], control = interruptor("golpe"),
 		texto = L["Cuánto falta para tu siguiente golpe automático, con cada mano. Ayuda a meter Embate o Golpe heroico sin perder golpes."] })
+	local golpeN = g2:Fila({ titulo = L["Segundos junto a la barra"], control = interruptor("golpeNumero"), hija = true, activa = si("golpe"),
+		texto = L["El número que cuenta hacia atrás. Apagado, solo la barra."] })
 	g2:Fila({ titulo = L["Panel de estadísticas"], control = interruptor("panel"),
 		texto = L["Un cuadro pequeño y movible con tu vida y las estadísticas que más pesan para tu clase. En combate el juego oculta algunos números: se queda el último que se pudo leer."] })
+
+	local g4 = K.GrupoAjustes(padre, { titulo = L["Misiones"] })
+	g4:Fila({ titulo = L["Marcar a quien te falta para una misión"], control = interruptor("marcaMision"),
+		texto = L["Un ícono de misión en la placa de nombre de los enemigos y personajes que todavía necesitas para una misión de tu registro. En mazmorras el juego oculta esos datos y no se marcan."] })
+	g4:Fila({ titulo = L["Con un brillo suave"], control = interruptor("marcaMisionBrillo"), hija = true, activa = si("marcaMision"),
+		texto = L["Además del ícono, un brillo dorado que late alrededor de su barra."] })
 
 	local g3 = K.GrupoAjustes(padre, { titulo = L["Medidor de daño"] })
 	g3:Fila({ titulo = L["Mostrar la ventana del medidor"], control = interruptor("medidor"),
@@ -403,8 +451,11 @@ local function grupos(padre)
 	local function filtrar()
 		K.Mostrar(fuente, R.Disponible() and true or false)
 		K.Mostrar(golpe, not LANZADORES[M.Clase() or ""])
+		K.Mostrar(golpeN, not LANZADORES[M.Clase() or ""])
+		K.Mostrar(rama, R.Fuente() == "alfa" and #P.Ramas() > 0)
+		if type(expl.alfaDatos) == "table" then expl.alfaDatos.texto = textoExplicaciones() end
 	end
-	return { g1, g2, g3 }, filtrar
+	return { g1, g2, g4, g3 }, filtrar
 end
 
 ---------------------------------------------------------------------------

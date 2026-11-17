@@ -14,6 +14,7 @@ Prioridades.lua
 Prioridad.lua
 Rotacion.lua
 Reacciones.lua
+MarcaMision.lua
 Golpe.lua
 Panel.lua
 Medidor.lua

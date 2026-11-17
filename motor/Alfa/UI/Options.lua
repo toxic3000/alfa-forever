@@ -796,11 +796,18 @@ local function buildAbout(view)
 	view.Welcome = welcome
 	local whatsNew = W.Button(view, L["What's new"], function() ns.Fire("SHOW_WHATSNEW") end)
 	view.WhatsNew = whatsNew
-	local credH, credText = block(L["Credits"], "Alfa: toxic3000 - La Jauría. Basado en Polestar de The Polestar authors (https://github.com/fitzforge/polestar), GPL-3.0, con la navegación de Shortest Path Forever de Cillian Berragan (GPL-3.0-or-later)." .. "\n"
-		.. "Recolección usa la base de nodos de GatherLite de Wuild (MIT). Mundo usa la lógica y las máscaras de territorio de OpenMap de OpenMap contributors (MIT); el arte del mapa es de Blizzard." .. "\n"
-		.. L["Inter typeface by The Inter Project Authors, SIL Open Font License 1.1."] .. "\n"
-		.. L["Quest and map data includes pfQuest by shagu (MIT License)."] .. "\n"
-		.. L["Discord and its logo are trademarks of Discord Inc.; the logo marks the link to the Alfa Discord."])
+	-- Alfa: créditos y licencias de lo que usa, y el aviso de marcas
+	local credH, credText = block(T("Créditos y licencias"), T("Alfa lo hace toxic3000 para La Jauría. Es software libre (GPL-3.0) y su código está en github.com/toxic3000/alfa-forever.") .. "\n\n"
+		.. T("Alfa usa código y datos de estos proyectos libres, con sus avisos de autor y sus licencias incluidos en cada carpeta:") .. "\n"
+		.. T("• Polestar, de The Polestar authors (GPL-3.0): el motor de guías, navegación y datos (github.com/fitzforge/polestar).") .. "\n"
+		.. T("• Shortest Path Forever, de Cillian Berragan (GPL-3.0-or-later): la navegación y los servicios cercanos.") .. "\n"
+		.. T("• pfQuest, de shagu (MIT): datos de misiones, PNJ y objetos.") .. "\n"
+		.. T("• GatherLite, de Wuild (MIT): la base de nodos de recolección.") .. "\n"
+		.. T("• OpenMap, de OpenMap contributors (MIT): la lógica del mapa continuo y las máscaras de territorio.") .. "\n"
+		.. T("• TerrainWorldMap, de Dramacydal (MIT): la tabla de mosaicos del terreno del mapa.") .. "\n"
+		.. T("• Letras Inter, Fira Sans y Open Sans (SIL Open Font License 1.1).") .. "\n\n"
+		.. T("Alfa no está afiliado a esos proyectos ni ellos lo respaldan; gracias a todos por compartir su trabajo.") .. "\n\n"
+		.. T("World of Warcraft, Warcraft y Blizzard Entertainment son marcas de Blizzard Entertainment, Inc. El arte del juego y del mapa es de Blizzard. Alfa no está afiliado a Blizzard. Discord es marca de Discord Inc."))
 	local maintH = W.SectionHeader(view)
 	W.SetSection(maintH, L["Maintenance"])
 	local resetAll = W.ActionTile(view, "reset", L["Reset all settings"], L["Every Alfa setting back to default. Progress is kept."],
@@ -1845,6 +1852,15 @@ local porSeccion = { [AJUSTES.key] = AJUSTES }
 for _, s in ipairs(SECCIONES) do
 	porSeccion[s.key] = s
 	for i, k in ipairs(s.pages) do seccionDe[k], posicion[k] = s.key, i end
+end
+-- Ajustes, en un orden que junta lo que se parece: tu estilo (Alfa_Bienvenida)
+-- y la apariencia fina del motor; las comodidades de Alfa y la calidad de vida
+-- del motor; luego la guía, sus misiones, el mapa y lo demás. Una página que
+-- no está aquí va al final, en su orden de siempre.
+local ORDEN_AJUSTES = { "bienvenida", "appearance", "comodidades", "qualityoflife", "guide", "questing", "map",
+	"discovery", "gamepad", "integrations", "guidepacks", "recorder", "about" }
+for i, k in ipairs(ORDEN_AJUSTES) do
+	if not posicion[k] then posicion[k] = i end
 end
 local ultima = {} -- section key -> the page last shown in it
 

@@ -12,7 +12,7 @@ local ADDON, M = ...
 local N, A, L = M.N, M.A, M.L
 local K = N.Kit
 
-local ipairs, format = ipairs, string.format
+local ipairs, format, floor = ipairs, string.format, math.floor
 local ESP = K.ESP
 local ID = M.ID
 
@@ -33,6 +33,10 @@ local function textoMisiones()
 		t = t .. " " .. K.Tenir("aviso", L["Tienes encendido «solo las misiones de mi ruta»: solo acepta las de tu ruta."])
 	end
 	return t
+end
+
+local function textoEstilo()
+	return L["«Igual que Alfa» sigue el estilo de Ajustes > Apariencia y cambia con él."]
 end
 
 local GRUPOS = {
@@ -62,6 +66,49 @@ local GRUPOS = {
 		{ k = "minimapaMenu", hija = "minimapa", titulo = L["Ocultar el menú de addons"],
 			texto = L["Oculta el botón con el número de addons en la esquina del minimapa. Esos addons se siguen abriendo con su comando, como /alfa."],
 			buscar = "addon compartment, addon menu, minimap number" },
+	} },
+	{ titulo = L["Estilo del chat"], filas = {
+		{ k = "chat", titulo = L["Dar al chat el estilo de Alfa"],
+			texto = L["Las ventanas de chat, sus pestañas y la caja para escribir toman el estilo que elijas abajo y cambian con él. Al apagarlo vuelve el chat de siempre, sin /reload."],
+			buscar = "chat skin, chat style, chat frame, chat tabs, edit box, theme chat" },
+		{ k = "chatEstilo", etiqueta = L["Estilo del chat"], hija = "chat", tipo = "estilo", titulo = L["Estilo"], texto = textoEstilo,
+			buscar = "chat theme, alfa, classic, glass, cristal" },
+		{ k = "chatOpacidad", hija = "chat", tipo = "deslizador", min = 0, max = 1, paso = 0.05, titulo = L["Opacidad del fondo"],
+			texto = L["Cuánto se ve el fondo de las ventanas de chat; en cero solo queda el borde."], buscar = "chat background opacity, alpha" },
+		{ k = "chatPestanas", hija = "chat", titulo = L["Pestañas con el estilo"],
+			texto = L["Las pestañas toman la letra y los colores del estilo; la elegida lleva la línea de acento. En Clásico WoW quedan las del juego."], buscar = "chat tabs" },
+		{ k = "chatEscribir", hija = "chat", titulo = L["Caja para escribir con el estilo"],
+			texto = L["La caja donde escribes toma el estilo, con el borde de acento mientras escribes. En Clásico WoW queda la del juego."], buscar = "chat edit box, input box" },
+		{ k = "chatLetra", hija = "chat", titulo = L["Letra del estilo"],
+			texto = L["El chat usa la letra de Alfa (la de Ajustes > Apariencia). El tamaño se sigue cambiando en el menú de la pestaña."], buscar = "chat font" },
+		{ k = "chatBotones", hija = "chat", titulo = L["Ocultar los botones del chat"],
+			texto = L["Quita la columna de botones junto al chat (menú, canales y voz). Los comandos como /s, /g o /canal siguen igual."], buscar = "hide chat buttons, chat menu button" },
+	} },
+	{ titulo = L["Estilo del minimapa"], filas = {
+		{ k = "minimapaEstilo", titulo = L["Dar al minimapa el estilo de Alfa"],
+			texto = L["El borde del minimapa, redondo o cuadrado («Minimapa cuadrado», arriba), y la barra con la zona y la hora toman el estilo que elijas, como la ventana del mapa. Al apagarlo vuelve el de siempre."],
+			buscar = "minimap skin, minimap border, minimap style, zone text" },
+		{ k = "minimapaEstiloTema", etiqueta = L["Estilo del minimapa"], hija = "minimapaEstilo", tipo = "estilo", titulo = L["Estilo"], texto = textoEstilo,
+			buscar = "minimap theme, alfa, classic, glass, cristal" },
+		{ k = "minimapaCabecera", hija = "minimapaEstilo", titulo = L["Barra de la zona con el estilo"],
+			texto = L["La barra con el nombre de la zona y la hora toma los colores y la letra del estilo. Los botones de rastreo, calendario y correo quedan como siempre."],
+			buscar = "zone text bar, minimap clock, minimap header" },
+	} },
+	{ titulo = L["Estilo de las barras"], filas = {
+		{ k = "barras", titulo = L["Dar a las barras el estilo de Alfa"],
+			texto = L["La barra de acción, las barras extra, la de experiencia, el menú y las bolsas toman el estilo que elijas. Solo cambia su aspecto, fuera de combate; al apagarlo vuelven las del juego."],
+			buscar = "action bar skin, action bars style, main menu bar, buttons skin, xp bar, micro menu, bags bar" },
+		{ k = "barrasEstilo", etiqueta = L["Estilo de las barras"], hija = "barras", tipo = "estilo", titulo = L["Estilo"], texto = textoEstilo,
+			buscar = "action bar theme, alfa, classic, glass, cristal" },
+		{ k = "barrasBotones", hija = "barras", titulo = L["Botones con el estilo"],
+			texto = L["Cada botón de acción con el borde y el fondo del estilo, el ícono cuadrado y la letra de Alfa en la tecla y la cuenta."], buscar = "action button border, hotkey font, empty slot" },
+		{ k = "barrasGrifos", hija = "barras", tipo = "desplegable", titulo = L["Grifos"], opciones = function() return {
+				{ valor = "como", texto = L["Como están"] }, { valor = "color", texto = L["Del color del estilo"] }, { valor = "ocultar", texto = L["Ocultos"] } } end,
+			texto = L["Los grifos (o dragones) a los lados de la barra principal."], buscar = "gryphons, wyverns, end caps" },
+		{ k = "barrasExperiencia", hija = "barras", titulo = L["Experiencia y reputación"],
+			texto = L["El marco de las barras de experiencia y reputación; el relleno conserva sus colores."], buscar = "xp bar, experience bar, reputation bar" },
+		{ k = "barrasMenu", hija = "barras", titulo = L["Menú y bolsas"],
+			texto = L["El marco del menú del juego y de las bolsas, abajo a la derecha."], buscar = "micro menu, bags bar, bag buttons" },
 	} },
 	{ titulo = L["Marcos y barra"], filas = {
 		{ k = "colores", titulo = L["Colores de clase en los marcos"],
@@ -156,6 +203,10 @@ end
 ---------------------------------------------------------------------------
 -- La página
 ---------------------------------------------------------------------------
+-- Vender lo gris, reparar, los vuelos, las invitaciones... son del motor y
+-- viven en Ajustes > Calidad de vida (no se repiten aquí): un enlace allá.
+local masCalidad = { texto = L["Más en Calidad de vida"], alClic = function() N.Abrir("qualityoflife") end }
+
 local function estado()
 	local lista, apagadas = recomendadas()
 	local n = cuantasEncendidas()
@@ -168,6 +219,7 @@ local function estado()
 			accion = { texto = L["Encender las recomendadas"], icono = "ic-exito", alClic = function()
 				for _, k in ipairs(lista) do N.Set(ID, k, true) end
 			end },
+			secundaria = masCalidad,
 		}
 	end
 	return {
@@ -175,6 +227,7 @@ local function estado()
 		titulo = L["Tus comodidades están listas"],
 		texto = format(L["Tienes %d encendidas. Abajo está cada una, con lo que hace, por si quieres cambiar algo."], n),
 		estado = { texto = L["Listo"], tono = "exito" },
+		secundaria = masCalidad,
 	}
 end
 
@@ -188,6 +241,16 @@ local function fila(g, f)
 			return true
 		end,
 		control = function(contenedor)
+			if f.tipo == "estilo" or f.tipo == "desplegable" then
+				local opciones = f.tipo == "estilo" and M.OpcionesEstilo() or f.opciones()
+				return K.Desplegable(contenedor, { clave = clave(f.k), opciones = opciones, ancho = 180 })
+			end
+			if f.tipo == "deslizador" then
+				local d = K.Deslizador(contenedor, { min = f.min, max = f.max, paso = f.paso, clave = clave(f.k),
+					formato = function(v) return floor(v * 100 + 0.5) .. " %" end })
+				d.alfaAnchoFila = 220
+				return d
+			end
 			if f.boton then
 				local c = CreateFrame("Frame", nil, contenedor)
 				c.Interruptor = K.Interruptor(c, { clave = clave(f.k) })
@@ -247,14 +310,26 @@ end)
 local BUSCAR = {}
 for _, g in ipairs(GRUPOS) do
 	for _, f in ipairs(g.filas) do
-		BUSCAR[#BUSCAR + 1] = { kind = "toggle", key = clave(f.k), label = f.titulo, search = f.buscar,
+		local c = { kind = "toggle", key = clave(f.k), label = f.etiqueta or f.titulo, search = f.buscar,
 			help = type(f.texto) == "string" and f.texto or nil }
+		if f.tipo == "estilo" or f.tipo == "desplegable" then
+			c.kind = "dropdown"
+			c.choices = function()
+				local t = {}
+				for i, o in ipairs(f.tipo == "estilo" and M.OpcionesEstilo() or f.opciones()) do t[i] = { value = o.valor, label = o.texto } end
+				return t
+			end
+		elseif f.tipo == "deslizador" then
+			c.kind, c.min, c.max, c.step = "slider", f.min, f.max, f.paso
+			c.format = function(v) return floor(v * 100 + 0.5) .. " %" end
+		end
+		BUSCAR[#BUSCAR + 1] = c
 	end
 end
 
 N.Modulo({
 	id = ID, nombre = L["Comodidades"], icono = "ic-comodidades", orden = 70, seccion = "ajustes",
-	subtitulo = L["Lo pequeño que hace el juego más cómodo: misiones, vuelos, minimapa, marcos, cuadro de información, probador, cámara y sonidos."],
+	subtitulo = L["Lo pequeño que hace el juego más cómodo: misiones, vuelos, minimapa, chat y barras con el estilo de Alfa, marcos, cuadro de información, probador, cámara y sonidos."],
 	controles = BUSCAR,
 	construir = construir,
 })

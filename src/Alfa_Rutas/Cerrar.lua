@@ -91,7 +91,10 @@ local function revisarUna(qid, desde, aqui, p, enLog)
 		else
 			pm.q, pm.listo = q, it.listo
 			it.pm = pm
-			it.grupo, it.dentro = pm.grupo and not it.listo, pm.dentro and not it.listo
+			-- dentro de una mazmorra: por la lista del motor o por la etiqueta del juego
+			local dentro = pm.dentro or I.EtiquetaMazmorra(it.id)
+			it.grupo, it.dentro = (pm.grupo or dentro) and not it.listo, dentro and not it.listo
+			it.mazmorra = pm.mazmorra
 			local destino = puntoDe(pm, it.listo)
 			it.destino = destino
 			it.zona = destino and destino.map
@@ -105,7 +108,7 @@ local function revisarUna(qid, desde, aqui, p, enLog)
 	if it.fallida then r[#r + 1] = L["Fallida"] end
 	if it.gris then r[#r + 1] = L["Ya no da XP"] end
 	if it.grupo then r[#r + 1] = L["Pide grupo"] end
-	if it.dentro then r[#r + 1] = L["En mazmorra"] end
+	if it.dentro then r[#r + 1] = it.mazmorra and format(L["Dentro de %s (mazmorra)"], it.mazmorra) or L["En mazmorra"] end
 	if it.sinDatos then r[#r + 1] = L["Sin datos"] end
 	if it.sinEntrega then r[#r + 1] = L["No sé dónde se entrega"] end
 	-- Lo que no vale la pena: fallida, gris o muy lejos sin estar lista.
@@ -394,6 +397,7 @@ local function armar(lista, filtro, idx, ceder, alAvanzar)
 	local ahora, despues, fuera, notas = {}, {}, {}, {}
 	local nivelExtra = 0
 	local usadas = {}
+	local antesDe = {} -- [qid] = lo que se agregó antes (Disp.TextoAntes)
 	for _, it in ipairs(lista) do
 		if Cr.Entra(it, filtro) then
 			if it.enLog then
@@ -403,11 +407,12 @@ local function armar(lista, filtro, idx, ceder, alAvanzar)
 				-- Agregada a mano: su cadena (las previas que falten, en orden).
 				local des = D.Desbloquear(it.id)
 				if des.motivo then
-					notas[#notas + 1] = format(L["%s no entra: %s."], M.Citar(it.titulo), D.Texto(des.motivo, {}))
+					notas[#notas + 1] = format(L["%s no entra: %s."], M.Citar(it.titulo), D.Texto(des.motivo, des.info))
 				else
 					if des.linea then
 						notas[#notas + 1] = format(L["%s pide %s: apréndela antes."], M.Citar(it.titulo), D.NombreProfesion(des.linea))
 					end
+					if des.antes then antesDe[it.id] = des.antes end
 					local destino = des.nivel and despues or ahora
 					if des.nivel then nivelExtra = max(nivelExtra, des.nivel) end
 					for _, qid in ipairs(des.cadena) do
@@ -483,6 +488,7 @@ local function armar(lista, filtro, idx, ceder, alAvanzar)
 		for _, s in ipairs(mas) do pasos[#pasos + 1] = s end
 	end
 	if #pasos == 0 then return nil, "vacio" end
+	P.MarcarAntes(pasos, antesDe)
 	local ultimo = pasos[#pasos]
 	for _, it in ipairs(fuera) do
 		local por = marcas[it.id] == "abandonar" and L["la marcaste para abandonar"] or (it.razones[1] or L["la dejaste fuera"])

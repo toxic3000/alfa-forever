@@ -4,6 +4,8 @@
 -- distancia), con el evento PLAYER_SWING del cliente: sin registro de
 -- combate. Útil para meter Embate o Golpe heroico sin perder golpes.
 -- Solo se ve mientras un golpe corre; su OnUpdate vive solo mientras tanto.
+-- Los segundos junto a la barra solo si los pides (combate.golpeNumero): al
+-- pelear basta la barra, sin números que cambian a cada rato.
 
 local ADDON, M = ...
 local N, A, K, L = M.N, M.A, M.K, M.L
@@ -43,7 +45,7 @@ local function alCorrer(self)
 		if m and ahora < m.inicio + m.dur + 0.3 then
 			local resta = m.inicio + m.dur - ahora
 			b:SetValue(min(1, (ahora - m.inicio) / m.dur))
-			b.Texto:SetText(resta > 0 and format("%.1f", resta) or "")
+			b.Texto:SetText(M.Opt("golpeNumero") and resta > 0 and format("%.1f", resta) or "")
 			b:Show()
 			alguna = true
 		elseif not M.Desbloqueado() then

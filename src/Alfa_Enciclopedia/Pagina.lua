@@ -10,7 +10,8 @@
 -- (SHOW_RARES): Alt+clic en un objeto, /alfa lookup, /alfa rares, el aviso
 -- de un raro y el buscador del selector de guías abren la enciclopedia.
 --
---   AlfaEnciclopedia.Abrir(tipo, id)   tipo: "objeto" | "pnj" | "mision" | "zona" | "raro"
+--   AlfaEnciclopedia.Abrir(tipo, id)   tipo: "objeto" | "montura" | "mascota" | "pnj" | "mision" | "zona" | "raro"
+--       o "guia" con id "montura" (Mi primera montura) o "legado" (Puntos del legado)
 --       o el del motor ("item", "npc", "quest", "zone", "rare", "treasure", "object"...);
 --       sin id abre ese tipo. AlfaEnciclopedia.Buscar(texto), .Cerrar(), .Visible()
 
@@ -82,19 +83,35 @@ local function opciones()
 	local out = {}
 	for _, t in ipairs(M.TIPOS) do
 		local n = contar(t.clave)
+		local ins = n and { { M.Miles(n), "neutro" } } or nil
+		-- Monturas y mascotas: cuántas tienes (cuando ya se armaron).
+		if (t.clave == "montura" or t.clave == "mascota") and M.Col then
+			local tienes, total, sabe = M.Col.Cuenta(t.clave)
+			if sabe then ins = { { format(L["Tienes %d de %d"], tienes, total), "exito" } } end
+		end
 		out[#out + 1] = {
-			icono = t.icono, titulo = t.texto, texto = t.descripcion,
-			insignias = n and { { M.Miles(n), "neutro" } } or nil,
+			icono = t.icono, titulo = t.texto, texto = t.descripcion, insignias = ins,
 			alClic = function() V.Abrir({ tipo = t.clave }) end,
 		}
 	end
+	-- Las guías.
+	out[#out + 1] = { icono = "ic-huella", titulo = L["Mi primera montura"],
+		texto = L["Qué necesitas a tu nivel: la equitación, el oro, a quién ir y tu montura de clase."],
+		alClic = function() V.Abrir({ kind = "guia", id = "montura" }) end }
+	local disp = M.Legado and M.Legado.Resumen()
+	out[#out + 1] = { icono = "ic-nivel", titulo = L["Puntos del legado"],
+		texto = L["Qué son, cómo se gana cada uno, en qué se gastan y cuántos tienes."],
+		insignias = disp and disp > 0 and { { format(L["%d para gastar"], disp), "exito" } } or nil,
+		alClic = function() V.Abrir({ kind = "guia", id = "legado" }) end }
 	return out
 end
 
-local ICONO = { item = "ic-bolsas", mount = "ic-bolsas", pet = "ic-bolsas", recipe = "ic-oficios", tabard = "ic-bolsas",
-	npc = "ic-personajes", rare = "ic-raros", treasure = "ic-raros", object = "ic-recoleccion", quest = "ic-misiones", zone = "ic-mapa" }
+local ICONO = { item = "ic-bolsas", mount = "ic-huella", pet = "ic-lobo", recipe = "ic-oficios", tabard = "ic-bolsas",
+	npc = "ic-personajes", rare = "ic-raros", treasure = "ic-raros", object = "ic-recoleccion", quest = "ic-misiones", zone = "ic-mapa",
+	mountspell = "ic-huella", guia = "ic-guia" }
 local CLASE = { item = L["Objeto"], mount = L["Montura"], pet = L["Mascota"], recipe = L["Receta"], tabard = L["Tabardo"],
-	npc = L["PNJ"], rare = L["Raro"], treasure = L["Tesoro"], object = L["Objeto del mundo"], quest = L["Misión"], zone = L["Zona"] }
+	npc = L["PNJ"], rare = L["Raro"], treasure = L["Tesoro"], object = L["Objeto del mundo"], quest = L["Misión"], zone = L["Zona"],
+	mountspell = L["Montura"], guia = L["Guía"] }
 
 -- Lo último que consultaste: tarjetas compactas (solo si hay).
 local function recientes(padre)
@@ -138,7 +155,7 @@ local function construir(view)
 	K.EnPagina(view, t, function()
 		t:SetAccion({
 			icono = "ic-enciclopedia", sobre = M.Mayus(L["La enciclopedia de La Jauría"]), titulo = L["Busca cualquier cosa del juego"],
-			texto = L["Todos los objetos, PNJ, misiones, zonas y raros, aunque no los tengas: quién lo suelta y con qué probabilidad, quién lo vende y dónde, qué misión lo da y cómo llegar."],
+			texto = L["Todos los objetos, monturas, mascotas, PNJ, misiones, zonas y raros, aunque no los tengas: quién lo suelta y con qué probabilidad, quién lo vende y dónde, qué misión lo da y cómo llegar."],
 			accion = { texto = L["Abrir la enciclopedia"], icono = "ic-buscar", alClic = function() V.Abrir() end },
 		})
 		t:SetOpciones(opciones(), L["Qué quieres buscar"])
@@ -153,7 +170,7 @@ A.On("CODEX_LOADED", function() if vista then N.RehacerPagina(vista) end end)
 
 N.Modulo({
 	id = ID, nombre = L["Enciclopedia"], icono = "ic-enciclopedia", orden = 25, seccion = "aventura",
-	subtitulo = L["Todo el juego, aunque no lo tengas: objetos, PNJ, misiones, zonas y raros."],
+	subtitulo = L["Todo el juego, aunque no lo tengas: objetos, monturas, mascotas, PNJ, misiones, zonas y raros."],
 	construir = construir,
 })
 
@@ -167,3 +184,6 @@ local function comando(resto)
 end
 A.RegisterCommand("enciclopedia", comando, L["abre la Enciclopedia (o busca: /alfa enciclopedia <texto>)"])
 A.RegisterCommand("wiki", comando, L["lo mismo que /alfa enciclopedia"])
+A.RegisterCommand("monturas", function() V.Abrir({ tipo = "montura" }) end, L["abre las monturas de la Enciclopedia"])
+A.RegisterCommand("mascotas", function() V.Abrir({ tipo = "mascota" }) end, L["abre las mascotas de la Enciclopedia"])
+A.RegisterCommand("legado", function() V.Abrir({ kind = "guia", id = "legado" }) end, L["abre la guía de los puntos del legado"])

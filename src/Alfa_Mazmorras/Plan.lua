@@ -328,7 +328,7 @@ function P.Preparar(key)
 	if #e.recoger > 0 and Dgx.PickUp then
 		local gid, razon = llamar(Dgx.PickUp, key, true)
 		if gid then
-			A.Set("ui.shown", true)
+			if N.EmpezarRuta then N.EmpezarRuta() else A.Set("ui.shown", true) end
 			aviso({ titulo = format(L["En marcha hacia %s"], nombre), lobo = "atento", tono = "acento", duracion = 9,
 				texto = P.Frase(e) })
 			return true
@@ -350,7 +350,7 @@ function P.Entregar(key)
 	if not (Dgx and Dgx.HandIn) then return false end
 	local gid, razon = llamar(Dgx.HandIn, key)
 	if gid then
-		A.Set("ui.shown", true)
+		if N.EmpezarRuta then N.EmpezarRuta() else A.Set("ui.shown", true) end
 		aviso({ titulo = L["A entregar tus misiones"], lobo = "aullando", tono = "exito", duracion = 6,
 			texto = L["La guía te lleva a quien recibe cada una."] })
 		return true

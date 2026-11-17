@@ -17,6 +17,9 @@ Guias.lua
 Cerrar.lua
 Recoger.lua
 Rutas.lua
+Cerca.lua
+Planes.lua
+VistaPlanes.lua
 Rastreador.lua
 Camino.lua
 Biblioteca.lua

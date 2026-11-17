@@ -32,14 +32,18 @@ local MEDALLAS = { alfa = MAPA .. "medallion-alfa", halo = MAPA .. "medallion-ha
 local FLECHA = "Interface\\Minimap\\MinimapArrow"
 
 -- Las capas de Polestar.Pins que se ven en el mapa de Alfa, de abajo
--- arriba, con el zoom desde el que entran.
+-- arriba, con el zoom desde el que entran. Los puntos de vuelo (maps.taxi,
+-- Maps/TravelPins.lua: los de tu facción y los neutrales, verdes si ya los
+-- conoces y ámbar con "?" si no) entran con el continente entero.
 local CAPAS_MOTOR = {
 	{ "maps.services", 7 }, { "quests.available", 4 }, { "quests.objectives", 3.5 }, { "quests.turnin", 3.5 },
-	{ "rares.treasure", 4 }, { "rares.rare", 3.5 }, { "maps.inns", 3.5 }, { "maps.docks", 2.2 }, { "maps.taxi", 2.2 },
+	{ "mundo.salidas", 6 }, { "mundo.portales", 3 },
+	{ "rares.treasure", 4 }, { "rares.rare", 3.5 }, { "maps.inns", 3.5 }, { "maps.docks", 2.2 }, { "maps.taxi", 1.5 },
 	{ "maps.dungeons", 1.6 }, { "nav.upcoming", 1.6 }, { "nav.goals", 2.5 }, { "nav.spots", 3 }, { "nav.route", 1.4 },
 	{ "qol.death", 0 }, { "nav.target", 0 },
 }
 local MAX_PINES = 320
+local NOMBRES_PIN = 9 -- desde qué zoom se escribe el nombre de una salida o un portal (`etiqueta`)
 local TAM = { lejos = 13, cerca = 17 } -- tamaño de un pin según el zoom (unidades de la vista)
 local ETIQUETAS = { 1.55, 2.1, 22, 34 } -- entran entre [1] y [2], se van entre [3] y [4]
 
@@ -116,11 +120,12 @@ end
 -- Clic derecho en cualquier pin que no sea uno de tus marcadores: el menú
 -- para seguirlo (flecha y ruta) o guardarlo como marcador (Marcadores.lua).
 -- Los pines del motor no usan el botón derecho (en el mapa del juego lo
--- dejan pasar al mapa).
+-- dejan pasar al mapa). Un pin sin clic propio (vuelos, barcos, posadas,
+-- servicios) abre ese mismo menú también con el clic izquierdo.
 local function alClic(self, boton)
 	local p = self.amPin
 	if not p then return end
-	if boton == "RightButton" and not p.amMarcador then
+	if not p.amMarcador and (boton == "RightButton" or type(p.onClick) ~= "function") then
 		local Mk = M.Marcadores
 		if Mk and Mk.MenuPin then Mk.MenuPin(self, p) end
 		return
@@ -147,6 +152,18 @@ local function nuevoPin()
 	f.aro:Hide()
 	f.texto = f:CreateFontString(nil, "OVERLAY")
 	f.texto:SetPoint("CENTER", 0, 0)
+	-- La insignia del motor (`badge`): el "?" de un vuelo que aún no conoces.
+	f.insignia = f:CreateFontString(nil, "OVERLAY")
+	f.insignia:SetPoint("CENTER", f, "TOPRIGHT", -1, -1)
+	f.insignia:Hide()
+	-- La flechita de una salida de zona (`rumbo`, radianes: 0 = arriba).
+	f.rumbo = f:CreateTexture(nil, "OVERLAY")
+	f.rumbo:SetTexture(FLECHA)
+	f.rumbo:Hide()
+	-- El nombre de una salida o un portal (`etiqueta`), bajo el pin.
+	f.nombre = f:CreateFontString(nil, "OVERLAY")
+	f.nombre:SetPoint("TOP", f, "BOTTOM", 0, -1)
+	f.nombre:Hide()
 	f:SetScript("OnEnter", alEntrar)
 	f:SetScript("OnLeave", alSalir)
 	f:SetScript("OnClick", alClic)
@@ -266,6 +283,44 @@ local function vestir(f, p, tam)
 	else
 		f.texto:Hide()
 	end
+	if type(p.rumbo) == "number" then
+		local d = tam * 0.95
+		f.rumbo:SetSize(tam * 0.95, tam * 0.95)
+		f.rumbo:ClearAllPoints()
+		f.rumbo:SetPoint("CENTER", f, "CENTER", -math.sin(p.rumbo) * d, math.cos(p.rumbo) * d)
+		if f.rumbo.SetRotation then f.rumbo:SetRotation(p.rumbo) end
+		f.rumbo:SetVertexColor(r, g, b, a)
+		f.rumbo:Show()
+	else
+		f.rumbo:Hide()
+	end
+	if type(p.etiqueta) == "string" then
+		local T = A.Theme
+		local alto = max(9, floor(tam * 0.7 + 0.5))
+		if T and type(T.SetFace) == "function" and type(T.FontSpec) == "function" then
+			T.SetFace(f.nombre, (T.FontSpec("label")), alto, "OUTLINE")
+		else
+			f.nombre:SetFont(STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF", alto, "OUTLINE")
+		end
+		f.nombre:SetText(p.etiqueta)
+		f.nombre:SetTextColor(color("text", a))
+	else
+		f.nombre:SetText("")
+	end
+	if p.badge ~= nil then
+		local T = A.Theme
+		local alto = max(8, floor(tam * 0.62 + 0.5))
+		if T and type(T.SetFace) == "function" and type(T.FontSpec) == "function" then
+			T.SetFace(f.insignia, (T.FontSpec("number")), alto, "OUTLINE")
+		else
+			f.insignia:SetFont(STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF", alto, "OUTLINE")
+		end
+		f.insignia:SetText(tostring(p.badge))
+		f.insignia:SetTextColor(r, g, b, a)
+		f.insignia:Show()
+	else
+		f.insignia:Hide()
+	end
 	f:SetFrameLevel(encima:GetFrameLevel() + (tonumber(p.priority) and min(40, floor(p.priority / 3)) or 1) + 2)
 end
 
@@ -281,6 +336,8 @@ end
 ---------------------------------------------------------------------------
 
 local cache = {} -- capa -> { pines, u = {}, v = {} }
+local dibujadas = {} -- capa -> la tabla de pines (o false) que se dibujó por última vez
+local zAhora = 1
 
 local function puntos(nombre)
 	local Pins = A.Pins
@@ -306,8 +363,9 @@ end
 
 -- Una capa de Pins en la vista; n: los pines puestos hasta ahora. -> n
 local function dibujarCapa(nombre, desde, z, tam, n)
-	if z < desde or n > MAX_PINES then return n end
 	local c = puntos(nombre)
+	dibujadas[nombre] = c and c.pines or false
+	if z < desde or n > MAX_PINES then return n end
 	if not c then return n end
 	local pines = c.pines
 	for i = 1, #pines do
@@ -323,6 +381,8 @@ local function dibujarCapa(nombre, desde, z, tam, n)
 					f.amPin, f.amZ = p, tam
 					vestir(f, p, (tonumber(p.size) or 16) / 16 * tam)
 				end
+				local conNombre = p.etiqueta ~= nil and zAhora >= NOMBRES_PIN
+				if f.nombre:IsShown() ~= conNombre then f.nombre:SetShown(conNombre) end
 				poner(f, x, y)
 			end
 		end
@@ -550,6 +610,7 @@ function Mc.Colocar(cu, cv, k, vw, vh, z)
 	local o = vistaAhora or {}
 	vistaAhora = o
 	o.cu, o.cv, o.k, o.vw, o.vh, o.z = cu, cv, k, vw, vh, z
+	zAhora = z
 	local tam = TAM.lejos + (TAM.cerca - TAM.lejos) * rampa(z, 2, 16)
 	tam = floor(tam * 2 + 0.5) / 2
 	dibujarEtiquetas(z)
@@ -559,11 +620,37 @@ function Mc.Colocar(cu, cv, k, vw, vh, z)
 	dibujarYo()
 end
 
--- Lo que se mueve solo (tú, tu grupo, la guía): unas veces por segundo.
+-- Alguna capa de Pins cambió (o se mostró u ocultó) desde que se dibujó.
+local function capasCambiaron()
+	local Pins = A.Pins
+	if not (Pins and type(Pins.GetLayer) == "function" and type(Pins.IsLayerVisible) == "function") then return false end
+	local function cambio(nombre)
+		local p = Pins.IsLayerVisible(nombre) and Pins.GetLayer(nombre)
+		if type(p) ~= "table" then p = false end
+		return p ~= dibujadas[nombre]
+	end
+	for _, def in ipairs(CAPAS_MOTOR) do
+		if cambio(def[1]) then return true end
+	end
+	local Capas = M.Capas
+	for _, e in ipairs(Capas.Modulos()) do
+		if cambio(e.pines or e.id) then return true end
+	end
+	return false
+end
+
+-- Lo que se mueve solo, unas veces por segundo: tú y tu grupo siempre; los
+-- pines solo si alguna capa cambió (la guía, un vuelo descubierto...). Con el
+-- mapa quieto no se recorre ningún pin.
 function Mc.Latido()
 	if not (encima and vistaAhora) then return end
 	local o = vistaAhora
-	Mc.Colocar(o.cu, o.cv, o.k, o.vw, o.vh, o.z)
+	if capasCambiaron() then
+		Mc.Colocar(o.cu, o.cv, o.k, o.vw, o.vh, o.z)
+		return
+	end
+	dibujarGrupo()
+	dibujarYo()
 end
 
 -- Al abrir el mapa: si alguna capa necesita el Codex (mazmorras, servicios,

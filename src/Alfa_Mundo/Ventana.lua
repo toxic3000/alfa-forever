@@ -8,11 +8,17 @@
 --   doble clic     acercar
 --   clic derecho   (o Mayús+clic) poner ahí un marcador
 --   Ctrl+clic      la flecha y la ruta te llevan ahí, sin marcador
--- Arriba: tus marcadores, las capas, el modo limpio, el mapa del juego y
--- los ajustes. Abajo a la derecha: +, – y centrar en mí. En el pie, la zona
--- bajo el cursor con su rango de niveles y las coordenadas tuyas y del
--- cursor. La ventana se mueve por su cabecera y cambia de tamaño por su
--- esquina; recuerda los dos.
+-- Arriba: buscar cerca (si Rutas lo ofrece), tus marcadores, las capas, el
+-- modo limpio, el mapa del juego y el engrane (estilo del mapa y opciones).
+-- Abajo a la derecha: +, – y centrar en mí. En el pie, la zona bajo el
+-- cursor con su rango de niveles y las coordenadas tuyas y del cursor. La
+-- ventana se mueve por su cabecera y cambia de tamaño por su esquina;
+-- recuerda los dos. El marco sigue el estilo de Alfa (K.SetEstilo): en
+-- Clásico WoW el mapa se mete dentro del borde del cuadro de diálogo.
+--
+-- El zoom nunca agranda un texel de la mejor capa que hay donde se acerca
+-- (el terreno o el arte de la zona, Lz.Densidad) a más de NITIDEZ píxeles
+-- de la pantalla: así no se ve pixelado.
 
 local ADDON, M = ...
 local N = AlfaNucleo
@@ -39,6 +45,7 @@ local DOBLE = 0.32        -- segundos para un doble clic
 local FRENO = 5.5         -- qué tan rápido se detiene la inercia
 local INERCIA_MIN = 40    -- unidades de la vista por segundo para que siga sola
 local ANCHO_MIN, ALTO_MIN = 600, 420
+local NITIDEZ = 2         -- píxeles de la pantalla por texel, como mucho, al acercar
 
 local F, vista
 local cu, cv, z = 0.5, 0.5, 1          -- la vista: centro y zoom
@@ -94,6 +101,37 @@ local function encajar()
 	if z < Z_MIN then z = Z_MIN elseif z > Z_MAX then z = Z_MAX end
 end
 
+-- Píxeles de la pantalla por unidad de la vista.
+local function pixeles()
+	local s = vista and vista:GetEffectiveScale() or 1
+	if type(s) ~= "number" or s <= 0 then s = 1 end
+	local alto
+	if GetPhysicalScreenSize then
+		local ok, _, h = pcall(GetPhysicalScreenSize)
+		if ok and type(h) == "number" and h > 0 then alto = h end
+	end
+	return alto and s * alto / 768 or s
+end
+
+-- El zoom más alto en el punto (u, v) del mundo sin que se vea pixelado.
+local function tope(u, v)
+	local d = Lz.Densidad(u, v)
+	if not (type(d) == "number" and d > 0) then return Z_MAX end
+	local Wm, Hm = Lz.Tamano()
+	local vw, vh = tamVista()
+	local base = min(vw / Wm, vh / Hm)
+	if not (base > 0) then return Z_MAX end
+	return max(Z_MIN * 2, min(Z_MAX, NITIDEZ * d / pixeles() / base))
+end
+
+-- Un zoom pedido en (u, v): si pasa del tope, no acerca más que eso (pero
+-- nunca obliga a alejarse de lo que ya ves).
+local function limitar(nuevo, u, v)
+	local t = tope(u, v)
+	if nuevo > t then nuevo = max(t, min(nuevo, meta.z or z)) end
+	return nuevo
+end
+
 ---------------------------------------------------------------------------
 -- Dibujar
 ---------------------------------------------------------------------------
@@ -119,6 +157,7 @@ local function zoomEn(nuevo, x, y)
 		x, y = vw / 2, vh / 2
 	end
 	local u, v = aMundo(x, y)
+	nuevo = limitar(nuevo, u, v)
 	inercia = nil
 	meta.z, meta.x, meta.y, meta.u, meta.v = nuevo, x, y, u, v
 	meta.cu, meta.cv = nil, nil
@@ -128,7 +167,7 @@ end
 local function irA(u, v, zoom)
 	inercia = nil
 	meta.cu, meta.cv = Geo.Encajar(u, v)
-	meta.z = max(Z_MIN, min(Z_MAX, zoom or z))
+	meta.z = limitar(max(Z_MIN, min(Z_MAX, zoom or z)), meta.cu, meta.cv)
 	meta.u = nil
 end
 
@@ -151,7 +190,7 @@ local function centrarEnMi(suave, alAbrir)
 	local Ccompat = A.Compat
 	local zona = Ccompat and type(Ccompat.GetUnitZone) == "function" and Ccompat.GetUnitZone("player") or mapa
 	local zz = zoomPara(zona) or zoomPara(mapa) or 12
-	zz = min(zz, 26)
+	zz = min(zz, 26, tope(u, v))
 	if not alAbrir then zz = max(z, zz) end
 	if suave then
 		irA(u, v, zz)
@@ -270,8 +309,27 @@ local function actualizarTitulo()
 	K.Escribir(F.Cabecera.Subtitulo, texto)
 end
 
+-- Buscar cerca: la API de Alfa_Rutas (Cerca.lua), si está cargada.
+local function hayCerca()
+	local C = AlfaCerca
+	return type(C) == "table" and type(C.Menu) == "function"
+end
+
+-- El título llega hasta el botón de más a la izquierda que se ve.
+local function acomodarTitulo()
+	local c = F.Cabecera
+	local izq = F.BCerca:IsShown() and F.BCerca or F.BMarcas
+	c.Subtitulo:SetPoint("RIGHT", izq, "LEFT", -ESP.base, 0)
+	c.Titulo:SetPoint("RIGHT", izq, "LEFT", -ESP.base, 0)
+end
+
 local function pintarBotones()
 	if not F then return end
+	local cerca = hayCerca()
+	if F.BCerca:IsShown() ~= cerca then
+		F.BCerca:SetShown(cerca)
+		acomodarTitulo()
+	end
 	F.BLimpio:SetMarcado(Capas.Limpio())
 	F.BCapas:SetMarcado(Panel.Visible())
 	F.BMarcas:SetMarcado(PM.Visible())
@@ -456,6 +514,28 @@ local function botonCab(icono, ayuda, fn, texto)
 	return b
 end
 
+-- El engrane: el estilo del mapa (terreno o clásico) y las opciones de Mundo.
+local function menuAjustes(boton)
+	local opciones = {}
+	for _, o in ipairs(M.OpcionesEstilo()) do opciones[#opciones + 1] = o end
+	opciones[#opciones + 1] = { separador = true }
+	opciones[#opciones + 1] = { valor = "opciones", texto = L["Más opciones de Mundo"], icono = "ic-ajustes" }
+	local actual = A.Get("mundo.estiloMapa") == "clasico" and "clasico" or "terreno"
+	K.Menu(boton, opciones, actual, function(v)
+		if v == "opciones" then
+			N.Abrir("mundo")
+		elseif v == "terreno" or v == "clasico" then
+			A.Set("mundo.estiloMapa", v)
+		end
+	end, 280)
+	-- Junto al borde derecho de la ventana: el menú se abre hacia la izquierda.
+	local m = _G.AlfaKitMenu
+	if m and m:IsShown() then
+		m:ClearAllPoints()
+		m:SetPoint("TOPRIGHT", boton, "BOTTOMRIGHT", 0, -4)
+	end
+end
+
 local function botonZoom(padre, texto, fn, ayuda)
 	local b = K.Boton(padre, texto, fn, { tipo = "secundario", ancho = 32 })
 	b:SetAncho(32)
@@ -483,7 +563,8 @@ local function construir()
 	local c = F.Cabecera
 
 	-- Los botones de la cabecera, de derecha a izquierda junto a la X.
-	F.BAjustes = botonCab("ic-ajustes", L["Opciones de Mundo"], function() N.Abrir("mundo") end)
+	F.BAjustes = botonCab("ic-ajustes", L["Ajustes del mapa"], function(self) menuAjustes(self) end,
+		L["El estilo del mapa (terreno como el minimapa, o el arte clásico) y las opciones de Mundo."])
 	F.BAjustes:SetPoint("RIGHT", c.Cerrar, "LEFT", -ESP.xs, 0)
 	F.BJuego = botonCab("ic-mapa", L["Ir al mapa del juego"], function() V.AlMapaDelJuego() end,
 		L["Abre el mapa del juego en esta misma zona. En combate el mapa del juego no se abre desde Alfa."])
@@ -506,14 +587,17 @@ local function construir()
 	F.BMarcas:SetPoint("RIGHT", F.BCapas, "LEFT", -ESP.xs, 0)
 	F.Cuenta = K.Texto(F.BMarcas, "insignia", "acento")
 	F.Cuenta:SetPoint("BOTTOMRIGHT", F.BMarcas, "BOTTOMRIGHT", 2, -1)
-	c.Subtitulo:SetPoint("RIGHT", F.BMarcas, "LEFT", -ESP.base, 0)
-	c.Titulo:SetPoint("RIGHT", F.BMarcas, "LEFT", -ESP.base, 0)
+	-- Buscar cerca (Alfa_Rutas): solo se ve si su API está; se mira otra vez al hacer clic.
+	F.BCerca = botonCab("ic-buscar", L["Buscar cerca: vuelo, posada, banco…"], function(self)
+		if hayCerca() then K.Llamar(AlfaCerca.Menu, self) end
+	end)
+	F.BCerca:SetPoint("RIGHT", F.BMarcas, "LEFT", -ESP.xs, 0)
+	F.BCerca:SetShown(hayCerca())
+	acomodarTitulo()
 	c.Subtitulo:SetWordWrap(false)
 
 	-- La vista del mapa
 	vista = CreateFrame("Frame", nil, F.Cuerpo)
-	vista:SetPoint("TOPLEFT", F.Cuerpo, "TOPLEFT", BORDE, 0)
-	vista:SetPoint("BOTTOMRIGHT", F.Cuerpo, "BOTTOMRIGHT", -BORDE, PIE)
 	vista:EnableMouse(true)
 	vista:EnableMouseWheel(true)
 	vista.Fondo = K.Plano(vista, "hundido", "BACKGROUND", -8)
@@ -551,8 +635,6 @@ local function construir()
 
 	-- Pie: zona bajo el cursor, ayuda y coordenadas.
 	local pie = CreateFrame("Frame", nil, F.Cuerpo)
-	pie:SetPoint("BOTTOMLEFT", F.Cuerpo, "BOTTOMLEFT", BORDE, BORDE)
-	pie:SetPoint("BOTTOMRIGHT", F.Cuerpo, "BOTTOMRIGHT", -BORDE, BORDE)
 	pie:SetHeight(PIE - BORDE)
 	pie.Linea = K.Linea(pie, "linea")
 	pie.Linea:SetPoint("TOPLEFT", pie, "TOPLEFT", 0, 0)
@@ -573,7 +655,6 @@ local function construir()
 	-- Asa para cambiar el tamaño.
 	local asa = CreateFrame("Button", nil, F)
 	asa:SetSize(16, 16)
-	asa:SetPoint("BOTTOMRIGHT", F, "BOTTOMRIGHT", -6, 6)
 	asa:SetFrameLevel(F:GetFrameLevel() + 40)
 	asa.t = K.Icono(asa, "resize", 16, "textoTenue", "OVERLAY")
 	asa.t:SetAllPoints()
@@ -586,6 +667,23 @@ local function construir()
 		sucio = true
 	end)
 	K.ConInfo(asa, L["Cambiar el tamaño"], nil)
+
+	-- El marco sigue el estilo de Alfa: en Clásico WoW el borde del cuadro de
+	-- diálogo es ancho, y el mapa, el pie y el asa se meten dentro de él.
+	K.Pintar({ vista, pie, asa }, function(x)
+		local izq, der, abajo, esquina = BORDE, BORDE, BORDE, 6
+		local mj = K.Clasico() and K.MARCOS and K.MARCOS.dialogo
+		if mj then izq, der, abajo, esquina = mj.izq, mj.der, mj.abajo, mj.der + 2 end
+		x[1]:ClearAllPoints()
+		x[1]:SetPoint("TOPLEFT", F.Cuerpo, "TOPLEFT", izq, 0)
+		x[1]:SetPoint("BOTTOMRIGHT", F.Cuerpo, "BOTTOMRIGHT", -der, PIE + abajo - BORDE)
+		x[2]:ClearAllPoints()
+		x[2]:SetPoint("BOTTOMLEFT", F.Cuerpo, "BOTTOMLEFT", izq, abajo)
+		x[2]:SetPoint("BOTTOMRIGHT", F.Cuerpo, "BOTTOMRIGHT", -der, abajo)
+		x[3]:ClearAllPoints()
+		x[3]:SetPoint("BOTTOMRIGHT", F, "BOTTOMRIGHT", -esquina, esquina)
+		sucio = true
+	end)
 
 	Capas.AlCambiar(function()
 		sucio = true
@@ -616,6 +714,7 @@ function V.Abrir(mapa)
 	F:Abrir()
 	if sinArte then return end
 	Mc.PrepararDatos()
+	if M.Entradas then M.Entradas.Preparar() end
 	-- El encuadre espera a que la vista tenga su tamaño (el primer cuadro).
 	porEncuadrar = { mapa = mapa }
 	sucio = true
@@ -627,7 +726,7 @@ function encuadrar()
 	if not p or vw < 20 then return end
 	porEncuadrar = nil
 	if p.u then
-		cu, cv, z = p.u, p.v, max(Z_MIN, min(Z_MAX, p.z or 14))
+		cu, cv, z = p.u, p.v, max(Z_MIN, min(Z_MAX, p.z or 14, tope(p.u, p.v)))
 		meta.z, meta.cu, meta.cv, meta.u = z, nil, nil, nil
 		sucio = true
 		return
@@ -635,7 +734,7 @@ function encuadrar()
 	local zz, u, v = nil, nil, nil
 	if type(p.mapa) == "number" then zz, u, v = zoomPara(p.mapa) end
 	if zz then
-		cu, cv, z = u, v, max(Z_MIN, min(Z_MAX, zz))
+		cu, cv, z = u, v, max(Z_MIN, min(Z_MAX, zz, tope(u, v)))
 		meta.z, meta.cu, meta.cv, meta.u = z, nil, nil, nil
 	elseif not centrarEnMi(false, true) then
 		cu, cv, z = 0.5, 0.5, 1
@@ -690,6 +789,14 @@ end
 function V.Detalle()
 	if F and not sinArte then
 		Lz.Detalle()
+		sucio = true
+	end
+end
+
+-- Terreno o clásico (mundo.estiloMapa).
+function V.Estilo()
+	if F and not sinArte then
+		Lz.Estilo()
 		sucio = true
 	end
 end

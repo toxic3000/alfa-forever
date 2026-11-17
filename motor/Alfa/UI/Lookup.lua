@@ -489,6 +489,8 @@ function LK.Guide(i)
 	if gid then
 		-- The guide opens in its tab; the hub steps aside, as loading does.
 		ns.Set("ui.shown", true)
+		-- Alfa: se cierran las demas ventanas de Alfa y queda el seguimiento (Alfa_Nucleo)
+		if AlfaNucleo and AlfaNucleo.EmpezarRuta then AlfaNucleo.EmpezarRuta() end
 		if shell then shell:Hide() end
 		return gid
 	end

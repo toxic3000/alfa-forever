@@ -110,6 +110,10 @@ local function nueva(kind, id)
 	return { kind = kind, id = id, insignias = {}, secciones = {}, acciones = {} }
 end
 
+-- Para las fichas de Coleccion.lua y Legado.lua.
+F.Nueva, F.Seccion, F.Punto, F.FilaObjeto, F.FilaMision = nueva, seccion, punto, filaObjeto, filaMision
+F.NivelTexto = nivelTexto
+
 -- Lugares para "Ver en el mapa": los de las filas, sin repetir y con tope.
 local function puntosDe(secciones, tope)
 	local out, visto = {}, {}
@@ -367,6 +371,8 @@ function F.Objeto(id)
 	end
 	if dbrec and dbrec.unique then f.insignias[#f.insignias + 1] = { L["Único"], "neutro" } end
 	f.datos = estadisticas(dbrec)
+	-- Monturas y mascotas: si ya la tienes y qué pide (Coleccion.lua).
+	if (kind == "mount" or kind == "pet") and M.Col then M.Col.Enriquecer(f, rec, kind, id) end
 
 	-- De dónde sale (el motor ordena: lo que puedes primero, lo más rápido).
 	local lista = {}
@@ -442,6 +448,11 @@ function F.Objeto(id)
 	f.acciones.mapa = puntosDe(f.secciones)
 	if type(AlfaRuta) == "table" and type(AlfaRuta.AgregarObjeto) == "function" then
 		f.acciones.ruta = function() return AlfaRuta.AgregarObjeto(id) end
+	end
+	-- Mis planes (Alfa_Rutas): "conseguir este objeto" en tu plan de ahora.
+	local P = rawget(_G, "AlfaPlanes")
+	if type(P) == "table" and type(P.AgregarObjeto) == "function" then
+		f.acciones.plan = function() return P.AgregarObjeto(id) end
 	end
 	f.acciones.vincular = function() return F.Vincular("item", id) end
 	return f
@@ -936,6 +947,11 @@ function F.Construir(kind, id)
 	if kind == "object" or kind == "treasure" then return F.Cosa(tonumber(id), kind) end
 	if kind == "quest" then return F.Mision(tonumber(id)) end
 	if kind == "zone" then return F.Zona(tonumber(id)) end
+	if kind == "mountspell" and M.Col then return M.Col.FichaHechizo(tonumber(id)) end
+	if kind == "guia" then
+		local g = M.FICHAS_GUIA and M.FICHAS_GUIA[id]
+		return g and g() or nil
+	end
 	return nil
 end
 
@@ -951,6 +967,17 @@ local MOTIVO = {
 	combat = L["Se puede al salir de combate."],
 }
 
+-- Al empezar a seguir algo: la ventana de seguimiento a la vista y las de
+-- Alfa (esta también) se cierran (N.EmpezarRuta del núcleo; sin él, la guía).
+local function empezar()
+	if N.EmpezarRuta then
+		local ok = pcall(N.EmpezarRuta)
+		if ok then return end
+	end
+	if A.Set then A.Set("ui.shown", true) end
+end
+F.Empezar = empezar
+
 function F.Guiar(kind, id, fila)
 	local L2 = Lk()
 	if not (L2 and L2.Guide) then return false, L["El motor no puede armar guías ahora."] end
@@ -961,11 +988,14 @@ function F.Guiar(kind, id, fila)
 		local lista = L2.Sources(kind, id)
 		local mejor = L2.BestSource(lista)
 		if mejor then ok, gid, motivo = pcall(L2.Guide, kind, id, mejor) end
-		if gid then return true, L["Te llevo a la mejor fuente. Recuerda que una montura pide nivel, equitación y oro."] end
+		if gid then
+			empezar()
+			return true, L["Te llevo a la mejor fuente. Recuerda que una montura pide nivel, equitación y oro."]
+		end
 	end
 	if not ok then return false, tostring(gid) end
 	if gid then
-		if A.Set then A.Set("ui.shown", true) end
+		empezar()
 		return true, L["Guía abierta en una pestaña nueva: sigue la flecha."]
 	end
 	return false, MOTIVO[motivo] or format(L["No se pudo armar la guía (%s)."], tostring(motivo or "?"))

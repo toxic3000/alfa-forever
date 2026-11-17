@@ -244,6 +244,7 @@ A.On("SETTING_CHANGED", function(path)
 	if type(path) ~= "string" then return end
 	if path == "" or path == "mundo" or path == "maps" or path == "maps.reveal" then V.RehacerArte() end
 	if path == "" or path == "mundo" or path == "mundo.detalle" then V.Detalle() end
+	if path == "" or path == "mundo" or path == "mundo.estiloMapa" then V.Estilo() end
 	if path == "" or path == "mundo" or path == "mundo.teclaM" then aplicarTecla() end
 	if path == "" or path == "nav" or path == "nav.mapIcons" or path == "maps.zoneLevels" or path == "mundo.nombres" then Mc.Reestilar() end
 	mostrarBarra()

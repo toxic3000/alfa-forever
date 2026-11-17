@@ -39,6 +39,14 @@ M.AJUSTES = {
 	-- Sueltos, apagados de fábrica: cámara, grifos y sonidos
 	camara = false, grifos = false,
 	silenciarErrores = false, silenciarDialogos = false, silenciarMascotas = false, silenciarGestos = false, silenciarLista = false,
+	-- Estilo del chat (Chat.lua): "igual" sigue al estilo de Alfa (alfa, clasico, cristal)
+	chat = true, chatEstilo = "igual", chatOpacidad = 0.7, chatPestanas = true, chatEscribir = true,
+	chatLetra = true, chatBotones = false,
+	-- Estilo del minimapa (MinimapaEstilo.lua)
+	minimapaEstilo = true, minimapaEstiloTema = "igual", minimapaCabecera = true,
+	-- Estilo de las barras (Barras.lua): grifos "como" | "color" | "ocultar"
+	barras = false, barrasEstilo = "igual", barrasBotones = true, barrasGrifos = "como",
+	barrasExperiencia = true, barrasMenu = true,
 }
 
 -- Los valores por omisión, desde el principio (las partes los leen al

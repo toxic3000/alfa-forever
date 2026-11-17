@@ -1,28 +1,47 @@
 -- Alfa - Rutas: el rastreador de pasos (toxic3000 / La Jauría). GPL-3.0.
 --
 -- La ventana de guía de Alfa, hecha con el Kit, en lugar de la del motor
--- (reemplazos GUIDE_FRAME, GUIDE_END y ROUTE_CHOICE, docs/KIT.md). Compacta
--- y en este orden:
---   cabecera   la huella, la guía, "Paso 12 de 80 · 15 %", y la lista, el menú y cerrar
---   huellas    el avance de la guía
+-- (reemplazos GUIDE_FRAME, GUIDE_END y ROUTE_CHOICE, docs/KIT.md).
+--
+-- Compacta de fábrica: solo lo que está en curso, para no estorbar al jugar.
+--   cabecera   la huella, la guía, "Paso 12 de 80 · 15 %", y buscar cerca (Cerca.lua,
+--              si rutas.cercaBoton), el menú y cerrar
+--   mi plan    la meta de ahora de tu plan (Planes.lua), con Llévame y Hecha
 --   aviso      lo único que pide tu atención ahora (uno a la vez): terminaste la
 --              guía, una misión que dejó tu registro, una de grupo sin responder,
 --              una misión que aún no puedes tomar (con "Armar lo que falta"),
 --              o que estás mirando otro paso
---   el paso    su título, su nota y sus metas (clic: la flecha va ahí; clic
---              derecho: marcar, omitir, Enciclopedia, a tu plan de misiones)
---   objeto     el objeto de misión del paso (se usa con el botón del motor)
---   cerca      "Mientras estás aquí": hasta 3 cosas de paso (clic: la flecha)
---   pie        Anterior · Omitir · Siguiente
--- La lista (el botón de lista) muestra todos los pasos: clic va a ese paso.
+--   el paso    su título; la meta de ahora y hasta dos más, una línea cada una
+--              (clic: la flecha va ahí; clic derecho: marcar, omitir,
+--              Enciclopedia, a tu plan de misiones) y "y N más"
+--   flecha     la distancia y el rumbo hasta la flecha (se repinta cada segundo
+--              mientras se ve)
+--   cerca      una línea de "Mientras estás aquí"
+--   pie        Ver detalle · Omitir · Siguiente
+-- Con "Mostrar más en el seguimiento" (rutas.seguimientoCompleto) vuelve la
+-- vista amplia: las huellas, la nota del paso, todas sus metas con sus
+-- grupos y notas, el objeto de misión y hasta tres de "Mientras estás aquí".
+-- El ajuste del motor ui.compact deja siempre la compacta; ui.showNotes
+-- apaga la nota del paso en la amplia.
+--
+-- "Ver detalle" (y el menú) abre otra ventana (AlfaRastreadorDetalle, una
+-- K.Ventana que recuerda su lugar y se cierra sola con Esc): el paso entero
+-- con su nota, sus metas y sus notas, el objeto, lo que hay cerca y tu plan;
+-- y "Todos los pasos" de la guía (clic: mirar ese paso). Una nota de la guía
+-- que sigue en inglés en un cliente en español no se muestra (no se mezclan
+-- idiomas): Rs.SinTraducir.
 -- El motor sigue haciendo todo por dentro (pasos, flecha, automatización);
--- esta ventana solo lee y pide (Alfa.Engine, Alfa.UI).
+-- estas ventanas solo leen y piden (Alfa.Engine, Alfa.UI).
 
 local ADDON, M = ...
 local A, L, N = M.A, M.L, M.N
 local K = M.K
 local Rs = {}
 M.Rastreador = Rs
+
+
+-- rutas.seguimientoCompleto: la vista amplia del rastreador (de fábrica, la compacta).
+A.RegisterDefaults(M.ID, { seguimientoCompleto = false })
 
 local type, ipairs, pairs, tonumber, tostring = type, ipairs, pairs, tonumber, tostring
 local floor, max, min, format = math.floor, math.max, math.min, string.format
@@ -32,10 +51,13 @@ local PAD = K.ESP.m
 local CAB = 40
 local PIE = 40
 local MAX_CERCA = 3
+local MAX_COMPACTO = 3 -- la meta de ahora y hasta dos más
+local MAX_CERCA_DETALLE = 6
 
 local F -- la ventana
-local ui = { metas = {}, cerca = {} }
-local est = { lista = false, mostrar = false, fin = nil, pendiente = false }
+local ui = {}
+local cxR -- las piezas de las metas del rastreador
+local est = { mostrar = false, fin = nil, pendiente = false }
 
 local function E() return A.Engine end
 local function U() return A.UI end
@@ -50,6 +72,85 @@ local function engine(fn, ...)
 end
 
 local function datos() return N.Datos(M.ID) end
+
+-- La vista compacta (de fábrica) o la amplia.
+local function compacto()
+	return A.Get(M.ID .. ".seguimientoCompleto") ~= true or A.Get("ui.compact") == true
+end
+Rs.Compacto = compacto
+
+---------------------------------------------------------------------------
+-- Notas de la guía sin traducir
+---------------------------------------------------------------------------
+-- Las guías traen sus notas en inglés y el paquete de idioma las traduce;
+-- la que no tiene traducción llega en inglés. En un cliente en español (o con
+-- Alfa en español) esa nota no se muestra: mejor nada que mezclar idiomas.
+-- Se reconoce por sus palabras: al menos dos palabras comunes del inglés y
+-- más que del español (los nombres del juego ya vienen traducidos).
+
+local INGLES, ESPANOL = {}, {}
+for w in ("the by on of and to at from with takes take it its is are inside near top floor north south east west "
+	.. "behind upstairs downstairs you your here there next into past up down along around across over under for "
+	.. "this that keep then after before first follow road path gate docks tower bridge cave entrance left right "
+	.. "kill loot talk accept turn hand in out back across between which who where when while if can will"):gmatch("%a+") do
+	INGLES[w] = true
+end
+for w in ("el la los las de del en y con por para que al una un unos unas junto se su sus tu hacia piso arriba abajo "
+	.. "cerca lado entre sobre bajo desde hasta norte sur este oeste dentro fuera puerta camino torre puente cueva"):gmatch("%a+") do
+	ESPANOL[w] = true
+end
+-- "de", "en", "a"... no cuentan para el inglés aunque se escriban igual.
+INGLES["in"] = nil
+
+local espanol
+local function enEspanol()
+	if espanol == nil then
+		local f = rawget(_G, "AlfaIdioma")
+		local ok, loc = false, nil
+		if type(f) == "function" then ok, loc = pcall(f) end
+		if not (ok and type(loc) == "string") then loc = GetLocale and GetLocale() or "" end
+		espanol = (loc == "esMX" or loc == "esES")
+	end
+	return espanol
+end
+
+-- -> true si el texto parece una nota en inglés que no se tradujo.
+function Rs.SinTraducir(s)
+	if type(s) ~= "string" or s == "" or not enEspanol() then return false end
+	local limpio = s:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub("|T.-|t", ""):gsub("|H.-|h(.-)|h", "%1")
+	local en, es = 0, 0
+	for w in limpio:lower():gmatch("[%a']+") do
+		if INGLES[w] then en = en + 1 elseif ESPANOL[w] then es = es + 1 end
+	end
+	return en >= 2 and en > es
+end
+
+-- La nota de una meta, sin la que quedó en inglés (para GoalSubline del motor).
+local sinNota = setmetatable({}, { __mode = "k" })
+local function metaSinNota(g)
+	if not (g.note and Rs.SinTraducir(g.note)) then return g end
+	local p = sinNota[g]
+	if not p then
+		p = setmetatable({ note = false }, { __index = g })
+		sinNota[g] = p
+	end
+	return p
+end
+
+local function sublinea(g, mapa)
+	local u = U()
+	if not (u and u.GoalSubline) then return nil end
+	local ok, s = pcall(u.GoalSubline, metaSinNota(g), mapa)
+	if ok and type(s) == "string" and s ~= "" then return s end
+	return nil
+end
+
+-- La nota de un paso, si dice algo y está en tu idioma.
+local function notaPaso(v)
+	local nota = v and (v.why or v.note)
+	if type(nota) ~= "string" or nota == "" or Rs.SinTraducir(nota) then return nil end
+	return nota
+end
 
 ---------------------------------------------------------------------------
 -- Lugar en la pantalla
@@ -82,6 +183,12 @@ local function menuGuia(dueno)
 	local e = E()
 	local tabs, activa = engine("GetTabs")
 	local op = {}
+	if e and e.GetGuide and e.GetGuide() then
+		op[#op + 1] = { valor = function() Rs.AbrirDetalle() end, texto = L["Ver detalle"], icono = "ic-lista" }
+		op[#op + 1] = { valor = function() A.Set(M.ID .. ".seguimientoCompleto", compacto()) end,
+			texto = compacto() and L["Mostrar más en el seguimiento"] or L["Mostrar menos en el seguimiento"], icono = "ic-ventana" }
+		op[#op + 1] = { separador = true }
+	end
 	for i, t in ipairs(tabs or {}) do
 		op[#op + 1] = { valor = function() if i ~= activa then engine("SelectTab", i) end end,
 			texto = (t.title or "?") .. (t.complete and ("  \194\183  " .. L["terminada"]) or ""), icono = i == activa and "ic-huella" or "ic-guia" }
@@ -89,6 +196,10 @@ local function menuGuia(dueno)
 	op[#op + 1] = { valor = function() if M.Biblioteca then M.Biblioteca.Abrir({ pestanaNueva = true }) end end, texto = L["Abrir otra guía..."], icono = "ic-mas" }
 	op[#op + 1] = { valor = function() if M.Asistente then M.Asistente.Abrir() end end, texto = L["¿Qué quieres hacer?"], icono = "ic-lobo" }
 	op[#op + 1] = { valor = function() M.Cerrar.Ahora() end, texto = L["Cerrar mis misiones"], icono = "ic-misiones" }
+	-- Buscar cerca: en el menú solo si su lupa no está en la cabecera.
+	if M.Cerca and A.Get(M.ID .. ".cercaBoton") == false then
+		op[#op + 1] = { valor = function() M.Cerca.Menu(dueno) end, texto = L["Buscar cerca..."], icono = "ic-buscar" }
+	end
 	if activa and e then
 		op[#op + 1] = { valor = function() engine("CloseTab", activa) end, texto = L["Cerrar esta pestaña"], icono = "ic-cerrar" }
 	end
@@ -123,13 +234,16 @@ local function menuMeta(fila)
 end
 
 ---------------------------------------------------------------------------
--- Piezas
+-- Piezas que comparten el rastreador y la ventana de detalle: cada una vive
+-- en su contexto (cx = { padre, metas, grupos, cerca }) y se reutiliza.
 ---------------------------------------------------------------------------
 
-local function filaMeta(i)
-	local f = ui.metas[i]
+local function nuevoCx(padre) return { padre = padre, metas = {}, grupos = {}, cerca = {} } end
+
+local function filaMeta(cx, i)
+	local f = cx.metas[i]
 	if f then return f end
-	f = CreateFrame("Button", nil, F)
+	f = CreateFrame("Button", nil, cx.padre)
 	f:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 	f.Marca = CreateFrame("Frame", nil, f)
 	f.Marca:SetSize(12, 12)
@@ -148,7 +262,9 @@ local function filaMeta(i)
 	f:SetScript("OnEnter", function(self)
 		self.velo:Show()
 		local g = self.alfaMeta
-		if g and g.detail and g.detail ~= "" then K.MostrarInfo(self, U() and U().PlainGoalText and U().PlainGoalText(g) or "", g.detail) end
+		if g and g.detail and g.detail ~= "" and not Rs.SinTraducir(g.detail) then
+			K.MostrarInfo(self, U() and U().PlainGoalText and U().PlainGoalText(g) or "", g.detail)
+		end
 	end)
 	f:SetScript("OnLeave", function(self) self.velo:Hide() K.OcultarInfo(self) end)
 	f:SetScript("OnClick", function(self, boton)
@@ -161,14 +277,14 @@ local function filaMeta(i)
 			end
 		end
 	end)
-	ui.metas[i] = f
+	cx.metas[i] = f
 	return f
 end
 
-local function filaCerca(i)
-	local f = ui.cerca[i]
+local function filaCerca(cx, i)
+	local f = cx.cerca[i]
 	if f then return f end
-	f = CreateFrame("Button", nil, F)
+	f = CreateFrame("Button", nil, cx.padre)
 	f:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 	f.Icono = K.Icono(f, "ic-flecha", 12, "acento")
 	f.Icono:SetPoint("TOPLEFT", f, "TOPLEFT", 0, -2)
@@ -179,8 +295,321 @@ local function filaCerca(i)
 		if boton == "RightButton" then engine("DismissWhileHere", self.alfaI) else engine("AimWhileHere", self.alfaI) end
 	end)
 	K.ConInfo(f, L["Mientras estás aquí"], L["Clic: la flecha te lleva. Clic derecho: ya no mostrarla."])
-	ui.cerca[i] = f
+	cx.cerca[i] = f
 	return f
+end
+
+local function textoGrupo(cx, i)
+	local t = cx.grupos[i]
+	if t then return t end
+	t = K.Texto(cx.padre, "mayus", "textoTenue")
+	cx.grupos[i] = t
+	return t
+end
+
+local function ocultarDesde(pool, i)
+	for k = i, #pool do pool[k]:Hide() end
+end
+
+-- Una fila de meta. lineas: el tope de líneas del texto; conSub: con su
+-- línea de abajo (lugar, notas); conBarra: con su barra de avance.
+local function pintarFila(cx, n, v, g, x, y, ancho, mapa, lineas, conSub, conBarra)
+	local u = U()
+	local f = filaMeta(cx, n)
+	f.alfaMeta, f.alfaPaso = g, v.index
+	local hecha = g.status == "done" or g.status == "skipped"
+	local actual = v.current == g.index
+	local fuera = type(g.noDisponible) == "string" and g.noDisponible ~= ""
+	f.Marca.caja:Estilo({ fondo = hecha and "acento" or "hundido", alfaFondo = hecha and 0.18 or nil, borde = (hecha or actual) and "acento" or "lineaFuerte" })
+	f.Marca.Ok:SetShown(hecha)
+	f.Barra:SetShown(actual)
+	local linea = u and u.GoalLine and u.GoalLine(g) or (g.text or "")
+	local tw = ancho - 20
+	K.Escribir(f.Texto, linea)
+	K.ColorTexto(f.Texto, (hecha or fuera) and "textoTenue" or "texto")
+	f.Texto:ClearAllPoints()
+	f.Texto:SetPoint("TOPLEFT", f, "TOPLEFT", 20, -2)
+	local h = 2 + K.Parrafo(f.Texto, tw, lineas)
+	if u and u.FitCounts then pcall(u.FitCounts, f.Texto) end
+	local sub
+	if conSub and (not hecha or fuera) then
+		sub = sublinea(g, mapa)
+		if g.unavailableText then sub = g.unavailableText end
+		-- Lo que la ruta agregó antes de esta meta, o por qué no se puede.
+		if type(g.antes) == "string" and g.antes ~= "" then
+			sub = format(L["Antes: %s"], g.antes) .. (sub and ("\n" .. sub) or "")
+		end
+		if fuera then sub = format(L["No disponible: %s"], g.noDisponible) end
+	end
+	if sub and sub ~= "" then
+		K.Escribir(f.Sub, sub)
+		f.Sub:ClearAllPoints()
+		f.Sub:SetPoint("TOPLEFT", f, "TOPLEFT", 20, -(h + 2))
+		h = h + 2 + K.Parrafo(f.Sub, tw, 3)
+		f.Sub:Show()
+	else
+		f.Sub:Hide()
+	end
+	local frac = conBarra and not fuera and u and u.GoalBar and u.GoalBar(g)
+	if frac and not hecha then
+		f.Progreso:ClearAllPoints()
+		f.Progreso:SetPoint("TOPLEFT", f, "TOPLEFT", 20, -(h + 4))
+		f.Progreso:Acomodar(tw)
+		f.Progreso:Set(frac)
+		f.Progreso:Show()
+		h = h + 8
+	else
+		f.Progreso:Hide()
+	end
+	h = h + 4
+	f.Marca:ClearAllPoints()
+	f.Marca:SetPoint("TOPLEFT", f, "TOPLEFT", 2, -4)
+	f.Barra:ClearAllPoints()
+	f.Barra:SetPoint("TOPLEFT", f, "TOPLEFT", -6, -2)
+	f.Barra:SetHeight(max(10, h - 6))
+	f:ClearAllPoints()
+	f:SetPoint("TOPLEFT", cx.padre, "TOPLEFT", x, -y)
+	f:SetSize(ancho, h)
+	f:Show()
+	return y + h + 2
+end
+
+-- Todas las metas del paso, con sus grupos (la persona o el lugar) y notas.
+local function pintarMetas(cx, v, x, y, ancho, mapa)
+	local u = U()
+	local n, ng = 0, 0
+	local grupos = (u and u.StepGroups and v and #v.groups > 1) and v.groups or nil
+	local orden = {}
+	if grupos then
+		-- El nombre de un grupo solo cuando dice algo nuevo: no el título del
+		-- paso ni el mismo de arriba.
+		local anterior = v.title
+		for _, grp in ipairs(grupos) do
+			local cabeza = true
+			for _, k in ipairs(grp.goals or {}) do
+				local g = v.goals[k]
+				if g and g.status ~= "na" and not g.folded and not g.header then
+					local nombre = cabeza and u.GroupName and u.GroupName(v, grp) or nil
+					if nombre == anterior then nombre = nil end
+					if cabeza and nombre then anterior = nombre end
+					orden[#orden + 1] = { g = g, grupo = nombre, nuevoGrupo = cabeza and #orden > 0 }
+					cabeza = false
+				end
+			end
+		end
+	else
+		for _, g in ipairs(v and v.goals or {}) do
+			if g.status ~= "na" and not g.folded and not g.header then orden[#orden + 1] = { g = g } end
+		end
+	end
+	for _, o in ipairs(orden) do
+		if o.nuevoGrupo then y = y + K.ESP.xs end
+		if o.grupo and o.grupo ~= "" then
+			ng = ng + 1
+			local t = textoGrupo(cx, ng)
+			K.Escribir(t, K.Mayus(o.grupo))
+			t:ClearAllPoints()
+			t:SetPoint("TOPLEFT", cx.padre, "TOPLEFT", x, -y)
+			t:SetWidth(ancho)
+			t:Show()
+			y = y + 16
+		end
+		n = n + 1
+		y = pintarFila(cx, n, v, o.g, x, y, ancho, mapa, 3, true, true)
+	end
+	ocultarDesde(cx.metas, n + 1)
+	for k = ng + 1, #cx.grupos do cx.grupos[k]:Hide() end
+	return y
+end
+
+-- Las metas que siguen abiertas, la de ahora primero.
+local function metasAbiertas(v)
+	local out = {}
+	for _, g in ipairs(v and v.goals or {}) do
+		if g.status ~= "na" and g.status ~= "done" and g.status ~= "skipped" and not g.folded and not g.header
+			and not (type(g.noDisponible) == "string" and g.noDisponible ~= "") then
+			out[#out + 1] = g
+		end
+	end
+	for k, g in ipairs(out) do
+		if g.index == v.current then
+			if k > 1 then table.remove(out, k) table.insert(out, 1, g) end
+			break
+		end
+	end
+	return out
+end
+
+-- Compacta: la meta de ahora y hasta dos más, una línea cada una, sin grupos
+-- ni notas; las que no se pueden hacer (noDisponible) no salen.
+-- -> y, cuántas quedaron fuera, lo que la ruta agregó antes de la de ahora
+local function pintarMetasCompacto(cx, v, x, y, ancho)
+	local abiertas = metasAbiertas(v)
+	local antes = abiertas[1] and type(abiertas[1].antes) == "string" and abiertas[1].antes ~= "" and abiertas[1].antes or nil
+	local n = 0
+	for k = 1, min(MAX_COMPACTO, #abiertas) do
+		n = n + 1
+		y = pintarFila(cx, n, v, abiertas[k], x, y, ancho, nil, 1, false, k == 1)
+	end
+	ocultarDesde(cx.metas, n + 1)
+	for k = 1, #cx.grupos do cx.grupos[k]:Hide() end
+	return y, max(0, #abiertas - n), antes
+end
+
+local function pintarObjeto(cx, x, y, ancho)
+	local o = cx.objeto
+	local Q = A.QoL
+	local B = Q and Q.Buttons
+	local item
+	if B and B.ChooseQuestItem then
+		local ok, r = pcall(B.ChooseQuestItem)
+		if ok then item = r end
+	end
+	if not item then
+		if o then o:Hide() end
+		return y
+	end
+	if not o then
+		o = CreateFrame("Frame", nil, cx.padre)
+		cx.objeto = o
+		o.caja = K.Caja(o, { fondo = "panel", borde = "linea", corte = K.CORTE.control })
+		o.Icono = K.IconoObjeto(o, 26)
+		o.Icono:SetPoint("LEFT", o, "LEFT", 8, 0)
+		o.Nombre = K.Texto(o, "etiqueta", "objeto")
+		o.Nombre:SetPoint("TOPLEFT", o.Icono, "TOPRIGHT", 10, -1)
+		o.Nombre:SetPoint("RIGHT", o, "RIGHT", -8, 0)
+		o.Ayuda = K.Texto(o, "pequeno", "textoTenue")
+		o.Ayuda:SetPoint("TOPLEFT", o.Nombre, "BOTTOMLEFT", 0, -2)
+		o.Ayuda:SetPoint("RIGHT", o, "RIGHT", -8, 0)
+		o:SetHeight(42)
+	end
+	o.Icono:SetObjeto(item)
+	K.Escribir(o.Nombre, M.NombreObjeto(item))
+	K.Escribir(o.Ayuda, L["Objeto de misión: úsalo con su botón o con tu tecla de paso."])
+	o:ClearAllPoints()
+	o:SetPoint("TOPLEFT", cx.padre, "TOPLEFT", x, -y)
+	o:SetWidth(ancho)
+	o:Show()
+	return y + 42 + K.ESP.s
+end
+
+-- "Mientras estás aquí": hasta `tope` cosas. conTitulo: con su encabezado;
+-- sin él, una sola línea con el nombre delante.
+local function pintarCerca(cx, x, y, ancho, tope, conTitulo)
+	local lista = engine("GetWhileHereList") or {}
+	local u = U()
+	local n = 0
+	if not cx.cercaTit then
+		cx.cercaTit = K.Texto(cx.padre, "mayus", "acento")
+		K.Escribir(cx.cercaTit, K.Mayus(L["Mientras estás aquí"]))
+	end
+	if #lista > 0 and tope > 0 then
+		if conTitulo then
+			cx.cercaTit:ClearAllPoints()
+			cx.cercaTit:SetPoint("TOPLEFT", cx.padre, "TOPLEFT", x, -y)
+			cx.cercaTit:Show()
+			y = y + 16
+		else
+			cx.cercaTit:Hide()
+		end
+		for i = 1, min(tope, #lista) do
+			local v = lista[i]
+			n = n + 1
+			local f = filaCerca(cx, n)
+			f.alfaI = i
+			local texto = u and u.HereText and u.HereText(v) or (v.hereText or v.text or "")
+			if not conTitulo then texto = format(L["Mientras estás aquí: %s"], texto) end
+			K.Escribir(f.Texto, texto)
+			local h = K.Parrafo(f.Texto, ancho - 18, conTitulo and 2 or 1)
+			f:ClearAllPoints()
+			f:SetPoint("TOPLEFT", cx.padre, "TOPLEFT", x, -y)
+			f:SetSize(ancho, h)
+			f:Show()
+			y = y + h + 4
+		end
+		y = y + 4
+	else
+		cx.cercaTit:Hide()
+	end
+	ocultarDesde(cx.cerca, n + 1)
+	return y
+end
+
+local function ocultarPaso(cx)
+	ocultarDesde(cx.metas, 1)
+	for _, t in ipairs(cx.grupos) do t:Hide() end
+	ocultarDesde(cx.cerca, 1)
+	if cx.cercaTit then cx.cercaTit:Hide() end
+	if cx.objeto then cx.objeto:Hide() end
+end
+
+---------------------------------------------------------------------------
+-- La flecha: distancia y rumbo, en una línea
+---------------------------------------------------------------------------
+
+local RUMBOS = { L["al norte"], L["al noroeste"], L["al oeste"], L["al suroeste"],
+	L["al sur"], L["al sureste"], L["al este"], L["al noreste"] }
+
+local function rumbo(dn, dw)
+	local grados = math.atan2(dw, dn) * 180 / math.pi -- 0 norte, 90 oeste
+	return RUMBOS[floor(((grados + 22.5) % 360) / 45) + 1]
+end
+
+-- -> el texto de la línea de la flecha, o nil sin flecha.
+local function textoFlecha()
+	local Nav = A.Nav
+	if type(Nav) ~= "table" or type(Nav.GetTarget) ~= "function" then return nil end
+	local ok, t = pcall(Nav.GetTarget)
+	if not ok or type(t) ~= "table" then return nil end
+	local Cp = A.Compat
+	if type(Cp) == "table" then
+		if type(Cp.IsInInstance) == "function" and Cp.IsInInstance() then return L["En una instancia: la flecha vuelve al salir"] end
+		if type(Cp.IsOnTaxi) == "function" and Cp.IsOnTaxi() then return L["En vuelo: la flecha sigue al bajar"] end
+	end
+	local dn, dw
+	if type(Nav.TargetOffset) == "function" then
+		local ok2, a, b = pcall(Nav.TargetOffset)
+		if ok2 then dn, dw = tonumber(a), tonumber(b) end
+	end
+	if not (dn and dw) then
+		local zona = type(Nav.GetTargetZoneName) == "function" and Nav.GetTargetZoneName() or nil
+		return type(zona) == "string" and zona ~= "" and format(L["Lejos de aquí: %s"], zona) or L["Lejos de aquí"]
+	end
+	local d = math.sqrt(dn * dn + dw * dw)
+	local area = tonumber(t.area)
+	if area and area > 0 then d = d > area and d - area or 0 end
+	if d <= (tonumber(t.r) or 8) then return L["Ya llegaste"] end
+	local txt
+	if type(A.FormatDistance) == "function" then
+		local ok3, r = pcall(A.FormatDistance, d)
+		if ok3 and type(r) == "string" then txt = r end
+	end
+	return (txt or format("%d yd", floor(d + 0.5))) .. " " .. rumbo(dn, dw)
+end
+
+-- Cada segundo, mientras el rastreador compacto se ve: solo el texto; si la
+-- línea aparece o se va, se acomoda todo.
+local function latido()
+	if not (F and F:IsShown() and ui.flecha) then return end
+	local t = compacto() and textoFlecha() or nil
+	if (t ~= nil) ~= ui.flecha:IsShown() then Rs.Luego() return end
+	if t then K.Escribir(ui.flecha.Texto, t) end
+end
+
+---------------------------------------------------------------------------
+-- Construir el rastreador
+---------------------------------------------------------------------------
+
+-- El botón de buscar cerca se ve con rutas.cercaBoton; el título llega hasta
+-- el primer botón a la vista.
+function Rs.BotonCerca()
+	local c = ui.cab
+	if not c then return end
+	local ver = M.Cerca ~= nil and A.Get(M.ID .. ".cercaBoton") ~= false
+	c.Cerca:SetShown(ver)
+	local tope = ver and c.Cerca or c.Menu
+	c.Titulo:SetPoint("RIGHT", tope, "LEFT", -6, 0)
+	c.Sub:SetPoint("RIGHT", tope, "LEFT", -6, 0)
 end
 
 local function construir()
@@ -193,6 +622,7 @@ local function construir()
 	F.caja = K.Caja(F, { fondo = "fondo", borde = "linea", corte = K.CORTE.panel })
 	F.caja:Estilo({ alfaFondo = 0.94 })
 	F.Marca = K.Marca(F, K.CORTE.panel, "acento", 28)
+	cxR = nuevoCx(F)
 
 	-- Cabecera (se arrastra)
 	local c = CreateFrame("Frame", nil, F)
@@ -210,14 +640,15 @@ local function construir()
 	c.Cerrar:SetPoint("RIGHT", c, "RIGHT", -8, 0)
 	c.Menu = K.BotonIcono(c, "ic-mas", function(self) menuGuia(self) end, { tam = 22, icono = 12, ayuda = L["Guías y planes"] })
 	c.Menu:SetPoint("RIGHT", c.Cerrar, "LEFT", -2, 0)
-	c.Lista = K.BotonIcono(c, "ic-lista", function() est.lista = not est.lista Rs.Pintar() end, { tam = 22, icono = 12, ayuda = L["Todos los pasos"] })
-	c.Lista:SetPoint("RIGHT", c.Menu, "LEFT", -2, 0)
+	-- Buscar cerca (Cerca.lua): el vuelo, la posada, reparar... con la flecha.
+	c.Cerca = K.BotonIcono(c, "ic-buscar", function(self) if M.Cerca then M.Cerca.Menu(self) end end,
+		{ tam = 22, icono = 12, ayuda = L["Buscar cerca"], ayudaTexto = L["El maestro de vuelo, la posada, reparar, el banco y más: el más cercano, con la flecha y la ruta."] })
+	c.Cerca:SetPoint("RIGHT", c.Menu, "LEFT", -2, 0)
 	c.Titulo = K.Texto(c, "encabezado", "texto")
 	c.Titulo:SetPoint("TOPLEFT", c, "TOPLEFT", PAD + 24, -7)
-	c.Titulo:SetPoint("RIGHT", c.Lista, "LEFT", -6, 0)
 	c.Sub = K.Texto(c, "pequeno", "textoTenue")
 	c.Sub:SetPoint("TOPLEFT", c.Titulo, "BOTTOMLEFT", 0, -2)
-	c.Sub:SetPoint("RIGHT", c.Lista, "LEFT", -6, 0)
+	Rs.BotonCerca()
 	c.Linea = K.Linea(c, "linea")
 	c.Linea:SetPoint("BOTTOMLEFT", c, "BOTTOMLEFT", PAD, 0)
 	c.Linea:SetPoint("BOTTOMRIGHT", c, "BOTTOMRIGHT", -PAD, 0)
@@ -241,67 +672,68 @@ local function construir()
 	b.Uno = K.Boton(b, "", nil, { tipo = "acento", tam = "chico" })
 	b.Dos = K.Boton(b, "", nil, { tipo = "fantasma", tam = "chico" })
 
+	-- Mi plan: la meta de ahora
+	local pl = CreateFrame("Button", nil, F)
+	ui.plan = pl
+	pl:RegisterForClicks("LeftButtonUp")
+	pl.caja = K.Caja(pl, { fondo = "panel", borde = "acento", corte = K.CORTE.control })
+	pl.caja:Estilo({ alfaBorde = 0.45 })
+	pl.Icono = K.Icono(pl, "ic-lista", 16, "acento")
+	pl.Icono:SetPoint("TOPLEFT", pl, "TOPLEFT", 10, -10)
+	pl.Sobre = K.Texto(pl, "mayus", "acento")
+	pl.Titulo = K.Texto(pl, "etiqueta", "texto")
+	pl.Titulo:SetWordWrap(true)
+	pl.Texto = K.Texto(pl, "pequeno", "textoSuave")
+	pl.Progreso = K.Progreso(pl, { alto = 4 })
+	pl.Ir = K.Boton(pl, "", nil, { tipo = "acento", tam = "chico", icono = "ic-flecha" })
+	pl.Hecha = K.Boton(pl, L["Ya la hice"], nil, { tipo = "fantasma", tam = "chico" })
+	pl:SetScript("OnClick", function() if M.VistaPlanes then local d = M.Planes.Tarjeta() if d then M.VistaPlanes.Abrir(d.plan.id) end end end)
+	K.ConInfo(pl, L["Mi plan"], L["Clic: abre tu plan para verlo o cambiarlo."])
+
 	-- El paso
 	ui.paso = K.Texto(F, "subtitulo", "texto")
 	ui.paso:SetWordWrap(true)
 	ui.nota = K.Texto(F, "nota", "textoSuave")
 	ui.nota:SetWordWrap(true)
-	ui.grupos = {}
 
-	-- El objeto de misión
-	local o = CreateFrame("Frame", nil, F)
-	ui.objeto = o
-	o.caja = K.Caja(o, { fondo = "panel", borde = "linea", corte = K.CORTE.control })
-	o.Icono = K.IconoObjeto(o, 26)
-	o.Icono:SetPoint("LEFT", o, "LEFT", 8, 0)
-	o.Nombre = K.Texto(o, "etiqueta", "objeto")
-	o.Nombre:SetPoint("TOPLEFT", o.Icono, "TOPRIGHT", 10, -1)
-	o.Nombre:SetPoint("RIGHT", o, "RIGHT", -8, 0)
-	o.Ayuda = K.Texto(o, "pequeno", "textoTenue")
-	o.Ayuda:SetPoint("TOPLEFT", o.Nombre, "BOTTOMLEFT", 0, -2)
-	o.Ayuda:SetPoint("RIGHT", o, "RIGHT", -8, 0)
-	o:SetHeight(42)
+	-- "y N más": lleva al detalle
+	local mas = CreateFrame("Button", nil, F)
+	ui.mas = mas
+	mas.Texto = K.Texto(mas, "pequeno", "textoTenue")
+	mas.Texto:SetPoint("LEFT", mas, "LEFT", 20, 0)
+	mas:SetHeight(16)
+	mas:SetScript("OnClick", function() Rs.AbrirDetalle() end)
+	mas:SetScript("OnEnter", function(self) K.ColorTexto(self.Texto, "acento") end)
+	mas:SetScript("OnLeave", function(self) K.ColorTexto(self.Texto, "textoTenue") end)
 
-	-- Mientras estás aquí
-	ui.cercaTit = K.Texto(F, "mayus", "acento")
-	K.Escribir(ui.cercaTit, L["Mientras estás aquí"]:upper())
+	-- La flecha
+	local fl = CreateFrame("Frame", nil, F)
+	ui.flecha = fl
+	fl:SetHeight(16)
+	fl.Icono = K.Icono(fl, "ic-flecha", 12, "acento")
+	fl.Icono:SetPoint("LEFT", fl, "LEFT", 2, 0)
+	fl.Texto = K.Texto(fl, "pequeno", "textoSuave")
+	fl.Texto:SetPoint("LEFT", fl, "LEFT", 20, 0)
+	fl.Texto:SetPoint("RIGHT", fl, "RIGHT", 0, 0)
+
+	-- Lo que la ruta agregó antes de la meta de ahora (una línea)
+	local an = CreateFrame("Frame", nil, F)
+	ui.antes = an
+	an:SetHeight(16)
+	an.Icono = K.Icono(an, "ic-info", 12, "aviso")
+	an.Icono:SetPoint("LEFT", an, "LEFT", 2, 0)
+	an.Texto = K.Texto(an, "pequeno", "textoSuave")
+	an.Texto:SetPoint("LEFT", an, "LEFT", 20, 0)
+	an.Texto:SetPoint("RIGHT", an, "RIGHT", 0, 0)
 
 	-- Vacío (sin guía)
 	ui.vacio = K.Vacio(F, { lobo = "dormido", titulo = L["No sigues ninguna guía"],
 		texto = L["Elige qué quieres hacer y Alfa te lleva paso a paso."],
 		accion = { texto = L["¿Qué quieres hacer?"], icono = "ic-lobo", alClic = function() if M.Asistente then M.Asistente.Abrir() end end } })
 
-	-- La lista de pasos
-	ui.lista = K.Lista(F, {
-		alto = K.ALTO.filaCompacta,
-		crear = function(fila)
-			fila.Num = K.Texto(fila, "numero", "textoTenue")
-			fila.Num:SetPoint("LEFT", fila, "LEFT", 8, 0)
-			fila.Num:SetWidth(28)
-			fila.Num:SetJustifyH("RIGHT")
-			fila.Hecho = K.Icono(fila, "ic-exito", 12, "acento")
-			fila.Hecho:SetPoint("LEFT", fila, "LEFT", 42, 0)
-			fila.Texto = K.Texto(fila, "etiqueta", "texto")
-			fila.Texto:SetPoint("LEFT", fila, "LEFT", 60, 0)
-			fila.Texto:SetPoint("RIGHT", fila, "RIGHT", -8, 0)
-		end,
-		pintar = function(fila, i)
-			local v = engine("GetStepView", i)
-			local u = U()
-			fila.Num:SetText(tostring(u and u.StepNo and u.StepNo(i) or i))
-			local resumen = v and u and u.StepSummary and u.StepSummary(v) or ""
-			K.Escribir(fila.Texto, resumen)
-			local actual = i == engine("GetLiveStep")
-			local hecho = v and (v.status == "done" or v.skipped)
-			fila.Hecho:SetShown(hecho and true or false)
-			K.ColorTexto(fila.Texto, actual and "acento" or (hecho and "textoTenue" or "texto"))
-		end,
-		alClic = function(i) engine("Goto", i) est.lista = false Rs.Pintar() end,
-		elegir = false,
-	})
-
 	-- El pie
-	ui.atras = K.Boton(F, L["Anterior"], function() engine("Prev") end, { tipo = "fantasma", tam = "chico" })
+	ui.detalle = K.Boton(F, L["Ver detalle"], function() Rs.AlternarDetalle() end,
+		{ tipo = "fantasma", tam = "chico", icono = "ic-lista", ayuda = L["Todas las metas, notas y pasos de esta guía en otra ventana."] })
 	ui.omitir = K.Boton(F, L["Omitir"], function()
 		local e = E()
 		if e and e.GetGuide and e.GetGuide() then engine("Skip") end
@@ -309,7 +741,13 @@ local function construir()
 	ui.siguiente = K.Boton(F, L["Siguiente"], function() engine("Next") end, { tipo = "secundario", tam = "chico" })
 	ui.pieLinea = K.Linea(F, "linea")
 
-	F:SetScript("OnShow", function() Rs.Pintar() end)
+	F:SetScript("OnShow", function()
+		Rs.Pintar()
+		if not ui.reloj then ui.reloj = A.NewTicker(1, latido) end
+	end)
+	F:SetScript("OnHide", function()
+		if ui.reloj then ui.reloj:Cancel() ui.reloj = nil end
+	end)
 	F:Hide()
 	ponerEnSuLugar()
 end
@@ -320,6 +758,9 @@ end
 
 -- Una misión del paso de ahora que el motor manda a tomar pero que todavía
 -- no se puede tomar (la regla de la ruta). -> qid, texto | nil
+-- Misiones bloqueadas que ya se resolvieron solas (una vez por misión y sesión).
+local resueltas = {}
+
 local function aceptarBloqueado(v)
 	if not (v and v.goals and M.Disp) then return nil end
 	for _, g in ipairs(v.goals) do
@@ -360,9 +801,15 @@ local function aviso(v, live)
 	if v and live and v.index == live then
 		local bq, texto, imposible = aceptarBloqueado(v)
 		if bq then
-			return { tono = "aviso", icono = "ic-alerta", titulo = format(L["Aún no puedes tomar %s"], M.Citar(M.TituloMision(bq))), texto = texto,
-				uno = not imposible and { L["Armar lo que falta"], function() M.Recoger.Desbloquear(bq) end } or nil,
-				dos = { L["Omitirla"], function() engine("SkipQuest", bq, true) end } }
+			-- Sin preguntar: si se puede, se agrega solo lo que falta; si no, se omite sola.
+			if not resueltas[bq] then
+				resueltas[bq] = true
+				K.Despues(0, function()
+					if imposible then engine("SkipQuest", bq, true) else M.Recoger.Desbloquear(bq) end
+				end)
+			end
+			if imposible then return nil end
+			return { tono = "info", icono = "ic-ruta", titulo = format(L["Agregué lo que falta para %s"], M.Citar(M.TituloMision(bq))), texto = texto }
 		end
 	end
 	if v and live and v.index ~= live then
@@ -370,6 +817,68 @@ local function aviso(v, live)
 			uno = { L["Volver al paso de ahora"], function() engine("Goto", live) end } }
 	end
 	return nil
+end
+
+-- La meta de ahora de tu plan, si sigues uno. comp: compacta (el título en
+-- una línea, sin su texto). -> alto
+local function pintarPlan(ancho, comp)
+	local b = ui.plan
+	local d = M.Planes and M.Planes.Tarjeta()
+	if not d then b:Hide() return 0 end
+	local x = 34
+	local tw = ancho - x - 10
+	K.Escribir(b.Sobre, K.Mayus(d.total > 0 and format(L["Mi plan · %s · %d de %d"], d.nombre, d.hechas, d.total) or format(L["Mi plan · %s"], d.nombre)))
+	b.Sobre:ClearAllPoints()
+	b.Sobre:SetPoint("TOPLEFT", b, "TOPLEFT", x, -9)
+	b.Sobre:SetWidth(tw)
+	K.SetIcono(b.Icono, d.icono or "ic-lista", "acento")
+	K.Escribir(b.Titulo, d.titulo or "")
+	b.Titulo:ClearAllPoints()
+	b.Titulo:SetPoint("TOPLEFT", b, "TOPLEFT", x, -24)
+	local y = 24 + K.Parrafo(b.Titulo, tw, comp and 1 or 2)
+	if not comp and d.texto and d.texto ~= "" then
+		K.Escribir(b.Texto, d.texto)
+		b.Texto:ClearAllPoints()
+		b.Texto:SetPoint("TOPLEFT", b, "TOPLEFT", x, -(y + 2))
+		y = y + 2 + K.Parrafo(b.Texto, tw, 2)
+		b.Texto:Show()
+	else
+		b.Texto:Hide()
+	end
+	if d.frac then
+		b.Progreso:ClearAllPoints()
+		b.Progreso:SetPoint("TOPLEFT", b, "TOPLEFT", x, -(y + 5))
+		b.Progreso:Acomodar(tw)
+		b.Progreso:Set(d.frac)
+		b.Progreso:Show()
+		y = y + 9
+	else
+		b.Progreso:Hide()
+	end
+	local bx = x
+	if d.ir then
+		b.Ir:SetTexto(d.ir[1])
+		b.Ir.alClic = d.ir[2]
+		b.Ir:ClearAllPoints()
+		b.Ir:SetPoint("TOPLEFT", b, "TOPLEFT", bx, -(y + 8))
+		bx = bx + b.Ir:AnchoNatural() + K.ESP.s
+		b.Ir:Show()
+	else
+		b.Ir:Hide()
+	end
+	if d.hecha then
+		b.Hecha.alClic = d.hecha
+		b.Hecha:ClearAllPoints()
+		b.Hecha:SetPoint("TOPLEFT", b, "TOPLEFT", bx, -(y + 8))
+		b.Hecha:Show()
+	else
+		b.Hecha:Hide()
+	end
+	if d.ir or d.hecha then y = y + 8 + K.ALTO.botonChico end
+	local h = y + 10
+	b:SetSize(ancho, h)
+	b:Show()
+	return h
 end
 
 local function pintarAviso(d, ancho)
@@ -416,186 +925,43 @@ local function pintarAviso(d, ancho)
 end
 
 ---------------------------------------------------------------------------
--- Pintar
+-- Pintar el rastreador
 ---------------------------------------------------------------------------
 
-local function ocultarDesde(pool, i)
-	for k = i, #pool do pool[k]:Hide() end
-end
-
-local function textoGrupo(i)
-	local t = ui.grupos[i]
-	if t then return t end
-	t = K.Texto(F, "mayus", "textoTenue")
-	ui.grupos[i] = t
-	return t
-end
-
-local function pintarMetas(v, x, y, ancho, mapa)
+-- El nombre de la guía y "Paso 12 de 80 · 15 %". -> nombre, línea, hechos, total
+local function resumenGuia(g, v)
 	local u = U()
-	local n, ng = 0, 0
-	local grupos = (u and u.StepGroups and v and #v.groups > 1) and v.groups or nil
-	local orden = {}
-	if grupos then
-		-- El nombre de un grupo (la persona o el lugar) solo cuando dice algo
-		-- nuevo: no el título del paso ni el mismo de arriba.
-		local anterior = v.title
-		for _, grp in ipairs(grupos) do
-			local cabeza = true
-			for _, k in ipairs(grp.goals or {}) do
-				local g = v.goals[k]
-				if g and g.status ~= "na" and not g.folded and not g.header then
-					local nombre = cabeza and u.GroupName and u.GroupName(v, grp) or nil
-					if nombre == anterior then nombre = nil end
-					if cabeza and nombre then anterior = nombre end
-					orden[#orden + 1] = { g = g, grupo = nombre, nuevoGrupo = cabeza and #orden > 0 }
-					cabeza = false
-				end
-			end
-		end
-	else
-		for _, g in ipairs(v and v.goals or {}) do
-			if g.status ~= "na" and not g.folded and not g.header then orden[#orden + 1] = { g = g } end
-		end
-	end
-	for _, o in ipairs(orden) do
-		local g = o.g
-		if o.nuevoGrupo then y = y + K.ESP.xs end
-		if o.grupo and o.grupo ~= "" then
-			ng = ng + 1
-			local t = textoGrupo(ng)
-			K.Escribir(t, o.grupo:upper())
-			t:ClearAllPoints()
-			t:SetPoint("TOPLEFT", F, "TOPLEFT", x, -y)
-			t:SetWidth(ancho)
-			t:Show()
-			y = y + 16
-		end
-		n = n + 1
-		local f = filaMeta(n)
-		f.alfaMeta, f.alfaPaso = g, v.index
-		local hecha = g.status == "done" or g.status == "skipped"
-		local actual = v.current == g.index
-		f.Marca.caja:Estilo({ fondo = hecha and "acento" or "hundido", alfaFondo = hecha and 0.18 or nil, borde = (hecha or actual) and "acento" or "lineaFuerte" })
-		f.Marca.Ok:SetShown(hecha)
-		f.Barra:SetShown(actual)
-		local linea = u and u.GoalLine and u.GoalLine(g) or (g.text or "")
-		local tw = ancho - 20
-		K.Escribir(f.Texto, linea)
-		K.ColorTexto(f.Texto, hecha and "textoTenue" or "texto")
-		f.Texto:ClearAllPoints()
-		f.Texto:SetPoint("TOPLEFT", f, "TOPLEFT", 20, -2)
-		local h = 2 + K.Parrafo(f.Texto, tw, 3)
-		if u and u.FitCounts then pcall(u.FitCounts, f.Texto) end
-		local sub = not hecha and u and u.GoalSubline and u.GoalSubline(g, mapa) or nil
-		if g.unavailableText and not hecha then sub = g.unavailableText end
-		if sub and sub ~= "" then
-			K.Escribir(f.Sub, sub)
-			f.Sub:ClearAllPoints()
-			f.Sub:SetPoint("TOPLEFT", f, "TOPLEFT", 20, -(h + 2))
-			h = h + 2 + K.Parrafo(f.Sub, tw, 3)
-			f.Sub:Show()
-		else
-			f.Sub:Hide()
-		end
-		local frac = u and u.GoalBar and u.GoalBar(g)
-		if frac and not hecha then
-			f.Progreso:ClearAllPoints()
-			f.Progreso:SetPoint("TOPLEFT", f, "TOPLEFT", 20, -(h + 4))
-			f.Progreso:Acomodar(tw)
-			f.Progreso:Set(frac)
-			f.Progreso:Show()
-			h = h + 8
-		else
-			f.Progreso:Hide()
-		end
-		h = h + 4
-		f.Marca:ClearAllPoints()
-		f.Marca:SetPoint("TOPLEFT", f, "TOPLEFT", 2, -4)
-		f.Barra:ClearAllPoints()
-		f.Barra:SetPoint("TOPLEFT", f, "TOPLEFT", -6, -2)
-		f.Barra:SetHeight(max(10, h - 6))
-		f:ClearAllPoints()
-		f:SetPoint("TOPLEFT", F, "TOPLEFT", x, -y)
-		f:SetSize(ancho, h)
-		f:Show()
-		y = y + h + 2
-	end
-	ocultarDesde(ui.metas, n + 1)
-	for k = ng + 1, #ui.grupos do ui.grupos[k]:Hide() end
-	return y
-end
-
-local function pintarObjeto(v, x, y, ancho)
-	local o = ui.objeto
-	local Q = A.QoL
-	local B = Q and Q.Buttons
-	local item
-	if B and B.ChooseQuestItem then
-		local ok, r = pcall(B.ChooseQuestItem)
-		if ok then item = r end
-	end
-	if not item then o:Hide() return y end
-	o.Icono:SetObjeto(item)
-	K.Escribir(o.Nombre, M.NombreObjeto(item))
-	K.Escribir(o.Ayuda, L["Objeto de misión: úsalo con su botón o con tu tecla de paso."])
-	o:ClearAllPoints()
-	o:SetPoint("TOPLEFT", F, "TOPLEFT", x, -y)
-	o:SetWidth(ancho)
-	o:Show()
-	return y + 42 + K.ESP.s
-end
-
-local function pintarCerca(x, y, ancho)
-	local lista = engine("GetWhileHereList") or {}
-	local u = U()
-	local n = 0
-	if #lista > 0 then
-		ui.cercaTit:ClearAllPoints()
-		ui.cercaTit:SetPoint("TOPLEFT", F, "TOPLEFT", x, -y)
-		ui.cercaTit:Show()
-		y = y + 16
-		for i = 1, min(MAX_CERCA, #lista) do
-			local v = lista[i]
-			n = n + 1
-			local f = filaCerca(n)
-			f.alfaI = i
-			K.Escribir(f.Texto, u and u.HereText and u.HereText(v) or (v.hereText or v.text or ""))
-			local h = K.Parrafo(f.Texto, ancho - 18, 2)
-			f:ClearAllPoints()
-			f:SetPoint("TOPLEFT", F, "TOPLEFT", x, -y)
-			f:SetSize(ancho, h)
-			f:Show()
-			y = y + h + 4
-		end
-		y = y + 4
-	else
-		ui.cercaTit:Hide()
-	end
-	ocultarDesde(ui.cerca, n + 1)
-	return y
-end
-
-local function cabecera(g, v)
-	local c = ui.cab
-	K.Escribir(c.Titulo, g and (U() and U().GuideLabel and U().GuideLabel(g) or g.title) or L["Alfa"])
+	local nombre = g and (u and u.GuideLabel and u.GuideLabel(g) or g.title) or L["Alfa"]
 	local done, total = engine("GetProgress")
 	local partes = {}
-	local u = U()
 	if v then
 		local i = v.index
 		local tot = u and u.StepTotal and u.StepTotal() or engine("GetStepCount") or 0
 		partes[#partes + 1] = format(L["Paso %d de %d"], u and u.StepNo and u.StepNo(i) or i, tot)
 	end
 	if total and total > 0 then partes[#partes + 1] = format("%d %%", floor((done or 0) / total * 100)) end
-	K.Escribir(c.Sub, table.concat(partes, "  \194\183  "))
-	c.Lista:SetMarcado(est.lista)
+	return nombre, table.concat(partes, "  \194\183  "), done, total
+end
+
+local function cabecera(g, v)
+	local c = ui.cab
+	local nombre, linea, done, total = resumenGuia(g, v)
+	K.Escribir(c.Titulo, nombre)
+	K.Escribir(c.Sub, linea)
 	ui.huellas:Set(done or 0, total or 0)
 	return total and total > 0
 end
 
+local function tituloPaso(v)
+	local titulo = v.title
+	local u = U()
+	if (not titulo or titulo == "") and u and u.StepSummary then titulo = u.StepSummary(v) end
+	return titulo or ""
+end
+
 function Rs.Pintar()
 	if not (F and F:IsShown()) then return end
+	local comp = compacto()
 	local e = E()
 	local g = e and e.GetGuide and e.GetGuide()
 	local i = g and engine("GetStepIndex")
@@ -604,7 +970,7 @@ function Rs.Pintar()
 	local x, ancho = PAD, ANCHO - 2 * PAD
 	local conAvance = cabecera(g, v)
 	local y = CAB + K.ESP.s
-	if conAvance then
+	if conAvance and not comp then
 		ui.huellas:ClearAllPoints()
 		ui.huellas:SetPoint("TOPLEFT", F, "TOPLEFT", x, -y)
 		ui.huellas:Show()
@@ -613,7 +979,15 @@ function Rs.Pintar()
 		ui.huellas:Hide()
 	end
 	local vacio = not (g and v)
-	ui.vacio:SetShown(vacio and not est.fin)
+	-- Mi plan
+	local hp = pintarPlan(ancho, comp)
+	if hp > 0 then
+		ui.plan:ClearAllPoints()
+		ui.plan:SetPoint("TOPLEFT", F, "TOPLEFT", x, -y)
+		y = y + hp + K.ESP.m
+	end
+	local conVacio = vacio and not est.fin and hp == 0
+	ui.vacio:SetShown(conVacio)
 	-- El aviso
 	local h = pintarAviso(aviso(v, live), ancho)
 	if h > 0 then
@@ -621,75 +995,91 @@ function Rs.Pintar()
 		ui.aviso:SetPoint("TOPLEFT", F, "TOPLEFT", x, -y)
 		y = y + h + K.ESP.m
 	end
-	local mostrarPaso = not vacio and not est.lista
-	ui.lista:SetShown(est.lista and not vacio)
-	if est.lista and not vacio then
-		local datosLista = {}
-		local u = U()
-		for k = 1, engine("GetStepCount") or 0 do
-			if not (u and u.StepHidden and u.StepHidden(k)) then datosLista[#datosLista + 1] = k end
-		end
-		local alto = min(360, #datosLista * K.ALTO.filaCompacta)
-		ui.lista:ClearAllPoints()
-		ui.lista:SetPoint("TOPLEFT", F, "TOPLEFT", x - 4, -y)
-		ui.lista:Acomodar(ancho + 8, max(K.ALTO.filaCompacta, alto))
-		ui.lista:SetDatos(datosLista)
-		for pos, k in ipairs(datosLista) do if k == live then ui.lista:IrA(pos) end end
-		y = y + max(K.ALTO.filaCompacta, alto) + K.ESP.s
-	end
-	ui.paso:SetShown(mostrarPaso)
+	ui.paso:SetShown(not vacio)
 	ui.nota:Hide()
-	if mostrarPaso then
-		local u = U()
-		local titulo = v.title
-		if (not titulo or titulo == "") and u and u.StepSummary then titulo = u.StepSummary(v) end
-		K.Escribir(ui.paso, titulo or "")
+	ui.mas:Hide()
+	ui.flecha:Hide()
+	ui.antes:Hide()
+	if not vacio then
+		K.Escribir(ui.paso, tituloPaso(v))
 		ui.paso:ClearAllPoints()
 		ui.paso:SetPoint("TOPLEFT", F, "TOPLEFT", x, -y)
 		y = y + K.Parrafo(ui.paso, ancho, 2) + 4
-		local nota = v.why or v.note
-		if nota and nota ~= "" then
-			K.Escribir(ui.nota, nota)
-			ui.nota:ClearAllPoints()
-			ui.nota:SetPoint("TOPLEFT", F, "TOPLEFT", x, -y)
-			y = y + K.Parrafo(ui.nota, ancho, 4) + K.ESP.s
-			ui.nota:Show()
+		if comp then
+			y = y + 2
+			local resto, antes
+			y, resto, antes = pintarMetasCompacto(cxR, v, x, y, ancho)
+			if resto > 0 then
+				K.Escribir(ui.mas.Texto, format(L["y %d más"], resto))
+				ui.mas:ClearAllPoints()
+				ui.mas:SetPoint("TOPLEFT", F, "TOPLEFT", x, -y)
+				ui.mas:SetWidth(ancho)
+				ui.mas:Show()
+				y = y + 16 + 2
+			end
+			local t = live and v.index == live and textoFlecha() or nil
+			if t then
+				K.Escribir(ui.flecha.Texto, t)
+				ui.flecha:ClearAllPoints()
+				ui.flecha:SetPoint("TOPLEFT", F, "TOPLEFT", x, -(y + 2))
+				ui.flecha:SetWidth(ancho)
+				ui.flecha:Show()
+				y = y + 20
+			end
+			if cxR.objeto then cxR.objeto:Hide() end
+			-- Una sola línea de contexto: lo que la ruta agregó antes, o
+			-- lo que hay cerca.
+			if antes then
+				K.Escribir(ui.antes.Texto, format(L["Antes: %s"], antes))
+				ui.antes:ClearAllPoints()
+				ui.antes:SetPoint("TOPLEFT", F, "TOPLEFT", x, -(y + 2))
+				ui.antes:SetWidth(ancho)
+				ui.antes:Show()
+				y = y + 20
+				pintarCerca(cxR, x, y, ancho, 0, false)
+			else
+				y = pintarCerca(cxR, x, y + 2, ancho, 1, false)
+			end
+		else
+			local nota = A.Get("ui.showNotes") ~= false and notaPaso(v) or nil
+			if nota then
+				K.Escribir(ui.nota, nota)
+				ui.nota:ClearAllPoints()
+				ui.nota:SetPoint("TOPLEFT", F, "TOPLEFT", x, -y)
+				y = y + K.Parrafo(ui.nota, ancho, 4) + K.ESP.s
+				ui.nota:Show()
+			end
+			y = y + 2
+			local here = A.PlayerPoint and A.PlayerPoint()
+			y = pintarMetas(cxR, v, x, y, ancho, here and here.map)
+			y = y + K.ESP.xs
+			y = pintarObjeto(cxR, x, y, ancho)
+			y = pintarCerca(cxR, x, y, ancho, MAX_CERCA, true)
 		end
-		y = y + 2
-		local here = A.PlayerPoint and A.PlayerPoint()
-		y = pintarMetas(v, x, y, ancho, here and here.map)
-		y = y + K.ESP.xs
-		y = pintarObjeto(v, x, y, ancho)
-		y = pintarCerca(x, y, ancho)
 	else
-		ocultarDesde(ui.metas, 1)
-		for _, t in ipairs(ui.grupos) do t:Hide() end
-		ocultarDesde(ui.cerca, 1)
-		ui.cercaTit:Hide()
-		ui.objeto:Hide()
+		ocultarPaso(cxR)
 	end
-	if vacio and not est.fin then
+	if conVacio then
 		local vh = ui.vacio:Acomodar(ancho)
 		ui.vacio:ClearAllPoints()
 		ui.vacio:SetPoint("TOPLEFT", F, "TOPLEFT", x, -y)
 		y = y + vh + K.ESP.base
 	end
-	-- El pie
+	-- El pie: Ver detalle · Omitir · Siguiente
 	local conPie = not vacio
-	for _, b in ipairs({ ui.atras, ui.omitir, ui.siguiente, ui.pieLinea }) do b:SetShown(conPie) end
+	for _, b in ipairs({ ui.detalle, ui.omitir, ui.siguiente, ui.pieLinea }) do b:SetShown(conPie) end
 	if conPie then
 		y = y + K.ESP.xs
 		ui.pieLinea:ClearAllPoints()
 		ui.pieLinea:SetPoint("TOPLEFT", F, "TOPLEFT", x, -y)
 		ui.pieLinea:SetPoint("TOPRIGHT", F, "TOPLEFT", x + ancho, -y)
 		local by = y + floor((PIE - K.ALTO.botonChico) / 2)
-		ui.atras:ClearAllPoints()
-		ui.atras:SetPoint("TOPLEFT", F, "TOPLEFT", x - 4, -by)
+		ui.detalle:ClearAllPoints()
+		ui.detalle:SetPoint("TOPLEFT", F, "TOPLEFT", x - 4, -by)
 		ui.siguiente:ClearAllPoints()
 		ui.siguiente:SetPoint("TOPRIGHT", F, "TOPLEFT", x + ancho + 4, -by)
 		ui.omitir:ClearAllPoints()
-		ui.omitir:SetPoint("TOP", F, "TOPLEFT", x + floor(ancho / 2), -by)
-		ui.atras:SetActivo(i ~= nil and i > 1)
+		ui.omitir:SetPoint("TOPRIGHT", ui.siguiente, "TOPLEFT", -K.ESP.xs, 0)
 		y = y + PIE
 	else
 		y = y + K.ESP.xs
@@ -697,14 +1087,215 @@ function Rs.Pintar()
 	F:SetHeight(y)
 end
 
+---------------------------------------------------------------------------
+-- La ventana de detalle: el paso entero y todos los pasos
+---------------------------------------------------------------------------
+
+local D -- la ventana
+local dui = {}
+local dvista = "paso"
+
+local function construirDetalle()
+	D = K.Ventana({ nombre = "AlfaRastreadorDetalle", titulo = L["Detalle de la guía"], icono = "ic-guia", ancho = 460, alto = 600 })
+	local cuerpo = D.Cuerpo
+	dui.seg = K.Segmentos(cuerpo, { estilo = "segmentos", valor = dvista,
+		opciones = { { valor = "paso", texto = L["Este paso"] }, { valor = "pasos", texto = L["Todos los pasos"] } },
+		alCambiar = function(valor) if valor ~= dvista then dvista = valor Rs.PintarDetalle() end end })
+	dui.scroll = K.Desplazable(cuerpo)
+	local C = dui.scroll.Contenido
+	dui.cx = nuevoCx(C)
+	-- Tu plan
+	dui.planSobre = K.Texto(C, "mayus", "acento")
+	dui.planTitulo = K.Texto(C, "etiqueta", "texto")
+	dui.planTitulo:SetWordWrap(true)
+	dui.planVer = K.Boton(C, L["Ver el plan"], function()
+		local d = M.Planes and M.Planes.Tarjeta()
+		if d and M.VistaPlanes then M.VistaPlanes.Abrir(d.plan.id) end
+	end, { tipo = "secundario", tam = "chico", icono = "ic-lista" })
+	dui.planLinea = K.Linea(C, "linea")
+	-- El paso
+	dui.titulo = K.Texto(C, "subtitulo", "texto")
+	dui.titulo:SetWordWrap(true)
+	dui.nota = K.Texto(C, "nota", "textoSuave")
+	dui.nota:SetWordWrap(true)
+	dui.vacio = K.Vacio(C, { lobo = "dormido", titulo = L["No sigues ninguna guía"],
+		texto = L["Elige qué quieres hacer y Alfa te lleva paso a paso."],
+		accion = { texto = L["¿Qué quieres hacer?"], icono = "ic-lobo", alClic = function() if M.Asistente then M.Asistente.Abrir() end end } })
+	-- Todos los pasos
+	dui.lista = K.Lista(cuerpo, {
+		alto = K.ALTO.filaCompacta,
+		crear = function(fila)
+			fila.Num = K.Texto(fila, "numero", "textoTenue")
+			fila.Num:SetPoint("LEFT", fila, "LEFT", 8, 0)
+			fila.Num:SetWidth(28)
+			fila.Num:SetJustifyH("RIGHT")
+			fila.Hecho = K.Icono(fila, "ic-exito", 12, "acento")
+			fila.Hecho:SetPoint("LEFT", fila, "LEFT", 42, 0)
+			fila.Texto = K.Texto(fila, "etiqueta", "texto")
+			fila.Texto:SetPoint("LEFT", fila, "LEFT", 60, 0)
+			fila.Texto:SetPoint("RIGHT", fila, "RIGHT", -8, 0)
+		end,
+		pintar = function(fila, i)
+			local v = engine("GetStepView", i)
+			local u = U()
+			fila.Num:SetText(tostring(u and u.StepNo and u.StepNo(i) or i))
+			local resumen = v and u and u.StepSummary and u.StepSummary(v) or ""
+			K.Escribir(fila.Texto, resumen)
+			local actual = i == engine("GetLiveStep")
+			local hecho = v and (v.status == "done" or v.skipped)
+			fila.Hecho:SetShown(hecho and true or false)
+			K.ColorTexto(fila.Texto, actual and "acento" or (hecho and "textoTenue" or "texto"))
+		end,
+		alClic = function(i)
+			engine("Goto", i)
+			dvista = "paso"
+			dui.seg:SetValor("paso")
+			Rs.PintarDetalle()
+		end,
+		elegir = false,
+	})
+	-- El pie: Anterior a la izquierda; Omitir y Siguiente a la derecha.
+	dui.atras = K.Boton(D, L["Anterior"], function() engine("Prev") end, { tipo = "fantasma", tam = "chico" })
+	dui.omitir = K.Boton(D, L["Omitir"], function()
+		local e = E()
+		if e and e.GetGuide and e.GetGuide() then engine("Skip") end
+	end, { tipo = "fantasma", tam = "chico", ayuda = L["Omite este paso: la guía sigue con el siguiente. Puedes volver a él con Anterior."] })
+	dui.siguiente = K.Boton(D, L["Siguiente"], function() engine("Next") end, { tipo = "secundario", tam = "chico" })
+	D:SetPie({ dui.omitir, dui.siguiente }, { dui.atras })
+	D:SetScript("OnShow", function() Rs.PintarDetalle() end)
+	D.alAcomodar = function() Rs.PintarDetalle() end
+end
+
+function Rs.PintarDetalle()
+	if not (D and D:IsShown()) then return end
+	local e = E()
+	local g = e and e.GetGuide and e.GetGuide()
+	local i = g and engine("GetStepIndex")
+	local live = g and engine("GetLiveStep")
+	local v = i and engine("GetStepView", i)
+	local vacio = not (g and v)
+	local nombre, linea = resumenGuia(g, v)
+	D:SetTitulo(g and nombre or L["Detalle de la guía"], linea, "ic-guia")
+	local m = D.margen
+	local ancho = D:AnchoCuerpo()
+	local y = K.ESP.m
+	dui.seg:SetShown(not vacio)
+	if not vacio then
+		local hs = dui.seg:Acomodar(ancho)
+		dui.seg:ClearAllPoints()
+		dui.seg:SetPoint("TOPLEFT", D.Cuerpo, "TOPLEFT", m, -y)
+		y = y + hs + K.ESP.m
+	end
+	local alto = max(80, D:AltoCuerpo() - y - K.ESP.s)
+	for _, b in ipairs({ dui.atras, dui.omitir, dui.siguiente }) do b:SetActivo(not vacio) end
+	if not vacio then dui.atras:SetActivo(i > 1) end
+	-- Todos los pasos
+	if dvista == "pasos" and not vacio then
+		dui.scroll:Hide()
+		local datosLista = {}
+		local u = U()
+		for k = 1, engine("GetStepCount") or 0 do
+			if not (u and u.StepHidden and u.StepHidden(k)) then datosLista[#datosLista + 1] = k end
+		end
+		dui.lista:ClearAllPoints()
+		dui.lista:SetPoint("TOPLEFT", D.Cuerpo, "TOPLEFT", m - 4, -y)
+		dui.lista:Acomodar(ancho + 8, alto)
+		dui.lista:SetDatos(datosLista)
+		for pos, k in ipairs(datosLista) do if k == live then dui.lista:IrA(pos) end end
+		dui.lista:Show()
+		return
+	end
+	dui.lista:Hide()
+	dui.scroll:Show()
+	dui.scroll:ClearAllPoints()
+	dui.scroll:SetPoint("TOPLEFT", D.Cuerpo, "TOPLEFT", m, -y)
+	dui.scroll:Acomodar(ancho + 12, alto)
+	local cx = dui.cx
+	local w = ancho
+	local cy = 0
+	-- Tu plan
+	local d = M.Planes and M.Planes.Tarjeta()
+	local conPlan = d ~= nil
+	for _, p in ipairs({ dui.planSobre, dui.planTitulo, dui.planVer, dui.planLinea }) do p:SetShown(conPlan) end
+	if conPlan then
+		K.Escribir(dui.planSobre, K.Mayus(d.total > 0 and format(L["Mi plan · %s · %d de %d"], d.nombre, d.hechas, d.total) or format(L["Mi plan · %s"], d.nombre)))
+		dui.planSobre:ClearAllPoints()
+		dui.planSobre:SetPoint("TOPLEFT", cx.padre, "TOPLEFT", 0, -cy)
+		dui.planSobre:SetWidth(w)
+		cy = cy + 16
+		K.Escribir(dui.planTitulo, d.titulo or "")
+		dui.planTitulo:ClearAllPoints()
+		dui.planTitulo:SetPoint("TOPLEFT", cx.padre, "TOPLEFT", 0, -cy)
+		cy = cy + K.Parrafo(dui.planTitulo, w) + K.ESP.s
+		dui.planVer:ClearAllPoints()
+		dui.planVer:SetPoint("TOPLEFT", cx.padre, "TOPLEFT", 0, -cy)
+		cy = cy + K.ALTO.botonChico + K.ESP.m
+		dui.planLinea:ClearAllPoints()
+		dui.planLinea:SetPoint("TOPLEFT", cx.padre, "TOPLEFT", 0, -cy)
+		dui.planLinea:SetPoint("TOPRIGHT", cx.padre, "TOPLEFT", w, -cy)
+		cy = cy + K.ESP.m
+	end
+	-- El paso
+	dui.vacio:SetShown(vacio and not conPlan)
+	dui.titulo:SetShown(not vacio)
+	dui.nota:Hide()
+	if vacio then
+		ocultarPaso(cx)
+		if not conPlan then
+			local vh = dui.vacio:Acomodar(w)
+			dui.vacio:ClearAllPoints()
+			dui.vacio:SetPoint("TOPLEFT", cx.padre, "TOPLEFT", 0, -cy)
+			cy = cy + vh
+		end
+	else
+		K.Escribir(dui.titulo, tituloPaso(v))
+		dui.titulo:ClearAllPoints()
+		dui.titulo:SetPoint("TOPLEFT", cx.padre, "TOPLEFT", 0, -cy)
+		cy = cy + K.Parrafo(dui.titulo, w) + 4
+		local nota = notaPaso(v)
+		if nota then
+			K.Escribir(dui.nota, nota)
+			dui.nota:ClearAllPoints()
+			dui.nota:SetPoint("TOPLEFT", cx.padre, "TOPLEFT", 0, -cy)
+			cy = cy + K.Parrafo(dui.nota, w) + K.ESP.s
+			dui.nota:Show()
+		end
+		cy = cy + 2
+		local here = A.PlayerPoint and A.PlayerPoint()
+		cy = pintarMetas(cx, v, 6, cy, w - 6, here and here.map)
+		cy = cy + K.ESP.s
+		cy = pintarObjeto(cx, 0, cy, w)
+		cy = pintarCerca(cx, 0, cy + K.ESP.xs, w, MAX_CERCA_DETALLE, true)
+	end
+	dui.scroll:SetAltoContenido(cy + K.ESP.base)
+end
+
+-- vista: "paso" (por omisión, la que tenías) o "pasos".
+function Rs.AbrirDetalle(vista)
+	if not D then construirDetalle() end
+	if vista == "paso" or vista == "pasos" then
+		dvista = vista
+		dui.seg:SetValor(vista)
+	end
+	D:Abrir()
+	Rs.PintarDetalle()
+end
+
+function Rs.AlternarDetalle()
+	if D and D:IsShown() then D:Cerrar() else Rs.AbrirDetalle() end
+end
+
+function Rs.DetalleVisible() return D ~= nil and D:IsShown() end
+
 -- Muchas cosas cambian seguido (cada bicho muerto, cada paso): se pinta una
--- vez por tanda.
+-- vez por tanda, lo que esté a la vista.
 local function luego()
-	if est.pendiente or not (F and F:IsShown()) then return end
+	if est.pendiente or not ((F and F:IsShown()) or (D and D:IsShown())) then return end
 	est.pendiente = true
 	A.After(0.05, function()
 		est.pendiente = false
 		Rs.Pintar()
+		Rs.PintarDetalle()
 	end)
 end
 Rs.Luego = luego
@@ -741,7 +1332,7 @@ local function pedidoFin(p)
 	else
 		local m = p.modelo or {}
 		K.Aviso({ lobo = "aullando", titulo = format(L["¡Bien hecho! %s"], m.label or ""), texto = L["Terminaste esta guía."],
-			duracion = 12, accion = { texto = L["¿Qué sigue?"], alClic = function() A.Set("ui.shown", true) end } })
+			duracion = 12, accion = { texto = L["¿Qué sigue?"], alClic = function() M.Empezar() end } })
 	end
 end
 
@@ -754,7 +1345,17 @@ for _, msg in ipairs({ "GUIDE_CHANGED", "STEP_CHANGED", "STEP_UPDATED", "WAYPOIN
 end
 A.RegisterEvent("QUEST_LOG_UPDATE", luego)
 A.RegisterEvent("BAG_UPDATE_DELAYED", luego)
-K.AlRepintar(function() if F and F:IsShown() then Rs.Pintar() end end)
+K.AlRepintar(function()
+	if F and F:IsShown() then Rs.Pintar() end
+	Rs.PintarDetalle()
+end)
+local VISTA = { [M.ID .. ".seguimientoCompleto"] = true, ["ui.compact"] = true, ["ui.showNotes"] = true }
+A.On("SETTING_CHANGED", function(ruta)
+	if ruta == M.ID .. ".cercaBoton" then Rs.BotonCerca() end
+	if VISTA[ruta] or ruta == "" then luego() end
+end)
+M.Escuchar("PLANES", luego)
+M.Escuchar("PLAN_AVANCE", luego)
 
 function Rs.Visible() return F ~= nil and F:IsShown() end
 function Rs.Mostrar() A.Set("ui.shown", true) end

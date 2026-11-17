@@ -233,6 +233,7 @@ end
 -- Seguir: la flecha y la ruta del motor
 ---------------------------------------------------------------------------
 local seguido -- { id, objetivo } del marcador al que va la flecha
+local desdeOtroModulo = false -- AlfaMundo.SeguirPunto / SeguirMarcador: ese módulo decide qué ventanas cierra
 
 -- A un punto cualquiera: mapa, x, y (0-100), nombre, marco (f = "e" para
 -- las coordenadas de la era, las de algunos pines del motor). -> true | false
@@ -253,6 +254,10 @@ function Mk.SeguirPunto(mapa, x, y, nombre, marco, id)
 		N.Imprimir(format(L["La flecha te lleva a %s."], nombre))
 	end
 	avisar()
+	-- Empieza el seguimiento: se cierran el mapa y las ventanas de Alfa y se
+	-- ve el rastreador (N.EmpezarRuta, del núcleo). Toda acción del jugador
+	-- que sigue algo pasa por aquí: pines, fichas, la lista, el aviso, Ctrl+clic.
+	if not desdeOtroModulo and type(N.EmpezarRuta) == "function" then N.EmpezarRuta() end
 	return true
 end
 
@@ -532,6 +537,18 @@ if K.AlRepintar then K.AlRepintar(function() avisar() end) end
 -- El nombre que dice un pin: su etiqueta, su texto o la primera línea de su cuadro.
 local function nombreDePin(p)
 	if type(p.label) == "string" and p.label ~= "" then return p.label end
+	-- Un maestro de vuelo (Maps/TravelPins.lua): el nombre de su nodo, en tu idioma.
+	if p.nodeID then
+		local Nv = A.Nav
+		local ok, d = false, nil
+		if Nv and type(Nv.GetTravelData) == "function" then ok, d = pcall(Nv.GetTravelData) end
+		local nodo = ok and type(d) == "table" and type(d.taxiById) == "table" and d.taxiById[p.nodeID] or nil
+		if type(nodo) == "table" then
+			local T = Nv.travel
+			local nombre = T and type(T.TaxiName) == "function" and T.TaxiName(nodo) or nodo.name
+			if type(nombre) == "string" and nombre ~= "" then return nombre end
+		end
+	end
 	if type(p.tooltip) == "string" then
 		local linea = p.tooltip:match("^([^\n]+)")
 		if linea then return (linea:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")) end
@@ -588,5 +605,15 @@ API.PonerMarcador = function(spec)
 	local m = Mk.Crear(spec)
 	return m and m.id or nil
 end
-API.SeguirMarcador = function(id) return Mk.Seguir(id) end
-API.SeguirPunto = function(mapa, x, y, nombre) return Mk.SeguirPunto(tonumber(mapa), tonumber(x), tonumber(y), nombre) end
+local function deOtroModulo(fn, ...)
+	desdeOtroModulo = true
+	local ok, r = pcall(fn, ...)
+	desdeOtroModulo = false
+	if not ok then
+		if geterrorhandler then geterrorhandler()(r) end
+		return false
+	end
+	return r
+end
+API.SeguirMarcador = function(id) return deOtroModulo(Mk.Seguir, id) end
+API.SeguirPunto = function(mapa, x, y, nombre) return deOtroModulo(Mk.SeguirPunto, tonumber(mapa), tonumber(x), tonumber(y), nombre) end

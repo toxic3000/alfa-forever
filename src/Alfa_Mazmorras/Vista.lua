@@ -498,7 +498,7 @@ local function llenarResumen(r, key, d, e, nivel, lado)
 			insignias = { { NOMBRE_REQ[a.kind] or L["Requisito"], "neutro" } },
 			secundaria = not listo and { texto = L["Guíame"], alClic = function()
 				local gid, porque = x.Attune and llamar(x.Attune, key, a.id)
-				if gid then A.Set("ui.shown", true)
+				if gid then if N.EmpezarRuta then N.EmpezarRuta() else A.Set("ui.shown", true) end
 				elseif K.Aviso then K.Aviso({ titulo = L["No pude armar esa guía"], texto = porque == "tabs" and L["Tienes seis guías abiertas: cierra una y vuelve a intentarlo."] or nil, icono = "ic-alerta", tono = "aviso" }) end
 			end } or nil,
 		}

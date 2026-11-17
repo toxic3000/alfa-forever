@@ -14,6 +14,7 @@ function GetServerTime() return 1700000000 end
 time = os.time
 date = os.date
 function GetLocale() return "esMX" end
+function AlfaIdioma() return "esMX" end -- src/Alfa_Idioma (tools/build.py)
 function GetRealmName() return "Forever" end
 function GetNormalizedRealmName() return "Forever" end
 function UnitName(u) if u == "player" then return "Lobato", nil end return nil end

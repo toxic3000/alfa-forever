@@ -1,27 +1,37 @@
--- Alfa - Bienvenida: el primer arranque, las novedades y el aullido
+-- Alfa - Bienvenida: la configuración de Alfa, las novedades y el aullido
 -- (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Toma el lugar de la bienvenida y de las novedades del motor (SHOW_WELCOME y
--- SHOW_WHATSNEW, docs/KIT.md "Reemplazos"): las dos abren la ventana de Alfa
--- 1.0 (Asistente.lua), que muestra lo nuevo y pregunta, en este orden, el
--- estilo, si las misiones automáticas son solo las de tu ruta, si compartes tu
--- ubicación con La Jauría y si quieres el aullido.
+-- SHOW_WHATSNEW, docs/KIT.md "Reemplazos"). Lo principal es el asistente de
+-- configuración (Asistente.lua, con sus pasos en Pasos.lua): el idioma, el
+-- estilo, todo lo que Alfa hace sola (misiones, guía, comerciantes y viajes,
+-- otros jugadores, tu personaje), La Jauría y un resumen con "Cambiar".
 --
--- Cuándo sale sola: una vez por cuenta, también a quien ya vio la bienvenida
--- de antes (AlfaNucleoDB.bienvenida.visto < VERSION). Unos segundos después
--- de entrar, fuera de combate, de instancias, de cinemáticas y de la elección
--- de camino (espera a que termine cada cosa). Mostrarla la marca vista: un
--- /reload no la repite. /alfa bienvenida, Acerca de > "Mostrar la bienvenida
--- otra vez" y la página Estilo y sonido la abren cuando sea.
+-- Es obligatorio: hasta terminarlo, Pendiente() es true y Alfa no se usa (la
+-- puerta central del núcleo y del motor llama a AlfaBienvenida.Exigir()).
+-- Nunca bloquea el juego: solo las ventanas de Alfa. Sale solo al entrar
+-- (unos segundos después, fuera de combate, de instancias, de cinemáticas y
+-- de la elección de camino) cada vez que entras mientras esté pendiente, y
+-- sigue en el paso donde lo dejaste (también tras recargar por el idioma).
+-- Subir M.VERSION lo vuelve a pedir una vez a todos, con sus ajustes de ahora
+-- ya elegidos (cada paso lee los ajustes reales).
 --
 -- El aullido (Aullar): un lobo del propio juego la primera vez que abres la
 -- ventana de Alfa en cada sesión (con el ajuste bienvenida.aullido). Ver
 -- SONIDOS y LEEME.md.
 --
 -- Contrato (global AlfaBienvenida):
---   AlfaBienvenida.Abrir(vista)   "portada" (por omisión) o "asistente"
+--   AlfaBienvenida.Abrir(vista)   abre el asistente (pendiente: donde lo
+--                                 dejaste, con la línea de por qué; terminado:
+--                                 el resumen), o "portada" para lo nuevo
+--                                 de la versión (solo ya terminado)
+--   AlfaBienvenida.Pendiente()    true mientras la configuración no se terminó
+--   AlfaBienvenida.Exigir()       si está pendiente: lo abre, dice por qué en
+--                                 el chat y devuelve true (la puerta lo usa
+--                                 antes de abrir cualquier ventana de Alfa)
 --   AlfaBienvenida.Aullar()       el aullido ahora (si está encendido)
---   AlfaBienvenida.Visto()        true si ya salió el asistente de la 1.0
+--   AlfaBienvenida.Visto()        true si ya salió la configuración de esta versión
+-- Al terminar se dispara el mensaje del motor ALFA_CONFIGURADO.
 
 local ADDON, M = ...
 local N = AlfaNucleo
@@ -32,13 +42,16 @@ local ID = "bienvenida"
 local L = N.Textos(M.EN)
 M.ID, M.L = ID, L
 
--- La versión del asistente: subirla lo vuelve a mostrar una vez a todos.
-M.VERSION = 1
+-- La versión del asistente: subirla lo vuelve a pedir una vez a todos. La 1
+-- era el asistente de cuatro preguntas; la 2 es la configuración completa.
+M.VERSION = 2
 local ESPERA = 4 -- segundos después de entrar (tras la bienvenida del motor, 2, y sus novedades, 3)
 
 local function datos() return N.Datos(ID) end
 
 function M.Visto() return (tonumber(datos().visto) or 0) >= M.VERSION end
+-- true mientras la configuración de esta versión no se terminó.
+function M.Pendiente() return (tonumber(datos().respondio) or 0) < M.VERSION end
 function M.MarcarVisto()
 	local d = datos()
 	d.visto = M.VERSION
@@ -90,6 +103,7 @@ A.RegisterEvent("PLAYER_ENTERING_WORLD", function(_, inicio, recarga)
 	if inicio == true and not recarga then N.DatosPersonaje(ID).aulloSesion = nil end
 end)
 
+
 ---------------------------------------------------------------------------
 -- Cuándo se abre
 ---------------------------------------------------------------------------
@@ -112,7 +126,7 @@ local function libre(motivo)
 	return true
 end
 
--- vista: "portada" o "asistente"
+-- vista: "asistente" (por omisión) o "portada"
 function M.Abrir(motivo, vista)
 	motivo = motivo or "pedido"
 	if not libre(motivo) then
@@ -121,39 +135,65 @@ function M.Abrir(motivo, vista)
 		return false
 	end
 	pendiente = nil
-	if motivo == "login" then M.MarcarVisto() end
-	M.AbrirVentana(vista or M.vistaPendiente or "portada")
+	M.MarcarVisto()
+	local cual = vista or M.vistaPendiente or "asistente"
 	M.vistaPendiente = nil
+	-- falta la configuracion: primero la intro del lobo (una vez por sesion), luego el asistente
+	if cual == "asistente" and M.Pendiente() and M.Intro then
+		M.Intro(function() M.AbrirVentana(cual) end)
+	else
+		M.AbrirVentana(cual)
+	end
 	return true
 end
 
 local function intentar()
-	if pendiente == "pedido" or (pendiente == "login" and not M.Visto()) then M.Abrir(pendiente) end
+	if pendiente == "pedido" or (pendiente == "login" and M.Pendiente()) then M.Abrir(pendiente) end
+end
+
+-- La línea que explica por qué Alfa no abre todavía.
+local function recordar()
+	N.Imprimir(L["Termina la configuración para usar Alfa (2 minutos)."])
 end
 
 -- Al cerrarse la ventana: la bienvenida del motor que esperaba queda cerrada
 -- (WELCOME_CLOSED: las novedades del motor, reemplazadas aquí, ya no salen).
+-- Cerrarla sin terminar no cambia nada: se recuerda que falta.
 function M.AlCerrar()
 	local listo = esperaListo
 	esperaListo = nil
 	if listo then K.Llamar(listo) else A.Fire("WELCOME_CLOSED") end
+	if M.Pendiente() and not M.recargando then recordar() end
+end
+
+-- La puerta: si falta la configuración, la abre y lo dice. -> true si detuvo.
+function M.Exigir()
+	if not M.Pendiente() then return false end
+	if not (M.Visible and M.Visible()) then
+		recordar()
+		M.Abrir("pedido", "asistente")
+	end
+	return true
 end
 
 local function visible() return M.Visible and M.Visible() or false end
 
 N.Reemplazar("SHOW_WELCOME", function(p)
 	esperaListo = p.Listo
-	if p.motivo == "login" and M.Visto() then M.AlCerrar() return end
-	M.Abrir(p.motivo == "login" and "login" or "pedido", "portada")
+	if p.motivo == "login" then
+		if M.Pendiente() then M.Abrir("login", "asistente") else M.AlCerrar() end
+		return
+	end
+	M.Abrir("pedido", M.Pendiente() and "asistente" or "portada")
 end, visible)
 
 N.Reemplazar("SHOW_WHATSNEW", function(p)
-	if p.motivo == "login" and M.Visto() then return end
-	M.Abrir(p.motivo == "login" and "login" or "pedido", "portada")
+	if p.motivo == "login" then return end
+	M.Abrir("pedido", M.Pendiente() and "asistente" or "portada")
 end, visible)
 
 A.OnLogin(function()
-	if M.Visto() then return end
+	if not M.Pendiente() then return end
 	pendiente = pendiente or "login"
 	if C_Timer and C_Timer.After then C_Timer.After(ESPERA, intentar) else intentar() end
 end)
@@ -172,10 +212,20 @@ A.On("ROUTE_CHOICE_HIDDEN", function() intentar() end)
 ---------------------------------------------------------------------------
 A.RegisterCommand("bienvenida", function(resto)
 	resto = type(resto) == "string" and resto:lower():match("^%s*(%S*)") or ""
-	M.Abrir("pedido", (resto == "asistente" or resto == "pasos") and "asistente" or "portada")
-end, L["abre la bienvenida de Alfa 1.0 (también: asistente)"])
+	local portada = resto == "novedades" or resto == "portada" or resto == "nuevo"
+	M.Abrir("pedido", (portada and not M.Pendiente()) and "portada" or "asistente")
+end, L["abre la configuración de Alfa (también: novedades)"])
 
 AlfaBienvenida = type(AlfaBienvenida) == "table" and AlfaBienvenida or {}
-function AlfaBienvenida.Abrir(vista) return M.Abrir("pedido", vista) end
+function AlfaBienvenida.Abrir(vista)
+	if M.Pendiente() then
+		-- La puerta del núcleo (N.Permitido) llega aquí: decir por qué.
+		M.Exigir()
+		return true
+	end
+	return M.Abrir("pedido", vista == "portada" and "portada" or "asistente")
+end
+function AlfaBienvenida.Pendiente() return M.Pendiente() end
+function AlfaBienvenida.Exigir() return M.Exigir() end
 function AlfaBienvenida.Aullar() return M.Aullar() end
 function AlfaBienvenida.Visto() return M.Visto() end

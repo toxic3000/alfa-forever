@@ -145,7 +145,9 @@ local function pintar(spec)
 	local relleno = K.Tono(tono)
 	K.ColorPlano(f.Franja, relleno)
 	K.ColorPlano(f.Marca, relleno)
-	f.Baldosa.caja:Estilo({ fondo = relleno, borde = relleno })
+	-- la baldosa en el tono suave y el ícono en el fuerte: con los dos iguales
+	-- el ícono no se veía (quedaba un cuadro liso)
+	f.Baldosa.caja:Estilo({ fondo = relleno, alfaFondo = 0.18, borde = relleno, alfaBorde = 0.55 })
 	-- El ícono: el de un hechizo tal cual, el lobo o un ícono de Alfa teñido.
 	if spec.textura then
 		f.Icono:SetTexture(spec.textura)
@@ -156,10 +158,11 @@ local function pintar(spec)
 	else
 		f.Icono:SetTexCoord(0, 1, 0, 1)
 		if spec.lobo then
-			f.Icono:SetTexture(K.Lobo(spec.lobo))
-			f.Icono.alfaColor = relleno
-			f.Icono:SetVertexColor(K.Color(relleno))
-			f.Icono:SetSize(30, 30)
+			-- el ícono de Alfa (el lobo del logo), a todo color
+			f.Icono:SetTexture("Interface\\AddOns\\Alfa\\Media\\UI\\logo")
+			f.Icono.alfaColor = nil
+			f.Icono:SetVertexColor(1, 1, 1, 1)
+			f.Icono:SetSize(BALDOSA - 4, BALDOSA - 4)
 		else
 			K.SetIcono(f.Icono, spec.icono or "ic-info", relleno)
 			f.Icono:SetSize(20, 20)

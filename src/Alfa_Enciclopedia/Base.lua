@@ -134,11 +134,22 @@ end)
 local GRUPO_NOMBRE = { item = "item", mount = "item", pet = "item", recipe = "item", tabard = "item",
 	npc = "npc", rare = "npc", object = "object", treasure = "object", quest = "quest" }
 
+-- Las guías propias (Coleccion.lua, Legado.lua): kind "guia", id -> nombre.
+M.GUIAS = {}
+
 function M.Nombre(kind, id)
 	if id == nil then return "?" end
 	if kind == "zone" then return M.Zona(id) or tostring(id) end
+	if kind == "guia" then return M.GUIAS[id] or tostring(id) end
 	local C = M.CodexListo()
 	if not C then return tostring(id) end
+	if kind == "mountspell" then
+		-- Una montura que es un hechizo (de clase, o del diario de monturas).
+		local s = C.Spell(id)
+		local nombre = s and s.name
+		if not nombre and M.Col and M.Col.NombreDiario then nombre = M.Col.NombreDiario(id) end
+		return nombre or tostring(id)
+	end
 	if kind == "instance" then
 		local inst = C.Instance(id)
 		return inst and inst.name or tostring(id)
@@ -257,6 +268,10 @@ end
 M.TIPOS = {
 	{ clave = "objeto", texto = L["Objetos"], icono = "ic-bolsas", kinds = { "item", "mount", "pet", "recipe", "tabard" },
 		descripcion = L["Armas, armaduras, materiales, recetas y monturas: quién los suelta y quién los vende."] },
+	{ clave = "montura", texto = L["Monturas"], icono = "ic-huella", kinds = { "mount" },
+		descripcion = L["Todas las monturas: cómo se consigue cada una, qué pide y si ya la tienes."] },
+	{ clave = "mascota", texto = L["Mascotas"], icono = "ic-lobo", kinds = { "pet" },
+		descripcion = L["Todas las mascotas de compañía: dónde salen, cuánto cuestan y cuáles te faltan."] },
 	{ clave = "pnj", texto = L["PNJ"], icono = "ic-personajes", kinds = { "npc" },
 		descripcion = L["Dónde está cada uno, lo que vende, lo que suelta y sus misiones."] },
 	{ clave = "mision", texto = L["Misiones"], icono = "ic-misiones", kinds = { "quest" },
@@ -270,8 +285,10 @@ M.TIPO = {}
 M.TIPO_DE_KIND = {}
 for _, t in ipairs(M.TIPOS) do
 	M.TIPO[t.clave] = t
+	-- Las monturas y mascotas también están en Objetos, pero se abren en su tipo.
 	for _, k in ipairs(t.kinds) do M.TIPO_DE_KIND[k] = t.clave end
 end
+M.TIPO_DE_KIND.mountspell = "montura"
 M.ES_OBJETO = { item = true, mount = true, pet = true, recipe = true, tabard = true }
 
 -- Lo que pide quien abre la enciclopedia (los tipos del motor y los de Alfa).
@@ -281,6 +298,7 @@ local ALIAS = {
 	npc = "npc", pnj = "npc", quest = "quest", mision = "quest", ["misión"] = "quest",
 	zone = "zone", zona = "zone", rare = "rare", raro = "rare", treasure = "treasure", tesoro = "treasure",
 	object = "object", instance = "instance", mazmorra = "instance", dungeon = "instance",
+	mountspell = "mountspell", guia = "guia",
 }
 function M.KindDe(tipo) return type(tipo) == "string" and ALIAS[tipo:lower()] or nil end
 

@@ -89,8 +89,8 @@ function B.Seguir(id, nueva)
 	elseif e.SetGuide then
 		e.SetGuide(id)
 	end
-	A.Set("ui.shown", true)
 	if v then v:Cerrar() end
+	M.Empezar()
 end
 
 ---------------------------------------------------------------------------

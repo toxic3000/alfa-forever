@@ -1,0 +1,15 @@
+## Interface: 16001
+## Title: |cff8be04eAlfa|r - Paisaje y gráficos
+## Notes: Ajustes de gráficos escondidos, preajustes, cámara, placas y filtros de color para que el mundo se vea mejor.
+## Author: toxic3000 - La Jauria
+## Version: dev
+## X-License: GPL-3.0-only
+## Dependencies: Alfa, Alfa_Nucleo
+## Category: Alfa
+
+Textos.lua
+Datos.lua
+Motor.lua
+Filtros.lua
+Ventana.lua
+Pagina.lua

@@ -19,6 +19,12 @@
 --   B.Pintar(b, ent)         el objeto (ent = entrada de Ventana.lua) o vacío (nil)
 --   B.Buscar(b, estado)      nil: sin búsqueda; true: coincide; false: atenuado
 --   B.Enfriar(b, bolsa, casilla), B.Bloqueo(b, bloqueado)
+--
+-- Objetos de misión (los que el juego marca con GetContainerItemQuestInfo y
+-- los de la clase Misión, 12): con bolsas.brilloMision, un borde del color de
+-- misiones que late y una insignia «!» (llena si el objeto empieza una
+-- misión); sin él, el marco dorado fijo del juego (bolsas.marcaMision). Las
+-- piezas del brillo se crean solo en los botones que lo necesitan.
 
 local ADDON, M = ...
 local N, A, L = M.N, M.A, M.L
@@ -266,6 +272,79 @@ function B.Foto(padre)
 end
 
 ---------------------------------------------------------------------------
+-- El brillo de misión (se crea la primera vez que un botón lo necesita)
+---------------------------------------------------------------------------
+
+local function piezasMision(b, p)
+	if p.brillo then return p.brillo, p.insignia end
+	local g = CreateFrame("Frame", nil, p.capa)
+	g:SetAllPoints(b)
+	g:SetFrameLevel(p.capa:GetFrameLevel() + 1)
+	g.borde = marco(g, "OVERLAY", 3)
+	g.halo = g:CreateTexture(nil, "OVERLAY", nil, 2)
+	g.halo:SetTexture(media("glow"))
+	g.halo:SetBlendMode("ADD")
+	g.halo:SetPoint("TOPLEFT", b, "TOPLEFT", -5, 5)
+	g.halo:SetPoint("BOTTOMRIGHT", b, "BOTTOMRIGHT", 5, -5)
+	local ag = g:CreateAnimationGroup()
+	ag:SetLooping("BOUNCE")
+	local a = ag:CreateAnimation("Alpha")
+	a:SetFromAlpha(1)
+	a:SetToAlpha(0.35)
+	a:SetDuration(0.8)
+	if a.SetSmoothing then a:SetSmoothing("IN_OUT") end
+	g.late = ag
+	g:Hide()
+	-- La insignia «!» no late: queda fija arriba a la izquierda.
+	local ins = CreateFrame("Frame", nil, p.capa)
+	ins:SetFrameLevel(p.capa:GetFrameLevel() + 2)
+	ins:SetPoint("TOPLEFT", b, "TOPLEFT", 1, -1)
+	ins.fondo = ins:CreateTexture(nil, "OVERLAY", nil, 4)
+	ins.fondo:SetTexture(BLANCO)
+	ins.fondo:SetAllPoints(ins)
+	ins.borde = marco(ins, "OVERLAY", 5)
+	ins.texto = ins:CreateFontString(nil, "OVERLAY")
+	ins.texto:SetPoint("CENTER", ins, "CENTER", 1, 0)
+	ins:Hide()
+	p.brillo, p.insignia = g, ins
+	return g, ins
+end
+
+local function sinBrillo(p)
+	if not p.brillo then return end
+	if p.brillo.late:IsPlaying() then p.brillo.late:Stop() end
+	p.brillo:Hide()
+	p.insignia:Hide()
+end
+
+local function pintarBrillo(b, p, inicia)
+	local g, ins = piezasMision(b, p)
+	local r, gg, bb = M.Color("quest", 0.95, 0.82, 0.42)
+	ponerMarco(g.borde, b, max(p.grosor or 1, 2 * pixel(b)), r, gg, bb, 1)
+	g.halo:SetVertexColor(r, gg, bb, 0.5)
+	g:Show()
+	if not g.late:IsPlaying() then g.late:Play() end
+	local t = max(11, floor((p.tam or 36) * 0.36 + 0.5))
+	if ins.alfaTam ~= t then
+		ins.alfaTam = t
+		ins:SetSize(t, t)
+		fuente(ins.texto, max(9, t - 2))
+	end
+	ins.texto:SetText("!")
+	-- Empieza una misión: la insignia llena; si no, oscura con el «!» de color.
+	if inicia then
+		ins.fondo:SetVertexColor(r, gg, bb, 1)
+		ins.texto:SetTextColor(0.08, 0.06, 0.02, 1)
+	else
+		local sr, sg, sb = M.Color("shade", 0, 0, 0.02)
+		ins.fondo:SetVertexColor(sr, sg, sb, 0.9)
+		ins.texto:SetTextColor(r, gg, bb, 1)
+	end
+	ponerMarco(ins.borde, ins, pixel(ins), r, gg, bb, 1)
+	ins:Show()
+end
+
+---------------------------------------------------------------------------
 -- Pintar
 ---------------------------------------------------------------------------
 
@@ -302,6 +381,7 @@ function B.Pintar(b, ent)
 		p.tinte:Hide()
 		mostrarMarco(p.calidad, false)
 		p.mision:Hide()
+		sinBrillo(p)
 		p.mejora:Hide()
 		p.chatarra:Hide()
 		p.nivel:SetText("")
@@ -376,10 +456,16 @@ function B.Pintar(b, ent)
 		p.mejora:Hide()
 	end
 
-	if M.Get("marcaMision") and rec.mision then
+	local esMision = rec.mision or e.clase == 12
+	if M.Get("brilloMision") and esMision then
+		p.mision:Hide()
+		pintarBrillo(b, p, rec.bang)
+	elseif M.Get("marcaMision") and esMision then
+		sinBrillo(p)
 		p.mision:SetTexture(rec.bang and (TEXTURE_ITEM_QUEST_BANG or QUEST_BANG) or (TEXTURE_ITEM_QUEST_BORDER or QUEST_BORDE))
 		p.mision:Show()
 	else
+		sinBrillo(p)
 		p.mision:Hide()
 	end
 

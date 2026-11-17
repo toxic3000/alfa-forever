@@ -47,6 +47,15 @@ PARCHES = [
     ("Alfa/Core/Update.lua",
      'local base = "https://github.com/fitzforge/polestar/releases"',
      lambda c: f'local base = "{c["urls"]["releases"]}"'),
+    # Alfa no es beta: sin la etiqueta junto a la version (ns.stage = nil).
+    ("Alfa/Core/Init.lua",
+     'ns.stage = "Beta"',
+     lambda c: 'ns.stage = nil -- Alfa: version estable, sin etiqueta de etapa'),
+    # Reglas de Blizzard (no saturar el chat de otros): escribir tu avance de
+    # misiones en el chat del grupo viene apagado; la bienvenida lo pregunta.
+    ("Alfa/Quests/Party.lua",
+     'panelPos = false, chat = true,',
+     lambda c: 'panelPos = false, chat = false,'),
     # El Discord de Alfa es el de La Jauria.
     ("Alfa/Core/Init.lua",
      'ns.DiscordURL = "https://discord.gg/polestar"',
@@ -175,7 +184,14 @@ REEMPLAZOS = [
      _fijo("-- Alfa: un mensaje que abre una ventana reemplazada (Core/Reemplazos.lua) va a la\n"
            "-- ventana de Alfa que la tomo; si no la atiende, sigue a los oyentes del motor.\n"
            "ns.DesviosDeMensajes = ns.DesviosDeMensajes or {}\n\n"
-           "function ns.Fire(msg, ...)\n\tlocal desvio = ns.DesviosDeMensajes[msg]\n"
+           "-- Alfa: la puerta (ns.Puerta, la pone Alfa_Nucleo) puede detener un mensaje que\n"
+           "-- abre una ventana: mientras falte terminar la bienvenida, abre la bienvenida.\n"
+           "local function cerrada(msg)\n\tlocal puerta = ns.Puerta\n"
+           "\tif not puerta or type(msg) ~= \"string\" or msg == \"SHOW_WELCOME\" then return false end\n"
+           "\tif not (msg:find(\"^SHOW_\") or msg:find(\"^TOGGLE_\")) then return false end\n"
+           "\tlocal ok, si = pcall(puerta, msg)\n\treturn ok and si == true\nend\n\n"
+           "function ns.Fire(msg, ...)\n\tif cerrada(msg) then return end\n"
+           "\tlocal desvio = ns.DesviosDeMensajes[msg]\n"
            "\tif desvio and desvio(...) then return end\n\tlocal list = listeners[msg]\n")),
     # Las secciones del centro abren el centro del motor sin pasar por el
     # reemplazo del selector (UI.AbrirCentro, motor/Alfa/UI/Picker.lua).
@@ -291,10 +307,181 @@ REEMPLAZOS = [
 ]
 PARCHES += REEMPLAZOS
 
+# Requisitos de una mision (src/Alfa_Rutas/Disponible.lua llena ns.Requisitos):
+# la ruta no manda a una mision que este personaje no puede hacer. Lo que no se
+# arregla haciendo algo (otra clase, raza o faccion, una excluyente ya hecha,
+# una profesion que no tiene, una reputacion que no alcanza) deja la aceptacion
+# fuera sin preguntar, con su motivo (noDisponible en la vista de la meta); una
+# previa que ninguna guia anterior da entra como paso de alimentacion armado
+# por Alfa (Own.feederPlan, con las mismas reglas: en las zonas de la guia y
+# barata), y la mision que la pide dice que se agrego (antes).
+_REQ_DEF = (
+    "-- Alfa: lo que la ruta de Alfa sabe de una misión y el motor no (Alfa_Rutas,\n"
+    "-- Disponible.lua, llena ns.Requisitos):\n"
+    "--   Bloqueo(questID) -> texto | nil: este personaje no puede tomarla ahora ni\n"
+    "--     haciendo otras misiones (otra clase, raza o facción, una excluyente ya\n"
+    "--     hecha, una profesión que no tiene, una reputación que no alcanza): la\n"
+    "--     aceptación y sus metas quedan fuera (marca \"alfa\"), sin preguntar.\n"
+    "--   Cadena(questID) -> { { quest, title, step, preAll }, ... } | nil: los\n"
+    "--     pasos en orden de la cadena que trae esa misión cuando ninguna guía\n"
+    "--     anterior la da (Own.feederPlan los pone como los de una guía previa).\n"
+    "-- La palabra del PNJ (Own.offered) gana: si la ofreció, se puede.\n"
+    "ns.Requisitos = ns.Requisitos or {}\n"
+    "Own.alfaMarks = setmetatable({}, { __mode = \"k\" })\n"
+    "\n"
+    "function Own.alfaBloqueo(goal, own, list)\n"
+    "\tlocal fn = ns.Requisitos.Bloqueo\n"
+    "\tlocal q = goal.quest\n"
+    "\tif type(fn) ~= \"function\" or not q or Own.offered[q] then return nil end\n"
+    "\tlocal a = own and goal or (list[1] and list[1].goal)\n"
+    "\tif not a then return nil end\n"
+    "\tlocal ok, texto = pcall(fn, q)\n"
+    "\tif not (ok and type(texto) == \"string\" and texto ~= \"\") then return nil end\n"
+    "\tlocal m = Own.alfaMarks[a]\n"
+    "\tif not m then\n"
+    "\t\tm = { reason = \"alfa\", accept = a }\n"
+    "\t\tOwn.alfaMarks[a] = m\n"
+    "\tend\n"
+    "\tm.texto = texto\n"
+    "\treturn m\n"
+    "end\n"
+    "\n"
+    "-- Alfa: lo que la ruta agregó antes de esta meta (texto), de la meta o del plan\n"
+    "-- de la guía (guide.antes: misión -> texto, Own.alfaAntesDe).\n"
+    "function Own.alfaAntes(goal)\n"
+    "\tif type(goal.antes) == \"string\" and goal.antes ~= \"\" then return goal.antes end\n"
+    "\tlocal byQuest = goal.t == \"accept\" and goal.quest and guide and rawget(guide, \"antes\")\n"
+    "\treturn type(byQuest) == \"table\" and byQuest[goal.quest] or nil\n"
+    "end\n"
+    "\n"
+    "-- Alfa: la cadena de Alfa para la previa p, como la de Own.feederChain: cada\n"
+    "-- misión es de la guía \"alfa\" (distancia 0: va justo antes de la aceptación\n"
+    "-- que abre), en orden. -> cadena | nil\n"
+    "function Own.alfaFeeder(p, idx)\n"
+    "\tlocal fn = ns.Requisitos.Cadena\n"
+    "\tif type(fn) ~= \"function\" then return nil end\n"
+    "\tlocal ok, list = pcall(fn, p)\n"
+    "\tif not (ok and type(list) == \"table\" and #list > 0) then return nil end\n"
+    "\tlocal skips = ns.CharState().feedSkips\n"
+    "\tfor _, e in ipairs(list) do\n"
+    "\t\tif not (e.quest and type(e.step) == \"table\" and type(e.step.goals) == \"table\") then return nil end\n"
+    "\t\tif Own.questSkipped(e.quest) or (type(skips) == \"table\" and skips[e.quest]) then\n"
+    "\t\t\treturn { p = p, from = { id = \"alfa\", guide = \"Alfa\", title = list[#list].title }, ok = false, skipped = true, quests = {}, deps = {} }\n"
+    "\t\tend\n"
+    "\tend\n"
+    "\tlocal C = Compat()\n"
+    "\tlocal ch = { p = p, ok = true, quests = {}, deps = {}, orden = {} }\n"
+    "\tfor _, e in ipairs(list) do\n"
+    "\t\tlocal q = e.quest\n"
+    "\t\tidx.alfaN = (idx.alfaN or 0) + 1\n"
+    "\t\tlocal s = idx.alfaN\n"
+    "\t\tidx.first[q] = { id = \"alfa\", guide = \"Alfa\", title = e.title, d = 0, s = s, preAll = e.preAll }\n"
+    "\t\tlocal goals = {}\n"
+    "\t\tfor _, goal in ipairs(e.step.goals) do\n"
+    "\t\t\tgoals[#goals + 1] = { id = \"alfa\", d = 0, s = s, step = e.step, goal = goal }\n"
+    "\t\tend\n"
+    "\t\tidx.goals[q] = goals\n"
+    "\t\tch.quests[q] = C.IsOnQuest(q) and \"turnin\" or true\n"
+    "\t\tch.orden[#ch.orden + 1] = q\n"
+    "\tend\n"
+    "\tch.from = idx.first[p]\n"
+    "\tif not ch.from then return nil end\n"
+    "\treturn ch\n"
+    "end\n"
+    "\n"
+    "-- Alfa: de cada cadena que el plan metió, sus misiones por nombre para las\n"
+    "-- aceptaciones que abre. -> { [quest] = texto } | nil\n"
+    "function Own.alfaAntesDe(list, idx)\n"
+    "\tlocal out\n"
+    "\tlocal N = ns.Names\n"
+    "\tfor _, ch in ipairs(list or NONE) do\n"
+    "\t\tif ch.inserted then\n"
+    "\t\t\tlocal orden = ch.orden\n"
+    "\t\t\tif not orden then\n"
+    "\t\t\t\torden = {}\n"
+    "\t\t\t\tfor q in pairs(ch.quests) do orden[#orden + 1] = q end\n"
+    "\t\t\t\ttable.sort(orden)\n"
+    "\t\t\tend\n"
+    "\t\t\tlocal t = {}\n"
+    "\t\t\tfor _, q in ipairs(orden) do\n"
+    "\t\t\t\tlocal e = idx and idx.first[q]\n"
+    "\t\t\t\tt[#t + 1] = (N and N.Quest and N.Quest(q)) or (e and e.title) or Compat().GetQuestTitle(q) or tostring(q)\n"
+    "\t\t\tend\n"
+    "\t\t\tif #t > 0 then\n"
+    "\t\t\t\tlocal s = table.concat(t, \", \")\n"
+    "\t\t\t\tout = out or {}\n"
+    "\t\t\t\tfor _, d in ipairs(ch.deps) do out[d.q] = out[d.q] and (out[d.q] .. \", \" .. s) or s end\n"
+    "\t\t\tend\n"
+    "\t\tend\n"
+    "\tend\n"
+    "\treturn out\n"
+    "end\n"
+    "\n"
+)
+
+REQUISITOS = [
+    ("Alfa/Core/Engine.lua",
+     "-- Per quest, a goal's unavailable mark or nil. First, a quest the player\n",
+     _fijo(_REQ_DEF + "-- Per quest, a goal's unavailable mark or nil. First, a quest the player\n")),
+    ("Alfa/Core/Engine.lua",
+     "\tlocal u = unavailable[q]\n\tif u and u.reason == \"closed\" then\n",
+     _fijo("\t-- Alfa: lo que la ruta de Alfa sabe que la cierra (Own.alfaBloqueo).\n"
+           "\tlocal alfa = Own.alfaBloqueo(goal, own, list)\n"
+           "\tif alfa then return alfa end\n"
+           "\tlocal u = unavailable[q]\n\tif u and u.reason == \"closed\" then\n")),
+    ("Alfa/Core/Engine.lua",
+     "\tif u.reason == \"skipped\" then return L[\"You skipped this quest\"] end\n",
+     _fijo("\tif u.reason == \"skipped\" then return L[\"You skipped this quest\"] end\n"
+           "\tif u.reason == \"alfa\" then return u.texto end\n")),
+    ("Alfa/Core/Engine.lua",
+     "\t\tunavailableText = unavail and unavailableText(unavail) or nil,\n",
+     _fijo("\t\tunavailableText = unavail and unavailableText(unavail) or nil,\n"
+           "\t\t-- Alfa: por qué no se puede (Own.alfaBloqueo) y lo que la ruta agregó antes.\n"
+           "\t\tnoDisponible = unavail and unavail.reason == \"alfa\" and unavail.texto or nil,\n"
+           "\t\tantes = Own.alfaAntes(goal),\n")),
+    ("Alfa/Core/Engine.lua",
+     "\t\t\t\t\t\t\t\tch = Own.feederChain(p, idx) or false\n",
+     _fijo("\t\t\t\t\t\t\t\tch = Own.feederChain(p, idx)\n"
+           "\t\t\t\t\t\t\t\t-- Alfa: sin guía previa que la dé, la cadena de Alfa (Own.alfaFeeder).\n"
+           "\t\t\t\t\t\t\t\tif not (ch and (ch.ok or ch.skipped)) then ch = Own.alfaFeeder(p, idx) or ch end\n"
+           "\t\t\t\t\t\t\t\tch = ch or false\n")),
+    ("Alfa/Core/Engine.lua",
+     "\treturn { steps = steps, feeders = feeders, hidden = hidden, cost = cost, fromBase = fromBase, legs = legs, onWay = onWay }\n",
+     _fijo("\treturn { steps = steps, feeders = feeders, hidden = hidden, cost = cost, fromBase = fromBase, legs = legs, onWay = onWay,\n"
+           "\t\tantes = Own.alfaAntesDe(list, idx) }\n")),
+    ("Alfa/Core/Engine.lua",
+     "\tg2.onWay = next(plan.onWay) and plan.onWay or nil\n",
+     _fijo("\tg2.onWay = next(plan.onWay) and plan.onWay or nil\n\tg2.antes = plan.antes\n")),
+    # Guiame a una mision: la aceptacion de la buscada dice que previas se agregaron.
+    ("Alfa/Lookup/Guide.lua",
+     "\treturn steps\nend\nLookup.QuestChain = questChain\n",
+     _fijo("\t-- Alfa: la misión buscada dice qué se agregó antes (sus previas, en orden).\n"
+           "\tif #chain > 1 then\n"
+           "\t\tlocal N, t = ns.Names, {}\n"
+           "\t\tfor i = 1, #chain - 1 do\n"
+           "\t\t\tif i > 3 then\n"
+           "\t\t\t\tt[#t] = t[#t] .. \"...\"\n"
+           "\t\t\t\tbreak\n"
+           "\t\t\tend\n"
+           "\t\t\tt[#t + 1] = (N and N.Quest and N.Quest(chain[i].id)) or chain[i].title or tostring(chain[i].id)\n"
+           "\t\tend\n"
+           "\t\tlocal last = steps[#steps]\n"
+           "\t\tlocal a = last and last.goals and last.goals[1]\n"
+           "\t\tif a and a.t == \"accept\" and a.quest == questId then a.antes = table.concat(t, \", \") end\n"
+           "\tend\n"
+           "\treturn steps\nend\nLookup.QuestChain = questChain\n")),
+]
+PARCHES += REQUISITOS
+
 # Textos que se agregan al final de un archivo: las traducciones de lo nuevo.
+# Textos del motor que el paquete de idioma de Polestar deja en inglés.
+SIN_TRADUCIR_ES = {"Recorder": "Grabadora"}
+
 AGREGADOS = [
     (f"Alfa_{loc}/Interface.lua",
-     "\n-- Alfa: pagina Acerca de\n" + "".join(f'L["{n}"] = "{es}"\n' for _, n, es in ACERCA))
+     "\n-- Alfa: pagina Acerca de\n" + "".join(f'L["{n}"] = "{es}"\n' for _, n, es in ACERCA)
+     + "-- Alfa: textos que el paquete dejaba en ingles\n"
+     + "".join(f'L["{en}"] = "{es}"\n' for en, es in SIN_TRADUCIR_ES.items()))
     for loc in ("esMX", "esES")
 ]
 

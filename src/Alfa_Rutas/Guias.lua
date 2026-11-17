@@ -126,8 +126,9 @@ function G.Abrir(id)
 	end
 	local i = E.OpenTab(id, true)
 	if not i then return nil, "tabs" end
-	-- Como el "Guíame" del motor: la ventana de la guía se muestra.
-	if A.Set then A.Set("ui.shown", true) end
+	-- Como el "Guíame" del motor: la ventana de la guía se muestra (y las
+	-- de Alfa se cierran). Solo lo abre un clic: Seguir, Liberar, Recoger...
+	M.Empezar()
 	return i
 end
 

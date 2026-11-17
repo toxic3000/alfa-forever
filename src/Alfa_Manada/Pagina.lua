@@ -10,7 +10,9 @@
 --      Seguir e Invitar. Si no hay nadie, la sección no sale.
 --   3. El clan: La Jauría, su lema, lo que ofrece, su Discord para copiar y
 --      "Quiero unirme".
---   4. Los ajustes: tu rastro (compartir) y qué se ve en el mapa.
+--   4. En memoria de Lya: la tarjeta de su recuerdo (Alfa_Lya). Las donaciones no
+--      van en el juego (reglas de Blizzard): viven en CurseForge, GitHub y Discord.
+--   5. Los ajustes: tu rastro (compartir) y qué se ve en el mapa.
 -- Mientras la página está a la vista se revisa cada REFRESCO segundos y se
 -- rehace solo si algo de lo que muestra cambió (distancias, quién, dónde).
 --
@@ -130,9 +132,9 @@ local function accion(ui, gente)
 	if not on("compartir") then
 		return {
 			lobo = "atento", tono = "acento", sobre = U.Mayus(L["La Jauría"]),
-			titulo = L["Comparte tu rastro con la manada"],
-			texto = L["La Jauría son todos los que usan Alfa. Si compartes tu ubicación, te ven en su mapa y tú a ellos: quién anda cerca, dónde y, con un clic, la flecha te lleva. Tu grupo se ve siempre, compartas o no."],
-			accion = { texto = L["Compartir mi ubicación"], icono = "ic-manada", alClic = function() P.Preguntar() end },
+			titulo = L["Deja que la manada te vea en el mapa"],
+			texto = L["Si quieres, tu personaje aparece en el mapa del juego de los lobos que usan Alfa, y ellos en el tuyo: quién anda cerca, dónde y, con un clic, la flecha te lleva. Solo es el lugar de tu personaje dentro de WoW, nunca tu ubicación real. Tu grupo se ve siempre."],
+			accion = { texto = L["Que me vean en el mapa"], icono = "ic-manada", alClic = function() P.Preguntar() end },
 		}
 	end
 
@@ -192,7 +194,7 @@ local function accion(ui, gente)
 
 	-- Nadie a la vista: cómo hacer crecer la manada.
 	return {
-		lobo = "dormido", tono = "neutro", sobre = U.Mayus(L["Compartes tu ubicación"]),
+		lobo = "dormido", tono = "neutro", sobre = U.Mayus(L["La manada te ve en el mapa"]),
 		titulo = L["Nadie de la manada a la vista"],
 		texto = L["Cuando otro lobo con Alfa comparta su ubicación, aparece aquí y en tu mapa. Para que la manada crezca, invita a tus amigos: que instalen Alfa, acepten compartir y entren al Discord de La Jauría."],
 		accion = { texto = L["Copiar el Discord"], icono = "ic-manada", alClic = function() if ui.clan then ui.clan:IrAlDiscord() end end },
@@ -550,7 +552,73 @@ local function bloqueClan(ui, padre)
 end
 
 ---------------------------------------------------------------------------
--- 4. Los ajustes
+-- 4. En memoria de Lya (Alfa_Lya): una tarjeta corta con su recuerdo.
+-- Las donaciones no van dentro del juego (reglas de Blizzard para addons):
+-- viven en CurseForge, GitHub y el Discord.
+---------------------------------------------------------------------------
+
+local function recuerdoLya()
+	local Lya = rawget(_G, "AlfaLya")
+	if not (Lya and type(Lya.Recuerdo) == "function") then return nil end
+	local ok, titulo, texto, pie = pcall(Lya.Recuerdo)
+	if not (ok and texto and texto ~= "") then return nil end
+	return titulo, texto, pie
+end
+
+local function bloqueLya(padre)
+	local b = CreateFrame("Frame", nil, padre)
+	b.caja = K.Caja(b, { fondo = "panel", borde = "linea", corte = K.CORTE.panel })
+	b.Icono = K.Icono(b, "ic-lobo", 24, "acento")
+	b.Sobre = K.Texto(b, "mayus", "textoTenue")
+	b.Titulo = K.Texto(b, "subtitulo", "texto")
+	b.Texto = K.Texto(b, "texto", "textoSuave")
+	b.Pie = K.Texto(b, "nota", "textoTenue")
+
+	function b:Llenar()
+		local titulo, texto, pie = recuerdoLya()
+		self.alfaHay = texto ~= nil
+		K.Mostrar(self, self.alfaHay)
+		if not self.alfaHay then return end
+		K.Escribir(self.Sobre, U.Mayus(L["En memoria"]))
+		K.Escribir(self.Titulo, titulo or "Lya")
+		K.Escribir(self.Texto, texto)
+		K.Escribir(self.Pie, pie or "")
+	end
+
+	local function en(x, px, py)
+		x:ClearAllPoints()
+		x:SetPoint("TOPLEFT", b, "TOPLEFT", px, -py)
+	end
+
+	function b:Acomodar(ancho)
+		self:SetWidth(ancho)
+		if not self.alfaHay then
+			self:SetHeight(1)
+			return 1
+		end
+		local pad = ESP.l
+		local xt = pad + 24 + ESP.base
+		local w = ancho - xt - pad
+		en(self.Icono, pad, pad + 2)
+		local y = pad
+		en(self.Sobre, xt, y)
+		self.Sobre:SetWidth(w)
+		y = y + K.AltoTexto(self.Sobre) + 4
+		en(self.Titulo, xt, y)
+		K.Ajustar(self.Titulo, w)
+		y = y + K.AltoTexto(self.Titulo) + ESP.s
+		en(self.Texto, xt, y)
+		y = y + K.Parrafo(self.Texto, min(w, 720)) + ESP.s
+		en(self.Pie, xt, y)
+		y = y + K.Parrafo(self.Pie, w) + pad
+		self:SetHeight(y)
+		return y
+	end
+	return b
+end
+
+---------------------------------------------------------------------------
+-- 5. Los ajustes
 ---------------------------------------------------------------------------
 
 local function interruptor(clave, alCambiar)
@@ -576,14 +644,14 @@ end
 local function grupos(ui, padre)
 	local rastro = K.GrupoAjustes(padre, { titulo = L["Tu rastro"] })
 	ui.filaCompartir = rastro:Fila({
-		titulo = L["Compartir mi ubicación con La Jauría"], texto = "",
+		titulo = L["Que la manada vea a mi personaje en el mapa"], texto = "",
 		control = interruptor("compartir", function() N.Datos(ID).preguntado = true end),
 	})
 	local mapa = K.GrupoAjustes(padre, { titulo = L["En el mapa"] })
 	mapa:Fila({ titulo = L["Tu grupo en el mapa"], control = interruptor("capaGrupo"),
 		texto = L["Tu grupo o banda en el mapa y el minimapa, con el color de su clase."] })
 	mapa:Fila({ titulo = L["La Jauría en el mapa"], control = interruptor("capaJauria"), activa = function() return on("compartir") end,
-		texto = L["Quienes comparten su ubicación contigo. Un clic en su marca y la flecha te lleva."] })
+		texto = L["Los lobos que se dejan ver en el mapa. Un clic en su marca y la flecha te lleva."] })
 	mapa:Fila({ titulo = L["También en el minimapa"], control = interruptor("minimapa"),
 		texto = L["Las marcas de la manada también en el minimapa, no solo en el mapa del mundo."] })
 	return { rastro, mapa }
@@ -601,7 +669,7 @@ local function terminar(si)
 	pendiente = nil
 	N.Datos(ID).preguntado = true
 	N.Set(ID, "compartir", si and true or false)
-	if si then U.Decir(L["Compartes tu ubicación con La Jauría. Lo cambias cuando quieras en /alfa manada."]) end
+	if si then U.Decir(L["La manada ya ve a tu personaje en el mapa del juego. Lo cambias cuando quieras en /alfa manada."]) end
 	if p and p.alTerminar then K.Llamar(p.alTerminar, si and true or false) end
 end
 
@@ -630,9 +698,9 @@ function P.Preguntar(opts)
 		pendiente = { alTerminar = opts.alTerminar }
 		K.Dialogo({
 			lobo = "aullando", ancho = 480,
-			titulo = L["¿Compartes tu ubicación con La Jauría?"],
-			texto = L["La Jauría son todos los que usan Alfa. Si aceptas, quienes también comparten te ven en su mapa y te pueden seguir con la flecha, y tú a ellos. Se envía tu zona, tu posición, tu nivel y tu clase, nunca dentro de mazmorras. Tu grupo se ve siempre. Lo cambias cuando quieras en La Jauría."],
-			aceptar = L["Sí, compartir"],
+			titulo = L["¿Quieres que la manada te vea en el mapa del juego?"],
+			texto = L["Es opcional: tu personaje aparece en el mapa de WoW de los lobos de La Jauría que usan Alfa, y ellos en el tuyo, para encontrarse y llegar con la flecha. Solo se comparte dónde anda tu personaje dentro del juego (zona, punto en el mapa, nivel y clase), nunca tu ubicación real ni nada de tu computadora, y nunca dentro de mazmorras. Tu grupo se ve siempre. Lo cambias cuando quieras en La Jauría."],
+			aceptar = L["Sí, que me vean"],
 			cancelar = L["Ahora no"],
 			alAceptar = function() terminar(true) end,
 			alCancelar = function() terminar(false) end,
@@ -679,6 +747,7 @@ local function llenar(ui)
 	t:SetOpciones(lista, L["La manada a la vista"], { cuenta = #gente > 0 and #gente or nil, enlace = enlace })
 	pintarPersonas(t.Rejilla, lista)
 	ui.clan:Llenar()
+	ui.lya:Llenar()
 	ui.filaCompartir.alfaDatos.texto = textoCompartir()
 	for _, g in ipairs(ui.ajustes) do g:Refrescar() end
 	ui.firma = firma(ui, gente)
@@ -708,6 +777,7 @@ function P.Construir(view)
 	local t = K.Tablero(view, { margen = N.MargenPagina(), accion = "accion", tituloOpciones = L["La manada a la vista"], min = 256 })
 	ui.tablero = t
 	ui.clan = t:AgregarBloque(bloqueClan(ui, t.Extra))
+	ui.lya = t:AgregarBloque(bloqueLya(t.Extra), { espacio = ESP.l })
 	ui.ajustes = grupos(ui, t.Extra)
 	for i, g in ipairs(ui.ajustes) do t:AgregarBloque(g, { espacio = i == 1 and ESP.xl or ESP.l }) end
 	K.EnPagina(view, t, function() llenar(ui) end)
@@ -722,3 +792,4 @@ function P.Abrir()
 	N.Abrir(ID)
 	M.Avisar()
 end
+

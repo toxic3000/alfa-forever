@@ -3049,6 +3049,33 @@ local function pillButton(f, i)
 	return b
 end
 
+-- Alfa: las pastillas que no caben en el ancho de la ventana bajan a otra
+-- fila (Ajustes tiene 11 secciones y se salían por la derecha); la fila crece
+-- y el contenido, anclado debajo, baja con ella.
+local PILL_GAP, PILL_ROW_GAP = 6, 6
+local function placePills(f)
+	local row = f.PillRow
+	local first = SHELL.pad - 6
+	local maxX = (row:GetWidth() or 0) - SHELL.pad + 6
+	local x, y, rows = first, 0, 1
+	local top = (TOP.pills - PILL_H) / 2
+	for _, b in ipairs(f.pillButtons) do
+		if b:IsShown() then
+			local w = b:GetWidth()
+			if maxX > first and x > first and x + w > maxX then
+				x, y, rows = first, y + PILL_H + PILL_ROW_GAP, rows + 1
+			end
+			b:ClearAllPoints()
+			b:SetPoint("TOPLEFT", row, "TOPLEFT", x, -(top + y))
+			x = x + w + PILL_GAP
+		end
+	end
+	f.psPillRows = rows
+	local h = TOP.pills + (rows - 1) * (PILL_H + PILL_ROW_GAP)
+	if math.abs((row:GetHeight() or 0) - h) > 0.5 then row:SetHeight(h) end
+	return x
+end
+
 -- The pill row: the pills from the pad, then the subtitle in what is left;
 -- without pills, the title and the subtitle after it.
 local function layoutPillRow(f)
@@ -3060,6 +3087,12 @@ local function layoutPillRow(f)
 	if last then
 		f.Title:Hide()
 		f.Subtitle:SetPoint("LEFT", last, "RIGHT", 16, 0)
+		-- Alfa: con varias filas el subtítulo no tiene lugar fijo; se oculta
+		if (f.psPillRows or 1) > 1 then
+			f.Subtitle:SetPoint("RIGHT", row, "RIGHT", -pad, 0)
+			f.Subtitle:Hide()
+			return
+		end
 	else
 		f.Title:SetShown((f.Title:GetText() or "") ~= "")
 		f.Title:SetPoint("LEFT", row, "LEFT", pad, 0)
@@ -3075,7 +3108,6 @@ function W.ShellPills(f, pills, active, onSelect)
 	if not rawget(f, "PillRow") then return end
 	f.psOnPill = onSelect
 	local n = pills and #pills or 0
-	local x = SHELL.pad - 6
 	for i = 1, n do
 		local p = pills[i]
 		local b = pillButton(f, i)
@@ -3088,14 +3120,21 @@ function W.ShellPills(f, pills, active, onSelect)
 		b.Label:SetPoint("LEFT", b, "LEFT", p.icon and 31 or 14, 0)
 		b.Dot:SetShown(p.dot and true or false)
 		b:SetWidth((p.icon and 31 or 14) + math.ceil(textWidth(b.Label)) + 14)
-		b:ClearAllPoints()
-		b:SetPoint("LEFT", f.PillRow, "LEFT", x, 0)
 		paintPill(b)
 		b:Show()
-		x = x + b:GetWidth() + 6
 	end
 	for i = n + 1, #f.pillButtons do f.pillButtons[i]:Hide() end
+	placePills(f)
 	layoutPillRow(f)
+	-- al cambiar el ancho de la ventana se vuelven a repartir en filas
+	if not f.psPillHook then
+		f.psPillHook = true
+		f.PillRow:HookScript("OnSizeChanged", function()
+			local antes = f.psPillRows
+			placePills(f)
+			if antes ~= f.psPillRows then layoutPillRow(f) end
+		end)
+	end
 end
 
 function W.TopTitle(f, title, subtitle)

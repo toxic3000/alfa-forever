@@ -65,7 +65,14 @@ local function aplicarMascara()
 	if MinimapCompassTexture then MinimapCompassTexture:SetAlpha(0) end
 	if MinimapCompassTextureUnderlay then MinimapCompassTextureUnderlay:SetAlpha(0) end
 	ponerBorde()
-	borde:Show()
+	-- Con el estilo del minimapa (MinimapaEstilo.lua) va su bisel en lugar del borde fino.
+	borde:SetShown(not (M.EstiloMinimapaActivo and M.EstiloMinimapaActivo()))
+end
+
+-- El borde fino según la forma y el estilo (lo llama MinimapaEstilo.lua).
+local function refrescarBorde()
+	if not borde then return end
+	borde:SetShown(cuadrado and not (M.EstiloMinimapaActivo and M.EstiloMinimapaActivo()))
 end
 
 -- El botón del motor se coloca según la forma: que se acomode ya.
@@ -95,6 +102,8 @@ local function ponerCuadrado(si)
 		if C and C.UpdateMinimapConfig then pcall(C.UpdateMinimapConfig, C) end
 	end
 	moverBotonAlfa()
+	-- El estilo del minimapa cambia de bisel cuadrado a aro redondo.
+	if M.AlCambiarFormaMinimapa then M.Seguro(M.AlCambiarFormaMinimapa) end
 end
 
 local enganchadoCluster = false
@@ -243,4 +252,5 @@ A.RegisterEvent("PLAYER_ENTERING_WORLD", function()
 end)
 
 -- Para pruebas.
-M.Minimapa = { EsBotonDeAddon = esBotonDeAddon, Botones = botones, Aplicar = aplicar }
+M.Minimapa = { EsBotonDeAddon = esBotonDeAddon, Botones = botones, Aplicar = aplicar,
+	EsCuadrado = function() return cuadrado end, RefrescarBorde = refrescarBorde }

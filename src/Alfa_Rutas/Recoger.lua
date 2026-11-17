@@ -158,7 +158,7 @@ function R.Desbloquear(qid, alTerminar)
 	end
 	local des = D.Desbloquear(qid)
 	if des.motivo then
-		M.Aviso(format(L["%s no se puede tomar"], M.Citar(M.TituloMision(qid))), D.Texto(des.motivo, {}), { icono = "ic-aviso", tono = "aviso" })
+		M.Aviso(format(L["%s no se puede tomar"], M.Citar(M.TituloMision(qid))), D.Texto(des.motivo, des.info), { icono = "ic-aviso", tono = "aviso" })
 		return alTerminar(false)
 	end
 	I.Pedir(function(idx)
@@ -190,6 +190,8 @@ function R.Desbloquear(qid, alTerminar)
 				local s2 = P.PasosMisiones(luego, desde, ceder, notas)
 				for _, s in ipairs(s2) do pasos[#pasos + 1] = s end
 			end
+			-- La misión dice lo que se agregó antes (el rastreador: "Antes: ...").
+			P.MarcarAntes(pasos, { [qid] = des.antes })
 			if des.linea then
 				P.Anotar(pasos[1], format(L["Necesitas %s para esta cadena: apréndela con un instructor."], D.NombreProfesion(des.linea)))
 			end

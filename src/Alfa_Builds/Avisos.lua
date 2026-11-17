@@ -166,6 +166,7 @@ local function llevarA(goal, quien)
 	if not (goal and goal.map and goal.x and goal.y and Nv and Nv.SetTarget) then return end
 	local t = Nv.SetTarget(goal.map, goal.x, goal.y, quien or L["Misión de clase"], goal.f, nil, goal.z)
 	if t and Nv.StartTrip then Nv.StartTrip(t, nil, L["Misión de clase"]) end
+	if t and N.EmpezarRuta then N.EmpezarRuta() end -- cierra las ventanas de Alfa y muestra el seguimiento
 end
 
 N.Reemplazar("CLASS_CARD", function(p)

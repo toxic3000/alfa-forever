@@ -14,24 +14,36 @@ A mano: descarga `Alfa-<versión>.zip` de [Releases](https://github.com/toxic300
 
 | Comando | Módulo | Qué hace |
 |---|---|---|
-| `/alfa` | Ventana principal | Hoy, Aventura, Personaje, Mundo, Oficios y Manada, con Ajustes aparte; 3 estilos (Alfa, Clásico WoW, Cristal) |
-| `/alfa bienvenida` | Bienvenida | Primer arranque guiado: estilo, misiones solo de tu ruta, compartir con La Jauría, aullido |
+| `/alfa` | Ventana principal | Hoy, Aventura, Personaje, Mundo, Oficios y Manada, con Ajustes aparte; 3 estilos (Alfa, Clásico WoW, Cristal) que también visten el chat, el minimapa y las barras |
+| `/alfa bienvenida` | Bienvenida | Intro del lobo, idioma de Alfa (10 idiomas), qué es Alfa y cada opción automática como una pregunta |
 | `/alfa inicio` | Hoy | "¿Qué hacemos hoy?", tu siguiente paso, entregar o recoger misiones, alertas, tu clase y tus números |
-| `/alfa rutas` | Ruta | Asistente de 4 caminos, rastreador propio, biblioteca de guías, **entregar todas tus misiones listas**, plan de misiones a mano y misiones que sí puedes tomar |
-| `/alfa enciclopedia` | Enciclopedia | Todos los objetos, PNJ, misiones, zonas y raros, con sus fuentes y "Guíame" |
+| `/alfa rutas` | Ruta | Asistente de 4 caminos, seguimiento compacto con detalle aparte, biblioteca de guías, **Mis planes**, misiones previas agregadas solas y solo misiones que sí puedes hacer |
+| `/alfa cerca` | Buscar cerca | Maestro de vuelo, posada, reparar, banco, buzón, subastas y entrenadores con flecha y ruta |
+| `/alfa enciclopedia` | Enciclopedia | Objetos, PNJ, misiones, zonas, raros, monturas y mascotas, con sus fuentes y "Guíame"; guía de los puntos del Legado |
 | `/alfa mazmorras` | Mazmorras | Para tu nivel con "Prepárame"; jefes, botín, misiones y consejos |
 | `/alfa builds` | Talentos | Qué poner ahora y por qué, con un clic; equipo y compartir |
-| `/alfa combate` · `/alfa dps` | Combate | Ayuda de rotación discreta, avisos de reacción y medidor de daño del grupo |
+| `/alfa combate` · `/alfa dps` | Combate | Ayuda de rotación para las 27 especializaciones, objetivos de misión resaltados, avisos de reacción y medidor de daño |
 | `/alfa curacion` | Curación | Marcos para curar con clic y asistente de 3 pasos |
-| `/alfa bolsas` | Bolsas | Tres vistas (todo, categorías, por bolsa), barra de bolsas, banco con depositar rápido y comprar espacio, qué vender |
-| `/alfa mapa` (o M) | Mundo | Mapa de todo el mundo con zoom, marcadores propios para seguir y compartir, capas |
+| `/alfa bolsas` | Bolsas | Tres vistas, banco con depositar rápido, objetos de misión que brillan y qué vender |
+| `/alfa mapa` (o M) | Mundo | Mapa de todo el mundo con el terreno real, puntos de vuelo, entradas y salidas, marcadores propios y capas |
 | `/alfa recoleccion` | Recolección | Nodos, pines y ruta de farmeo |
 | `/alfa comercio` | Comercio | Precios de la subasta y qué hacer con cada objeto |
-| `/alfa pesca` | Pesca | Una tecla para lanzar y recoger |
-| `/alfa manada` | La Jauría | Tu grupo y quienes usan Alfa y aceptan compartir; Seguir; el clan |
+| `/alfa pesca` | Pesca | Modo pesca de una tecla (equipo, cebo, lanzar y recoger), barra, diario, logros, guía de 1 a 300 y cocina |
+| `/alfa paisaje` | Paisaje y gráficos | Ajustes gráficos explicados, preajustes, deshacer y filtros de pantalla |
+| `/alfa lya` | Lya | Una loba negra compañera: consejos, ánimo e historias de tus misiones y zonas. En memoria de una gran perrita |
+| `/alfa manada` | La Jauría | Tu grupo y quienes usan Alfa y aceptan que la manada los vea en el mapa; Seguir; el clan |
+| `/alfa reportar` | Reportes | Errores, mejoras y comentarios para el buzón privado del Discord, revisados por el desarrollador |
 | (Ajustes) | Comodidades | Minimapa, colores de clase, cuadro de información, probador, vuelo, misiones y sonidos |
 
 Alfa no depende de ningún otro addon. Versiones y notas: [`docs/VERSIONES.md`](docs/VERSIONES.md) y [`CHANGELOG.md`](CHANGELOG.md).
+
+## Apoya a Alfa
+
+Alfa es gratis y lo seguirá siendo. Donar es totalmente opcional: es una forma de agradecer el trabajo de toxic3000 y ayudar a que Alfa siga creciendo. No desbloquea nada y no cambia nada en el juego.
+
+[![Donar con PayPal](https://img.shields.io/badge/Donar-PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://www.paypal.com/donate/?hosted_button_id=7J5BYWH9DVT9C)
+
+Dentro del juego no hay donaciones: así lo piden las reglas de Blizzard para addons (ver `docs/REGLAS-BLIZZARD.md`).
 
 ## Construir e instalar
 

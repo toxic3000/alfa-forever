@@ -1257,7 +1257,7 @@ function V.Ajuste(clave)
 			if clave == "llavero" or clave == nil then todo(f, true) else ya(f) end
 		end
 	end
-	if clave == nil or clave:find("^marca") then V.RepintarTodo() end
+	if clave == nil or clave:find("^marca") or clave == "brilloMision" then V.RepintarTodo() end
 	if clave == "ordenar" or clave == nil then
 		for _, f in pairs(ventanas) do if f:IsShown() then franja(f) end end
 	end
@@ -1291,6 +1291,22 @@ A.RegisterEvent("BAG_UPDATE", function(_, bolsa)
 end)
 
 A.RegisterEvent("BAG_CONTAINER_UPDATE", function() enCada(todo) end)
+
+-- Aceptar o terminar una misión cambia qué objetos son de misión o la
+-- empiezan: las bolsas a la vista se vuelven a leer (una vez por ráfaga).
+local misionPendiente = false
+local function porMisiones()
+	if misionPendiente then return end
+	misionPendiente = true
+	M.Luego(0.5, function()
+		misionPendiente = false
+		enCada(function(f) if f.esVivo then todo(f) end end)
+	end)
+end
+A.RegisterEvent("QUEST_ACCEPTED", porMisiones)
+A.RegisterEvent("QUEST_REMOVED", porMisiones)
+A.RegisterEvent("QUEST_TURNED_IN", porMisiones)
+A.RegisterEvent("UNIT_QUEST_LOG_CHANGED", function(_, u) if not (issecretvalue and issecretvalue(u)) and u == "player" then porMisiones() end end)
 A.RegisterEvent("PLAYERBANKSLOTS_CHANGED", function(_, pestana)
 	local f = ventanas.banco
 	if not (f and f:IsShown() and f.esVivo) then return end

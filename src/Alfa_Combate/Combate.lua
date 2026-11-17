@@ -11,7 +11,13 @@
 --   * Medidor de daño (Medidor.lua, Ventana.lua): el top de tu grupo o banda
 --     con C_DamageMeter, el medidor oficial del juego; los valores secretos
 --     se muestran sin aritmética (barras y textos que los aceptan).
+--   * Marca de misión (MarcaMision.lua): un ícono y un brillo suave en la
+--     placa de nombre de quien te falta para una misión.
 --   * La página "combate" (Pagina.lua), en Personaje.
+-- Explicaciones con tope (más abajo): cada texto explicativo (el porqué de
+-- la rotación, los avisos de reacción) sale a lo sumo 4 veces por personaje,
+-- uno a la vez y nunca el mismo dos veces en 30 s; se callan para siempre con
+-- su × o con clic derecho, y "Volver a mostrar" los enciende de nuevo.
 -- Este archivo: ajustes, utilidades, los marcos movibles, eventos y comandos.
 --
 -- Contrato (global): AlfaCombate.AlternarMedidor(), AlfaCombate.Mover(),
@@ -28,7 +34,7 @@ local ID = "combate"
 M.ID = ID
 M.ICONO = "ic-nivel"
 
-local type, pairs, ipairs, pcall, floor, max = type, pairs, ipairs, pcall, math.floor, math.max
+local type, pairs, ipairs, pcall, floor, max, tonumber = type, pairs, ipairs, pcall, math.floor, math.max, tonumber
 
 M.AJUSTES = {
 	-- Rotación
@@ -40,6 +46,9 @@ M.AJUSTES = {
 	tam = 44,             -- tamaño del ícono principal
 	tecla = true,         -- la tecla sobre el ícono
 	nombre = false,       -- el nombre de la habilidad debajo
+	porque = true,        -- la línea corta del porqué (con tope: unas pocas veces)
+	barrido = true,       -- el barrido oscuro de la recarga sobre los íconos
+	rama = "auto",        -- tu especialización para la prioridad de Alfa ("auto" o su clave)
 	resaltar = true,      -- resaltar el botón de tu barra (el borde de Alfa)
 	-- Avisos
 	avisos = true,        -- avisos de reacción de tu clase
@@ -48,7 +57,11 @@ M.AJUSTES = {
 	avisosPorque = true,
 	-- Golpe y panel
 	golpe = true,
-	panel = false,        -- el panel de estadísticas (opcional)
+	golpeNumero = false,  -- los segundos junto a la barra de golpe
+	panel = false,
+	-- Misiones
+	marcaMision = true,   -- marcar en su placa de nombre a quien te falta para una misión
+	marcaMisionBrillo = true, -- y un brillo suave alrededor de su barra        -- el panel de estadísticas (opcional)
 	-- Medidor
 	medidor = false,      -- la ventana del medidor abierta (se recuerda)
 	medidorGrupo = false, -- la ventana solo cuando estás en grupo
@@ -132,6 +145,82 @@ function M.Juntar(lista)
 	if n == 0 then return "" end
 	if n == 1 then return lista[1] end
 	return table.concat(lista, ", ", 1, n - 1) .. " " .. L["y"] .. " " .. lista[n]
+end
+
+---------------------------------------------------------------------------
+-- Explicaciones con tope: lo que se escribe en pantalla al pelear no se
+-- repite. Cada texto (por su clave) sale a lo sumo LIMITE veces por personaje
+-- y luego se calla; el jugador puede callarlo antes (su × o clic derecho).
+-- Uno solo a la vez y nunca el mismo antes de PAUSA segundos.
+-- Se guarda en AlfaNucleoCharDB.combate.textos = { vistas = {}, callados = {} }.
+---------------------------------------------------------------------------
+M.LIMITE_TEXTO = 4
+M.PAUSA_TEXTO = 30
+
+local ultimaVez = {}  -- clave -> cuándo salió (esta sesión)
+local enPantalla      -- { clave, hasta }
+
+local function textos()
+	local d = N.DatosPersonaje(ID)
+	if type(d.textos) ~= "table" then d.textos = {} end
+	local t = d.textos
+	if type(t.vistas) ~= "table" then t.vistas = {} end
+	if type(t.callados) ~= "table" then t.callados = {} end
+	return t
+end
+
+-- ¿Puede salir ahora este texto?
+function M.TextoPuede(clave)
+	if type(clave) ~= "string" then return false end
+	local t = textos()
+	if t.callados[clave] then return false end
+	if (tonumber(t.vistas[clave]) or 0) >= M.LIMITE_TEXTO then return false end
+	local ahora = GetTime()
+	if ultimaVez[clave] and ahora - ultimaVez[clave] < M.PAUSA_TEXTO then return false end
+	if enPantalla and enPantalla.hasta > ahora and enPantalla.clave ~= clave then return false end
+	return true
+end
+
+-- Salió (cuenta una vez) y ocupa la pantalla `dur` segundos.
+function M.TextoMostrado(clave, dur)
+	local t = textos()
+	t.vistas[clave] = (tonumber(t.vistas[clave]) or 0) + 1
+	local ahora = GetTime()
+	ultimaVez[clave] = ahora
+	enPantalla = { clave = clave, hasta = ahora + (dur or 2.5) }
+end
+
+-- Se fue antes de tiempo: deja libre la pantalla.
+function M.TextoFin(clave)
+	if enPantalla and enPantalla.clave == clave then enPantalla = nil end
+end
+
+-- "No volver a mostrar".
+function M.Callar(clave)
+	if type(clave) ~= "string" then return end
+	textos().callados[clave] = true
+	M.TextoFin(clave)
+	M.Avisar()
+end
+
+-- Cuántas explicaciones ya no salen (calladas o que llegaron al tope).
+function M.TextosCallados()
+	local t, n = textos(), 0
+	local vistos = {}
+	for k in pairs(t.callados) do vistos[k] = true n = n + 1 end
+	for k, v in pairs(t.vistas) do
+		if not vistos[k] and (tonumber(v) or 0) >= M.LIMITE_TEXTO then n = n + 1 end
+	end
+	return n
+end
+
+-- "Volver a mostrar las explicaciones".
+function M.ReiniciarTextos()
+	local d = N.DatosPersonaje(ID)
+	d.textos = { vistas = {}, callados = {} }
+	for k in pairs(ultimaVez) do ultimaVez[k] = nil end
+	enPantalla = nil
+	M.Avisar()
 end
 
 ---------------------------------------------------------------------------
@@ -222,7 +311,7 @@ end
 ---------------------------------------------------------------------------
 -- Refrescar: cada parte decide si se ve. La página se rehace si está abierta.
 ---------------------------------------------------------------------------
-local PARTES = { "Rotacion", "Reacciones", "Golpe", "Panel", "Ventana" }
+local PARTES = { "Rotacion", "Reacciones", "Golpe", "Panel", "Ventana", "MarcaMision" }
 
 function M.Refrescar()
 	for _, p in ipairs(PARTES) do
@@ -256,6 +345,10 @@ A.RegisterEvent("PLAYER_TARGET_CHANGED", cada(function()
 	if M.Prioridad then M.Prioridad.NuevoObjetivo() end
 	if M.Rotacion then M.Rotacion.Ver() end
 end))
+A.RegisterEvent("PLAYER_LEVEL_UP", cada(function()
+	if M.Prioridad then M.Prioridad.Olvidar() end
+	M.Avisar()
+end))
 A.RegisterEvent("SPELLS_CHANGED", cada(function()
 	if M.Prioridad then M.Prioridad.Olvidar() end
 	if M.Rotacion then M.Rotacion.Olvidar() end
@@ -266,7 +359,11 @@ for _, ev in ipairs({ "ACTIONBAR_SLOT_CHANGED", "ACTIONBAR_PAGE_CHANGED", "UPDAT
 	A.RegisterEvent(ev, cada(function() if M.Rotacion then M.Rotacion.OlvidarBarras() end end))
 end
 A.RegisterEvent("SPELL_UPDATE_USABLE", cada(function() if M.Reacciones then M.Reacciones.Revisar() end end))
-A.RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", cada(function(_, id) if M.Reacciones then M.Reacciones.Brillo(id) end end))
+A.RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", cada(function(_, id)
+	if M.Prioridad then M.Prioridad.Brillo(id, true) end
+	if M.Reacciones then M.Reacciones.Brillo(id) end
+end))
+A.RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", cada(function(_, id) if M.Prioridad then M.Prioridad.Brillo(id, false) end end))
 A.RegisterEvent("PLAYER_SWING", cada(function(_, dur, tipo) if M.Golpe then M.Golpe.Golpe(dur, tipo) end end))
 for _, ev in ipairs({ "GROUP_ROSTER_UPDATE", "GROUP_JOINED", "GROUP_LEFT" }) do
 	A.RegisterEvent(ev, cada(function() if M.Ventana then M.Ventana.Ver() end M.Avisar() end))
@@ -277,6 +374,7 @@ A.RegisterEvent("DAMAGE_METER_RESET", cada(function() if M.Medidor then M.Medido
 
 A.On("SETTING_CHANGED", function(path)
 	if path == "" or (type(path) == "string" and path:find("^" .. ID .. "%.")) then
+		if path == ID .. ".rama" and M.Prioridad then M.Prioridad.Olvidar() end
 		K.Llamar(M.Refrescar)
 	end
 end)
@@ -320,6 +418,7 @@ end
 
 A.OnLogin(function()
 	K.Llamar(migrar)
+	if M.Rotacion and M.Rotacion.Presentar then A.After(6, function() K.Llamar(M.Rotacion.Presentar) end) end
 	if M.Reacciones then M.Reacciones.Preparar() end
 	if M.Rotacion then M.Rotacion.PrepararBarras() end
 	M.Refrescar()

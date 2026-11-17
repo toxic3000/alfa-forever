@@ -1,11 +1,11 @@
--- Alfa - Bienvenida: la página "Estilo y sonido" en Ajustes (Toxic / La
+-- Alfa - Bienvenida: la página "Estilo y sonido" en Ajustes (toxic3000 / La
 -- Jauría). GPL-3.0.
 --
 -- Un Tablero del Kit:
---   1. tu estilo de ahora, con "Repetir el asistente";
+--   1. tu estilo de ahora, con "Mi configuración" (el asistente, en su resumen);
 --   2. los tres estilos para cambiar en un clic (y, en Cristal, el acento);
 --   3. el sonido: el aullido al abrir Alfa y un botón para escucharlo;
---   4. la bienvenida y lo nuevo de la 1.0.
+--   4. la configuración, lo nuevo de la versión y "Reportar".
 
 local ADDON, M = ...
 local N = AlfaNucleo
@@ -23,7 +23,9 @@ local function estado()
 		icono = e and e.icono or "ic-apariencia", tono = "acento", sobre = L["Tu estilo"],
 		titulo = K.NombreEstilo(K.Estilo()) or "",
 		texto = e and L[e.texto] or nil,
-		accion = { texto = L["Repetir el asistente"], icono = "ic-seguir", alClic = function() M.Abrir("pedido", "asistente") end },
+		accion = { texto = L["Mi configuración"], icono = "ic-ajustes", alClic = function() M.Abrir("pedido", "asistente") end },
+		-- La letra, su tamaño, los bordes y la flecha siguen en Ajustes > Apariencia (del motor).
+		secundaria = { texto = L["Más opciones de apariencia"], alClic = function() N.Abrir("appearance") end },
 	}
 end
 
@@ -51,7 +53,13 @@ local function grupos(ui, padre)
 	sonido:Fila({ titulo = L["Escuchar el aullido"], texto = L["Suena ahora, aunque el aullido esté apagado."],
 		control = function(fila) return K.Boton(fila, L["Escuchar"], function() M.Aullar(true) end, { tipo = "secundario", icono = "ic-lobo" }) end })
 
-	local bienvenida = K.GrupoAjustes(padre, { titulo = L["Bienvenida"] })
+	local bienvenida = K.GrupoAjustes(padre, { titulo = L["Configuración y ayuda"] })
+	bienvenida:Fila({ titulo = L["Tu configuración de Alfa"],
+		texto = L["El idioma, el estilo, lo que Alfa hace sola por ti y La Jauría, con «Cambiar» en cada cosa. También con /alfa bienvenida."],
+		control = function(fila) return K.Boton(fila, L["Abrir"], function() M.Abrir("pedido", "asistente") end, { tipo = "secundario" }) end })
+	bienvenida:Fila({ titulo = L["Reportar un error, una mejora o un comentario"],
+		texto = L["Alfa arma el reporte y tú lo pegas en el buzón privado del Discord de La Jauría. También con /alfa reportar."],
+		control = function(fila) return K.Boton(fila, L["Reportar"], function() M.AbrirReporte() end, { tipo = "secundario" }) end })
 	bienvenida:Fila({ titulo = format(L["Lo nuevo en Alfa %s"], M.VERSION_ALFA),
 		texto = L["La bienvenida con las novedades de esta versión."],
 		control = function(fila) return K.Boton(fila, L["Ver"], function() M.Abrir("pedido", "portada") end, { tipo = "secundario" }) end })
@@ -83,6 +91,6 @@ N.Modulo({
 	id = ID, nombre = L["Estilo y sonido"], icono = "ic-apariencia", orden = 90, seccion = "ajustes",
 	subtitulo = L["Tu estilo (Alfa, Clásico WoW o Cristal), el color de acento y el aullido."],
 	comando = "estilo",
-	ajustes = { aullido = true },
+	ajustes = { aullido = true, idioma = "" },
 	construir = construir,
 })

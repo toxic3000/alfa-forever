@@ -32,7 +32,8 @@ local v      -- la ventana
 local ui = {}
 local est = {
 	tipo = "objeto", texto = "",
-	filtros = { objeto = {}, pnj = {}, mision = {}, zona = {}, raro = {} },
+	-- Monturas y mascotas empiezan con las que se pueden conseguir.
+	filtros = { objeto = {}, montura = { estado = "conseguible" }, mascota = { estado = "conseguible" }, pnj = {}, mision = {}, zona = {}, raro = {} },
 	resultados = {}, pila = {}, actual = nil, abiertas = {}, enMapa = nil,
 }
 
@@ -118,6 +119,7 @@ end
 -- Navegar entre fichas
 ---------------------------------------------------------------------------
 local mostrarFicha -- (kind, id, desdeLista)
+local rehacerFichaActual -- (más abajo)
 
 local function recordar(kind, id)
 	local d = N.DatosPersonaje(M.ID)
@@ -243,7 +245,10 @@ local function bloqueAcciones(pila)
 	b.Falta = K.Boton(b, L["Qué me falta"], nil, { tipo = "secundario", icono = "ic-ruta",
 		ayuda = L["Arma con tu ruta lo que necesitas para poder tomarla: el nivel o las misiones de antes."] })
 	b.Vincular = K.Boton(b, L["Vincular"], nil, { tipo = "fantasma", icono = "ic-mas", ayuda = L["Pone el enlace en el chat."] })
-	b.lista = { b.Guiar, b.Falta, b.Mapa, b.Ruta, b.Vincular }
+	b.Plan = K.Boton(b, L["Agregar a mi plan"], nil, { tipo = "secundario", icono = "ic-ruta",
+		ayuda = L["Suma «conseguir este objeto» a tu plan de ahora (o a uno nuevo)."] })
+	b.Extra = K.Boton(b, "", nil, { tipo = "secundario", icono = "ic-ventana" })
+	b.lista = { b.Guiar, b.Plan, b.Falta, b.Extra, b.Mapa, b.Ruta, b.Vincular }
 	function b:Set(f)
 		local a = f.acciones or {}
 		local clave = f.kind .. ":" .. tostring(f.id)
@@ -275,6 +280,21 @@ local function bloqueAcciones(pila)
 		self.Falta.alClic = function() pcall(a.desbloquear) end
 		self.Vincular:SetShown(a.vincular ~= nil)
 		self.Vincular.alClic = function() local ok, msg = a.vincular() if not ok then aviso(false, msg) end end
+		-- Mis planes (Alfa_Rutas): un objetivo "conseguir este objeto".
+		self.Plan:SetShown(a.plan ~= nil)
+		self.Plan.alClic = function()
+			local ok, r, msg = pcall(a.plan)
+			if not ok or r == false then aviso(false, type(msg) == "string" and msg or L["Tu plan no pudo agregarlo."])
+			else aviso(true, L["Lo agregué a tu plan."]) end
+		end
+		-- Un botón propio de la ficha (una guía: "Abrir el Legado del juego").
+		local ex = a.extra
+		self.Extra:SetShown(ex ~= nil)
+		if ex then
+			self.Extra:SetTexto(ex.texto or "")
+			self.Extra:SetIcono(ex.icono or "ic-ventana")
+			self.Extra.alClic = function() local ok, msg = ex.alClic() if ok == false then aviso(false, msg) end end
+		end
 	end
 	function b:Acomodar(w)
 		local x, y, alto = 0, 0, 0
@@ -493,6 +513,43 @@ local function bloqueSeccion(pila)
 	return b
 end
 
+-- Párrafos con su título (las guías y lo que dice el juego).
+local function bloqueParrafos(pila)
+	local b = CreateFrame("Frame", nil, pila)
+	b.Seccion = K.Seccion(b, "")
+	b.textos = {}
+	function b:Set(p)
+		self.Seccion:Set(p.titulo or "")
+		local n = 0
+		for _, t in ipairs(p.textos or {}) do
+			if type(t) == "string" and t ~= "" then
+				n = n + 1
+				local fs = self.textos[n] or K.Texto(self, "texto", "textoSuave")
+				self.textos[n] = fs
+				K.Escribir(fs, t)
+				fs:Show()
+			end
+		end
+		for i = n + 1, #self.textos do self.textos[i]:Hide() end
+		self.alfaN = n
+	end
+	function b:Acomodar(w)
+		self.Seccion:ClearAllPoints()
+		self.Seccion:SetPoint("TOPLEFT", self, "TOPLEFT", 0, 0)
+		self.Seccion:SetWidth(w)
+		local y = self.Seccion:Acomodar(w) + ESP.s
+		for i = 1, self.alfaN do
+			local fs = self.textos[i]
+			fs:ClearAllPoints()
+			fs:SetPoint("TOPLEFT", self, "TOPLEFT", 4, -y)
+			y = y + K.Parrafo(fs, w - 8, 12) + ESP.s
+		end
+		self:SetHeight(y)
+		return y
+	end
+	return b
+end
+
 -- Una nota corta (lo que se está preparando).
 local function bloqueNota(pila)
 	local b = CreateFrame("Frame", nil, pila)
@@ -516,8 +573,38 @@ local function armarBloques(pila)
 	B.mejor = pila:Agregar(K.Tarjeta(pila, { variante = "normal" }))
 	B.datos = pila:Agregar(bloqueDatos(pila))
 	B.secciones = {}
+	B.parrafos = {}
 	B.nota = nil
 	B.pila = pila
+end
+
+local function parrafoN(i)
+	local b = B.parrafos[i]
+	if b then return b end
+	b = B.pila:Agregar(bloqueParrafos(B.pila), { espacio = ESP.l })
+	B.parrafos[i] = b
+	return b
+end
+
+-- El orden de la pila: cabecera, botones, lo mejor, datos, los párrafos de
+-- arriba, las secciones, los demás párrafos y la nota.
+local function ordenarPila(arriba, abajo)
+	local bl = B.pila.bloques
+	local entrada = {}
+	for _, e in ipairs(bl) do entrada[e.b] = e end
+	local orden = { B.cab, B.acc, B.mejor, B.datos }
+	for _, b in ipairs(arriba) do orden[#orden + 1] = b end
+	for _, b in ipairs(B.secciones) do orden[#orden + 1] = b end
+	for _, b in ipairs(abajo) do orden[#orden + 1] = b end
+	local usados, nuevo = {}, {}
+	for _, b in ipairs(orden) do
+		local e = entrada[b]
+		if e and not usados[b] then usados[b] = true nuevo[#nuevo + 1] = e end
+	end
+	for _, e in ipairs(bl) do if not usados[e.b] and e.b ~= B.nota then usados[e.b] = true nuevo[#nuevo + 1] = e end end
+	if B.nota and entrada[B.nota] then nuevo[#nuevo + 1] = entrada[B.nota] end
+	for k = #bl, 1, -1 do bl[k] = nil end
+	for k, e in ipairs(nuevo) do bl[k] = e end
 end
 
 local function seccionN(i)
@@ -558,16 +645,26 @@ local function pintarFicha(f, conVolver)
 		K.Mostrar(b, true)
 	end
 	for i = #f.secciones + 1, #B.secciones do K.Mostrar(B.secciones[i], false) end
+	local arriba, abajo = {}, {}
+	local ps = f.parrafos or {}
+	for i, p in ipairs(ps) do
+		local b = parrafoN(i)
+		b:Set(p)
+		K.Mostrar(b, true)
+		-- Lo que explica algo va antes de sus listas; en una guía, solo el primero.
+		local alto = p.arriba
+		if alto == nil then alto = (f.kind ~= "guia") or i == 1 end
+		if alto then arriba[#arriba + 1] = b else abajo[#abajo + 1] = b end
+	end
+	for i = #ps + 1, #B.parrafos do K.Mostrar(B.parrafos[i], false) end
 	if f.nota then
 		local nb = notaBloque()
-		-- Si se crearon secciones después de la nota, la nota pasa al final.
-		local bl = B.pila.bloques
-		for k, e in ipairs(bl) do if e.b == nb and k ~= #bl then table.remove(bl, k) bl[#bl + 1] = e break end end
 		nb:Set(f.nota)
 		K.Mostrar(nb, true)
 	elseif B.nota then
 		K.Mostrar(B.nota, false)
 	end
+	ordenarPila(arriba, abajo)
 end
 
 -- Lo que la ListaFicha llama al elegir: un número (una fila del catálogo) o
@@ -601,7 +698,7 @@ local function llenarFicha(pila, dato)
 end
 
 -- Rehace la ficha a la vista (algo terminó de prepararse), sin moverla.
-local function rehacerFichaActual()
+rehacerFichaActual = function()
 	if not (v and v:IsShown() and est.actual and B.cab) then return end
 	local a = est.actual
 	local ok, f = pcall(F.Construir, a.kind, a.id)
@@ -615,6 +712,8 @@ end
 -- La lista
 ---------------------------------------------------------------------------
 local function lineaObjeto(c, i, k)
+	-- En Monturas y Mascotas: cómo se consigue, el precio y si ya la tienes.
+	if c.src and M.Col then return M.Col.Linea(c, i, k) end
 	local partes = {}
 	if k == "mount" then partes[1] = L["Montura"]
 	elseif k == "pet" then partes[1] = L["Mascota"]
@@ -683,7 +782,7 @@ local function crearFila(f)
 end
 
 local ICONO_TIPO = { npc = { "ic-personajes", "acento" }, rare = { "ic-raros", "raro" }, treasure = { "ic-raros", "oro" },
-	quest = { "ic-misiones", "oro" }, zone = { "ic-mapa", "acento" } }
+	quest = { "ic-misiones", "oro" }, zone = { "ic-mapa", "acento" }, mountspell = { "ic-huella", "clase" } }
 
 local function pintarFila(f, i)
 	local c = Cat.Col(est.tipo)
@@ -704,18 +803,27 @@ local function pintarFila(f, i)
 		f.Baldosa:Show()
 		local ic = ICONO_TIPO[kind] or { "ic-enciclopedia", "acento" }
 		K.SetIcono(f.Glifo, ic[1], select(2, K.Tono(ic[2])))
-		K.ColorTexto(f.Nombre, kind == "quest" and "mision" or (kind == "zone" and "lugar" or "pnj"))
-		K.Escribir(f.Linea, lineaDe(kind, id))
+		if kind == "mountspell" then
+			K.ColorTexto(f.Nombre, "texto")
+			K.Escribir(f.Linea, M.Col.Linea(c, i, kind))
+		else
+			K.ColorTexto(f.Nombre, kind == "quest" and "mision" or (kind == "zone" and "lugar" or "pnj"))
+			K.Escribir(f.Linea, lineaDe(kind, id))
+		end
 	end
 end
 
 local function alEntrarFila(f, i)
 	local c = Cat.Col(est.tipo)
 	if not (c and i and GameTooltip) then return end
-	if M.ES_OBJETO[Cat.Kind(c, i)] then
+	local kind = Cat.Kind(c, i)
+	if M.ES_OBJETO[kind] then
 		GameTooltip:SetOwner(f, "ANCHOR_RIGHT")
 		GameTooltip:SetHyperlink("item:" .. c.id[i])
 		GameTooltip:Show()
+	elseif kind == "mountspell" and GameTooltip.SetSpellByID then
+		GameTooltip:SetOwner(f, "ANCHOR_RIGHT")
+		if pcall(GameTooltip.SetSpellByID, GameTooltip, c.id[i]) then GameTooltip:Show() else GameTooltip:Hide() end
 	end
 end
 
@@ -911,6 +1019,23 @@ local function armarBarra(tipo)
 			local ops = est.filtros.objeto.tipo and Cat.OpcionesSubtipo(est.filtros.objeto.tipo)
 			sub.alfaVisible = ops ~= nil
 			if ops then sub:SetOpciones(ops) end
+		end
+	elseif tipo == "montura" or tipo == "mascota" then
+		local Co = M.Col
+		cs[1] = desplegable(tipo, "estado", Co.ESTADOS, 164)
+		cs[2] = desplegable(tipo, "mia", Co.MIAS, 150)
+		local fuentes = Co.OpcionesFuente()
+		if tipo == "mascota" then
+			-- Las mascotas no son de clase ni de JcJ.
+			local solo = {}
+			for _, o in ipairs(fuentes) do if o.valor ~= "clase" and o.valor ~= "pvp" then solo[#solo + 1] = o end end
+			fuentes = solo
+		end
+		cs[3] = desplegable(tipo, "fuente", fuentes, 140)
+		cs[4] = desplegable(tipo, "bando", Co.BANDOS, 140)
+		if tipo == "montura" then
+			cs[5] = K.Boton(ui.barra, L["Mi primera montura"], function() V.Abrir({ kind = "guia", id = "montura" }) end,
+				{ tipo = "acento", icono = "ic-huella", ayuda = L["Qué necesitas a tu nivel: equitación, oro y a quién ir."] })
 		end
 	elseif tipo == "pnj" then
 		local ops = { { valor = false, texto = L["Todo oficio"] } }
@@ -1109,6 +1234,8 @@ end
 
 -- pedido = { texto, tipo ("objeto", "pnj"...), kind, id }
 function V.Abrir(p)
+	-- mientras falte terminar la bienvenida, se abre la bienvenida
+	if N.Permitido and not N.Permitido() then return end
 	p = p or {}
 	if not v then crear() end
 	v:Abrir()
@@ -1123,6 +1250,17 @@ function V.Abrir(p)
 	if kind and id ~= nil and kind ~= "instance" then
 		id = tonumber(id) or id
 		local tipo = M.TIPO_DE_KIND[kind]
+		if kind == "guia" then
+			-- Una guía: Mi primera montura va con las monturas; las demás, con lo que esté abierto.
+			if id == "montura" then V.SetTipo("montura", true) end
+			est.texto = ""
+			ui.buscador:SetTexto("", true)
+			acomodar()
+			local t = est.tipo
+			Cat.Pedir(t, function(ok) if ok then filtrar({ kind = kind, id = id }) end end)
+			if not Cat.Listo(t) then ui.lf:MostrarFicha({ kind = kind, id = id }) end
+			return
+		end
 		if tipo then V.SetTipo(tipo, true) end
 		-- Lo buscamos por su nombre, así queda elegido en la lista.
 		local nombre = M.Nombre(kind, id)
@@ -1169,6 +1307,22 @@ M.alIndice = function(cual)
 	if not V.Visible() then return end
 	if est.pend and ((cual == "misiones" and est.tipo == "mision") or (cual == "raros" and est.tipo == "raro")) then filtrar() end
 	if est.ficha and est.ficha.nota then rehacerFichaActual() end
+end
+
+-- Tus monturas o mascotas cambiaron (aprendiste una, la compraste...).
+M.alColeccion = function()
+	if not V.Visible() then return end
+	if est.tipo == "montura" or est.tipo == "mascota" then
+		if est.filtros[est.tipo].mia then filtrar() else ui.lf.Lista:Refrescar() end
+	end
+	local a = est.actual
+	if a and (a.kind == "mount" or a.kind == "pet" or a.kind == "mountspell" or a.kind == "guia") then rehacerFichaActual() end
+end
+
+-- Tus puntos del legado o tus retos cambiaron.
+M.alLegado = function()
+	local a = est.actual
+	if V.Visible() and a and a.kind == "guia" and a.id == "legado" then rehacerFichaActual() end
 end
 
 A.RegisterEvent("PLAYER_REGEN_ENABLED", function()

@@ -2,7 +2,7 @@
 -- GPL-3.0.
 --
 -- AlfaRuta (global), el contrato de docs/PLAN-1.0.md:
---   AlfaRuta.Asistente(camino)       "¿Qué quieres hacer?"; camino: "nivel" | "profesiones" | "oro" | "mazmorras" | nil
+--   AlfaRuta.Asistente(camino)       "¿Qué quieres hacer?"; camino: "nivel" | "profesiones" | "oro" | "mazmorras" | "planes" | nil
 --   AlfaRuta.Liberar(filtro)         arma y abre el plan para cerrar tus misiones (filtro: "todas" | "listas" | "zona"; sin él, el que eligió el jugador)
 --   AlfaRuta.Recoger()               toma las mejores misiones de cerca
 --   AlfaRuta.AgregarObjeto(itemID)   un tramo para conseguir ese objeto en tu ruta (la Enciclopedia: "Agregar a mi ruta")
@@ -23,6 +23,8 @@
 --   AlfaRuta.MostrarGuia()           muestra el rastreador
 --   AlfaRuta.RastreadorVisible() -> bool  si el rastreador está a la vista (Hoy no repite "Mientras estás aquí")
 --   AlfaRuta.Pagina()                la página Ruta
+-- Buscar cerca (AlfaCerca, Cerca.lua) y Mis planes (AlfaPlanes, Planes.lua)
+-- tienen su propio global.
 -- Las misiones también se agregan y se quitan del plan desde el menú del
 -- registro de misiones del juego (clic derecho en una misión) y del
 -- seguimiento de objetivos.
@@ -87,7 +89,7 @@ function R.EnRuta(qid, verbo) return R.EsDeMiRuta(qid, verbo) end
 function R.SoloRuta() return A.Get("ruta.soloRuta") ~= false end
 function R.Listas() return Cr.ListasAhora() end
 function R.Biblioteca() M.Biblioteca.Abrir() end
-function R.MostrarGuia() A.Set("ui.shown", true) end
+function R.MostrarGuia() M.Empezar() end
 function R.RastreadorVisible() return M.Rastreador.Visible() and true or false end
 function R.Pagina() N.Abrir(M.ID) end
 

@@ -311,6 +311,7 @@ function Ruta.Guiar()
 	ruta.guiando = true
 	apuntar(k)
 	if not vigia then vigia = A.NewTicker(0.5, vigilar) end
+	if N.EmpezarRuta then N.EmpezarRuta() end -- cierra las ventanas de Alfa y muestra el seguimiento
 	return true
 end
 
