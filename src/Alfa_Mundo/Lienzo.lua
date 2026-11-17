@@ -119,8 +119,9 @@ local function cargar()
 		if t.amArchivo then
 			local ok = t:SetTexture(t.amArchivo, nil, nil, "TRILINEAR")
 			t.amArchivo = nil
+			-- Una que ya se fundía (se volvió a encolar) no cuenta dos veces.
+			if not fundiendo[t] then nFundiendo = nFundiendo + 1 end
 			fundiendo[t] = t0
-			nFundiendo = nFundiendo + 1
 			n = n + 1
 			if t.amComprobar then t.amComprobar(t, ok) end
 		end

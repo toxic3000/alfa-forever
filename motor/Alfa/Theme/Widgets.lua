@@ -103,7 +103,7 @@ end)
 -- Forever left max-lines strings blank until their text changed (the guide
 -- window's name, tip and "Then:" lines) while no-wrap strings drew.
 function W.Text(parent, role, color, layer)
-	local fs = parent:CreateFontString(nil, layer or "OVERLAY")
+	local fs = parent:CreateFontString(nil, layer or "OVERLAY", "GameFontNormalSmall")
 	Theme.Font(fs, role or "body")
 	W.Color(fs, color or "text")
 	fs:SetJustifyH("LEFT")
@@ -2325,6 +2325,15 @@ local function buildModal()
 	W.Rim(box, { width = MODAL_W * 0.7 })
 	-- Escape closes the dialog alone; every other key goes on to the game.
 	box:EnableKeyboard(true)
+	-- Propaga por omisión: en combate no se puede cambiar, así que nunca se
+	-- queda comiéndose las teclas. Al ocultarse vuelve a propagar si se puede.
+	local function propagar()
+		if box.SetPropagateKeyboardInput and not (InCombatLockdown and InCombatLockdown()) then
+			box:SetPropagateKeyboardInput(true)
+		end
+	end
+	propagar()
+	s:HookScript("OnHide", propagar)
 	box:SetScript("OnKeyDown", function(self, key)
 		local esc = key == "ESCAPE"
 		if self.SetPropagateKeyboardInput and not (InCombatLockdown and InCombatLockdown()) then

@@ -766,7 +766,7 @@ local function pintarBuscador(b)
 	b.caja:Estilo({ fondo = "hundido", borde = b.alfaFoco and "acento" or (b.alfaSobre and "textoTenue" or "lineaFuerte"), alfaBorde = b.alfaFoco and 0.8 or 1 })
 	K.SetIcono(b.Lupa, "ic-buscar", b.alfaFoco and "acento" or "textoTenue")
 	b.Campo:SetTextColor(K.Color("texto"))
-	b.Campo:SetFont(K.Cara("medium"), K.Tamano("cuerpo"), "")
+	K.FuenteSegura(b.Campo, K.Cara("medium"), K.Tamano("cuerpo"), "")
 end
 
 function K.Buscador(padre, opts)
@@ -782,7 +782,7 @@ function K.Buscador(padre, opts)
 	e:SetPoint("LEFT", b, "LEFT", 32, 0)
 	e:SetPoint("RIGHT", b, "RIGHT", -30, 0)
 	e:SetHeight(K.ALTO.control - 4)
-	e:SetFont(K.Cara("medium"), K.Tamano("cuerpo"), "")
+	K.FuenteSegura(e, K.Cara("medium"), K.Tamano("cuerpo"), "")
 	e:SetMaxLetters(80)
 	b.Ayuda = K.Texto(b, "nota", "textoTenue")
 	b.Ayuda:SetPoint("LEFT", e, "LEFT", 1, 0)
@@ -1169,8 +1169,8 @@ function K.IconoObjeto(padre, tam)
 	ic.Icono:SetPoint("BOTTOMRIGHT", ic, "BOTTOMRIGHT", -2, 2)
 	ic.Icono:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 	ic.borde = K.Borde(ic, 0, "OVERLAY")
-	ic.Cantidad = ic:CreateFontString(nil, "OVERLAY")
-	ic.Cantidad:SetFont(K.Cara("semibold"), max(9, floor(tam * 0.3)), "OUTLINE")
+	ic.Cantidad = ic:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
+	K.FuenteSegura(ic.Cantidad, K.Cara("semibold"), max(9, floor(tam * 0.3)), "OUTLINE")
 	ic.Cantidad:SetPoint("BOTTOMRIGHT", ic, "BOTTOMRIGHT", -2, 2)
 	ic.Cantidad:SetJustifyH("RIGHT")
 	function ic:SetObjeto(dato)
@@ -1216,13 +1216,15 @@ end
 -- Un objeto que llega a la caché del cliente: los íconos que lo esperaban se rehacen.
 local eventos = CreateFrame("Frame")
 eventos:RegisterEvent("GET_ITEM_INFO_RECEIVED")
-eventos:SetScript("OnEvent", function(_, _, id)
+eventos:SetScript("OnEvent", function(_, _, id, exito)
 	id = tonumber(id)
 	for ic, falta in pairs(esperando) do
 		if falta == id then
 			esperando[ic] = nil
 			local d = ic.alfaDato
-			if d and d.id == id then
+			-- exito == false: el cliente no tiene ese objeto. Se queda con el "?" y no
+			-- se vuelve a pedir (si no, pide y responde sin fin).
+			if exito ~= false and d and d.id == id then
 				d.icono, d.calidad = nil, nil
 				ic:SetObjeto(d)
 			end

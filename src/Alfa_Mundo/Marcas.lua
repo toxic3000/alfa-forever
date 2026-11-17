@@ -86,6 +86,7 @@ end
 
 local libres, usados = {}, {} -- usados: capa -> { índice -> pin }
 local enUso = 0
+local avisoPin = false -- un pin que no se pudo vestir ya se avisó (una vez por sesión)
 
 local function medalla()
 	local Pins = A.Pins
@@ -117,6 +118,25 @@ local function ruedaAlMapa(_, delta)
 	if V and V.Rueda then V.Rueda(nil, delta) end
 end
 
+-- Un pin se queda el botón al presionarlo: el izquierdo se reenvía a la
+-- vista para que arrastrar empezando sobre un pin (o su nombre) también
+-- mueva el mapa. Al soltar, la vista solo actúa si el mapa se movió.
+local function presionarAlMapa(_, boton)
+	local V = M.Ventana
+	if V and V.Presionar then V.Presionar(boton) end
+end
+
+local function soltarAlMapa(_, boton)
+	local V = M.Ventana
+	if V and V.SoltarArrastre then V.SoltarArrastre(boton) end
+end
+
+-- Tras arrastrar el mapa desde un pin, su clic no se dispara.
+local function trasArrastre()
+	local V = M.Ventana
+	return V and V.RecienArrastrado and V.RecienArrastrado() or false
+end
+
 -- Clic derecho en cualquier pin que no sea uno de tus marcadores: el menú
 -- para seguirlo (flecha y ruta) o guardarlo como marcador (Marcadores.lua).
 -- Los pines del motor no usan el botón derecho (en el mapa del juego lo
@@ -125,6 +145,7 @@ end
 local function alClic(self, boton)
 	local p = self.amPin
 	if not p then return end
+	if boton == "LeftButton" and trasArrastre() then return end
 	if not p.amMarcador and (boton == "RightButton" or type(p.onClick) ~= "function") then
 		local Mk = M.Marcadores
 		if Mk and Mk.MenuPin then Mk.MenuPin(self, p) end
@@ -150,10 +171,12 @@ local function nuevoPin()
 	f.aro:SetTexture(NAV .. "ring")
 	f.aro:SetPoint("CENTER")
 	f.aro:Hide()
-	f.texto = f:CreateFontString(nil, "OVERLAY")
+	-- Los textos nacen con una letra: un SetText sobre un texto sin letra es
+	-- un error de Lua ("Font not set"). Al pintar el pin se pone la del estilo.
+	f.texto = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 	f.texto:SetPoint("CENTER", 0, 0)
 	-- La insignia del motor (`badge`): el "?" de un vuelo que aún no conoces.
-	f.insignia = f:CreateFontString(nil, "OVERLAY")
+	f.insignia = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 	f.insignia:SetPoint("CENTER", f, "TOPRIGHT", -1, -1)
 	f.insignia:Hide()
 	-- La flechita de una salida de zona (`rumbo`, radianes: 0 = arriba).
@@ -161,12 +184,14 @@ local function nuevoPin()
 	f.rumbo:SetTexture(FLECHA)
 	f.rumbo:Hide()
 	-- El nombre de una salida o un portal (`etiqueta`), bajo el pin.
-	f.nombre = f:CreateFontString(nil, "OVERLAY")
+	f.nombre = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 	f.nombre:SetPoint("TOP", f, "BOTTOM", 0, -1)
 	f.nombre:Hide()
 	f:SetScript("OnEnter", alEntrar)
 	f:SetScript("OnLeave", alSalir)
 	f:SetScript("OnClick", alClic)
+	f:SetScript("OnMouseDown", presionarAlMapa)
+	f:SetScript("OnMouseUp", soltarAlMapa)
 	f:EnableMouseWheel(true)
 	f:SetScript("OnMouseWheel", ruedaAlMapa)
 	return f
@@ -305,7 +330,7 @@ local function vestir(f, p, tam)
 		f.nombre:SetText(p.etiqueta)
 		f.nombre:SetTextColor(color("text", a))
 	else
-		f.nombre:SetText("")
+		f.nombre:Hide()
 	end
 	if p.badge ~= nil then
 		local T = A.Theme
@@ -378,12 +403,25 @@ local function dibujarCapa(nombre, desde, z, tam, n)
 				local p = pines[i]
 				local f, nuevo = tomar(nombre, i)
 				if nuevo or f.amPin ~= p or f.amZ ~= tam then
-					f.amPin, f.amZ = p, tam
-					vestir(f, p, (tonumber(p.size) or 16) / 16 * tam)
+					-- Un pin que falla al vestirse se esconde y se avisa una vez:
+					-- nunca deja el mapa a medias al moverlo.
+					local ok, err = pcall(vestir, f, p, (tonumber(p.size) or 16) / 16 * tam)
+					if ok then
+						f.amPin, f.amZ = p, tam
+					else
+						f.amPin, f.amZ = nil, nil
+						f:Hide()
+						if not avisoPin and geterrorhandler then
+							avisoPin = true
+							geterrorhandler()(err)
+						end
+					end
 				end
-				local conNombre = p.etiqueta ~= nil and zAhora >= NOMBRES_PIN
-				if f.nombre:IsShown() ~= conNombre then f.nombre:SetShown(conNombre) end
-				poner(f, x, y)
+				if f.amPin then
+					local conNombre = p.etiqueta ~= nil and zAhora >= NOMBRES_PIN
+					if f.nombre:IsShown() ~= conNombre then f.nombre:SetShown(conNombre) end
+					poner(f, x, y)
+				end
 			end
 		end
 	end
@@ -392,12 +430,20 @@ end
 
 local function dibujarMotor(z, tam)
 	local n = 0
-	for _, def in ipairs(CAPAS_MOTOR) do n = dibujarCapa(def[1], def[2], z, tam, n) end
+	-- De arriba abajo: si se llega a MAX_PINES, se cortan las de abajo (servicios,
+	-- misiones) y nunca el destino, la muerte o tus marcadores. Lo que queda
+	-- encima lo decide p.priority (vestir), no el orden en que se dibujan.
 	-- Las capas de otros módulos que publican sus pines en Alfa.Pins con el
 	-- mismo id (o el de `pines`) también salen aquí, desde su `zoom`.
 	local Capas = M.Capas
-	for _, e in ipairs(Capas.Modulos()) do
+	local modulos = Capas.Modulos()
+	for i = #modulos, 1, -1 do
+		local e = modulos[i]
 		if Capas.Activa(e) then n = dibujarCapa(e.pines or e.id, e.zoom or 2, z, tam, n) end
+	end
+	for i = #CAPAS_MOTOR, 1, -1 do
+		local def = CAPAS_MOTOR[i]
+		n = dibujarCapa(def[1], def[2], z, tam, n)
 	end
 end
 
@@ -511,6 +557,8 @@ local function punto(i)
 		GameTooltip:Show()
 	end)
 	f:SetScript("OnLeave", alSalir)
+	f:SetScript("OnMouseDown", presionarAlMapa)
+	f:SetScript("OnMouseUp", soltarAlMapa)
 	f:EnableMouseWheel(true)
 	f:SetScript("OnMouseWheel", ruedaAlMapa)
 	grupo[i] = f
@@ -603,6 +651,19 @@ function Mc.Crear(padre)
 	return encima
 end
 
+-- Cada paso por su cuenta: si uno falla, los demás igual se dibujan (los
+-- pines, tu grupo y tu flecha no se quedan congelados). El error se avisa
+-- una vez por sesión.
+local avisoPaso = false
+local function paso(fn, ...)
+	local ok, err = pcall(fn, ...)
+	if not ok and not avisoPaso and geterrorhandler then
+		avisoPaso = true
+		geterrorhandler()(err)
+	end
+	return ok
+end
+
 -- Tras cada cambio de la vista (mover, zoom, tamaño).
 function Mc.Colocar(cu, cv, k, vw, vh, z)
 	if not encima then return end
@@ -613,11 +674,11 @@ function Mc.Colocar(cu, cv, k, vw, vh, z)
 	zAhora = z
 	local tam = TAM.lejos + (TAM.cerca - TAM.lejos) * rampa(z, 2, 16)
 	tam = floor(tam * 2 + 0.5) / 2
-	dibujarEtiquetas(z)
-	dibujarMotor(z, tam)
-	soltarSinVer()
-	dibujarGrupo()
-	dibujarYo()
+	paso(dibujarEtiquetas, z)
+	paso(dibujarMotor, z, tam)
+	paso(soltarSinVer)
+	paso(dibujarGrupo)
+	paso(dibujarYo)
 end
 
 -- Alguna capa de Pins cambió (o se mostró u ocultó) desde que se dibujó.
@@ -632,9 +693,11 @@ local function capasCambiaron()
 	for _, def in ipairs(CAPAS_MOTOR) do
 		if cambio(def[1]) then return true end
 	end
+	-- Solo las de módulos encendidas: las apagadas no se dibujan (no quedan en
+	-- `dibujadas`) y parecerían cambiadas siempre, rehaciendo todo sin parar.
 	local Capas = M.Capas
 	for _, e in ipairs(Capas.Modulos()) do
-		if cambio(e.pines or e.id) then return true end
+		if Capas.Activa(e) and cambio(e.pines or e.id) then return true end
 	end
 	return false
 end
@@ -649,8 +712,8 @@ function Mc.Latido()
 		Mc.Colocar(o.cu, o.cv, o.k, o.vw, o.vh, o.z)
 		return
 	end
-	dibujarGrupo()
-	dibujarYo()
+	paso(dibujarGrupo)
+	paso(dibujarYo)
 end
 
 -- Al abrir el mapa: si alguna capa necesita el Codex (mazmorras, servicios,

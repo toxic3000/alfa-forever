@@ -166,6 +166,24 @@ end
 
 function R.BancoTomado() return bancoTomado end
 
+-- Para comprar otra casilla (C_Bank.PurchaseBankTab es restringida y solo la
+-- llama el juego): el banco de Blizzard abierto vuelve a la vista sin cerrar
+-- la visita (no se oculta: su OnHide la cerraría) y el jugador usa su botón.
+-- Al cerrar el banco, R.Aplicar lo vuelve a tomar. -> true si queda a la vista.
+function R.SoltarBanco()
+	if InCombatLockdown and InCombatLockdown() then return false end
+	local bank = _G.BankFrame
+	if type(bank) ~= "table" or not bank.GetParent then return false end
+	if bank:GetParent() == oculto then
+		local a = antes[bank]
+		bank:SetParent(a and a[1] or UIParent)
+		if a and a[2] then bank:SetFrameStrata(a[2]) end
+		if a and a[3] then bank:SetFrameLevel(a[3]) end
+		bancoTomado = false
+	end
+	return bank:IsVisible() and true or false
+end
+
 ---------------------------------------------------------------------------
 -- Seguir a las funciones de las bolsas
 ---------------------------------------------------------------------------

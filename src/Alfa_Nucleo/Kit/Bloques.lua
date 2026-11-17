@@ -586,9 +586,13 @@ local function filaDe(l, i)
 	if l.alfaCrear then K.Llamar(l.alfaCrear, f) end
 	f:SetScript("OnClick", function(self, boton)
 		local lista = self.alfaLista
-		if not self.alfaI then return end
-		if lista.alfaElegir ~= false and boton == "LeftButton" then lista:Elegir(self.alfaI) end
-		if lista.alClic then K.Llamar(lista.alClic, lista.datos[self.alfaI], self.alfaI, boton) end
+		-- El índice y el dato se toman antes de elegir: Elegir puede desplazar la
+		-- lista y esta fila pasar a mostrar otra.
+		local i = self.alfaI
+		if not i then return end
+		local dato = lista.datos[i]
+		if lista.alfaElegir ~= false and boton == "LeftButton" then lista:Elegir(i) end
+		if lista.alClic then K.Llamar(lista.alClic, dato, i, boton) end
 	end)
 	f:SetScript("OnEnter", function(self) self.alfaSobre = true pintarFila(self) if self.alfaLista.alEntrar then K.Llamar(self.alfaLista.alEntrar, self, self.alfaLista.datos[self.alfaI]) end end)
 	f:SetScript("OnLeave", function(self) self.alfaSobre = nil pintarFila(self) K.OcultarInfo(self) end)

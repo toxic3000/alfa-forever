@@ -68,6 +68,12 @@ local function armarCaptura()
 		if k then terminarCaptura(prefijo() .. k) else terminarCaptura(nil) end
 	end)
 	f:SetScript("OnMouseWheel", function(_, d) terminarCaptura(prefijo() .. (d > 0 and "MOUSEWHEELUP" or "MOUSEWHEELDOWN")) end)
+	-- Si empieza un combate, la captura se cancela sin guardar nada (si no, se
+	-- comería la primera tecla de la pelea).
+	f:RegisterEvent("PLAYER_REGEN_DISABLED")
+	f:SetScript("OnEvent", function(self)
+		if self:IsShown() then terminarCaptura(nil) end
+	end)
 	f:Hide()
 	return f
 end

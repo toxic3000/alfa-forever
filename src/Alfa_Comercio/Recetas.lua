@@ -261,6 +261,9 @@ local function leerVentana()
 			if i % 20 == 0 then M.Ceder() end
 		end
 		-- Con la lista completa se reemplaza la profesión; con la filtrada solo se suma.
+		-- Si cerraste la ventana a mitad de la lectura, lo que faltó no se leyó:
+		-- solo se suma, para no borrar recetas que sí tienes.
+		if not ventanaAbierta then completa = false end
 		ficha = miFicha()
 		if completa and next(nuevas) then
 			for rid, rec in pairs(ficha.r) do

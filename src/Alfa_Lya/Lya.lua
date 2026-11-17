@@ -164,7 +164,7 @@ end
 -- El temporizador de los cuadros: solo con Lya a la vista y fuera de combate.
 local function andar()
 	local p = POSES[actualPose]
-	if not (f and f:IsShown()) or combate or not p or #p < 2 then parar() return end
+	if not (f and f:IsVisible()) or combate or not p or #p < 2 then parar() return end
 	if ticker and tickerCada == p.cada then return end
 	parar()
 	if C_Timer and C_Timer.NewTicker then
@@ -232,7 +232,7 @@ local function carrera()
 end
 
 function UI.Pose(nombre, segundos)
-	if not (f and f:IsShown()) or combate then return false end
+	if not (f and f:IsVisible()) or combate then return false end
 	if nombre == nil then
 		if dormida or UI.Hablando() then return false end
 		nombre = DEL_MOMENTO[random(#DEL_MOMENTO)]
@@ -282,7 +282,7 @@ local function cerrarOjos(segundos)
 end
 
 parpadear = function(mio)
-	if not (f and f:IsShown()) or dormida or combate then return end -- se reprograma al despertar / mostrarse
+	if not (f and f:IsVisible()) or dormida or combate then return end -- se reprograma al despertar / mostrarse
 	local p = POSES[actualPose]
 	if p and p.parpadeo and not parpadeando then
 		cerrarOjos(0.13)
@@ -295,7 +295,7 @@ parpadear = function(mio)
 end
 
 function UI.Saltar()
-	if not (f and f:IsShown()) or combate then return end
+	if not (f and f:IsVisible()) or combate then return end
 	if f.Salto:IsPlaying() or f.Carrera:IsPlaying() then return end
 	if dormida then UI.Dormir(false) end
 	f.Salto:Play()
@@ -305,7 +305,7 @@ end
 -- Un gesto sin palabras para que se sienta viva: un saltito, ponerse atenta
 -- (las orejas arriba) o las dos cosas. Nunca dormida, en combate ni con otra pose.
 function UI.Gesto()
-	if not (f and f:IsShown()) or dormida or combate or pasajera then return end
+	if not (f and f:IsVisible()) or dormida or combate or pasajera then return end
 	local r = random()
 	if r < 0.4 then
 		UI.Saltar()

@@ -240,14 +240,14 @@ glass:SetScript("OnUpdate", ns.Safe(function(_, elapsed)
 	glassSand:SetRotation(a)
 end))
 
-local distText = frame:CreateFontString(nil, "OVERLAY")
+local distText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 distText:SetPoint("TOP", dial, "BOTTOM", 0, -12) -- clear of the dart's tip and the 3D arrow's shadow
 distText:SetJustifyH("CENTER")
 
 -- A timed quest's countdown (Quests/Timed.lua), between the distance and the
 -- label while a timer runs (syncTimer); the label sits under the distance
 -- otherwise.
-local timerText = frame:CreateFontString(nil, "OVERLAY")
+local timerText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 timerText:SetPoint("TOP", distText, "BOTTOM", 0, -4)
 timerText:SetJustifyH("CENTER")
 timerText:Hide()
@@ -256,14 +256,14 @@ timerText:Hide()
 -- Crossroads: saves 3 min"), so a quest name of that length stays on one
 -- line; longer ones wrap to a second (#1581).
 local LABEL_WIDTH = 300
-local labelText = frame:CreateFontString(nil, "OVERLAY")
+local labelText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 labelText:SetPoint("TOP", distText, "BOTTOM", 0, -5)
 labelText:SetWidth(LABEL_WIDTH)
 labelText:SetJustifyH("CENTER")
 labelText:SetWordWrap(true)
 labelText:SetMaxLines(2)
 
-local etaText = frame:CreateFontString(nil, "OVERLAY")
+local etaText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 etaText:SetPoint("TOP", labelText, "BOTTOM", 0, -4)
 etaText:SetJustifyH("CENTER")
 

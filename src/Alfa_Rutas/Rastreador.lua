@@ -591,7 +591,7 @@ end
 -- línea aparece o se va, se acomoda todo.
 local function latido()
 	if not (F and F:IsShown() and ui.flecha) then return end
-	local t = compacto() and textoFlecha() or nil
+	local t = ui.conFlecha and compacto() and textoFlecha() or nil
 	if (t ~= nil) ~= ui.flecha:IsShown() then Rs.Luego() return end
 	if t then K.Escribir(ui.flecha.Texto, t) end
 end
@@ -766,7 +766,8 @@ local function aceptarBloqueado(v)
 	for _, g in ipairs(v.goals) do
 		if g.t == "accept" and g.quest and (g.status == "active" or g.status == "pending") then
 			local ok, motivo, info = M.Disp.Estado(g.quest)
-			if not ok then return g.quest, M.Disp.Texto(motivo, info), M.Disp.Imposible(motivo) end
+			-- "desconocida": las bases no cargaron o no está; ni se omite ni se bloquea.
+			if not ok and motivo ~= "desconocida" then return g.quest, M.Disp.Texto(motivo, info), M.Disp.Imposible(motivo) end
 		end
 	end
 	return nil
@@ -802,13 +803,25 @@ local function aviso(v, live)
 		local bq, texto, imposible = aceptarBloqueado(v)
 		if bq then
 			-- Sin preguntar: si se puede, se agrega solo lo que falta; si no, se omite sola.
-			if not resueltas[bq] then
-				resueltas[bq] = true
+			-- El aviso solo sale si de verdad se agregó; en combate se reintenta al salir.
+			local enCombate = InCombatLockdown and InCombatLockdown()
+			if not resueltas[bq] and (imposible or not enCombate) then
+				resueltas[bq] = imposible and "lista" or "armando"
 				K.Despues(0, function()
-					if imposible then engine("SkipQuest", bq, true) else M.Recoger.Desbloquear(bq) end
+					if imposible then engine("SkipQuest", bq, true) return end
+					M.Recoger.Desbloquear(bq, function(bien)
+						if bien then
+							resueltas[bq] = "lista"
+							Rs.Pintar()
+						elseif InCombatLockdown and InCombatLockdown() then
+							resueltas[bq] = nil -- se vuelve a intentar fuera de combate
+						else
+							resueltas[bq] = "fallo"
+						end
+					end)
 				end)
 			end
-			if imposible then return nil end
+			if imposible or resueltas[bq] ~= "lista" then return nil end
 			return { tono = "info", icono = "ic-ruta", titulo = format(L["Agregué lo que falta para %s"], M.Citar(M.TituloMision(bq))), texto = texto }
 		end
 	end
@@ -999,6 +1012,7 @@ function Rs.Pintar()
 	ui.nota:Hide()
 	ui.mas:Hide()
 	ui.flecha:Hide()
+	ui.conFlecha = false
 	ui.antes:Hide()
 	if not vacio then
 		K.Escribir(ui.paso, tituloPaso(v))
@@ -1017,7 +1031,9 @@ function Rs.Pintar()
 				ui.mas:Show()
 				y = y + 16 + 2
 			end
-			local t = live and v.index == live and textoFlecha() or nil
+			-- El latido mira lo mismo: si no, repinta todo cada segundo.
+			ui.conFlecha = (live and v.index == live) and true or false
+			local t = ui.conFlecha and textoFlecha() or nil
 			if t then
 				K.Escribir(ui.flecha.Texto, t)
 				ui.flecha:ClearAllPoints()
@@ -1345,6 +1361,8 @@ for _, msg in ipairs({ "GUIDE_CHANGED", "STEP_CHANGED", "STEP_UPDATED", "WAYPOIN
 end
 A.RegisterEvent("QUEST_LOG_UPDATE", luego)
 A.RegisterEvent("BAG_UPDATE_DELAYED", luego)
+-- Al salir de combate: lo que se dejó para después (agregar lo que falta).
+A.RegisterEvent("PLAYER_REGEN_ENABLED", luego)
 K.AlRepintar(function()
 	if F and F:IsShown() then Rs.Pintar() end
 	Rs.PintarDetalle()

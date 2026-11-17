@@ -172,15 +172,68 @@ C_AddOns = {
   DoesAddOnExist = function(n) return ADDON_META[n] ~= nil end,
 }
 BANCO_ZONAS = {[1411] = "Durotar", [1412] = "Mulgore", [1413] = "Los Baldíos", [1414] = "Kalimdor", [1415] = "Reinos del Este", [1416] = "Montañas de Alterac", [1417] = "Tierras Altas de Arathi", [1418] = "Tierras Inhóspitas", [1419] = "Las Tierras Devastadas", [1420] = "Claros de Tirisfal", [1421] = "Bosque de Argénteos", [1422] = "Tierras de la Peste del Oeste", [1423] = "Tierras de la Peste del Este", [1424] = "Laderas de Trabalomas", [1425] = "Tierras del Interior", [1426] = "Dun Morogh", [1427] = "La Garganta de Fuego", [1428] = "Las Estepas Ardientes", [1429] = "Bosque de Elwynn", [1430] = "Paso de la Muerte", [1431] = "Bosque del Ocaso", [1432] = "Loch Modan", [1433] = "Montañas Crestagrana", [1434] = "Vega de Tuercespina", [1435] = "Pantano de las Penas", [1436] = "Páramos de Poniente", [1437] = "Los Humedales", [1438] = "Teldrassil", [1439] = "Costa Oscura", [1440] = "Vallefresno", [1441] = "Las Mil Agujas", [1442] = "Sierra Espolón", [1443] = "Desolace", [1444] = "Feralas", [1445] = "Marjal Revolcafango", [1446] = "Tanaris", [1447] = "Azshara", [1448] = "Frondavil", [1449] = "Cráter de Un'Goro", [1450] = "Claro de la Luna", [1451] = "Silithus", [1452] = "Cuna del Invierno", [1453] = "Ventormenta", [1454] = "Orgrimmar", [1455] = "Forjaz", [1456] = "Cima del Trueno", [1457] = "Darnassus", [1458] = "Entrañas"}
+-- Un mundo chico pero de verdad para el mapa de Alfa: Azeroth (947) con sus dos
+-- continentes y todas sus zonas en una cuadrícula, cada una con su rectángulo y
+-- sus mosaicos de arte. Así el mapa se dibuja en el banco y la prueba puede
+-- navegarlo (zoom, arrastre, pines).
+BANCO_MAPA = { [947] = { tipo = 0, r = { 0, 1, 0, 1 } },
+  [1414] = { padre = 947, tipo = 2, r = { 0.03, 0.46, 0.08, 0.92 } },
+  [1415] = { padre = 947, tipo = 2, r = { 0.54, 0.97, 0.08, 0.92 } } }
+do
+  local function repartir(cont, ids)
+    local c = BANCO_MAPA[cont].r
+    local n = #ids
+    local cols = math.ceil(math.sqrt(n))
+    local filas = math.ceil(n / cols)
+    local w, h = (c[2] - c[1]) / cols, (c[4] - c[3]) / filas
+    for i, id in ipairs(ids) do
+      local col, fila = (i - 1) % cols, math.floor((i - 1) / cols)
+      local l, t = c[1] + col * w, c[3] + fila * h
+      BANCO_MAPA[id] = { padre = cont, tipo = 3, r = { l + w * 0.04, l + w * 0.96, t + h * 0.04, t + h * 0.96 } }
+    end
+  end
+  repartir(1414, { 1411, 1412, 1413, 1438, 1439, 1440, 1441, 1442, 1443, 1444, 1445, 1446, 1447, 1448, 1449, 1450, 1451, 1452, 1454, 1456, 1457 })
+  repartir(1415, { 1416, 1417, 1418, 1419, 1420, 1421, 1422, 1423, 1424, 1425, 1426, 1427, 1428, 1429, 1430, 1431, 1432, 1433, 1434, 1435, 1436, 1437, 1453, 1455, 1458 })
+end
 C_Map = {
   GetBestMapForUnit = function() return 1411 end,
   GetPlayerMapPosition = function() return { x = 0.5, y = 0.5, GetXY = function() return 0.5, 0.5 end } end,
-  GetMapInfo = function(id) return { mapID = id, name = BANCO_ZONAS[id] or ("Zona " .. tostring(id)), mapType = 3, parentMapID = 1414 } end,
-  GetMapArtLayers = function() return nil end,
-  GetMapArtLayerTextures = function() return nil end,
-  GetMapChildrenInfo = function() return {} end,
+  GetMapInfo = function(id)
+    local m = BANCO_MAPA[id]
+    return { mapID = id, name = BANCO_ZONAS[id] or (id == 947 and "Azeroth") or ("Zona " .. tostring(id)),
+      mapType = m and m.tipo or 3, parentMapID = m and m.padre or 1414 }
+  end,
+  GetMapArtLayers = function(id)
+    if not BANCO_MAPA[id] then return nil end
+    return { { layerWidth = 1002, layerHeight = 668, tileWidth = 256, tileHeight = 256, minScale = 1, maxScale = 1 } }
+  end,
+  GetMapArtLayerTextures = function(id)
+    if not BANCO_MAPA[id] then return nil end
+    local t = {}
+    for i = 1, 12 do t[i] = 100000 + id * 16 + i end
+    return t
+  end,
+  GetMapChildrenInfo = function(id, tipo)
+    local out = {}
+    for hijo, m in pairs(BANCO_MAPA) do
+      if m.padre == id and (tipo == nil or m.tipo == tipo) then
+        out[#out + 1] = { mapID = hijo, mapType = m.tipo, name = BANCO_ZONAS[hijo] or tostring(hijo), parentMapID = id }
+      end
+    end
+    table.sort(out, function(a, b) return a.mapID < b.mapID end)
+    return out
+  end,
   GetWorldPosFromMapPos = function() return nil end,
-  GetMapRectOnMap = function() return 0, 1, 0, 1 end,
+  GetMapRectOnMap = function(id, sobre)
+    local m = BANCO_MAPA[id]
+    if not m then return nil end
+    if sobre == 947 or sobre == nil then return m.r[1], m.r[2], m.r[3], m.r[4] end
+    local p = BANCO_MAPA[sobre]
+    if not p then return nil end
+    local w, h = p.r[2] - p.r[1], p.r[4] - p.r[3]
+    return (m.r[1] - p.r[1]) / w, (m.r[2] - p.r[1]) / w, (m.r[3] - p.r[3]) / h, (m.r[4] - p.r[3]) / h
+  end,
+  GetMapLevels = function() return nil end,
 }
 C_Item = {
   GetItemIconByID = function() return 134400 end,
@@ -207,7 +260,20 @@ C_TooltipInfo = nil
 C_Reputation = nil
 
 DEFAULT_CHAT_FRAME = CreateFrame("Frame", "ChatFrame1")
-function DEFAULT_CHAT_FRAME:AddMessage(m) PRINTED = (PRINTED or 0) + 1 end
+-- Los marcos del chat con su pestaña, su fondo y su caja de escribir (Comodidades
+-- los viste): de verdad, como en el juego.
+NUM_CHAT_WINDOWS = 10
+for i = 1, NUM_CHAT_WINDOWS do
+  local cf = i == 1 and DEFAULT_CHAT_FRAME or CreateFrame("Frame", "ChatFrame" .. i)
+  cf:SetSize(430, 120)
+  if i > 2 then cf:Hide() end
+  CreateFrame("Frame", "ChatFrame" .. i .. "Background", cf)
+  local tab = CreateFrame("Button", "ChatFrame" .. i .. "Tab", UIParent)
+  tab:SetSize(80, 24)
+  tab:CreateFontString("ChatFrame" .. i .. "TabText", "OVERLAY", "GameFontNormalSmall")
+  if not _G["ChatFrame" .. i .. "EditBox"] then CreateFrame("EditBox", "ChatFrame" .. i .. "EditBox", cf) end
+end
+function DEFAULT_CHAT_FRAME:AddMessage(m) PRINTED = (rawget(_G, "PRINTED") or 0) + 1 end
 GameTooltip = CreateFrame("Frame", "GameTooltip")
 do
   local tip = GameTooltip
@@ -235,6 +301,15 @@ Enum = setmetatable({}, { __index = function(t, k) local v = setmetatable({}, { 
 KEY_BINDINGS_MAC = nil
 FACTION_HORDE, FACTION_ALLIANCE = "Horda", "Alianza"
 NUM_BAG_SLOTS = 4
+NUM_TOTAL_EQUIPPED_BAG_SLOTS = 4
+GetMoneyString = function(c) c = math.floor(tonumber(c) or 0) return (math.floor(c / 10000)) .. "g " .. (math.floor(c / 100) % 100) .. "s " .. (c % 100) .. "c" end
+-- Los marcos del minimapa que Alfa viste (Comodidades): de verdad, no comodines,
+-- para que el banco pruebe ese código como lo corre el juego.
+MinimapCluster = CreateFrame("Frame", "MinimapCluster")
+MinimapCluster:SetSize(192, 200)
+MinimapCluster.ZoneTextButton = CreateFrame("Button", "MinimapZoneTextButton", MinimapCluster)
+MinimapCluster.ZoneTextButton:SetSize(140, 16)
+MinimapZoneText = MinimapCluster.ZoneTextButton:CreateFontString("MinimapZoneText", "OVERLAY", "GameFontNormal")
 BACKPACK_CONTAINER = 0
 
 -- Every other global: a stand-in that accepts indexing and calls.

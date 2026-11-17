@@ -298,9 +298,10 @@ end
 
 -- Lo que se arregla haciendo algo (subir de nivel, hacer las previas) frente
 -- a lo que no (o no haciendo misiones: aprender una profesión, subir una
--- reputación).
+-- reputación). "desconocida" (las bases no cargaron o no está la misión) no
+-- es ninguna de las dos: no se omite ni se bloquea por eso.
 local IMPOSIBLE = { faccion = true, raza = true, clase = true, hecha = true, excluida = true, fiesta = true,
-	desconocida = true, profesion = true, reputacion = true }
+	profesion = true, reputacion = true }
 function D.Imposible(motivo) return IMPOSIBLE[motivo] or false end
 
 local function nombreProfesion(linea)

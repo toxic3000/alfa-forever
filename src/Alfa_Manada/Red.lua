@@ -99,12 +99,13 @@ end
 local prefijoListo = false
 function R.Prefijo()
 	if prefijoListo or not (C_ChatInfo and C_ChatInfo.RegisterAddonMessagePrefix) then return end
-	local ya = C_ChatInfo.IsAddonMessagePrefixRegistered and C_ChatInfo.IsAddonMessagePrefixRegistered(R.PREFIJO)
-	if not ya then
-		local ok, r = pcall(C_ChatInfo.RegisterAddonMessagePrefix, R.PREFIJO)
-		R.diag.prefijo = ok and r or "error"
-	end
-	prefijoListo = true
+	local esta = C_ChatInfo.IsAddonMessagePrefixRegistered
+	if esta and esta(R.PREFIJO) then prefijoListo = true return end
+	local ok, r = pcall(C_ChatInfo.RegisterAddonMessagePrefix, R.PREFIJO)
+	R.diag.prefijo = ok and r or "error"
+	-- Listo solo si de verdad quedó registrado: si no, se reintenta la próxima vez.
+	if esta then prefijoListo = esta(R.PREFIJO) and true or false
+	else prefijoListo = ok and r ~= false end
 end
 
 ---------------------------------------------------------------------------
@@ -434,8 +435,13 @@ local function alMensaje(_, prefijo, texto, canal, remitente, _, _, localID, nom
 		-- por el canal, ya lo escuchó por el canal).
 		if via == R.Via() then responder() end
 	elseif tipo == "P" then
-		local map, x, y = tonumber(f[1]), tonumber(f[2]), tonumber(f[3])
-		if not (map and x and y) or map <= 0 or map ~= math.floor(map) or x < 0 or x > 100 or y < 0 or y > 100 then return end
+		-- Solo dígitos: tonumber acepta "nan", "inf", "1e300" o "0x10", que
+		-- rompen la capa del mapa y el orden de la gente.
+		local s1, s2, s3 = f[1] or "", f[2] or "", f[3] or ""
+		-- (el "-" solo deja pasar "-0.00" del borde del mapa; el rango corta el resto).
+		if not (s1:match("^%d+$") and s2:match("^%-?%d+%.?%d*$") and s3:match("^%-?%d+%.?%d*$")) then return end
+		local map, x, y = tonumber(s1), tonumber(s2), tonumber(s3)
+		if not (map and x and y) or map < 1 or map > 100000 or x < 0 or x > 100 or y < 0 or y > 100 then return end
 		local nivel = tonumber(f[4])
 		local clase = f[5] and f[5]:match("^%u+$") or nil
 		G.Oido(clave, remitente, via, {

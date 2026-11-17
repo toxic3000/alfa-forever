@@ -46,9 +46,9 @@ local function avisoVivo()
 end
 
 local function cerrarAqui()
-	local a = avisoVivo()
+	local a, t = avisoVivo(), aqui.turno
 	aqui.aviso, aqui.turno = nil, nil
-	if a and a.Cerrar and a.Cerrar.Click then a.Cerrar:Click() end
+	if a and type(a.Cerrar) == "function" then a:Cerrar(t) end
 end
 
 local function rastreadorLoMuestra()
@@ -306,10 +306,12 @@ local function acomodarTip(t, s)
 	K.Escribir(t.XP, format(L["%s XP"], miles(s.xp or 0)))
 	t.Niveles:ClearAllPoints()
 	t.Niveles:SetPoint("TOPLEFT", t, "TOPLEFT", PAD_TIP, -y)
+	-- Una sola ancla: la cifra a la derecha de la ficha, a la altura de la
+	-- base del número grande (dos anclas la descuadraban).
+	local hn = K.AltoTexto(t.Niveles)
 	t.XP:ClearAllPoints()
-	t.XP:SetPoint("BOTTOMRIGHT", t.Niveles, "BOTTOMRIGHT", 0, 0)
-	t.XP:SetPoint("RIGHT", t, "RIGHT", -PAD_TIP, 0)
-	y = y + K.AltoTexto(t.Niveles) + 10
+	t.XP:SetPoint("BOTTOMRIGHT", t, "TOPRIGHT", -PAD_TIP, -(y + hn))
+	y = y + hn + 10
 	t.Barra:ClearAllPoints()
 	t.Barra:SetPoint("TOPLEFT", t, "TOPLEFT", PAD_TIP, -y)
 	t.Barra:SetWidth(dentro)

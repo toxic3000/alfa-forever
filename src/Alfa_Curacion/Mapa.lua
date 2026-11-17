@@ -17,8 +17,8 @@
 --
 -- Clic para lanzar de Blizzard (C_ClickBindings): sus atajos de hechizo
 -- mandan sobre cualquier botón de unidad seguro, también los de Alfa. "Usar
--- también en los marcos de Blizzard" intenta copiar tu mapa a su perfil con
--- C_ClickBindings.SetProfileByInfo y, si no se puede, abre su ventana.
+-- también en los marcos de Blizzard" abre su ventana para que armes ahí los
+-- mismos clics (C_ClickBindings.SetProfileByInfo es restringida).
 
 local ADDON, M = ...
 local N = AlfaNucleo
@@ -408,6 +408,9 @@ end
 M.AbrirVentanaBlizzard = abrirVentanaBlizzard
 
 -- -> true | false, y un texto para la página.
+-- C_ClickBindings.SetProfileByInfo es restringida (HasRestrictions): un addon
+-- no puede escribir el perfil de Blizzard. Se abre su ventana para que armes
+-- ahí los mismos clics.
 function M.UsarEnBlizzard()
 	local d = M.Datos()
 	local function fin(ok, texto)
@@ -416,95 +419,11 @@ function M.UsarEnBlizzard()
 		return ok, texto
 	end
 	if enCombate() then return fin(false, L["Sal de combate y vuelve a intentarlo."]) end
-	local C = C_ClickBindings
-	local E, I = tiposClick()
-	local bits = bitsModificadores()
-	if not (C and C.SetProfileByInfo and C.GetProfileInfo and E and I and bits) then
-		if abrirVentanaBlizzard() then
-			return fin(false, L["Este cliente no deja copiar tu mapa solo: se abrió la ventana de clic para lanzar de Blizzard para que lo armes ahí."])
-		end
-		return fin(false, L["Este cliente no tiene el clic para lanzar de Blizzard. Tus clics funcionan en los marcos de Alfa."])
-	end
-	-- Lo tuyo, ranura por ranura. Tus 12 clics quedan en Blizzard igual que
-	-- en tu mapa, también los que dejaste sin acción; los demás (otros botones
-	-- del ratón, otras combinaciones) no se tocan.
-	local mapa = M.Mapa()
-	local mio, ocupado, inter, saltados = {}, {}, {}, 0
-	for _, r in ipairs(M.RANURAS) do
-		local p, s = M.Partes(r)
-		local e = mapa[r]
-		local boton, mods = BOTON_BLIZZARD[s], bits[p]
-		ocupado[boton .. ":" .. mods] = true
-		local nueva
-		if type(e) == "table" and e.t == "spell" then
-			local base = idBase(e.id)
-			local puede = true
-			if C.CanSpellBeClickBound then
-				local okP, si = pcall(C.CanSpellBeClickBound, base)
-				puede = okP and not secreto(si) and si == true
-			end
-			if puede then
-				nueva = { type = E.Spell, actionID = base, button = boton, modifiers = mods }
-			else
-				saltados = saltados + 1
-			end
-		elseif type(e) == "table" and e.t == "target" and not inter[I.Target] then
-			nueva = { type = E.Interaction, actionID = I.Target, button = boton, modifiers = mods }
-			inter[I.Target] = true
-		elseif type(e) == "table" and e.t == "menu" and M.PermiteMenu(r) and not inter[I.OpenContextMenu] then
-			nueva = { type = E.Interaction, actionID = I.OpenContextMenu, button = boton, modifiers = mods }
-			inter[I.OpenContextMenu] = true
-		end
-		if nueva then mio[#mio + 1] = nueva end
-	end
-	if #mio == 0 then return fin(false, L["Tu mapa del ratón está vacío: elige algo en una ranura primero."]) end
-	-- Lo que ya tenías en Blizzard y no choca con lo tuyo se queda.
-	local okP, actual = pcall(C.GetProfileInfo)
-	local perfil = {}
-	if okP and type(actual) == "table" then
-		for i = 1, #actual do
-			local e = actual[i]
-			if type(e) == "table" and type(e.button) == "string" and type(e.modifiers) == "number" then
-				local choca = ocupado[e.button .. ":" .. e.modifiers]
-				if e.type == E.Interaction and inter[e.actionID] then choca = true end
-				if not choca then
-					perfil[#perfil + 1] = { type = e.type, actionID = e.actionID, button = e.button, modifiers = e.modifiers }
-				end
-			end
-		end
-	end
-	for i = 1, #mio do perfil[#perfil + 1] = mio[i] end
-	local ok = pcall(C.SetProfileByInfo, perfil)
-	-- Se comprueba leyendo el perfil de vuelta.
-	local bien = false
-	if ok then
-		local okL, leido = pcall(C.GetProfileInfo)
-		if okL and type(leido) == "table" then
-			bien = true
-			for i = 1, #mio do
-				local m, esta = mio[i], false
-				for j = 1, #leido do
-					local e = leido[j]
-					if type(e) == "table" and e.type == m.type and e.actionID == m.actionID
-						and e.button == m.button and e.modifiers == m.modifiers then
-						esta = true
-						break
-					end
-				end
-				if not esta then bien = false break end
-			end
-		end
-	end
-	if bien then
-		local texto = L["Listo: tu mapa también funciona en los marcos de Blizzard."]
-		if saltados > 0 then
-			texto = texto .. " " .. string.format(L["%d hechizo(s) no se pueden poner en el clic para lanzar."], saltados)
-		end
-		N.Imprimir(texto)
-		return fin(true, texto)
-	end
 	if abrirVentanaBlizzard() then
 		return fin(false, L["Blizzard no dejó copiar tu mapa desde un addon. Se abrió su ventana de clic para lanzar: arma ahí los mismos clics."])
+	end
+	if type(rawget(_G, "ToggleClickBindingFrame")) ~= "function" then
+		return fin(false, L["Este cliente no tiene el clic para lanzar de Blizzard. Tus clics funcionan en los marcos de Alfa."])
 	end
 	return fin(false, L["Blizzard no dejó copiar tu mapa desde un addon. Ábrelo en el menú del juego: Opciones, Clic para lanzar."])
 end

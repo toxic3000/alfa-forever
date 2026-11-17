@@ -44,12 +44,18 @@ local TOPE_PUBLICADO = 16   -- puntos que gasta un personaje al salir Forever (B
 local TOTAL_PUBLICADO = 65  -- retos (y puntos) al salir Forever (Blizzard)
 
 local secreto = A.Compat and A.Compat.IsSecret or function() return false end
+-- Todos los resultados, también los que vienen después de un nil (una tabla
+-- con # los perdería en Lua 5.1); nil si falla o si alguno es secreto.
+local function devolver(ok, ...)
+	if not ok then return nil end
+	for i = 1, select("#", ...) do
+		if secreto((select(i, ...))) then return nil end
+	end
+	return ...
+end
 local function llamar(fn, ...)
 	if type(fn) ~= "function" then return nil end
-	local r = { pcall(fn, ...) }
-	if not r[1] then return nil end
-	for i = 2, #r do if secreto(r[i]) then return nil end end
-	return select(2, unpack(r))
+	return devolver(pcall(fn, ...))
 end
 
 local function nombreArbol(a)

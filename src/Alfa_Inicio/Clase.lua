@@ -133,7 +133,9 @@ function K.Rol()
 		idx = ok and num(idx) or nil
 		if idx and idx > 0 then
 			local ok2, _, n, _, _, role = pcall(S.GetSpecializationInfo, idx)
-			if ok2 and ROL_CLIENTE[role] then return ROL_CLIENTE[role], texto(n) end
+			-- texto() descarta los valores secretos: indexar una tabla con uno es error.
+			role = ok2 and texto(role) or nil
+			if role and ROL_CLIENTE[role] then return ROL_CLIENTE[role], texto(n) end
 		end
 	end
 	return "dano", nil

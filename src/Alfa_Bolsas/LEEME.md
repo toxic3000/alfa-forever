@@ -15,7 +15,7 @@ Tus bolsas, tu banco y el inventario de todos tus personajes en una ventana de A
 - Los objetos de misión **del mundo** (cajas, plantas...) no se pueden resaltar desde un addon: los muestran los marcadores del motor en el mapa y el minimapa.
 - **El banco** en la misma clase de ventana: en vivo con un banquero y, si no, la última foto.
   - **Depositar rápido:** un botón y un menú: *lo que ya tienes en el banco*, *todos los materiales*, *una categoría…* y *todo lo que no sea equipo* (sin misiones, la piedra de hogar ni lo que tu guía aún necesita). Antes cuenta cuánto cabe; mueve por lotes tras tu clic y se detiene al entrar en combate o cerrar el banco. Otro clic lo detiene.
-  - **Comprar espacio:** la barra del banco muestra la siguiente casilla de bolsa del banco con su costo; un clic pide confirmación y compra (`C_Bank.PurchaseBankTab`). Después se pone una bolsa en ella.
+  - **Comprar espacio:** la barra del banco muestra la siguiente casilla de bolsa del banco con su costo; un clic vuelve a mostrar el banco del juego (sin cerrar la visita) para comprarla con su botón: `C_Bank.PurchaseBankTab` es restringida y un addon no puede llamarla. La casilla nueva se lee del juego al cambiar (`BANK_TABS_CHANGED`). Después se pone una bolsa en ella.
 - **El inventario de todos tus personajes:** reino, facción, clase, nivel, dinero, bolsas (con la bolsa misma), banco, equipo y lo que cuesta su siguiente casilla del banco. En el cuadro de cada objeto: *"Tienes 12 (Toxic: 7 en bolsas, Alt: 5 en banco)"*.
 - **Pie de la ventana:** tu dinero, el de toda la cuenta y el espacio libre (al pasar el ratón: el detalle y el dinero de cada personaje).
 - En la vista por categorías, mientras el ratón está sobre la ventana nada cambia de lugar: lo vendido queda vacío donde estaba y se acomoda al salir.
@@ -51,7 +51,7 @@ Forever (tipo de juego "Camelot" en el código de Blizzard) vende **casillas de 
 4. Barra de bolsas: pasar el ratón resalta su contenido; clic lo fija; arrastrar una bolsa de las bolsas a una casilla de la barra la equipa o la cambia, y arrastrar desde la barra la recoge (sin errores, fuera de combate).
 5. Con 4 casillas libres o menos: aparece el aviso y la franja; *Marcar como chatarra* pone la moneda y la mueve a Chatarra; en un comerciante se vende sola (o con *Vender la chatarra*); *Llévame al comerciante* pone la flecha.
 6. Banco: *Depositar* con cada opción mueve lo que dice y se detiene al cerrar el banco; con el banco lleno avisa cuántos no cupieron.
-7. Banco: la casilla "+" muestra el costo correcto; el diálogo compra al aceptar (verificar que `PurchaseBankTab` no pida otra cosa) y aparece la casilla nueva; arrastrar una bolsa a ella la pone.
+7. Banco: la casilla "+" muestra el costo correcto; su clic muestra el banco del juego sin cerrar la visita, su botón compra y aparece la casilla nueva en Alfa; al cerrar el banco, el de Blizzard vuelve a ocultarse; arrastrar una bolsa a ella la pone.
 8. Ordenar, buscar ("espada", "verde", ">20", "20-30"), las marcas y el cuadro "Tienes N".
 9. Apagar "Usar las bolsas de Alfa" devuelve las de Blizzard sin recargar (con las bolsas cerradas).
 10. Objetos de misión: brillan con su «!»; uno que empieza misión lleva la insignia llena y deja de llevarla al aceptar la misión; apagar `brilloMision` vuelve al marco fijo sin recargar.

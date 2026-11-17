@@ -1279,6 +1279,10 @@
   "en": "Opens the Stories window.",
   "origen": "Alfa_Lya"
  },
+ "Abre la ventana de clic para lanzar de Blizzard para que armes ahí los mismos clics y cures igual en sus marcos de grupo (el juego no deja que un addon los copie).": {
+  "en": "Opens Blizzard's click casting window so you can set up the same clicks there and heal the same way on its group frames (the game doesn't let an addon copy them).",
+  "origen": "Alfa_Curacion"
+ },
  "Abre la ventana de talentos del juego una vez o espera unos segundos: en cuanto Alfa la lea, te dice qué poner. Mientras, abajo ves tu build.": {
   "en": "Open the game's talent window once or wait a few seconds: as soon as Alfa reads it, it tells you what to take. Meanwhile, your build is below.",
   "origen": "Alfa_Builds"
@@ -4587,10 +4591,6 @@
   "en": "Buy another bank slot",
   "origen": "Alfa_Bolsas"
  },
- "Comprar por %s": {
-  "en": "Buy for %s",
-  "origen": "Alfa_Bolsas"
- },
  "Comprar y vender con otros": {
   "en": "Buy and sell with other players",
   "origen": "Alfa_Rutas"
@@ -4895,10 +4895,6 @@
   "en": "Copy the string below and pass it on in chat or Discord: with Alfa they paste it in Import and get your same build.",
   "origen": "Alfa_Builds"
  },
- "Copia tu mapa al clic para lanzar de Blizzard, así curas igual en sus marcos de grupo. Si el juego no lo deja, abre su ventana para que lo hagas ahí.": {
-  "en": "Copies your map to Blizzard's click casting, so you heal the same way on its group frames. If the game won't allow it, its window opens so you can do it there.",
-  "origen": "Alfa_Curacion"
- },
  "Copiar": {
   "en": "Copy",
   "origen": "Alfa_Manada"
@@ -5114,10 +5110,6 @@
  "Cuerpo a cuerpo con tótems y golpes elementales: el chamán que mejor sube.": {
   "en": "Melee with totems and elemental strikes: the shaman that levels best.",
   "origen": "Alfa_Builds"
- },
- "Cuesta %s (tienes %s). Es la casilla %d de %d: después pon una bolsa en ella para guardar más.": {
-  "en": "It costs %s (you have %s). It's slot %d of %d: then put a bag in it to store more.",
-  "origen": "Alfa_Bolsas"
  },
  "Cuesta %s.": {
   "en": "It costs %s.",
@@ -10567,6 +10559,10 @@
   "en": "The next slot costs %s and you can't afford it yet.",
   "origen": "Alfa_Bolsas"
  },
+ "La siguiente casilla cuesta %s: cómprala con el botón del banco del juego, que ya está a la vista.": {
+  "en": "The next slot costs %s: buy it with the game's bank button, now on screen.",
+  "origen": "Alfa_Bolsas"
+ },
  "La subasta deja escanear todo cada 15 minutos. Falta %s.": {
   "en": "The auction house allows a full scan every 15 minutes. %s to go.",
   "origen": "Alfa_Comercio"
@@ -13717,6 +13713,10 @@
  },
  "No se pudo marcar: falta el motor de Alfa.": {
   "en": "Couldn't mark: Alfa's engine is missing.",
+  "origen": "Alfa_Bolsas"
+ },
+ "No se pudo mostrar el banco del juego para comprar la casilla.": {
+  "en": "Couldn't show the game's bank to buy the slot.",
   "origen": "Alfa_Bolsas"
  },
  "No se pudo probar ahora": {
@@ -22686,10 +22686,6 @@
  "¿Borrar todos tus marcadores?": {
   "en": "Delete all your markers?",
   "origen": "Alfa_Mundo"
- },
- "¿Comprar otra casilla del banco?": {
-  "en": "Buy another bank slot?",
-  "origen": "Alfa_Bolsas"
  },
  "¿Cuánto decide Alfa por ti en el camino?": {
   "en": "How much does Alfa decide for you along the way?",

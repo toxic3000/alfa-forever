@@ -393,7 +393,7 @@ local function px(v) return format(L["%d px"], floor((tonumber(v) or 0) + 0.5)) 
 local function entero(v) return tostring(floor((tonumber(v) or 0) + 0.5)) end
 M.Px, M.Entero = px, entero
 
-local BASE_BLIZZARD = L["Copia tu mapa al clic para lanzar de Blizzard, así curas igual en sus marcos de grupo. Si el juego no lo deja, abre su ventana para que lo hagas ahí."]
+local BASE_BLIZZARD = L["Abre la ventana de clic para lanzar de Blizzard para que armes ahí los mismos clics y cures igual en sus marcos de grupo (el juego no deja que un addon los copie)."]
 
 -- "El clic izquierdo solo selecciona" no es un ajuste (va por personaje, en
 -- M.Datos): su fila se crea al mostrar la página por primera vez y queda

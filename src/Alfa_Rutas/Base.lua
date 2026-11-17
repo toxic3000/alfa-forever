@@ -257,7 +257,7 @@ function M.Rutas()
 	local d = M.Cuenta()
 	local out, vistos = {}, {}
 	for _, id in ipairs(d.orden) do
-		if d.rutas[id] and not vistos[id] then
+		if type(d.rutas[id]) == "table" and not vistos[id] then
 			out[#out + 1] = d.rutas[id]
 			vistos[id] = true
 		end
@@ -320,7 +320,12 @@ end
 -- La ruta que se edita en la página: la elegida, la activa, o la primera.
 function M.RutaEditada()
 	local p = M.Personaje()
-	return M.Ruta(p.editando) or M.Ruta(p.activa) or M.Rutas()[1]
+	local r = M.Ruta(p.editando) or M.Ruta(p.activa)
+	if r then return r end
+	-- La primera, igual que M.Ruta: sus tramos siempre en una tabla.
+	r = M.Rutas()[1]
+	if r and type(r.tramos) ~= "table" then r.tramos = {} end
+	return r
 end
 
 -- La ruta en seguimiento de este personaje (la que siguió con "Seguir").

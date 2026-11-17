@@ -136,14 +136,25 @@ end
 -- Dibujar
 ---------------------------------------------------------------------------
 
+-- El arte y lo de encima, cada uno por su cuenta: si uno falla, el otro igual
+-- se mueve con la vista (el error se avisa una vez por sesión).
+local avisoColocar = false
+local function aparte(fn, ...)
+	local ok, err = pcall(fn, ...)
+	if not ok and not avisoColocar and geterrorhandler then
+		avisoColocar = true
+		geterrorhandler()(err)
+	end
+end
+
 local function colocar()
 	sucio = false
 	if sinArte then return end
 	encajar()
 	local vw, vh = tamVista()
 	local k = escala(z)
-	Lz.Colocar(cu, cv, k, vw, vh, z)
-	Mc.Colocar(cu, cv, k, vw, vh, z)
+	aparte(Lz.Colocar, cu, cv, k, vw, vh, z)
+	aparte(Mc.Colocar, cu, cv, k, vw, vh, z)
 	if Lz.Pendiente() then sucio = true end
 end
 
@@ -223,7 +234,9 @@ local function animar(dt)
 	if abs(meta.z - z) > 1e-4 then
 		z = z * (meta.z / z) ^ f
 		if abs(meta.z - z) / meta.z < 0.002 then z = meta.z end
-		if meta.u then
+		-- Mientras se arrastra, el arrastre deja bajo el cursor el punto que
+		-- agarraste (arrastrar, después de esto): el ancla del zoom no pelea con él.
+		if meta.u and not (arrastre and arrastre.movido) then
 			-- El punto bajo el cursor no se mueve mientras se acerca.
 			local Wm, Hm = Lz.Tamano()
 			local vw, vh = tamVista()
@@ -382,13 +395,43 @@ local function alPresionar(_, boton)
 	local x, y = cursor()
 	if not x then return end
 	if boton == "LeftButton" then
-		arrastre = { x = x, y = y, cu = cu, cv = cv, movido = false, vu = 0, vv = 0 }
+		-- gu, gv: el punto del mundo que agarraste; se queda bajo el cursor
+		-- aunque el zoom cambie durante el arrastre (la rueda).
+		local gu, gv = aMundo(x, y)
+		arrastre = { x = x, y = y, cu = cu, cv = cv, gu = gu, gv = gv, movido = false, vu = 0, vv = 0 }
 		inercia = nil
 		meta.cu, meta.cv, meta.u = nil, nil, nil
 		meta.z = z
 	elseif boton == "RightButton" then
 		arrastre = { derecho = true, x = x, y = y }
 	end
+end
+
+-- Un zoom que sigue animándose al terminar un arrastre: su ancla pasa al
+-- punto bajo el cursor de ahora (si no, la vista saltaría al ancla vieja).
+local function reanclarZoom()
+	if not meta.u then return end
+	if inercia then meta.u = nil return end -- la inercia mueve; el zoom, desde el centro
+	local x, y = cursor()
+	if not x then
+		local vw, vh = tamVista()
+		x, y = vw / 2, vh / 2
+	end
+	meta.x, meta.y = x, y
+	meta.u, meta.v = aMundo(x, y)
+end
+
+local finArrastre = -1 -- cuándo terminó el último arrastre con movimiento
+
+-- Fin de un arrastre que movió el mapa.
+local function terminarArrastre(a)
+	-- Un arrastre rápido sigue solo un poco y se frena.
+	local Wm, Hm = Lz.Tamano()
+	local k = escala(z)
+	local rapidez = sqrt((a.vu * k * Wm) ^ 2 + (a.vv * k * Hm) ^ 2)
+	if rapidez > INERCIA_MIN and not (A.Get("ui.reduceMotion")) then inercia = { vu = a.vu, vv = a.vv } end
+	reanclarZoom()
+	finArrastre = GetTime and GetTime() or 0
 end
 
 local function alSoltar(_, boton)
@@ -402,11 +445,7 @@ local function alSoltar(_, boton)
 	end
 	if boton ~= "LeftButton" or not a or a.derecho then return end
 	if a.movido then
-		-- Un arrastre rápido sigue solo un poco y se frena.
-		local Wm, Hm = Lz.Tamano()
-		local k = escala(z)
-		local rapidez = sqrt((a.vu * k * Wm) ^ 2 + (a.vv * k * Hm) ^ 2)
-		if rapidez > INERCIA_MIN and not (A.Get("ui.reduceMotion")) then inercia = { vu = a.vu, vv = a.vv } end
+		terminarArrastre(a)
 		return
 	end
 	if not x then return end
@@ -427,11 +466,36 @@ local function alSoltar(_, boton)
 	end
 end
 
+-- Los pines y los puntos del grupo (Marcas.lua) se quedan el botón al
+-- presionarlos: reenvían el izquierdo aquí para que arrastrar empezando sobre
+-- uno también mueva el mapa.
+function V.Presionar(boton)
+	if boton == "LeftButton" then alPresionar(nil, boton) end
+end
+
+-- Al soltar sobre un pin: solo actúa si el arrastre movió el mapa (-> true).
+function V.SoltarArrastre(boton)
+	local a = arrastre
+	if sinArte or boton ~= "LeftButton" or not a or a.derecho then return false end
+	arrastre = nil
+	if not a.movido then return false end
+	terminarArrastre(a)
+	return true
+end
+
+-- Si el clic de un pin viene de soltar un arrastre (no debe dispararse).
+function V.RecienArrastrado()
+	if arrastre and arrastre.movido then return true end
+	local ahora = GetTime and GetTime() or 0
+	return ahora - finArrastre < 0.1
+end
+
 local function arrastrar(dt)
 	local a = arrastre
 	if not a or a.derecho then return false end
 	if not (IsMouseButtonDown and IsMouseButtonDown("LeftButton")) then
 		arrastre = nil
+		if a.movido then reanclarZoom() end
 		return false
 	end
 	local x, y = cursor()
@@ -440,8 +504,11 @@ local function arrastrar(dt)
 	if not a.movido and abs(dx) + abs(dy) < 3 then return false end
 	a.movido = true
 	local Wm, Hm = Lz.Tamano()
+	local vw, vh = tamVista()
 	local k = escala(z)
-	local nu, nv = a.cu - dx / (k * Wm), a.cv - dy / (k * Hm)
+	-- El punto agarrado bajo el cursor, con el zoom de ahora (sin zoom de por
+	-- medio es lo mismo que mover el centro lo que se movió el cursor).
+	local nu, nv = a.gu - (x - vw / 2) / (k * Wm), a.gv - (y - vh / 2) / (k * Hm)
 	-- La rapidez del arrastre (suavizada), para la inercia al soltar.
 	if dt > 0 then
 		local f = min(1, dt * 18)
@@ -457,8 +524,9 @@ local encuadrar -- (abajo, con V.Abrir)
 local function alActualizar(_, dt)
 	dt = type(dt) == "number" and dt or 0
 	if porEncuadrar and encuadrar then encuadrar() end
-	if arrastrar(dt) then sucio = true end
+	-- El zoom primero: el arrastre se acomoda al zoom de este mismo cuadro.
 	if animar(dt) then sucio = true end
+	if arrastrar(dt) then sucio = true end
 	if sucio then colocar() end
 	reloj = reloj + dt
 	if reloj >= LATIDO then

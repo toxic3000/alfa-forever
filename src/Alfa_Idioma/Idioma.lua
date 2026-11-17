@@ -47,5 +47,6 @@ function AlfaPonerIdioma(loc)
 	AlfaIdiomaDB = type(AlfaIdiomaDB) == "table" and AlfaIdiomaDB or {}
 	AlfaIdiomaDB.idioma = loc
 	local nuevo = loc or (juego and juego()) or "enUS"
+	if nuevo == "enGB" then nuevo = "enUS" end -- igual que AlfaIdioma(): no pide recargar de más
 	return nuevo ~= AlfaIdioma()
 end

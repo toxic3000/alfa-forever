@@ -144,9 +144,8 @@ M.EN = {
 	["Este banco no vende más espacio."] = "This bank sells no more space.",
 	["Tu banco ya tiene todas sus casillas."] = "Your bank already has all its slots.",
 	["La siguiente casilla cuesta %s y no te alcanza todavía."] = "The next slot costs %s and you can't afford it yet.",
-	["¿Comprar otra casilla del banco?"] = "Buy another bank slot?",
-	["Cuesta %s (tienes %s). Es la casilla %d de %d: después pon una bolsa en ella para guardar más."] = "It costs %s (you have %s). It's slot %d of %d: then put a bag in it to store more.",
-	["Comprar por %s"] = "Buy for %s",
+	["La siguiente casilla cuesta %s: cómprala con el botón del banco del juego, que ya está a la vista."] = "The next slot costs %s: buy it with the game's bank button, now on screen.",
+	["No se pudo mostrar el banco del juego para comprar la casilla."] = "Couldn't show the game's bank to buy the slot.",
 
 	-- Cuando se llenan
 	["Tus bolsas se están llenando"] = "Your bags are filling up",

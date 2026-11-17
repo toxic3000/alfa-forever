@@ -109,7 +109,7 @@ M.EN = {
 	["Para quien prefiere seleccionar con el izquierdo: la cura de ese clic pasa al botón central. Se vuelve a aplicar tu preajuste."] = "For those who like to target with left click: that click's heal moves to the middle button. Your preset is applied again.",
 	["Usar también en los marcos de Blizzard"] = "Also use on Blizzard's frames",
 	["Usar"] = "Use",
-	["Copia tu mapa al clic para lanzar de Blizzard, así curas igual en sus marcos de grupo. Si el juego no lo deja, abre su ventana para que lo hagas ahí."] = "Copies your map to Blizzard's click casting, so you heal the same way on its group frames. If the game won't allow it, its window opens so you can do it there.",
+	["Abre la ventana de clic para lanzar de Blizzard para que armes ahí los mismos clics y cures igual en sus marcos de grupo (el juego no deja que un addon los copie)."] = "Opens Blizzard's click casting window so you can set up the same clicks there and heal the same way on its group frames (the game doesn't let an addon copy them).",
 	["Preajustes listos para usar"] = "Ready-to-use presets",
 
 	-- Página: ajustes

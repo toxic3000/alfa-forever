@@ -1,5 +1,28 @@
 # Cambios de Alfa
 
+## 1.1.3 — Mapa estable y 46 arreglos (17/11/2026)
+
+**Español**
+- Arreglado: al abrir el mapa con M salía «Font not set» y al moverlo todo se veía mal. Los pines tenían textos sin letra; ahora nacen con letra y, si un pin fallara, solo ese se esconde y el resto del mapa sigue bien.
+- Mapa: ya se puede arrastrar empezando encima de un ícono, la rueda mientras arrastras ya no hace saltar el mapa, un error en un paso ya no congela pines ni la flecha, con muchos pines ya no desaparecen tu destino y tus marcadores, y con capas apagadas ya no se redibuja todo diez veces por segundo.
+- Ruta: ya no omite para siempre una misión que todavía no puede revisar; «Agregué lo que falta» solo sale si de verdad se agregó; las metas de servicio de «Mis planes» se cumplen tras /reload.
+- Combate: el medidor de daño ya no falla en combate con los valores secretos de Forever, y la ayuda de rotación ya no sugiere interrumpir lo que no se puede interrumpir.
+- Pesca: si empieza una pelea mientras vuelve tu equipo normal ya no se pierden piezas; con la interfaz oculta siguen a la vista el botín, los avisos y el menú; la captura de tecla se cancela al entrar en combate.
+- Bolsas y Curación: comprar una casilla del banco y copiar los clics a los marcos de Blizzard ahora los hace el juego (son acciones que un addon no puede hacer solo).
+- La Jauría: un mensaje con coordenadas raras ya no rompe la capa del mapa.
+- Varios: el aviso «Mientras estás aquí» ya no da error al quitarse; la intro del lobo se corta si entras en combate; un clic en la última fila de una lista ya no abre otra; se puede volver del color de clase al verde de La Jauría; ya no sale el aviso falso de «poca XP descansada» al subir de nivel; Lya ya no se anima con Alfa oculto; y otros arreglos menores en Enciclopedia, Comercio, Recolección y Paisaje.
+- Nueva prueba de navegación y funcionalidad que usa Alfa como un jugador antes de cada versión (el mapa incluido), para que estos errores no vuelvan.
+
+**English**
+- Fixed: opening the map with M showed "Font not set" and moving it broke everything. Map pins now always have a font, and a failing pin only hides itself.
+- Map: you can start dragging over an icon, the wheel while dragging no longer makes the map jump, one failing step no longer freezes pins or the arrow, your destination and markers no longer vanish when there are many pins, and hidden layers no longer force full redraws.
+- Route: no longer skips forever a quest it can't check yet; "added what was missing" only shows when it really was; service goals in My plans complete after /reload.
+- Combat: the damage meter no longer errors in combat with Forever's secret values; the rotation helper no longer suggests interrupting uninterruptible casts.
+- Fishing: gear is no longer lost if a fight starts while your normal gear comes back; loot, popups and the game menu stay visible with the UI hidden; key capture cancels in combat.
+- Bags and Healing: buying a bank slot and copying clicks to Blizzard's frames are now done by the game (an add-on can't do them on its own).
+- La Jauría: a message with odd coordinates no longer breaks the map layer.
+- Many smaller fixes, plus a new navigation and functionality test that plays through Alfa (map included) before every release.
+
 ## 1.1.2 — Lya de cuerpo completo (17/11/2026)
 
 **Español**

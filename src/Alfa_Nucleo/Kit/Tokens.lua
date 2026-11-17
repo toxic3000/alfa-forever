@@ -246,6 +246,9 @@ K.MismoColor = igual
 -- Pone el acento: un { r, g, b } o un id de K.ACENTOS; nil vuelve al del estilo.
 function K.SetAcento(c)
 	if not (A and A.Set) then return end
+	-- Elegir cualquier acento deja de usar el color de la clase (si no, volver
+	-- al verde de La Jauría no cambiaba nada).
+	if A.Get and A.Get("ui.classAccent") then A.Set("ui.classAccent", false) end
 	if type(c) == "string" then
 		for _, a in ipairs(K.ACENTOS) do if a.id == c then c = a.color end end
 	end
@@ -362,7 +365,7 @@ end
 
 -- Un texto del Kit: rol de K.TIPO y color (token). Una línea por omisión.
 function K.Texto(padre, rol, color, capa)
-	local fs = padre:CreateFontString(nil, capa or "OVERLAY")
+	local fs = padre:CreateFontString(nil, capa or "OVERLAY", "GameFontNormalSmall")
 	fs.alfaRol, fs.alfaColor = rol or "cuerpo", color or "texto"
 	fs:SetJustifyH("LEFT")
 	fs:SetWordWrap(false)
@@ -466,6 +469,16 @@ function K.Parrafo(fs, ancho, lineas)
 	if lineas then fs:SetMaxLines(lineas) end
 	fs:SetJustifyV("TOP")
 	return K.AltoTexto(fs)
+end
+
+-- Pone una letra con respaldo: si la del estilo no carga, la del juego (un
+-- texto o una caja sin letra dan "Font not set" al escribirles).
+function K.FuenteSegura(obj, cara, tam, banderas)
+	local ok = obj:SetFont(cara, tam, banderas or "")
+	if not ok and obj.SetFontObject then
+		local caja = obj.GetObjectType and obj:GetObjectType() == "EditBox"
+		obj:SetFontObject(caja and ChatFontNormal or GameFontNormal)
+	end
 end
 
 -- Ajusta el ancho de un texto de una línea a lo que mide, sin pasar de `tope`.

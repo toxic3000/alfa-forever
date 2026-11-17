@@ -228,6 +228,7 @@ local function completar(f)
 	if map then
 		f.zona = U.NombreMapa(U.ZonaDe(map))
 		local yd, otro = U.Distancia(map, x, y)
+		if yd ~= yd then yd = nil end -- NaN rompe el orden
 		f.dist, f.otro = yd, otro == "otro" or nil
 	end
 	return f

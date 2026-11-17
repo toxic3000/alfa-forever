@@ -268,8 +268,8 @@ function R.Indice(mapID)
 	local propios = D.nodos[mapID]
 	if type(propios) == "table" then
 		for _, rec in ipairs(propios) do
-			local g = grupoDe(rec)
-			local x, y = tonumber(rec.x), tonumber(rec.y)
+			local g = grupoDe(rec) -- nil si lo guardado no es una tabla: se salta
+			local x, y = g and tonumber(rec.x), g and tonumber(rec.y)
 			if g and x and y then
 				local j = cercano(idx, x, y, g, rango(g))
 				if j and not idx.d[j] then idx.d[j] = rec else agregar(idx, x, y, g, rec, false) end
@@ -309,7 +309,8 @@ local function anotarNodo(g, mapID, x, y, objectID, cuenta, cuando)
 		if not enConocidos[mapID] then conocidos = nil end
 	end
 	rec.n = (tonumber(rec.n) or 0) + (cuenta or 1)
-	if cuando and (not rec.t or cuando > rec.t) then rec.t = cuando end
+	local antes = tonumber(rec.t)
+	if cuando and (not antes or cuando > antes) then rec.t = cuando end
 	return j, rec
 end
 
@@ -557,6 +558,8 @@ function R.Anotar(g, mapID)
 		z = { total = 0, tipos = {}, recursos = {} }
 		P.zonas[mapID] = z
 	end
+	if type(z.tipos) ~= "table" then z.tipos = {} end
+	if type(z.recursos) ~= "table" then z.recursos = {} end
 	z.total = (tonumber(z.total) or 0) + 1
 	sumar(z.tipos, gr.tipo)
 	sumar(z.recursos, gr.clave)

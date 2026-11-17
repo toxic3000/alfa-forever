@@ -531,6 +531,18 @@ local function resolverServicio(m)
 	return p
 end
 
+-- Pl.Revisar: la meta de servicio de ahora sin lugar todavía (tras /reload o
+-- recién agregada) lo busca fuera de combate, a lo más cada 30 s si no sale.
+local buscado = {}
+local function servicioPendiente(m)
+	if not (m and m.tipo == "lugar" and m.modo == "servicio") or rt.lugar[m.uid] then return false end
+	if InCombatLockdown and InCombatLockdown() then return false end
+	local ahora = GetTime and GetTime() or 0
+	if buscado[m.uid] and ahora - buscado[m.uid] < 30 then return false end
+	buscado[m.uid] = ahora
+	return resolverServicio(m) ~= nil
+end
+
 -- Llévame: lo que acerca a la meta. -> true si hizo algo. auto: la flecha
 -- que va sola al llegarle el turno (no cierra ventanas ni muestra nada).
 function Pl.Ir(m, auto)
@@ -597,7 +609,7 @@ end
 local function relojLugar(m)
 	local quiere = m ~= nil and m.tipo == "lugar"
 	if quiere and not ticker then
-		ticker = A.NewTicker(1.5, function() Pl.Revisar() end)
+		ticker = A.NewTicker(1.5, function() Pl.Revisar(true) end)
 	elseif not quiere and ticker then
 		ticker:Cancel()
 		ticker = nil
@@ -610,7 +622,9 @@ local function alLlegarTurno(m)
 	if A.Get(M.ID .. ".planFlecha") ~= false then Pl.Ir(m, true) end
 end
 
-function Pl.Revisar()
+-- desdeReloj: la revisión de cada 1.5 s; solo avisa PLAN_AVANCE si algo cambió.
+local firmaAvance
+function Pl.Revisar(desdeReloj)
 	local pl = Pl.Activo()
 	if not pl then
 		relojLugar(nil)
@@ -619,6 +633,7 @@ function Pl.Revisar()
 	end
 	local antes = ultima
 	local m = Pl.Actual(pl)
+	if servicioPendiente(m) then m = Pl.Actual(pl) end
 	ultima = m and m.uid or false
 	relojLugar(m)
 	if antes ~= nil and antes ~= ultima then
@@ -633,6 +648,9 @@ function Pl.Revisar()
 		alLlegarTurno(m)
 		A.Fire("ALFA_PLAN")
 	end
+	local firma = tostring(pl.id) .. "|" .. tostring(ultima) .. "|" .. tostring((Pl.Avance(pl))) .. "|" .. tostring(m and select(4, Pl.Estado(m)) or "")
+	if desdeReloj and firma == firmaAvance then return end
+	firmaAvance = firma
 	M.Avisar("PLAN_AVANCE")
 end
 

@@ -66,6 +66,7 @@ local rects = {} -- mapa -> { l, r, t, b } | false
 function Geo.Rect(mapa)
 	if mapa == MUNDO then return 0, 1, 0, 1 end
 	if type(mapa) ~= "number" then return nil end
+	if mapa ~= mapa then return nil end -- NaN: no sirve de índice
 	local r = rects[mapa]
 	if r == nil then
 		r = false

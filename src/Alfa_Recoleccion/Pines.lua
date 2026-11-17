@@ -43,7 +43,7 @@ function P.Construir(f)
 	f.aro = f:CreateTexture(nil, "OVERLAY")
 	f.aro:SetTexture(ARO)
 	f.aro:SetPoint("CENTER")
-	f.cuenta = f:CreateFontString(nil, "OVERLAY")
+	f.cuenta = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 	f.cuenta:SetPoint("CENTER", f, "BOTTOMRIGHT", -1, 2)
 	f.cuenta:Hide()
 	return f

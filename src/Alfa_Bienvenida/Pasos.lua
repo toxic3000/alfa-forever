@@ -144,14 +144,16 @@ function M.PantallasDeAjustes()
 						texto = "Más pasto, más horizonte, niebla ligera y rayos de sol, sin pedirle de más a tu PC. Se deshace con un clic en /alfa paisaje." },
 						{ get = function()
 							local V = rawget(_G, "AlfaVista")
-							return V and V.Actual and V.Actual() == "manada" or false
+							if not V then return false end
+							-- "Puesto" aunque el juego haya recortado algún valor (Ultimo).
+							return (V.Actual and V.Actual() == "manada") or (V.Ultimo and V.Ultimo() == "manada") or false
 						end,
 						set = function(v)
 							local V = rawget(_G, "AlfaVista")
 							if not V then return end
-							local actual = V.Actual and V.Actual()
-							if v and actual ~= "manada" then V.AplicarPreset("manada")
-							elseif not v and actual == "manada" then V.Deshacer() end
+							local puesto = (V.Actual and V.Actual() == "manada") or (V.Ultimo and V.Ultimo() == "manada")
+							if v and not puesto then V.AplicarPreset("manada")
+							elseif not v and puesto then V.Deshacer() end
 						end,
 						existe = function() return rawget(_G, "AlfaVista") ~= nil end }),
 				} },

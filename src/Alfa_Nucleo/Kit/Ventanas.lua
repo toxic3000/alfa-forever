@@ -304,18 +304,26 @@ local function armarDialogo()
 	d.Icono:SetPoint("TOPLEFT", d, "TOPLEFT", ESP.l, -ESP.l)
 	d.Titulo = K.Texto(d, "titulo", "texto")
 	d.Texto = K.Texto(d, "texto", "textoSuave")
+	-- Cada botón suelta las respuestas antes de cerrar: el velo, al ocultarse por
+	-- otro camino (Esc, otro diálogo encima), llama a alCancelar.
 	d.Aceptar = K.Boton(d, "", function()
 		local fn = d.alAceptar
+		d.alAceptar, d.alCancelar = nil, nil
 		d.velo:Hide()
 		if fn then K.Llamar(fn) end
 	end, { tipo = "primario" })
 	d.Cancelar = K.Boton(d, "", function()
 		local fn = d.alCancelar
+		d.alAceptar, d.alCancelar = nil, nil
 		d.velo:Hide()
 		if fn then K.Llamar(fn) end
 	end, { tipo = "fantasma" })
 	d.velo = velo
-	velo:SetScript("OnHide", function() d.alAceptar, d.alCancelar = nil, nil end)
+	velo:SetScript("OnHide", function()
+		local fn = d.alCancelar
+		d.alAceptar, d.alCancelar = nil, nil
+		if fn then K.Llamar(fn) end
+	end)
 	cerrarConEsc("AlfaKitVelo")
 	return d
 end
@@ -325,6 +333,10 @@ function K.Dialogo(o)
 	dialogo = dialogo or armarDialogo()
 	local d = dialogo
 	local ancho = o.ancho or K.ANCHO.dialogo
+	-- Un diálogo nuevo encima del que estaba abierto: el anterior se da por cancelado.
+	local previo = d.velo and d.velo:IsShown() and d.alCancelar
+	d.alAceptar, d.alCancelar = nil, nil
+	if previo then K.Llamar(previo) end
 	d.alAceptar, d.alCancelar = o.alAceptar, o.alCancelar
 	if o.lobo then
 		d.Icono:SetTexture(K.Lobo(o.lobo))
@@ -419,8 +431,9 @@ local function armarAviso()
 	a.Icono:SetPoint("TOPLEFT", a, "TOPLEFT", ESP.base, -ESP.m - 2)
 	a.Titulo = K.Texto(a, "encabezado", "texto")
 	a.Texto = K.Texto(a, "nota", "textoSuave")
-	a.Cerrar = K.BotonIcono(a, "ic-cerrar", function() quitar(a) end, { tam = 22, icono = 10 })
-	a.Cerrar:SetPoint("TOPRIGHT", a, "TOPRIGHT", -6, -6)
+	-- El botón no se llama "Cerrar": a:Cerrar(turno) (abajo) es la función para quitar el aviso.
+	a.BotonCerrar = K.BotonIcono(a, "ic-cerrar", function() quitar(a) end, { tam = 22, icono = 10 })
+	a.BotonCerrar:SetPoint("TOPRIGHT", a, "TOPRIGHT", -6, -6)
 	local ag = a:CreateAnimationGroup()
 	local alfa = ag:CreateAnimation("Alpha")
 	alfa:SetFromAlpha(0)

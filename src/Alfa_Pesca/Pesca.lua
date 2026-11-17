@@ -115,6 +115,8 @@ local E = {
 	ultimo = nil,           -- la última captura (para la barra)
 	plan = nil,             -- el paso de la tecla (Equipo.lua)
 	ui = nil,               -- la interfaz oculta: { minimapa, chat }
+	prepararAlSalir = false,    -- rehacer la macro ya está encolado para el fin del combate
+	restaurarPendiente = false, -- devolver las CVar ya está encolado para el fin del combate
 }
 M.E = E
 
@@ -306,7 +308,11 @@ function M.PrepararBotones()
 	preparando = true
 	A.After(0.2, function()
 		preparando = false
+		-- En combate se encola una sola vez, aunque se pida muchas veces.
+		if E.prepararAlSalir then return end
+		E.prepararAlSalir = true
 		N.FueraDeCombate(function()
+			E.prepararAlSalir = false
 			prepararBotones()
 			M.Avisar("plan")
 		end)
@@ -546,7 +552,14 @@ function M.Restaurar()
 	end
 	if next(r) == nil then E.respaldo = nil end
 	guardarRespaldo()
-	if E.respaldo then N.FueraDeCombate(M.Restaurar) end
+	-- Lo que el combate no dejó devolver, al salir (encolado una sola vez).
+	if E.respaldo and not E.restaurarPendiente then
+		E.restaurarPendiente = true
+		N.FueraDeCombate(function()
+			E.restaurarPendiente = false
+			M.Restaurar()
+		end)
+	end
 end
 
 A.RegisterEvent("CVAR_UPDATE", function(_, nombre)
@@ -582,6 +595,11 @@ local function marcosChat()
 	return out
 end
 
+local SIEMPRE_VISIBLES = {
+	"LootFrame", "GroupLootContainer", "StaticPopup1", "StaticPopup2", "StaticPopup3", "StaticPopup4",
+	"GameMenuFrame", "GameTooltip", "UIErrorsFrame",
+}
+
 local function ignorar(f, si)
 	if f and f.SetIgnoreParentAlpha then pcall(f.SetIgnoreParentAlpha, f, si and true or false) end
 end
@@ -590,6 +608,12 @@ function M.OcultarUI()
 	if E.ui or enCombate() or not opt("ocultarUI") or not UIParent then return end
 	local quedan = {}
 	for _, f in ipairs(M.VISIBLES) do quedan[#quedan + 1] = f end
+	-- Lo del juego que siempre tiene que verse: el botín, los diálogos, el
+	-- menú, los cuadros de ayuda y los errores en pantalla.
+	for _, nombre in ipairs(SIEMPRE_VISIBLES) do
+		local f = rawget(_G, nombre)
+		if f then quedan[#quedan + 1] = f end
+	end
 	if opt("uiMinimapa") then quedan[#quedan + 1] = rawget(_G, "MinimapCluster") end
 	if opt("uiChat") then for _, f in ipairs(marcosChat()) do quedan[#quedan + 1] = f end end
 	for _, f in ipairs(quedan) do ignorar(f, true) end

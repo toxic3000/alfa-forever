@@ -65,7 +65,7 @@ N.Reemplazar("DUNGEON_TOAST", function(p)
 		if a and not a.cerrado then
 			a.cerrado = true
 			actual = nil
-			if a.aviso and a.aviso.alfaTurno == a.turno and a.aviso.Cerrar then a.aviso.Cerrar:Click() end
+			if a.aviso and a.aviso.alfaTurno == a.turno and type(a.aviso.Cerrar) == "function" then a.aviso:Cerrar(a.turno) end
 		end
 		return
 	end

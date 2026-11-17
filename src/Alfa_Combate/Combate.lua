@@ -92,12 +92,15 @@ function M.Legible(v)
 	return v
 end
 
--- Una llamada al cliente que no rompe nada si falla: -> sus resultados o nil.
+-- Una llamada al cliente que no rompe nada si falla: -> todos sus resultados o nil.
+local function devolver(ok, ...)
+	if ok then return ... end
+	return nil
+end
+
 function M.Llamar(fn, ...)
 	if type(fn) ~= "function" then return nil end
-	local ok, a, b, c, d = pcall(fn, ...)
-	if ok then return a, b, c, d end
-	return nil
+	return devolver(pcall(fn, ...))
 end
 
 function M.EnCombate()

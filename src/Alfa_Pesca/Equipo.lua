@@ -519,10 +519,16 @@ function Eq.Restaurar()
 		if b == 16 then return false end
 		return a < b
 	end)
-	if #orden == 0 then return 0 end
+	if #orden == 0 or Eq.restaurando then return 0 end
 	Eq.restaurando = true
 	local i = 0
 	local function siguiente()
+		-- Si empieza un combate a medias, se espera a que termine sin borrar
+		-- nada: la pieza sigue anotada hasta que de verdad se pone.
+		if enCombate() then
+			N.FueraDeCombate(siguiente)
+			return
+		end
 		i = i + 1
 		local r = orden[i]
 		if not r then
@@ -532,8 +538,12 @@ function Eq.Restaurar()
 			return
 		end
 		local e = n[r]
-		n[r] = nil
-		if e and not Eq.Excluido(r) then equipar(e, r) end
+		if e and not Eq.Excluido(r) then
+			-- Se borra solo si el juego aceptó la orden; si falló, queda para la próxima.
+			if equipar(e, r) then n[r] = nil end
+		else
+			n[r] = nil
+		end
 		-- La otra mano espera a que entre el arma.
 		A.After(r == 16 and 0.6 or 0.15, siguiente)
 	end
@@ -547,6 +557,11 @@ function Eq.PonerPesca()
 	local cambios = Eq.MejorEquipo()
 	local i = 0
 	local function siguiente()
+		-- Si empieza un combate a medias, lo que falta se pone al salir.
+		if enCombate() then
+			N.FueraDeCombate(siguiente)
+			return
+		end
 		i = i + 1
 		local c = cambios[i]
 		if not c then M.Avisar("equipo") return end

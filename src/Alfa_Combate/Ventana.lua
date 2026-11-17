@@ -92,7 +92,10 @@ function M.PintarFila(f, x, r)
 	local tope = r.max
 	if not M.Secreto(tope) and (type(tope) ~= "number" or tope <= 0) then tope = 1 end
 	pcall(f.Barra.SetMinMaxValues, f.Barra, 0, tope)
-	pcall(f.Barra.SetValue, f.Barra, x.valor or 0)
+	-- Un secreto va tal cual a SetValue (sin `or`, que lo compararía).
+	local valor = x.valor
+	if not M.Secreto(valor) and type(valor) ~= "number" then valor = 0 end
+	pcall(f.Barra.SetValue, f.Barra, valor)
 	local t = r.tipo
 	local principal, otro = x.valor, x.porSeg
 	if t.porSeg then principal, otro = x.porSeg, x.valor end

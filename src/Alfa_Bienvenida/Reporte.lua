@@ -175,6 +175,13 @@ local function componer()
 		n = n - 1
 		s = armar(n)
 	end
+	-- Si aún no cabe (un texto largo en ruso, coreano o chino ocupa más bytes
+	-- que letras), se recorta solo lo que escribiste: los datos y el cierre del
+	-- bloque se quedan completos.
+	if #s > MAX_REPORTE then
+		texto = cortar(texto, math.max(20, #texto - (#s - MAX_REPORTE)))
+		s = armar(n)
+	end
 	return cortar(s, MAX_REPORTE)
 end
 
@@ -195,7 +202,7 @@ local function cuadro(padre, o)
 	e:SetAutoFocus(false)
 	if o.max then e:SetMaxLetters(o.max) end
 	K.Pintar(e, function(x)
-		x:SetFont(K.Cara("medium"), K.Tamano("cuerpo"), "")
+		K.FuenteSegura(x, K.Cara("medium"), K.Tamano("cuerpo"), "")
 		x:SetTextColor(K.Color("texto"))
 	end)
 	if o.lineas then
@@ -346,7 +353,9 @@ end
 local function rehacer()
 	if not ui.reporte then return end
 	ui.reporte:Set(componer())
-	local n = #(ui.texto or "")
+	-- Letras, no bytes (como cuenta la caja): "ñ" o "я" son una sola.
+	local t = ui.texto or ""
+	local n = strlenutf8 and strlenutf8(t) or #(t:gsub("[\128-\191]", ""))
 	ui.cuenta:Set(format(L["%d de %d letras"], n, MAX_TEXTO))
 end
 

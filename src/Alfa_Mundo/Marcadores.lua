@@ -344,9 +344,12 @@ end
 local prefijoListo = false
 local function prefijo()
 	if prefijoListo or not (C_ChatInfo and C_ChatInfo.RegisterAddonMessagePrefix) then return end
-	local ya = C_ChatInfo.IsAddonMessagePrefixRegistered and C_ChatInfo.IsAddonMessagePrefixRegistered(PREFIJO)
-	if not ya then pcall(C_ChatInfo.RegisterAddonMessagePrefix, PREFIJO) end
-	prefijoListo = true
+	local esta = C_ChatInfo.IsAddonMessagePrefixRegistered
+	if esta and esta(PREFIJO) then prefijoListo = true return end
+	local ok, r = pcall(C_ChatInfo.RegisterAddonMessagePrefix, PREFIJO)
+	-- Listo solo si de verdad quedó registrado: si no, se reintenta al enviar.
+	if esta then prefijoListo = esta(PREFIJO) and true or false
+	else prefijoListo = ok and r ~= false end
 end
 
 local function mensaje(m)
@@ -414,8 +417,11 @@ local function alRecibir(_, pre, texto, _, emisor)
 	if A.Get("mundo.recibirMarcadores") == false then return end
 	local v, mapa, x, y, icono, color, nombre = strsplit("|", texto, 7)
 	if v ~= "1" then return end
+	-- Solo dígitos: tonumber acepta "nan", "inf" o "1e300", que rompen el mapa.
+	if not (type(mapa) == "string" and mapa:match("^%d+$") and type(x) == "string" and x:match("^%d+$")
+		and type(y) == "string" and y:match("^%d+$")) then return end
 	mapa, x, y = tonumber(mapa), tonumber(x), tonumber(y)
-	if not (mapa and x and y and x >= 0 and x <= 10000 and y >= 0 and y <= 10000) then return end
+	if not (mapa and x and y and mapa >= 1 and mapa <= 100000 and x >= 0 and x <= 10000 and y >= 0 and y <= 10000) then return end
 	x, y = x / 100, y / 100
 	local quien = (C and C.SenderName and C.SenderName(emisor)) or (type(emisor) == "string" and emisor) or "?"
 	nombre = limpiar(nombre)
@@ -439,7 +445,15 @@ end
 A.RegisterEvent("CHAT_MSG_ADDON", alRecibir)
 A.RegisterEvent("PLAYER_ENTERING_WORLD", function() prefijo() vaciarEspera() end)
 A.RegisterEvent("ZONE_CHANGED_NEW_AREA", vaciarEspera)
-A.RegisterEvent("GROUP_ROSTER_UPDATE", function() avisar() end)
+-- El grupo solo cambia si se puede compartir: los pines no se rehacen y los
+-- oyentes (página, panel, ficha) se avisan solo si cambió el canal.
+local ultimoCanal = false
+A.RegisterEvent("GROUP_ROSTER_UPDATE", function()
+	local c = canal() or false
+	if c == ultimoCanal then return end
+	ultimoCanal = c
+	for i = 1, #oyentes do K.Llamar(oyentes[i]) end
+end)
 
 ---------------------------------------------------------------------------
 -- Los pines (mapa de Alfa, mapa del juego y minimapa)

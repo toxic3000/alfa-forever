@@ -198,6 +198,13 @@ end
 
 -- -> texto (secreto si el número lo es): solo para SetText.
 function D.Numero(v)
+	-- Primero el secreto: ni siquiera se compara con nil.
+	if M.Secreto(v) then
+		if type(AbbreviateLargeNumbers) ~= "function" then return "" end
+		local ok, s = pcall(AbbreviateLargeNumbers, v)
+		if ok and (M.Secreto(s) or type(s) == "string") then return s end
+		return ""
+	end
 	if v == nil then return "" end
 	if type(AbbreviateLargeNumbers) == "function" then
 		local ok, s = pcall(AbbreviateLargeNumbers, v)

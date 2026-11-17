@@ -100,7 +100,7 @@ end
 ---------------------------------------------------------------------------
 local function pintarCampo(b)
 	b.caja:Estilo({ fondo = "hundido", borde = b.alfaFoco and "acento" or "lineaFuerte", alfaBorde = b.alfaFoco and 0.8 or 1 })
-	b.Campo:SetFont(K.Cara("semibold"), K.Tamano("numero"), "")
+	K.FuenteSegura(b.Campo, K.Cara("semibold"), K.Tamano("numero"), "")
 	b.Campo:SetTextColor(K.Color("texto"))
 end
 
@@ -635,7 +635,9 @@ local function crear()
 	local cuerpo = v.Cuerpo
 	local opciones = {}
 	for _, p in ipairs(M.PESTANAS) do opciones[#opciones + 1] = { valor = p.id, texto = p.nombre } end
-	V.pestana = N.Datos(ID).pestana or "calidad"
+	-- Una pestaña guardada que ya no existe (de otra versión) vuelve a Calidad.
+	local guardada = N.Datos(ID).pestana
+	V.pestana = NOMBRE_PESTANA[guardada] and guardada or "calidad"
 	V.Tabs = K.Segmentos(cuerpo, { estilo = "segmentos", opciones = opciones, valor = V.pestana,
 		alCambiar = function(id)
 			V.pestana = id

@@ -11,9 +11,9 @@
 --
 -- Comprar espacio: Forever vende casillas de bolsa del banco, una tras otra
 -- (C_Bank.FetchNextPurchasableBankTabData: costo y si te alcanza;
--- C_Bank.PurchaseBankTab: la compra, que pide un clic del jugador). Alfa
--- muestra el costo y compra solo al aceptar su diálogo, como el botón del
--- banco del juego (Camelot/BankFrame.lua, CONFIRM_BUY_BANK_TAB).
+-- C_Bank.PurchaseBankTab: la compra, restringida a Blizzard). Alfa muestra el
+-- costo y, al pedir comprar, vuelve a mostrar el banco del juego para que su
+-- botón haga la compra (Camelot/BankFrame.lua, CONFIRM_BUY_BANK_TAB).
 
 local ADDON, M = ...
 local N, A, L = M.N, M.A, M.L
@@ -254,24 +254,17 @@ function Banco.Comprar()
 		N.Imprimir(format(L["La siguiente casilla cuesta %s y no te alcanza todavía."], N.Dinero(costo)))
 		return
 	end
-	local B = C_Bank
-	local function comprar()
-		if not D.BancoAbierto() or M.EnCombate() then return end
-		local ok, err = pcall(B.PurchaseBankTab, D.TIPO_BANCO)
-		if not ok and geterrorhandler then geterrorhandler()(err) end
+	-- C_Bank.PurchaseBankTab es restringida (HasRestrictions): un addon no
+	-- puede llamarla, y su diálogo abierto desde aquí quedaría contaminado.
+	-- La compra la hace el botón del banco del juego: se vuelve a mostrar
+	-- (sin cerrar la visita) y el jugador compra con él. Alfa no da nada por
+	-- comprado: BANK_TABS_CHANGED vuelve a leer el estado (Datos.lua).
+	local R = M.Reemplazo
+	if R and R.SoltarBanco and R.SoltarBanco() then
+		N.Imprimir(format(L["La siguiente casilla cuesta %s: cómprala con el botón del banco del juego, que ya está a la vista."], N.Dinero(costo)))
+	else
+		N.Imprimir(L["No se pudo mostrar el banco del juego para comprar la casilla."])
 	end
-	if costo <= 0 then
-		comprar()
-		return
-	end
-	K.Dialogo({
-		titulo = L["¿Comprar otra casilla del banco?"],
-		texto = format(L["Cuesta %s (tienes %s). Es la casilla %d de %d: después pon una bolsa en ella para guardar más."],
-			N.Dinero(costo), N.Dinero(M.Num(GetMoney and GetMoney()) or 0), c.compradas + 1, c.maximo),
-		aceptar = format(L["Comprar por %s"], N.Dinero(costo, true)),
-		icono = "ic-oro",
-		alAceptar = comprar,
-	})
 end
 
 -- Para la página y la ventana: cómo está el espacio del banco ahora.

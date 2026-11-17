@@ -45,8 +45,15 @@ local function construir()
 	f:SetScript("OnClick", terminar)
 	f:SetScript("OnKeyDown", function(self, tecla)
 		if tecla == "ESCAPE" or tecla == "SPACE" or tecla == "ENTER" then terminar() end
-		if self.SetPropagateKeyboardInput then self:SetPropagateKeyboardInput(tecla ~= "ESCAPE" and tecla ~= "SPACE" and tecla ~= "ENTER") end
+		-- En combate SetPropagateKeyboardInput está bloqueado para un addon.
+		if self.SetPropagateKeyboardInput and not (InCombatLockdown and InCombatLockdown()) then
+			self:SetPropagateKeyboardInput(tecla ~= "ESCAPE" and tecla ~= "SPACE" and tecla ~= "ENTER")
+		end
 	end)
+	-- Si un enemigo te ataca durante la intro, se termina al momento: nunca
+	-- te deja sin teclas en combate.
+	f:RegisterEvent("PLAYER_REGEN_DISABLED")
+	f:SetScript("OnEvent", function() if f:IsShown() then terminar() end end)
 
 	f.Velo = f:CreateTexture(nil, "BACKGROUND")
 	f.Velo:SetAllPoints(f)

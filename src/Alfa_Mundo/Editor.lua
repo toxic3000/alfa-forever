@@ -293,8 +293,12 @@ function E.Abrir(opts)
 	pintar()
 	F:ClearAllPoints()
 	local ancla = opts.ancla
-	if ancla and ancla.GetRight and ancla:GetRight() then
-		F:SetPoint("TOPLEFT", ancla, "TOPRIGHT", ESP.s, 0)
+	local der, arriba = ancla and ancla.GetRight and ancla:GetRight(), ancla and ancla.GetTop and ancla:GetTop()
+	local sa, sf = ancla and ancla.GetEffectiveScale and ancla:GetEffectiveScale(), F:GetEffectiveScale()
+	if type(der) == "number" and type(arriba) == "number" and type(sa) == "number" and type(sf) == "number" and sf > 0 then
+		-- Una vez, donde está el ancla ahora, contra UIParent: el ancla puede
+		-- ser un pin que se recicla al mover el mapa (y la ficha saltaría con él).
+		F:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", der * sa / sf + ESP.s, arriba * sa / sf)
 	else
 		local x, y = GetCursorPosition()
 		local s = UIParent:GetEffectiveScale()

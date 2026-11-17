@@ -594,6 +594,7 @@ end
 
 local descansando
 local pctAntes
+local nivelAntes -- al subir de nivel el % baja solo (el nivel pide más XP): no es gastar
 local descansoEn = -1000
 
 local function revisarDescanso(entrar)
@@ -616,7 +617,11 @@ local function revisarDescanso(entrar)
 	end
 	-- Al bajar del umbral (con umbral 0: al acabarse). Un aviso, no dos.
 	local umbral = valor("descansoBajo", 5)
-	if activo and pctAntes and not resting then
+	local nivel = UnitLevel and UnitLevel("player")
+	if type(nivel) ~= "number" or (issecretvalue and issecretvalue(nivel)) then nivel = nil end
+	local subio = nivel and nivelAntes and nivel ~= nivelAntes
+	if nivel then nivelAntes = nivel end
+	if activo and pctAntes and not resting and not subio then
 		local cruzo
 		if umbral > 0 then
 			cruzo = pctAntes > umbral and pct <= umbral

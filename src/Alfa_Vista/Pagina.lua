@@ -152,4 +152,6 @@ AlfaVista = {
 	Deshacer = function() return M.Deshacer() end,
 	-- id del preajuste que sigue puesto (nil si se cambió algo después)
 	Actual = function() local p = M.UltimoPreset(); return p and p.id or nil end,
+	-- el último aplicado y no deshecho (aunque el juego haya recortado un valor)
+	Ultimo = function() return M.UltimoId() end,
 }

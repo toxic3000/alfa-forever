@@ -201,9 +201,12 @@ function Frame:CreateTexture(name, layer, tmpl, sub)
   return t
 end
 function Frame:CreateMaskTexture() return self:CreateTexture() end
-function Frame:CreateFontString(name, layer)
+function Frame:CreateFontString(name, layer, template)
   local t = newObj("FontString", self)
   t._layer = layer
+  -- Como el juego: sin plantilla, el texto no tiene letra hasta SetFont o
+  -- SetFontObject, y un SetText antes es un error ("Font not set").
+  t._letra = template ~= nil
   t._wrap = true
   t._font = { "Fonts\\FRIZQT__.TTF", 12, "" }
   t._tc = { 1, 1, 1, 1 }
@@ -242,15 +245,23 @@ function Frame:SetRotation() end
 function Frame:AddMaskTexture() end
 -- Font strings
 function Frame:SetText(t)
+  if self._kind == "FontString" and not rawget(self, "_letra") then
+    note("SetText", "Font not set (el texto no tiene letra)\n" .. debug.traceback())
+  end
   if t ~= nil and type(t) ~= "string" and type(t) ~= "number" then note("SetText", "bad text " .. type(t) .. "\n" .. debug.traceback()) end
   self._text = t ~= nil and tostring(t) or nil
   if self._kind == "EditBox" then fire(self, "OnTextChanged", false) end
 end
-function Frame:SetFormattedText(f, ...) self._text = string.format(f, ...) end
+function Frame:SetFormattedText(f, ...)
+  if self._kind == "FontString" and not rawget(self, "_letra") then
+    note("SetFormattedText", "Font not set (el texto no tiene letra)\n" .. debug.traceback())
+  end
+  self._text = string.format(f, ...)
+end
 function Frame:GetText() return self._text end
-function Frame:SetFont(path, size, flags) self._font = { path, size or 12, flags or "" }; return true end
+function Frame:SetFont(path, size, flags) self._font = { path, size or 12, flags or "" }; self._letra = true; return true end
 function Frame:GetFont() local f = self._font or { "Fonts\\FRIZQT__.TTF", 12, "" } return f[1], f[2], f[3] end
-function Frame:SetFontObject() end
+function Frame:SetFontObject(o) if o ~= nil then self._letra = true end end
 function Frame:SetTextColor(r, g, b, a)
   if type(r) ~= "number" or type(g) ~= "number" or type(b) ~= "number" then note("SetTextColor", "bad colour\n" .. debug.traceback()) end
   self._tc = { r, g, b, a or 1 }

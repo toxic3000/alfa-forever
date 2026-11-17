@@ -139,7 +139,7 @@ local function verBorde(e, si)
 end
 
 local function texto(padre, rol)
-	local fs = padre:CreateFontString(nil, "OVERLAY")
+	local fs = padre:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 	if T and T.Font then T.Font(fs, rol) end
 	fs:SetTextColor(1, 1, 1, 1)
 	fs:SetShadowOffset(1, -1)
@@ -575,13 +575,19 @@ local function guardarPosicion()
 	N.Datos(ID).pos = { punto = punto, rel = rel or punto, x = floor(x + 0.5), y = floor(y + 0.5) }
 end
 
+-- El ancla es protegida: si empieza un combate mientras la arrastras, se
+-- suelta en PLAYER_REGEN_DISABLED (aún se puede) y se guarda donde quedó.
+local arrastrando = false
+
 local function empezarArrastre()
 	if M.EnCombate() or not ancla then return end
 	ancla:StartMoving()
+	arrastrando = true
 end
 
 local function terminarArrastre()
 	if not ancla then return end
+	arrastrando = false
 	if not M.EnCombate() then ancla:StopMovingOrSizing() end
 	guardarPosicion()
 	M.Avisar()
@@ -1040,6 +1046,12 @@ A.RegisterEvent("GROUP_ROSTER_UPDATE", function()
 	M.Avisar()
 end)
 A.RegisterEvent("PLAYER_REGEN_DISABLED", function()
+	-- Un arrastre a medias se termina ahora, antes del bloqueo del combate.
+	if arrastrando and ancla then
+		arrastrando = false
+		ancla:StopMovingOrSizing()
+		guardarPosicion()
+	end
 	-- La prueba no sirve en una pelea: se quita y quedan tus marcos de verdad.
 	if enPrueba and prueba then
 		enPrueba = nil

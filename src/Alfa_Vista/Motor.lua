@@ -308,6 +308,10 @@ function M.Deshacer()
 	return true
 end
 
+-- El id del último preajuste aplicado (y no deshecho), aunque el juego haya
+-- recortado algún valor: lo usa la bienvenida para saber si lo pusiste.
+function M.UltimoId() return datos().ultimoPreset end
+
 function M.UltimoPreset()
 	local id = datos().ultimoPreset
 	local p = id and M.PRESET[id]
