@@ -27,4 +27,4 @@ La versión vive en un solo lugar, `tools/alfa.json` (`version`). `tools/build.p
 3. Probar en el juego con `tools/instalar.py --aplicar` (con WoW cerrado).
 4. `python -I tools/empaquetar.py` → `paquetes/Alfa-<versión>.zip`.
 5. Commit "Alfa <versión>", etiqueta `git tag -a v<versión> -m "Alfa <versión>"` y `git push --follow-tags`.
-6. Subir el zip a CurseForge (Beta o Release) con las notas del `CHANGELOG.md`, y crear la versión en GitHub (Releases) con el mismo zip.
+6. Subir el zip a CurseForge (Beta o Release) con las notas del `CHANGELOG.md`, y crear la versión en GitHub (Releases) con el mismo zip **y `paquetes/Instalar-Alfa.exe`** (`python -I instalador/construir.py`). El enlace del instalador apunta siempre a la última versión publicada, así que las dos cosas tienen que ir en cada una.

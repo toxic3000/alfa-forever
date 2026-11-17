@@ -4,6 +4,12 @@ El todo en uno de **La Jauría** para World of Warcraft: Forever. Junta en un so
 
 Hecho por **toxic3000** y La Jauría — [Discord](https://discord.gg/hUNjA6BJwh). Software libre bajo la GPL-3.0, construido sobre [Polestar](https://github.com/fitzforge/polestar) (GPL-3.0). Los créditos completos están en `NOTICE-ALFA.txt`, en la página «Acerca de» del juego y en el `CREDITOS.md` de cada módulo.
 
+## Instalar
+
+La forma fácil: descarga **[Instalar-Alfa.exe](https://github.com/toxic3000/alfa-forever/releases/latest/download/Instalar-Alfa.exe)** y ábrelo. Encuentra tu WoW Forever, baja la versión más nueva y la instala; vuelve a abrirlo para actualizar. Más detalles en [`instalador/LEEME.md`](instalador/LEEME.md).
+
+A mano: descarga `Alfa-<versión>.zip` de [Releases](https://github.com/toxic3000/alfa-forever/releases) y descomprímelo en `World of Warcraft/_forever_/Interface/AddOns` con el juego cerrado.
+
 ## Módulos
 
 | Comando | Módulo | Qué hace |
