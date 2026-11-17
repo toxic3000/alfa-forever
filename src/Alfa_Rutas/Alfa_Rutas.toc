@@ -1,7 +1,7 @@
 ## Interface: 16001
 ## Title: |cff8be04eAlfa|r - Rutas
 ## Notes: Qué hacer ahora, el rastreador de pasos, la biblioteca de guías, el plan para cerrar tus misiones y tus rutas propias.
-## Author: Toxic - La Jauria
+## Author: toxic3000 - La Jauria
 ## Version: dev
 ## X-License: GPL-3.0-only
 ## Dependencies: Alfa, Alfa_Nucleo

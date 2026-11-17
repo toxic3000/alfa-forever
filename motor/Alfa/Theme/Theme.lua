@@ -1,6 +1,6 @@
 -- Alfa.Theme: colours, fonts, media and frame skins for the UI and Nav.
 -- Basado en Polestar.Theme (GPL-3.0, The Polestar authors); reescrito por
--- Toxic / La Jauria para la interfaz propia de Alfa (docs/INTERFAZ.md).
+-- toxic3000 / La Jauria para la interfaz propia de Alfa (docs/INTERFAZ.md).
 --
 -- Diseño A, "moderno tactico": fondos grafito (#101412), paneles (#18201b) y
 -- paneles elevados (#1f2a23) con lineas de 1 px (#26302a), texto #e6efe4 y

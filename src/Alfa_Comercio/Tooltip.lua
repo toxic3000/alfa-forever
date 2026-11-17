@@ -1,4 +1,4 @@
--- Alfa - Comercio: el consejo en el cuadro de cada objeto (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Comercio: el consejo en el cuadro de cada objeto (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Dos líneas cortas, por ejemplo:
 --   Subasta: 1o 20p (hace 3 h) · Comerciante: 15p

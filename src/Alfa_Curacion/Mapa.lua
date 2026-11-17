@@ -1,4 +1,4 @@
--- Alfa - Curación: el mapa del ratón (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Curación: el mapa del ratón (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Cada ranura (botón del ratón con o sin Mayús, Ctrl o Alt) hace una cosa
 -- sobre el compañero que tienes bajo el ratón: un hechizo, seleccionarlo o

@@ -1,4 +1,4 @@
--- Alfa - Inicio: los avisos del motor, con el Kit (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Inicio: los avisos del motor, con el Kit (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Cuatro avisos del motor se muestran con piezas de Alfa (AlfaNucleo.Reemplazar,
 -- tabla en docs/KIT.md). El motor sigue decidiendo cuándo; aquí solo se

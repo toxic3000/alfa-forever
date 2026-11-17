@@ -1,4 +1,4 @@
--- Alfa - Pesca (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Pesca (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Addons de terceros con los que evitamos chocar. Son datos técnicos: el
 -- nombre de su carpeta, el de sus ajustes guardados y el de su acción de

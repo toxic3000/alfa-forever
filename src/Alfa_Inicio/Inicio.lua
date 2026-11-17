@@ -1,4 +1,4 @@
--- Alfa - Inicio: la página Hoy, la portada de Alfa (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Inicio: la página Hoy, la portada de Alfa (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Hecha con el Kit (docs/KIT.md, K.Tablero). De arriba abajo, y cada pieza
 -- solo si tiene algo útil o una acción (lo vacío no se muestra):

@@ -1,4 +1,4 @@
--- Alfa - Recolección: los nodos, los filtros y el historial (Toxic / La Jauría, GPL-3.0).
+-- Alfa - Recolección: los nodos, los filtros y el historial (toxic3000 / La Jauría, GPL-3.0).
 --
 -- Los nodos de cada zona se arman la primera vez que hacen falta (al abrir
 -- el mapa en esa zona o al pasar cerca en el minimapa): los de la base

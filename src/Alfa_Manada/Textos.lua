@@ -1,5 +1,5 @@
 -- Alfa - La Jauría: los textos en inglés (el español es el idioma principal
--- y va escrito en el código). Toxic / La Jauría. GPL-3.0.
+-- y va escrito en el código). toxic3000 / La Jauría. GPL-3.0.
 
 local _, M = ...
 

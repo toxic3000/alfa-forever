@@ -1,4 +1,4 @@
--- Alfa - Builds: pesos de estadísticas de cada build (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Builds: pesos de estadísticas de cada build (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Cada build trae su escala: los pesos del motor para su rama y tu nivel
 -- (Gear.WeightsFor) ajustados por su estilo y su objetivo (M.AJUSTE_PESOS) y

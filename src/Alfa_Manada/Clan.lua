@@ -1,5 +1,5 @@
 -- Alfa - La Jauría: los datos del clan que se muestran en su página.
--- Toxic / La Jauría. GPL-3.0.
+-- toxic3000 / La Jauría. GPL-3.0.
 --
 -- Este archivo es para que el clan lo ajuste a su gusto: cambia los textos,
 -- la lista de oficiales y el mensaje para pedir invitación. No hace falta
@@ -35,11 +35,9 @@ M.Clan = {
 		"Un Discord activo para organizarnos",
 	},
 
-	-- A quién pedirle la invitación. Se escribe como lo da el juego; la
-	-- comparación acepta "Toxic-Darunia" y "Toxic Darunia" por igual.
-	oficiales = {
-		"Toxic-Darunia",
-	},
+	-- A quién pedirle la invitación: nombres de personaje como los da el juego
+	-- ("Nombre-Reino" o "Nombre Apellido"). Vacío: "Quiero unirme" lleva al Discord.
+	oficiales = {},
 
 	-- Lo que se escribe en el susurro de "Quiero unirme". Quien juega lo ve
 	-- antes de enviarlo y lo manda con Intro.

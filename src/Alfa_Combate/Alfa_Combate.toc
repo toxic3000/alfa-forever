@@ -1,7 +1,7 @@
 ## Interface: 16001
 ## Title: |cff8be04eAlfa|r - Combate
 ## Notes: Qué habilidad presionar ahora y cuáles siguen, avisos de reacción y el medidor de daño de tu grupo.
-## Author: Toxic - La Jauria
+## Author: toxic3000 - La Jauria
 ## Version: dev
 ## X-License: GPL-3.0-only
 ## Dependencies: Alfa, Alfa_Nucleo

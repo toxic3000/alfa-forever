@@ -1,4 +1,4 @@
--- Alfa - Inicio: la tarjeta de aviso (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Inicio: la tarjeta de aviso (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Una tarjeta chica hecha con el Kit (docs/KIT.md): la franja del color del
 -- aviso, su ícono en una baldosa (o el de un hechizo, o el lobo), el título,

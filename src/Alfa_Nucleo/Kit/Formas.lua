@@ -1,4 +1,4 @@
--- Alfa - Kit: formas del diseño A (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Kit: formas del diseño A (toxic3000 / La Jauría). GPL-3.0.
 --
 -- La forma de Alfa: un rectángulo con las esquinas de arriba a la izquierda
 -- y de abajo a la derecha cortadas a 45 grados, como las facetas del lobo.

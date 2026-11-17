@@ -1,4 +1,4 @@
--- Alfa - Kit: elegir el estilo y el acento (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Kit: elegir el estilo y el acento (toxic3000 / La Jauría). GPL-3.0.
 --
 --   K.SelectorEstilo(padre, opts)   los tres estilos con su muestra; un clic lo aplica
 --   K.SelectorAcento(padre, opts)   los acentos de K.ACENTOS y el color de tu clase

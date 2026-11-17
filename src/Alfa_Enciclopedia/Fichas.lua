@@ -1,4 +1,4 @@
--- Alfa - Enciclopedia: lo que dice la ficha de cada cosa (Toxic / La Jauría).
+-- Alfa - Enciclopedia: lo que dice la ficha de cada cosa (toxic3000 / La Jauría).
 -- GPL-3.0.
 --
 -- Cada función arma un modelo (solo datos, sin marcos) que Ventana.lua

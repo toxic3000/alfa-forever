@@ -1,4 +1,4 @@
--- Alfa - Curación: su página en la ventana de Alfa (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Curación: su página en la ventana de Alfa (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Hecha con el Kit (docs/KIT.md, K.Tablero con la tarjeta de estado):
 --   1. El estado y qué hacer ahora: apagados (Encenderlos), en prueba

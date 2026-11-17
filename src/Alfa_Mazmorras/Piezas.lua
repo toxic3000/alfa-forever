@@ -1,5 +1,5 @@
 -- Alfa - Mazmorras: las piezas propias de la página, hechas con el Kit
--- (Toxic / La Jauría). GPL-3.0.
+-- (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Todas son bloques del Kit (docs/KIT.md): :Acomodar(ancho[, altoMin]) -> alto,
 -- se crean una vez y se reutilizan, y se pintan con tokens.

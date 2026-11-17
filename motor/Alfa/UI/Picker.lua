@@ -1,6 +1,6 @@
 -- El selector de guias y el centro de Alfa (la ventana AlfaPicker). Basado en
 -- el menu de guias de Polestar (GPL-3.0, The Polestar authors); reescrito por
--- Toxic / La Jauria con la interfaz propia de Alfa (docs/INTERFAZ.md).
+-- toxic3000 / La Jauria con la interfaz propia de Alfa (docs/INTERFAZ.md).
 --
 -- La ventana es el armazon de arriba, como la principal (W.Shell({ top =
 -- true })): el lobo, ALFA, tu personaje con su experiencia, el buscador y la

@@ -1,6 +1,6 @@
 -- Alfa - La Jauría: "Seguir" a alguien de la manada con la flecha de Alfa
 -- (la del motor: el estilo de la flecha de lobo lo pone la apariencia) y su
--- ruta. Toxic / La Jauría. GPL-3.0.
+-- ruta. toxic3000 / La Jauría. GPL-3.0.
 --
 -- Pone su posición como destino de la navegación del motor (Alfa.Nav.SetTarget,
 -- lo mismo que "/alfa way" y el seguir del grupo de Quests/Party.lua), como un

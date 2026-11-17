@@ -1,7 +1,7 @@
 -- Alfa - Rutas: trabajo en segundo plano. Leer miles de misiones u objetos
 -- de una vez congelaría el juego, así que cada trabajo corre en una
 -- corrutina que se reparte en pedacitos de pocos milisegundos por cuadro.
--- Toxic / La Jauría. GPL-3.0.
+-- toxic3000 / La Jauría. GPL-3.0.
 --
 --   Tareas.Lanzar(clave, fn(ceder), alTerminar(resultado | nil, error), alAvanzar?(fraccion))
 --     una tarea por clave: lanzar otra con la misma clave cancela la anterior.

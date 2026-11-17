@@ -1,4 +1,4 @@
--- Alfa - Combate: panel de estadísticas (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Combate: panel de estadísticas (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Un cuadro pequeño con tu vida y las estadísticas que más pesan para tu
 -- clase, opcional (apagado por omisión) y movible. Solo datos de tu

@@ -1,5 +1,5 @@
 -- Alfa - Mazmorras: toma el lugar del diario de mazmorras del motor y de su
--- tarjeta de "mazmorra abierta" (Toxic / La Jauría). GPL-3.0.
+-- tarjeta de "mazmorra abierta" (toxic3000 / La Jauría). GPL-3.0.
 --
 -- docs/KIT.md, "Reemplazos":
 --   SHOW_DUNGEON   (Dungeons.Open, /alfa dungeons, el botón del centro, el

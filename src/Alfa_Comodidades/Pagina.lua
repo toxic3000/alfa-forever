@@ -1,4 +1,4 @@
--- Alfa - Comodidades: su página, hecha con el Kit (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Comodidades: su página, hecha con el Kit (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Plantilla Tablero (docs/KIT.md): arriba, el estado y la acción
 -- recomendada (encender las comodidades que casi todos quieren, de un

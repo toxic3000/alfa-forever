@@ -1,5 +1,5 @@
 -- Alfa - Mazmorras: la página en la ventana de Alfa, hecha con el Kit
--- (Toxic / La Jauría). GPL-3.0.
+-- (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Desde la 1.0 es la única vista de las mazmorras: el diario del motor
 -- (SHOW_DUNGEON) y su tarjeta de mazmorra abierta (DUNGEON_TOAST) se

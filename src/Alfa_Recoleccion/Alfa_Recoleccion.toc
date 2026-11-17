@@ -1,7 +1,7 @@
 ## Interface: 16001
 ## Title: |cff8be04eAlfa|r - Recolección
 ## Notes: Minería, hierbas, pesca y tesoros en el mapa y el minimapa, con rutas de farmeo e historial.
-## Author: Toxic - La Jauria
+## Author: toxic3000 - La Jauria
 ## Version: dev
 ## X-License: GPL-3.0-only
 ## Dependencies: Alfa, Alfa_Nucleo

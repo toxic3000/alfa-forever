@@ -1,7 +1,7 @@
 -- Alfa.Widgets: the widget kit the guide window, picker and options are
 -- built from. Every piece paints itself from Alfa.Theme.
 -- Basado en Polestar.Widgets (GPL-3.0, The Polestar authors); reescrito por
--- Toxic / La Jauria para la interfaz propia de Alfa (docs/INTERFAZ.md): las
+-- toxic3000 / La Jauria para la interfaz propia de Alfa (docs/INTERFAZ.md): las
 -- piezas toman las esquinas cortadas del tema, sin brillos ni degradados, y
 -- W.Shell gana el armazon de la ventana principal (opts.top: cabecera con el
 -- personaje, secciones arriba, pestanas en pildora). La API publica de W.* es

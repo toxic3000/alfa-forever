@@ -1,5 +1,5 @@
 -- Alfa - Mazmorras: sus ajustes, en Ajustes > Descubrir > Mazmorras
--- (Toxic / La Jauría). GPL-3.0.
+-- (toxic3000 / La Jauría). GPL-3.0.
 --
 -- La página de Mazmorras solo guía; quien quiera detalle entra a Ajustes
 -- (docs/PLAN-1.0.md). Aquí van, junto a los del diario del motor:

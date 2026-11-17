@@ -9,7 +9,7 @@ import pathlib
 
 def _creditos(cfg):
     return (
-        '"Alfa: Toxic - La Jauría. Basado en Polestar de The Polestar authors '
+        '"Alfa: toxic3000 - La Jauría. Basado en Polestar de The Polestar authors '
         f'({cfg["urls"]["repo"]}), GPL-3.0, con la navegación de Shortest Path '
         'Forever de Cillian Berragan (GPL-3.0-or-later)." .. "\\n"\n\t\t.. '
         '"Recolección usa la base de nodos de GatherLite de Wuild (MIT). Mundo usa la lógica '
@@ -34,8 +34,8 @@ ACERCA = [
      "Alfa también es libre y de código abierto, bajo la GPL-3.0."),
     ("Anyone can read the code, fix a step, sharpen a route or write a new guide, and contributions are welcome. "
      "The GPL keeps it that way: every copy and every fork stays open.",
-     "Made by Toxic and La Jauría. Come play with the pack: our Discord is open to everyone.",
-     "Hecho por Toxic y La Jauría. Ven a jugar con la manada: nuestro Discord está abierto para todos."),
+     "Made by toxic3000 and La Jauría. Come play with the pack: our Discord is open to everyone.",
+     "Hecho por toxic3000 y La Jauría. Ven a jugar con la manada: nuestro Discord está abierto para todos."),
     ("Open source and free is the future.", "Lead your pack.", "Guía a tu manada."),
 ]
 

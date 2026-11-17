@@ -1,4 +1,4 @@
--- Alfa - Builds: las ventanas y avisos del motor que toma Talentos (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Builds: las ventanas y avisos del motor que toma Talentos (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Reemplazos (docs/KIT.md, "Reemplazos"):
 --   SHOW_TALENTS  la sección de talentos del motor: abre la página Talentos de Alfa.

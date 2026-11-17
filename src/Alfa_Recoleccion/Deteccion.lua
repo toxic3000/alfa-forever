@@ -1,4 +1,4 @@
--- Alfa - Recolección: saber qué recolectaste y dónde (Toxic / La Jauría, GPL-3.0).
+-- Alfa - Recolección: saber qué recolectaste y dónde (toxic3000 / La Jauría, GPL-3.0).
 --
 -- Método adaptado de código MIT (ver CREDITOS.md):
 --   UNIT_SPELLCAST_SENT     el hechizo de minar, herborizar, abrir o forzar,

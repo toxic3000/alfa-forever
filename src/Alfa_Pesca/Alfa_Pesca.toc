@@ -1,7 +1,7 @@
 ## Interface: 16001
 ## Title: |cff8be04eAlfa|r - Pesca
 ## Notes: Lanza con una tecla y recoge con la misma.
-## Author: Toxic - La Jauria
+## Author: toxic3000 - La Jauria
 ## Version: dev
 ## X-License: GPL-3.0-only
 ## Dependencies: Alfa, Alfa_Nucleo

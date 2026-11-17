@@ -1,4 +1,4 @@
--- Alfa - Recolección: la ruta de farmeo (Toxic / La Jauría, GPL-3.0).
+-- Alfa - Recolección: la ruta de farmeo (toxic3000 / La Jauría, GPL-3.0).
 --
 -- En la zona elegida se juntan los nodos del tipo (o del recurso) elegido
 -- en paradas (los que están a menos de JUNTAR yardas son una sola), y se

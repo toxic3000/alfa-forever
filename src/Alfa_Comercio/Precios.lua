@@ -1,4 +1,4 @@
--- Alfa - Comercio: precios de la subasta (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Comercio: precios de la subasta (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Guarda, por reino y facción, el precio mínimo por unidad de cada objeto en
 -- la casa de subastas, con su fecha y un historial corto (un precio por día,

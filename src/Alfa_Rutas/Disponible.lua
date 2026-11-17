@@ -1,5 +1,5 @@
 -- Alfa - Rutas: si una misión se puede tomar ya y, si no, qué falta para
--- tomarla. Toxic / La Jauría. GPL-3.0.
+-- tomarla. toxic3000 / La Jauría. GPL-3.0.
 --
 -- Regla de la ruta: nunca proponer una misión que aún no se puede tomar.
 -- Antes de ponerla en un plan se mira el nivel, las misiones previas, las

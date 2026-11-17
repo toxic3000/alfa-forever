@@ -1,4 +1,4 @@
--- Alfa - Builds: equipo meta por ranura (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Builds: equipo meta por ranura (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Recorre los objetos del Codex del motor (Alfa_Codex, se carga a pedido y
 -- solo fuera de combate), se queda con los que tu clase puede usar cerca de

@@ -1,4 +1,4 @@
--- Alfa - Builds: la página Talentos, hecha con el Kit (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Builds: la página Talentos, hecha con el Kit (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Una página que guía (docs/KIT.md, plantilla Tablero):
 --   1. Arriba, en grande, qué talento poner ahora y por qué, con Aplicar

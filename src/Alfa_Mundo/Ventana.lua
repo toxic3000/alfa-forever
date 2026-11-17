@@ -1,4 +1,4 @@
--- Alfa - Mundo: la ventana del mapa continuo (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Mundo: la ventana del mapa continuo (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Una ventana del Kit (K.Ventana), aparte del mapa de Blizzard: no toca
 -- WorldMapFrame ni reemplaza ninguna de sus funciones, así que no puede

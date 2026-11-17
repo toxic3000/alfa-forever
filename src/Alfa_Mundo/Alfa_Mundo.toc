@@ -3,7 +3,7 @@
 ## Notes: El mapa del mundo entero con zoom, tus marcadores y un solo control de capas para todo lo que se pinta.
 ## Notes-esMX: El mapa del mundo entero con zoom, tus marcadores y un solo control de capas para todo lo que se pinta.
 ## Notes-esES: El mapa del mundo entero con zoom, tus marcadores y un solo control de capas para todo lo que se pinta.
-## Author: Toxic - La Jauria
+## Author: toxic3000 - La Jauria
 ## Version: dev
 ## X-License: GPL-3.0-only
 ## Dependencies: Alfa, Alfa_Nucleo

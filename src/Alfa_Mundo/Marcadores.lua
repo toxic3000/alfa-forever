@@ -1,4 +1,4 @@
--- Alfa - Mundo: tus marcadores (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Mundo: tus marcadores (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Un marcador es un punto tuyo con nombre, ícono y color, guardado para la
 -- cuenta (N.Datos("mundo").marcadores: los ves con todos tus personajes).

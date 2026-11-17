@@ -1,5 +1,5 @@
 -- Alfa - Mundo: el control de capas en el mapa del juego y la tecla del
--- mapa (Toxic / La Jauría). GPL-3.0.
+-- mapa (toxic3000 / La Jauría). GPL-3.0.
 --
 -- En el mapa de Blizzard (WorldMapFrame) Alfa solo agrega, nunca reemplaza:
 --   * en su menú de rastreo (la lupa), "Alfa: capas del mapa", por el punto

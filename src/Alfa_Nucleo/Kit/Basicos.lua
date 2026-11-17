@@ -1,4 +1,4 @@
--- Alfa - Kit: piezas básicas (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Kit: piezas básicas (toxic3000 / La Jauría). GPL-3.0.
 --
 --   K.Boton(padre, texto, alClic, opts)       primario, secundario, fantasma, peligro
 --   K.BotonIcono(padre, icono, alClic, opts)  cuadrado, con su ayuda

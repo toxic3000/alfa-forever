@@ -1,4 +1,4 @@
--- Alfa - Comercio: recetas que conoces y Encantamiento (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Comercio: recetas que conoces y Encantamiento (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Al abrir la ventana de una profesión se guardan sus recetas aprendidas:
 -- reactivos (con cantidades) y producto. Se guardan por personaje en los

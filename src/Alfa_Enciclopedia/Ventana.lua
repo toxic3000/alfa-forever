@@ -1,4 +1,4 @@
--- Alfa - Enciclopedia: la ventana (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Enciclopedia: la ventana (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Una ventana propia del Kit (K.Ventana) con, de arriba abajo:
 --   1. el buscador (español o inglés, también por número) y los tipos

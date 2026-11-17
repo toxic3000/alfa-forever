@@ -1,4 +1,4 @@
--- Alfa: los reemplazos de las ventanas del motor (Toxic / La Jauria, GPL-3.0).
+-- Alfa: los reemplazos de las ventanas del motor (toxic3000 / La Jauria, GPL-3.0).
 -- La tabla de claves, con quien abre cada ventana, esta en docs/KIT.md.
 --
 -- Un modulo de Alfa toma el lugar de una ventana o un aviso del motor:

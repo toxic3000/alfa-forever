@@ -1,5 +1,5 @@
 -- Alfa - Curación: los hechizos, las ranuras del ratón y los preajustes
--- (Toxic / La Jauría). GPL-3.0.
+-- (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Los hechizos se guardan por spellID (todos sus rangos conocidos de Forever,
 -- el primero es el rango 1) y su nombre sale siempre del cliente con

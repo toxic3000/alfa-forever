@@ -1,4 +1,4 @@
--- Alfa - Pesca (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Pesca (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Pescar con una sola tecla: la tecla lanza Pesca y, mientras el corcho está
 -- en el agua, esa misma tecla lo recoge. Además: autobotín, sonido amplificado,

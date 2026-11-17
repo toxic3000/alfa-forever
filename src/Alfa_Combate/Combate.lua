@@ -1,4 +1,4 @@
--- Alfa - Combate (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Combate (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Ayudas de combate que solo muestran: nada aquí aprieta, elige objetivo ni
 -- decide por el jugador (docs/ARQUITECTURA.md, reglas de Forever).

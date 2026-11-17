@@ -1,5 +1,5 @@
 -- Alfa - La Jauría: la manada en el mapa del mundo y el minimapa.
--- Toxic / La Jauría. GPL-3.0.
+-- toxic3000 / La Jauría. GPL-3.0.
 --
 -- Dos capas de pines del motor (Alfa.Pins.SetLayer):
 --   manada.grupo    tu grupo o banda (posiciones del juego)

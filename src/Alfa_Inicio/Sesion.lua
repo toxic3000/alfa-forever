@@ -1,4 +1,4 @@
--- Alfa - Inicio: la sesión actual y el diario de sesiones (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Inicio: la sesión actual y el diario de sesiones (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Una sesión va desde que entras con el personaje hasta que sales: un /reload
 -- no la corta (PLAYER_ENTERING_WORLD dice si es la primera entrada o una

@@ -1,5 +1,5 @@
 -- Alfa - Enciclopedia: el catálogo de cada tipo, la búsqueda y los filtros
--- (Toxic / La Jauría). GPL-3.0.
+-- (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Cada tipo (objetos, PNJ, misiones, zonas, raros) es una tabla de columnas
 -- (una tabla por dato), armada una vez por sesión, por lotes, la primera vez

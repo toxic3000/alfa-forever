@@ -1,4 +1,4 @@
--- Alfa - Combate: barra de golpe (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Combate: barra de golpe (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Cuánto falta para tu siguiente golpe automático, con cada mano (y a
 -- distancia), con el evento PLAYER_SWING del cliente: sin registro de

@@ -1,4 +1,4 @@
--- Alfa - Builds: vocabulario y registro de builds (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Builds: vocabulario y registro de builds (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Cada archivo Builds/<Clase>.lua llama a M.Clase({...}) con sus builds.
 -- Un build es una lista ordenada de talentos (por spellID, con el nombre en

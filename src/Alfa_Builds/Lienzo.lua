@@ -1,4 +1,4 @@
--- Alfa - Builds: el árbol de talentos dibujado con el Kit (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Builds: el árbol de talentos dibujado con el Kit (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Un bloque del Kit (:Acomodar(ancho) -> alto) con las tres ramas en tres
 -- paneles, tus puntos de verdad y el plan encima:

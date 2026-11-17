@@ -1,5 +1,5 @@
 -- Alfa - La Jauría: el canal oculto entre los usuarios de Alfa.
--- Toxic / La Jauría. GPL-3.0.
+-- toxic3000 / La Jauría. GPL-3.0.
 --
 -- Un canal de chat propio ("AlfaJauria"), temporal (se deja solo al salir del
 -- juego), sin contraseña y sin ventana de chat: por él viajan los mensajes de

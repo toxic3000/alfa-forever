@@ -1,4 +1,4 @@
--- Alfa - Builds: el módulo (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Builds: el módulo (toxic3000 / La Jauría). GPL-3.0.
 --
 -- La página Talentos de Alfa: qué talento poner ahora y por qué, con
 -- Aplicar en un clic fuera de combate; tu objetivo y tu estilo en dos clics;

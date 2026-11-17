@@ -1,4 +1,4 @@
--- Alfa - Recolección (Toxic / La Jauría, GPL-3.0): nodos, rutas de farmeo e historial.
+-- Alfa - Recolección (toxic3000 / La Jauría, GPL-3.0): nodos, rutas de farmeo e historial.
 --
 -- Esta parte: la página del módulo, hecha con el Kit (docs/KIT.md, plantilla
 -- Tablero), las capas de Alfa_Mundo, el comando /alfa recoleccion y el

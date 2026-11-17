@@ -1,4 +1,4 @@
--- Alfa - Kit: tokens del diseño A (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Kit: tokens del diseño A (toxic3000 / La Jauría). GPL-3.0.
 --
 -- El Kit de Alfa son las piezas propias de la interfaz (docs/KIT.md): se
 -- escribió desde cero para Alfa 1.0 y no deriva de los Widgets del motor.

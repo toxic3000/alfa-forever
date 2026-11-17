@@ -1,4 +1,4 @@
--- Alfa - Comercio: escaneo completo de la subasta (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Comercio: escaneo completo de la subasta (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Con la casa de subastas abierta, una barra de Alfa bajo su ventana tiene el
 -- botón "Escanear con Alfa". Nada se compra ni se publica: solo se leen

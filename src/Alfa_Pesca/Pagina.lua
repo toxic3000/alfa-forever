@@ -1,4 +1,4 @@
--- Alfa - Pesca: su página en la ventana de Alfa (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Pesca: su página en la ventana de Alfa (toxic3000 / La Jauría). GPL-3.0.
 --
 -- La página de referencia del Kit de Alfa (docs/KIT.md): la plantilla
 -- Tablero con, de arriba abajo,

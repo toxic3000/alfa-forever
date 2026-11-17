@@ -1,4 +1,4 @@
--- Alfa - Comercio: la página "Comercio" (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Comercio: la página "Comercio" (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Hecha con el Kit (docs/KIT.md), plantilla Tablero:
 --   1. arriba y en grande, qué hacer con lo que llevas: cuánto ganas si sigues

@@ -1,4 +1,4 @@
--- Alfa - Rutas: el bloque "Mis rutas" de la página Ruta (Toxic / La Jauría).
+-- Alfa - Rutas: el bloque "Mis rutas" de la página Ruta (toxic3000 / La Jauría).
 -- GPL-3.0.
 --
 -- Tu ruta como un árbol: un tronco con una huella por tramo (XP, oro,

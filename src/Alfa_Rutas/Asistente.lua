@@ -1,4 +1,4 @@
--- Alfa - Rutas: el asistente "¿Qué quieres hacer?" (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Rutas: el asistente "¿Qué quieres hacer?" (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Dos clics y estás en marcha:
 --   1. eliges tu camino: Subir de nivel, Profesiones, Hacer oro o Mazmorras;

@@ -1,4 +1,4 @@
--- Alfa - Recolección: los nodos en el minimapa (Toxic / La Jauría, GPL-3.0).
+-- Alfa - Recolección: los nodos en el minimapa (toxic3000 / La Jauría, GPL-3.0).
 --
 -- La geometría es la del motor (Alfa.Pins.MinimapView y Alfa.Pins.Project:
 -- radio a la vista, giro con el jugador, minimapa redondo o cuadrado). Lo

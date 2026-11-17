@@ -1,4 +1,4 @@
--- Alfa - Rutas: el rastreador de pasos (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Rutas: el rastreador de pasos (toxic3000 / La Jauría). GPL-3.0.
 --
 -- La ventana de guía de Alfa, hecha con el Kit, en lugar de la del motor
 -- (reemplazos GUIDE_FRAME, GUIDE_END y ROUTE_CHOICE, docs/KIT.md). Compacta

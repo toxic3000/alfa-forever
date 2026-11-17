@@ -1,4 +1,4 @@
--- Alfa - Rutas: la página Ruta de la ventana de Alfa (Toxic / La Jauría).
+-- Alfa - Rutas: la página Ruta de la ventana de Alfa (toxic3000 / La Jauría).
 -- GPL-3.0.
 --
 -- Un Tablero del Kit (docs/KIT.md), de arriba abajo:

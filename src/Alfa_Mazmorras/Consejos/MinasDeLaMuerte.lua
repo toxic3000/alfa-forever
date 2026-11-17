@@ -1,4 +1,4 @@
--- Alfa - Mazmorras: consejos por jefe para principiantes (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Mazmorras: consejos por jefe para principiantes (toxic3000 / La Jauría). GPL-3.0.
 -- Minas de la Muerte (deadmines). Formato en LEEME.md.
 local _, M = ...
 M.Consejos = M.Consejos or {}

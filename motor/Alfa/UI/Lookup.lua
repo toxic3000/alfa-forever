@@ -1,6 +1,6 @@
 -- El Buscador "como conseguirlo", una seccion del centro (la ventana del
 -- selector de guias, UI.RegisterSection "Lookup"). Basado en el Lookup de
--- Polestar (GPL-3.0, The Polestar authors); reescrito por Toxic / La Jauria
+-- Polestar (GPL-3.0, The Polestar authors); reescrito por toxic3000 / La Jauria
 -- con la interfaz propia de Alfa (docs/INTERFAZ.md).
 --
 -- Una sola busqueda sobre las guias y todo el Codex (objetos, monturas,

@@ -1,4 +1,4 @@
--- Alfa - Mazmorras: textos en inglés (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Mazmorras: textos en inglés (toxic3000 / La Jauría). GPL-3.0.
 -- El español es el idioma principal: cada texto se escribe en español en el
 -- código, dentro de L["..."], y aquí va su traducción al inglés.
 -- Los consejos de cada jefe traen su inglés al lado (Consejos/*.lua).

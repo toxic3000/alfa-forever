@@ -1,4 +1,4 @@
--- Alfa - Textos de la interfaz (Ventanas). Toxic / La Jauria. GPL-3.0.
+-- Alfa - Textos de la interfaz (Ventanas). toxic3000 / La Jauria. GPL-3.0.
 -- Mismo formato que Textos.lua: la clave es el texto en espanol y aqui va su ingles.
 -- Se carga despues de Textos.lua (Alfa.toc), por eso se agrega a M.EN en vez de reemplazarlo.
 local _, M = ...

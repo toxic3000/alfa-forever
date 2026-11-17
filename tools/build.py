@@ -162,7 +162,7 @@ def main() -> int:
                 shutil.copy2(origen, destino)
 
     (dist / "NOTICE-ALFA.txt").write_text(
-        f"Alfa {cfg['version']} - Toxic / La Jauria\n\n"
+        f"Alfa {cfg['version']} - toxic3000 / La Jauria\n\n"
         f"Alfa es software libre bajo la GNU GPL version 3 (ver Alfa/LICENSE).\n"
         f"Esta basado en Polestar {cfg['upstream']} de The Polestar authors\n"
         f"({cfg['urls']['repo']}), GPL-3.0, que a su vez incluye trabajo de\n"

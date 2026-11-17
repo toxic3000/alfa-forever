@@ -1,4 +1,4 @@
--- Alfa - Combate: avisos de reacción (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Combate: avisos de reacción (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Un aviso corto cuando una habilidad de reacción de tu clase (Datos.lua) se
 -- vuelve usable: Abrumar cuando el enemigo esquiva, Revancha cuando bloqueas,

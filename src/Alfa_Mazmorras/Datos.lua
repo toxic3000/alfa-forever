@@ -1,4 +1,4 @@
--- Alfa - Mazmorras: datos y progreso (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Mazmorras: datos y progreso (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Lee el diario del motor (Alfa.Dungeons: misiones, jefes, entrada), que
 -- desde la 1.0 solo se ve a través de esta página (Reemplazos.lua), y le

@@ -1,6 +1,6 @@
 -- El diario de mazmorras del motor, una seccion del centro (la ventana del
 -- selector de guias). Basado en la seccion Dungeons de Polestar (GPL-3.0, The
--- Polestar authors); reescrito por Toxic / La Jauria con la interfaz propia
+-- Polestar authors); reescrito por toxic3000 / La Jauria con la interfaz propia
 -- de Alfa (docs/INTERFAZ.md).
 --
 -- Un diario de misiones por mazmorra y banda, como el Diario de mazmorras

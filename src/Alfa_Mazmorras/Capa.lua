@@ -1,4 +1,4 @@
--- Alfa - Mazmorras: las entradas de mazmorras en el minimapa (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Mazmorras: las entradas de mazmorras en el minimapa (toxic3000 / La Jauría). GPL-3.0.
 --
 -- El motor ya marca las entradas en el mapa del mundo (Maps/Dungeons.lua,
 -- capa "maps.dungeons", world = true, minimap = false; Alfa_Mundo la ofrece

@@ -1,4 +1,4 @@
--- Alfa - Builds del druida (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Builds del druida (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Un build "Subir solo / Equilibrado" por rama. El orden de talentos sale de
 -- los planes de nivelación de Polestar (talents/forever, GPL-3.0, The Polestar

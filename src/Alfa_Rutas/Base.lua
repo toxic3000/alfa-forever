@@ -1,5 +1,5 @@
 -- Alfa - Rutas: piezas comunes (ramas, datos guardados, plantillas, exportar
--- e importar). Toxic / La Jauría. GPL-3.0.
+-- e importar). toxic3000 / La Jauría. GPL-3.0.
 --
 -- Datos de la cuenta (N.Datos("rutas")): las rutas que arma el jugador.
 --   { v = 1, seq = n, orden = { id, ... }, rutas = { [id] = ruta } }

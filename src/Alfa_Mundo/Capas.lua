@@ -1,5 +1,5 @@
 -- Alfa - Mundo: un solo control de capas para todo lo que se pinta en los
--- mapas (Toxic / La Jauría). GPL-3.0.
+-- mapas (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Cada capa es un interruptor con nombre, grupo e ícono:
 --   * las del motor (guía, misiones, raros, viaje, zonas) están enlazadas a

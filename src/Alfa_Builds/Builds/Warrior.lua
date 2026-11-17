@@ -1,4 +1,4 @@
--- Alfa - Builds del guerrero (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Builds del guerrero (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Builds propios de Alfa, revisados contra el árbol de Forever 1.60.1 (filas,
 -- puntos por rama y flechas). Cada talento: { spellID, rango hasta el que se

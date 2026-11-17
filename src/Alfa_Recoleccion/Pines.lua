@@ -1,5 +1,5 @@
 -- Alfa - Recolección: el aspecto de un pin y su cuadro de información
--- (Toxic / La Jauría, GPL-3.0). Lo comparten el mapa del mundo y el minimapa.
+-- (toxic3000 / La Jauría, GPL-3.0). Lo comparten el mapa del mundo y el minimapa.
 --
 -- Un pin: un disco oscuro, el ícono del recurso recortado en círculo y un
 -- aro del color de su tipo (cobre la minería, verde las hierbas, azul la

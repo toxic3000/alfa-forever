@@ -1,4 +1,4 @@
--- Alfa - Combate: su página en la ventana de Alfa (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Combate: su página en la ventana de Alfa (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Un Tablero del Kit (docs/KIT.md), en Personaje:
 --   1. Estado: cómo está tu ayuda de rotación y qué hacer (encenderla,

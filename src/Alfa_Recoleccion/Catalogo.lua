@@ -1,4 +1,4 @@
--- Alfa - Recolección: el catálogo de recursos (Toxic / La Jauría, GPL-3.0).
+-- Alfa - Recolección: el catálogo de recursos (toxic3000 / La Jauría, GPL-3.0).
 --
 -- La lista de recursos, sus IDs de objeto de Forever, los niveles de
 -- habilidad y los nombres en español e inglés vienen de GatherLite

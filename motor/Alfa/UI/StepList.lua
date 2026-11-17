@@ -1,5 +1,5 @@
 -- Alfa: la lista de pasos con el acomodo propio de la ventana de guia
--- (Toxic / La Jauria, GPL-3.0; docs/INTERFAZ.md): cada paso, una tarjeta de
+-- (toxic3000 / La Jauria, GPL-3.0; docs/INTERFAZ.md): cada paso, una tarjeta de
 -- esquinas cortadas en el color de los paneles, alineada con la tarjeta del
 -- paso; el paso vivo con su raya de acento y AHORA; el paso en pantalla,
 -- levantado. Se abre con el boton de la lista o con "Paso N de M".

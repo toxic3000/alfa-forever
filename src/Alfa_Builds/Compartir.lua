@@ -1,4 +1,4 @@
--- Alfa - Builds: compartir builds con una cadena de texto (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Builds: compartir builds con una cadena de texto (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Cadena:  ALFA1;CLASE;rama;objetivo;estilo;Título;spell-rango,spell-rango,...
 -- Los talentos van en orden, como las entradas de Builds/<Clase>.lua (cada

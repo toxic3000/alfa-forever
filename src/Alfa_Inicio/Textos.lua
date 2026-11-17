@@ -1,4 +1,4 @@
--- Alfa - Inicio: textos en inglés (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Inicio: textos en inglés (toxic3000 / La Jauría). GPL-3.0.
 -- El español es el idioma principal: aquí solo va su traducción al inglés,
 -- para los clientes que no son esMX ni esES (N.Textos).
 

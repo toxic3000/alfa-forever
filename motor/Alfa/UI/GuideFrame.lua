@@ -1,4 +1,4 @@
--- Alfa: el acomodo propio de la ventana de guia (Toxic / La Jauria, GPL-3.0;
+-- Alfa: el acomodo propio de la ventana de guia (toxic3000 / La Jauria, GPL-3.0;
 -- docs/INTERFAZ.md), sobre la ventana de guia de Polestar (GPL-3.0, The
 -- Polestar authors). De arriba abajo:
 --

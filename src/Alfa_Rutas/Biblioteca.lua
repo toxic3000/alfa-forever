@@ -1,4 +1,4 @@
--- Alfa - Rutas: la biblioteca de guías (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Rutas: la biblioteca de guías (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Reemplaza el selector de guías del motor (SHOW_PICKER, docs/KIT.md). Una
 -- ventana del Kit: arriba, en grande, la guía que Alfa recomienda para tu

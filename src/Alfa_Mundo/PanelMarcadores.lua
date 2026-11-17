@@ -1,4 +1,4 @@
--- Alfa - Mundo: la lista de tus marcadores (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Mundo: la lista de tus marcadores (toxic3000 / La Jauría). GPL-3.0.
 --
 -- La fila de un marcador (la misma en el panel del mapa de Alfa y en la
 -- página Mundo): su ícono en su color, el nombre, dónde está (y quién te lo

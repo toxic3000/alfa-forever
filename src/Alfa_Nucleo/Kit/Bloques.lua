@@ -1,4 +1,4 @@
--- Alfa - Kit: bloques de página (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Kit: bloques de página (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Un bloque es un marco con :Acomodar(ancho) -> alto. Las plantillas
 -- (Kit/Plantillas.lua) los apilan con márgenes y ritmo fijos.

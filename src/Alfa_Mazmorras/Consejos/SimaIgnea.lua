@@ -1,4 +1,4 @@
--- Alfa - Mazmorras: consejos por jefe para principiantes (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Mazmorras: consejos por jefe para principiantes (toxic3000 / La Jauría). GPL-3.0.
 -- Sima Ígnea (ragefire-chasm). Formato (también en LEEME.md):
 --   [id de PNJ del jefe] = { { "español", "English", rol = "tanque"|"cura"|"dano" }, ... }
 --   e<id de encuentro> = ... para un grupo sin PNJ propio; general = la mazmorra entera.

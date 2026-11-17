@@ -1,4 +1,4 @@
--- Alfa - Núcleo de los módulos propios (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Núcleo de los módulos propios (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Todo módulo de Alfa (Alfa_Inicio, Alfa_Bolsas, ...) se cuelga de aquí:
 --   local N = AlfaNucleo          -- este archivo

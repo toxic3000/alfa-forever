@@ -1,5 +1,5 @@
 -- Alfa - Rutas: textos en inglés (el español es el idioma principal).
--- Toxic / La Jauría. GPL-3.0.
+-- toxic3000 / La Jauría. GPL-3.0.
 
 local ADDON, M = ...
 

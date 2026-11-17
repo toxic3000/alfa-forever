@@ -1,4 +1,4 @@
--- Alfa - Mazmorras: los avisos de jefes del propio juego (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Mazmorras: los avisos de jefes del propio juego (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Forever trae la línea de tiempo de encuentros (C_EncounterTimeline,
 -- Blizzard_EncounterTimeline) y los avisos de encuentros (C_EncounterWarnings,

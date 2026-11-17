@@ -1,4 +1,4 @@
--- Alfa - Enciclopedia: lo común (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Enciclopedia: lo común (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Los datos son los del motor (Alfa_Codex, Alfa_ItemDB y las funciones de
 -- Lookup): aquí no se copia nada, solo se lee y se pone en palabras de Alfa.

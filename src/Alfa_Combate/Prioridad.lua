@@ -1,4 +1,4 @@
--- Alfa - Combate: la prioridad propia de Alfa (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Combate: la prioridad propia de Alfa (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Lee la lista de tu clase (Prioridades.lua) con datos de tu personaje y
 -- devuelve, en orden, lo que conviene presionar: nada más. No aprieta nada.

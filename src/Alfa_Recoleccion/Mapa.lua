@@ -1,5 +1,5 @@
 -- Alfa - Recolección: los nodos y la ruta en el mapa del mundo
--- (Toxic / La Jauría, GPL-3.0).
+-- (toxic3000 / La Jauría, GPL-3.0).
 --
 -- Va sobre la vista que el motor comparte con todos (Alfa.MapCanvas), con
 -- sus mismas reglas para no contaminar el mapa del juego (Nav/MapCanvas.lua

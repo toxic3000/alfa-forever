@@ -1,4 +1,4 @@
--- Alfa - Textos de la interfaz propia del motor (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Textos de la interfaz propia del motor (toxic3000 / La Jauría). GPL-3.0.
 --
 -- La clave es el texto en español; aquí va su inglés. En el juego se leen con
 -- ns.T(texto) (Theme.T): en español sale la clave, en inglés este texto, y en

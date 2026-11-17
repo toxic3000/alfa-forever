@@ -1,7 +1,7 @@
 ## Interface: 16001
 ## Title: |cff8be04eAlfa|r - Enciclopedia
 ## Notes: Todos los objetos, PNJ, misiones, zonas y raros del juego, con dónde conseguirlos y cómo llegar.
-## Author: Toxic - La Jauria
+## Author: toxic3000 - La Jauria
 ## Version: dev
 ## X-License: GPL-3.0-only
 ## Dependencies: Alfa, Alfa_Nucleo

@@ -1,5 +1,5 @@
 -- Alfa - La Jauría: los mensajes entre los Alfa de la manada.
--- Toxic / La Jauría. GPL-3.0.
+-- toxic3000 / La Jauría. GPL-3.0.
 --
 -- Mensajes de addon ocultos con el prefijo propio "AlfaManada". Solo hablan
 -- quienes aceptaron compartir su ubicación con La Jauría (manada.compartir):

@@ -1,4 +1,4 @@
--- Alfa - Curación: los marcos de grupo y banda (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Curación: los marcos de grupo y banda (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Una cabecera segura (SecureGroupHeaderTemplate) arma un botón seguro
 -- (SecureUnitButtonTemplate) por compañero: tú y tu grupo, o tu banda de

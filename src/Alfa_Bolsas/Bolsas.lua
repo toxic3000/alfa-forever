@@ -1,4 +1,4 @@
--- Alfa - Bolsas (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Bolsas (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Tus bolsas y tu banco en una sola ventana de Alfa, con tres vistas (todo
 -- junto, por categorías o por bolsa), la barra de las bolsas equipadas,

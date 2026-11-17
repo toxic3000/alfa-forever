@@ -1,7 +1,7 @@
 -- Alfa - La Jauría: quién es quién. Tu grupo o banda (con la API del juego) y
 -- los usuarios de Alfa que aceptaron compartir su ubicación (lo que llega por
 -- Red.lua). Nada más: ni la lista de la hermandad ni la de amigos.
--- Toxic / La Jauría. GPL-3.0.
+-- toxic3000 / La Jauría. GPL-3.0.
 --
 --   G.LeerGrupo()        el grupo ahora: una fila por miembro con su posición
 --   G.Oido(clave, remitente, via, datos)   un mensaje de un Alfa

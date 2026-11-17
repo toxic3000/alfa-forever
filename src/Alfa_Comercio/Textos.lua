@@ -1,4 +1,4 @@
--- Alfa - Comercio: textos en inglés (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Comercio: textos en inglés (toxic3000 / La Jauría). GPL-3.0.
 -- El español es el idioma principal: cada clave es el texto en español.
 
 local _, M = ...

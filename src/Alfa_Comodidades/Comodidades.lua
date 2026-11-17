@@ -1,4 +1,4 @@
--- Alfa - Comodidades (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Comodidades (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Las comodidades de calidad de vida que el motor de Alfa todavía no tiene,
 -- hechas con código propio. Lo que el motor ya hace (vender grises, reparar

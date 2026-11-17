@@ -1,4 +1,4 @@
--- Alfa - Combate: habilidades de reacción por clase (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Combate: habilidades de reacción por clase (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Una habilidad de reacción se vuelve usable por algo que pasó (el enemigo
 -- esquivó, tú bloqueaste, al enemigo le queda poca vida...). Alfa la vigila

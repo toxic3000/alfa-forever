@@ -1,6 +1,6 @@
 -- Alfa - La Jauría: el módulo. Registra la página, los ajustes y el comando
 -- /alfa manada, mueve el pulso (grupo, envío de tu posición, marcas del mapa)
--- y publica el contrato AlfaManada para otras áreas. Toxic / La Jauría. GPL-3.0.
+-- y publica el contrato AlfaManada para otras áreas. toxic3000 / La Jauría. GPL-3.0.
 --
 -- Contrato (global AlfaManada):
 --   AlfaManada.PreguntarCompartir(alTerminar)  la ventana "¿Compartes tu

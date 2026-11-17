@@ -1,4 +1,4 @@
--- Alfa - Rutas: dos guías al momento. Toxic / La Jauría. GPL-3.0.
+-- Alfa - Rutas: dos guías al momento. toxic3000 / La Jauría. GPL-3.0.
 --
 --   Recoger: las mejores misiones que ya puedes tomar cerca de ti (las de tu
 --     nivel, de tu facción y clase, con sus previas hechas, sin pasarte del

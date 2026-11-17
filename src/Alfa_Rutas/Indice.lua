@@ -1,7 +1,7 @@
 -- Alfa - Rutas: el índice de misiones de este personaje y las piezas para
 -- medirlas (XP, oro estimado, dónde empiezan y terminan, cuánto camino y
 -- esfuerzo llevan) y para armar sus pasos con el formato de guía del motor.
--- Toxic / La Jauría. GPL-3.0.
+-- toxic3000 / La Jauría. GPL-3.0.
 --
 -- Todo sale del Codex del motor (A.Codex) y de su Lookup (A.Lookup): quién
 -- da y recibe cada misión, sus objetivos, sus recompensas, su XP. El camino

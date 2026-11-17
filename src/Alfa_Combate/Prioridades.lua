@@ -1,4 +1,4 @@
--- Alfa - Combate: prioridades propias por clase (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Combate: prioridades propias por clase (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Cuando el cliente no ofrece la ayuda de combate de Blizzard (Forever la
 -- trae apagada), Alfa sugiere con su propia lista de prioridad, leída solo

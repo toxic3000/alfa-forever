@@ -1,4 +1,4 @@
--- Alfa - Builds: el árbol de talentos real del juego (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Builds: el árbol de talentos real del juego (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Forever usa un árbol de C_Traits por clase (tres ramas, filas que piden
 -- puntos en la rama y flechas). Aquí se lee el árbol vivo, se resuelven los

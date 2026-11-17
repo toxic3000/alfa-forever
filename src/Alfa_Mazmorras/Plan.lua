@@ -1,5 +1,5 @@
 -- Alfa - Mazmorras: qué misiones de una mazmorra puedes tomar ya y qué le
--- falta a cada una de las demás (Toxic / La Jauría). GPL-3.0.
+-- falta a cada una de las demás (toxic3000 / La Jauría). GPL-3.0.
 --
 -- La regla (docs/PLAN-1.0.md, "Pedidos agregados"): Alfa nunca te manda a una
 -- misión que todavía no puedes tomar. «Prepárame» recoge solo las que ya

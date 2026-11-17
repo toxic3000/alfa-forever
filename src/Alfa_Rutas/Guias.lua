@@ -2,7 +2,7 @@
 -- guía del paquete "mis-rutas" (A.RegisterPack / A.RegisterGuide, como
 -- cualquier paquete de la comunidad), así que la flecha, los pasos, el mapa
 -- y las pestañas del motor la siguen igual que a las guías de Alfa, y el
--- menú de guías la lista bajo "Mis rutas". Toxic / La Jauría. GPL-3.0.
+-- menú de guías la lista bajo "Mis rutas". toxic3000 / La Jauría. GPL-3.0.
 --
 -- Los pasos compilados se guardan por personaje (M.Personaje().guias[rutaId],
 -- y .liberar): al cargar el addon se registran otra vez, antes de que el

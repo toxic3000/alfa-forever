@@ -1,5 +1,5 @@
 -- Alfa - Bienvenida: el primer arranque, las novedades y el aullido
--- (Toxic / La Jauría). GPL-3.0.
+-- (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Toma el lugar de la bienvenida y de las novedades del motor (SHOW_WELCOME y
 -- SHOW_WHATSNEW, docs/KIT.md "Reemplazos"): las dos abren la ventana de Alfa

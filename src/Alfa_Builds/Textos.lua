@@ -1,4 +1,4 @@
--- Alfa - Builds: textos en inglés (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Builds: textos en inglés (toxic3000 / La Jauría). GPL-3.0.
 -- El español es el idioma principal; esta tabla los traduce al inglés
 -- para los clientes que no son esMX ni esES.
 

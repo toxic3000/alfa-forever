@@ -1,4 +1,4 @@
--- Alfa - Combate: la ayuda de rotación (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Combate: la ayuda de rotación (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Un ícono compacto con la habilidad que conviene ahora y, a su derecha y
 -- más chicas, las que vienen después. Dos fuentes (R.Fuente):

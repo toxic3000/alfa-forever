@@ -1,4 +1,4 @@
--- Alfa - Enciclopedia: los índices al revés (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Enciclopedia: los índices al revés (toxic3000 / La Jauría). GPL-3.0.
 --
 -- El Codex dice de dónde sale cada objeto; la enciclopedia también quiere lo
 -- contrario: lo que vende o suelta un PNJ, lo que da un cofre o un banco de

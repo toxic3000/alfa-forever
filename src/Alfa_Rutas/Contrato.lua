@@ -1,4 +1,4 @@
--- Alfa - Rutas: lo que esta área ofrece a las demás (Toxic / La Jauría).
+-- Alfa - Rutas: lo que esta área ofrece a las demás (toxic3000 / La Jauría).
 -- GPL-3.0.
 --
 -- AlfaRuta (global), el contrato de docs/PLAN-1.0.md:

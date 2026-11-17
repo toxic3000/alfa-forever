@@ -1,4 +1,4 @@
--- Alfa - Mundo: geometría del mapa continuo (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Mundo: geometría del mapa continuo (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Todo el mundo se dibuja en "unidades de mundo": el mapa de Azeroth (947)
 -- normalizado, 0..1 de izquierda a derecha y de arriba abajo. Cada mapa

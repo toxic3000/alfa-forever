@@ -1,4 +1,4 @@
--- Alfa - Comercio: datos fijos del juego (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Comercio: datos fijos del juego (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Tablas clásicas de desencantar, escritas a mano a partir de los hechos del
 -- juego clásico (nivel de objeto -> materiales). Son ESTIMADAS: Forever puede

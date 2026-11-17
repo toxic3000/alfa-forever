@@ -1,4 +1,4 @@
--- Alfa - Mundo: el arte del mapa continuo (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Mundo: el arte del mapa continuo (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Un lienzo del tamaño del arte del mundo (947), escalado para el zoom
 -- (SetScale, como el ScrollContainer de Blizzard). Capas, de

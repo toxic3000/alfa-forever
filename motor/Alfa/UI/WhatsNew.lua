@@ -1,4 +1,4 @@
--- Alfa: las novedades (Toxic / La Jauria, GPL-3.0; docs/INTERFAZ.md). Las
+-- Alfa: las novedades (toxic3000 / La Jauria, GPL-3.0; docs/INTERFAZ.md). Las
 -- notas de Polestar cambian por las de Alfa; el mecanismo de cuando se
 -- muestran es el de Polestar (GPL-3.0, The Polestar authors).
 --

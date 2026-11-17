@@ -1,5 +1,5 @@
 -- Alfa - La Jauría: su página en la ventana de Alfa, hecha con el Kit.
--- Toxic / La Jauría. GPL-3.0.
+-- toxic3000 / La Jauría. GPL-3.0.
 --
 -- Un Tablero (docs/KIT.md) que guía de arriba abajo:
 --   1. Lo que toca ahora, en grande: compartir tu rastro, a quién sigues, en

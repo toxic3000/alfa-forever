@@ -1,4 +1,4 @@
--- Alfa - Combate: la ventana del medidor de daño (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Combate: la ventana del medidor de daño (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Una ventana del Kit, compacta y movible, con el top de tu grupo o banda:
 -- la pelea actual, la anterior o todo, en DPS, daño, CPS o curación, con

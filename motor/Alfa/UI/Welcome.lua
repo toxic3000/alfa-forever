@@ -1,4 +1,4 @@
--- Alfa: la bienvenida (Toxic / La Jauria, GPL-3.0; docs/INTERFAZ.md).
+-- Alfa: la bienvenida (toxic3000 / La Jauria, GPL-3.0; docs/INTERFAZ.md).
 -- Reemplaza la presentacion de Polestar (cielo nocturno, demostracion de
 -- ruta y textos de su proyecto) por una bienvenida corta de Alfa; conserva
 -- de la de Polestar (GPL-3.0, The Polestar authors) cuando se muestra y como

@@ -1,4 +1,4 @@
--- Alfa - Bienvenida: la ventana de Alfa 1.0 (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Bienvenida: la ventana de Alfa 1.0 (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Una ventana del Kit (K.Ventana) con dos vistas:
 --   portada    K.Tablero: arriba la acción grande ("Empezar", o "Todo listo"

@@ -1,4 +1,4 @@
--- Alfa - Bolsas (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Bolsas (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Addons de terceros con los que evitamos chocar: si uno de estos está
 -- activo, Alfa no reemplaza las bolsas ni el banco del juego (su ventana se

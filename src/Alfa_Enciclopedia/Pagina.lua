@@ -1,5 +1,5 @@
 -- Alfa - Enciclopedia: su página en la ventana de Alfa, los reemplazos del
--- motor y lo que usan los demás módulos (Toxic / La Jauría). GPL-3.0.
+-- motor y lo que usan los demás módulos (toxic3000 / La Jauría). GPL-3.0.
 --
 -- La página (Aventura > Enciclopedia) es un Tablero: arriba, en grande,
 -- abrir la enciclopedia; debajo, un acceso por tipo (con cuántos hay cuando

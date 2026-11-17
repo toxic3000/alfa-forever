@@ -1,5 +1,5 @@
 -- Alfa - Rutas: las acciones de tus rutas propias (seguir una, agregarle un
--- objeto) y el comando /alfa rutas. Toxic / La Jauría. GPL-3.0.
+-- objeto) y el comando /alfa rutas. toxic3000 / La Jauría. GPL-3.0.
 
 local ADDON, M = ...
 local A, L, N = M.A, M.L, M.N

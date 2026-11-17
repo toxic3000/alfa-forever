@@ -1,4 +1,4 @@
--- Alfa - Kit: plantillas de página (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Kit: plantillas de página (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Tres acomodos fijos para que toda página se vea ordenada, alineada y sin
 -- espacio perdido. Todas miden y se acomodan al ancho que se les da: el de la

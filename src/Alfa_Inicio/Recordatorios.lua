@@ -1,4 +1,4 @@
--- Alfa - Inicio: los recordatorios (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Inicio: los recordatorios (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Cada uno con su interruptor y su umbral (ajustes "inicio.*"), y un aviso en
 -- pantalla (M.Aviso) solo cuando algo cambia, nunca en bucle:

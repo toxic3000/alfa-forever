@@ -1,5 +1,5 @@
 -- Alfa - Mundo: el panel de capas que abre el botón del mapa (el de Alfa y
--- el del juego) (Toxic / La Jauría). GPL-3.0.
+-- el del juego) (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Hecho con el Kit (Emergente.lua): arriba el modo limpio; debajo cada grupo
 -- con sus interruptores, los del motor y los de los módulos que registraron

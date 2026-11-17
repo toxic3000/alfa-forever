@@ -1,4 +1,4 @@
--- Alfa - Kit: ventanas, diálogos y avisos (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Kit: ventanas, diálogos y avisos (toxic3000 / La Jauría). GPL-3.0.
 --
 --   K.Ventana(opts)        ventana flotante que se mueve, recuerda su lugar y se cierra con Esc
 --   K.Desplazable(padre)   un área que se desplaza con la rueda (y su barra fina)

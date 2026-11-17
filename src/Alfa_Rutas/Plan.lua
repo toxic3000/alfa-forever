@@ -1,7 +1,7 @@
 -- Alfa - Rutas: el planificador. Elige las misiones de cada tramo, las
 -- ordena por el camino más corto con el planificador de paradas del motor
 -- (Dungeons.PlanStops, el mismo de "recoger misiones" en los diarios de
--- mazmorra) y las convierte en pasos de guía. Toxic / La Jauría. GPL-3.0.
+-- mazmorra) y las convierte en pasos de guía. toxic3000 / La Jauría. GPL-3.0.
 --
 --   Plan.De(ruta) -> plan | nil          -- el plan guardado de este personaje, si sigue al día
 --   Plan.Armar(ruta, fn(plan | nil, motivo), alAvanzar?)

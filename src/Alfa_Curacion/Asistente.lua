@@ -1,4 +1,4 @@
--- Alfa - Curación: el asistente de 3 pasos (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Curación: el asistente de 3 pasos (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Una ventana propia del Kit (K.Ventana con K.Asistente), chica, para que se
 -- vean tus marcos mientras la usas:

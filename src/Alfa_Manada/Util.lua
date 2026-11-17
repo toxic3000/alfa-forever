@@ -1,5 +1,5 @@
 -- Alfa - La Jauría: piezas comunes del módulo (nombres, posiciones,
--- distancias, tiempos, susurros e invitaciones). Toxic / La Jauría. GPL-3.0.
+-- distancias, tiempos, susurros e invitaciones). toxic3000 / La Jauría. GPL-3.0.
 --
 -- Nombres en Forever: los personajes llevan apellido ("Ana Smith"). Los
 -- remitentes de los mensajes de addon llegan como "Ana Smith" (o con

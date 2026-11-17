@@ -1,4 +1,4 @@
--- Alfa - Bienvenida: lo nuevo de Alfa 1.0 (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Bienvenida: lo nuevo de Alfa 1.0 (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Las novedades que muestra la portada de la bienvenida. Deben decir lo mismo
 -- que la sección 1.0.0 de CHANGELOG.md (docs/VERSIONES.md): una línea por

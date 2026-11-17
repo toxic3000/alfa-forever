@@ -1,4 +1,4 @@
--- Alfa - Inicio: la tarjeta «Para tu <clase>» (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Inicio: la tarjeta «Para tu <clase>» (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Tres mini tarjetas por clase y por rol, solo con datos del propio jugador
 -- que el cliente deja leer, y nada que decida en combate: muestran y, con un

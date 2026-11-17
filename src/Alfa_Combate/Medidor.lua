@@ -1,4 +1,4 @@
--- Alfa - Combate: los datos del medidor de daño (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Combate: los datos del medidor de daño (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Forever no tiene registro de combate para los addons, pero trae el
 -- medidor oficial del juego (Blizzard_DamageMeter) y su API, C_DamageMeter:

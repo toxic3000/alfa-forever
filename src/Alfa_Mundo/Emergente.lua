@@ -1,5 +1,5 @@
 -- Alfa - Mundo: la base de los paneles que se abren desde un botón (las
--- capas y los marcadores) (Toxic / La Jauría). GPL-3.0.
+-- capas y los marcadores) (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Un panel del Kit: la caja con su marca de acento, el ícono, el título, una
 -- cuenta y la X arriba; debajo, el cuerpo que arma cada panel. Se abre junto

@@ -1,4 +1,4 @@
--- Alfa - Comercio: qué conviene hacer con cada objeto (Toxic / La Jauría). GPL-3.0.
+-- Alfa - Comercio: qué conviene hacer con cada objeto (toxic3000 / La Jauría). GPL-3.0.
 --
 -- Compara, por unidad:
 --   vender      el precio del comerciante (sellPrice de C_Item.GetItemInfo)
