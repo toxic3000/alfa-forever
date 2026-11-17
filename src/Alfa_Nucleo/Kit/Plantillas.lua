@@ -260,7 +260,14 @@ function K.Asistente(padre, opts)
 		local paso = self.pasos[i]
 		if paso and paso.alMostrar then K.Llamar(paso.alMostrar, p, self) end
 		self:Refrescar()
-		if self.alfaAncho then self:Acomodar(self.alfaAncho, self.alfaAlto) end
+		if self.alfaAncho then
+			local h = self:Acomodar(self.alfaAncho, self.alfaAlto)
+			-- Dentro de un área desplazable, su alto cambia con cada paso: sin
+			-- esto la barra se quedaba con el alto del paso anterior y no
+			-- dejaba bajar hasta el final.
+			local sf = self.alfaPadre and self.alfaPadre.GetParent and self.alfaPadre:GetParent()
+			if sf and sf.Contenido == self.alfaPadre and sf.SetAltoContenido then sf:SetAltoContenido(h) end
+		end
 		if self.alCambiar then K.Llamar(self.alCambiar, i) end
 	end
 	function a:Siguiente()

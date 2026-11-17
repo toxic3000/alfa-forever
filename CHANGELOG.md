@@ -1,5 +1,15 @@
 # Cambios de Alfa
 
+## 1.1.1 — Bienvenida a pantalla completa (17/11/2026)
+
+**Español**
+- Arreglado: en la bienvenida, algunas pantallas (como «¿Llevamos tu estilo al resto de la pantalla?» o las de misiones) no dejaban bajar hasta el final; había que cerrar y volver a abrir. Ahora cada paso mide su alto al mostrarse y la barra llega siempre hasta abajo. El mismo arreglo vale para los asistentes de Ruta y de Curación.
+- La bienvenida ahora ocupa toda la pantalla, con el juego oscurecido detrás y el contenido en una columna centrada: más cómoda de leer y más inmersiva. Se ajusta sola si cambias la resolución o la escala de la interfaz.
+
+**English**
+- Fixed: some first-run setup screens (like the style or quest steps) wouldn't scroll all the way down until you closed and reopened the window. Each step now measures itself when shown. The same fix applies to the Route and Healing assistants.
+- The first-run setup now fills the whole screen, with the game dimmed behind it and the content in a centered column. It adapts to resolution and UI scale changes.
+
 ## 1.1.0 — La manada crece (17/11/2026)
 
 **Español**

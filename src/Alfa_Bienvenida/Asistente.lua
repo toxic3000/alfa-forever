@@ -48,18 +48,34 @@ end
 -- Medir: la vista de ahora con el ancho del cuerpo (el asistente con su
 -- alto, para que el pie quede abajo).
 ---------------------------------------------------------------------------
+-- La ventana ocupa toda la pantalla; el contenido va en una columna centrada
+-- de COLUMNA a lo más, para que se lea cómodo en pantallas anchas.
+local COLUMNA = 960
+
 local function acomodar()
 	if not (v and v:IsShown()) then return end
-	local ancho = v:AnchoCuerpo()
+	local total = v:AnchoCuerpo()
+	local ancho = math.min(total, COLUMNA)
+	local margen = v.margen + math.floor((total - ancho) / 2)
 	local h = 0
 	if ui.vista == "asistente" and ui.asistente then
+		ui.asistente.alfaMargen = margen
 		h = ui.asistente:Acomodar(ancho, v:AltoCuerpo() - 2)
 	elseif ui.portada then
+		ui.portada.alfaMargen = margen
 		h = ui.portada:Acomodar(ancho)
 	end
 	v:SetAltoContenido(h)
 end
 M.Acomodar = acomodar
+
+-- Mide ahora y otra vez en un momento: el juego termina de acomodar los
+-- textos largos (los que bajan de renglón) un cuadro después.
+local function acomodarYa()
+	acomodar()
+	K.Despues(0.05, acomodar)
+	K.Despues(0.3, acomodar)
+end
 
 -- Un cambio de estilo cambia la letra y las medidas: se mide de nuevo.
 K.AlRepintar(function() acomodar() end)
@@ -565,9 +581,56 @@ local function armar()
 		if v.Desplazable then v.Desplazable:IrArriba() end
 		local p = ui.asistente.pasos[i]
 		if M.Pendiente() and p then datos().paso = p.id end
+		-- El alto del paso nuevo (sin esto la barra se quedaba con el del anterior).
+		acomodarYa()
 	end
 	ui.asistente:Hide()
 	v.alfaPortada, v.alfaAsistente = ui.portada, ui.asistente
+
+	-- Pantalla completa: un velo oscuro detrás tapa el juego y la ventana
+	-- llena la pantalla; no se arrastra.
+	local velo = CreateFrame("Frame", nil, K.Raiz())
+	velo:SetAllPoints(UIParent)
+	velo:SetFrameStrata(v:GetFrameStrata())
+	velo:SetFrameLevel(math.max(0, v:GetFrameLevel() - 1))
+	velo:EnableMouse(true)
+	velo.Fondo = velo:CreateTexture(nil, "BACKGROUND")
+	velo.Fondo:SetAllPoints(velo)
+	velo.Fondo:SetColorTexture(0.02, 0.03, 0.03, 0.82)
+	velo:Hide()
+	v.alfaVelo = velo
+	v:HookScript("OnShow", function() if ui.vista == "asistente" then velo:Show() v:Raise() end end)
+	v:HookScript("OnHide", function() velo:Hide() end)
+	if v.Cabecera then
+		v.Cabecera:SetScript("OnDragStart", nil)
+		v.Cabecera:SetScript("OnDragStop", nil)
+	end
+	local f = CreateFrame("Frame")
+	f:RegisterEvent("UI_SCALE_CHANGED")
+	f:RegisterEvent("DISPLAY_SIZE_CHANGED")
+	f:SetScript("OnEvent", function() if v:IsShown() and ui.vista == "asistente" then M.PantallaCompleta() end end)
+end
+
+-- La ventana a toda la pantalla (con un margen corto), centrada.
+local MARGEN_PANTALLA = 24
+function M.PantallaCompleta()
+	if not v then return end
+	local w = K.num(UIParent:GetWidth(), ANCHO + 2 * MARGEN_PANTALLA)
+	local h = K.num(UIParent:GetHeight(), ALTO + 2 * MARGEN_PANTALLA)
+	v:ClearAllPoints()
+	v:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+	v:SetTamano(math.max(ANCHO, w - 2 * MARGEN_PANTALLA), math.max(ALTO, h - 2 * MARGEN_PANTALLA))
+	if v.alfaVelo then v.alfaVelo:Show() end
+	acomodarYa()
+end
+
+-- La portada (lo nuevo de la versión) es una ventana normal, sin velo.
+local function ventanaNormal()
+	if v.alfaVelo then v.alfaVelo:Hide() end
+	v:ClearAllPoints()
+	v:SetPoint("CENTER", UIParent, "CENTER", 0, 40)
+	v:SetTamano(ANCHO, ALTO)
+	acomodarYa()
 end
 
 function M.Visible() return v ~= nil and v:IsShown() end
@@ -598,5 +661,5 @@ function M.AbrirVentana(vista)
 	end
 	v:Abrir()
 	if v.Desplazable then v.Desplazable:IrArriba() end
-	acomodar()
+	if ui.vista == "asistente" then M.PantallaCompleta() else ventanaNormal() end
 end
