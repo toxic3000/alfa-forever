@@ -213,10 +213,31 @@ local function combo()
 	return v
 end
 
+-- La mano principal con un encantamiento temporal (imbuir, veneno, piedra de
+-- afilar): true, false o nil si no se sabe (secreto o sin API). Primero
+-- C_Item.GetWeaponEnchantInfo (ItemDocumentation); la global vieja solo existe
+-- con las funciones de compatibilidad (Blizzard_Deprecated).
 local function armaEncantada()
-	if not GetWeaponEnchantInfo then return nil end
-	local si = M.Legible(M.Llamar(GetWeaponEnchantInfo))
-	if si == nil then return false end
+	local fn = C_Item and C_Item.GetWeaponEnchantInfo
+	if type(fn) == "function" then
+		local slot = Enum and Enum.WeaponSlot and Enum.WeaponSlot.MainHand or 0
+		local lista = M.Llamar(fn, slot)
+		if M.Secreto(lista) then return nil end
+		if type(lista) == "table" then
+			local items = lista.hasEnchant ~= nil and { lista } or lista
+			for _, e in ipairs(items) do
+				if type(e) == "table" then
+					local tiene = M.Legible(e.hasEnchant)
+					if tiene == nil then return nil end
+					if tiene == true then return true end
+				end
+			end
+			return false
+		end
+	end
+	if type(GetWeaponEnchantInfo) ~= "function" then return nil end
+	local ok, si = pcall(GetWeaponEnchantInfo)
+	if not ok or M.Secreto(si) then return nil end
 	return si and true or false
 end
 

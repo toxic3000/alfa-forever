@@ -252,6 +252,8 @@ end
 -- (WELCOME_CLOSED: las novedades del motor, reemplazadas aquí, ya no salen).
 -- Cerrarla sin terminar no cambia nada: se recuerda que falta.
 function M.AlCerrar()
+	-- Escondida por un combate (Asistente.lua): vuelve sola al terminar.
+	if M.porCombate then return end
 	local listo = esperaListo
 	esperaListo = nil
 	if listo then K.Llamar(listo) else A.Fire("WELCOME_CLOSED") end

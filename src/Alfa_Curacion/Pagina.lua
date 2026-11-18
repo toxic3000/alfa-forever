@@ -62,7 +62,7 @@ local function grupo()
 	end
 	if IsInRaid and IsInRaid() then return format(L["Banda de %d"], n), "acento" end
 	if IsInGroup and IsInGroup() then return format(L["Grupo de %d"], n), "acento" end
-	return L["Solo"], "neutro"
+	return L["Sin grupo"], "neutro"
 end
 
 -- ¿Cambiaste algo a mano después del preajuste?
@@ -119,12 +119,15 @@ local function estado()
 	if M.EnCombate() then d.texto = d.texto .. " " .. L["Estás en combate: lo que cambies se aplica al salir."] end
 	local insignias = {}
 	if nombreClase then insignias[#insignias + 1] = { nombreClase, "clase" } end
-	local pre = M.PREAJUSTES[M.Datos().preajuste or ""]
-	if pre then insignias[#insignias + 1] = { aMano() and format(L["%s, a tu gusto"], pre.nombre) or pre.nombre, "acento" } end
+	local pre = M.Datos().preajuste
+	if M.PREAJUSTES[pre or ""] then
+		local nombre = M.NombrePreajuste(pre)
+		insignias[#insignias + 1] = { aMano() and format(L["%s, a tu gusto"], nombre) or nombre, "acento" }
+	end
 	local g, tono = grupo()
 	insignias[#insignias + 1] = { g, tono }
 	d.insignias = insignias
-	d.accion = { texto = L["Asistente"], icono = "ic-seguir", alClic = abrirAsistente }
+	d.accion = { texto = L["Configurar con el asistente"], icono = "ic-seguir", alClic = abrirAsistente }
 	d.secundaria = { texto = M.Moviendo() and L["Fijar marcos"] or L["Mover marcos"], alClic = function() M.Mover(not M.Moviendo()) end }
 	return d
 end
@@ -141,7 +144,10 @@ function M.DescripcionPreajuste(pre)
 	local resumen = M.ResumenDe(mapa, 4)
 	if pre == "cero" then return L["El izquierdo selecciona y el derecho abre el menú. Tú eliges el resto."] end
 	if pre == "buffs" then
-		if resumen == "" then return L["El izquierdo selecciona y el derecho abre el menú; tu clase no tiene buffs para otros."] end
+		if resumen == "" then
+			if not M.TieneBuffs() then return L["El izquierdo selecciona y el derecho abre el menú: lo básico, porque tu clase no lanza hechizos sobre sus compañeros."] end
+			return L["El izquierdo selecciona y el derecho abre el menú. Tus buffs para otros se suman aquí al aprenderlos."]
+		end
 		return L["El izquierdo selecciona y el derecho abre el menú."] .. DOT .. resumen
 	end
 	if resumen == "" then return L["Todavía no conoces sus hechizos: se llenan al aprenderlos."] end
@@ -149,8 +155,7 @@ function M.DescripcionPreajuste(pre)
 end
 
 function M.TituloPreajuste(pre)
-	local P = M.PREAJUSTES[pre]
-	local titulo = P and P.nombre or pre
+	local titulo = M.NombrePreajuste(pre)
 	if pre == "curar" then
 		local _, nombreClase = M.Clase()
 		if nombreClase then titulo = format(L["%s (%s)"], titulo, nombreClase) end
@@ -168,7 +173,7 @@ function M.UsarPreajuste(pre, luego)
 	end
 	if aMano() and M.Datos().preajuste ~= pre then
 		K.Dialogo({
-			titulo = format(L["¿Usar «%s»?"], P.nombre), icono = "ic-curacion",
+			titulo = format(L["¿Usar «%s»?"], M.NombrePreajuste(pre)), icono = "ic-curacion",
 			texto = L["Tus clics vuelven a los del preajuste. Lo que cambiaste a mano se pierde."],
 			aceptar = L["Usarlo"], alAceptar = usar,
 		})
@@ -417,7 +422,13 @@ local function grupos(ui, padre)
 	local clics = K.GrupoAjustes(padre, { titulo = L["Tus clics"] })
 	ui.clics = clics
 	ui.filaBlizzard = clics:Fila({ titulo = L["Usar también en los marcos de Blizzard"], texto = BASE_BLIZZARD,
-		control = function(fila) return K.Boton(fila, L["Usar"], function() M.UsarEnBlizzard() end, { tipo = "secundario", tam = "chico" }) end })
+		control = function(fila)
+			local b = K.Boton(fila, L["Abrir clic para lanzar"], function() M.UsarEnBlizzard() end, { tipo = "secundario", tam = "chico" })
+			-- El juego abre su ventana (K.Seguro): Alfa no la abre desde su código.
+			K.Seguro(b, M.SeguroBlizzard)
+			b.alfaTrasClic = function() M.TrasAbrirBlizzard() end
+			return b
+		end })
 
 	local marcos = K.GrupoAjustes(padre, { titulo = L["Marcos"] })
 	marcos:Fila({ titulo = L["Usar los marcos de Alfa"], control = interruptor("activo"),

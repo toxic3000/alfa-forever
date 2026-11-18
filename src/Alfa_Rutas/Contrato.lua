@@ -47,7 +47,7 @@ function R.AgregarObjeto(itemID) return M.AgregarObjeto(itemID) end
 function R.AgregarMision(qid)
 	local ok, por = Cr.Agregar(qid)
 	if ok then
-		M.Aviso(L["Agregada a tu plan de misiones"], M.TituloMision(qid), {
+		M.Aviso(L["Agregada a Cerrar mis misiones"], M.TituloMision(qid), {
 			icono = "ic-misiones", accion = { texto = L["Armar mi plan"], alClic = function() Cr.Ahora() end } })
 	else
 		M.Aviso(L["No la agregué"], por, { icono = "ic-aviso", tono = "aviso" })
@@ -57,7 +57,7 @@ end
 
 function R.QuitarMision(qid)
 	local ok = Cr.Quitar(qid)
-	if ok then M.Aviso(L["Fuera de tu plan de misiones"], M.TituloMision(qid), { icono = "ic-misiones" }) end
+	if ok then M.Aviso(L["Fuera de Cerrar mis misiones"], M.TituloMision(qid), { icono = "ic-misiones" }) end
 	return ok
 end
 
@@ -127,9 +127,9 @@ local function agregarAlMenu(root, qid)
 	if not qid or (A.Hidden and A.Hidden()) then return end
 	root:CreateDivider()
 	if Cr.EnPlan(qid) then
-		root:CreateButton(L["Alfa: quitar de mi plan de misiones"], function() R.QuitarMision(qid) end)
+		root:CreateButton(L["Alfa: quitar de Cerrar mis misiones"], function() R.QuitarMision(qid) end)
 	else
-		root:CreateButton(L["Alfa: agregar a mi plan de misiones"], function() R.AgregarMision(qid) end)
+		root:CreateButton(L["Alfa: agregar a Cerrar mis misiones"], function() R.AgregarMision(qid) end)
 	end
 	root:CreateButton(L["Alfa: cerrar mis misiones"], function() Cr.Ahora() end)
 end

@@ -724,8 +724,13 @@ local function construir()
 		est.turno = est.turno + 1
 	end)
 	F:Hide()
-	-- Esc lo cierra.
-	if type(UISpecialFrames) == "table" then UISpecialFrames[#UISpecialFrames + 1] = "AlfaCercaMenu" end
+	-- Esc lo cierra, como las ventanas del Kit: A.CloseOnEscape del motor (no
+	-- lo pone en la lista del juego con la interfaz de mando, que también la lee).
+	if type(A.CloseOnEscape) == "function" then
+		A.CloseOnEscape("AlfaCercaMenu")
+	elseif type(UISpecialFrames) == "table" then
+		UISpecialFrames[#UISpecialFrames + 1] = "AlfaCercaMenu"
+	end
 	K.AlRepintar(function() if F and F:IsShown() then pintar() end end)
 end
 
@@ -739,6 +744,9 @@ function Ce.Menu(ancla, pagina)
 	F:Show()
 	pintar()
 end
+
+-- Al salir de combate, las filas que decían «Después del combate» se buscan ya.
+A.RegisterEvent("PLAYER_REGEN_ENABLED", function() if F and F:IsShown() then pintar() end end)
 
 -- Los tipos de la portada del menú, para este personaje.
 function Ce.Tipos()

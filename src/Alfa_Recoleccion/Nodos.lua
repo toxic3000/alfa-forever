@@ -384,7 +384,7 @@ function R.HabilidadesListas() return listas end
 
 -- ¿El tipo se muestra? Con Alfa_Mundo manda su capa; si no, el ajuste propio.
 function R.TipoActivo(tipo)
-	if R.mundo and type(AlfaMundo) == "table" and type(AlfaMundo.CapaActiva) == "function" then
+	if R.mundo and R.capas and R.capas[tipo] and type(AlfaMundo) == "table" and type(AlfaMundo.CapaActiva) == "function" then
 		local ok, v = pcall(AlfaMundo.CapaActiva, "recoleccion." .. tipo)
 		if ok and v ~= nil then return v and true or false end
 	end

@@ -52,9 +52,11 @@ local function accion()
 		local u = A.UI
 		return { icono = "ic-huella", tono = "acento", sobre = L["Tu guía"],
 			titulo = u and u.GuideLabel and u.GuideLabel(g) or g.title,
-			texto = total > 0 and format(L["Llevas %d de %d pasos. El rastreador te dice el siguiente y la flecha te lleva."], done, total)
+			texto = total > 0 and format(L["%d de %d pasos hechos. El rastreador te dice el siguiente y la flecha te lleva."], done, total)
 				or L["El rastreador te dice el siguiente paso y la flecha te lleva."],
-			progreso = total > 0 and { actual = done, total = total, huellas = true, texto = format("%d %%", floor(done / total * 100)) } or nil,
+			-- Un solo número, los pasos (como el rastreador): sin un % aparte.
+			progreso = total > 0 and { actual = done, total = total, huellas = true,
+				texto = total - done == 1 and L["Falta 1 paso"] or format(L["Faltan %d pasos"], total - done) } or nil,
 			accion = { texto = L["Mostrar mi guía"], icono = "ic-seguir", alClic = function() M.Empezar() end },
 			secundaria = { texto = L["¿Qué quieres hacer?"], alClic = function() M.Asistente.Abrir() end } }
 	end
@@ -72,7 +74,7 @@ local function opciones()
 	out[#out + 1] = { icono = "ic-lobo", titulo = L["¿Qué quieres hacer?"], texto = L["Subir de nivel, profesiones, oro o mazmorras."],
 		alClic = function() M.Asistente.Abrir() end }
 	if enLog > 0 then
-		out[#out + 1] = { icono = "ic-misiones", tono = "exito", titulo = L["Liberar misiones"],
+		out[#out + 1] = { icono = "ic-misiones", tono = "exito", titulo = L["Cerrar mis misiones"],
 			texto = listas > 0 and format(L["%d en tu registro, %d listas: termínalas y entrégalas en el orden más corto."], enLog, listas)
 				or format(L["%d en tu registro: termínalas y entrégalas en el orden más corto."], enLog),
 			alClic = function() Cr.Ahora() end }
@@ -115,15 +117,16 @@ local function ajustes(padre)
 			d.alfaAnchoFila = 200
 			return d
 		end })
+	-- El rastreador es de la ruta (no de buscar cerca).
+	g:Fila({ titulo = L["Mostrar más en el seguimiento"],
+		texto = L["De fábrica el seguimiento muestra solo lo que estás haciendo; encendido, muestra el paso completo con sus notas."],
+		control = function(f) return K.Interruptor(f, { clave = M.ID .. ".seguimientoCompleto" }) end })
 	return g
 end
 
 -- Los de buscar cerca (Cerca.lua).
 local function ajustesCerca(padre)
 	local g = K.GrupoAjustes(padre, { titulo = L["Buscar cerca y tus planes"] })
-	g:Fila({ titulo = L["Mostrar más en el seguimiento"],
-		texto = L["De fábrica el seguimiento muestra solo lo que estás haciendo; encendido, muestra el paso completo con sus notas."],
-		control = function(f) return K.Interruptor(f, { clave = M.ID .. ".seguimientoCompleto" }) end })
 	g:Fila({ titulo = L["Botón «Buscar cerca» en el rastreador"],
 		texto = L["La lupa de la cabecera del rastreador abre el menú. También: /alfa cerca o tu tecla."],
 		control = function(f) return K.Interruptor(f, { clave = M.ID .. ".cercaBoton" }) end })
@@ -174,13 +177,15 @@ A.On("STEP_CHANGED", luego)
 M.Escuchar("NIVEL", luego)
 M.Escuchar("SEGUIR", luego)
 M.Escuchar("CERRAR", luego)
+-- Las tarjetas de Mis planes muestran el avance: una meta cumplida se ve.
+M.Escuchar("PLAN_AVANCE", luego)
 
 -- ruta.soloRuta: el ajuste que lee Comodidades (y el primer arranque).
 A.RegisterDefaults("ruta", { soloRuta = true })
 
 N.Modulo({
 	id = M.ID, nombre = L["Ruta"], icono = "ic-ruta", orden = 12,
-	subtitulo = L["Qué hacer ahora, tu plan de misiones y tus rutas propias."],
+	subtitulo = L["Qué hacer ahora, cerrar tus misiones y tus rutas propias."],
 	ajustes = { margen = 2, evitarGrupo = true },
 	construir = construir,
 })

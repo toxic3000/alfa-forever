@@ -29,6 +29,13 @@ local SEP = M.SEP
 local function Codex() return M.CodexListo() end
 local function Lk() return A.Lookup end
 
+-- Si ya armaste una ruta propia en la página Ruta (sus datos de cuenta,
+-- N.Datos("rutas").rutas, solo se leen).
+local function tienesRuta()
+	local d = N.Datos and N.Datos("rutas")
+	return type(d) == "table" and type(d.rutas) == "table" and next(d.rutas) ~= nil
+end
+
 -- Por qué una fuente no es para ti todavía (los códigos del motor, en palabras de Alfa).
 local POR_QUE = {
 	faction = L["De la otra facción"], race = L["No es para tu raza"], class = L["No es para tu clase"],
@@ -446,13 +453,19 @@ function F.Objeto(id)
 
 	f.acciones.guiar = (type(curada) == "string" or mejor) and function() return F.Guiar(kind, id, mejor) end or nil
 	f.acciones.mapa = puntosDe(f.secciones)
-	if type(AlfaRuta) == "table" and type(AlfaRuta.AgregarObjeto) == "function" then
-		f.acciones.ruta = function() return AlfaRuta.AgregarObjeto(id) end
-	end
-	-- Mis planes (Alfa_Rutas): "conseguir este objeto" en tu plan de ahora.
+	-- "Quiero este objeto" tiene un botón: Agregar a Mis planes (Alfa_Rutas,
+	-- una meta "conseguir este objeto" en tu plan de ahora). Agregar a mi
+	-- ruta (un tramo de la ruta que armas en la página Ruta, que manda a
+	-- elegir el objeto aquí) sale solo si ya tienes una ruta, o si no hay
+	-- Mis planes: sin ruta crearía una que no pediste.
 	local P = rawget(_G, "AlfaPlanes")
-	if type(P) == "table" and type(P.AgregarObjeto) == "function" then
+	local conPlanes = type(P) == "table" and type(P.AgregarObjeto) == "function"
+	if conPlanes then
 		f.acciones.plan = function() return P.AgregarObjeto(id) end
+	end
+	if type(AlfaRuta) == "table" and type(AlfaRuta.AgregarObjeto) == "function" and (not conPlanes or tienesRuta()) then
+		f.acciones.ruta = function() return AlfaRuta.AgregarObjeto(id) end
+		f.acciones.rutaAyuda = L["Un tramo más en la ruta que armas en la página Ruta: Alfa elige el camino para conseguirlo."]
 	end
 	f.acciones.vincular = function() return F.Vincular("item", id) end
 	return f
@@ -823,14 +836,16 @@ function F.Mision(id)
 	f.acciones.guiar = not hecha and (#da > 0 or #entrega > 0) and function() return F.Guiar("quest", id) end or nil
 	f.acciones.mapa = puntosDe(f.secciones)
 	f.acciones.vincular = function() return F.Vincular("quest", id) end
-	-- Tu plan de misiones (la ruta de Alfa): agregarla o quitarla, y qué falta para tomarla.
+	-- Cerrar mis misiones (el plan de Alfa_Rutas que las termina y entrega):
+	-- agregarla o quitarla, y qué falta para tomarla.
 	if R and not hecha and type(R.AgregarMision) == "function" then
 		local okP, enPlan = pcall(function() return type(R.EnPlan) == "function" and R.EnPlan(id) end)
 		enPlan = okP and enPlan
 		if enPlan and type(R.QuitarMision) == "function" then
-			f.acciones.ruta, f.acciones.rutaTexto = function() return R.QuitarMision(id) end, L["Quitar de mi plan"]
+			f.acciones.ruta, f.acciones.rutaTexto = function() return R.QuitarMision(id) end, L["Quitar de Cerrar mis misiones"]
 		elseif not enPlan then
-			f.acciones.ruta, f.acciones.rutaTexto = function() return R.AgregarMision(id) end, L["Agregar a mi plan"]
+			f.acciones.ruta, f.acciones.rutaTexto = function() return R.AgregarMision(id) end, L["Agregar a Cerrar mis misiones"]
+			f.acciones.rutaAyuda = L["Entra en el plan que termina y entrega tus misiones por el camino más corto, con lo que pide antes."]
 		end
 	end
 	if R and bloqueada and type(R.Desbloquear) == "function" then
@@ -988,7 +1003,7 @@ function F.Guiar(kind, id, fila)
 		local lista = L2.Sources(kind, id)
 		local mejor = L2.BestSource(lista)
 		if mejor then ok, gid, motivo = pcall(L2.Guide, kind, id, mejor) end
-		if gid then
+		if ok and gid then
 			empezar()
 			return true, L["Te llevo a la mejor fuente. Recuerda que una montura pide nivel, equitación y oro."]
 		end

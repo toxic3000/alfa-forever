@@ -117,7 +117,11 @@ local function tarjetaEspacio()
 	local d = { icono = "ic-oro", titulo = L["Más espacio en el banco"] }
 	if not c then
 		d.texto = L["Visita a un banquero y Alfa te dirá cuánto cuesta la siguiente casilla de bolsa del banco."]
-		d.accion = { texto = L["Llévame al banco"], icono = "ic-flecha", alClic = S.LlevarBanco }
+		-- Si la tarjeta del banco (al lado) ya lleva al banco, aquí no se repite el botón.
+		local r = D.Actual()
+		if D.BancoAbierto() or (r and r.bancoVisto) then
+			d.accion = { texto = L["Llévame al banco"], icono = "ic-flecha", alClic = S.LlevarBanco }
+		end
 		return d
 	end
 	if c.completo then
@@ -365,9 +369,9 @@ local function grupos(padre)
 	local lleno = K.GrupoAjustes(padre, { titulo = L["Cuando se llenan"] })
 	lleno:Fila({ titulo = L["Sugerir qué vender"], control = interruptor("avisoLleno"),
 		texto = L["Un aviso y una franja en tus bolsas con qué vender, qué conservar y a qué comerciante ir, con un clic para marcar la chatarra."] })
-	lleno:Fila({ titulo = L["Avisar al quedar"], control = deslizador("avisoLibres", 1, 10, function(v)
-		local n = floor(v + 0.5)
-		return n == 1 and L["1 casilla"] or format(L["%d casillas"], n)
+	-- El valor va solo ("4"): el título ya dice qué cuenta y cabe en su caja.
+	lleno:Fila({ titulo = L["Avisar cuando queden"], control = deslizador("avisoLibres", 1, 10, function(v)
+		return tostring(floor(v + 0.5))
 	end), hija = true, activa = siempre("avisoLleno"), texto = L["Cuántas casillas libres quedan cuando Alfa te avisa."] })
 
 	local marcas = K.GrupoAjustes(padre, { titulo = L["Marcas sobre cada objeto"] })
@@ -376,12 +380,33 @@ local function grupos(padre)
 	marcas:Fila({ titulo = L["Chatarra"], control = interruptor("marcaChatarra"), texto = L["Una moneda sobre lo gris y lo que marcaste como chatarra."] })
 	marcas:Fila({ titulo = L["Objetos nuevos"], control = interruptor("marcaNuevos"), texto = L["Brillan los objetos que acabas de conseguir, hasta que cierras las bolsas."] })
 	marcas:Fila({ titulo = L["Flecha de mejora"], control = interruptor("marcaMejora"), texto = L["Una flecha verde en el equipo que es mejor que lo que llevas puesto, según tu clase y nivel."] })
-	marcas:Fila({ titulo = L["Objetos de misión que brillan"], control = interruptor("brilloMision"),
-		texto = L["Un borde dorado que late y una insignia «!» en lo que sirve para una misión; la insignia va llena si el objeto empieza una."] })
-	marcas:Fila({ titulo = L["Objetos de misión"], control = interruptor("marcaMision"), activa = function() return not M.Get("brilloMision") end,
-		texto = L["Sin el brillo: un marco dorado fijo en lo que sirve para una misión (con «!» si empieza una)."] })
+	-- Un solo selector para los dos ajustes (brilloMision manda sobre marcaMision,
+	-- Botones.lua); lee lo que ya tienes y solo cambia lo que eliges.
+	marcas:Fila({ titulo = L["Objetos de misión"],
+		texto = L["Brillo: un borde dorado que late y una insignia «!» (llena si el objeto empieza una misión). Marco fijo: el marco dorado del juego. Nada: sin marca."],
+		control = function(fila)
+			local function actual()
+				if M.Get("brilloMision") then return "brillo" end
+				return M.Get("marcaMision") and "marco" or "nada"
+			end
+			local seg = K.Segmentos(fila, { estilo = "segmentos", valor = actual(), opciones = {
+				{ valor = "brillo", texto = L["Brillo"] },
+				{ valor = "marco", texto = L["Marco fijo"] },
+				{ valor = "nada", texto = L["Nada"] },
+			}, alCambiar = function(v)
+				if v == "brillo" then
+					M.Set("brilloMision", true)
+				else
+					M.Set("brilloMision", false)
+					M.Set("marcaMision", v == "marco")
+				end
+			end })
+			function seg:Leer() self:SetValor(actual()) end
+			function seg:SetActivo(on) self:SetAlpha(on == false and 0.45 or 1) end
+			return seg
+		end })
 	marcas:Fila({ titulo = L["Cuántos tienes, en el cuadro de cada objeto"], control = interruptor("cuadroConteo"),
-		texto = L["Al pasar el ratón por un objeto: «Tienes 12 (Toxic: 7 en bolsas, Alt: 5 en banco)», con todos tus personajes."] })
+		texto = L["Al pasar el ratón por un objeto: «Tienes 12 (Lobato: 7 en bolsas, Alt: 5 en banco)», con todos tus personajes."] })
 	return { ventana, juego, ordenar, lleno, marcas }
 end
 

@@ -82,7 +82,7 @@ local function herramientas()
 	elseif D.Encendido() == false and D.Leer("todo", "dano", 1).vacia then
 		m.texto = L["El registro de daño del juego está apagado: enciéndelo para ver el top de tu grupo."]
 		m.insignias = { { L["Apagado"], "neutro" } }
-		m.accion = { texto = L["Encender el registro"], alClic = function() D.Encender() end }
+		m.accion = D.AccionEncender()
 	else
 		m.texto = L["El top de DPS de tu grupo o banda en una ventana pequeña, con la pelea actual y la anterior."]
 		m.insignias = { abierta and { L["En pantalla"], "exito" } or { L["Cerrada"], "neutro" } }
@@ -111,15 +111,7 @@ local function herramientas()
 	if not M.Opt("avisos") then a.insignias = { { L["Apagados"], "neutro" } } end
 	a.accion = { texto = L["Probar un aviso"], alClic = function() Rc.Probar() end }
 	out[#out + 1] = a
-	-- Resaltado
-	local on = R.ResaltadoActivo()
-	out[#out + 1] = {
-		icono = "ic-rejilla", titulo = L["Botón resaltado en tu barra"], lineas = 5,
-		texto = R.ResaltadoOficial() and L["Usa el resaltado del propio juego sobre el botón de la habilidad sugerida."]
-			or L["Un borde verde que late sobre el botón de tu barra con la habilidad sugerida, para encontrarlo rápido."],
-		insignias = { on and { L["Encendido"], "exito" } or { L["Apagado"], "neutro" } },
-		accion = { texto = on and L["No resaltarlo"] or L["Resaltarlo"], alClic = function() R.SetResaltado(not on) end },
-	}
+	-- El resaltado del botón no va aquí: es una fila de "Ícono de rotación".
 	return out
 end
 
@@ -373,19 +365,6 @@ local function grupos(padre)
 		texto = L["Un ícono con la habilidad que conviene ahora. Solo muestra: nunca aprieta nada por ti."] })
 	g1:Fila({ titulo = L["Cuántas habilidades después"], control = segmentos("despues", { 0, 1, 2, 3 }), hija = true, activa = si("rotacion"),
 		texto = L["Las que vienen después, más pequeñas a la derecha."] })
-	g1:Fila({ titulo = L["También fuera de combate"], control = interruptor("fuera"), hija = true, activa = si("rotacion"),
-		texto = L["Con un enemigo elegido, antes de empezar la pelea, y transparente para que no estorbe."] })
-	g1:Fila({ titulo = L["Opacidad fuera de combate"], control = deslizador("alfaFuera", 0.15, 1, 0.05, pct), hija = true, activa = ambas("rotacion", "fuera"),
-		texto = L["Qué tanto se ve el ícono mientras no peleas."] })
-	g1:Fila({ titulo = L["Tamaño del ícono"], control = deslizador("tam", 32, 64, 4, px), hija = true, activa = si("rotacion") })
-	g1:Fila({ titulo = L["Mostrar la tecla"], control = interruptor("tecla"), hija = true, activa = si("rotacion"),
-		texto = L["La tecla del botón de tu barra con esa habilidad, sobre el ícono."] })
-	g1:Fila({ titulo = L["Nombre de la habilidad"], control = interruptor("nombre"), hija = true, activa = si("rotacion"),
-		texto = L["Debajo del ícono: útil mientras aprendes."] })
-	g1:Fila({ titulo = L["Explicar por qué, unas pocas veces"], control = interruptor("porque"), hija = true, activa = si("rotacion"),
-		texto = L["Una línea corta debajo del ícono, como «Golpe mortal: recarga lista». Cada una sale hasta 4 veces y luego se calla; su × la calla antes."] })
-	g1:Fila({ titulo = L["Barrido de recarga"], control = interruptor("barrido"), hija = true, activa = si("rotacion"),
-		texto = L["Un barrido oscuro y suave sobre los íconos mientras su recarga corre."] })
 	local rama = g1:Fila({ titulo = L["Tu especialización"], hija = true, activa = si("rotacion"),
 		texto = L["Con qué prioridad sugiere Alfa. Automática: la de tus talentos o, mientras subes, la de tu clase."],
 		control = function(fila)
@@ -397,15 +376,43 @@ local function grupos(padre)
 	g1:Fila({ titulo = L["Resaltar el botón en tu barra"], hija = true, activa = si("rotacion"),
 		texto = L["Marca el botón de tu barra que tiene la habilidad sugerida."],
 		control = function(fila)
-			-- Con el resaltado oficial, el ajuste es el del juego (lo lee y lo cambia R).
-			local s = K.Interruptor(fila, { clave = ID .. ".resaltar", alCambiar = function(v) if R.ResaltadoOficial() then R.SetResaltado(v) end end })
+			-- Con el resaltado oficial, el ajuste es el del juego: se lee aquí y se
+			-- cambia en sus opciones (el clic dice dónde y el interruptor vuelve a
+			-- mostrar lo que hay).
+			local s = K.Interruptor(fila, { clave = ID .. ".resaltar", alCambiar = function(v, self)
+				if R.ResaltadoOficial() then R.SetResaltado(v) if self then self:Leer() end end
+			end })
 			s.Leer = function(self) self:SetValor(R.ResaltadoActivo()) end
 			return s
 		end })
-	local fuente = g1:Fila({ titulo = L["Usar siempre la prioridad de Alfa"], hija = true, activa = si("rotacion"), control = interruptor("prioridadAlfa"),
+	-- Lo de todos los días queda a la vista; lo fino, plegado bajo "Más
+	-- opciones del ícono" (el Kit no pliega grupos: una fila con su interruptor
+	-- muestra u oculta esas filas; se recuerda solo en esta sesión).
+	local mas = {}
+	local function plegada(o) local f = g1:Fila(o) mas[#mas + 1] = f return f end
+	local masFila = g1:Fila({ titulo = L["Más opciones del ícono"], hija = true, activa = si("rotacion"),
+		texto = L["Fuera de combate, tamaño, tecla, nombre, explicaciones, barrido y de dónde sale la sugerencia."],
+		control = function(fila)
+			return K.Interruptor(fila, { get = function() return M.masIcono and true or false end,
+				set = function(v) M.masIcono = v and true or false M.Avisar() end })
+		end })
+	plegada({ titulo = L["También fuera de combate"], control = interruptor("fuera"), hija = true, activa = si("rotacion"),
+		texto = L["Con un enemigo elegido, antes de empezar la pelea, y transparente para que no estorbe."] })
+	plegada({ titulo = L["Opacidad fuera de combate"], control = deslizador("alfaFuera", 0.15, 1, 0.05, pct), hija = true, activa = ambas("rotacion", "fuera"),
+		texto = L["Qué tanto se ve el ícono mientras no peleas."] })
+	plegada({ titulo = L["Tamaño del ícono"], control = deslizador("tam", 32, 64, 4, px), hija = true, activa = si("rotacion") })
+	plegada({ titulo = L["Mostrar la tecla"], control = interruptor("tecla"), hija = true, activa = si("rotacion"),
+		texto = L["La tecla del botón de tu barra con esa habilidad, sobre el ícono."] })
+	plegada({ titulo = L["Nombre de la habilidad"], control = interruptor("nombre"), hija = true, activa = si("rotacion"),
+		texto = L["Debajo del ícono: útil mientras aprendes."] })
+	plegada({ titulo = L["Explicar por qué, unas pocas veces"], control = interruptor("porque"), hija = true, activa = si("rotacion"),
+		texto = L["Una línea corta debajo del ícono, como «Golpe mortal: recarga lista». Cada una sale hasta 4 veces y luego se calla; su × la calla antes."] })
+	plegada({ titulo = L["Barrido de recarga"], control = interruptor("barrido"), hija = true, activa = si("rotacion"),
+		texto = L["Un barrido oscuro y suave sobre los íconos mientras su recarga corre."] })
+	local fuente = plegada({ titulo = L["Usar siempre la prioridad de Alfa"], hija = true, activa = si("rotacion"), control = interruptor("prioridadAlfa"),
 		texto = L["Aunque el juego ofrezca la ayuda de Blizzard, sugiere con la prioridad de Alfa para tu clase."] })
-	g1:Fila({ titulo = L["Lugar de los marcos"], texto = L["Tus marcos de combate vuelven a su lugar de siempre."],
-		control = function(fila) return K.Boton(fila, L["Restablecer"], function() M.ReiniciarPosiciones() end, { tipo = "secundario", tam = "chico" }) end })
+	g1:Fila({ titulo = L["Volver a su lugar"], texto = L["Tus marcos de combate vuelven a su lugar de siempre."],
+		control = function(fila) return K.Boton(fila, L["Devolver"], function() M.ReiniciarPosiciones() end, { tipo = "secundario", tam = "chico" }) end })
 
 	local g2 = K.GrupoAjustes(padre, { titulo = L["Avisos, golpe y estadísticas"] })
 	g2:Fila({ titulo = L["Avisos de reacción"], control = interruptor("avisos"),
@@ -449,7 +456,10 @@ local function grupos(padre)
 
 	-- Lo que no aplica a ti no se muestra.
 	local function filtrar()
-		K.Mostrar(fuente, R.Disponible() and true or false)
+		local abiertas = M.masIcono and true or false
+		for _, f in ipairs(mas) do K.Mostrar(f, abiertas) end
+		K.Mostrar(masFila, true)
+		K.Mostrar(fuente, abiertas and R.Disponible() and true or false)
 		K.Mostrar(golpe, not LANZADORES[M.Clase() or ""])
 		K.Mostrar(golpeN, not LANZADORES[M.Clase() or ""])
 		K.Mostrar(rama, R.Fuente() == "alfa" and #P.Ramas() > 0)

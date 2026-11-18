@@ -90,7 +90,7 @@ local function armar(idx, ceder)
 			ultimo = k and { k = k, paso = paso } or nil
 		end
 	end
-	P.Anotar(pasos[1], format(L["%d misiones para tomar cerca de ti. Después, ciérralas con tu plan de misiones."], #paradas))
+	P.Anotar(pasos[1], format(L["%d misiones para tomar cerca de ti. Después, ciérralas con «Cerrar mis misiones»."], #paradas))
 	return pasos, nil, #paradas
 end
 

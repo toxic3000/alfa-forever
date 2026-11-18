@@ -167,7 +167,7 @@ function M.AplicarPreajuste(pre, callado)
 	d.rechazos = {}
 	M.AplicarMapa()
 	if not callado then
-		N.Imprimir(string.format(L["Preajuste «%s» listo para tus clics."], M.PREAJUSTES[pre].nombre))
+		N.Imprimir(string.format(L["Preajuste «%s» listo para tus clics."], M.NombrePreajuste(pre)))
 	end
 end
 
@@ -238,7 +238,10 @@ local function ofertas()
 	return t
 end
 
+-- Un diálogo del Kit a la vista o esperando a que termine el combate.
 local function dialogoAbierto()
+	local K = N.Kit
+	if K and K.DialogoAbierto then return K.DialogoAbierto() and true or false end
 	local velo = rawget(_G, "AlfaKitVelo")
 	return type(velo) == "table" and velo.IsShown and velo:IsShown() and true or false
 end
@@ -396,36 +399,44 @@ function M.ChoquesBlizzard()
 	return n
 end
 
-local function abrirVentanaBlizzard()
-	if enCombate() then return false end
-	if A.GamepadUI and A.GamepadUI() then return false end
-	local abrir = rawget(_G, "ToggleClickBindingFrame")
-	if type(abrir) ~= "function" then return false end
-	local visible = rawget(_G, "ClickBindingFrame")
-	if type(visible) == "table" and visible.IsShown and visible:IsShown() then return true end
-	return pcall(abrir) == true
-end
-M.AbrirVentanaBlizzard = abrirVentanaBlizzard
+-- La ventana de clic para lanzar de Blizzard. Alfa nunca la abre desde su
+-- código: al abrirse, abre también el libro de hechizos, y el juego lo
+-- marcaría como tocado por un addon (después bloquearía lanzar desde él). El
+-- botón de la página la abre con un botón seguro (K.Seguro) que corre el
+-- comando del juego, como si lo escribieras tú.
+function M.SeguroBlizzard() return N.Kit.AbrirJuego("clicLanzar") end
 
--- -> true | false, y un texto para la página.
--- C_ClickBindings.SetProfileByInfo es restringida (HasRestrictions): un addon
--- no puede escribir el perfil de Blizzard. Se abre su ventana para que armes
--- ahí los mismos clics.
-function M.UsarEnBlizzard()
+local function guardarBlizzard(ok, texto)
 	local d = M.Datos()
-	local function fin(ok, texto)
-		d.blizzard = { ok = ok, texto = texto }
-		M.Avisar()
-		return ok, texto
+	d.blizzard = { ok = ok, texto = texto }
+	M.Avisar()
+	return ok, texto
+end
+
+-- Después del clic seguro: el comando del juego abre o cierra su ventana
+-- (es un interruptor). Solo se lee si quedó a la vista; nada se toca.
+function M.TrasAbrirBlizzard()
+	local f = rawget(_G, "ClickBindingFrame")
+	if type(f) == "table" and f.IsShown and not f:IsShown() then
+		return guardarBlizzard(false, L["Se cerró la ventana de clic para lanzar de Blizzard. Vuelve a pulsar «Abrir clic para lanzar» para abrirla."])
 	end
-	if enCombate() then return fin(false, L["Sal de combate y vuelve a intentarlo."]) end
-	if abrirVentanaBlizzard() then
-		return fin(false, L["Blizzard no dejó copiar tu mapa desde un addon. Se abrió su ventana de clic para lanzar: arma ahí los mismos clics."])
-	end
+	return guardarBlizzard(false, L["Blizzard no deja que un addon copie tu mapa. Se abrió su ventana de clic para lanzar: arma ahí los mismos clics."])
+end
+
+-- -> true | false, y un texto para la página (el clic normal: en combate,
+-- con teclado o mando, o con /alfa curacion blizzard).
+-- C_ClickBindings.SetProfileByInfo es restringida (HasRestrictions): un addon
+-- no puede escribir el perfil de Blizzard.
+function M.UsarEnBlizzard()
+	if enCombate() then return guardarBlizzard(false, L["Sal de combate y vuelve a intentarlo."]) end
 	if type(rawget(_G, "ToggleClickBindingFrame")) ~= "function" then
-		return fin(false, L["Este cliente no tiene el clic para lanzar de Blizzard. Tus clics funcionan en los marcos de Alfa."])
+		return guardarBlizzard(false, L["Este cliente no tiene el clic para lanzar de Blizzard. Tus clics funcionan en los marcos de Alfa."])
 	end
-	return fin(false, L["Blizzard no dejó copiar tu mapa desde un addon. Ábrelo en el menú del juego: Opciones, Clic para lanzar."])
+	local cmd = rawget(_G, "SLASH_CLICKCASTING1")
+	if type(cmd) == "string" and cmd ~= "" then
+		return guardarBlizzard(false, string.format(L["Blizzard no deja que un addon copie tu mapa. Abre su ventana con el botón «Abrir clic para lanzar» o escribe %s en el chat, y arma ahí los mismos clics."], cmd))
+	end
+	return guardarBlizzard(false, L["Blizzard no deja que un addon copie tu mapa. Ábrelo en el menú del juego: Opciones, Clic para lanzar."])
 end
 
 ---------------------------------------------------------------------------

@@ -283,13 +283,32 @@ M.PREAJUSTES = {
 	cero = { nombre = L["Desde cero"], icono = "reset" },
 }
 
--- Los preajustes que tu clase puede usar, en orden.
+-- ¿Tu clase tiene buffs para otros? (guerrero, pícaro y cazador, no)
+function M.TieneBuffs(clase)
+	clase = clase or M.Clase()
+	local t = BUFFS[clase or ""]
+	return type(t) == "table" and next(t) ~= nil
+end
+
+-- El nombre del preajuste para tu clase: sin buffs para otros, "Solo buffs"
+-- es "Básico" (el izquierdo selecciona y el derecho abre el menú).
+function M.NombrePreajuste(pre, clase)
+	local P = M.PREAJUSTES[pre]
+	if not P then return tostring(pre) end
+	if pre == "buffs" and not M.TieneBuffs(clase) then return L["Básico"] end
+	return P.nombre
+end
+
+-- Los preajustes que tu clase puede usar, en orden. Sin buffs para otros,
+-- "Desde cero" pone los mismos clics que Básico: no se ofrece, salvo que sea
+-- el que ya usas (así no te quedas sin su tarjeta "En uso").
 function M.PreajustesDe(clase)
 	clase = clase or M.Clase()
 	local t = {}
 	if CURAR[clase or ""] then t[#t + 1] = "curar" end
 	t[#t + 1] = "buffs"
-	t[#t + 1] = "cero"
+	local enUso = clase == M.Clase() and M.Datos and M.Datos().preajuste or nil
+	if M.TieneBuffs(clase) or enUso == "cero" then t[#t + 1] = "cero" end
 	return t
 end
 

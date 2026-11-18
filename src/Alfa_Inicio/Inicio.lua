@@ -6,12 +6,14 @@
 --      nivel, Profesiones, Hacer oro, Mazmorras). Cada uno abre el asistente
 --      de la ruta (AlfaRuta.Asistente(camino)); sin él, la página Rutas (o
 --      Mazmorras). En el nivel máximo, subir de nivel no sale.
+--      Con una guía o un plan en marcha, lo que sigues va primero y los
+--      caminos bajan a una fila compacta («¿Otra cosa hoy?», ordenar()).
 --   2. Tu siguiente paso (la tarjeta grande): el paso vivo de tu guía, sus
---      metas, la distancia y el rumbo hasta la flecha, el avance de la guía,
+--      metas, la distancia y el rumbo hasta la flecha, cuántos pasos llevas,
 --      Seguir y Ver pasos. Sin guía no sale: los caminos de arriba la eligen.
 --      Al terminar una guía: elegir qué sigue.
---   3. Liberar misiones y Recoger misiones a un clic (AlfaRuta.Liberar() y
---      AlfaRuta.Recoger(), si la ruta los tiene; Liberar, si tienes misiones).
+--   3. Cerrar mis misiones y Recoger misiones a un clic (AlfaRuta.Liberar() y
+--      AlfaRuta.Recoger(), si la ruta los tiene; Cerrar, si tienes misiones).
 --      Tu plan: la meta de ahora del plan que sigues (AlfaPlanes.Tarjeta()).
 --   4. Alertas: equipo gastado, bolsas casi llenas, habilidades por
 --      entrenar, tu buff y, si curas, preparar tus marcos de curación.
@@ -21,8 +23,9 @@
 --      tres tarjetas de tu clase (M.Clase), cada una abre su módulo.
 --   6. Hoy en números: XP por hora, para subir, oro de hoy, esta sesión.
 --   7. Abajo y compacto: la revisión rápida en una fila, tu diario (lo de
---      ahora; las sesiones pasadas al pedirlas), los accesos a los módulos y
---      los ajustes de tus avisos (plegados).
+--      ahora, desde los 5 minutos de sesión; las sesiones pasadas al
+--      pedirlas) y los ajustes de tus avisos (plegados). Los módulos ya están
+--      en la barra lateral: Hoy no los repite.
 -- Mientras la página se ve, los números, la distancia y la clase se
 -- repintan una vez por segundo (un temporizador que se apaga al ocultarla);
 -- lo demás se acomoda solo cuando algo cambia.
@@ -45,6 +48,7 @@ M.Pagina = P
 local DOT = "  \194\183  "
 local RAYA = "\226\128\148"
 local SESIONES = 4 -- sesiones pasadas al abrir el diario
+local DIARIO_MIN = 300 -- segundos de sesión antes de mostrar tu diario
 
 ---------------------------------------------------------------------------
 -- Ajustes
@@ -248,6 +252,51 @@ local function nuevaPortada(padre)
 	return b
 end
 
+-- Con una guía o un plan en marcha: los mismos caminos en una fila de
+-- botones chicos, debajo de lo que sigues.
+local function nuevaOtra(padre)
+	local b = CreateFrame("Frame", nil, padre)
+	b.Seccion = K.Seccion(b, L["¿Otra cosa hoy?"])
+	b.botones = {}
+	function b:Llenar()
+		local lista = caminos()
+		for i, c in ipairs(lista) do
+			local bt = self.botones[i]
+			if not bt then
+				bt = K.Boton(self, "", nil, { tipo = "secundario", tam = "chico", conIcono = true })
+				self.botones[i] = bt
+			end
+			bt:SetTexto(c.titulo)
+			bt:SetIcono(c.icono)
+			bt.alClic = c.alClic
+			K.ConInfo(bt, c.titulo, c.texto)
+			bt:Show()
+		end
+		for i = #lista + 1, #self.botones do self.botones[i]:Hide() end
+		self.alfaN = #lista
+	end
+	function b:Acomodar(ancho)
+		self.Seccion:ClearAllPoints()
+		self.Seccion:SetPoint("TOPLEFT", self, "TOPLEFT", 0, 0)
+		self.Seccion:SetWidth(ancho)
+		local y = self.Seccion:Acomodar(ancho) + ESP.s
+		local x, fila = 0, y
+		for i = 1, self.alfaN or 0 do
+			local bt = self.botones[i]
+			bt:SetAncho(nil)
+			local w = bt:AnchoNatural()
+			if x > 0 and x + w > ancho then x, fila = 0, fila + K.ALTO.botonChico + ESP.s end
+			bt:ClearAllPoints()
+			bt:SetPoint("TOPLEFT", self, "TOPLEFT", x, -fila)
+			x = x + w + ESP.s
+		end
+		local alto = fila + K.ALTO.botonChico
+		self:SetSize(ancho, alto)
+		return alto
+	end
+	return b
+end
+
 ---------------------------------------------------------------------------
 -- 2. Tu siguiente paso
 ---------------------------------------------------------------------------
@@ -393,12 +442,31 @@ local function distancia()
 	return txt .. " " .. rumbo(dn, dw), "neutro", label
 end
 
+-- Un texto sin colores ni íconos y en minúsculas, para compararlo.
+local function plano(s)
+	s = tostring(s or "")
+	s = s:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub("|T.-|t", "")
+	return s:lower()
+end
+
+-- "Hacia: X" solo si X no sale ya en el título o en las metas del paso.
+local function diceAlgoMas(hacia, info)
+	local h = plano(hacia)
+	if h == "" then return false end
+	if plano(info.titulo):find(h, 1, true) then return false end
+	for _, m in ipairs(info.metas or {}) do
+		if plano(m.texto):find(h, 1, true) then return false end
+	end
+	return true
+end
+
 -- Los datos de la tarjeta grande, o nil (sin guía: los caminos de arriba la eligen).
+-- fin = true: la guía ya terminó (no cuenta como una guía en marcha).
 local function tarjetaPaso()
 	local info = pasoActual()
 	if not info then return nil end
 	if info.fin then
-		return { lobo = "aullando", tono = "acento", sobre = L["Fin del camino"], titulo = L["¡Terminaste tu guía!"],
+		return { fin = true, lobo = "aullando", tono = "acento", sobre = L["Fin del camino"], titulo = L["¡Terminaste tu guía!"],
 			texto = format(L["%s quedó completa. Elige qué sigue y la manada va contigo."], info.guia ~= "" and info.guia or L["Tu guía"]),
 			accion = { texto = L["Elegir qué sigue"], icono = "ic-ruta", alClic = function() A.Fire("SHOW_PICKER") end } }
 	end
@@ -409,11 +477,13 @@ local function tarjetaPaso()
 	end
 	local lineas = {}
 	for i, m in ipairs(info.metas or {}) do lineas[i] = m.texto end
-	local insignias = { { info.total and format(L["Paso %d de %d"], info.num, info.total) or format(L["Paso %d"], info.num), "acento" } }
+	-- El avance es uno solo, el de la barra: los pasos hechos de la guía
+	-- (Engine.GetProgress, el mismo de la ventana de guía y de Rutas).
+	local insignias = {}
 	local dist, tono, hacia = distancia()
 	if dist then
 		insignias[#insignias + 1] = { dist, tono, "ic-flecha" }
-		if hacia and hacia ~= "" then insignias[#insignias + 1] = { format(L["Hacia: %s"], hacia), "neutro" } end
+		if hacia and diceAlgoMas(hacia, info) then insignias[#insignias + 1] = { format(L["Hacia: %s"], hacia), "neutro" } end
 	end
 	local d = {
 		icono = VERBO[info.verbo] or "ic-ruta", tono = "acento", sobre = L["Tu siguiente paso"],
@@ -424,9 +494,8 @@ local function tarjetaPaso()
 		ayuda = L["Seguir muestra tu guía y la flecha, y cierra esta ventana para que las veas."],
 	}
 	if (info.todos or 0) > 0 then
-		local frac = info.hechos / info.todos
 		d.progreso = { actual = info.hechos, total = info.todos,
-			texto = format(L["%s: %d %%"], info.guia ~= "" and info.guia or L["Tu guía"], floor(frac * 100 + 0.5)) }
+			texto = format(L["%s: %d de %d pasos hechos"], info.guia ~= "" and info.guia or L["Tu guía"], info.hechos, info.todos) }
 	end
 	return d
 end
@@ -441,7 +510,7 @@ local function firmaPaso(d)
 end
 
 ---------------------------------------------------------------------------
--- 3. Liberar y recoger misiones
+-- 3. Cerrar y recoger misiones
 ---------------------------------------------------------------------------
 
 local function misionesAbiertas()
@@ -456,7 +525,7 @@ local function misiones()
 	local liberar, recoger = deRuta("Liberar"), deRuta("Recoger")
 	local n = misionesAbiertas()
 	if liberar and n ~= 0 then
-		lista[#lista + 1] = { variante = "compacta", icono = "ic-exito", titulo = L["Liberar misiones"],
+		lista[#lista + 1] = { variante = "compacta", icono = "ic-exito", titulo = L["Cerrar mis misiones"],
 			texto = L["Completa o entrega las que tienes abiertas"], valor = n and tostring(n) or nil,
 			alClic = function() K.Llamar(liberar) end,
 			ayuda = L["Arma el plan para cerrar las misiones de tu registro y te lleva a cada una."] }
@@ -564,13 +633,14 @@ local function nuevoPlan(padre)
 	local b = K.Pila(padre, { espacio = ESP.m })
 	b.Seccion = b:Agregar(K.Seccion(b, L["Tu plan"]))
 	b.Tarjeta = b:Agregar(K.Tarjeta(b, { variante = "normal" }), { espacio = ESP.s })
+	-- -> true si sigues un plan (la tarjeta sale)
 	function b:Llenar()
 		local Pl = planes()
 		local ok, d = false, nil
 		if Pl then ok, d = pcall(Pl.Tarjeta) end
 		if not (ok and type(d) == "table" and d.plan) then
 			K.Mostrar(self, false)
-			return
+			return false
 		end
 		local id = d.plan.id
 		local abrir = function() if type(Pl.Abrir) == "function" then K.Llamar(Pl.Abrir, id) end end
@@ -583,6 +653,7 @@ local function nuevoPlan(padre)
 		if d.hecha then t.secundaria = { texto = L["Ya la hice"], alClic = d.hecha } end
 		self.Tarjeta:Set(t)
 		K.Mostrar(self, true)
+		return true
 	end
 	return b
 end
@@ -742,7 +813,8 @@ local function nuevaClase(padre)
 	local b = K.Pila(padre, { espacio = ESP.m })
 	b.Seccion = b:Agregar(K.Seccion(b, ""))
 	b.Talento = b:Agregar(K.Tarjeta(b, { variante = "normal" }), { espacio = ESP.s })
-	b.Rejilla = b:Agregar(K.Rejilla(b, { min = 240, gap = ESP.s }), { espacio = ESP.s })
+	-- 300 de ancho mínimo: dos columnas en la ventana, sin textos cortados.
+	b.Rejilla = b:Agregar(K.Rejilla(b, { min = 300, gap = ESP.s }), { espacio = ESP.s })
 	function b:Llenar()
 		local rol, rama = CL.Rol()
 		local chip = ROLES[rol] or ""
@@ -760,11 +832,13 @@ local function nuevaClase(padre)
 		K.Mostrar(self.Rejilla, #lista > 0)
 		K.Mostrar(self, t ~= nil or #lista > 0)
 	end
-	-- Cada segundo: solo las tarjetas (su alto no cambia).
+	-- Cada segundo: solo las tarjetas (su alto no cambia). Una tarjeta que
+	-- llega o se va acomoda todo, también con la rejilla oculta (sin datos al
+	-- abrir: si no, ya no volvía a salir).
 	function b:Repintar()
-		if not self:IsShown() or not self.Rejilla:IsShown() then return end
 		local lista = minis(self.Talento:IsShown())
 		if #lista ~= #self.Rejilla.elementos then return true end
+		if not self:IsShown() or not self.Rejilla:IsShown() then return end
 		llenar(self.Rejilla, lista)
 		if self.alfaAncho then self.Rejilla:Acomodar(self.alfaAncho) end
 	end
@@ -1001,72 +1075,12 @@ local function nuevoDiario(padre)
 		self.Ahora:Set({ icono = "ic-hoy", titulo = L["Ahora"], texto = S.Texto(e), valor = format(L["desde %s"], date("%H:%M", e.inicio)) })
 		llenar(self.Rejilla, lista)
 		K.Mostrar(self.Rejilla, #lista > 0)
+		-- Recién entrando no hay nada que contar: sale a los 5 minutos.
+		K.Mostrar(self, e.dur >= DIARIO_MIN)
 	end
-	return b
-end
-
--- Accesos: un botón chico por cada módulo de Alfa.
-local function modulos()
-	local out = {}
-	for _, spec in ipairs(N.modulos or {}) do
-		if type(spec) == "table" and type(spec.id) == "string" and spec.id ~= "inicio" then out[#out + 1] = spec end
-	end
-	table.sort(out, function(a, b)
-		local oa, ob = tonumber(a.orden) or 100, tonumber(b.orden) or 100
-		if oa ~= ob then return oa < ob end
-		return tostring(a.nombre) < tostring(b.nombre)
-	end)
-	return out
-end
-
-local function iconoDe(spec)
-	if type(spec.icono) == "string" and spec.icono:find("^ic%-") then return spec.icono end
-	local O = A.UI and A.UI.Options
-	local t = type(O) == "table" and O.ICONOS
-	return type(t) == "table" and t[spec.id] or "ic-lobo"
-end
-
-local function nuevosAccesos(padre)
-	local b = CreateFrame("Frame", nil, padre)
-	b.Seccion = K.Seccion(b, L["Accesos"])
-	b.botones = {}
-	function b:Llenar()
-		local lista = modulos()
-		for i, spec in ipairs(lista) do
-			local bt = self.botones[i]
-			if not bt then
-				bt = K.Boton(self, "", nil, { tipo = "secundario", tam = "chico", conIcono = true })
-				self.botones[i] = bt
-			end
-			local id = spec.id
-			bt:SetTexto(tostring(spec.nombre or id))
-			bt:SetIcono(iconoDe(spec))
-			bt.alClic = function() N.Abrir(id) end
-			K.ConInfo(bt, tostring(spec.nombre or id), type(spec.subtitulo) == "string" and spec.subtitulo or nil)
-			bt:Show()
-		end
-		for i = #lista + 1, #self.botones do self.botones[i]:Hide() end
-		self.alfaN = #lista
-		K.Mostrar(self, #lista > 0)
-	end
-	function b:Acomodar(ancho)
-		self.Seccion:ClearAllPoints()
-		self.Seccion:SetPoint("TOPLEFT", self, "TOPLEFT", 0, 0)
-		self.Seccion:SetWidth(ancho)
-		local y = self.Seccion:Acomodar(ancho) + ESP.s
-		local x, fila = 0, y
-		for i = 1, self.alfaN or 0 do
-			local bt = self.botones[i]
-			local w = bt:AnchoNatural()
-			bt:SetAncho(nil)
-			if x > 0 and x + w > ancho then x, fila = 0, fila + K.ALTO.botonChico + ESP.s end
-			bt:ClearAllPoints()
-			bt:SetPoint("TOPLEFT", self, "TOPLEFT", x, -fila)
-			x = x + w + ESP.s
-		end
-		local alto = fila + K.ALTO.botonChico
-		self:SetSize(ancho, alto)
-		return alto
+	-- Cada segundo: true si ya toca mostrarlo (o esconderlo) y hay que acomodar.
+	function b:Repintar()
+		return (S.Estado().dur >= DIARIO_MIN) ~= (self:IsShown() and true or false)
 	end
 	return b
 end
@@ -1179,23 +1193,56 @@ end
 -- La página
 ---------------------------------------------------------------------------
 
+-- Una guía que no terminó (la de "¡Terminaste tu guía!" ya no está en marcha).
+local function enGuia(paso) return paso ~= nil and not paso.fin end
+
+-- El orden de arriba de la pila del tablero. Sin guía ni plan: los caminos
+-- en grande primero (la portada). Con una guía: tu siguiente paso, tus
+-- misiones y tu plan; con solo un plan, tu plan primero. En los dos casos
+-- los caminos bajan a la fila compacta. Lo de abajo (t.Extra) no se mueve.
+local ORDEN = {
+	guia = { "accion", "opciones", "rejilla", "plan", "otra", "portada" },
+	plan = { "plan", "accion", "opciones", "rejilla", "otra", "portada" },
+	nada = { "portada", "accion", "opciones", "rejilla", "plan", "otra" },
+}
+
+local function ordenar(guia, plan)
+	local E = P.entradas
+	local orden, ya = {}, {}
+	for _, k in ipairs(ORDEN[guia and "guia" or (plan and "plan" or "nada")]) do
+		if E[k] then orden[#orden + 1] = E[k] ya[E[k]] = true end
+	end
+	-- Lo que el Kit tenga además no se pierde; lo de abajo (t.Extra) al final.
+	for _, e in ipairs(P.tablero.bloques) do
+		if not ya[e] and e ~= E.extra then orden[#orden + 1] = e ya[e] = true end
+	end
+	if E.extra then orden[#orden + 1] = E.extra end
+	P.tablero.bloques = orden
+	K.Mostrar(P.portada, not (guia or plan))
+	K.Mostrar(P.otra, (guia or plan) and true or false)
+end
+
 local function llenarTodo()
 	R.Leer()
-	P.portada:Llenar()
 	local paso = tarjetaPaso()
+	local plan = P.plan:Llenar()
+	P.enGuia = enGuia(paso)
+	ordenar(P.enGuia, plan)
+	P.portada:Llenar()
+	P.otra:Llenar()
 	P.firmaPaso = firmaPaso(paso)
 	P.tablero:SetAccion(paso)
-	P.tablero:SetOpciones(misiones(), false)
+	-- Con solo un plan arriba, tus misiones llevan su título (si no, se verían
+	-- como parte del plan); junto a la tarjeta del paso no lo necesitan.
+	P.tablero:SetOpciones(misiones(), (plan and not P.enGuia) and L["Tus misiones"] or false)
 	local lista = alertas()
 	P.firmaAlertas = firmaAlertas(lista)
-	P.plan:Llenar()
 	P.alertas:Llenar(lista)
 	P.cerca:Llenar()
 	P.clase:Llenar()
 	P.numeros:Llenar()
 	P.revision:Llenar(lista)
 	P.diario:Llenar()
-	P.accesos:Llenar()
 	P.ajustes:Llenar()
 end
 
@@ -1203,17 +1250,26 @@ local function construir(view)
 	P.view = view
 	local t = K.Tablero(view, { margen = N.MargenPagina(), accion = "accion", min = 256 })
 	P.tablero = t
-	-- La portada va antes que la tarjeta grande: es lo primero de la pila del tablero.
+	-- La portada, tu plan y la fila compacta de los caminos van en la pila
+	-- del tablero, junto a la tarjeta grande: ordenar() los acomoda.
 	P.portada = nuevaPortada(t)
-	table.insert(t.bloques, 1, { b = P.portada, sangria = 0 })
-	P.plan = t:AgregarBloque(nuevoPlan(t.Extra))
+	P.plan = nuevoPlan(t)
+	P.otra = nuevaOtra(t)
+	local E = { portada = { b = P.portada, sangria = 0 }, plan = { b = P.plan, sangria = 0 }, otra = { b = P.otra, sangria = 0 } }
+	for _, e in ipairs(t.bloques) do
+		if e.b == t.Accion then E.accion = e
+		elseif e.b == t.Opciones then E.opciones = e
+		elseif e.b == t.Rejilla then E.rejilla = e
+		elseif e.b == t.Extra then E.extra = e end
+	end
+	P.entradas = E
+	ordenar(false, false)
 	P.alertas = t:AgregarBloque(nuevoAlertas(t.Extra))
 	P.cerca = t:AgregarBloque(nuevoCerca(t.Extra))
 	P.clase = t:AgregarBloque(nuevaClase(t.Extra))
 	P.numeros = t:AgregarBloque(nuevoNumeros(t.Extra))
 	P.revision = t:AgregarBloque(nuevaRevision(t.Extra), { espacio = ESP.xl })
 	P.diario = t:AgregarBloque(nuevoDiario(t.Extra))
-	P.accesos = t:AgregarBloque(nuevosAccesos(t.Extra))
 	P.ajustes = t:AgregarBloque(nuevosAjustes(t.Extra))
 	K.EnPagina(view, t, function()
 		llenarTodo()
@@ -1253,6 +1309,8 @@ function P.Pintar()
 	local lista = alertas()
 	local paso = tarjetaPaso()
 	if firmaAlertas(lista) ~= P.firmaAlertas then return relayoutPronto() end
+	-- Una guía que empieza o termina cambia el orden de arriba.
+	if enGuia(paso) ~= P.enGuia then return relayoutPronto() end
 	local firma = firmaPaso(paso)
 	if firma ~= P.firmaPaso then
 		-- Solo cambió la distancia: la tarjeta se acomoda sola si su alto no cambia.
@@ -1263,7 +1321,7 @@ function P.Pintar()
 		t.Accion:Set(paso)
 		if t.Accion:Acomodar(K.num(t.Accion:GetWidth(), N.AnchoPagina())) ~= antes then return relayoutPronto() end
 	end
-	if P.numeros:Repintar() or P.clase:Repintar() then return relayoutPronto() end
+	if P.numeros:Repintar() or P.clase:Repintar() or P.diario:Repintar() then return relayoutPronto() end
 end
 
 function P.AlMostrar()

@@ -210,6 +210,10 @@ local function H(c)
 	local N = ns.Nav
 	return N and N.HandoffOption and N.HandoffOption(c) or c
 end
+-- Ajustes de la ventana de guía del motor que no hacen nada cuando el
+-- seguimiento de Alfa la reemplaza (Alfa_Rutas, Reemplazar "GUIDE_FRAME"):
+-- solo se ven si la ventana del motor es la que está en uso.
+local function motorVentana() return not (ns.Reemplazo and ns.Reemplazo("GUIDE_FRAME")) end
 
 -- A page's tabs and sections in their order, for modules to fill.
 local function declare(page, key, icon, order, subtitle, tabs)
@@ -237,15 +241,15 @@ local BUILTIN = {
 		subtitle = L["The guide window, the arrow and its routes, and what Alfa does for you."], controls = {
 		{ kind = "toggle", key = "ui.shown", label = L["Show the window"], help = L["Also /alfa, or the key binding."], search = "show guide, hide guide, toggle window, open window" },
 		{ kind = "toggle", key = "ui.compact", label = L["Compact mode"], help = L["Only the header and the current step's goals."], search = "minimal, small, smaller window, simple" },
-		{ kind = "toggle", key = "ui.wholeStep", label = L["Show the whole step"],
+		{ kind = "toggle", key = "ui.wholeStep", needs = motorVentana, label = L["Show the whole step"],
 			help = L["Every goal of the step at once, finished ones kept, instead of one person at a time with the others on one line each."] },
-		{ kind = "slider", key = "ui.maxHeight", label = L["Maximum height"], min = 0.3, max = 0.9, step = 0.05, format = percent,
+		{ kind = "slider", key = "ui.maxHeight", needs = motorVentana, label = L["Maximum height"], min = 0.3, max = 0.9, step = 0.05, format = percent,
 			help = L["How tall the window may grow, as a share of the screen. A longer step scrolls."] },
 		{ kind = "toggle", key = "ui.showNotes", label = L["Step tips"], help = L["The author's tip under the goals, one line until clicked."] },
-		{ kind = "toggle", key = "ui.notesOpen", label = L["Expand step tips"], help = L["Start each step with its tip in full instead of one line."],
+		{ kind = "toggle", key = "ui.notesOpen", needs = motorVentana, label = L["Expand step tips"], help = L["Start each step with its tip in full instead of one line."],
 			child = true, disabled = function() return not ns.Get("ui.showNotes") end },
-		{ kind = "slider", key = "ui.upcoming", label = L["Upcoming steps"], min = 0, max = 6, step = 1, format = "%d", help = L["How many steps the Up next list holds; 0 turns it off."] },
-		{ kind = "toggle", key = "ui.upcomingOpen", label = L["Expand Up next"], help = L["Start with the upcoming steps listed instead of collapsed."] },
+		{ kind = "slider", key = "ui.upcoming", needs = motorVentana, label = L["Upcoming steps"], min = 0, max = 6, step = 1, format = "%d", help = L["How many steps the Up next list holds; 0 turns it off."] },
+		{ kind = "toggle", key = "ui.upcomingOpen", needs = motorVentana, label = L["Expand Up next"], help = L["Start with the upcoming steps listed instead of collapsed."] },
 		{ kind = "toggle", key = "ui.newInForever", label = L["Mark quests new in Forever"],
 			help = L["A small infinity mark beside the name of a quest Forever added, in the guide, While you're here, the Codex and quest tooltips."],
 			search = "new in forever, infinity, new quest, forever quest, mark, badge" },
@@ -310,13 +314,13 @@ local BUILTIN = {
 			get = function() return ns.HideKeepsArrow() end, set = function(on) ns.SetHideKeepsArrow(on) end },
 	} },
 	{ page = GUIDE, tab = L["Window"], section = L["Position"], controls = {
-		{ kind = "toggle", key = "ui.locked", label = L["Lock window"], help = L["Prevents moving and resizing."], search = "lock, move, drag, resize, unlock" },
+		{ kind = "toggle", key = "ui.locked", needs = motorVentana, label = L["Lock window"], help = L["Prevents moving and resizing."], search = "lock, move, drag, resize, unlock" },
 		{ kind = "toggle", key = "ui.lockHud", label = L["Lock arrow and buttons"],
 			help = L["Stops stray drags on the arrow, the action buttons and the flight and instance timers. Shift-drag still moves them."] },
-		{ kind = "toggle", key = "ui.growUp", label = L["Grow upward"], help = L["Keep the bottom edge in place, so longer steps extend the window up."] },
-		{ kind = "toggle", key = "ui.barsBottom", label = L["Bar at the bottom"], help = L["With Grow upward, put the tabs and the step bar at the bottom edge, next to where the window is pinned."],
+		{ kind = "toggle", key = "ui.growUp", needs = motorVentana, label = L["Grow upward"], help = L["Keep the bottom edge in place, so longer steps extend the window up."] },
+		{ kind = "toggle", key = "ui.barsBottom", needs = motorVentana, label = L["Bar at the bottom"], help = L["With Grow upward, put the tabs and the step bar at the bottom edge, next to where the window is pinned."],
 			child = true, disabled = function() return not ns.Get("ui.growUp") end },
-		{ kind = "button", icon = "reset", button = L["Reset"], label = L["Reset position"], help = L["Put the guide window back in its corner."], onClick = function() ns.Set("ui.pos", nil) end },
+		{ kind = "button", icon = "reset", button = L["Reset"], label = L["Reset position"], help = L["Put the guide window back in its corner."], needs = motorVentana, onClick = function() ns.Set("ui.pos", nil) end },
 	} },
 	{ page = GUIDE, tab = L["Arrow & routes"], section = L["Arrow"], controls = {
 		H({ kind = "toggle", key = "nav.arrow", label = L["Show arrow"], help = L["Points to the current goal. Its look and colours are under Appearance, Arrow."],
@@ -1747,6 +1751,13 @@ local function renderSearch()
 		searchView.Hint = W.Text(searchView, "note", "textMuted")
 		searchView.Hint:SetText(L["Did you mean:"])
 		searchView.Links = {}
+		-- Sin ajustes que coincidan, quien escribe "cobre" o "lobo de guerra"
+		-- quizá busca algo del juego: la Enciclopedia de Alfa (si está).
+		searchView.Enciclopedia = W.Link(searchView, "", function()
+			local E = rawget(_G, "AlfaEnciclopedia")
+			if type(E) == "table" and type(E.Buscar) == "function" then pcall(E.Buscar, query) end
+		end)
+		searchView.Enciclopedia.psTip = nil
 	end
 	local groups, count, suggestions = O.Search(query)
 	local sections = {}
@@ -1783,6 +1794,21 @@ local function renderSearch()
 			end
 			y = 56 + 24 * shown + 32
 		end
+		local E = rawget(_G, "AlfaEnciclopedia")
+		local enc = searchView.Enciclopedia
+		if type(E) == "table" and type(E.Buscar) == "function" and query and query ~= "" then
+			W.SetLinkText(enc, string.format(T("Buscar «%s» en la Enciclopedia"), query))
+			-- Debajo de "¿Quisiste decir?" y sus enlaces, o del aviso si no hay.
+			local yEnc = shown > 0 and (y - 8) or 56
+			enc:ClearAllPoints()
+			enc:SetPoint("TOPLEFT", searchView, "TOPLEFT", SH.pad, -yEnc)
+			enc:Show()
+			y = yEnc + 24 + 16
+		else
+			enc:Hide()
+		end
+	elseif searchView.Enciclopedia then
+		searchView.Enciclopedia:Hide()
 	end
 	for i = shown + 1, #links do links[i]:Hide() end
 	if O.RefreshNav then O.RefreshNav() end

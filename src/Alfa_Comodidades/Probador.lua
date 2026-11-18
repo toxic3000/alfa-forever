@@ -260,9 +260,15 @@ end
 -- Mostrar y ocultar con el probador
 ---------------------------------------------------------------------------
 
+-- Con la interfaz para mando no se toca el probador: es una ventana del juego
+-- (ShowUIPanel) y crear marcos dentro de ella, o engancharse a ella, corre
+-- código de Alfa dentro de la navegación del mando, que la deja contaminada
+-- (ns.CreateFrameUnder y ns.GamepadUI del motor, Core/Init.lua).
+local function conMando() return A.GamepadUI and A.GamepadUI() and true or false end
+
 local function actualizar()
 	local f = DressUpFrame
-	if not (f and f:IsShown()) then return end
+	if conMando() or not (f and f:IsShown()) then return end
 	local jugador = modoJugador()
 	local conBotones = jugador and opcion("probadorBotones")
 	local conBarra = jugador and opcion("probadorAnimacion")
@@ -299,7 +305,7 @@ end
 
 local enganchado = false
 local function enganchar()
-	if enganchado then return end
+	if enganchado or conMando() then return end
 	local f = DressUpFrame
 	local s = escena()
 	if not (f and s and hooksecurefunc) then return end
@@ -320,6 +326,7 @@ M.AlCambiar({ "probador", "probadorBotones", "probadorAnimacion" }, function()
 end)
 
 function M.HayProbador()
+	if conMando() then return false end
 	return DressUpFrame ~= nil and DressUpFrame.ModelScene ~= nil
 end
 

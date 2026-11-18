@@ -54,9 +54,11 @@ local function soltar()
 	if t and t.cerrar then K.Llamar(t.cerrar) end
 end
 
+-- a:Cerrar(turno) es la función del aviso del Kit (su X es a.BotonCerrar):
+-- solo lo cierra si sigue mostrando este mensaje.
 local function quitarAviso(t)
 	local a = t and t.aviso
-	if a and a.alfaVivo and a.alfaTurno == t.turno and a.Cerrar then K.Llamar(a.Cerrar.alClic, a.Cerrar) end
+	if a and a.alfaVivo and type(a.Cerrar) == "function" then a:Cerrar(t.turno) end
 end
 
 local function vigilar(a, duracion)

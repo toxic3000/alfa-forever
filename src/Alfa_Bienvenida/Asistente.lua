@@ -440,10 +440,13 @@ local function terminar(despues)
 	-- Quien recién configura Alfa ya tiene todo lo nuevo: las notas de esta versión no le salen.
 	if M.MarcarNotasVistas then M.MarcarNotasVistas() end
 	if v then v:Cerrar() end
+	-- Con Hoy (Alfa_Inicio) cargado, el aviso lleva a su página: lo primero que ver.
+	local hoy = N.ModuloPorId and N.ModuloPorId("inicio") and { texto = L["Abrir Hoy"], alClic = function() N.Abrir("inicio") end } or nil
 	K.Aviso({
-		lobo = "aullando", tono = "acento", duracion = 8,
+		lobo = "aullando", tono = "acento", duracion = hoy and 12 or 8,
 		titulo = L["¡Listo! Alfa ya es tuyo"],
 		texto = L["Ábrelo con /alfa o con el lobo del minimapa. Para cambiar algo de esto: /alfa bienvenida."],
+		accion = hoy,
 	})
 	M.Aullar()
 	A.Fire("ALFA_CONFIGURADO")
@@ -593,6 +596,8 @@ local function armar()
 	ui.portada:AgregarBloque(K.Seccion(ui.portada.Extra, L["Lo nuevo en Alfa 1.0"]), { espacio = ESP.xl })
 	ui.rejilla10 = ui.portada:AgregarBloque(K.Rejilla(ui.portada.Extra, { min = 230 }), { espacio = ESP.m })
 	ui.asistente = K.Asistente(v.Cuerpo, { margen = v.margen, textoTerminar = L["Listo"], alTerminar = function() terminar() end, pasos = pasos() })
+	-- Una huella por paso (el Kit pone 10 como tope y aquí hay más pasos).
+	if ui.asistente.Huellas then ui.asistente.Huellas.alfaMax = math.max(10, #ui.asistente.pasos) end
 	ajustarPie(ui.asistente)
 	ui.asistente.alCambiar = function(i)
 		if v.Desplazable then v.Desplazable:IrArriba() end
@@ -626,7 +631,33 @@ local function armar()
 	f:RegisterEvent("UI_SCALE_CHANGED")
 	f:RegisterEvent("DISPLAY_SIZE_CHANGED")
 	f:SetScript("OnEvent", function() if v:IsShown() and ui.vista == "asistente" then M.PantallaCompleta() end end)
+
+	-- En combate la pantalla completa (su velo toma el ratón) no atrapa a nadie:
+	-- se esconde al empezar, sin contar como cerrada (M.AlCerrar no hace nada
+	-- con M.porCombate), y vuelve donde ibas al terminar la pelea, como las notas.
+	local ev = CreateFrame("Frame")
+	ev:RegisterEvent("PLAYER_REGEN_DISABLED")
+	ev:RegisterEvent("PLAYER_REGEN_ENABLED")
+	ev:SetScript("OnEvent", function(_, evento)
+		if evento == "PLAYER_REGEN_DISABLED" then
+			if v:IsShown() and ui.vista == "asistente" then
+				ui.reabrir = true
+				M.porCombate = true
+				v:Cerrar()
+				M.porCombate = nil
+			end
+		elseif ui.reabrir then
+			K.Despues(1, function()
+				if not ui.reabrir or (InCombatLockdown and InCombatLockdown()) then return end
+				ui.reabrir = nil
+				if not v:IsShown() then M.Abrir("pedido", "asistente") end
+			end)
+		end
+	end)
 end
+
+-- El asistente esperaba el fin de un combate para volver.
+function M.EsperaCombate() return ui.reabrir and true or false end
 
 -- La ventana a toda la pantalla (con un margen corto), centrada.
 local MARGEN_PANTALLA = 24
@@ -673,6 +704,13 @@ function M.AbrirVentana(vista)
 		ui.asistente:Hide()
 		ui.portada:Show()
 		ui.portada:SetAccion(accionPortada())
+		-- Sus huellas, una por paso como en el asistente.
+		local h = ui.portada.Accion and ui.portada.Accion.Huellas
+		local n = #ui.asistente.pasos
+		if h and h.alfaMax < n then
+			h.alfaMax = n
+			ui.portada:SetAccion(accionPortada())
+		end
 		ui.portada:SetOpciones({}, false)
 		ui.rejilla10:Llenar(novedades())
 		v:SetTitulo(format(L["Bienvenida a Alfa %s"], M.VERSION_ALFA), L["Lo nuevo de esta versión"], "ic-lobo")

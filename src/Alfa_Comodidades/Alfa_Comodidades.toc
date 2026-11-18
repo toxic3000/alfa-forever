@@ -17,6 +17,7 @@ MinimapaEstilo.lua
 Chat.lua
 Marcos.lua
 Barras.lua
+Formas.lua
 Cuadro.lua
 Probador.lua
 Sonidos.lua

@@ -163,8 +163,9 @@ local function avanzarCalculo()
 	inicioCuadro = reloj()
 	local ok, err = coroutine.resume(trabajo.co)
 	if not ok then
-		trabajo = nil
-		if motor then motor:Hide() end
+		-- El cálculo falló: la página deja de decir "Calculando…" (sin ruta nueva).
+		Ruta.alListo = nil
+		terminar(nil)
 		error(err, 0)
 	end
 	if coroutine.status(trabajo.co) == "dead" then terminar(trabajo.resultado) end

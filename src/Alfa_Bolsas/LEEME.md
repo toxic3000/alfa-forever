@@ -16,7 +16,7 @@ Tus bolsas, tu banco y el inventario de todos tus personajes en una ventana de A
 - **El banco** en la misma clase de ventana: en vivo con un banquero y, si no, la última foto.
   - **Depositar rápido:** un botón y un menú: *lo que ya tienes en el banco*, *todos los materiales*, *una categoría…* y *todo lo que no sea equipo* (sin misiones, la piedra de hogar ni lo que tu guía aún necesita). Antes cuenta cuánto cabe; mueve por lotes tras tu clic y se detiene al entrar en combate o cerrar el banco. Otro clic lo detiene.
   - **Comprar espacio:** la barra del banco muestra la siguiente casilla de bolsa del banco con su costo; un clic vuelve a mostrar el banco del juego (sin cerrar la visita) para comprarla con su botón: `C_Bank.PurchaseBankTab` es restringida y un addon no puede llamarla. La casilla nueva se lee del juego al cambiar (`BANK_TABS_CHANGED`). Después se pone una bolsa en ella.
-- **El inventario de todos tus personajes:** reino, facción, clase, nivel, dinero, bolsas (con la bolsa misma), banco, equipo y lo que cuesta su siguiente casilla del banco. En el cuadro de cada objeto: *"Tienes 12 (Toxic: 7 en bolsas, Alt: 5 en banco)"*.
+- **El inventario de todos tus personajes:** reino, facción, clase, nivel, dinero, bolsas (con la bolsa misma), banco, equipo y lo que cuesta su siguiente casilla del banco. En el cuadro de cada objeto: *"Tienes 12 (Lobato: 7 en bolsas, Alt: 5 en banco)"*.
 - **Pie de la ventana:** tu dinero, el de toda la cuenta y el espacio libre (al pasar el ratón: el detalle y el dinero de cada personaje).
 - En la vista por categorías, mientras el ratón está sobre la ventana nada cambia de lugar: lo vendido queda vacío donde estaba y se acomoda al salir.
 

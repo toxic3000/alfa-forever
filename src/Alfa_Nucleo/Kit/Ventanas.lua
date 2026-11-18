@@ -320,11 +320,31 @@ local function armarDialogo()
 	end, { tipo = "fantasma" })
 	d.velo = velo
 	velo:SetScript("OnHide", function()
+		if velo.alfaSinCancelar then return end
 		local fn = d.alCancelar
 		d.alAceptar, d.alCancelar = nil, nil
 		if fn then K.Llamar(fn) end
 	end)
 	cerrarConEsc("AlfaKitVelo")
+	-- En combate el velo no atrapa el ratón: al empezar uno, el diálogo se
+	-- esconde sin darse por cancelado (la pregunta sigue pendiente) y vuelve al
+	-- terminar, si nadie lo cerró o lo cambió por otro mientras tanto.
+	local ev = CreateFrame("Frame")
+	ev:RegisterEvent("PLAYER_REGEN_DISABLED")
+	ev:RegisterEvent("PLAYER_REGEN_ENABLED")
+	ev:SetScript("OnEvent", function(_, evento)
+		if evento == "PLAYER_REGEN_DISABLED" then
+			if velo:IsShown() then
+				d.porCombate = true
+				velo.alfaSinCancelar = true
+				velo:Hide()
+				velo.alfaSinCancelar = nil
+			end
+		elseif d.porCombate then
+			d.porCombate = nil
+			velo:Show()
+		end
+	end)
 	return d
 end
 
@@ -334,8 +354,9 @@ function K.Dialogo(o)
 	local d = dialogo
 	local ancho = o.ancho or K.ANCHO.dialogo
 	-- Un diálogo nuevo encima del que estaba abierto: el anterior se da por cancelado.
-	local previo = d.velo and d.velo:IsShown() and d.alCancelar
+	local previo = d.velo and (d.velo:IsShown() or d.porCombate) and d.alCancelar
 	d.alAceptar, d.alCancelar = nil, nil
+	d.porCombate = nil
 	if previo then K.Llamar(previo) end
 	d.alAceptar, d.alCancelar = o.alAceptar, o.alCancelar
 	if o.lobo then
@@ -371,11 +392,27 @@ function K.Dialogo(o)
 	d.Cancelar:SetPoint("RIGHT", d.Aceptar, "LEFT", -ESP.s, 0)
 	y = y + K.ALTO.boton + ESP.l
 	d:SetSize(ancho, y)
-	d.velo:Show()
+	-- Pedido en plena pelea: sale al terminar (el velo no atrapa a nadie en combate).
+	if InCombatLockdown and InCombatLockdown() then d.porCombate = true else d.velo:Show() end
 	return d
 end
 
-function K.CerrarDialogo() if dialogo then dialogo.velo:Hide() end end
+-- Hay un diálogo a la vista o esperando el fin del combate.
+function K.DialogoAbierto()
+	return dialogo ~= nil and (dialogo.velo:IsShown() or dialogo.porCombate) and true or false
+end
+
+function K.CerrarDialogo()
+	if not dialogo then return end
+	if dialogo.porCombate then
+		-- Esperaba al fin del combate: se da por cancelado, como al cerrarlo.
+		dialogo.porCombate = nil
+		local fn = dialogo.alCancelar
+		dialogo.alAceptar, dialogo.alCancelar = nil, nil
+		if fn then K.Llamar(fn) end
+	end
+	dialogo.velo:Hide()
+end
 
 ---------------------------------------------------------------------------
 -- Avisos flotantes (toasts): arriba al centro, el más nuevo arriba, hasta 3.
@@ -445,9 +482,11 @@ local function armarAviso()
 		if turno and turno ~= self.turno then return end
 		if self.alfaVivo then quitar(self) end
 	end
+	-- Clic en el cuerpo: su acción, salvo la que abre algo del juego (con
+	-- seguro): esa solo la hace su botón, con el clic del juego (K.Seguro).
 	a:SetScript("OnClick", function(self)
 		local ac = self.alfaAccion
-		if ac and ac.alClic then K.Llamar(ac.alClic, self) quitar(self) end
+		if ac and ac.alClic and not ac.seguro then K.Llamar(ac.alClic, self) quitar(self) end
 	end)
 	return a
 end
@@ -493,6 +532,11 @@ function K.Aviso(o)
 		a.Boton = a.Boton or K.Boton(a, "", nil, { tipo = "acento", tam = "chico" })
 		a.Boton:SetTexto(o.accion.texto)
 		a.Boton.alClic = function() K.Llamar(o.accion.alClic, a) quitar(a) end
+		K.SeguroDe(a.Boton, o.accion)
+		if o.accion.seguro then
+			-- El clic lo hizo el juego (K.Seguro): después, lo de Alfa y se cierra.
+			a.Boton.alfaTrasClic = function() if o.accion.trasClic then K.Llamar(o.accion.trasClic, a) end quitar(a) end
+		end
 		a.Boton:ClearAllPoints()
 		a.Boton:SetPoint("TOPLEFT", a, "TOPLEFT", x, -(y + ESP.s))
 		a.Boton:Show()

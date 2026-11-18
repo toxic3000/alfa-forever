@@ -14,7 +14,7 @@ Su propia página, hecha con el Kit (`Pagina.lua`): **Ajustes > Comodidades** (`
 | Estilo del chat | **Dar al chat el estilo de Alfa**: panel, pestañas, caja para escribir y letra con el estilo elegido; opacidad del fondo y ocultar la columna de botones |
 | Estilo del minimapa | **Dar al minimapa el estilo de Alfa**: bisel (cuadrado) o aro (redondo) y la barra de la zona y la hora |
 | Estilo de las barras | **Dar a las barras el estilo de Alfa**: barra principal, botones de acción, barras extra, experiencia y reputación, menú y bolsas; grifos como están, del color del estilo u ocultos |
-| Marcos y barra | Colores de clase en tu marco y en el del objetivo · ocultar los grifos |
+| Marcos y barra | Colores de clase en tu marco y en el del objetivo · ocultar los grifos · **avisar si la barra de una forma está vacía** (druida, guerrero, pícaro) y llenarla |
 | Cuadro de información | A quién apunta, rango de tu hermandad, ocultarlo en combate y verlo con Mayús |
 | Probador | Botones de objetos y control de animación |
 | Cámara | Alejar más la cámara |
@@ -43,6 +43,7 @@ Cada grupo tiene un interruptor principal y sus opciones dentro. **Los interrupt
 | `probador` (`probadorBotones`, `probadorAnimacion`) | apagado (dentro: sí) | Probador: botones de objetos y control de la animación |
 | `camara` | no | Alejar más la cámara |
 | `grifos` | no | Ocultar los grifos de la barra de acción |
+| `barraForma` | sí | La barra de una forma o actitud vacía (`Formas.lua`): un aviso por forma y personaje, fuera de combate, y "Llenar mi barra" pone las habilidades de esa forma que sabes solo en sus casillas vacías (nunca en combate ni con algo en el cursor) |
 | `silenciarErrores`, `silenciarDialogos`, `silenciarMascotas`, `silenciarGestos`, `silenciarLista` | no | Silenciar grupos de sonidos del juego y tu lista propia |
 | `chat` (`chatEstilo`, `chatOpacidad`, `chatPestanas`, `chatEscribir`, `chatLetra`, `chatBotones`) | apagado (dentro: `"igual"`, 0.7, sí, sí, sí, no) | El chat con el estilo de Alfa |
 | `minimapaEstilo` (`minimapaEstiloTema`, `minimapaCabecera`) | apagado (dentro: `"igual"`, sí) | El minimapa con el estilo de Alfa |
@@ -84,4 +85,5 @@ Para que un grupo venga encendido de fábrica basta cambiar su valor en `M.AJUST
 10. **Sonidos**: cada casilla calla lo que dice y al apagarla vuelve (también se ve en Opciones > Audio). `/alfa silenciar 12345` con la lista encendida.
 11. **Estilo del chat**: encenderlo con cada estilo (Alfa, Clásico WoW, Cristal) y con «Igual que Alfa» cambiando el estilo en Ajustes > Apariencia: el panel, la pestaña elegida con su acento, la caja para escribir (borde de acento al escribir), la letra. Abrir una ventana nueva y recibir un susurro en ventana aparte: salen con el estilo. Ocultar los botones. Apagarlo: todo vuelve como Blizzard (fondos al pasar el ratón incluidos). **En combate y en una mazmorra**: escribir `/cast` o usar una macro desde el chat sin errores de «acción bloqueada».
 12. **Estilo del minimapa**: redondo y cuadrado en los tres estilos (el aro propio debe cubrir el borde del mapa sin dejar ver el de Blizzard; ajustar el radio en los .tga si no encaja), la barra de la zona y la hora, girar el minimapa (queda el aro de Blizzard) y apagarlo.
-13. **Estilo de las barras**: los botones con borde del estilo, ícono cuadrado, tecla con la letra de Alfa; la ranura vacía al arrastrar un hechizo; los brillos al pasar el ratón y al estar activo; grifos de color y ocultos; experiencia, menú y bolsas. Edit Mode (ocultar el arte de la barra, mover barras) y luego salir. Cambiar de estilo en combate: se aplica al salir. Apagarlo: vuelve el arte del juego. Revisar en `/console taintLog 1` que no aparezca nada de Alfa_Comodidades.
+13. **Estilo de las barras**: los botones con borde del estilo, ícono cuadrado, tecla con la letra de Alfa; la ranura vacía al arrastrar un hechizo; los brillos al pasar el ratón y al estar activo; grifos de color y ocultos; experiencia, menú y bolsas. Edit Mode (ocultar el arte de la barra, mover barras) y luego salir. Cambiar de estilo en combate: se aplica al salir. Apagarlo: vuelve el arte del juego. Revisar en `/console taintLog 1` que no aparezca nada de Alfa_Comodidades. Con la barra principal en Edit Mode, el fondo de Alfa no la agranda ni la corre (cuelga del contenedor de su primer botón).
+14. **Barra de una forma vacía**: un druida que nunca llenó la barra de Felino (o un guerrero la de Actitud defensiva) cambia de forma: sale una vez el aviso «Tu barra de Felino está vacía»; «Llenar mi barra» pone sus habilidades en las casillas vacías sin tocar las que ya tienen algo. En combate dice que se llena al salir y lo hace al terminar.

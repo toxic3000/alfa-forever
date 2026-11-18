@@ -47,6 +47,8 @@ M.AJUSTES = {
 	-- Estilo de las barras (Barras.lua): grifos "como" | "color" | "ocultar"
 	barras = false, barrasEstilo = "igual", barrasBotones = true, barrasGrifos = "como",
 	barrasExperiencia = true, barrasMenu = true,
+	-- La barra de una forma vacía (Formas.lua): avisar una vez y ofrecer llenarla
+	barraForma = true,
 }
 
 -- Los valores por omisión, desde el principio (las partes los leen al

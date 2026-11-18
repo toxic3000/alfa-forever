@@ -31,6 +31,14 @@ M.NOVEDADES = {
 --   { version, titulo, puntos = { { icono (ic-*), texto } } }
 ---------------------------------------------------------------------------
 M.NOTAS = {
+	{ version = "1.1.5", titulo = "Sin bloqueos y más claro", puntos = {
+		{ "ic-talentos", "Se acabó el aviso «Alfa_Builds se ha bloqueado…»: la ventana de talentos, el clic para lanzar y el Legado ahora los abre el juego, y tus hechizos se lanzan sin problema desde el libro." },
+		{ "ic-ruta", "Tu guía ya no te manda a entregar misiones sin terminar: primero te lleva a lo que falta, y «Cerrar mis misiones» se pone al día sola." },
+		{ "ic-flecha", "«Ver el siguiente» te deja mirar el paso que viene y lo dice claro; y un solo contador de pasos hechos." },
+		{ "ic-personaje", "Druidas, guerreros y pícaros: si tu barra de forma o de actitud está vacía, Alfa te avisa y la llena con un clic." },
+		{ "ic-hoy", "Hoy te pone tu siguiente paso primero, y en combate ninguna ventana de Alfa te deja atrapado." },
+		{ "ic-exito", "Una revisión completa de todos los módulos: más de 60 arreglos." },
+	} },
 	{ version = "1.1.4", titulo = "Lya tiene mucho que contar", puntos = {
 		{ "ic-lobo", "Lya platica mucho más: lore de Warcraft, datos de cada zona, de tu raza, tu clase y tus profesiones, y consejos de eventos y de farmeo. ¡Y le encantan las salchichas!" },
 		{ "ic-cerca", "Junto a tu guía hay un botón para buscar lo que tienes cerca: vuelo, banco, subasta, reparar, comerciantes y entrenadores." },

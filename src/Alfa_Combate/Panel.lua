@@ -63,7 +63,8 @@ local LECTOR = {
 	parar = { L["Parar"], function() return pct(GetParryChance) end },
 	bloquear = { L["Bloquear"], function() return pct(GetBlockChance) end },
 	defensa = { L["Defensa"], function()
-		local b, m = M.Llamar(UnitDefense, "player")
+		-- UnitDefenseSkill (UnitDocumentation; la hoja de personaje de Camelot la usa).
+		local b, m = M.Llamar(UnitDefenseSkill or UnitDefense, "player")
 		b, m = num(b), num(m)
 		return b and tostring(floor(b + (m or 0)))
 	end },

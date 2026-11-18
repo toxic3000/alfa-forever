@@ -68,7 +68,8 @@ end
 local function numeros()
 	local n, total = Ce.Vistos()
 	local lista = {
-		{ variante = "compacta", icono = "ic-lista", titulo = L["Frases que ya te dijo todas sus veces"], valor = format(L["%d de %d"], n, total) },
+		{ variante = "compacta", icono = "ic-lista", titulo = L["Frases dichas"], valor = format(L["%d de %d"], n, total),
+			ayuda = L["Las que Lya ya te dijo sus tres veces. Con «Volver a mostrarlos» salen otra vez."] },
 		{ variante = "compacta", icono = "ic-reloj", titulo = NOMBRE_MODO[Ce.Frecuencia()] },
 	}
 	local Hi = M.Historias

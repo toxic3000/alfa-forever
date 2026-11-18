@@ -19,6 +19,7 @@ M.EN = {
 	-- Preajustes
 	["Curandero"] = "Healer",
 	["Solo buffs"] = "Buffs only",
+	["Básico"] = "Basic",
 	["Desde cero"] = "From scratch",
 	["Preajuste «%s» listo para tus clics."] = "Preset \"%s\" is ready on your clicks.",
 	["Tus clics de Curación se aplican al salir de combate."] = "Your Healing clicks apply when you leave combat.",
@@ -39,8 +40,10 @@ M.EN = {
 	["Tu mapa del ratón está vacío: elige algo en una ranura primero."] = "Your mouse map is empty: pick something for a slot first.",
 	["Listo: tu mapa también funciona en los marcos de Blizzard."] = "Done: your map also works on Blizzard's frames.",
 	["%d hechizo(s) no se pueden poner en el clic para lanzar."] = "%d spell(s) can't be put on click casting.",
-	["Blizzard no dejó copiar tu mapa desde un addon. Se abrió su ventana de clic para lanzar: arma ahí los mismos clics."] = "Blizzard didn't allow an addon to copy your map. Its click casting window opened: set up the same clicks there.",
-	["Blizzard no dejó copiar tu mapa desde un addon. Ábrelo en el menú del juego: Opciones, Clic para lanzar."] = "Blizzard didn't allow an addon to copy your map. Open it from the game menu: Options, Click Casting.",
+	["Blizzard no deja que un addon copie tu mapa. Se abrió su ventana de clic para lanzar: arma ahí los mismos clics."] = "Blizzard doesn't let an addon copy your map. Its click casting window opened: set up the same clicks there.",
+	["Se cerró la ventana de clic para lanzar de Blizzard. Vuelve a pulsar «Abrir clic para lanzar» para abrirla."] = "Blizzard's click casting window closed. Press \"Open click casting\" again to open it.",
+	["Blizzard no deja que un addon copie tu mapa. Abre su ventana con el botón «Abrir clic para lanzar» o escribe %s en el chat, y arma ahí los mismos clics."] = "Blizzard doesn't let an addon copy your map. Open its window with the \"Open click casting\" button or type %s in chat, and set up the same clicks there.",
+	["Blizzard no deja que un addon copie tu mapa. Ábrelo en el menú del juego: Opciones, Clic para lanzar."] = "Blizzard doesn't let an addon copy your map. Open it from the game menu: Options, Click Casting.",
 
 	-- Marcos
 	["Desconectado"] = "Offline",
@@ -61,7 +64,7 @@ M.EN = {
 	["abre su menú"] = "opens their menu",
 	["Banda de %d"] = "Raid of %d",
 	["Grupo de %d"] = "Party of %d",
-	["Solo"] = "Solo",
+	["Sin grupo"] = "No group",
 	["Los marcos de Curación están apagados"] = "Healing frames are off",
 	["Enciéndelos abajo, en Marcos, para ver a tu grupo con su vida y curar con un clic."] = "Turn them on below, under Frames, to see your group's health and heal with one click.",
 	["Apagados"] = "Off",
@@ -98,7 +101,8 @@ M.EN = {
 
 	-- Página: preajustes
 	["El izquierdo selecciona y el derecho abre el menú. Tú eliges el resto."] = "Left targets and right opens the menu. You pick the rest.",
-	["El izquierdo selecciona y el derecho abre el menú; tu clase no tiene buffs para otros."] = "Left targets and right opens the menu; your class has no buffs for others.",
+	["El izquierdo selecciona y el derecho abre el menú: lo básico, porque tu clase no lanza hechizos sobre sus compañeros."] = "Left targets and right opens the menu: the basics, since your class doesn't cast spells on its allies.",
+	["El izquierdo selecciona y el derecho abre el menú. Tus buffs para otros se suman aquí al aprenderlos."] = "Left targets and right opens the menu. Your buffs for others are added here as you learn them.",
 	["El izquierdo selecciona y el derecho abre el menú."] = "Left targets and right opens the menu.",
 	["Todavía no conoces sus hechizos: se llenan al aprenderlos."] = "You don't know its spells yet: they fill in as you learn them.",
 	["%s (%s)"] = "%s (%s)",
@@ -109,6 +113,7 @@ M.EN = {
 	["Para quien prefiere seleccionar con el izquierdo: la cura de ese clic pasa al botón central. Se vuelve a aplicar tu preajuste."] = "For those who like to target with left click: that click's heal moves to the middle button. Your preset is applied again.",
 	["Usar también en los marcos de Blizzard"] = "Also use on Blizzard's frames",
 	["Usar"] = "Use",
+	["Abrir clic para lanzar"] = "Open click casting",
 	["Abre la ventana de clic para lanzar de Blizzard para que armes ahí los mismos clics y cures igual en sus marcos de grupo (el juego no deja que un addon los copie)."] = "Opens Blizzard's click casting window so you can set up the same clicks there and heal the same way on its group frames (the game doesn't let an addon copy them).",
 	["Preajustes listos para usar"] = "Ready-to-use presets",
 
@@ -173,7 +178,7 @@ M.EN = {
 	["Prepara tus marcos en 3 pasos"] = "Set up your frames in 3 steps",
 	["Elige tus clics, acomoda tus marcos y pruébalos. Te toma un minuto."] = "Choose your clicks, place your frames and test them. It takes a minute.",
 	["Empezar"] = "Start",
-	["Asistente"] = "Wizard",
+	["Configurar con el asistente"] = "Set up with the wizard",
 	["Preajustes"] = "Presets",
 	["En uso"] = "In use",
 	["En uso, a tu gusto"] = "In use, your way",

@@ -29,6 +29,7 @@ MODULOS = ",".join([
     "Alfa_Comodidades", "Alfa_Comercio", "Alfa_Recoleccion", "Alfa_Pesca", "Alfa_Combate", "Alfa_Curacion",
     "Alfa_Bienvenida", "Alfa_Lya", "Alfa_Vista"])
 TOPE_MB, TOPE_S = 3000, 300
+DIST = pathlib.Path(os.environ.get("ALFA_DIST") or RAIZ / "dist")
 
 
 class PMC(ctypes.Structure):
@@ -50,8 +51,8 @@ def memoria_mb(p) -> int:
 
 
 def correr(escena: str):
-    codigo = ("import sys, runpy; sys.path.insert(0, %r); sys.argv = ['run.py', 'dist', %r, %r]; "
-              "runpy.run_path(%r, run_name='__main__')" % (str(SITE), MODULOS, escena, str(RAIZ / "tools" / "banco" / "run.py")))
+    codigo = ("import sys, runpy; sys.path.insert(0, %r); sys.argv = ['run.py', %r, %r, %r]; "
+              "runpy.run_path(%r, run_name='__main__')" % (str(SITE), str(DIST), MODULOS, escena, str(RAIZ / "tools" / "banco" / "run.py")))
     p = subprocess.Popen([sys.executable, "-u", "-c", codigo], cwd=RAIZ, stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT, env={**os.environ, "PYTHONUNBUFFERED": "1", "PYTHONIOENCODING": "utf-8"})
     inicio, salida = time.time(), []
@@ -73,20 +74,25 @@ def correr(escena: str):
 
 def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8", errors="backslashreplace")
-    if not (RAIZ / "dist" / "Alfa").is_dir():
-        print("Falta dist/: corre tools/build.py")
+    if not (DIST / "Alfa").is_dir():
+        print(f"Falta {DIST}: corre tools/build.py")
         return 1
     malo = False
     salen = 0
-    salida, cortado = correr("prueba.lua")
-    for l in salida:
-        if l.startswith(("FALLA EN", "   ", "AVISO", "PRUEBA:", "errores al entrar", "ERROR")):
-            print(l)
-    if cortado:
-        print("PRUEBA CORTADA:", cortado)
-        malo = True
-    if any(l.startswith("ERROR") or l.startswith("FALLA EN") for l in salida):
-        malo = True
+    # prueba.lua y las pruebas de cada área (tools/banco/prueba_*.lua).
+    escenas = ["prueba.lua"] + sorted(x.name for x in (RAIZ / "tools" / "banco").glob("prueba_*.lua"))
+    for escena in escenas:
+        salida, cortado = correr(escena)
+        if escena != "prueba.lua":
+            print("--", escena)
+        for l in salida:
+            if l.startswith(("FALLA EN", "   ", "AVISO", "PRUEBA:", "errores al entrar", "ERROR")):
+                print(l)
+        if cortado:
+            print("PRUEBA CORTADA:", escena, cortado)
+            malo = True
+        if any(l.startswith("ERROR") or l.startswith("FALLA EN") for l in salida):
+            malo = True
     for escena in ("galeria.lua", "galeria110.lua"):
         salida, cortado = correr(escena)
         for l in salida:

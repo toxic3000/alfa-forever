@@ -229,6 +229,17 @@ local function opcionesSonido()
 	return op
 end
 
+-- "Avanzado" (las ranuras que no se cambian) abierto: lo pediste en esta
+-- sesión o ya tienes alguna excluida (así la ves).
+function M.VerExcluir()
+	if M.verExcluir ~= nil then return M.verExcluir end
+	local t = N.Get(ID, "excluir")
+	if type(t) == "table" then
+		for _, v in pairs(t) do if v == true then return true end end
+	end
+	return false
+end
+
 local function grupos(ui, padre)
 	local g = {}
 	local tecla = K.GrupoAjustes(padre, { titulo = L["Tecla y modo pesca"] })
@@ -261,9 +272,18 @@ local function grupos(ui, padre)
 	equipo:Fila({ titulo = L["Cebo preferido"], control = desplegable("ceboPreferido", opcionesCebo), hija = true, activa = hijaDe("prepararCebo") })
 	equipo:Fila({ titulo = L["Volver a mi equipo al cerrar el modo"], control = interruptor("restaurarEquipo"), activa = activa,
 		texto = L["Alfa recuerda lo que llevabas antes de ponerte lo de pesca y te lo vuelve a poner."] })
+	-- Las cinco "No cambiar: ..." quedan plegadas bajo "Avanzado" (el Kit no
+	-- pliega grupos: su interruptor las muestra; abiertas si ya excluiste alguna).
+	ui.excluir = {}
+	equipo:Fila({ titulo = L["Avanzado"], hija = true, activa = hijaDe("prepararEquipo"),
+		texto = L["Las ranuras que tu tecla nunca cambia: cabeza, manos, pies, abalorios y las demás."],
+		control = function(fila)
+			return K.Interruptor(fila, { get = function() return M.VerExcluir() end,
+				set = function(v) M.verExcluir = v and true or false if M.alCambiar then M.alCambiar() end end })
+		end })
 	for _, gr in ipairs(M.Eq.GRUPOS) do
 		local id = gr.id
-		equipo:Fila({ titulo = format(L["No cambiar: %s"], gr.nombre), hija = true, activa = hijaDe("prepararEquipo"),
+		ui.excluir[#ui.excluir + 1] = equipo:Fila({ titulo = format(L["No cambiar: %s"], gr.nombre), hija = true, activa = hijaDe("prepararEquipo"),
 			control = function(fila)
 				return K.Interruptor(fila, {
 					get = function() local t = N.Get(ID, "excluir") return type(t) == "table" and t[id] == true end,
@@ -356,6 +376,8 @@ local function construir(view)
 	K.EnPagina(view, t, function()
 		t:SetAccion(estado(ui))
 		t:SetOpciones(accesos(), L["Tu pesca"])
+		local ver = M.VerExcluir()
+		for _, f in ipairs(ui.excluir or {}) do K.Mostrar(f, ver) end
 		for _, g in ipairs(ui.ajustes) do g:Refrescar() end
 	end)
 	ui.tablero = t

@@ -160,6 +160,8 @@ local function terminar()
 	if t.alListo then t.alListo(res) end
 end
 
+local trozo
+
 local function paso()
 	local t = trabajo
 	if not t then return end
@@ -168,6 +170,17 @@ local function paso()
 		N.FueraDeCombate(function() A.After(0.2, paso) end)
 		return
 	end
+	-- Un objeto raro de la base no deja la búsqueda trabada en "Buscando…"
+	-- para siempre: se reporta y la página vuelve a ofrecer buscar.
+	local ok, err = pcall(trozo, t)
+	if not ok then
+		if trabajo == t then trabajo = nil end
+		if geterrorhandler then geterrorhandler()(err) end
+		if t.alListo then pcall(t.alListo, nil, "codex") end
+	end
+end
+
+trozo = function(t)
 	local G, DB = A.Gear, A.ItemDB
 	local fin = math.min(#t.ids, t.i + POR_CUADRO)
 	for k = t.i + 1, fin do

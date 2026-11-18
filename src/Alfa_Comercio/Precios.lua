@@ -302,7 +302,11 @@ end
 
 function M.Olvidar()
 	local d = M.Datos()
-	d.reinos[M.ClaveReino()] = nil
+	local k = M.ClaveReino()
+	local v = d.reinos[k]
+	-- La espera del escaneo completo (pedido, Subasta.lua) es del servidor: se
+	-- queda, o el botón se encendería y la subasta no respondería.
+	d.reinos[k] = (type(v) == "table" and type(v.pedido) == "number") and { pedido = v.pedido } or nil
 	M.Cambio()
 end
 

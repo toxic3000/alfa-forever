@@ -90,13 +90,20 @@ local function enlazarHechizo(spell)
 	if link and insertar then insertar(link) end
 end
 
--- La ventana de talentos del juego, como su tecla. Nunca en combate ni con
--- la interfaz de mando, que maneja sus propias ventanas.
+-- La ventana de talentos del juego. Alfa nunca la abre desde su código: el
+-- juego marcaría la ventana (talentos y libro de hechizos son una sola) como
+-- tocada por un addon y después bloquearía lanzar hechizos desde ella. El
+-- clic lo hace el juego con un botón seguro (K.Seguro: el de su menú de
+-- talentos). Si no se puede (en combate, con teclado o mando), se dice con
+-- qué tecla abrirla.
+local function seguroTalentos() return K.AbrirJuego("talentos") end
+
 local function abrirVentanaJuego()
-	if InCombatLockdown() or (A.GamepadUI and A.GamepadUI()) then return end
-	local U = PlayerSpellsUtil
-	if U and U.ToggleClassTalentOrSpecFrame then pcall(U.ToggleClassTalentOrSpecFrame)
-	elseif U and U.OpenToClassTalentsTab then pcall(U.OpenToClassTalentsTab) end
+	local tecla = K.TeclaJuego("talentos")
+	local texto = tecla and format(L["Ábrela con tu tecla de talentos (%s) o desde el menú del juego."], tecla)
+		or L["Ábrela con tu tecla de talentos o desde el menú del juego."]
+	if InCombatLockdown() then texto = L["En combate no se puede: espera a terminar."] .. " " .. texto end
+	K.Aviso({ titulo = L["La ventana de talentos del juego"], texto = texto, icono = "ic-talentos", duracion = 8 })
 end
 
 -- Una sección y su contenido, con el ritmo del Kit (12 entre ambos).
@@ -166,7 +173,7 @@ local function ahora(e)
 	if e.foto or not st then
 		return { icono = "ic-reloj", tono = "neutro", sobre = L["Tus talentos"], titulo = L["El juego todavía no carga tu árbol"],
 			texto = L["Abre la ventana de talentos del juego una vez o espera unos segundos: en cuanto Alfa la lea, te dice qué poner. Mientras, abajo ves tu build."],
-			accion = { texto = L["Abrir la ventana de talentos"], icono = "ic-talentos", alClic = abrirVentanaJuego } }
+			accion = { texto = L["Abrir la ventana de talentos"], icono = "ic-talentos", alClic = abrirVentanaJuego, seguro = seguroTalentos } }
 	end
 	local s = M.Siguiente(e)
 	if not s then
@@ -196,7 +203,7 @@ local function ahora(e)
 					alClic = function() M.ElegirBuild(e2.objetivo, e2.estilo, mia) P.Rehacer() end }
 			end
 		end
-		d.secundaria = { texto = L["Abrir la ventana de talentos"], alClic = abrirVentanaJuego }
+		d.secundaria = { texto = L["Abrir la ventana de talentos"], alClic = abrirVentanaJuego, seguro = seguroTalentos }
 		return d
 	end
 	-- Hay punto libre y se puede tomar.
@@ -216,7 +223,7 @@ local function ahora(e)
 		return { icono = "ic-aviso", tono = "aviso", sobre = L["Tus talentos"], titulo = L["Lo que sigue en tu build no está en tu árbol"],
 			texto = format(L["Tienes %d puntos libres, pero los talentos que siguen en %s no existen en tu árbol (puede que cambiaran con un parche). Ponlos a mano en la ventana del juego o prueba otro estilo."], libres, b.titulo or ""),
 			insignias = { { libres == 1 and L["1 punto libre"] or format(L["%d puntos libres"], libres), "acento" } },
-			accion = { texto = L["Abrir la ventana de talentos"], icono = "ic-talentos", alClic = abrirVentanaJuego } }
+			accion = { texto = L["Abrir la ventana de talentos"], icono = "ic-talentos", alClic = abrirVentanaJuego, seguro = seguroTalentos } }
 	end
 	-- Sin punto libre: cuál sigue y cuándo llega.
 	insignias[#insignias + 1] = { format(L["Llega en el nivel %d"], s.nivel), "neutro" }
@@ -611,7 +618,7 @@ local function construirTalentos()
 		ui.lienzo:Set(e)
 		ui.arbol.Seccion:Set(L["Tu árbol"], {
 			cuenta = (e.st and not e.foto) and format("%d/%d", e.st.hechos, e.st.total) or nil,
-			enlace = { texto = L["Abrir la ventana del juego"], alClic = abrirVentanaJuego },
+			enlace = { texto = L["Abrir la ventana del juego"], alClic = abrirVentanaJuego, seguro = seguroTalentos },
 		})
 		-- 4. Lo que sigue, los primeros PLAN_VISIBLE; lo hecho y lo de
 		-- después se ven con "Ver todo el plan".

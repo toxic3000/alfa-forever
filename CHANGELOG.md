@@ -1,6 +1,28 @@
 # Cambios de Alfa
 
-## 1.1.4 — Lya tiene mucho que contar (18/11/2026)
+## 1.1.5 — Sin bloqueos y más claro (17/11/2026)
+
+**Español**
+- Arreglado: «Alfa_Builds se ha bloqueado de una acción disponible solo para la interfaz de Blizzard» al lanzar hechizos desde el libro. Alfa abría la ventana de talentos (que en Forever es la misma del libro de hechizos) desde su código y el juego la dejaba marcada. Ahora la abre el juego con un botón seguro, igual que el clic para lanzar de Curación, la ventana del Legado y las bolsas desde Lya. Alfa tampoco cambia ya las opciones del juego que Blizzard usa en combate (resaltado asistido y medidor de daño): te dice dónde están.
+- Arreglado: la guía te mandaba a entregar misiones sin terminar. «Ver el siguiente» (antes «Siguiente») solo te deja mirar el paso que viene y ahora lo dice claro; «Omitir» se esconde mientras miras otro paso; una entrega de una misión sin terminar primero te lleva a lo que falta; y «Cerrar mis misiones» se pone al día sola cuando tomas una misión nueva.
+- Nuevo para druidas, guerreros y pícaros: si al ponerte en forma o actitud tu barra está vacía (por eso parecía que «desaparecía al pelear»), Alfa te avisa y la llena con un clic con tus habilidades, solo en casillas vacías y nunca en combate.
+- Más claro en el día a día: un solo contador «X de Y pasos hechos»; en Hoy tu siguiente paso va primero; «Cerrar mis misiones» se llama igual en todos lados; los títulos de paso que llegaban en inglés ya no se cuelan; el buscador de Ajustes te ofrece buscar en la Enciclopedia; los textos dicen /alfa en vez de /pole; y se escondieron ajustes de la ventana de guía vieja que no hacían nada.
+- En combate ninguna ventana te atrapa: la bienvenida y los diálogos de Alfa se esconden al empezar una pelea y vuelven al terminar.
+- La Jauría: si tienes encendido «Rechazar invitaciones a hermandad», Alfa te dice dónde está y lo apaga con un botón.
+- Recolección te propone la ruta de la profesión que tienes (o te lleva con un instructor si no tienes ninguna); Paisaje tiene «Deshacer preajuste» en su página; Curación llama «Básico» al preajuste de las clases sin buffs; Combate y Pesca esconden sus opciones finas bajo «Más opciones».
+- Una revisión completa de todos los módulos: más de 60 arreglos (Talentos, Curación, Rutas, Mapa, Enciclopedia, Mazmorras, Inicio, Combate, Pesca, Bolsas, Comercio, Recolección, La Jauría), y la prueba de cada versión ahora también revisa que Alfa no abra ventanas del juego desde su código.
+
+**English**
+- Fixed: "Alfa_Builds has been blocked from an action only available to the Blizzard UI" when casting from the spellbook. Alfa opened the talent window (in Forever, the same as the spellbook) from its own code and the game kept it marked. The game now opens it through a secure button, and the same goes for Healing's click casting, the Legacy window and Lya's open bags. Alfa also no longer changes game options Blizzard uses in combat (assisted highlight, damage meter): it tells you where they are.
+- Fixed: the guide sent you to hand in unfinished quests. "See the next one" (formerly "Next") only lets you look at the coming step and now says so; "Skip" hides while you look at another step; a hand-in for an unfinished quest first takes you to what's missing; and "Close my quests" updates itself when you pick up a new quest.
+- New for druids, warriors and rogues: if your form or stance bar is empty when you shift (why it looked like it "disappeared in combat"), Alfa tells you and fills it in one click with your abilities, only in empty slots and never in combat.
+- Clearer day to day: one "X of Y steps done" count; Today shows your next step first; "Close my quests" has one name everywhere; step titles that came in English no longer slip through; the settings search offers to search the Encyclopedia; texts say /alfa instead of /pole; and settings of the old guide window that did nothing are hidden.
+- No window traps you in combat: the welcome and Alfa's dialogs hide when a fight starts and come back after.
+- La Jauría: if "Decline guild invites" is on, Alfa tells you where it is and turns it off with one button.
+- Gathering suggests the route for the profession you have (or takes you to a trainer); Scenery has "Undo preset" on its page; Healing calls the preset of classes without buffs "Basic"; Combat and Fishing tuck their fine options under "More options".
+- A full review of every module: over 60 fixes, and the release test now also checks that Alfa never opens game windows from its own code.
+
+## 1.1.4 — Lya tiene mucho que contar (17/11/2026)
 
 **Español**
 - Lya estrena look: una loba negrita de perfil, más chica y con su pañoleta verde de Alfa, con 39 cuadros de animación (corre, se busca la cola, duerme, aúlla, se estira y pide salchichas).

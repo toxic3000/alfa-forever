@@ -24,7 +24,10 @@
 -- reparentan, cambian de tamaño ni se les pone atributos; no se engancha
 -- ningún método suyo; solo texturas, colores, letras, transparencia y
 -- Show/Hide de regiones de arte, siempre fuera de combate
--- (N.FueraDeCombate). Los marcos de fondo son de Alfa, hijos de las barras.
+-- (N.FueraDeCombate). Los marcos de fondo son de Alfa, hijos de las barras
+-- (el de la principal, del contenedor de su primer botón: ver padreFondo).
+-- Un botón vacío que el juego muestra (Edit Mode: "Mostrar siempre los
+-- botones") se sigue viendo: su casilla es la forma y el borde de Alfa.
 -- En Clásico WoW las barras son las del juego: no se toca nada (salvo
 -- ocultar los grifos, si lo pides). Al apagarlo todo vuelve sin /reload.
 
@@ -70,11 +73,26 @@ end
 ---------------------------------------------------------------------------
 -- Fondos: un marco de Alfa detrás de una barra, en lugar de su arte
 ---------------------------------------------------------------------------
+-- MainActionBar es un ResizeLayoutFrame (Shared/ActionBarTemplate.xml): su
+-- Layout() la mide con todos sus hijos directos a la vista, salvo los que
+-- Blizzard marca con ignoreInLayout (escribir ese campo desde Alfa
+-- contaminaría su Layout). Un fondo hijo directo, más grande que la barra, la
+-- agrandaría y la correría de lugar. Por eso el fondo cuelga del contenedor
+-- del primer botón (un marco simple que siempre se ve con la barra; su Layout
+-- solo mide el contenedor) y se ancla a la barra.
+local function padreFondo(dueno)
+	local bs = rawget(dueno, "actionButtons")
+	local b = type(bs) == "table" and bs[1]
+	local c = type(b) == "table" and rawget(b, "container")
+	if type(c) == "table" and c.GetObjectType and c.CreateTexture then return c end
+	return dueno
+end
+
 local function fondoDe(dueno, margen, opts)
 	if type(dueno) ~= "table" or not dueno.GetFrameLevel then return nil end
 	local f = fondos[dueno]
 	if f then return f end
-	local m = CreateFrame("Frame", nil, dueno)
+	local m = CreateFrame("Frame", nil, padreFondo(dueno))
 	m:SetPoint("TOPLEFT", dueno, "TOPLEFT", -margen, margen)
 	m:SetPoint("BOTTOMRIGHT", dueno, "BOTTOMRIGHT", margen, -margen)
 	if opts and opts.estrato then m:SetFrameStrata(opts.estrato) end
@@ -293,4 +311,4 @@ A.RegisterEvent("PLAYER_ENTERING_WORLD", function()
 end)
 
 -- Para pruebas.
-M.Barras = { Aplicar = aplicar, Botones = botones }
+M.Barras = { Aplicar = aplicar, Botones = botones, Fondos = fondos }

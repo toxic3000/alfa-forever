@@ -1002,7 +1002,8 @@ local function menuDepositar(f, ancla)
 end
 
 local function crear(tipo)
-	local nombre = tipo == "banco" and "AlfaBolsasBanco" or "AlfaBolsas"
+	-- "AlfaBolsas" no: ese nombre global es la tabla para otros módulos (Reemplazo.lua).
+	local nombre = tipo == "banco" and "AlfaBolsasBanco" or "AlfaBolsasVentana"
 	local f = CreateFrame("Frame", nombre, UIParent)
 	f.tipo = tipo
 	f:SetFrameStrata("HIGH")

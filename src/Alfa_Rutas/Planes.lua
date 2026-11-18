@@ -46,6 +46,7 @@ local RIDING = 762
 
 local ticker  -- revisa la meta de lugar mientras le toca
 local ultima  -- uid de la meta de ahora en la última revisión (false: plan terminado)
+local olvidarLugar -- adelante: el lugar ya buscado de una meta de servicio
 
 local function llamar(fn, ...)
 	if type(fn) ~= "function" then return nil end
@@ -246,6 +247,8 @@ function Pl.CambiarMeta(id, uid, meta)
 	pl.metas[i] = t
 	local hechas = personaje().planHechas[id]
 	if hechas then hechas[uid] = nil end
+	-- El lugar que se buscó era del servicio de antes (otro tipo, otra profesión).
+	if olvidarLugar then olvidarLugar(uid) end
 	cambio(pl)
 	revisarCallado()
 	return t
@@ -534,6 +537,7 @@ end
 -- Pl.Revisar: la meta de servicio de ahora sin lugar todavía (tras /reload o
 -- recién agregada) lo busca fuera de combate, a lo más cada 30 s si no sale.
 local buscado = {}
+olvidarLugar = function(uid) rt.lugar[uid], buscado[uid] = nil, nil end
 local function servicioPendiente(m)
 	if not (m and m.tipo == "lugar" and m.modo == "servicio") or rt.lugar[m.uid] then return false end
 	if InCombatLockdown and InCombatLockdown() then return false end
@@ -556,8 +560,9 @@ function Pl.Ir(m, auto)
 			return ok
 		end
 		if m.modo == "marcador" and m.marcador and AlfaMundo and AlfaMundo.SeguirMarcador then
-			local ok = pcall(AlfaMundo.SeguirMarcador, m.marcador)
-			if ok then
+			-- false: el marcador ya no está (o no se pudo): al punto guardado.
+			local ok, puesto = pcall(AlfaMundo.SeguirMarcador, m.marcador)
+			if ok and puesto then
 				if not auto then M.Empezar() end
 				return true
 			end

@@ -70,9 +70,12 @@ local function planear()
 	local r = ruta()
 	if not r or #r.tramos == 0 then return end
 	est.ocupado, est.avance, est.motivo = true, 0, nil
+	local id = r.id
 	P.Armar(r, function(plan, motivo)
 		est.ocupado = false
-		est.motivo = not plan and motivo or nil
+		-- Por qué no salió, solo si sigues en esa ruta (otra no lo hereda).
+		local actual = ruta()
+		est.motivo = not plan and actual and actual.id == id and motivo or nil
 		rehacer()
 	end, function(f) est.avance = M.num(f, 0) end)
 end
@@ -81,9 +84,11 @@ local pendiente = false
 M.Escuchar("RUTA", function()
 	if pendiente then return end
 	pendiente = true
-	A.After(0.3, function() pendiente = false planear() rehacer() end)
+	-- Solo si el plan ya no vale (cambió un tramo): cambiarle el nombre no
+	-- vuelve a elegir las misiones de la guía que sigues.
+	A.After(0.3, function() pendiente = false if not P.De(ruta()) then planear() end rehacer() end)
 end)
-M.Escuchar("RUTAS", function() est.abierto, est.alt = nil, nil rehacer() end)
+M.Escuchar("RUTAS", function() est.abierto, est.alt, est.motivo = nil, nil, nil rehacer() end)
 
 local function cambiar(r) M.Cambio(r) rehacer() end
 
@@ -163,7 +168,7 @@ local function ventanaTexto(modo)
 		vt.Error = K.Texto(vt.Cuerpo, "pequeno", "aviso")
 		vt.Error:SetPoint("TOPLEFT", caja, "BOTTOMLEFT", 0, -K.ESP.s)
 		vt.Aceptar = K.Boton(vt, "", function() if vt.alAceptar then vt.alAceptar() end end, { tipo = "primario" })
-		vt:SetPie({ K.Boton(vt, L["Cerrar"], function() vt:Cerrar() end, { tipo = "fantasma" }), vt.Aceptar })
+		vt.alfaPie = { K.Boton(vt, L["Cerrar"], function() vt:Cerrar() end, { tipo = "fantasma" }), vt.Aceptar }
 	end
 	local r = ruta()
 	vt.Error:SetText("")
@@ -200,6 +205,8 @@ local function ventanaTexto(modo)
 			rehacer()
 		end
 	end
+	-- El pie se acomoda con el texto de Aceptar de este modo (si no, tapa Cerrar).
+	vt:SetPie(vt.alfaPie)
 	vt:Abrir()
 	vt.Campo:SetFocus()
 	if modo == "exportar" then vt.Campo:HighlightText() end
@@ -210,7 +217,7 @@ local function menuRuta(dueno)
 	local op = {}
 	for _, x in ipairs(M.Rutas()) do
 		local activa = M.Personaje().activa == x.id
-		op[#op + 1] = { valor = function() M.Personaje().editando = x.id est.abierto = nil rehacer() end,
+		op[#op + 1] = { valor = function() M.Personaje().editando = x.id est.abierto, est.alt, est.motivo = nil, nil, nil rehacer() end,
 			texto = x.nombre .. (activa and ("  \194\183  " .. L["en marcha"]) or ""), icono = (r and r.id == x.id) and "ic-huella" or "ic-ruta" }
 	end
 	op[#op + 1] = { valor = function() M.NuevaRuta(L["Mi ruta"], {}) rehacer() end, texto = L["Nueva ruta vacía"], icono = "ic-mas" }
@@ -540,8 +547,8 @@ function M.BloqueRutas(padre, alCambiar)
 	b.Estado = b:Agregar(K.Tarjeta(b, { variante = "estado" }), { espacio = K.ESP.base })
 	-- Sin rutas: las plantillas.
 	b.Vacio = b:Agregar(K.Vacio(b, { lobo = "dormido", titulo = L["Todavía no tienes rutas propias"],
-		texto = L["Una ruta es tu árbol de tramos: misiones de XP, de oro, de clase, materiales u objetos. Empieza con una plantilla."] }))
-	b.Plantillas = b:Agregar(K.Rejilla(b, { min = 240, gap = K.ESP.s, variante = "compacta" }))
+		texto = L["Una ruta es tu árbol de tramos: misiones de XP, de oro, de clase, materiales u objetos. Elige una de estas para empezar:"] }))
+	b.Plantillas = b:Agregar(K.Rejilla(b, { min = 240, gap = K.ESP.s, variante = "normal" }))
 
 	function b:Llenar()
 		local r = ruta()
@@ -553,7 +560,7 @@ function M.BloqueRutas(padre, alCambiar)
 		K.Mostrar(self.Vacio, not hay)
 		local plantillas = {}
 		for _, p in ipairs(M.PLANTILLAS) do
-			plantillas[#plantillas + 1] = { variante = "compacta", icono = p.icono, titulo = p.nombre, texto = p.desc,
+			plantillas[#plantillas + 1] = { variante = "normal", lineas = 2, icono = p.icono, titulo = p.nombre, texto = p.desc,
 				alClic = function() M.DesdePlantilla(p.clave) rehacer() end, ayuda = p.desc }
 		end
 		self.Plantillas:Llenar(plantillas)

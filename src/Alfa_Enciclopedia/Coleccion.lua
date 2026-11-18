@@ -739,8 +739,13 @@ M.FICHAS_GUIA.montura = function()
 	local montura
 	for _, m in ipairs(lista) do if m.tier == tier then montura = montura or m end end
 	local costo = r and Col.CostoEquitacion(tier, r.faccion)
-	local tengoMontura = false
-	for _, m in ipairs(lista) do if Col.Tiene("mount", m.id) == true then tengoMontura = true end end
+	local tengoMontura, tengoRapida = false, false
+	for _, m in ipairs(lista) do
+		if Col.Tiene("mount", m.id) == true then
+			tengoMontura = true
+			if m.tier == 2 then tengoRapida = true end
+		end
+	end
 
 	local filas = {
 		{ L["Tu nivel"], format(L["%d de %d"], nivel, nivelTier) },
@@ -766,12 +771,14 @@ M.FICHAS_GUIA.montura = function()
 		siguiente = r and r.instructor
 		f.mejor = instructor and { sobre = L["Lo siguiente"], titulo = format(L["Aprende equitación con %s"], instructor.titulo),
 			texto = F.Unir(instructor.texto, costo and N.Dinero(costo, true) or nil), icono = "ic-personajes", punto = instructor.punto, ir = instructor.ir } or nil
-	elseif not tengoMontura or tier == 2 then
+	elseif not tengoMontura or (tier == 2 and not tengoRapida) then
 		siguiente = r and r.vendedor
 		f.mejor = vendedor and { sobre = L["Lo siguiente"], titulo = format(L["Compra tu montura con %s"], vendedor.titulo),
 			texto = F.Unir(vendedor.texto, montura and N.Dinero(montura.precio, true) or nil), icono = "ic-comercio", punto = vendedor.punto, ir = vendedor.ir } or nil
 	else
-		f.mejor = { sobre = L["Listo"], titulo = L["Ya tienes tu montura"], texto = L["A nivel 60 sigue la rápida: equitación de oficial y una montura épica."], icono = "ic-exito" }
+		-- Con la rápida ya no hay "lo que sigue".
+		f.mejor = { sobre = L["Listo"], titulo = L["Ya tienes tu montura"],
+			texto = tier == 1 and L["A nivel 60 sigue la rápida: equitación de oficial y una montura épica."] or nil, icono = "ic-exito" }
 	end
 
 	local donde = {}

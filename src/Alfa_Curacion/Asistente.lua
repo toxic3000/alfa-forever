@@ -56,6 +56,8 @@ local function llenarPreajustes()
 		})
 		K.Mostrar(t, true)
 	end
+	-- Una tarjeta que ya no se ofrece ("Desde cero" tras dejarlo, sin buffs) se oculta.
+	for i = #M.PreajustesDe() + 1, #p.tarjetas do K.Mostrar(p.tarjetas[i], false) end
 	if p.izq then
 		K.Mostrar(p.izq, actual == "curar")
 		p.izq:Refrescar()

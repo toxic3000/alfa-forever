@@ -222,7 +222,12 @@ local function crearBarra()
 	if barra then return barra end
 	local padre = marcoSubasta()
 	if type(padre) ~= "table" then return nil end
-	barra = CreateFrame("Frame", nil, padre)
+	-- Cuelga de la capa de Alfa y solo se ancla a la subasta: crear marcos
+	-- dentro de una ventana abierta del juego (AuctionHouseFrame es un panel)
+	-- corre la navegación del mando (CreateFrame enganchado) dentro del código
+	-- de Alfa y deja la ventana contaminada (ns.CreateFrameUnder del motor).
+	barra = CreateFrame("Frame", nil, K.Raiz())
+	if padre.GetFrameStrata then barra:SetFrameStrata(padre:GetFrameStrata()) end
 	barra:SetSize(BARRA_W, BARRA_H)
 	barra:SetPoint("TOPRIGHT", padre, "BOTTOMRIGHT", 0, -2)
 	barra.caja = K.Caja(barra, { fondo = "fondo", borde = "linea", corte = K.CORTE.panel })
@@ -252,6 +257,8 @@ local function alAbrir()
 	abierta = true
 	mensaje = nil
 	if not api() then return end
+	-- Con la barra apagada no se arma nada (se arma si la enciendes con la subasta abierta).
+	if not barra and not M.Ajuste("boton") then return end
 	if not crearBarra() then
 		-- La ventana de la subasta se carga a pedido: puede llegar un cuadro después.
 		if C_Timer and C_Timer.After then
@@ -273,5 +280,7 @@ A.RegisterEvent("AUCTION_HOUSE_CLOSED", function()
 end)
 
 A.On("SETTING_CHANGED", function(path)
-	if type(path) == "string" and path:sub(1, #M.ID + 1) == M.ID .. "." then refrescarBarra() end
+	if type(path) == "string" and path:sub(1, #M.ID + 1) == M.ID .. "." then
+		if abierta and not barra and M.Ajuste("boton") then alAbrir() else refrescarBarra() end
+	end
 end)

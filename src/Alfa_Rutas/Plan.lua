@@ -437,6 +437,20 @@ end
 
 local MAX_PARADAS = 15
 
+-- La guarda de una entrega: la meta "complete" de su misión, en el lugar de
+-- sus objetivos. Se cumple sola cuando la misión queda lista; mientras no,
+-- es la meta de ahora del paso y la flecha va a lo que falta, nunca al PNJ
+-- de la entrega: así pasa al mirar el paso antes de tiempo (Siguiente, la
+-- lista de pasos), al omitir o marcar a mano el paso de los objetivos y con
+-- un plan viejo que se quedó atrás.
+local function guarda(pm)
+	local g = { t = "complete", quest = pm.q.id, title = pm.q.title }
+	local o = pm.objetivo
+	if o and o.map and o.x and o.y then g.map, g.x, g.y, g.f = o.map, o.x, o.y, o.f end
+	return g
+end
+P.Guarda = guarda
+
 local function claveNpc(g)
 	if g.npc then return "n" .. g.npc end
 	if g.object then return "o" .. g.object end
@@ -507,7 +521,8 @@ local function pasosDe(partes, desde, costo)
 				o = #paradas
 			end
 			local antes = o or a
-			paradas[#paradas + 1] = { tipo = "T", pm = pm, inP = pm.fin, outP = pm.fin, deps = antes and { antes } or {} }
+			-- guarda: la entrega lleva antes "Completa la misión" (Plan.Guarda).
+			paradas[#paradas + 1] = { tipo = "T", pm = pm, inP = pm.fin, outP = pm.fin, deps = antes and { antes } or {}, guarda = hacer }
 			porQuest[pm.q.id] = { a = a, t = #paradas }
 		else
 			local entra = (not enLog and pm.dador) or (hacer and pm.objetivo) or pm.fin
@@ -557,7 +572,10 @@ local function pasosDe(partes, desde, costo)
 			pasos[#pasos + 1] = { title = pm.q.title, goals = M.Copia(pm.objetivos) }
 			ultimo = nil
 		elseif s.tipo == "T" then
-			notar(conPnj(M.Copia(pm.entregar), pm.q.title), pm)
+			local paso = conPnj(M.Copia(pm.entregar), pm.q.title)
+			-- Justo antes de su entrega: "Completa" (hecha sola al quedar lista).
+			if s.guarda then table.insert(paso.goals, #paso.goals, guarda(pm)) end
+			notar(paso, pm)
 		else
 			local goals = {}
 			if pm.aceptar and not I.EnRegistro(pm.q.id) then goals[#goals + 1] = M.Copia(pm.aceptar) end

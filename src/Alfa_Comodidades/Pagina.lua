@@ -120,6 +120,10 @@ local GRUPOS = {
 		{ k = "grifos", titulo = L["Ocultar los grifos de la barra de acción"],
 			texto = L["Quita los grifos de los lados de la barra principal. Edit Mode también tiene su propia opción para esto."],
 			existe = function() return M.Remates() ~= nil end, buscar = "gryphons, end caps, action bar art, wyverns" },
+		{ k = "barraForma", titulo = L["Avisar si la barra de una forma está vacía"],
+			texto = L["Al cambiar de forma o de actitud, el juego usa otra barra de abajo. Si está vacía, Alfa te avisa una vez y puede llenar sus casillas vacías con las habilidades de esa forma que ya sabes, fuera de combate y sin tocar lo que ya tienes."],
+			existe = function() return M.ClaseConFormas and M.ClaseConFormas() end,
+			buscar = "empty stance bar, form bar, cat form, bear form, stealth bar, action bar disappears, druid, warrior, rogue" },
 	} },
 	{ titulo = L["Cuadro de información"], filas = {
 		{ k = "cuadro", titulo = L["Mejorar el cuadro de información"],

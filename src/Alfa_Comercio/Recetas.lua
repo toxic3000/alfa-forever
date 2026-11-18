@@ -252,7 +252,7 @@ local function leerVentana()
 	end
 	local ids, completa = listaRecetas(TS)
 	if not ids then return end
-	M.Tarea("recetas", function()
+	local puesta = M.Tarea("recetas", function()
 		local ficha = miFicha()
 		local nuevas = {}
 		for i = 1, #ids do
@@ -274,6 +274,8 @@ local function leerVentana()
 		if base and type(base.skillLevel) == "number" then ficha.profs[profesion] = base.skillLevel end
 		M.RecetasCambiaron()
 	end)
+	-- Ya había una lectura corriendo: esta no se pierde, se lee al terminar aquella.
+	if not puesta and ventanaAbierta and C_Timer and C_Timer.After then C_Timer.After(1, leerVentana) end
 end
 
 local pendiente = false

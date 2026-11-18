@@ -161,13 +161,29 @@ function Lg.Resumen()
 	return p and p.disponibles, p and p.ganados
 end
 
-local function abrirDelJuego()
-	if InCombatLockdown() then return false, L["Se puede al salir de combate."] end
-	local fn = rawget(_G, "ToggleLegacySystemUI")
-	if type(fn) ~= "function" then return false, L["Este cliente no tiene la ventana del Legado."] end
-	local ok = pcall(fn)
-	if not ok then return false, L["La ventana del Legado no abrió."] end
-	return true
+-- La ventana del Legado del juego. Alfa nunca la abre desde su código (como
+-- los talentos: el juego la marcaría como tocada por un addon y después
+-- bloquearía lo que se hace desde ella). El clic lo hace el juego con un
+-- botón seguro (K.Seguro: el botón del Legado de su menú, LegacyMicroButton).
+-- Si no se puede (en combate, con teclado o mando, o ese botón está apagado),
+-- el clic normal solo dice cómo abrirla.
+local function hayLegado()
+	return rawget(_G, "LegacyMicroButton") ~= nil or type(rawget(_G, "ToggleLegacySystemUI")) == "function"
+end
+
+local function seguroLegado() return K.AbrirJuego("legado") end
+
+local function comoAbrirlo()
+	local tecla = K.TeclaJuego("TOGGLELEGACYSYSTEM")
+	local texto = tecla and format(L["Ábrela con tu tecla del Legado (%s) o con su botón en la barra de menú del juego."], tecla)
+		or L["Ábrela con su botón en la barra de menú del juego: la fila de botones pequeños de abajo a la derecha."]
+	local b = rawget(_G, "LegacyMicroButton")
+	if type(b) == "table" and b.IsEnabled and not b:IsEnabled() then
+		texto = L["El juego todavía no la abre: se abre con tu primer punto del Legado (casi siempre, al llegar a nivel 25)."]
+	elseif InCombatLockdown and InCombatLockdown() then
+		texto = L["Se puede al salir de combate."] .. " " .. texto
+	end
+	K.Aviso({ titulo = L["La ventana del Legado del juego"], texto = texto, icono = "ic-ventana", duracion = 8 })
 end
 
 ---------------------------------------------------------------------------
@@ -287,8 +303,8 @@ M.FICHAS_GUIA.legado = function()
 	F.Seccion(f, "registro", L["El registro del Legado"], premios)
 
 	f.parrafos = PARRAFOS
-	if type(rawget(_G, "ToggleLegacySystemUI")) == "function" then
-		f.acciones.extra = { texto = L["Abrir el Legado del juego"], icono = "ic-ventana", alClic = abrirDelJuego }
+	if hayLegado() then
+		f.acciones.extra = { texto = L["Abrir el Legado del juego"], icono = "ic-ventana", alClic = comoAbrirlo, seguro = seguroLegado }
 	end
 	return f
 end

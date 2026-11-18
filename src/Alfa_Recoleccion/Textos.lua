@@ -128,4 +128,11 @@ M.EN = {
 	["Las sesiones, las zonas y los objetos de este personaje."] = "This character's sessions, zones and items.",
 	["Esta sesión"] = "This session",
 	["Uso: /alfa recoleccion [ruta [mineria|hierbas|pesca|tesoros] | guiar | parar | mapa | minimapa]"] = "Usage: /alfa recoleccion [ruta [mineria|hierbas|pesca|tesoros] | guiar | parar | mapa | minimapa]",
+	-- Sin profesión de recolección
+	["Aprende Minería o Herboristería"] = "Learn Mining or Herbalism",
+	["Tu personaje todavía no recolecta. Con Minería o Herboristería, Alfa une las minas o las hierbas de tu zona en una vuelta corta. Te las enseña un instructor de profesión."] = "Your character doesn't gather yet. With Mining or Herbalism, Alfa links the mines or herbs in your zone into a short loop. A profession trainer teaches them.",
+	["Sin profesión"] = "No profession",
+	["Instructor de Minería"] = "Mining trainer",
+	["Instructor de Herboristería"] = "Herbalism trainer",
+	["Pregúntale a un guardia de la ciudad por el instructor de la profesión."] = "Ask a city guard for the profession trainer.",
 }

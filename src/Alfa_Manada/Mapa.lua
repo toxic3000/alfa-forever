@@ -108,7 +108,10 @@ end
 -- Las capas
 ---------------------------------------------------------------------------
 
-local function capaActiva(capa) return N.Get(ID, CAPAS[capa].ajuste) and true or false end
+-- Sin valor guardado cuenta como encendida (de fábrica lo están): la capa se
+-- registra al cargar el archivo, antes de que Manada.lua ponga sus valores
+-- por omisión, y Alfa_Mundo guarda como "de fábrica" lo primero que recibe.
+local function capaActiva(capa) return N.Get(ID, CAPAS[capa].ajuste) ~= false end
 
 local hecho = -1     -- G.version dibujada
 local sigHecho       -- a quién se seguía al dibujar

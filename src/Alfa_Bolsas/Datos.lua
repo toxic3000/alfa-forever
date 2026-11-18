@@ -495,7 +495,7 @@ function D.Conteo(id)
 	return total, partes
 end
 
--- "Tienes 12 (Toxic: 7 en bolsas, Alt: 5 en banco)" -> texto | nil
+-- "Tienes 12 (Lobato: 7 en bolsas, Alt: 5 en banco)" -> texto | nil
 function D.LineaCuadro(id)
 	local total, partes = D.Conteo(id)
 	if total <= 0 then return nil end

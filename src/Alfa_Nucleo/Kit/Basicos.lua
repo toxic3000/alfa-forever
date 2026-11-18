@@ -12,6 +12,7 @@
 --   K.Huellas(padre, opts)                    el avance con huellas del lobo
 --   K.IconoObjeto(padre, tam)                 un objeto con el borde de su calidad
 --   K.MostrarInfo / K.OcultarInfo / K.ConInfo el cuadro de información
+--   K.Seguro / K.AbrirJuego / K.TeclaJuego    abrir ventanas del juego sin bloqueos
 -- Todas se pintan con tokens (Kit/Tokens.lua) y se repintan solas.
 
 local _, N = ...
@@ -706,7 +707,8 @@ function K.Segmentos(padre, opts)
 			if b.Icono then b.Icono:SetShown(o.icono ~= nil) end
 			K.Escribir(b.Texto, o.texto or tostring(o.valor))
 			b.Cuenta:SetText(o.cuenta ~= nil and tostring(o.cuenta) or "")
-			if o.ayuda then K.ConInfo(b, o.texto, o.ayuda) end
+			-- Sin ayuda, la casilla no conserva la de la opción que tenía antes.
+			if o.ayuda then K.ConInfo(b, o.texto, o.ayuda) elseif b.alfaInfo then b.alfaInfo = { nil, nil } end
 		end
 		for i = #self.opciones + 1, #self.botones do self.botones[i]:Hide() end
 	end
@@ -1231,3 +1233,206 @@ eventos:SetScript("OnEvent", function(_, _, id, exito)
 		end
 	end
 end)
+
+---------------------------------------------------------------------------
+-- Botón seguro: un botón del Kit que abre algo de Blizzard (la ventana de
+-- talentos, el libro de hechizos, el clic para lanzar, las bolsas) no lo
+-- llama desde Alfa. Si un addon abre esas ventanas, el juego las marca como
+-- "tocadas por el addon" y después bloquea lanzar desde ellas ("Alfa se ha
+-- bloqueado de una acción disponible solo para la interfaz de Blizzard").
+-- Al pasar el ratón, un botón seguro de Blizzard (SecureActionButtonTemplate)
+-- cubre al del Kit y el clic lo hace el juego: queda como si lo hubieras
+-- hecho tú en su menú. Solo fuera de combate; en combate (o con teclado o
+-- mando) el botón del Kit hace su clic normal (alClic).
+--   K.Seguro(boton, atrib)  atrib: { type, clickbutton, macrotext } o
+--                           fn(boton) -> atributos | nil (nil: su clic normal)
+--   boton.alfaTrasClic = fn(boton, raton)  lo que sigue después del clic seguro
+--   K.AbrirJuego(cual) -> atributos | nil  "talentos" | "hechizos" | "clicLanzar" | "bolsas" | "legado"
+--   K.TeclaJuego(accion) -> "N" | nil      la tecla del juego de esa acción
+-- El seguro va en la capa del botón, un nivel arriba (lo que tapa al botón
+-- también lo tapa a él), y se va si el botón se oculta, se apaga, cambia de
+-- datos sin acción del juego o empieza un combate; al terminar el combate
+-- vuelve si el ratón sigue encima.
+---------------------------------------------------------------------------
+local seguro
+local ATRIB_SEGURO = { "type", "clickbutton", "macrotext" }
+local bajo = setmetatable({}, { __mode = "v" }) -- bajo.b: el botón con seguro bajo el ratón
+
+local function enCombate() return InCombatLockdown and InCombatLockdown() and true or false end
+-- Con la interfaz de mando, Alfa no toca las ventanas del juego (Alfa.GamepadUI).
+local function conMando() return A and A.GamepadUI and A.GamepadUI() and true or false end
+
+local function infoDe(d)
+	local i = d and d.alfaInfo
+	if not i then return end
+	local t, x = i[1], i[2]
+	if type(t) == "function" then t, x = t(d) end
+	if (t and t ~= "") or (x and x ~= "") then K.MostrarInfo(d, t, x) end
+end
+
+-- porCombate == true: el ratón sigue encima y el seguro vuelve al salir de
+-- combate (como OnLeave del seguro llega con el marco, no es true).
+local function soltarSeguro(porCombate)
+	if not seguro or enCombate() then return end
+	local d = seguro.dueno
+	seguro.dueno = nil
+	seguro:Hide()
+	seguro:ClearAllPoints()
+	if d then
+		if porCombate ~= true and bajo.b == d then bajo.b = nil end
+		local f = d:GetScript("OnLeave")
+		if f then pcall(f, d) end
+		K.OcultarInfo(d)
+	end
+end
+
+local function armarSeguro()
+	if seguro then return seguro end
+	if enCombate() then return nil end
+	local ok, b = pcall(CreateFrame, "Button", "AlfaKitSeguro", UIParent, "SecureActionButtonTemplate")
+	if not ok or type(b) ~= "table" then return nil end
+	seguro = b
+	-- Solo el clic izquierdo, como los botones del Kit, y al soltar: sin
+	-- useOnKeyDown = false el juego hace la acción al apretar si la opción
+	-- "lanzar al pulsar la tecla" (ActionButtonUseKeyDown) está prendida, y
+	-- un clic que solo llega al soltar no haría nada.
+	b:RegisterForClicks("LeftButtonUp")
+	b:SetAttribute("useOnKeyDown", false)
+	b:Hide()
+	b:SetScript("OnEnter", function(self)
+		local d = self.dueno
+		if not d then return end
+		local f = d:GetScript("OnEnter")
+		if f then pcall(f, d) end
+		infoDe(d)
+	end)
+	b:SetScript("OnLeave", soltarSeguro)
+	b:SetScript("PostClick", function(self, raton)
+		local d = self.dueno
+		if d and d.alfaTrasClic then K.Llamar(d.alfaTrasClic, d, raton) end
+	end)
+	-- Mientras cubre (solo con el ratón encima): si su botón se oculta (también
+	-- con su ventana o su aviso) o se apaga, se va.
+	b:SetScript("OnUpdate", function(self)
+		local d = self.dueno
+		if not d or not d:IsVisible() or (d.IsEnabled and not d:IsEnabled()) then soltarSeguro() end
+	end)
+	return b
+end
+
+-- Los atributos del seguro para ese botón ahora, o nil (su clic normal).
+local function atributosDe(b)
+	if enCombate() or conMando() or not b.alfaSeguro then return nil end
+	if not b:IsVisible() or (b.IsEnabled and not b:IsEnabled()) then return nil end
+	local a = b.alfaSeguro
+	if type(a) == "function" then
+		local ok, r = pcall(a, b)
+		if not ok and geterrorhandler then geterrorhandler()(r) end
+		a = ok and r or nil
+	end
+	return type(a) == "table" and a or nil
+end
+
+-- Pone el seguro sobre el botón (o lo quita si ya no le toca).
+local function cubrir(b)
+	local a = atributosDe(b)
+	if not a then
+		if seguro and seguro.dueno == b then soltarSeguro() end
+		return false
+	end
+	local s = armarSeguro()
+	if not s then return false end
+	if s.dueno and s.dueno ~= b then soltarSeguro() end
+	for _, k in ipairs(ATRIB_SEGURO) do s:SetAttribute(k, a[k]) end
+	s.dueno = b
+	s:SetFrameStrata(b:GetFrameStrata() or "MEDIUM")
+	s:SetFrameLevel(min(10000, K.num(b:GetFrameLevel(), 0) + 2))
+	s:ClearAllPoints()
+	s:SetAllPoints(b)
+	s:Show()
+	return true
+end
+
+-- Antes de que empiece el combate (todavía se puede) el seguro se va; al
+-- terminar, vuelve si el ratón sigue sobre su botón.
+local combateSeguro = CreateFrame("Frame")
+combateSeguro:RegisterEvent("PLAYER_REGEN_DISABLED")
+combateSeguro:RegisterEvent("PLAYER_REGEN_ENABLED")
+combateSeguro:SetScript("OnEvent", function(_, evento)
+	if evento == "PLAYER_REGEN_DISABLED" then
+		if seguro and seguro.dueno then soltarSeguro(true) end
+		return
+	end
+	local d = bajo.b
+	if d and d.alfaConSeguro and d:IsVisible() and d.IsMouseOver and d:IsMouseOver() then cubrir(d) end
+end)
+
+function K.Seguro(b, atrib)
+	if not b then return b end
+	b.alfaSeguro = atrib
+	if b.alfaConSeguro then
+		-- Un botón que se reutiliza con otros datos (una tarjeta, el globo de
+		-- Lya): si el seguro lo cubre, se rehace con lo nuevo o se va.
+		if seguro and seguro.dueno == b and not enCombate() then cubrir(b) end
+		return b
+	end
+	b.alfaConSeguro = true
+	b:HookScript("OnEnter", function(self)
+		bajo.b = self
+		cubrir(self)
+	end)
+	b:HookScript("OnLeave", function(self)
+		-- Al ponerse el seguro encima, el botón también recibe OnLeave: ese no cuenta.
+		if bajo.b == self and not (seguro and seguro.dueno == self) then bajo.b = nil end
+	end)
+	-- Si el botón se va (se cierra su página o su ventana), el seguro se va con él.
+	b:HookScript("OnHide", function(self)
+		if bajo.b == self then bajo.b = nil end
+		if seguro and seguro.dueno == self then soltarSeguro() end
+	end)
+	return b
+end
+
+-- Los botones del juego que abren cada ventana (Forever trae los dos de
+-- Clásico; la interfaz moderna, uno para ambas). Uno apagado (por ejemplo,
+-- los talentos antes del nivel en que se abren) no haría nada: sigue el otro.
+local MICRO = {
+	talentos = { "TalentMicroButton", "PlayerSpellsMicroButton" },
+	hechizos = { "SpellbookMicroButton", "PlayerSpellsMicroButton" },
+	bolsas = { "MainMenuBarBackpackButton" },
+	legado = { "LegacyMicroButton" },
+}
+
+function K.AbrirJuego(cual)
+	if cual == "clicLanzar" then
+		local cmd = rawget(_G, "SLASH_CLICKCASTING1")
+		if type(cmd) == "string" and cmd ~= "" and type(rawget(_G, "ToggleClickBindingFrame")) == "function" then
+			return { type = "macro", macrotext = cmd }
+		end
+		return nil
+	end
+	for _, nombre in ipairs(MICRO[cual] or {}) do
+		local b = rawget(_G, nombre)
+		if type(b) == "table" and b.Click and not (b.IsEnabled and not b:IsEnabled()) then
+			return { type = "click", clickbutton = b }
+		end
+	end
+	return nil
+end
+
+-- Para las piezas que arman botones desde datos: { texto, alClic, seguro, trasClic }.
+function K.SeguroDe(b, d)
+	if not b then return end
+	b.alfaTrasClic = d and d.trasClic or nil
+	if (d and d.seguro) or b.alfaConSeguro then K.Seguro(b, d and d.seguro or nil) end
+end
+
+local ACCION_DE = { talentos = "TOGGLETALENTS", hechizos = "TOGGLESPELLBOOK", bolsas = "OPENALLBAGS" }
+
+function K.TeclaJuego(accion)
+	accion = ACCION_DE[accion] or accion
+	if not (GetBindingKey and accion) then return nil end
+	local ok, k = pcall(GetBindingKey, accion)
+	if not ok or type(k) ~= "string" or k == "" then return nil end
+	return textoDeTecla(k) or k
+end

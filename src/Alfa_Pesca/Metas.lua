@@ -268,7 +268,8 @@ M.Escuchar(function(m)
 			f:Hide()
 		end
 	end
-	if m.metas and #M.MetasGuardadas() > 0 and not Me.Visible() and opt("metasVentana") and not N.DatosPersonaje(ID).metasCerrada then
+	-- Solo con el modo pesca abierto (pescar con la tecla fija no la abre).
+	if m.metas and E.modo and #M.MetasGuardadas() > 0 and not Me.Visible() and opt("metasVentana") and not N.DatosPersonaje(ID).metasCerrada then
 		Me.Alternar(true)
 	end
 	Me.Refrescar()

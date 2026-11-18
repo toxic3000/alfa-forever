@@ -502,7 +502,21 @@ local function armar(lista, filtro, idx, ceder, alAvanzar)
 		P.Anotar(pasos[1], format(L["%d misiones por cerrar (%d listas para entregar), en el orden más corto."], total, listas))
 	end
 	P.Anotar(pasos[1], L["La flecha usa vuelos y tu piedra de hogar cuando conviene."])
-	return pasos, nil, notas, listas == total
+	local dentro = {}
+	for _, grupo in ipairs({ ahora, despues }) do
+		for _, pm in ipairs(grupo) do dentro[pm.q.id] = true end
+	end
+	return pasos, nil, notas, listas == total, dentro
+end
+
+-- Lo que el plan vio del registro al armarse: { filtro, log = { [qid] = lista? }, dentro = { [qid] = true } }
+-- (Cr.AlDia lo compara con el registro de ahora).
+local function selloDe(lista, filtro, dentro)
+	local log = {}
+	for _, it in ipairs(lista or {}) do
+		if it.enLog then log[it.id] = it.listo and true or false end
+	end
+	return { filtro = filtro, log = log, dentro = dentro or {} }
 end
 
 function Cr.Armar(opts, alTerminar)
@@ -513,10 +527,12 @@ function Cr.Armar(opts, alTerminar)
 	local function conLista(lista)
 		local function seguir(idx)
 			T.Lanzar("cerrar:armar", function(ceder)
-				local pasos, por, notas, soloEntregar = armar(lista, filtro, idx, ceder, opts.alAvanzar)
-				return { pasos = pasos, por = por, notas = notas, solo = soloEntregar }
+				local pasos, por, notas, soloEntregar, dentro = armar(lista, filtro, idx, ceder, opts.alAvanzar)
+				return { pasos = pasos, por = por, notas = notas, solo = soloEntregar, dentro = dentro }
 			end, function(res, err)
-				if not res or not res.pasos then return alTerminar(nil, err and "error" or (res and res.por) or "vacio") end
+				if not res or not res.pasos then
+					return alTerminar(nil, err and "error" or (res and res.por) or "vacio", nil, selloDe(lista, filtro))
+				end
 				local mapa
 				for _, s in ipairs(res.pasos) do
 					for _, g in ipairs(s.goals) do if g.map then mapa = g.map break end end
@@ -525,7 +541,7 @@ function Cr.Armar(opts, alTerminar)
 				local def = M.Guias.Def(M.Guias.IdLiberar(), res.solo and L["Entregar mis misiones"] or L["Cerrar mis misiones"], res.pasos, {
 					zone = mapa, pitch = L["Tus misiones abiertas, para terminarlas y entregarlas por el camino más corto."],
 				})
-				alTerminar(def, nil, res.notas)
+				alTerminar(def, nil, res.notas, selloDe(lista, filtro, res.dentro))
 			end)
 		end
 		-- Con agregadas que piden nivel hace falta el índice (misiones de XP).
@@ -542,8 +558,8 @@ end
 
 -- Un clic: arma, instala y abre la guía; avisa qué hizo.
 function Cr.Ahora(filtro, alListo)
-	M.Aviso(L["Armando tu plan de misiones..."], L["Alfa mide los caminos (vuelos y piedra de hogar): tarda unos segundos."], { icono = "ic-misiones" })
-	Cr.Armar({ filtro = filtro }, function(def, motivo, notas)
+	M.Aviso(L["Armando «Cerrar mis misiones»..."], L["Alfa mide los caminos (vuelos y piedra de hogar): tarda unos segundos."], { icono = "ic-misiones" })
+	Cr.Armar({ filtro = filtro }, function(def, motivo, notas, sello)
 		if not def then
 			local texto = (motivo == "nada" or motivo == "vacio") and L["No tienes misiones para este plan con ese filtro."] or I.TextoMotivo(motivo)
 			M.Aviso(L["No armé el plan"], texto, { icono = "ic-aviso", tono = "aviso" })
@@ -556,6 +572,7 @@ function Cr.Ahora(filtro, alListo)
 			if alListo then alListo(false) end
 			return
 		end
+		pj().liberarSello = sello
 		local i, por = M.Guias.Abrir(def.id)
 		for k, n in ipairs(notas or {}) do
 			if k > 3 then break end
@@ -596,8 +613,97 @@ function Cr.AbandonarMarcadas()
 	return true
 end
 
+---------------------------------------------------------------------------
+-- El plan al día con tu registro
+---------------------------------------------------------------------------
+-- El plan se arma con el registro de ese momento. Si mientras lo sigues
+-- tomas una misión nueva (la que te da el PNJ al entregarle otra, aunque se
+-- llame igual) o, en "Entregar mis misiones", una queda lista, el plan
+-- abierto se arma otra vez solo, sin preguntar: el motor lleva lo hecho a la
+-- guía nueva y la nueva misión entra con sus objetivos antes de su entrega.
+-- En combate espera a que termine.
+
+local ESPERA = 3 -- segundos sin cambios en el registro antes de rearmar
+local programado, trasCombate, rearmando = false, false, false
+
+-- ¿El registro de ahora trae algo que el plan no vio al armarse?
+function Cr.AlDia()
+	local s = pj().liberarSello
+	if type(s) ~= "table" or type(s.log) ~= "table" then return true end
+	local Cp = CP()
+	if not (Cp and Cp.GetLogQuests) then return true end
+	for _, qid in ipairs(Cp.GetLogQuests() or {}) do
+		local antes = s.log[qid]
+		if antes == nil and not pj().marcas[qid] then return false end
+		if s.filtro == "listas" and antes == false and Cp.IsQuestReadyForTurnIn(qid) then return false end
+	end
+	return true
+end
+
+-- Rearma el plan abierto con el registro de ahora, sin avisos de armado; dice
+-- qué entró. fn(bien) al terminar.
+function Cr.Actualizar(alListo)
+	local s = pj().liberarSello
+	-- Un plan de una versión anterior no guardó qué vio: se rearma callado.
+	local callado = type(s) ~= "table"
+	local antes = not callado and type(s.dentro) == "table" and s.dentro or {}
+	rearmando = true
+	local filtro = not callado and s.filtro or nil
+	if callado then
+		local viejo = type(pj().especiales) == "table" and pj().especiales.liberar
+		if type(viejo) == "table" and viejo.title == L["Entregar mis misiones"] then filtro = "listas" end
+	end
+	Cr.Armar({ filtro = filtro }, function(def, motivo, _, sello)
+		rearmando = false
+		local bien = false
+		-- Sin nada que hacer (todo lo demás entregado) el plan se queda como está.
+		if def and M.Guias.Instalar(def) then
+			bien = true
+			local nuevas = {}
+			for qid in pairs(sello and sello.dentro or {}) do
+				if not antes[qid] then nuevas[#nuevas + 1] = M.Citar(M.TituloMision(qid)) end
+			end
+			table.sort(nuevas)
+			if #nuevas > 0 and not callado then
+				local lista = #nuevas > 3 and (concat(nuevas, ", ", 1, 3) .. " " .. format(L["y %d más"], #nuevas - 3)) or concat(nuevas, ", ")
+				M.Aviso(L["«Cerrar mis misiones» está al día"], format(#nuevas == 1 and L["Entró %s, con lo que pide antes de entregarla."]
+					or L["Entraron %s, con lo que piden antes de entregarlas."], lista), { icono = "ic-misiones" })
+			end
+		end
+		-- Lo visto se guarda aunque no entrara nada: no se vuelve a rearmar por lo mismo.
+		if sello then pj().liberarSello = sello end
+		if alListo then alListo(bien) end
+	end)
+end
+
+local function revisarPlanAbierto()
+	programado = false
+	if not M.Guias.Abierta(M.Guias.IdLiberar()) then return end
+	if InCombatLockdown and InCombatLockdown() then trasCombate = true return end
+	if rearmando or T.Corriendo("cerrar:armar") or T.Corriendo("cerrar:revisar") then
+		programado = true
+		A.After(ESPERA, revisarPlanAbierto)
+		return
+	end
+	if type(pj().liberarSello) ~= "table" or not Cr.AlDia() then Cr.Actualizar() end
+end
+
+local function programar()
+	if programado then return end
+	programado = true
+	A.After(ESPERA, revisarPlanAbierto)
+end
+
 -- El registro cambió: la revisión vieja ya no vale.
-local function olvidar() revision = nil M.Avisar("CERRAR") end
+local function olvidar() revision = nil M.Avisar("CERRAR") programar() end
 A.RegisterEvent("QUEST_ACCEPTED", olvidar)
 A.RegisterEvent("QUEST_REMOVED", olvidar)
 A.RegisterEvent("QUEST_TURNED_IN", olvidar)
+-- "Entregar mis misiones": una que queda lista entra (la mira el sello, barato).
+A.RegisterEvent("QUEST_LOG_UPDATE", function()
+	local s = pj().liberarSello
+	if type(s) == "table" and s.filtro == "listas" then programar() end
+end)
+A.RegisterEvent("PLAYER_REGEN_ENABLED", function()
+	if trasCombate then trasCombate = false programar() end
+end)

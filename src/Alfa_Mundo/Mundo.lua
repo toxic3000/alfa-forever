@@ -187,7 +187,7 @@ local function ajustesMapa(padre)
 				{ valor = "off", texto = L["Ocultas"] }, { valor = "on", texto = L["Reveladas"] }, { valor = "tint", texto = L["Reveladas con otro tono"] },
 			} })
 		end })
-	g.detalle = g:Fila({ titulo = L["Detalle fino de cada zona"], control = interruptor("mundo.detalle"),
+	g.detalle = g:Fila({ titulo = L["Más detalle al acercar el mapa"], control = interruptor("mundo.detalle"),
 		activa = function() return Lz.HayTexturas() end,
 		texto = L["Dibuja el arte completo de cada zona recortado a su forma, con las texturas de detalle incluidas. Sin ellas el mapa sigue completo, solo más suave entre zona y zona."] })
 	return g
@@ -359,7 +359,7 @@ N.Modulo({
 			search = "waypoints, markers, pins, marcadores, notas" },
 		{ kind = "toggle", key = "mundo.recibirMarcadores", label = L["Recibir marcadores de tu grupo"], search = "share waypoints, party, compartir" },
 		{ kind = "toggle", key = "mundo.menuMapa", label = L["Capas en la lupa del mapa del juego"], search = "tracking menu, layers" },
-		{ kind = "toggle", key = "mundo.detalle", label = L["Detalle fino de cada zona"], search = "map detail, textures" },
+		{ kind = "toggle", key = "mundo.detalle", label = L["Más detalle al acercar el mapa"], search = "map detail, textures, zoom, detalle fino" },
 		{ kind = "dropdown", key = "mundo.estiloMapa", label = L["Estilo del mapa"],
 			choices = { { value = "terreno", label = L["Terreno, como el minimapa"] }, { value = "clasico", label = L["Clásico, el arte pintado del juego"] } },
 			search = "map style, terrain, minimap, classic, estilo, terreno, minimapa" },

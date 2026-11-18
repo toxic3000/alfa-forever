@@ -8,6 +8,7 @@ import re
 
 CAMBIOS = {"Polestar": "Alfa", "POLESTAR": "ALFA", "polestar": "alfa"}
 PATRON = re.compile("|".join(CAMBIOS))
+POLE = re.compile(r"/pole(?=[\s).,:;])")
 
 # Fragmentos que nunca cambian: avisos de autoria y direcciones de Polestar.
 PROTEGIDOS = [
@@ -27,6 +28,9 @@ def cambiar(texto: str) -> str:
             texto = texto.replace(frag, marca)
             guardados[marca] = frag
     texto = PATRON.sub(lambda m: CAMBIOS[m.group(0)], texto)
+    # Los textos que enseñan el comando corto ("/pole lookup") dicen /alfa;
+    # el alias "/pole" (SLASH_ALFA2 = "/pole") sigue funcionando.
+    texto = POLE.sub("/alfa", texto)
     for marca, frag in guardados.items():
         texto = texto.replace(marca, frag)
     return texto

@@ -522,6 +522,14 @@ function Eq.Restaurar()
 	if #orden == 0 or Eq.restaurando then return 0 end
 	Eq.restaurando = true
 	local i = 0
+	-- Una pieza se olvida solo cuando de verdad quedó puesta: EquipItemByName no
+	-- avisa si falla (bolsas llenas para la caña de dos manos, la vendiste...).
+	local function verificar()
+		for _, r in ipairs(orden) do
+			local e = n[r]
+			if e and idDe(puesto(r)) == idDe(e) then n[r] = nil end
+		end
+	end
 	local function siguiente()
 		-- Si empieza un combate a medias, se espera a que termine sin borrar
 		-- nada: la pieza sigue anotada hasta que de verdad se pone.
@@ -533,14 +541,21 @@ function Eq.Restaurar()
 		local r = orden[i]
 		if not r then
 			Eq.restaurando = false
+			verificar()
 			Eq.Foto()
 			M.Avisar("equipo")
+			-- El juego confirma el cambio un poco después: otra mirada.
+			A.After(1, function()
+				if Eq.restaurando then return end
+				verificar()
+				M.Avisar("equipo")
+			end)
 			return
 		end
 		local e = n[r]
 		if e and not Eq.Excluido(r) then
-			-- Se borra solo si el juego aceptó la orden; si falló, queda para la próxima.
-			if equipar(e, r) then n[r] = nil end
+			-- Queda anotada hasta que verificar() la ve puesta; si falló, queda para la próxima.
+			equipar(e, r)
 		else
 			n[r] = nil
 		end

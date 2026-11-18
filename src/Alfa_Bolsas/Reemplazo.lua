@@ -290,6 +290,24 @@ end)
 
 A.OnLogin(function() M.Luego(0, R.Aplicar) end)
 
+---------------------------------------------------------------------------
+-- Para otros módulos (Lya, Inicio...): abrir las bolsas sin tocar las de
+-- Blizzard. Abrir las del juego desde código de Alfa (OpenAllBags,
+-- ToggleAllBags) las deja contaminadas y el juego bloquea usar objetos desde
+-- ellas; esas las abre el juego con un clic seguro (K.AbrirJuego("bolsas")).
+--   AlfaBolsas.Activas() -> true si Alfa reemplaza las bolsas del juego
+--   AlfaBolsas.Abrir()   -> true si abrió (o ya estaba abierta) la ventana de
+--                           Alfa; false si las bolsas de Alfa están apagadas
+--                           (con mando, otro addon de bolsas o el ajuste)
+---------------------------------------------------------------------------
+AlfaBolsas = type(rawget(_G, "AlfaBolsas")) == "table" and rawget(_G, "AlfaBolsas") or {}
+AlfaBolsas.Activas = function() return R.Activo() end
+AlfaBolsas.Abrir = function()
+	if not R.Activo() then return false end
+	V.MostrarBolsas(true)
+	return true
+end
+
 A.On("SETTING_CHANGED", function(ruta)
 	if ruta == M.ID .. ".reemplazar" or ruta == M.ID .. ".banco" or ruta == M.ID or ruta == "" then
 		if not R.Activo() then V.MostrarBolsas(false) end

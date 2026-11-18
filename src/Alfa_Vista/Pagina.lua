@@ -48,7 +48,10 @@ local function estado()
 		d.texto = L["Alfa no ha cambiado nada todavía. Prueba «Paisaje de la manada» o abre la ventana para ver los ajustes que el menú del juego no enseña."]
 	end
 	d.accion = { texto = L["Abrir Paisaje y gráficos"], icono = "ic-seguir", alClic = function() abrir() end }
-	if not p or p.id ~= "manada" then
+	if p and M.PuedeDeshacer() then
+		-- Con un preajuste puesto, deshacerlo desde aquí (como en la ventana).
+		d.secundaria = { texto = L["Deshacer preajuste"], alClic = function() M.Deshacer() end }
+	elseif not p or p.id ~= "manada" then
 		d.secundaria = { texto = L["Paisaje de la manada"], alClic = function() V.AplicarPreset("manada") end }
 	end
 	return d
@@ -81,7 +84,7 @@ local function atajoCVar(g, cvar, titulo, texto)
 end
 
 local function atajos(padre)
-	local g = K.GrupoAjustes(padre, { titulo = L["Atajos"] })
+	local g = K.GrupoAjustes(padre, { titulo = L["Efectos"] })
 	g:Fila({ titulo = L["Viñeta"], texto = L["Las orillas de la pantalla un poco más oscuras."], control = interruptor("vineta") })
 	g:Fila({ titulo = L["Grano de película"], texto = L["Un grano fino de cine sobre el mundo."], control = interruptor("grano") })
 	g:Fila({ titulo = L["Barras de cine"], texto = L["Para capturas y paseos. No da más FPS."], control = interruptor("barras") })

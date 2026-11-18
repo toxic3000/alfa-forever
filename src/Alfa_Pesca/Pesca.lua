@@ -454,8 +454,11 @@ local function deseadas()
 	pon("SoftTargetInteract", 3)
 	pon("SoftTargetInteractArc", 2)
 	pon("SoftTargetInteractRange", 60)
+	-- El corcho es un objeto del mundo: su ícono es SoftTargetIconGameObject.
+	-- SoftTargetIconInteract no se toca: es de las que CVarCallbackRegistry
+	-- guarda en caché (Blizzard_NamePlates.lua) y, cambiada desde Alfa, las
+	-- placas de nombre la leerían contaminada en combate (CVAR_UPDATE es síncrono).
 	pon("SoftTargetIconGameObject", icono)
-	pon("SoftTargetIconInteract", icono)
 	if opt("sonido") then
 		local v = entre(opt("volumen"), 0, 1, 1)
 		local musica = entre(opt("musica"), 0, 1, 0)

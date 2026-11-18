@@ -550,6 +550,16 @@ function I.PasosMision(q, desde)
 		out.objetivos[#out.objetivos + 1] = g
 		if g.map and not out.objetivo then out.objetivo = { map = g.map, x = g.x, y = g.y, f = g.f } end
 	end
+	-- Sin objetivos en el Codex pero con objetivos en tu registro (un dato que
+	-- falta): lo que pide el juego, como meta "complete" (el motor muestra sus
+	-- líneas del registro). Si no, el plan solo decía "Entrega" y te mandaba
+	-- al PNJ con la misión sin terminar.
+	if #out.objetivos == 0 and enLog then
+		local Cp = CP()
+		if Cp and Cp.GetQuestObjectives and Cp.GetQuestObjectives(q.id) then
+			out.objetivos[1] = { t = "complete", quest = q.id, title = q.title }
+		end
+	end
 	-- Misión de mazmorra: lo que pide se consigue dentro; la flecha lleva a la
 	-- entrada (nunca al punto de afuera que trae el dato) y queda marcada para
 	-- que el plan no la meta sin que la pidas.

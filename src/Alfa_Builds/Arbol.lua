@@ -463,6 +463,17 @@ end
 -- Disposición para dibujar el árbol
 ---------------------------------------------------------------------------
 
+-- El nombre de la rama i en tu idioma (Builds/<Clase>.lua): la foto del motor
+-- los trae en inglés ("Arms", "Feral Combat").
+local function nombreRama(i)
+	local dc = M.DatosClase and M.DatosClase()
+	for _, sp in pairs(dc and dc.especialidades or {}) do
+		if sp.indice == i then return sp.nombre end
+	end
+	return nil
+end
+T.NombreRama = nombreRama
+
 -- -> { specs = { { nombre, gastado } }, nodos = { { id, spec, fila, col, spell, nombre, icono, max, activo } },
 --      flechas = { { de, a } }, filas, columnas }
 -- Filas y columnas de la foto del motor; un nodo vivo que la foto no tiene
@@ -473,10 +484,10 @@ function T.Disposicion(vivo)
 	local d = { specs = {}, nodos = {}, flechas = {}, filas = 7, columnas = 4 }
 	local nombresSpec = f and f.specs or {}
 	if vivo then
-		for i, s in ipairs(vivo.specs) do d.specs[i] = { nombre = s.nombre or nombresSpec[i], gastado = s.gastado or 0 } end
+		for i, s in ipairs(vivo.specs) do d.specs[i] = { nombre = s.nombre or nombreRama(i) or nombresSpec[i], gastado = s.gastado or 0 } end
 	end
 	for i, nom in ipairs(nombresSpec) do
-		if not d.specs[i] then d.specs[i] = { nombre = nom, gastado = 0 } end
+		if not d.specs[i] then d.specs[i] = { nombre = nombreRama(i) or nom, gastado = 0 } end
 	end
 	local filaY, colX = {}, {}
 	local puestos = {}
@@ -493,7 +504,7 @@ function T.Disposicion(vivo)
 			if fn and n.spec == nil then n.spec = fn.spec end
 			if fn then
 				agregar({ id = id, spec = n.spec or fn.spec, fila = fn.row, col = fn.col, spell = n.spell or fn.spell,
-					nombre = n.nombre or fn.name, icono = n.icono, max = n.max, activo = n.activo })
+					nombre = n.nombre or T.Nombre(n.spell or fn.spell) or fn.name, icono = n.icono, max = n.max, activo = n.activo })
 				local s = n.spec or fn.spec
 				if n.y then filaY[s .. ":" .. n.y] = fn.row end
 				if n.x then colX[s .. ":" .. n.x] = fn.col end
@@ -528,7 +539,7 @@ function T.Disposicion(vivo)
 	end
 	if #d.nodos == 0 and f then
 		for id, fn in pairs(f.nodes) do
-			agregar({ id = id, spec = fn.spec, fila = fn.row, col = fn.col, spell = fn.spell, nombre = fn.name, max = fn.max, activo = 0 })
+			agregar({ id = id, spec = fn.spec, fila = fn.row, col = fn.col, spell = fn.spell, nombre = T.Nombre(fn.spell) or fn.name, max = fn.max, activo = 0 })
 		end
 	end
 	if #d.flechas == 0 and f then
@@ -551,7 +562,7 @@ function T.VivoDeFoto()
 	local f = foto()
 	if not f then return nil end
 	local vivo = { config = nil, tree = f.tree, nodos = {}, porSpell = {}, porNombre = {}, specs = {}, libres = 0, gastados = 0, foto = true }
-	for i, nom in ipairs(f.specs or {}) do vivo.specs[i] = { nombre = nom, gastado = 0 } end
+	for i, nom in ipairs(f.specs or {}) do vivo.specs[i] = { nombre = nombreRama(i) or nom, gastado = 0 } end
 	for id, fn in pairs(f.nodes) do
 		vivo.nodos[id] = { id = id, spell = fn.spell, nombre = T.Nombre(fn.spell) or fn.name, max = fn.max, activo = 0, actual = 0, spec = fn.spec, flechas = {} }
 		vivo.porSpell[fn.spell] = id

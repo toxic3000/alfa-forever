@@ -79,14 +79,27 @@ function D.Encendido()
 	return v == "1" or v == 1 or v == true
 end
 
--- Con el clic del jugador y fuera de combate: enciende el registro del juego.
+-- Encender el registro del juego lo hace quien juega, en las opciones del
+-- juego (Opciones > Opciones avanzadas > Activar el medidor de daño,
+-- AdvancedOptions.lua). Desde Alfa no: CVAR_UPDATE es síncrono y dejaría
+-- contaminada la caché de CVarCallbackRegistry (damageMeterEnabled es de las
+-- que guarda), y el medidor de Blizzard la lee en combate (ShouldBeShown)
+-- antes de comparar valores secretos: fallaría. "/console" tampoco sirve
+-- (Blizzard lo corre con forceinsecure()). El botón explica dónde está.
+function D.ComoEncender()
+	local seccion = rawget(_G, "ADVANCED_OPTIONS_LABEL")
+	local casilla = rawget(_G, "ENABLE_DAMAGE_METER")
+	return format(L["Enciéndelo en el menú del juego: Opciones > %s > «%s». Alfa no lo cambia por ti: el medidor del juego lo lee en combate y fallaría."],
+		type(seccion) == "string" and seccion or L["Opciones avanzadas"], type(casilla) == "string" and casilla or L["Activar el medidor de daño"])
+end
+
+-- La acción para una tarjeta o un botón del Kit.
+function D.AccionEncender()
+	return { texto = L["Cómo encenderlo"], alClic = D.Encender }
+end
+
 function D.Encender()
-	N.FueraDeCombate(function()
-		local set = (C_CVar and C_CVar.SetCVar) or SetCVar
-		M.Llamar(set, "damageMeterEnabled", "1")
-		D.Pedir()
-		M.Avisar()
-	end)
+	N.Imprimir(D.ComoEncender())
 end
 
 ---------------------------------------------------------------------------
@@ -272,7 +285,10 @@ function D.Anunciar(sesion, tipo)
 	local t = r.tipo
 	local quien = (sesion == "anterior" and L["pelea anterior"]) or (sesion == "todo" and L["todas las peleas"]) or L["pelea actual"]
 	local dur = D.Tiempo(r.dur)
-	local lineas = { format(L["Alfa · Top %d de %s (%s%s)"], #r.filas, t.texto, quien, dur and (", " .. dur) or "") }
+	-- Tu fila aparte (fuera del top) no se anuncia: no cuenta en el título.
+	local top = 0
+	for _, x in ipairs(r.filas) do if not x.aparte then top = top + 1 end end
+	local lineas = { format(L["Alfa · Top %d de %s (%s%s)"], top, t.texto, quien, dur and (", " .. dur) or "") }
 	for _, x in ipairs(r.filas) do
 		if not x.aparte then
 			local principal = t.porSeg and x.porSeg or x.valor

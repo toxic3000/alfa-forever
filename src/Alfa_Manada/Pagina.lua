@@ -297,6 +297,11 @@ local function alUnirse(ui)
 	if R.Buscando() then return end
 	local u = ui.unirse
 	local oficiales = (M.Clan and M.Clan.oficiales) or {}
+	-- Sin oficiales anotados (Clan.lua): "Quiero unirme" lleva al Discord.
+	if #oficiales == 0 then
+		if ui.clan then ui.clan:IrAlDiscord() end
+		return
+	end
 	local mensaje = U.TextoClan("mensajeUnirse") or ""
 	u.estado, u.quien = "buscando", nil
 	R.BuscarOficial(oficiales, function(nombre, por)
@@ -340,6 +345,11 @@ local function bloqueClan(ui, padre)
 	b.escribir = {}
 	b.Oficiales = K.Texto(b, "pequeno", "textoTenue")
 	b.Aviso = K.Texto(b, "nota", "aviso")
+	-- El motor rechaza las invitaciones (Ajustes > Calidad de vida > Social): un clic lo apaga.
+	b.Apagar = K.Boton(b, L["Apagarlo"], function()
+		if A.Set then A.Set("qol.declineGuildInvites", false) end
+		M.Avisar()
+	end, { tipo = "secundario", tam = "chico" })
 
 	function b:Llenar()
 		K.Escribir(self.Sobre, U.Mayus(L["El clan"]))
@@ -412,9 +422,11 @@ local function bloqueClan(ui, padre)
 		local nombres = {}
 		for i, nm in ipairs(of) do nombres[i] = U.Mostrar(nm) end
 		K.Escribir(self.Oficiales, #nombres > 0 and format(L["Oficiales: %s"], table.concat(nombres, ", ")) or "")
-		K.Escribir(self.Aviso, (A.Get and A.Get("qol.declineGuildInvites"))
-			and L["Tienes activado \"Rechazar invitaciones de hermandad\" en Comodidades: apágalo para que te llegue la invitación."] or "")
+		local rechaza = A.Get and A.Get("qol.declineGuildInvites") and true or false
+		K.Escribir(self.Aviso, rechaza
+			and L["Tienes activado «Rechazar invitaciones a hermandad» en Ajustes > Calidad de vida > Social: apágalo para que te llegue la invitación."] or "")
 		for _, x in ipairs({ self.Linea2, self.UnirseT, self.Unirse, self.Estado, self.Oficiales, self.Aviso }) do x:SetShown(self.alfaUnirse) end
+		self.Apagar:SetShown(self.alfaUnirse and rechaza or false)
 		if not self.alfaUnirse then for _, bt in ipairs(self.escribir) do bt:Hide() end end
 	end
 
@@ -526,6 +538,11 @@ local function bloqueClan(ui, padre)
 				y = y + ESP.s
 				en(self.Aviso, pad, y)
 				y = y + K.Parrafo(self.Aviso, w)
+			end
+			if self.Apagar:IsShown() then
+				y = y + ESP.s
+				en(self.Apagar, pad, y)
+				y = y + K.ALTO.botonChico
 			end
 		end
 		y = y + pad
@@ -684,6 +701,8 @@ local function vigilarEsc()
 		if not p then return end
 		A.After(0, function()
 			if pendiente ~= p then return end
+			-- Escondido por el combate (K.Dialogo): la pregunta sigue y vuelve al terminar.
+			if K.DialogoAbierto and K.DialogoAbierto() then return end
 			pendiente = nil
 			if p.alTerminar then K.Llamar(p.alTerminar, on("compartir")) end
 		end)

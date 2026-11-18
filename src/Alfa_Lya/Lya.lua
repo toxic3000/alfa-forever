@@ -625,6 +625,10 @@ end
 
 local function ponerBoton(b, a)
 	b.alfaAccion = a
+	-- Una acción que abre algo del juego la hace el juego (K.Seguro); después
+	-- Lya se calla como con cualquier otro botón.
+	K.SeguroDe(b, a)
+	if a and a.seguro then b.alfaTrasClic = function() if actual then UI.Callar() end end end
 	if not a then b:Hide() return 0 end
 	b:SetTexto(a.texto or "")
 	b:Show()

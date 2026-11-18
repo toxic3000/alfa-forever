@@ -112,10 +112,11 @@ end
 ---------------------------------------------------------------------------
 -- { id, corto (para el resumen), titulo, texto, grupos = { { titulo, filas } } }
 function M.PantallasDeAjustes()
+	local cura = M.Rol() == "cura"
 	return {
 		{
 			id = "apariencia", corto = "Todo con tu estilo",
-			titulo = "¿Llevamos tu estilo al resto de la pantalla?",
+			titulo = "Tu pantalla y tu compañera",
 			texto = "El estilo que elegiste también puede vestir el chat, el minimapa, las barras de abajo y el mapa. Se apaga cuando quieras y todo vuelve a como estaba.",
 			grupos = {
 				{ titulo = "Interfaz del juego", filas = {
@@ -141,7 +142,7 @@ function M.PantallasDeAjustes()
 				} },
 				{ titulo = "Paisaje", filas = {
 					fila({ id = "paisaje", titulo = "Un paisaje más bonito",
-						texto = "Más pasto, más horizonte, niebla ligera y rayos de sol, sin pedirle de más a tu PC. Se deshace con un clic en /alfa paisaje." },
+						texto = "Más pasto, más horizonte, niebla ligera y rayos de sol, sin pedirle de más a tu PC. Se deshace en Mundo > Paisaje y gráficos (o /alfa paisaje)." },
 						{ get = function()
 							local V = rawget(_G, "AlfaVista")
 							if not V then return false end
@@ -181,7 +182,9 @@ function M.PantallasDeAjustes()
 					{ id = "cerrarSaltadas", clave = "behavior.closeSkipped", titulo = "Cerrar lo que tu guía salta",
 						texto = "Tras aceptar o entregar, cierra la ventana del PNJ si solo ofrece misiones que tu guía no hace." },
 					{ id = "avisarCierra", clave = "behavior.warnClosing", titulo = "Avisar antes de una misión que cierra otra",
-						texto = "Dice en el chat qué misión perderías y te deja aceptarla a ti." },
+						texto = "Dice en el chat qué misión perderías y te deja aceptarla a ti.",
+						-- Encendido para quien configura Alfa por primera vez (nunca encima de lo que eligió).
+						recomendar = function() return true end },
 				} },
 				{ titulo = "Recompensas", filas = {
 					{ id = "mejorRecompensa", clave = "qol.rewardAutoPick", titulo = "Tomar la mejor recompensa",
@@ -296,8 +299,10 @@ function M.PantallasDeAjustes()
 			texto = "Ya vienen elegidas según tu clase y tu rol. Cámbialas si prefieres otra cosa.",
 			grupos = {
 				{ titulo = "En combate", filas = {
-					{ id = "curar", clave = "curacion.activo", titulo = "Curar con un clic",
-						texto = "Marcos de grupo de Alfa: pasas el ratón sobre un compañero y haces clic para curarlo.",
+					-- Para quien no cura (un guerrero), lo mismo es ver a su grupo y elegirlo.
+					{ id = "curar", clave = "curacion.activo", titulo = cura and "Curar con un clic" or "Marcos de grupo de Alfa",
+						texto = cura and "Marcos de grupo de Alfa: pasas el ratón sobre un compañero y haces clic para curarlo."
+							or "Ves a tu grupo con su vida y lo seleccionas con un clic.",
 						existe = function() return hay("curacion") and existe("curacion.activo") end,
 						recomendar = function(rol) if rol == "cura" then return true end end },
 					{ id = "rotacion", destacar = true, clave = "combate.rotacion", titulo = "Ayuda de rotación",

@@ -99,7 +99,8 @@ M.EN = {
 	["Oficiales: %s"] = "Officers: %s",
 	["Escribir a %s"] = "Write to %s",
 	["Abre un susurro con tu mensaje listo. Si no está conectado, el juego te lo dirá."] = "Opens a whisper with your message ready. If they're offline, the game will tell you.",
-	["Tienes activado \"Rechazar invitaciones de hermandad\" en Comodidades: apágalo para que te llegue la invitación."] = "\"Decline guild invitations\" is on in Quality of life: turn it off so the invite reaches you.",
+	["Tienes activado «Rechazar invitaciones a hermandad» en Ajustes > Calidad de vida > Social: apágalo para que te llegue la invitación."] = "“Decline guild invitations” is on in Settings > Quality of Life > Social: turn it off so the invite reaches you.",
+	["Apagarlo"] = "Turn it off",
 
 	["Opcional"] = "Optional",
 	["Muy pronto"] = "Coming soon",

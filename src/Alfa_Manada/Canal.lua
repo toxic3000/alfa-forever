@@ -49,6 +49,7 @@ local estado, razon = "fuera", nil
 local queremos = false
 local intentos = 0
 local saliendo = false
+local cancelada = false -- se apagó compartir con la entrada ya pedida al juego
 C.alEntrar = nil -- fn(): ya estamos dentro (Red.lua saluda)
 
 local function unirFn()
@@ -186,6 +187,7 @@ function C.Entrar()
 end
 
 function C.Salir()
+	if estado == "entrando" and not C.Id() then cancelada = true end
 	if estado == "esperando" or estado == "entrando" then estado = "fuera" end
 	if not C.Id() then
 		estado = "fuera"
@@ -224,7 +226,14 @@ A.RegisterEvent("CHAT_MSG_CHANNEL_NOTICE", function(_, tipo, _, _, canal, _, _, 
 	if not (C.EsNuestro(base) or C.EsNuestro(canal)) then return end
 	tipo = U.Texto(tipo)
 	if tipo == "YOU_JOINED" or tipo == "YOU_CHANGED" then
-		if queremos then marcarDentro() end
+		-- Si apagaste compartir mientras se entraba, ahora que el canal existe se sale.
+		if queremos then
+			cancelada = false
+			marcarDentro()
+		elseif cancelada and tipo == "YOU_JOINED" then
+			cancelada = false
+			C.Salir()
+		end
 	elseif tipo == "YOU_LEFT" then
 		estado = "fuera"
 		if queremos and not saliendo then

@@ -362,10 +362,11 @@ function M.NombreRol(rol)
 end
 
 -- Una fila de un índice inverso guarda objeto y probabilidad en un número:
--- id * 10000 + probabilidad en centésimas (0: no se sabe).
+-- id * 10000 + probabilidad en centésimas (0: no se sabe). Tope 99,99: el
+-- 100 % (10000) se comería el id (se leería como el objeto siguiente).
 function M.Empacar(id, p)
 	p = tonumber(p)
-	local c = p and p > 0 and floor(math.min(p, 100) * 100 + 0.5) or 0
+	local c = p and p > 0 and floor(math.min(p, 99.99) * 100 + 0.5) or 0
 	return id * 10000 + c
 end
 function M.Desempacar(v)

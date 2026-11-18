@@ -4,7 +4,7 @@
 
 **The all-in-one for World of Warcraft: Forever.** Guides, route, map, bags, talents, encyclopedia, dungeons, healing, fishing, trading and your guild, in one addon with one look — and **Lya**, a black she-wolf companion who chats with you about lore, your zone and your adventures. Made by **toxic3000** for **La Jauría**. Free, open source, 10 languages.
 
-> 🐺 **New in 1.1.4:** Lya has a brand-new look and chats a lot more (Warcraft lore, every zone, your race, class and professions, event and farming tips — and she loves sausages); a "find nearby" button by your guide; flight points and travel spots on the map; and every update now greets you with the wolf intro and its notes.
+> 🐺 **New in 1.1.5:** no more "Alfa_Builds has been blocked" when casting from the spellbook (the game now opens Blizzard's windows); your guide no longer sends you to hand in unfinished quests; druids, warriors and rogues get a one-click fill for an empty form or stance bar; Today shows your next step first; and a full review brought over 60 fixes.
 > If something breaks, tell us with `/alfa reportar`, on [Discord](https://discord.gg/hUNjA6BJwh), in the comments or on [GitHub](https://github.com/toxic3000/alfa-forever/issues).
 
 ## A quick look / Un vistazo
@@ -70,7 +70,7 @@ It doesn't switch your brain off: Alfa backs you up and you decide. The first ti
 
 **El todo en uno para World of Warcraft: Forever.** Guías, ruta, mapa, bolsas, talentos, enciclopedia, mazmorras, curación, pesca, comercio y tu clan, en un solo addon y con un solo estilo. Hecho por **toxic3000** para **La Jauría**.
 
-> **Novedades de la 1.1.4:** Lya estrena look y platica mucho más (lore de Warcraft, cada zona, tu raza, clase y profesiones, consejos de eventos y farmeo, ¡y le encantan las salchichas!); un botón para buscar lo que tienes cerca junto a tu guía; los puntos de vuelo y de viaje en el mapa; y cada actualización te recibe con la intro del lobo y sus notas.
+> **Novedades de la 1.1.5:** se acabó el «Alfa_Builds se ha bloqueado» al lanzar desde el libro de hechizos (las ventanas de Blizzard ahora las abre el juego); tu guía ya no te manda a entregar misiones sin terminar; druidas, guerreros y pícaros llenan con un clic su barra de forma o actitud vacía; Hoy te pone tu siguiente paso primero; y una revisión completa trajo más de 60 arreglos.
 > Si algo falla, avísanos con `/alfa reportar`, en el [Discord de La Jauría](https://discord.gg/hUNjA6BJwh), en los comentarios o en [GitHub](https://github.com/toxic3000/alfa-forever/issues).
 
 ¿Cansado de tener un montón de addons que se enciman y te llenan el mapa de marcas? Alfa los junta en uno solo, ordenado y guiado, que se adapta a tu clase. **No necesita ningún otro addon.**

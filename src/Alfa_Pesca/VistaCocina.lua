@@ -34,7 +34,10 @@ local function tarjetaCola()
 		d.titulo = format(L["Siguiente: %s (%d de %d)"], c.nombre or "?", c.hechas, c.cantidad)
 		d.texto = Co.Abierta() and L["Pulsa Cocinar: cada clic hace un lote. Tienes que estar junto a un fuego."]
 			or L["El primer clic abre la Cocina del juego; el siguiente cocina el lote. Tienes que estar junto a un fuego."]
-		d.accion = { texto = L["Cocinar el siguiente lote"], icono = "ic-seguir", alClic = cocinar }
+		-- trasClic: lo que hace el clic del botón seguro (M.ConSeguro, abajo). Va en
+		-- los datos porque cada :Set de la tarjeta lo vuelve a poner (K.SeguroDe).
+		d.accion = { texto = L["Cocinar el siguiente lote"], icono = "ic-seguir", alClic = cocinar,
+			trasClic = function() if Co.Abierta() then cocinar() end end }
 		d.progreso = { actual = c.hechas, total = max(1, c.cantidad), texto = format(L["%d de %d"], c.hechas, c.cantidad) }
 	else
 		d.titulo = L["Tu cola de cocina está vacía"]
@@ -87,7 +90,6 @@ local function construir(padre)
 		-- Los botones de la tarjeta hacen algo protegido: el botón seguro los cubre.
 		if not envuelto and ui.cola.Accion then
 			M.ConSeguro(ui.cola.Accion, function() return Co.Atributos() end)
-			ui.cola.Accion.alfaTrasClic = function() if Co.Abierta() then cocinar() end end
 			envuelto = true
 		end
 		if ui.cola.Secundaria and not ui.cola.Secundaria.alfaSeguro then

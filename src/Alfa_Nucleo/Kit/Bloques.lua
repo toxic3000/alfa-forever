@@ -168,20 +168,24 @@ function K.Seccion(padre, titulo, opts)
 			if not self.Enlace then self.Enlace = K.Boton(self, "", nil, { tipo = "fantasma", tam = "chico" }) end
 			self.Enlace:SetTexto(o.enlace.texto)
 			self.Enlace.alClic = o.enlace.alClic
+			K.SeguroDe(self.Enlace, o.enlace)
 			self.Enlace:Show()
 		elseif self.Enlace then
 			self.Enlace:Hide()
 		end
 	end
 	function s:Acomodar(ancho)
-		K.Ajustar(self.Titulo, ancho - 120)
-		K.Ajustar(self.Cuenta)
 		local derecha = 0
 		if self.Enlace and self.Enlace:IsShown() then
 			self.Enlace:ClearAllPoints()
 			self.Enlace:SetPoint("RIGHT", self, "RIGHT", 0, 0)
 			derecha = K.num(self.Enlace:GetWidth(), 0) + ESP.m
 		end
+		-- El título no se mete debajo del enlace ni de la cuenta (un enlace
+		-- ancho, como "Abrir la ventana del juego", pasa de 120).
+		local cw = K.Ajustar(self.Cuenta)
+		cw = (self.Cuenta:GetText() or "") ~= "" and (cw + 8) or 0
+		K.Ajustar(self.Titulo, max(40, ancho - max(120, derecha + cw + ESP.m)))
 		self.Linea:ClearAllPoints()
 		local ancla = (self.Cuenta:GetText() or "") ~= "" and self.Cuenta or self.Titulo
 		self.Linea:SetPoint("LEFT", ancla, "RIGHT", ESP.m, 0)
@@ -322,6 +326,7 @@ function K.Tarjeta(padre, opts)
 			self.Accion:SetTexto(d.accion.texto)
 			self.Accion:SetIcono(d.accion.icono)
 			self.Accion.alClic = d.accion.alClic
+			K.SeguroDe(self.Accion, d.accion)
 			self.Accion:Show()
 		elseif self.Accion then
 			self.Accion:Hide()
@@ -330,6 +335,7 @@ function K.Tarjeta(padre, opts)
 			self.Secundaria = self.Secundaria or K.Boton(self, "", nil, { tipo = "fantasma", tam = v == "accion" and "normal" or "chico" })
 			self.Secundaria:SetTexto(d.secundaria.texto)
 			self.Secundaria.alClic = d.secundaria.alClic
+			K.SeguroDe(self.Secundaria, d.secundaria)
 			self.Secundaria:Show()
 		elseif self.Secundaria then
 			self.Secundaria:Hide()
@@ -472,6 +478,10 @@ function K.Tarjeta(padre, opts)
 			else
 				local bx = x
 				abajo = abajo + ESP.base
+				-- En una fila de rejilla (altoMin), los botones van al pie de la
+				-- tarjeta: así quedan a la misma altura en todas las de la fila.
+				local bh = K.num(botones[1]:GetHeight(), 32)
+				if altoMin and altoMin > abajo + bh + pad then abajo = altoMin - pad - bh end
 				for _, b in ipairs(botones) do
 					b:SetAncho(nil)
 					b:ClearAllPoints()
@@ -745,6 +755,7 @@ function K.Vacio(padre, opts)
 			self.Accion:SetTexto(o.accion.texto)
 			self.Accion:SetIcono(o.accion.icono)
 			self.Accion.alClic = o.accion.alClic
+			K.SeguroDe(self.Accion, o.accion)
 			self.Accion:Show()
 		elseif self.Accion then
 			self.Accion:Hide()

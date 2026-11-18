@@ -166,14 +166,25 @@ function R.ResaltadoActivo()
 	return M.Opt("resaltar") and true or false
 end
 
--- Con el clic del jugador: el ajuste del juego (fuera de combate) o el de Alfa.
+-- El ajuste del juego (assistedCombatHighlight) no se cambia desde Alfa:
+-- CVAR_UPDATE es un evento síncrono, así que CVarCallbackRegistry y
+-- AssistedCombatManager:ProcessCVars correrían dentro del código de Alfa y
+-- dejarían contaminados su OnUpdate y los marcos que pone en los botones de
+-- acción hasta un /reload. "/console" tampoco sirve: Blizzard lo corre con
+-- forceinsecure() (SlashCommands.lua). Lo cambia quien juega en las opciones
+-- del juego (Opciones > Opciones avanzadas, AdvancedOptions.lua).
+function R.ComoCambiarResaltado()
+	local seccion = rawget(_G, "ADVANCED_OPTIONS_LABEL")
+	local casilla = rawget(_G, "ASSISTED_COMBAT_HIGHLIGHT_LABEL")
+	return format(L["Cámbialo en el menú del juego: Opciones > %s > «%s». Alfa no lo cambia por ti: el juego lo lee en combate y fallaría."],
+		type(seccion) == "string" and seccion or L["Opciones avanzadas"], type(casilla) == "string" and casilla or L["Resaltado asistido"])
+end
+
+-- Con el clic del jugador: el ajuste de Alfa, o cómo cambiar el del juego.
 function R.SetResaltado(on)
 	if R.ResaltadoOficial() then
-		N.FueraDeCombate(function()
-			local set = (C_CVar and C_CVar.SetCVar) or SetCVar
-			M.Llamar(set, "assistedCombatHighlight", on and "1" or "0")
-			M.Avisar()
-		end)
+		N.Imprimir(R.ComoCambiarResaltado())
+		M.Avisar()
 	else
 		M.SetOpt("resaltar", on and true or false)
 	end

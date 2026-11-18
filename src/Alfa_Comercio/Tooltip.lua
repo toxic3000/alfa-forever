@@ -53,9 +53,32 @@ function M.LineasCuadro(c)
 	return uno, dos
 end
 
+local function secreto(v) return issecretvalue and issecretvalue(v) or false end
+
+-- El objeto de ese cuadro ya está ligado (uno "al equiparse" que ya te pusiste):
+-- true, false o nil si no se sabe (un objeto que no es tuyo, un enlace del chat).
+-- El cuadro trae su GUID (GetTooltipData); C_Item.GetItemLocation y IsBound
+-- (ItemDocumentation) dicen si está ligado. Sin eso, el tipo de ligado del objeto.
+local function ligadoDe(tooltip)
+	if not (tooltip and tooltip.GetTooltipData) then return nil end
+	local ok, d = pcall(tooltip.GetTooltipData, tooltip)
+	if not ok or secreto(d) or type(d) ~= "table" then return nil end
+	local guid = d.guid
+	if secreto(guid) or type(guid) ~= "string" or guid == "" then return nil end
+	local CI = C_Item
+	if not (CI and CI.GetItemLocation and CI.IsBound) then return nil end
+	local ok2, loc = pcall(CI.GetItemLocation, guid)
+	if not ok2 or type(loc) ~= "table" or not loc.IsValid then return nil end
+	local ok3, valido = pcall(loc.IsValid, loc)
+	if not (ok3 and valido == true) then return nil end
+	local ok4, si = pcall(CI.IsBound, loc)
+	if ok4 and not secreto(si) and type(si) == "boolean" then return si end
+	return nil
+end
+
 A.Hooks.ItemLines(M.ID, function(tooltip, link, itemID)
 	if not M.Ajuste("tooltip") or type(itemID) ~= "number" then return end
-	local c = M.Consejo(itemID, { link = link })
+	local c = M.Consejo(itemID, { link = link, ligado = ligadoDe(tooltip) })
 	local uno, dos = M.LineasCuadro(c)
 	if not uno then return end
 	A.Hooks.AddLine(tooltip, N.HEX .. "Alfa|r " .. uno, nil, 1, 1, 1)

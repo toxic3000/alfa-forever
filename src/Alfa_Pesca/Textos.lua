@@ -535,4 +535,7 @@ M.EN = {
 	["Clic: quitar de la cola."] = "Click: remove from the queue.",
 	["Vaciar"] = "Empty",
 	["Cocina"] = "Cooking",
+	-- Pagina.lua: las ranuras que no se cambian, plegadas
+	["Avanzado"] = "Advanced",
+	["Las ranuras que tu tecla nunca cambia: cabeza, manos, pies, abalorios y las demás."] = "The slots your key never changes: head, hands, feet, trinkets and the rest.",
 }

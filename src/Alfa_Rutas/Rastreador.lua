@@ -118,11 +118,22 @@ end
 function Rs.SinTraducir(s)
 	if type(s) ~= "string" or s == "" or not enEspanol() then return false end
 	local limpio = s:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub("|T.-|t", ""):gsub("|H.-|h(.-)|h", "%1")
-	local en, es = 0, 0
+	local en, es, primera, posesivo = 0, 0, nil, false
 	for w in limpio:lower():gmatch("[%a']+") do
+		if primera == nil then primera = w end
 		if INGLES[w] then en = en + 1 elseif ESPANOL[w] then es = es + 1 end
+		-- "X's hunt targets": el posesivo del inglés (el español no lo usa).
+		if w:find("%a's$") then posesivo = true end
 	end
-	return en >= 2 and en > es
+	if es > 0 then return en >= 2 and en > es end
+	-- Sin ninguna palabra del español: dos del inglés, su posesivo o que
+	-- empiece con una del inglés ("Into Vallefresno", "The road north").
+	return en >= 2 or posesivo or (primera ~= nil and INGLES[primera] == true)
+end
+
+-- Una meta de nota que quedó en inglés: no se muestra.
+local function notaEnIngles(g)
+	return g ~= nil and g.t == "note" and Rs.SinTraducir(g.text)
 end
 
 -- La nota de una meta, sin la que quedó en inglés (para GoalSubline del motor).
@@ -150,6 +161,104 @@ local function notaPaso(v)
 	local nota = v and (v.why or v.note)
 	if type(nota) ~= "string" or nota == "" or Rs.SinTraducir(nota) then return nil end
 	return nota
+end
+
+-- El título de un paso en tu idioma. Uno del motor que quedó en inglés
+-- ("Into Vallefresno", "X's hunt targets") o sin título: lo que pide su meta
+-- de ahora (o la primera), como la escribe el motor en tu idioma; sin nada
+-- en tu idioma, vacío (no se mezclan idiomas).
+local function tituloPaso(v)
+	local titulo = v and v.title
+	if type(titulo) == "string" and titulo ~= "" and not Rs.SinTraducir(titulo) then return titulo end
+	local u = U()
+	local plano = u and u.PlainGoalText
+	if type(plano) ~= "function" then return "" end
+	local meta
+	for _, g in ipairs(v and v.goals or {}) do
+		if g.status ~= "na" and g.t ~= "note" and not g.header then
+			if g.index == v.current then meta = g break end
+			meta = meta or g
+		end
+	end
+	if not meta then return "" end
+	local ok, s = pcall(plano, meta)
+	if ok and type(s) == "string" and s ~= "" and not Rs.SinTraducir(s) then return s end
+	return ""
+end
+
+-- El número de un paso como lo cuenta la guía (los pasos ocultos no cuentan).
+local function numeroPaso(i)
+	local u = U()
+	return u and u.StepNo and u.StepNo(i) or i
+end
+
+---------------------------------------------------------------------------
+-- Entregas de misiones que aún no terminas
+---------------------------------------------------------------------------
+-- La meta de entregar no mira si la misión está lista: el motor la deja abierta
+-- y la flecha va al PNJ. Una misión en tu registro con objetivos (los que lista
+-- el juego), ni lista ni fallida, no se entrega todavía.
+
+-- Una meta de entregar (de la vista del motor) cuya misión aún no terminas.
+local function sinTerminar(g)
+	if not (g and g.t == "turnin" and g.quest and (g.status == "active" or g.status == "pending")) then return false end
+	local Cp = A.Compat
+	if not (Cp and Cp.IsOnQuest and Cp.IsQuestReadyForTurnIn and Cp.GetQuestObjectives) then return false end
+	local q = g.quest
+	if not Cp.IsOnQuest(q) or Cp.IsQuestReadyForTurnIn(q) then return false end
+	if Cp.IsQuestFailed and Cp.IsQuestFailed(q) then return false end
+	-- Sin objetivos en el registro (llevar una carta, hablar con alguien) no hay qué terminar.
+	return Cp.GetQuestObjectives(q) ~= nil
+end
+Rs.SinTerminar = sinTerminar
+
+-- Lo que le falta a la misión q, en palabras del juego: "Asta de hierro (0/1)".
+local function faltaDe(q)
+	local Cp = A.Compat
+	local objs = Cp and Cp.GetQuestObjectives and Cp.GetQuestObjectives(q)
+	local partes, resto = {}, 0
+	for _, o in ipairs(objs or {}) do
+		if not o.finished then
+			local nombre = Cp.ObjectiveLabel and Cp.ObjectiveLabel(o.text) or ""
+			if nombre ~= "" then
+				if #partes < 2 then
+					partes[#partes + 1] = format("%s (%d/%d)", nombre, tonumber(o.numFulfilled) or 0, tonumber(o.numRequired) or 1)
+				else
+					resto = resto + 1
+				end
+			end
+		end
+	end
+	if #partes == 0 then return nil end
+	local s = table.concat(partes, ", ")
+	if resto > 0 then s = s .. " " .. format(L["y %d más"], resto) end
+	return s
+end
+
+-- La entrega sin terminar que el paso v te pide ahora (su meta de ahora). -> meta, lo que falta
+local function entregaSinTerminar(v)
+	if not (v and v.goals and v.current) then return nil end
+	for _, g in ipairs(v.goals) do
+		if g.index == v.current and sinTerminar(g) then return g, faltaDe(g.quest) end
+	end
+	return nil
+end
+
+local OBRA = { kill = true, collect = true, interact = true, use = true, talk = true, complete = true }
+
+-- El primer paso de la guía (que no sea `menos`) con trabajo abierto de la misión q. -> índice | nil
+local function pasoDeLaObra(q, menos)
+	local e = E()
+	local g = e and e.GetGuide and e.GetGuide()
+	if not (g and type(g.steps) == "table") then return nil end
+	for k, paso in ipairs(g.steps) do
+		if k ~= menos then
+			for gi, meta in ipairs(paso.goals or {}) do
+				if meta.quest == q and OBRA[meta.t] and engine("Applies", k, gi) and not engine("GoalDone", k, gi) then return k end
+			end
+		end
+	end
+	return nil
 end
 
 ---------------------------------------------------------------------------
@@ -221,9 +330,9 @@ local function menuMeta(fila)
 		local q = g.quest
 		op[#op + 1] = { valor = function() engine("SkipQuest", q, true) end, texto = L["Omitir esta misión"], icono = "ic-cerrar" }
 		if M.Cerrar.EnPlan(q) then
-			op[#op + 1] = { valor = function() M.Cerrar.Quitar(q) end, texto = L["Quitar de mi plan de misiones"], icono = "ic-misiones" }
+			op[#op + 1] = { valor = function() M.Cerrar.Quitar(q) end, texto = L["Quitar de Cerrar mis misiones"], icono = "ic-misiones" }
 		else
-			op[#op + 1] = { valor = function() M.Cerrar.Agregar(q) end, texto = L["Agregar a mi plan de misiones"], icono = "ic-misiones" }
+			op[#op + 1] = { valor = function() M.Cerrar.Agregar(q) end, texto = L["Agregar a Cerrar mis misiones"], icono = "ic-misiones" }
 		end
 		if AlfaEnciclopedia and AlfaEnciclopedia.Abrir then
 			op[#op + 1] = { valor = function() AlfaEnciclopedia.Abrir("quest", q) end, texto = L["Ver en la Enciclopedia"], icono = "ic-enciclopedia" }
@@ -318,7 +427,9 @@ local function pintarFila(cx, n, v, g, x, y, ancho, mapa, lineas, conSub, conBar
 	local f = filaMeta(cx, n)
 	f.alfaMeta, f.alfaPaso = g, v.index
 	local hecha = g.status == "done" or g.status == "skipped"
-	local actual = v.current == g.index
+	-- cx.previa: el paso que miras no es el de ahora; sus metas van atenuadas
+	-- y ninguna lleva la raya de "ahora".
+	local actual = v.current == g.index and not cx.previa
 	local fuera = type(g.noDisponible) == "string" and g.noDisponible ~= ""
 	f.Marca.caja:Estilo({ fondo = hecha and "acento" or "hundido", alfaFondo = hecha and 0.18 or nil, borde = (hecha or actual) and "acento" or "lineaFuerte" })
 	f.Marca.Ok:SetShown(hecha)
@@ -326,7 +437,7 @@ local function pintarFila(cx, n, v, g, x, y, ancho, mapa, lineas, conSub, conBar
 	local linea = u and u.GoalLine and u.GoalLine(g) or (g.text or "")
 	local tw = ancho - 20
 	K.Escribir(f.Texto, linea)
-	K.ColorTexto(f.Texto, (hecha or fuera) and "textoTenue" or "texto")
+	K.ColorTexto(f.Texto, (hecha or fuera or cx.previa or sinTerminar(g)) and "textoTenue" or "texto")
 	f.Texto:ClearAllPoints()
 	f.Texto:SetPoint("TOPLEFT", f, "TOPLEFT", 20, -2)
 	local h = 2 + K.Parrafo(f.Texto, tw, lineas)
@@ -340,6 +451,11 @@ local function pintarFila(cx, n, v, g, x, y, ancho, mapa, lineas, conSub, conBar
 			sub = format(L["Antes: %s"], g.antes) .. (sub and ("\n" .. sub) or "")
 		end
 		if fuera then sub = format(L["No disponible: %s"], g.noDisponible) end
+		-- Una entrega de una misión que aún no terminas: qué le falta.
+		if not fuera and sinTerminar(g) then
+			local falta = faltaDe(g.quest)
+			sub = falta and format(L["Aún no está terminada: te falta %s."], falta) or L["Aún no está terminada: termínala antes de entregarla."]
+		end
 	end
 	if sub and sub ~= "" then
 		K.Escribir(f.Sub, sub)
@@ -388,7 +504,7 @@ local function pintarMetas(cx, v, x, y, ancho, mapa)
 			local cabeza = true
 			for _, k in ipairs(grp.goals or {}) do
 				local g = v.goals[k]
-				if g and g.status ~= "na" and not g.folded and not g.header then
+				if g and g.status ~= "na" and not g.folded and not g.header and not notaEnIngles(g) then
 					local nombre = cabeza and u.GroupName and u.GroupName(v, grp) or nil
 					if nombre == anterior then nombre = nil end
 					if cabeza and nombre then anterior = nombre end
@@ -399,7 +515,7 @@ local function pintarMetas(cx, v, x, y, ancho, mapa)
 		end
 	else
 		for _, g in ipairs(v and v.goals or {}) do
-			if g.status ~= "na" and not g.folded and not g.header then orden[#orden + 1] = { g = g } end
+			if g.status ~= "na" and not g.folded and not g.header and not notaEnIngles(g) then orden[#orden + 1] = { g = g } end
 		end
 	end
 	for _, o in ipairs(orden) do
@@ -427,7 +543,7 @@ local function metasAbiertas(v)
 	local out = {}
 	for _, g in ipairs(v and v.goals or {}) do
 		if g.status ~= "na" and g.status ~= "done" and g.status ~= "skipped" and not g.folded and not g.header
-			and not (type(g.noDisponible) == "string" and g.noDisponible ~= "") then
+			and not (type(g.noDisponible) == "string" and g.noDisponible ~= "") and not notaEnIngles(g) then
 			out[#out + 1] = g
 		end
 	end
@@ -449,7 +565,8 @@ local function pintarMetasCompacto(cx, v, x, y, ancho)
 	local n = 0
 	for k = 1, min(MAX_COMPACTO, #abiertas) do
 		n = n + 1
-		y = pintarFila(cx, n, v, abiertas[k], x, y, ancho, nil, 1, false, k == 1)
+		-- Hasta dos renglones: "Consigue la ruta de vuelo en Puesto del…" no se corta.
+		y = pintarFila(cx, n, v, abiertas[k], x, y, ancho, nil, 2, false, k == 1)
 	end
 	ocultarDesde(cx.metas, n + 1)
 	for k = 1, #cx.grupos do cx.grupos[k]:Hide() end
@@ -607,9 +724,16 @@ function Rs.BotonCerca()
 	if not c then return end
 	local ver = M.Cerca ~= nil and A.Get(M.ID .. ".cercaBoton") ~= false
 	c.Cerca:SetShown(ver)
-	local tope = ver and c.Cerca or c.Menu
-	c.Titulo:SetPoint("RIGHT", tope, "LEFT", -6, 0)
-	c.Sub:SetPoint("RIGHT", tope, "LEFT", -6, 0)
+	-- Hasta el primer botón (cerrar, el menú y buscar cerca: 22 px cada uno),
+	-- sin encimarse: el nombre en hasta dos renglones (la cabecera crece,
+	-- cabecera()), y entero al pasar el ratón por la cabecera.
+	local botones = 8 + 22 + 2 + 22 + (ver and (2 + 22) or 0)
+	c.alfaAnchoTitulo = ANCHO - botones - 6 - (PAD + 24)
+	c.Titulo:SetJustifyH("LEFT")
+	c.Sub:SetJustifyH("LEFT")
+	c.Sub:SetWordWrap(false)
+	c.Sub:SetWidth(c.alfaAnchoTitulo)
+	if F and F:IsShown() and Rs.Luego then Rs.Luego() end
 end
 
 local function construir()
@@ -650,6 +774,8 @@ local function construir()
 	c.Sub = K.Texto(c, "pequeno", "textoTenue")
 	c.Sub:SetPoint("TOPLEFT", c.Titulo, "BOTTOMLEFT", 0, -2)
 	Rs.BotonCerca()
+	-- El nombre completo de la guía (en la cabecera puede ir cortado).
+	K.ConInfo(c, function(self) return self.alfaNombre, nil end)
 	c.Linea = K.Linea(c, "linea")
 	c.Linea:SetPoint("BOTTOMLEFT", c, "BOTTOMLEFT", PAD, 0)
 	c.Linea:SetPoint("BOTTOMRIGHT", c, "BOTTOMRIGHT", -PAD, 0)
@@ -738,8 +864,10 @@ local function construir()
 	ui.omitir = K.Boton(F, L["Omitir"], function()
 		local e = E()
 		if e and e.GetGuide and e.GetGuide() then engine("Skip") end
-	end, { tipo = "fantasma", tam = "chico", ayuda = L["Omite este paso: la guía sigue con el siguiente. Puedes volver a él con Anterior."] })
-	ui.siguiente = K.Boton(F, L["Siguiente"], function() engine("Next") end, { tipo = "secundario", tam = "chico" })
+	end, { tipo = "fantasma", tam = "chico", ayuda = L["Omite este paso: la guía sigue con el siguiente. Puedes volver a él desde «Ver detalle»."] })
+	-- Engine.Next solo deja mirar el paso que sigue (la guía avanza sola).
+	ui.siguiente = K.Boton(F, L["Ver el siguiente"], function() engine("Next") end,
+		{ tipo = "secundario", tam = "chico", ayuda = L["Solo para mirar: tu paso de ahora no cambia. Alfa avanza sola cuando lo cumples."] })
 	ui.pieLinea = K.Linea(F, "linea")
 
 	F:SetScript("OnShow", function()
@@ -826,9 +954,33 @@ local function aviso(v, live)
 			return { tono = "info", icono = "ic-ruta", titulo = format(L["Agregué lo que falta para %s"], M.Citar(M.TituloMision(bq))), texto = texto }
 		end
 	end
+	-- La guía te manda a entregar una misión que aún no terminas (un paso que
+	-- miras antes de tiempo, el de sus objetivos omitido, un plan viejo): se
+	-- dice qué falta y se lleva a eso, nunca solo al PNJ.
+	local sin, falta = entregaSinTerminar(v)
+	if sin then
+		local obra = pasoDeLaObra(sin.quest, v.index)
+		local d = { tono = "aviso", icono = "ic-aviso", titulo = format(L["%s aún no está terminada"], M.Citar(sin.title or M.TituloMision(sin.quest))),
+			texto = falta and format(L["Antes de entregarla te falta: %s."], falta) or L["Termínala antes de entregarla."] }
+		local volver = live and format(L["Volver al paso %d"], numeroPaso(live))
+		if obra then
+			d.uno = { obra == live and volver or L["Llévame a lo que falta"], function() engine("Goto", obra) end }
+		end
+		if live and v.index ~= live and obra ~= live then
+			d[d.uno and "dos" or "uno"] = { volver, function() engine("Goto", live) end }
+		end
+		return d
+	end
+	-- Vista previa: mirar otro paso lleva la flecha a ese paso (el motor la
+	-- pone en el paso que se ve), no al de ahora; se dice cuál es el de ahora.
 	if v and live and v.index ~= live then
-		return { tono = "neutro", icono = "ic-info", titulo = L["Estás mirando otro paso"], texto = L["La flecha sigue en el paso de ahora."],
-			uno = { L["Volver al paso de ahora"], function() engine("Goto", live) end } }
+		local ahora = engine("GetStepView", live)
+		local nombre = ahora and tituloPaso(ahora) or ""
+		local cual = nombre ~= "" and format(L["Tu paso de ahora es el %d: %s."], numeroPaso(live), nombre)
+			or format(L["Tu paso de ahora es el %d."], numeroPaso(live))
+		return { tono = "neutro", icono = "ic-info", titulo = format(L["Vista previa: paso %d"], numeroPaso(v.index)),
+			texto = cual .. " " .. L["La flecha te lleva a este paso, no al de ahora."],
+			uno = { format(L["Volver al paso %d"], numeroPaso(live)), function() engine("Goto", live) end } }
 	end
 	return nil
 end
@@ -912,7 +1064,7 @@ local function pintarAviso(d, ancho)
 		K.Escribir(b.Texto, d.texto)
 		b.Texto:ClearAllPoints()
 		b.Texto:SetPoint("TOPLEFT", b, "TOPLEFT", x, -(y + 2))
-		y = y + 2 + K.Parrafo(b.Texto, tw, 3)
+		y = y + 2 + K.Parrafo(b.Texto, tw, 4)
 		b.Texto:Show()
 	else
 		b.Texto:Hide()
@@ -946,31 +1098,26 @@ end
 local function resumenGuia(g, v)
 	local u = U()
 	local nombre = g and (u and u.GuideLabel and u.GuideLabel(g) or g.title) or L["Alfa"]
+	-- Un solo número: los pasos hechos (el número del paso que miras lo dice
+	-- la vista previa; "Paso 2" junto a "54 %" se contradecía).
 	local done, total = engine("GetProgress")
-	local partes = {}
-	if v then
-		local i = v.index
-		local tot = u and u.StepTotal and u.StepTotal() or engine("GetStepCount") or 0
-		partes[#partes + 1] = format(L["Paso %d de %d"], u and u.StepNo and u.StepNo(i) or i, tot)
-	end
-	if total and total > 0 then partes[#partes + 1] = format("%d %%", floor((done or 0) / total * 100)) end
-	return nombre, table.concat(partes, "  \194\183  "), done, total
+	local linea = (total and total > 0) and format(L["%d de %d pasos hechos"], done or 0, total) or ""
+	return nombre, linea, done, total
 end
 
 local function cabecera(g, v)
 	local c = ui.cab
 	local nombre, linea, done, total = resumenGuia(g, v)
+	c.alfaNombre = g and nombre or nil
 	K.Escribir(c.Titulo, nombre)
 	K.Escribir(c.Sub, linea)
+	-- El nombre en hasta dos renglones; la cabecera crece con él.
+	local ht = K.Parrafo(c.Titulo, c.alfaAnchoTitulo or (ANCHO - 120), 2)
+	local hs = linea ~= "" and K.AltoTexto(c.Sub) or 0
+	ui.altoCab = max(CAB, 7 + ht + (hs > 0 and (2 + hs) or 0) + 7)
+	c:SetHeight(ui.altoCab)
 	ui.huellas:Set(done or 0, total or 0)
 	return total and total > 0
-end
-
-local function tituloPaso(v)
-	local titulo = v.title
-	local u = U()
-	if (not titulo or titulo == "") and u and u.StepSummary then titulo = u.StepSummary(v) end
-	return titulo or ""
 end
 
 function Rs.Pintar()
@@ -982,8 +1129,11 @@ function Rs.Pintar()
 	local live = g and engine("GetLiveStep")
 	local v = i and engine("GetStepView", i)
 	local x, ancho = PAD, ANCHO - 2 * PAD
+	-- Vista previa: miras otro paso que el de ahora.
+	local previa = v ~= nil and live ~= nil and v.index ~= live
+	cxR.previa = previa
 	local conAvance = cabecera(g, v)
-	local y = CAB + K.ESP.s
+	local y = (ui.altoCab or CAB) + K.ESP.s
 	if conAvance and not comp then
 		ui.huellas:ClearAllPoints()
 		ui.huellas:SetPoint("TOPLEFT", F, "TOPLEFT", x, -y)
@@ -1032,8 +1182,9 @@ function Rs.Pintar()
 				ui.mas:Show()
 				y = y + 16 + 2
 			end
-			-- El latido mira lo mismo: si no, repinta todo cada segundo.
-			ui.conFlecha = (live and v.index == live) and true or false
+			-- El latido mira lo mismo: si no, repinta todo cada segundo. La
+			-- flecha va al paso que se ve (el motor), sea el de ahora u otro.
+			ui.conFlecha = live ~= nil
 			local t = ui.conFlecha and textoFlecha() or nil
 			if t then
 				K.Escribir(ui.flecha.Texto, t)
@@ -1085,6 +1236,9 @@ function Rs.Pintar()
 	-- El pie: Ver detalle · Omitir · Siguiente
 	local conPie = not vacio
 	for _, b in ipairs({ ui.detalle, ui.omitir, ui.siguiente, ui.pieLinea }) do b:SetShown(conPie) end
+	-- Omitir salta el paso que se ve (Engine.Skip): en la vista previa no se
+	-- ofrece aquí (el detalle dice cuál omite).
+	if previa then ui.omitir:Hide() end
 	if conPie then
 		y = y + K.ESP.xs
 		ui.pieLinea:ClearAllPoints()
@@ -1177,7 +1331,8 @@ local function construirDetalle()
 		local e = E()
 		if e and e.GetGuide and e.GetGuide() then engine("Skip") end
 	end, { tipo = "fantasma", tam = "chico", ayuda = L["Omite este paso: la guía sigue con el siguiente. Puedes volver a él con Anterior."] })
-	dui.siguiente = K.Boton(D, L["Siguiente"], function() engine("Next") end, { tipo = "secundario", tam = "chico" })
+	dui.siguiente = K.Boton(D, L["Ver el siguiente"], function() engine("Next") end,
+		{ tipo = "secundario", tam = "chico", ayuda = L["Solo para mirar: tu paso de ahora no cambia. Alfa avanza sola cuando lo cumples."] })
 	D:SetPie({ dui.omitir, dui.siguiente }, { dui.atras })
 	D:SetScript("OnShow", function() Rs.PintarDetalle() end)
 	D.alAcomodar = function() Rs.PintarDetalle() end
@@ -1206,6 +1361,14 @@ function Rs.PintarDetalle()
 	local alto = max(80, D:AltoCuerpo() - y - K.ESP.s)
 	for _, b in ipairs({ dui.atras, dui.omitir, dui.siguiente }) do b:SetActivo(not vacio) end
 	if not vacio then dui.atras:SetActivo(i > 1) end
+	-- Omitir salta el paso que se ve: en la vista previa dice cuál.
+	local previa = v ~= nil and live ~= nil and v.index ~= live
+	dui.cx.previa = previa
+	local omitir = previa and format(L["Omitir el paso %d"], numeroPaso(v.index)) or L["Omitir"]
+	if dui.omitir.alfaRotulo ~= omitir then
+		dui.omitir.alfaRotulo = omitir
+		dui.omitir:SetTexto(omitir)
+	end
 	-- Todos los pasos
 	if dvista == "pasos" and not vacio then
 		dui.scroll:Hide()

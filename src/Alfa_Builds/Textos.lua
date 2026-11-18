@@ -725,4 +725,9 @@ M.EN = {
 	["El sanador de los druidas: curas a cualquier grupo y sobrevives bien, aunque en solitario matas lento."] = "The druids' healer: you heal any group and survive well, though solo you kill slowly.",
 	["En solitario, deja curas que duran en el tiempo y pelea con Cólera."] = "Solo, put on heals over time and fight with Wrath.",
 	["En grupo, cura antes de que la vida baje mucho: es más barato."] = "In a group, heal before health drops a lot: it's cheaper.",
+	-- Pagina.lua: la ventana de talentos del juego (sin abrirla desde Alfa)
+	["La ventana de talentos del juego"] = "The game's talent window",
+	["Ábrela con tu tecla de talentos (%s) o desde el menú del juego."] = "Open it with your talents key (%s) or from the game menu.",
+	["Ábrela con tu tecla de talentos o desde el menú del juego."] = "Open it with your talents key or from the game menu.",
+	["En combate no se puede: espera a terminar."] = "You can't in combat: wait until it ends.",
 }

@@ -97,7 +97,7 @@ end
 -- El bloque. ui.alCambiar: la página se rehace.
 function M.BloqueMisiones(padre, alCambiar)
 	local b = K.Pila(padre, { espacio = K.ESP.m })
-	b.Seccion = b:Agregar(K.Seccion(b, L["Tu plan de misiones"]))
+	b.Seccion = b:Agregar(K.Seccion(b, L["Cerrar mis misiones"]))
 	-- Arriba: el filtro y la acción.
 	local barra = CreateFrame("Frame", nil, b)
 	b.Filtro = K.Segmentos(barra, { estilo = "segmentos", opciones = FILTROS, valor = Cr.Filtro(), alCambiar = function(f)
@@ -162,13 +162,13 @@ function M.BloqueMisiones(padre, alCambiar)
 			K.Mostrar(self.Lista, false)
 			K.Mostrar(self.Vacio, false)
 			K.Mostrar(self.Pie, false)
-			self.Seccion:Set(L["Tu plan de misiones"])
+			self.Seccion:Set(L["Cerrar mis misiones"])
 			return
 		end
 		K.Mostrar(self.Cargando, false)
 		local c = Cr.Cuentas(lista)
 		local hay = #lista > 0
-		self.Seccion:Set(L["Tu plan de misiones"], { cuenta = hay and #lista or nil })
+		self.Seccion:Set(L["Cerrar mis misiones"], { cuenta = hay and #lista or nil })
 		K.Mostrar(self.Barra, hay)
 		K.Mostrar(self.Resumen, hay)
 		K.Mostrar(self.Lista, hay)

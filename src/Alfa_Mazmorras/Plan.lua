@@ -51,11 +51,17 @@ local function enRegistro(id)
 	return C and llamar(C.IsOnQuest, id) == true or false
 end
 
--- «Título» con las comillas del motor (o las nuestras).
+-- «Título»: en español, con las comillas de los textos de Alfa (« »); en
+-- otro idioma, con las de ese cliente (A.Quoted del motor), como el texto
+-- traducido que las rodea. Un título que ya trae sus comillas se queda así.
 local function citar(t)
 	if type(t) ~= "string" or t == "" then return "" end
-	local q = A.Quoted and llamar(A.Quoted, t)
-	return type(q) == "string" and q or ("\194\171" .. t .. "\194\187")
+	if not N.espanol then
+		local q = A.Quoted and llamar(A.Quoted, t)
+		if type(q) == "string" and q ~= "" then return q end
+	end
+	if t:find("\194\171", 1, true) or t:find("\194\187", 1, true) then return t end
+	return "\194\171" .. t .. "\194\187"
 end
 P.Citar = citar
 
@@ -224,7 +230,9 @@ function P.Estado(key)
 				f.texto = format(L["Primero necesitas %s, que se toma a nivel %d."], citar(w.previa.title), w.previa.minLevel or w.nivel or 0)
 			else
 				f.estado = format(L["Desde nivel %d"], w.nivel or 0)
-				f.texto = w.nivel and w.nivel > nivel and format(L["Te faltan %d niveles para tomarla."], w.nivel - nivel) or nil
+				local faltan = w.nivel and w.nivel - nivel or 0
+				f.texto = faltan == 1 and L["Te falta 1 nivel para tomarla."]
+					or faltan > 1 and format(L["Te faltan %d niveles para tomarla."], faltan) or nil
 			end
 		elseif cerrada(q) then
 			f.grupo, f.estado, f.tono = "otras", L["Ya no aplica"], "neutro"
@@ -260,7 +268,7 @@ end
 ---------------------------------------------------------------------------
 local function cuantas(n, una, varias) return n == 1 and una or format(varias, n) end
 
--- Lo que esperan las demás, en corto: "2 esperan: «A» (nivel 25) y «B» (antes «C»)."
+-- Lo que esperan las demás, en corto: "Más adelante: «A» (nivel 25) y «B» (antes «C»)."
 local function frasesEspera(e, tope)
 	local partes = {}
 	for i, w in ipairs(e.esperan) do
@@ -275,7 +283,7 @@ local function frasesEspera(e, tope)
 	local resto = #e.esperan - #partes
 	local lista = #partes == 1 and partes[1] or format(L["%s y %s"], concat(partes, ", ", 1, #partes - 1), partes[#partes])
 	if resto > 0 then lista = format(L["%s y %d más"], concat(partes, ", "), resto) end
-	return format(#e.esperan == 1 and L["Espera: %s."] or L["Esperan: %s."], lista)
+	return format(L["Más adelante: %s."], lista)
 end
 P.FrasesEspera = frasesEspera
 
@@ -314,7 +322,11 @@ end
 function P.Entrada(key)
 	local Dgx = Dg()
 	if not (Dgx and Dgx.GuideTo) then return false end
-	if llamar(Dgx.GuideTo, key) then return true end
+	if llamar(Dgx.GuideTo, key) then
+		-- Como todo «Llévame»: la flecha a la vista, sin la ventana de Alfa encima.
+		if N.EmpezarRuta then N.EmpezarRuta() end
+		return true
+	end
 	aviso({ titulo = L["No conozco la entrada de esta mazmorra"], icono = "ic-alerta", tono = "aviso" })
 	return false
 end
@@ -365,5 +377,7 @@ end
 function P.Llevame(punto, nombre)
 	local Dgx = Dg()
 	if not (Dgx and Dgx.GuideToPoint and type(punto) == "table") then return false end
-	return llamar(Dgx.GuideToPoint, punto, nombre or punto.name) and true or false
+	local ok = llamar(Dgx.GuideToPoint, punto, nombre or punto.name) and true or false
+	if ok and N.EmpezarRuta then N.EmpezarRuta() end
+	return ok
 end

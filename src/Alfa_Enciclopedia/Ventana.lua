@@ -6,8 +6,9 @@
 --   2. los filtros del tipo elegido (solo los que sirven: un tipo sin filtros
 --      no deja una fila vacía);
 --   3. la lista virtual y la ficha (K.ListaFicha). La ficha empieza con lo
---      mejor para ti y sus botones (Guíame, Ver en el mapa, Agregar a mi ruta,
---      Vincular) y sigue con una sección por cada fuente que tiene datos.
+--      mejor para ti y sus botones (Guíame, Ver en el mapa, Agregar a Mis
+--      planes, a mi ruta o a Cerrar mis misiones, Vincular) y sigue con una
+--      sección por cada fuente que tiene datos.
 -- Las filas de la ficha llevan a la ficha de lo que nombran (un PNJ, una
 -- misión, un objeto...) y "Volver" regresa.
 --
@@ -53,7 +54,12 @@ local function registrarCapa()
 	local Mu = AlfaMundo
 	if type(Mu) == "table" and type(Mu.RegistrarCapa) == "function" then
 		pcall(Mu.RegistrarCapa, { id = CAPA, grupo = L["Guía"], nombre = L["Lo que buscas en la Enciclopedia"],
-			ayuda = L["Los lugares que pides ver en el mapa desde la Enciclopedia."], color = "acento", activa = true, esencial = true, zoom = 1 })
+			ayuda = L["Los lugares que pides ver en el mapa desde la Enciclopedia."], color = "acento", activa = true, esencial = true, zoom = 1,
+			-- Su interruptor también manda en el mapa del juego y el minimapa (no solo en el de Alfa).
+			alCambiar = function(on)
+				local Pn = A.Pins
+				if Pn and Pn.SetLayerVisible then Pn.SetLayerVisible(CAPA, on) end
+			end })
 	end
 end
 
@@ -245,7 +251,7 @@ local function bloqueAcciones(pila)
 	b.Falta = K.Boton(b, L["Qué me falta"], nil, { tipo = "secundario", icono = "ic-ruta",
 		ayuda = L["Arma con tu ruta lo que necesitas para poder tomarla: el nivel o las misiones de antes."] })
 	b.Vincular = K.Boton(b, L["Vincular"], nil, { tipo = "fantasma", icono = "ic-mas", ayuda = L["Pone el enlace en el chat."] })
-	b.Plan = K.Boton(b, L["Agregar a mi plan"], nil, { tipo = "secundario", icono = "ic-ruta",
+	b.Plan = K.Boton(b, L["Agregar a Mis planes"], nil, { tipo = "secundario", icono = "ic-ruta",
 		ayuda = L["Suma «conseguir este objeto» a tu plan de ahora (o a uno nuevo)."] })
 	b.Extra = K.Boton(b, "", nil, { tipo = "secundario", icono = "ic-ventana" })
 	b.lista = { b.Guiar, b.Plan, b.Falta, b.Extra, b.Mapa, b.Ruta, b.Vincular }
@@ -268,8 +274,11 @@ local function bloqueAcciones(pila)
 			self:Set(f)
 			ui.lf:RehacerFicha()
 		end
+		-- El mismo botón sirve a dos cosas: el tramo de tu ruta (objetos) o
+		-- Cerrar mis misiones (misiones); su texto y su ayuda dicen cuál.
 		self.Ruta:SetShown(a.ruta ~= nil)
 		self.Ruta:SetTexto(a.rutaTexto or L["Agregar a mi ruta"])
+		K.ConInfo(self.Ruta, nil, a.rutaAyuda)
 		self.Ruta.alClic = function()
 			-- La ruta avisa sola lo que hizo; aquí solo si falló sin decir nada.
 			local ok, r = pcall(a.ruta)
@@ -283,13 +292,16 @@ local function bloqueAcciones(pila)
 		-- Mis planes (Alfa_Rutas): un objetivo "conseguir este objeto".
 		self.Plan:SetShown(a.plan ~= nil)
 		self.Plan.alClic = function()
+			-- Mis planes avisa solo lo que agregó (con «Ver mi plan»); aquí solo si falló.
 			local ok, r, msg = pcall(a.plan)
-			if not ok or r == false then aviso(false, type(msg) == "string" and msg or L["Tu plan no pudo agregarlo."])
-			else aviso(true, L["Lo agregué a tu plan."]) end
+			if not ok or r == false then aviso(false, type(msg) == "string" and msg or L["Tu plan no pudo agregarlo."]) end
 		end
 		-- Un botón propio de la ficha (una guía: "Abrir el Legado del juego").
+		-- Con ex.seguro, el clic lo hace el juego (K.SeguroDe: un botón seguro
+		-- encima al pasar el ratón); alClic queda para cuando no se puede.
 		local ex = a.extra
 		self.Extra:SetShown(ex ~= nil)
+		K.SeguroDe(self.Extra, ex)
 		if ex then
 			self.Extra:SetTexto(ex.texto or "")
 			self.Extra:SetIcono(ex.icono or "ic-ventana")
@@ -1142,7 +1154,9 @@ acomodar = function()
 	local y = ESP.base
 	acomodarArriba()
 	y = y + K.ALTO.control + ESP.m
-	local hb = acomodarBarra(w)
+	-- Con el aviso de por qué no abre (V.MostrarMotivo) no hay filtros a la vista.
+	local hb = 0
+	if not ui.estado:IsShown() then hb = acomodarBarra(w) end
 	if hb > 0 then
 		ui.barra:ClearAllPoints()
 		ui.barra:SetPoint("TOPLEFT", v.Cuerpo, "TOPLEFT", x, -y)
@@ -1273,8 +1287,9 @@ function V.Abrir(p)
 		ui.buscador:SetTexto(est.texto, true)
 		acomodar()
 		if tipo then
-			Cat.Pedir(tipo, function(ok) if ok then filtrar({ kind = kind, id = id }) end end)
-			if not Cat.Listo(tipo) then filtrar() end
+			-- Con el catálogo listo elige ya; si no, lo pide y elige al terminar
+			-- (un filtrar() suelto elegiría después la primera fila: otra del mismo nombre).
+			filtrar({ kind = kind, id = id })
 		else
 			ui.lf:MostrarFicha({ kind = kind, id = id })
 		end

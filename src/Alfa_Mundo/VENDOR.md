@@ -33,7 +33,7 @@ Total: unos 12,4 MB (de los ~361 MB de OpenMap). Si se cambia la lista de `TERRI
 
 ## Comprobación
 
-La primera vez que lo necesita, Mundo pone `MapFeatherRound` en una textura de prueba: si el cliente responde que no existe, se queda con el arte del juego y la página Mundo lo dice ("Faltan las texturas de detalle..."). El ajuste "Detalle fino de cada zona" (`mundo.detalle`) apaga el detalle aunque estén.
+La primera vez que lo necesita, Mundo pone `MapFeatherRound` en una textura de prueba: si el cliente responde que no existe, se queda con el arte del juego y la página Mundo lo dice ("Faltan las texturas de detalle..."). El ajuste "Más detalle al acercar el mapa" (`mundo.detalle`) apaga el detalle aunque estén.
 
 # Datos de TerrainWorldMap que usa Alfa_Mundo (el terreno)
 

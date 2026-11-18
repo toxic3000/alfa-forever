@@ -202,6 +202,8 @@ local function vacio(e, w, titulo, texto, boton)
 	if boton then
 		e.Boton:SetTexto(boton.texto)
 		e.Boton.alClic = boton.alClic
+		-- Lo que hace el juego (encender su registro) va por el clic seguro del Kit.
+		K.SeguroDe(e.Boton, boton)
 		e.Boton:ClearAllPoints()
 		e.Boton:SetPoint("TOPLEFT", e, "TOPLEFT", x, -(y + ESP.s))
 		e.Boton:Show()
@@ -222,7 +224,7 @@ function M.EstadoMedidor(r)
 	if D.Encendido() == false then
 		return L["El registro de daño del juego está apagado"],
 			L["Alfa lee el medidor oficial del juego. Enciéndelo y aquí verás el daño de tu grupo; su ventana puedes ocultarla en el Modo de edición."],
-			{ texto = L["Encender el registro"], alClic = function() D.Encender() end }
+			D.AccionEncender()
 	end
 	if r.sinAnterior then
 		return L["Todavía no hay una pelea anterior"], L["Después de tu segunda pelea, aquí ves la de antes."]

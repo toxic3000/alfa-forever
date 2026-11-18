@@ -449,4 +449,18 @@ M.EN = {
 	["Te falta ira: Enfurecer te la da."] = "You're short on rage: Enrage gives it to you.",
 	["Fuego feérico: el enemigo recibe más daño."] = "Faerie Fire: the enemy takes more damage.",
 	["Te falta la forma de lechúcico lunar: más daño con tus hechizos."] = "Moonkin Form is missing: more damage with your spells.",
+
+	-- Ajustes del juego que Alfa no cambia por ti (Rotacion.lua, Medidor.lua)
+	["Cómo encenderlo"] = "How to turn it on",
+	["Cómo cambiarlo"] = "How to change it",
+	-- Pagina.lua: el ícono plegado y el lugar de los marcos
+	["Más opciones del ícono"] = "More icon options",
+	["Fuera de combate, tamaño, tecla, nombre, explicaciones, barrido y de dónde sale la sugerencia."] = "Out of combat, size, key, name, explanations, sweep and where the suggestion comes from.",
+	["Volver a su lugar"] = "Back to their place",
+	["Devolver"] = "Put back",
+	["Opciones avanzadas"] = "Advanced Options",
+	["Activar el medidor de daño"] = "Enable Damage Meter",
+	["Resaltado asistido"] = "Assisted Highlight",
+	["Enciéndelo en el menú del juego: Opciones > %s > «%s». Alfa no lo cambia por ti: el medidor del juego lo lee en combate y fallaría."] = "Turn it on in the game menu: Options > %s > “%s”. Alfa doesn't change it for you: the game's meter reads it in combat and would break.",
+	["Cámbialo en el menú del juego: Opciones > %s > «%s». Alfa no lo cambia por ti: el juego lo lee en combate y fallaría."] = "Change it in the game menu: Options > %s > “%s”. Alfa doesn't change it for you: the game reads it in combat and would break.",
 }

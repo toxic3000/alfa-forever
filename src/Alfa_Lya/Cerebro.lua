@@ -222,9 +222,29 @@ local function irA(tipo)
 	N.Imprimir(L["La búsqueda de lugares cercanos no está disponible."])
 end
 
+-- Las bolsas: las de Alfa se abren desde aquí. Las de Blizzard no: abrirlas
+-- desde el código de Alfa las dejaría marcadas y el juego bloquearía usar
+-- objetos desde ellas; esas las abre el juego con un clic seguro (K.Seguro)
+-- en su botón de la mochila.
+local function bolsasAlfa()
+	local B = rawget(_G, "AlfaBolsas")
+	return type(B) == "table" and type(B.Abrir) == "function" and B or nil
+end
+
 local function abrirBolsas()
 	if InCombatLockdown and InCombatLockdown() then return end
-	if OpenAllBags then pcall(OpenAllBags) elseif ToggleAllBags then pcall(ToggleAllBags) end
+	local B = bolsasAlfa()
+	if B and B.Abrir() then return end
+	local tecla = N.Kit.TeclaJuego("bolsas")
+	N.Imprimir(tecla and string.format(L["Abre tus bolsas con tu tecla (%s)."], tecla) or L["Abre tus bolsas con su tecla o con el botón de la mochila."])
+end
+
+-- Con las bolsas de Alfa encendidas, su clic normal (abrirBolsas); si no,
+-- el de la mochila del juego.
+local function seguroBolsas()
+	local B = bolsasAlfa()
+	if B and (type(B.Activas) ~= "function" or B.Activas()) then return nil end
+	return N.Kit.AbrirJuego("bolsas")
 end
 
 local function entregarTodas()
@@ -319,7 +339,7 @@ local CONTEXTO = {
 		local fr, t = bolsasLibres()
 		if not fr or not t or t <= 0 or fr > 2 then return false end
 		c.cara = "atenta"
-		c.acciones = { { texto = L["Abrir bolsas"], fn = abrirBolsas },
+		c.acciones = { { texto = L["Abrir bolsas"], fn = abrirBolsas, seguro = seguroBolsas },
 			{ texto = L["Llévame a un vendedor"], fn = function() irA("vendor") end } }
 		return decirDe("bolsas", c, fr)
 	end,

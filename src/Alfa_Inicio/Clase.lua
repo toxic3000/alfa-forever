@@ -159,13 +159,13 @@ end
 -- Encantamiento temporal de un arma (veneno, encantamiento de chamán):
 -- { tiene, resto } para la mano principal (0) o la secundaria (1); nil si no se sabe.
 -- C_Item.GetWeaponEnchantInfo(slot) devuelve una lista de WeaponEnchantInfo;
--- el respaldo es la global clásica GetWeaponEnchantInfo() (milisegundos).
+-- el respaldo es la global clásica GetWeaponEnchantInfo(). Las dos dan el
+-- tiempo en milisegundos (BuffFrame.lua lo divide entre 1000; la global es
+-- remainingTimeMs, Deprecated_12_1_0.lua).
 local function segundos(t)
 	t = num(t)
 	if not t then return nil end
-	-- La global clásica da milisegundos; ningún encantamiento de arma dura 3 h.
-	if t > 10800 then t = t / 1000 end
-	return t
+	return t / 1000
 end
 
 local function encantamiento(mano)
@@ -358,12 +358,12 @@ T.talentos = {
 			return { valor = L["Desde el nivel 10"], color = "textMuted", detalle = L["Tu primer punto, en el nivel 10."] }
 		end
 		local _, rama = K.Rol()
-		local det = rama and format(L["Tu rama: %s"], rama) or L["Tu plan está en Builds."]
+		local det = rama and format(L["Tu rama: %s"], rama) or L["Tu plan está en Talentos."]
 		local fn = C_ClassTalents and C_ClassTalents.HasUnspentTalentPoints
 		if fn then
 			local ok, v = pcall(fn)
 			if ok and not secreto(v) then
-				if v == true then return { valor = L["Puntos por gastar"], color = "warning", detalle = L["Builds te dice cuál sigue."] } end
+				if v == true then return { valor = L["Puntos por gastar"], color = "warning", detalle = L["Talentos te dice cuál sigue."] } end
 				if v == false then return { valor = L["Al día"], color = "success", detalle = det } end
 			end
 		end

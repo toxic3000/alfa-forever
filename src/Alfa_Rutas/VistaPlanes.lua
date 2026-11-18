@@ -841,6 +841,9 @@ end
 -- Abre el editor de un plan (sin id: uno nuevo).
 function VP.Abrir(id)
 	if not v then construir() end
+	-- Un nombre a medio escribir se guarda en su plan antes de cambiar de plan
+	-- (al perder el foco ya con el otro plan, renombraría a ese).
+	ui.nombre.Campo:ClearFocus()
 	local pl = Pl.De(id) or Pl.Nuevo(L["Mi plan"])
 	est.plan, est.tipo, est.meta = pl.id, nil, nil
 	v:Abrir()

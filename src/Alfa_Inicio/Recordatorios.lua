@@ -301,6 +301,8 @@ local function dondeEntrenar(trainer)
 		local ok, adv = pcall(E.TrainingAdvice)
 		if ok and type(adv) == "table" then
 			if adv.guide and num(adv.steps) then
+				-- El motor cuenta el paso de ahora como el 1 (Engine.GuideTrainStop).
+				if adv.steps <= 1 then return L["El paso de ahora de tu guía te lleva a entrenar."], false end
 				return format(L["La guía te lleva a entrenar en %d pasos."], adv.steps), false
 			end
 			trainer = adv.trainer

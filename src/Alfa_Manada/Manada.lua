@@ -243,7 +243,9 @@ local function preguntarSola(intento)
 	local d = N.Datos(ID)
 	if d.preguntado or on("compartir") or hayBienvenida() then return end
 	local velo = rawget(_G, "AlfaKitVelo")
-	local ocupado = U.EnInstancia() or (InCombatLockdown and InCombatLockdown()) or (velo and velo.IsShown and velo:IsShown())
+	local Kit = N.Kit
+	local abierto = (Kit and Kit.DialogoAbierto and Kit.DialogoAbierto()) or (velo and velo.IsShown and velo:IsShown())
+	local ocupado = U.EnInstancia() or (InCombatLockdown and InCombatLockdown()) or abierto
 	if ocupado then
 		if intento < 20 then A.After(30, function() preguntarSola(intento + 1) end) end
 		return

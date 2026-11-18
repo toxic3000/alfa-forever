@@ -284,7 +284,7 @@ local function accionInicio(d, modo, nivel)
 		end
 		t.secundaria = { texto = L["Ver la mazmorra"], alClic = abrir }
 		if #e.recoger > 0 then ins[#ins + 1] = { cuantas(#e.recoger, L["1 misión para recoger"], L["%d misiones para recoger"]), "acento" } end
-		if #e.esperan > 0 then ins[#ins + 1] = { cuantas(#e.esperan, L["1 espera"], L["%d esperan"]), "aviso" } end
+		if #e.esperan > 0 then ins[#ins + 1] = { cuantas(#e.esperan, L["1 para después"], L["%d para después"]), "aviso" } end
 	end
 	if h then
 		ins[#ins + 1] = { L["Ya la completaste"], "exito" }
@@ -497,7 +497,9 @@ local function llenarResumen(r, key, d, e, nivel, lado)
 			titulo = a.name or "?", texto = a.note,
 			insignias = { { NOMBRE_REQ[a.kind] or L["Requisito"], "neutro" } },
 			secundaria = not listo and { texto = L["Guíame"], alClic = function()
-				local gid, porque = x.Attune and llamar(x.Attune, key, a.id)
+				-- (sin "x.Attune and ...": el and se queda solo con el primer valor y perdía el porqué)
+				local gid, porque
+				if x.Attune then gid, porque = llamar(x.Attune, key, a.id) end
 				if gid then if N.EmpezarRuta then N.EmpezarRuta() else A.Set("ui.shown", true) end
 				elseif K.Aviso then K.Aviso({ titulo = L["No pude armar esa guía"], texto = porque == "tabs" and L["Tienes seis guías abiertas: cierra una y vuelve a intentarlo."] or nil, icono = "ic-alerta", tono = "aviso" }) end
 			end } or nil,
@@ -609,7 +611,11 @@ end
 -- Lo que muestra una celda de un objeto del botín.
 local function datosCelda(e, key, nombreJefe)
 	local o = D.Objeto(e)
-	local sub = { o.ranura, o.tipo }
+	-- Sin huecos: unir() va con ipairs, y un objeto sin ranura (receta, de
+	-- misión) dejaba { nil, tipo } y perdía el tipo, el nivel y el jefe.
+	local sub = {}
+	if o.ranura then sub[#sub + 1] = o.ranura end
+	if o.tipo then sub[#sub + 1] = o.tipo end
 	if type(o.req) == "number" and o.req > 1 then sub[#sub + 1] = format(L["Niv. %d"], o.req) end
 	if nombreJefe then sub[#sub + 1] = nombreJefe end
 	local c = { id = e.id, nombre = o.nombre, calidad = o.calidad, icono = o.icono, sub = unir(sub), chance = e.chance }

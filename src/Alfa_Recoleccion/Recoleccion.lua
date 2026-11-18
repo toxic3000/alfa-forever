@@ -35,7 +35,7 @@ end
 
 if hayMundo() then
 	for _, tipo in ipairs(M.TIPOS) do
-		local ok = pcall(AlfaMundo.RegistrarCapa, {
+		local ok, id = pcall(AlfaMundo.RegistrarCapa, {
 			id = "recoleccion." .. tipo, grupo = L["Recolección"], nombre = R.NombreTipo(tipo),
 			icono = (R.IconoTipo(tipo)), activa = N.Get(ID, tipo) ~= false,
 			alCambiar = function(activa)
@@ -44,7 +44,13 @@ if hayMundo() then
 				R.Refiltrar()
 			end,
 		})
-		if ok then R.mundo = true end
+		-- Solo cuenta la capa que Alfa_Mundo aceptó (devuelve nil, error si no):
+		-- la de un tipo que no aceptó la decide el ajuste propio (R.TipoActivo).
+		if ok and id then
+			R.capas = R.capas or {}
+			R.capas[tipo] = true
+			R.mundo = true
+		end
 	end
 end
 
@@ -67,7 +73,9 @@ local AJUSTES = {
 	soloProfesiones = true, soloHabilidad = false,
 	base = true, agrupar = true,
 	tamanoMapa = 1, tamanoMinimapa = 1,
-	rutaTipo = "mineria", rutaRecurso = "todos",
+	-- "auto": la profesión de recolección que tiene tu personaje (tipoRuta);
+	-- lo que elijas en "Tipo" se guarda y manda.
+	rutaTipo = "auto", rutaRecurso = "todos",
 }
 
 local function porciento(v) return floor(v * 100 + 0.5) .. " %" end
@@ -102,7 +110,8 @@ end
 ---------------------------------------------------------------------------
 local function miles(n)
 	local s = tostring(floor(tonumber(n) or 0))
-	local sep = N.espanol and "." or ","
+	-- En español de México los miles van con coma (12,345), como en Comercio.
+	local sep = ","
 	while true do
 		local k
 		s, k = s:gsub("^(-?%d+)(%d%d%d)", "%1" .. sep .. "%2")
@@ -146,9 +155,37 @@ local function nombreRecurso(tipo, recurso)
 	return R.NombreTipo(tipo)
 end
 
+-- El tipo de la ruta: el que elegiste en "Tipo" o, sin elegir ("auto"), la
+-- profesión de recolección que tiene tu personaje (Minería, luego
+-- Herboristería). nil: no tiene ninguna (la tarjeta lo dice).
+local OFICIOS_RUTA = { "mineria", "hierbas" }
+local function tipoRuta()
+	local t = N.Get(ID, "rutaTipo")
+	if t ~= "auto" and M.TIPO[t] then return t end
+	if not R.HabilidadesListas() then return "mineria" end
+	for _, x in ipairs(OFICIOS_RUTA) do
+		if R.Habilidad(x) ~= nil then return x end
+	end
+	return nil
+end
+R.TipoRuta = tipoRuta
+
+-- La flecha al instructor de una profesión más cercano (Buscar cerca del
+-- motor: Alfa.Nav.nearby.Go("trainer", línea)); sin eso, cómo encontrarlo.
+local function irInstructor(linea)
+	local Nav = A.Nav
+	local near = type(Nav) == "table" and Nav.nearby
+	if type(near) == "table" and type(near.Go) == "function" then
+		local ok, puesto = pcall(near.Go, "trainer", linea)
+		if ok and puesto and N.EmpezarRuta then N.EmpezarRuta() end
+		return
+	end
+	N.Imprimir(L["Pregúntale a un guardia de la ciudad por el instructor de la profesión."])
+end
+
 local function crearRuta()
 	local zona = Ruta.ZonaActual()
-	local ok, motivo = Ruta.Crear(N.Get(ID, "rutaTipo") or "mineria", N.Get(ID, "rutaRecurso") or "todos", zona, function(r)
+	local ok, motivo = Ruta.Crear(tipoRuta() or "mineria", N.Get(ID, "rutaRecurso") or "todos", zona, function(r)
 		if r and r.n then N.Imprimir(L["Ruta lista en %s: %s"]:format(nombreZona(r.mapa), Ruta.Resumen(r) or "")) end
 	end)
 	V.aviso = not ok and motivo or nil
@@ -168,7 +205,7 @@ end
 local function tarjetaRuta()
 	local r = Ruta.Actual()
 	local zona = Ruta.ZonaActual()
-	local tipo = N.Get(ID, "rutaTipo") or "mineria"
+	local tipo = tipoRuta()
 	local recurso = N.Get(ID, "rutaRecurso") or "todos"
 	local d = { icono = "ic-ruta" }
 	if Ruta.Calculando() then
@@ -201,6 +238,15 @@ local function tarjetaRuta()
 		d.estado = { texto = L["Sin zona"], tono = "neutro" }
 		return d
 	end
+	if not tipo then
+		-- Sin Minería ni Herboristería no hay ruta que armar: quién te las enseña.
+		d.titulo, d.tono = L["Aprende Minería o Herboristería"], "acento"
+		d.texto = L["Tu personaje todavía no recolecta. Con Minería o Herboristería, Alfa une las minas o las hierbas de tu zona en una vuelta corta. Te las enseña un instructor de profesión."]
+		d.estado = { texto = L["Sin profesión"], tono = "neutro" }
+		d.accion = { texto = L["Instructor de Minería"], icono = "ic-flecha", alClic = function() irInstructor(M.TIPO.mineria.oficio) end }
+		d.secundaria = { texto = L["Instructor de Herboristería"], alClic = function() irInstructor(M.TIPO.hierbas.oficio) end }
+		return d
+	end
 	local hay = 0
 	for _, x in ipairs(Ruta.RecursosEn(zona, tipo)) do
 		if recurso == "todos" or x.clave == recurso then hay = hay + x.cuenta end
@@ -221,7 +267,7 @@ local function tarjetaRuta()
 end
 
 local function opcionesRecurso()
-	local tipo = N.Get(ID, "rutaTipo") or "mineria"
+	local tipo = tipoRuta() or "mineria"
 	local out = { { valor = "todos", texto = L["Todos"] } }
 	local elegido, esta = N.Get(ID, "rutaRecurso"), false
 	for _, r in ipairs(Ruta.RecursosEn(Ruta.ZonaActual(), tipo)) do
@@ -241,9 +287,9 @@ local function grupoQueRecolectar(padre)
 	for _, tipo in ipairs(M.TIPOS) do tipos[#tipos + 1] = { valor = tipo, texto = CORTO[tipo] or R.NombreTipo(tipo) } end
 	g:Fila({ titulo = L["Tipo"], texto = L["El tipo de nodos que une la ruta."],
 		control = function(fila)
-			local s = K.Segmentos(fila, { estilo = "segmentos", opciones = tipos, valor = N.Get(ID, "rutaTipo") or "mineria",
+			local s = K.Segmentos(fila, { estilo = "segmentos", opciones = tipos, valor = tipoRuta() or "mineria",
 				alCambiar = function(v) N.Set(ID, "rutaTipo", v) end })
-			function s:Leer() self:SetValor(N.Get(ID, "rutaTipo") or "mineria") end
+			function s:Leer() self:SetValor(tipoRuta() or "mineria") end
 			V.segTipo = s
 			return s
 		end })
@@ -634,7 +680,7 @@ A.RegisterCommand("recoleccion", function(resto)
 	local orden, arg = (resto or ""):lower():match("^%s*(%S*)%s*(%S*)")
 	if orden == "" then return N.Abrir(ID) end
 	if orden == "ruta" then
-		local tipo = TIPO_POR_PALABRA[arg] or N.Get(ID, "rutaTipo") or "mineria"
+		local tipo = TIPO_POR_PALABRA[arg] or tipoRuta() or "mineria"
 		local recurso = TIPO_POR_PALABRA[arg] and "todos" or (N.Get(ID, "rutaRecurso") or "todos")
 		local ok, motivo = Ruta.Crear(tipo, recurso, nil, function(r)
 			if r and r.n then

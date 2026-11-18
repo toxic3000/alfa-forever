@@ -794,7 +794,8 @@ function encuadrar()
 	if not p or vw < 20 then return end
 	porEncuadrar = nil
 	if p.u then
-		cu, cv, z = p.u, p.v, max(Z_MIN, min(Z_MAX, p.z or 14, tope(p.u, p.v)))
+		local zz = p.z or min(26, p.mapa and zoomPara(p.mapa) or 12)
+		cu, cv, z = p.u, p.v, max(Z_MIN, min(Z_MAX, zz, tope(p.u, p.v)))
 		meta.z, meta.cu, meta.cv, meta.u = z, nil, nil, nil
 		sucio = true
 		return
@@ -821,13 +822,14 @@ end
 function V.IrAMarcador(m)
 	local u, v = Geo.DeMapa(m.mapa, m.x, m.y)
 	if not u then return end
-	local zz = max(z, min(26, zoomPara(m.mapa) or 12))
 	if not V.Visible() then
+		-- El zoom se mide al encuadrar: antes de abrirla por primera vez la
+		-- vista no existe (ni tiene tamaño).
 		V.Abrir()
-		porEncuadrar = { u = u, v = v, z = zz }
+		porEncuadrar = { u = u, v = v, mapa = m.mapa }
 		return
 	end
-	irA(u, v, zz)
+	irA(u, v, max(z, min(26, zoomPara(m.mapa) or 12)))
 end
 
 -- Al mapa del juego en la zona que ves (desde un addon no se abre en combate:

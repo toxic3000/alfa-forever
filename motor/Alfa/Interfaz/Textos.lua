@@ -17,6 +17,7 @@ M.EN = {
 	["Manada"] = "Pack",
 	["Ajustes"] = "Settings",
 	["Buscar ajustes"] = "Search settings",
+	["Buscar «%s» en la Enciclopedia"] = "Search \"%s\" in the Encyclopedia",
 	["Nivel %d"] = "Level %d",
 	["Nivel máximo"] = "Maximum level",
 	["%d %% de experiencia"] = "%d %% experience",
