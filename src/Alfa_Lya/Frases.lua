@@ -39,6 +39,16 @@ F.volver = {
 	"Mucho tiempo sin verte, %s. Repasa tus misiones antes de salir.",
 }
 
+-- Al entrar al juego (1.2.1): llega corriendo a su lugar y te dice que te
+-- extrañó (%s: tu nombre).
+F.llegada = {
+	"¡%s! Te extrañé mucho. Vine corriendo en cuanto te vi llegar.",
+	"¡Ya llegaste, %s! Te extrañé. ¿A dónde vamos hoy?",
+	"¡Ahí estás, %s! Te estaba esperando… te extrañé.",
+	"¡%s, volviste! Te extrañé tanto que no paraba de mover la cola.",
+	"¡Te extrañé, %s! Corrí hasta aquí para verte.",
+}
+
 -- Subir de nivel (%d: el nivel nuevo).
 F.nivel = {
 	"¡Nivel %d! ¡Auuu! Así se sube en manada.",

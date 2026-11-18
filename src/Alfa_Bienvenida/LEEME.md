@@ -17,7 +17,8 @@ La configuración de Alfa (obligatoria la primera vez), las novedades, el aullid
 - **Obligatoria**: mientras falte, `AlfaBienvenida.Pendiente()` es true y la puerta del núcleo (`N.Permitido`, `Alfa.Puerta`) llama a `AlfaBienvenida.Abrir()`, que abre la configuración donde la dejaste y dice en el chat "Termina la configuración para usar Alfa (2 minutos)." (también al cerrarla sin terminar). No bloquea el juego: solo las ventanas de Alfa. Sale sola a los pocos segundos de cada entrada mientras falte (fuera de combate, de instancias, de cinemáticas y de la elección de camino).
 - **Quien ya terminó el asistente de antes** (`M.VERSION` 1) ve la nueva configuración una vez (`M.VERSION` = 2), con sus ajustes de ahora ya elegidos, y no recibe las recomendaciones por rol.
 - **Página Ajustes > Estilo y sonido:** tu estilo con "Mi configuración", los tres estilos, el acento de Cristal, el aullido, la configuración, "Reportar" y lo nuevo de la versión (abre las notas).
-- **La intro del lobo** (`Intro.lua`, texturas de `tools/intro.py` en `Media/`): estrellas que titilan, la luna que sube con su halo, el lobo sentado en su peña recortado contra la luna con el contorno encendido, el aullido con tres ondas, A L F A con su resplandor, una raya de luz y un brillo que recorre las letras hasta un destello; luego el lema. 4,6 s, se salta con clic, Esc, espacio o Enter y se corta si entras en combate. Sale antes de la configuración pendiente y antes de las notas de una versión nueva, una vez por sesión.
+- **La intro del lobo** (`Intro.lua`, texturas de `tools/intro.py` en `Media/`): estrellas que titilan, una estrella fugaz, la luna que sube con su halo, el lobo en su peña recortado contra la luna con el contorno encendido, chispas de luz que suben de la peña y neblina abajo; el lobo toma aire y aúlla (el aullido largo) con cinco ondas mientras la luna le contesta con su halo; A L F A con su resplandor, una raya de luz y un brillo que recorre las letras hasta un destello; un destello en el ojo del lobo al terminar de aullar; luego el lema. Toda la escena se acerca despacio (las estrellas no). 5,8 s (1.2.1), se salta con clic, Esc, espacio o Enter y se corta si entras en combate. Sale antes de la configuración pendiente y antes de las notas de una versión nueva, una vez por sesión. Avisa `ALFA_INTRO_INICIO` y, cuando deja ver lo que sigue, `ALFA_INTRO_FIN` (Lya llega corriendo entonces).
+- **El lobo de la intro**: `tools/intro.py` trae tres (`LOBOS`: `sentado`, el de la 1.2.0; `de-pie`, parado con la cabeza alzada; `facetado`, el sentado con las facetas del emblema) y `ELEGIDO` dice cuál se dibuja; al correrlo escribe en `Intro.lua` la punta del hocico y el ojo del elegido (la línea `local LOBO = ...`).
 - **Notas de cada versión** (`Notas.lua`, la tabla `M.NOTAS` de `Novedades.lua`): al entrar con una versión de Alfa más nueva que la última que viste (`AlfaNucleoDB.bienvenida.versionVista`; una vez por versión y por cuenta), unos segundos después de los demás avisos y fuera de combate, de instancias, de cinemáticas y de la elección de camino: la intro y luego una ventana chica en el centro, "Lo nuevo en Alfa X.Y.Z", con "Seguir jugando" y "Ver todo lo nuevo" (la portada, que lista las notas de cada versión). Quien no tenía Alfa ve la configuración, no las notas; al terminarla su versión queda vista. Quien ya había configurado y no tiene registro, viene de una versión anterior: ve las notas. En combate la ventana se esconde y vuelve al terminar la pelea. Una versión sin entrada en `M.NOTAS` no muestra ventana.
 
 ## Reportar un error, una mejora o un comentario (`Reporte.lua`)
@@ -33,18 +34,21 @@ Un addon no puede enviar nada fuera del juego. La ventana arma el reporte y tú 
 
 La primera vez que abres la ventana de Alfa en cada sesión suena un lobo **del propio juego** (canal de efectos, así que respeta tu volumen y si tienes los efectos apagados). Un `/reload` no lo repite; volver a entrar sí.
 
+**El aullido largo de la intro** (1.2.1, `M.AULLIDOS` en `Bienvenida.lua`): el juego clásico no trae un aullido largo en un solo archivo, así que se arma con los suyos, uno tras otro (el siguiente empieza cuando termina el anterior, con `C_Sound.IsPlaying`), y otro lobo contesta a lo lejos en el canal de ambiente (suena más bajo, como un eco del valle). Hay tres: `corto` (el de siempre), `largo` (de fábrica en la intro) y `manada` (más lobos que contestan). Para compararlos en el juego: `/alfa bienvenida aullido corto|largo|manada` suena y lo deja como el de la intro (`bienvenida.aullidoIntro`). Al abrir la ventana de Alfa y con «Escuchar» sigue sonando el corto.
+
 Sonidos, por FileDataID, en este orden (si el cliente no tiene uno, prueba el siguiente):
 
 | FileDataID | Archivo del juego | Qué es |
 |---|---|---|
 | 569109 | `Sound/SPELLS/FuriousHowl1.ogg` | Aullido furioso, la habilidad del lobo del cazador (desde la 1.x) |
 | 564211 | `Sound/CREATURE/Wolf/WolfStandVar4.ogg` | El lobo de siempre, quieto, aullando (desde la 1.x) |
+| 564217 | `Sound/CREATURE/Wolf/WolfStandVar4b.ogg` | La otra toma del mismo aullido: la segunda parte del aullido largo (desde la 1.x) |
 
 De dónde salen: el listado de archivos de la comunidad, [wowdev/wow-listfile](https://github.com/wowdev/wow-listfile) (`parts/sound.csv`, versión 202611141741). Los dos son archivos del juego original (1.x), así que el cliente clásico los trae; el motor ya toca sonidos del juego por FileDataID del mismo rango (las campanas de barco y zepelín, 566652 y 566719). Alfa no reparte ningún sonido propio.
 
 ## Comandos
 
-- `/alfa bienvenida`: abre la configuración (pendiente: donde la dejaste; terminada: el resumen). `/alfa bienvenida novedades`: lo nuevo de la versión.
+- `/alfa bienvenida`: abre la configuración (pendiente: donde la dejaste; terminada: el resumen). `/alfa bienvenida novedades`: lo nuevo de la versión. `/alfa bienvenida aullido [corto|largo|manada]`: suena ese aullido y queda como el de la intro.
 - `/alfa reportar [error | mejora | comentario]`: la ventana de reportes.
 - `/alfa estilo`: abre Ajustes > Estilo y sonido.
 - `/alfa welcome` y Acerca de > "Mostrar la bienvenida otra vez" (del motor) abren lo nuevo de la versión.

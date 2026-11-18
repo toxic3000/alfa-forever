@@ -34,7 +34,7 @@ M.EN = {
 	["Vender"] = "Vendor",
 	["Subastar"] = "Auction",
 	["Transformar"] = "Craft",
-	["Guardar"] = "Keep",
+	["Guardar [conservar]"] = "Keep",
 
 	-- Filas y detalle
 	["Comerciante"] = "Vendor",

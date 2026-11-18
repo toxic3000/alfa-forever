@@ -216,7 +216,7 @@ local function estado()
 		icono = "ic-comodidades", tono = "exito",
 		titulo = L["Tus comodidades están listas"],
 		texto = format(L["Tienes %d encendidas. Abajo está cada una, con lo que hace, por si quieres cambiar algo."], n),
-		estado = { texto = L["Listo"], tono = "exito" },
+		estado = { texto = L["Listo [estado]"], tono = "exito" },
 		secundaria = masCalidad,
 	}
 end

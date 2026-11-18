@@ -343,6 +343,7 @@ N.Modulo({
 		estiloMapa = "terreno", -- "terreno" (los mosaicos del minimapa) | "clasico" (solo el arte pintado)
 		salidas = true,     -- salidas de zona (Entradas.lua)
 		portales = true,    -- portales a pie (Entradas.lua)
+		vueloEnMapa = true, -- la línea de tu vuelo en grifo en el mapa de Alfa (Trayecto.lua, 1.2.1)
 		botonMapa = true,   -- botones de Alfa junto a la lupa del mapa del juego
 		menuMapa = true,    -- las capas en el menú de la lupa
 		teclaM = true,      -- la tecla del mapa abre el de Alfa
@@ -360,6 +361,7 @@ N.Modulo({
 		{ kind = "toggle", key = "mundo.recibirMarcadores", label = L["Recibir marcadores de tu grupo"], search = "share waypoints, party, compartir" },
 		{ kind = "toggle", key = "mundo.menuMapa", label = L["Capas en la lupa del mapa del juego"], search = "tracking menu, layers" },
 		{ kind = "toggle", key = "mundo.detalle", label = L["Más detalle al acercar el mapa"], search = "map detail, textures, zoom, detalle fino" },
+		{ kind = "toggle", key = "mundo.vueloEnMapa", label = L["Tu vuelo en el mapa"], search = "flight path, gryphon, taxi, flight line, vuelo, grifo, línea" },
 		{ kind = "dropdown", key = "mundo.estiloMapa", label = L["Estilo del mapa"],
 			choices = { { value = "terreno", label = L["Terreno, como el minimapa"] }, { value = "clasico", label = L["Clásico, el arte pintado del juego"] } },
 			search = "map style, terrain, minimap, classic, estilo, terreno, minimapa" },

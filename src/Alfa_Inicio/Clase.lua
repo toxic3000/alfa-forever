@@ -450,8 +450,8 @@ T.venenos = {
 			local t = e.resto and (e.resto >= 60 and format(L["%d min"], floor(e.resto / 60)) or format(L["%d s"], floor(e.resto))) or L["Activo"]
 			return nom .. ": " .. (e.tiene and t or RAYA)
 		end
-		local partes = { linea(L["Principal"], mh) }
-		if dos then partes[#partes + 1] = linea(L["Secundaria"], oh) end
+		local partes = { linea(L["Principal [mano]"], mh) }
+		if dos then partes[#partes + 1] = linea(L["Secundaria [mano]"], oh) end
 		local r = { detalle = table.concat(partes, DOT) }
 		if puestos >= total then
 			r.valor, r.color = total == 2 and L["En las dos armas"] or L["En tu arma"], "success"

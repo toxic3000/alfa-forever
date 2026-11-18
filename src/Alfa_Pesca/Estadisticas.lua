@@ -132,7 +132,7 @@ local function construirEstadisticas(padre)
 	return p
 end
 
-V.Registrar("estadisticas", { nombre = L["Estadísticas"], icono = "ic-nivel", orden = 2,
+V.Registrar("estadisticas", { nombre = L["Estadísticas [pesca]"], icono = "ic-nivel", orden = 2,
 	cambia = { registro = true, captura = true, canal = true }, construir = construirEstadisticas })
 
 ---------------------------------------------------------------------------

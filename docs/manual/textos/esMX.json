@@ -1,0 +1,837 @@
+{
+  "idioma": "esMX",
+  "nombre": "Español (México)",
+  "ui": {
+    "titulo_manual": "Manual de usuario",
+    "lema": "Guía a tu manada",
+    "portada_sub": "El todo en uno de La Jauría para World of Warcraft: Forever",
+    "portada_version": "Para Alfa {v} · WoW Forever {j}",
+    "hecho_por": "Hecho por toxic3000 para La Jauría",
+    "indice": "Índice",
+    "parte": "Parte",
+    "consejo": "Consejo",
+    "nota": "Nota",
+    "importante": "Importante",
+    "lya": "Lya",
+    "novedad": "Novedad de la {v}",
+    "novedad_viene": "Lo que llega con la versión {v}",
+    "novedad_ya": "Lo nuevo desde la versión {v}",
+    "pie": "Alfa · Manual de usuario",
+    "nota_capturas": ""
+  },
+  "carta": {
+    "titulo": "Te damos la bienvenida a la manada",
+    "parrafos": [
+      "Alfa es el todo en uno de La Jauría para World of Warcraft: Forever. Junta en un solo addon tu ruta y tus guías, el mapa, las bolsas, los talentos, la enciclopedia, las mazmorras, la curación, la pesca, el comercio y tu manada, todo con el mismo estilo y en tu idioma. No necesita ningún otro addon.",
+      "Alfa no juega por ti: te acompaña. La primera vez te pregunta, una por una, qué quieres que haga solo, y todo lo demás lo decides tú. En combate nunca aprieta nada por ti; solo te muestra lo que conviene.",
+      "Este manual te lleva de la mano por cada parte de Alfa, con capturas, pasos y consejos. Léelo de corrido o salta desde el índice a lo que te interese: cada capítulo se entiende solo."
+    ],
+    "lya": "¡Hola! Soy Lya, la loba de la manada. Te voy a acompañar en todo el manual y también en el juego. Si en algún momento te pierdes, dame un clic y te echo la mano… y si traes una salchicha, mejor.",
+    "firma": "— toxic3000 y La Jauría",
+    "rapido": {
+      "titulo": "Alfa en tres pasos",
+      "items": [
+        {"titulo": "Instálalo", "texto": "Abre **Instalar-Alfa.exe** y deja que encuentre tu juego."},
+        {"titulo": "Contesta la bienvenida", "texto": "Dos minutos para decidir qué hace Alfa por ti."},
+        {"titulo": "Escribe /alfa", "texto": "Tu ventana, con todo a un clic. ¡A jugar!"}
+      ]
+    },
+    "como_leer_titulo": "Cómo leer este manual",
+    "como_leer": [
+      {"tipo": "pasos", "titulo": "Pasos", "texto": "Los números verdes son pasos: síguelos en orden."},
+      {"tipo": "consejo", "titulo": "Consejos", "texto": "Ideas para sacarle más jugo a Alfa."},
+      {"tipo": "teclas", "titulo": "Teclas y comandos", "texto": "[[M]] es una tecla; `/alfa` se escribe en el chat."},
+      {"tipo": "novedad", "titulo": "Novedades", "texto": "Lo que cambia o llega en una versión."}
+    ]
+  },
+  "partes": [
+    {
+      "id": "empezar",
+      "titulo": "Empezar",
+      "lema": "Instala Alfa, configúralo a tu gusto y conoce tu nueva ventana.",
+      "pose": "sentada1",
+      "capitulos": [
+        {
+          "id": "primeros",
+          "titulo": "Primeros pasos",
+          "lema": "De cero a jugar con Alfa en unos minutos.",
+          "icono": "huella",
+          "bloques": [
+            {"t": "intro", "texto": "Instalar Alfa toma un minuto y configurarlo, unos dos. Aquí tienes las dos formas de instalarlo, lo que pasa la primera vez que entras al juego y cómo mantenerlo al día."},
+            {"t": "h", "texto": "Instalar con Instalar-Alfa.exe (la forma fácil)"},
+            {"t": "ilustracion", "id": "instalador", "e": {"pasos": [
+              ["Bienvenida", "Revisa cuál es la versión más nueva."],
+              ["Carpeta del juego", "Encuentra tu WoW Forever solo."],
+              ["Instalar", "Descarga Alfa, lo revisa y lo copia."],
+              ["Listo", "Entra al juego y empieza."]
+            ]}, "pie": "El instalador te lleva en cuatro pasos y no toca tus ajustes ni tus otros addons."},
+            {"t": "dos", "img": "instalador", "pie": "Encuentra tu juego solo y te dice qué versión tienes.", "lado": "der", "prop": "40", "bloques": [
+              {"t": "pasos", "items": [
+                "Descarga **Instalar-Alfa.exe** desde la página de Alfa en GitHub o desde el Discord de La Jauría.",
+                "Ábrelo. Si Windows muestra «Windows protegió tu PC», da clic en **Más información** y luego en **Ejecutar de todas formas**.",
+                "El instalador busca tu WoW Forever. Si no lo encuentra, elige la carpeta donde instalaste el juego (la que tiene adentro la carpeta `_forever_`).",
+                "Si el juego está abierto, ciérralo: el instalador espera, descarga la versión más nueva, la revisa y la instala.",
+                "Entra al juego con tu personaje. ¡Listo!"
+              ]}
+            ]},
+            {"t": "consejo", "texto": "Para actualizar, vuelve a abrir **Instalar-Alfa.exe**: siempre baja la versión más nueva. Si usas la app de CurseForge, también reconoce Alfa y te avisa cuando hay una versión nueva."},
+            {"t": "h", "texto": "Instalar a mano con el zip"},
+            {"t": "pasos", "items": [
+              "Descarga `Alfa-<versión>.zip` desde CurseForge o desde la página de versiones de GitHub.",
+              "Cierra el juego.",
+              "Descomprime el zip dentro de `World of Warcraft\\_forever_\\Interface\\AddOns`. Deben quedar varias carpetas que empiezan con `Alfa`.",
+              "Entra al juego. En la lista de addons de la pantalla de personajes, revisa que Alfa esté activado."
+            ]},
+            {"t": "h", "texto": "La primera vez: la bienvenida"},
+            {"t": "dos", "img": "bv-quees", "pie": "Cada pantalla de la bienvenida es una sola decisión. Tú mandas.", "lado": "izq", "prop": "50", "bloques": [
+              {"t": "p", "texto": "Al entrar, el lobo aúlla a la luna y te recibe la configuración de Alfa: una pantalla completa que te pregunta, una cosa a la vez, cómo quieres jugar. Toma unos dos minutos."},
+              {"t": "p", "texto": "Mientras no la termines, las ventanas de Alfa te llevan de vuelta a ella. Tus bolsas y el combate funcionan normal desde el principio."},
+              {"t": "p", "texto": "Al final verás un resumen con todo lo que elegiste y un solo botón: **Listo**."}
+            ]},
+            {"t": "etapas", "titulo": "Las nueve pantallas", "items": [
+              {"titulo": "Idioma", "texto": "Alfa en 10 idiomas, aunque tu juego esté en otro."},
+              {"titulo": "Estilo", "texto": "Alfa, Clásico WoW o Cristal."},
+              {"titulo": "Misiones", "texto": "Qué aceptar y entregar solo."},
+              {"titulo": "Tu guía", "texto": "Cómo elige Alfa tu siguiente paso."},
+              {"titulo": "Comerciantes y viajes", "texto": "Vender lo gris, reparar, tomar vuelos."},
+              {"titulo": "Otros jugadores", "texto": "Invocaciones, grupos y duelos."},
+              {"titulo": "Tu personaje", "texto": "Curar con un clic y ayuda de rotación."},
+              {"titulo": "La Jauría", "texto": "Si la manada te ve en el mapa."},
+              {"titulo": "Resumen", "texto": "Revisa todo y pulsa «Listo»."}
+            ]},
+            {"t": "consejo", "texto": "¿Quieres cambiar algo después? Escribe `/alfa bienvenida` y se abre el resumen: cada pantalla tiene su botón «Cambiar»."},
+            {"t": "h", "texto": "Cada vez que entras"},
+            {"t": "dos", "img": "notas", "pie": "Después de actualizar, una ventana te cuenta qué cambió.", "lado": "der", "prop": "40", "bloques": [
+              {"t": "p", "texto": "El lobo te recibe con «¡De vuelta en la manada!» cada vez que entras al juego (no al recargar la interfaz). Lo saltas con un clic, [[Esc]], la barra espaciadora o [[Enter]], y si empieza una pelea se quita solo."},
+              {"t": "p", "texto": "Cuando Alfa se actualiza, después de la intro sale una ventanita con lo nuevo: **Seguir jugando** la cierra y **Ver todo lo nuevo** te cuenta el resto."},
+              {"t": "p", "texto": "¿Prefieres entrar sin la intro? Apágala en **Ajustes > Estilo y sonido**."}
+            ]}
+          ]
+        },
+        {
+          "id": "ventana",
+          "titulo": "La ventana de Alfa",
+          "lema": "Todo Alfa en un solo lugar: escribe /alfa.",
+          "icono": "ventana",
+          "bloques": [
+            {"t": "intro", "texto": "Escribe `/alfa` en el chat (o da clic en el botón de Alfa del minimapa) y se abre la ventana principal. Arriba está tu personaje; abajo, todo lo que Alfa sabe hacer, ordenado en seis secciones más los Ajustes."},
+            {"t": "img", "img": "inicio", "marcas": "ventana", "pie": "La ventana de Alfa, abierta en Hoy.", "leyenda": [
+              "Tu personaje: nombre, clase, nivel, experiencia y descanso.",
+              "Buscar ajustes: escribe lo que buscas y Alfa te lleva a la opción.",
+              "Las seis secciones: Hoy, Aventura, Personaje, Mundo, Oficios y Manada.",
+              "Ajustes: estilo, comodidades, misiones y todo lo demás.",
+              "Restablecer página y Recargar, por si algo se ve raro."
+            ]},
+            {"t": "h", "texto": "Las secciones"},
+            {"t": "tarjetas", "cols": 2, "items": [
+              {"icono": "hoy", "titulo": "Hoy", "texto": "Tu día: el siguiente paso, lo urgente y tu clase."},
+              {"icono": "aventura", "titulo": "Aventura", "texto": "Ruta y guías, Mazmorras y Enciclopedia."},
+              {"icono": "personaje", "titulo": "Personaje", "texto": "Talentos, Combate, Curación, Bolsas y Lya."},
+              {"icono": "mundo", "titulo": "Mundo", "texto": "El mapa, Recolección y Paisaje y gráficos."},
+              {"icono": "oficios", "titulo": "Oficios", "texto": "Comercio y Pesca."},
+              {"icono": "manada", "titulo": "Manada", "texto": "La Jauría: tu grupo, quien comparte y el clan."},
+              {"icono": "ajustes", "titulo": "Ajustes", "texto": "Estilo y sonido, Comodidades, Misiones y más."},
+              {"icono": "buscar", "titulo": "Buscar ajustes", "texto": "Encuentra cualquier opción escribiendo su nombre."}
+            ]},
+            {"t": "h", "texto": "Tres estilos"},
+            {"t": "img", "img": "estilo", "pie": "Ajustes > Estilo y sonido: tu estilo y los tres para elegir."},
+            {"t": "p", "texto": "Alfa se viste como tú quieras. **Alfa** es grafito con esquinas cortadas y el verde de La Jauría; **Clásico WoW** usa los marcos, botones y letras del propio juego, con títulos en oro; **Cristal** deja ver el mundo a través de fondos transparentes, con el color de acento que elijas. El estilo también puede vestir el chat, el minimapa y tus barras de acción (en Comodidades). Cámbialo en **Ajustes > Estilo y sonido** o con `/alfa estilo`."},
+            {"t": "consejo", "texto": "Cada página tiene su comando: `/alfa bolsas` abre Bolsas y `/alfa mapa` abre el mapa. La lista completa está en el capítulo «Atajos y comandos»."},
+            {"t": "lya", "pose": "aullar2", "texto": "¿Sabías que el lobo aúlla la primera vez que abres la ventana de Alfa en cada sesión? Es un aullido del propio juego, así que respeta tu volumen. Si lo prefieres en silencio, se apaga en Estilo y sonido."}
+          ]
+        },
+        {
+          "id": "hoy",
+          "titulo": "Hoy",
+          "lema": "«¿Qué hacemos hoy?»: tu siguiente paso, lo urgente y tu clase.",
+          "icono": "hoy",
+          "bloques": [
+            {"t": "intro", "texto": "Hoy es la portada de Alfa: lo primero que ves al abrir la ventana. Junta en una sola página lo que te toca hacer ahora y te deja todo a un clic. Solo aparece lo que sirve: si una parte no tiene nada útil, no sale."},
+            {"t": "img", "img": "inicio", "marcas": "hoy", "pie": "Hoy, de un vistazo.", "leyenda": [
+              "Tu siguiente paso: lo que pide tu guía, a cuánto queda y cuánto llevas. **Seguir** te pone la flecha.",
+              "Recoger misiones: las de tu ruta que tienes cerca.",
+              "¿Otra cosa hoy?: subir de nivel, profesiones, hacer oro o mazmorras.",
+              "Alertas: solo lo urgente, con su botón para resolverlo."
+            ]},
+            {"t": "h", "texto": "Qué encuentras, de arriba abajo"},
+            {"t": "lista", "items": [
+              "**Tu siguiente paso.** El paso de tu guía con sus metas, a cuánto queda y cuánto llevas. **Seguir** muestra la guía y la flecha y cierra la ventana; **Ver pasos** abre la lista completa.",
+              "**Cerrar mis misiones y Recoger misiones.** Un clic arma la ruta para entregar lo que tienes listo o para tomar las mejores misiones de la zona.",
+              "**Tu plan.** Si sigues uno de *Mis planes*, aquí está tu meta de ahora.",
+              "**Alertas.** Equipo gastado, bolsas llenas (con lo que puedes vender y cuánto te dan), habilidades por entrenar o tu buff que falta, cada una con su botón: «Llévame a reparar», «Llévame con mi entrenador»…",
+              "**Buscar cerca.** Vuelo, posada, reparar, banco, buzón y tu entrenador: un botón pone la flecha al más cercano.",
+              "**Para tu clase.** El talento que toca ahora y tarjetas pensadas para tu clase.",
+              "**Hoy en números.** Experiencia por hora, cuánto te falta para subir, el oro de hoy y tu manada.",
+              "**Tu diario y tus avisos.** Tu sesión de hoy, las anteriores y los recordatorios que quieres recibir."
+            ]},
+            {"t": "tarjetas", "cols": 2, "titulo": "Los cuatro caminos de «¿Otra cosa hoy?»", "items": [
+              {"icono": "nivel", "titulo": "Subir de nivel", "texto": "Una guía para tu nivel y tu zona, con su propia ruta de misiones."},
+              {"icono": "oficios", "titulo": "Profesiones", "texto": "Sube tu profesión o junta tus materiales desde donde estás."},
+              {"icono": "oro", "titulo": "Hacer oro", "texto": "Misiones que dejan dinero y materiales que se venden bien."},
+              {"icono": "mazmorra", "titulo": "Mazmorras", "texto": "La mazmorra para tu nivel, sus misiones y cómo llegar."}
+            ]},
+            {"t": "consejo", "texto": "Si te ausentas unos días, Lya te recibe con un «¡hace días que no te veía!» y un botón para abrir Hoy y retomar justo donde ibas. Y con `/alfa sesion` ves en el chat cómo va tu sesión de hoy."}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "aventura",
+      "titulo": "Aventura",
+      "lema": "Tu camino: la ruta, el saber de todo el juego y las mazmorras.",
+      "pose": "correr3",
+      "capitulos": [
+        {
+          "id": "ruta",
+          "titulo": "Ruta y guías",
+          "lema": "Dos clics y Alfa te lleva.",
+          "icono": "ruta",
+          "bloques": [
+            {"t": "intro", "texto": "La ruta es el corazón de Alfa. Le dices qué quieres hacer y arma el camino: qué misiones tomar, a dónde ir y cuándo entregar. Una flecha en pantalla te lleva paso a paso, con vuelos y barcos incluidos."},
+            {"t": "h", "texto": "Empieza con el asistente"},
+            {"t": "dos", "img": "asistente", "pie": "«¿Qué quieres hacer hoy?»: cinco caminos.", "lado": "izq", "prop": "50", "bloques": [
+              {"t": "pasos", "items": [
+                "En Hoy o en **Aventura > Ruta**, da clic en «¿Qué quieres hacer?».",
+                "Elige un camino: **Subir de nivel**, **Profesiones**, **Hacer oro**, **Mazmorras** o **Mi propio plan**.",
+                "En el segundo clic, Alfa te propone la opción que mejor te queda y la pone en marcha.",
+                "Se cierran las ventanas de Alfa y queda tu guía en pantalla, con la flecha apuntando a tu primer paso."
+              ]}
+            ]},
+            {"t": "h", "texto": "Tu guía en pantalla"},
+            {"t": "img", "img": "rastreador", "ancho": "media", "marcas": "partes", "pie": "El seguimiento: compacto, solo con lo que estás haciendo ahora.", "leyenda": [
+              "Tu guía y cuántos pasos llevas hechos.",
+              "Buscar cerca: vuelo, posada, reparar, banco y más.",
+              "Lo que toca ahora. Clic: la flecha; clic derecho: marcarlo, omitirlo o verlo en la Enciclopedia.",
+              "Hacia dónde vas.",
+              "**Ver detalle**: el paso completo, con todas sus metas, en otra ventana.",
+              "**Omitir** salta el paso; **Ver el siguiente** te deja echar un vistazo al que viene."
+            ]},
+            {"t": "h", "texto": "Solo misiones que de verdad puedes hacer"},
+            {"t": "p", "texto": "Antes de mandarte a una misión, Alfa revisa tu nivel, tu clase, tu raza, tu facción, tus profesiones y tu reputación. Si le falta una misión previa, la agrega sola antes, en orden. Lo que no puedes cumplir se oculta con su motivo, para que nunca camines de balde. Las misiones de mazmorra te llevan a la entrada."},
+            {"t": "h", "texto": "Biblioteca de guías"},
+            {"t": "img", "img": "biblioteca", "pie": "La guía recomendada para tu nivel y tu zona, en grande, y todas las demás por categoría."},
+            {"t": "h", "texto": "Cerrar mis misiones y Recoger misiones"},
+            {"t": "p", "texto": "**Cerrar mis misiones** arma el mejor orden para entregar lo que ya tienes listo (y terminar lo que falta), contando vuelos, barcos y tu piedra de hogar. **Recoger misiones** junta las mejores que puedes tomar cerca, sin pasarte del límite de tu registro. Las dos están en Hoy, en Ruta y en tu guía."},
+            {"t": "h", "texto": "Mis planes: tus propias metas"},
+            {"t": "dos", "img": "planes", "pie": "Un plan es una lista de metas en el orden que tú quieras.", "lado": "izq", "prop": "50", "bloques": [
+              {"t": "p", "texto": "Arma una lista de metas: conseguir un objeto, juntar oro, subir una profesión, ir a un lugar, hacer una misión, llegar a un nivel o una nota libre. Se marcan solas cuando las cumples y la flecha te lleva a la siguiente."},
+              {"t": "p", "texto": "¿Sin ideas? Empieza con una plantilla: *Mi primera montura*, *Oro para la montura*, *Preparar la mazmorra* o *Subir cocina y pesca juntas*."}
+            ]},
+            {"t": "h", "texto": "Buscar cerca"},
+            {"t": "dos", "img": "cerca", "pie": "Lo más cercano, por tiempo de camino.", "lado": "izq", "prop": "34", "bloques": [
+              {"t": "p", "texto": "El botón con el pin de ubicación, junto a tu guía (y también en Hoy y en el mapa), te dice qué tienes más cerca por tiempo de camino: maestro de vuelo, posadero, reparar, banco, buzón, casa de subastas, tu entrenador, los entrenadores de profesión, vendedores y más."},
+              {"t": "p", "texto": "Un clic pone la flecha y la ruta. También con `/alfa cerca`."},
+              {"t": "consejo", "texto": "En **Ajustes > Misiones** decides si Alfa acepta y entrega solo las misiones de tu ruta o todas. Ruta te lleva ahí con un botón."}
+            ]}
+          ]
+        },
+        {
+          "id": "enciclopedia",
+          "titulo": "Enciclopedia",
+          "lema": "Todo el juego, aunque no lo tengas.",
+          "icono": "enciclopedia",
+          "bloques": [
+            {"t": "intro", "texto": "La Enciclopedia es la wiki del juego dentro de Alfa: todos los objetos, monturas, mascotas, PNJ, misiones, zonas y raros, con dónde conseguirlos y cómo llegar. Ábrela en **Aventura > Enciclopedia** o con `/alfa enciclopedia`."},
+            {"t": "img", "img": "enciclopedia", "pie": "Busca, filtra y abre la ficha: quién lo suelta, quién lo vende y qué misión lo da."},
+            {"t": "pasos", "titulo": "Encontrar algo", "items": [
+              "Escribe el nombre de lo que buscas (también sirve en inglés) o su número, como `#12345`.",
+              "Elige el tipo (objetos, monturas, mascotas, PNJ, misiones, zonas o raros) y afina con los filtros: calidad, nivel, ranura o «Puedo usar».",
+              "Abre la ficha. Primero va lo mejor para ti; después, cada fuente con sus datos.",
+              "Da clic en **Guíame** y Alfa arma el camino hasta ahí, con la flecha."
+            ]},
+            {"t": "tarjetas", "cols": 2, "titulo": "Los botones de cada ficha", "items": [
+              {"icono": "seguir", "titulo": "Guíame", "texto": "La ruta hasta la mejor fuente."},
+              {"icono": "lista", "titulo": "Qué me falta", "texto": "Lo que necesitas antes: nivel, una misión previa, una llave…"},
+              {"icono": "mapa", "titulo": "Ver en el mapa", "texto": "Dónde está, en el mapa de Alfa."},
+              {"icono": "mas", "titulo": "Agregar a Mis planes", "texto": "Conviértelo en una meta de tu plan."}
+            ]},
+            {"t": "h", "texto": "Monturas y mascotas"},
+            {"t": "img", "img": "monturas", "pie": "Cada montura y mascota con cómo se consigue, su nivel, su bando y si ya la tienes."},
+            {"t": "p", "texto": "Filtra por las que puedes conseguir, las que ya tienes o te faltan, la fuente y el bando. La guía **Mi primera montura** te dice cuánto cuesta entrenar, cuál es la montura más barata de tu raza, cuánto oro te falta y a quién ir."},
+            {"t": "consejo", "texto": "La Enciclopedia también trae una guía de los **puntos del Legado** de Forever: qué son, cómo se ganan y en qué se usan."}
+          ]
+        },
+        {
+          "id": "mazmorras",
+          "titulo": "Mazmorras",
+          "lema": "La que te toca, qué llevar y cómo llegar.",
+          "icono": "mazmorra",
+          "bloques": [
+            {"t": "intro", "texto": "Mazmorras te dice cuál es la mazmorra para tu nivel y te prepara con un clic: recoge las misiones que conviene llevar y te pone la flecha a la entrada. Ábrela en **Aventura > Mazmorras** o con `/alfa mazmorras`."},
+            {"t": "img", "img": "mazmorras", "pie": "«Para tu nivel ahora» en grande y, debajo, todas las mazmorras por rango de nivel."},
+            {"t": "pasos", "titulo": "Prepárate en un clic", "items": [
+              "Abre Mazmorras: arriba está la recomendada para tu nivel.",
+              "Pulsa **Prepárame** (o «Llévame a la entrada»).",
+              "Alfa recoge solo las misiones que ya puedes tomar y te dice qué les falta a las demás.",
+              "Sigue la flecha hasta la entrada. Al entrar, un aviso te lleva a los jefes."
+            ]},
+            {"t": "tarjetas", "cols": 2, "titulo": "La página de cada mazmorra", "items": [
+              {"icono": "info", "titulo": "Resumen", "texto": "Qué hacer ahora, lo que valen sus misiones y sus requisitos."},
+              {"icono": "mazmorra", "titulo": "Jefes", "texto": "Cada jefe con consejos según tu papel, su botín y sus misiones."},
+              {"icono": "oro", "titulo": "Botín", "texto": "Por jefe, con «Lo que me sirve», la probabilidad y si ya lo tienes."},
+              {"icono": "misiones", "titulo": "Misiones", "texto": "Para recoger, en tu registro, todavía no y ya hechas."},
+              {"icono": "aviso", "titulo": "Consejos", "texto": "Antes de entrar, y los avisos de jefes del juego."},
+              {"icono": "huella", "titulo": "Tu progreso", "texto": "Mazmorras hechas, jefes vencidos y botín: `/alfa mazmorras progreso`."}
+            ]},
+            {"t": "consejo", "texto": "El **modo historia** viene encendido: los jefes que todavía no vences quedan por descubrir, sin spoilers. Sus consejos se pueden ver a propósito. Se cambia en **Ajustes > Descubrimiento**."}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "personaje",
+      "titulo": "Personaje",
+      "lema": "Tus talentos, tu combate, tus bolsas… y tu loba.",
+      "pose": "atenta1",
+      "capitulos": [
+        {
+          "id": "talentos",
+          "titulo": "Talentos",
+          "lema": "Qué poner ahora y por qué, con un clic.",
+          "icono": "talentos",
+          "bloques": [
+            {"t": "intro", "texto": "Talentos te dice qué talento poner ahora, te explica por qué y lo aplica con un clic. Tu build se elige en dos clics. Ábrelo en **Personaje > Talentos** o con `/alfa talentos`."},
+            {"t": "img", "img": "builds", "pie": "Tu camino: lo que quieres hacer y cómo juegas. Alfa arma el build que te queda."},
+            {"t": "pasos", "items": [
+              "En **Tu camino**, elige qué quieres: **Subir solo**, **Mazmorras**, **Tanque** o **JcJ**.",
+              "Elige cómo juegas: **Tranquilo**, **Equilibrado** o **Arriesgado**, y tu rama si hay varias.",
+              "Arriba, en grande, aparece el talento que toca con su porqué. Pulsa **Aplicar**.",
+              "Al subir de nivel, un aviso te dice el siguiente, listo para aplicar."
+            ]},
+            {"t": "tarjetas", "cols": 2, "items": [
+              {"icono": "talentos", "titulo": "Tu árbol", "texto": "Tus puntos y el plan encima: lo hecho en verde y lo que toca con un anillo."},
+              {"icono": "lista", "titulo": "Plan por nivel", "texto": "Los talentos que siguen, con su nivel y su porqué."},
+              {"icono": "personaje", "titulo": "Equipo y estadísticas", "texto": "Qué estadísticas buscar y lo mejor para tu nivel en cada ranura."},
+              {"icono": "manada", "titulo": "Compartir con la manada", "texto": "Copia tu build en un código y pásalo a quien quieras."}
+            ]},
+            {"t": "importante", "texto": "Alfa nunca te quita talentos ni aplica nada en combate o con la ventana de talentos del juego abierta. Si tus puntos van por otro camino, te lo dice y te ofrece seguir el build de la rama que ya llevas."},
+            {"t": "consejo", "texto": "En cada nivel, Alfa también te avisa de los hechizos nuevos que puedes aprender, con qué entrenador y cuánto cuestan, y de los rangos viejos que quedan en tus barras: **Actualizar mis barras** los cambia."}
+          ]
+        },
+        {
+          "id": "combate",
+          "titulo": "Combate",
+          "lema": "Ayudas que te muestran; tú aprietas.",
+          "icono": "nivel",
+          "bloques": [
+            {"t": "intro", "texto": "Combate te echa la mano en las peleas sin decidir por ti: te muestra qué habilidad conviene ahora, te avisa cuando algo se vuelve usable y te resalta a los enemigos de tus misiones. Nada aquí aprieta, lanza ni elige objetivo por ti. Ábrelo en **Personaje > Combate** o con `/alfa combate`."},
+            {"t": "ilustracion", "id": "rotacion", "e": {"area": "Área", "porque": "Golpe mortal: recarga lista", "ahora": "Ahora", "despues": "Después"}, "pie": "La ayuda de rotación (dibujo de referencia).", "leyenda": [
+              "El ícono grande es la habilidad que conviene ahora.",
+              "Los chicos, las que siguen.",
+              "Un barrido oscuro muestra la recarga que corre.",
+              "El borde late cuando el juego hace brillar esa habilidad. «Área» sale con tres enemigos o más.",
+              "Debajo, una línea corta te dice por qué."
+            ]},
+            {"t": "p", "texto": "La ayuda de rotación conoce las **27 especializaciones** de las 9 clases y crece contigo: solo te sugiere lo que ya aprendiste, con tu rango más alto. La primera vez, un aviso te explica cómo leerla. El ícono se mueve a donde quieras y puede mostrar la tecla de tu barra."},
+            {"t": "tarjetas", "cols": 3, "items": [
+              {"icono": "aviso", "titulo": "Avisos de reacción", "texto": "Abrumar, Revancha, Ejecutar, Contraataque… justo cuando se pueden usar."},
+              {"icono": "misiones", "titulo": "Lo de misión, resaltado", "texto": "Los enemigos que necesitas, marcados en su placa de nombre."},
+              {"icono": "reloj", "titulo": "Medidor de daño", "texto": "El daño de tu grupo, cuando tu juego trae el medidor (`/alfa dps`)."}
+            ]},
+            {"t": "nota", "texto": "Quien cura empieza con la ayuda de rotación apagada (la bienvenida lo decide según tu papel). La enciendes o la apagas en Combate cuando quieras."}
+          ]
+        },
+        {
+          "id": "curacion",
+          "titulo": "Curación",
+          "lema": "Pasa el ratón, haz clic y cura.",
+          "icono": "curacion",
+          "bloques": [
+            {"t": "intro", "texto": "Curación pone marcos de grupo y de banda pensados para curar con un clic: pasas el ratón sobre un compañero, haces clic y lanzas el hechizo que elegiste. Cualquier sacerdote, druida, paladín o chamán lo usa sin configurar nada; las demás clases, para sus buffs y para seleccionar."},
+            {"t": "img", "img": "curacion", "pie": "La página de Curación: tus marcos, los preajustes y lo que hace cada clic."},
+            {"t": "pasos", "titulo": "El asistente de 3 pasos (`/alfa curacion asistente`)", "items": [
+              "**Elige tus clics.** Un preajuste para tu clase; si curas, el clic izquierdo puede quedarse solo para seleccionar.",
+              "**Acomoda tus marcos.** Con marcos de ejemplo que arrastras: ancho, alto, columnas y hacia dónde crecen.",
+              "**Prueba tus clics.** Haz clic en un marco de ejemplo (con o sin Mayús, Ctrl o Alt) y Alfa te dice qué lanzaría, sin lanzar nada."
+            ]},
+            {"t": "ilustracion", "id": "raton", "e": {
+              "botones": ["Izquierdo", "Central", "Derecho"],
+              "mods": ["Sin tecla", "Mayús", "Ctrl", "Alt"],
+              "acciones": [
+                ["Seleccionar", "", "Menú del jugador"],
+                ["Tu cura rápida", "", "Tu cura grande"],
+                ["Quitar perjuicio", "", "Tu buff"],
+                ["Cura en el tiempo", "", ""]
+              ]
+            }, "pie": "Doce clics para doce acciones: tres botones del ratón, con o sin Mayús, Ctrl o Alt. (Ejemplo)"},
+            {"t": "lista", "titulo": "Lo que te muestran los marcos", "items": [
+              "La vida en el color de la clase y las curas que vienen en camino, en una franja verde clara.",
+              "Una línea roja si alguien tiene la amenaza del enemigo.",
+              "Un borde del color del perjuicio que **tú** puedes quitar.",
+              "Atenuado si está fuera de alcance; gris si está muerto, es fantasma o se desconectó."
+            ]},
+            {"t": "nota", "texto": "Los marcos se acomodan solos también en combate, pero cambiar lo que hacen tus clics se hace fuera de combate: así lo pide el juego. Con **Mover marcos** los pones donde quieras."}
+          ]
+        },
+        {
+          "id": "bolsas",
+          "titulo": "Bolsas",
+          "lema": "Tus bolsas, tu banco y todos tus personajes.",
+          "icono": "bolsas",
+          "bloques": [
+            {"t": "intro", "texto": "Bolsas junta tus bolsas en una sola ventana de Alfa que se abre con la [[B]] de siempre y al visitar un comerciante, el correo o el banco. También tiene tu banco desde cualquier lugar y lo que llevan tus otros personajes."},
+            {"t": "img", "img": "bolsas", "pie": "La página de Bolsas: tu banco, más espacio y qué vender o conservar."},
+            {"t": "tarjetas", "cols": 3, "titulo": "Tres vistas", "items": [
+              {"icono": "rejilla", "titulo": "Todo junto", "texto": "Cada casilla en su lugar, con el llavero al final."},
+              {"icono": "lista", "titulo": "Por categorías", "texto": "Equipo, consumibles, misiones, artesanía, chatarra…"},
+              {"icono": "bolsas", "titulo": "Por bolsa", "texto": "Cada bolsa en su bloque, con cuántos espacios le quedan."}
+            ]},
+            {"t": "h", "texto": "Buscar y ordenar"},
+            {"t": "p", "texto": "Busca por nombre, tipo, calidad («verde», «azul», «morado») o nivel de objeto («20», «>20», «20-30»): lo que coincide se ilumina y lo demás se atenúa. **Ordenar** acomoda todo con un clic."},
+            {"t": "lista", "titulo": "Marcas sobre cada objeto", "items": [
+              "El nivel de objeto y un borde del color de su calidad.",
+              "Una moneda sobre la chatarra y un brillo en lo nuevo.",
+              "Una flecha verde si es una mejora para ti.",
+              "**Los objetos de misión brillan** con un borde dorado y un «!»; el «!» va lleno si el objeto empieza una misión que aún no tienes."
+            ]},
+            {"t": "h", "texto": "El banco"},
+            {"t": "p", "texto": "Con un banquero, tu banco se abre en la misma clase de ventana; lejos de él, ves la última foto que tomó Alfa. **Depositar rápido** guarda en un clic lo que ya tienes en el banco, todos los materiales o una categoría. La barra del banco te muestra el costo del siguiente espacio."},
+            {"t": "consejo", "texto": "Cuando tus bolsas se llenan, Alfa te dice qué vender y qué conservar, con los precios de Comercio: **Marcar como chatarra**, **Llévame al comerciante** y, con el comerciante abierto, **Vender la chatarra**."}
+          ]
+        },
+        {
+          "id": "lya",
+          "titulo": "Lya",
+          "lema": "Tu loba compañera.",
+          "icono": "lobo",
+          "bloques": [
+            {"t": "intro", "texto": "Lya es una loba negra chiquita que te acompaña en pantalla: te da consejos cortos, te anima y te cuenta historias del mundo. Lleva el nombre de Lya, la perrita de toxic3000: noble, leal y siempre al lado de los suyos, la gordita consentida de la casa. Alfa la recuerda así, como la loba que cuida a la manada y nunca deja a nadie atrás."},
+            {"t": "poses", "items": [
+              ["quieta1", "Te acompaña"], ["atenta1", "Se pone atenta"], ["sentada1", "Se sienta"], ["pedir2", "Pide salchicha"], ["correr3", "Corre"],
+              ["cola2", "Se busca la cola"], ["estirarse2", "Se estira"], ["saltar2", "Salta"], ["aullar2", "Aúlla"], ["dormir2", "Duerme"]
+            ]},
+            {"t": "lya", "pose": "pedir2", "texto": "Me encanta platicar de la zona donde andamos, de tu raza y de tus oficios. Y si me ves sentadita con mi huesito… es que tengo hambre. ¿Me das una salchicha?"},
+            {"t": "lista", "titulo": "Lo que hace", "items": [
+              "**Te acompaña.** Respira, mueve la cola, corre, se estira, aúlla cuando subes de nivel y se duerme enroscada si te alejas un rato. En combate se queda quieta y tenue, para no distraerte.",
+              "**Te avisa a tiempo.** Equipo gastado, bolsas llenas, habilidades por entrenar o tres misiones listas para entregar, siempre con un botón que te lleva.",
+              "**Te cuenta historias.** Guarda la historia de cada misión que tomas, aunque la aceptes sin leerla, y al entregarla te ofrece el final.",
+              "**Sabe de todo.** Lore de Warcraft, datos curiosos de cada zona de Kalimdor y los Reinos del Este, de tu raza, tu clase y tus profesiones, y consejos de amiga."
+            ]},
+            {"t": "img", "img": "lya-globo", "ancho": "media", "pie": "Lya habla en su globo, sin estorbar, cuando hay calma."},
+            {"t": "tarjetas", "cols": 2, "titulo": "Su menú (clic derecho sobre Lya)", "items": [
+              {"icono": "reloj", "titulo": "Silenciar 1 hora", "texto": "Para cuando necesitas concentrarte."},
+              {"icono": "mapa", "titulo": "Cuéntame algo de aquí", "texto": "Un dato de la zona donde estás."},
+              {"icono": "lobo", "titulo": "Cuéntame algo · Háblame de mi gente", "texto": "Lore, consejos y cosas de tu raza."},
+              {"icono": "misiones", "titulo": "Historias de tus misiones", "texto": "Abre la ventana Historias."},
+              {"icono": "ajustes", "titulo": "Consejos: muchos, pocos o solo importantes", "texto": "Cada clic pasa a la siguiente opción."},
+              {"icono": "cerrar", "titulo": "Bloquear posición · Ocultar a Lya", "texto": "Déjala fija o escóndela; vuelve con `/alfa lya`."}
+            ]},
+            {"t": "img", "img": "lya-historias", "pie": "La ventana Historias reúne lo que te contaron en cada misión, por zona y con buscador (`/alfa historias`)."},
+            {"t": "consejo", "texto": "Dale un clic a Lya cuando quieras un consejo. Puedes arrastrarla a donde te guste y, con «Bloquear posición», se queda fija."}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mundo",
+      "titulo": "Mundo",
+      "lema": "El mapa, los recursos y cómo se ve el mundo.",
+      "pose": "aullar2",
+      "capitulos": [
+        {
+          "id": "mapa",
+          "titulo": "El mapa de Alfa",
+          "lema": "Todo Azeroth en un solo mapa, con la tecla M.",
+          "icono": "mapa",
+          "bloques": [
+            {"t": "intro", "texto": "El mapa de Alfa pone todo el mundo en un solo mapa con zoom: el terreno real, los puntos de vuelo, las entradas y salidas, tus marcadores y tu grupo. Se abre con la [[M]] de siempre (o con `/alfa mapa`) y se centra en tu zona."},
+            {"t": "ilustracion", "id": "mapa", "e": {
+              "titulo": "Mapa del mundo",
+              "cerca": "Buscar cerca",
+              "marcadores": "Tus marcadores",
+              "capas": "Capas",
+              "limpio": "Modo limpio",
+              "juego": "Ir al mapa del juego",
+              "engrane": "Estilo del mapa",
+              "zoom": "Acercar, alejar y centrar en ti",
+              "tu": "Tú",
+              "vuelo": "Vuelo conocido",
+              "vuelo2": "Vuelo por descubrir",
+              "marcador": "Tu marcador",
+              "mazmorra": "Mazmorra",
+              "salida": "Hacia otra zona"
+            }, "pie": "La ventana del mapa y sus botones (dibujo de referencia)."},
+            {"t": "teclas", "titulo": "Moverte por el mapa", "items": [
+              {"teclas": ["Rueda del ratón"], "texto": "Acerca o aleja donde está el cursor."},
+              {"teclas": ["Arrastrar"], "texto": "Mueve el mapa; si sueltas rápido, sigue un poco y se frena."},
+              {"teclas": ["Doble clic"], "texto": "Acerca."},
+              {"teclas": ["Clic derecho"], "texto": "Pone un marcador ahí (también Mayús+clic)."},
+              {"teclas": ["Ctrl", "Clic"], "texto": "La flecha y la ruta hasta ese punto, sin guardar nada."},
+              {"teclas": ["M"], "texto": "Abre y cierra el mapa."}
+            ]},
+            {"t": "tarjetas", "cols": 2, "titulo": "Lo que ves", "items": [
+              {"icono": "mundo", "titulo": "El terreno real", "texto": "Al acercarte, el suelo del minimapa: montañas, ríos y caminos. En el engrane eliges «Terreno» o «Clásico»."},
+              {"icono": "seguir", "titulo": "Puntos de vuelo", "texto": "Verdes los que conoces; ámbar con «?» los que te faltan. Al pasar el ratón, a dónde vuelas desde ahí."},
+              {"icono": "mazmorra", "titulo": "Entradas y salidas", "texto": "Mazmorras, salidas de zona con su destino, barcos, zepelines, el tranvía y portales."},
+              {"icono": "recoleccion", "titulo": "Recursos", "texto": "Minería, hierbas, pesca y tesoros al acercarte a una zona; tenues si tu habilidad no alcanza."},
+              {"icono": "manada", "titulo": "Tu manada", "texto": "Tu grupo, con el color de su clase; quien comparte su ubicación, con una huella pequeña."},
+              {"icono": "ventana", "titulo": "Modo limpio", "texto": "Un clic deja solo lo esencial: tú, tu grupo, tus marcadores y tu guía."}
+            ]},
+            {"t": "h", "texto": "Tus marcadores"},
+            {"t": "pasos", "items": [
+              "Da clic derecho en el mapa de Alfa (en el mapa del juego, Mayús+clic derecho).",
+              "Ponle nombre y elige uno de 13 íconos y 10 colores. Pulsa **Guardar**.",
+              "Da clic en su pin para cambiarlo, compartirlo con tu grupo, borrarlo o **Seguir**: la flecha y la ruta te llevan hasta él."
+            ]},
+            {"t": "p", "texto": "Tus marcadores se ven en el mapa de Alfa, en el del juego y en el minimapa. La lista completa está en el botón de la huella, y en la página **Mundo** con las capas del mapa y el modo limpio."},
+            {"t": "novedad", "ref": "mapa"},
+            {"t": "nota", "texto": "Dentro de una mazmorra, la [[M]] abre el mapa del juego. Desde el mapa de Alfa, «Ir al mapa del juego» abre el del juego en la misma zona, y en el mapa del juego el botón «Mapa de Alfa» te regresa."}
+          ]
+        },
+        {
+          "id": "recoleccion",
+          "titulo": "Recolección",
+          "lema": "Minerales, hierbas, peces y tesoros, con ruta.",
+          "icono": "recoleccion",
+          "bloques": [
+            {"t": "intro", "texto": "Recolección te muestra en el mapa y en el minimapa los lugares de minería, hierbas, bancos de peces y tesoros de WoW Forever, y arma rutas de farmeo en tu zona. Trae unos 25 000 lugares de fábrica y aprende los que tú descubres."},
+            {"t": "img", "img": "recoleccion", "pie": "Arma una ruta con lo que tu habilidad alcanza y la flecha te lleva de parada en parada."},
+            {"t": "pasos", "titulo": "Tu ruta de farmeo", "items": [
+              "Abre **Mundo > Recolección** (`/alfa recoleccion`).",
+              "Elige qué recolectar: el tipo (minería, hierbas, pesca o tesoros) y, si quieres, un recurso.",
+              "Pulsa **Crear ruta**: Alfa junta los lugares en una vuelta corta y la dibuja en el mapa.",
+              "Pulsa **Guiarme**: la flecha va a la parada más cercana y pasa a la siguiente cuando llegas o recolectas."
+            ]},
+            {"t": "lista", "items": [
+              "Cada lugar lleva el color de su tipo: cobre la minería, verde las hierbas, azul la pesca y oro los tesoros.",
+              "Lo que tu habilidad todavía no alcanza se ve gris y tenue.",
+              "Al pasar el ratón: el nivel necesario, cuántas veces lo recolectaste y cuándo fue la última.",
+              "El historial cuenta lo que juntas por sesión, por hora y por zona."
+            ]},
+            {"t": "consejo", "texto": "¿Todavía sin profesión de recolección? Recolección te lleva con un instructor para que aprendas una."}
+          ]
+        },
+        {
+          "id": "paisaje",
+          "titulo": "Paisaje y gráficos",
+          "lema": "Que el mundo se vea precioso, sin complicarte.",
+          "icono": "apariencia",
+          "bloques": [
+            {"t": "intro", "texto": "Paisaje y gráficos explica en palabras simples los ajustes gráficos del juego (incluso los que el menú esconde), trae preajustes y deshace con un clic. Ábrelo en **Mundo > Paisaje y gráficos** o con `/alfa paisaje`."},
+            {"t": "img", "img": "vista", "pie": "Seis pestañas (Calidad, Entorno, Cámara, Interfaz, Filtros y Avanzado), con buscador."},
+            {"t": "tarjetas", "cols": 3, "titulo": "Preajustes", "items": [
+              {"icono": "reloj", "titulo": "Bajo", "texto": "Lo más ligero, para subir los cuadros por segundo."},
+              {"icono": "ajustes", "titulo": "Medio", "texto": "Equilibrado: se ve bien en casi cualquier equipo."},
+              {"icono": "apariencia", "titulo": "Alto", "texto": "Más distancia, sombras finas y agua con reflejos."},
+              {"icono": "exito", "titulo": "Ultra", "texto": "Todo al máximo seguro. Pide una tarjeta de video fuerte."},
+              {"icono": "lobo", "titulo": "Paisaje de la manada", "texto": "La firma de Alfa: más pasto, más horizonte, niebla ligera y rayos de sol."},
+              {"icono": "flecha", "titulo": "Deshacer", "texto": "Regresa lo que tenías antes del último preajuste."}
+            ]},
+            {"t": "lista", "items": [
+              "**Al instalar no cambia nada**: solo lee. Alfa toca un ajuste hasta que tú lo pides.",
+              "**Filtros de pantalla** opcionales: tinte, viñeta, grano y barras de cine, que nunca tapan la interfaz.",
+              "En combate no se toca nada: lo que pidas espera al final de la pelea.",
+              "Si el juego limita un valor, la fila te lo dice: «Pediste 2.6; el juego lo dejó en 2»."
+            ]}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "oficios",
+      "titulo": "Oficios",
+      "lema": "Pescar con calma y hacer oro con cabeza.",
+      "pose": "pedir2",
+      "capitulos": [
+        {
+          "id": "pesca",
+          "titulo": "Pesca",
+          "lema": "Una tecla para todo.",
+          "icono": "pesca",
+          "bloques": [
+            {"t": "intro", "texto": "Pesca es una reingeniería completa de la pesca: un modo en el que una sola tecla te pone la caña, aplica el cebo, lanza y recoge. Además trae una barra, un diario de capturas, metas, 22 logros, una guía de 1 a 300 y cocina junto al agua."},
+            {"t": "ilustracion", "id": "pesca", "e": {"tecla": "Espacio", "cada": "Cada pulsación hace el siguiente paso", "pasos": ["Ponerte la caña y el equipo", "Poner el cebo", "Lanzar", "Recoger cuando pica"]}, "pie": "Siempre con tu tecla y fuera de combate."},
+            {"t": "pasos", "items": [
+              "Abre el modo pesca: con el botón de su página, con `/alfa pesca` o, simplemente, poniéndote una caña.",
+              "Pulsa [[Espacio]]: Alfa te pone la mejor caña y tu equipo de pesca.",
+              "Pulsa otra vez: aplica el mejor cebo. Una vez más: lanza.",
+              "Cuando el corcho chapotea, pulsa [[Espacio]] para recoger.",
+              "Al cerrar el modo, vuelve tu equipo normal."
+            ]},
+            {"t": "teclas", "titulo": "Las teclas del modo pesca", "items": [
+              {"teclas": ["Espacio"], "texto": "El siguiente paso. La tecla se cambia: teclado, botones del ratón o la rueda."},
+              {"teclas": ["Mayús", "Espacio"], "texto": "Saltar, como siempre."},
+              {"teclas": ["Ctrl", "Espacio"], "texto": "Soltar el lanzamiento y volver a lanzar."},
+              {"teclas": ["Caminar"], "texto": "Al moverte, tu tecla vuelve a ser la de siempre."}
+            ]},
+            {"t": "img", "img": "pesca-barra", "ancho": "media", "pie": "La barra de pesca: tu habilidad y lo que hará tu tecla."},
+            {"t": "img", "img": "pesca", "pie": "La página de Pesca: diario, estadísticas, guía, cocina, metas y logros."},
+            {"t": "tarjetas", "cols": 2, "items": [
+              {"icono": "enciclopedia", "titulo": "Diario de pesca", "texto": "Todo lo que se pesca en Forever y lo que ya sacaste, con maestrías."},
+              {"icono": "nivel", "titulo": "Estadísticas", "texto": "Lanzamientos, capturas y valor, por sesión y desde siempre."},
+              {"icono": "ruta", "titulo": "Guía de 1 a 300", "texto": "Dónde pescar según tu habilidad, instructores, vendedores y el concurso de Tuercespina."},
+              {"icono": "exito", "titulo": "Metas y logros", "texto": "Ponte metas y desbloquea 22 logros propios. Y cocina lo pescado junto al agua."}
+            ]}
+          ]
+        },
+        {
+          "id": "comercio",
+          "titulo": "Comercio",
+          "lema": "¿Lo vendo, lo subasto o lo transformo?",
+          "icono": "comercio",
+          "bloques": [
+            {"t": "intro", "texto": "Comercio responde una sola pregunta para cada objeto: ¿lo vendo al comerciante, lo subasto o lo convierto en algo que valga más? Solo informa: nunca compra, vende ni publica nada por ti."},
+            {"t": "img", "img": "comercio", "pie": "La página de Comercio: qué hacer con lo que llevas y los precios de la subasta."},
+            {"t": "pasos", "items": [
+              "Ve a la casa de subastas: bajo su ventana aparece la barra de Alfa.",
+              "Pulsa **Escanear con Alfa**. Guarda el precio más bajo de cada objeto (entre un escaneo y otro hay que esperar 15 minutos).",
+              "Pasa el ratón por cualquier objeto: dos líneas te dicen su precio y lo mejor que puedes hacer con él.",
+              "En **Oficios > Comercio** ves cuánto ganas si sigues los consejos y qué conviene vender, subastar, transformar o guardar."
+            ]},
+            {"t": "ilustracion", "id": "cuadro", "e": {"lineas": [
+              {"t": "Tela de seda", "c": ""},
+              {"t": "Tela", "c": "g"},
+              {"t": "Subasta: 1o 20p (hace 3 h) · Comerciante: 15p", "c": "a"},
+              {"t": "Mejor: subastar 1o 14p (+660%)", "c": "a"}
+            ]}, "pie": "Las dos líneas de Alfa en el cuadro de un objeto (ejemplo)."},
+            {"t": "lista", "items": [
+              "Aprende de lo que buscas a mano en la subasta y de lo que cuestan las cosas con los comerciantes.",
+              "Lee tus recetas y calcula si te conviene fabricar; también desencantar, si tú o alguno de tus personajes puede.",
+              "Recomienda lo que más oro deja, si le gana por lo menos un 10 % a venderlo; si nada deja oro, te dice que lo guardes.",
+              "Los precios de hace más de 60 días se olvidan solos."
+            ]},
+            {"t": "consejo", "texto": "Bolsas usa estos consejos: cuando se llenan, te dice qué vender y cuánto te dan."}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "jauria",
+      "titulo": "La Jauría",
+      "lema": "Juega en manada.",
+      "pose": "cola2",
+      "capitulos": [
+        {
+          "id": "jauria",
+          "titulo": "La Jauría",
+          "lema": "Tu grupo en el mapa, con permiso, y el clan a un clic.",
+          "icono": "manada",
+          "bloques": [
+            {"t": "intro", "texto": "La Jauría es la página de tu manada: tu grupo o banda y los jugadores que usan Alfa y aceptaron que la manada los vea en el mapa. Ábrela en **Manada** o con `/alfa manada`."},
+            {"t": "img", "img": "manada", "pie": "Lo que toca ahora, la manada a la vista y el clan."},
+            {"t": "h", "texto": "Compartir tu ubicación es tu decisión"},
+            {"t": "p", "texto": "De fábrica no se comparte nada. En la bienvenida eliges «No, por ahora» o «Sí, que la manada me vea», y después lo cambias cuando quieras en esta página, con «Que la manada vea a mi personaje en el mapa». Si compartes, solo se envía el lugar de tu personaje dentro del juego. Tu grupo siempre se ve, como en el juego."},
+            {"t": "importante", "texto": "La ubicación viaja por un canal oculto del juego que alguien con otro addon podría leer: compártela solo si te sientes a gusto. Dentro de mazmorras y bandas no se envía nada."},
+            {"t": "lista", "titulo": "La manada a la vista", "items": [
+              "Una tarjeta por persona: su nombre en el color de su clase, nivel, zona, distancia y hace cuánto se supo de ella.",
+              "**Seguir** pone la flecha con esa persona y no la suelta aunque cambie de zona.",
+              "**Invitar** la suma a tu grupo.",
+              "En el mapa, tu grupo sale con el color de su clase y quien comparte, con una huella pequeña."
+            ]},
+            {"t": "h", "texto": "Insignias de La Jauría"},
+            {"t": "tarjetas", "cols": 2, "items": [
+              {"icono": "lobo", "titulo": "Alfa de La Jauría", "texto": "Un lobo en oro junto al nombre."},
+              {"icono": "huella", "titulo": "De La Jauría", "texto": "Un lobo en verde junto al nombre."}
+            ]},
+            {"t": "p", "texto": "La insignia se ve en el cuadro del jugador, en esta página y como un aro en el mapa. Es solo visual: no da ninguna ventaja, y la lista la lleva toxic3000, con permiso de cada persona."},
+            {"t": "h", "texto": "El clan"},
+            {"t": "p", "texto": "Al final de la página está La Jauría, el clan: su lema, lo que ofrece, el enlace del Discord para copiar y **Quiero unirme**, para pedir tu lugar en la manada."},
+            {"t": "comandos", "items": [
+              {"cmd": "/alfa manada seguir <nombre>", "texto": "Te lleva con alguien de tu grupo o que comparte."},
+              {"cmd": "/alfa manada parar", "texto": "Deja de seguir."},
+              {"cmd": "/alfa manada compartir sí | no", "texto": "Empieza o deja de compartir tu ubicación."}
+            ]}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ajustes",
+      "titulo": "Ajustes",
+      "lema": "Alfa a tu medida.",
+      "pose": "estirarse2",
+      "capitulos": [
+        {
+          "id": "ajustes",
+          "titulo": "Ajustes",
+          "lema": "Todo se cambia, nada se pierde.",
+          "icono": "ajustes",
+          "bloques": [
+            {"t": "intro", "texto": "En **Ajustes** (arriba a la derecha de la ventana) vive todo lo que se puede cambiar: el estilo, las comodidades, las misiones, el mapa y más. Lo más rápido es el buscador: escribe lo que quieres cambiar en «Buscar ajustes» y Alfa te lleva a la opción."},
+            {"t": "tarjetas", "cols": 2, "items": [
+              {"icono": "apariencia", "titulo": "Estilo y sonido", "texto": "Los tres estilos, el aullido, el lobo al entrar, la configuración, «Reportar» y lo nuevo."},
+              {"icono": "comodidades", "titulo": "Comodidades", "texto": "Pequeñas mejoras del juego, en un solo lugar (capítulo siguiente)."},
+              {"icono": "misiones", "titulo": "Misiones", "texto": "Aceptar y entregar solo, todas las misiones o solo las de tu ruta."},
+              {"icono": "mapa", "titulo": "Mapa y Descubrimiento", "texto": "El mapa, las mazmorras y el modo historia."},
+              {"icono": "guia", "titulo": "Guía", "texto": "Cómo se ve y se porta tu guía en pantalla."},
+              {"icono": "info", "titulo": "Acerca de", "texto": "La versión, los créditos y las licencias."}
+            ]},
+            {"t": "img", "img": "misiones", "pie": "Ajustes > Misiones: cada opción explicada en una línea."},
+            {"t": "consejo", "texto": "Abajo a la izquierda, **Restablecer página** regresa los ajustes de la página que estás viendo a como venían."},
+            {"t": "nota", "texto": "Al actualizar, tus ajustes se quedan como los dejaste. Si una versión los cambia de lugar, Alfa los muda sola, una sola vez, sin perder nada."}
+          ]
+        },
+        {
+          "id": "comodidades",
+          "titulo": "Comodidades",
+          "lema": "Pequeñas cosas que hacen el juego más cómodo.",
+          "icono": "comodidades",
+          "bloques": [
+            {"t": "intro", "texto": "Comodidades junta mejoras de calidad de vida: cada grupo tiene su interruptor y sus opciones adentro. Ábrela en **Ajustes > Comodidades** o con `/alfa comodidades`."},
+            {"t": "img", "img": "comodidades", "pie": "Arriba, cuántas tienes encendidas; debajo, cada grupo con su interruptor."},
+            {"t": "consejo", "texto": "¿No sabes por dónde empezar? Pulsa **Encender las recomendadas**: colores de clase, cuadro de información mejorado, probador, la siguiente parada del vuelo y sin voces de error."},
+            {"t": "tarjetas", "cols": 2, "items": [
+              {"icono": "seguir", "titulo": "Viajes", "texto": "La siguiente parada en vuelos con escalas, y cuánto falta."},
+              {"icono": "mapa", "titulo": "Minimapa", "texto": "Cuadrado, con los botones de addons ocultos hasta que pasas el ratón."},
+              {"icono": "apariencia", "titulo": "Estilo del chat, el minimapa y las barras", "texto": "Viste esas partes del juego con tu estilo; al apagarlo, todo vuelve como estaba."},
+              {"icono": "personaje", "titulo": "Marcos y barra", "texto": "Colores de clase en tu marco y en el de tu objetivo, y aviso si la barra de una forma está vacía."},
+              {"icono": "info", "titulo": "Cuadro de información", "texto": "A quién apunta alguien, su rango de hermandad y verlo solo con Mayús."},
+              {"icono": "ventana", "titulo": "Probador", "texto": "Botones para quitar piezas y control de la animación."},
+              {"icono": "mundo", "titulo": "Cámara", "texto": "Alejar la cámara un poco más."},
+              {"icono": "aviso", "titulo": "Silenciar sonidos", "texto": "Voces de error, diálogos, mascotas, gestos y tu propia lista."}
+            ]},
+            {"t": "p", "texto": "Druidas, guerreros y pícaros: si al cambiar de forma o de actitud tu barra está vacía, Alfa te avisa y la llena con un clic con tus habilidades (**Llenar mi barra**), solo en casillas vacías y nunca en combate."},
+            {"t": "comandos", "items": [
+              {"cmd": "/alfa silenciar <número>", "texto": "Agrega un sonido del juego a tu lista, por su número. Sin número, te muestra la lista."}
+            ]}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ayuda",
+      "titulo": "Ayuda",
+      "lema": "Atajos, respuestas y una manada que te echa la mano.",
+      "pose": "saltar2",
+      "capitulos": [
+        {
+          "id": "atajos",
+          "titulo": "Atajos y comandos",
+          "lema": "Todo Alfa al alcance de tu teclado.",
+          "icono": "mando",
+          "bloques": [
+            {"t": "teclas", "titulo": "Teclas y ratón", "items": [
+              {"teclas": ["M"], "texto": "Abre o cierra el mapa de Alfa."},
+              {"teclas": ["B"], "texto": "Abre tus bolsas."},
+              {"teclas": ["Esc"], "texto": "Cierra ventanas y salta la intro."},
+              {"teclas": ["Espacio"], "texto": "En el modo pesca: el siguiente paso."},
+              {"teclas": ["Ctrl", "Espacio"], "texto": "En el modo pesca: volver a lanzar."},
+              {"teclas": ["Clic derecho"], "texto": "En el mapa de Alfa: pone un marcador."},
+              {"teclas": ["Mayús", "Clic derecho"], "texto": "En el mapa del juego: pone un marcador."},
+              {"teclas": ["Ctrl", "Clic"], "texto": "En el mapa de Alfa: la flecha y la ruta a ese punto."}
+            ]},
+            {"t": "nota", "texto": "En las opciones de teclado del juego hay una categoría **Alfa** para elegir tus propias teclas: abrir el mapa, el modo pesca y Buscar cerca."},
+            {"t": "comandos", "titulo": "Comandos (se escriben en el chat)", "items": [
+              {"cmd": "/alfa", "texto": "Abre la ventana de Alfa."},
+              {"cmd": "/alfa inicio", "texto": "Hoy."},
+              {"cmd": "/alfa rutas", "texto": "Ruta y guías."},
+              {"cmd": "/alfa cerca", "texto": "Buscar cerca: vuelo, posada, reparar y más."},
+              {"cmd": "/alfa enciclopedia", "texto": "La Enciclopedia (también `/alfa monturas`, `/alfa mascotas` y `/alfa legado`)."},
+              {"cmd": "/alfa mazmorras", "texto": "Mazmorras (`progreso`: tu progreso)."},
+              {"cmd": "/alfa talentos", "texto": "Talentos."},
+              {"cmd": "/alfa combate · /alfa dps", "texto": "Combate y el medidor de daño."},
+              {"cmd": "/alfa curacion", "texto": "Curación (`asistente`: el asistente)."},
+              {"cmd": "/alfa bolsas", "texto": "Bolsas."},
+              {"cmd": "/alfa lya · /alfa historias", "texto": "Lya y sus historias."},
+              {"cmd": "/alfa mapa · /alfa mundo", "texto": "El mapa de Alfa y la página Mundo."},
+              {"cmd": "/alfa limpio", "texto": "El modo limpio del mapa."},
+              {"cmd": "/alfa recoleccion", "texto": "Recolección (`ruta`, `guiar` y `parar`)."},
+              {"cmd": "/alfa paisaje", "texto": "Paisaje y gráficos."},
+              {"cmd": "/alfa pesca", "texto": "El modo pesca."},
+              {"cmd": "/alfa comercio", "texto": "Comercio (`escanear`, con la subasta abierta)."},
+              {"cmd": "/alfa manada", "texto": "La Jauría."},
+              {"cmd": "/alfa comodidades", "texto": "Comodidades."},
+              {"cmd": "/alfa estilo", "texto": "Ajustes > Estilo y sonido."},
+              {"cmd": "/alfa bienvenida", "texto": "La configuración (`novedades`: lo nuevo de la versión)."},
+              {"cmd": "/alfa sesion", "texto": "Tu sesión de hoy, en el chat."},
+              {"cmd": "/alfa reportar", "texto": "Reportar un error, una mejora o un comentario."}
+            ]}
+          ]
+        },
+        {
+          "id": "faq",
+          "titulo": "Preguntas frecuentes",
+          "lema": "Lo que la manada pregunta más.",
+          "icono": "info",
+          "bloques": [
+            {"t": "faq", "items": [
+              {"q": "¿Alfa juega por mí?", "a": "No. Alfa te apoya y tú decides: la bienvenida te pregunta qué quieres que haga solo, y en combate nunca aprieta, lanza ni elige objetivo por ti. Curar, pescar, aplicar talentos y usar objetos siempre es con tu tecla o tu clic."},
+              {"q": "¿Necesito otros addons?", "a": "No. Alfa trae todo lo que usa."},
+              {"q": "¿Puedo tener Alfa en un idioma distinto al del juego?", "a": "Sí. Alfa viene en 10 idiomas y puedes elegir el que quieras aunque tu juego esté en otro: escribe `/alfa bienvenida`, pulsa «Cambiar» en Idioma y elige. Alfa recarga la interfaz y sigue en tu idioma."},
+              {"q": "¿Quién me ve en el mapa?", "a": "Tu grupo, como siempre. Los demás jugadores que usan Alfa solo te ven si aceptaste compartir tu ubicación, y solo ven el lugar de tu personaje dentro del juego. Puedes dejar de compartir cuando quieras en La Jauría."},
+              {"q": "¿Cómo quito la intro del lobo al entrar?", "a": "En **Ajustes > Estilo y sonido**, apaga «El lobo te recibe al entrar». Ahí mismo se apaga el aullido."},
+              {"q": "Lya habla mucho, ¿cómo la calmo?", "a": "Clic derecho sobre ella: **Silenciar 1 hora**, o cambia los consejos a «pocos» o «solo importantes». También puedes ocultarla y traerla de vuelta con `/alfa lya`."},
+              {"q": "La [[M]] abre el mapa del juego y no el de Alfa.", "a": "Dentro de mazmorras es a propósito: ahí la [[M]] abre el mapa del juego. Fuera de ellas, revisa en la página **Mundo** que esté encendido «Abrir el mapa de Alfa con la tecla del mapa»."},
+              {"q": "¿Se pierden mis ajustes al actualizar?", "a": "No. Alfa conserva todo, y si una versión cambia algo de lugar, lo muda sola, una sola vez."},
+              {"q": "¿Por qué Alfa espera a que termine la pelea para algunas cosas?", "a": "Porque el juego no deja que un addon cambie ciertas cosas en combate. Alfa las deja listas y las hace en cuanto termina la pelea."},
+              {"q": "Mi barra se ve vacía al cambiar de forma o de actitud.", "a": "Es la barra de esa forma, que el juego deja aparte. Alfa te avisa y la llena con un clic (**Llenar mi barra**) con tus habilidades, solo en casillas vacías."},
+              {"q": "¿Alfa es gratis?", "a": "Sí, y lo seguirá siendo. Es software libre, sin anuncios, y nada escribe solo en el chat de otros jugadores."}
+            ]}
+          ]
+        },
+        {
+          "id": "falla",
+          "titulo": "¿Algo falla?",
+          "lema": "Cuéntanos y lo arreglamos.",
+          "icono": "aviso",
+          "bloques": [
+            {"t": "intro", "texto": "Alfa se prueba antes de cada versión, pero WoW Forever es grande y siempre se escapa algo. Si ves un error o tienes una idea, la manada quiere saberlo."},
+            {"t": "pasos", "titulo": "Primero, lo rápido", "items": [
+              "Escribe `/reload` para recargar la interfaz.",
+              "Revisa que Alfa esté al día: abre otra vez **Instalar-Alfa.exe**.",
+              "Si una página se ve rara, prueba **Restablecer página**."
+            ]},
+            {"t": "h", "texto": "Reportar con /alfa reportar"},
+            {"t": "dos", "img": "reportar", "pie": "El reporte se arma solo mientras escribes.", "lado": "izq", "prop": "40", "bloques": [
+              {"t": "pasos", "items": [
+                "Escribe `/alfa reportar`.",
+                "Elige **Error**, **Mejora** o **Comentario** y cuéntalo con tus palabras.",
+                "Alfa le agrega lo que ayuda a arreglarlo: la versión, el idioma, tu clase y nivel y dónde estás. No lleva tu nombre ni tu reino.",
+                "Pulsa **Elegir todo**, copia con [[Ctrl]]+[[C]] y pégalo en el canal **#buzon-alfa** del Discord de La Jauría."
+              ]},
+              {"t": "p", "texto": "Ese buzón es privado: solo el desarrollador de Alfa lee lo que mandas."}
+            ]},
+            {"t": "enlace", "icono": "comunidad", "titulo": "Discord de La Jauría", "url": "https://discord.gg/hUNjA6BJwh", "texto": "Ven a jugar con la manada, pide ayuda y entérate de cada versión nueva."},
+            {"t": "p", "texto": "También puedes contarnos en los comentarios de CurseForge o abrir un reporte en GitHub: https://github.com/toxic3000/alfa-forever/issues"},
+            {"t": "lya", "pose": "saltar2", "texto": "¡Gracias por avisar! Cada reporte ayuda a que Alfa sea mejor para toda la manada."}
+          ]
+        },
+        {
+          "id": "creditos",
+          "titulo": "Créditos y licencia",
+          "lema": "Gracias a quienes lo hacen posible.",
+          "icono": "lobo",
+          "bloques": [
+            {"t": "p", "texto": "**Alfa** lo hace **toxic3000** para La Jauría, con cariño y con ayuda de inteligencia artificial: toxic3000 lo diseña, decide cada detalle y lo prueba en el juego antes de publicarlo. Gracias a todos los que usan Alfa, reportan un error, proponen una idea o se lo cuentan a un amigo: ustedes son la manada."},
+            {"t": "h", "texto": "Proyectos en los que se basa"},
+            {"t": "creditos", "items": [
+              ["Polestar", "The Polestar authors: la base sobre la que está construido Alfa.", "GPL-3.0"],
+              ["Shortest Path Forever", "Cillian Berragan: la navegación.", "GPL-3.0-or-later"],
+              ["pfQuest", "shagu: datos de misiones.", "MIT"],
+              ["GatherLite", "Wuild: la base de lugares de recolección.", "MIT"],
+              ["OpenMap", "La lógica del mapa.", "MIT"],
+              ["TerrainWorldMap", "Dramacydal: la tabla del terreno.", "MIT"],
+              ["Inter, Fira Sans, Open Sans", "Las letras de Alfa y de este manual.", "OFL 1.1"]
+            ]},
+            {"t": "p", "texto": "Alfa no está afiliado a esos proyectos ni a Blizzard. World of Warcraft y Blizzard Entertainment son marcas de Blizzard Entertainment, Inc."},
+            {"t": "h", "texto": "Licencia"},
+            {"t": "p", "texto": "Alfa es software libre: puedes usarlo, estudiarlo, compartirlo y modificarlo bajo los términos de la Licencia Pública General de GNU, versión 3 (GPL-3.0). Se distribuye con la esperanza de que sea útil, pero sin ninguna garantía. El texto completo de la licencia viene en el archivo `LICENSE` y el código está en https://github.com/toxic3000/alfa-forever"},
+            {"t": "p", "texto": "Este manual es parte de Alfa y se comparte con la misma licencia. Usa las letras Inter y Fira Sans (SIL Open Font License 1.1)."}
+          ]
+        }
+      ]
+    }
+  ],
+  "novedades": {
+    "mapa": {
+      "titulo": "El mapa, todavía mejor",
+      "items": [
+        "Tu ubicación, más resaltada: te encuentras al instante.",
+        "La línea del camino hasta tu destino, con la distancia.",
+        "Tu destino, marcado en el mapa.",
+        "El vuelo en grifo, con su línea dibujada en el mapa.",
+        "El mapa sin cortes al hacer zoom."
+      ]
+    }
+  },
+  "contraportada": {
+    "titulo": "Únete a la manada",
+    "texto": "Juega con La Jauría, pide ayuda, propón ideas y entérate antes que nadie de cada versión de Alfa.",
+    "enlaces": [
+      ["Discord", "https://discord.gg/hUNjA6BJwh"],
+      ["CurseForge", "https://www.curseforge.com/wow/addons/alfa-forever"],
+      ["GitHub", "https://github.com/toxic3000/alfa-forever"]
+    ],
+    "pie": "Alfa {v} · Software libre bajo la licencia GPL-3.0 · Hecho por toxic3000 para La Jauría\nWorld of Warcraft es una marca de Blizzard Entertainment, Inc. Alfa no está afiliado a Blizzard."
+  }
+}

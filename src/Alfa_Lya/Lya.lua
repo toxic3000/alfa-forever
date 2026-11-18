@@ -235,8 +235,10 @@ local function carrera()
 	f.Carrera:Play()
 end
 
+local function llegando() return f and f.Llegada and f.Llegada:IsPlaying() or false end
+
 function UI.Pose(nombre, segundos)
-	if not (f and f:IsVisible()) or combate then return false end
+	if not (f and f:IsVisible()) or combate or llegando() then return false end
 	if nombre == nil then
 		if dormida or UI.Hablando() then return false end
 		nombre = DEL_MOMENTO[random(#DEL_MOMENTO)]
@@ -300,7 +302,7 @@ end
 
 function UI.Saltar()
 	if not (f and f:IsVisible()) or combate then return end
-	if f.Salto:IsPlaying() or f.Carrera:IsPlaying() then return end
+	if f.Salto:IsPlaying() or f.Carrera:IsPlaying() or llegando() then return end
 	if dormida then UI.Dormir(false) end
 	f.Salto:Play()
 	UI.Pose("saltar")
@@ -309,7 +311,7 @@ end
 -- Un gesto sin palabras para que se sienta viva: un saltito, ponerse atenta
 -- (las orejas arriba) o las dos cosas. Nunca dormida, en combate ni con otra pose.
 function UI.Gesto()
-	if not (f and f:IsVisible()) or dormida or combate or pasajera then return end
+	if not (f and f:IsVisible()) or dormida or combate or pasajera or llegando() then return end
 	local r = random()
 	if r < 0.4 then
 		UI.Saltar()
@@ -340,11 +342,87 @@ function UI.Dormir(si)
 	if not si then programarParpadeo() end
 end
 
+---------------------------------------------------------------------------
+-- La llegada (1.2.1): al entrar al juego, Lya llega corriendo desde la orilla
+-- de la pantalla que tiene detrás (mira hacia el centro: corre hacia él)
+-- hasta su lugar, da un saltito y luego dice lo suyo. Mientras espera su
+-- momento (la intro del lobo), solo se ve su lugar en el suelo. Su lugar
+-- guardado no cambia: se mueve solo el dibujo (f.Andar), como en la carrera.
+--   UI.EsperarLlegada()  la esconde hasta que llegue
+--   UI.Llegar(fn)        llega corriendo y luego llama a fn (en combate, oculta
+--                        o sin espacio: aparece en su lugar y llama a fn)
+---------------------------------------------------------------------------
+local esperando = false
+
+-- El dibujo vuelve a su lugar, a la vista, sin desplazamiento.
+local function enSuLugar()
+	esperando = false
+	if not f then return end
+	if f.Llegada then f.Llegada:Stop() end
+	f.alLlegar = nil
+	f.Andar:ClearAllPoints()
+	f.Andar:SetPoint("CENTER", f, "CENTER", 0, 0)
+	f.Andar:SetAlpha(1)
+end
+
+function UI.EsperarLlegada()
+	if not (f and f:IsShown()) then return false end
+	esperando = true
+	f.Andar:SetAlpha(0)
+	return true
+end
+function UI.Esperando() return esperando end
+
+function UI.Llegar(fn)
+	if not f then return false end
+	local function listo()
+		enSuLugar()
+		if fn then K.Llamar(fn) end
+	end
+	if not esperando then return false end
+	local w = UIParent and UIParent:GetWidth()
+	local izq, der = f:GetLeft(), f:GetRight()
+	if not f:IsVisible() or combate or type(w) ~= "number" or type(izq) ~= "number" or type(der) ~= "number" then
+		listo()
+		return true
+	end
+	mirar()
+	-- entra por la orilla que tiene detrás: por la derecha si mira a la izquierda
+	local ancho = der - izq
+	local dx = alReves and floor(w - izq + ancho * 0.6) or -floor(der + ancho * 0.6)
+	if dx == 0 then listo() return true end
+	local dura = max(1.1, min(2.6, (dx < 0 and -dx or dx) / 650))
+	if UI.Hablando() then UI.Callar(true) end
+	UI.Dormir(false)
+	f.Andar:ClearAllPoints()
+	f.Andar:SetPoint("CENTER", f, "CENTER", dx, 0)
+	f.Andar:SetAlpha(1)
+	f.Viaje:SetOffset(-dx, 0)
+	f.Viaje:SetDuration(dura)
+	f.alLlegar = fn
+	esperando = false
+	-- galopa todo el camino (y frena al llegar)
+	turnoPose = turnoPose + 1
+	pararCarrera()
+	pasajera = "correr"
+	actualPose = nil
+	ponerPose()
+	f.Llegada:Play()
+	return true
+end
+
 function UI.Combate(si)
 	combate = si and true or false
 	if not f then return end
 	f:SetAlpha(combate and 0.45 or 1)
 	if combate then
+		-- en combate no corre: aparece en su lugar (lo que iba a decir espera)
+		if llegando() then
+			local fn = f.alLlegar
+			enSuLugar()
+			if pasajera == "correr" then terminarPasajera() end
+			if fn then K.Llamar(fn) end
+		end
 		f.Salto:Stop()
 		pararCarrera()
 		f.Pulso:Stop()
@@ -526,6 +604,20 @@ local function construirLya()
 	end)
 	f.Carrera, f.Ida, f.Regreso = c, ida, regreso
 
+	-- Llegar (al entrar al juego): desde la orilla de la pantalla hasta su
+	-- lugar, frenando al final; luego un saltito y lo que tenga que decir.
+	local lle = f.Andar:CreateAnimationGroup()
+	local viaje = lle:CreateAnimation("Translation")
+	viaje:SetDuration(1.6) viaje:SetSmoothing("OUT")
+	lle:SetScript("OnFinished", function()
+		local fn = f.alLlegar
+		enSuLugar()
+		if pasajera == "correr" then terminarPasajera() end
+		UI.Saltar()
+		if fn then K.Despues(0.45, function() K.Llamar(fn) end) end
+	end)
+	f.Llegada, f.Viaje = lle, viaje
+
 	K.Pintar(f, pintarLya)
 	medir()
 
@@ -571,6 +663,7 @@ local function construirLya()
 	end)
 	f:SetScript("OnHide", function()
 		parar()
+		enSuLugar()
 		f.Salto:Stop()
 		f.Pulso:Stop()
 		turnoPose = turnoPose + 1
@@ -699,7 +792,12 @@ function UI.Hablar(c)
 
 	-- La pose mientras habla: la que pida (pedir con hambre), atenta si te
 	-- ofrece algo, el aullido en una celebración. Se despierta para hablar y
-	-- deja de correr (el globo va pegado a ella).
+	-- deja de correr (el globo va pegado a ella); si venía llegando o la
+	-- estaban esperando, ya está en su lugar.
+	if llegando() or esperando then
+		enSuLugar()
+		if pasajera == "correr" then pasajera = nil end
+	end
 	UI.Dormir(false)
 	pararCarrera()
 	if pasajera and pasajera ~= "saltar" then

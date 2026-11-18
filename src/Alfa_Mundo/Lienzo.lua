@@ -19,6 +19,14 @@
 -- Sin las texturas de detalle el mapa sigue completo: entre zona y zona se
 -- ve el arte del continente (más suave), nunca un hueco.
 --
+-- Un mapa de una pieza (1.2.1): con el estilo terreno, las bases y las zonas
+-- no se pintan (arteDeZonas: cada zona tiene sus tonos y sus orillas, y
+-- juntas se veían como pedazos pegados); del continente se pasa directo al
+-- terreno. Cada mosaico del terreno se mete medio texel bajo su vecino (sin
+-- rayas) y difumina los lados que dan a un hueco (Lz.Bordes, máscaras de
+-- tools/bordes.py). Una tanda de texturas que espera a una que no llega
+-- aparece con lo que llegó (ESPERA_TANDA): nunca queda un cuadro vacío.
+--
 -- El terreno (datos en TerrenoDatos.lua, de TerrainWorldMap, ver CREDITOS.md):
 -- cada mosaico mapCC_FF mide 533,33 yardas en una rejilla de 64 x 64; su
 -- esquina está en Y = (32 - CC) * 533,33 y X = (32 - FF) * 533,33 del mundo.
@@ -72,6 +80,11 @@ local PISO = 6                  -- niveles de marco por capa: la capa y hasta 5 
 Lz.NIVELES = 7 * PISO           -- niveles que ocupa el lienzo sobre la vista (lo de encima va más arriba)
 local ZONAS_POR_CUADRO = 3      -- zonas que se arman por cuadro (crear sus texturas)
 local APARICION = 0.25          -- segundos del fundido al llegar un archivo
+local ESPERA_TANDA = 2          -- segundos que una tanda espera a la última: después aparece lo que llegó
+local ENCIMA = 0.5              -- texeles que un mosaico del terreno se mete bajo su vecino (sin rayas)
+-- Las orillas de un mosaico junto a un hueco del terreno se difuminan (1.2.1):
+-- una máscara por combinación de lados (N = 1, E = 2, S = 4, O = 8).
+local BORDES = "Interface\\AddOns\\" .. ADDON .. "\\Media\\Borde\\borde-"
 
 local vista, lienzo, sotano
 local capa = {}                 -- nombre -> marco
@@ -112,24 +125,16 @@ end
 local tanda = 0            -- la tanda que se arma ahora (sube en cada Lz.Colocar)
 local pendientes = {}      -- tanda -> texturas pedidas que aún no llegan
 local miembros = {}        -- tanda -> { textura, ... }
+local desde = {}           -- tanda -> cuándo se pidió su primera textura
 
 local function empezarFundido(t, t0)
 	if not fundiendo[t] then nFundiendo = nFundiendo + 1 end
 	fundiendo[t] = t0
 end
 
--- Una textura de la tanda llegó (o se soltó sin llegar): si era la última,
--- toda la tanda empieza a aparecer junta.
-local function llego(t, t0)
-	local k = t.amTanda
-	if not k then return end
-	t.amTanda = nil
-	local n = (pendientes[k] or 1) - 1
-	if n > 0 then
-		pendientes[k] = n
-		return
-	end
-	pendientes[k] = nil
+-- La tanda k aparece con lo que ya llegó (completa, o cansada de esperar).
+local function soltarTanda(k, t0)
+	pendientes[k], desde[k] = nil, nil
 	for _, m in ipairs(miembros[k] or {}) do
 		if m.amListo then
 			m.amListo = nil
@@ -137,6 +142,28 @@ local function llego(t, t0)
 		end
 	end
 	miembros[k] = nil
+end
+
+-- Una textura de la tanda llegó (o se soltó sin llegar): si era la última,
+-- toda la tanda empieza a aparecer junta. Si su tanda ya apareció sin ella
+-- (esperó más de ESPERA_TANDA), aparece sola: nunca queda un hueco (1.2.1).
+local function llego(t, t0)
+	local k = t.amTanda
+	if not k then return end
+	t.amTanda = nil
+	if pendientes[k] == nil then
+		if t.amListo then
+			t.amListo = nil
+			empezarFundido(t, t0)
+		end
+		return
+	end
+	local n = pendientes[k] - 1
+	if n > 0 then
+		pendientes[k] = n
+		return
+	end
+	soltarTanda(k, t0)
 end
 
 local function encolar(t, archivo)
@@ -150,6 +177,7 @@ local function encolar(t, archivo)
 	t:SetAlpha(0)
 	t.amTanda = tanda
 	pendientes[tanda] = (pendientes[tanda] or 0) + 1
+	if not desde[tanda] then desde[tanda] = GetTime and GetTime() or 0 end
 	local lista = miembros[tanda]
 	if not lista then
 		lista = {}
@@ -185,8 +213,13 @@ local function cargar()
 		for i = #cola, 1, -1 do cola[i] = nil end
 		colaEn = 1
 	end
-	for t, desde in pairs(fundiendo) do
-		local f = (t0 - desde) / APARICION
+	-- Una tanda que espera demasiado a su última textura aparece con lo que
+	-- llegó: si una no llega nunca, el resto no se queda escondido (1.2.1).
+	for k, t1 in pairs(desde) do
+		if t0 - t1 > ESPERA_TANDA then soltarTanda(k, t0) end
+	end
+	for t, inicio in pairs(fundiendo) do
+		local f = (t0 - inicio) / APARICION
 		if f >= 1 then
 			t:SetAlpha(1)
 			fundiendo[t] = nil
@@ -468,8 +501,34 @@ local function armarTerreno()
 	return terreno
 end
 
+-- Los vecinos de un mosaico en la pantalla (1.2.1): -> hayN, hayE, hayS, hayO.
+-- La columna crece hacia la derecha si bx > 0 y la fila hacia abajo si by > 0.
+local function vecinos(reg, m)
+	local mos = reg.mos
+	local function hay(col, fila)
+		if col < 0 or col > 63 or fila < 0 or fila > 63 then return false end
+		local v = mos[col * 64 + fila]
+		return v ~= nil and not v.malo
+	end
+	local dc, df = reg.bx > 0 and 1 or -1, reg.by > 0 and 1 or -1
+	return hay(m.col, m.fila - df), hay(m.col + dc, m.fila), hay(m.col, m.fila + df), hay(m.col - dc, m.fila)
+end
+
+-- La máscara de un mosaico: los lados que dan a un hueco (N = 1, E = 2,
+-- S = 4, O = 8) se difuminan hacia el arte de abajo, así un hueco no deja
+-- un cuadro de orillas duras. 0: ninguno.
+function Lz.Bordes(reg, m)
+	local n, e, s, o = vecinos(reg, m)
+	return (n and 0 or 1) + (e and 0 or 2) + (s and 0 or 4) + (o and 0 or 8), n, e, s, o
+end
+
 -- El mosaico en la vista: su textura se arma la primera vez (recortada al
 -- rectángulo del continente) y su archivo se pide por la cola.
+--
+-- Sin rayas entre mosaicos (1.2.1): cada lado que da a un vecino se mete
+-- ENCIMA texeles bajo él, leyendo el texel de su orilla (CLAMP: la textura no
+-- se estira ni se mueve contra los pines). Los lados que dan a un hueco se
+-- difuminan (Lz.Bordes).
 local function ponerMosaico(reg, m)
 	local t = m.tex
 	if not t then
@@ -483,11 +542,25 @@ local function ponerMosaico(reg, m)
 			m.malo = true -- fuera del mapa del continente
 			return
 		end
-		t = textura(reg.marco, 0)
 		local dw, dh = tx1 - tx0, ty1 - ty0
+		local mascara, n, e, s, o = Lz.Bordes(reg, m)
+		local ex, ey = dw / TEXELES * ENCIMA, dh / TEXELES * ENCIMA
+		-- Solo los lados enteros (no recortados por el continente) con vecino.
+		if o and ix0 == tx0 then ix0 = ix0 - ex end
+		if e and ix1 == tx1 then ix1 = ix1 + ex end
+		if n and iy0 == ty0 then iy0 = iy0 - ey end
+		if s and iy1 == ty1 then iy1 = iy1 + ey end
+		t = textura(reg.marco, 0)
 		t:SetTexCoord((ix0 - tx0) / dw, (ix1 - tx0) / dw, (iy0 - ty0) / dh, (iy1 - ty0) / dh)
 		t:SetSize(ix1 - ix0, iy1 - iy0)
 		t:SetPoint("TOPLEFT", reg.marco, "TOPLEFT", ix0, -iy0)
+		if mascara > 0 and reg.marco.CreateMaskTexture and t.AddMaskTexture then
+			local mk = reg.marco:CreateMaskTexture()
+			mk:SetTexture(BORDES .. mascara, "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+			mk:SetAllPoints(t)
+			t:AddMaskTexture(mk)
+			t.amMascara = mascara
+		end
 		t.amMosaico, t.amComprobar = m, comprobar
 		m.tex, m.cx, m.cy = t, (tx0 + tx1) / 2, (ty0 + ty1) / 2
 	end
@@ -670,6 +743,10 @@ end
 local function guardar(z)
 	if not z.visible then return end
 	z.visible = false
+	if z.soloVista then
+		z.soloVista = nil
+		return
+	end
 	z.marco:SetParent(sotano)
 	z.marco:ClearAllPoints()
 	if z.baseMarco then
@@ -689,7 +766,15 @@ local function colocarBase(z)
 	b:SetPoint("TOPLEFT", lienzo, "TOPLEFT", z.l, -z.t)
 end
 
-local function sacar(z, padre)
+-- soloVista: la zona cuenta como a la vista (AlfaMundo.ZonasALaVista) sin
+-- poner su arte (el estilo terreno, arteDeZonas).
+local function sacar(z, padre, soloVista)
+	if soloVista then
+		if z.visible and not z.soloVista then guardar(z) end
+		z.visible, z.soloVista = true, true
+		return
+	end
+	if z.soloVista then z.visible, z.soloVista = false, nil end
 	if not z.hecho then
 		-- Unas pocas por cuadro: abrir el mapa sobre un continente no traba.
 		if presupuesto <= 0 then
@@ -711,6 +796,17 @@ end
 local function cruza(z, x0, y0, x1, y1)
 	return z.l < x1 and z.l + z.w > x0 and z.t < y1 and z.t + z.h > y0
 end
+
+-- El arte de cada zona encima del continente (1.2.1). Cada zona la pintó
+-- Blizzard por su lado, con sus tonos y sus orillas: juntas sobre el mapa
+-- continuo se veían como pedazos pegados. Con el estilo terreno (y el terreno
+-- de verdad disponible) el continente, que es una sola pintura, llega hasta
+-- que entra el terreno, que también es continuo. El estilo clásico las sigue
+-- mostrando: es el arte pintado de siempre.
+local function arteDeZonas()
+	return not (terrenoActivo() and #armarTerreno() > 0)
+end
+Lz.ArteDeZonas = arteDeZonas
 
 -- cu, cv: el centro (0..1 del mundo); k: unidades de la vista por unidad del
 -- lienzo; vw, vh: el tamaño de la vista; z: el zoom (1 = el mundo cabe).
@@ -739,14 +835,16 @@ function Lz.Colocar(cu, cv, k, vw, vh, z)
 	if ac > 0 then
 		for _, cont in ipairs(Geo.Continentes()) do armarContinente(cont) end
 	end
-	-- Zonas
+	-- Zonas (con el estilo terreno solo cuentan como a la vista: arteDeZonas)
 	local ad = rampa(z, DETALLE)
-	capa.zonas:SetAlpha(ad)
-	capa.bases:SetAlpha(ad)
-	capa.zonas:SetShown(ad > 0.003)
-	capa.bases:SetShown(ad > 0.003 and detalleFino())
+	local conArte = arteDeZonas()
+	local az = conArte and ad or 0
+	capa.zonas:SetAlpha(az)
+	capa.bases:SetAlpha(az)
+	capa.zonas:SetShown(az > 0.003)
+	capa.bases:SetShown(az > 0.003 and detalleFino())
 	for _, zz in ipairs(zonas) do
-		if ad > 0.003 and cruza(zz, x0, y0, x1, y1) then sacar(zz, capa.zonas) else guardar(zz) end
+		if ad > 0.003 and cruza(zz, x0, y0, x1, y1) then sacar(zz, capa.zonas, not conArte) else guardar(zz) end
 	end
 	-- Terreno: encima de las zonas, debajo de las ciudades
 	local at = terrenoActivo() and rampa(z, TERRENO) or 0
@@ -827,6 +925,8 @@ function Lz.Densidad(u, v)
 		if reg then return TEXELES / abs(reg.bx) end
 	end
 	local cont, zona = Geo.Cadena(u, v)
+	-- Sin el arte de las zonas (estilo terreno), el del continente es el mejor.
+	if not arteDeZonas() then zona = nil end
 	for _, mapa in ipairs({ zona or cont or Geo.MUNDO, cont or Geo.MUNDO, Geo.MUNDO }) do
 		local info = Geo.Capa(mapa)
 		local l, r = Geo.Rect(mapa)
@@ -843,6 +943,14 @@ function Lz.RectZona(mapa)
 	if l then return l, t, r - l, b - t end
 	return nil
 end
+
+-- Para pruebas: la cola de texturas por dentro (una tanda que se queda
+-- esperando, 1.2.1).
+Lz.Prueba = {
+	Encolar = function(t, archivo) encolar(t, archivo) end,
+	Cargar = function() cargar() end,
+	NuevaTanda = function() tanda = tanda + 1 end,
+}
 
 -- Las zonas armadas, para las etiquetas: { id, l, t, w, h } en unidades del lienzo.
 function Lz.Zonas() return zonas end

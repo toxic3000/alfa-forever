@@ -23,7 +23,7 @@ O.CATEGORIAS = {
 	{ clave = "recientes", nombre = L["Recientes"] },
 	{ clave = "equipo", nombre = L["Equipo"] },
 	{ clave = "consumibles", nombre = L["Consumibles"] },
-	{ clave = "misiones", nombre = L["Misiones"] },
+	{ clave = "misiones", nombre = L["Misiones [bolsas]"] },
 	{ clave = "artesania", nombre = L["Artesanía y comercio"] },
 	{ clave = "reagentes", nombre = L["Componentes"] },
 	{ clave = "monturas", nombre = L["Monturas y mascotas"] },

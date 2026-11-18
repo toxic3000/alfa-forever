@@ -30,7 +30,7 @@ M.PESTANAS = {
 	{ id = "avanzado", nombre = L["Avanzado"] },
 }
 
-local NIVELES4 = { { "0", L["Bajo"] }, { "1", L["Medio"] }, { "2", L["Alto"] }, { "3", L["Ultra"] } }
+local NIVELES4 = { { "0", L["Bajo"] }, { "1", L["Medio"] }, { "2", L["Alto [calidad]"] }, { "3", L["Ultra"] } }
 
 M.GRUPOS = {
 	---------------------------------------------------------------- Calidad
@@ -119,7 +119,7 @@ M.GRUPOS = {
 			opciones = { { "0", L["Apagados"] }, { "1", L["Bajos"] }, { "2", L["Altos"] } },
 			texto = L["Haces de luz entre árboles, nubes y montañas."], buscar = "sun shafts god rays light" },
 		{ cvar = "weatherDensity", tipo = "lista", titulo = L["Clima"],
-			opciones = { { "0", L["Mínimo"] }, { "1", L["Bajo"] }, { "2", L["Medio"] }, { "3", L["Alto"] } },
+			opciones = { { "0", L["Mínimo"] }, { "1", L["Bajo"] }, { "2", L["Medio"] }, { "3", L["Alto [calidad]"] } },
 			texto = L["Cuánta lluvia, nieve y polvo se ve cuando hay mal tiempo."], buscar = "weather density rain snow" },
 	} },
 
@@ -268,7 +268,7 @@ end
 M.PRESETS = {
 	preset("bajo", L["Bajo"], "ic-reloj", L["Lo más ligero: para equipos modestos o para subir los FPS en peleas grandes."], columna("bajo")),
 	preset("medio", L["Medio"], "ic-ajustes", L["Equilibrado: se ve bien y corre bien en casi cualquier equipo."], columna("medio")),
-	preset("alto", L["Alto"], "ic-apariencia", L["Más distancia, sombras finas y agua con reflejos."], columna("alto")),
+	preset("alto", L["Alto [calidad]"], "ic-apariencia", L["Más distancia, sombras finas y agua con reflejos."], columna("alto")),
 	preset("ultra", L["Ultra"], "ic-raros", L["Todo al máximo seguro. Pide una tarjeta de video fuerte."], columna("ultra")),
 	preset("manada", L["Paisaje de la manada"], "ic-lobo", L["Más pasto, más horizonte, niebla ligera y rayos de sol. Bonito sin pedir de más."], columna("manada")),
 }

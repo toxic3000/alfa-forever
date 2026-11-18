@@ -47,7 +47,7 @@ Sale de una revisión del código del 18/11. En cada versión va primero lo que 
 - [x] Mudar la configuración de cada jugador (`schema = 2`, con el modelo de `migradoBuilds`).
 - [x] Qué viene encendido de fábrica en Comodidades: las 5 recomendadas, el minimapa mejorado y las barras con el estilo de Alfa (decidió Toxic el 18/11; solo en instalaciones nuevas).
 - [x] Bienvenida y novedades que expliquen dónde quedó cada cosa; galería y anuncio nuevos.
-- [ ] Talentos, Raros, Personajes e Importar con `UI.HubKit`: pasa a la 1.2.1 (la 1.2.0 es la versión estable: primero la estabilidad).
+- [ ] Talentos, Raros, Personajes e Importar con `UI.HubKit`: pasa a la 1.2.2 (la 1.2.0 fue la versión estable y la 1.2.1 la del mapa: tu camino, el vuelo y el terreno sin pedazos).
 - [x] Insignias de La Jauría (idea de Toxic, 18/11): una chapita discreta (solo visual) junto al nombre de quien es de la manada, en el cuadro del jugador, La Jauría y el mapa. Solo para ciertas personas, no para todos los que usan Alfa. Decidido: una lista de personajes (nombre-reino) dentro del addon que Toxic pasa y mantiene (opción 1), con permiso de cada persona para salir en la lista.
 - [x] Mapa «en manada» (Toxic, 18/11): quien usa Alfa y comparte su ubicación (capa `manada.jauria` de `Alfa_Manada/Mapa.lua`, ya existe y es voluntaria) se ve con una huella pequeña de lobo, más chica que el pin de tu grupo; los de la lista de insignias llevan además su chapita. Sigue siendo voluntario: nadie aparece sin aceptar compartir.
 

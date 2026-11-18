@@ -111,7 +111,7 @@ local reintento
 -- (nunca la misma dos veces seguidas). Los consejos y el "¿Sabías que…?"
 -- siguen saliendo 3 veces como mucho: enseñan algo y repetirlos cansa.
 local LIBRES = {
-	bienvenida = true, volver = true, saludoManana = true, saludoTarde = true, saludoNoche = true,
+	bienvenida = true, volver = true, llegada = true, saludoManana = true, saludoTarde = true, saludoNoche = true,
 	nivel = true, muerte = true, reparar = true, bolsas = true, entrenar = true, entregar = true,
 	descanso = true, misionesHoy = true, animo = true, carino = true, ambiente = true, zona = true,
 	hambre = true, salchichas = true,
@@ -623,6 +623,30 @@ local function juntar(espera, fn)
 end
 
 local entrado = false
+
+-- La llegada (1.2.1): al entrar al juego (no al recargar), Lya espera a que
+-- termine la intro del lobo (ALFA_INTRO_FIN, de Alfa_Bienvenida) y llega
+-- corriendo a su lugar a decirte que te extrañó. Sin intro, llega sola a los
+-- 9 s; si algo la detiene, a los 30 s como mucho. lya.llegar = false la apaga.
+local llegada = { pendiente = false, saludo = nil }
+
+local function introVisible()
+	local intro = rawget(_G, "AlfaIntro")
+	return type(intro) == "table" and intro.IsShown and intro:IsShown() or false
+end
+
+local function llegar()
+	if not llegada.pendiente then return end
+	llegada.pendiente = false
+	local saludo = llegada.saludo
+	llegada.saludo = nil
+	if not UI.Llegar(saludo) and saludo then saludo() end
+end
+
+A.On("ALFA_INTRO_FIN", function()
+	if llegada.pendiente then K.Despues(0.15, llegar) end
+end)
+
 A.RegisterEvent("PLAYER_ENTERING_WORLD", function(_, esLogin, esRecarga)
 	reintentar()
 	if entrado then return end
@@ -634,6 +658,32 @@ A.RegisterEvent("PLAYER_ENTERING_WORLD", function(_, esLogin, esRecarga)
 		d.sesionInicio, d.sesionAvisos = reloj(), 0
 	end
 	Ce.Aplicar()
+	local function nombreJugador()
+		local nombre = UnitName and UnitName("player") or ""
+		if issecretvalue and issecretvalue(nombre) then nombre = "" end
+		return nombre
+	end
+	local function saludoDeEntrada()
+		local nombre = nombreJugador()
+		if antes and reloj() - antes > 3 * 86400 then
+			decirDe("volver", { salto = true, acciones = N.ModuloPorId("inicio") and { { texto = L["Abrir Hoy"], fn = function() N.Abrir("inicio") end } } or nil }, nombre)
+		elseif llegada.corrio then
+			decirDe("llegada", { cara = "atenta" }, nombre)
+		else
+			saludar(nombre)
+		end
+	end
+	-- Ya presentada y a la vista: llega corriendo cuando termina la intro.
+	if esLogin == true and d.presentada and N.Get(ID, "llegar") ~= false and UI.EsperarLlegada() then
+		llegada.pendiente = true
+		llegada.saludo = function()
+			llegada.corrio = true
+			llegada.saludada = true
+			saludoDeEntrada()
+		end
+		A.After(9, function() if llegada.pendiente and not introVisible() then llegar() end end)
+		A.After(30, llegar)
+	end
 	-- Después de los avisos del motor y de Hoy al entrar.
 	A.After(18, function()
 		if not d.presentada then
@@ -641,13 +691,9 @@ A.RegisterEvent("PLAYER_ENTERING_WORLD", function(_, esLogin, esRecarga)
 			return
 		end
 		if esLogin ~= true then return end
-		local nombre = UnitName and UnitName("player") or ""
-		if issecretvalue and issecretvalue(nombre) then nombre = "" end
-		if antes and reloj() - antes > 3 * 86400 then
-			decirDe("volver", { salto = true, acciones = N.ModuloPorId("inicio") and { { texto = L["Abrir Hoy"], fn = function() N.Abrir("inicio") end } } or nil }, nombre)
-		else
-			saludar(nombre)
-		end
+		-- la llegada saluda ella misma (ya saludó o saluda en cuanto llegue)
+		if llegada.saludada or llegada.pendiente then return end
+		saludoDeEntrada()
 	end)
 end)
 

@@ -25,7 +25,7 @@ Seguir la flecha hace que uno se salte la historia: Lya la guarda y te la cuenta
 | Momento | Qué dice |
 |---|---|
 | Primera vez, tras la bienvenida de Alfa | Se presenta (una sola vez) |
-| Entrar al juego | Te saluda por tu nombre; tras 3 días o más, "hace días que no te veía" con *Abrir Hoy* |
+| Entrar al juego (1.2.1) | Llega corriendo a su lugar desde la orilla de la pantalla que tiene detrás, justo cuando termina la intro del lobo (`ALFA_INTRO_FIN`; sin intro, a los 9 s), da un saltito y te dice que te extrañó (`llegada`); tras 3 días o más, "hace días que no te veía" con *Abrir Hoy*. Mientras espera solo se ve su lugar en el suelo; en combate aparece en su lugar sin correr. Al recargar la interfaz no corre ni saluda. `lya.llegar = false` la apaga |
 | Subir de nivel (`PLAYER_LEVEL_UP`) | Aúlla y te felicita; en 10, 20, 30, 40 (montura, *Cómo conseguirla*), 50 y 60 algo especial |
 | Morir (`PLAYER_DEAD`) | «¡Arriba, lobo!» con un consejo |
 | Equipo al 30 % o menos | *Llévame a reparar* (`AlfaCerca.Ir("repair")`) |

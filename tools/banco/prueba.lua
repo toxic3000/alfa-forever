@@ -74,7 +74,8 @@ step("notas: actualización (versión vista vieja)", function()
   if not B.RevisarNotas(0) then error("no hay notas que ver con una versión vista vieja") end
   local intro = _G.AlfaIntro
   if not (intro and intro:IsShown()) then error("la intro del lobo no salió antes de las notas") end
-  for _, t in ipairs({ 0.3, 1, 1.6, 2.2, 2.8, 3.3, 3.9, 4.2, 4.7 }) do B.CuadroIntro(t) end
+  -- la intro dura 5,8 s desde la 1.2.1 (el aullido largo)
+  for _, t in ipairs({ 0.3, 1, 1.6, 2.2, 2.8, 3.3, 3.9, 4.2, 4.7, 5.3, 5.9 }) do B.CuadroIntro(t) end
   T(2)
   if intro:IsShown() then error("la intro no terminó") end
   if not B.NotasVisibles() then error("la ventana de notas no se abrió tras la intro") end

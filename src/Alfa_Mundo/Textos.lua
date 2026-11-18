@@ -263,4 +263,13 @@ M.EN = {
 	["Haz clic derecho (o Mayús+clic) en el mapa donde quieras uno: le pones nombre, ícono y color, y la flecha te lleva cuando quieras."] = "Right-click (or Shift-click) the map where you want one: give it a name, an icon and a colour, and the arrow takes you there whenever you like.",
 	["Abre el mapa y haz clic derecho (o Mayús+clic) donde quieras uno: le pones nombre, ícono y color, y la flecha te lleva cuando quieras. En el mapa del juego, Mayús+clic derecho."] = "Open the map and right-click (or Shift-click) where you want one: give it a name, an icon and a colour, and the arrow takes you there whenever you like. On the game's map, Shift-right-click.",
 	["Clic en uno: el mapa va hasta él. Clic derecho en el mapa: uno nuevo."] = "Click one: the map goes to it. Right-click the map: a new one.",
+
+	-- Tu camino en el mapa (Trayecto.lua, 1.2.1)
+	["Tu camino [mapa]"] = "Your way",
+	["Clic: el mapa muestra todo el camino, de ti al destino."] = "Click: the map shows the whole way, from you to the destination.",
+	["En vuelo a %s"] = "Flying to %s",
+	["tu destino"] = "your destination",
+	["%d yd"] = "%d yd",
+	["Tu vuelo en el mapa"] = "Your flight on the map",
+	["Mientras vuelas en grifo, la línea de tu viaje en el mapa de Alfa: por dónde vas y dónde aterrizas."] = "While you fly on a gryphon, your trip's line on Alfa's map: where you are and where you land.",
 }

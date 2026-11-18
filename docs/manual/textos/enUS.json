@@ -1,0 +1,837 @@
+{
+  "idioma": "enUS",
+  "nombre": "English",
+  "ui": {
+    "titulo_manual": "User manual",
+    "lema": "Lead your pack",
+    "portada_sub": "La Jauría’s all-in-one for World of Warcraft: Forever",
+    "portada_version": "For Alfa {v} · WoW Forever {j}",
+    "hecho_por": "Made by toxic3000 for La Jauría",
+    "indice": "Contents",
+    "parte": "Part",
+    "consejo": "Tip",
+    "nota": "Note",
+    "importante": "Important",
+    "lya": "Lya",
+    "novedad": "New in {v}",
+    "novedad_viene": "Coming in version {v}",
+    "novedad_ya": "New since version {v}",
+    "pie": "Alfa · User manual",
+    "nota_capturas": "The screenshots in this manual show Alfa in Spanish. In your game you’ll see the same buttons, with their names in English."
+  },
+  "carta": {
+    "titulo": "Welcome to the pack",
+    "parrafos": [
+      "Alfa is La Jauría’s all-in-one for World of Warcraft: Forever. It brings your route and guides, the map, bags, talents, encyclopedia, dungeons, healing, fishing, trading and your pack together in one addon, all with the same look and in your language. It needs no other addon.",
+      "Alfa doesn’t play for you: it keeps you company. The first time, it asks you one question at a time what you want it to do on its own, and you decide everything else. In combat it never presses anything for you; it only shows you what’s worth doing.",
+      "This manual walks you through every part of Alfa, with screenshots, steps and tips. Read it straight through or jump from the contents to whatever interests you: each chapter stands on its own."
+    ],
+    "lya": "Hi! I’m Lya, the pack’s she-wolf. I’ll keep you company through the whole manual and in the game too. If you ever get lost, give me a click and I’ll lend you a paw… and if you bring a sausage, even better.",
+    "firma": "— toxic3000 and La Jauría",
+    "rapido": {
+      "titulo": "Alfa in three steps",
+      "items": [
+        {"titulo": "Install it", "texto": "Open **Instalar-Alfa.exe** and let it find your game."},
+        {"titulo": "Answer the welcome", "texto": "Two minutes to decide what Alfa does for you."},
+        {"titulo": "Type /alfa", "texto": "Your window, with everything one click away. Let’s play!"}
+      ]
+    },
+    "como_leer_titulo": "How to read this manual",
+    "como_leer": [
+      {"tipo": "pasos", "titulo": "Steps", "texto": "Green numbers are steps: follow them in order."},
+      {"tipo": "consejo", "titulo": "Tips", "texto": "Ideas to get more out of Alfa."},
+      {"tipo": "teclas", "titulo": "Keys and commands", "texto": "[[M]] is a key; `/alfa` is typed in chat."},
+      {"tipo": "novedad", "titulo": "What’s new", "texto": "What changes or arrives in a version."}
+    ]
+  },
+  "partes": [
+    {
+      "id": "empezar",
+      "titulo": "Getting started",
+      "lema": "Install Alfa, set it up your way and meet your new window.",
+      "pose": "sentada1",
+      "capitulos": [
+        {
+          "id": "primeros",
+          "titulo": "First steps",
+          "lema": "From zero to playing with Alfa in a few minutes.",
+          "icono": "huella",
+          "bloques": [
+            {"t": "intro", "texto": "Installing Alfa takes a minute, and setting it up about two more. Here are the two ways to install it, what happens the first time you enter the game and how to keep it up to date."},
+            {"t": "h", "texto": "Install with Instalar-Alfa.exe (the easy way)"},
+            {"t": "ilustracion", "id": "instalador", "e": {"pasos": [
+              ["Welcome", "Checks which version is the newest."],
+              ["Game folder", "Finds your WoW Forever on its own."],
+              ["Install", "Downloads Alfa, checks it and copies it."],
+              ["Done", "Enter the game and start."]
+            ]}, "pie": "The installer takes you through four steps and doesn’t touch your settings or your other addons."},
+            {"t": "dos", "img": "instalador", "pie": "It finds your game on its own and tells you which version you have.", "lado": "der", "prop": "40", "bloques": [
+              {"t": "pasos", "items": [
+                "Download **Instalar-Alfa.exe** from Alfa’s GitHub page or from La Jauría’s Discord.",
+                "Open it. If Windows shows “Windows protected your PC”, click **More info** and then **Run anyway**.",
+                "The installer looks for your WoW Forever. If it can’t find it, choose the folder where you installed the game (the one with the `_forever_` folder inside).",
+                "If the game is open, close it: the installer waits, downloads the newest version, checks it and installs it.",
+                "Enter the game with your character. Done!"
+              ]}
+            ]},
+            {"t": "consejo", "texto": "To update, open **Instalar-Alfa.exe** again: it always gets the newest version. If you use the CurseForge app, it also recognizes Alfa and lets you know when there’s a new version."},
+            {"t": "h", "texto": "Install by hand with the zip"},
+            {"t": "pasos", "items": [
+              "Download `Alfa-<version>.zip` from CurseForge or from the GitHub releases page.",
+              "Close the game.",
+              "Unzip it inside `World of Warcraft\\_forever_\\Interface\\AddOns`. You should end up with several folders whose names start with `Alfa`.",
+              "Enter the game. In the AddOns list on the character screen, check that Alfa is enabled."
+            ]},
+            {"t": "h", "texto": "The first time: the welcome"},
+            {"t": "dos", "img": "bv-quees", "pie": "Each welcome screen is a single decision. You’re in charge.", "lado": "izq", "prop": "50", "bloques": [
+              {"t": "p", "texto": "When you log in, the wolf howls at the moon and Alfa’s setup greets you: a full screen that asks you, one thing at a time, how you want to play. It takes about two minutes."},
+              {"t": "p", "texto": "Until you finish it, Alfa’s windows take you back to it. Your bags and combat work normally from the start."},
+              {"t": "p", "texto": "At the end you’ll see a summary of everything you chose and a single button: **Done**."}
+            ]},
+            {"t": "etapas", "titulo": "The nine screens", "items": [
+              {"titulo": "Language", "texto": "Alfa in 10 languages, even if your game is in another."},
+              {"titulo": "Style", "texto": "Alfa, Classic WoW or Glass."},
+              {"titulo": "Quests", "texto": "What to accept and turn in on its own."},
+              {"titulo": "Your guide", "texto": "How Alfa picks your next step."},
+              {"titulo": "Merchants and travel", "texto": "Sell your grays, repair, take flights."},
+              {"titulo": "Other players", "texto": "Summons, groups and duels."},
+              {"titulo": "Your character", "texto": "One-click healing and rotation help."},
+              {"titulo": "La Jauría", "texto": "Whether the pack sees you on the map."},
+              {"titulo": "Summary", "texto": "Check everything and press “Done”."}
+            ]},
+            {"t": "consejo", "texto": "Want to change something later? Type `/alfa bienvenida` and the summary opens: each screen has its own “Change” button."},
+            {"t": "h", "texto": "Every time you log in"},
+            {"t": "dos", "img": "notas", "pie": "After an update, a window tells you what changed.", "lado": "der", "prop": "40", "bloques": [
+              {"t": "p", "texto": "The wolf greets you with “Back with the pack!” every time you enter the game (not when you reload the UI). Skip it with a click, [[Esc]], the space bar or [[Enter]], and if a fight starts it goes away on its own."},
+              {"t": "p", "texto": "When Alfa updates, a small window with what’s new appears after the intro: **Keep playing** closes it and **See everything new** tells you the rest."},
+              {"t": "p", "texto": "Rather log in without the intro? Turn it off in **Settings > Style and sound**."}
+            ]}
+          ]
+        },
+        {
+          "id": "ventana",
+          "titulo": "The Alfa window",
+          "lema": "All of Alfa in one place: type /alfa.",
+          "icono": "ventana",
+          "bloques": [
+            {"t": "intro", "texto": "Type `/alfa` in chat (or click the Alfa button on the minimap) and the main window opens. Your character is at the top; below is everything Alfa can do, sorted into six sections plus Settings."},
+            {"t": "img", "img": "inicio", "marcas": "ventana", "pie": "The Alfa window, open on Today.", "leyenda": [
+              "Your character: name, class, level, experience and rest.",
+              "Search settings: type what you’re looking for and Alfa takes you to the option.",
+              "The six sections: Today, Adventure, Character, World, Trades and Pack.",
+              "Settings: style, conveniences, quests and everything else.",
+              "Reset page and Reload UI, in case something looks off."
+            ]},
+            {"t": "h", "texto": "The sections"},
+            {"t": "tarjetas", "cols": 2, "items": [
+              {"icono": "hoy", "titulo": "Today", "texto": "Your day: the next step, what’s urgent and your class."},
+              {"icono": "aventura", "titulo": "Adventure", "texto": "Route and guides, Dungeons and Encyclopedia."},
+              {"icono": "personaje", "titulo": "Character", "texto": "Talents, Combat, Healing, Bags and Lya."},
+              {"icono": "mundo", "titulo": "World", "texto": "The map, Gathering, and Landscape and graphics."},
+              {"icono": "oficios", "titulo": "Trades", "texto": "Trade and Fishing."},
+              {"icono": "manada", "titulo": "Pack", "texto": "La Jauría: your group, those who share and the clan."},
+              {"icono": "ajustes", "titulo": "Settings", "texto": "Style and sound, Conveniences, Questing and more."},
+              {"icono": "buscar", "titulo": "Search settings", "texto": "Find any option by typing its name."}
+            ]},
+            {"t": "h", "texto": "Three styles"},
+            {"t": "img", "img": "estilo", "pie": "Settings > Style and sound: your style and the three to choose from."},
+            {"t": "p", "texto": "Alfa dresses however you like. **Alfa** is graphite with cut corners and La Jauría’s green; **Classic WoW** uses the game’s own frames, buttons and fonts, with gold titles; **Glass** lets you see the world through see-through backgrounds, in the accent color you pick. The style can also dress the chat, the minimap and your action bars (in Conveniences). Change it in **Settings > Style and sound** or with `/alfa estilo`."},
+            {"t": "consejo", "texto": "Every page has its own command: `/alfa bolsas` opens Bags and `/alfa mapa` opens the map. The full list is in the “Shortcuts and commands” chapter."},
+            {"t": "lya", "pose": "aullar2", "texto": "Did you know the wolf howls the first time you open the Alfa window each session? It’s a howl from the game itself, so it follows your volume. If you’d rather have silence, turn it off in Style and sound."}
+          ]
+        },
+        {
+          "id": "hoy",
+          "titulo": "Today",
+          "lema": "“What do we do today?”: your next step, what’s urgent and your class.",
+          "icono": "hoy",
+          "bloques": [
+            {"t": "intro", "texto": "Today is Alfa’s front page: the first thing you see when you open the window. It gathers what you should do right now on a single page and puts everything one click away. Only what’s useful shows up: if a part has nothing useful, it stays hidden."},
+            {"t": "img", "img": "inicio", "marcas": "hoy", "pie": "Today, at a glance.", "leyenda": [
+              "Your next step: what your guide asks, how far it is and how much you’ve done. **Follow** sets the arrow.",
+              "Pick up quests: the ones on your route that are close by.",
+              "Something else today?: level up, professions, make gold or dungeons.",
+              "Alerts: only what’s urgent, with a button to sort it out."
+            ]},
+            {"t": "h", "texto": "What you’ll find, top to bottom"},
+            {"t": "lista", "items": [
+              "**Your next step.** Your guide’s step with its goals, how far it is and how much you’ve done. **Follow** shows the guide and the arrow and closes the window; **See steps** opens the full list.",
+              "**Close my quests and Pick up quests.** One click builds the route to turn in what you have ready or to grab the best quests in the zone.",
+              "**Your plan.** If you follow one of *My plans*, your current goal is here.",
+              "**Alerts.** Worn gear, full bags (with what you can sell and how much you’ll get), abilities to train or a missing buff, each with its own button: “Take me to repair”, “Take me to my trainer”…",
+              "**Find nearby.** Flight, inn, repair, bank, mailbox and your trainer: one button points the arrow to the closest one.",
+              "**For your class.** The talent to take now and cards made for your class.",
+              "**Today in numbers.** Experience per hour, how much you need to level up, today’s gold and your pack.",
+              "**Your journal and your alerts.** Today’s session, earlier ones and the reminders you want to get."
+            ]},
+            {"t": "tarjetas", "cols": 2, "titulo": "The four paths of “Something else today?”", "items": [
+              {"icono": "nivel", "titulo": "Level up", "texto": "A guide for your level and zone, with its own quest route."},
+              {"icono": "oficios", "titulo": "Professions", "texto": "Level your profession or gather your materials from where you are."},
+              {"icono": "oro", "titulo": "Make gold", "texto": "Quests that pay well and materials that sell well."},
+              {"icono": "mazmorra", "titulo": "Dungeons", "texto": "The dungeon for your level, its quests and how to get there."}
+            ]},
+            {"t": "consejo", "texto": "If you’re away for a few days, Lya greets you with an “I haven’t seen you in days!” and a button that opens Today so you can pick up right where you left off. And with `/alfa sesion` you can see how today’s session is going, in chat."}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "aventura",
+      "titulo": "Adventure",
+      "lema": "Your path: the route, knowledge of the whole game and dungeons.",
+      "pose": "correr3",
+      "capitulos": [
+        {
+          "id": "ruta",
+          "titulo": "Route and guides",
+          "lema": "Two clicks and Alfa takes you there.",
+          "icono": "ruta",
+          "bloques": [
+            {"t": "intro", "texto": "The route is the heart of Alfa. You tell it what you want to do and it plans the way: which quests to take, where to go and when to turn them in. An arrow on screen leads you step by step, flights and boats included."},
+            {"t": "h", "texto": "Start with the assistant"},
+            {"t": "dos", "img": "asistente", "pie": "“What do you want to do today?”: five paths.", "lado": "izq", "prop": "50", "bloques": [
+              {"t": "pasos", "items": [
+                "In Today or in **Adventure > Route**, click “What do you want to do?”.",
+                "Pick a path: **Level up**, **Professions**, **Make gold**, **Dungeons** or **My own plan**.",
+                "On the second click, Alfa suggests the option that suits you best and gets it going.",
+                "Alfa’s windows close and your guide stays on screen, with the arrow pointing at your first step."
+              ]}
+            ]},
+            {"t": "h", "texto": "Your guide on screen"},
+            {"t": "img", "img": "rastreador", "ancho": "media", "marcas": "partes", "pie": "The tracker: compact, with only what you’re doing right now.", "leyenda": [
+              "Your guide and how many steps you’ve done.",
+              "Find nearby: flight, inn, repair, bank and more.",
+              "What’s up now. Click: the arrow; right-click: mark it, skip it or see it in the Encyclopedia.",
+              "Where you’re headed.",
+              "**See details**: the whole step, with all its goals, in another window.",
+              "**Skip** jumps over the step; **See the next one** lets you peek at what’s coming."
+            ]},
+            {"t": "h", "texto": "Only quests you can actually do"},
+            {"t": "p", "texto": "Before sending you on a quest, Alfa checks your level, class, race, faction, professions and reputation. If a prerequisite quest is missing, it adds it first, in order. Whatever you can’t complete is hidden along with the reason, so you never walk there for nothing. Dungeon quests take you to the entrance."},
+            {"t": "h", "texto": "Guide library"},
+            {"t": "img", "img": "biblioteca", "pie": "The recommended guide for your level and zone, front and center, and all the others by category."},
+            {"t": "h", "texto": "Close my quests and Pick up quests"},
+            {"t": "p", "texto": "**Close my quests** works out the best order to turn in what you already have ready (and finish what’s left), counting flights, boats and your Hearthstone. **Pick up quests** gathers the best ones you can take nearby, without going over your quest log limit. You’ll find both in Today, in Route and in your guide."},
+            {"t": "h", "texto": "My plans: your own goals"},
+            {"t": "dos", "img": "planes", "pie": "A plan is a list of goals in whatever order you like.", "lado": "izq", "prop": "50", "bloques": [
+              {"t": "p", "texto": "Build a list of goals: get an item, save up gold, level a profession, go somewhere, do a quest, reach a level or write a free note. Goals check themselves off when you complete them, and the arrow takes you to the next one."},
+              {"t": "p", "texto": "Out of ideas? Start from a template: *My first mount*, *Gold for the mount*, *Get ready for the dungeon* or *Level cooking and fishing together*."}
+            ]},
+            {"t": "h", "texto": "Find nearby"},
+            {"t": "dos", "img": "cerca", "pie": "The closest places, by travel time.", "lado": "izq", "prop": "34", "bloques": [
+              {"t": "p", "texto": "The button with the location pin, next to your guide (and also in Today and on the map), tells you what’s closest by travel time: flight master, innkeeper, repair, bank, mailbox, auction house, your trainer, profession trainers, vendors and more."},
+              {"t": "p", "texto": "One click sets the arrow and the route. Also with `/alfa cerca`."},
+              {"t": "consejo", "texto": "In **Settings > Questing** you decide whether Alfa accepts and turns in only your route’s quests or all of them. Route takes you there with one button."}
+            ]}
+          ]
+        },
+        {
+          "id": "enciclopedia",
+          "titulo": "Encyclopedia",
+          "lema": "The whole game, even what you don’t have.",
+          "icono": "enciclopedia",
+          "bloques": [
+            {"t": "intro", "texto": "The Encyclopedia is the game’s wiki inside Alfa: every item, mount, pet, NPC, quest, zone and rare, with where to get it and how to get there. Open it in **Adventure > Encyclopedia** or with `/alfa enciclopedia`."},
+            {"t": "img", "img": "enciclopedia", "pie": "Search, filter and open its page: who drops it, who sells it and which quest gives it."},
+            {"t": "pasos", "titulo": "Finding something", "items": [
+              "Type the name of what you’re looking for (in English or Spanish) or its number, like `#12345`.",
+              "Pick the type (items, mounts, companions, NPCs, quests, zones or rares) and narrow it down with the filters: quality, level, slot or “I can use”.",
+              "Open its page. What’s best for you comes first; then each source with its details.",
+              "Click **Guide me** and Alfa plans the way there, with the arrow."
+            ]},
+            {"t": "tarjetas", "cols": 2, "titulo": "The buttons on each page", "items": [
+              {"icono": "seguir", "titulo": "Guide me", "texto": "The route to the best source."},
+              {"icono": "lista", "titulo": "What I’m missing", "texto": "What you need first: a level, a prerequisite quest, a key…"},
+              {"icono": "mapa", "titulo": "Show on map", "texto": "Where it is, on Alfa’s map."},
+              {"icono": "mas", "titulo": "Add to My plans", "texto": "Turn it into a goal in your plan."}
+            ]},
+            {"t": "h", "texto": "Mounts and pets"},
+            {"t": "img", "img": "monturas", "pie": "Every mount and pet, with how to get it, its level, its faction and whether you already have it."},
+            {"t": "p", "texto": "Filter by the ones you can get, the ones you already have or are missing, the source and the faction. The **My first mount** guide tells you how much riding training costs, which mount is the cheapest for your race, how much gold you still need and who to go to."},
+            {"t": "consejo", "texto": "The Encyclopedia also has a guide to Forever’s **Legacy points**: what they are, how to earn them and what they’re for."}
+          ]
+        },
+        {
+          "id": "mazmorras",
+          "titulo": "Dungeons",
+          "lema": "The right one for you, what to bring and how to get there.",
+          "icono": "mazmorra",
+          "bloques": [
+            {"t": "intro", "texto": "Dungeons tells you which dungeon fits your level and gets you ready in one click: it picks up the quests worth bringing and points the arrow at the entrance. Open it in **Adventure > Dungeons** or with `/alfa mazmorras`."},
+            {"t": "img", "img": "mazmorras", "pie": "“For your level now” front and center and, below, every dungeon by level range."},
+            {"t": "pasos", "titulo": "Get ready in one click", "items": [
+              "Open Dungeons: the recommended one for your level is at the top.",
+              "Press **Get me ready** (or “Take me to the entrance”).",
+              "Alfa picks up only the quests you can already take and tells you what the others still need.",
+              "Follow the arrow to the entrance. Once inside, a prompt takes you to the bosses."
+            ]},
+            {"t": "tarjetas", "cols": 2, "titulo": "Each dungeon’s page", "items": [
+              {"icono": "info", "titulo": "Overview", "texto": "What to do now, what its quests are worth and its requirements."},
+              {"icono": "mazmorra", "titulo": "Bosses", "texto": "Each boss with tips for your role, its loot and its quests."},
+              {"icono": "oro", "titulo": "Loot", "texto": "By boss, with “What I can use”, the drop chance and whether you have it."},
+              {"icono": "misiones", "titulo": "Quests", "texto": "To pick up, in your log, not yet and already done."},
+              {"icono": "aviso", "titulo": "Tips", "texto": "Before you go in, plus the game’s boss alerts."},
+              {"icono": "huella", "titulo": "Your progress", "texto": "Dungeons done, bosses defeated and loot: `/alfa mazmorras progreso`."}
+            ]},
+            {"t": "consejo", "texto": "**Story mode** comes turned on: bosses you haven’t beaten yet stay undiscovered, with no spoilers. You can still view their tips on purpose. Change it in **Settings > Discovery**."}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "personaje",
+      "titulo": "Character",
+      "lema": "Your talents, your combat, your bags… and your she-wolf.",
+      "pose": "atenta1",
+      "capitulos": [
+        {
+          "id": "talentos",
+          "titulo": "Talents",
+          "lema": "What to take now and why, in one click.",
+          "icono": "talentos",
+          "bloques": [
+            {"t": "intro", "texto": "Talents tells you which talent to take now, explains why and applies it in one click. You choose your build in two clicks. Open it in **Character > Talents** or with `/alfa talentos`."},
+            {"t": "img", "img": "builds", "pie": "Your path: what you want to do and how you play. Alfa puts together the build that fits you."},
+            {"t": "pasos", "items": [
+              "In **Your path**, choose what you want: **Solo leveling**, **Dungeons**, **Tank** or **PvP**.",
+              "Choose how you play: **Steady**, **Balanced** or **Risky**, and your talent tree if there’s more than one.",
+              "The talent to take shows up big at the top, with its why. Press **Apply**.",
+              "When you level up, a prompt tells you the next one, ready to apply."
+            ]},
+            {"t": "tarjetas", "cols": 2, "items": [
+              {"icono": "talentos", "titulo": "Your tree", "texto": "Your points with the plan on top: what’s done in green and what’s next with a ring."},
+              {"icono": "lista", "titulo": "Plan by level", "texto": "The talents coming up, with their level and their why."},
+              {"icono": "personaje", "titulo": "Gear and stats", "texto": "Which stats to look for and the best gear for your level in each slot."},
+              {"icono": "manada", "titulo": "Share with the pack", "texto": "Copy your build as a code and pass it to anyone you like."}
+            ]},
+            {"t": "importante", "texto": "Alfa never removes talents, and it never applies anything in combat or while the game’s talent window is open. If your points are going another way, it tells you and offers to follow the build for the tree you’re already on."},
+            {"t": "consejo", "texto": "At each level, Alfa also tells you about the new spells you can learn, from which trainer and how much they cost, and about old ranks still on your bars: **Update my bars** swaps them."}
+          ]
+        },
+        {
+          "id": "combate",
+          "titulo": "Combat",
+          "lema": "It shows you; you press.",
+          "icono": "nivel",
+          "bloques": [
+            {"t": "intro", "texto": "Combat lends you a hand in fights without deciding for you: it shows which ability is worth using now, alerts you when something becomes usable and highlights the enemies your quests need. Nothing here presses, casts or targets for you. Open it in **Character > Combat** or with `/alfa combate`."},
+            {"t": "ilustracion", "id": "rotacion", "e": {"area": "Area", "porque": "Mortal Strike: cooldown ready", "ahora": "Now", "despues": "Next"}, "pie": "The rotation helper (reference drawing).", "leyenda": [
+              "The big icon is the ability worth using now.",
+              "The small ones are the ones that come next.",
+              "A dark sweep shows the running cooldown.",
+              "The border pulses when the game makes that ability glow. “Area” shows up with three or more enemies.",
+              "Below, a short line tells you why."
+            ]},
+            {"t": "p", "texto": "The rotation helper knows all **27 specializations** of the 9 classes and grows with you: it only suggests what you’ve already learned, at your highest rank. The first time, a prompt explains how to read it. You can move the icon wherever you like, and it can show the key from your bar."},
+            {"t": "tarjetas", "cols": 3, "items": [
+              {"icono": "aviso", "titulo": "Reaction alerts", "texto": "Overpower, Revenge, Execute, Counterattack… right when they can be used."},
+              {"icono": "misiones", "titulo": "Quest things, highlighted", "texto": "The enemies you need, marked on their nameplate."},
+              {"icono": "reloj", "titulo": "Damage meter", "texto": "Your group’s damage, when your game includes the meter (`/alfa dps`)."}
+            ]},
+            {"t": "nota", "texto": "Healers start with the rotation helper turned off (the welcome decides based on your role). Turn it on or off in Combat whenever you like."}
+          ]
+        },
+        {
+          "id": "curacion",
+          "titulo": "Healing",
+          "lema": "Hover, click, heal.",
+          "icono": "curacion",
+          "bloques": [
+            {"t": "intro", "texto": "Healing adds party and raid frames built for click-to-heal: hover over a teammate, click and cast the spell you chose. Any priest, druid, paladin or shaman can use it without setting anything up; other classes use it for their buffs and for targeting."},
+            {"t": "img", "img": "curacion", "pie": "The Healing page: your frames, the presets and what each click does."},
+            {"t": "pasos", "titulo": "The 3-step wizard (`/alfa curacion asistente`)", "items": [
+              "**Choose your clicks.** A preset for your class; if you heal, left click can stay just for targeting.",
+              "**Place your frames.** With sample frames you drag around: width, height, columns and which way they grow.",
+              "**Test your clicks.** Click a sample frame (with or without Shift, Ctrl or Alt) and Alfa tells you what it would cast, without casting anything."
+            ]},
+            {"t": "ilustracion", "id": "raton", "e": {
+              "botones": ["Left", "Middle", "Right"],
+              "mods": ["No key", "Shift", "Ctrl", "Alt"],
+              "acciones": [
+                ["Target", "", "Player menu"],
+                ["Your quick heal", "", "Your big heal"],
+                ["Remove debuff", "", "Your buff"],
+                ["Heal over time", "", ""]
+              ]
+            }, "pie": "Twelve clicks for twelve actions: three mouse buttons, with or without Shift, Ctrl or Alt. (Example)"},
+            {"t": "lista", "titulo": "What the frames show you", "items": [
+              "Health in the class color, and incoming heals in a light green band.",
+              "A red line if someone has the enemy’s aggro.",
+              "A border in the color of a debuff **you** can remove.",
+              "Faded if out of range; gray if dead, a ghost or disconnected."
+            ]},
+            {"t": "nota", "texto": "The frames rearrange themselves even in combat, but changing what your clicks do has to happen out of combat: the game requires it. With **Move frames** you can put them wherever you like."}
+          ]
+        },
+        {
+          "id": "bolsas",
+          "titulo": "Bags",
+          "lema": "Your bags, your bank and all your characters.",
+          "icono": "bolsas",
+          "bloques": [
+            {"t": "intro", "texto": "Bags puts all your bags in a single Alfa window that opens with the usual [[B]] and when you visit a vendor, the mailbox or the bank. It also shows your bank from anywhere and what your other characters carry."},
+            {"t": "img", "img": "bolsas", "pie": "The Bags page: your bank, more space and what to sell or keep."},
+            {"t": "tarjetas", "cols": 3, "titulo": "Three views", "items": [
+              {"icono": "rejilla", "titulo": "All together", "texto": "Every slot in its place, with the keyring at the end."},
+              {"icono": "lista", "titulo": "By category", "texto": "Gear, consumables, quest items, crafting, junk…"},
+              {"icono": "bolsas", "titulo": "By bag", "texto": "Each bag in its own block, with how many slots it has left."}
+            ]},
+            {"t": "h", "texto": "Search and sort"},
+            {"t": "p", "texto": "Search by name, type, quality (“green”, “blue”, “purple”) or item level (“20”, “>20”, “20-30”): matches light up and everything else fades. **Sort** tidies everything up in one click."},
+            {"t": "lista", "titulo": "Marks on each item", "items": [
+              "Its item level and a border in its quality color.",
+              "A coin on junk and a sparkle on new items.",
+              "A green arrow if it’s an upgrade for you.",
+              "**Quest items glow** with a golden border and a “!”; the “!” is filled in if the item starts a quest you don’t have yet."
+            ]},
+            {"t": "h", "texto": "The bank"},
+            {"t": "p", "texto": "At a banker, your bank opens in the same kind of window; away from one, you see the last snapshot Alfa took. **Quick deposit** stores, in one click, whatever you already keep in the bank, all your materials or a whole category. The bank bar shows you the cost of the next slot."},
+            {"t": "consejo", "texto": "When your bags fill up, Alfa tells you what to sell and what to keep, using Trade’s prices: **Mark as junk**, **Take me to a vendor** and, with the vendor open, **Sell the junk**."}
+          ]
+        },
+        {
+          "id": "lya",
+          "titulo": "Lya",
+          "lema": "Your she-wolf companion.",
+          "icono": "lobo",
+          "bloques": [
+            {"t": "intro", "texto": "Lya is a little black she-wolf who keeps you company on screen: she gives you short tips, cheers you on and tells you stories about the world. She’s named after Lya, toxic3000’s dog: noble, loyal and always by her family’s side, the chubby, pampered darling of the house. Alfa remembers her that way, as the she-wolf who looks after the pack and never leaves anyone behind."},
+            {"t": "poses", "items": [
+              ["quieta1", "Keeps you company"], ["atenta1", "Perks up"], ["sentada1", "Sits"], ["pedir2", "Begs for a sausage"], ["correr3", "Runs"],
+              ["cola2", "Chases her tail"], ["estirarse2", "Stretches"], ["saltar2", "Jumps"], ["aullar2", "Howls"], ["dormir2", "Sleeps"]
+            ]},
+            {"t": "lya", "pose": "pedir2", "texto": "I love chatting about the zone we’re in, your race and your professions. And if you see me sitting with my little bone… it means I’m hungry. Will you give me a sausage?"},
+            {"t": "lista", "titulo": "What she does", "items": [
+              "**She keeps you company.** She breathes, wags her tail, runs, stretches, howls when you level up and curls up to sleep if you step away for a while. In combat she stays still and faint, so she won’t distract you.",
+              "**She warns you in time.** Worn gear, full bags, abilities to train or three quests ready to turn in, always with a button that takes you there.",
+              "**She tells you stories.** She keeps the story of every quest you take, even if you accept it without reading, and when you turn it in she offers you the ending.",
+              "**She knows it all.** Warcraft lore, fun facts about every zone in Kalimdor and the Eastern Kingdoms, about your race, your class and your professions, and advice from a friend."
+            ]},
+            {"t": "img", "img": "lya-globo", "ancho": "media", "pie": "Lya talks in her speech bubble, without getting in the way, when things are calm."},
+            {"t": "tarjetas", "cols": 2, "titulo": "Her menu (right-click on Lya)", "items": [
+              {"icono": "reloj", "titulo": "Mute for 1 hour", "texto": "For when you need to focus."},
+              {"icono": "mapa", "titulo": "Tell me something about this place", "texto": "A fact about the zone you’re in."},
+              {"icono": "lobo", "titulo": "Tell me something · Tell me about my people", "texto": "Lore, tips and things about your race."},
+              {"icono": "misiones", "titulo": "Your quest stories", "texto": "Opens the Stories window."},
+              {"icono": "ajustes", "titulo": "Tips: many, few or important only", "texto": "Each click moves to the next option."},
+              {"icono": "cerrar", "titulo": "Lock position · Hide Lya", "texto": "Keep her in place or hide her; bring her back with `/alfa lya`."}
+            ]},
+            {"t": "img", "img": "lya-historias", "pie": "The Stories window gathers what you were told in each quest, by zone and with a search box (`/alfa historias`)."},
+            {"t": "consejo", "texto": "Give Lya a click whenever you want a tip. You can drag her anywhere you like and, with “Lock position”, she stays put."}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mundo",
+      "titulo": "World",
+      "lema": "The map, resources and how the world looks.",
+      "pose": "aullar2",
+      "capitulos": [
+        {
+          "id": "mapa",
+          "titulo": "Alfa’s map",
+          "lema": "All of Azeroth on one map, with the M key.",
+          "icono": "mapa",
+          "bloques": [
+            {"t": "intro", "texto": "Alfa’s map puts the whole world on one zoomable map: the real terrain, flight points, entrances and exits, your markers and your group. It opens with the usual [[M]] (or with `/alfa mapa`) and centers on your zone."},
+            {"t": "ilustracion", "id": "mapa", "e": {
+              "titulo": "World map",
+              "cerca": "Find nearby",
+              "marcadores": "Your markers",
+              "capas": "Layers",
+              "limpio": "Clean mode",
+              "juego": "Go to the game’s map",
+              "engrane": "Map style",
+              "zoom": "Zoom in, zoom out and center on you",
+              "tu": "You",
+              "vuelo": "Known flight point",
+              "vuelo2": "Flight point to discover",
+              "marcador": "Your marker",
+              "mazmorra": "Dungeon",
+              "salida": "To another zone"
+            }, "pie": "The map window and its buttons (reference drawing)."},
+            {"t": "teclas", "titulo": "Moving around the map", "items": [
+              {"teclas": ["Mouse wheel"], "texto": "Zooms in or out where the cursor is."},
+              {"teclas": ["Drag"], "texto": "Moves the map; let go quickly and it glides a bit before stopping."},
+              {"teclas": ["Double-click"], "texto": "Zooms in."},
+              {"teclas": ["Right-click"], "texto": "Places a marker there (Shift-click works too)."},
+              {"teclas": ["Ctrl", "Click"], "texto": "The arrow and the route to that point, without saving anything."},
+              {"teclas": ["M"], "texto": "Opens and closes the map."}
+            ]},
+            {"t": "tarjetas", "cols": 2, "titulo": "What you see", "items": [
+              {"icono": "mundo", "titulo": "The real terrain", "texto": "Zoom in and you see the minimap’s ground: mountains, rivers and roads. In the gear menu, choose “Terrain” or “Classic”."},
+              {"icono": "seguir", "titulo": "Flight points", "texto": "Green for the ones you know; amber with a “?” for the ones you’re missing. Hover to see where you can fly from there."},
+              {"icono": "mazmorra", "titulo": "Entrances and exits", "texto": "Dungeons, zone exits with their destination, boats, zeppelins, the tram and portals."},
+              {"icono": "recoleccion", "titulo": "Resources", "texto": "Mining, herbs, fishing and treasures as you zoom into a zone; faded if your skill isn’t high enough."},
+              {"icono": "manada", "titulo": "Your pack", "texto": "Your group, in their class colors; those who share their location, with a small paw print."},
+              {"icono": "ventana", "titulo": "Clean mode", "texto": "One click leaves only the essentials: you, your group, your markers and your guide."}
+            ]},
+            {"t": "h", "texto": "Your markers"},
+            {"t": "pasos", "items": [
+              "Right-click on Alfa’s map (on the game’s map, Shift-right-click).",
+              "Give it a name and choose one of 13 icons and 10 colors. Press **Save**.",
+              "Click its pin to change it, share it with your group, delete it or **Follow** it: the arrow and the route take you there."
+            ]},
+            {"t": "p", "texto": "Your markers show up on Alfa’s map, on the game’s map and on the minimap. The full list is under the paw print button, and on the **World** page along with the map layers and clean mode."},
+            {"t": "novedad", "ref": "mapa"},
+            {"t": "nota", "texto": "Inside a dungeon, [[M]] opens the game’s map. From Alfa’s map, “Go to the game’s map” opens the game’s map on the same zone, and on the game’s map the “Alfa’s map” button takes you back."}
+          ]
+        },
+        {
+          "id": "recoleccion",
+          "titulo": "Gathering",
+          "lema": "Ore, herbs, fish and treasures, with a route.",
+          "icono": "recoleccion",
+          "bloques": [
+            {"t": "intro", "texto": "Gathering shows you the mining nodes, herbs, fishing pools and treasures of WoW Forever on the map and the minimap, and builds farming routes in your zone. It comes with about 25,000 spots out of the box and learns the ones you discover."},
+            {"t": "img", "img": "recoleccion", "pie": "Build a route with what your skill can reach, and the arrow takes you from stop to stop."},
+            {"t": "pasos", "titulo": "Your farming route", "items": [
+              "Open **World > Gathering** (`/alfa recoleccion`).",
+              "Choose what to gather: the type (mining, herbs, fishing or treasures) and, if you like, a specific resource.",
+              "Press **Create route**: Alfa joins the spots into a short loop and draws it on the map.",
+              "Press **Guide me**: the arrow goes to the closest stop and moves on to the next when you arrive or gather."
+            ]},
+            {"t": "lista", "items": [
+              "Each spot has its type’s color: copper for mining, green for herbs, blue for fishing and gold for treasures.",
+              "What your skill can’t reach yet shows up gray and faded.",
+              "On hover: the required skill, how many times you’ve gathered it and when you last did.",
+              "The history counts what you gather per session, per hour and per zone."
+            ]},
+            {"t": "consejo", "texto": "No gathering profession yet? Gathering takes you to a trainer so you can learn one."}
+          ]
+        },
+        {
+          "id": "paisaje",
+          "titulo": "Landscape and graphics",
+          "lema": "Make the world look gorgeous, without the hassle.",
+          "icono": "apariencia",
+          "bloques": [
+            {"t": "intro", "texto": "Landscape and graphics explains the game’s graphics settings in plain words (even the ones the menu hides), comes with presets and undoes changes in one click. Open it in **World > Landscape and graphics** or with `/alfa paisaje`."},
+            {"t": "img", "img": "vista", "pie": "Six tabs (Quality, Environment, Camera, Interface, Filters and Advanced), with a search box."},
+            {"t": "tarjetas", "cols": 3, "titulo": "Presets", "items": [
+              {"icono": "reloj", "titulo": "Low", "texto": "The lightest, to raise your frames per second."},
+              {"icono": "ajustes", "titulo": "Medium", "texto": "Balanced: looks good on almost any computer."},
+              {"icono": "apariencia", "titulo": "High", "texto": "More view distance, fine shadows and water with reflections."},
+              {"icono": "exito", "titulo": "Ultra", "texto": "Everything at the safe maximum. Needs a strong graphics card."},
+              {"icono": "lobo", "titulo": "Pack landscape", "texto": "Alfa’s signature: more grass, more horizon, light fog and sunbeams."},
+              {"icono": "flecha", "titulo": "Undo", "texto": "Brings back what you had before the last preset."}
+            ]},
+            {"t": "lista", "items": [
+              "**Installing it changes nothing**: it only reads. Alfa doesn’t touch a setting until you ask.",
+              "Optional **screen filters**: tint, vignette, grain and cinema bars, which never cover the interface.",
+              "Nothing is touched in combat: whatever you ask for waits until the fight is over.",
+              "If the game limits a value, the row tells you: “You asked for 2.6; the game set it to 2.”"
+            ]}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "oficios",
+      "titulo": "Trades",
+      "lema": "Fish at your own pace and make gold wisely.",
+      "pose": "pedir2",
+      "capitulos": [
+        {
+          "id": "pesca",
+          "titulo": "Fishing",
+          "lema": "One key for everything.",
+          "icono": "pesca",
+          "bloques": [
+            {"t": "intro", "texto": "Fishing completely re-engineers fishing: a mode where a single key equips your pole, applies the lure, casts and loots. It also brings a bar, a catch journal, goals, 22 achievements, a 1 to 300 guide and cooking by the water."},
+            {"t": "ilustracion", "id": "pesca", "e": {"tecla": "Space", "cada": "Each press does the next step", "pasos": ["Equip your pole and gear", "Apply the lure", "Cast", "Loot when it bites"]}, "pie": "Always with your key, and out of combat."},
+            {"t": "pasos", "items": [
+              "Open fishing mode: with the button on its page, with `/alfa pesca` or simply by equipping a fishing pole.",
+              "Press [[Space]]: Alfa equips your best pole and your fishing gear.",
+              "Press it again: it applies the best lure. Once more: it casts.",
+              "When the bobber splashes, press [[Space]] to loot.",
+              "When you close the mode, your normal gear comes back."
+            ]},
+            {"t": "teclas", "titulo": "Fishing mode keys", "items": [
+              {"teclas": ["Space"], "texto": "The next step. You can change the key: keyboard, mouse buttons or the wheel."},
+              {"teclas": ["Shift", "Space"], "texto": "Jump, as always."},
+              {"teclas": ["Ctrl", "Space"], "texto": "Drop the cast and cast again."},
+              {"teclas": ["Walk"], "texto": "When you move, your key goes back to what it normally does."}
+            ]},
+            {"t": "img", "img": "pesca-barra", "ancho": "media", "pie": "The fishing bar: your skill and what your key will do."},
+            {"t": "img", "img": "pesca", "pie": "The Fishing page: journal, statistics, guide, cooking, goals and achievements."},
+            {"t": "tarjetas", "cols": 2, "items": [
+              {"icono": "enciclopedia", "titulo": "Fishing journal", "texto": "Everything you can catch in Forever and what you’ve already caught, with masteries."},
+              {"icono": "nivel", "titulo": "Statistics", "texto": "Casts, catches and value, per session and all-time."},
+              {"icono": "ruta", "titulo": "1 to 300 guide", "texto": "Where to fish for your skill, trainers, vendors and the Stranglethorn Fishing Extravaganza."},
+              {"icono": "exito", "titulo": "Goals and achievements", "texto": "Set yourself goals and unlock 22 achievements of its own. And cook your catch by the water."}
+            ]}
+          ]
+        },
+        {
+          "id": "comercio",
+          "titulo": "Trade",
+          "lema": "Vendor it, auction it or craft it?",
+          "icono": "comercio",
+          "bloques": [
+            {"t": "intro", "texto": "Trade answers a single question for every item: should I sell it to a vendor, auction it or turn it into something worth more? It only informs: it never buys, sells or posts anything for you."},
+            {"t": "img", "img": "comercio", "pie": "The Trade page: what to do with what you carry, and auction house prices."},
+            {"t": "pasos", "items": [
+              "Go to the auction house: Alfa’s bar appears below its window.",
+              "Press **Scan with Alfa**. It saves the lowest price of every item (you have to wait 15 minutes between scans).",
+              "Hover over any item: two lines tell you its price and the best thing you can do with it.",
+              "In **Trades > Trade** you see how much you earn if you follow the advice, and what’s worth vendoring, auctioning, crafting or keeping."
+            ]},
+            {"t": "ilustracion", "id": "cuadro", "e": {"lineas": [
+              {"t": "Silk Cloth", "c": ""},
+              {"t": "Cloth", "c": "g"},
+              {"t": "Auction: 1g 20s (3 h ago) · Vendor: 15s", "c": "a"},
+              {"t": "Best: auction it 1g 14s (+660%)", "c": "a"}
+            ]}, "pie": "Alfa’s two lines in an item’s tooltip (example)."},
+            {"t": "lista", "items": [
+              "It learns from what you look up by hand at the auction house and from what things cost at vendors.",
+              "It reads your recipes and works out whether crafting pays off; disenchanting too, if you or one of your characters can.",
+              "It recommends whatever earns the most gold, as long as it beats vendoring by at least 10%; if nothing earns gold, it tells you to keep the item.",
+              "Prices older than 60 days are forgotten on their own."
+            ]},
+            {"t": "consejo", "texto": "Bags uses this advice: when your bags fill up, it tells you what to sell and how much you’ll get."}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "jauria",
+      "titulo": "La Jauría",
+      "lema": "Play as a pack.",
+      "pose": "cola2",
+      "capitulos": [
+        {
+          "id": "jauria",
+          "titulo": "La Jauría",
+          "lema": "Your group on the map, with permission, and the clan one click away.",
+          "icono": "manada",
+          "bloques": [
+            {"t": "intro", "texto": "La Jauría is your pack’s page: your party or raid, and the players who use Alfa and agreed to let the pack see them on the map. Open it in **Pack** or with `/alfa manada`."},
+            {"t": "img", "img": "manada", "pie": "What’s up now, the pack in sight and the clan."},
+            {"t": "h", "texto": "Sharing your location is your call"},
+            {"t": "p", "texto": "Out of the box, nothing is shared. In the welcome you choose “Not for now” or “Yes, let the pack see me”, and you can change it later on this page whenever you like, with “Let the pack see my character on the map”. If you share, only your character’s location in the game is sent. Your group is always visible, just like in the game."},
+            {"t": "importante", "texto": "Your location travels over a hidden game channel that someone with another addon could read: share it only if you’re comfortable with that. Nothing is sent inside dungeons and raids."},
+            {"t": "lista", "titulo": "The pack in sight", "items": [
+              "One card per person: their name in their class color, level, zone, distance and how long ago they were last heard from.",
+              "**Follow** points the arrow at that person and doesn’t let go, even if they change zones.",
+              "**Invite** adds them to your group.",
+              "On the map, your group shows up in their class colors, and those who share, with a small paw print."
+            ]},
+            {"t": "h", "texto": "La Jauría badges"},
+            {"t": "tarjetas", "cols": 2, "items": [
+              {"icono": "lobo", "titulo": "Alpha of La Jauría", "texto": "A gold wolf next to the name."},
+              {"icono": "huella", "titulo": "Member of La Jauría", "texto": "A green wolf next to the name."}
+            ]},
+            {"t": "p", "texto": "The badge shows on the player’s tooltip, on this page and as a ring on the map. It’s only visual: it gives no advantage, and toxic3000 keeps the list, with each person’s permission."},
+            {"t": "h", "texto": "The clan"},
+            {"t": "p", "texto": "At the bottom of the page is La Jauría, the clan: its motto, what it offers, the Discord link to copy and **I want to join**, to ask for your place in the pack."},
+            {"t": "comandos", "items": [
+              {"cmd": "/alfa manada seguir <nombre>", "texto": "Takes you to someone in your group or who shares."},
+              {"cmd": "/alfa manada parar", "texto": "Stops following."},
+              {"cmd": "/alfa manada compartir sí | no", "texto": "Starts or stops sharing your location."}
+            ]}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ajustes",
+      "titulo": "Settings",
+      "lema": "Alfa, your way.",
+      "pose": "estirarse2",
+      "capitulos": [
+        {
+          "id": "ajustes",
+          "titulo": "Settings",
+          "lema": "Change anything, lose nothing.",
+          "icono": "ajustes",
+          "bloques": [
+            {"t": "intro", "texto": "**Settings** (at the top right of the window) is home to everything you can change: the style, conveniences, quests, the map and more. The quickest way in is the search box: type what you want to change in “Search settings” and Alfa takes you to the option."},
+            {"t": "tarjetas", "cols": 2, "items": [
+              {"icono": "apariencia", "titulo": "Style and sound", "texto": "The three styles, the howl, the wolf at login, your setup, “Report” and what’s new."},
+              {"icono": "comodidades", "titulo": "Conveniences", "texto": "Small improvements to the game, all in one place (next chapter)."},
+              {"icono": "misiones", "titulo": "Questing", "texto": "Accept and turn in on its own, all quests or only your route’s."},
+              {"icono": "mapa", "titulo": "Map and Discovery", "texto": "The map, dungeons and story mode."},
+              {"icono": "guia", "titulo": "Guide", "texto": "How your on-screen guide looks and behaves."},
+              {"icono": "info", "titulo": "About", "texto": "The version, credits and licenses."}
+            ]},
+            {"t": "img", "img": "misiones", "pie": "Settings > Questing: each option explained in one line."},
+            {"t": "consejo", "texto": "At the bottom left, **Reset page** puts the settings of the page you’re viewing back the way they came."},
+            {"t": "nota", "texto": "When you update, your settings stay as you left them. If a version moves them somewhere else, Alfa moves them over for you, just once, without losing anything."}
+          ]
+        },
+        {
+          "id": "comodidades",
+          "titulo": "Conveniences",
+          "lema": "Little things that make the game more comfortable.",
+          "icono": "comodidades",
+          "bloques": [
+            {"t": "intro", "texto": "Conveniences gathers quality-of-life improvements: each group has its own switch, with its options inside. Open it in **Settings > Conveniences** or with `/alfa comodidades`."},
+            {"t": "img", "img": "comodidades", "pie": "At the top, how many you have turned on; below, each group with its switch."},
+            {"t": "consejo", "texto": "Not sure where to start? Press **Turn on the recommended ones**: class colors, a better tooltip, the dressing room, the flight’s next stop and no error speech."},
+            {"t": "tarjetas", "cols": 2, "items": [
+              {"icono": "seguir", "titulo": "Travel", "texto": "The next stop on flights with layovers, and how long is left."},
+              {"icono": "mapa", "titulo": "Minimap", "texto": "Square, with addon buttons hidden until you hover."},
+              {"icono": "apariencia", "titulo": "Chat, minimap and bars style", "texto": "Dresses those parts of the game in your style; turn it off and everything goes back to how it was."},
+              {"icono": "personaje", "titulo": "Frames and action bar", "texto": "Class colors on your frame and your target’s, and a warning if a form’s bar is empty."},
+              {"icono": "info", "titulo": "Tooltip", "texto": "Who someone is targeting, their guild rank and showing it only with Shift."},
+              {"icono": "ventana", "titulo": "Dressing room", "texto": "Buttons to remove pieces, and animation control."},
+              {"icono": "mundo", "titulo": "Camera", "texto": "Zoom the camera out a bit further."},
+              {"icono": "aviso", "titulo": "Mute sounds", "texto": "Error speech, dialogue, pets, emotes and your own list."}
+            ]},
+            {"t": "p", "texto": "Druids, warriors and rogues: if your bar is empty when you change form or stance, Alfa lets you know and fills it with your abilities in one click (**Fill my bar**), only in empty slots and never in combat."},
+            {"t": "comandos", "items": [
+              {"cmd": "/alfa silenciar <número>", "texto": "Adds a game sound to your list, by its number. Without a number, it shows you the list."}
+            ]}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ayuda",
+      "titulo": "Help",
+      "lema": "Shortcuts, answers and a pack that lends a hand.",
+      "pose": "saltar2",
+      "capitulos": [
+        {
+          "id": "atajos",
+          "titulo": "Shortcuts and commands",
+          "lema": "All of Alfa at your fingertips.",
+          "icono": "mando",
+          "bloques": [
+            {"t": "teclas", "titulo": "Keys and mouse", "items": [
+              {"teclas": ["M"], "texto": "Opens or closes Alfa’s map."},
+              {"teclas": ["B"], "texto": "Opens your bags."},
+              {"teclas": ["Esc"], "texto": "Closes windows and skips the intro."},
+              {"teclas": ["Space"], "texto": "In fishing mode: the next step."},
+              {"teclas": ["Ctrl", "Space"], "texto": "In fishing mode: cast again."},
+              {"teclas": ["Right-click"], "texto": "On Alfa’s map: places a marker."},
+              {"teclas": ["Shift", "Right-click"], "texto": "On the game’s map: places a marker."},
+              {"teclas": ["Ctrl", "Click"], "texto": "On Alfa’s map: the arrow and the route to that point."}
+            ]},
+            {"t": "nota", "texto": "In the game’s key binding options there’s an **Alfa** category where you can choose your own keys: open the map, fishing mode and Find nearby."},
+            {"t": "comandos", "titulo": "Commands (typed in chat)", "items": [
+              {"cmd": "/alfa", "texto": "Opens the Alfa window."},
+              {"cmd": "/alfa inicio", "texto": "Today."},
+              {"cmd": "/alfa rutas", "texto": "Route and guides."},
+              {"cmd": "/alfa cerca", "texto": "Find nearby: flight, inn, repair and more."},
+              {"cmd": "/alfa enciclopedia", "texto": "The Encyclopedia (also `/alfa monturas`, `/alfa mascotas` and `/alfa legado`)."},
+              {"cmd": "/alfa mazmorras", "texto": "Dungeons (`progreso`: your progress)."},
+              {"cmd": "/alfa talentos", "texto": "Talents."},
+              {"cmd": "/alfa combate · /alfa dps", "texto": "Combat and the damage meter."},
+              {"cmd": "/alfa curacion", "texto": "Healing (`asistente`: the wizard)."},
+              {"cmd": "/alfa bolsas", "texto": "Bags."},
+              {"cmd": "/alfa lya · /alfa historias", "texto": "Lya and her stories."},
+              {"cmd": "/alfa mapa · /alfa mundo", "texto": "Alfa’s map and the World page."},
+              {"cmd": "/alfa limpio", "texto": "The map’s clean mode."},
+              {"cmd": "/alfa recoleccion", "texto": "Gathering (`ruta`, `guiar` and `parar`)."},
+              {"cmd": "/alfa paisaje", "texto": "Landscape and graphics."},
+              {"cmd": "/alfa pesca", "texto": "Fishing mode."},
+              {"cmd": "/alfa comercio", "texto": "Trade (`escanear`, with the auction house open)."},
+              {"cmd": "/alfa manada", "texto": "La Jauría."},
+              {"cmd": "/alfa comodidades", "texto": "Conveniences."},
+              {"cmd": "/alfa estilo", "texto": "Settings > Style and sound."},
+              {"cmd": "/alfa bienvenida", "texto": "Your setup (`novedades`: what’s new in this version)."},
+              {"cmd": "/alfa sesion", "texto": "Today’s session, in chat."},
+              {"cmd": "/alfa reportar", "texto": "Report a bug, an idea or a comment."}
+            ]}
+          ]
+        },
+        {
+          "id": "faq",
+          "titulo": "Frequently asked questions",
+          "lema": "What the pack asks the most.",
+          "icono": "info",
+          "bloques": [
+            {"t": "faq", "items": [
+              {"q": "Does Alfa play for me?", "a": "No. Alfa backs you up and you decide: the welcome asks what you want it to do on its own, and in combat it never presses, casts or targets for you. Healing, fishing, applying talents and using items always take your key or your click."},
+              {"q": "Do I need other addons?", "a": "No. Alfa comes with everything it uses."},
+              {"q": "Can I have Alfa in a different language from my game?", "a": "Yes. Alfa comes in 10 languages and you can pick any of them, even if your game is in another: type `/alfa bienvenida`, press “Change” on Language and choose. Alfa reloads the interface and stays in your language."},
+              {"q": "Who sees me on the map?", "a": "Your group, as always. Other players who use Alfa only see you if you agreed to share your location, and all they see is your character’s location in the game. You can stop sharing whenever you like in La Jauría."},
+              {"q": "How do I turn off the wolf intro at login?", "a": "In **Settings > Style and sound**, turn off “The wolf greets you when you log in”. You can turn off the howl right there too."},
+              {"q": "Lya talks a lot. How do I calm her down?", "a": "Right-click on her: **Mute for 1 hour**, or switch her tips to “few” or “important only”. You can also hide her and bring her back with `/alfa lya`."},
+              {"q": "[[M]] opens the game’s map, not Alfa’s.", "a": "Inside dungeons that’s on purpose: there, [[M]] opens the game’s map. Outside them, check on the **World** page that “Open Alfa’s map with the map key” is turned on."},
+              {"q": "Do I lose my settings when I update?", "a": "No. Alfa keeps everything, and if a version moves something, it moves it over for you, just once."},
+              {"q": "Why does Alfa wait for the fight to end for some things?", "a": "Because the game doesn’t let an addon change certain things in combat. Alfa gets them ready and does them as soon as the fight is over."},
+              {"q": "My bar looks empty when I change form or stance.", "a": "It’s that form’s own bar, which the game keeps separate. Alfa lets you know and fills it with your abilities in one click (**Fill my bar**), only in empty slots."},
+              {"q": "Is Alfa free?", "a": "Yes, and it always will be. It’s free software, with no ads, and nothing it does posts on its own in other players’ chat."}
+            ]}
+          ]
+        },
+        {
+          "id": "falla",
+          "titulo": "Something wrong?",
+          "lema": "Tell us and we’ll fix it.",
+          "icono": "aviso",
+          "bloques": [
+            {"t": "intro", "texto": "Alfa is tested before every version, but WoW Forever is big and something always slips through. If you spot a bug or have an idea, the pack wants to know."},
+            {"t": "pasos", "titulo": "First, the quick fixes", "items": [
+              "Type `/reload` to reload the interface.",
+              "Make sure Alfa is up to date: open **Instalar-Alfa.exe** again.",
+              "If a page looks off, try **Reset page**."
+            ]},
+            {"t": "h", "texto": "Report with /alfa reportar"},
+            {"t": "dos", "img": "reportar", "pie": "The report builds itself as you type.", "lado": "izq", "prop": "40", "bloques": [
+              {"t": "pasos", "items": [
+                "Type `/alfa reportar`.",
+                "Choose **Bug**, **Idea** or **Comment** and describe it in your own words.",
+                "Alfa adds what helps fix it: the version, the language, your class and level and where you are. It doesn’t include your name or your realm.",
+                "Press **Select all**, copy with [[Ctrl]]+[[C]] and paste it in the **#buzon-alfa** channel on La Jauría’s Discord."
+              ]},
+              {"t": "p", "texto": "That mailbox is private: only Alfa’s developer reads what you send."}
+            ]},
+            {"t": "enlace", "icono": "comunidad", "titulo": "La Jauría’s Discord", "url": "https://discord.gg/hUNjA6BJwh", "texto": "Come play with the pack, ask for help and hear about every new version."},
+            {"t": "p", "texto": "You can also tell us in the CurseForge comments or open a report on GitHub: https://github.com/toxic3000/alfa-forever/issues"},
+            {"t": "lya", "pose": "saltar2", "texto": "Thanks for letting us know! Every report helps make Alfa better for the whole pack."}
+          ]
+        },
+        {
+          "id": "creditos",
+          "titulo": "Credits and license",
+          "lema": "Thanks to everyone who makes it possible.",
+          "icono": "lobo",
+          "bloques": [
+            {"t": "p", "texto": "**Alfa** is made by **toxic3000** for La Jauría, with love and with help from artificial intelligence: toxic3000 designs it, decides every detail and tests it in the game before releasing it. Thanks to everyone who uses Alfa, reports a bug, suggests an idea or tells a friend about it: you are the pack."},
+            {"t": "h", "texto": "Projects it builds on"},
+            {"t": "creditos", "items": [
+              ["Polestar", "The Polestar authors: the base Alfa is built on.", "GPL-3.0"],
+              ["Shortest Path Forever", "Cillian Berragan: navigation.", "GPL-3.0-or-later"],
+              ["pfQuest", "shagu: quest data.", "MIT"],
+              ["GatherLite", "Wuild: the gathering spot database.", "MIT"],
+              ["OpenMap", "The map logic.", "MIT"],
+              ["TerrainWorldMap", "Dramacydal: the terrain table.", "MIT"],
+              ["Inter, Fira Sans, Open Sans", "The fonts of Alfa and of this manual.", "OFL 1.1"]
+            ]},
+            {"t": "p", "texto": "Alfa is not affiliated with those projects or with Blizzard. World of Warcraft and Blizzard Entertainment are trademarks of Blizzard Entertainment, Inc."},
+            {"t": "h", "texto": "License"},
+            {"t": "p", "texto": "Alfa is free software: you can use it, study it, share it and modify it under the terms of the GNU General Public License, version 3 (GPL-3.0). It is distributed in the hope that it will be useful, but without any warranty. The full license text is in the `LICENSE` file, and the code is at https://github.com/toxic3000/alfa-forever"},
+            {"t": "p", "texto": "This manual is part of Alfa and is shared under the same license. It uses the Inter and Fira Sans fonts (SIL Open Font License 1.1)."}
+          ]
+        }
+      ]
+    }
+  ],
+  "novedades": {
+    "mapa": {
+      "titulo": "The map, even better",
+      "items": [
+        "Your position stands out more: you spot yourself instantly.",
+        "The route line to your destination, with the distance.",
+        "Your destination, marked on the map.",
+        "Your gryphon flight, with its line drawn on the map.",
+        "No more seams on the map when you zoom."
+      ]
+    }
+  },
+  "contraportada": {
+    "titulo": "Join the pack",
+    "texto": "Play with La Jauría, ask for help, suggest ideas and be the first to hear about every Alfa version.",
+    "enlaces": [
+      ["Discord", "https://discord.gg/hUNjA6BJwh"],
+      ["CurseForge", "https://www.curseforge.com/wow/addons/alfa-forever"],
+      ["GitHub", "https://github.com/toxic3000/alfa-forever"]
+    ],
+    "pie": "Alfa {v} · Free software under the GPL-3.0 license · Made by toxic3000 for La Jauría\nWorld of Warcraft is a trademark of Blizzard Entertainment, Inc. Alfa is not affiliated with Blizzard."
+  }
+}

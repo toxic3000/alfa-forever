@@ -185,7 +185,7 @@ M.TIPOS = {
 	subastar = { chip = "Subastar", color = "success", tono = "exito" },
 	desencantar = { chip = "Transformar", color = "dungeon", tono = "mazmorra" },
 	receta = { chip = "Transformar", color = "dungeon", tono = "mazmorra" },
-	guardar = { chip = "Guardar", color = "textDim", tono = "neutro" },
+	guardar = { chip = "Guardar [conservar]", color = "textDim", tono = "neutro" },
 }
 
 -- opts = { ligado = bool (nil: según el tipo de ligado), link = string }

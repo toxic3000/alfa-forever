@@ -1,24 +1,32 @@
 -- Alfa - Bienvenida: la intro, un lobo que aúlla a la luna antes de la
--- configuración o de las notas de una versión nueva (toxic3000 / La Jauría).
--- GPL-3.0.
+-- configuración, de las notas de una versión nueva o como saludo al entrar
+-- (toxic3000 / La Jauría). GPL-3.0.
 --
--- Sale una vez por sesión: cuando la configuración se abre porque falta (la
--- primera vez) o al entrar con una versión nueva de Alfa (antes de sus notas,
--- Notas.lua). Dura 4,6 s:
+-- Sale una vez por sesión. Dura 5,8 s (1.2.1: más larga, para que el aullido
+-- largo respire):
 --   0,0  la pantalla se oscurece y van saliendo las estrellas, que titilan
 --   0,2  la luna sube con su halo, que respira despacio
 --   0,6  el lobo sube sobre su peña, una silueta recortada contra la luna;
 --        la luz de la luna le enciende el contorno (el color del estilo)
---   1,55 aúlla (el aullido de la bienvenida) y del hocico salen tres ondas
---   2,05 A L F A aparece con su resplandor, una raya de luz se abre debajo
+--   0,75 una estrella fugaz cruza el cielo
+--   0,9  chispas de luz suben despacio de la peña; la neblina se mueve abajo
+--   1,25 el lobo toma aire (el pecho se hincha un poco)
+--   1,55 aúlla (el aullido largo: Bienvenida.lua) y de su hocico salen cinco
+--        ondas; mientras aúlla, la luna le contesta con su halo
+--   2,9  A L F A aparece con su resplandor, una raya de luz se abre debajo
 --        y un brillo recorre las letras hasta un destello; luego el lema y,
 --        con versión nueva, "Alfa X.Y.Z ya está aquí"
---   4,0  todo se funde y deja ver lo que sigue (que ya se abrió debajo)
+--   3,45 al terminar de aullar, un destello en el ojo del lobo
+--   5,2  todo se funde y deja ver lo que sigue (que ya se abrió debajo)
+-- Toda la escena se acerca despacio (la cámara avanza un poco) y las
+-- estrellas se quedan quietas: da profundidad.
 -- Un clic, Esc, espacio o Enter la saltan. Si entras en combate se corta al
 -- momento y lo que sigue recibe "combate" para esperar a que termine.
 -- Funciona igual en los 3 estilos: los colores salen del estilo (el acento,
 -- o el oro de los títulos en Clásico WoW). Las texturas son propias
 -- (tools/intro.py) y el OnUpdate solo corre mientras se ve.
+-- Al empezar avisa ALFA_INTRO_INICIO y, cuando deja ver lo que sigue,
+-- ALFA_INTRO_FIN (motivo): Lya llega corriendo justo entonces.
 --
 --   M.Intro(fn, o)   la muestra y luego llama a fn(motivo): nil (terminó o la
 --                    saltaste) o "combate". o = { version = "1.1.4" } añade la
@@ -32,12 +40,17 @@ local A, K = N.A, N.Kit
 local L = M.L or N.Textos(M.EN)
 
 local MEDIA = "Interface\\AddOns\\Alfa_Bienvenida\\Media\\"
-local DURACION = 4.6
+local DURACION = 5.8
 local FUNDIDO = 0.6   -- el final: todo se va y deja ver lo que sigue
 local AULLIDO = 1.55  -- cuándo aúlla el lobo
+local ONDAS = 5       -- las ondas del aullido
 local ESTRELLAS = 44
+local CHISPAS = 14
+-- El lobo elegido en tools/intro.py: la punta de su hocico y su ojo, en la
+-- textura de 512 (esta línea la escribe tools/intro.py).
+local LOBO = { hocico = { 395, 75 }, ojo = { 344, 113 } } -- tools/intro.py (de-pie)
 
-local sin, max, min, floor = math.sin, math.max, math.min, math.floor
+local sin, cos, max, min, floor, pi = math.sin, math.cos, math.max, math.min, math.floor, math.pi
 
 local f, alTerminar, vista, llamado
 local function ahora() return GetTime and GetTime() or 0 end
@@ -56,6 +69,10 @@ end
 local function avance(t, desde, hasta) return (t - desde) / (hasta - desde) end
 local function tramo(t, desde, hasta) return suave(avance(t, desde, hasta)) end
 
+local function avisar(que, motivo)
+	if A and A.Fire then pcall(A.Fire, que, motivo) end
+end
+
 -- Llama una sola vez a lo que sigue; desde ahí la intro ya no toma el ratón
 -- ni el teclado (lo que sigue se usa mientras ella se funde encima).
 local function llamar(motivo)
@@ -68,6 +85,7 @@ local function llamar(motivo)
 	local fn = alTerminar
 	alTerminar = nil
 	if fn then K.Llamar(fn, motivo) end
+	avisar("ALFA_INTRO_FIN", motivo)
 end
 
 local function terminar(motivo)
@@ -97,15 +115,19 @@ local function textura(capa, sub, archivo, aditiva)
 	return t
 end
 
--- Las estrellas: siempre en el mismo lugar (una semilla fija), cada una con
--- su momento para aparecer y su ritmo para titilar.
-local function armarEstrellas()
-	f.Estrellas = {}
-	local semilla = 12345
-	local function azar()
+-- Un azar con semilla fija: la misma escena cada vez.
+local function azarDe(semilla)
+	return function()
 		semilla = (semilla * 1103515245 + 12345) % 2147483648
 		return semilla / 2147483648
 	end
+end
+
+-- Las estrellas: siempre en el mismo lugar, cada una con su momento para
+-- aparecer y su ritmo para titilar.
+local function armarEstrellas()
+	f.Estrellas = {}
+	local azar = azarDe(12345)
 	for i = 1, ESTRELLAS do
 		local t = textura("BACKGROUND", 2, "intro-estrella", true)
 		f.Estrellas[i] = {
@@ -116,6 +138,23 @@ local function armarEstrellas()
 			a = 0.35 + azar() * 0.6,     -- su brillo
 			d = 0.1 + azar() * 1.1,      -- cuándo aparece
 			v = 1.6 + azar() * 3.2,      -- qué tan rápido titila
+			p = azar() * 6.28,
+		}
+	end
+end
+
+-- Las chispas: puntitos de luz que suben de la peña, se mecen y se apagan.
+local function armarChispas()
+	f.Chispas = {}
+	local azar = azarDe(777)
+	for i = 1, CHISPAS do
+		f.Chispas[i] = {
+			tex = textura("ARTWORK", 3, "intro-estrella", true),
+			x = -0.62 + azar() * 1.1,    -- a lo ancho de la peña (en tamaños del lobo)
+			d = 0.9 + azar() * 3.1,      -- cuándo nace
+			vida = 1.8 + azar() * 1.2,
+			sube = 0.16 + azar() * 0.2,  -- cuánto sube (en tamaños del lobo)
+			tam = 4 + floor(azar() * 5),
 			p = azar() * 6.28,
 		}
 	end
@@ -143,12 +182,17 @@ local function construir()
 	f.Velo:SetAllPoints(f)
 	f.Velo:SetColorTexture(1, 1, 1, 1)
 	armarEstrellas()
+	f.Fugaz = textura("BACKGROUND", 3, "intro-fugaz", true)
 	f.Halo = textura("BORDER", 0, "intro-halo", true)
 	f.Luna = textura("BORDER", 2, "intro-luna")
 	f.Lobo = textura("ARTWORK", 0, "intro-lobo")
 	f.Borde = textura("ARTWORK", 2, "intro-lobo-borde", true)
+	armarChispas()
+	-- la neblina de abajo: el mismo resplandor redondo, aplastado y tenue
+	f.Niebla = textura("ARTWORK", 3, "intro-halo")
 	f.Ondas = {}
-	for i = 1, 3 do f.Ondas[i] = textura("ARTWORK", 4, "intro-onda", true) end
+	for i = 1, ONDAS do f.Ondas[i] = textura("ARTWORK", 4, "intro-onda", true) end
+	f.Ojo = textura("ARTWORK", 6, "intro-destello", true)
 	f.Resplandor = textura("ARTWORK", 5, "intro-halo", true)
 	f.Marca = textura("OVERLAY", 0, "intro-marca")
 	-- El brillo que recorre las letras: tres franjas de la misma marca (sus
@@ -175,11 +219,15 @@ local function preparar(o)
 	f.velo = pal.velo
 	f.Velo:SetVertexColor(pal.velo[1], pal.velo[2], pal.velo[3], 1)
 	for _, s in ipairs(f.Estrellas) do s.tex:SetVertexColor(pal.estrella[1], pal.estrella[2], pal.estrella[3], 1) end
+	f.Fugaz:SetVertexColor(pal.estrella[1], pal.estrella[2], pal.estrella[3], 1)
 	f.Luna:SetVertexColor(pal.luna[1], pal.luna[2], pal.luna[3], 1)
 	f.Halo:SetVertexColor(K.Color(luz))
 	f.Lobo:SetVertexColor(pal.silueta[1], pal.silueta[2], pal.silueta[3], 1)
 	f.Borde:SetVertexColor(K.Color(luz))
+	for _, c in ipairs(f.Chispas) do c.tex:SetVertexColor(K.Color(luz)) end
+	f.Niebla:SetVertexColor(pal.luna[1], pal.luna[2], pal.luna[3], 1)
 	for _, x in ipairs(f.Ondas) do x:SetVertexColor(K.Color(luz)) end
+	f.Ojo:SetVertexColor(pal.luna[1], pal.luna[2], pal.luna[3], 1)
 	f.Resplandor:SetVertexColor(K.Color(luz))
 	f.Marca:SetVertexColor(K.Color("titulo"))
 	for _, x in ipairs(f.Brillo) do x:SetVertexColor(pal.luna[1], pal.luna[2], pal.luna[3], 1) end
@@ -193,8 +241,11 @@ local function preparar(o)
 	f.E, f.W, f.H = E, W, H
 	f.luna = { x = 40 * E, y = 95 * E, tam = 300 * E, halo = 660 * E }
 	f.lobo = { x = -20 * E, y = 5 * E, tam = 400 * E }
-	-- el hocico en la textura del lobo (tools/intro.py, HOCICO = 350, 76 de 512)
-	f.hocico = { x = f.lobo.x + (350 / 512 - 0.5) * f.lobo.tam, y = f.lobo.y + (0.5 - 76 / 512) * f.lobo.tam }
+	-- el hocico y el ojo en la textura del lobo (LOBO, de tools/intro.py)
+	f.hocico = { x = f.lobo.x + (LOBO.hocico[1] / 512 - 0.5) * f.lobo.tam, y = f.lobo.y + (0.5 - LOBO.hocico[2] / 512) * f.lobo.tam }
+	f.ojo = { x = f.lobo.x + (LOBO.ojo[1] / 512 - 0.5) * f.lobo.tam, y = f.lobo.y + (0.5 - LOBO.ojo[2] / 512) * f.lobo.tam }
+	-- la cresta de la peña (tools/intro.py: el suelo del lobo, y = 395 de 512)
+	f.pena = f.lobo.y + (0.5 - 395 / 512) * f.lobo.tam
 	f.marca = { y = -168 * E, ancho = 360 * E, alto = 45 * E }
 	f.Marca:SetSize(f.marca.ancho, f.marca.alto)
 	f.Destello:SetSize(1, 1)
@@ -214,10 +265,18 @@ local function preparar(o)
 	K.Escribir(f.Salto, L["Clic o Esc para saltar"])
 end
 
-local function poner(t, x, y, ancho, alto)
+-- Pone una pieza en (x, y) desde el centro, con su tamaño; z acerca la escena
+-- (la cámara que avanza): multiplica la distancia al centro y el tamaño.
+local function poner(t, x, y, ancho, alto, z)
+	z = z or 1
 	t:ClearAllPoints()
-	t:SetPoint("CENTER", f, "CENTER", x, y)
-	t:SetSize(max(1, ancho), max(1, alto or ancho))
+	t:SetPoint("CENTER", f, "CENTER", x * z, y * z)
+	t:SetSize(max(1, ancho * z), max(1, (alto or ancho) * z))
+end
+
+local function girar(t, angulo)
+	if t.SetRotation then t:SetRotation(angulo) return true end
+	return false
 end
 
 ---------------------------------------------------------------------------
@@ -226,64 +285,114 @@ end
 local function cuadro(self, t)
 	local E = self.E
 	local fin = 1 - tramo(t, DURACION - FUNDIDO, DURACION)
+	-- la cámara avanza despacio durante toda la intro
+	local z = 1 + 0.045 * suave(t / DURACION)
 
 	-- el velo entra y al final se va con todo
 	self.Velo:SetAlpha(self.velo[4] * tramo(t, 0, 0.45) * fin)
 
-	-- las estrellas aparecen una a una y titilan
+	-- las estrellas aparecen una a una y titilan (no se acercan: están lejos)
 	for _, s in ipairs(self.Estrellas) do
 		local nace = tramo(t, s.d, s.d + 0.6)
 		s.tex:SetAlpha(s.a * nace * (0.62 + 0.38 * sin(t * s.v + s.p)) * fin)
 	end
 
-	-- la luna sube y se acomoda; su halo crece y respira
+	-- una estrella fugaz cruza el cielo, de la izquierda hacia abajo a la derecha
+	local fu = avance(t, 0.75, 1.4)
+	if fu <= 0 or fu >= 1 or not self.Fugaz.SetRotation then
+		self.Fugaz:SetAlpha(0)
+	else
+		local ang = -0.42
+		local dx, dy = cos(ang), sin(ang)
+		local largo = 380 * E
+		local x0, y0 = -self.W * 0.40, self.H * 0.42
+		local u = frena(fu)
+		poner(self.Fugaz, x0 + dx * largo * u, y0 + dy * largo * u, 230 * E, 26 * E)
+		girar(self.Fugaz, ang)
+		self.Fugaz:SetAlpha(sin(fu * pi) ^ 0.8 * 0.9 * fin)
+	end
+
+	-- la luna sube y se acomoda; su halo crece y respira, y contesta al aullido
 	local lu = self.luna
 	local sube = frena(avance(t, 0.15, 1.5))
 	local ly = lu.y - 70 * E * (1 - sube)
-	poner(self.Luna, lu.x, ly, lu.tam)
+	poner(self.Luna, lu.x, ly, lu.tam, nil, z)
 	self.Luna:SetAlpha(tramo(t, 0.15, 1.0) * fin)
-	local h = lu.halo * (0.55 + 0.45 * sube) * (1 + 0.035 * sin(t * 2.4))
-	poner(self.Halo, lu.x, ly, h)
-	self.Halo:SetAlpha(0.42 * tramo(t, 0.3, 1.6) * fin)
+	local contesta = tramo(t, AULLIDO, AULLIDO + 0.5) * (1 - tramo(t, 3.3, 4.3))
+	local h = lu.halo * (0.55 + 0.45 * sube) * (1 + 0.035 * sin(t * 2.4) + 0.06 * contesta)
+	poner(self.Halo, lu.x, ly, h, nil, z)
+	self.Halo:SetAlpha((0.42 * tramo(t, 0.3, 1.6) + 0.16 * contesta * (0.75 + 0.25 * sin(t * 7.5))) * fin)
 
-	-- el lobo sube sobre su peña; la luna le enciende el contorno
+	-- el lobo sube sobre su peña; toma aire antes de aullar y lo suelta al final;
+	-- la luna le enciende el contorno
 	local lo = self.lobo
 	local w = frena(avance(t, 0.55, 1.5))
-	local dy = -26 * E * (1 - w)
-	poner(self.Lobo, lo.x, lo.y + dy, lo.tam)
-	poner(self.Borde, lo.x, lo.y + dy, lo.tam)
+	local aire = tramo(t, 1.2, AULLIDO) * (1 - tramo(t, 3.3, 3.9))
+	local dy = -26 * E * (1 - w) + 2.5 * E * aire
+	local tl = lo.tam * (1 + 0.014 * aire)
+	poner(self.Lobo, lo.x, lo.y + dy, tl, nil, z)
+	poner(self.Borde, lo.x, lo.y + dy, tl, nil, z)
 	self.Lobo:SetAlpha(tramo(t, 0.55, 1.2) * fin)
-	self.Borde:SetAlpha(tramo(t, 1.15, 1.8) * (0.88 + 0.12 * sin(t * 3.1)) * fin)
+	self.Borde:SetAlpha(tramo(t, 1.15, 1.8) * (0.88 + 0.12 * sin(t * 3.1) + 0.1 * contesta) * fin)
 
-	-- el aullido, una sola vez, y sus tres ondas desde el hocico
+	-- las chispas suben de la peña, se mecen y se apagan
+	for _, c in ipairs(self.Chispas) do
+		local u = avance(t, c.d, c.d + c.vida)
+		if u <= 0 or u >= 1 then
+			c.tex:SetAlpha(0)
+		else
+			local x = lo.x + c.x * lo.tam + 9 * E * sin(t * 1.7 + c.p)
+			local y = self.pena + c.sube * lo.tam * u
+			poner(c.tex, x, y, c.tam * E, nil, z)
+			c.tex:SetAlpha(sin(u * pi) * 0.7 * fin)
+		end
+	end
+
+	-- la neblina, tenue, se mueve despacio frente al pie de la peña
+	poner(self.Niebla, lo.x + 30 * E * sin(t * 0.35), self.pena - 40 * E, 1000 * E, 150 * E, z)
+	self.Niebla:SetAlpha(0.09 * tramo(t, 0.4, 1.6) * fin)
+
+	-- el aullido, una sola vez (el largo), y sus ondas desde el hocico
 	if not self.aullo and t >= AULLIDO then
 		self.aullo = true
-		if M.Aullar then M.Aullar(true) end -- en la intro siempre aúlla
+		if M.Aullar then M.Aullar(true, "intro") end -- en la intro siempre aúlla
 	end
 	for i, o in ipairs(self.Ondas) do
-		local u = avance(t, AULLIDO + (i - 1) * 0.28, AULLIDO + (i - 1) * 0.28 + 1.25)
+		local u = avance(t, AULLIDO + (i - 1) * 0.42, AULLIDO + (i - 1) * 0.42 + 1.5)
 		if u <= 0 or u >= 1 then
 			o:SetAlpha(0)
 		else
-			poner(o, self.hocico.x, self.hocico.y + dy, (46 + 270 * frena(u)) * E)
-			o:SetAlpha((1 - u) ^ 1.6 * 0.9 * fin)
+			local fuerza = 1 - (i - 1) * 0.12 -- las últimas, más suaves
+			poner(o, self.hocico.x, self.hocico.y + dy, (46 + 300 * frena(u)) * E, nil, z)
+			o:SetAlpha((1 - u) ^ 1.6 * 0.9 * fuerza * fin)
 		end
+	end
+
+	-- al terminar de aullar, un destello en el ojo del lobo
+	local oj = avance(t, 3.4, 4.05)
+	if oj <= 0 or oj >= 1 then
+		self.Ojo:SetAlpha(0)
+	else
+		local c = sin(oj * pi)
+		poner(self.Ojo, self.ojo.x, self.ojo.y + dy, (6 + 30 * c) * E, nil, z)
+		girar(self.Ojo, oj * 1.6)
+		self.Ojo:SetAlpha(c * 0.95 * fin)
 	end
 
 	-- A L F A, con su resplandor y la raya de luz que se abre debajo
 	local ma = self.marca
-	local m = tramo(t, 2.05, 2.6)
+	local m = tramo(t, 2.9, 3.45)
 	local my = ma.y - 10 * E * (1 - m)
 	poner(self.Marca, 0, my, ma.ancho, ma.alto)
 	self.Marca:SetAlpha(m * fin)
 	poner(self.Resplandor, 0, my, ma.ancho * 1.45, ma.alto * 3.2)
-	self.Resplandor:SetAlpha((0.3 * tramo(t, 2.05, 2.5) - 0.14 * tramo(t, 2.7, 3.6)) * fin)
-	local r = frena(avance(t, 2.35, 3.0))
+	self.Resplandor:SetAlpha((0.3 * tramo(t, 2.9, 3.35) - 0.14 * tramo(t, 3.55, 4.45)) * fin)
+	local r = frena(avance(t, 3.2, 3.85))
 	poner(self.Raya, 0, my - ma.alto / 2 - 7 * E, ma.ancho * 0.9 * r, max(1, floor(1.5 * E + 0.5)))
 	self.Raya:SetAlpha(0.85 * r * fin)
 
 	-- el brillo recorre las letras de izquierda a derecha
-	local b = avance(t, 2.6, 3.3)
+	local b = avance(t, 3.45, 4.15)
 	local izq = -ma.ancho / 2
 	for i, x in ipairs(self.Brillo) do
 		local centro = -0.12 + 1.24 * b + (i - 2) * 0.07
@@ -300,19 +409,19 @@ local function cuadro(self, t)
 	end
 
 	-- el destello al final del brillo, arriba de la última letra
-	local d = avance(t, 3.1, 3.75)
+	local d = avance(t, 3.95, 4.6)
 	if d <= 0 or d >= 1 then
 		self.Destello:SetAlpha(0)
 	else
-		local c = sin(d * math.pi)
+		local c = sin(d * pi)
 		poner(self.Destello, ma.ancho * 0.39, my + ma.alto * 0.36, (10 + 40 * c) * E)
-		if self.Destello.SetRotation then self.Destello:SetRotation(d * 1.4) end
+		girar(self.Destello, d * 1.4)
 		self.Destello:SetAlpha(c * fin)
 	end
 
 	-- el lema, la versión y cómo saltarla
-	self.Lema:SetAlpha(tramo(t, 2.5, 3.0) * fin)
-	self.Version:SetAlpha(0.9 * tramo(t, 2.75, 3.2) * fin)
+	self.Lema:SetAlpha(tramo(t, 3.35, 3.85) * fin)
+	self.Version:SetAlpha(0.9 * tramo(t, 3.6, 4.05) * fin)
 	self.Salto:SetAlpha(0.6 * tramo(t, 0.8, 1.4) * (1 - tramo(t, DURACION - FUNDIDO - 0.3, DURACION - FUNDIDO)))
 
 	-- lo que sigue se abre debajo mientras todo se funde
@@ -342,4 +451,8 @@ function M.Intro(fn, o)
 	cuadro(f, 0)
 	f:Show()
 	f:SetScript("OnUpdate", function(self) cuadro(self, ahora() - self.inicio) end)
+	avisar("ALFA_INTRO_INICIO")
 end
+
+-- Si la intro se está viendo ahora (para quien quiera esperar a que termine).
+function M.IntroVisible() return f and f:IsShown() and true or false end

@@ -238,7 +238,7 @@ M.EN = {
 	["Un error, una mejora o un comentario, directo al desarrollador"] = "A bug, an idea or a comment, straight to the developer",
 	["¿Qué nos quieres contar?"] = "What would you like to tell us?",
 	["Error"] = "Bug",
-	["Mejora"] = "Idea",
+	["Mejora [reporte]"] = "Idea",
 	["Comentario"] = "Comment",
 	["Qué hacías, qué esperabas y qué pasó. Si puedes, cómo hacer que vuelva a pasar."] = "What you were doing, what you expected and what happened. If you can, how to make it happen again.",
 	["Qué te gustaría que Alfa hiciera, o hiciera mejor, y para qué te serviría."] = "What you'd like Alfa to do, or do better, and how it would help you.",
@@ -307,6 +307,13 @@ M.EN = {
 	["El lobo te recibe al entrar"] = "The wolf greets you when you log in",
 	["Cada vez que entras al juego, la intro del lobo y la luna te da la bienvenida. Un clic o Esc la saltan."] = "Every time you log in, the wolf and moon intro welcomes you. A click or Esc skips it.",
 	["¡De vuelta en la manada, %s!"] = "Back with the pack, %s!",
+	-- Novedades 1.2.1
+	["Tu camino en el mapa y un aullido nuevo"] = "Your way on the map and a new howl",
+	["Un mapa de una pieza: al acercar ya no se ven pedazos pegados, y el terreno se une sin rayas ni cuadros."] = "A map in one piece: zooming in no longer shows pieces stuck together, and the terrain joins with no lines or squares.",
+	["Tu ruta dibujada en el mapa de Alfa hasta tu destino, que late para que lo encuentres; arriba ves a qué distancia está y cuánto falta, y un clic te muestra todo el camino."] = "Your route drawn on Alfa's map to your destination, which pulses so you spot it; at the top you see how far it is and how long is left, and one click shows you the whole way.",
+	["En grifo, la línea de tu vuelo en el mapa: por dónde vas, dónde aterrizas y el tiempo que falta."] = "On a gryphon, your flight's line on the map: where you are, where you land and the time left.",
+	["Tu lugar resalta más: tu flecha lleva un aro y un pulso suave, y se ve bien hasta en la nieve."] = "Your spot stands out more: your arrow has a ring and a soft pulse, and it shows well even on snow.",
+	["El lobo de la intro aúlla de pie sobre la peña, con un aullido largo que otro lobo contesta; y al entrar, Lya llega corriendo a decirte que te extrañó."] = "The intro wolf howls standing on the rock, a long howl another wolf answers; and when you log in, Lya comes running to tell you she missed you.",
 	-- Novedades 1.2.0
 	["Alfa estable: en orden y en manada"] = "Stable Alfa: in order and as a pack",
 	["Ajustes en orden: Comodidades y Calidad de vida son una sola página con pestañas, y todo lo de misiones vive en Ajustes > Misiones. Tu configuración se mudó sola, sin perder nada."] = "Settings in order: Conveniences and Quality of Life are one page with tabs, and everything about quests lives in Settings > Questing. Your settings moved on their own, nothing lost.",

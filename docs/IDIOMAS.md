@@ -12,6 +12,25 @@ Alfa se escribe en español y viene en 9 idiomas: español, inglés, alemán (de
 
 Una traducción se descarta si no conserva exactamente los huecos `%s`/`%d` **en el mismo orden** (el `string.format` de Lua no permite reordenarlos), los colores `|c…|r`, las texturas `|T…|t`, los enlaces `|H…|h` y los saltos de línea.
 
+## Claves con contexto
+
+Cada idioma es **una sola tabla** para todos los módulos: si dos módulos usan el mismo texto en español con sentidos distintos, en los otros idiomas los dos salen con la misma traducción y uno queda mal. Para separarlos, la clave lleva su contexto al final, entre corchetes: `L["Alto [calidad]"]`. `N.Textos` (Alfa_Nucleo) quita ese `[...]` final al mostrarla en español y cuando falta la traducción, así que en español se sigue leyendo «Alto». En `Textos.lua` el inglés va con la misma clave (`["Alto [calidad]"] = "High"`).
+
+Separadas hoy (traducciones en `textos/<locale>/zz_Separadas.json`, que se lee al final y gana sobre los demás archivos):
+
+| Clave con contexto | Dónde | La otra, sin contexto |
+|---|---|---|
+| `Alto [calidad]` | preajuste de Paisaje y gráficos | `Alto`: la altura de los marcos de Curación |
+| `Estadísticas [pesca]` | pestaña y tarjeta de Pesca | `Estadísticas`: los atributos de un objeto (Enciclopedia) |
+| `Guardar [conservar]` | consejo y filtro de Comercio | `Guardar`: botón de guardar (marcadores, planes, rutas) |
+| `Mejora [reporte]` | tipo de reporte de `/alfa reportar` | `Mejora`: la especialización del chamán |
+| `Misiones [bolsas]` | categoría de Bolsas (objetos de misión) | `Misiones`: misiones en todo lo demás |
+| `No [apagado]` | «Recordatorio del instructor» de Hoy | `No`: la respuesta del resumen de la bienvenida |
+| `Principal [mano]`, `Secundaria [mano]` | arma principal y secundaria (Hoy, tu clase) | `Principal`, `Secundaria`: profesiones (Talentos > Equipo) |
+| `Listo [estado]` | insignia «preparado» de Comodidades y Pesca | `Listo`: terminar un asistente, botón «Listo» |
+
+Para encontrar más: las claves en español que tienen un inglés distinto en dos `Textos.lua` (casi siempre es solo otra redacción, pero así salieron estas). `Protección [paladín]` y `Restauración [chamán]` usan lo mismo desde antes (con su propio `gsub`, que sigue sirviendo).
+
 ## Corregir una traducción
 
 1. Busca el texto en `textos/<locale>/` y cambia solo la traducción, nunca la clave en español.

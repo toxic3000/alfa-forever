@@ -1,5 +1,37 @@
 # Cambios de Alfa
 
+## 1.2.1 — Tu camino en el mapa y un aullido nuevo (18/11/2026)
+
+**Español**
+- Un mapa de una pieza: al acercar el mapa de Alfa ya no se ven pedazos pegados. Con el estilo «Terreno», del dibujo del continente pasas directo al terreno del minimapa, sin el dibujo de cada zona encima.
+- El terreno se une sin rayas: cada pedazo se mete apenas bajo su vecino, y donde falta uno la orilla se difumina en lugar de dejar un cuadro duro. Si un pedazo no llega a cargar, los demás aparecen igual: ya no quedan huecos.
+- Tu ruta dibujada en el mapa de Alfa, como en el mapa del juego y en el minimapa: desde donde estás hasta tu destino, con el mismo estilo de línea que elegiste. El destino late para que lo encuentres de un vistazo.
+- Arriba a la izquierda del mapa, una ficha te dice a dónde vas, a qué distancia (por el camino) y cuánto te falta. Un clic y el mapa se mueve para mostrarte todo el camino, de ti al destino.
+- En grifo, la línea de tu vuelo en el mapa: por dónde vuela el maestro de vuelo, desde donde vas hasta donde aterrizas, con el tiempo que falta. Se va sola al aterrizar y sigue si recargas en el aire. Se apaga en las capas del mapa («Tu vuelo en el mapa»).
+- Tu lugar resalta más: tu flecha lleva una sombra que la despega del suelo (se ve hasta en la nieve), un aro de color y un pulso suave. Con «Menos movimiento» el pulso se queda quieto.
+- El lobo de la intro estrena figura: ahora aúlla de pie sobre la peña, con la cabeza alzada a la luna.
+- Una intro más viva: una estrella fugaz, chispas de luz, el lobo toma aire y suelta un aullido largo, la luna le contesta y al final le brilla el ojo.
+- El aullido es más largo y otro lobo contesta a lo lejos, con sonidos del propio juego. Puedes compararlos con /alfa bienvenida aullido corto, largo o manada.
+- Al entrar al juego, Lya llega corriendo y te dice que te extrañó.
+- En alemán, francés, portugués, ruso, coreano y chino, varios textos ya dicen su palabra correcta: Guardar en los marcadores del mapa, el preajuste Alto de Paisaje, Mejora en /alfa reportar, Estadísticas de Pesca, Misiones en Bolsas, el arma principal y secundaria, y Listo.
+- Nuevo: el manual de Alfa en PDF, en los 10 idiomas, con capturas y pasos para cada parte del addon. Se descarga junto a cada versión en GitHub.
+- La prueba de cada versión ahora también revisa la línea del camino, el vuelo, el destino y los huecos del terreno.
+
+**English**
+- A map in one piece: zooming in on Alfa's map no longer shows pieces stuck together. With the "Terrain" style you go straight from the continent's painting to the minimap's terrain, with no zone painting on top.
+- The terrain joins with no lines: each piece tucks just under its neighbour, and where one is missing the edge fades out instead of leaving a hard square. If a piece fails to load, the rest still show: no more holes.
+- Your route drawn on Alfa's map, as on the game's map and the minimap: from where you are to your destination, in the line style you chose. The destination pulses so you spot it at a glance.
+- At the top left of the map, a card tells you where you're going, how far it is (along the way) and how long is left. One click and the map moves to show you the whole way, from you to the destination.
+- On a gryphon, your flight's line on the map: the way the flight master flies, from where you are to where you land, with the time left. It goes away on landing and stays if you reload in the air. Turn it off in the map's layers ("Your flight on the map").
+- Your spot stands out more: your arrow has a shadow that lifts it off the ground (it shows even on snow), a coloured ring and a soft pulse. With "Reduce motion" the pulse stays still.
+- The intro wolf has a new look: it now howls standing on the rock, head raised to the moon.
+- A livelier intro: a shooting star, sparks of light, the wolf takes a breath and lets out a long howl, the moon answers, and its eye gleams at the end.
+- The howl is longer, with another wolf answering in the distance, using the game's own sounds. Compare them with /alfa bienvenida aullido corto, largo or manada.
+- When you log in, Lya comes running and tells you she missed you.
+- In German, French, Portuguese, Russian, Korean and Chinese, several texts now use their right word: Save on the map's markers, Landscape's High preset, Idea in /alfa reportar, Fishing's Statistics, Quest items in Bags, main and off hand, and Ready.
+- New: Alfa's manual as a PDF, in all 10 languages, with screenshots and steps for every part of the addon. Download it with each release on GitHub.
+- Each release's test now also checks the route line, the flight, the destination and the terrain's holes.
+
 ## 1.2.0 — Alfa estable: en orden y en manada (18/11/2026)
 
 **Español**

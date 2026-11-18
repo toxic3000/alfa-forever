@@ -120,16 +120,96 @@ end
 --                                             y aullando (1.x)
 M.SONIDOS = { 569109, 564211 }
 
-local function sonar(id)
+-- El aullido largo de la intro (1.2.1). El juego clásico no trae un aullido
+-- largo en un solo archivo, así que se arma con los suyos: cuando termina uno
+-- empieza el siguiente (C_Sound.IsPlaying), y otro lobo contesta a lo lejos
+-- en el canal de ambiente (que suena más bajo, como un eco del valle).
+--   564211  Sound/CREATURE/Wolf/WolfStandVar4.ogg   el lobo quieto, aullando
+--   564217  Sound/CREATURE/Wolf/WolfStandVar4b.ogg  la otra toma del mismo aullido
+-- Cada paso: ids (se prueba en orden), canal y cuándo: tras = "fin" (cuando
+-- termina el anterior) o segundos después de que empezó el anterior.
+-- Para compararlos en el juego: /alfa bienvenida aullido corto|largo|manada
+-- (suena y queda como el de la intro).
+M.AULLIDOS = {
+	corto = { { ids = { 569109, 564211 } } },
+	largo = {
+		{ ids = { 564211, 569109 } },
+		{ ids = { 564217 }, tras = "fin" },
+		{ ids = { 564211 }, canal = "Ambience", tras = 0.55 },
+	},
+	manada = {
+		{ ids = { 564211, 569109 } },
+		{ ids = { 564217 }, tras = "fin" },
+		{ ids = { 564211 }, canal = "Ambience", tras = 0.45 },
+		{ ids = { 564217 }, canal = "Ambience", tras = "fin" },
+		{ ids = { 564211 }, canal = "Ambience", tras = 0.7 },
+	},
+}
+M.AULLIDO_INTRO = "largo" -- el de fábrica; bienvenida.aullidoIntro lo cambia
+
+local function sonar(id, canal)
 	local tocar = A.PlaySoundFile or PlaySoundFile
 	if not tocar then return false end
-	local ok, va = pcall(tocar, id, "SFX")
-	return ok and va and true or false
+	local ok, va, mango = pcall(tocar, id, canal or "SFX")
+	if ok and va then return true, mango end
+	return false
+end
+
+local turnoAullido = 0
+local function sonando(mango)
+	if not (mango and C_Sound and C_Sound.IsPlaying) then return nil end
+	local ok, si = pcall(C_Sound.IsPlaying, mango)
+	if not ok or (issecretvalue and issecretvalue(si)) then return nil end
+	return si and true or false
+end
+
+-- Toca los pasos de un aullido, uno tras otro. Un aullido nuevo calla al
+-- que todavía estaba encadenando pasos.
+local function secuencia(pasos)
+	turnoAullido = turnoAullido + 1
+	local mio = turnoAullido
+	local i, mango = 0, nil
+	local function siguiente()
+		if mio ~= turnoAullido then return end
+		i = i + 1
+		local p = pasos[i]
+		if not p then return end
+		local va = false
+		for _, id in ipairs(p.ids) do
+			local ok, m = sonar(id, p.canal)
+			if ok then va, mango = true, m break end
+		end
+		if i == 1 and not va then return end -- sin sonido: nada más
+		local q = pasos[i + 1]
+		if not q then return end
+		if q.tras == "fin" and sonando(mango) ~= nil then
+			-- espera a que termine, mirando cada décima (8 s como mucho)
+			local vueltas = 0
+			local function mirar()
+				if mio ~= turnoAullido then return end
+				vueltas = vueltas + 1
+				if sonando(mango) and vueltas < 80 then K.Despues(0.1, mirar) else siguiente() end
+			end
+			K.Despues(0.1, mirar)
+		else
+			K.Despues(tonumber(q.tras) or 1.6, siguiente)
+		end
+	end
+	siguiente()
+	return true
 end
 
 -- forzar: suena aunque el ajuste esté apagado (el botón "Escuchar").
-function M.Aullar(forzar)
+-- cual: "intro" (el aullido largo de la intro) o el nombre de uno de M.AULLIDOS;
+-- sin él, el corto de siempre (al abrir la ventana de Alfa y "Escuchar").
+function M.Aullar(forzar, cual)
 	if not forzar and not N.Get(ID, "aullido") then return false end
+	if cual == "intro" then
+		cual = N.Get(ID, "aullidoIntro")
+		if not M.AULLIDOS[cual or ""] then cual = M.AULLIDO_INTRO end
+	end
+	local pasos = M.AULLIDOS[cual or ""]
+	if pasos and #pasos > 1 then return secuencia(pasos) end
 	for _, id in ipairs(M.SONIDOS) do
 		if sonar(id) then return true end
 	end
@@ -345,7 +425,14 @@ A.On("ROUTE_CHOICE_HIDDEN", function() intentarTodo() end)
 -- Comando y contrato
 ---------------------------------------------------------------------------
 A.RegisterCommand("bienvenida", function(resto)
+	local cual = type(resto) == "string" and resto:lower():match("^%s*aullido%s*(%S*)")
 	resto = type(resto) == "string" and resto:lower():match("^%s*(%S*)") or ""
+	-- /alfa bienvenida aullido [corto|largo|manada]: suena y queda como el de la intro
+	if cual then
+		if M.AULLIDOS[cual] then N.Set(ID, "aullidoIntro", cual) end
+		M.Aullar(true, "intro")
+		return
+	end
 	local portada = resto == "novedades" or resto == "portada" or resto == "nuevo"
 	M.Abrir("pedido", (portada and not M.Pendiente()) and "portada" or "asistente")
 end, L["abre la configuración de Alfa (también: novedades)"])

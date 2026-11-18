@@ -426,7 +426,7 @@ end
 ---------------------------------------------------------------------------
 
 local FILTROS = {
-	{ "todos", "Todos" }, { "vender", "Vender" }, { "subastar", "Subastar" }, { "transformar", "Transformar" }, { "guardar", "Guardar" },
+	{ "todos", "Todos" }, { "vender", "Vender" }, { "subastar", "Subastar" }, { "transformar", "Transformar" }, { "guardar", "Guardar [conservar]" },
 }
 
 local function bloqueLista(ui, padre)

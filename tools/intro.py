@@ -17,6 +17,10 @@ Escribe en src/Alfa_Bienvenida/Media, como TGA de 32 bits sin comprimir:
   intro-destello.tga     el destello de la marca (64): cuatro puntas finas
   intro-marca.tga        A L F A en la letra de Alfa (512 x 64), para la marca
                          y su brillo (que la recorre por sus coordenadas)
+  intro-fugaz.tga        una estrella fugaz (256 x 32): la estela y su cabeza
+
+El lobo: hay tres (LOBOS) y ELEGIDO dice cuál se dibuja; la punta de su hocico
+y su ojo se escriben solos en Intro.lua.
 
 Todas son blancas (o grises) para que el juego las tiña con los colores de
 cada estilo (alfa, clásico, cristal). Con una carpeta, deja ahí una hoja PNG
@@ -25,6 +29,7 @@ para revisarlas sobre fondo oscuro.
 import math
 import pathlib
 import random
+import re
 import sys
 
 from PIL import Image, ImageChops, ImageDraw, ImageFilter
@@ -174,7 +179,9 @@ def destello():
 # El lobo sentado que aúlla, sobre su peña (512 unidades; y hacia abajo).
 # De perfil mirando a la derecha, la cabeza alzada y el hocico hacia la luna.
 # ---------------------------------------------------------------------------
-HOCICO = (350, 76)  # la punta del hocico: de aquí salen las ondas (Intro.lua)
+# Hay tres lobos para elegir (LOBOS, abajo): ELEGIDO dice cuál se dibuja. La
+# punta de su hocico (de ahí salen las ondas) y su ojo (el destello al final
+# del aullido) se escriben solos en Intro.lua (la línea "local LOBO = ...").
 
 # El contorno (1.2.0, redibujado): cada punto es (x, y, tipo). "s" es un
 # punto liso (la curva pasa por él sin quiebre) y "c" una esquina (la punta
@@ -224,6 +231,56 @@ PATA = [
     (318, 300, "s"), (322, 336, "s"), (322, 372, "s"), (328, 386, "s"), (331, 395, "c"),
     (313, 395, "c"), (314, 372, "s"), (312, 334, "s"),
 ]
+
+# El lobo de pie (opción A, 1.2.1): parado en la peña sobre sus cuatro patas,
+# el cuello con su melena y la cabeza alzada a la luna, la boca abierta al
+# aullar y la oreja echada hacia atrás; la cola tupida cuelga detrás.
+DE_PIE = [
+    # la punta de la cola y su orilla de arriba hasta la grupa
+    (92, 342, "c"), (88, 318, "s"), (93, 292, "s"), (107, 268, "s"), (128, 250, "s"), (152, 239, "s"),
+    # el lomo hasta la cruz
+    (182, 232, "s"), (216, 230, "s"), (248, 228, "s"), (266, 224, "s"), (284, 213, "s"),
+    # la melena de la nuca, con sus mechones
+    (296, 198, "s"), (293, 187, "c"), (305, 181, "s"), (302, 169, "c"), (314, 163, "s"), (316, 152, "s"),
+    # la nuca y la oreja, echada hacia atrás
+    (321, 138, "s"), (324, 127, "c"), (309, 100, "c"), (334, 112, "c"),
+    # la frente y el hocico en cuña, hasta la nariz
+    (341, 107, "s"), (349, 104, "s"), (360, 95, "s"), (371, 85, "s"), (381, 76, "s"), (388, 70, "c"),
+    (395, 74, "c"), (397, 81, "c"),
+    # la mandíbula de arriba, la boca abierta y la de abajo
+    (387, 93, "s"), (376, 107, "s"), (367, 122, "c"), (386, 110, "c"), (384, 118, "s"), (373, 131, "c"),
+    # la garganta con su melena y el pecho
+    (366, 142, "s"), (369, 148, "c"), (359, 152, "c"), (367, 164, "c"), (357, 169, "c"), (363, 181, "c"),
+    (360, 203, "s"), (356, 231, "s"), (350, 258, "s"), (347, 279, "s"),
+    # la pata de adelante y su mano
+    (345, 302, "s"), (344, 340, "s"), (345, 371, "s"), (351, 386, "s"), (363, 390, "c"), (363, 396, "c"),
+    (330, 396, "c"), (328, 383, "s"), (325, 350, "s"), (322, 314, "s"), (316, 301, "c"),
+    # el vientre
+    (300, 303, "s"), (276, 306, "s"), (252, 301, "s"), (231, 293, "c"),
+    # la pata de atrás: la rodilla, el corvejón y la mano
+    (238, 312, "s"), (234, 331, "s"), (224, 350, "s"), (220, 367, "s"), (220, 384, "s"), (232, 390, "c"),
+    (232, 396, "c"), (200, 396, "c"), (199, 382, "s"), (194, 352, "c"), (186, 320, "s"), (176, 296, "s"),
+    # el anca y la orilla de abajo de la cola
+    (164, 277, "s"), (150, 269, "s"), (134, 285, "s"), (116, 305, "s"), (102, 327, "s"),
+]
+# Las patas del otro lado: la de adelante un poco atrás y la de atrás un poco adelante.
+DE_PIE_PATAS = [
+    [(320, 296, "s"), (318, 330, "s"), (316, 365, "s"), (318, 384, "s"), (324, 396, "c"), (298, 396, "c"),
+     (300, 382, "s"), (300, 350, "s"), (302, 300, "s")],
+    [(246, 296, "s"), (256, 316, "s"), (254, 336, "s"), (246, 356, "s"), (244, 384, "s"), (254, 396, "c"),
+     (228, 396, "c"), (228, 378, "s"), (234, 346, "s"), (240, 318, "s")],
+]
+
+# Los lobos: su contorno, sus otras patas, la punta del hocico, el ojo y si
+# lleva facetas (las líneas del emblema de Alfa, encendidas por la luna).
+LOBOS = {
+    "sentado": {"contorno": LOBO, "patas": [], "hocico": (350, 76), "ojo": (309, 109), "facetas": False},
+    "de-pie": {"contorno": DE_PIE, "patas": DE_PIE_PATAS, "hocico": (395, 75), "ojo": (344, 113), "facetas": False},
+    "facetado": {"contorno": LOBO, "patas": [], "hocico": (350, 76), "ojo": (309, 109), "facetas": True},
+}
+ELEGIDO = "de-pie"    # Toxic eligió el de pie (1.2.1); los otros: "sentado" (el de la 1.2.0) y "facetado"
+HOCICO = LOBOS[ELEGIDO]["hocico"]
+OJO = LOBOS[ELEGIDO]["ojo"]
 
 
 def _curva(puntos, pasos=12):
@@ -277,7 +334,10 @@ def _silueta():
     s = 512 * F
     lobo = Image.new("L", (s, s), 0)
     d = ImageDraw.Draw(lobo)
-    d.polygon(_escalar(_curva(LOBO)), fill=255)
+    elegido = LOBOS[ELEGIDO]
+    for pata in elegido["patas"]:
+        d.polygon(_escalar(_curva(pata)), fill=255)
+    d.polygon(_escalar(_curva(elegido["contorno"])), fill=255)
     pena = Image.new("L", (s, s), 0)
     ImageDraw.Draw(pena).polygon(_escalar(PENA), fill=255)
     # La peña se pierde a los lados y hacia abajo.
@@ -339,7 +399,97 @@ def lobo_borde():
     brillo = ImageChops.subtract(brillo, solo)
     brillo = ImageChops.multiply(brillo, Image.new("L", (s, s), 90))
     a = ImageChops.lighter(a, ImageChops.multiply(brillo, peso))
+    if LOBOS[ELEGIDO]["facetas"]:
+        a = ImageChops.lighter(a, _facetas(LOBOS[ELEGIDO]["contorno"], solo))
     return blanco_con_alfa(a.resize((512, 512), Image.LANCZOS))
+
+
+def _delaunay(pts):
+    """Triángulos de Delaunay (Bowyer-Watson) de una lista de puntos (x, y)."""
+    grande = [(-3000.0, -3000.0), (3000.0, -3000.0), (0.0, 3000.0)]
+    todos = list(pts) + grande
+    n = len(pts)
+    tris = [(n, n + 1, n + 2)]
+
+    def circulo(t):
+        (ax, ay), (bx, by), (cx, cy) = (todos[i] for i in t)
+        d = 2 * (ax * (by - cy) + bx * (cy - ay) + cx * (ay - by))
+        if abs(d) < 1e-9:
+            return 0.0, 0.0, float("inf")
+        ux = ((ax * ax + ay * ay) * (by - cy) + (bx * bx + by * by) * (cy - ay) + (cx * cx + cy * cy) * (ay - by)) / d
+        uy = ((ax * ax + ay * ay) * (cx - bx) + (bx * bx + by * by) * (ax - cx) + (cx * cx + cy * cy) * (bx - ax)) / d
+        return ux, uy, (ax - ux) ** 2 + (ay - uy) ** 2
+
+    for i in range(n):
+        x, y = todos[i]
+        malos = [t for t in tris if (lambda c: (x - c[0]) ** 2 + (y - c[1]) ** 2 < c[2])(circulo(t))]
+        orillas = {}
+        for t in malos:
+            for a, b in ((t[0], t[1]), (t[1], t[2]), (t[2], t[0])):
+                k = (min(a, b), max(a, b))
+                orillas[k] = orillas.get(k, 0) + 1
+        tris = [t for t in tris if t not in malos]
+        for (a, b), veces in orillas.items():
+            if veces == 1:
+                tris.append((a, b, i))
+    return [t for t in tris if max(t) < n]
+
+
+def _facetas(contorno, solo):
+    """Las facetas del emblema de Alfa sobre el lobo: una triangulación grande
+    de su silueta, en líneas finas, más encendidas del lado de la luna (arriba
+    a la derecha). Siempre las mismas (semilla fija)."""
+    s = 512 * F
+    r = random.Random(3)
+    borde = _curva(contorno, pasos=3)
+    pts = [p for i, p in enumerate(borde) if i % 7 == 0]
+    dentro = solo.load()
+    caja = solo.getbbox()
+    x0, y0, x1, y1 = [v / F for v in caja]
+    meta, intentos = len(pts) + 14, 0
+    while len(pts) < meta and intentos < 20000:
+        intentos += 1
+        x, y = r.uniform(x0, x1), r.uniform(y0, y1)
+        if dentro[int(x * F), int(y * F)] > 200 and all((x - a) ** 2 + (y - b) ** 2 > 34 ** 2 for a, b in pts):
+            pts.append((x, y))
+    lineas = Image.new("L", (s, s), 0)
+    d = ImageDraw.Draw(lineas)
+    hechas = set()
+    for t in _delaunay(pts):
+        cx = sum(pts[i][0] for i in t) / 3
+        cy = sum(pts[i][1] for i in t) / 3
+        if dentro[min(s - 1, int(cx * F)), min(s - 1, int(cy * F))] < 128:
+            continue
+        for a, b in ((t[0], t[1]), (t[1], t[2]), (t[2], t[0])):
+            k = (min(a, b), max(a, b))
+            if k in hechas:
+                continue
+            hechas.add(k)
+            (ax, ay), (bx, by) = pts[a], pts[b]
+            mx, my = (ax + bx) / 2, (ay + by) / 2
+            luz = max(0.0, min(1.0, 0.25 + (mx - 200) / 260 + (300 - my) / 420))
+            d.line([(ax * F, ay * F), (bx * F, by * F)], fill=int(25 + 120 * luz), width=F)
+    lineas = ImageChops.multiply(lineas, solo.filter(ImageFilter.MinFilter(F * 2 + 1)))
+    return lineas.filter(ImageFilter.GaussianBlur(F * 0.5))
+
+
+def fugaz():
+    """Una estrella fugaz (256 x 32): una estela que se apaga hacia la izquierda
+    y una cabeza brillante a la derecha. Intro.lua la gira y la cruza por el cielo."""
+    w, h = 256, 32
+    im = Image.new("L", (w * F, h * F), 0)
+    d = ImageDraw.Draw(im)
+    cy = h * F / 2
+    for i in range(w * F):
+        t = i / (w * F)               # 0 la cola, 1 la cabeza
+        grosor = (0.4 + 2.6 * t ** 2) * F
+        v = int(255 * t ** 1.8)
+        d.line([(i, cy - grosor / 2), (i, cy + grosor / 2)], fill=v)
+    cab = Image.new("L", (w * F, h * F), 0)
+    ImageDraw.Draw(cab).ellipse((w * F - 12 * F, cy - 6 * F, w * F - 0 * F, cy + 6 * F), fill=255)
+    cab = cab.filter(ImageFilter.GaussianBlur(F * 2.2))
+    im = ImageChops.lighter(im.filter(ImageFilter.GaussianBlur(F * 0.8)), cab)
+    return blanco_con_alfa(im.resize((w, h), Image.LANCZOS))
 
 
 def onda():
@@ -388,7 +538,23 @@ def marca():
 TEXTURAS = {
     "intro-luna": luna, "intro-halo": halo, "intro-estrella": estrella, "intro-destello": destello,
     "intro-lobo": lobo, "intro-lobo-borde": lobo_borde, "intro-onda": onda, "intro-marca": marca,
+    "intro-fugaz": fugaz,
 }
+INTRO_LUA = RAIZ / "src" / "Alfa_Bienvenida" / "Intro.lua"
+
+
+def anotar_lobo():
+    """Escribe en Intro.lua la punta del hocico y el ojo del lobo elegido."""
+    texto = INTRO_LUA.read_text(encoding="utf-8")
+    linea = "local LOBO = { hocico = { %d, %d }, ojo = { %d, %d } } -- tools/intro.py (%s)" % (
+        HOCICO[0], HOCICO[1], OJO[0], OJO[1], ELEGIDO)
+    nuevo, n = re.subn(r"^local LOBO = \{.*$", linea, texto, count=1, flags=re.M)
+    if n != 1:
+        print("AVISO: no encontré la línea 'local LOBO = ...' en Intro.lua")
+        return
+    if nuevo != texto:
+        INTRO_LUA.write_text(nuevo, encoding="utf-8")
+    print("Intro.lua:", linea)
 
 
 def hoja(imagenes: dict, destino: pathlib.Path):
@@ -433,6 +599,7 @@ def main() -> int:
         t.save(SALIDA / f"{nombre}.tga")
         hechas[nombre] = t
         print(f"{nombre}.tga {t.size[0]}x{t.size[1]}")
+    anotar_lobo()
     if len(sys.argv) > 1:
         carpeta = pathlib.Path(sys.argv[1])
         carpeta.mkdir(parents=True, exist_ok=True)

@@ -145,7 +145,7 @@ local function estado(ui)
 		local est = M.Estado()
 		d.titulo, d.tono = L["Modo pesca abierto"], "acento"
 		d.texto = est.texto
-		d.estado = { texto = M.Pescando() and L["Pescando"] or L["Listo"], tono = "acento" }
+		d.estado = { texto = M.Pescando() and L["Pescando"] or L["Listo [estado]"], tono = "acento" }
 		d.accion = { texto = L["Cerrar el modo pesca"], icono = "ic-cerrar", alClic = function() M.CerrarModo() end }
 		d.secundaria = { texto = L["Abrir el diario"], alClic = function() if M.V then M.V.Abrir("diario") end end }
 	else
@@ -153,7 +153,7 @@ local function estado(ui)
 		d.titulo, d.tono = L["Listo para pescar"], "exito"
 		d.texto = k and format(L["Abre el modo pesca (aquí, con /alfa pesca o al ponerte la caña) y pulsa %s: tu tecla te pone el equipo, el cebo, lanza y recoge cuando salpica."], k)
 			or L["Abre el modo pesca y elige tu tecla: te pone el equipo, el cebo, lanza y recoge cuando salpica."]
-		d.estado = { texto = L["Listo"], tono = "exito" }
+		d.estado = { texto = L["Listo [estado]"], tono = "exito" }
 		d.accion = { texto = L["Abrir el modo pesca"], icono = "ic-seguir", alClic = abrir }
 		d.secundaria = { texto = L["Elegir mi tecla"], alClic = function() if ui.tecla then ui.tecla:Capturar() end end }
 	end
@@ -180,7 +180,7 @@ local function accesos()
 	local metas = #M.MetasGuardadas()
 	return {
 		{ icono = M.ICONO.diario, titulo = L["Diario de pesca"], texto = format(L["%d especies de %d en el catálogo."], M.Especies(), #M.CATALOGO), alClic = abrir("diario") },
-		{ icono = "ic-nivel", titulo = L["Estadísticas"], texto = format(L["Esta sesión: %d capturas de %d lanzamientos. Desde siempre: %d."], s.capturas, s.lanzamientos, v.capturas), alClic = abrir("estadisticas") },
+		{ icono = "ic-nivel", titulo = L["Estadísticas [pesca]"], texto = format(L["Esta sesión: %d capturas de %d lanzamientos. Desde siempre: %d."], s.capturas, s.lanzamientos, v.capturas), alClic = abrir("estadisticas") },
 		{ icono = "ic-guia", titulo = L["Guía de pesca"], texto = L["De 1 a 300, dónde pescar cerca de ti, equipo, cebos, misiones y el concurso."], alClic = abrir("guia") },
 		{ icono = M.ICONO.fogata, titulo = L["Cocina junto al agua"], texto = L["Tus recetas de pescado, la cola de cocina y la fogata."], alClic = abrir("cocina") },
 		{ icono = M.ICONO.meta, titulo = L["Metas de pesca"], texto = metas > 0 and format(L["%d metas en marcha."], metas) or L["Ponte una meta: un pez, capturas, tiempo o valor."], alClic = function() M.Metas.Alternar(true) end },

@@ -31,6 +31,13 @@ M.NOVEDADES = {
 --   { version, titulo, puntos = { { icono (ic-*), texto } } }
 ---------------------------------------------------------------------------
 M.NOTAS = {
+	{ version = "1.2.1", titulo = "Tu camino en el mapa y un aullido nuevo", puntos = {
+		{ "ic-mapa", "Un mapa de una pieza: al acercar ya no se ven pedazos pegados, y el terreno se une sin rayas ni cuadros." },
+		{ "ic-ruta", "Tu ruta dibujada en el mapa de Alfa hasta tu destino, que late para que lo encuentres; arriba ves a qué distancia está y cuánto falta, y un clic te muestra todo el camino." },
+		{ "ic-flecha", "En grifo, la línea de tu vuelo en el mapa: por dónde vas, dónde aterrizas y el tiempo que falta." },
+		{ "ic-huella", "Tu lugar resalta más: tu flecha lleva un aro y un pulso suave, y se ve bien hasta en la nieve." },
+		{ "ic-lobo", "El lobo de la intro aúlla de pie sobre la peña, con un aullido largo que otro lobo contesta; y al entrar, Lya llega corriendo a decirte que te extrañó." },
+	} },
 	{ version = "1.2.0", titulo = "Alfa estable: en orden y en manada", puntos = {
 		{ "ic-ajustes", "Ajustes en orden: Comodidades y Calidad de vida son una sola página con pestañas, y todo lo de misiones vive en Ajustes > Misiones. Tu configuración se mudó sola, sin perder nada." },
 		{ "ic-lobo", "El lobo te recibe cada vez que entras al juego, redibujado: cabeza, orejas y hocico de lobo de verdad." },

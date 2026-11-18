@@ -44,7 +44,7 @@ local INVITACION = "https://discord.gg/hUNjA6BJwh"
 
 local TIPOS = {
 	{ valor = "error", texto = "Error", ayuda = "Qué hacías, qué esperabas y qué pasó. Si puedes, cómo hacer que vuelva a pasar." },
-	{ valor = "mejora", texto = "Mejora", ayuda = "Qué te gustaría que Alfa hiciera, o hiciera mejor, y para qué te serviría." },
+	{ valor = "mejora", texto = "Mejora [reporte]", ayuda = "Qué te gustaría que Alfa hiciera, o hiciera mejor, y para qué te serviría." },
 	{ valor = "comentario", texto = "Comentario", ayuda = "Lo que quieras contarle al desarrollador de Alfa." },
 }
 

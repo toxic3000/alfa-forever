@@ -632,32 +632,94 @@ local function dibujarGrupo()
 	for i = n + 1, #grupo do grupo[i]:Hide() end
 end
 
+-- Un aro que crece y se desvanece, una y otra vez (tu lugar y el destino
+-- del camino, Trayecto.lua). de, a: su escala al empezar y al terminar.
+local function latir(marco, de, a, segs)
+	if not marco.CreateAnimationGroup then return end
+	local ag = marco:CreateAnimationGroup()
+	ag:SetLooping("REPEAT")
+	local s = ag:CreateAnimation("Scale")
+	if s.SetScaleFrom then
+		s:SetScaleFrom(de, de)
+		s:SetScaleTo(a, a)
+	elseif s.SetScale then
+		s:SetScale(a / de, a / de)
+	end
+	s:SetDuration(segs)
+	if s.SetSmoothing then s:SetSmoothing("OUT") end
+	local f = ag:CreateAnimation("Alpha")
+	if f.SetFromAlpha then
+		f:SetFromAlpha(0.95)
+		f:SetToAlpha(0)
+	end
+	f:SetDuration(segs)
+	marco.latido = ag
+end
+Mc.Latir = latir
+
+-- Que el latido corra, o se quede quieto con "menos movimiento".
+local function latido(marco)
+	local ag = marco.latido
+	if not ag then return end
+	if A.Get("ui.reduceMotion") then
+		if ag:IsPlaying() then ag:Stop() end
+		marco:Hide()
+	else
+		marco:Show()
+		if not ag:IsPlaying() then ag:Play() end
+	end
+end
+Mc.Latiendo = latido
+
+-- Tú, resaltado (1.2.1): una sombra que despega la flecha del suelo (en la
+-- nieve o la arena se perdía), el halo y un aro fino del color de acento, y
+-- un pulso que sale de ti cada par de segundos.
 local function dibujarYo()
 	if not yo then
 		yo = CreateFrame("Frame", nil, encima)
-		yo:SetSize(30, 30)
+		yo:SetSize(32, 32)
 		yo:SetFrameLevel(encima:GetFrameLevel() + 70)
+		yo.pulso = CreateFrame("Frame", nil, yo)
+		yo.pulso:SetSize(30, 30)
+		yo.pulso:SetPoint("CENTER")
+		yo.pulso.t = yo.pulso:CreateTexture(nil, "BACKGROUND")
+		yo.pulso.t:SetTexture(NAV .. "ring")
+		yo.pulso.t:SetAllPoints()
+		latir(yo.pulso, 0.9, 2.6, 2)
 		yo.halo = yo:CreateTexture(nil, "BACKGROUND")
 		yo.halo:SetTexture(MAPA .. "glow")
-		yo.halo:SetSize(46, 46)
+		yo.halo:SetSize(60, 60)
 		yo.halo:SetPoint("CENTER")
+		yo.sombra = yo:CreateTexture(nil, "BORDER")
+		yo.sombra:SetTexture(MAPA .. "glow")
+		yo.sombra:SetSize(42, 42)
+		yo.sombra:SetPoint("CENTER")
+		yo.aro = yo:CreateTexture(nil, "ARTWORK")
+		yo.aro:SetTexture(NAV .. "ring")
+		yo.aro:SetSize(30, 30)
+		yo.aro:SetPoint("CENTER")
 		yo.flecha = yo:CreateTexture(nil, "OVERLAY")
 		yo.flecha:SetTexture(FLECHA)
-		yo.flecha:SetSize(30, 30)
+		yo.flecha:SetSize(32, 32)
 		yo.flecha:SetPoint("CENTER")
 	end
 	local u, v = Geo.Jugador()
 	if not u then
+		if yo.pulso.latido and yo.pulso.latido:IsPlaying() then yo.pulso.latido:Stop() end
 		yo:Hide()
 		return
 	end
 	local x, y = aVista(u, v)
 	local r, g, b = color("accent")
-	yo.halo:SetVertexColor(r, g, b, 0.45)
+	yo.halo:SetVertexColor(r, g, b, 0.55)
+	yo.aro:SetVertexColor(r, g, b, 0.9)
+	yo.pulso.t:SetVertexColor(r, g, b, 1)
+	yo.sombra:SetVertexColor(color("scrim", 0.7))
 	local f = Geo.Orientacion()
 	if f and yo.flecha.SetRotation then yo.flecha:SetRotation(f) end
 	fijar(yo, x, y)
 	yo:Show()
+	latido(yo.pulso)
 end
 
 ---------------------------------------------------------------------------
@@ -751,3 +813,5 @@ function Mc.PrepararDatos()
 end
 
 function Mc.CuantosPines() return enUso end
+-- Tu marca en el mapa (para pruebas).
+function Mc.Yo() return yo end

@@ -1122,7 +1122,7 @@ local function gruposAvisos(padre)
 		ent:Fila({ titulo = L["Nota de entrenar en tu guía"], texto = L["Con el entrenador más cercano en tu camino."],
 			control = function(fila)
 				return K.Desplegable(fila, { clave = "behavior.trainReminder", ancho = 170, opciones = {
-					{ valor = "2", texto = L["Cada 2 niveles"] }, { valor = "1", texto = L["Cada nivel"] }, { valor = "off", texto = L["No"] } } })
+					{ valor = "2", texto = L["Cada 2 niveles"] }, { valor = "1", texto = L["Cada nivel"] }, { valor = "off", texto = L["No [apagado]"] } } })
 			end })
 	end
 	g[#g + 1] = ent

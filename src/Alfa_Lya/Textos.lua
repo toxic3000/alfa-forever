@@ -1129,6 +1129,12 @@ M.EN = {
 	["Ver el Legado"] = "See the Legacy",
 	["De tu gente todavía no sé mucho. ¿Te cuento otra cosa?"] = "I don't know much about your people yet. Shall I tell you something else?",
 	-- Fin de la plática de Lya
+	-- Al entrar al juego: llega corriendo (1.2.1)
+	["¡%s! Te extrañé mucho. Vine corriendo en cuanto te vi llegar."] = "%s! I missed you so much. I came running the moment I saw you.",
+	["¡Ya llegaste, %s! Te extrañé. ¿A dónde vamos hoy?"] = "You're here, %s! I missed you. Where are we off to today?",
+	["¡Ahí estás, %s! Te estaba esperando… te extrañé."] = "There you are, %s! I was waiting for you… I missed you.",
+	["¡%s, volviste! Te extrañé tanto que no paraba de mover la cola."] = "%s, you're back! I missed you so much I couldn't stop wagging my tail.",
+	["¡Te extrañé, %s! Corrí hasta aquí para verte."] = "I missed you, %s! I ran all the way here to see you.",
 }
 
 M.L = AlfaNucleo.Textos(M.EN)

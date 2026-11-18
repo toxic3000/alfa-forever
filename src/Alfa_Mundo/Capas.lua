@@ -350,6 +350,9 @@ motor(G_ESENCIAL, "guia.mapa", "nav.worldPins", L["Siguiente paso de la guía"],
 -- Guía
 motor(G_GUIA, "guia.ruta", "nav.routeLines", L["Línea de la ruta"],
 	L["El camino hasta el destino dibujado en el mapa."], UI .. "icon-goto", "accent", { esencial = true })
+motor(G_GUIA, "guia.vuelo", ID .. ".vueloEnMapa", L["Tu vuelo en el mapa"],
+	L["Mientras vuelas en grifo, la línea de tu viaje en el mapa de Alfa: por dónde vas y dónde aterrizas."],
+	MAPA .. "flightmaster", "success", { esencial = true, propia = true })
 motor(G_GUIA, "guia.siguientes", "nav.upcomingPins", L["Pasos que siguen, numerados"],
 	L["Un pin pequeño con su número donde te llevan los próximos pasos."], MAPA .. "pin", "accent")
 motor(G_GUIA, "guia.minimapa", "nav.minimapPins", L["La guía en el minimapa"],

@@ -11,3 +11,5 @@ tools/instalar_local.json
 tools/banco/shot-*.png
 tools/banco/shot-*.json
 tools/anunciar_local.json
+# El manual en PDF se genera (tools/manual.py) y va adjunto a cada Release de GitHub.
+docs/manual/*.pdf

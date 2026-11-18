@@ -34,13 +34,23 @@ local function diccionario()
 	return N.idiomas[locale] or (AlfaNucleoIdiomas and AlfaNucleoIdiomas[locale])
 end
 
+-- Una clave puede llevar su contexto al final, entre corchetes ("Alto [calidad]",
+-- "Guardar [conservar]"): así dos textos iguales en español que en otro idioma se
+-- dicen distinto tienen cada uno su traducción (docs/IDIOMAS.md). En español, y si
+-- falta la traducción, se muestra sin el corchete.
+local function sinContexto(k)
+	if type(k) ~= "string" then return k end
+	return (k:gsub(" %[[^%]]-%]$", ""))
+end
+N.SinContexto = sinContexto
+
 function N.Textos(en)
 	if N.espanol then
-		return setmetatable({}, { __index = function(_, k) return k end })
+		return setmetatable({}, { __index = function(_, k) return sinContexto(k) end })
 	end
 	return setmetatable({}, { __index = function(_, k)
 		local d = diccionario()
-		return (d and d[k]) or (type(en) == "table" and en[k]) or k
+		return (d and d[k]) or (type(en) == "table" and en[k]) or sinContexto(k)
 	end })
 end
 

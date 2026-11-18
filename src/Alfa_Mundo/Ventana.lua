@@ -26,7 +26,7 @@ local A = N.A
 local K = N.Kit
 local L = N.Textos(M.EN)
 local Geo, Lz, Mc, Capas, Panel = M.Geo, M.Lienzo, M.Marcas, M.Capas, M.Panel
-local Mk, PM = M.Marcadores, M.PanelMarcadores
+local Mk, PM, Tr = M.Marcadores, M.PanelMarcadores, M.Trayecto
 
 local type, pairs, ipairs, pcall, tonumber, min, max, floor, abs, exp, sqrt = type, pairs, ipairs, pcall, tonumber, math.min, math.max, math.floor, math.abs, math.exp, math.sqrt
 local format = string.format
@@ -155,6 +155,7 @@ local function colocar()
 	local k = escala(z)
 	aparte(Lz.Colocar, cu, cv, k, vw, vh, z)
 	aparte(Mc.Colocar, cu, cv, k, vw, vh, z)
+	aparte(Tr.Colocar, cu, cv, k, vw, vh, z)
 	if Lz.Pendiente() then sucio = true end
 end
 
@@ -531,7 +532,10 @@ local function alActualizar(_, dt)
 	reloj = reloj + dt
 	if reloj >= LATIDO then
 		reloj = 0
-		if not sucio then Mc.Latido() end
+		if not sucio then
+			Mc.Latido()
+			aparte(Tr.Latido)
+		end
 		actualizarPie()
 	end
 	relojTitulo = relojTitulo + dt
@@ -678,6 +682,9 @@ local function construir()
 	F.Vista = vista
 	local lienzo = Lz.Crear(vista)
 	Mc.Crear(vista)
+	-- Tu camino (1.2.1): la ruta, el vuelo y el destino, entre el arte y los pines.
+	Tr.Crear(vista)
+	Tr.alVerCamino = function() V.VerCamino() end
 	if not lienzo then
 		sinArte = true
 		F.SinArte = K.Vacio(vista, { lobo = "vacio", titulo = L["Este cliente no da el arte del mapa"],
@@ -831,6 +838,21 @@ function V.IrAMarcador(m)
 		return
 	end
 	irA(u, v, max(z, min(26, zoomPara(m.mapa) or 12)))
+end
+
+-- La ficha del camino (Trayecto.lua): la vista se desliza hasta que se ve
+-- todo, de ti al destino (1.2.1).
+function V.VerCamino()
+	if not (F and F:IsShown()) or sinArte then return end
+	local u0, v0, u1, v1 = Tr.Encuadre()
+	if not u0 then return end
+	local Wm, Hm = Lz.Tamano()
+	local vw, vh = tamVista()
+	local base = min(vw / Wm, vh / Hm)
+	if not (base > 0) then return end
+	local w, h = max(u1 - u0, 1e-4), max(v1 - v0, 1e-4)
+	local zz = min(vw / (w * Wm), vh / (h * Hm)) / base * 0.8
+	irA((u0 + u1) / 2, (v0 + v1) / 2, max(Z_MIN, min(zz, 26)))
 end
 
 -- Al mapa del juego en la zona que ves (desde un addon no se abre en combate:

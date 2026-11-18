@@ -16,6 +16,7 @@ Capas.lua
 Entradas.lua
 Lienzo.lua
 Marcas.lua
+Trayecto.lua
 Emergente.lua
 PanelCapas.lua
 Marcadores.lua

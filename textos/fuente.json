@@ -519,6 +519,10 @@
   "en": "%d are worth more at the auction house or crafted.",
   "origen": "Alfa_Bolsas"
  },
+ "%d yd": {
+  "en": "%d yd",
+  "origen": "Alfa_Mundo"
+ },
  "%d%% de nivel": {
   "en": "%d%% of a level",
   "origen": "Alfa_Inicio"
@@ -2406,6 +2410,10 @@
  "Alto": {
   "en": "Height",
   "origen": "Alfa_Curacion"
+ },
+ "Alto [calidad]": {
+  "en": "High",
+  "origen": "Alfa_Vista"
  },
  "Alto de las barras": {
   "en": "Bar height",
@@ -4614,6 +4622,10 @@
  "Clic: abrir o cerrar la ventana de Alfa": {
   "en": "Click: open or close the Alfa window",
   "origen": "Interfaz"
+ },
+ "Clic: el mapa muestra todo el camino, de ti al destino.": {
+  "en": "Click: the map shows the whole way, from you to the destination.",
+  "origen": "Alfa_Mundo"
  },
  "Clic: elegir otra guía": {
   "en": "Click: choose another guide",
@@ -7319,6 +7331,10 @@
   "en": "The frozen lake of Kel'Theril holds Highborne ruins.",
   "origen": "Alfa_Lya"
  },
+ "El lobo de la intro aúlla de pie sobre la peña, con un aullido largo que otro lobo contesta; y al entrar, Lya llega corriendo a decirte que te extrañó.": {
+  "en": "The intro wolf howls standing on the rock, a long howl another wolf answers; and when you log in, Lya comes running to tell you she missed you.",
+  "origen": "Alfa_Bienvenida"
+ },
  "El lobo te recibe al entrar": {
   "en": "The wolf greets you when you log in",
   "origen": "Alfa_Bienvenida"
@@ -8571,6 +8587,10 @@
   "en": "The Temple of Atal'Hakkar sank in this swamp: the green dragons sank it to stop Hakkar's priests.",
   "origen": "Alfa_Lya"
  },
+ "En grifo, la línea de tu vuelo en el mapa: por dónde vas, dónde aterrizas y el tiempo que falta.": {
+  "en": "On a gryphon, your flight's line on the map: where you are, where you land and the time left.",
+  "origen": "Alfa_Bienvenida"
+ },
  "En grupo": {
   "en": "In a group",
   "origen": "Alfa_Combate"
@@ -8966,6 +8986,10 @@
  "En vivo si estás con un banquero; si no, la última foto.": {
   "en": "Live while you are at a banker; otherwise the last snapshot.",
   "origen": "Alfa_Bolsas"
+ },
+ "En vuelo a %s": {
+  "en": "Flying to %s",
+  "origen": "Alfa_Mundo"
  },
  "En vuelo: la flecha sigue al bajar": {
   "en": "In flight: the arrow resumes when you land",
@@ -9823,6 +9847,10 @@
   "en": "Stats",
   "origen": "Alfa_Enciclopedia"
  },
+ "Estadísticas [pesca]": {
+  "en": "Statistics",
+  "origen": "Alfa_Pesca"
+ },
  "Este aviso ya no mostrará texto: solo el ícono. En Combate puedes volver a encenderlos.": {
   "en": "This alert won't show text anymore: just the icon. You can turn them back on in Combat.",
   "origen": "Alfa_Combate"
@@ -10660,11 +10688,15 @@
   "origen": "Alfa_Lya"
  },
  "Guardar": {
-  "en": "Keep",
-  "origen": "Alfa_Comercio"
+  "en": "Save",
+  "origen": "Alfa_Mundo"
  },
  "Guardar %d": {
   "en": "Keep %d",
+  "origen": "Alfa_Comercio"
+ },
+ "Guardar [conservar]": {
+  "en": "Keep",
   "origen": "Alfa_Comercio"
  },
  "Guardar como marcador": {
@@ -12863,6 +12895,10 @@
   "en": "Done",
   "origen": "Interfaz"
  },
+ "Listo [estado]": {
+  "en": "Ready",
+  "origen": "Alfa_Comodidades"
+ },
  "Listo para ayudar a tu grupo": {
   "en": "Ready to help your group",
   "origen": "Alfa_Curacion"
@@ -14712,6 +14748,10 @@
   "origen": "Alfa_Comercio"
  },
  "Mejora": {
+  "en": "Enhancement",
+  "origen": "Alfa_Builds"
+ },
+ "Mejora [reporte]": {
   "en": "Idea",
   "origen": "Alfa_Bienvenida"
  },
@@ -14871,6 +14911,10 @@
   "en": "While the curse is up, heal early, before health gets low.",
   "origen": "Alfa_Mazmorras/Consejos"
  },
+ "Mientras vuelas en grifo, la línea de tu viaje en el mapa de Alfa: por dónde vas y dónde aterrizas.": {
+  "en": "While you fly on a gryphon, your trip's line on Alfa's map: where you are and where you land.",
+  "origen": "Alfa_Mundo"
+ },
  "Mientras, junta el oro: con la equitación y la montura se va casi todo.": {
   "en": "Meanwhile, save gold: riding and the mount take almost all of it.",
   "origen": "Alfa_Enciclopedia"
@@ -14958,6 +15002,10 @@
  "Misiones": {
   "en": "Quests",
   "origen": "Alfa_Bienvenida"
+ },
+ "Misiones [bolsas]": {
+  "en": "Quest items",
+  "origen": "Alfa_Bolsas"
  },
  "Misiones automáticas": {
   "en": "Quest automation",
@@ -15834,6 +15882,10 @@
  "No": {
   "en": "No",
   "origen": "Alfa_Bienvenida"
+ },
+ "No [apagado]": {
+  "en": "Off",
+  "origen": "Alfa_Inicio"
  },
  "No armé el plan": {
   "en": "I didn't build the plan",
@@ -17943,6 +17995,10 @@
   "en": "Primary",
   "origen": "Alfa_Builds"
  },
+ "Principal [mano]": {
+  "en": "Main",
+  "origen": "Alfa_Inicio"
+ },
  "Probador": {
   "en": "Dressing room",
   "origen": "Alfa_Comodidades"
@@ -19490,6 +19546,10 @@
  "Secundaria": {
   "en": "Secondary",
   "origen": "Alfa_Builds"
+ },
+ "Secundaria [mano]": {
+  "en": "Off",
+  "origen": "Alfa_Inicio"
  },
  "Sed de sangre: tu golpe más fuerte, cada vez que esté listo.": {
   "en": "Bloodthirst: your strongest hit, every time it's ready.",
@@ -21999,6 +22059,14 @@
   "en": "Your path",
   "origen": "Alfa_Builds"
  },
+ "Tu camino [mapa]": {
+  "en": "Your way",
+  "origen": "Alfa_Mundo"
+ },
+ "Tu camino en el mapa y un aullido nuevo": {
+  "en": "Your way on the map and a new howl",
+  "origen": "Alfa_Bienvenida"
+ },
  "Tu caña tiene cebo: %s más.": {
   "en": "Your pole has a lure: %s left.",
   "origen": "Alfa_Pesca"
@@ -22307,6 +22375,10 @@
   "en": "Your she-wolf companion: she gives you tips and encouragement. Also with /alfa lya.",
   "origen": "Alfa_Lya"
  },
+ "Tu lugar resalta más: tu flecha lleva un aro y un pulso suave, y se ve bien hasta en la nieve.": {
+  "en": "Your spot stands out more: your arrow has a ring and a soft pulse, and it shows well even on snow.",
+  "origen": "Alfa_Bienvenida"
+ },
  "Tu manada": {
   "en": "Your pack",
   "origen": "Alfa_Inicio"
@@ -22543,6 +22615,10 @@
   "en": "Your %s route in %s is ready",
   "origen": "Alfa_Recoleccion"
  },
+ "Tu ruta dibujada en el mapa de Alfa hasta tu destino, que late para que lo encuentres; arriba ves a qué distancia está y cuánto falta, y un clic te muestra todo el camino.": {
+  "en": "Your route drawn on Alfa's map to your destination, which pulses so you spot it; at the top you see how far it is and how long is left, and one click shows you the whole way.",
+  "origen": "Alfa_Bienvenida"
+ },
  "Tu ruta está vacía": {
   "en": "Your route is empty",
   "origen": "Alfa_Rutas"
@@ -22654,6 +22730,10 @@
  "Tu vida está muy baja: cúrate rápido.": {
   "en": "Your health is very low: heal yourself fast.",
   "origen": "Alfa_Combate"
+ },
+ "Tu vuelo en el mapa": {
+  "en": "Your flight on the map",
+  "origen": "Alfa_Mundo"
  },
  "Tu árbol": {
   "en": "Your tree",
@@ -23058,6 +23138,10 @@
  "Un hechizo de tus barras tiene un rango viejo": {
   "en": "A spell on your bars is an old rank",
   "origen": "Alfa_Builds"
+ },
+ "Un mapa de una pieza: al acercar ya no se ven pedazos pegados, y el terreno se une sin rayas ni cuadros.": {
+  "en": "A map in one piece: zooming in no longer shows pieces stuck together, and the terrain joins with no lines or squares.",
+  "origen": "Alfa_Bienvenida"
  },
  "Un mapa impecable": {
   "en": "A flawless map",
@@ -25367,6 +25451,10 @@
   "en": "your class",
   "origen": "Alfa_Combate"
  },
+ "tu destino": {
+  "en": "your destination",
+  "origen": "Alfa_Mundo"
+ },
  "tu hermandad": {
   "en": "your guild",
   "origen": "Alfa_Inicio"
@@ -25503,12 +25591,24 @@
   "en": "%s! I haven't seen you in days. Today shows where we left off.",
   "origen": "Alfa_Lya"
  },
+ "¡%s! Te extrañé mucho. Vine corriendo en cuanto te vi llegar.": {
+  "en": "%s! I missed you so much. I came running the moment I saw you.",
+  "origen": "Alfa_Lya"
+ },
+ "¡%s, volviste! Te extrañé tanto que no paraba de mover la cola.": {
+  "en": "%s, you're back! I missed you so much I couldn't stop wagging my tail.",
+  "origen": "Alfa_Lya"
+ },
  "¡Abrumar!": {
   "en": "Overpower!",
   "origen": "Alfa_Combate"
  },
  "¡Ahí estás, %s! Si quieres un consejo, dame clic.": {
   "en": "There you are, %s! If you want a tip, click me.",
+  "origen": "Alfa_Lya"
+ },
+ "¡Ahí estás, %s! Te estaba esperando… te extrañé.": {
+  "en": "There you are, %s! I was waiting for you… I missed you.",
   "origen": "Alfa_Lya"
  },
  "¡Arriba, lobo! Antes de volver a pelear, recupera vida y maná.": {
@@ -25715,6 +25815,10 @@
   "en": "You reached level %d! Every level makes you stronger.",
   "origen": "Alfa_Lya"
  },
+ "¡Te extrañé, %s! Corrí hasta aquí para verte.": {
+  "en": "I missed you, %s! I ran all the way here to see you.",
+  "origen": "Alfa_Lya"
+ },
  "¡Te extrañé, %s! Tu ruta sigue donde la dejaste.": {
   "en": "I missed you, %s! Your route is right where you left it.",
   "origen": "Alfa_Lya"
@@ -25741,6 +25845,10 @@
  },
  "¡Ya eres nivel %d! La manada aúlla por ti.": {
   "en": "You're level %d now! The pack howls for you.",
+  "origen": "Alfa_Lya"
+ },
+ "¡Ya llegaste, %s! Te extrañé. ¿A dónde vamos hoy?": {
+  "en": "You're here, %s! I missed you. Where are we off to today?",
   "origen": "Alfa_Lya"
  },
  "¡Ya terminaste %d misiones! Vamos a cobrar la recompensa.": {

@@ -201,6 +201,15 @@ function Frame:CreateTexture(name, layer, tmpl, sub)
   return t
 end
 function Frame:CreateMaskTexture() return self:CreateTexture() end
+-- Las líneas (las de la ruta en los mapas): una textura con sus dos puntas.
+function Frame:CreateLine(name, layer, tmpl, sub)
+  local t = self:CreateTexture(name, layer, tmpl, sub)
+  t._kind = "Line"
+  return t
+end
+function Frame:SetStartPoint(p, rel, x, y) self._ini = { p, rel, x, y } end
+function Frame:SetEndPoint(p, rel, x, y) self._fin = { p, rel, x, y } end
+function Frame:SetThickness(t) self._grueso = t end
 function Frame:CreateFontString(name, layer, template)
   local t = newObj("FontString", self)
   t._layer = layer
