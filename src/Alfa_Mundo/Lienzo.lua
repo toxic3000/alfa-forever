@@ -68,6 +68,8 @@ local TOPE_MOSAICOS = 600       -- con más cargados, se sueltan todos los que n
 local PRUEBA = 16               -- si fallan los primeros mosaicos, todos, el terreno se apaga solo
 local MARGEN = 0.12             -- parte de la vista que se arma de más a cada lado
 local POR_CUADRO = 40           -- archivos que se piden por cuadro
+local PISO = 6                  -- niveles de marco por capa: la capa y hasta 5 niveles de zona (nivelDe)
+Lz.NIVELES = 7 * PISO           -- niveles que ocupa el lienzo sobre la vista (lo de encima va más arriba)
 local ZONAS_POR_CUADRO = 3      -- zonas que se arman por cuadro (crear sus texturas)
 local APARICION = 0.25          -- segundos del fundido al llegar un archivo
 
@@ -117,7 +119,9 @@ local function cargar()
 		local t = cola[colaEn]
 		colaEn = colaEn + 1
 		if t.amArchivo then
-			local ok = t:SetTexture(t.amArchivo, nil, nil, "TRILINEAR")
+			-- CLAMP: el filtro nunca toma la orilla contraria de la textura, que
+			-- dejaba una línea fina entre mosaicos (1.1.7).
+			local ok = t:SetTexture(t.amArchivo, "CLAMP", "CLAMP", "TRILINEAR")
 			t.amArchivo = nil
 			-- Una que ya se fundía (se volvió a encolar) no cuenta dos veces.
 			if not fundiendo[t] then nFundiendo = nFundiendo + 1 end
@@ -166,6 +170,14 @@ end
 -- archivos completos, recortados al borde de la capa)
 ---------------------------------------------------------------------------
 
+-- Hasta dónde se lee una textura recortada: `usado` texeles de `total`. Si el
+-- recorte queda dentro del archivo, medio texel antes de la orilla, para que
+-- el filtro no mezcle el relleno vacío de más allá (un halo oscuro). 1.1.7.
+function Lz.Recorte(usado, total)
+	if not (usado and total and total > 0) or usado >= total then return 1 end
+	return max(0, usado - 0.5) / total
+end
+
 local function mosaicos(padre, mapa, x, y, w, h, mascara, sub)
 	local info, archivos = Geo.Capa(mapa)
 	if not info then return 0 end
@@ -180,7 +192,7 @@ local function mosaicos(padre, mapa, x, y, w, h, mascara, sub)
 			local archivo = archivos[(j - 1) * cols + k]
 			if archivo and pw > 0 and ph > 0 then
 				local t = textura(padre, sub)
-				t:SetTexCoord(0, pw / tw, 0, ph / th)
+				t:SetTexCoord(0, Lz.Recorte(pw, tw), 0, Lz.Recorte(ph, th))
 				t:SetSize(pw * sx, ph * sy)
 				t:SetPoint("TOPLEFT", padre, "TOPLEFT", x + (k - 1) * tw * sx, -(y + (j - 1) * th * sy))
 				if mascara then t:AddMaskTexture(mascara) end
@@ -223,7 +235,10 @@ local function ponerRecuadro(z, archivo, x, y, w, h, derecha, abajo)
 		z.tex[n] = t
 	end
 	t:SetDrawLayer("ARTWORK", z.sub or 0)
-	t:SetTexCoord(0, derecha, 0, abajo)
+	-- derecha = w / (ancho del archivo): el mismo medio texel en el recorte.
+	local fw = (derecha and derecha > 0) and w / derecha or w
+	local fh = (abajo and abajo > 0) and h / abajo or h
+	t:SetTexCoord(0, Lz.Recorte(w, fw), 0, Lz.Recorte(h, fh))
 	t:SetSize(w * z.sx, h * z.sy)
 	t:ClearAllPoints()
 	t:SetPoint("TOPLEFT", z.marco, "TOPLEFT", x * z.sx, -y * z.sy)
@@ -498,6 +513,30 @@ local function armarRegistros()
 			end
 		end
 	end
+	-- El nivel de cada zona en su capa (nivelDe): dos zonas que se tocan nunca
+	-- comparten nivel, como colorear un mapa. Las grandes primero (abajo), y
+	-- por id si empatan, así sale igual en cada sesión.
+	for _, lista in ipairs({ zonas, ciudades }) do
+		local orden = {}
+		for i, z in ipairs(lista) do orden[i] = z end
+		table.sort(orden, function(a, b)
+			local sa, sb = a.w * a.h, b.w * b.h
+			if sa ~= sb then return sa > sb end
+			return a.id < b.id
+		end)
+		for i, z in ipairs(orden) do
+			local usados = {}
+			for j = 1, i - 1 do
+				local o = orden[j]
+				if z.l < o.l + o.w and o.l < z.l + z.w and z.t < o.t + o.h and o.t < z.t + z.h then
+					usados[o.rango] = true
+				end
+			end
+			local r = 0
+			while usados[r] and r < PISO - 2 do r = r + 1 end
+			z.rango = r
+		end
+	end
 	return true
 end
 
@@ -528,7 +567,8 @@ function Lz.Crear(padre)
 	for i, nombre in ipairs({ "mundo", "cont", "bases", "zonas", "terreno", "ciudades" }) do
 		local f = CreateFrame("Frame", nil, lienzo)
 		f:SetAllPoints(lienzo)
-		f:SetFrameLevel(base + i * 2)
+		-- Cada capa deja lugar para un nivel propio por zona (ver nivelDe).
+		f:SetFrameLevel(base + i * PISO)
 		capa[nombre] = f
 	end
 	cargador = CreateFrame("Frame", nil, vista)
@@ -540,11 +580,30 @@ function Lz.Crear(padre)
 end
 
 function Lz.Tamano() return W, H end
+
+-- Píxeles físicos de la pantalla por unidad de la vista.
+function Lz.Pixeles()
+	local s = vista and vista.GetEffectiveScale and vista:GetEffectiveScale() or 1
+	if type(s) ~= "number" or s <= 0 then s = 1 end
+	if GetPhysicalScreenSize then
+		local ok, _, h = pcall(GetPhysicalScreenSize)
+		if ok and type(h) == "number" and h > 0 then return s * h / 768 end
+	end
+	return s
+end
 function Lz.Listo() return hecho end
 
 ---------------------------------------------------------------------------
 -- Colocar la vista: escala, posición, fundidos y qué zonas se ven
 ---------------------------------------------------------------------------
+
+-- Un nivel de marco propio por zona: dos zonas cuyos rectángulos se tocan ya
+-- no comparten nivel (el juego elegía cuál va encima y cambiaba al mover el
+-- mapa: parpadeaban las fronteras). Las grandes abajo, las chicas encima.
+-- 1.1.7.
+local function nivelDe(z, padre)
+	return padre:GetFrameLevel() + 1 + min(PISO - 2, z.rango or 0)
+end
 
 local function guardar(z)
 	if not z.visible then return end
@@ -563,7 +622,7 @@ local function colocarBase(z)
 	if not b or z.basePuesta then return end
 	z.basePuesta = true
 	b:SetParent(capa.bases)
-	b:SetFrameLevel(capa.bases:GetFrameLevel() + 1)
+	b:SetFrameLevel(nivelDe(z, capa.bases))
 	b:ClearAllPoints()
 	b:SetPoint("TOPLEFT", lienzo, "TOPLEFT", z.l, -z.t)
 end
@@ -581,7 +640,7 @@ local function sacar(z, padre)
 	if z.visible then return end
 	z.visible = true
 	z.marco:SetParent(padre)
-	z.marco:SetFrameLevel(padre:GetFrameLevel() + 1)
+	z.marco:SetFrameLevel(nivelDe(z, padre))
 	z.marco:ClearAllPoints()
 	z.marco:SetPoint("TOPLEFT", lienzo, "TOPLEFT", z.l, -z.t)
 	colocarBase(z)
@@ -598,7 +657,14 @@ function Lz.Colocar(cu, cv, k, vw, vh, z)
 	presupuesto, pendiente = ZONAS_POR_CUADRO, false
 	lienzo:SetScale(k)
 	lienzo:ClearAllPoints()
-	lienzo:SetPoint("TOPLEFT", vista, "TOPLEFT", vw / (2 * k) - cu * W, -(vh / (2 * k) - cv * H))
+	-- La esquina del lienzo cae en un píxel entero de la pantalla, y los pines
+	-- se cuentan desde ahí (Lz.Ahora().ox/oy, Marcas): mapa y pines se mueven
+	-- juntos, sin que uno brinque un píxel contra el otro. 1.1.7.
+	local px = Lz.Pixeles()
+	local ox = floor((vw / 2 - cu * W * k) * px + 0.5) / px
+	local oy = floor((vh / 2 - cv * H * k) * px + 0.5) / px
+	lienzo:SetPoint("TOPLEFT", vista, "TOPLEFT", ox / k, -(oy / k))
+	ahora.ox, ahora.oy, ahora.px = ox, oy, px
 	local mx, my = vw / (2 * k) * (1 + MARGEN * 2), vh / (2 * k) * (1 + MARGEN * 2)
 	local x0, x1, y0, y1 = cu * W - mx, cu * W + mx, cv * H - my, cv * H + my
 	ahora.k, ahora.z, ahora.vw, ahora.vh = k, z, vw, vh

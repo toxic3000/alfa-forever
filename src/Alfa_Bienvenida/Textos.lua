@@ -303,6 +303,12 @@ M.EN = {
 	["Versión %s"] = "Version %s",
 	["¡Qué gusto verte de vuelta! Esto es lo que trae esta versión para ti y tu manada."] = "Great to see you back! Here's what this version brings for you and your pack.",
 	["Desde tu última visita también hubo cambios en %s: los ves en «Ver todo lo nuevo»."] = "Since your last visit there were also changes in %s: find them in \"See everything new\".",
+	-- Novedades 1.1.7
+	["Un mapa impecable"] = "A flawless map",
+	["El mapa se ve más limpio: sin líneas finas entre sus pedazos ni halos oscuros en las orillas de las zonas."] = "The map looks cleaner: no thin lines between its pieces and no dark halos on the edges of zones.",
+	["Los íconos, los nombres y tu flecha se mueven pegados al mapa al hacer zoom o arrastrar: ya no brincan un píxel."] = "Icons, names and your arrow move glued to the map when you zoom or drag: they no longer jump a pixel.",
+	["Las fronteras entre zonas ya no parpadean al mover el mapa."] = "Borders between zones no longer flicker when you move the map.",
+	["Cada ícono del mapa con su tamaño exacto en tu pantalla, nítido de orilla a orilla."] = "Every map icon at its exact size on your screen, crisp from edge to edge.",
 	-- Novedades 1.1.6
 	["Más firme y en tu idioma"] = "Steadier, and in your language",
 	["«Seguir» en La Jauría ya no se suelta cuando tu guía cambia de paso ni cuando vas por tu cuerpo: al terminar, la flecha vuelve con quien sigues."] = "\"Follow\" in La Jauría no longer lets go when your guide changes step or while you run back to your body: afterwards the arrow goes back to who you follow.",

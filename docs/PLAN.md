@@ -20,11 +20,11 @@ Sale de una revisión del código del 18/11. En cada versión va primero lo que 
 - [x] Alfa independiente: sin «Polestar Client», sin traducciones viejas que nombran a Polestar, sin `/pole`, README propio y Acerca de sin «construido sobre». Los avisos de licencia y créditos se quedan (GPL).
 
 ### 1.1.7 — Mapa impecable, parte 1
-- [ ] Pines, etiquetas y tu posición ajustados al píxel físico, con tamaños enteros (`Alfa_Mundo/Marcas.lua`).
-- [ ] Texturas del mapa con `LINEAR` y `CLAMP` en vez de `TRILINEAR` (`Lienzo.lua`).
-- [ ] Medio texel de margen en cada `SetTexCoord` recortado.
-- [ ] Nivel de marco único por zona (sin parpadeo en fronteras).
-- [ ] Pruebas numéricas en el banco (tamaños enteros, medio texel, niveles únicos) y capturas de antes/después en el juego.
+- [x] Pines, etiquetas y tu posición ajustados al píxel físico, con tamaños enteros (`Alfa_Mundo/Marcas.lua`).
+- [x] Texturas del mapa con `CLAMP` explícito (se queda `TRILINEAR`: con zoom lejano `LINEAR` haría brillar los píxeles al moverse).
+- [x] Medio texel de margen en cada `SetTexCoord` recortado.
+- [x] Nivel de marco único por zona (sin parpadeo en fronteras).
+- [x] Pruebas numéricas en el banco (tamaños enteros, medio texel, niveles únicos) y capturas de antes/después en el juego.
 
 ### 1.1.8 — Mapa impecable, parte 2
 - [ ] Íconos TGA sin bordes negros (dilatar el color en los píxeles transparentes, `tools/iconos.py`).

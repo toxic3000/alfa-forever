@@ -199,8 +199,15 @@ if vista then
   end
   local function igual(nombre, u0, v0, tol)
     local u, v = bajoCursor()
-    if not (math.abs(u - u0) < (tol or 1e-4) and math.abs(v - v0) < (tol or 1e-4)) then
-      error(nombre .. string.format(": el punto bajo el cursor se movió (%.5f, %.5f) -> (%.5f, %.5f)", u0, v0, u, v))
+    -- Desde la 1.1.7 la esquina del mapa cae en un píxel entero: se acepta
+    -- hasta medio píxel en cada medida: un píxel entre dos (más la tolerancia de siempre).
+    local Mc = Mu.Marcas
+    local ancho = Mc.AVista(1, 1) - Mc.AVista(0, 0)
+    local alto = select(2, Mc.AVista(1, 1)) - select(2, Mc.AVista(0, 0))
+    local tu = (tol or 1e-4) + (ancho > 0 and 1.0 / ancho or 0)
+    local tv = (tol or 1e-4) + (alto > 0 and 1.0 / alto or 0)
+    if not (math.abs(u - u0) < tu and math.abs(v - v0) < tv) then
+      error(nombre .. string.format(": el punto bajo el cursor se movió (%.5f, %.5f) -> (%.5f, %.5f) [%.1f px, %.1f px]", u0, v0, u, v, (u - u0) * ancho, (v - v0) * alto))
     end
   end
   local function alCentro()

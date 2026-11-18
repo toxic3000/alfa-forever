@@ -31,6 +31,12 @@ M.NOVEDADES = {
 --   { version, titulo, puntos = { { icono (ic-*), texto } } }
 ---------------------------------------------------------------------------
 M.NOTAS = {
+	{ version = "1.1.7", titulo = "Un mapa impecable", puntos = {
+		{ "ic-mapa", "El mapa se ve más limpio: sin líneas finas entre sus pedazos ni halos oscuros en las orillas de las zonas." },
+		{ "ic-flecha", "Los íconos, los nombres y tu flecha se mueven pegados al mapa al hacer zoom o arrastrar: ya no brincan un píxel." },
+		{ "ic-mundo", "Las fronteras entre zonas ya no parpadean al mover el mapa." },
+		{ "ic-exito", "Cada ícono del mapa con su tamaño exacto en tu pantalla, nítido de orilla a orilla." },
+	} },
 	{ version = "1.1.6", titulo = "Más firme y en tu idioma", puntos = {
 		{ "ic-seguir", "«Seguir» en La Jauría ya no se suelta cuando tu guía cambia de paso ni cuando vas por tu cuerpo: al terminar, la flecha vuelve con quien sigues." },
 		{ "ic-misiones", "Aceptar todas las misiones ya no pierde una diaria porque la ventana se cerraba antes de tiempo." },

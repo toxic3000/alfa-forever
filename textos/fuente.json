@@ -4075,6 +4075,10 @@
   "en": "Every new version greets you with the wolf intro and its notes, like these.",
   "origen": "Alfa_Bienvenida"
  },
+ "Cada ícono del mapa con su tamaño exacto en tu pantalla, nítido de orilla a orilla.": {
+  "en": "Every map icon at its exact size on your screen, crisp from edge to edge.",
+  "origen": "Alfa_Bienvenida"
+ },
  "Cairne Pezuña de Sangre gobierna desde Cima del Trueno, aunque Magatha, de los Tótem Siniestro, no lo quiere tanto como aparenta.": {
   "en": "Cairne Bloodhoof rules from Thunder Bluff, though Magatha of the Grimtotem doesn't love him as much as she pretends.",
   "origen": "Alfa_Lya"
@@ -7310,6 +7314,10 @@
  "El mapa no se abre en combate.": {
   "en": "The map doesn't open in combat.",
   "origen": "Alfa_Enciclopedia"
+ },
+ "El mapa se ve más limpio: sin líneas finas entre sus pedazos ni halos oscuros en las orillas de las zonas.": {
+  "en": "The map looks cleaner: no thin lines between its pieces and no dark halos on the edges of zones.",
+  "origen": "Alfa_Bienvenida"
  },
  "El mar paga": {
   "en": "The sea pays",
@@ -12483,6 +12491,10 @@
   "en": "Felwood's corrupted songflowers can be cleansed; doing so grants you a blessing that lasts a good while.",
   "origen": "Alfa_Lya"
  },
+ "Las fronteras entre zonas ya no parpadean al mover el mapa.": {
+  "en": "Borders between zones no longer flicker when you move the map.",
+  "origen": "Alfa_Bienvenida"
+ },
  "Las gafas de ingeniero solo las pueden usar ingenieros: ¡lúcelas con orgullo!": {
   "en": "Engineering goggles can only be worn by engineers: wear them proudly!",
   "origen": "Alfa_Lya"
@@ -14058,6 +14070,10 @@
  "Los árboles del Legado son tres: Profesiones, Aventura y Recursos. Al salir Forever, cada personaje gasta hasta 16 puntos.": {
   "en": "There are three Legacy trees: Professions, Adventure and Resourcefulness. At Forever's launch, each character spends up to 16 points.",
   "origen": "Alfa_Lya"
+ },
+ "Los íconos, los nombres y tu flecha se mueven pegados al mapa al hacer zoom o arrastrar: ya no brincan un píxel.": {
+  "en": "Icons, names and your arrow move glued to the map when you zoom or drag: they no longer jump a pixel.",
+  "origen": "Alfa_Bienvenida"
  },
  "Los últimos Altonato de Kalimdor siguen en La Masacre: se llaman Shen'dralar y cuidan su vieja biblioteca.": {
   "en": "The last Highborne of Kalimdor remain in Dire Maul: they're called the Shen'dralar and they tend their old library.",
@@ -22930,6 +22946,10 @@
  "Un hechizo de tus barras tiene un rango viejo": {
   "en": "A spell on your bars is an old rank",
   "origen": "Alfa_Builds"
+ },
+ "Un mapa impecable": {
+  "en": "A flawless map",
+  "origen": "Alfa_Bienvenida"
  },
  "Un marco dorado en lo que sirve para una misión (con «!» si empieza una).": {
   "en": "A gold frame on items for a quest (with \"!\" when it starts one).",

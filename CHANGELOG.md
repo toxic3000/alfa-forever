@@ -1,5 +1,23 @@
 # Cambios de Alfa
 
+## 1.1.7 — Un mapa impecable (18/11/2026)
+
+**Español**
+- El mapa se ve más limpio: las texturas ya no toman la orilla contraria al filtrarse (dejaba líneas finas entre pedazos), y cada recorte deja medio texel de margen (sin halos oscuros en las orillas de las zonas).
+- Los íconos, los nombres, tu grupo y tu flecha se mueven pegados al mapa: la esquina del mapa y cada pin caen en un píxel entero de tu pantalla, así ya no brincan un píxel al hacer zoom o arrastrar.
+- Cada ícono del mapa mide un número par de píxeles en tu pantalla: nítido de orilla a orilla.
+- Las fronteras entre zonas ya no parpadean: dos zonas vecinas nunca comparten nivel de dibujo.
+- Los botones del mapa quedan siempre encima de todo lo que se dibuja.
+- La prueba de cada versión ahora también revisa el mapa con números: píxeles enteros, lados pares, recortes y niveles.
+
+**English**
+- The map looks cleaner: textures no longer sample the opposite edge when filtered (it left thin lines between pieces), and every crop keeps half a texel of margin (no dark halos on zone edges).
+- Icons, names, your group and your arrow move glued to the map: the map's corner and every pin land on a whole pixel of your screen, so they no longer jump a pixel when you zoom or drag.
+- Every map icon is an even number of pixels on your screen: crisp from edge to edge.
+- Borders between zones no longer flicker: two neighbouring zones never share a draw level.
+- The map's buttons always stay above everything drawn on it.
+- Each release's test now also checks the map with numbers: whole pixels, even sizes, crops and levels.
+
 ## 1.1.6 — Más firme y en tu idioma (18/11/2026)
 
 **Español**

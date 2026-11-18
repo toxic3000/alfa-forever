@@ -70,9 +70,34 @@ end
 -- Del mundo (0..1) a la vista (unidades desde su esquina arriba a la izquierda).
 local function aVista(u, v)
 	local o = vistaAhora
+	-- Desde la esquina del lienzo, que cae en un píxel entero (Lz.Colocar).
+	local a = Lz.Ahora and Lz.Ahora()
+	if a and a.ox and a.k == o.k then return u * W * o.k + a.ox, v * H * o.k + a.oy end
 	return (u - o.cu) * W * o.k + o.vw / 2, (v - o.cv) * H * o.k + o.vh / 2
 end
 Mc.AVista = aVista
+
+-- Pines nítidos que no brincan contra el mapa (1.1.7): su centro en un píxel
+-- entero de la pantalla y su lado en un número par de píxeles, así las
+-- orillas también caen en píxeles enteros.
+local function pixeles()
+	local s = Lz.Pixeles and Lz.Pixeles() or 1
+	return (type(s) == "number" and s > 0) and s or 1
+end
+local function alPixel(v)
+	local s = pixeles()
+	return floor(v * s + 0.5) / s
+end
+local function lado(v)
+	local s = pixeles()
+	return max(2, 2 * floor(v * s / 2 + 0.5)) / s
+end
+Mc.Lado, Mc.AlPixel = lado, alPixel
+
+local function fijar(f, x, y)
+	f:ClearAllPoints()
+	f:SetPoint("CENTER", encima, "TOPLEFT", alPixel(x), -alPixel(y))
+end
 
 local function dentro(x, y, m)
 	local o = vistaAhora
@@ -252,17 +277,18 @@ local function vestir(f, p, tam)
 	f.brillo:SetShown(p.glow and true or false)
 	if marca then
 		local m = p.medal ~= false and medalla() or nil
-		local medal = 2 * floor(tam * 1.4 / 2 + 0.5)
+		local medal = lado(tam * 1.4)
 		f:SetSize(medal, medal)
 		f.fondo:SetTexture(m)
 		f.fondo:SetSize(medal, medal)
 		f.fondo:SetVertexColor(1, 1, 1, a)
 		f.fondo:SetShown(m ~= nil)
 		f.icono:SetTexture(MAPA .. "icon-" .. marca)
-		f.icono:SetSize(tam * 27 / 24, tam * 27 / 24)
+		f.icono:SetSize(lado(tam * 27 / 24), lado(tam * 27 / 24))
 		f.icono:SetVertexColor(r, g, b, a)
-		f.brillo:SetSize(medal * 2.3, medal * 2.3)
+		f.brillo:SetSize(lado(medal * 2.3), lado(medal * 2.3))
 	else
+		tam = lado(tam)
 		f:SetSize(tam, tam)
 		if icono then
 			local ruta = icono:find("[\\/]") and icono or (NAV .. icono)
@@ -270,7 +296,7 @@ local function vestir(f, p, tam)
 			f.icono:SetSize(tam, tam)
 			f.icono:SetVertexColor(r, g, b, a)
 			f.fondo:SetTexture(NAV .. "pin-fill")
-			f.fondo:SetSize(tam * 1.2, tam * 1.2)
+			f.fondo:SetSize(lado(tam * 1.2), lado(tam * 1.2))
 			f.fondo:SetVertexColor(color("scrim", 0.55 * a))
 			f.fondo:SetShown(p.backdrop and true or false)
 		else
@@ -282,13 +308,13 @@ local function vestir(f, p, tam)
 			f.icono:SetSize(tam, tam)
 			f.icono:SetVertexColor(1, 1, 1, a)
 		end
-		f.brillo:SetSize(tam * 1.8, tam * 1.8)
+		f.brillo:SetSize(lado(tam * 1.8), lado(tam * 1.8))
 	end
 	f.brillo:SetVertexColor(r, g, b, 0.5)
 	-- El aro fino de color (los marcadores): `ring = { r, g, b, a }`.
 	if type(p.ring) == "table" then
 		local ar, ag, ab, aa = rgba(p.ring)
-		f.aro:SetSize(tam * 1.3, tam * 1.3)
+		f.aro:SetSize(lado(tam * 1.3), lado(tam * 1.3))
 		f.aro:SetVertexColor(ar, ag, ab, aa)
 		f.aro:Show()
 	else
@@ -350,8 +376,7 @@ local function vestir(f, p, tam)
 end
 
 local function poner(f, x, y)
-	f:ClearAllPoints()
-	f:SetPoint("CENTER", encima, "TOPLEFT", x, -y)
+	fijar(f, x, y)
 	f:Show()
 end
 
@@ -502,8 +527,7 @@ local function dibujarEtiquetas(z)
 						end
 					end
 					e:SetAlpha(a)
-					e:ClearAllPoints()
-					e:SetPoint("CENTER", encima, "TOPLEFT", x, -y)
+					fijar(e, x, y)
 					e:Show()
 				end
 			end
@@ -598,8 +622,7 @@ local function dibujarGrupo()
 						local C = A.Compat
 						local nombre = C and type(C.UnitFullName) == "function" and C.UnitFullName(unidad)
 						f.amNombre = type(nombre) == "string" and nombre or nil
-						f:ClearAllPoints()
-						f:SetPoint("CENTER", encima, "TOPLEFT", x, -y)
+						fijar(f, x, y)
 						f:Show()
 					end
 				end
@@ -633,8 +656,7 @@ local function dibujarYo()
 	yo.halo:SetVertexColor(r, g, b, 0.45)
 	local f = Geo.Orientacion()
 	if f and yo.flecha.SetRotation then yo.flecha:SetRotation(f) end
-	yo:ClearAllPoints()
-	yo:SetPoint("CENTER", encima, "TOPLEFT", x, -y)
+	fijar(yo, x, y)
 	yo:Show()
 end
 
@@ -647,7 +669,8 @@ function Mc.Crear(padre)
 	vista = padre
 	encima = CreateFrame("Frame", nil, padre)
 	encima:SetAllPoints(padre)
-	encima:SetFrameLevel(padre:GetFrameLevel() + 30)
+	-- Encima de todas las capas del lienzo (Lz.NIVELES), con margen.
+	encima:SetFrameLevel(padre:GetFrameLevel() + (Lz.NIVELES or 30) + 10)
 	return encima
 end
 
