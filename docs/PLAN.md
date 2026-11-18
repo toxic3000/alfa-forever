@@ -34,12 +34,12 @@ Sale de una revisión del código del 18/11. En cada versión va primero lo que 
 - [ ] Máscaras de territorio de 512 o 1024: pendiente, no hay arte de origen de más resolución (las de OpenMap son de 256).
 
 ### 1.1.9 — Ensayo general de la 1.2.0
-- [ ] El buscador de Ajustes incluye Pesca, Comercio, Ruta, Bolsas, Combate, Curación, Lya y Estilo y sonido.
-- [ ] Bolsas usa `Search.Fold` del motor (cirílico y otros alfabetos).
-- [ ] Inicio usa `AlfaComercio` como ya lo hace Bolsas.
-- [ ] Un solo término: Calabozos o Mazmorras (decide Toxic).
-- [ ] Núcleo: `alComando(rest)` y `N.Repintar(id)`.
-- [ ] Banco: prueba de guardar, recargar y leer ajustes; migraciones que lean `schema`.
+- [x] El buscador de Ajustes incluye Pesca, Comercio, Ruta, Bolsas, Combate, Curación, Lya y Estilo y sonido.
+- [x] Bolsas usa `Search.Fold` del motor (cirílico y otros alfabetos).
+- [x] Inicio usa `AlfaComercio` como ya lo hace Bolsas.
+- [x] Un solo término: «Mazmorras» (decidió Toxic el 18/11; `tools/parches.py`, `mazmorras`).
+- [x] Núcleo: `alComando(rest)` y `N.Repintar(id)`.
+- [x] Banco: prueba de guardar, recargar y leer ajustes; migraciones que lean `schema`.
 
 ### 1.2.0 — Ajustes en orden
 - [ ] Juntar Comodidades y Calidad de vida (chocan en misiones, errores, minimapa y vuelos).
@@ -51,7 +51,7 @@ Sale de una revisión del código del 18/11. En cada versión va primero lo que 
 - [ ] Insignias de La Jauría (idea de Toxic, 18/11): una chapita discreta (solo visual) junto al nombre de quien es de la manada, en el cuadro del jugador, La Jauría y el mapa. Solo para ciertas personas, no para todos los que usan Alfa. Decidido: una lista de personajes (nombre-reino) dentro del addon que Toxic pasa y mantiene (opción 1), con permiso de cada persona para salir en la lista.
 - [ ] Mapa «en manada» (Toxic, 18/11): quien usa Alfa y comparte su ubicación (capa `manada.jauria` de `Alfa_Manada/Mapa.lua`, ya existe y es voluntaria) se ve con una huella pequeña de lobo, más chica que el pin de tu grupo; los de la lista de insignias llevan además su chapita. Sigue siendo voluntario: nadie aparece sin aceptar compartir.
 
-Decisiones pendientes de Toxic: Calabozos o Mazmorras; si Lya tutea o habla de usted en frFR y ruRU; qué de Comodidades viene encendido.
+Decisiones pendientes de Toxic: si Lya tutea o habla de usted en frFR y ruRU; qué de Comodidades viene encendido.
 
 ## Módulos
 

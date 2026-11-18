@@ -65,6 +65,8 @@ end
 --   construir = function(view) end,  -- arma la vista la primera vez
 --   controles = { ... },      -- opcional: controles estándar de A.RegisterOptions
 --   comando = "bolsas",       -- opcional: /alfa bolsas abre la página
+--   alComando = function(resto) end, -- opcional (1.1.9): /alfa bolsas <algo>
+--                             -- llama aquí con "<algo>"; sin nada, abre la página
 -- }
 ---------------------------------------------------------------------------
 N.modulos = {}
@@ -83,7 +85,12 @@ function N.Modulo(spec)
 	})
 	if not ok and geterrorhandler then geterrorhandler()(err) end
 	if spec.comando then
-		A.RegisterCommand(spec.comando, function() N.Abrir(spec.id) end, spec.subtitulo)
+		A.RegisterCommand(spec.comando, function(resto)
+			if type(spec.alComando) == "function" and type(resto) == "string" and resto ~= "" then
+				return spec.alComando(resto)
+			end
+			N.Abrir(spec.id)
+		end, spec.subtitulo)
 	end
 	A.Fire("ALFA_MODULO", spec)
 	return spec
@@ -204,6 +211,38 @@ function N.RehacerPagina(view)
 	if O and O.frame and W and W.ShellBody then W.ShellBody(O.frame, h) end
 end
 
+-- La página `id`, si está a la vista: se vuelve a medir y dibujar (1.1.9: así
+-- un módulo no toca las piezas internas de la ventana). arriba: vuelve al
+-- principio de la página. -> true si estaba a la vista.
+function N.Repintar(id, arriba)
+	local O = A.UI and A.UI.Options
+	if not (O and type(O.Views) == "function") then return false end
+	local hubo = false
+	for _, v in ipairs(O.Views(id)) do
+		if v.IsVisible and v:IsVisible() then
+			N.RehacerPagina(v)
+			hubo = true
+		end
+	end
+	if hubo and arriba then N.SubirPagina() end
+	return hubo
+end
+
+-- La ventana de Alfa vuelve al principio de la página que muestra.
+function N.SubirPagina()
+	local O = A.UI and A.UI.Options
+	local W = A.Widgets
+	local win = O and O.frame
+	if W and W.ScrollTo and win and win.Scroll then W.ScrollTo(win.Scroll, 0) end
+end
+
+-- Cierra la ventana de Alfa (si está abierta).
+function N.CerrarVentana()
+	local O = A.UI and A.UI.Options
+	local win = type(O) == "table" and O.frame
+	if type(win) == "table" and type(win.Hide) == "function" then win:Hide() end
+end
+
 -- Una ventana o un aviso del motor que toma un módulo de Alfa (docs/KIT.md,
 -- "Reemplazos"): desde ese momento el motor llama a fn(pedido) en lugar de
 -- mostrar la suya. visible(): opcional, si tu ventana está a la vista.
@@ -310,3 +349,45 @@ A.RegisterEvent("PLAYER_REGEN_ENABLED", function()
 		if not ok and geterrorhandler then geterrorhandler()(err) end
 	end
 end)
+
+---------------------------------------------------------------------------
+-- Migraciones de los ajustes (1.1.9). Cuando una versión cambia dónde vive
+-- un ajuste (la 1.2.0 reacomoda Ajustes), su módulo registra un paso:
+--   N.Migracion(n, function(db) ... end)   -- db: AlfaDB (sus .settings)
+-- Al entrar, los pasos con número mayor al último hecho
+-- (AlfaDB.alfaSchema) corren una sola vez, en orden; cada uno que termina
+-- bien se anota, así nadie pierde su configuración ni la muda dos veces.
+-- Un paso que falla se avisa y detiene los siguientes hasta la próxima vez.
+---------------------------------------------------------------------------
+local migraciones = {}
+
+function N.Migracion(n, fn)
+	n = tonumber(n)
+	assert(n and n >= 1 and type(fn) == "function", "Migracion: número y función")
+	for _, m in ipairs(migraciones) do assert(m.n ~= n, "Migracion: número repetido " .. n) end
+	migraciones[#migraciones + 1] = { n = n, fn = fn }
+end
+
+-- -> cuántos pasos corrieron
+function N.CorrerMigraciones()
+	local db = A.DB and A.DB()
+	if type(db) ~= "table" then return 0 end
+	local hecha = tonumber(db.alfaSchema) or 0
+	table.sort(migraciones, function(a, b) return a.n < b.n end)
+	local corridas = 0
+	for _, m in ipairs(migraciones) do
+		if m.n > hecha then
+			local ok, err = pcall(m.fn, db)
+			if not ok then
+				if geterrorhandler then geterrorhandler()(err) end
+				return corridas
+			end
+			hecha = m.n
+			db.alfaSchema = hecha
+			corridas = corridas + 1
+		end
+	end
+	return corridas
+end
+
+A.OnLogin(function() N.CorrerMigraciones() end)

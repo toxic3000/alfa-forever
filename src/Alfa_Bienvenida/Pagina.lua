@@ -90,10 +90,34 @@ function M.alCambiar()
 end
 K.AlRepintar(function() M.alCambiar() end)
 
+-- Para la búsqueda de ajustes de la ventana de Alfa (la página es propia):
+-- el aullido y los botones de arriba. El estilo y el acento no van: son
+-- ui.skin, ui.accent y ui.classAccent, que la búsqueda ya encuentra en
+-- Ajustes > Apariencia (cada ajuste sale una sola vez).
+local CONTROLES = {
+	{ kind = "toggle", key = ID .. ".aullido", label = L["Aullido al abrir Alfa"],
+		help = L["Un aullido de lobo, del propio juego, la primera vez que abres Alfa en cada sesión."], search = "howl, wolf sound, sound, opening sound" },
+	{ kind = "button", label = L["Escuchar el aullido"], button = L["Escuchar"], icon = "info",
+		help = L["Suena ahora, aunque el aullido esté apagado."], onClick = function() M.Aullar(true) end, search = "howl, play sound, test sound" },
+	{ kind = "button", label = L["Tu configuración de Alfa"], button = L["Abrir"], icon = "info",
+		help = L["El idioma, el estilo, lo que Alfa hace sola por ti y La Jauría, con «Cambiar» en cada cosa. También con /alfa bienvenida."],
+		onClick = function() M.Abrir("pedido", "asistente") end, search = "setup, welcome, wizard, language, configuration" },
+	{ kind = "button", label = L["Reportar un error, una mejora o un comentario"], button = L["Reportar"], icon = "info",
+		help = L["Alfa arma el reporte y tú lo pegas en el buzón privado del Discord de La Jauría. También con /alfa reportar."],
+		onClick = function() M.AbrirReporte() end, search = "bug report, feedback, suggestion, discord" },
+	{ kind = "button", label = function() return format(L["Lo nuevo en Alfa %s"], M.VERSION_ALFA) end, button = L["Ver"], icon = "info",
+		help = L["La bienvenida con las novedades de esta versión."],
+		onClick = function()
+			if M.AbrirNotas and M.AbrirNotas() then return end
+			M.Abrir("pedido", "portada")
+		end, search = "whats new, changelog, patch notes, release notes, version" },
+}
+
 N.Modulo({
 	id = ID, nombre = L["Estilo y sonido"], icono = "ic-apariencia", orden = 90, seccion = "ajustes",
 	subtitulo = L["Tu estilo (Alfa, Clásico WoW o Cristal), el color de acento y el aullido."],
 	comando = "estilo",
 	ajustes = { aullido = true, idioma = "" },
+	controles = CONTROLES,
 	construir = construir,
 })

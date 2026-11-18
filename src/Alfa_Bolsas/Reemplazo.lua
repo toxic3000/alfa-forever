@@ -302,6 +302,16 @@ A.OnLogin(function() M.Luego(0, R.Aplicar) end)
 ---------------------------------------------------------------------------
 AlfaBolsas = type(rawget(_G, "AlfaBolsas")) == "table" and rawget(_G, "AlfaBolsas") or {}
 AlfaBolsas.Activas = function() return R.Activo() end
+-- Lo que se puede vender y cuánto vale, con el consejo de Comercio si está
+-- (Sugerencias.lua): para el aviso de bolsas llenas de Inicio. 1.1.9.
+--   -> cuántos, valor en cobre, "Lino ×12, Garra rota ×3 y 2 más"
+AlfaBolsas.Venta = function()
+	local S = M.Sugerencias
+	if not (S and S.Estado) then return nil end
+	local e = S.Estado()
+	local lista = e.vender or {}
+	return #lista, e.valorVenta or 0, S.Nombres and S.Nombres(lista, 3) or nil
+end
 AlfaBolsas.Abrir = function()
 	if not R.Activo() then return false end
 	V.MostrarBolsas(true)

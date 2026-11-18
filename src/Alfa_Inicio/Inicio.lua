@@ -185,11 +185,7 @@ local function llenar(rejilla, datos)
 	end
 end
 
-local function cerrarVentana()
-	local O = A.UI and A.UI.Options
-	local win = type(O) == "table" and O.frame
-	if type(win) == "table" and type(win.Hide) == "function" then win:Hide() end
-end
+local function cerrarVentana() N.CerrarVentana() end
 
 ---------------------------------------------------------------------------
 -- 1. ¿Qué hacemos hoy?

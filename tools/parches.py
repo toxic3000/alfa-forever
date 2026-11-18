@@ -602,6 +602,37 @@ de cada carpeta.
 """
 
 
+# 1.1.9: un solo termino. El paquete esMX del motor dice "Calabozos" y Alfa
+# dice "Mazmorras" (decision de Toxic, 18/11/2026). Se cambia con su genero:
+# "el calabozo" -> "la mazmorra". En orden: lo largo antes que lo corto.
+_MAZMORRAS = [
+    ("Todos los calabozos", "Todas las mazmorras"), ("todos los calabozos", "todas las mazmorras"),
+    ("Los calabozos están desactivados", "Las mazmorras están desactivadas"),
+    ("Calabozos desactivados", "Mazmorras desactivadas"),
+    ("Ningún calabozo", "Ninguna mazmorra"), ("ningún calabozo", "ninguna mazmorra"),
+    ("Los calabozos", "Las mazmorras"), ("los calabozos", "las mazmorras"),
+    ("del calabozo", "de la mazmorra"), ("El calabozo", "La mazmorra"), ("el calabozo", "la mazmorra"),
+    ("Un calabozo", "Una mazmorra"), ("un calabozo", "una mazmorra"),
+    ("Este calabozo", "Esta mazmorra"), ("este calabozo", "esta mazmorra"),
+    ("CALABOZOS", "MAZMORRAS"), ("CALABOZO", "MAZMORRA"),
+    ("Calabozos", "Mazmorras"), ("calabozos", "mazmorras"), ("Calabozo", "Mazmorra"), ("calabozo", "mazmorra"),
+]
+
+
+def mazmorras(dist: pathlib.Path) -> list:
+    rutas = sorted((dist / "Alfa_esMX").glob("*.lua")) + [dist / "Alfa_Codex" / "Alfa_Codex.toc"]
+    for ruta in rutas:
+        if not ruta.exists():
+            continue
+        texto = ruta.read_bytes().decode("utf-8")
+        nuevo = texto
+        for viejo, bueno in _MAZMORRAS:
+            nuevo = nuevo.replace(viejo, bueno)
+        if nuevo != texto:
+            ruta.write_bytes(nuevo.encode("utf-8"))
+    return []
+
+
 def limpiar(dist: pathlib.Path, cfg: dict) -> list:
     errores = []
     for ruta in sorted(dist.glob("Alfa_????/Interface.lua")):
@@ -609,6 +640,7 @@ def limpiar(dist: pathlib.Path, cfg: dict) -> list:
         nuevo = _SOBRANTE.sub("", texto)
         if nuevo != texto:
             ruta.write_bytes(nuevo.encode("latin-1"))
+    errores += mazmorras(dist)
     readme = dist / "Alfa" / "README.txt"
     if readme.exists():
         web = cfg["urls"]["issues"].rsplit("/issues", 1)[0]

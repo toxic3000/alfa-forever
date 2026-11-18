@@ -303,6 +303,12 @@ M.EN = {
 	["Versión %s"] = "Version %s",
 	["¡Qué gusto verte de vuelta! Esto es lo que trae esta versión para ti y tu manada."] = "Great to see you back! Here's what this version brings for you and your pack.",
 	["Desde tu última visita también hubo cambios en %s: los ves en «Ver todo lo nuevo»."] = "Since your last visit there were also changes in %s: find them in \"See everything new\".",
+	-- Novedades 1.1.9
+	["Todo a la mano"] = "Everything at hand",
+	["El buscador de Ajustes ya encuentra todo: también Pesca, Comercio, Ruta, Bolsas, Combate, Curación, Lya y Estilo y sonido."] = "The settings search now finds everything: Fishing, Trade, Route, Bags, Combat, Healing, Lya and Style and sound too.",
+	["Bolsas encuentra tus objetos en ruso y en otros alfabetos aunque escribas con mayúscula."] = "Bags finds your items in Russian and other alphabets even if you type with capitals.",
+	["Cuando tus bolsas se llenan, Hoy te dice qué puedes vender y cuánto te dan."] = "When your bags fill up, Today tells you what you can sell and how much you'll get.",
+	["Tus ajustes pasan una prueba de guardar y recargar en cada versión, para que nunca se pierdan."] = "Your settings go through a save-and-reload test in every release, so they're never lost.",
 	-- Novedades 1.1.8
 	["Íconos limpios y tus recursos en el mapa"] = "Clean icons and your resources on the map",
 	["Íconos sin bordes negros: el mapa y las ventanas de Alfa se ven limpios al hacer zoom o al teñirse de color."] = "Icons without black edges: the map and Alfa's windows look clean when you zoom or when they take on a color.",

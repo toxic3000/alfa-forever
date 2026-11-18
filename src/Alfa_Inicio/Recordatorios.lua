@@ -246,6 +246,14 @@ local function revisarBolsas()
 			if ok2 and type(nombre) == "string" then txt = txt .. "\n" .. format(L["Lo que menos vale: %s"], nombre) end
 		end
 	end
+	-- Con Bolsas (y el consejo de Comercio): qué vender y cuánto te dan. 1.1.9.
+	local B = rawget(_G, "AlfaBolsas")
+	if type(B) == "table" and type(B.Venta) == "function" then
+		local ok, n, cobre, nombres = pcall(B.Venta)
+		if ok and type(n) == "number" and n > 0 and type(cobre) == "number" and cobre > 0 then
+			txt = txt .. "\n" .. format(L["Puedes vender %s por %s."], nombres or tostring(n), N.Dinero(cobre))
+		end
+	end
 	local botones = { { texto = L["Llévame a un vendedor"], fn = function() irA("vendor") end } }
 	if N.ModuloPorId("bolsas") then
 		table.insert(botones, 1, { texto = L["Abrir bolsas"], fn = function() N.Abrir("bolsas") end })

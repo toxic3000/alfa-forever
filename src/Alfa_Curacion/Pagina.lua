@@ -500,11 +500,61 @@ A.On("SETTING_CHANGED", function(path)
 	if type(path) == "string" and path:sub(1, #ID + 1) == ID .. "." then M.Avisar() end
 end)
 
+---------------------------------------------------------------------------
+-- Para la búsqueda de ajustes de la ventana de Alfa (la página es propia):
+-- los mismos ajustes de arriba, con su texto y atenuados igual. "Usar
+-- también en los marcos de Blizzard" no va: su botón es seguro (lo abre el
+-- juego) y solo se puede hacer en la página.
+---------------------------------------------------------------------------
+local function clave(k) return ID .. "." .. k end
+local function apagado() return not activo() end
+
+local function toggle(k, label, help, search, hija)
+	return { kind = "toggle", key = clave(k), label = label, help = help, search = search, child = hija, disabled = apagado }
+end
+
+local CONTROLES = {
+	-- No es un ajuste (va por personaje, en M.Datos): se cambia solo si es otro valor,
+	-- así "Restablecer la página" no vuelve a aplicar tu preajuste sin motivo.
+	{ kind = "toggle", label = L["El clic izquierdo solo selecciona"],
+		help = L["Para quien prefiere seleccionar con el izquierdo: la cura de ese clic pasa al botón central. Se vuelve a aplicar tu preajuste."],
+		disabled = function() return M.Datos().preajuste ~= "curar" end,
+		get = function() return M.IzquierdoSelecciona() end,
+		set = function(v)
+			if (v == true) ~= M.IzquierdoSelecciona() then M.FijarIzquierdoSelecciona(v == true) end
+		end,
+		search = "left click select, click casting, middle button" },
+	{ kind = "toggle", key = clave("activo"), label = L["Usar los marcos de Alfa"],
+		help = L["Tu grupo y tu banda con su vida, para curar con un clic. Se cambia fuera de combate."],
+		search = "raid frames, party frames, healing frames, click to heal" },
+	toggle("solo", L["Verte a ti estando solo"], L["Tu propio marco aparece aunque no estés en grupo, para curarte con un clic."], "solo, player frame", true),
+	toggle("ocultarBlizzard", L["Ocultar los marcos de grupo de Blizzard"], L["Para no ver dos veces a tu grupo. Se cambia fuera de combate."], "hide blizzard raid frames", true),
+	{ kind = "slider", key = clave("ancho"), label = L["Ancho"], min = 50, max = 200, step = 2, format = px, child = true, disabled = apagado, search = "frame width" },
+	{ kind = "slider", key = clave("alto"), label = L["Alto"], min = 20, max = 80, step = 1, format = px, child = true, disabled = apagado, search = "frame height" },
+	{ kind = "slider", key = clave("porColumna"), label = L["Compañeros por columna"], min = 1, max = 40, step = 1, format = entero, child = true, disabled = apagado,
+		help = L["Cuántos van en cada columna (o fila) antes de empezar otra. 5 es un grupo por columna."], search = "per column, layout" },
+	{ kind = "dropdown", key = clave("crecer"), label = L["Crecen hacia"], child = true, disabled = apagado,
+		choices = { { value = "abajo", label = L["Abajo"] }, { value = "derecha", label = L["La derecha"] } }, search = "grow direction, layout" },
+	{ kind = "dropdown", key = clave("orden"), label = L["Orden"], child = true, disabled = apagado,
+		choices = { { value = "grupo", label = L["Por grupo"] }, { value = "rol", label = L["Por rol"] },
+			{ value = "clase", label = L["Por clase"] }, { value = "nombre", label = L["Por nombre"] } }, search = "sort, order, role, class" },
+	{ kind = "button", label = L["Volver a su lugar"], button = L["Reiniciar"], icon = "window", disabled = apagado,
+		help = L["Pone los marcos donde estaban al instalar Alfa."], onClick = function() M.ReiniciarPosicion() end, search = "reset position" },
+	toggle("colorClase", L["Color de clase"], L["La barra de vida con el color de la clase de cada uno. Apagado: barra verde y el nombre con su color."], "class colours"),
+	toggle("entrantes", L["Curas que van llegando"], L["Una franja verde clara muestra las curas que ya vienen en camino."], "incoming heals, heal prediction"),
+	toggle("amenaza", L["Amenaza"], L["Una línea roja arriba avisa cuando un enemigo va por ese compañero."], "threat, aggro"),
+	toggle("disipar", L["Perjuicios que puedes quitar"], L["El borde toma el color del perjuicio (magia, maldición, enfermedad o veneno) cuando tú lo puedes quitar."], "dispel, debuffs, decurse"),
+	toggle("porcentaje", L["Porcentaje de vida"], L["Muestra la vida en número, debajo del nombre."], "health percent"),
+	toggle("alcance", L["Atenuar a quien está lejos"], L["Si está fuera de tu alcance, su marco se ve más tenue."], "range, out of range fade"),
+	toggle("descripcion", L["Detalle al pasar el ratón"], L["El cuadro del jugador al pasar el ratón. En combate no sale, para no estorbar."], "tooltip, mouseover"),
+}
+
 N.Modulo({
 	id = ID, nombre = L["Curación"], icono = "ic-curacion", orden = 16,
 	subtitulo = L["Marcos de grupo y banda para curar con un clic, con preajustes por clase."],
 	comando = "curacion",
 	ajustes = M.AJUSTES,
+	controles = CONTROLES,
 	construir = construir,
 })
 

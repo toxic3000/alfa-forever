@@ -59,11 +59,80 @@ M.AJUSTES = {
 
 M.VISTAS = { una = true, categorias = true, bolsa = true }
 
+-- Para la búsqueda de ajustes de la ventana de Alfa (la página es propia,
+-- Pagina.lua): los mismos ajustes que la página, con su texto.
+local function clave(k) return M.ID .. "." .. k end
+local function apagado(k) return function() return not M.Get(k) end end
+local function entero(v) return tostring(math.floor(v + 0.5)) end
+
+-- "Objetos de misión": un solo selector para brilloMision y marcaMision
+-- (brilloMision manda, Botones.lua), igual que en la página.
+local function misionActual()
+	if M.Get("brilloMision") then return "brillo" end
+	return M.Get("marcaMision") and "marco" or "nada"
+end
+
+local CONTROLES = {
+	{ kind = "dropdown", key = clave("vista"), label = L["Vista"],
+		help = L["Todo junto muestra cada casilla en su lugar; por categorías agrupa equipo, consumibles, misiones y materiales; por bolsa pone cada bolsa en su bloque."],
+		choices = { { value = "una", label = L["Todo junto"] }, { value = "categorias", label = L["Categorías"] }, { value = "bolsa", label = L["Por bolsa"] } },
+		get = function() return M.Vista() end, set = function(v) M.Set("vista", v) end,
+		search = "bag view, categories, all in one, by bag" },
+	{ kind = "slider", key = clave("tamIcono"), label = L["Tamaño de las casillas"], help = L["Qué tan grande se ve cada casilla."],
+		min = 28, max = 48, step = 1, format = function(v) return math.floor(v + 0.5) .. " px" end, search = "icon size, slot size" },
+	{ kind = "slider", key = clave("columnas"), label = L["Columnas"], help = L["Cuántas casillas caben en cada fila."],
+		min = 6, max = 20, step = 1, format = entero, search = "columns, width" },
+	{ kind = "toggle", key = clave("barra"), label = L["Barra de tus bolsas"],
+		help = L["Arriba de la ventana, cada bolsa equipada con su espacio: pasa el ratón para resaltar lo que lleva y arrastra otra bolsa para cambiarla."],
+		search = "bag bar, equipped bags" },
+	{ kind = "toggle", key = clave("llavero"), label = L["Mostrar el llavero"], help = L["Tus llaves junto a tus bolsas."], search = "keyring, keys" },
+	{ kind = "toggle", key = clave("reemplazar"), label = L["Usar las bolsas de Alfa"],
+		help = L["La B, Mayús+B, la tecla de cada bolsa y los comerciantes abren la ventana de Alfa. Apágalo para volver a las del juego."],
+		search = "replace bags, blizzard bags, one bag" },
+	{ kind = "toggle", key = clave("banco"), label = L["Usar el banco de Alfa"], child = true, disabled = apagado("reemplazar"),
+		help = L["Al hablar con un banquero se abre el banco de Alfa, con depositar rápido. La primera visita de cada personaje muestra el del juego: así recibe su primera pestaña."],
+		search = "bank, replace bank" },
+	{ kind = "toggle", key = clave("ordenar"), label = L["Botón Ordenar"], help = L["Junta los montones y acomoda tus objetos con un clic."], search = "sort, sort button" },
+	{ kind = "toggle", key = clave("ordenarInverso"), label = L["Ordenar de derecha a izquierda"], child = true, disabled = apagado("ordenar"),
+		help = L["Los objetos se juntan al final de tus bolsas en lugar de al principio."], search = "reverse sort" },
+	{ kind = "toggle", key = clave("avisoLleno"), label = L["Sugerir qué vender"],
+		help = L["Un aviso y una franja en tus bolsas con qué vender, qué conservar y a qué comerciante ir, con un clic para marcar la chatarra."],
+		search = "bags full, sell, junk" },
+	{ kind = "slider", key = clave("avisoLibres"), label = L["Avisar cuando queden"], min = 1, max = 10, step = 1, format = entero,
+		child = true, disabled = apagado("avisoLleno"), help = L["Cuántas casillas libres quedan cuando Alfa te avisa."], search = "free slots" },
+	{ kind = "toggle", key = clave("marcaNivel"), label = L["Nivel de objeto"], help = L["El número abajo a la izquierda de cada pieza de equipo."], search = "item level, ilvl" },
+	{ kind = "toggle", key = clave("marcaCalidad"), label = L["Borde de calidad"], help = L["Un borde del color de la calidad: verde, azul, morado..."], search = "quality border, rarity" },
+	{ kind = "toggle", key = clave("marcaChatarra"), label = L["Chatarra"], help = L["Una moneda sobre lo gris y lo que marcaste como chatarra."], search = "junk, grey items" },
+	{ kind = "toggle", key = clave("marcaNuevos"), label = L["Objetos nuevos"], help = L["Brillan los objetos que acabas de conseguir, hasta que cierras las bolsas."], search = "new items, glow" },
+	{ kind = "toggle", key = clave("marcaMejora"), label = L["Flecha de mejora"],
+		help = L["Una flecha verde en el equipo que es mejor que lo que llevas puesto, según tu clase y nivel."], search = "upgrade arrow" },
+	{ kind = "dropdown", key = clave("brilloMision"), label = L["Objetos de misión"],
+		help = L["Brillo: un borde dorado que late y una insignia «!» (llena si el objeto empieza una misión). Marco fijo: el marco dorado del juego. Nada: sin marca."],
+		choices = { { value = "brillo", label = L["Brillo"] }, { value = "marco", label = L["Marco fijo"] }, { value = "nada", label = L["Nada"] } },
+		get = misionActual,
+		set = function(v)
+			if v == nil then -- nil: los dos vuelven a como vienen
+				M.Set("brilloMision", nil)
+				M.Set("marcaMision", nil)
+			elseif v == "brillo" then
+				M.Set("brilloMision", true)
+			else
+				M.Set("brilloMision", false)
+				M.Set("marcaMision", v == "marco")
+			end
+		end,
+		search = "quest items, quest glow, quest border" },
+	{ kind = "toggle", key = clave("cuadroConteo"), label = L["Cuántos tienes, en el cuadro de cada objeto"],
+		help = L["Al pasar el ratón por un objeto: «Tienes 12 (Lobato: 7 en bolsas, Alt: 5 en banco)», con todos tus personajes."],
+		search = "tooltip count, alts, item count" },
+}
+
 N.Modulo({
 	id = M.ID, nombre = L["Bolsas"], icono = "ic-bolsas", orden = 40,
 	subtitulo = L["Tus bolsas y tu banco en una sola ventana, y lo que lleva cada uno de tus personajes."],
 	comando = "bolsas",
 	ajustes = M.AJUSTES,
+	controles = CONTROLES,
 	construir = function(view) if M.ConstruirPagina then M.ConstruirPagina(view) end end,
 })
 

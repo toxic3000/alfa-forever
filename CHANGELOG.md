@@ -1,5 +1,23 @@
 # Cambios de Alfa
 
+## 1.1.9 — Todo a la mano (18/11/2026)
+
+**Español**
+- El buscador de Ajustes ya encuentra todo: ahora también los ajustes de Pesca, Comercio, Ruta, Bolsas, Combate, Curación, Lya y Estilo y sonido.
+- Bolsas encuentra tus objetos en ruso y en otros alfabetos aunque escribas con mayúscula.
+- Cuando tus bolsas se llenan, el aviso de Hoy te dice qué puedes vender y cuánto te dan (con el consejo de Comercio).
+- Un solo nombre en español de México: «Mazmorras» en todo Alfa (algunas partes decían «Calabozos»).
+- `/alfa <módulo> <algo>`: los módulos ya pueden recibir opciones en su comando.
+- Tus ajustes pasan una prueba de guardar y recargar en cada versión, y Alfa ya sabe mudar ajustes de lugar una sola vez, sin perder nada: lo que necesita la 1.2.0.
+
+**English**
+- The settings search now finds everything: Fishing, Trade, Route, Bags, Combat, Healing, Lya and Style and sound settings too.
+- Bags finds your items in Russian and other alphabets even if you type with capitals.
+- When your bags fill up, Today's alert tells you what you can sell and how much you'll get (with Trade's advice).
+- One name in Latin American Spanish: "Mazmorras" for dungeons all over Alfa (some parts said "Calabozos").
+- `/alfa <module> <something>`: modules can now take options in their command.
+- Your settings go through a save-and-reload test in every release, and Alfa can now move settings to a new place just once, losing nothing: what 1.2.0 needs.
+
 ## 1.1.8 — Íconos limpios y tus recursos en el mapa (18/11/2026)
 
 **Español**

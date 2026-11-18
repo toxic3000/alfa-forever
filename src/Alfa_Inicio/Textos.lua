@@ -322,6 +322,7 @@ M.EN = {
 	["Llévame a reparar"] = "Take me to repair",
 
 	["Vende lo gris con cualquier vendedor o tira algo que ya no uses."] = "Sell your grey items to any vendor or drop something you no longer use.",
+	["Puedes vender %s por %s."] = "You can sell %s for %s.",
 	["Lo que menos vale: %s"] = "Least valuable: %s",
 	["Llévame a un vendedor"] = "Take me to a vendor",
 	["Abrir bolsas"] = "Open bags",

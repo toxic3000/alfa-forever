@@ -2197,6 +2197,14 @@ end)
 -- Late pages (a module's) and their dots show in the sections at once.
 ns.On("ALFA_MODULO", function() if win and win:IsShown() then renderNav() end end)
 
+-- The views of a page that has been drawn (Alfa_Nucleo: N.Repintar). 1.1.9.
+function O.Views(key)
+	local p = pageByKey(key)
+	local out = {}
+	for _, view in pairs(p and p.views or {}) do out[#out + 1] = view end
+	return out
+end
+
 -- The widgets on a page tab (tests and preview): key -> widget.
 function O.Controls(key, tabName)
 	local p = pageByKey(key)

@@ -31,6 +31,12 @@ M.NOVEDADES = {
 --   { version, titulo, puntos = { { icono (ic-*), texto } } }
 ---------------------------------------------------------------------------
 M.NOTAS = {
+	{ version = "1.1.9", titulo = "Todo a la mano", puntos = {
+		{ "ic-buscar", "El buscador de Ajustes ya encuentra todo: también Pesca, Comercio, Ruta, Bolsas, Combate, Curación, Lya y Estilo y sonido." },
+		{ "ic-bolsas", "Bolsas encuentra tus objetos en ruso y en otros alfabetos aunque escribas con mayúscula." },
+		{ "ic-hoy", "Cuando tus bolsas se llenan, Hoy te dice qué puedes vender y cuánto te dan." },
+		{ "ic-exito", "Tus ajustes pasan una prueba de guardar y recargar en cada versión, para que nunca se pierdan." },
+	} },
 	{ version = "1.1.8", titulo = "Íconos limpios y tus recursos en el mapa", puntos = {
 		{ "ic-ventana", "Íconos sin bordes negros: el mapa y las ventanas de Alfa se ven limpios al hacer zoom o al teñirse de color." },
 		{ "ic-recoleccion", "Minería, hierbas, pesca y tesoros también en el mapa grande de Alfa: al acercarte a una zona salen agrupados, con su cantidad." },

@@ -50,11 +50,11 @@ def memoria_mb(p) -> int:
     return 0
 
 
-def correr(escena: str):
+def correr(escena: str, entorno: dict | None = None):
     codigo = ("import sys, runpy; sys.path.insert(0, %r); sys.argv = ['run.py', %r, %r, %r]; "
               "runpy.run_path(%r, run_name='__main__')" % (str(SITE), str(DIST), MODULOS, escena, str(RAIZ / "tools" / "banco" / "run.py")))
     p = subprocess.Popen([sys.executable, "-u", "-c", codigo], cwd=RAIZ, stdout=subprocess.PIPE,
-                         stderr=subprocess.STDOUT, env={**os.environ, "PYTHONUNBUFFERED": "1", "PYTHONIOENCODING": "utf-8"})
+                         stderr=subprocess.STDOUT, env={**os.environ, "PYTHONUNBUFFERED": "1", "PYTHONIOENCODING": "utf-8", **(entorno or {})})
     inicio, salida = time.time(), []
     import threading
     hilo = threading.Thread(target=lambda: salida.extend(p.stdout.read().decode("utf-8", "replace").splitlines()))
@@ -82,7 +82,19 @@ def main() -> int:
     # prueba.lua y las pruebas de cada área (tools/banco/prueba_*.lua).
     escenas = ["prueba.lua"] + sorted(x.name for x in (RAIZ / "tools" / "banco").glob("prueba_*.lua"))
     for escena in escenas:
-        salida, cortado = correr(escena)
+        if escena == "prueba_ajustes.lua":
+            # Dos corridas con las mismas variables guardadas: como un /reload (1.1.9).
+            import tempfile
+            archivo = pathlib.Path(tempfile.gettempdir()) / "alfa_banco_guardadas.lua"
+            if archivo.exists():
+                archivo.unlink()
+            salida, cortado = [], None
+            for fase in ("1", "2"):
+                s, c = correr(escena, {"BANCO_GUARDADAS": str(archivo), "BANCO_FASE": fase})
+                salida += s
+                cortado = cortado or c
+        else:
+            salida, cortado = correr(escena)
         if escena != "prueba.lua":
             print("--", escena)
         for l in salida:

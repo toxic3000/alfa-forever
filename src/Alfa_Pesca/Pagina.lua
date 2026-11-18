@@ -389,11 +389,99 @@ M.alCambiar = function()
 	if view then N.RehacerPagina(view) end
 end
 
+---------------------------------------------------------------------------
+-- Para la búsqueda de ajustes de la ventana de Alfa (la página es propia):
+-- los mismos ajustes de arriba, con su texto y atenuados igual. Las teclas
+-- (se capturan con un clic), los atajos del juego, "Avanzado" (solo pliega
+-- filas) y los botones de tus datos no van.
+---------------------------------------------------------------------------
+local function clave(k) return ID .. "." .. k end
+local function apagado() return not activa() end
+local function apagadoDe(padre) local f = hijaDe(padre) return function() return not f() end end
+
+local function toggle(k, label, help, hija, search)
+	return { kind = "toggle", key = clave(k), label = label, help = help, search = search,
+		child = hija and true or nil, disabled = hija and apagadoDe(hija) or apagado }
+end
+
+local function slider(k, label, a, b, paso, formato, hija, help, search)
+	return { kind = "slider", key = clave(k), label = label, help = help, search = search, min = a, max = b, step = paso, format = formato,
+		child = true, disabled = apagadoDe(hija) }
+end
+
+local function opciones(fn)
+	return function()
+		local t = {}
+		for i, o in ipairs(fn()) do t[i] = { value = o.valor, label = o.texto } end
+		return t
+	end
+end
+
+local CONTROLES = {
+	{ kind = "toggle", key = clave("activo"), label = L["Usar la pesca de Alfa"],
+		help = L["Apágalo si no quieres que Alfa toque tus teclas, tu equipo ni tus ajustes al pescar."], search = "fishing, enable fishing, pesca" },
+	toggle("saltoMayus", L["Mayús+Espacio sigue saltando"], L["Con la tecla en Espacio, Mayús+Espacio salta mientras el modo está abierto."], nil, "shift space, jump"),
+	toggle("saltarAlMoverse", L["Al moverte, la tecla vuelve a la normal"], L["Mientras caminas o corres, tu tecla hace lo de siempre (con Espacio, saltar)."], nil, "moving, jump, key"),
+	toggle("abrirConCana", L["Abrir el modo al ponerte una caña"], nil, nil, "fishing pole, fishing mode"),
+	toggle("cerrarAlMontar", L["Cerrar el modo al montar"], nil, nil, "mount, fishing mode"),
+	toggle("prepararEquipo", L["Ponerme el equipo de pesca"], L["Tu tecla primero te pone la mejor caña y lo que tengas con bonificación de pesca (sombrero, guantes, botas, abalorios)."], nil, "fishing gear, pole, equip"),
+	toggle("prepararCebo", L["Poner el cebo"], L["Si tu caña no tiene cebo, tu tecla pone el mejor que tengas (o el que prefieras) antes de lanzar."], nil, "lure, bait"),
+	{ kind = "dropdown", key = clave("ceboPreferido"), label = L["Cebo preferido"], choices = opciones(opcionesCebo),
+		child = true, disabled = apagadoDe("prepararCebo"), search = "lure, bait" },
+	toggle("restaurarEquipo", L["Volver a mi equipo al cerrar el modo"], L["Alfa recuerda lo que llevabas antes de ponerte lo de pesca y te lo vuelve a poner."], nil, "swap back, gear"),
+}
+-- "No cambiar: ..." de cada grupo de ranuras (no es un ajuste suelto: va en la tabla excluir).
+for _, gr in ipairs(Eq.GRUPOS) do
+	local id = gr.id
+	CONTROLES[#CONTROLES + 1] = { kind = "toggle", label = format(L["No cambiar: %s"], gr.nombre), child = true,
+		disabled = apagadoDe("prepararEquipo"), search = "gear slot, exclude",
+		get = function() local t = N.Get(ID, "excluir") return type(t) == "table" and t[id] == true end,
+		set = function(v) Eq.SetExcluido(id, v) end }
+end
+for _, c in ipairs({
+	toggle("barra", L["Mostrar la barra en el modo pesca"], nil, nil, "fishing bar"),
+	toggle("barraVertical", L["Barra vertical"], nil, "barra", "vertical bar"),
+	slider("barraEscala", L["Tamaño de la barra"], 0.7, 1.5, 0.05, pct, "barra", nil, "bar size, scale"),
+	toggle("barraPlegar", L["Plegarla sola"], L["Sin el ratón encima, la barra guarda sus botones y deja solo lo que pasa."], "barra", "collapse bar"),
+	toggle("vistaMinima", L["Vista mínima al lanzar"], L["Mientras el corcho está en el agua, una línea fina con el tiempo, tu habilidad y lo último que sacaste."], nil, "minimal view, bobber"),
+	toggle("resumen", L["Aviso con lo que sacas"], nil, nil, "catch toast, loot"),
+	toggle("metasVentana", L["Ventana de metas"], L["Con el modo pesca abierto y alguna meta, la ventanita de metas se ve sola."], nil, "goals window"),
+	toggle("ocultarUI", L["Ocultar la interfaz al pescar"], L["Mientras pescas se ve solo el mundo y la barra de pesca. Nunca en combate: al empezar uno, todo vuelve."], nil, "hide ui, hide interface"),
+	toggle("uiMinimapa", L["Dejar el minimapa"], nil, "ocultarUI", "minimap"),
+	toggle("uiChat", L["Dejar el chat"], nil, "ocultarUI", "chat"),
+	toggle("sonido", L["Subir el sonido al pescar"], L["Sube los efectos y baja la música y el ambiente para que oigas el chapoteo. Al terminar, todo vuelve a como estaba."], nil, "sound, volume, splash"),
+	slider("volumen", L["Volumen de los efectos"], 0, 1, 0.05, pct, "sonido", nil, "sound effects volume"),
+	slider("musica", L["Música mientras pescas"], 0, 1, 0.05, pct, "sonido", nil, "music volume"),
+	slider("ambiente", L["Ambiente mientras pescas"], 0, 1, 0.05, pct, "sonido", nil, "ambience volume"),
+	toggle("sonidoFondo", L["Sonido con el juego en segundo plano"], L["Mientras pescas, el juego se sigue oyendo aunque estés en otra ventana."], nil, "background sound"),
+	toggle("alertas", L["Avisos con sonido"], L["Sonidos suaves del juego: nada de voces ni sonidos repetidos."], nil, "alerts, sound"),
+	{ kind = "dropdown", key = clave("alertaSonido"), label = L["Sonido de los avisos"], choices = opciones(opcionesSonido),
+		child = true, disabled = apagadoDe("alertas"), search = "alert sound",
+		get = function() return N.Get(ID, "alertaSonido") end,
+		set = function(v)
+			N.Set(ID, "alertaSonido", v)
+			local s = M.SONIDO_DE[v]
+			if s and PlaySound then pcall(PlaySound, s.kit, "Master") end
+		end },
+	toggle("alertaCaptura", L["Al sacar algo"], nil, "alertas", "catch alert"),
+	toggle("alertaEscape", L["Cuando se escapa"], nil, "alertas", "escaped, missed"),
+	toggle("alertaInactivo", L["Si te quedas sin lanzar"], L["Con el modo pesca abierto, un aviso suave para volver a lanzar."], "alertas", "idle alert"),
+	slider("inactivoSeg", L["Después de"], 10, 120, 5, function(v) return format(L["%d s"], v) end, "alertaInactivo", nil, "idle seconds"),
+	toggle("autobotin", L["Recoger todo lo que pesques"], L["Toma el botín de la pesca enseguida, aunque tengas apagado el botín automático del juego."], nil, "auto loot"),
+	toggle("ocultarNombres", L["Ocultar nombres al pescar"], L["Esconde las placas y los nombres de los PNJ mientras pescas (los enemigos hostiles conservan su nombre), para ver y tocar mejor el corcho."], nil, "hide names, nameplates"),
+	toggle("iconoCorcho", L["Ícono sobre el corcho"], L["Muestra un ícono encima del corcho: así sabes que tu tecla lo va a recoger."], nil, "bobber icon"),
+	toggle("dobleClic", L["Doble clic derecho para lanzar"], L["Haz doble clic derecho en el mundo para lanzar la caña, sin usar la tecla. Nunca en combate ni en vuelo."], nil, "double click, right click, cast"),
+	slider("velocidad", L["Rapidez del doble clic"], 0.1, 0.8, 0.05, segundos, "dobleClic", L["Tiempo máximo entre los dos clics. Súbelo si tus dobles clics no lanzan."], "double click speed"),
+	toggle("montado", L["También en montura"], nil, "dobleClic", "mounted"),
+	toggle("relanzar", L["Doble clic mientras pescas vuelve a lanzar"], L["Encendido: el doble clic mientras pescas lanza de nuevo y, con Mayús, Ctrl o Alt, recoge. Apagado: al revés."], "dobleClic", "recast"),
+}) do CONTROLES[#CONTROLES + 1] = c end
+
 N.Modulo({
 	id = ID, nombre = L["Pesca"], icono = "ic-pesca", orden = 55,
 	subtitulo = L["Una tecla para todo: equipo, cebo, lanzar y recoger. Con diario, guía, cocina, metas y estadísticas."],
 	comando = "pesca",
 	ajustes = M.AJUSTES,
+	controles = CONTROLES,
 	construir = construir,
 })
 

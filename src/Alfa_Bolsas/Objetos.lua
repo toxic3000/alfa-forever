@@ -59,9 +59,21 @@ do
 	end
 end
 
+-- Cirílico (1.1.9): string.lower de WoW no baja las mayúsculas rusas, así
+-- que «Медь» no encontraba «медь». Mayúsculas a minúsculas, y Ё ё como е
+-- (como hace la búsqueda del motor, Core/Search.lua).
+local CIRILICO = {}
+do
+	for b = 0x90, 0x9F do CIRILICO["\208" .. string.char(b)] = "\208" .. string.char(b + 0x20) end
+	for b = 0xA0, 0xAF do CIRILICO["\208" .. string.char(b)] = "\209" .. string.char(b - 0x20) end
+	CIRILICO["\208\129"], CIRILICO["\209\145"] = "\208\181", "\208\181"
+end
+
 function O.Doblar(s)
 	if type(s) ~= "string" then return "" end
-	return (s:lower():gsub("\195[\128-\191]", ACENTOS))
+	s = s:lower():gsub("\195[\128-\191]", ACENTOS)
+	if s:find("[\208\209]") then s = s:gsub("[\208\209][\128-\191]", CIRILICO) end
+	return s
 end
 
 ---------------------------------------------------------------------------

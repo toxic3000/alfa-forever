@@ -503,9 +503,106 @@ M.alMedidor = function()
 	if ui.medidor:Llenar() then N.RehacerPagina(view) end
 end
 
+---------------------------------------------------------------------------
+-- Para la búsqueda de ajustes de la ventana de Alfa (la página es propia):
+-- los mismos ajustes de arriba, con su texto, atenuados y ocultos igual. Lo
+-- que en la página va plegado bajo "Más opciones del ícono" aquí va suelto
+-- (ese interruptor solo pliega filas: no va). Ni la sesión ni el tipo del
+-- top de daño: son la vista del medidor, no ajustes.
+---------------------------------------------------------------------------
+local function clave(k) return ID .. "." .. k end
+local function no(fn) return function() return not fn() end end
+local function noLanzador() return not LANZADORES[M.Clase() or ""] end
+
+local function toggle(k, label, help, padre, search)
+	return { kind = "toggle", key = clave(k), label = label, help = help, search = search,
+		child = padre and true or nil, disabled = padre and no(si(padre)) or nil }
+end
+
+local function numeros(valores)
+	local t = {}
+	for i, v in ipairs(valores) do t[i] = { value = v, label = tostring(v) } end
+	return t
+end
+
+local CONTROLES = {
+	toggle("rotacion", L["Mostrar la ayuda de rotación"], L["Un ícono con la habilidad que conviene ahora. Solo muestra: nunca aprieta nada por ti."], nil,
+		"rotation helper, next ability, assisted combat, one button"),
+	{ kind = "dropdown", key = clave("despues"), label = L["Cuántas habilidades después"], help = L["Las que vienen después, más pequeñas a la derecha."],
+		choices = numeros({ 0, 1, 2, 3 }), child = true, disabled = no(si("rotacion")), search = "upcoming abilities, queue" },
+	{ kind = "dropdown", key = clave("rama"), label = L["Tu especialización"],
+		help = L["Con qué prioridad sugiere Alfa. Automática: la de tus talentos o, mientras subes, la de tu clase."],
+		choices = function()
+			local o = { { value = "auto", label = L["Automática"] } }
+			for _, r in ipairs(P.Ramas()) do o[#o + 1] = { value = r.clave, label = r.nombre or r.clave } end
+			return o
+		end,
+		needs = function() return R.Fuente() == "alfa" and #P.Ramas() > 0 end,
+		child = true, disabled = no(si("rotacion")), search = "spec, specialization, talents, priority" },
+	-- Con el resaltado oficial, el ajuste es el del juego (como en la página).
+	{ kind = "toggle", key = clave("resaltar"), label = L["Resaltar el botón en tu barra"],
+		help = L["Marca el botón de tu barra que tiene la habilidad sugerida."],
+		get = function() return R.ResaltadoActivo() end,
+		set = function(v)
+			M.SetOpt("resaltar", v)
+			if R.ResaltadoOficial() then R.SetResaltado(v) end
+		end,
+		child = true, disabled = no(si("rotacion")), search = "highlight button, action bar" },
+	toggle("fuera", L["También fuera de combate"], L["Con un enemigo elegido, antes de empezar la pelea, y transparente para que no estorbe."], "rotacion", "out of combat"),
+	{ kind = "slider", key = clave("alfaFuera"), label = L["Opacidad fuera de combate"], help = L["Qué tanto se ve el ícono mientras no peleas."],
+		min = 0.15, max = 1, step = 0.05, format = pct, child = true, disabled = no(ambas("rotacion", "fuera")), search = "opacity, alpha, out of combat" },
+	{ kind = "slider", key = clave("tam"), label = L["Tamaño del ícono"], min = 32, max = 64, step = 4, format = px,
+		child = true, disabled = no(si("rotacion")), search = "icon size, scale" },
+	toggle("tecla", L["Mostrar la tecla"], L["La tecla del botón de tu barra con esa habilidad, sobre el ícono."], "rotacion", "keybind, hotkey"),
+	toggle("nombre", L["Nombre de la habilidad"], L["Debajo del ícono: útil mientras aprendes."], "rotacion", "ability name, spell name"),
+	toggle("porque", L["Explicar por qué, unas pocas veces"], L["Una línea corta debajo del ícono, como «Golpe mortal: recarga lista». Cada una sale hasta 4 veces y luego se calla; su × la calla antes."], "rotacion", "explain why, reason"),
+	toggle("barrido", L["Barrido de recarga"], L["Un barrido oscuro y suave sobre los íconos mientras su recarga corre."], "rotacion", "cooldown swipe"),
+	(function()
+		local c = toggle("prioridadAlfa", L["Usar siempre la prioridad de Alfa"], L["Aunque el juego ofrezca la ayuda de Blizzard, sugiere con la prioridad de Alfa para tu clase."], "rotacion", "alfa priority, blizzard assisted combat")
+		c.needs = function() return R.Disponible() and true or false end
+		return c
+	end)(),
+	{ kind = "button", label = L["Volver a su lugar"], button = L["Devolver"], icon = "window",
+		help = L["Tus marcos de combate vuelven a su lugar de siempre."], onClick = function() M.ReiniciarPosiciones() end,
+		search = "reset position, move frames" },
+	toggle("avisos", L["Avisos de reacción"], L["Un aviso corto cuando se activa una habilidad que depende de lo que pasó, como Abrumar después de que el enemigo esquive."], nil,
+		"reaction alerts, proc, overpower"),
+	toggle("avisosSonido", L["Con sonido"], nil, "avisos", "alert sound"),
+	toggle("avisosPorque", L["Explicar por qué"], L["Una línea debajo del aviso con lo que pasó."], "avisos", "explain why"),
+	toggle("avisosOtros", L["También cuando el juego hace brillar otra habilidad"], L["Cualquier habilidad tuya que el juego resalte por un efecto."], "avisos", "spell glow, proc"),
+	{ kind = "button", label = L["Explicaciones"], button = L["Volver a mostrarlas"], icon = "info",
+		help = format(L["Cada aviso y cada porqué sale con texto hasta %d veces y luego solo queda el ícono."], M.LIMITE_TEXTO),
+		onClick = function() M.ReiniciarTextos() end, search = "explanations, show again, tips" },
+	(function()
+		local c = toggle("golpe", L["Barra de golpe"], L["Cuánto falta para tu siguiente golpe automático, con cada mano. Ayuda a meter Embate o Golpe heroico sin perder golpes."], nil, "swing timer, auto attack")
+		c.needs = noLanzador
+		return c
+	end)(),
+	(function()
+		local c = toggle("golpeNumero", L["Segundos junto a la barra"], L["El número que cuenta hacia atrás. Apagado, solo la barra."], "golpe", "swing timer seconds")
+		c.needs = noLanzador
+		return c
+	end)(),
+	toggle("panel", L["Panel de estadísticas"], L["Un cuadro pequeño y movible con tu vida y las estadísticas que más pesan para tu clase. En combate el juego oculta algunos números: se queda el último que se pudo leer."], nil,
+		"stats panel, character stats"),
+	toggle("marcaMision", L["Marcar a quien te falta para una misión"], L["Un ícono de misión en la placa de nombre de los enemigos y personajes que todavía necesitas para una misión de tu registro. En mazmorras el juego oculta esos datos y no se marcan."], nil,
+		"quest mobs, nameplate quest icon"),
+	toggle("marcaMisionBrillo", L["Con un brillo suave"], L["Además del ícono, un brillo dorado que late alrededor de su barra."], "marcaMision", "quest glow"),
+	toggle("medidor", L["Mostrar la ventana del medidor"], L["También con /alfa dps. No se cierra con Esc, para que la tengas a la vista al pelear."], nil,
+		"damage meter, dps meter, recount, details"),
+	toggle("medidorGrupo", L["Solo cuando estás en grupo"], L["Si juegas sin grupo, la ventana se esconde."], "medidor", "group only, party"),
+	{ kind = "slider", key = clave("opacidad"), label = L["Opacidad de la ventana"], min = 0.3, max = 1, step = 0.05, format = pct,
+		child = true, disabled = no(si("medidor")), search = "meter opacity, alpha" },
+	{ kind = "slider", key = clave("filas"), label = L["Cuántos en el top"], min = 3, max = 10, step = 1, format = entero,
+		help = L["En la ventana y aquí. Si no estás entre ellos, tu fila sale al final."], search = "meter rows, top" },
+	{ kind = "dropdown", key = clave("anunciar"), label = L["Cuántos se anuncian"], choices = numeros({ 3, 5, 10 }),
+		help = L["Las líneas que escribe Anunciar en el chat de tu grupo o banda."], search = "announce, report to chat" },
+}
+
 N.Modulo({
 	id = ID, nombre = L["Combate"], icono = M.ICONO, orden = 15, seccion = "personaje",
 	subtitulo = L["Qué habilidad presionar ahora y cuáles siguen, avisos de reacción y el top de daño de tu grupo."],
 	ajustes = M.AJUSTES,
+	controles = CONTROLES,
 	construir = construir,
 })

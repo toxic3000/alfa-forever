@@ -168,9 +168,60 @@ M.Avisar = function()
 	if view then N.RehacerPagina(view) end
 end
 
+---------------------------------------------------------------------------
+-- Para la búsqueda de ajustes de la ventana de Alfa (la página es propia):
+-- los mismos ajustes y botones de arriba, con su texto y atenuados igual.
+---------------------------------------------------------------------------
+local function clave(k) return ID .. "." .. k end
+local function no(fn) return function() return not fn() end end
+local function cuentaHistorias()
+	local Hi = M.Historias
+	return visible() and Hi and Hi.Modo() ~= "pedir" and Hi.Modo() ~= "nunca"
+end
+local function elegir(lista)
+	local t = {}
+	for i, o in ipairs(lista) do t[i] = { value = o.valor, label = o.texto } end
+	return t
+end
+local function minutos(v) return format(L["%d min"], floor(v + 0.5)) end
+
+local CONTROLES = {
+	{ kind = "toggle", key = clave("mostrar"), label = L["Mostrar a Lya"],
+		help = L["Tu loba compañera: te da consejos y ánimo. También con /alfa lya."], search = "companion, wolf, pet, show lya, hide lya" },
+	{ kind = "slider", key = clave("tamano"), label = L["Tamaño"], min = 48, max = 96, step = 4,
+		format = function(v) return format(L["%d px"], floor(v + 0.5)) end,
+		disabled = no(visible), help = L["Qué tan grande se ve Lya."], search = "lya size, scale" },
+	{ kind = "toggle", key = clave("bloqueado"), label = L["Bloquear su lugar"], disabled = no(visible),
+		help = L["Para no moverla sin querer. Sin bloquear, arrástrala a donde quieras."], search = "lock lya, move" },
+	{ kind = "dropdown", key = clave("frecuencia"), label = L["Cuántos consejos"], choices = elegir(MODOS), disabled = no(visible),
+		help = L["Muchos: consejos del momento y de vez en cuando uno de Alfa. Pocos: menos seguido. Solo importantes: al morir, al subir de nivel y en tus logros."],
+		search = "tips frequency, how often, chatty" },
+	{ kind = "slider", key = clave("minutos"), label = L["Minutos entre consejos"], min = 2, max = 30, step = 1, format = minutos,
+		child = true, disabled = no(hablaMas),
+		help = L["Lo menos que espera Lya entre un consejo y otro. Lo importante no espera."], search = "tips interval, minutes" },
+	{ kind = "toggle", key = clave("sonido"), label = L["Sonido suave"], disabled = no(visible),
+		help = L["Un clic bajito cuando Lya te dice algo."], search = "lya sound" },
+	{ kind = "button", label = L["Consejos vistos"], button = L["Volver a mostrarlos"], icon = "reset", disabled = no(visible),
+		help = L["Cada frase sale tres veces como mucho. Con esto vuelven a salir desde el principio."],
+		onClick = function() Ce.OlvidarVistos() end, search = "seen tips, show again" },
+	{ kind = "dropdown", key = clave("historias"), label = L["Lya cuenta historias"], choices = elegir(MODOS_HISTORIA), disabled = no(visible),
+		help = L["Siempre: te ofrece la historia de cada misión y un dato de cada zona nueva. A veces: de las misiones que tomas sin leer, y no siempre. Solo si le pido: con clic derecho, «Cuéntame algo de aquí». Las historias se guardan igual."],
+		search = "quest stories, lore, fun facts" },
+	{ kind = "slider", key = clave("minutosHistoria"), label = L["Minutos entre historias"], min = 3, max = 60, step = 1, format = minutos,
+		child = true, disabled = no(cuentaHistorias),
+		help = L["Lo menos que espera Lya entre una historia y otra. Nunca en combate ni en mazmorras."], search = "stories interval, minutes" },
+	{ kind = "toggle", key = clave("epilogo"), label = L["El final de cada misión"], child = true, disabled = no(cuentaHistorias),
+		help = L["Al entregar una misión, Lya te ofrece contarte cómo terminó."], search = "quest epilogue, ending" },
+	{ kind = "button", label = L["Tus historias"], button = L["Abrir Historias"], icon = "info",
+		needs = function() return M.Historias ~= nil end,
+		help = L["Todas las misiones que Lya te guardó, por zona, con su historia completa. También con /alfa historias."],
+		onClick = function() if M.Historias then M.Historias.Abrir() end end, search = "stories window, quest log lore" },
+}
+
 N.Modulo({
 	id = ID, nombre = L["Lya"], icono = "ic-lobo", orden = 48, seccion = "personaje",
 	subtitulo = L["Tu loba compañera: consejos cortos, ánimo y nunca te deja atrás."],
 	ajustes = M.AJUSTES,
+	controles = CONTROLES,
 	construir = construir,
 })

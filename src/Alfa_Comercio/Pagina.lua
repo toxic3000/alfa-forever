@@ -678,6 +678,32 @@ local function rehacerLuego()
 end
 
 ---------------------------------------------------------------------------
+-- Para la búsqueda de ajustes de la ventana de Alfa (la página es propia):
+-- los ajustes de "En el juego" y "Las cuentas". Borrar los precios no va.
+---------------------------------------------------------------------------
+local CONTROLES = {
+	{ kind = "toggle", key = ruta("tooltip"), label = L["Consejo en el cuadro de los objetos"],
+		help = L["Al pasar el ratón sobre un objeto: su precio en la subasta, lo que paga el comerciante y qué te conviene."],
+		search = "tooltip, item price, auction price, vendor price" },
+	{ kind = "toggle", key = ruta("boton"), label = L["Barra de Alfa en la casa de subastas"],
+		help = L["El botón «Escanear con Alfa» bajo la ventana de la subasta."], search = "auction house, scan button, ah" },
+	{ kind = "toggle", key = ruta("busquedas"), label = L["Aprender de tus búsquedas"],
+		help = L["Cuando buscas algo en la subasta, Alfa guarda el precio más bajo que ves."], search = "auction search, learn prices" },
+	{ kind = "slider", key = ruta("comision"), label = L["Comisión de la subasta"], min = 0, max = 15, step = 1,
+		format = function(v) return ("%d %%"):format(floor((v or 0) + 0.5)) end,
+		help = L["Lo que se queda la subasta de cada venta. Suele ser 5 % en la de tu facción y 15 % en la neutral. Es un estimado."],
+		search = "auction cut, fee, commission" },
+	{ kind = "dropdown", key = ruta("desencantar"), label = L["Considerar desencantar"],
+		help = L["«Siempre» sirve si un amigo encantador te ayuda. Las tablas de desencantar son estimadas."],
+		choices = { { value = "auto", label = L["Si tú o tus personajes pueden"] }, { value = "siempre", label = L["Siempre"] },
+			{ value = "nunca", label = L["Nunca"] } },
+		search = "disenchant, enchanting" },
+	{ kind = "slider", key = ruta("diasViejo"), label = L["Avisar cuando los precios tengan más de"], min = 1, max = 14, step = 1,
+		format = function(v) return L["%d días"]:format(floor((v or 0) + 0.5)) end,
+		help = L["Los precios cambian: después de estos días Alfa te recuerda escanear otra vez."], search = "old prices, stale, days, scan reminder" },
+}
+
+---------------------------------------------------------------------------
 -- Módulo, comandos y avisos
 ---------------------------------------------------------------------------
 
@@ -688,6 +714,7 @@ N.Modulo({
 		tooltip = true, boton = true, busquedas = true,
 		comision = 5, desencantar = "auto", diasViejo = 3,
 	},
+	controles = CONTROLES,
 	construir = construir,
 })
 

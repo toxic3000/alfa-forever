@@ -183,9 +183,39 @@ M.Escuchar("PLAN_AVANCE", luego)
 -- ruta.soloRuta: el ajuste que lee Comodidades (y el primer arranque).
 A.RegisterDefaults("ruta", { soloRuta = true })
 
+-- Para la búsqueda de ajustes de la ventana de Alfa (la página es propia):
+-- los mismos ajustes de arriba; los de buscar cerca, si está.
+local function hayCerca() return M.Cerca ~= nil end
+local CONTROLES = {
+	{ kind = "toggle", key = "ruta.soloRuta", label = L["Aceptar y entregar solo las misiones de mi ruta"],
+		help = L["Alfa no toma misiones que no sirven a tu ruta, ni las entrega solas. Lo respeta también «todas las misiones» de Comodidades."],
+		search = "only route quests, quest automation" },
+	-- behavior.autoAccept y behavior.autoTurnin no van aquí: son del motor (la
+	-- búsqueda los encuentra en Misiones) y «Restablecer la página» de Ruta no
+	-- debe tocarlos.
+	{ kind = "toggle", key = M.ID .. ".evitarGrupo", label = L["Evitar misiones de grupo"],
+		help = L["Al armar tus rutas, Alfa deja fuera las que piden élites."], search = "group quests, elite quests, skip" },
+	{ kind = "slider", key = M.ID .. ".margen", label = L["Niveles arriba del tuyo"], min = 1, max = 4, step = 1,
+		format = function(v) return format(L["+%d"], v) end,
+		help = L["Qué tan difíciles pueden ser las misiones que Alfa elige (siempre de las que ya puedes tomar)."],
+		search = "levels above, quest level, difficulty" },
+	{ kind = "toggle", key = M.ID .. ".seguimientoCompleto", label = L["Mostrar más en el seguimiento"],
+		help = L["De fábrica el seguimiento muestra solo lo que estás haciendo; encendido, muestra el paso completo con sus notas."],
+		search = "tracker, full step, notes" },
+	{ kind = "toggle", key = M.ID .. ".cercaBoton", label = L["Botón «Buscar cerca» en el rastreador"], needs = hayCerca,
+		help = L["La lupa de la cabecera del rastreador abre el menú. También: /alfa cerca o tu tecla."], search = "nearby, search nearby, tracker button" },
+	{ kind = "toggle", key = M.ID .. ".cercaHoy", label = L["«Buscar cerca» en la página Hoy"], needs = hayCerca,
+		help = L["Una fila con vuelo, posada, reparar, banco, buzón y tu entrenador, a un clic."], search = "nearby, today page" },
+	{ kind = "toggle", key = M.ID .. ".cercaAviso", label = L["Aviso al poner la flecha"], needs = hayCerca,
+		help = L["Un aviso corto con el lugar, su zona y el tiempo de camino."], search = "nearby, arrow toast" },
+	{ kind = "toggle", key = M.ID .. ".planFlecha", label = L["Mis planes: la flecha va sola al siguiente lugar"], needs = hayCerca,
+		help = L["Cuando la meta de ahora de tu plan es un lugar, la flecha lo toma sin que hagas clic."], search = "plans, arrow, goals" },
+}
+
 N.Modulo({
 	id = M.ID, nombre = L["Ruta"], icono = "ic-ruta", orden = 12,
 	subtitulo = L["Qué hacer ahora, cerrar tus misiones y tus rutas propias."],
 	ajustes = { margen = 2, evitarGrupo = true },
+	controles = CONTROLES,
 	construir = construir,
 })

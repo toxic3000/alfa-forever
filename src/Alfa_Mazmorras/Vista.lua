@@ -1089,12 +1089,7 @@ function V.Visible() return vista ~= nil and vista:IsVisible() and true or false
 function V.Refrescar(arriba)
 	if not V.Visible() then return end
 	N.RehacerPagina(vista)
-	if arriba then
-		local W = A.Widgets
-		local O = A.UI and A.UI.Options
-		local win = O and O.frame
-		if W and W.ScrollTo and win and win.Scroll then W.ScrollTo(win.Scroll, 0) end
-	end
+	if arriba then N.SubirPagina() end
 end
 
 local pronto

@@ -79,9 +79,52 @@ def main() -> int:
         return True
 
     g.PY_LOAD_ADDON = load_addon
+    # Variables guardadas entre dos corridas (prueba_ajustes.lua, 1.1.9): con
+    # BANCO_GUARDADAS, se cargan antes de los addons, como hace el juego, y se
+    # escriben al final, como al salir o con /reload.
+    guardadas = os.environ.get("BANCO_GUARDADAS")
+    if guardadas and pathlib.Path(guardadas).exists():
+        named(pathlib.Path(guardadas).read_text(encoding="utf-8"), "guardadas.lua")
     for name in ADDONS:
         load_addon(name)
     named(SCRIPT, 'drive.lua')
+    if guardadas:
+        nombres = []
+        for name in ADDONS:
+            meta = g.ADDON_META[name]
+            for campo in ("SavedVariables", "SavedVariablesPerCharacter"):
+                for n in str((meta[campo] if meta else None) or "").split(","):
+                    if n.strip():
+                        nombres.append(n.strip())
+        volcar = lua.eval('''function(nombres)
+          local out, visto = {}, {}
+          local function val(v, sangria)
+            local t = type(v)
+            if t == "string" then return string.format("%q", v) end
+            if t == "number" or t == "boolean" then return tostring(v) end
+            if t ~= "table" or visto[v] then return "nil" end
+            visto[v] = true
+            local partes = {}
+            for k, x in pairs(v) do
+              local tk = type(k)
+              if (tk == "string" or tk == "number") and type(x) ~= "function" and type(x) ~= "userdata" then
+                local clave = tk == "string" and string.format("[%q]", k) or ("[" .. tostring(k) .. "]")
+                partes[#partes + 1] = sangria .. "  " .. clave .. " = " .. val(x, sangria .. "  ") .. ","
+              end
+            end
+            visto[v] = nil
+            return "{\\n" .. table.concat(partes, "\\n") .. "\\n" .. sangria .. "}"
+          end
+          for i = 1, #nombres do
+            local n = nombres[i]
+            if rawget(_G, n) ~= nil then out[#out + 1] = n .. " = " .. val(rawget(_G, n), "") end
+          end
+          return table.concat(out, "\\n")
+        end''')
+        tabla = lua.table()
+        for i, n in enumerate(nombres, 1):
+            tabla[i] = n
+        pathlib.Path(guardadas).write_text(volcar(tabla), encoding="utf-8")
     snaps = g.SNAPSHOTS
     if snaps:
         sys.path.insert(0, str(HERE))

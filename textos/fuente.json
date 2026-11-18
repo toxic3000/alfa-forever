@@ -3615,6 +3615,10 @@
   "en": "%s's bags",
   "origen": "Alfa_Bolsas"
  },
+ "Bolsas encuentra tus objetos en ruso y en otros alfabetos aunque escribas con mayúscula.": {
+  "en": "Bags finds your items in Russian and other alphabets even if you type with capitals.",
+  "origen": "Alfa_Bienvenida"
+ },
  "Bolsas y banco": {
   "en": "Bags and bank",
   "origen": "Alfa_Bienvenida"
@@ -5483,6 +5487,10 @@
   "en": "When your step asks for it and you talk to its innkeeper. Never at another inn.",
   "origen": "Alfa_Bienvenida"
  },
+ "Cuando tus bolsas se llenan, Hoy te dice qué puedes vender y cuánto te dan.": {
+  "en": "When your bags fill up, Today tells you what you can sell and how much you'll get.",
+  "origen": "Alfa_Bienvenida"
+ },
  "Cuando tú o tu grupo peleen, aquí sale quién hace más daño.": {
   "en": "When you or your group fight, you'll see here who deals the most damage.",
   "origen": "Alfa_Combate"
@@ -6874,6 +6882,10 @@
  "El brujo Zalazane les robó las Islas del Eco a los Lanza Negra con su vudú.": {
   "en": "The witch doctor Zalazane stole the Echo Isles from the Darkspear with his voodoo.",
   "origen": "Alfa_Lya"
+ },
+ "El buscador de Ajustes ya encuentra todo: también Pesca, Comercio, Ruta, Bolsas, Combate, Curación, Lya y Estilo y sonido.": {
+  "en": "The settings search now finds everything: Fishing, Trade, Route, Bags, Combat, Healing, Lya and Style and sound too.",
+  "origen": "Alfa_Bienvenida"
  },
  "El buscador del motor está apagado (Ajustes > Descubrir): enciéndelo para que Alfa arme guías.": {
   "en": "The engine's Lookup is off (Settings > Discovery): turn it on so Alfa can build guides.",
@@ -18067,6 +18079,10 @@
   "en": "You can sell %s (about %s).",
   "origen": "Alfa_Bolsas"
  },
+ "Puedes vender %s por %s.": {
+  "en": "You can sell %s for %s.",
+  "origen": "Alfa_Inicio"
+ },
  "Puedo usar": {
   "en": "I can use",
   "origen": "Alfa_Enciclopedia"
@@ -21531,6 +21547,10 @@
   "en": "All of Azeroth on one canvas: zoom with the wheel, drag to move around and place your markers with a right-click.",
   "origen": "Alfa_Mundo"
  },
+ "Todo a la mano": {
+  "en": "Everything at hand",
+  "origen": "Alfa_Bienvenida"
+ },
  "Todo al máximo seguro. Pide una tarjeta de video fuerte.": {
   "en": "Everything at its safe maximum. Needs a strong graphics card.",
   "origen": "Alfa_Vista"
@@ -22582,6 +22602,10 @@
  "Tus actitudes son de batalla, defensiva y rabiosa; elige la que pida el momento.": {
   "en": "Your stances are Battle, Defensive and Berserker; pick the one the moment calls for.",
   "origen": "Alfa_Lya"
+ },
+ "Tus ajustes pasan una prueba de guardar y recargar en cada versión, para que nunca se pierdan.": {
+  "en": "Your settings go through a save-and-reload test in every release, so they're never lost.",
+  "origen": "Alfa_Bienvenida"
  },
  "Tus avisos": {
   "en": "Your alerts",
