@@ -1887,6 +1887,10 @@
   "en": "When the flight map opens, flies to the destination your route marks.",
   "origen": "Alfa_Bienvenida"
  },
+ "Al acercar o cargar el mapa, cada parte aparece completa de una vez, sin cuadritos sueltos.": {
+  "en": "When you zoom in or the map loads, each part appears whole at once, with no loose squares.",
+  "origen": "Alfa_Bienvenida"
+ },
  "Al acercar se ven las montañas y el relieve, igual que en el minimapa. Apagado: el mapa pintado del juego.": {
   "en": "Zoom in to see mountains and relief, just like the minimap. Off: the game's painted map.",
   "origen": "Alfa_Bienvenida"
@@ -7365,6 +7369,10 @@
  },
  "El minimapa": {
   "en": "The minimap",
+  "origen": "Alfa_Bienvenida"
+ },
+ "El minimapa de Recolección descansa cuando no tiene nada que mostrar.": {
+  "en": "Gathering's minimap rests when it has nothing to show.",
   "origen": "Alfa_Bienvenida"
  },
  "El minimapa pasa de redondo a cuadrado, con un borde fino. No se recomienda junto con girar el minimapa.": {
@@ -14814,6 +14822,10 @@
  "Minería, hierbas, pesca y tesoros en tu mapa y minimapa, con rutas de farmeo e historial.": {
   "en": "Mining, herbs, fishing and treasures on your map and minimap, with farming routes and history.",
   "origen": "Alfa_Recoleccion"
+ },
+ "Minería, hierbas, pesca y tesoros también en el mapa grande de Alfa: al acercarte a una zona salen agrupados, con su cantidad.": {
+  "en": "Mining, herbs, fishing and treasures on Alfa's big map too: zoom into a zone and they show up grouped, with their count.",
+  "origen": "Alfa_Bienvenida"
  },
  "Minimapa": {
   "en": "Minimap",
@@ -23435,6 +23447,10 @@
   "en": "Several enemies: your hits strike one more.",
   "origen": "Alfa_Combate"
  },
+ "Varios puntos juntos: acércate en el mapa para verlos.": {
+  "en": "Several spots together: zoom in on the map to see them.",
+  "origen": "Alfa_Recoleccion"
+ },
  "Varita": {
   "en": "Wand",
   "origen": "Alfa_Enciclopedia"
@@ -26026,6 +26042,14 @@
  "Íconos de ayuda": {
   "en": "Helper icons",
   "origen": "Alfa_Mazmorras"
+ },
+ "Íconos limpios y tus recursos en el mapa": {
+  "en": "Clean icons and your resources on the map",
+  "origen": "Alfa_Bienvenida"
+ },
+ "Íconos sin bordes negros: el mapa y las ventanas de Alfa se ven limpios al hacer zoom o al teñirse de color.": {
+  "en": "Icons without black edges: the map and Alfa's windows look clean when you zoom or when they take on a color.",
+  "origen": "Alfa_Bienvenida"
  },
  "Ídolo": {
   "en": "Idol",

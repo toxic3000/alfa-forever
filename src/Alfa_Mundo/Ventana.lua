@@ -877,3 +877,17 @@ local API = AlfaMundo
 API.Abrir = V.Abrir
 API.Alternar = V.Alternar
 API.Cerrar = V.Cerrar
+
+-- Las zonas (y ciudades) que el mapa continuo muestra ahora con su arte, o
+-- nil si está cerrado: así un módulo publica sus pines solo de lo que se ve
+-- (Recolección). 1.1.8.
+API.ZonasALaVista = function()
+	if not (F and F:IsShown()) then return nil end
+	local ids = {}
+	for _, lista in ipairs({ Lz.Zonas() or {}, Lz.Ciudades() or {} }) do
+		for _, z in ipairs(lista) do
+			if z.visible then ids[#ids + 1] = z.id end
+		end
+	end
+	return ids
+end

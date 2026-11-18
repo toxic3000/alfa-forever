@@ -16,5 +16,6 @@ Deteccion.lua
 Pines.lua
 Mapa.lua
 Minimapa.lua
+MapaMundo.lua
 Ruta.lua
 Recoleccion.lua

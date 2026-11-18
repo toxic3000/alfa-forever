@@ -38,6 +38,8 @@ if hayMundo() then
 		local ok, id = pcall(AlfaMundo.RegistrarCapa, {
 			id = "recoleccion." .. tipo, grupo = L["Recolección"], nombre = R.NombreTipo(tipo),
 			icono = (R.IconoTipo(tipo)), activa = N.Get(ID, tipo) ~= false,
+			-- En el mapa continuo, desde que se ven las zonas (MapaMundo.lua).
+			zoom = 4.5,
 			alCambiar = function(activa)
 				-- Se guarda también aquí, para cuando Alfa_Mundo no esté.
 				N.Set(ID, tipo, activa and true or false)
@@ -743,6 +745,7 @@ A.OnLogin(function()
 	R.Sesion()
 	M.Mapa.Instalar()
 	M.Mini.Instalar()
+	if M.MapaMundo then M.MapaMundo.Instalar() end
 	-- Las habilidades pueden llegar tarde.
 	A.After(3, releer)
 end)

@@ -31,6 +31,12 @@ M.NOVEDADES = {
 --   { version, titulo, puntos = { { icono (ic-*), texto } } }
 ---------------------------------------------------------------------------
 M.NOTAS = {
+	{ version = "1.1.8", titulo = "Íconos limpios y tus recursos en el mapa", puntos = {
+		{ "ic-ventana", "Íconos sin bordes negros: el mapa y las ventanas de Alfa se ven limpios al hacer zoom o al teñirse de color." },
+		{ "ic-recoleccion", "Minería, hierbas, pesca y tesoros también en el mapa grande de Alfa: al acercarte a una zona salen agrupados, con su cantidad." },
+		{ "ic-mapa", "Al acercar o cargar el mapa, cada parte aparece completa de una vez, sin cuadritos sueltos." },
+		{ "ic-exito", "El minimapa de Recolección descansa cuando no tiene nada que mostrar." },
+	} },
 	{ version = "1.1.7", titulo = "Un mapa impecable", puntos = {
 		{ "ic-mapa", "El mapa se ve más limpio: sin líneas finas entre sus pedazos ni halos oscuros en las orillas de las zonas." },
 		{ "ic-flecha", "Los íconos, los nombres y tu flecha se mueven pegados al mapa al hacer zoom o arrastrar: ya no brincan un píxel." },

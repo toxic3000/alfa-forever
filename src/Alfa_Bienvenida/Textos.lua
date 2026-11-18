@@ -303,6 +303,12 @@ M.EN = {
 	["Versión %s"] = "Version %s",
 	["¡Qué gusto verte de vuelta! Esto es lo que trae esta versión para ti y tu manada."] = "Great to see you back! Here's what this version brings for you and your pack.",
 	["Desde tu última visita también hubo cambios en %s: los ves en «Ver todo lo nuevo»."] = "Since your last visit there were also changes in %s: find them in \"See everything new\".",
+	-- Novedades 1.1.8
+	["Íconos limpios y tus recursos en el mapa"] = "Clean icons and your resources on the map",
+	["Íconos sin bordes negros: el mapa y las ventanas de Alfa se ven limpios al hacer zoom o al teñirse de color."] = "Icons without black edges: the map and Alfa's windows look clean when you zoom or when they take on a color.",
+	["Minería, hierbas, pesca y tesoros también en el mapa grande de Alfa: al acercarte a una zona salen agrupados, con su cantidad."] = "Mining, herbs, fishing and treasures on Alfa's big map too: zoom into a zone and they show up grouped, with their count.",
+	["Al acercar o cargar el mapa, cada parte aparece completa de una vez, sin cuadritos sueltos."] = "When you zoom in or the map loads, each part appears whole at once, with no loose squares.",
+	["El minimapa de Recolección descansa cuando no tiene nada que mostrar."] = "Gathering's minimap rests when it has nothing to show.",
 	-- Novedades 1.1.7
 	["Un mapa impecable"] = "A flawless map",
 	["El mapa se ve más limpio: sin líneas finas entre sus pedazos ni halos oscuros en las orillas de las zonas."] = "The map looks cleaner: no thin lines between its pieces and no dark halos on the edges of zones.",

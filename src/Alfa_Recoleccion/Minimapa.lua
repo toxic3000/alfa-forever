@@ -37,6 +37,7 @@ local quieto, acumulado = 0, 0
 
 local function activo()
 	if N.Get(ID, "minimapa") == false or A.Hidden() then return false end
+	if R.AlgunoVisible and not R.AlgunoVisible() then return false end
 	if not Minimap or not Minimap:IsVisible() then return false end
 	return not R.EnInstancia()
 end
@@ -165,9 +166,7 @@ function Mini.Instalar()
 			if quieto >= DORMIR then self:Hide() end
 		end
 	end))
-	vigia = A.NewTicker(0.5, function()
-		if dibujar(false) then despertar() end
-	end)
+	Mini.Vigia()
 	for _, evento in ipairs({
 		"PLAYER_STARTED_MOVING", "PLAYER_STARTED_TURNING", "MINIMAP_UPDATE_ZOOM", "CVAR_UPDATE",
 		"ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA", "PLAYER_ENTERING_WORLD",
@@ -175,6 +174,20 @@ function Mini.Instalar()
 		A.RegisterEvent(evento, despertar)
 	end
 	dibujar(true)
+end
+
+-- El vigía (cada medio segundo mira si hay que despertar) solo corre con el
+-- minimapa de Recolección encendido: apagado, no gasta nada. 1.1.8.
+function Mini.Vigia()
+	local on = N.Get(ID, "minimapa") ~= false
+	if on and not vigia then
+		vigia = A.NewTicker(0.5, function()
+			if dibujar(false) then despertar() end
+		end)
+	elseif not on and vigia then
+		vigia:Cancel()
+		vigia = nil
+	end
 end
 
 function Mini.Refrescar()
@@ -191,7 +204,10 @@ end)
 
 local PROPIOS = { ["recoleccion.minimapa"] = true, ["recoleccion.tamanoMinimapa"] = true }
 A.On("SETTING_CHANGED", function(path)
-	if PROPIOS[path] or path == "" or path == ID then Mini.Refrescar() end
+	if PROPIOS[path] or path == "" or path == ID then
+		if motor then Mini.Vigia() end
+		Mini.Refrescar()
+	end
 end)
 
 A.On("ALFA_HIDDEN", function(oculto)

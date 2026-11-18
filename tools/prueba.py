@@ -108,6 +108,20 @@ def main() -> int:
     if salen:
         print(f"{salen} textos se salen de su caja (revisar: alineación)")
         malo = True
+    # Orillas limpias en los iconos (tools/sangrado.py, 1.1.8): casi ningún
+    # pixel transparente negro junto a uno visible (los que quedan son sombras).
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+    import sangrado
+    from PIL import Image
+    sucias = 0
+    for sub in ("Map", "Nav", "UI"):
+        for tga in sorted((DIST / "Alfa" / "Media" / sub).glob("*.tga")):
+            with Image.open(tga) as img:
+                sucias += sangrado.orillas_sucias(img)
+    print(f"ORILLAS: {sucias} pixeles de orilla sucia en los iconos")
+    if sucias > 40:
+        print("ORILLAS SUCIAS: corre tools/build.py (tools/sangrado.py)")
+        malo = True
     print("RESULTADO:", "con problemas" if malo else "todo bien")
     return 1 if malo else 0
 

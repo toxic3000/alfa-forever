@@ -135,4 +135,6 @@ M.EN = {
 	["Instructor de Minería"] = "Mining trainer",
 	["Instructor de Herboristería"] = "Herbalism trainer",
 	["Pregúntale a un guardia de la ciudad por el instructor de la profesión."] = "Ask a city guard for the profession trainer.",
+	-- Mapa continuo (1.1.8)
+	["Varios puntos juntos: acércate en el mapa para verlos."] = "Several spots together: zoom in on the map to see them.",
 }

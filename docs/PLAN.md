@@ -27,11 +27,11 @@ Sale de una revisión del código del 18/11. En cada versión va primero lo que 
 - [x] Pruebas numéricas en el banco (tamaños enteros, medio texel, niveles únicos) y capturas de antes/después en el juego.
 
 ### 1.1.8 — Mapa impecable, parte 2
-- [ ] Íconos TGA sin bordes negros (dilatar el color en los píxeles transparentes, `tools/iconos.py`).
-- [ ] Rampas `DETALLE`/`TERRENO` con menos capas encimadas; fundido de carga por región.
-- [ ] Recolección publica sus nodos en `Alfa.Pins` (`recoleccion.<tipo>`) para el mapa continuo.
-- [ ] El ticker del minimapa de Recolección se detiene cuando la capa está oculta.
-- [ ] Si hay arte de origen, máscaras de territorio de 512 o 1024.
+- [x] Íconos TGA sin bordes negros (dilatar el color en los píxeles transparentes, `tools/iconos.py`).
+- [x] Fundido de carga por tandas (`Lienzo.lua`: todo lo pedido en una colocación aparece junto). Las rampas `DETALLE`/`TERRENO` se quedan: el cruce entre capas es intencional.
+- [x] Recolección publica sus nodos en `Alfa.Pins` (`recoleccion.<tipo>`) para el mapa continuo.
+- [x] El ticker del minimapa de Recolección se detiene cuando la capa está oculta.
+- [ ] Máscaras de territorio de 512 o 1024: pendiente, no hay arte de origen de más resolución (las de OpenMap son de 256).
 
 ### 1.1.9 — Ensayo general de la 1.2.0
 - [ ] El buscador de Ajustes incluye Pesca, Comercio, Ruta, Bolsas, Combate, Curación, Lya y Estilo y sonido.

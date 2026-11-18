@@ -412,6 +412,12 @@ function R.Refiltrar()
 end
 
 function R.GrupoVisible(g) return visibles[g] == true end
+
+-- ¿Se ve algún tipo? Sin ninguno, el minimapa y el mapa no trabajan (1.1.8).
+function R.AlgunoVisible()
+	for _, v in pairs(visibles) do if v then return true end end
+	return false
+end
 function R.Puede(g) return puede[g] ~= false end
 
 -- ¿Se pinta el nodo i de la zona?

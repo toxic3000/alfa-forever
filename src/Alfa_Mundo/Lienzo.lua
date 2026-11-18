@@ -106,9 +106,56 @@ local function textura(padre, sub)
 	return t
 end
 
+-- Tandas (1.1.8): lo que se pide en una misma colocación aparece junto,
+-- cuando ya llegó todo, en vez de un cuadrito a la vez (se veía un tablero
+-- de ajedrez al acercar o al cargar el terreno).
+local tanda = 0            -- la tanda que se arma ahora (sube en cada Lz.Colocar)
+local pendientes = {}      -- tanda -> texturas pedidas que aún no llegan
+local miembros = {}        -- tanda -> { textura, ... }
+
+local function empezarFundido(t, t0)
+	if not fundiendo[t] then nFundiendo = nFundiendo + 1 end
+	fundiendo[t] = t0
+end
+
+-- Una textura de la tanda llegó (o se soltó sin llegar): si era la última,
+-- toda la tanda empieza a aparecer junta.
+local function llego(t, t0)
+	local k = t.amTanda
+	if not k then return end
+	t.amTanda = nil
+	local n = (pendientes[k] or 1) - 1
+	if n > 0 then
+		pendientes[k] = n
+		return
+	end
+	pendientes[k] = nil
+	for _, m in ipairs(miembros[k] or {}) do
+		if m.amListo then
+			m.amListo = nil
+			empezarFundido(m, t0)
+		end
+	end
+	miembros[k] = nil
+end
+
 local function encolar(t, archivo)
+	if t.amArchivo and t.amTanda then
+		-- Ya esperaba en una tanda: solo cambia el archivo.
+		t.amArchivo = archivo
+		return
+	end
 	t.amArchivo = archivo
+	t.amListo = nil
 	t:SetAlpha(0)
+	t.amTanda = tanda
+	pendientes[tanda] = (pendientes[tanda] or 0) + 1
+	local lista = miembros[tanda]
+	if not lista then
+		lista = {}
+		miembros[tanda] = lista
+	end
+	lista[#lista + 1] = t
 	cola[#cola + 1] = t
 	if cargador then cargador:Show() end
 end
@@ -123,10 +170,14 @@ local function cargar()
 			-- dejaba una línea fina entre mosaicos (1.1.7).
 			local ok = t:SetTexture(t.amArchivo, "CLAMP", "CLAMP", "TRILINEAR")
 			t.amArchivo = nil
-			-- Una que ya se fundía (se volvió a encolar) no cuenta dos veces.
-			if not fundiendo[t] then nFundiendo = nFundiendo + 1 end
-			fundiendo[t] = t0
 			n = n + 1
+			-- Aparece con su tanda (llego); sin tanda, sola, como antes.
+			if t.amTanda then
+				t.amListo = true
+				llego(t, t0)
+			else
+				empezarFundido(t, t0)
+			end
 			if t.amComprobar then t.amComprobar(t, ok) end
 		end
 	end
@@ -144,7 +195,7 @@ local function cargar()
 			t:SetAlpha(f * f * (3 - 2 * f))
 		end
 	end
-	if #cola == 0 and nFundiendo == 0 and cargador then cargador:Hide() end
+	if #cola == 0 and nFundiendo == 0 and next(pendientes) == nil and cargador then cargador:Hide() end
 end
 
 -- Si las texturas de detalle están en la carpeta de Alfa_Mundo. El cliente
@@ -347,6 +398,9 @@ local function soltarMosaico(m)
 		nFundiendo = nFundiendo - 1
 	end
 	t.amArchivo = nil
+	t.amListo = nil
+	-- Soltada antes de llegar: su tanda no la espera más.
+	if t.amTanda then llego(t, GetTime and GetTime() or 0) end
 	t:SetTexture(nil)
 	t:Hide()
 end
@@ -581,6 +635,14 @@ end
 
 function Lz.Tamano() return W, H end
 
+-- Lo que falta por aparecer (para pruebas): archivos en cola, tandas
+-- esperando y texturas fundiéndose.
+function Lz.Cargando()
+	local tandas = 0
+	for _ in pairs(pendientes) do tandas = tandas + 1 end
+	return #cola - colaEn + 1, tandas, nFundiendo
+end
+
 -- Píxeles físicos de la pantalla por unidad de la vista.
 function Lz.Pixeles()
 	local s = vista and vista.GetEffectiveScale and vista:GetEffectiveScale() or 1
@@ -655,6 +717,7 @@ end
 function Lz.Colocar(cu, cv, k, vw, vh, z)
 	if not hecho or not (k and k > 0) then return end
 	presupuesto, pendiente = ZONAS_POR_CUADRO, false
+	tanda = tanda + 1
 	lienzo:SetScale(k)
 	lienzo:ClearAllPoints()
 	-- La esquina del lienzo cae en un píxel entero de la pantalla, y los pines

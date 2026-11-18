@@ -1,5 +1,21 @@
 # Cambios de Alfa
 
+## 1.1.8 — Íconos limpios y tus recursos en el mapa (18/11/2026)
+
+**Español**
+- Íconos sin bordes negros: los píxeles transparentes de los íconos guardaban color negro y, al escalarlos o teñirlos, el juego lo mezclaba en la orilla. Ahora cada orilla toma el color de su ícono, en el mapa y en todas las ventanas de Alfa.
+- Minería, hierbas, pesca y tesoros también en el mapa grande de Alfa: al acercarte a una zona salen sus nodos, agrupados por cercanía con su cantidad, del color de su tipo y tenues si tu habilidad todavía no alcanza. Solo de las zonas a la vista, para no saturar el mapa.
+- Al acercar o cargar el mapa, cada parte aparece completa de una vez, sin cuadritos sueltos.
+- El minimapa de Recolección descansa cuando no tiene nada que mostrar, y deja de vigilar si lo apagas.
+- La prueba de cada versión ahora también revisa las orillas de los íconos y los nodos del mapa grande.
+
+**English**
+- Icons without black edges: the transparent pixels of icons held black, and the game blended it into the edge when scaling or tinting them. Now every edge takes its icon's color, on the map and in every Alfa window.
+- Mining, herbs, fishing and treasures on Alfa's big map too: zoom into a zone and its nodes show up, grouped by nearness with their count, in their type's color and dimmed if your skill isn't there yet. Only for the zones in view, so the map isn't crowded.
+- When you zoom in or the map loads, each part appears whole at once, with no loose squares.
+- Gathering's minimap rests when it has nothing to show, and stops watching if you turn it off.
+- Each release's test now also checks icon edges and the big map's nodes.
+
 ## 1.1.7 — Un mapa impecable (18/11/2026)
 
 **Español**
