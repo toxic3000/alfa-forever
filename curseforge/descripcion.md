@@ -4,7 +4,7 @@
 
 **The all-in-one for World of Warcraft: Forever.** Guides, route, map, bags, talents, encyclopedia, dungeons, healing, fishing, trading and your guild, in one addon with one look — and **Lya**, a black she-wolf companion who chats with you about lore, your zone and your adventures. Made by **toxic3000** for **La Jauría**. Free, open source, 10 languages.
 
-> 🐺 **New in 1.1.9:** the settings search finds everything, Fishing, Trade, Route, Bags, Combat, Healing and Lya included; Bags searches in any alphabet; when your bags fill up, Today tells you what to sell and for how much; and your settings pass a save-and-reload test in every release.
+> 🐺 **New in 1.2.0, the stable release:** settings in order (Conveniences in one page, every quest option under Questing), the wolf greets you every time you log in, La Jauría badges for the Alphas and the pack, a small paw print on the map for everyone who shares, and a full review with over 20 fixes.
 > If something breaks, tell us with `/alfa reportar`, on [Discord](https://discord.gg/hUNjA6BJwh), in the comments or on [GitHub](https://github.com/toxic3000/alfa-forever/issues).
 
 ## A quick look / Un vistazo
@@ -70,7 +70,7 @@ It doesn't switch your brain off: Alfa backs you up and you decide. The first ti
 
 **El todo en uno para World of Warcraft: Forever.** Guías, ruta, mapa, bolsas, talentos, enciclopedia, mazmorras, curación, pesca, comercio y tu clan, en un solo addon y con un solo estilo. Hecho por **toxic3000** para **La Jauría**.
 
-> **Novedades de la 1.1.9:** el buscador de Ajustes encuentra todo, con Pesca, Comercio, Ruta, Bolsas, Combate, Curación y Lya; Bolsas busca en cualquier alfabeto; con las bolsas llenas, Hoy te dice qué vender y por cuánto; un solo nombre, «Mazmorras»; y tus ajustes pasan una prueba de guardar y recargar en cada versión.
+> **Novedades de la 1.2.0, la versión estable:** ajustes en orden (Comodidades en una sola página y todas las misiones en Misiones), el lobo te recibe cada vez que entras, insignias de La Jauría para los Alfas y la manada, una huella pequeña en el mapa para quien comparte, y una revisión completa con más de 20 arreglos.
 > Si algo falla, avísanos con `/alfa reportar`, en el [Discord de La Jauría](https://discord.gg/hUNjA6BJwh), en los comentarios o en [GitHub](https://github.com/toxic3000/alfa-forever/issues).
 
 ¿Cansado de tener un montón de addons que se enciman y te llenan el mapa de marcas? Alfa los junta en uno solo, ordenado y guiado, que se adapta a tu clase. **No necesita ningún otro addon.**
