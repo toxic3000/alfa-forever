@@ -345,7 +345,20 @@ T.RAZONES = {
 	flecha = L["Ese talento necesita antes otro talento completo (la flecha del árbol)."],
 	puntos = L["No quedan puntos libres."],
 	otro = L["El juego no dejó comprar ese rango."],
+	-- 1.2.0: con la ventana del juego abierta, comprar desde Alfa haría correr
+	-- sus avisos marcados por Alfa (lo mismo que bloqueaba el libro de hechizos).
+	ventana = L["Cierra la ventana de talentos y hechizos del juego y vuelve a aplicar"],
+	pendientes = L["Tienes cambios sin guardar en la ventana de talentos del juego: guárdalos o deshazlos ahí primero"],
 }
+
+-- La ventana de talentos del juego a la vista (en Forever es la misma del libro de hechizos).
+local function ventanaDelJuego()
+	for _, nombre in ipairs({ "PlayerSpellsFrame", "ClassTalentFrame", "PlayerTalentFrame" }) do
+		local f = rawget(_G, nombre)
+		if type(f) == "table" and f.IsShown and f:IsShown() then return true end
+	end
+	return false
+end
 
 -- La configuración guardada que el marco de talentos tiene elegida (si la
 -- hay y sigue existiendo), como hace el botón Aplicar del juego.
@@ -378,6 +391,9 @@ function T.PuedeEditar(config)
 	if InCombatLockdown() then return false, "combate" end
 	if not (C_Traits and C_Traits.PurchaseRank and (C_ClassTalents.CommitConfig or C_Traits.CommitConfig)) then return false, "sinapi" end
 	if not config then return false, "sinconfig" end
+	if ventanaDelJuego() then return false, "ventana" end
+	-- Lo que tú cambiaste en la ventana del juego y no guardaste no se borra (1.2.0).
+	if C_Traits.ConfigHasStagedChanges and R(llamar(C_Traits.ConfigHasStagedChanges, config)) then return false, "pendientes" end
 	if C_ClassTalents.CanEditTalents then
 		local ok, puede, err = pcall(C_ClassTalents.CanEditTalents)
 		if ok and R(puede) == false then return false, "bloqueado", R(err) end
@@ -396,7 +412,6 @@ function T.Aplicar(plan, alTerminar)
 	local puede, razon, textoJuego = T.PuedeEditar(config)
 	if not puede then return false, razon, textoJuego end
 	if #plan.compras == 0 then return false, "nada" end
-	if R(llamar(C_Traits.ConfigHasStagedChanges, config)) then llamar(C_Traits.RollbackConfig, config) end
 	local resumen = { compradas = 0, fallos = {} }
 	local fallado = {}
 	for _, c in ipairs(plan.compras) do

@@ -12,6 +12,12 @@
 --   AlfaManada.Resumen()         { comparte, manada, grupo, siguiendo, via }:
 --       cuántos de la manada (sin tu grupo) y de tu grupo se ven ahora, a
 --       quién sigues (nombre o nil) y por dónde sale tu rastro
+--   AlfaManada.Insignia(nombre)  "alfa" | "jauria" | nil: la insignia de un
+--       personaje ("Nombre Apellido", "Nombre-Reino"; la lista y cómo se
+--       comparan los nombres: Insignias.lua)
+--   AlfaManada.InsigniaDeUnidad(unit)  lo mismo para una unidad del juego
+--   AlfaManada.EstiloInsignia(tipo)  { texto, icono, color = { r, g, b } } o
+--       nil: cómo se dibuja, para que se vea igual en todas partes
 --
 -- Sin asistente de primer arranque (Alfa_Bienvenida), la pregunta sale sola
 -- una vez, al poco de entrar, fuera de combate y de instancias.
@@ -68,6 +74,10 @@ function AlfaManada.Resumen()
 	local s = S.Actual()
 	return { comparte = on("compartir"), manada = manada, grupo = grupo, siguiendo = s and s.nombre or nil, via = (R.Via()) }
 end
+
+function AlfaManada.Insignia(nombre) return M.Insignias.De(nombre) end
+function AlfaManada.InsigniaDeUnidad(unit) return M.Insignias.DeUnidad(unit) end
+function AlfaManada.EstiloInsignia(tipo) return M.Insignias.Estilo(tipo) end
 
 ---------------------------------------------------------------------------
 -- Comando: /alfa manada [seguir <nombre> | parar | compartir sí/no | estado]

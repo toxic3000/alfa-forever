@@ -31,6 +31,13 @@ M.NOVEDADES = {
 --   { version, titulo, puntos = { { icono (ic-*), texto } } }
 ---------------------------------------------------------------------------
 M.NOTAS = {
+	{ version = "1.2.0", titulo = "Alfa estable: en orden y en manada", puntos = {
+		{ "ic-ajustes", "Ajustes en orden: Comodidades y Calidad de vida son una sola página con pestañas, y todo lo de misiones vive en Ajustes > Misiones. Tu configuración se mudó sola, sin perder nada." },
+		{ "ic-lobo", "El lobo te recibe cada vez que entras al juego, redibujado: cabeza, orejas y hocico de lobo de verdad." },
+		{ "ic-manada", "Insignias de La Jauría: los Alfas y los miembros llevan su lobo en el cuadro, en La Jauría y en el mapa; y quienes comparten se ven con una huella." },
+		{ "ic-comodidades", "Quien instala Alfa ya tiene encendidos los colores de clase, el cuadro de información, el probador, el minimapa y las barras con el estilo de Alfa." },
+		{ "ic-exito", "Una revisión completa para la versión estable: más de 20 arreglos en mazmorras con grupo, combate, el mapa, Pesca, Talentos y más." },
+	} },
 	{ version = "1.1.9", titulo = "Todo a la mano", puntos = {
 		{ "ic-buscar", "El buscador de Ajustes ya encuentra todo: también Pesca, Comercio, Ruta, Bolsas, Combate, Curación, Lya y Estilo y sonido." },
 		{ "ic-bolsas", "Bolsas encuentra tus objetos en ruso y en otros alfabetos aunque escribas con mayúscula." },

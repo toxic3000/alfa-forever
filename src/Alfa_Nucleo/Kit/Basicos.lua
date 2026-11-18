@@ -861,6 +861,13 @@ local function cerrarMenu()
 	if atrapa then atrapa:Hide() end
 end
 K.CerrarMenu = cerrarMenu
+-- Al entrar en combate el menú se cierra: su capa de pantalla completa se
+-- comería el primer clic de la pelea (1.2.0).
+do
+	local ev = CreateFrame("Frame")
+	ev:RegisterEvent("PLAYER_REGEN_DISABLED")
+	ev:SetScript("OnEvent", function() cerrarMenu() end)
+end
 
 local function armarMenu()
 	atrapa = CreateFrame("Button", nil, UIParent)

@@ -50,6 +50,9 @@ local function grupos(ui, padre)
 	sonido:Fila({ titulo = L["Aullido al abrir Alfa"],
 		texto = L["Un aullido de lobo, del propio juego, la primera vez que abres Alfa en cada sesión."],
 		control = function(fila) return K.Interruptor(fila, { clave = ID .. ".aullido" }) end })
+	sonido:Fila({ titulo = L["El lobo te recibe al entrar"],
+		texto = L["Cada vez que entras al juego, la intro del lobo y la luna te da la bienvenida. Un clic o Esc la saltan."],
+		control = function(fila) return K.Interruptor(fila, { clave = ID .. ".introSiempre" }) end })
 	sonido:Fila({ titulo = L["Escuchar el aullido"], texto = L["Suena ahora, aunque el aullido esté apagado."],
 		control = function(fila) return K.Boton(fila, L["Escuchar"], function() M.Aullar(true) end, { tipo = "secundario", icono = "ic-lobo" }) end })
 
@@ -97,6 +100,9 @@ K.AlRepintar(function() M.alCambiar() end)
 local CONTROLES = {
 	{ kind = "toggle", key = ID .. ".aullido", label = L["Aullido al abrir Alfa"],
 		help = L["Un aullido de lobo, del propio juego, la primera vez que abres Alfa en cada sesión."], search = "howl, wolf sound, sound, opening sound" },
+	{ kind = "toggle", key = ID .. ".introSiempre", label = L["El lobo te recibe al entrar"],
+		help = L["Cada vez que entras al juego, la intro del lobo y la luna te da la bienvenida. Un clic o Esc la saltan."],
+		search = "intro, wolf, moon, login animation, welcome animation" },
 	{ kind = "button", label = L["Escuchar el aullido"], button = L["Escuchar"], icon = "info",
 		help = L["Suena ahora, aunque el aullido esté apagado."], onClick = function() M.Aullar(true) end, search = "howl, play sound, test sound" },
 	{ kind = "button", label = L["Tu configuración de Alfa"], button = L["Abrir"], icon = "info",
@@ -117,7 +123,7 @@ N.Modulo({
 	id = ID, nombre = L["Estilo y sonido"], icono = "ic-apariencia", orden = 90, seccion = "ajustes",
 	subtitulo = L["Tu estilo (Alfa, Clásico WoW o Cristal), el color de acento y el aullido."],
 	comando = "estilo",
-	ajustes = { aullido = true, idioma = "" },
+	ajustes = { aullido = true, idioma = "", introSiempre = true },
 	controles = CONTROLES,
 	construir = construir,
 })

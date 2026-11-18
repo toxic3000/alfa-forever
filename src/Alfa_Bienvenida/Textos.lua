@@ -218,7 +218,7 @@ M.EN = {
 	["No, por ahora"] = "Not for now",
 	["Tu personaje no aparece en el mapa de nadie de La Jauría. Lo cambias cuando quieras en la página de La Jauría."] = "Your character doesn't show on anyone's map in La Jauría. Change it any time on the La Jauría page.",
 	["Sí, que la manada me vea"] = "Yes, let the pack see me",
-	["Tu personaje aparece en el mapa de quienes también se dejan ver. Solo su lugar en el juego, nunca dentro de mazmorras ni por canales públicos."] = "Your character shows on the map of those who also let themselves be seen. Only its place in the game, never inside dungeons or over public channels.",
+	["Tu personaje aparece en el mapa de quienes también se dejan ver. Solo su lugar en el juego y nunca dentro de mazmorras; va por un canal oculto que alguien con otro addon podría leer."] = "Your character shows on the map of those who also let themselves be seen. Only its place in the game and never inside dungeons; it goes through a hidden channel that someone with another addon could read.",
 	["Lo apagas o lo enciendes cuando quieras en Manada > La Jauría."] = "Turn it off or on any time in Pack > La Jauría.",
 	["La manada te ve en el mapa"] = "The pack sees you on the map",
 	["La manada no te ve en el mapa"] = "The pack doesn't see you on the map",
@@ -303,6 +303,17 @@ M.EN = {
 	["Versión %s"] = "Version %s",
 	["¡Qué gusto verte de vuelta! Esto es lo que trae esta versión para ti y tu manada."] = "Great to see you back! Here's what this version brings for you and your pack.",
 	["Desde tu última visita también hubo cambios en %s: los ves en «Ver todo lo nuevo»."] = "Since your last visit there were also changes in %s: find them in \"See everything new\".",
+	-- El saludo de cada entrada (1.2.0)
+	["El lobo te recibe al entrar"] = "The wolf greets you when you log in",
+	["Cada vez que entras al juego, la intro del lobo y la luna te da la bienvenida. Un clic o Esc la saltan."] = "Every time you log in, the wolf and moon intro welcomes you. A click or Esc skips it.",
+	["¡De vuelta en la manada, %s!"] = "Back with the pack, %s!",
+	-- Novedades 1.2.0
+	["Alfa estable: en orden y en manada"] = "Stable Alfa: in order and as a pack",
+	["Ajustes en orden: Comodidades y Calidad de vida son una sola página con pestañas, y todo lo de misiones vive en Ajustes > Misiones. Tu configuración se mudó sola, sin perder nada."] = "Settings in order: Conveniences and Quality of Life are one page with tabs, and everything about quests lives in Settings > Questing. Your settings moved on their own, nothing lost.",
+	["El lobo te recibe cada vez que entras al juego, redibujado: cabeza, orejas y hocico de lobo de verdad."] = "The wolf greets you every time you log in, redrawn: a real wolf's head, ears and muzzle.",
+	["Insignias de La Jauría: los Alfas y los miembros llevan su lobo en el cuadro, en La Jauría y en el mapa; y quienes comparten se ven con una huella."] = "La Jauría badges: Alphas and members wear their wolf in the tooltip, in La Jauría and on the map; and those who share show as a paw print.",
+	["Quien instala Alfa ya tiene encendidos los colores de clase, el cuadro de información, el probador, el minimapa y las barras con el estilo de Alfa."] = "New installs come with class colors, the tooltip, the dressing room, the minimap and the bars in Alfa's style already on.",
+	["Una revisión completa para la versión estable: más de 20 arreglos en mazmorras con grupo, combate, el mapa, Pesca, Talentos y más."] = "A full review for the stable release: over 20 fixes in group dungeons, combat, the map, Fishing, Talents and more.",
 	-- Novedades 1.1.9
 	["Todo a la mano"] = "Everything at hand",
 	["El buscador de Ajustes ya encuentra todo: también Pesca, Comercio, Ruta, Bolsas, Combate, Curación, Lya y Estilo y sonido."] = "The settings search now finds everything: Fishing, Trade, Route, Bags, Combat, Healing, Lya and Style and sound too.",

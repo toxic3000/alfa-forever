@@ -193,4 +193,9 @@ M.EN = {
 	["Llenar mi barra"] = "Fill my bar",
 	["Avisar si la barra de una forma está vacía"] = "Warn me if a form's bar is empty",
 	["Al cambiar de forma o de actitud, el juego usa otra barra de abajo. Si está vacía, Alfa te avisa una vez y puede llenar sus casillas vacías con las habilidades de esa forma que ya sabes, fuera de combate y sin tocar lo que ya tienes."] = "When you change form or stance, the game uses another bottom bar. If it is empty, Alfa warns you once and can fill its empty slots with the abilities of that form you already know, out of combat and without touching what you already have.",
+	-- 1.2.0
+	["Todas las misiones"] = "All quests",
+	["Misiones automáticas"] = "Quest automation",
+	["Lo pequeño que hace el juego más cómodo: el minimapa, el chat y las barras con el estilo de Alfa, marcos, cuadro de información, probador, cámara y sonidos; y en sus pestañas, viajes, invitaciones, comerciantes y más."] = "The small things that make the game more comfortable: the minimap, chat and bars in Alfa's style, frames, tooltip, dressing room, camera and sounds; and in its tabs, travel, invitations, merchants and more.",
+	["Los grifos (o dragones) a los lados de la barra principal. «Del color del estilo» necesita el estilo de las barras; «Ocultos» funciona siempre."] = "The gryphons (or wyverns) on the sides of the main bar. \"In the style's color\" needs the bars style; \"Hidden\" always works.",
 }

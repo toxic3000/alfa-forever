@@ -435,6 +435,11 @@ end
 -- Pone el texto; un nombre en coreano o chino en un cliente latino toma la
 -- letra del juego para esa escritura (sin ella saldrían cuadros).
 function K.Escribir(fs, texto)
+	-- Un texto secreto va tal cual: no se puede leer (1.2.0).
+	if issecretvalue and issecretvalue(texto) then
+		fs:SetText(texto)
+		return
+	end
 	texto = texto ~= nil and tostring(texto) or ""
 	local otra = T and T.ScriptFont and T.ScriptFont(texto) or nil
 	if type(otra) ~= "string" then otra = nil end

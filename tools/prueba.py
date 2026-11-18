@@ -89,7 +89,7 @@ def main() -> int:
             if archivo.exists():
                 archivo.unlink()
             salida, cortado = [], None
-            for fase in ("1", "2"):
+            for fase in ("0", "1", "2"):
                 s, c = correr(escena, {"BANCO_GUARDADAS": str(archivo), "BANCO_FASE": fase})
                 salida += s
                 cortado = cortado or c

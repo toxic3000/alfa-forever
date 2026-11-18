@@ -205,8 +205,15 @@ end
 local ZONA = 3 -- Enum.UIMapType.Zone
 
 -- La zona (no la cueva ni el pueblo) de un mapa.
+-- La zona y el nombre de un mapa no cambian: se guardan la primera vez
+-- (La Jauría los pide por persona cada pocos segundos; 1.2.0).
+local zonaDe, nombreDe = {}, {}
+
 function U.ZonaDe(map)
 	if type(map) ~= "number" or not (C_Map and C_Map.GetMapInfo) then return map end
+	local ya = zonaDe[map]
+	if ya then return ya end
+	local pedido = map
 	for _ = 1, 12 do
 		local ok, info = pcall(C_Map.GetMapInfo, map)
 		if not ok or type(info) ~= "table" then break end
@@ -215,14 +222,20 @@ function U.ZonaDe(map)
 		if t <= ZONA or not parent or parent == 0 then break end
 		map = parent
 	end
+	zonaDe[pedido] = map
 	return map
 end
 
 function U.NombreMapa(map)
 	if type(map) ~= "number" then return nil end
+	local ya = nombreDe[map]
+	if ya then return ya end
 	local C = A.Compat
 	local ok, name = pcall(C.MapName, map)
-	if ok and texto(name) then return name end
+	if ok and texto(name) then
+		nombreDe[map] = name
+		return name
+	end
 	return nil
 end
 
@@ -384,25 +397,14 @@ end
 function U.Susurrar(nombre, mensaje)
 	local destino = U.Destino(nombre)
 	if not destino then return false end
+	-- Solo se abre el cuadro con "/w nombre texto" (1.2.0): el propio cuadro
+	-- lo convierte en susurro. Alfa ya no toca sus atributos (SetChatType,
+	-- SetTellTarget), que quedaban marcados y podían bloquear después un
+	-- /cast o /target escrito ahí en combate.
+	local texto = "/w " .. destino .. " " .. (mensaje or "")
 	local CFU = ChatFrameUtil
-	if type(CFU) == "table" and type(CFU.ChooseBoxForSend) == "function" and type(CFU.OpenChat) == "function" then
-		local ok = pcall(function()
-			local eb = CFU.ChooseBoxForSend()
-			eb:SetChatType("WHISPER")
-			eb:SetTellTarget(destino)
-			local activa = type(CFU.GetActiveWindow) == "function" and CFU.GetActiveWindow() or nil
-			if eb ~= activa then
-				CFU.OpenChat(mensaje or "")
-			else
-				eb:SetText(mensaje or "")
-				eb:UpdateHeader()
-			end
-		end)
-		if ok then return true end
-		if type(CFU.SendTellWithMessage) == "function" and pcall(CFU.SendTellWithMessage, destino, mensaje or "") then return true end
-		if type(CFU.SendTell) == "function" and pcall(CFU.SendTell, destino) then return true end
-	end
-	if ChatFrame_SendTell and pcall(ChatFrame_SendTell, destino) then return true end
+	if type(CFU) == "table" and type(CFU.OpenChat) == "function" and pcall(CFU.OpenChat, texto) then return true end
+	if type(ChatFrame_OpenChat) == "function" and pcall(ChatFrame_OpenChat, texto) then return true end
 	return false
 end
 

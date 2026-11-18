@@ -20,8 +20,11 @@ local ID = "comodidades"
 M.ID = ID
 
 ---------------------------------------------------------------------------
--- Ajustes. Los interruptores principales vienen apagados y las opciones de
--- dentro encendidas: al encender un grupo queda listo para usar.
+-- Ajustes. Las opciones de dentro vienen encendidas: al encender un grupo
+-- queda listo para usar. Desde la 1.2.0 vienen encendidas de fábrica las
+-- recomendadas, el minimapa mejorado y las barras con el estilo de Alfa
+-- (decisión de Toxic); quien ya tenía Alfa conserva lo suyo (la migración de
+-- abajo deja anotados los valores de antes).
 ---------------------------------------------------------------------------
 M.AJUSTES = {
 	-- Misiones: aceptar y entregar todas (normales, diarias, semanales y completadas)
@@ -29,23 +32,25 @@ M.AJUSTES = {
 	-- Vuelo: la siguiente parada bajo el temporizador del motor
 	vueloParada = true,
 	-- Minimapa: cuadrado, sin botones de addons a la vista y sin su menú
-	minimapa = false, minimapaCuadrado = true, minimapaBotones = true, minimapaMenu = true,
+	minimapa = true, minimapaCuadrado = true, minimapaBotones = true, minimapaMenu = true,
 	-- Colores de clase: tu marco y el del objetivo
-	colores = false, coloresJugador = true, coloresObjetivo = true,
+	colores = true, coloresJugador = true, coloresObjetivo = true,
 	-- Cuadro de información: a quién apunta, rango de hermandad, ocultarlo en combate y verlo con Mayús
-	cuadro = false, cuadroObjetivo = true, cuadroRango = true, cuadroCombate = false, cuadroShift = true,
+	cuadro = true, cuadroObjetivo = true, cuadroRango = true, cuadroCombate = false, cuadroShift = true,
 	-- Probador: botones de objetos y control de la animación
-	probador = false, probadorBotones = true, probadorAnimacion = true,
-	-- Sueltos, apagados de fábrica: cámara, grifos y sonidos
-	camara = false, grifos = false,
-	silenciarErrores = false, silenciarDialogos = false, silenciarMascotas = false, silenciarGestos = false, silenciarLista = false,
+	probador = true, probadorBotones = true, probadorAnimacion = true,
+	-- Sueltos: la cámara y los sonidos (las voces de error, calladas de fábrica)
+	camara = false,
+	silenciarErrores = true, silenciarDialogos = false, silenciarMascotas = false, silenciarGestos = false, silenciarLista = false,
 	-- Estilo del chat (Chat.lua): "igual" sigue al estilo de Alfa (alfa, clasico, cristal)
 	chat = true, chatEstilo = "igual", chatOpacidad = 0.7, chatPestanas = true, chatEscribir = true,
 	chatLetra = true, chatBotones = false,
 	-- Estilo del minimapa (MinimapaEstilo.lua)
 	minimapaEstilo = true, minimapaEstiloTema = "igual", minimapaCabecera = true,
-	-- Estilo de las barras (Barras.lua): grifos "como" | "color" | "ocultar"
-	barras = false, barrasEstilo = "igual", barrasBotones = true, barrasGrifos = "como",
+	-- Estilo de las barras (Barras.lua). Los grifos (o dragones) de la barra
+	-- principal: "como" | "color" (con el estilo de las barras) | "ocultar"
+	-- (con o sin el estilo; desde la 1.2.0 es el único ajuste de los grifos).
+	barras = true, barrasEstilo = "igual", barrasBotones = true, barrasGrifos = "como",
 	barrasExperiencia = true, barrasMenu = true,
 	-- La barra de una forma vacía (Formas.lua): avisar una vez y ofrecer llenarla
 	barraForma = true,
@@ -54,6 +59,27 @@ M.AJUSTES = {
 -- Los valores por omisión, desde el principio (las partes los leen al
 -- cargar); la página se registra al final (Pagina.lua).
 A.RegisterDefaults(ID, M.AJUSTES)
+
+-- 1.2.0, la mudanza de los ajustes (corre una sola vez por cuenta, N.Migracion):
+--   * Quien ya tenía Alfa conserva lo que tenía: lo que hasta la 1.1.9 venía
+--     apagado y ahora viene encendido queda anotado como apagado. Una
+--     instalación nueva recibe lo nuevo.
+--   * "Ocultar los grifos" (grifos) y "Grifos" del estilo de las barras eran
+--     dos ajustes para lo mismo: queda uno, barrasGrifos.
+M.ANTES_APAGADAS = { "minimapa", "colores", "cuadro", "probador", "silenciarErrores", "barras" }
+N.Migracion(1, function(db)
+	local s = type(db.settings) == "table" and db.settings or nil
+	if not s then return end
+	local mio = type(s[ID]) == "table" and s[ID] or {}
+	if not (A.IsNewAccount and A.IsNewAccount()) then
+		for _, k in ipairs(M.ANTES_APAGADAS) do
+			if mio[k] == nil then mio[k] = false end
+		end
+	end
+	if mio.grifos == true and mio.barrasGrifos == nil then mio.barrasGrifos = "ocultar" end
+	mio.grifos = nil
+	if next(mio) ~= nil then s[ID] = mio end
+end)
 
 -- Un ajuste del módulo como verdadero o falso.
 function M.Get(clave)

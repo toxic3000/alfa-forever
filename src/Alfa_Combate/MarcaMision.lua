@@ -109,7 +109,10 @@ function MM.Falta(unidad)
 	if M.Legible(M.Llamar(UnitIsPlayer, unidad)) == true then return false end
 	if M.Legible(M.Llamar(UnitIsDead, unidad)) == true then return false end
 	if M.Legible(M.Llamar(UnitIsQuestBoss, unidad)) == true then return true end
-	local a = porCuadro(unidad)
+	-- En combate, sin leer el cuadro de cada placa (pesa con muchas a la vista):
+	-- solo lo que sabe el motor; al salir del combate se repasa todo (1.2.0).
+	local a = nil
+	if not (InCombatLockdown and InCombatLockdown()) then a = porCuadro(unidad) end
 	if a == true then return true end
 	local b = porMotor(unidad)
 	if b == true then return true end

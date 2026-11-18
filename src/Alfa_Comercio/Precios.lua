@@ -243,6 +243,37 @@ function M.Anotar(id, precio, cantidad, fuente, fecha, r)
 	M.Historia(r, id, precio, fecha)
 end
 
+-- Lo viejo se olvida (1.2.0): un precio de hace más de PODAR_DIAS días ya no
+-- dice nada, y sin podar los datos guardados crecían para siempre (más lento
+-- al entrar y al salir del juego). Un reino sin nada reciente se borra.
+local PODAR_DIAS = 60
+function M.Podar(ahora)
+	local d = M.Datos()
+	ahora = ahora or M.Ahora()
+	local limite = ahora - PODAR_DIAS * DIA
+	local quitados = 0
+	for clave, r in pairs(d.reinos) do
+		if type(r) ~= "table" then
+			d.reinos[clave] = nil
+		else
+			local quedan = 0
+			for id, e in pairs(type(r.p) == "table" and r.p or {}) do
+				local fecha = type(e) == "table" and tonumber(e[2]) or nil
+				if not fecha or fecha < limite then
+					r.p[id] = nil
+					if type(r.h) == "table" then r.h[id] = nil end
+					quitados = quitados + 1
+				else
+					quedan = quedan + 1
+				end
+			end
+			if quedan == 0 and not (type(r.pedido) == "number" and r.pedido >= limite) then d.reinos[clave] = nil end
+		end
+	end
+	return quitados
+end
+A.OnLogin(function() pcall(M.Podar) end)
+
 ---------------------------------------------------------------------------
 -- Lectura de precios
 ---------------------------------------------------------------------------

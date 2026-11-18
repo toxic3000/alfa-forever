@@ -413,7 +413,7 @@ local function pasoJauria()
 					{ valor = false, icono = "ic-cerrar", titulo = "No, por ahora",
 						texto = "Tu personaje no aparece en el mapa de nadie de La Jauría. Lo cambias cuando quieras en la página de La Jauría." },
 					{ valor = true, icono = "ic-manada", titulo = "Sí, que la manada me vea",
-						texto = "Tu personaje aparece en el mapa de quienes también se dejan ver. Solo su lugar en el juego, nunca dentro de mazmorras ni por canales públicos." },
+						texto = "Tu personaje aparece en el mapa de quienes también se dejan ver. Solo su lugar en el juego y nunca dentro de mazmorras; va por un canal oculto que alguien con otro addon podría leer." },
 				},
 				leer = function() local m = manada() return m and m.Comparte() and true or false end,
 				guardar = function(x) local m = manada() if m then m.Compartir(x and true or false) end end,

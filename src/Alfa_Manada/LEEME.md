@@ -17,6 +17,18 @@ La página de La Jauría en la ventana de Alfa (sección Manada, orden 8, ícono
 - Mensajes con el prefijo `AlfaManada` (`Red.lua`): `1H` (estoy aquí, al entrar al canal; los demás responden con su posición tras una espera al azar, una vez cada 30 s como mucho), `1P` (mapa, x, y, nivel, clase: cada 10 s si te moviste 10 yardas, cada 4 min quieto), `1X` (dejé de compartir), y `1J`/`1K` por susurro para **Quiero unirme**. Cola con tope de 1 mensaje por segundo (ráfaga de 3) que espera si el servidor frena.
 - Nada sale dentro de instancias, con el bloqueo de mensajes del juego (`InChatMessagingLockdown`) ni desde una cuenta de prueba o restringida. Lo recibido caduca a los 5 min y se olvida a los 15; como mucho 200 personas.
 
+## En el mapa
+
+- **Tu grupo** (`manada.grupo`): la marca de mapa de Alfa con el alfiler del color de su clase, como siempre.
+- **Andar en manada** (`manada.jauria`): quien usa Alfa y aceptó compartir se ve con una huella de lobo pequeña (`ic-huella`), más chica que las marcas de tu grupo, del color de su clase (o el verde de Alfa), sobre un disco oscuro. Nadie sale sin aceptar compartir.
+- Quien tiene **insignia** lleva además un aro de su rango (oro o verde) y queda encima de los demás.
+
+## Insignias (`Insignias.lua`)
+
+Una chapita discreta y solo visual para ciertas personas de La Jauría, no para todos los que usan Alfa: **los Alfas** (`"alfa"`: el lobo en oro, "Alfa de La Jauría") y **La Jauría** (`"jauria"`: el lobo en verde, "De La Jauría"). Se ve en el cuadro del jugador (una línea), junto a su nombre en la página y como un aro en su marca del mapa.
+
+La lista `I.LISTA` la lleva Toxic a mano, con permiso de cada persona: `["Nombre Apellido-Reino"] = "alfa"`. Se compara sin mayúsculas ni acentos; con reino cuenta solo en ese reino (a quien el juego no le da reino, como el cuadro de un jugador en Forever, se le toma como de tu reino); sin reino pero con apellido cuenta en cualquier reino; un nombre solo, sin apellido ni reino, no cuenta. Vacía, no engancha nada.
+
 ## Privacidad
 
 **Por defecto no se comparte nada.** Al instalar sale la pregunta "¿Compartes tu ubicación con La Jauría?" (un `K.Dialogo`), una sola vez, fuera de combate y de instancias; si está la configuración de Alfa (`Alfa_Bienvenida`), lo pregunta ella en su paso de La Jauría, con "No compartir" elegido hasta que pulses el sí. Quien no comparte no entra al canal ni envía ni recibe nada: se ve entre quienes comparten. Tu grupo siempre se ve (posiciones del juego). La respuesta de la 0.1.0 ("compartir con la hermandad") no cuenta: se vuelve a preguntar.
@@ -28,6 +40,7 @@ La página de La Jauría en la ventana de Alfa (sección Manada, orden 8, ícono
 - `AlfaManada.Abrir()`.
 - `AlfaManada.Apoyar()`: abre la página en "Apoya a Alfa".
 - `AlfaManada.Resumen()` → `{ comparte, manada, grupo, siguiendo, via }` (para Hoy, por ejemplo).
+- `AlfaManada.Insignia(nombre)` → `"alfa"` | `"jauria"` | `nil`; `AlfaManada.InsigniaDeUnidad(unit)`; `AlfaManada.EstiloInsignia(tipo)` → `{ texto, icono, color }`.
 
 ## Comandos
 

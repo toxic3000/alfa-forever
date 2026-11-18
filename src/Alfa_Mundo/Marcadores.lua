@@ -37,6 +37,8 @@ local CAPA, CAPA_MINI = "mundo.marcadores", "mundo.marcadoresMini"
 Mk.CAPA = CAPA
 local PREFIJO = "AlfaMarca"
 local MAX_MARCADORES = 400
+local MAX_RECIBIDOS = 60   -- marcadores que te compartieron, como mucho (1.2.0)
+local POR_MINUTO = 3       -- marcadores que acepta de una misma persona por minuto
 local LARGO_NOMBRE = 40
 local UI = "Interface\\AddOns\\Alfa\\Media\\UI\\"
 local MAPA = "Interface\\AddOns\\Alfa\\Media\\Map\\"
@@ -183,8 +185,26 @@ function Mk.Crear(spec)
 		de = type(spec.de) == "string" and spec.de ~= "" and spec.de or nil,
 	}
 	d.siguienteMarca = d.siguienteMarca + 1
+	-- Lo que te compartieron nunca saca a tus propios marcadores (1.2.0): si
+	-- hay demás, se va primero el compartido más viejo.
+	local function quitarCompartidoViejo()
+		for i = #d.marcadores, 1, -1 do
+			if d.marcadores[i].de then
+				table.remove(d.marcadores, i)
+				return true
+			end
+		end
+		return false
+	end
+	if m.de then
+		local recibidos = 0
+		for _, x in ipairs(d.marcadores) do if x.de then recibidos = recibidos + 1 end end
+		while recibidos >= MAX_RECIBIDOS and quitarCompartidoViejo() do recibidos = recibidos - 1 end
+	end
 	table.insert(d.marcadores, 1, m)
-	while #d.marcadores > MAX_MARCADORES do table.remove(d.marcadores) end
+	while #d.marcadores > MAX_MARCADORES do
+		if not quitarCompartidoViejo() then table.remove(d.marcadores) end
+	end
 	avisar()
 	return m
 end
@@ -408,13 +428,44 @@ end
 
 -- Lo que llega de otro jugador del grupo con Alfa.
 local recientes = {} -- firma -> momento (no repetir el mismo marcador)
+local porPersona = {} -- quien -> { momentos de lo que aceptó en el último minuto }
 
-local function alRecibir(_, pre, texto, _, emisor)
+-- Solo del grupo o la banda en que estás (1.2.0): un susurro, la hermandad o
+-- un canal no traen marcadores, y quien los manda tiene que estar contigo.
+local CANALES = { PARTY = true, RAID = true, INSTANCE_CHAT = true }
+local function delGrupo(emisor)
+	if type(emisor) ~= "string" then return false end
+	local nombre = Ambiguate and Ambiguate(emisor, "none") or emisor
+	for _, fn in ipairs({ UnitInParty, UnitInRaid }) do
+		if type(fn) == "function" then
+			local ok, si = pcall(fn, nombre)
+			if ok and si then return true end
+		end
+	end
+	return false
+end
+
+-- No más de POR_MINUTO por persona; lo viejo se olvida.
+local function dentroDelLimite(quien, ahora)
+	local t = porPersona[quien] or {}
+	local vivos = {}
+	for _, m in ipairs(t) do if ahora - m < 60 then vivos[#vivos + 1] = m end end
+	if #vivos >= POR_MINUTO then porPersona[quien] = vivos return false end
+	vivos[#vivos + 1] = ahora
+	porPersona[quien] = vivos
+	for firma, cuando in pairs(recientes) do
+		if ahora - cuando >= 60 then recientes[firma] = nil end
+	end
+	return true
+end
+
+local function alRecibir(_, pre, texto, tipoCanal, emisor)
 	if pre ~= PREFIJO or type(texto) ~= "string" then return end
 	local C = A.Compat
-	if C and C.IsSecret and (C.IsSecret(texto) or C.IsSecret(emisor)) then return end
+	if C and C.IsSecret and (C.IsSecret(texto) or C.IsSecret(emisor) or C.IsSecret(tipoCanal)) then return end
 	if C and C.SenderIsMe and C.SenderIsMe(emisor) then return end
 	if A.Get("mundo.recibirMarcadores") == false then return end
+	if not CANALES[tipoCanal] or not delGrupo(emisor) then return end
 	local v, mapa, x, y, icono, color, nombre = strsplit("|", texto, 7)
 	if v ~= "1" then return end
 	-- Solo dígitos: tonumber acepta "nan", "inf" o "1e300", que rompen el mapa.
@@ -428,6 +479,7 @@ local function alRecibir(_, pre, texto, _, emisor)
 	local firma = table.concat({ quien, mapa, floor(x), floor(y), nombre }, ":")
 	local ahora = GetTime and GetTime() or 0
 	if recientes[firma] and ahora - recientes[firma] < 60 then return end
+	if not dentroDelLimite(quien, ahora) then return end
 	recientes[firma] = ahora
 	-- Ya lo tienes (te lo mandaron antes): no se duplica.
 	for _, m in ipairs(Mk.Lista()) do

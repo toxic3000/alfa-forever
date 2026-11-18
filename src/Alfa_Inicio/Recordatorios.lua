@@ -353,7 +353,8 @@ local function revisarEntrenar()
 end
 local revisarEntrenarPronto = juntar(2, revisarEntrenar)
 
-A.RegisterEvent("LEARNED_SPELL_IN_TAB", revisarEntrenarPronto)
+-- Forever no tiene LEARNED_SPELL_IN_TAB: su evento es este (1.2.0; SPELLS_CHANGED también lo cubre).
+A.RegisterEvent("LEARNED_SPELL_IN_SKILL_LINE", revisarEntrenarPronto)
 A.RegisterEvent("SPELLS_CHANGED", revisarEntrenarPronto)
 A.RegisterEvent("PLAYER_LEVEL_UP", function() A.After(3, revisarEntrenar) end)
 A.On("CLASS_TRAINED", revisarEntrenarPronto)

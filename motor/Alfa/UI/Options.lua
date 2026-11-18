@@ -95,6 +95,18 @@ end
 
 local function pageOf(name, icon, order, builtin, key)
 	local p = pages[name]
+	-- Alfa (1.2.0): la misma página por su clave, aunque llegue con otro nombre
+	-- (Comodidades absorbe a Calidad de vida; los módulos agregan a Misiones).
+	if not p and key then
+		local k = keyOf(key)
+		for _, q in ipairs(pageList) do
+			if q.key == k then
+				p = q
+				pages[name] = q
+				break
+			end
+		end
+	end
 	if not p then
 		seq = seq + 1
 		local k = keyOf(key or name)
@@ -131,8 +143,17 @@ local function sectionOf(t, name)
 	return s
 end
 
+local QOL_UNIDA -- el nombre de Calidad de vida (se llena abajo, con L)
 local function add(spec, builtin)
+	-- Alfa (1.2.0): Calidad de vida se une a Comodidades (docs/PLAN.md).
+	if QOL_UNIDA and (spec.page == QOL_UNIDA or spec.key == "qualityoflife") then
+		if spec.tab == L["Quests"] then return end -- ya están en Misiones
+		spec.page, spec.key, spec.icon, spec.order, spec.subtitle = "Comodidades", "comodidades", "ic-comodidades", 70, nil
+	end
 	local p = pageOf(spec.page, spec.icon, spec.order, builtin, spec.key)
+	-- Un módulo que llega a una página ya creada por su clave (Comodidades):
+	-- su nombre es el que se ve.
+	if spec.custom and not builtin and spec.page ~= p.name and not p.label then p.label = spec.page end
 	if spec.subtitle then p.subtitle = spec.subtitle end
 	-- Alfa: the section the page lives in (SECCIONES) and the name it shows,
 	-- when the spec brings them.
@@ -178,6 +199,7 @@ end
 
 local GUIDE, LOOK, MAP, QUESTING, DISCOVERY, QOL, REC, ABOUT =
 	L["Guide"], L["Appearance"], L["Map"], L["Questing"], L["Discovery"], L["Quality of Life"], L["Recorder"], L["About"]
+QOL_UNIDA = QOL
 
 local function resetPositions()
 	ns.Set("ui.pos", nil)
@@ -367,7 +389,8 @@ local BUILTIN = {
 			needs = function() return loaded("TomTom") end,
 			child = true, disabled = function() return not ns.Get("nav.tomtom") end }),
 	} },
-	{ page = GUIDE, tab = L["Automation"], section = L["Quests"], controls = {
+	-- Alfa (1.2.0): las misiones, en un solo lugar (Misiones > Misiones).
+	{ page = QUESTING, key = "questing", tab = L["Quests"], section = L["Automation"], controls = {
 		{ kind = "toggle", key = "behavior.closeSkipped", label = L["Close offers the guide skips"], help = L["After Alfa accepts or turns in a quest, closes the quest window the NPC opens next when the guide skips its quests. Hold Shift to keep it open."],
 			search = "close quest window, auto close, skip quests" },
 		{ kind = "toggle", key = "behavior.warnClosing", label = L["Warn about missable quests"], help = L["Before you take a quest that closes another for good, says which in chat and leaves the accept to you."],
@@ -564,7 +587,7 @@ local BUILTIN = {
 -- Dungeons, Rares and Characters on Discovery; QoL and Maps on Quality of Life.
 for _, list in ipairs({
 	declare(QUESTING, "questing", "icon-accept", 40, L["Quest information, rewards and gear advice, and the quest buttons."], {
-		{ L["Quests"], { L["Quest database"], L["Tooltips and quest log"], L["Faster questing"] } },
+		{ L["Quests"], { L["Faster questing"], L["Automation"], L["Quest database"], L["Tooltips and quest log"] } },
 		{ L["Rewards & gear"], { L["Quest rewards"], L["Loot and merchants"], L["Gear advice"], L["Comparison"] } },
 		-- Talents: { L["Talents"], { L["Talent plan"] } } here once the plans are back (Talents.lua, T.SOON).
 		{ L["Buttons"], { L["Action buttons"] } },
@@ -1089,7 +1112,7 @@ local ALIASES = {
 	quests = { "questing", L["Quests"] }, gear = { "questing", L["Rewards & gear"] },
 	lookup = { "discovery", L["Lookup"] }, dungeons = { "discovery", L["Dungeons"] }, rares = { "discovery", L["Rares"] },
 	characters = { "discovery", L["Characters"] }, alts = { "discovery", L["Characters"] },
-	look = { "appearance" }, qol = { "qualityoflife" },
+	look = { "appearance" }, qol = { "comodidades" }, qualityoflife = { "comodidades" },
 }
 
 ---------------------------------------------------------------------------
@@ -1386,7 +1409,7 @@ local function buildView(p, t)
 	view:SetPoint("TOPLEFT", win.Body, "TOPLEFT", 0, 0)
 	view:SetPoint("RIGHT", win.Body, "RIGHT", 0, 0)
 	view.cache, view.headers, view.panels = {}, {}, {}
-	if p.custom then
+	if p.custom and t.name == "" then
 		p.custom(view)
 	else
 		view.Refresh = function()
@@ -1837,10 +1860,17 @@ local function tabHasControls(t)
 end
 
 local function shownTabs(p)
-	if p.custom then return p.tabs end
 	local out = {}
+	-- Alfa (1.2.0): la vista propia es la pestaña "" y va primero; junto a
+	-- ella, las pestañas normales que tengan algo.
+	if p.custom then
+		for _, t in ipairs(p.tabs) do if t.name == "" then out[1] = t end end
+		if not out[1] then out[1] = { name = "", sections = {} } p.tabs[#p.tabs + 1] = out[1] end
+	end
 	for _, t in ipairs(p.tabs) do
-		if tabHasControls(t) then out[#out + 1] = t end
+		if t.name ~= "" or not p.custom then
+			if tabHasControls(t) then out[#out + 1] = t end
+		end
 	end
 	if #out == 0 then out[1] = p.tabs[1] end
 	return out
@@ -1883,7 +1913,7 @@ end
 -- y la apariencia fina del motor; las comodidades de Alfa y la calidad de vida
 -- del motor; luego la guía, sus misiones, el mapa y lo demás. Una página que
 -- no está aquí va al final, en su orden de siempre.
-local ORDEN_AJUSTES = { "bienvenida", "appearance", "comodidades", "qualityoflife", "guide", "questing", "map",
+local ORDEN_AJUSTES = { "bienvenida", "appearance", "comodidades", "guide", "questing", "map",
 	"discovery", "gamepad", "integrations", "guidepacks", "recorder", "about" }
 for i, k in ipairs(ORDEN_AJUSTES) do
 	if not posicion[k] then posicion[k] = i end
@@ -2094,7 +2124,7 @@ function O.Select(key, tabName)
 	local tabs
 	if #list > 1 or (list[1] and list[1].name ~= "") then
 		tabs = {}
-		for i, tt in ipairs(list) do tabs[i] = { key = tt.name, label = T(tt.name) } end
+		for i, tt in ipairs(list) do tabs[i] = { key = tt.name, label = tt.name == "" and O.PageLabel(p) or T(tt.name) } end
 	end
 	W.ShellTabs(win, tabs, t.name, function(name) O.Select(p.key, name) end)
 	W.ShellTitle(win, O.PageLabel(p), T(p.subtitle))
@@ -2196,6 +2226,29 @@ end)
 
 -- Late pages (a module's) and their dots show in the sections at once.
 ns.On("ALFA_MODULO", function() if win and win:IsShown() then renderNav() end end)
+
+-- What a page holds (tests): { custom = bool, tabs = { { name, keys = { key = true } } } },
+-- or nil if there is no such page (an alias counts). 1.2.0.
+function O.Estructura(key)
+	local p = pageByKey(key)
+	if not p then return nil end
+	local out = { key = p.key, custom = p.custom ~= nil, tabs = {} }
+	for _, t in ipairs(shownTabs(p)) do
+		local keys = {}
+		for _, s in ipairs(t.sections) do
+			for _, c in ipairs(s.controls) do if c.key then keys[c.key] = true end end
+		end
+		out.tabs[#out.tabs + 1] = { name = t.name, keys = keys }
+	end
+	return out
+end
+
+-- The pages the Ajustes section lists, by key, in order (tests). 1.2.0.
+function O.PaginasDeAjustes()
+	local out = {}
+	for _, p in ipairs(pagesOf(AJUSTES.key)) do out[#out + 1] = p.key end
+	return out
+end
 
 -- The views of a page that has been drawn (Alfa_Nucleo: N.Repintar). 1.1.9.
 function O.Views(key)

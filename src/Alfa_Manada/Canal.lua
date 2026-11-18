@@ -37,7 +37,15 @@ local U = M.U
 local C = {}
 M.Canal = C
 
-C.NOMBRE = "AlfaJauria"
+C.NOMBRES = { "AlfaJauria", "AlfaJauria2", "AlfaJauria3" }
+C.NOMBRE = C.NOMBRES[1]
+local cual = 1 -- el nombre de ahora en C.NOMBRES
+
+-- 1.2.0: si alguien le pone contraseña al canal, nos banea o no nos deja
+-- entrar, se pasa al siguiente nombre (todos los que usan Alfa ven lo mismo
+-- y pasan juntos). Sin más nombres, como siempre: se reintenta y, si no, la
+-- hermandad (Red.lua).
+local TOMADO = { WRONG_PASSWORD = true, BANNED = true, NOT_ALLOWED = true }
 
 local ESPERA_MAX = 40   -- segundos esperando a los canales del juego
 local VERIFICAR = 12    -- segundos para confirmar que entramos
@@ -240,6 +248,12 @@ A.RegisterEvent("CHAT_MSG_CHANNEL_NOTICE", function(_, tipo, _, _, canal, _, _, 
 			-- Salimos sin pedirlo (el juego, otro addon, un /leave): de vuelta en un rato.
 			A.After(30, function() if queremos and estado == "fuera" then C.Entrar() end end)
 		end
+	elseif tipo and TOMADO[tipo] and cual < #C.NOMBRES then
+		-- El canal fue tomado: el siguiente nombre, de una vez.
+		cual = cual + 1
+		C.NOMBRE = C.NOMBRES[cual]
+		estado = "fuera"
+		if queremos then A.After(2, function() if queremos and estado == "fuera" then C.Entrar() end end) end
 	elseif tipo and NO_ENTRA[tipo] then
 		fallar(tipo == "TRIAL_RESTRICTED" and "prueba" or tipo:lower())
 	end

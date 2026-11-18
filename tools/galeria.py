@@ -68,8 +68,8 @@ VISTAS = [
      "Black, with her Alfa bandana: she runs, chases her tail, sleeps, howls and begs for sausages."),
     ("shot-lya-globo.png", "Lya platica contigo", "Lore de Warcraft, datos de cada zona, de tu raza y tus profesiones, y consejos de amiga.",
      "Warcraft lore, facts about every zone, your race and professions, and friendly tips."),
-    ("shot-intro.png", "Cada versión, una bienvenida", "La intro del lobo y la luna, y después lo nuevo de la versión.",
-     "The wolf and moon intro, then what's new in the version."),
+    ("shot-intro.png", "Cada entrada, una bienvenida", "La intro del lobo y la luna te recibe al entrar al juego; con una versión nueva, después sale lo nuevo.",
+     "The wolf and moon intro greets you when you log in; with a new version, what's new comes next."),
     ("shot-notas.png", "Lo nuevo, a la vista", "Al actualizar, una ventana te cuenta qué cambió. La cierras y sigues jugando.",
      "After an update, a window tells you what changed. Close it and keep playing."),
 ]

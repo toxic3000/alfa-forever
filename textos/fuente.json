@@ -1403,6 +1403,10 @@
   "en": "Open Dungeons",
   "origen": "Alfa_Rutas"
  },
+ "Abrir Misiones": {
+  "en": "Open Questing",
+  "origen": "Alfa_Rutas"
+ },
  "Abrir Paisaje y gráficos": {
   "en": "Open Landscape and graphics",
   "origen": "Alfa_Vista"
@@ -1590,6 +1594,10 @@
  "Aceptar y entregar": {
   "en": "Accept and turn in",
   "origen": "Alfa_Bienvenida"
+ },
+ "Aceptar y entregar misiones": {
+  "en": "Accept and turn in quests",
+  "origen": "Alfa_Rutas"
  },
  "Aceptar y entregar solo las misiones de mi ruta": {
   "en": "Accept and turn in only my route's quests",
@@ -1883,6 +1891,10 @@
   "en": "Meter settings",
   "origen": "Alfa_Combate"
  },
+ "Ajustes en orden: Comodidades y Calidad de vida son una sola página con pestañas, y todo lo de misiones vive en Ajustes > Misiones. Tu configuración se mudó sola, sin perder nada.": {
+  "en": "Settings in order: Conveniences and Quality of Life are one page with tabs, and everything about quests lives in Settings > Questing. Your settings moved on their own, nothing lost.",
+  "origen": "Alfa_Bienvenida"
+ },
  "Al abrirse el mapa de vuelo, vuela al destino que marca tu ruta.": {
   "en": "When the flight map opens, flies to the destination your route marks.",
   "origen": "Alfa_Bienvenida"
@@ -2143,6 +2155,10 @@
   "en": "Alfa will delete what it saved of %s: bags, bank and gear. Play that character again and it is saved anew.",
   "origen": "Alfa_Bolsas"
  },
+ "Alfa de La Jauría": {
+  "en": "Alpha of La Jauría",
+  "origen": "Alfa_Manada"
+ },
  "Alfa elige las misiones que más XP dan cerca de ti, en tres tandas.": {
   "en": "Alfa picks the quests near you that give the most XP, in three batches.",
   "origen": "Alfa_Rutas"
@@ -2153,6 +2169,10 @@
  },
  "Alfa es un addon que toxic3000 creó para sus amigos y quiso compartir con todos.": {
   "en": "Alfa is an addon toxic3000 made for friends and wanted to share with everyone.",
+  "origen": "Alfa_Bienvenida"
+ },
+ "Alfa estable: en orden y en manada": {
+  "en": "Stable Alfa: in order and as a pack",
   "origen": "Alfa_Bienvenida"
  },
  "Alfa está armando tu ruta...": {
@@ -2225,6 +2245,10 @@
  },
  "Alfa no toma misiones que no sirven a tu ruta, ni las entrega solas. Lo respeta también «todas las misiones» de Comodidades.": {
   "en": "Alfa does not take quests that don't serve your route, nor turns them in by itself. Conveniences' \"all quests\" respects it too.",
+  "origen": "Alfa_Rutas"
+ },
+ "Alfa no toma misiones que no sirven a tu ruta, ni las entrega solas. Lo respeta también «todas las misiones».": {
+  "en": "Alfa doesn't take quests your route doesn't need, nor turn them in by itself. \"All quests\" respects it too.",
   "origen": "Alfa_Rutas"
  },
  "Alfa no toma misiones que no sirven a tu ruta. Tu registro queda limpio.": {
@@ -4083,6 +4107,10 @@
   "en": "Every new version greets you with the wolf intro and its notes, like these.",
   "origen": "Alfa_Bienvenida"
  },
+ "Cada vez que entras al juego, la intro del lobo y la luna te da la bienvenida. Un clic o Esc la saltan.": {
+  "en": "Every time you log in, the wolf and moon intro welcomes you. A click or Esc skips it.",
+  "origen": "Alfa_Bienvenida"
+ },
  "Cada ícono del mapa con su tamaño exacto en tu pantalla, nítido de orilla a orilla.": {
   "en": "Every map icon at its exact size on your screen, crisp from edge to edge.",
   "origen": "Alfa_Bienvenida"
@@ -4442,6 +4470,10 @@
  "Cien al cesto": {
   "en": "A hundred in the basket",
   "origen": "Alfa_Pesca"
+ },
+ "Cierra la ventana de talentos y hechizos del juego y vuelve a aplicar": {
+  "en": "Close the game's talents and spells window and apply again",
+  "origen": "Alfa_Builds"
  },
  "Cierra una pestaña para abrir esta guía.": {
   "en": "Close a tab to open this guide.",
@@ -5895,6 +5927,10 @@
   "en": "Forever",
   "origen": "Alfa_Mazmorras"
  },
+ "De La Jauría": {
+  "en": "Member of La Jauría",
+  "origen": "Alfa_Manada"
+ },
  "De arriba abajo: la primera que el juego te deja usar es la que sale en el ícono. Lo que el juego hace brillar pasa al frente; las de área salen con varios enemigos peleando. Solo aparecen las que ya aprendiste.": {
   "en": "Top to bottom: the first one the game lets you use is the one on the icon. What the game makes glow jumps to the front; area abilities show with several enemies fighting. Only the ones you've learned appear.",
   "origen": "Alfa_Combate"
@@ -7282,6 +7318,14 @@
  "El lago helado de Kel'Theril guarda ruinas de los Altonato.": {
   "en": "The frozen lake of Kel'Theril holds Highborne ruins.",
   "origen": "Alfa_Lya"
+ },
+ "El lobo te recibe al entrar": {
+  "en": "The wolf greets you when you log in",
+  "origen": "Alfa_Bienvenida"
+ },
+ "El lobo te recibe cada vez que entras al juego, redibujado: cabeza, orejas y hocico de lobo de verdad.": {
+  "en": "The wolf greets you every time you log in, redrawn: a real wolf's head, ears and muzzle.",
+  "origen": "Alfa_Bienvenida"
  },
  "El maestro de vuelo, la posada, reparar, el banco y más, con la flecha.": {
   "en": "The flight master, the inn, repairs, the bank and more, with the arrow.",
@@ -9391,8 +9435,8 @@
   "en": "It's optional. If you say yes, La Jauría wolves who use Alfa see your character on the WoW map, like you see your group, and can reach you with the arrow; and you them. Alfa only shares where your character is inside the game: the zone, the spot on the map, its level and class. Never your real location, your computer or your account.",
   "origen": "Alfa_Bienvenida"
  },
- "Es opcional: tu personaje aparece en el mapa de WoW de los lobos de La Jauría que usan Alfa, y ellos en el tuyo, para encontrarse y llegar con la flecha. Solo se comparte dónde anda tu personaje dentro del juego (zona, punto en el mapa, nivel y clase), nunca tu ubicación real ni nada de tu computadora, y nunca dentro de mazmorras. Tu grupo se ve siempre. Lo cambias cuando quieras en La Jauría.": {
-  "en": "It's optional: your character shows on the WoW map of La Jauría wolves who use Alfa, and theirs on yours, to find each other and reach them with the arrow. Only where your character is inside the game is shared (zone, spot on the map, level and class), never your real location or anything from your computer, and never inside dungeons. Your group always shows. Change it any time in La Jauría.",
+ "Es opcional: tu personaje aparece en el mapa de WoW de los lobos de La Jauría que usan Alfa, y ellos en el tuyo, para encontrarse y llegar con la flecha. Solo se comparte dónde anda tu personaje dentro del juego (zona, punto en el mapa, nivel y clase), nunca tu ubicación real ni nada de tu computadora, y nunca dentro de mazmorras. Va por un canal oculto que no sale en el chat, aunque alguien que entre a él con otro addon podría verlo. Tu grupo se ve siempre. Lo cambias cuando quieras en La Jauría.": {
+  "en": "It's optional: your character shows on the WoW map of La Jauría wolves who use Alfa, and theirs on yours, to find each other and reach them with the arrow. Only where your character is inside the game is shared (zone, spot on the map, level and class), never your real location or anything from your computer, and never inside dungeons. It goes through a hidden channel that doesn't show in chat, though someone who joins it with another addon could see it. Your group always shows. Change it any time in La Jauría.",
   "origen": "Alfa_Manada"
  },
  "Es para niveles %s y vas en el %d: te faltan %d niveles.": {
@@ -11259,6 +11303,10 @@
   "en": "Horizon start",
   "origen": "Alfa_Vista"
  },
+ "Insignias de La Jauría: los Alfas y los miembros llevan su lobo en el cuadro, en La Jauría y en el mapa; y quienes comparten se ven con una huella.": {
+  "en": "La Jauría badges: Alphas and members wear their wolf in the tooltip, in La Jauría and on the map; and those who share show as a paw print.",
+  "origen": "Alfa_Bienvenida"
+ },
  "Instantánea: úsala cada vez que esté lista.": {
   "en": "Instant: use it every time it's ready.",
   "origen": "Alfa_Combate"
@@ -12483,6 +12531,10 @@
   "en": "Trial accounts cannot share: the game does not allow it.",
   "origen": "Alfa_Mundo"
  },
+ "Las de tu ruta, las de la guía o todas: se eligen en Ajustes > Misiones, con lo demás de las misiones.": {
+  "en": "Your route's, the guide's or all of them: chosen in Settings > Questing, with everything else about quests.",
+  "origen": "Alfa_Rutas"
+ },
  "Las demás": {
   "en": "The others",
   "origen": "Alfa_Rutas"
@@ -13147,6 +13199,10 @@
   "en": "New in Alfa 1.0",
   "origen": "Alfa_Bienvenida"
  },
+ "Lo pequeño que hace el juego más cómodo: el minimapa, el chat y las barras con el estilo de Alfa, marcos, cuadro de información, probador, cámara y sonidos; y en sus pestañas, viajes, invitaciones, comerciantes y más.": {
+  "en": "The small things that make the game more comfortable: the minimap, chat and bars in Alfa's style, frames, tooltip, dressing room, camera and sounds; and in its tabs, travel, invitations, merchants and more.",
+  "origen": "Alfa_Comodidades"
+ },
  "Lo pequeño que hace el juego más cómodo: misiones, vuelos, minimapa, chat y barras con el estilo de Alfa, marcos, cuadro de información, probador, cámara y sonidos.": {
   "en": "The small things that make the game more comfortable: quests, flights, minimap, chat and bars in Alfa's style, frames, tooltip, dressing room, camera and sounds.",
   "origen": "Alfa_Comodidades"
@@ -13745,6 +13801,10 @@
  },
  "Los grifos (o dragones) a los lados de la barra principal.": {
   "en": "The gryphons (or wyverns) at the sides of the main bar.",
+  "origen": "Alfa_Comodidades"
+ },
+ "Los grifos (o dragones) a los lados de la barra principal. «Del color del estilo» necesita el estilo de las barras; «Ocultos» funciona siempre.": {
+  "en": "The gryphons (or wyverns) on the sides of the main bar. \"In the style's color\" needs the bars style; \"Hidden\" always works.",
   "origen": "Alfa_Comodidades"
  },
  "Los gules, las abominaciones y las gárgolas son los soldados más comunes de la Plaga. Las abominaciones se cosen con partes de muchos cadáveres.": {
@@ -14898,6 +14958,10 @@
  "Misiones": {
   "en": "Quests",
   "origen": "Alfa_Bienvenida"
+ },
+ "Misiones automáticas": {
+  "en": "Quest automation",
+  "origen": "Alfa_Comodidades"
  },
  "Misiones de pesca": {
   "en": "Fishing quests",
@@ -18195,6 +18259,10 @@
   "en": "Burns the enemy for a while.",
   "origen": "Alfa_Combate"
  },
+ "Quien instala Alfa ya tiene encendidos los colores de clase, el cuadro de información, el probador, el minimapa y las barras con el estilo de Alfa.": {
+  "en": "New installs come with class colors, the tooltip, the dressing room, the minimap and the bars in Alfa's style already on.",
+  "origen": "Alfa_Bienvenida"
+ },
  "Quien repara tu equipo": {
   "en": "Someone who repairs your gear",
   "origen": "Alfa_Rutas"
@@ -18203,8 +18271,8 @@
   "en": "Whoever uses Alfa in your group receives it and can follow it.",
   "origen": "Alfa_Mundo"
  },
- "Quienes usan Alfa y comparten te ven en su mapa y pueden seguirte, y tú a ellos. Se envía tu zona, tu posición, tu nivel y tu clase cada 10 segundos mientras te mueves (cada 4 minutos si estás quieto), nunca dentro de mazmorras ni por canales públicos.": {
-  "en": "People who use Alfa and share see you on their map and can follow you, and you them. Your zone, position, level and class go out every 10 seconds while you move (every 4 minutes while you stand still), never inside dungeons or through public channels.",
+ "Quienes usan Alfa y comparten te ven en su mapa y pueden seguirte, y tú a ellos. Se envía tu zona, tu posición, tu nivel y tu clase cada 10 segundos mientras te mueves (cada 4 minutos si estás quieto), nunca dentro de mazmorras. Va por un canal oculto de Alfa: no sale en el chat, pero alguien que entre a ese canal con otro addon podría leerlo.": {
+  "en": "People who use Alfa and share see you on their map and can follow you, and you them. Your zone, position, level and class go out every 10 seconds while you move (every 4 minutes while you stand still), never inside dungeons. It goes through a hidden Alfa channel: it doesn't show in chat, but someone who joins that channel with another addon could read it.",
   "origen": "Alfa_Manada"
  },
  "Quienes van contigo y usan Alfa ven cómo vas en las misiones que comparten.": {
@@ -21259,12 +21327,16 @@
   "en": "You have 6 guides open",
   "origen": "Alfa_Rutas"
  },
- "Tienes activado «Rechazar invitaciones a hermandad» en Ajustes > Calidad de vida > Social: apágalo para que te llegue la invitación.": {
-  "en": "“Decline guild invitations” is on in Settings > Quality of Life > Social: turn it off so the invite reaches you.",
+ "Tienes activado «Rechazar invitaciones a hermandad» en Ajustes > Comodidades > Social: apágalo para que te llegue la invitación.": {
+  "en": "“Decline guild invitations” is on in Settings > Conveniences > Social: turn it off so the invite reaches you.",
   "origen": "Alfa_Manada"
  },
  "Tienes cambios sin confirmar en la ventana de talentos: se descartan antes de aplicar.": {
   "en": "You have unconfirmed changes in the talent window: they are discarded before applying.",
+  "origen": "Alfa_Builds"
+ },
+ "Tienes cambios sin guardar en la ventana de talentos del juego: guárdalos o deshazlos ahí primero": {
+  "en": "You have unsaved changes in the game's talent window: save or undo them there first",
   "origen": "Alfa_Builds"
  },
  "Tienes encendido «solo las misiones de mi ruta»: solo acepta las de tu ruta.": {
@@ -21390,6 +21462,10 @@
  "Todas las metas, notas y pasos de esta guía en otra ventana.": {
   "en": "Every goal, note and step of this guide in another window.",
   "origen": "Alfa_Rutas"
+ },
+ "Todas las misiones": {
+  "en": "All quests",
+  "origen": "Alfa_Comodidades"
  },
  "Todas las misiones que Lya te guardó, por zona, con su historia completa. También con /alfa historias.": {
   "en": "Every quest Lya saved for you, by zone, with its full story. Also with /alfa historias.",
@@ -22319,8 +22395,8 @@
   "en": "Your character",
   "origen": "Alfa_Bienvenida"
  },
- "Tu personaje aparece en el mapa de quienes también se dejan ver. Solo su lugar en el juego, nunca dentro de mazmorras ni por canales públicos.": {
-  "en": "Your character shows on the map of those who also let themselves be seen. Only its place in the game, never inside dungeons or over public channels.",
+ "Tu personaje aparece en el mapa de quienes también se dejan ver. Solo su lugar en el juego y nunca dentro de mazmorras; va por un canal oculto que alguien con otro addon podría leer.": {
+  "en": "Your character shows on the map of those who also let themselves be seen. Only its place in the game and never inside dungeons; it goes through a hidden channel that someone with another addon could read.",
   "origen": "Alfa_Bienvenida"
  },
  "Tu personaje deja de decir \"No tengo suficiente maná\", \"Eso todavía no está listo\" y parecidas. El texto rojo sigue.": {
@@ -23157,6 +23233,10 @@
  },
  "Una revisión completa de todos los módulos: más de 60 arreglos.": {
   "en": "A full review of every module: over 60 fixes.",
+  "origen": "Alfa_Bienvenida"
+ },
+ "Una revisión completa para la versión estable: más de 20 arreglos en mazmorras con grupo, combate, el mapa, Pesca, Talentos y más.": {
+  "en": "A full review for the stable release: over 20 fixes in group dungeons, combat, the map, Fishing, Talents and more.",
   "origen": "Alfa_Bienvenida"
  },
  "Una ruta es tu árbol de tramos: misiones de XP, de oro, de clase, materiales u objetos. Elige una de estas para empezar:": {
@@ -25494,6 +25574,10 @@
  "¡De vuelta con la manada!": {
   "en": "Back with the pack!",
   "origen": "Alfa_Inicio"
+ },
+ "¡De vuelta en la manada, %s!": {
+  "en": "Back with the pack, %s!",
+  "origen": "Alfa_Bienvenida"
  },
  "¡Ejecutar!": {
   "en": "Execute!",

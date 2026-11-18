@@ -195,7 +195,7 @@ local function grifos(est)
 	local barra = principal()
 	local caps = barra and barra.EndCaps
 	local modo = activo() and N.Get(ID, "barrasGrifos") or "como"
-	local propio = M.Get("grifos") -- "Ocultar los grifos" de Marcos y barra
+	local propio = N.Get(ID, "barrasGrifos") == "ocultar" -- Marcos.lua los oculta también sin el estilo
 	for _, k in ipairs({ "LeftEndCap", "RightEndCap" }) do
 		local t = caps and caps[k] and caps[k].Texture
 		if type(t) == "table" and t.SetVertexColor then
@@ -289,7 +289,7 @@ end
 
 local function enCalma() N.FueraDeCombate(aplicar) end
 
-M.AlCambiar({ "barras", "barrasEstilo", "barrasBotones", "barrasGrifos", "barrasExperiencia", "barrasMenu", "grifos" }, enCalma)
+M.AlCambiar({ "barras", "barrasEstilo", "barrasBotones", "barrasGrifos", "barrasExperiencia", "barrasMenu" }, enCalma)
 M.AlCambiarAspecto(function() if activo() then enCalma() end end)
 
 -- Edit Mode puede ocultar el arte de la barra o cambiar las barras: al

@@ -22,7 +22,8 @@
 --
 --   M.Intro(fn, o)   la muestra y luego llama a fn(motivo): nil (terminó o la
 --                    saltaste) o "combate". o = { version = "1.1.4" } añade la
---                    línea de la versión. Ya vista en la sesión: fn al instante
+--                    línea de la versión; o = { texto = "..." }, otra línea
+--                    (el saludo de cada entrada). Ya vista en la sesión: fn al instante
 --                    (salvo con o.otraVez, para verla de nuevo: el banco).
 
 local ADDON, M = ...
@@ -208,7 +209,8 @@ local function preparar(o)
 	f.Version:SetPoint("TOP", f.Lema, "BOTTOM", 0, -8)
 
 	K.Escribir(f.Lema, L["Guía a tu manada"])
-	K.Escribir(f.Version, o and o.version and string.format(L["Alfa %s ya está aquí"], o.version) or "")
+	-- la línea de abajo: la versión nueva, o el saludo de cada entrada (o.texto)
+	K.Escribir(f.Version, (o and o.version and string.format(L["Alfa %s ya está aquí"], o.version)) or (o and o.texto) or "")
 	K.Escribir(f.Salto, L["Clic o Esc para saltar"])
 end
 

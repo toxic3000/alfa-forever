@@ -224,7 +224,15 @@ A.OnLogin(function()
 	local d = N.DatosPersonaje(M.ID)
 	local v = d.viaje
 	local ahora = time and time() or 0
-	if type(v) == "table" and type(v.paradas) == "table" and enElAire() and ahora - (tonumber(v.t) or 0) < VIGENCIA then
+	-- Un viaje guardado viejo o dañado se descarta entero (1.2.0): el tramo es
+	-- un número y cada parada una tabla con su nombre.
+	local sano = type(v) == "table" and type(v.paradas) == "table" and type(v.tramo) == "number"
+	if sano then
+		for _, p in ipairs(v.paradas) do
+			if type(p) ~= "table" or type(p.nombre) ~= "string" then sano = false break end
+		end
+	end
+	if sano and enElAire() and ahora - (tonumber(v.t) or 0) < VIGENCIA then
 		viaje = v
 	else
 		d.viaje = nil

@@ -26,6 +26,10 @@ M.EN = {
 	["Sin ubicación ahora: en una instancia o fuera del mapa"] = "No location right now: in an instance or off the map",
 	["Sin ubicación"] = "No location",
 
+	-- Insignias
+	["Alfa de La Jauría"] = "Alpha of La Jauría",
+	["De La Jauría"] = "Member of La Jauría",
+
 	-- Seguir
 	["Perdimos el rastro de %s: ya no sabemos dónde está."] = "We lost %s's trail: we no longer know where they are.",
 	["Dentro de una instancia no se puede seguir a nadie."] = "You can't follow anyone inside an instance.",
@@ -99,7 +103,7 @@ M.EN = {
 	["Oficiales: %s"] = "Officers: %s",
 	["Escribir a %s"] = "Write to %s",
 	["Abre un susurro con tu mensaje listo. Si no está conectado, el juego te lo dirá."] = "Opens a whisper with your message ready. If they're offline, the game will tell you.",
-	["Tienes activado «Rechazar invitaciones a hermandad» en Ajustes > Calidad de vida > Social: apágalo para que te llegue la invitación."] = "“Decline guild invitations” is on in Settings > Quality of Life > Social: turn it off so the invite reaches you.",
+	["Tienes activado «Rechazar invitaciones a hermandad» en Ajustes > Comodidades > Social: apágalo para que te llegue la invitación."] = "“Decline guild invitations” is on in Settings > Conveniences > Social: turn it off so the invite reaches you.",
 	["Apagarlo"] = "Turn it off",
 
 	["Opcional"] = "Optional",
@@ -107,7 +111,7 @@ M.EN = {
 
 	-- Ajustes
 	["Que la manada vea a mi personaje en el mapa"] = "Let the pack see my character on the map",
-	["Quienes usan Alfa y comparten te ven en su mapa y pueden seguirte, y tú a ellos. Se envía tu zona, tu posición, tu nivel y tu clase cada 10 segundos mientras te mueves (cada 4 minutos si estás quieto), nunca dentro de mazmorras ni por canales públicos."] = "People who use Alfa and share see you on their map and can follow you, and you them. Your zone, position, level and class go out every 10 seconds while you move (every 4 minutes while you stand still), never inside dungeons or through public channels.",
+	["Quienes usan Alfa y comparten te ven en su mapa y pueden seguirte, y tú a ellos. Se envía tu zona, tu posición, tu nivel y tu clase cada 10 segundos mientras te mueves (cada 4 minutos si estás quieto), nunca dentro de mazmorras. Va por un canal oculto de Alfa: no sale en el chat, pero alguien que entre a ese canal con otro addon podría leerlo."] = "People who use Alfa and share see you on their map and can follow you, and you them. Your zone, position, level and class go out every 10 seconds while you move (every 4 minutes while you stand still), never inside dungeons. It goes through a hidden Alfa channel: it doesn't show in chat, but someone who joins that channel with another addon could read it.",
 	["Ahora va por el canal oculto de Alfa."] = "It's going through Alfa's hidden channel now.",
 	["Ahora va por tu hermandad: el canal oculto de Alfa no está disponible, así que solo te ven quienes comparten en tu hermandad."] = "It's going through your guild now: Alfa's hidden channel isn't available, so only those sharing in your guild see you.",
 	["Ahora no sale: Alfa busca cómo unirse a la manada."] = "It isn't going out now: Alfa is looking for a way to reach the pack.",
@@ -121,7 +125,7 @@ M.EN = {
 
 	-- La pregunta
 	["¿Quieres que la manada te vea en el mapa del juego?"] = "Want the pack to see you on the game map?",
-	["Es opcional: tu personaje aparece en el mapa de WoW de los lobos de La Jauría que usan Alfa, y ellos en el tuyo, para encontrarse y llegar con la flecha. Solo se comparte dónde anda tu personaje dentro del juego (zona, punto en el mapa, nivel y clase), nunca tu ubicación real ni nada de tu computadora, y nunca dentro de mazmorras. Tu grupo se ve siempre. Lo cambias cuando quieras en La Jauría."] = "It's optional: your character shows on the WoW map of La Jauría wolves who use Alfa, and theirs on yours, to find each other and reach them with the arrow. Only where your character is inside the game is shared (zone, spot on the map, level and class), never your real location or anything from your computer, and never inside dungeons. Your group always shows. Change it any time in La Jauría.",
+	["Es opcional: tu personaje aparece en el mapa de WoW de los lobos de La Jauría que usan Alfa, y ellos en el tuyo, para encontrarse y llegar con la flecha. Solo se comparte dónde anda tu personaje dentro del juego (zona, punto en el mapa, nivel y clase), nunca tu ubicación real ni nada de tu computadora, y nunca dentro de mazmorras. Va por un canal oculto que no sale en el chat, aunque alguien que entre a él con otro addon podría verlo. Tu grupo se ve siempre. Lo cambias cuando quieras en La Jauría."] = "It's optional: your character shows on the WoW map of La Jauría wolves who use Alfa, and theirs on yours, to find each other and reach them with the arrow. Only where your character is inside the game is shared (zone, spot on the map, level and class), never your real location or anything from your computer, and never inside dungeons. It goes through a hidden channel that doesn't show in chat, though someone who joins it with another addon could see it. Your group always shows. Change it any time in La Jauría.",
 	["Sí, que me vean"] = "Yes, let them see me",
 	["Ahora no"] = "Not now",
 	["La manada ya ve a tu personaje en el mapa del juego. Lo cambias cuando quieras en /alfa manada."] = "The pack now sees your character on the game map. Change it any time with /alfa manada.",

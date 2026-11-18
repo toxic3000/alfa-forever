@@ -186,10 +186,18 @@ end
 local dueno
 local aplicadas = ""
 
+-- Dentro de una mazmorra, banda o campo de batalla la tecla abre el mapa del
+-- juego (el de Alfa no tiene los interiores): 1.2.0.
+local function enInstancia()
+	local C = A.Compat
+	local ok, si = pcall(function() return C and C.IsInInstance and C.IsInInstance() end)
+	return ok and si and true or false
+end
+
 local function aplicarTecla()
 	if not (SetOverrideBinding and ClearOverrideBindings and GetBindingKey) then return end
 	dueno = dueno or CreateFrame("Frame", "AlfaMundoTeclas", UIParent)
-	local quiero = A.Get("mundo.teclaM") == true and not oculto() and not mando()
+	local quiero = A.Get("mundo.teclaM") == true and not oculto() and not mando() and not enInstancia()
 	local teclas = {}
 	if quiero then
 		for _, k in ipairs({ GetBindingKey("TOGGLEWORLDMAP") }) do
@@ -198,7 +206,7 @@ local function aplicarTecla()
 	end
 	local firma = table.concat(teclas, ",")
 	if firma == aplicadas then return end
-	N.FueraDeCombate(function()
+	N.FueraDeCombate("mundo.teclaM", function()
 		ClearOverrideBindings(dueno)
 		for _, k in ipairs(teclas) do
 			if type(k) == "string" and k ~= "" then SetOverrideBinding(dueno, true, k, "ALFA_MUNDO_MAPA") end
@@ -231,6 +239,8 @@ A.RegisterEvent("ADDON_LOADED", function(_, nombre)
 end)
 
 A.RegisterEvent("UPDATE_BINDINGS", function() aplicarTecla() end)
+-- Al entrar o salir de una instancia (en la pantalla de carga se puede).
+A.RegisterEvent("PLAYER_ENTERING_WORLD", function() aplicarTecla() end)
 
 A.RegisterEvent("MAP_EXPLORATION_UPDATED", function() V.RehacerArte() end)
 A.RegisterEvent("PLAYER_LEVEL_UP", function() Mc.Reestilar() end)

@@ -176,35 +176,83 @@ def destello():
 # ---------------------------------------------------------------------------
 HOCICO = (350, 76)  # la punta del hocico: de aquí salen las ondas (Intro.lua)
 
+# El contorno (1.2.0, redibujado): cada punto es (x, y, tipo). "s" es un
+# punto liso (la curva pasa por él sin quiebre) y "c" una esquina (la punta
+# de una oreja, de un mechón o del hocico). _curva() lo convierte en una
+# silueta suave con curvas de Hermite (Catmull-Rom en los lisos).
 LOBO = [
-    # la cola, tupida y tendida sobre la peña
-    (78, 397), (86, 388), (98, 378), (116, 368), (138, 361), (158, 358), (176, 358),
-    # la grupa y el muslo
-    (184, 348), (186, 334), (192, 318),
-    # el lomo, de la grupa a la cruz
-    (202, 298), (214, 278), (228, 258), (242, 240),
-    # la melena del cuello, con sus mechones
-    (250, 228), (248, 216), (258, 208), (256, 196), (264, 186), (264, 172),
-    # la nuca y la oreja, echada hacia atrás al aullar
-    (270, 156), (262, 126), (286, 140),
-    # la frente y el hocico alzado hacia la luna
-    (298, 132), (308, 122), (320, 106), (334, 90), (350, 74),
-    # la boca abierta: la mandíbula de arriba, la comisura y la de abajo
-    (353, 79), (340, 96), (329, 111), (346, 101), (349, 106), (338, 118), (332, 126),
-    # la garganta con su melena y el pecho
-    (330, 140), (326, 152), (333, 160), (327, 170), (331, 184), (338, 204), (344, 228),
-    (347, 252), (345, 276),
-    # la pata delantera de adelante, hasta la peña
-    (343, 298), (343, 332), (345, 360), (347, 378), (360, 384), (363, 393), (329, 393),
-    (330, 378), (328, 350), (324, 320),
-    # el vientre, el muslo de adelante y la pata de atrás
-    (315, 322), (305, 338), (300, 362), (306, 380), (318, 387), (318, 394),
-    (240, 395), (200, 393), (176, 390),
-    # la cola por abajo
-    (150, 393), (120, 396), (96, 399),
+    # la cola, tupida, tendida sobre la peña y con su punta
+    (64, 377, "c"), (78, 368, "s"), (100, 360, "s"), (130, 352, "s"), (162, 348, "s"), (190, 349, "s"),
+    # la grupa, redonda: el muslo del lobo sentado
+    (200, 344, "s"), (196, 326, "s"), (200, 306, "s"), (210, 290, "s"),
+    # el lomo, que sube a la cruz
+    (224, 271, "s"), (237, 252, "s"), (249, 232, "s"),
+    # la melena de la cruz y la nuca, con dos mechones suaves
+    (257, 216, "s"), (253, 205, "c"), (264, 199, "s"), (262, 187, "c"), (273, 180, "s"),
+    # la nuca, que se afina bajo el cráneo
+    (282, 154, "s"),
+    # la oreja de este lado, echada hacia atrás al aullar
+    (279, 142, "c"), (265, 113, "c"), (294, 124, "c"),
+    # la otra oreja, que asoma un poco más adelante
+    (281, 102, "c"), (301, 114, "c"),
+    # el cráneo, la frente y el quiebre hacia el hocico
+    (306, 104, "s"), (315, 98, "s"),
+    # el hocico, largo y fuerte, hasta la nariz
+    (323, 93, "s"), (334, 84, "s"), (345, 77, "s"), (351, 75, "c"),
+    # la nariz, redondeada, y la mandíbula de arriba
+    (353, 80, "s"), (343, 92, "s"), (331, 104, "c"),
+    # la mandíbula de abajo, abierta para aullar, y la barbilla
+    (348, 97, "c"), (345, 106, "s"), (339, 116, "s"),
+    # la garganta con su melena
+    (331, 130, "c"), (339, 140, "c"), (331, 147, "c"), (341, 158, "c"), (334, 165, "c"),
+    (343, 180, "s"),
+    # el pecho, hinchado al aullar
+    (350, 203, "s"), (353, 228, "s"), (351, 252, "s"), (347, 272, "s"),
+    # la pata delantera de este lado, recta hasta la peña, y su mano
+    (344, 295, "s"), (343, 330, "s"), (344, 362, "s"), (347, 380, "s"),
+    (358, 385, "s"), (365, 391, "s"), (364, 395, "c"), (330, 395, "c"),
+    (330, 381, "s"), (329, 350, "s"), (327, 318, "s"),
+    # el codo y el vientre
+    (320, 303, "c"), (313, 318, "s"),
+    # el muslo de atrás y su pata, adelantada bajo el vientre
+    (305, 338, "s"), (301, 360, "s"), (306, 379, "s"), (321, 387, "s"), (323, 395, "c"),
+    # el suelo y la cola por abajo
+    (250, 396, "c"), (220, 396, "s"), (190, 397, "s"), (150, 398, "s"), (114, 395, "s"), (84, 386, "s"),
 ]
-# La otra pata delantera, un poco más atrás.
-PATA = [(305, 296), (311, 336), (312, 372), (321, 386), (322, 394), (298, 394), (300, 372), (296, 332)]
+# La otra pata delantera: asoma apenas, detrás de la de adelante.
+PATA = [
+    (318, 300, "s"), (322, 336, "s"), (322, 372, "s"), (328, 386, "s"), (331, 395, "c"),
+    (313, 395, "c"), (314, 372, "s"), (312, 334, "s"),
+]
+
+
+def _curva(puntos, pasos=12):
+    """Un contorno cerrado de (x, y, tipo) a una lista de puntos suaves."""
+    n = len(puntos)
+    pos = [(x, y) for x, y, _ in puntos]
+    tipo = [t for _, _, t in puntos]
+    tan = []
+    for i in range(n):
+        if tipo[i] == "c":
+            tan.append((0.0, 0.0))
+        else:
+            (ax, ay), (bx, by) = pos[i - 1], pos[(i + 1) % n]
+            tan.append(((bx - ax) * 0.5, (by - ay) * 0.5))
+    out = []
+    for i in range(n):
+        (x0, y0), (x1, y1) = pos[i], pos[(i + 1) % n]
+        (tx0, ty0), (tx1, ty1) = tan[i], tan[(i + 1) % n]
+        for k in range(pasos):
+            t = k / pasos
+            h00 = 2 * t ** 3 - 3 * t ** 2 + 1
+            h10 = t ** 3 - 2 * t ** 2 + t
+            h01 = -2 * t ** 3 + 3 * t ** 2
+            h11 = t ** 3 - t ** 2
+            out.append((h00 * x0 + h10 * tx0 + h01 * x1 + h11 * tx1,
+                        h00 * y0 + h10 * ty0 + h01 * y1 + h11 * ty1))
+    return out
+
+
 # La peña: una cresta de roca con escalones, que se pierde a los lados y abajo.
 PENA = [
     (0, 474), (0, 452), (36, 440), (70, 424), (96, 411), (120, 404), (150, 397), (176, 392),
@@ -229,8 +277,7 @@ def _silueta():
     s = 512 * F
     lobo = Image.new("L", (s, s), 0)
     d = ImageDraw.Draw(lobo)
-    d.polygon(_escalar(LOBO), fill=255)
-    d.polygon(_escalar(PATA), fill=255)
+    d.polygon(_escalar(_curva(LOBO)), fill=255)
     pena = Image.new("L", (s, s), 0)
     ImageDraw.Draw(pena).polygon(_escalar(PENA), fill=255)
     # La peña se pierde a los lados y hacia abajo.

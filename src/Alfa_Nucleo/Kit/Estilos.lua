@@ -123,7 +123,7 @@ local function acentoDeCristal()
 	if K.Cristal() then return K.Color("acento") end
 	local d = N.Datos and N.Datos("kit")
 	local c = d and type(d.acentos) == "table" and d.acentos.cristal
-	if type(c) == "table" and type(c[1]) == "number" then return c[1], c[2], c[3] end
+	if type(c) == "table" and type(c[1]) == "number" and type(c[2]) == "number" and type(c[3]) == "number" then return c[1], c[2], c[3] end
 	local j = K.ACENTOS[1].color
 	return j[1], j[2], j[3]
 end

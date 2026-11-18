@@ -336,14 +336,29 @@ end
 
 -- Ejecuta fn cuando el jugador sale de combate (o ya, si no está en combate).
 -- Para todo lo que toca marcos protegidos: nunca durante el combate.
+-- N.FueraDeCombate(fn) o N.FueraDeCombate(clave, fn): con clave, lo que
+-- espera con la misma clave se reemplaza (una sola vez al salir, con lo más
+-- nuevo), en lugar de juntarse muchas copias durante un combate largo (1.2.0).
 local pendientes = {}
-function N.FueraDeCombate(fn)
+local porClave = {}
+function N.FueraDeCombate(a, b)
+	local clave, fn = nil, a
+	if type(a) == "string" then clave, fn = a, b end
+	if type(fn) ~= "function" then return end
 	if not InCombatLockdown() then return fn() end
+	if clave and porClave[clave] then
+		pendientes[porClave[clave]] = fn
+		return
+	end
+	-- La misma función ya en espera no se encola dos veces.
+	for i = 1, #pendientes do if pendientes[i] == fn then return end end
 	pendientes[#pendientes + 1] = fn
+	if clave then porClave[clave] = #pendientes end
 end
 A.RegisterEvent("PLAYER_REGEN_ENABLED", function()
 	local lista = pendientes
 	pendientes = {}
+	porClave = {}
 	for i = 1, #lista do
 		local ok, err = pcall(lista[i])
 		if not ok and geterrorhandler then geterrorhandler()(err) end

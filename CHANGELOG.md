@@ -1,5 +1,51 @@
 # Cambios de Alfa
 
+## 1.2.0 — Alfa estable: en orden y en manada (18/11/2026)
+
+**Español**
+- Ajustes en orden: Comodidades y Calidad de vida son una sola página, «Comodidades», con sus pestañas (Viajes, Social, Comerciantes, Seguimiento y Mapa). La pestaña de misiones que repetía lo de Misiones ya no está.
+- Las misiones en un solo lugar, Ajustes > Misiones: aceptar y entregar las de la guía, todas las misiones (normales, diarias y semanales), solo las de tu ruta y la automatización que estaba en Guía. Ruta y Comodidades te llevan ahí con un botón.
+- Tu configuración se mudó sola y una sola vez, sin perder nada. Los grifos de la barra quedaron en un solo ajuste (ocultos, del color del estilo o como están).
+- Para quien instala Alfa por primera vez, vienen encendidos los colores de clase en los marcos, el cuadro de información mejorado, el probador, el minimapa mejorado, las barras con el estilo de Alfa y sin voces de error. A quien ya usaba Alfa no se le cambió nada.
+- El lobo te recibe cada vez que entras al juego (no al recargar), con «¡De vuelta en la manada!». Se apaga en Estilo y sonido. Y el lobo de la intro está redibujado: cabeza, dos orejas, hocico y boca abierta al aullar, pecho y cola de lobo de verdad.
+- Insignias de La Jauría: los Alfas (en oro) y los miembros de la manada (en verde) llevan un lobo junto a su nombre en el cuadro del jugador, en la página de La Jauría y en el mapa. Solo es visual y la lista la lleva Toxic.
+- En el mapa, quienes comparten su ubicación se ven con una huella pequeña; tu grupo, como siempre. Los textos de compartir ahora dicen claro que va por un canal oculto que alguien con otro addon podría leer, y si alguien toma ese canal, Alfa pasa a otro.
+- Una revisión completa para la versión estable, con más de 20 arreglos:
+  - en mazmorras con grupo, los marcos de Curación ya no fallan con los nombres y la vida que el juego da en secreto;
+  - al entrar en combate se cierran los menús de Alfa, que se comían el primer clic de la pelea;
+  - Talentos no aplica con la ventana de talentos del juego abierta ni borra los cambios que no guardaste;
+  - los marcadores compartidos solo llegan de tu grupo, con límite, y nunca borran los tuyos;
+  - en una mazmorra la tecla M abre el mapa del juego;
+  - al pescar, las ventanas de cola, de listos y de rol siempre se ven, y «Silenciar mascotas» ya no choca con Pesca;
+  - lo que espera al fin del combate ya no se repite; las tareas de Ruta y la marca de misión no trabajan en combate; La Jauría guarda las zonas que ya calculó;
+  - los precios de la subasta de hace más de 60 días se olvidan solos;
+  - los datos guardados dañados (ventanas, colores, el vuelo) ya no rompen nada;
+  - «Quiero unirme» abre el susurro sin marcar el cuadro de chat;
+  - y otros arreglos menores.
+- La prueba de cada versión ahora también revisa la mudanza de los ajustes con una cuenta vieja simulada, las insignias y estos arreglos.
+
+**English**
+- Settings in order: Conveniences and Quality of Life are one page, "Conveniences", with its tabs (Travel, Social, Vendors, Trackers and Map). The quests tab that repeated Questing is gone.
+- Quests in one place, Settings > Questing: accept and turn in the guide's, all quests (regular, daily and weekly), only your route's and the automation that was under Guide. Route and Conveniences take you there with a button.
+- Your settings moved on their own, just once, nothing lost. The bar's gryphons are one setting now (hidden, in the style's color or as they are).
+- New installs come with class colors on frames, the better tooltip, the dressing room, the better minimap, Alfa-style bars and no error voices already on. Nothing changed for people who already used Alfa.
+- The wolf greets you every time you log in (not on reload), with "Back with the pack!". Turn it off in Style and sound. And the intro's wolf is redrawn: a real wolf's head, two ears, muzzle and open mouth as it howls, chest and tail.
+- La Jauría badges: Alphas (gold) and pack members (green) wear a wolf next to their name in the player tooltip, on the La Jauría page and on the map. It's only visual, and Toxic keeps the list.
+- On the map, people who share their location show as a small paw print; your group as always. The sharing texts now say clearly that it goes through a hidden channel someone with another addon could read, and if someone takes that channel, Alfa moves to another one.
+- A full review for the stable release, with over 20 fixes:
+  - in group dungeons, Healing's frames no longer break on the names and health the game gives as secret;
+  - Alfa's menus close when combat starts (they ate the fight's first click);
+  - Talents doesn't apply with the game's talent window open, nor wipe changes you didn't save;
+  - shared markers only come from your group, rate-limited, and never remove yours;
+  - inside a dungeon, the M key opens the game's map;
+  - while fishing, queue, ready-check and role windows always show, and "Mute pet sounds" no longer clashes with Fishing;
+  - work waiting for the end of combat no longer repeats; Route tasks and the quest marker rest during combat; La Jauría keeps the zones it already worked out;
+  - auction prices older than 60 days are forgotten on their own;
+  - damaged saved data (windows, colors, the flight) no longer breaks anything;
+  - "I want to join" opens the whisper without tainting the chat box;
+  - and other small fixes.
+- Each release's test now also checks the settings move with a simulated old account, the badges and these fixes.
+
 ## 1.1.9 — Todo a la mano (18/11/2026)
 
 **Español**

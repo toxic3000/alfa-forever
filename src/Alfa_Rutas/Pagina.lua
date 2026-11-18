@@ -98,15 +98,11 @@ end
 -- 5. Los ajustes.
 local function ajustes(padre)
 	local g = K.GrupoAjustes(padre, { titulo = L["Cómo trabaja tu ruta"] })
-	g:Fila({ titulo = L["Aceptar y entregar solo las misiones de mi ruta"],
-		texto = L["Alfa no toma misiones que no sirven a tu ruta, ni las entrega solas. Lo respeta también «todas las misiones» de Comodidades."],
-		control = function(f) return K.Interruptor(f, { clave = "ruta.soloRuta" }) end })
-	g:Fila({ titulo = L["Aceptar solas las misiones de la guía"],
-		texto = L["Al hablar con quien da una misión de tu ruta, se acepta sola. Mayús la deja para ti."],
-		control = function(f) return K.Interruptor(f, { clave = "behavior.autoAccept" }) end })
-	g:Fila({ titulo = L["Entregar solas las misiones de la guía"],
-		texto = L["Si la recompensa tiene varias opciones, eliges tú."],
-		control = function(f) return K.Interruptor(f, { clave = "behavior.autoTurnin" }) end })
+	-- Aceptar y entregar (las de la guía, todas o solo las de tu ruta): en
+	-- Ajustes > Misiones, con las demás misiones (1.2.0).
+	g:Fila({ titulo = L["Aceptar y entregar misiones"],
+		texto = L["Las de tu ruta, las de la guía o todas: se eligen en Ajustes > Misiones, con lo demás de las misiones."],
+		control = function(f) return K.Boton(f, L["Abrir Misiones"], function() N.Abrir("questing") end, { tipo = "secundario" }) end })
 	g:Fila({ titulo = L["Evitar misiones de grupo"],
 		texto = L["Al armar tus rutas, Alfa deja fuera las que piden élites."],
 		control = function(f) return K.Interruptor(f, { clave = M.ID .. ".evitarGrupo" }) end })
@@ -187,9 +183,6 @@ A.RegisterDefaults("ruta", { soloRuta = true })
 -- los mismos ajustes de arriba; los de buscar cerca, si está.
 local function hayCerca() return M.Cerca ~= nil end
 local CONTROLES = {
-	{ kind = "toggle", key = "ruta.soloRuta", label = L["Aceptar y entregar solo las misiones de mi ruta"],
-		help = L["Alfa no toma misiones que no sirven a tu ruta, ni las entrega solas. Lo respeta también «todas las misiones» de Comodidades."],
-		search = "only route quests, quest automation" },
 	-- behavior.autoAccept y behavior.autoTurnin no van aquí: son del motor (la
 	-- búsqueda los encuentra en Misiones) y «Restablecer la página» de Ruta no
 	-- debe tocarlos.
@@ -211,6 +204,18 @@ local CONTROLES = {
 	{ kind = "toggle", key = M.ID .. ".planFlecha", label = L["Mis planes: la flecha va sola al siguiente lugar"], needs = hayCerca,
 		help = L["Cuando la meta de ahora de tu plan es un lugar, la flecha lo toma sin que hagas clic."], search = "plans, arrow, goals" },
 }
+
+-- "Solo las misiones de mi ruta", en Ajustes > Misiones > Misiones (1.2.0).
+do
+	local LM = A.L or {}
+	local ok, err = A.RegisterOptions({ page = "questing", key = "questing", tab = LM["Quests"] or "Quests",
+		section = LM["Faster questing"] or "Faster questing", controls = {
+			{ kind = "toggle", key = "ruta.soloRuta", label = L["Aceptar y entregar solo las misiones de mi ruta"],
+				help = L["Alfa no toma misiones que no sirven a tu ruta, ni las entrega solas. Lo respeta también «todas las misiones»."],
+				search = "only route quests, quest automation" },
+		} })
+	if not ok and geterrorhandler then geterrorhandler()(err) end
+end
 
 N.Modulo({
 	id = M.ID, nombre = L["Ruta"], icono = "ic-ruta", orden = 12,

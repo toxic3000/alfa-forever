@@ -142,7 +142,8 @@ local function destinoDe(m)
 end
 
 local espera = 0
-motor:SetScript("OnUpdate", function(self, dt)
+-- Por A.Safe: un error aquí se avisa una vez, no en cada cuadro (1.2.0).
+motor:SetScript("OnUpdate", A.Safe(function(self, dt)
 	espera = espera - (tonumber(dt) or 0)
 	if espera > 0 then return end
 	espera = 0.1
@@ -187,7 +188,7 @@ motor:SetScript("OnUpdate", function(self, dt)
 			end
 		end
 	end
-end)
+end))
 
 -- Pone un mensaje en la cola; `clave` identifica su tipo y destino.
 -- Sin `canal`, se difunde a la manada por R.Via().

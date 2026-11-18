@@ -159,7 +159,8 @@ function M.Remates()
 end
 
 local function ponerGrifos()
-	local ocultar = M.Get("grifos")
+	-- Un solo ajuste para los grifos (1.2.0): ocultos, con o sin el estilo de las barras.
+	local ocultar = N.Get(M.ID, "barrasGrifos") == "ocultar"
 	local izq, der = M.Remates()
 	for _, cap in ipairs({ izq or false, der or false }) do
 		local tex = cap and cap.Texture
@@ -175,7 +176,7 @@ local function ponerGrifos()
 	end
 end
 
-M.AlCambiar({ "grifos" }, function() N.FueraDeCombate(ponerGrifos) end)
+M.AlCambiar({ "barrasGrifos" }, function() N.FueraDeCombate(ponerGrifos) end)
 
 ---------------------------------------------------------------------------
 -- Cámara

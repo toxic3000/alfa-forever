@@ -740,10 +740,14 @@ function Ce.Menu(ancla, pagina)
 	K.CerrarMenu()
 	est.dueno = type(ancla) == "table" and ancla or nil
 	est.pagina = PAGINAS[pagina or ""] and pagina or "inicio"
-	atrapa:Show()
+	-- En combate, sin la capa que atrapa los clics: la pelea manda (1.2.0).
+	if not (InCombatLockdown and InCombatLockdown()) then atrapa:Show() end
 	F:Show()
 	pintar()
 end
+
+-- Al entrar en combate la capa se quita (el menú sigue, con su X).
+A.RegisterEvent("PLAYER_REGEN_DISABLED", function() if atrapa then atrapa:Hide() end end)
 
 -- Al salir de combate, las filas que decían «Después del combate» se buscan ya.
 A.RegisterEvent("PLAYER_REGEN_ENABLED", function() if F and F:IsShown() then pintar() end end)

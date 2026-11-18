@@ -26,8 +26,8 @@ Hecho por **toxic3000** y La Jauría — [Discord](https://discord.gg/hUNjA6BJwh
 | **Pesca** — una tecla para todo, diario, logros y guía de 1 a 300. | **Enciclopedia** — todo el juego, aunque no lo tengas, con "Guíame". |
 | ![Paisaje y gráficos](curseforge/galeria/13-vista.png) | ![Mis planes](curseforge/galeria/14-planes.png) |
 | **Paisaje** — los gráficos explicados, con preajustes. | **Mis planes** — tus propias metas, y la flecha te lleva. |
-| ![Cada versión, una bienvenida](curseforge/galeria/18-intro.png) | ![Lo nuevo, a la vista](curseforge/galeria/19-notas.png) |
-| **Cada versión, una bienvenida** — la intro del lobo y la luna. | **Lo nuevo, a la vista** — qué cambió, en una ventana. |
+| ![Cada entrada, una bienvenida](curseforge/galeria/18-intro.png) | ![Lo nuevo, a la vista](curseforge/galeria/19-notas.png) |
+| **Cada entrada, una bienvenida** — la intro del lobo y la luna te recibe al entrar. | **Lo nuevo, a la vista** — qué cambió, en una ventana. |
 
 Más imágenes en [`curseforge/galeria/`](curseforge/galeria).
 

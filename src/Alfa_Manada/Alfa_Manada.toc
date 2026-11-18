@@ -11,6 +11,7 @@
 Textos.lua
 Clan.lua
 Util.lua
+Insignias.lua
 Canal.lua
 Red.lua
 Gente.lua

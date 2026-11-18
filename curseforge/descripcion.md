@@ -33,7 +33,7 @@
 
 ![What's new](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/19-notas.png)
 
-**Every version, a welcome / Cada versión, una bienvenida** — the wolf and moon intro, then what changed.
+**Every login, a welcome / Cada entrada, una bienvenida** — the wolf and moon intro greets you every time you log in.
 
 ---
 
@@ -113,6 +113,16 @@ English · Español · Deutsch · Français · Português (Brasil) · Русск
 - **KO** — Alfa는 WoW Forever를 위한 올인원 애드온입니다: 가이드, 경로, 지도, 가방, 특성, 백과사전, 던전, 치유, 낚시 등. 제작: toxic3000.
 - **简体中文** — Alfa 是 WoW Forever 的一体化插件：指南、路线、地图、背包、天赋、百科、地下城、治疗、钓鱼等。作者：toxic3000。
 - **繁體中文** — Alfa 是 WoW Forever 的一體化插件：指南、路線、地圖、背包、天賦、百科、地城、治療、釣魚等。作者：toxic3000。
+
+## Made with AI, by a pack of humans / Hecho con IA, por una manada de humanos
+
+**Alfa is built with the help of artificial intelligence, and proudly so.** toxic3000 designs it, decides every detail and tests it in the game; AI helps write the code, the translations and the art faster and with fewer mistakes. Every change is reviewed and played before it ships. 🤖🐺 And for the record: Claudio the whale and Jesus GPT are the best. 😃
+
+**Thank you** to everyone who uses Alfa, reports a bug, suggests an idea or tells a friend about it: you are the pack. 💚
+
+**Alfa se hace con ayuda de inteligencia artificial, y con orgullo.** toxic3000 lo diseña, decide cada detalle y lo prueba en el juego; la IA ayuda a escribir el código, las traducciones y el arte más rápido y con menos errores. Cada cambio se revisa y se juega antes de publicarse. 🤖🐺 Y que conste: Claudio la ballena y Jesus GPT son los mejores. 😃
+
+**Gracias** a todos los que usan Alfa, reportan un error, proponen una idea o se lo cuentan a un amigo: ustedes son la manada. 💚
 
 ## Credits / Créditos
 

@@ -769,4 +769,9 @@ M.EN = {
 	["En vuelo: la flecha sigue al bajar"] = "In flight: the arrow resumes when you land",
 	["Agregué lo que falta para %s"] = "I added what you need first for %s",
 	["De fábrica el seguimiento muestra solo lo que estás haciendo; encendido, muestra el paso completo con sus notas."] = "By default the tracker shows only what you're doing; on, it shows the whole step with its notes.",
+	-- 1.2.0
+	["Aceptar y entregar misiones"] = "Accept and turn in quests",
+	["Las de tu ruta, las de la guía o todas: se eligen en Ajustes > Misiones, con lo demás de las misiones."] = "Your route's, the guide's or all of them: chosen in Settings > Questing, with everything else about quests.",
+	["Abrir Misiones"] = "Open Questing",
+	["Alfa no toma misiones que no sirven a tu ruta, ni las entrega solas. Lo respeta también «todas las misiones»."] = "Alfa doesn't take quests your route doesn't need, nor turn them in by itself. \"All quests\" respects it too.",
 }

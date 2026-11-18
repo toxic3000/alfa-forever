@@ -74,6 +74,14 @@ local function lugar(f, sinDistancia)
 	return table.concat(partes, DOT)
 end
 
+-- El nombre con el lobo de su insignia al lado (Insignias.lua), si tiene.
+local function conInsignia(f, nombre)
+	nombre = nombre or "?"
+	local tipo = M.Insignias.DeFila(f)
+	if not tipo then return nombre end
+	return nombre .. " " .. M.Insignias.Icono(tipo)
+end
+
 local function puedeSeguir(f)
 	return f ~= nil and f.conectado ~= false and f.map ~= nil and not U.EnInstancia()
 end
@@ -120,7 +128,7 @@ local function accion(ui, gente)
 		local f = buscar(gente, s.clave)
 		return {
 			icono = "ic-seguir", tono = "exito", sobre = U.Mayus(L["Siguiendo el rastro"]),
-			titulo = format(L["Vas tras %s"], s.nombre or "?"),
+			titulo = format(L["Vas tras %s"], f and conInsignia(f, s.nombre) or (s.nombre or "?")),
 			texto = (f and f.map and (lugar(f) .. ". ") or (L["Buscando su rastro..."] .. " "))
 				.. L["La flecha se mueve con su rastro y se detiene al llegar."],
 			accion = { texto = L["Dejar de seguir"], icono = "ic-cerrar", alClic = function() S.Parar() M.Avisar() end },
@@ -150,12 +158,13 @@ local function accion(ui, gente)
 	local f = gente[1]
 	if f and f.map then
 		local titulo
+		local nombre = conInsignia(f, f.nombre)
 		if f.dist then
-			titulo = format(L["%s anda a %s"], f.nombre or "?", U.TextoDistancia(f.dist))
+			titulo = format(L["%s anda a %s"], nombre, U.TextoDistancia(f.dist))
 		elseif f.zona then
-			titulo = format(L["%s anda por %s"], f.nombre or "?", f.zona)
+			titulo = format(L["%s anda por %s"], nombre, f.zona)
 		else
-			titulo = f.nombre or "?"
+			titulo = nombre
 		end
 		local partes = {}
 		local nc, lg = nivelClase(f), lugar(f, f.dist ~= nil)
@@ -209,10 +218,13 @@ local function datoPersona(f)
 	local S = M.Seguir
 	local siguiendo = S.Sigue(f.clave)
 	local nc = nivelClase(f)
+	local ins = M.Insignias.DeFila(f)
 	return {
 		variante = "normal", icono = "ic-huella",
 		sobre = U.Mayus(siguiendo and L["Siguiendo"] or (f.tipo == "grupo" and L["Tu grupo"] or L["La Jauría"])),
-		titulo = f.nombre or "?",
+		titulo = conInsignia(f, f.nombre),
+		-- Al pasar el ratón por la tarjeta: qué es el lobo junto al nombre.
+		ayuda = ins and (M.Insignias.Linea(ins)) or nil,
 		texto = (nc ~= "" and (nc .. "\n") or "") .. lugar(f),
 		accion = { texto = siguiendo and L["Dejar de seguir"] or L["Seguir"], icono = siguiendo and "ic-cerrar" or "ic-seguir", alClic = function() seguir(f) end },
 		secundaria = invitable(f) and { texto = L["Invitar"], alClic = function() invitar(f) end } or nil,
@@ -345,7 +357,7 @@ local function bloqueClan(ui, padre)
 	b.escribir = {}
 	b.Oficiales = K.Texto(b, "pequeno", "textoTenue")
 	b.Aviso = K.Texto(b, "nota", "aviso")
-	-- El motor rechaza las invitaciones (Ajustes > Calidad de vida > Social): un clic lo apaga.
+	-- El motor rechaza las invitaciones (Ajustes > Comodidades > Social): un clic lo apaga.
 	b.Apagar = K.Boton(b, L["Apagarlo"], function()
 		if A.Set then A.Set("qol.declineGuildInvites", false) end
 		M.Avisar()
@@ -424,7 +436,7 @@ local function bloqueClan(ui, padre)
 		K.Escribir(self.Oficiales, #nombres > 0 and format(L["Oficiales: %s"], table.concat(nombres, ", ")) or "")
 		local rechaza = A.Get and A.Get("qol.declineGuildInvites") and true or false
 		K.Escribir(self.Aviso, rechaza
-			and L["Tienes activado «Rechazar invitaciones a hermandad» en Ajustes > Calidad de vida > Social: apágalo para que te llegue la invitación."] or "")
+			and L["Tienes activado «Rechazar invitaciones a hermandad» en Ajustes > Comodidades > Social: apágalo para que te llegue la invitación."] or "")
 		for _, x in ipairs({ self.Linea2, self.UnirseT, self.Unirse, self.Estado, self.Oficiales, self.Aviso }) do x:SetShown(self.alfaUnirse) end
 		self.Apagar:SetShown(self.alfaUnirse and rechaza or false)
 		if not self.alfaUnirse then for _, bt in ipairs(self.escribir) do bt:Hide() end end
@@ -644,7 +656,7 @@ end
 
 -- Lo que dice la fila de compartir: qué se envía y por dónde va ahora.
 local function textoCompartir()
-	local t = L["Quienes usan Alfa y comparten te ven en su mapa y pueden seguirte, y tú a ellos. Se envía tu zona, tu posición, tu nivel y tu clase cada 10 segundos mientras te mueves (cada 4 minutos si estás quieto), nunca dentro de mazmorras ni por canales públicos."]
+	local t = L["Quienes usan Alfa y comparten te ven en su mapa y pueden seguirte, y tú a ellos. Se envía tu zona, tu posición, tu nivel y tu clase cada 10 segundos mientras te mueves (cada 4 minutos si estás quieto), nunca dentro de mazmorras. Va por un canal oculto de Alfa: no sale en el chat, pero alguien que entre a ese canal con otro addon podría leerlo."]
 	if not on("compartir") then return t end
 	local via = M.Red.Via()
 	local ahora
@@ -718,7 +730,7 @@ function P.Preguntar(opts)
 		K.Dialogo({
 			lobo = "aullando", ancho = 480,
 			titulo = L["¿Quieres que la manada te vea en el mapa del juego?"],
-			texto = L["Es opcional: tu personaje aparece en el mapa de WoW de los lobos de La Jauría que usan Alfa, y ellos en el tuyo, para encontrarse y llegar con la flecha. Solo se comparte dónde anda tu personaje dentro del juego (zona, punto en el mapa, nivel y clase), nunca tu ubicación real ni nada de tu computadora, y nunca dentro de mazmorras. Tu grupo se ve siempre. Lo cambias cuando quieras en La Jauría."],
+			texto = L["Es opcional: tu personaje aparece en el mapa de WoW de los lobos de La Jauría que usan Alfa, y ellos en el tuyo, para encontrarse y llegar con la flecha. Solo se comparte dónde anda tu personaje dentro del juego (zona, punto en el mapa, nivel y clase), nunca tu ubicación real ni nada de tu computadora, y nunca dentro de mazmorras. Va por un canal oculto que no sale en el chat, aunque alguien que entre a él con otro addon podría verlo. Tu grupo se ve siempre. Lo cambias cuando quieras en La Jauría."],
 			aceptar = L["Sí, que me vean"],
 			cancelar = L["Ahora no"],
 			alAceptar = function() terminar(true) end,

@@ -359,7 +359,7 @@ end
 
 local function contar(f)
 	acum = 1
-	f:SetScript("OnUpdate", alActualizar)
+	f:SetScript("OnUpdate", A.Safe(alActualizar)) -- un error, una vez (1.2.0)
 end
 
 ---------------------------------------------------------------------------

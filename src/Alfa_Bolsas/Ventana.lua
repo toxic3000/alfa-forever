@@ -851,7 +851,8 @@ local function trabajar(f)
 end
 
 despertar = function(f)
-	if f and f:IsShown() then f:SetScript("OnUpdate", trabajar) end
+	-- Por A.Safe: un error aquí se avisa una vez, no en cada cuadro (1.2.0).
+	if f and f:IsShown() then f:SetScript("OnUpdate", A.Safe(trabajar)) end
 end
 
 -- Todo de nuevo: cada contenedor por leer y cada casilla por pintar

@@ -879,7 +879,7 @@ end
 
 local function vigilarAvance()
 	if reloj then return end
-	reloj = C_Timer.NewTicker(0.3, function()
+	reloj = A.NewTicker(0.3, function() -- por A.Safe: un error, una vez (1.2.0)
 		if not (v and v:IsShown()) then reloj:Cancel() reloj = nil return end
 		K.Escribir(ui.lf.Cuenta, cuentaTexto(#(est.resultados[est.tipo] or {})))
 		local ocupado = false

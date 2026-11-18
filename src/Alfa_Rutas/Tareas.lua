@@ -40,6 +40,9 @@ end
 T.Ceder = ceder
 
 local function paso()
+	-- En combate se espera (1.2.0): el cuadro es de la pelea. La tarea sigue
+	-- donde iba al terminar.
+	if InCombatLockdown and InCombatLockdown() then return end
 	for clave, t in pairs(tareas) do
 		inicio, cuenta = reloj and reloj() or 0, 0
 		local ok, res = co_resume(t.co, ceder)

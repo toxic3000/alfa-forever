@@ -1033,8 +1033,13 @@ local SCRIPT_FONTS = {
 	hangul = { path = "Fonts\\2002.TTF", locales = { koKR = true } },
 	han = { path = "Fonts\\ARKai_T.ttf", locales = { zhCN = true, zhTW = true } },
 }
+-- Alfa (1.2.0): un texto secreto (nombres en mazmorras, vida en combate) no
+-- se lee: ni find, ni comparaciones. Se queda con la letra que ya tenía.
+local function secreto(v) return issecretvalue ~= nil and issecretvalue(v) and true or false end
+Theme.EsSecreto = secreto
+
 function Theme.ScriptFont(text)
-	if type(text) ~= "string" then return nil end
+	if secreto(text) or type(text) ~= "string" then return nil end
 	local at = text:find("[\227-\237]")
 	if not at then return nil end
 	local b = text:byte(at)
@@ -1087,6 +1092,7 @@ end
 local function textAgain(fs)
 	if fs.HasFocus and fs:HasFocus() then return end
 	local text = fs.GetText and fs:GetText()
+	if secreto(text) then return end
 	if text and text ~= "" then
 		fs:SetText(text .. " ")
 		fs:SetText(text)
@@ -1115,7 +1121,10 @@ end
 -- the string is painted again for it.
 local function retext(fs)
 	local role = fonted[fs]
-	if role and (Theme.ScriptFont(fs:GetText()) or false) ~= scripted[fs] then paintFont(fs, role) end
+	if not role then return end
+	local text = fs:GetText()
+	if secreto(text) then return end
+	if (Theme.ScriptFont(text) or false) ~= scripted[fs] then paintFont(fs, role) end
 end
 
 function Theme.Font(fs, role)
@@ -2093,7 +2102,8 @@ function Theme.Refresh()
 	P = nil
 	for sky in pairs(bands) do paintBand(sky) end
 	for frame, kind in pairs(skinned) do paint(frame, kind) end
-	for fs, role in pairs(fonted) do paintFont(fs, role) end
+	-- Alfa (1.2.0): una letra que falla no deja sin repintar a las demás.
+	for fs, role in pairs(fonted) do pcall(paintFont, fs, role) end
 	-- EllesmereUI's font is handed over at login, in the frame the window is
 	-- first drawn: a string set again in that frame can stay blank, so once more
 	-- a frame later.

@@ -715,7 +715,7 @@ A.RegisterEvent("PLAYER_UPDATE_RESTING", function()
 	revisarPronto()
 end)
 A.RegisterEvent("PLAYER_FLAGS_CHANGED", function(_, unit)
-	if unit == nil or unit == "player" then revisarSueno() end
+	if unit == nil or (not (issecretvalue and issecretvalue(unit)) and unit == "player") then revisarSueno() end
 end)
 
 A.RegisterEvent("PLAYER_REGEN_DISABLED", function()

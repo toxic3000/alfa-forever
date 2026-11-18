@@ -465,7 +465,9 @@ local function deseadas()
 		local ambiente = entre(opt("ambiente"), 0, 1, 0)
 		pon("Sound_EnableAllSound", 1)
 		pon("Sound_EnableSFX", 1)
-		pon("Sound_EnablePetSounds", 0)
+		-- Con "Sonidos de mascotas" de Comodidades callados, esa CVar es suya:
+		-- Pesca no la toca (al terminar no las devolvería) (1.2.0).
+		if A.Get("comodidades.silenciarMascotas") ~= true then pon("Sound_EnablePetSounds", 0) end
 		pon("Sound_MusicVolume", musica)
 		if ambiente <= 0 then pon("Sound_EnableAmbience", 0) else pon("Sound_AmbienceVolume", ambiente) end
 		pon("Sound_SFXVolume", v)
@@ -601,6 +603,10 @@ end
 local SIEMPRE_VISIBLES = {
 	"LootFrame", "GroupLootContainer", "StaticPopup1", "StaticPopup2", "StaticPopup3", "StaticPopup4",
 	"GameMenuFrame", "GameTooltip", "UIErrorsFrame",
+	-- Las colas y los avisos de grupo (1.2.0): sin ellos se perdía la cola
+	-- mientras pescabas quieto.
+	"LFGDungeonReadyPopup", "LFGDungeonReadyDialog", "LFDRoleCheckPopup", "ReadyCheckFrame",
+	"PVPReadyDialog", "LFGListInviteDialog", "PetBattleQueueReadyFrame",
 }
 
 local function ignorar(f, si)
@@ -630,6 +636,12 @@ function M.MostrarUI()
 	E.ui = nil
 	if UIParent then UIParent:SetAlpha(u.alfa or 1) end
 	for _, f in ipairs(u.quedan) do ignorar(f, false) end
+end
+
+-- Una cola lista, una revisión de listos o de rol: la interfaz vuelve sola
+-- para que no se pierda mientras pescas quieto (1.2.0).
+for _, evento in ipairs({ "LFG_PROPOSAL_SHOW", "READY_CHECK", "LFG_ROLE_CHECK_SHOW", "PET_BATTLE_QUEUE_PROPOSE_MATCH" }) do
+	A.RegisterEvent(evento, function() if E.ui then M.MostrarUI() end end)
 end
 
 ---------------------------------------------------------------------------
@@ -1014,7 +1026,7 @@ end)
 -- El cebo que entra en la caña cuenta para tus logros.
 local habiaCebo = nil
 A.RegisterEvent("UNIT_INVENTORY_CHANGED", function(_, unidad)
-	if unidad ~= "player" then return end
+	if not legible(unidad) or unidad ~= "player" then return end
 	local ahora = Eq.CeboActivo() ~= nil
 	if habiaCebo == false and ahora then R.Cebo() end
 	habiaCebo = ahora

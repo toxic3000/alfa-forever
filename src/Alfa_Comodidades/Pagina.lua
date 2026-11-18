@@ -27,27 +27,16 @@ local function cvarDe(k)
 	end
 end
 
-local function textoMisiones()
-	local t = L["También las que no son de la guía (de esas se encarga \"Aceptar misiones de la guía\"). No toma misiones grises, no entrega las que piden oro, monedas o materiales de oficio, y si hay varias recompensas eliges tú. Mantén presionado Mayús para hacerlo tú."]
-	if A.Get("ruta.soloRuta") == true then
-		t = t .. " " .. K.Tenir("aviso", L["Tienes encendido «solo las misiones de mi ruta»: solo acepta las de tu ruta."])
-	end
-	return t
-end
+-- La ayuda de "Aceptar y entregar todas las misiones" (en Ajustes > Misiones).
+local TEXTO_MISIONES = L["También las que no son de la guía (de esas se encarga \"Aceptar misiones de la guía\"). No toma misiones grises, no entrega las que piden oro, monedas o materiales de oficio, y si hay varias recompensas eliges tú. Mantén presionado Mayús para hacerlo tú."]
 
 local function textoEstilo()
 	return L["«Igual que Alfa» sigue el estilo de Ajustes > Apariencia y cambia con él."]
 end
 
+-- Las misiones (aceptar y entregar todas) viven en Ajustes > Misiones desde
+-- la 1.2.0, con las demás misiones: ver MISIONES, al final.
 local GRUPOS = {
-	{ titulo = L["Misiones"], filas = {
-		{ k = "misiones", titulo = L["Aceptar y entregar todas las misiones"], texto = textoMisiones,
-			buscar = "automate quests, auto accept all quests, auto turn in, quest automation, daily, weekly" },
-		{ k = "misionesNormales", hija = "misiones", titulo = L["Misiones normales"], texto = L["Las que se hacen una sola vez."], buscar = "regular quests" },
-		{ k = "misionesDiarias", hija = "misiones", titulo = L["Misiones diarias"], texto = L["Las que se repiten cada día."], buscar = "daily quests, dailies" },
-		{ k = "misionesSemanales", hija = "misiones", titulo = L["Misiones semanales"], texto = L["Las que se repiten cada semana."], buscar = "weekly quests" },
-		{ k = "misionesEntregar", hija = "misiones", titulo = L["Entregar las completadas"], texto = L["Apagado, solo las acepta y la entrega la haces tú."], buscar = "turn in completed quests, hand in" },
-	} },
 	{ titulo = L["Viajes"], filas = {
 		{ k = "vueloParada", titulo = L["Mostrar la siguiente parada"],
 			texto = L["En un vuelo con escalas, una línea bajo el temporizador dice dónde es la siguiente parada y cuánto falta para llegar. Necesita el temporizador de vuelo encendido."],
@@ -66,6 +55,14 @@ local GRUPOS = {
 		{ k = "minimapaMenu", hija = "minimapa", titulo = L["Ocultar el menú de addons"],
 			texto = L["Oculta el botón con el número de addons en la esquina del minimapa. Esos addons se siguen abriendo con su comando, como /alfa."],
 			buscar = "addon compartment, addon menu, minimap number" },
+		{ k = "minimapaEstilo", titulo = L["Dar al minimapa el estilo de Alfa"],
+			texto = L["El borde del minimapa, redondo o cuadrado («Minimapa cuadrado», arriba), y la barra con la zona y la hora toman el estilo que elijas, como la ventana del mapa. Al apagarlo vuelve el de siempre."],
+			buscar = "minimap skin, minimap border, minimap style, zone text" },
+		{ k = "minimapaEstiloTema", etiqueta = L["Estilo del minimapa"], hija = "minimapaEstilo", tipo = "estilo", titulo = L["Estilo"], texto = textoEstilo,
+			buscar = "minimap theme, alfa, classic, glass, cristal" },
+		{ k = "minimapaCabecera", hija = "minimapaEstilo", titulo = L["Barra de la zona con el estilo"],
+			texto = L["La barra con el nombre de la zona y la hora toma los colores y la letra del estilo. Los botones de rastreo, calendario y correo quedan como siempre."],
+			buscar = "zone text bar, minimap clock, minimap header" },
 	} },
 	{ titulo = L["Estilo del chat"], filas = {
 		{ k = "chat", titulo = L["Dar al chat el estilo de Alfa"],
@@ -84,16 +81,6 @@ local GRUPOS = {
 		{ k = "chatBotones", hija = "chat", titulo = L["Ocultar los botones del chat"],
 			texto = L["Quita la columna de botones junto al chat (menú, canales y voz). Los comandos como /s, /g o /canal siguen igual."], buscar = "hide chat buttons, chat menu button" },
 	} },
-	{ titulo = L["Estilo del minimapa"], filas = {
-		{ k = "minimapaEstilo", titulo = L["Dar al minimapa el estilo de Alfa"],
-			texto = L["El borde del minimapa, redondo o cuadrado («Minimapa cuadrado», arriba), y la barra con la zona y la hora toman el estilo que elijas, como la ventana del mapa. Al apagarlo vuelve el de siempre."],
-			buscar = "minimap skin, minimap border, minimap style, zone text" },
-		{ k = "minimapaEstiloTema", etiqueta = L["Estilo del minimapa"], hija = "minimapaEstilo", tipo = "estilo", titulo = L["Estilo"], texto = textoEstilo,
-			buscar = "minimap theme, alfa, classic, glass, cristal" },
-		{ k = "minimapaCabecera", hija = "minimapaEstilo", titulo = L["Barra de la zona con el estilo"],
-			texto = L["La barra con el nombre de la zona y la hora toma los colores y la letra del estilo. Los botones de rastreo, calendario y correo quedan como siempre."],
-			buscar = "zone text bar, minimap clock, minimap header" },
-	} },
 	{ titulo = L["Estilo de las barras"], filas = {
 		{ k = "barras", titulo = L["Dar a las barras el estilo de Alfa"],
 			texto = L["La barra de acción, las barras extra, la de experiencia, el menú y las bolsas toman el estilo que elijas. Solo cambia su aspecto, fuera de combate; al apagarlo vuelven las del juego."],
@@ -102,9 +89,6 @@ local GRUPOS = {
 			buscar = "action bar theme, alfa, classic, glass, cristal" },
 		{ k = "barrasBotones", hija = "barras", titulo = L["Botones con el estilo"],
 			texto = L["Cada botón de acción con el borde y el fondo del estilo, el ícono cuadrado y la letra de Alfa en la tecla y la cuenta."], buscar = "action button border, hotkey font, empty slot" },
-		{ k = "barrasGrifos", hija = "barras", tipo = "desplegable", titulo = L["Grifos"], opciones = function() return {
-				{ valor = "como", texto = L["Como están"] }, { valor = "color", texto = L["Del color del estilo"] }, { valor = "ocultar", texto = L["Ocultos"] } } end,
-			texto = L["Los grifos (o dragones) a los lados de la barra principal."], buscar = "gryphons, wyverns, end caps" },
 		{ k = "barrasExperiencia", hija = "barras", titulo = L["Experiencia y reputación"],
 			texto = L["El marco de las barras de experiencia y reputación; el relleno conserva sus colores."], buscar = "xp bar, experience bar, reputation bar" },
 		{ k = "barrasMenu", hija = "barras", titulo = L["Menú y bolsas"],
@@ -117,9 +101,10 @@ local GRUPOS = {
 		{ k = "coloresJugador", hija = "colores", titulo = L["En tu marco"], texto = L["Un fondo del color de tu clase bajo tu nombre."], buscar = "player frame" },
 		{ k = "coloresObjetivo", hija = "colores", titulo = L["En el marco del objetivo"],
 			texto = L["Si tu objetivo es un jugador, su fondo toma el color de su clase en lugar del de su reacción."], buscar = "target frame" },
-		{ k = "grifos", titulo = L["Ocultar los grifos de la barra de acción"],
-			texto = L["Quita los grifos de los lados de la barra principal. Edit Mode también tiene su propia opción para esto."],
-			existe = function() return M.Remates() ~= nil end, buscar = "gryphons, end caps, action bar art, wyverns" },
+		{ k = "barrasGrifos", tipo = "desplegable", titulo = L["Grifos"], opciones = function() return {
+				{ valor = "como", texto = L["Como están"] }, { valor = "color", texto = L["Del color del estilo"] }, { valor = "ocultar", texto = L["Ocultos"] } } end,
+			texto = L["Los grifos (o dragones) a los lados de la barra principal. «Del color del estilo» necesita el estilo de las barras; «Ocultos» funciona siempre."],
+			existe = function() return M.Remates() ~= nil end, buscar = "gryphons, wyverns, end caps, action bar art, hide gryphons" },
 		{ k = "barraForma", titulo = L["Avisar si la barra de una forma está vacía"],
 			texto = L["Al cambiar de forma o de actitud, el juego usa otra barra de abajo. Si está vacía, Alfa te avisa una vez y puede llenar sus casillas vacías con las habilidades de esa forma que ya sabes, fuera de combate y sin tocar lo que ya tienes."],
 			existe = function() return M.ClaseConFormas and M.ClaseConFormas() end,
@@ -208,8 +193,9 @@ end
 -- La página
 ---------------------------------------------------------------------------
 -- Vender lo gris, reparar, los vuelos, las invitaciones... son del motor y
--- viven en Ajustes > Calidad de vida (no se repiten aquí): un enlace allá.
-local masCalidad = { texto = L["Más en Calidad de vida"], alClic = function() N.Abrir("qualityoflife") end }
+-- desde la 1.2.0 están en las otras pestañas de esta misma página. Las
+-- misiones automáticas, en Ajustes > Misiones: un enlace allá.
+local masCalidad = { texto = L["Misiones automáticas"], alClic = function() N.Abrir("questing") end }
 
 local function estado()
 	local lista, apagadas = recomendadas()
@@ -331,9 +317,33 @@ for _, g in ipairs(GRUPOS) do
 	end
 end
 
+---------------------------------------------------------------------------
+-- Aceptar y entregar todas las misiones: en Ajustes > Misiones > Misiones,
+-- con las demás misiones (1.2.0). Mismas claves de siempre.
+---------------------------------------------------------------------------
+local function apagadoTodas() return not M.Get("misiones") end
+local MISIONES = {
+	{ kind = "toggle", key = clave("misiones"), label = L["Aceptar y entregar todas las misiones"], help = TEXTO_MISIONES,
+		search = "automate quests, auto accept all quests, auto turn in, quest automation, daily, weekly" },
+	{ kind = "toggle", key = clave("misionesNormales"), label = L["Misiones normales"], help = L["Las que se hacen una sola vez."],
+		child = true, disabled = apagadoTodas, search = "regular quests" },
+	{ kind = "toggle", key = clave("misionesDiarias"), label = L["Misiones diarias"], help = L["Las que se repiten cada día."],
+		child = true, disabled = apagadoTodas, search = "daily quests, dailies" },
+	{ kind = "toggle", key = clave("misionesSemanales"), label = L["Misiones semanales"], help = L["Las que se repiten cada semana."],
+		child = true, disabled = apagadoTodas, search = "weekly quests" },
+	{ kind = "toggle", key = clave("misionesEntregar"), label = L["Entregar las completadas"], help = L["Apagado, solo las acepta y la entrega la haces tú."],
+		child = true, disabled = apagadoTodas, search = "turn in completed quests, hand in" },
+}
+do
+	local LM = A.L or {}
+	local ok, err = A.RegisterOptions({ page = "questing", key = "questing", tab = LM["Quests"] or "Quests",
+		section = L["Todas las misiones"], controls = MISIONES })
+	if not ok and geterrorhandler then geterrorhandler()(err) end
+end
+
 N.Modulo({
 	id = ID, nombre = L["Comodidades"], icono = "ic-comodidades", orden = 70, seccion = "ajustes",
-	subtitulo = L["Lo pequeño que hace el juego más cómodo: misiones, vuelos, minimapa, chat y barras con el estilo de Alfa, marcos, cuadro de información, probador, cámara y sonidos."],
+	subtitulo = L["Lo pequeño que hace el juego más cómodo: el minimapa, el chat y las barras con el estilo de Alfa, marcos, cuadro de información, probador, cámara y sonidos; y en sus pestañas, viajes, invitaciones, comerciantes y más."],
 	controles = BUSCAR,
 	construir = construir,
 })

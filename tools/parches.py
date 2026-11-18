@@ -619,6 +619,48 @@ _MAZMORRAS = [
 ]
 
 
+# 1.2.0: Calidad de vida vive dentro de Comodidades (motor/Alfa/UI/Options.lua).
+# Los avisos del motor que mandaban a "Quality of Life > ..." dicen ahora el
+# nombre de Comodidades en cada idioma (las pestañas siguen con su nombre).
+_FRASES_QOL = [
+    "Classic limits; Forever may differ (set them under Quality of Life, Trackers).",
+    "The XP tracker is off (Options > Quality of Life > Trackers).",
+    "Level-up spell cards are off. Turn them back on under Options > Quality of Life > Vendors > Trainers.",
+    "Old rank cards are off. Turn them back on under Options > Quality of Life > Vendors > Trainers.",
+]
+_COMODIDADES = {"esMX": "Comodidades", "esES": "Comodidades", "deDE": "Komfort", "frFR": "Confort de jeu",
+                "ptBR": "Comodidades", "ruRU": "Удобства", "koKR": "편의 기능", "zhCN": "便利功能", "zhTW": "便利功能"}
+
+
+def comodidades(dist: pathlib.Path) -> list:
+    errores = []
+    nuevas = {f: f.replace("Quality of Life", "Conveniences") for f in _FRASES_QOL}
+    for ruta in sorted(dist.glob("Alfa*/**/*.lua")):
+        try:
+            texto = ruta.read_bytes().decode("utf-8")
+        except UnicodeDecodeError:
+            continue  # un archivo de datos en otra codificación: no tiene estos avisos
+        if "Quality of Life" not in texto:
+            continue
+        nuevo = texto
+        for vieja, buena in nuevas.items():
+            nuevo = nuevo.replace(vieja, buena)
+        loc = ruta.parent.name[5:] if ruta.parent.name.startswith("Alfa_") else ""
+        if loc in _COMODIDADES and ruta.name == "Interface.lua":
+            m = re.search(r'^L\["Quality of Life"\] = "([^"\n]*)"', nuevo, re.M)
+            if m:
+                qol, com = m.group(1), _COMODIDADES[loc]
+                lineas = nuevo.split("\n")
+                for i, linea in enumerate(lineas):
+                    if any(linea.startswith(f'L["{b}"]') for b in nuevas.values()):
+                        clave, _, valor = linea.partition("] = ")
+                        lineas[i] = clave + "] = " + valor.replace(qol, com)
+                nuevo = "\n".join(lineas)
+        if nuevo != texto:
+            ruta.write_bytes(nuevo.encode("utf-8"))
+    return errores
+
+
 def mazmorras(dist: pathlib.Path) -> list:
     rutas = sorted((dist / "Alfa_esMX").glob("*.lua")) + [dist / "Alfa_Codex" / "Alfa_Codex.toc"]
     for ruta in rutas:
@@ -641,6 +683,7 @@ def limpiar(dist: pathlib.Path, cfg: dict) -> list:
         if nuevo != texto:
             ruta.write_bytes(nuevo.encode("latin-1"))
     errores += mazmorras(dist)
+    errores += comodidades(dist)
     readme = dist / "Alfa" / "README.txt"
     if readme.exists():
         web = cfg["urls"]["issues"].rsplit("/issues", 1)[0]

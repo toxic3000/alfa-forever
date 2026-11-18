@@ -271,7 +271,7 @@ local aplicar
 local function enganchar()
 	if enganchado or type(hooksecurefunc) ~= "function" then return end
 	enganchado = true
-	local function otraVez() if M.Get("chat") then N.FueraDeCombate(aplicar) end end
+	local function otraVez() if M.Get("chat") then N.FueraDeCombate("comodidades.chat", aplicar) end end
 	for _, f in ipairs({ "FCF_OpenNewWindow", "FCF_OpenTemporaryWindow", "FCF_DockUpdate" }) do
 		if type(_G[f]) == "function" then hooksecurefunc(f, otraVez) end
 	end

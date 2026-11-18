@@ -115,7 +115,7 @@ local function ponerEnSuLugar(v)
 	v:ClearAllPoints()
 	local d = v.alfaNombre and datos().ventanas
 	local l = type(d) == "table" and d[v.alfaNombre]
-	if type(l) == "table" and type(l[3]) == "number" then
+	if type(l) == "table" and type(l[1]) == "string" and type(l[2]) == "string" and type(l[3]) == "number" and type(l[4]) == "number" then
 		v:SetPoint(l[1], UIParent, l[2], l[3], l[4])
 	else
 		v:SetPoint("CENTER", UIParent, "CENTER", 0, 40)

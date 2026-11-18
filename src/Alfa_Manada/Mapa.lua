@@ -2,14 +2,20 @@
 -- toxic3000 / La Jauría. GPL-3.0.
 --
 -- Dos capas de pines del motor (Alfa.Pins.SetLayer):
---   manada.grupo    tu grupo o banda (posiciones del juego)
+--   manada.grupo    tu grupo o banda (posiciones del juego): una marca de
+--                   mapa de Alfa (el medallón de la casa) con el alfiler del
+--                   color de la clase
 --   manada.jauria   los usuarios de Alfa que comparten su ubicación contigo
--- Cada pin es una marca de mapa de Alfa (el medallón de la casa) con el
--- alfiler del color de la clase y el nombre en su etiqueta. El cuadro al
--- pasar el ratón dice nombre, nivel, clase, zona, distancia y hace cuánto se
--- supo; un clic lo sigue (Seguir.lua). Una posición de más de un minuto se
--- dibuja tenue. A quien sigues se le ve más grande, con el aro de Alfa y un
--- halo.
+--                   (andar en manada): una huella de lobo pequeña, más chica
+--                   que las marcas de tu grupo, del color de su clase (o el
+--                   verde de Alfa), sobre un disco oscuro. Solo sale quien
+--                   aceptó compartir.
+-- El nombre va en la etiqueta del pin. El cuadro al pasar el ratón dice
+-- nombre, su insignia (Insignias.lua), nivel, clase, zona, distancia y hace
+-- cuánto se supo; un clic lo sigue (Seguir.lua). Una posición de más de un
+-- minuto se dibuja tenue. A quien sigues se le ve más grande y con un halo.
+-- Quien tiene insignia lleva además un aro del color de su rango (oro los
+-- Alfas, verde La Jauría) y queda encima de los demás.
 -- Con Alfa_Mundo, las dos capas se registran en su control de capas
 -- (AlfaMundo.RegistrarCapa); apagar una allí apaga el ajuste aquí y al revés.
 
@@ -61,6 +67,17 @@ local function media(nombre)
 	return "Interface\\AddOns\\Alfa\\Media\\UI\\" .. nombre
 end
 
+-- El color de una huella: el de su clase o, si no se sabe, el verde de Alfa.
+local function colorHuella(clase)
+	if type(clase) == "string" and clase ~= "" then
+		local ok, r, g, b = pcall(A.Theme.ClassColor, clase)
+		if ok and type(r) == "number" then return r, g, b end
+	end
+	local v = M.Insignias.VERDE
+	return v[1], v[2], v[3]
+end
+Mapa.ColorHuella = colorHuella
+
 ---------------------------------------------------------------------------
 -- El cuadro del pin
 ---------------------------------------------------------------------------
@@ -79,6 +96,8 @@ local function cuadro(f, capa)
 		local G = M.Gente
 		local r, g, b = U.ColorTexto(f.clase)
 		tip:SetText(f.nombre or "?", r, g, b)
+		local ins = M.Insignias.DeFila(f)
+		if ins then M.Insignias.AgregarLinea(tip, ins) end
 		local nivel = lineaNivel(f)
 		if nivel then tip:AddLine(nivel, 1, 1, 1) end
 		local map, x, y, edad = G.PosicionDe(f)
@@ -127,27 +146,47 @@ function Mapa.Refrescar(forzar)
 	-- Las posiciones envejecen solas: se redibuja al menos cada 20 s.
 	if not forzar and hecho == G.version and sigHecho == (sigue and sigue.clave) and ahora - ultimoDibujo < 20 then return end
 	hecho, sigHecho, ultimoDibujo = G.version, sigue and sigue.clave, ahora
+	local I = M.Insignias
+	local huella = media("ic-huella")
 	local porCapa = { grupo = {}, manada = {} }
 	for _, p in ipairs(G.ParaElMapa()) do
 		local f, capa = p.fila, p.capa
-		local r, g, b = U.ColorClase(f.clase)
 		local alfa = (capa ~= "grupo" and f.edad and f.edad > G.VIEJA) and 0.55 or 1
 		local seguido = sigue and sigue.clave == f.clave
+		local ins = I.DeFila(f)
 		local lista = porCapa[capa]
-		lista[#lista + 1] = {
+		local pin = {
 			map = f.map, x = f.x, y = f.y,
-			icon = "map:pin-small",
-			color = { r, g, b, alfa },
 			badge = corto(f.nombre),
 			state = seguido and "focus" or nil,
-			size = 15, minimapSize = 13,
 			glow = seguido or nil,
-			priority = seguido and 10 or 2,
 			tooltip = cuadro(f, capa),
 			onClick = function(button)
 				if button == "LeftButton" or button == nil then M.Seguir.A(f) end
 			end,
+			alfaInsignia = ins,
 		}
+		local base
+		if capa == "grupo" then
+			local r, g, b = U.ColorClase(f.clase)
+			pin.icon, pin.color = "map:pin-small", { r, g, b, alfa }
+			pin.size, pin.minimapSize = 15, 13
+			base = 2
+		else
+			-- La huella de quien anda en manada: más chica que tu grupo.
+			local r, g, b = colorHuella(f.clase)
+			pin.icon, pin.color, pin.backdrop = huella, { r, g, b, alfa }, true
+			pin.size, pin.minimapSize = seguido and 13 or 11, 10
+			base = 1
+		end
+		-- Una insignia: el aro de su rango y encima de los demás.
+		if ins then
+			local ir, ig, ib = I.Color(ins)
+			pin.ring = { ir, ig, ib, 0.95 * alfa }
+			base = base + (ins == "alfa" and 2 or 1)
+		end
+		pin.priority = seguido and 10 or base
+		lista[#lista + 1] = pin
 	end
 	local mini = N.Get(ID, "minimapa") and true or false
 	for _, capa in ipairs(ORDEN) do
@@ -155,7 +194,8 @@ function Mapa.Refrescar(forzar)
 		-- Solo se rehace la capa que cambió (el mapa abierto no parpadea).
 		local firma = { mini and "m" or "-" }
 		for i, pin in ipairs(porCapa[capa]) do
-			firma[i + 1] = ("%s%d:%.1f:%.1f:%s:%s"):format(pin.badge, pin.map, pin.x, pin.y, pin.color[4], pin.glow and "g" or "")
+			firma[i + 1] = ("%s%d:%.1f:%.1f:%s:%s:%s"):format(tostring(pin.badge), pin.map, pin.x, pin.y, tostring(pin.color[4]),
+				pin.glow and "g" or "", pin.alfaInsignia or "")
 		end
 		firma = table.concat(firma, "|")
 		if forzar or c.firma ~= firma then

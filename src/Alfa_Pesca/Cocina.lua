@@ -242,7 +242,8 @@ local HECHIZOS = {}
 for _, r in ipairs(M.RECETAS) do HECHIZOS[r.hechizo] = true end
 
 A.RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", function(_, unidad, _, spell)
-	if unidad ~= "player" or not legible(spell) or not HECHIZOS[spell] then return end
+	-- Lo secreto primero: un token de unidad secreto no se compara (1.2.0).
+	if not legible(unidad) or unidad ~= "player" or not legible(spell) or not HECHIZOS[spell] then return end
 	local c = Co.cola[1]
 	local lote = false
 	if c and c.hechizo == spell then

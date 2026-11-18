@@ -736,4 +736,7 @@ M.EN = {
 	["Ábrela con tu tecla de talentos (%s) o desde el menú del juego."] = "Open it with your talents key (%s) or from the game menu.",
 	["Ábrela con tu tecla de talentos o desde el menú del juego."] = "Open it with your talents key or from the game menu.",
 	["En combate no se puede: espera a terminar."] = "You can't in combat: wait until it ends.",
+	-- 1.2.0
+	["Cierra la ventana de talentos y hechizos del juego y vuelve a aplicar"] = "Close the game's talents and spells window and apply again",
+	["Tienes cambios sin guardar en la ventana de talentos del juego: guárdalos o deshazlos ahí primero"] = "You have unsaved changes in the game's talent window: save or undo them there first",
 }

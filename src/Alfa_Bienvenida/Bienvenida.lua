@@ -46,6 +46,12 @@
 -- Una vez por versión y por cuenta (AlfaNucleoDB): las notas hablan del
 -- addon, no del personaje, y verlas otra vez en cada personaje cansaría. Si
 -- entras en combate durante la intro, la ventana espera a que termine.
+--
+-- El saludo (1.2.0, bienvenida.introSiempre, encendido de fábrica): cada vez
+-- que entras al juego (no al recargar), aunque no haya nada nuevo, la intro
+-- del lobo te recibe sola, cuando se puede (fuera de combate, de instancias y
+-- de cinemáticas). Con la configuración pendiente o con notas nuevas no hace
+-- falta: la intro ya sale con ellas.
 
 local ADDON, M = ...
 local N = AlfaNucleo
@@ -295,9 +301,35 @@ A.OnLogin(function()
 	if C_Timer and C_Timer.After then C_Timer.After(ESPERA, intentar) else intentar() end
 end)
 
+-- El saludo de cada entrada (ver arriba).
+local saludoPendiente = false
+
+local function saludar()
+	if not saludoPendiente then return end
+	-- la configuración o las notas ya traen la intro: el saludo sobra
+	if M.Pendiente() or notasPendientes or (M.NotasVisibles and M.NotasVisibles()) or (M.Visible and M.Visible()) then
+		saludoPendiente = false
+		return
+	end
+	if not libre("login") then return end -- espera: combate, cinemática o instancia
+	saludoPendiente = false
+	local nombre = UnitName and UnitName("player")
+	local texto = type(nombre) == "string" and nombre ~= "" and string.format(L["¡De vuelta en la manada, %s!"], nombre) or nil
+	if M.Intro then M.Intro(nil, { texto = texto }) end
+end
+M.Saludar = saludar
+
+A.RegisterEvent("PLAYER_ENTERING_WORLD", function(_, inicio, recarga)
+	if inicio == true and not recarga and N.Get(ID, "introSiempre") ~= false then
+		saludoPendiente = true
+	end
+	if saludoPendiente and C_Timer and C_Timer.After then C_Timer.After(ESPERA_NOTAS + 1, saludar) end
+end)
+
 local function intentarTodo()
 	intentar()
 	intentarNotas()
+	saludar()
 end
 A.RegisterEvent("PLAYER_REGEN_ENABLED", function() intentarTodo() end)
 A.RegisterEvent("CINEMATIC_STOP", function()

@@ -243,7 +243,8 @@ end
 local function colocar(f)
 	local p = posiciones()[f.alfaClave]
 	f:ClearAllPoints()
-	if type(p) == "table" and type(p[1]) == "string" and type(p[3]) == "number" then
+	if type(p) == "table" and type(p[1]) == "string" and type(p[3]) == "number"
+		and (p[2] == nil or type(p[2]) == "string") and (p[4] == nil or type(p[4]) == "number") then
 		f:SetPoint(p[1], UIParent, p[2] or p[1], p[3], p[4] or 0)
 	else
 		local d = f.alfaPunto
