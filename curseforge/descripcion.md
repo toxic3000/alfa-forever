@@ -4,7 +4,7 @@
 
 **The all-in-one for World of Warcraft: Forever.** Guides, route, map, bags, talents, encyclopedia, dungeons, healing, fishing, trading and your guild, in one addon with one look — and **Lya**, a black she-wolf companion who chats with you about lore, your zone and your adventures. Made by **toxic3000** for **La Jauría**. Free, open source, 10 languages.
 
-> 🐺 **New in 1.1.7:** a flawless map: no thin lines between its pieces or dark halos on zone edges; icons, names and your arrow move glued to the map without jumping a pixel; borders between zones no longer flicker; and every map icon is crisp at its exact size.
+> 🐺 **New in 1.1.8:** icons without black edges on the map and in every Alfa window; mining, herbs, fishing and treasures on Alfa's big map, grouped with their count when you zoom into a zone; the map appears whole at once as it loads; and Gathering's minimap rests when it has nothing to show.
 > If something breaks, tell us with `/alfa reportar`, on [Discord](https://discord.gg/hUNjA6BJwh), in the comments or on [GitHub](https://github.com/toxic3000/alfa-forever/issues).
 
 ## A quick look / Un vistazo
@@ -70,7 +70,7 @@ It doesn't switch your brain off: Alfa backs you up and you decide. The first ti
 
 **El todo en uno para World of Warcraft: Forever.** Guías, ruta, mapa, bolsas, talentos, enciclopedia, mazmorras, curación, pesca, comercio y tu clan, en un solo addon y con un solo estilo. Hecho por **toxic3000** para **La Jauría**.
 
-> **Novedades de la 1.1.7:** un mapa impecable: sin líneas finas entre sus pedazos ni halos oscuros en las orillas de las zonas; los íconos, los nombres y tu flecha se mueven pegados al mapa sin brincar un píxel; las fronteras entre zonas ya no parpadean; y cada ícono del mapa se ve nítido con su tamaño exacto.
+> **Novedades de la 1.1.8:** íconos sin bordes negros en el mapa y en todas las ventanas de Alfa; minería, hierbas, pesca y tesoros en el mapa grande de Alfa, agrupados con su cantidad al acercarte a una zona; el mapa aparece completo de una vez al cargar; y el minimapa de Recolección descansa cuando no tiene nada que mostrar.
 > Si algo falla, avísanos con `/alfa reportar`, en el [Discord de La Jauría](https://discord.gg/hUNjA6BJwh), en los comentarios o en [GitHub](https://github.com/toxic3000/alfa-forever/issues).
 
 ¿Cansado de tener un montón de addons que se enciman y te llenan el mapa de marcas? Alfa los junta en uno solo, ordenado y guiado, que se adapta a tu clase. **No necesita ningún otro addon.**
