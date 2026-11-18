@@ -4,7 +4,7 @@
 
 **The all-in-one for World of Warcraft: Forever.** Guides, route, map, bags, talents, encyclopedia, dungeons, healing, fishing, trading and your guild, in one addon with one look — and **Lya**, a black she-wolf companion who chats with you about lore, your zone and your adventures. Made by **toxic3000** for **La Jauría**. Free, open source, 10 languages.
 
-> 🐺 **New in 1.1.6:** "Follow" in La Jauría no longer lets go when your guide changes step or while you run back to your body; accepting every quest no longer misses a daily; your flight bar always shows its stops; dungeon boss warnings your game has no longer show as off; and Alfa tweaks in every language.
+> 🐺 **New in 1.1.7:** a flawless map: no thin lines between its pieces or dark halos on zone edges; icons, names and your arrow move glued to the map without jumping a pixel; borders between zones no longer flicker; and every map icon is crisp at its exact size.
 > If something breaks, tell us with `/alfa reportar`, on [Discord](https://discord.gg/hUNjA6BJwh), in the comments or on [GitHub](https://github.com/toxic3000/alfa-forever/issues).
 
 ## A quick look / Un vistazo
@@ -70,7 +70,7 @@ It doesn't switch your brain off: Alfa backs you up and you decide. The first ti
 
 **El todo en uno para World of Warcraft: Forever.** Guías, ruta, mapa, bolsas, talentos, enciclopedia, mazmorras, curación, pesca, comercio y tu clan, en un solo addon y con un solo estilo. Hecho por **toxic3000** para **La Jauría**.
 
-> **Novedades de la 1.1.6:** «Seguir» en La Jauría ya no se suelta cuando tu guía cambia de paso ni cuando vas por tu cuerpo; aceptar todas las misiones ya no pierde diarias; tu barra de vuelo sale siempre con sus paradas; los avisos de jefes que trae tu juego ya no salen apagados; y ajustes de Alfa en todos los idiomas.
+> **Novedades de la 1.1.7:** un mapa impecable: sin líneas finas entre sus pedazos ni halos oscuros en las orillas de las zonas; los íconos, los nombres y tu flecha se mueven pegados al mapa sin brincar un píxel; las fronteras entre zonas ya no parpadean; y cada ícono del mapa se ve nítido con su tamaño exacto.
 > Si algo falla, avísanos con `/alfa reportar`, en el [Discord de La Jauría](https://discord.gg/hUNjA6BJwh), en los comentarios o en [GitHub](https://github.com/toxic3000/alfa-forever/issues).
 
 ¿Cansado de tener un montón de addons que se enciman y te llenan el mapa de marcas? Alfa los junta en uno solo, ordenado y guiado, que se adapta a tu clase. **No necesita ningún otro addon.**
