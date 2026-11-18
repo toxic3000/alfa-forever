@@ -1,5 +1,23 @@
 # Cambios de Alfa
 
+## 1.1.6 — Más firme y en tu idioma (18/11/2026)
+
+**Español**
+- Arreglado: «Seguir» en La Jauría se soltaba cuando tu guía cambiaba de paso, y también mientras corrías a tu cuerpo. Ahora la flecha se queda con quien sigues y, al revivir, vuelve con esa persona.
+- Arreglado: con «Aceptar todas las misiones» de Comodidades, la ventana a veces se cerraba antes de que llegara la misión diaria que Alfa acababa de pedir.
+- Arreglado: la barra de vuelo con tus paradas podía no aparecer, según el orden en que el juego cargaba los addons.
+- Arreglado: en Mazmorras, si tu juego no trae el interruptor general de los avisos de jefes, los avisos que sí trae ya no salen apagados para siempre.
+- Ajustes de Alfa en todos los idiomas: las fechas de Hoy salen en el orden de cada idioma, y Protección y Restauración llevan su nombre correcto en cada clase.
+- Solo /alfa: se quitó un comando corto que sobraba.
+
+**English**
+- Fixed: "Follow" in La Jauría let go when your guide changed step, and also while you ran back to your body. The arrow now stays with who you follow and goes back to them once you're alive.
+- Fixed: with Comforts' "Accept every quest", the window sometimes closed before the daily quest Alfa had just asked for arrived.
+- Fixed: the flight bar with your stops could fail to show, depending on the order the game loaded addons in.
+- Fixed: in Dungeons, if your game lacks the main boss-warnings switch, the warnings it does have no longer stay off forever.
+- Alfa tweaks in every language: Today's dates follow each language's order, and Protection and Restoration get their right name for each class.
+- Just /alfa: an extra short command was removed.
+
 ## 1.1.5 — Sin bloqueos y más claro (17/11/2026)
 
 **Español**

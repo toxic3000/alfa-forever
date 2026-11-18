@@ -776,7 +776,7 @@ local function buildAbout(view)
 	W.SetSection(whyH, L["Why Alfa"])
 	local paras = {
 		L["Alfa is La Jauría's all-in-one for WoW Forever: guides, map, bags, builds, fishing, trading and your pack, in one place and with one look."],
-		hex .. L["It is built on Polestar, the free and open-source leveling guide by The Polestar authors. Alfa is free and open source too, under the GPL-3.0."] .. "|r",
+		hex .. L["Alfa is free and open source, under the GPL-3.0. The free projects it builds on are credited below, in Credits and licenses."] .. "|r",
 		L["Made by toxic3000 and La Jauría. Come play with the pack: our Discord is open to everyone."],
 	}
 	if ns.stage then

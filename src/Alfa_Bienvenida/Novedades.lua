@@ -31,6 +31,13 @@ M.NOVEDADES = {
 --   { version, titulo, puntos = { { icono (ic-*), texto } } }
 ---------------------------------------------------------------------------
 M.NOTAS = {
+	{ version = "1.1.6", titulo = "Más firme y en tu idioma", puntos = {
+		{ "ic-seguir", "«Seguir» en La Jauría ya no se suelta cuando tu guía cambia de paso ni cuando vas por tu cuerpo: al terminar, la flecha vuelve con quien sigues." },
+		{ "ic-misiones", "Aceptar todas las misiones ya no pierde una diaria porque la ventana se cerraba antes de tiempo." },
+		{ "ic-reloj", "La barra de tu vuelo con sus paradas sale siempre al despegar." },
+		{ "ic-mazmorra", "Mazmorras: los avisos de jefes que tu juego sí trae ya no salen apagados." },
+		{ "ic-exito", "Ajustes de Alfa en todos los idiomas: las fechas en el orden de cada uno y los nombres de cada especialización bien puestos." },
+	} },
 	{ version = "1.1.5", titulo = "Sin bloqueos y más claro", puntos = {
 		{ "ic-talentos", "Se acabó el aviso «Alfa_Builds se ha bloqueado…»: la ventana de talentos, el clic para lanzar y el Legado ahora los abre el juego, y tus hechizos se lanzan sin problema desde el libro." },
 		{ "ic-ruta", "Tu guía ya no te manda a entregar misiones sin terminar: primero te lleva a lo que falta, y «Cerrar mis misiones» se pone al día sola." },

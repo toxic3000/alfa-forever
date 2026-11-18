@@ -54,6 +54,7 @@ M.EN = {
 	["Sed de sangre: tu golpe más fuerte, cada vez que esté listo."] = "Bloodthirst: your strongest hit, every time it's ready.",
 	["Huracán: golpea a todos a tu alrededor."] = "Whirlwind: hits everyone around you.",
 	["Protección"] = "Protection",
+	["Protección [paladín]"] = "Protection", -- [corchetes]: solo separan la clave (coreano)
 	["Revancha: barata y con mucha amenaza tras bloquear o esquivar."] = "Revenge: cheap and high threat after you block or dodge.",
 	["Embate con escudo: mucho daño y amenaza."] = "Shield Slam: lots of damage and threat.",
 	["Los enemigos de alrededor pegan menos."] = "Enemies around you hit softer.",
@@ -358,6 +359,7 @@ M.EN = {
 	["Reprensión"] = "Retribution",
 	["Elemental"] = "Elemental",
 	["Restauración"] = "Restoration",
+	["Restauración [chamán]"] = "Restoration",
 	["Equilibrio"] = "Balance",
 	["Feral"] = "Feral",
 

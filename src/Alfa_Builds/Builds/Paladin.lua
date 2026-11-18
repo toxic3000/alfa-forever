@@ -15,7 +15,7 @@ M.Clase({
 	nombre = L["Paladín"],
 	especialidades = {
 		holy = { nombre = L["Sagrado"], indice = 1, icono = 1310911, rol = "sanador" },
-		protection = { nombre = L["Protección"], indice = 2, icono = 20925, rol = "tanque" },
+		protection = { nombre = (L["Protección [paladín]"]:gsub(" %[.-%]$", "")), indice = 2, icono = 20925, rol = "tanque" },
 		retribution = { nombre = L["Reprensión"], indice = 3, icono = 1310735, rol = "dps" },
 	},
 	recomendados = { solo = "retribution-solo-equilibrado" },
@@ -54,7 +54,7 @@ M.Clase({
 		},
 		{
 			id = "protection-solo-equilibrado", spec = "protection", objetivo = "solo", estilo = "equilibrado", armas = "escudo",
-			titulo = L["Protección para subir"],
+			titulo = (L["Protección para subir [paladín]"]:gsub(" %[.-%]$", "")),
 			resumen = L["Escudo y luz sagrada: un tanque muy resistente que recupera su propio maná."],
 			fuente = "motor",
 			talentos = {

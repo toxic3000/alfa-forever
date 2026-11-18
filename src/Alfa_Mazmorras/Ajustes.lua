@@ -65,8 +65,8 @@ local function ctlCVar(nombre, etiqueta, ayuda, hijo, depende)
 		get = function() return Av.Bool(nombre) end,
 		set = function(on) Av.Poner(nombre, on) cambio() end,
 		disabled = function()
-			if nombre ~= "combatWarningsEnabled" and not Av.Bool("combatWarningsEnabled") then return true end
-			return depende ~= nil and not Av.Bool(depende)
+			if nombre ~= "combatWarningsEnabled" and not Av.Activo("combatWarningsEnabled") then return true end
+			return depende ~= nil and not Av.Activo(depende)
 		end,
 	}
 end
@@ -99,7 +99,7 @@ local AVISOS = {
 		},
 		get = function() return Av.Numero("encounterWarningsLevel") end,
 		set = function(v) Av.Poner("encounterWarningsLevel", v) cambio() end,
-		disabled = function() return not (Av.Bool("combatWarningsEnabled") and Av.Bool("encounterWarningsEnabled")) end,
+		disabled = function() return not (Av.Activo("combatWarningsEnabled") and Av.Activo("encounterWarningsEnabled")) end,
 	},
 	ctlCVar("encounterWarningsHideIfNotTargetingPlayer", L["Solo los que me apuntan a mí"],
 		L["Oculta los mensajes de ataques que van contra otro jugador."], true, "encounterWarningsEnabled"),

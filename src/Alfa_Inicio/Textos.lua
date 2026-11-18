@@ -370,7 +370,9 @@ M.EN = {
 	["%d muertes"] = "%d deaths",
 	["hoy a las %s"] = "today at %s",
 	["ayer a las %s"] = "yesterday at %s",
-	["el %d/%d a las %s"] = "on %d/%d at %s",
+	["el %s a las %s"] = "on %s at %s",
+	-- El orden del día y el mes: cada idioma pone el suyo ({dia} y {mes} no se traducen).
+	["{dia}/{mes}"] = "{mes}/{dia}",
 	["Esta sesión: %s"] = "This session: %s",
 	["Ritmo: %s XP por hora; subes de nivel en %s."] = "Pace: %s XP per hour; you level up in %s.",
 	["tu sesión de ahora en el chat"] = "your current session in chat",

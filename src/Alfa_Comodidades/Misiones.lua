@@ -92,6 +92,13 @@ end
 
 local function puedeAceptar(q) return not soloRuta() or enRuta(q) end
 
+-- Antes de pedir algo en la ventana: que el motor no la cierre en ese
+-- momento ("cerrar lo que la guía no toma", Automation.Keep; 1.1.6).
+local function pedir()
+	local Au = A.Automation
+	if Au and Au.Keep then Au.Keep(2) end
+end
+
 ---------------------------------------------------------------------------
 -- Qué misiones toma
 ---------------------------------------------------------------------------
@@ -246,6 +253,7 @@ local function alSaludo()
 			local _, completa = GetActiveTitle(i)
 			local q = GetActiveQuestID and legible(GetActiveQuestID(i))
 			if legible(completa) and not (q and dejadas[q]) then
+				pedir()
 				SelectActiveQuest(i)
 				return
 			end
@@ -256,6 +264,7 @@ local function alSaludo()
 		local esTrivial, frecuencia, _, _, q = GetAvailableQuestInfo(i)
 		q = legible(q)
 		if not legible(esTrivial) and not (q and dejadas[q]) and quiereFrecuencia(frecuencia) and puedeAceptar(q) then
+			pedir()
 			SelectAvailableQuest(i)
 			return
 		end
@@ -278,6 +287,7 @@ local function alDialogo()
 		for _, info in ipairs(activas) do
 			local q = legible(info.questID)
 			if q and legible(info.isComplete) and not dejadas[q] then
+				pedir()
 				G.SelectActiveQuest(q)
 				return
 			end
@@ -288,6 +298,7 @@ local function alDialogo()
 		local q = legible(info.questID)
 		if q and not dejadas[q] and not legible(info.isTrivial) and not legible(info.isIgnored)
 			and quiereFrecuencia(info.frequency) and puedeAceptar(q) then
+			pedir()
 			G.SelectAvailableQuest(q)
 			return
 		end

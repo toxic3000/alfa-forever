@@ -1,0 +1,14 @@
+{
+ "Protección [paladín]": "防護",
+ "Restauración [chamán]": "恢復",
+ "Protección para subir [paladín]": "防護（練等）",
+ "Restauración para subir [chamán]": "恢復（練等）",
+ "el %s a las %s": "%s %s",
+ "{dia}/{mes}": "{mes}月{dia}日",
+ "Más firme y en tu idioma": "更穩定，也更懂你的語言",
+ "«Seguir» en La Jauría ya no se suelta cuando tu guía cambia de paso ni cuando vas por tu cuerpo: al terminar, la flecha vuelve con quien sigues.": "La Jauría 的「跟隨」不會在指南換步驟或你跑回屍體時中斷：結束後，箭頭會重新指向你跟隨的人。",
+ "Aceptar todas las misiones ya no pierde una diaria porque la ventana se cerraba antes de tiempo.": "接受所有任務時，不會再因為視窗太早關閉而漏掉每日任務。",
+ "La barra de tu vuelo con sus paradas sale siempre al despegar.": "起飛時一定會顯示帶有中途站的飛行條。",
+ "Mazmorras: los avisos de jefes que tu juego sí trae ya no salen apagados.": "地城：你的遊戲中有的首領警報不再顯示為關閉。",
+ "Ajustes de Alfa en todos los idiomas: las fechas en el orden de cada uno y los nombres de cada especialización bien puestos.": "所有語言的 Alfa 調整：日期依各語言的順序顯示，每個專精的名稱都正確。"
+}

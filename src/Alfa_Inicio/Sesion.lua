@@ -385,7 +385,14 @@ function S.Cuando(ts)
 	local hora = format("%02d:%02d", t.hour, t.min)
 	if mismoDia(t, date("*t", ahora())) then return format(L["hoy a las %s"], hora) end
 	if mismoDia(t, date("*t", ahora() - 86400)) then return format(L["ayer a las %s"], hora) end
-	return format(L["el %d/%d a las %s"], t.day, t.month, hora)
+	return format(L["el %s a las %s"], S.Fecha(t), hora)
+end
+
+-- El día y el mes en el orden de cada idioma ("14/11", "11/14", "11月14日"...):
+-- el orden es parte de la traducción, porque format no deja reordenar huecos.
+function S.Fecha(t)
+	local s = L["{dia}/{mes}"]:gsub("{dia}", tostring(t.day)):gsub("{mes}", tostring(t.month))
+	return s
 end
 
 -- "14/11" (o "Hoy") para las etiquetas de la gráfica.
@@ -393,7 +400,7 @@ function S.Dia(ts)
 	ts = tonumber(ts) or ahora()
 	local t = date("*t", ts)
 	if mismoDia(t, date("*t", ahora())) then return L["Hoy"] end
-	return format("%d/%d", t.day, t.month)
+	return S.Fecha(t)
 end
 
 -- /alfa sesion: la sesión de ahora en el chat.

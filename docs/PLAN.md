@@ -6,6 +6,53 @@ Estrategia acordada el 15/11/2026: construir todo y probarlo en el juego al fina
 
 **Estado del 16/11/2026:** los 11 módulos y el motor están construidos y en git. Todo junto da 473 archivos Lua en 40 carpetas sin errores de sintaxis, y los 12 módulos cargan juntos en la prueba de humo sin errores ni avisos. Cada módulo tiene su lista "Para verificar en el juego" en su `LEEME.md`. Siguiente paso: instalar con `tools/instalar.py --aplicar` (con WoW cerrado) y probar módulo por módulo.
 
+## Ruta de la 1.1.6 a la 1.2.0 (acordada el 18/11/2026)
+
+Sale de una revisión del código del 18/11. En cada versión va primero lo que reporten los jugadores; cada error del juego real se agrega antes al banco. Cada versión se publica sola (git, GitHub con zip e instalador, CurseForge y aviso en Discord).
+
+### 1.1.6 — Arreglos de raíz
+- [x] Seguir (La Jauría): destino persistente en `Nav.SetTarget` (hoy `stepMoved` lo borra al cambiar de paso) y no soltarse con `Nav.Hold` activo (camino al cadáver).
+- [x] `behavior.closeSkipped` del motor ya no cierra la ventana de una misión que Comodidades acaba de pedir.
+- [x] Barra de vuelo: `Maps.GetFlightFrame()` en lugar del global `AlfaFlightTimer` y el orden de `OnLogin`.
+- [x] Mazmorras: si falta `combatWarningsEnabled` pero existen las CVars hijas, los avisos no se quedan apagados.
+- [x] Fechas armadas por idioma (`Alfa_Inicio/Sesion.lua`): hoy el orden día/mes está fijo y zhTW sale al revés.
+- [x] Talentos: claves distintas para Protección (guerrero/paladín) y Restauración (druida/chamán); koKR las necesita.
+- [x] Alfa independiente: sin «Polestar Client», sin traducciones viejas que nombran a Polestar, sin `/pole`, README propio y Acerca de sin «construido sobre». Los avisos de licencia y créditos se quedan (GPL).
+
+### 1.1.7 — Mapa impecable, parte 1
+- [ ] Pines, etiquetas y tu posición ajustados al píxel físico, con tamaños enteros (`Alfa_Mundo/Marcas.lua`).
+- [ ] Texturas del mapa con `LINEAR` y `CLAMP` en vez de `TRILINEAR` (`Lienzo.lua`).
+- [ ] Medio texel de margen en cada `SetTexCoord` recortado.
+- [ ] Nivel de marco único por zona (sin parpadeo en fronteras).
+- [ ] Pruebas numéricas en el banco (tamaños enteros, medio texel, niveles únicos) y capturas de antes/después en el juego.
+
+### 1.1.8 — Mapa impecable, parte 2
+- [ ] Íconos TGA sin bordes negros (dilatar el color en los píxeles transparentes, `tools/iconos.py`).
+- [ ] Rampas `DETALLE`/`TERRENO` con menos capas encimadas; fundido de carga por región.
+- [ ] Recolección publica sus nodos en `Alfa.Pins` (`recoleccion.<tipo>`) para el mapa continuo.
+- [ ] El ticker del minimapa de Recolección se detiene cuando la capa está oculta.
+- [ ] Si hay arte de origen, máscaras de territorio de 512 o 1024.
+
+### 1.1.9 — Ensayo general de la 1.2.0
+- [ ] El buscador de Ajustes incluye Pesca, Comercio, Ruta, Bolsas, Combate, Curación, Lya y Estilo y sonido.
+- [ ] Bolsas usa `Search.Fold` del motor (cirílico y otros alfabetos).
+- [ ] Inicio usa `AlfaComercio` como ya lo hace Bolsas.
+- [ ] Un solo término: Calabozos o Mazmorras (decide Toxic).
+- [ ] Núcleo: `alComando(rest)` y `N.Repintar(id)`.
+- [ ] Banco: prueba de guardar, recargar y leer ajustes; migraciones que lean `schema`.
+
+### 1.2.0 — Ajustes en orden
+- [ ] Juntar Comodidades y Calidad de vida (chocan en misiones, errores, minimapa y vuelos).
+- [ ] Ajustes de misiones en un solo lugar (hoy en 6, contando la bienvenida).
+- [ ] Mudar la configuración de cada jugador (`schema = 2`, con el modelo de `migradoBuilds`).
+- [ ] Qué viene encendido de fábrica en Comodidades (decide Toxic).
+- [ ] Bienvenida y novedades que expliquen dónde quedó cada cosa; galería y anuncio nuevos.
+- [ ] Talentos, Raros, Personajes e Importar con `UI.HubKit` (si no cabe, 1.2.1).
+- [ ] Insignias de La Jauría (idea de Toxic, 18/11): una chapita discreta (solo visual) junto al nombre de quien es de la manada, en el cuadro del jugador, La Jauría y el mapa. Solo para ciertas personas, no para todos los que usan Alfa. Decidido: una lista de personajes (nombre-reino) dentro del addon que Toxic pasa y mantiene (opción 1), con permiso de cada persona para salir en la lista.
+- [ ] Mapa «en manada» (Toxic, 18/11): quien usa Alfa y comparte su ubicación (capa `manada.jauria` de `Alfa_Manada/Mapa.lua`, ya existe y es voluntaria) se ve con una huella pequeña de lobo, más chica que el pin de tu grupo; los de la lista de insignias llevan además su chapita. Sigue siendo voluntario: nadie aparece sin aceptar compartir.
+
+Decisiones pendientes de Toxic: Calabozos o Mazmorras; si Lya tutea o habla de usted en frFR y ruRU; qué de Comodidades viene encendido.
+
 ## Módulos
 
 | Módulo | Página (orden) | Qué hace |

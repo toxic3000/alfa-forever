@@ -369,7 +369,7 @@ M.PRIORIDADES = {
 			e(20473, L["Choque sagrado: daño instantáneo, cada vez que esté listo."], { recarga = true }),
 			P_SENTENCIA, P_EXORCISMO, P_CONSAGRAR,
 		} },
-		{ clave = "protection", nombre = L["Protección"], firma = { 20925 }, lista = {
+		{ clave = "protection", nombre = (L["Protección [paladín]"]:gsub(" %[.-%]$", "")), firma = { 20925 }, lista = {
 			e(25780, L["En grupo y aguantando: Furia justa te da más amenaza."], { sinBuff = true, enGrupo = true, sinObjetivo = true }),
 			P_SANTUARIO, P_PODERIO, P_RECTITUD, P_RECTITUD2, P_JUSTICIA, P_IMPOSICION,
 			e(20925, L["Te falta Escudo sagrado: bloqueas más."], { sinBuff = true, soloCombate = true, sinObjetivo = true }),
@@ -393,7 +393,7 @@ M.PRIORIDADES = {
 			e(17364, L["Ataque de tormenta: mucho daño, cada vez que esté listo."], { recarga = true }),
 			C_LLAMA, C_TIERRA, C_ABRASADOR, C_MAGMA,
 		} },
-		{ clave = "restoration", nombre = L["Restauración"], firma = { 16190, 16188 }, lista = {
+		{ clave = "restoration", nombre = (L["Restauración [chamán]"]:gsub(" %[.-%]$", "")), firma = { 16190, 16188 }, lista = {
 			C_RELAMPAGOS, C_LENGUA, C_MUERDE, C_CORTE, C_OLA_MENOR, C_OLA,
 			C_LLAMA, C_CADENA, C_ABRASADOR, C_MAGMA, C_TIERRA, C_RAYO,
 		} },

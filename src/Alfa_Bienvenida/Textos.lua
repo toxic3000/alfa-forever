@@ -303,6 +303,13 @@ M.EN = {
 	["Versión %s"] = "Version %s",
 	["¡Qué gusto verte de vuelta! Esto es lo que trae esta versión para ti y tu manada."] = "Great to see you back! Here's what this version brings for you and your pack.",
 	["Desde tu última visita también hubo cambios en %s: los ves en «Ver todo lo nuevo»."] = "Since your last visit there were also changes in %s: find them in \"See everything new\".",
+	-- Novedades 1.1.6
+	["Más firme y en tu idioma"] = "Steadier, and in your language",
+	["«Seguir» en La Jauría ya no se suelta cuando tu guía cambia de paso ni cuando vas por tu cuerpo: al terminar, la flecha vuelve con quien sigues."] = "\"Follow\" in La Jauría no longer lets go when your guide changes step or while you run back to your body: afterwards the arrow goes back to who you follow.",
+	["Aceptar todas las misiones ya no pierde una diaria porque la ventana se cerraba antes de tiempo."] = "Accepting every quest no longer misses a daily because the window closed too soon.",
+	["La barra de tu vuelo con sus paradas sale siempre al despegar."] = "Your flight bar with its stops always shows when you take off.",
+	["Mazmorras: los avisos de jefes que tu juego sí trae ya no salen apagados."] = "Dungeons: the boss warnings your game does have no longer show as off.",
+	["Ajustes de Alfa en todos los idiomas: las fechas en el orden de cada uno y los nombres de cada especialización bien puestos."] = "Alfa tweaks in every language: dates in each one's own order and every specialization's name right.",
 	-- Novedades 1.1.5
 	["Sin bloqueos y más claro"] = "No more blocks, and clearer",
 	["Se acabó el aviso «Alfa_Builds se ha bloqueado…»: la ventana de talentos, el clic para lanzar y el Legado ahora los abre el juego, y tus hechizos se lanzan sin problema desde el libro."] = "No more \"Alfa_Builds has been blocked…\": the talent window, click casting and the Legacy window are now opened by the game, and your spells cast fine from the spellbook.",

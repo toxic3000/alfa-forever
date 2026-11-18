@@ -42,6 +42,12 @@ function Av.Bool(nombre)
 	return v ~= nil and v ~= "0" and v ~= "" and v ~= "false"
 end
 
+-- Para lo que depende de otra opción: si el cliente no la tiene, no apaga a
+-- las que sí tiene (cuenta como prendida). 1.1.6.
+function Av.Activo(nombre)
+	return not Av.Existe(nombre) or Av.Bool(nombre)
+end
+
 function Av.Numero(nombre)
 	return tonumber(cvar(nombre) or "")
 end

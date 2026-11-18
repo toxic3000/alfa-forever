@@ -5,6 +5,7 @@ aparecer exactamente una vez; si no, la construccion se detiene para revisar a
 mano que cambio en Polestar.
 """
 import pathlib
+import re
 
 
 def _creditos(cfg):
@@ -28,10 +29,10 @@ ACERCA = [
      "Alfa es el todo en uno de La Jauría para WoW Forever: guías, mapa, bolsas, builds, pesca, comercio "
      "y tu manada, en un solo lugar y con un solo estilo."),
     ("Alfa doesn't claim to be the fastest guide, or the smoothest. It is a free alternative, and it gets better with time.",
-     "It is built on Polestar, the free and open-source leveling guide by The Polestar authors. "
-     "Alfa is free and open source too, under the GPL-3.0.",
-     "Está construido sobre Polestar, la guía libre y de código abierto de The Polestar authors. "
-     "Alfa también es libre y de código abierto, bajo la GPL-3.0."),
+     "Alfa is free and open source, under the GPL-3.0. The free projects it builds on are credited below, "
+     "in Credits and licenses.",
+     "Alfa es libre y de código abierto, bajo la GPL-3.0. Los proyectos libres en los que se apoya tienen "
+     "su crédito abajo, en Créditos y licencias."),
     ("Anyone can read the code, fix a step, sharpen a route or write a new guide, and contributions are welcome. "
      "The GPL keeps it that way: every copy and every fork stays open.",
      "Made by toxic3000 and La Jauría. Come play with the pack: our Discord is open to everyone.",
@@ -93,6 +94,60 @@ PARCHES = [
          '\t\t\t\tonClick = function() ns.SetHidden(false) ns.Fire("SHOW_OPTIONS", id) end }\n'
          '\t\tend\n'
          '\tend\n')),
+    # 1.1.6: Alfa es independiente: sin el comando corto de Polestar ni su
+    # sitio como pagina del modulo de navegacion.
+    ("Alfa/Core/Init.lua",
+     '\tSLASH_ALFA2 = "/pole"',
+     lambda c: '\t-- Alfa: solo /alfa (sin el comando corto de Polestar)'),
+    ("Alfa_Nav/Alfa_Nav.toc",
+     '## X-Website: https://github.com/fitzforge/polestar',
+     lambda c: '## X-Website: ' + c["urls"]["issues"].rsplit("/issues", 1)[0]),
+    # 1.1.6: un destino "persistente" (Seguir de La Jauria) no se suelta
+    # cuando la guia cambia de paso; Nav.KeepTarget lo marca.
+    ("Alfa/Nav/Nav.lua",
+     'function Nav.IsHeld()',
+     lambda c: (
+         '-- Alfa: el destino puesto sigue aunque la guia cambie de paso (Seguir de La Jauria).\r\n'
+         'function Nav.KeepTarget(t)\r\n'
+         '\tif t == nil or t ~= override then return false end\r\n'
+         '\tt.persistent = true\r\n'
+         '\treturn true\r\n'
+         'end\r\n'
+         '\r\n'
+         'function Nav.IsHeld()')),
+    ("Alfa/Nav/Nav.lua",
+     '\tif override == nil and not dismissed then return end',
+     lambda c: (
+         '\tif override and override.persistent then return end -- Alfa: Nav.KeepTarget\r\n'
+         '\tif override == nil and not dismissed then return end')),
+    # 1.1.6: cuando otro modulo de Alfa acaba de pedir algo en la ventana
+    # (Comodidades toma una diaria), "cerrar lo que la guia no toma" espera.
+    ("Alfa/Core/Automation.lua",
+     'local function mayClose()',
+     lambda c: (
+         '-- Alfa: otro modulo acaba de pedir algo en esta ventana; no se cierra un rato.\r\n'
+         'local keepUntil = 0\r\n'
+         'function Automation.Keep(seconds)\r\n'
+         '\tkeepUntil = (GetTime and GetTime() or 0) + (tonumber(seconds) or 2)\r\n'
+         'end\r\n'
+         'local function kept() return GetTime ~= nil and GetTime() < keepUntil end\r\n'
+         '\r\n'
+         'local function mayClose()')),
+    ("Alfa/Core/Automation.lua",
+     '\treturn ns.Get("behavior.closeSkipped") and not suppressed() and not ns.Compat.InCombat()',
+     lambda c: '\treturn ns.Get("behavior.closeSkipped") and not suppressed() and not ns.Compat.InCombat() and not kept()'),
+    # 1.1.6: la barra de vuelo para otros modulos, sin depender del global ni
+    # del orden de los OnLogin.
+    ("Alfa/Maps/FlightTimer.lua",
+     '-- Current state for other modules: toName, secondsLeft (nil when unknown), source.',
+     lambda c: (
+         '-- Alfa: el marco de la barra de vuelo (lo crea si aun no existe).\r\n'
+         'function Maps.GetFlightFrame()\r\n'
+         '\tbuildFrame()\r\n'
+         '\treturn frame\r\n'
+         'end\r\n'
+         '\r\n'
+         '-- Current state for other modules: toName, secondsLeft (nil when unknown), source.')),
 ] + [
     ("Alfa/UI/Options.lua", f'L["{viejo}"]', (lambda n: lambda c: f'L["{n}"]')(nuevo))
     for viejo, nuevo, _ in ACERCA
@@ -515,4 +570,50 @@ def aplicar(dist: pathlib.Path, cfg: dict) -> list:
             errores.append(f"{rel}: no existe")
             continue
         ruta.write_bytes(ruta.read_bytes() + extra.encode("utf-8"))
+    errores += limpiar(dist, cfg)
+    return errores
+
+
+# 1.1.6: Alfa es independiente. Los paquetes de idioma traen traducciones que
+# el codigo de Alfa ya no usa y que nombran a Polestar o a su programa
+# (Polestar Client): las comentadas ("-- L[...]") y las de Polestar Client.
+# Los avisos de autor y de licencia (LICENSE*, CREDITS, NOTICE-ALFA.txt,
+# Acerca de) se quedan: la GPL pide conservarlos.
+_SOBRANTE = re.compile(
+    r'^[ \t]*(?:--[ \t]*L\[[^\n]*(?:[Pp]olestar|/pole\b)[^\n]*|L\["[^\n]*Polestar Client[^\n]*)\r?\n', re.M)
+
+_README = """Alfa {version}
+El todo en uno de La Jauria para World of Warcraft: Forever. Hecho por toxic3000.
+
+Instalar
+- Lo facil: Instalar-Alfa.exe ({web}/releases/latest/download/Instalar-Alfa.exe).
+- A mano: con el juego cerrado, copia todas las carpetas Alfa* del zip en
+  World of Warcraft/_forever_/Interface/AddOns/ y vuelve a abrir el juego
+  (un /reload no carga carpetas nuevas).
+
+Codigo, reportes y versiones: {web}
+Discord de La Jauria: {discord}
+
+Licencia
+Alfa es software libre bajo la GNU General Public License, version 3 (LICENSE).
+Los creditos y avisos de autor de todo lo que usa estan en NOTICE-ALFA.txt,
+en la pagina "Acerca de" del juego y en los archivos LICENSE* y CREDITOS.md
+de cada carpeta.
+"""
+
+
+def limpiar(dist: pathlib.Path, cfg: dict) -> list:
+    errores = []
+    for ruta in sorted(dist.glob("Alfa_????/Interface.lua")):
+        texto = ruta.read_bytes().decode("latin-1")
+        nuevo = _SOBRANTE.sub("", texto)
+        if nuevo != texto:
+            ruta.write_bytes(nuevo.encode("latin-1"))
+    readme = dist / "Alfa" / "README.txt"
+    if readme.exists():
+        web = cfg["urls"]["issues"].rsplit("/issues", 1)[0]
+        readme.write_text(_README.format(version=cfg["version"], web=web, discord=cfg["urls"]["discord"]),
+                          encoding="utf-8", newline="\r\n")
+    else:
+        errores.append("Alfa/README.txt: no existe")
     return errores

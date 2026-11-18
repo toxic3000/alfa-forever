@@ -16,7 +16,7 @@ M.Clase({
 	especialidades = {
 		elemental = { nombre = L["Elemental"], indice = 1, icono = 16166, rol = "dps" },
 		enhancement = { nombre = L["Mejora"], indice = 2, icono = 425336, rol = "dps" },
-		restoration = { nombre = L["Restauración"], indice = 3, icono = 408521, rol = "sanador" },
+		restoration = { nombre = (L["Restauración [chamán]"]:gsub(" %[.-%]$", "")), indice = 3, icono = 408521, rol = "sanador" },
 	},
 	recomendados = { solo = "enhancement-solo-equilibrado" },
 	builds = {
@@ -85,7 +85,7 @@ M.Clase({
 		},
 		{
 			id = "restoration-solo-equilibrado", spec = "restoration", objetivo = "solo", estilo = "equilibrado", armas = "escudo",
-			titulo = L["Restauración para subir"],
+			titulo = (L["Restauración para subir [chamán]"]:gsub(" %[.-%]$", "")),
 			resumen = L["El sanador de los chamanes: curas en cadena y tótems que ayudan a todo el grupo."],
 			fuente = "motor",
 			talentos = {

@@ -62,9 +62,17 @@ local function dondeEsta(s)
 	return G.PosicionDe({ clave = s.clave })
 end
 
+-- Camino a tu cuerpo (Nav.Hold) la flecha muestra ese punto por encima de
+-- todo: seguir a alguien espera debajo y vuelve solo al soltarlo.
+local function retenida()
+	local Nav = nav()
+	return Nav and Nav.IsHeld and Nav.IsHeld() or false
+end
+
 local function tick()
 	local Nav = nav()
 	if not sig then return end
+	if retenida() then return end
 	if Nav.GetTarget() ~= sig.objetivo then
 		-- Otro destino tomó la flecha (un paso nuevo de la guía, un clic en el
 		-- mapa, "Volver a la guía"): se dice, salvo al llegar.
@@ -118,6 +126,8 @@ function S.A(fila)
 	end
 	local objetivo = Nav.SetTarget(map, x, y, s.nombre)
 	if type(objetivo) ~= "table" then return false end
+	-- Que un paso nuevo de la guía no le quite la flecha (1.1.6).
+	if Nav.KeepTarget then Nav.KeepTarget(objetivo) end
 	if Nav.StartTrip then Nav.StartTrip(objetivo, s.nombre, etiqueta(s.tipo)) end
 	if N.EmpezarRuta then N.EmpezarRuta() end -- cierra las ventanas de Alfa y muestra el seguimiento
 	s.objetivo = objetivo
@@ -138,7 +148,8 @@ function S.Parar(callado)
 	local t = sig.objetivo
 	if sig.ticker then sig.ticker:Cancel() end
 	sig = nil
-	if Nav and Nav.GetTarget and Nav.GetTarget() == t then
+	-- Retenida (camino a tu cuerpo) el destino de Seguir sigue debajo: también se suelta.
+	if Nav and Nav.GetTarget and (Nav.GetTarget() == t or retenida()) then
 		local trip = Nav.Trip and Nav.Trip()
 		if trip and trip.target == t and not callado then
 			Nav.EndTrip()
@@ -153,7 +164,7 @@ end
 -- A quién se sigue: { clave, nombre, tipo } o nil.
 -- (Si otro destino tomó la flecha ya no cuenta; el tick lo suelta y lo dice.)
 function S.Actual()
-	if sig and nav().GetTarget() ~= sig.objetivo then return nil end
+	if sig and not retenida() and nav().GetTarget() ~= sig.objetivo then return nil end
 	return sig
 end
 

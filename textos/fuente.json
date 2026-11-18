@@ -1583,6 +1583,10 @@
   "en": "Accept the guide's quests by themselves",
   "origen": "Alfa_Rutas"
  },
+ "Aceptar todas las misiones ya no pierde una diaria porque la ventana se cerraba antes de tiempo.": {
+  "en": "Accepting every quest no longer misses a daily because the window closed too soon.",
+  "origen": "Alfa_Bienvenida"
+ },
  "Aceptar y entregar": {
   "en": "Accept and turn in",
   "origen": "Alfa_Bienvenida"
@@ -1850,6 +1854,10 @@
  "Ajustes": {
   "en": "Settings",
   "origen": "Interfaz"
+ },
+ "Ajustes de Alfa en todos los idiomas: las fechas en el orden de cada uno y los nombres de cada especialización bien puestos.": {
+  "en": "Alfa tweaks in every language: dates in each one's own order and every specialization's name right.",
+  "origen": "Alfa_Bienvenida"
  },
  "Ajustes de Bolsas": {
   "en": "Bags settings",
@@ -11783,6 +11791,10 @@
   "en": "The fishing bar",
   "origen": "Alfa_Pesca"
  },
+ "La barra de tu vuelo con sus paradas sale siempre al despegar.": {
+  "en": "Your flight bar with its stops always shows when you take off.",
+  "origen": "Alfa_Bienvenida"
+ },
  "La barra de vida con el color de la clase de cada uno. Apagado: barra verde y el nombre con su color.": {
   "en": "The health bar in each member's class color. Off: a green bar and the name in their color.",
   "origen": "Alfa_Curacion"
@@ -14535,6 +14547,10 @@
   "en": "Dungeons and raids",
   "origen": "Alfa_Enciclopedia"
  },
+ "Mazmorras: los avisos de jefes que tu juego sí trae ya no salen apagados.": {
+  "en": "Dungeons: the boss warnings your game does have no longer show as off.",
+  "origen": "Alfa_Bienvenida"
+ },
  "Mazthoril es la guarida de los dragones azules, siempre atentos a quién usa la magia.": {
   "en": "Mazthoril is the lair of the blue dragons, always watching who uses magic.",
   "origen": "Alfa_Lya"
@@ -15330,6 +15346,10 @@
  "Más espacio en el banco": {
   "en": "More bank space",
   "origen": "Alfa_Bolsas"
+ },
+ "Más firme y en tu idioma": {
+  "en": "Steadier, and in your language",
+  "origen": "Alfa_Bienvenida"
  },
  "Más golpe crítico para todo lo que haces.": {
   "en": "More critical strike for everything you do.",
@@ -17883,7 +17903,15 @@
   "en": "Protection",
   "origen": "Alfa_Builds"
  },
+ "Protección [paladín]": {
+  "en": "Protection",
+  "origen": "Alfa_Builds"
+ },
  "Protección para subir": {
+  "en": "Leveling Protection",
+  "origen": "Alfa_Builds"
+ },
+ "Protección para subir [paladín]": {
   "en": "Leveling Protection",
   "origen": "Alfa_Builds"
  },
@@ -18795,7 +18823,15 @@
   "en": "Restoration",
   "origen": "Alfa_Builds"
  },
+ "Restauración [chamán]": {
+  "en": "Restoration",
+  "origen": "Alfa_Builds"
+ },
  "Restauración para subir": {
+  "en": "Leveling Restoration",
+  "origen": "Alfa_Builds"
+ },
+ "Restauración para subir [chamán]": {
   "en": "Leveling Restoration",
   "origen": "Alfa_Builds"
  },
@@ -24539,8 +24575,8 @@
   "en": "Sunday",
   "origen": "Alfa_Pesca"
  },
- "el %d/%d a las %s": {
-  "en": "on %d/%d at %s",
+ "el %s a las %s": {
+  "en": "on %s at %s",
   "origen": "Alfa_Inicio"
  },
  "el Martillo Crepuscular": {
@@ -25307,6 +25343,10 @@
   "en": "no longer obtainable",
   "origen": "Alfa_Enciclopedia"
  },
+ "{dia}/{mes}": {
+  "en": "{mes}/{dia}",
+  "origen": "Alfa_Inicio"
+ },
  "¡%d misiones entregadas hoy! Así se caza en manada.": {
   "en": "%d quests turned in today! That's how the pack hunts.",
   "origen": "Alfa_Lya"
@@ -25594,6 +25634,10 @@
  "«Prepárame» recoge solo las que ya puedes tomar y te lleva a la entrada.": {
   "en": "\"Get me ready\" picks up only the ones you can take now and takes you to the entrance.",
   "origen": "Alfa_Mazmorras"
+ },
+ "«Seguir» en La Jauría ya no se suelta cuando tu guía cambia de paso ni cuando vas por tu cuerpo: al terminar, la flecha vuelve con quien sigues.": {
+  "en": "\"Follow\" in La Jauría no longer lets go when your guide changes step or while you run back to your body: afterwards the arrow goes back to who you follow.",
+  "origen": "Alfa_Bienvenida"
  },
  "«Siempre» sirve si un amigo encantador te ayuda. Las tablas de desencantar son estimadas.": {
   "en": "\"Always\" is for when an enchanter friend helps you. The disenchanting tables are estimates.",

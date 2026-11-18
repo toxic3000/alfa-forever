@@ -229,7 +229,10 @@ A.OnLogin(function()
 	else
 		d.viaje = nil
 	end
-	local base = _G.AlfaFlightTimer -- Maps.CompactFrame del motor, creado al entrar
+	-- La barra de vuelo del motor (Maps.GetFlightFrame la crea si aún no existe,
+	-- así no depende del orden en que el juego corre los OnLogin; 1.1.6).
+	local Maps = A.Maps
+	local base = Maps and Maps.GetFlightFrame and Maps.GetFlightFrame() or _G.AlfaFlightTimer
 	if not (base and base.HookScript) then return end
 	construir(base)
 	base:HookScript("OnShow", function() M.Seguro(arrancar) end)
