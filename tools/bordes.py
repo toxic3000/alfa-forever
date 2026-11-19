@@ -19,6 +19,11 @@ RAIZ = pathlib.Path(__file__).resolve().parent.parent
 DESTINO = RAIZ / "src" / "Alfa_Mundo" / "Media" / "Borde"
 LADO = 64      # texeles de la máscara (potencia de dos)
 ANCHO = 0.22   # parte del mosaico que ocupa el difuminado de cada lado
+# El arte de un continente (1.2.2): su rectángulo trae su propio mar y, al
+# acercar, se pegaba sobre el mapa del mundo con la orilla recta. Se funde por
+# los cuatro lados, más angosto (casi todo su borde es mar).
+LADO_CONT = 256
+ANCHO_CONT = 0.07
 
 
 def suave(t):
@@ -26,8 +31,9 @@ def suave(t):
     return t * t * (3 - 2 * t)
 
 
-def valor(x, y, n):
+def valor(x, y, n, ancho=None):
     # x, y: el centro del texel en 0..1, y hacia abajo.
+    ANCHO = ancho or globals()["ANCHO"]
     a = 1.0
     if n & 1:
         a *= suave(y / ANCHO)          # norte: arriba
@@ -50,7 +56,14 @@ def main():
                 v = round(255 * valor((i + 0.5) / LADO, (j + 0.5) / LADO, n))
                 px[i, j] = (v, v, v, v)
         im.save(DESTINO / f"borde-{n}.tga")
-    print(f"OK {DESTINO.relative_to(RAIZ)}: 15 máscaras de {LADO} x {LADO}")
+    im = Image.new("RGBA", (LADO_CONT, LADO_CONT))
+    px = im.load()
+    for j in range(LADO_CONT):
+        for i in range(LADO_CONT):
+            v = round(255 * valor((i + 0.5) / LADO_CONT, (j + 0.5) / LADO_CONT, 15, ANCHO_CONT))
+            px[i, j] = (v, v, v, v)
+    im.save(DESTINO / "borde-continente.tga")
+    print(f"OK {DESTINO.relative_to(RAIZ)}: 15 máscaras de {LADO} x {LADO} y la del continente")
 
 
 if __name__ == "__main__":

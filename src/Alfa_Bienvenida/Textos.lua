@@ -307,6 +307,12 @@ M.EN = {
 	["El lobo te recibe al entrar"] = "The wolf greets you when you log in",
 	["Cada vez que entras al juego, la intro del lobo y la luna te da la bienvenida. Un clic o Esc la saltan."] = "Every time you log in, the wolf and moon intro welcomes you. A click or Esc skips it.",
 	["¡De vuelta en la manada, %s!"] = "Back with the pack, %s!",
+	-- Novedades 1.2.2
+	["Tu insignia de La Jauría en el borde de tu retrato, y en el de tu objetivo si la lleva."] = "Your La Jauría badge on the edge of your portrait, and on your target's if they have it.",
+	["Invita a tu clan con un clic, y arreglos"] = "Invite to your guild with one click, and fixes",
+	["Arreglos: «Cerrar mis misiones» vuelve a armar tu ruta, la ayuda de rotación vuelve a decirte qué usar y el mapa ya no muestra rectángulos pegados al acercar."] = "Fixes: \"Close my quests\" builds your route again, the rotation helper tells you what to use again and the map no longer shows pasted rectangles when zooming in.",
+	["Clic derecho en un jugador y «Invitar al clan»: eliges tu hermandad o tu comunidad y la invitación le llega sin escribir su nombre."] = "Right-click a player and \"Invite to guild or community\": pick your guild or community and the invitation reaches them without typing their name.",
+	["Solo salen los clanes donde puedes invitar, y Alfa te confirma en el chat a quién invitaste. Lo apagas en La Jauría > Invitar."] = "Only the places you can invite to show up, and Alfa confirms in chat who you invited. Turn it off in La Jauría > Invite.",
 	-- Novedades 1.2.1
 	["Tu camino en el mapa y un aullido nuevo"] = "Your way on the map and a new howl",
 	["Un mapa de una pieza: al acercar ya no se ven pedazos pegados, y el terreno se une sin rayas ni cuadros."] = "A map in one piece: zooming in no longer shows pieces stuck together, and the terrain joins with no lines or squares.",

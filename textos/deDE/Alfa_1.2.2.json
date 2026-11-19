@@ -1,0 +1,23 @@
+{
+ "Invitar al clan": "In Gilde oder Community einladen",
+ "hermandad": "Gilde",
+ "comunidad": "Community",
+ "Le enviaste a %s una invitación a %s.": "Du hast %s eine Einladung in %s geschickt.",
+ "No se pudo enviar la invitación a %s. Prueba desde la ventana de Hermandad y comunidades.": "Die Einladung an %s konnte nicht gesendet werden. Versuche es im Fenster „Gilde & Communitys“.",
+ "«Invitar al clan» en el clic derecho": "„In Gilde oder Community einladen“ per Rechtsklick",
+ "Clic derecho en un jugador (su retrato, su nombre en el chat o tu grupo) y elige tu hermandad o tu comunidad: la invitación le llega sin escribir su nombre.": "Rechtsklick auf einen Spieler (sein Porträt, sein Name im Chat oder deine Gruppe) und wähle deine Gilde oder Community: Die Einladung kommt an, ohne dass du den Namen tippen musst.",
+ "Clic derecho en un jugador y «Invitar al clan»: eliges tu hermandad o tu comunidad y la invitación le llega sin escribir su nombre.": "Rechtsklick auf einen Spieler und „In Gilde oder Community einladen“: Wähle deine Gilde oder Community, und die Einladung kommt an, ohne dass du den Namen tippen musst.",
+ "Solo salen los clanes donde puedes invitar, y Alfa te confirma en el chat a quién invitaste. Lo apagas en La Jauría > Invitar.": "Es erscheinen nur die Orte, in die du einladen darfst, und Alfa bestätigt im Chat, wen du eingeladen hast. Abschalten unter La Jauría > Einladen.",
+ "Invita a tu clan con un clic, y arreglos": "Lade deinen Clan mit einem Klick ein – und Korrekturen",
+ "Arreglos: «Cerrar mis misiones» vuelve a armar tu ruta, la ayuda de rotación vuelve a decirte qué usar y el mapa ya no muestra rectángulos pegados al acercar.": "Korrekturen: „Meine Quests abschließen“ erstellt deine Route wieder, die Rotationshilfe sagt dir wieder, was du nutzen sollst, und die Karte zeigt beim Zoomen keine aufgeklebten Rechtecke mehr.",
+ "Tu plan se quedó sin paso. Seguir lo vuelve a armar con las misiones que tienes ahora.": "Dein Plan hat keinen Schritt mehr. Folgen erstellt ihn mit deinen aktuellen Quests neu.",
+ "Tu insignia en los retratos": "Dein Abzeichen an den Porträts",
+ "Quien lleva la insignia de La Jauría la luce en el borde de su retrato: en el tuyo, el de tu objetivo y el de tu foco.": "Wer das Abzeichen von La Jauría trägt, zeigt es am Rand seines Porträts: deinem, dem deines Ziels und dem deines Fokus.",
+ "El enlace del Discord ya está elegido: cópialo con Ctrl+C y pégalo en tu navegador.": "Der Discord-Link ist markiert: Kopiere ihn mit Strg+C und füge ihn in deinen Browser ein.",
+ "Guardaste tu sesión de pesca y empezaste otra.": "Du hast deine Angelsitzung gespeichert und eine neue begonnen.",
+ "Tu sesión de pesca ya estaba vacía: la nueva empieza con tu primer lanzamiento.": "Deine Angelsitzung war schon leer: Die neue beginnt mit deinem ersten Auswurf.",
+ "Tus marcos de combate volvieron a su lugar de siempre.": "Deine Kampffenster sind wieder an ihrem gewohnten Platz.",
+ "Las explicaciones vuelven a salir.": "Die Erklärungen werden wieder angezeigt.",
+ "No había explicaciones calladas: ya salen todas.": "Es waren keine Erklärungen stummgeschaltet: Alle werden schon angezeigt.",
+ "Tu insignia de La Jauría en el borde de tu retrato, y en el de tu objetivo si la lleva.": "Dein Abzeichen von La Jauría am Rand deines Porträts – und an dem deines Ziels, wenn es eines trägt."
+}

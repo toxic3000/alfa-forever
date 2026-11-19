@@ -353,7 +353,13 @@ local function grupos(ui, padre)
 
 	local datos = K.GrupoAjustes(padre, { titulo = L["Tus datos"] })
 	datos:Fila({ titulo = L["Empezar otra sesión"], texto = L["La de ahora pasa a tus sesiones anteriores."],
-		control = function(fila) return K.Boton(fila, L["Empezar otra"], function() M.NuevaSesion() end, { tipo = "secundario", tam = "chico" }) end })
+		control = function(fila) return K.Boton(fila, L["Empezar otra"], function()
+			local s = M.Sesion and M.Sesion()
+			local habia = type(s) == "table" and ((tonumber(s.lanzamientos) or 0) + (tonumber(s.capturas) or 0)) > 0
+			M.NuevaSesion()
+			-- 1.2.2: se dice qué pasó (con la sesión vacía no cambiaba nada a la vista).
+			N.Imprimir(habia and L["Guardaste tu sesión de pesca y empezaste otra."] or L["Tu sesión de pesca ya estaba vacía: la nueva empieza con tu primer lanzamiento."])
+		end, { tipo = "secundario", tam = "chico" }) end })
 	datos:Fila({ titulo = L["Borrar todo el registro"], texto = L["Sesiones, diario, logros y metas de este personaje. No se puede deshacer."],
 		control = function(fila)
 			return K.Boton(fila, L["Borrar"], function()

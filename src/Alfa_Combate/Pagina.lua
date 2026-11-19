@@ -412,7 +412,10 @@ local function grupos(padre)
 	local fuente = plegada({ titulo = L["Usar siempre la prioridad de Alfa"], hija = true, activa = si("rotacion"), control = interruptor("prioridadAlfa"),
 		texto = L["Aunque el juego ofrezca la ayuda de Blizzard, sugiere con la prioridad de Alfa para tu clase."] })
 	g1:Fila({ titulo = L["Volver a su lugar"], texto = L["Tus marcos de combate vuelven a su lugar de siempre."],
-		control = function(fila) return K.Boton(fila, L["Devolver"], function() M.ReiniciarPosiciones() end, { tipo = "secundario", tam = "chico" }) end })
+		control = function(fila) return K.Boton(fila, L["Devolver"], function()
+			M.ReiniciarPosiciones()
+			N.Imprimir(L["Tus marcos de combate volvieron a su lugar de siempre."])
+		end, { tipo = "secundario", tam = "chico" }) end })
 
 	local g2 = K.GrupoAjustes(padre, { titulo = L["Avisos, golpe y estadísticas"] })
 	g2:Fila({ titulo = L["Avisos de reacción"], control = interruptor("avisos"),
@@ -429,7 +432,11 @@ local function grupos(padre)
 		return t
 	end
 	local expl = g2:Fila({ titulo = L["Explicaciones"], texto = textoExplicaciones(),
-		control = function(fila) return K.Boton(fila, L["Volver a mostrarlas"], function() M.ReiniciarTextos() end, { tipo = "secundario", tam = "chico" }) end })
+		control = function(fila) return K.Boton(fila, L["Volver a mostrarlas"], function()
+			local n = M.TextosCallados()
+			M.ReiniciarTextos()
+			N.Imprimir(n > 0 and L["Las explicaciones vuelven a salir."] or L["No había explicaciones calladas: ya salen todas."])
+		end, { tipo = "secundario", tam = "chico" }) end })
 	local golpe = g2:Fila({ titulo = L["Barra de golpe"], control = interruptor("golpe"),
 		texto = L["Cuánto falta para tu siguiente golpe automático, con cada mano. Ayuda a meter Embate o Golpe heroico sin perder golpes."] })
 	local golpeN = g2:Fila({ titulo = L["Segundos junto a la barra"], control = interruptor("golpeNumero"), hija = true, activa = si("golpe"),

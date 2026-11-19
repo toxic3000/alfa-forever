@@ -678,7 +678,19 @@ local function armarContinente(cont)
 	f:SetPoint("TOPLEFT", lienzo, "TOPLEFT", 0, 0)
 	f:SetSize(1, 1)
 	contArte[cont] = f
-	mosaicos(f, cont, l * W, t * H, (r - l) * W, (b - t) * H, nil, 0)
+	-- Sus cuatro orillas se funden con el mapa del mundo de abajo (1.2.2): el
+	-- rectángulo trae su propio mar y se veía pegado, con la orilla recta.
+	-- Una sola máscara del tamaño del continente para todos sus pedazos.
+	local x, y, w, h = l * W, t * H, (r - l) * W, (b - t) * H
+	local mk
+	if f.CreateMaskTexture then
+		mk = f:CreateMaskTexture()
+		mk:SetTexture(BORDES .. "continente", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+		mk:SetSize(w, h)
+		mk:SetPoint("TOPLEFT", f, "TOPLEFT", x, -y)
+		f.amMascara = mk
+	end
+	mosaicos(f, cont, x, y, w, h, mk, 0)
 end
 
 function Lz.Crear(padre)

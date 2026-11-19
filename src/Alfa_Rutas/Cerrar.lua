@@ -566,6 +566,10 @@ function Cr.Ahora(filtro, alListo)
 			if alListo then alListo(false) end
 			return
 		end
+		-- Pedido con un clic: empieza limpio, sin los pasos que omitiste en
+		-- un plan anterior (Guias.Olvidar). El rearmado solo (Cr.Actualizar)
+		-- sí conserva lo hecho.
+		M.Guias.Olvidar(def.id)
 		local ok = M.Guias.Instalar(def)
 		if not ok then
 			M.Aviso(L["No armé el plan"], L["El motor no aceptó la guía."], { icono = "ic-aviso", tono = "aviso" })

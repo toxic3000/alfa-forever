@@ -1,5 +1,27 @@
 # Cambios de Alfa
 
+## 1.2.2 — Invita a tu clan con un clic, y arreglos (18/11/2026)
+
+**Español**
+- Nuevo: «Invitar al clan» en el clic derecho de un jugador. Haz clic derecho en su retrato, en su nombre en el chat, en alguien de tu grupo o banda, o en la lista de una comunidad, y elige tu hermandad o tu comunidad: la invitación le llega sin escribir su nombre.
+- Solo aparecen los clanes donde de verdad puedes invitar: tu hermandad si tu rango lo permite (y la persona aún no es de ella), y tus comunidades de WoW donde tienes permiso. Si no hay ninguno, la opción no sale.
+- Alfa te confirma en el chat a quién invitaste y a dónde. Lo apagas en La Jauría > Invitar.
+- Nuevo: la insignia de La Jauría en el borde del retrato. Quien la lleva la luce en su marco, en el de su objetivo y en el de su foco, con el aro dorado (Alfa) o verde (Jauría). Lo apagas en La Jauría > Invitar.
+- Arreglo: «Cerrar mis misiones» ya arma tu ruta. Los pasos que omitías en un plan se quedaban omitidos en los siguientes, y el plan podía quedar sin nada que seguir (le dabas a Seguir y no pasaba nada) o con un solo paso al ponerse al día. Ahora cada plan que pides empieza limpio, te lleva a terminar las misiones a medias y luego a entregarlas. Si el tuyo estaba atorado, se arregla solo al entrar.
+- Arreglo: la ayuda de rotación vuelve a decirte qué habilidades usar. En combate, la ayuda de Blizzard llega oculta en Forever y Alfa solo podía poner un ícono suelto, sin las que siguen ni el porqué. Ahora usa la prioridad de Alfa para tu clase, y si eliges la de Blizzard y esa no dice nada, Alfa entra en su lugar.
+- Arreglo: el mapa de Alfa ya no muestra el dibujo de cada continente como un rectángulo pegado al acercar: sus orillas se funden con el mapa del mundo.
+- Revisamos los más de 500 botones de Alfa, uno por uno. Ninguno daba error, y los que no se notaban ahora dicen qué hicieron: «Probar» de los avisos sale aunque haya otro aviso, el enlace del Discord dice cómo copiarlo, y «Empezar otra» de Pesca y «Devolver» y «Volver a mostrarlas» de Combate avisan en el chat. La prueba de cada versión ahora clica todos los botones.
+
+**English**
+- New: "Invite to guild or community" on a player's right-click menu. Right-click their portrait, their name in chat, someone in your group or raid, or a community's roster, and pick your guild or community: the invitation reaches them without typing their name.
+- Only the places you can actually invite to show up: your guild if your rank allows it (and they aren't in it yet), and your WoW communities where you have permission. If there are none, the option doesn't appear.
+- Alfa confirms in chat who you invited and where. Turn it off in La Jauría > Invite.
+- New: the La Jauría badge on the edge of the portrait. Whoever has it shows it on their frame, their target's and their focus's, with a gold (Alpha) or green (Pack) ring. Turn it off in La Jauría > Invite.
+- Fix: "Close my quests" builds your route again. Steps you skipped in one plan stayed skipped in the next ones, so the plan could end up with nothing to follow (pressing Follow did nothing) or with a single step when it updated. Now every plan you ask for starts clean, takes you to finish the quests in progress and then to hand them in. If yours was stuck, it fixes itself when you log in.
+- Fix: the rotation helper tells you which abilities to use again. In combat, Blizzard's assisted combat comes hidden on Forever and Alfa could only show a lone icon, with no next abilities and no reason. Now it uses Alfa's priority for your class, and if you choose Blizzard's and it suggests nothing, Alfa steps in.
+- Fix: Alfa's map no longer shows each continent's painting as a pasted rectangle when zooming in: its edges blend into the world map.
+- We went through Alfa's 500+ buttons one by one. None of them errored, and the ones you couldn't notice now say what they did: the notices' "Test" shows even with another notice up, the Discord link says how to copy it, and Fishing's "Start another" and Combat's "Put back" and "Show them again" confirm in chat. Each release's test now clicks every button.
+
 ## 1.2.1 — Tu camino en el mapa y un aullido nuevo (18/11/2026)
 
 **Español**

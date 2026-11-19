@@ -2915,6 +2915,10 @@
   "en": "Drag a bag here to equip it.",
   "origen": "Alfa_Bolsas"
  },
+ "Arreglos: «Cerrar mis misiones» vuelve a armar tu ruta, la ayuda de rotación vuelve a decirte qué usar y el mapa ya no muestra rectángulos pegados al acercar.": {
+  "en": "Fixes: \"Close my quests\" builds your route again, the rotation helper tells you what to use again and the map no longer shows pasted rectangles when zooming in.",
+  "origen": "Alfa_Bienvenida"
+ },
  "Arriba de la ventana, cada bolsa equipada con su espacio: pasa el ratón para resaltar lo que lleva y arrastra otra bolsa para cambiarla.": {
   "en": "At the top of the window, each equipped bag with its space: hover to highlight what it holds and drag another bag to swap it.",
   "origen": "Alfa_Bolsas"
@@ -4518,6 +4522,14 @@
  "Clic derecho (o Mayús+clic): un marcador ahí. Ctrl+clic: la flecha y la ruta te llevan ahí sin guardar nada.": {
   "en": "Right-click (or Shift-click): a marker there. Ctrl-click: the arrow and the route take you there without saving anything.",
   "origen": "Alfa_Mundo"
+ },
+ "Clic derecho en un jugador (su retrato, su nombre en el chat o tu grupo) y elige tu hermandad o tu comunidad: la invitación le llega sin escribir su nombre.": {
+  "en": "Right-click a player (their portrait, their name in chat or your group) and pick your guild or community: the invitation reaches them without typing their name.",
+  "origen": "Alfa_Manada"
+ },
+ "Clic derecho en un jugador y «Invitar al clan»: eliges tu hermandad o tu comunidad y la invitación le llega sin escribir su nombre.": {
+  "en": "Right-click a player and \"Invite to guild or community\": pick your guild or community and the invitation reaches them without typing their name.",
+  "origen": "Alfa_Bienvenida"
  },
  "Clic derecho: dejarla sin acción.": {
   "en": "Right-click: leave it empty.",
@@ -7110,6 +7122,10 @@
  "El enemigo está por caer: drénale el alma y gana un fragmento.": {
   "en": "The enemy is about to fall: drain its soul and gain a shard.",
   "origen": "Alfa_Combate"
+ },
+ "El enlace del Discord ya está elegido: cópialo con Ctrl+C y pégalo en tu navegador.": {
+  "en": "The Discord link is selected: copy it with Ctrl+C and paste it in your browser.",
+  "origen": "Alfa_Manada"
  },
  "El entrenador de oficio más cercano": {
   "en": "The nearest profession trainer",
@@ -10723,6 +10739,10 @@
   "en": "You stored %d items in the bank.",
   "origen": "Alfa_Bolsas"
  },
+ "Guardaste tu sesión de pesca y empezaste otra.": {
+  "en": "You saved your fishing session and started another.",
+  "origen": "Alfa_Pesca"
+ },
  "Guardianes enemigos": {
   "en": "Enemy guardians",
   "origen": "Alfa_Vista"
@@ -11423,6 +11443,10 @@
   "en": "Intimidation: your pet stuns the enemy.",
   "origen": "Alfa_Combate"
  },
+ "Invita a tu clan con un clic, y arreglos": {
+  "en": "Invite to your guild with one click, and fixes",
+  "origen": "Alfa_Bienvenida"
+ },
  "Invitaciones a hermandades": {
   "en": "Guild invites",
   "origen": "Alfa_Bienvenida"
@@ -11433,6 +11457,10 @@
  },
  "Invitar": {
   "en": "Invite",
+  "origen": "Alfa_Manada"
+ },
+ "Invitar al clan": {
+  "en": "Invite to guild or community",
   "origen": "Alfa_Manada"
  },
  "Invitar al grupo": {
@@ -12591,6 +12619,10 @@
   "en": "The dwarves' excavations woke up the troggs, and now Thelsamar has to watch out for them.",
   "origen": "Alfa_Lya"
  },
+ "Las explicaciones vuelven a salir.": {
+  "en": "The explanations show again.",
+  "origen": "Alfa_Combate"
+ },
  "Las flores cantoras corrompidas de Frondavil se pueden purificar; al hacerlo te dan una bendición que dura un buen rato.": {
   "en": "Felwood's corrupted songflowers can be cleansed; doing so grants you a blessing that lasts a good while.",
   "origen": "Alfa_Lya"
@@ -12786,6 +12818,10 @@
  "Lavanda": {
   "en": "Lavender",
   "origen": "Alfa_Mundo"
+ },
+ "Le enviaste a %s una invitación a %s.": {
+  "en": "You sent %s an invitation to %s.",
+  "origen": "Alfa_Manada"
  },
  "Lechúcico": {
   "en": "Moonkin",
@@ -16003,6 +16039,10 @@
   "en": "Don't spend everything on gear: learning to ride at level 40 is the best investment along the way.",
   "origen": "Alfa_Lya"
  },
+ "No había explicaciones calladas: ya salen todas.": {
+  "en": "No explanations were muted: they all show already.",
+  "origen": "Alfa_Combate"
+ },
  "No hay bancos de peces conocidos en esta zona: aquí se pesca en aguas abiertas.": {
   "en": "No known fishing pools in this zone: here you fish in open water.",
   "origen": "Alfa_Pesca"
@@ -16210,6 +16250,10 @@
  "No se pudo comprar: %s": {
   "en": "Couldn't buy: %s",
   "origen": "Alfa_Builds"
+ },
+ "No se pudo enviar la invitación a %s. Prueba desde la ventana de Hermandad y comunidades.": {
+  "en": "Couldn't send the invitation to %s. Try from the Guild & Communities window.",
+  "origen": "Alfa_Manada"
  },
  "No se pudo leer el escaneo. Intenta de nuevo más tarde.": {
   "en": "The scan couldn't be read. Try again later.",
@@ -18319,6 +18363,10 @@
   "en": "New installs come with class colors, the tooltip, the dressing room, the minimap and the bars in Alfa's style already on.",
   "origen": "Alfa_Bienvenida"
  },
+ "Quien lleva la insignia de La Jauría la luce en el borde de su retrato: en el tuyo, el de tu objetivo y el de tu foco.": {
+  "en": "Whoever has the La Jauría badge shows it on the edge of their portrait: yours, your target's and your focus's.",
+  "origen": "Alfa_Manada"
+ },
  "Quien repara tu equipo": {
   "en": "Someone who repairs your gear",
   "origen": "Alfa_Rutas"
@@ -20298,6 +20346,10 @@
  "Solo puedes tener dos principales a la vez; las secundarias son libres. Se aprenden con su entrenador en las ciudades.": {
   "en": "You can only have two main ones at a time; secondary ones are free. You learn them from their trainer in the cities.",
   "origen": "Alfa_Builds"
+ },
+ "Solo salen los clanes donde puedes invitar, y Alfa te confirma en el chat a quién invitaste. Lo apagas en La Jauría > Invitar.": {
+  "en": "Only the places you can invite to show up, and Alfa confirms in chat who you invited. Turn it off in La Jauría > Invite.",
+  "origen": "Alfa_Bienvenida"
  },
  "Solo se admite la versión 1 de la cadena de escala.": {
   "en": "Only version 1 of the scale string is supported.",
@@ -22339,6 +22391,14 @@
   "en": "Your history",
   "origen": "Alfa_Recoleccion"
  },
+ "Tu insignia de La Jauría en el borde de tu retrato, y en el de tu objetivo si la lleva.": {
+  "en": "Your La Jauría badge on the edge of your portrait, and on your target's if they have it.",
+  "origen": "Alfa_Bienvenida"
+ },
+ "Tu insignia en los retratos": {
+  "en": "Your badge on portraits",
+  "origen": "Alfa_Manada"
+ },
  "Tu instalación está mezclada o incompleta (%s). Cierra el juego, borra todas las carpetas de Alfa en Interface/AddOns e instala Alfa de nuevo con la app de CurseForge o el zip más reciente (no \"Source code\").": {
   "en": "Your install is mixed or incomplete (%s). Close the game, delete every Alfa folder in Interface/AddOns and install Alfa again with the CurseForge app or the latest zip (not \"Source code\").",
   "origen": "Interfaz"
@@ -22523,6 +22583,10 @@
   "en": "Your plan has no goals yet",
   "origen": "Alfa_Rutas"
  },
+ "Tu plan se quedó sin paso. Seguir lo vuelve a armar con las misiones que tienes ahora.": {
+  "en": "Your plan ran out of steps. Follow builds it again with the quests you have now.",
+  "origen": "Alfa_Inicio"
+ },
  "Tu posición en la parte de abajo del minimapa.": {
   "en": "Your position at the bottom of the minimap.",
   "origen": "Alfa_Mundo"
@@ -22662,6 +22726,10 @@
  "Tu sesión de ahora": {
   "en": "Your current session",
   "origen": "Alfa_Inicio"
+ },
+ "Tu sesión de pesca ya estaba vacía: la nueva empieza con tu primer lanzamiento.": {
+  "en": "Your fishing session was already empty: the new one starts with your first cast.",
+  "origen": "Alfa_Pesca"
  },
  "Tu sesión, tu diario, recordatorios y tu siguiente paso, con el color de tu clase.": {
   "en": "Your session, your journal, reminders and your next step, in your class's colour.",
@@ -22930,6 +22998,10 @@
  "Tus marcadores también en el minimapa, cuando estás cerca.": {
   "en": "Your markers on the minimap too, when you are close.",
   "origen": "Alfa_Mundo"
+ },
+ "Tus marcos de combate volvieron a su lugar de siempre.": {
+  "en": "Your combat frames went back to their usual place.",
+  "origen": "Alfa_Combate"
  },
  "Tus marcos de combate vuelven a su lugar de siempre.": {
   "en": "Your combat frames go back to their usual spot.",
@@ -24731,6 +24803,10 @@
   "en": "completed once",
   "origen": "Alfa_Mazmorras"
  },
+ "comunidad": {
+  "en": "community",
+  "origen": "Alfa_Manada"
+ },
  "común": {
   "en": "common",
   "origen": "Alfa_Bolsas"
@@ -24906,6 +24982,10 @@
  "hecho por otro personaje": {
   "en": "done by another character",
   "origen": "Alfa_Enciclopedia"
+ },
+ "hermandad": {
+  "en": "guild",
+  "origen": "Alfa_Manada"
  },
  "hoy": {
   "en": "today",
@@ -25882,6 +25962,10 @@
  "«Igual que Alfa» sigue el estilo de Ajustes > Apariencia y cambia con él.": {
   "en": "\"Same as Alfa\" follows the style in Settings > Appearance and changes with it.",
   "origen": "Alfa_Comodidades"
+ },
+ "«Invitar al clan» en el clic derecho": {
+  "en": "\"Invite to guild or community\" on right-click",
+  "origen": "Alfa_Manada"
  },
  "«Prepárame» recoge solo las que ya puedes tomar y te lleva a la entrada.": {
   "en": "\"Get me ready\" picks up only the ones you can take now and takes you to the entrance.",

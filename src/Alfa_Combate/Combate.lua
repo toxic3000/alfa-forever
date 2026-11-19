@@ -39,7 +39,10 @@ local type, pairs, ipairs, pcall, floor, max, tonumber = type, pairs, ipairs, pc
 M.AJUSTES = {
 	-- Rotación
 	rotacion = true,      -- el ícono con la siguiente habilidad
-	prioridadAlfa = false, -- siempre la prioridad de Alfa, aunque el juego ofrezca la de Blizzard
+	-- La prioridad de Alfa antes que la ayuda de Blizzard (1.2.2: de fábrica;
+	-- en combate Forever da la de Blizzard "secreta" y sin las que siguen ni
+	-- el porqué). Apagado: la de Blizzard cuando el juego la ofrece.
+	prioridadAlfa = true,
 	despues = 2,          -- cuántas habilidades después (0 a 3)
 	fuera = true,         -- también fuera de combate, con un enemigo elegido
 	alfaFuera = 0.45,     -- opacidad fuera de combate

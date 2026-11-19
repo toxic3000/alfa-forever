@@ -1,0 +1,23 @@
+{
+ "Invitar al clan": "Convidar para a guilda ou comunidade",
+ "hermandad": "guilda",
+ "comunidad": "comunidade",
+ "Le enviaste a %s una invitación a %s.": "Você enviou a %s um convite para %s.",
+ "No se pudo enviar la invitación a %s. Prueba desde la ventana de Hermandad y comunidades.": "Não foi possível enviar o convite a %s. Tente pela janela Guilda e Comunidades.",
+ "«Invitar al clan» en el clic derecho": "“Convidar para a guilda ou comunidade” no clique direito",
+ "Clic derecho en un jugador (su retrato, su nombre en el chat o tu grupo) y elige tu hermandad o tu comunidad: la invitación le llega sin escribir su nombre.": "Clique com o botão direito em um jogador (o retrato, o nome no bate-papo ou seu grupo) e escolha sua guilda ou comunidade: o convite chega sem digitar o nome.",
+ "Clic derecho en un jugador y «Invitar al clan»: eliges tu hermandad o tu comunidad y la invitación le llega sin escribir su nombre.": "Clique com o botão direito em um jogador e “Convidar para a guilda ou comunidade”: escolha sua guilda ou comunidade e o convite chega sem digitar o nome.",
+ "Solo salen los clanes donde puedes invitar, y Alfa te confirma en el chat a quién invitaste. Lo apagas en La Jauría > Invitar.": "Só aparecem os lugares onde você pode convidar, e o Alfa confirma no bate-papo quem você convidou. Desative em La Jauría > Convidar.",
+ "Invita a tu clan con un clic, y arreglos": "Convide para o seu clã com um clique, e correções",
+ "Arreglos: «Cerrar mis misiones» vuelve a armar tu ruta, la ayuda de rotación vuelve a decirte qué usar y el mapa ya no muestra rectángulos pegados al acercar.": "Correções: “Concluir minhas missões” volta a montar sua rota, a ajuda de rotação volta a dizer o que usar e o mapa não mostra mais retângulos colados ao aproximar.",
+ "Tu plan se quedó sin paso. Seguir lo vuelve a armar con las misiones que tienes ahora.": "Seu plano ficou sem passo. Seguir o monta de novo com as missões que você tem agora.",
+ "Tu insignia en los retratos": "Seu emblema nos retratos",
+ "Quien lleva la insignia de La Jauría la luce en el borde de su retrato: en el tuyo, el de tu objetivo y el de tu foco.": "Quem tem o emblema de La Jauría o exibe na borda do retrato: no seu, no do seu alvo e no do seu foco.",
+ "El enlace del Discord ya está elegido: cópialo con Ctrl+C y pégalo en tu navegador.": "O link do Discord já está selecionado: copie com Ctrl+C e cole no seu navegador.",
+ "Guardaste tu sesión de pesca y empezaste otra.": "Você salvou sua sessão de pesca e começou outra.",
+ "Tu sesión de pesca ya estaba vacía: la nueva empieza con tu primer lanzamiento.": "Sua sessão de pesca já estava vazia: a nova começa no seu primeiro lançamento.",
+ "Tus marcos de combate volvieron a su lugar de siempre.": "Seus quadros de combate voltaram ao lugar de sempre.",
+ "Las explicaciones vuelven a salir.": "As explicações voltam a aparecer.",
+ "No había explicaciones calladas: ya salen todas.": "Não havia explicações silenciadas: todas já aparecem.",
+ "Tu insignia de La Jauría en el borde de tu retrato, y en el de tu objetivo si la lleva.": "Seu emblema de La Jauría na borda do seu retrato, e no do seu alvo se ele tiver."
+}

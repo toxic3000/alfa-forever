@@ -84,6 +84,18 @@ M.EN = {
 	["Ver menos"] = "See less",
 	["Invitar"] = "Invite",
 	["Invitar al grupo"] = "Invite to group",
+
+	-- Invitar al clan (1.2.2)
+	["Invitar al clan"] = "Invite to guild or community",
+	["El enlace del Discord ya está elegido: cópialo con Ctrl+C y pégalo en tu navegador."] = "The Discord link is selected: copy it with Ctrl+C and paste it in your browser.",
+	["hermandad"] = "guild",
+	["comunidad"] = "community",
+	["Tu insignia en los retratos"] = "Your badge on portraits",
+	["Quien lleva la insignia de La Jauría la luce en el borde de su retrato: en el tuyo, el de tu objetivo y el de tu foco."] = "Whoever has the La Jauría badge shows it on the edge of their portrait: yours, your target's and your focus's.",
+	["Le enviaste a %s una invitación a %s."] = "You sent %s an invitation to %s.",
+	["No se pudo enviar la invitación a %s. Prueba desde la ventana de Hermandad y comunidades."] = "Couldn't send the invitation to %s. Try from the Guild & Communities window.",
+	["«Invitar al clan» en el clic derecho"] = "\"Invite to guild or community\" on right-click",
+	["Clic derecho en un jugador (su retrato, su nombre en el chat o tu grupo) y elige tu hermandad o tu comunidad: la invitación le llega sin escribir su nombre."] = "Right-click a player (their portrait, their name in chat or your group) and pick your guild or community: the invitation reaches them without typing their name.",
 	["Invitaste a %s a tu grupo."] = "You invited %s to your group.",
 
 	-- El clan

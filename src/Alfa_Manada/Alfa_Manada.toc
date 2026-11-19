@@ -12,10 +12,12 @@ Textos.lua
 Clan.lua
 Util.lua
 Insignias.lua
+Retrato.lua
 Canal.lua
 Red.lua
 Gente.lua
 Seguir.lua
+Invitar.lua
 Mapa.lua
 Pagina.lua
 Manada.lua

@@ -1,0 +1,23 @@
+{
+ "Invitar al clan": "Пригласить в гильдию или сообщество",
+ "hermandad": "гильдия",
+ "comunidad": "сообщество",
+ "Le enviaste a %s una invitación a %s.": "Вы отправили игроку %s приглашение в %s.",
+ "No se pudo enviar la invitación a %s. Prueba desde la ventana de Hermandad y comunidades.": "Не удалось отправить приглашение игроку %s. Попробуйте через окно «Гильдия и сообщества».",
+ "«Invitar al clan» en el clic derecho": "«Пригласить в гильдию или сообщество» по правому клику",
+ "Clic derecho en un jugador (su retrato, su nombre en el chat o tu grupo) y elige tu hermandad o tu comunidad: la invitación le llega sin escribir su nombre.": "Щёлкните правой кнопкой по игроку (по портрету, имени в чате или в вашей группе) и выберите гильдию или сообщество: приглашение придёт без ввода имени.",
+ "Clic derecho en un jugador y «Invitar al clan»: eliges tu hermandad o tu comunidad y la invitación le llega sin escribir su nombre.": "Правый клик по игроку и «Пригласить в гильдию или сообщество»: выберите гильдию или сообщество, и приглашение придёт без ввода имени.",
+ "Solo salen los clanes donde puedes invitar, y Alfa te confirma en el chat a quién invitaste. Lo apagas en La Jauría > Invitar.": "Показываются только те места, куда вы можете приглашать, а Alfa подтверждает в чате, кого вы пригласили. Отключается в La Jauría > Пригласить.",
+ "Invita a tu clan con un clic, y arreglos": "Приглашайте в клан одним щелчком — и исправления",
+ "Arreglos: «Cerrar mis misiones» vuelve a armar tu ruta, la ayuda de rotación vuelve a decirte qué usar y el mapa ya no muestra rectángulos pegados al acercar.": "Исправления: «Закрыть мои задания» снова строит маршрут, помощник ротации снова подсказывает, что использовать, а карта при приближении больше не показывает наклеенные прямоугольники.",
+ "Tu plan se quedó sin paso. Seguir lo vuelve a armar con las misiones que tienes ahora.": "В вашем плане не осталось шагов. «Следовать» соберёт его заново с текущими заданиями.",
+ "Tu insignia en los retratos": "Ваш значок на портретах",
+ "Quien lleva la insignia de La Jauría la luce en el borde de su retrato: en el tuyo, el de tu objetivo y el de tu foco.": "У кого есть значок La Jauría, тот носит его на краю портрета: вашего, вашей цели и вашего фокуса.",
+ "El enlace del Discord ya está elegido: cópialo con Ctrl+C y pégalo en tu navegador.": "Ссылка на Discord выделена: скопируйте её Ctrl+C и вставьте в браузер.",
+ "Guardaste tu sesión de pesca y empezaste otra.": "Вы сохранили рыболовную сессию и начали новую.",
+ "Tu sesión de pesca ya estaba vacía: la nueva empieza con tu primer lanzamiento.": "Ваша рыболовная сессия уже была пустой: новая начнётся с первого заброса.",
+ "Tus marcos de combate volvieron a su lugar de siempre.": "Ваши боевые окна вернулись на привычное место.",
+ "Las explicaciones vuelven a salir.": "Пояснения снова показываются.",
+ "No había explicaciones calladas: ya salen todas.": "Скрытых пояснений не было: показываются все.",
+ "Tu insignia de La Jauría en el borde de tu retrato, y en el de tu objetivo si la lleva.": "Ваш значок La Jauría на краю портрета, а также у цели, если он у неё есть."
+}

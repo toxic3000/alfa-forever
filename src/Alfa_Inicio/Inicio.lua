@@ -344,7 +344,7 @@ local function pasoActual()
 	if type(E) ~= "table" or type(E.GetGuide) ~= "function" then return nil end
 	local ok, g = pcall(E.GetGuide)
 	if not ok or type(g) ~= "table" then return nil end
-	local info = { guia = texto(g.title) or "" }
+	local info = { guia = texto(g.title) or "", id = type(g.id) == "string" and g.id or nil }
 	local okp, hechos, todos = pcall(E.GetProgress)
 	if okp then info.hechos, info.todos = num(hechos) or 0, num(todos) or 0 end
 	local live = type(E.GetLiveStep) == "function" and E.GetLiveStep() or nil
@@ -467,6 +467,18 @@ local function tarjetaPaso()
 			accion = { texto = L["Elegir qué sigue"], icono = "ic-ruta", alClic = function() A.Fire("SHOW_PICKER") end } }
 	end
 	if not info.num then
+		-- «Cerrar mis misiones» abierta pero sin paso (lo que tenía quedó
+		-- omitido o ya no está en tu registro): Seguir la vuelve a armar con
+		-- tu registro de ahora (1.2.2), en vez de abrir un rastreador vacío.
+		local liberar = deRuta("Liberar")
+		if liberar and info.id == "mis-rutas/liberar" then
+			return { icono = "ic-ruta", tono = "acento", sobre = L["Tu siguiente paso"], titulo = info.guia ~= "" and info.guia or L["Tu guía"],
+				texto = L["Tu plan se quedó sin paso. Seguir lo vuelve a armar con las misiones que tienes ahora."],
+				accion = { texto = L["Seguir"], icono = "ic-seguir", alClic = function()
+					if A.Get("nav.arrow") == false then A.Set("nav.arrow", true) end
+					K.Llamar(liberar)
+				end } }
+		end
 		return { icono = "ic-ruta", tono = "acento", sobre = L["Tu siguiente paso"], titulo = info.guia ~= "" and info.guia or L["Tu guía"],
 			texto = L["Tu guía está lista. Ábrela para ver tu paso."],
 			accion = { texto = L["Seguir"], icono = "ic-seguir", alClic = seguirRuta } }

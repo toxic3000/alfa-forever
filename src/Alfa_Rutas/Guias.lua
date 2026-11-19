@@ -113,6 +113,23 @@ function G.Instalar(def)
 	return true
 end
 
+-- Un plan nuevo, pedido con un clic, empieza limpio (1.2.2). El motor
+-- reconoce los pasos por su contenido y, al cambiar la guía, les devuelve lo
+-- que ya tenían (checkShape): un paso de «Cerrar mis misiones» que omitiste
+-- seguía omitido en cada plan nuevo con esa misión, y con todos omitidos el
+-- plan quedaba sin paso (ni terminado ni con algo que seguir). Se olvida lo
+-- guardado de esa guía: omitidos, marcados, su forma y su paso fijado.
+local ESTADO = { "manual", "skipped", "when", "skipStored", "added", "gone", "behind", "passedBefore",
+	"guideEnds", "shapes", "stepKeys", "shapeVersions", "ownShapes", "pins" }
+function G.Olvidar(id)
+	if type(id) ~= "string" or type(A.CharState) ~= "function" then return end
+	local ok, s = pcall(A.CharState)
+	if not ok or type(s) ~= "table" then return end
+	for _, campo in ipairs(ESTADO) do
+		if type(s[campo]) == "table" then s[campo][id] = nil end
+	end
+end
+
 function G.Abrir(id)
 	local E = M.Motor("Engine")
 	if not (E and E.OpenTab and A.IsLoggedIn and A.IsLoggedIn()) then return nil, "login" end
@@ -182,6 +199,13 @@ local function restaurar()
 		end
 	end
 	p.liberar = nil -- (versiones viejas: ahora va en especiales)
+	-- Una vez por personaje (1.2.2): «Cerrar mis misiones» sin los pasos
+	-- omitidos que heredaba de planes viejos (G.Olvidar), antes de que el
+	-- motor reabra sus pestañas; así un plan atorado sin paso se arregla solo.
+	if not p.olvido122 then
+		p.olvido122 = true
+		G.Olvidar(LIBERAR)
+	end
 	if type(p.especiales) == "table" then
 		for k, def in pairs(p.especiales) do
 			if not (ESPECIALES[k] and type(def) == "table" and registrar(def)) then p.especiales[k] = nil end

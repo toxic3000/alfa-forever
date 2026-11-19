@@ -30,6 +30,7 @@ M.EN = {
 	["Todavía no tienes una guía abierta. Elige una y Alfa te lleva paso a paso: a dónde ir, qué hacer y con quién hablar."] = "You have no guide open yet. Pick one and Alfa takes you step by step: where to go, what to do and who to talk to.",
 	["¡Terminaste esta guía! Elige la siguiente y sigue subiendo con la manada."] = "You finished this guide! Pick the next one and keep climbing with the pack.",
 	["Tu guía está lista. Ábrela para ver tu paso."] = "Your guide is ready. Open it to see your step.",
+	["Tu plan se quedó sin paso. Seguir lo vuelve a armar con las misiones que tienes ahora."] = "Your plan ran out of steps. Follow builds it again with the quests you have now.",
 	["Seguir ruta"] = "Follow route",
 	["Muestra la ventana de guía y la flecha, y cierra esta ventana para que las veas."] = "Shows the guide window and the arrow, and closes this window so you can see them.",
 	["Ver pasos"] = "See steps",

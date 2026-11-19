@@ -249,6 +249,25 @@ step("rutas: tomar 1027 pone el plan al día solo", function()
 end)
 
 ---------------------------------------------------------------------------
+-- 3b. (1.2.2) Omitir todos los pasos y volver a pedir el plan: antes el
+-- motor les devolvía lo omitido (los reconoce por su contenido) y el plan
+-- quedaba sin paso, ni terminado ni con algo que seguir.
+---------------------------------------------------------------------------
+step("rutas: un plan pedido otra vez no hereda los pasos omitidos", function()
+  local n = 0
+  while E.GetStepIndex() and n < 40 do E.Skip() n = n + 1 T(1) end
+  if E.GetStepIndex() then error("no se pudieron omitir todos los pasos") end
+  local hechos, todos = E.GetProgress()
+  print("  todo omitido: " .. tostring(hechos) .. " de " .. tostring(todos) .. " hechos, sin paso")
+  Ru.Cerrar.Ahora("todas")
+  correr()
+  T(3)
+  local g = E.GetGuide()
+  if not (g and g.id == Ru.Guias.IdLiberar()) then error("el plan nuevo no es la guía activa") end
+  if not E.GetStepIndex() then error("el plan pedido otra vez sigue sin paso (heredó lo omitido)\n" .. describir()) end
+end)
+
+---------------------------------------------------------------------------
 -- 4. Una misión sin objetivos en el Codex que el registro sí lista
 ---------------------------------------------------------------------------
 step("rutas: objetivos que solo da el registro", function()

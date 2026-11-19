@@ -45,6 +45,8 @@ N.Modulo({
 		compartir = false,  -- mi ubicación a La Jauría (se pregunta al instalar)
 		capaGrupo = true, capaJauria = true,
 		minimapa = true,
+		invitarMenu = true, -- «Invitar al clan» en el clic derecho de un jugador
+		insigniaRetrato = true, -- la insignia de La Jauría en el borde del retrato (1.2.2)
 	},
 	construir = P.Construir,
 })

@@ -1,0 +1,23 @@
+{
+ "Invitar al clan": "길드 또는 커뮤니티에 초대",
+ "hermandad": "길드",
+ "comunidad": "커뮤니티",
+ "Le enviaste a %s una invitación a %s.": "%s님에게 %s 초대를 보냈습니다.",
+ "No se pudo enviar la invitación a %s. Prueba desde la ventana de Hermandad y comunidades.": "%s님에게 초대를 보내지 못했습니다. 길드 및 커뮤니티 창에서 시도해 보세요.",
+ "«Invitar al clan» en el clic derecho": "우클릭 메뉴에 '길드 또는 커뮤니티에 초대'",
+ "Clic derecho en un jugador (su retrato, su nombre en el chat o tu grupo) y elige tu hermandad o tu comunidad: la invitación le llega sin escribir su nombre.": "플레이어(초상화, 대화창의 이름 또는 파티)를 우클릭하고 길드나 커뮤니티를 고르세요. 이름을 입력하지 않아도 초대가 전달됩니다.",
+ "Clic derecho en un jugador y «Invitar al clan»: eliges tu hermandad o tu comunidad y la invitación le llega sin escribir su nombre.": "플레이어를 우클릭하고 '길드 또는 커뮤니티에 초대'를 누르세요. 길드나 커뮤니티를 고르면 이름을 입력하지 않아도 초대가 전달됩니다.",
+ "Solo salen los clanes donde puedes invitar, y Alfa te confirma en el chat a quién invitaste. Lo apagas en La Jauría > Invitar.": "초대할 수 있는 곳만 표시되며, Alfa가 누구를 초대했는지 대화창에 알려 줍니다. La Jauría > 초대에서 끌 수 있습니다.",
+ "Invita a tu clan con un clic, y arreglos": "클릭 한 번으로 클랜에 초대, 그리고 수정 사항",
+ "Arreglos: «Cerrar mis misiones» vuelve a armar tu ruta, la ayuda de rotación vuelve a decirte qué usar y el mapa ya no muestra rectángulos pegados al acercar.": "수정: '내 퀘스트 마무리'가 다시 경로를 만들고, 순환 도우미가 다시 무엇을 쓸지 알려 주며, 지도를 확대해도 붙여 놓은 듯한 사각형이 더 이상 보이지 않습니다.",
+ "Tu plan se quedó sin paso. Seguir lo vuelve a armar con las misiones que tienes ahora.": "계획에 남은 단계가 없습니다. 따라가기를 누르면 지금 가진 퀘스트로 다시 만듭니다.",
+ "Tu insignia en los retratos": "초상화의 휘장",
+ "Quien lleva la insignia de La Jauría la luce en el borde de su retrato: en el tuyo, el de tu objetivo y el de tu foco.": "La Jauría 휘장을 가진 사람은 초상화 테두리에 표시됩니다: 내 초상화, 대상, 주시 대상.",
+ "El enlace del Discord ya está elegido: cópialo con Ctrl+C y pégalo en tu navegador.": "Discord 링크가 선택되었습니다. Ctrl+C로 복사해 브라우저에 붙여 넣으세요.",
+ "Guardaste tu sesión de pesca y empezaste otra.": "낚시 세션을 저장하고 새 세션을 시작했습니다.",
+ "Tu sesión de pesca ya estaba vacía: la nueva empieza con tu primer lanzamiento.": "낚시 세션이 이미 비어 있습니다. 새 세션은 첫 낚싯대 던지기부터 시작됩니다.",
+ "Tus marcos de combate volvieron a su lugar de siempre.": "전투 창이 원래 자리로 돌아갔습니다.",
+ "Las explicaciones vuelven a salir.": "설명이 다시 표시됩니다.",
+ "No había explicaciones calladas: ya salen todas.": "숨긴 설명이 없습니다. 모두 이미 표시됩니다.",
+ "Tu insignia de La Jauría en el borde de tu retrato, y en el de tu objetivo si la lleva.": "초상화 테두리에 La Jauría 휘장이 표시되고, 대상도 가지고 있으면 대상에도 표시됩니다."
+}

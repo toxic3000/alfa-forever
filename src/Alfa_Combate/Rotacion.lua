@@ -451,14 +451,23 @@ end
 -- La sugerencia de ahora y las que siguen, de la fuente que toca:
 -- -> spell (nil, número o secreto), lista de las que siguen, la primera
 --    (su dato completo, o nil con la ayuda de Blizzard), hay varios enemigos
+local function deAlfa(n)
+	local lista, varios = M.Prioridad.Calcular(n + 1)
+	local primera = table.remove(lista, 1)
+	if not primera then return nil, lista, nil, varios end
+	return primera.id, lista, primera, varios
+end
+
 local function sugerencia(n)
-	if R.Fuente() == "alfa" then
-		local lista, varios = M.Prioridad.Calcular(n + 1)
-		local primera = table.remove(lista, 1)
-		if not primera then return nil, lista, nil, varios end
-		return primera.id, lista, primera, varios
-	end
+	if R.Fuente() == "alfa" then return deAlfa(n) end
 	local spell = R.Siguiente()
+	-- La de Blizzard no sugiere nada o llega secreta (en combate, en
+	-- Forever: sin las que siguen ni el porqué): la prioridad de Alfa, si
+	-- la hay para tu clase (1.2.2).
+	-- (Lo secreto primero: un valor secreto no se compara.)
+	if (M.Secreto(spell) or spell == nil or spell == 0) and M.Prioridad and M.Prioridad.Hay() then
+		return deAlfa(n)
+	end
 	if M.Secreto(spell) or type(spell) ~= "number" then return spell, {}, nil, false end
 	local usable = M.Legible(M.Llamar(C_Spell and C_Spell.IsSpellUsable, spell))
 	local nombre = M.NombreHechizo(spell)

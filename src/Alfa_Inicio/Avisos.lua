@@ -284,7 +284,19 @@ end
 
 -- Un aviso de muestra (el botón de los ajustes).
 function Aviso.Probar()
-	Aviso.Mostrar({
+	-- Pediste verlo: sale ya, aunque haya otro aviso a la vista (1.2.2; antes
+	-- se formaba detrás y el botón Probar parecía no hacer nada). El que
+	-- estaba vuelve a la cola, primero.
+	if A.Hidden and A.Hidden() then return end
+	if not f then construir() end
+	if f:IsShown() and actual and actual.clave ~= "prueba" then
+		table.insert(cola, 1, actual)
+		actual = nil
+	end
+	for i = #cola, 1, -1 do
+		if cola[i].clave == "prueba" then table.remove(cola, i) end
+	end
+	pintar({
 		clave = "prueba", tipo = "info", lobo = "normal",
 		titulo = L["Así se ven tus avisos"],
 		linea = L["Arrástralo para moverlo"],

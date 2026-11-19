@@ -1,0 +1,23 @@
+{
+ "Invitar al clan": "邀请加入公会或社区",
+ "hermandad": "公会",
+ "comunidad": "社区",
+ "Le enviaste a %s una invitación a %s.": "你已向%s发送了加入%s的邀请。",
+ "No se pudo enviar la invitación a %s. Prueba desde la ventana de Hermandad y comunidades.": "无法向%s发送邀请。请在“公会与社区”窗口中尝试。",
+ "«Invitar al clan» en el clic derecho": "右键菜单中的“邀请加入公会或社区”",
+ "Clic derecho en un jugador (su retrato, su nombre en el chat o tu grupo) y elige tu hermandad o tu comunidad: la invitación le llega sin escribir su nombre.": "右键点击一名玩家（头像、聊天中的名字或你的队伍），选择你的公会或社区：无需输入名字，邀请就会送达。",
+ "Clic derecho en un jugador y «Invitar al clan»: eliges tu hermandad o tu comunidad y la invitación le llega sin escribir su nombre.": "右键点击一名玩家并选择“邀请加入公会或社区”：选好你的公会或社区，无需输入名字，邀请就会送达。",
+ "Solo salen los clanes donde puedes invitar, y Alfa te confirma en el chat a quién invitaste. Lo apagas en La Jauría > Invitar.": "只会显示你有权限邀请的地方，Alfa 会在聊天中确认你邀请了谁。可在 La Jauría > 邀请 中关闭。",
+ "Invita a tu clan con un clic, y arreglos": "一键邀请加入你的公会，以及修复",
+ "Arreglos: «Cerrar mis misiones» vuelve a armar tu ruta, la ayuda de rotación vuelve a decirte qué usar y el mapa ya no muestra rectángulos pegados al acercar.": "修复：“完成我的任务”重新为你规划路线，循环助手再次告诉你该用什么，放大地图时也不再出现贴上去的矩形。",
+ "Tu plan se quedó sin paso. Seguir lo vuelve a armar con las misiones que tienes ahora.": "你的计划没有步骤了。点击跟随会用你现在的任务重新规划。",
+ "Tu insignia en los retratos": "头像上的徽章",
+ "Quien lleva la insignia de La Jauría la luce en el borde de su retrato: en el tuyo, el de tu objetivo y el de tu foco.": "拥有 La Jauría 徽章的人会在头像边缘显示它：你的、你目标的和你焦点的头像。",
+ "El enlace del Discord ya está elegido: cópialo con Ctrl+C y pégalo en tu navegador.": "Discord 链接已选中：用 Ctrl+C 复制，然后粘贴到浏览器中。",
+ "Guardaste tu sesión de pesca y empezaste otra.": "你保存了这次钓鱼记录，并开始了新的一次。",
+ "Tu sesión de pesca ya estaba vacía: la nueva empieza con tu primer lanzamiento.": "你的钓鱼记录已经是空的：新的一次从你第一次抛竿开始。",
+ "Tus marcos de combate volvieron a su lugar de siempre.": "你的战斗框体已回到原来的位置。",
+ "Las explicaciones vuelven a salir.": "说明会重新显示。",
+ "No había explicaciones calladas: ya salen todas.": "没有被隐藏的说明：全部都已显示。",
+ "Tu insignia de La Jauría en el borde de tu retrato, y en el de tu objetivo si la lleva.": "你的 La Jauría 徽章显示在头像边缘；如果目标也有，也会显示在目标头像上。"
+}

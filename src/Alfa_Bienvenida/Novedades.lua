@@ -31,6 +31,12 @@ M.NOVEDADES = {
 --   { version, titulo, puntos = { { icono (ic-*), texto } } }
 ---------------------------------------------------------------------------
 M.NOTAS = {
+	{ version = "1.2.2", titulo = "Invita a tu clan con un clic, y arreglos", puntos = {
+		{ "ic-manada", "Clic derecho en un jugador y «Invitar al clan»: eliges tu hermandad o tu comunidad y la invitación le llega sin escribir su nombre." },
+		{ "ic-exito", "Solo salen los clanes donde puedes invitar, y Alfa te confirma en el chat a quién invitaste. Lo apagas en La Jauría > Invitar." },
+		{ "ic-lobo", "Tu insignia de La Jauría en el borde de tu retrato, y en el de tu objetivo si la lleva." },
+		{ "ic-ruta", "Arreglos: «Cerrar mis misiones» vuelve a armar tu ruta, la ayuda de rotación vuelve a decirte qué usar y el mapa ya no muestra rectángulos pegados al acercar." },
+	} },
 	{ version = "1.2.1", titulo = "Tu camino en el mapa y un aullido nuevo", puntos = {
 		{ "ic-mapa", "Un mapa de una pieza: al acercar ya no se ven pedazos pegados, y el terreno se une sin rayas ni cuadros." },
 		{ "ic-ruta", "Tu ruta dibujada en el mapa de Alfa hasta tu destino, que late para que lo encuentres; arriba ves a qué distancia está y cuánto falta, y un clic te muestra todo el camino." },

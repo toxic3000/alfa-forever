@@ -296,9 +296,17 @@ local function campoCopiar(padre)
 		e:SetText(self.texto)
 		e:SetCursorPosition(0)
 	end
+	-- El juego no deja copiar al portapapeles desde un addon: el enlace queda
+	-- elegido y se dice cómo copiarlo (1.2.2; antes no se notaba nada).
+	local dicho = 0
 	function c:Copiar()
 		e:SetFocus()
 		e:HighlightText()
+		local t = GetTime and GetTime() or 0
+		if t - dicho > 5 then
+			dicho = t
+			U.Decir(L["El enlace del Discord ya está elegido: cópialo con Ctrl+C y pégalo en tu navegador."])
+		end
 	end
 	return c
 end
@@ -683,7 +691,12 @@ local function grupos(ui, padre)
 		texto = L["Los lobos que se dejan ver en el mapa. Un clic en su marca y la flecha te lleva."] })
 	mapa:Fila({ titulo = L["También en el minimapa"], control = interruptor("minimapa"),
 		texto = L["Las marcas de la manada también en el minimapa, no solo en el mapa del mundo."] })
-	return { rastro, mapa }
+	local invitar = K.GrupoAjustes(padre, { titulo = L["Invitar"] })
+	invitar:Fila({ titulo = L["«Invitar al clan» en el clic derecho"], control = interruptor("invitarMenu"),
+		texto = L["Clic derecho en un jugador (su retrato, su nombre en el chat o tu grupo) y elige tu hermandad o tu comunidad: la invitación le llega sin escribir su nombre."] })
+	invitar:Fila({ titulo = L["Tu insignia en los retratos"], control = interruptor("insigniaRetrato"),
+		texto = L["Quien lleva la insignia de La Jauría la luce en el borde de su retrato: en el tuyo, el de tu objetivo y el de tu foco."] })
+	return { rastro, mapa, invitar }
 end
 
 ---------------------------------------------------------------------------
