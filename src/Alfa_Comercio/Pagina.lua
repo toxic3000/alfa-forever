@@ -602,6 +602,10 @@ local function grupos(padre)
 		texto = L["El botón «Escanear con Alfa» bajo la ventana de la subasta."] })
 	juego:Fila({ titulo = L["Aprender de tus búsquedas"], control = function(f) return K.Interruptor(f, { clave = ruta("busquedas") }) end,
 		texto = L["Cuando buscas algo en la subasta, Alfa guarda el precio más bajo que ves."] })
+	juego:Fila({ titulo = L["«Tomar todo» en el buzón"], control = function(f) return K.Interruptor(f, { clave = ruta("buzon") }) end,
+		texto = L["Una barra bajo el buzón para tomar el dinero y los objetos de tus cartas con un clic, y lo que recibiste al final."] })
+	juego:Fila({ titulo = L["Avisar de cartas que vencen"], control = function(f) return K.Interruptor(f, { clave = ruta("buzonVence") }) end,
+		texto = L["Al abrir el buzón, un aviso si una carta con objetos vence en menos de 3 días."] })
 
 	local cuentas = K.GrupoAjustes(padre, { titulo = L["Las cuentas"] })
 	cuentas:Fila({ titulo = L["Comisión de la subasta"],
@@ -689,6 +693,11 @@ local CONTROLES = {
 		help = L["El botón «Escanear con Alfa» bajo la ventana de la subasta."], search = "auction house, scan button, ah" },
 	{ kind = "toggle", key = ruta("busquedas"), label = L["Aprender de tus búsquedas"],
 		help = L["Cuando buscas algo en la subasta, Alfa guarda el precio más bajo que ves."], search = "auction search, learn prices" },
+	{ kind = "toggle", key = ruta("buzon"), label = L["«Tomar todo» en el buzón"],
+		help = L["Una barra bajo el buzón para tomar el dinero y los objetos de tus cartas con un clic, y lo que recibiste al final."],
+		search = "mail, mailbox, open all, take all, inbox" },
+	{ kind = "toggle", key = ruta("buzonVence"), label = L["Avisar de cartas que vencen"],
+		help = L["Al abrir el buzón, un aviso si una carta con objetos vence en menos de 3 días."], search = "mail expires, expiring mail" },
 	{ kind = "slider", key = ruta("comision"), label = L["Comisión de la subasta"], min = 0, max = 15, step = 1,
 		format = function(v) return ("%d %%"):format(floor((v or 0) + 0.5)) end,
 		help = L["Lo que se queda la subasta de cada venta. Suele ser 5 % en la de tu facción y 15 % en la neutral. Es un estimado."],
@@ -711,7 +720,7 @@ N.Modulo({
 	id = M.ID, nombre = L["Comercio"], icono = "ic-comercio", orden = 45, comando = M.ID,
 	subtitulo = L["¿Vender, subastar o transformar? Lo que más oro te deja con cada objeto."],
 	ajustes = {
-		tooltip = true, boton = true, busquedas = true,
+		tooltip = true, boton = true, busquedas = true, buzon = true, buzonVence = true,
 		comision = 5, desencantar = "auto", diasViejo = 3,
 	},
 	controles = CONTROLES,

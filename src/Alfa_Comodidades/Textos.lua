@@ -198,4 +198,12 @@ M.EN = {
 	["Misiones automáticas"] = "Quest automation",
 	["Lo pequeño que hace el juego más cómodo: el minimapa, el chat y las barras con el estilo de Alfa, marcos, cuadro de información, probador, cámara y sonidos; y en sus pestañas, viajes, invitaciones, comerciantes y más."] = "The small things that make the game more comfortable: the minimap, chat and bars in Alfa's style, frames, tooltip, dressing room, camera and sounds; and in its tabs, travel, invitations, merchants and more.",
 	["Los grifos (o dragones) a los lados de la barra principal. «Del color del estilo» necesita el estilo de las barras; «Ocultos» funciona siempre."] = "The gryphons (or wyverns) on the sides of the main bar. \"In the style's color\" needs the bars style; \"Hidden\" always works.",
+	-- 1.2.8: la recompensa recomendada
+	["Alfa te recomienda: %s"] = "Alfa recommends: %s",
+	["Es una mejora para ti."] = "It's an upgrade for you.",
+	["Es la que más vale al venderla."] = "It's the one worth the most to sell.",
+	["la opción %d"] = "option %d",
+	["Recompensas"] = "Rewards",
+	["Marcar la mejor recompensa para ti"] = "Mark the best reward for you",
+	["Una huella sobre la mejor para tu clase (o la que más vale al venderla) y «Alfa te recomienda». Nunca elige por ti."] = "A paw print on the best one for your class (or the one worth the most to sell) and \"Alfa recommends\". It never picks for you.",
 }

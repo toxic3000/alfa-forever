@@ -31,6 +31,12 @@ M.NOVEDADES = {
 --   { version, titulo, puntos = { { icono (ic-*), texto } } }
 ---------------------------------------------------------------------------
 M.NOTAS = {
+	{ version = "1.2.8", titulo = "La manada se organiza y tu historia", puntos = {
+		{ "ic-manada", "Citas de la manada, «¿Quién va?», raros con reloj y notas en tu mapa." },
+		{ "ic-ruta", "Vuelta a entregar por el camino más corto, la piedra de hogar a tiempo y la mejor recompensa marcada." },
+		{ "ic-huella", "Lya lleva tu historia, aprende qué consejos ya no quieres y te avisa de tus oficios." },
+		{ "ic-bolsas", "«Tomar todo» en el buzón, tu oro por hora y aviso de bolsas casi llenas." },
+	} },
 	{ version = "1.2.7", titulo = "Anuncios animados y la manada a la vista", puntos = {
 		{ "ic-lobo", "Al llegar en barco o al encontrar un raro, un anuncio grande con animación, como la intro." },
 		{ "ic-manada", "La manada en el mapa, cazar juntos, el saludo al entrar y la calavera para el raro con un clic." },

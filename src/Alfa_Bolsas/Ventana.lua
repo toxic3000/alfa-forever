@@ -957,6 +957,13 @@ local function infoPie(self)
 	end
 	lineas[#lineas + 1] = " "
 	lineas[#lineas + 1] = K.Tenir("acento", L["Toda la cuenta"]) .. "  ·  " .. N.Dinero(D.DineroCuenta(), true)
+	-- 1.2.8: el oro de esta sesión (Sesion.lua).
+	local Se = M.Sesion
+	if Se and propia(f) then
+		lineas[#lineas + 1] = " "
+		lineas[#lineas + 1] = K.Tenir("texto", L["Esta sesión"])
+		for _, l in ipairs(Se.Lineas()) do lineas[#lineas + 1] = l end
+	end
 	return L["Espacio y dinero"], lineas
 end
 

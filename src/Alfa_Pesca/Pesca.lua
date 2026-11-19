@@ -739,7 +739,8 @@ end
 
 -- auto: lo cerró algo que no fue tu clic ni tu tecla (montar, apagar). Entonces
 -- tu equipo no se cambia solo: un aviso ofrece volver a él con un clic.
-function M.CerrarModo(auto)
+-- sinCana (1.2.8): te quitaste la caña tú; ya traes tu equipo, no hay nada que ofrecer.
+function M.CerrarModo(auto, sinCana)
 	if not E.modo then return end
 	E.modo = false
 	E.fase = nil
@@ -751,7 +752,7 @@ function M.CerrarModo(auto)
 		cancelarRestaurar()
 		M.Restaurar()
 	end
-	if opt("restaurarEquipo") and Eq.HayNormal() then
+	if opt("restaurarEquipo") and Eq.HayNormal() and not sinCana then
 		if not auto then
 			Eq.Restaurar()
 		elseif N.Kit and N.Kit.Aviso then
@@ -1039,9 +1040,23 @@ A.RegisterEvent("SKILL_LINES_CHANGED", function()
 end)
 
 -- Tu equipo cambió: la macro se rehace y, con una caña nueva, se abre el modo.
+-- 1.2.8: y al quitarte la caña (te pusiste tus armas) el modo se cierra solo:
+-- antes seguían los mensajes y las teclas de pesca con las armas en la mano.
+local function cerrarSiSinCana()
+	if E.modo and not Eq.restaurando and not Eq.CanaPuesta() then M.CerrarModo(true, true) end
+end
 A.RegisterEvent("PLAYER_EQUIPMENT_CHANGED", function(_, ranura)
-	if ranura == 16 and habilitado() and opt("abrirConCana") and not E.modo and not Eq.restaurando and Eq.CanaPuesta() then
-		M.AbrirModo(true)
+	if ranura == 16 or ranura == 17 then
+		local antes = E.conCana
+		E.conCana = Eq.CanaPuesta() and true or false
+		if ranura == 16 and habilitado() and opt("abrirConCana") and not E.modo and not Eq.restaurando and E.conCana then
+			M.AbrirModo(true)
+		elseif antes and not E.conCana and E.modo and not Eq.restaurando then
+			-- Un instante después: al cambiar de arma el juego puede avisar dos veces.
+			A.After(0.3, function()
+				if enCombate() then N.FueraDeCombate(cerrarSiSinCana) else cerrarSiSinCana() end
+			end)
+		end
 	end
 	M.PrepararBotones()
 	M.Avisar("equipo")
@@ -1275,6 +1290,7 @@ end)
 -- Al entrar: la sesión vieja pasa al historial si quedó atrás; lo que haya
 -- quedado de un cierre de golpe se restaura; tras un /reload el modo sigue.
 A.RegisterEvent("PLAYER_ENTERING_WORLD", function(_, inicial)
+	E.conCana = Eq.CanaPuesta() and true or false
 	R.Revisar()
 	recuperar()
 	local d = N.DatosPersonaje(ID)

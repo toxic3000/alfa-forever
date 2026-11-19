@@ -1,5 +1,53 @@
 # Cambios de Alfa
 
+## 1.2.8 — La manada se organiza, tu historia y el buzón (19/11/2026)
+
+**Español**
+- Citas de la manada: propón una salida (qué, día y hora) desde La Jauría o con /alfa cita mañana 21:30 Minas. A los lobos de tu hermandad con Alfa les llega con «Voy»; ves quién va y Lya te la recuerda 15 minutos antes.
+- ¿Quién va?: al llegar a una zona con una mazmorra para tu nivel, Lya te dice quién de la manada anda cerca y va a tu nivel, con un botón para invitarlo.
+- Raros con reloj: Alfa recuerda cuándo cayó cada raro; su cuadro dice hace cuánto lo cazaron y si pudo volver ya.
+- Notas del lobo: deja una nota en tu mapa donde estás (/alfa nota Aquí sale el mineral, o «Nota aquí» en La Jauría); un clic en la marca y la flecha te lleva. Puedes compartirlas con tu hermandad.
+- Vuelta a entregar: con varias misiones listas, Alfa las ordena por el camino más corto y la flecha te lleva de una en una («Entrega 2 de 4»).
+- Piedra de hogar a tiempo: si casi todo lo que vas a entregar está en tu ciudad de hogar y estás lejos, Lya te sugiere usar la piedra.
+- Zona peligrosa: al entrar a una zona con enemigos muy por arriba de tu nivel, un aviso corto.
+- La mejor recompensa: al entregar una misión, Alfa marca la recompensa que más te sirve (o la que más vale) con una huella.
+- Tu historia: Lya lleva un diario de tus hitos (niveles, tu primera mazmorra, tu montura, tu primer raro, tu mejor día) en su página.
+- Lya aprende: si cierras tres veces el mismo tipo de consejo, te pregunta si ya no lo quieres; los que callas los puedes devolver en su página.
+- Tus oficios: cuando un oficio llega al tope de su rango, Lya te dice que ya puedes aprender el siguiente y dónde está tu instructor más cercano.
+- Fin de mazmorra: al salir, Lya te cuenta cuánto tardaron, cuántas veces caíste y lo mejor que sacaste.
+- El buzón: «Tomar todo» toma el dinero y los objetos de tus cartas y te dice lo que recibiste; también te avisa si una carta con objetos está por vencer.
+- Oro de la sesión: cuánto ganas en esta sesión y a qué ritmo por hora, en tus bolsas y en su página.
+- Bolsas casi llenas: con 2 casillas libres o menos, Alfa te dice qué conviene soltar primero, con «Vender» si tienes al vendedor abierto.
+- Acerca de Alfa: la historia de Alfa y La Jauría, los créditos al día y el Discord para copiarlo.
+- Buscar en todo Alfa: el buscador de Ajustes también encuentra misiones, raros y PNJ; un clic abre su ficha o pone la flecha.
+- Más ligero al entrar: la Enciclopedia y la recolección cargan menos al entrar al juego (unos 7 MB menos de memoria).
+- Los créditos de Polestar dicen claramente que son del motor en el que se basa Alfa.
+- Arreglado: al quitarte la caña y ponerte tus armas, el modo pesca se cierra solo (antes seguían sus mensajes y teclas).
+- Arreglado: el aviso de descanso ya no dice «0 %» de XP descansada al entrar a una posada.
+
+**English**
+- Pack outings: propose an outing (what, day and time) from La Jauría or with /alfa cita tomorrow 21:30 Deadmines. The wolves in your guild with Alfa get it with "I'm in"; you see who's coming and Lya reminds you 15 minutes before.
+- Who's going?: when you reach a zone with a dungeon for your level, Lya tells you who in the pack is nearby and at your level, with a button to invite them.
+- Rare timers: Alfa remembers when each rare died; its tooltip says how long ago it was killed and whether it may be back.
+- Wolf notes: leave a note on your map where you stand (/alfa nota Ore spawns here, or "Note here" in La Jauría); click the marker and the arrow takes you. You can share them with your guild.
+- Turn-in run: with several quests ready, Alfa sorts them by the shortest way and the arrow takes you to each one ("Turn-in 2 of 4").
+- Hearthstone time: if most of what you'll turn in is in your hearth town and you're far away, Lya suggests using the stone.
+- Dangerous zone: entering a zone with enemies well above your level, a short warning.
+- The best reward: when you turn in a quest, Alfa marks the reward that suits you best (or is worth the most) with a paw.
+- Your story: Lya keeps a diary of your milestones (levels, your first dungeon, your mount, your first rare, your best day) on her page.
+- Lya learns: if you close the same kind of tip three times, she asks if you still want it; the ones you mute can be brought back on her page.
+- Your trades: when a profession reaches its rank cap, Lya tells you you can learn the next one and where your nearest trainer is.
+- End of dungeon: when you leave, Lya tells you how long it took, how many times you fell and the best thing you got.
+- The mailbox: "Take all" takes the money and items from your letters and tells you what you received; it also warns you if a letter with items is about to expire.
+- Session gold: how much you earn this session and your pace per hour, in your bags and on their page.
+- Bags almost full: with 2 free slots or fewer, Alfa tells you what to let go first, with "Sell" if a vendor is open.
+- About Alfa: the story of Alfa and La Jauría, up-to-date credits and the Discord to copy.
+- Search all of Alfa: the Settings search also finds quests, rares and NPCs; a click opens their page or sets the arrow.
+- Lighter at login: the Encyclopedia and gathering load less when you log in (about 7 MB less memory).
+- Polestar's credits now clearly say they belong to the engine Alfa is built on.
+- Fixed: when you take off your fishing pole and put your weapons back on, fishing mode closes on its own (its messages and keys used to stay).
+- Fixed: the resting notice no longer says "0%" rested XP when you enter an inn.
+
 ## 1.2.7 — Anuncios animados, la manada a la vista y Lya más viva (19/11/2026)
 
 **Español**

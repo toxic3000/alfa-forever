@@ -305,6 +305,227 @@ local function alDialogo()
 	end
 end
 
+---------------------------------------------------------------------------
+-- 1.2.8: Elegir la recompensa
+---------------------------------------------------------------------------
+-- Con varias recompensas para elegir (QUEST_COMPLETE), Alfa marca la mejor
+-- para ti: la mayor mejora que tu clase puede usar comparada con lo que
+-- llevas puesto (Alfa.Gear, por el orden del motor: QoL.Rewards.Rank) y, sin
+-- mejoras, la que más vale al venderla. Una huella sobre su botón y, bajo la
+-- ventana, «Alfa te recomienda: X». Solo se ve: nunca elige por ti (eso es
+-- «Tomar la mejor recompensa» del motor, si la enciendes). Los botones de
+-- recompensa no son seguros; nada se toca en ellos más que su marca.
+-- Ajuste comodidades.recompensa (de fábrica, encendido).
+
+A.RegisterDefaults(M.ID, { recompensa = true })
+
+local K = N.Kit
+local REINTENTOS, ESPERA = 4, 0.4
+local ANCHO_LINEA = 300
+local rec = { marca = nil, linea = nil, turno = 0 }
+
+local function recompensaEncendida()
+	return A.Get(M.ID .. ".recompensa") ~= false and not (A.Hidden and A.Hidden())
+end
+
+local function panelRecompensas()
+	local f = (QuestInfoFrame and QuestInfoFrame.rewardsFrame) or rawget(_G, "QuestInfoRewardsFrame")
+	if not (f and type(f.RewardButtons) == "table") then return nil end
+	if f.IsShown and not f:IsShown() then return nil end
+	return f
+end
+
+local function botonDe(i)
+	local f = panelRecompensas()
+	if not f then return nil end
+	for _, b in pairs(f.RewardButtons) do
+		if b and b.type == "choice" and (b.objectType == nil or b.objectType == "item") and b.IsShown and b:IsShown()
+			and b.GetID and b:GetID() == i then
+			return b
+		end
+	end
+	return nil
+end
+
+-- Sin el motor: cada opción por su precio de venta (sin saber de mejoras).
+local function opcionesPropias()
+	local n = GetNumQuestChoices and num(GetNumQuestChoices()) or 0
+	local lista, completa = {}, true
+	local info = (C_Item and C_Item.GetItemInfo) or rawget(_G, "GetItemInfo")
+	for i = 1, n do
+		local link = GetQuestItemLink and legible(GetQuestItemLink("choice", i))
+		local cuenta = GetQuestItemInfo and select(3, GetQuestItemInfo("choice", i))
+		local precio
+		if link and type(info) == "function" then
+			local ok, r = pcall(function() return select(11, info(link)) end)
+			precio = ok and tonumber(legible(r)) or nil
+		end
+		if not (link and precio) then completa = false end
+		local pila = num(cuenta) > 0 and num(cuenta) or 1
+		lista[i] = { index = i, link = link, count = pila, value = (precio or 0) * pila }
+	end
+	return lista, completa
+end
+
+local function ordenPropio(lista)
+	local orden = {}
+	for i = 1, #lista do orden[i] = lista[i] end
+	table.sort(orden, function(a, b)
+		if a.value ~= b.value then return a.value > b.value end
+		return a.index < b.index
+	end)
+	local out = {}
+	for i = 1, #orden do out[i] = orden[i].index end
+	return out, "value"
+end
+
+-- -> índice de la mejor, "upgrade" | "value"; nil, "esperar" (faltan datos)
+local function laMejor()
+	local R = A.QoL and A.QoL.Rewards
+	local lista, completa, orden, por
+	if R and type(R.ReadChoices) == "function" and type(R.Rank) == "function" then
+		local ok, l, c = pcall(R.ReadChoices, false)
+		if ok and type(l) == "table" then
+			lista, completa = l, c
+			if completa and #lista >= 2 then
+				local okR, o, r = pcall(R.Rank, lista)
+				if okR and type(o) == "table" then orden, por = o, r end
+			end
+		end
+	end
+	if not lista then
+		lista, completa = opcionesPropias()
+		if completa and #lista >= 2 then orden, por = ordenPropio(lista) end
+	end
+	if #lista < 2 then return nil end
+	if not completa then return nil, "esperar" end
+	if not (orden and orden[1]) then return nil end
+	-- Sin mejoras ni precios (todo vale 0): nada que recomendar.
+	if por ~= "upgrade" then
+		local alguno = false
+		for _, c in ipairs(lista) do if (c.value or 0) > 0 then alguno = true end end
+		if not alguno then return nil end
+	end
+	return orden[1], por
+end
+
+local function ocultarRecompensa()
+	rec.turno = rec.turno + 1
+	rec.mejor, rec.por = nil, nil
+	if rec.marca then rec.marca:Hide() end
+	if rec.linea then rec.linea:Hide() end
+end
+
+local function marcaEn(b)
+	local m = rec.marca
+	if not m then
+		m = CreateFrame("Frame", nil, b)
+		m:SetSize(18, 18)
+		m.Fondo = K.Plano(m, "fondo", "BACKGROUND")
+		m.Fondo:SetAllPoints()
+		m.Fondo:SetAlpha(0.85)
+		m.Icono = K.Icono(m, "ic-huella", 12, "acento")
+		m.Icono:SetPoint("CENTER", m, "CENTER", 0, 0)
+		rec.marca = m
+	end
+	m:SetParent(b)
+	m:SetFrameLevel((b:GetFrameLevel() or 1) + 4)
+	m:ClearAllPoints()
+	m:SetPoint("BOTTOMRIGHT", b, "BOTTOMRIGHT", -2, 2)
+	m:Show()
+	return m
+end
+
+local function lineaBajo(nombre, por)
+	local f = rec.linea
+	if not f then
+		f = CreateFrame("Frame", nil, K.Raiz())
+		f:SetFrameStrata("MEDIUM")
+		f:SetSize(ANCHO_LINEA, 44)
+		f.caja = K.Caja(f, { fondo = "panel", borde = "acento", corte = K.CORTE.control })
+		f.caja:Estilo({ alfaBorde = 0.6, alfaFondo = 0.94 })
+		f.Icono = K.Icono(f, "ic-huella", 16, "acento")
+		f.Icono:SetPoint("TOPLEFT", f, "TOPLEFT", 10, -9)
+		f.Titulo = K.Texto(f, "etiqueta", "texto")
+		f.Titulo:SetWordWrap(true)
+		f.Titulo:SetPoint("TOPLEFT", f, "TOPLEFT", 34, -9)
+		f.Texto = K.Texto(f, "pequeno", "textoSuave")
+		f.Texto:SetWordWrap(true)
+		rec.linea = f
+	end
+	local tw = ANCHO_LINEA - 34 - 10
+	K.Escribir(f.Titulo, string.format(L["Alfa te recomienda: %s"], nombre))
+	K.Escribir(f.Texto, por == "upgrade" and L["Es una mejora para ti."] or L["Es la que más vale al venderla."])
+	local y = 9 + K.Parrafo(f.Titulo, tw, 2)
+	f.Texto:ClearAllPoints()
+	f.Texto:SetPoint("TOPLEFT", f, "TOPLEFT", 34, -(y + 2))
+	y = y + 2 + K.Parrafo(f.Texto, tw, 2)
+	f:SetHeight(y + 9)
+	f:ClearAllPoints()
+	local q = rawget(_G, "QuestFrame")
+	if q and q.IsShown and q:IsShown() then
+		f:SetPoint("TOP", q, "BOTTOM", 0, -4)
+	else
+		f:SetPoint("TOP", UIParent, "TOP", 0, -140)
+	end
+	f:Show()
+	return f
+end
+
+local function nombreOpcion(i)
+	local nombre = GetQuestItemInfo and legible((GetQuestItemInfo("choice", i)))
+	if type(nombre) == "string" and nombre ~= "" then return nombre end
+	return string.format(L["la opción %d"], i)
+end
+
+-- -> índice marcado | nil
+local function marcarRecompensa(intento, turno)
+	if turno ~= rec.turno then return nil end
+	if not recompensaEncendida() then ocultarRecompensa() return nil end
+	local mejor, por = laMejor()
+	if not mejor then
+		if por == "esperar" and intento < REINTENTOS then
+			A.After(ESPERA, function() M.Seguro(marcarRecompensa, intento + 1, turno) end)
+		end
+		return nil
+	end
+	local b = botonDe(mejor)
+	if b then marcaEn(b) elseif rec.marca then rec.marca:Hide() end
+	lineaBajo(nombreOpcion(mejor), por)
+	rec.mejor, rec.por = mejor, por
+	return mejor
+end
+
+local function alCompletarRecompensa()
+	ocultarRecompensa()
+	if not recompensaEncendida() then return end
+	local n = GetNumQuestChoices and num(GetNumQuestChoices()) or 0
+	if n < 2 then return end
+	local turno = rec.turno
+	-- La ventana del juego pinta sus botones al abrirse: un momento después.
+	A.After(0.05, function() M.Seguro(marcarRecompensa, 0, turno) end)
+end
+
+A.RegisterEvent("QUEST_FINISHED", function() ocultarRecompensa() end)
+A.RegisterEvent("QUEST_DETAIL", function() ocultarRecompensa() end)
+A.RegisterEvent("QUEST_PROGRESS", function() ocultarRecompensa() end)
+A.OnLogin(function()
+	local q = rawget(_G, "QuestFrame")
+	if q and q.HookScript then q:HookScript("OnHide", function() ocultarRecompensa() end) end
+end)
+
+-- Ajustes > Misiones: junto a lo demás de las misiones.
+do
+	local LM = A.L or {}
+	local ok, err = A.RegisterOptions({ page = "questing", key = "questing", tab = LM["Quests"] or "Quests",
+		section = L["Recompensas"], controls = {
+			{ kind = "toggle", key = M.ID .. ".recompensa", label = L["Marcar la mejor recompensa para ti"],
+				help = L["Una huella sobre la mejor para tu clase (o la que más vale al venderla) y «Alfa te recomienda». Nunca elige por ti."],
+				search = "quest reward, best reward, upgrade, choose reward" },
+		} })
+	if not ok and geterrorhandler then geterrorhandler()(err) end
+end
+
 local function evento(fn)
 	return function() M.Seguro(fn) end
 end
@@ -312,9 +533,13 @@ end
 A.RegisterEvent("QUEST_DETAIL", evento(alDetalle))
 A.RegisterEvent("QUEST_PROGRESS", evento(alProgreso))
 A.RegisterEvent("QUEST_COMPLETE", evento(alCompletar))
+A.RegisterEvent("QUEST_COMPLETE", evento(alCompletarRecompensa))
 A.RegisterEvent("QUEST_GREETING", evento(alSaludo))
 A.RegisterEvent("GOSSIP_SHOW", evento(alDialogo))
 
 -- Para pruebas.
 M.Misiones = { Detalle = alDetalle, Progreso = alProgreso, Completar = alCompletar, Saludo = alSaludo, Dialogo = alDialogo, Dejadas = dejadas,
-	SoloRuta = soloRuta, EnRuta = enRuta }
+	SoloRuta = soloRuta, EnRuta = enRuta,
+	-- 1.2.8: la recompensa recomendada
+	Recompensa = alCompletarRecompensa, LaMejor = laMejor, Rec = rec,
+	MarcarRecompensa = function() ocultarRecompensa() return marcarRecompensa(0, rec.turno) end }

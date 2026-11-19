@@ -23,6 +23,10 @@ Llamado.lua
 Raro.lua
 Juntos.lua
 Saludo.lua
+Cita.lua
+QuienVa.lua
+Reloj.lua
+Notas.lua
 Mapa.lua
 Pagina.lua
 Manada.lua

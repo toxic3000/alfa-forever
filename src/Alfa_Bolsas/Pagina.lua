@@ -164,8 +164,26 @@ local function tarjetaVender()
 	return d
 end
 
+-- 1.2.8: el oro de esta sesión (Sesion.lua).
+local function tarjetaSesion()
+	local s = M.Sesion.Datos()
+	local d = { icono = "ic-oro", titulo = L["Esta sesión"] }
+	if s.ganado <= 0 then
+		d.texto = L["Aún no ganas oro en esta sesión. Alfa cuenta lo que ganas desde que entraste al juego."]
+	elseif s.porHora > 0 then
+		d.texto = format(L["Ganaste %s en %s: unos %s por hora."], N.Dinero(s.ganado, true), N.Duracion(s.segundos), N.Dinero(s.porHora, true))
+	else
+		d.texto = format(L["Ganaste %s. En un minuto te digo cuánto ganas por hora."], N.Dinero(s.ganado, true))
+	end
+	if s.gastado > 0 then
+		local neto = s.oro >= 0 and ("+" .. N.Dinero(s.oro, true)) or N.Dinero(s.oro, true)
+		d.texto = d.texto .. " " .. format(L["Con lo que gastaste: %s."], neto)
+	end
+	return d
+end
+
 local function opciones()
-	return { tarjetaBanco(), tarjetaEspacio(), tarjetaVender() }
+	return { tarjetaBanco(), tarjetaEspacio(), tarjetaVender(), tarjetaSesion() }
 end
 
 ---------------------------------------------------------------------------
@@ -373,6 +391,8 @@ local function grupos(padre)
 	lleno:Fila({ titulo = L["Avisar cuando queden"], control = deslizador("avisoLibres", 1, 10, function(v)
 		return tostring(floor(v + 0.5))
 	end), hija = true, activa = siempre("avisoLleno"), texto = L["Cuántas casillas libres quedan cuando Alfa te avisa."] })
+	lleno:Fila({ titulo = L["Avisar cuando estén casi llenas"], control = interruptor("avisoCasiLleno"),
+		texto = L["Con 2 casillas libres o menos, un aviso con lo primero que puedes soltar y un botón para vender o ver tus bolsas."] })
 
 	local marcas = K.GrupoAjustes(padre, { titulo = L["Marcas sobre cada objeto"] })
 	marcas:Fila({ titulo = L["Nivel de objeto"], control = interruptor("marcaNivel"), texto = L["El número abajo a la izquierda de cada pieza de equipo."] })
@@ -443,6 +463,7 @@ end
 M.Escuchar("DATOS", P.Rehacer)
 M.Escuchar("COMPRA", P.Rehacer)
 M.Escuchar("SUGERENCIAS", P.Rehacer)
+M.Escuchar("SESION", P.Rehacer)
 A.RegisterEvent("BANKFRAME_OPENED", P.Rehacer)
 A.RegisterEvent("BANKFRAME_CLOSED", P.Rehacer)
 A.On("SETTING_CHANGED", function(r)

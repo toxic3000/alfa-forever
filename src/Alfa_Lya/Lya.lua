@@ -700,6 +700,8 @@ end
 local function clicBoton(b)
 	local a = b.alfaAccion
 	if not (actual and a) then return end
+	-- 1.2.8: hiciste algo con lo que dijo (Aprende.lua no lo cuenta como cerrado).
+	if M.AlActuarGlobo then pcall(M.AlActuarGlobo, actual) end
 	UI.Callar()
 	if type(a.fn) == "function" then K.Llamar(a.fn, f) end
 end
@@ -715,7 +717,12 @@ local function construirGlobo()
 	g.Marca = K.Marca(g, K.CORTE.panel, "acento")
 	g.Texto = K.Texto(g, "nota", "texto")
 	g.Texto:SetJustifyH("LEFT")
-	g.Cerrar = K.BotonIcono(g, "ic-cerrar", function() UI.Callar() end, { tam = 18, icono = 9, ayuda = L["Cerrar"] })
+	-- 1.2.8: cerrar con la X sin hacer nada (Aprende.lua cuenta los de cada tipo).
+	g.Cerrar = K.BotonIcono(g, "ic-cerrar", function()
+		local c = actual
+		UI.Callar()
+		if c and M.AlCerrarGlobo then K.Llamar(M.AlCerrarGlobo, c) end
+	end, { tam = 18, icono = 9, ayuda = L["Cerrar"] })
 	g.Cerrar:SetPoint("TOPRIGHT", g, "TOPRIGHT", -4, -4)
 	g.B1 = K.Boton(g, "", clicBoton, { tipo = "acento", tam = "chico" })
 	g.B2 = K.Boton(g, "", clicBoton, { tipo = "fantasma", tam = "chico" })
@@ -746,7 +753,12 @@ local function ponerBoton(b, a)
 	-- Una acción que abre algo del juego la hace el juego (K.Seguro); después
 	-- Lya se calla como con cualquier otro botón.
 	K.SeguroDe(b, a)
-	if a and a.seguro then b.alfaTrasClic = function() if actual then UI.Callar() end end end
+	if a and a.seguro then b.alfaTrasClic = function()
+		if actual then
+			if M.AlActuarGlobo then pcall(M.AlActuarGlobo, actual) end
+			UI.Callar()
+		end
+	end end
 	if not a then b:Hide() return 0 end
 	b:SetTexto(a.texto or "")
 	b:Show()

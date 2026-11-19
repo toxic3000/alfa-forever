@@ -978,6 +978,9 @@ local function aviso(v, live)
 			uno = { L["La haré"], function() engine("AnswerGroup", q, "do") end },
 			dos = { L["Saltarla"], function() engine("AnswerGroup", q, "skip") end } }
 	end
+	-- 1.2.8: la vuelta a entregar en curso («Entrega 2 de 4», Vuelta.lua).
+	local Vt = M.Vuelta
+	if Vt and Vt.Estado() then return Vt.Aviso() end
 	if v and live and v.index == live then
 		local bq, texto, imposible = aceptarBloqueado(v)
 		if bq then
@@ -1032,7 +1035,8 @@ local function aviso(v, live)
 			texto = cual .. " " .. L["La flecha te lleva a este paso, no al de ahora."],
 			uno = { format(L["Volver al paso %d"], numeroPaso(live)), function() engine("Goto", live) end } }
 	end
-	return nil
+	-- 1.2.8: con 2 o más misiones listas, ofrecer la vuelta a entregar.
+	return Vt and Vt.Aviso() or nil
 end
 
 -- La meta de ahora de tu plan, si sigues uno. comp: compacta (el título en
@@ -1699,6 +1703,7 @@ A.On("SETTING_CHANGED", function(ruta)
 end)
 M.Escuchar("PLANES", luego)
 M.Escuchar("PLAN_AVANCE", luego)
+M.Escuchar("VUELTA", luego)
 
 function Rs.Visible() return F ~= nil and F:IsShown() end
 function Rs.Mostrar() A.Set("ui.shown", true) end

@@ -4,7 +4,7 @@
 
 **The all-in-one for World of Warcraft: Forever.** Guides, route, map, bags, talents, encyclopedia, dungeons, healing, fishing, trading and your guild, in one addon with one look — and **Lya**, a black she-wolf companion who chats with you about lore, your zone and your adventures. Made by **toxic3000** for **La Jauría**. Free, open source, 10 languages.
 
-> 🐺 **New in 1.2.3:** invite players to your guild from their right-click menu without typing their name (for a community, the name comes ready to paste), and the La Jauría badge on portraits. "Close my quests" builds your route again, the rotation helper suggests again, the map no longer shows pasted rectangles, and every button, font and alignment was checked. PDF manual in 10 languages ([download it](https://github.com/toxic3000/alfa-forever/releases/latest)).
+> 🐺 **New in 1.2.8:** the pack gets organized — propose outings with a day and time, "Who's going?" when there's a dungeon for your level, rare timers and notes on your map. A turn-in run by the shortest way, the best quest reward marked, "Take all" at the mailbox, your gold per hour, and Lya keeps the story of your adventure. Since 1.2.4: Lya says Alfa's alerts and answers "How do I...?" (`/alfa ayuda`), animated announcements for boats and rares, profiles you can export, and a 5-step tour. PDF manual in 10 languages ([download it](https://github.com/toxic3000/alfa-forever/releases/latest)).
 > If something breaks, tell us with `/alfa reportar`, on [Discord](https://discord.gg/hUNjA6BJwh), in the comments or on [GitHub](https://github.com/toxic3000/alfa-forever/issues).
 
 ## A quick look / Un vistazo
@@ -46,22 +46,22 @@ Open everything with `/alfa`. The main window has six pages: **Today, Adventure,
 It doesn't switch your brain off: Alfa backs you up and you decide. The first time, it asks one by one what you want it to do for you and whether you want the arrow and the path on screen.
 
 - **Welcome** — a wolf intro, Alfa's language (10 languages, even if the game uses another) and every automatic option as a question. Always opt-in.
-- **Lya** — a black companion she-wolf: tips, encouragement, stories about your quests and fun facts about each zone. In memory of a great little dog.
-- **Today** — "What do we do today?": your next step, turn in or pick up quests, alerts (durability, full bags, spells to train), your class and your session numbers.
-- **Route** — a two-click assistant (leveling, professions, gold or dungeons), Alfa's own tracker with an arrow, a guide library, **a route that turns in every ready quest**, a quest plan you build yourself, and only quests you can actually do: missing prerequisites are added for you. A compact tracker with details apart, and **My plans** for your own goals.
+- **Lya** — a black companion she-wolf: tips, encouragement, stories about your quests and fun facts about each zone. She says Alfa's alerts, answers "How do I...?" (`/alfa ayuda`), keeps the story of your adventure and tells you when to train your professions. In memory of a great little dog.
+- **Today** — "What do we do today?": your next step, "An hour of hunting", turn in or pick up quests, alerts (durability, full bags, spells to train), your class, your session numbers and how long your guide has left.
+- **Route** — a two-click assistant (leveling, professions, gold or dungeons), Alfa's own tracker with an arrow, a guide library, **a route that turns in every ready quest**, a quest plan you build yourself, and only quests you can actually do: missing prerequisites are added for you. A compact tracker with details apart, and **My plans** for your own goals. A **turn-in run** by the shortest way, the best quest reward marked, the hearthstone at the right time and a warning before dangerous zones.
 - **Find nearby** — flight master, inn, repair, bank, mailbox, auction house and trainers, with arrow and route.
 - **Encyclopedia** — every item, NPC, quest, zone, rare, mount and pet in the game, even if you don't own it: who drops it, who sells it, which quest gives it, and a "Guide me" button. A Legacy points guide.
 - **Dungeons** — the one for your level, with "Get me ready": bosses, loot, quests to bring, tips and the way to the entrance.
 - **Talents** — which talent to take now and why, applied in one click. Pick a goal (solo leveling, dungeons, tank, PvP) and a style (safe, balanced, risky).
 - **Combat** — a rotation helper for all 27 specializations, your quest mobs highlighted, reaction alerts and a group damage meter.
 - **Healing** — click-to-heal party frames and a 3-step setup assistant.
-- **Bags** — three views (all, categories, per bag), a bag bar, your bank from anywhere with quick deposit and slot purchase, every character's inventory, and what to sell when they fill up.
+- **Bags** — three views (all, categories, per bag), a bag bar, your bank from anywhere with quick deposit and slot purchase, every character's inventory, and what to sell when they fill up. **Take all** at the mailbox and your gold per hour.
 - **World** — all of Azeroth on one zoomable map with real terrain, flight points, entrances and exits (dungeons, boats, zeppelins, portals), your own markers and one layer control.
 - **Gathering** — ore, herbs, fishing pools and treasures on map and minimap, with farming routes.
 - **Trade** — auction prices and what to do with each item: vendor, auction or craft.
 - **Fishing** — fully re-engineered: a one-key fishing mode (gear, lure, cast and loot), a fishing bar, catch journal, achievements, goals, a 1–300 guide and cooking by the water.
 - **Scenery** — the game's graphics settings in plain words, presets, one-click undo and screen filters.
-- **La Jauría** — your group and Alfa users who opt in to be seen, on the map; a **Follow** button with the arrow; a howl to call the pack; the guild page.
+- **La Jauría** — your group and Alfa users who opt in to be seen, on the map; a **Follow** button with the arrow; call the pack; dens to play together; rares shared by the pack with their timers; **outings** with a day and time; "Who's going?"; notes on your map; the La Jauría badge and the guild page.
 - **Comforts** (Settings) — minimap, class colors, info box, dressing room, flight bar, quest automation and sounds.
 
 **Plays by Forever's and Blizzard's rules:** nothing decides for you in combat. Healing, fishing, applying talents and using items always need your key or click, and out of combat when the game requires it. Free, open source, no ads, and nothing posts to other players' chat on its own.
@@ -70,7 +70,7 @@ It doesn't switch your brain off: Alfa backs you up and you decide. The first ti
 
 **El todo en uno para World of Warcraft: Forever.** Guías, ruta, mapa, bolsas, talentos, enciclopedia, mazmorras, curación, pesca, comercio y tu clan, en un solo addon y con un solo estilo. Hecho por **toxic3000** para **La Jauría**.
 
-> **Novedades de la 1.2.3:** invita a tu hermandad desde el clic derecho de un jugador sin escribir su nombre (para una comunidad, el nombre te queda listo para pegar) y la insignia de La Jauría en los retratos. «Cerrar mis misiones» vuelve a armar tu ruta, la ayuda de rotación vuelve a sugerir, el mapa ya no muestra rectángulos pegados y revisamos cada botón, la letra y la alineación. Manual en PDF en 10 idiomas ([descárgalo](https://github.com/toxic3000/alfa-forever/releases/latest)).
+> **Novedades de la 1.2.8:** la manada se organiza: propón citas con día y hora, «¿Quién va?» cuando hay una mazmorra para tu nivel, raros con reloj y notas en tu mapa. Vuelta a entregar por el camino más corto, la mejor recompensa marcada, «Tomar todo» en el buzón, tu oro por hora y Lya lleva la historia de tu aventura. Desde la 1.2.4: Lya te dice los avisos de Alfa y te responde «¿Cómo hago...?» (`/alfa ayuda`), anuncios animados de barcos y raros, perfiles que puedes exportar y un recorrido de 5 pasos. Manual en PDF en 10 idiomas ([descárgalo](https://github.com/toxic3000/alfa-forever/releases/latest)).
 > Si algo falla, avísanos con `/alfa reportar`, en el [Discord de La Jauría](https://discord.gg/hUNjA6BJwh), en los comentarios o en [GitHub](https://github.com/toxic3000/alfa-forever/issues).
 
 ¿Cansado de tener un montón de addons que se enciman y te llenan el mapa de marcas? Alfa los junta en uno solo, ordenado y guiado, que se adapta a tu clase. **No necesita ningún otro addon.**
@@ -82,22 +82,22 @@ No busca apagarte el cerebro: Alfa te apoya, y tú decides. La primera vez te pr
 | Módulo | Qué hace |
 |---|---|
 | **Bienvenida** | Intro del lobo, el idioma de Alfa (10 idiomas, aunque el juego esté en otro) y cada opción automática como una pregunta. Siempre con tu permiso. |
-| **Lya** `/alfa lya` | Una loba negra compañera: consejos, ánimo, historias de tus misiones y datos curiosos de cada zona, sin estorbar. En memoria de una gran perrita. |
-| **Hoy** `/alfa inicio` | "¿Qué hacemos hoy?": tu siguiente paso, entregar o recoger misiones, alertas (durabilidad, bolsas llenas, habilidades por entrenar), tu clase y tus números de la sesión. |
-| **Ruta** `/alfa rutas` | Un asistente de dos clics (subir de nivel, profesiones, oro o mazmorras), un rastreador propio con flecha, una biblioteca de guías, **una ruta que entrega todas tus misiones listas**, un plan de misiones que armas tú y solo misiones que de verdad puedes hacer: si falta una previa, Alfa la agrega sola. Seguimiento compacto con el detalle aparte y **Mis planes** para armar tus propias metas. |
+| **Lya** `/alfa lya` · `/alfa ayuda` | Una loba negra compañera: consejos, ánimo, historias de tus misiones y datos curiosos de cada zona, sin estorbar. Te dice los avisos de Alfa, te responde «¿Cómo hago...?», lleva la historia de tu aventura y te avisa cuándo entrenar tus oficios. En memoria de una gran perrita. |
+| **Hoy** `/alfa inicio` | "¿Qué hacemos hoy?": tu siguiente paso, «Una hora de caza», entregar o recoger misiones, alertas (durabilidad, bolsas llenas, habilidades por entrenar), tu clase, tus números de la sesión y cuánto te falta de tu guía. |
+| **Ruta** `/alfa rutas` | Un asistente de dos clics (subir de nivel, profesiones, oro o mazmorras), un rastreador propio con flecha, una biblioteca de guías, **una ruta que entrega todas tus misiones listas**, un plan de misiones que armas tú y solo misiones que de verdad puedes hacer: si falta una previa, Alfa la agrega sola. Seguimiento compacto con el detalle aparte y **Mis planes** para armar tus propias metas. **Vuelta a entregar** por el camino más corto, la mejor recompensa marcada, la piedra de hogar a tiempo y aviso antes de zonas peligrosas. |
 | **Buscar cerca** `/alfa cerca` | Maestro de vuelo, posada, reparar, banco, buzón, subastas y entrenadores, con flecha y ruta. |
 | **Enciclopedia** `/alfa enciclopedia` | Todos los objetos, PNJ, misiones, zonas, raros, monturas y mascotas del juego, aunque no los tengas: quién lo suelta, quién lo vende, qué misión lo da, y un botón "Guíame". Guía de los puntos del Legado. |
 | **Mazmorras** `/alfa mazmorras` | La que te toca por nivel, con "Prepárame": jefes, botín, misiones que conviene llevar, consejos y cómo llegar a la entrada. |
 | **Talentos** `/alfa builds` | Qué talento poner ahora y por qué, aplicado con un clic. Eliges objetivo (subir solo, mazmorras, tanque, JcJ) y estilo (tranquilo, equilibrado, arriesgado). |
 | **Combate** `/alfa combate` · `/alfa dps` | Ayuda de rotación para las 27 especializaciones, los enemigos de tus misiones resaltados, avisos de reacción y un medidor de daño de tu grupo. |
 | **Curación** `/alfa curacion` | Marcos de grupo para curar con un clic y un asistente de 3 pasos para configurarlos. |
-| **Bolsas** `/alfa bolsas` | Tres vistas (todo junto, por categorías o por bolsa), barra de bolsas, banco desde cualquier lugar con depósito rápido y compra de espacios, el inventario de tus personajes y qué vender cuando se llenan. |
+| **Bolsas** `/alfa bolsas` | Tres vistas (todo junto, por categorías o por bolsa), barra de bolsas, banco desde cualquier lugar con depósito rápido y compra de espacios, el inventario de tus personajes y qué vender cuando se llenan. **Tomar todo** en el buzón y tu oro por hora. |
 | **Mundo** `/alfa mapa` (o la tecla M) | Todo Azeroth en un solo mapa con zoom y el terreno real, puntos de vuelo, entradas y salidas (mazmorras, barcos, zepelines y portales), tus marcadores y un solo control de capas. |
 | **Recolección** `/alfa recoleccion` | Minerales, hierbas, bancos de peces y tesoros en el mapa y el minimapa, con ruta de farmeo. |
 | **Comercio** `/alfa comercio` | Precios de la subasta y qué hacer con cada objeto: venderlo, subastarlo o transformarlo. |
 | **Pesca** `/alfa pesca` | Reingeniería completa: modo pesca de una tecla (equipo, cebo, lanzar y recoger), barra, diario de capturas, logros, metas, guía de 1 a 300 y cocina junto al agua. |
 | **Paisaje** `/alfa paisaje` | Los ajustes gráficos del juego explicados en palabras simples, preajustes, deshacer de un clic y filtros de pantalla. |
-| **La Jauría** `/alfa manada` | Tu grupo y quienes usan Alfa y aceptan que la manada los vea, en el mapa; botón **Seguir** con la flecha; aullido para avisar a la manada; la página del clan. |
+| **La Jauría** `/alfa manada` · `/alfa cita` · `/alfa nota` | Tu grupo y quienes usan Alfa y aceptan que la manada los vea, en el mapa; botón **Seguir** con la flecha; llamar a la manada; guaridas para jugar juntos; raros compartidos por la manada con su reloj; **citas** con día y hora; «¿Quién va?»; notas en tu mapa; la insignia de La Jauría y la página del clan. |
 | **Comodidades** (Ajustes) | Minimapa, colores de clase, cuadro de información, probador, barra de vuelo, misiones automáticas y sonidos. |
 
 **Respeta las reglas de Forever y de Blizzard:** nada decide por ti en combate. Curar, pescar, aplicar talentos y usar objetos siempre es con tu tecla o tu clic, y fuera de combate cuando el juego lo pide. Gratis, código abierto, sin anuncios y nada escribe solo en el chat de otros.

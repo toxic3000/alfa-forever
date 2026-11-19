@@ -527,4 +527,8 @@ M.EN = {
 	["unos %d min"] = "about %d min",
 	["como %d h"] = "about %d h",
 	["como %d h %d min"] = "about %d h %d min",
+	-- 1.2.8: descanso sin «0 %»
+	["Descansando"] = "Resting",
+	["Empiezas a juntar XP descansada"] = "You're starting to build rested XP",
+	["Aquí juntas XP descansada poco a poco (más si cierras sesión aquí): luego ganas el doble por enemigo hasta gastarla."] = "Here you build rested XP little by little (more if you log out here): then you earn double per enemy until it runs out.",
 }

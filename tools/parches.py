@@ -564,6 +564,37 @@ PARCHES += [
      lambda cfg: 'Rares.FOUNDER = "Toxic Darunia" -- Alfa: el fundador de Alfa y de La Jauria\n'),
 ]
 
+# 1.2.8, carga ligera: la línea de ritmo de la ventana de guía (Levels.Pace)
+# ya no carga el Codex (7 MB) al entrar; lo usa cuando otra cosa lo carga (la
+# Enciclopedia, el buscador, el mapa) y la ventana se repinta con
+# CODEX_LOADED (motor/Alfa/UI/GuideFrame.lua). El selector de guías y los
+# demás que piden niveles lo siguen cargando como siempre.
+PARCHES += [
+    ("Alfa/Core/Levels.lua",
+     'if not (ns.Get("lookup.enabled") and Cx.Load and Cx.Load()) then return nil end',
+     lambda cfg: 'if Levels.ligero or not (ns.Get("lookup.enabled") and Cx.Load and Cx.Load()) then return nil end -- Alfa: carga ligera'),
+    ("Alfa/Core/Levels.lua",
+     '\tlocal s = Levels.ForGuide(g.id, p, live, kind == "goal" and step or nil)\n',
+     lambda cfg: '\tLevels.ligero = true -- Alfa (1.2.8): el ritmo no carga el Codex\n'
+                 '\tlocal okL, s = pcall(Levels.ForGuide, g.id, p, live, kind == "goal" and step or nil)\n'
+                 '\tLevels.ligero = nil\n'
+                 '\tif not okL then error(s, 0) end\n'),
+]
+
+# 1.2.8: la página Estrellas guía nombra a quienes apoyan y construyen
+# Polestar (Core/Credits.lua es la lista de Polestar): son créditos de Polestar,
+# no de Alfa, y así lo dice. Textos en motor/Alfa/Interfaz/Textos.lua.
+PARCHES += [
+    ("Alfa/UI/Thanks.lua", 'b.psTipLines = { L["Everyone who supports Alfa and helps build it."] }',
+     lambda cfg: 'b.psTipLines = { ns.T("Quienes apoyan y construyen Polestar, el motor en el que se basa Alfa.") }'),
+    ("Alfa/UI/Thanks.lua", 'lead:SetText(L["Thank you to everyone who supports Alfa and helps build it"])',
+     lambda cfg: 'lead:SetText(ns.T("Gracias a quienes apoyan y construyen Polestar, el motor de Alfa"))'),
+    ("Alfa/UI/Thanks.lua", 'join:SetText(L["Alfa is open source:"])',
+     lambda cfg: 'join:SetText(ns.T("Polestar es de código abierto:"))'),
+    ("Alfa/UI/Thanks.lua", 'closing:SetText(L["Thank you for making Alfa possible."])',
+     lambda cfg: 'closing:SetText(ns.T("Gracias por hacer posible el motor de Alfa."))'),
+]
+
 # Textos que se agregan al final de un archivo: las traducciones de lo nuevo.
 # Textos del motor que el paquete de idioma de Polestar deja en inglés.
 SIN_TRADUCIR_ES = {"Recorder": "Grabadora"}

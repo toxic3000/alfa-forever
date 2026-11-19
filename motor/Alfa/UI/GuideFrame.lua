@@ -5636,6 +5636,8 @@ ns.On("QOL_XP_UPDATED", whenReady(function(stats) GF.UpdateXP(stats) end))
 ns.On("QOL_REST_UPDATED", whenReady(function() GF.UpdateXP() end))
 ns.OnLogin(function() GF.UpdateXP() end)
 ns.On("STEP_CHANGED", whenReady(function() GF.UpdateXP() end))
+-- Alfa (1.2.8, carga ligera): el ritmo espera a que algo cargue el Codex
+ns.On("CODEX_LOADED", whenReady(function() GF.UpdateXP() end))
 
 -- The party line (Quests/Party.lua, Party.StepLine): hidden without one;
 -- "Go on without them" at its end while the group waits on the step.

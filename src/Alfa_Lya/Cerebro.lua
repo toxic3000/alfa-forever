@@ -124,6 +124,8 @@ local function libre(id) return type(id) == "string" and LIBRES[id:match("^(%a+)
 local function motivo(c)
 	if not Ce.Activa() or (A.Hidden and A.Hidden()) or not UI.Visible() then return "oculta" end
 	if c.id and not libre(c.id) and veces(c.id) >= MAX_VECES then return "vista" end
+	-- 1.2.8: los consejos que le pediste que ya no te diga (Aprende.lua).
+	if not c.pedido and M.Aprende and M.Aprende.Callada(c) then return "callada" end
 	if Ce.Silenciada() and not c.pedido then return "silencio" end
 	if not c.importante and not c.pedido and Ce.Frecuencia() == "importantes" then return "modo" end
 	-- 1.2.7: c.enMazmorra deja hablar dentro de una instancia (el consejo de la
@@ -805,6 +807,8 @@ local function comando(resto)
 		M.Guia.Abrir()
 	elseif palabra == "historial" or palabra == "dijiste" then
 		if M.Guia then M.Guia.Abrir(nil, nil, true) end
+		elseif palabra == "historia" then
+			N.Abrir(ID)
 	elseif palabra == "semana" then
 		if not Ce.Activa() then Ce.Mostrar(true) end
 		if M.Dia then M.Dia.ContarSemana() end
@@ -827,7 +831,7 @@ local function comando(resto)
 		end
 	end
 end
-A.RegisterCommand("lya", comando, L["muestra u oculta a Lya, tu loba compañera (también: ayuda, dia, semana, historial, consejo, dato, historias, ajustes)"])
+A.RegisterCommand("lya", comando, L["muestra u oculta a Lya, tu loba compañera (también: ayuda, dia, semana, historia, historial, consejo, dato, historias, ajustes)"])
 A.RegisterCommand("lobito", comando, L["lo mismo que /alfa lya"], true)
 
 ---------------------------------------------------------------------------

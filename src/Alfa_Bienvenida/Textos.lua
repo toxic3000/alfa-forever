@@ -524,4 +524,10 @@ M.EN = {
 	["La manada en el mapa, cazar juntos, el saludo al entrar y la calavera para el raro con un clic."] = "The pack on the map, hunting together, the greeting at login and the skull for the rare in one click.",
 	["Lya en las mazmorras, con ánimo, su salchicha y su despedida; y te enseña Alfa en 5 pasos."] = "Lya in dungeons, with moods, her sausage and her goodbye; and she shows you Alfa in 5 steps.",
 	["Una hora de caza, aviso de cadena, «Deshacer» al omitir y cuánto te falta de tu guía."] = "An hour of hunting, chain warning, \"Undo\" after skipping and how much of your guide is left.",
+	-- Notas 1.2.8
+	["La manada se organiza y tu historia"] = "The pack gets organized, and your story",
+	["Citas de la manada, «¿Quién va?», raros con reloj y notas en tu mapa."] = "Pack outings, \"Who's going?\", rare timers and notes on your map.",
+	["Vuelta a entregar por el camino más corto, la piedra de hogar a tiempo y la mejor recompensa marcada."] = "A turn-in run by the shortest way, the hearthstone at the right time and the best reward marked.",
+	["Lya lleva tu historia, aprende qué consejos ya no quieres y te avisa de tus oficios."] = "Lya keeps your story, learns which tips you no longer want and tells you about your trades.",
+	["«Tomar todo» en el buzón, tu oro por hora y aviso de bolsas casi llenas."] = "\"Take all\" at the mailbox, your gold per hour and a warning when your bags are almost full.",
 }

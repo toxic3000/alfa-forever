@@ -240,6 +240,30 @@ local function cercano(idx, x, y, g, r)
 	return mejor
 end
 
+-- La base viene compacta en el juego (tools/build.py, 1.2.8): cada zona de
+-- cada objeto es un texto "x,y,x,y,..." que se lee aquí la primera vez que
+-- esa zona hace falta. Así no ocupa memoria lo que no visitas. Sin compactar
+-- (src/ tal cual) sigue siendo una lista de números.
+local function puntosDe(v)
+	if type(v) ~= "string" then return v end
+	local t, n = {}, 0
+	for num in v:gmatch("[^,]+") do
+		n = n + 1
+		t[n] = tonumber(num)
+	end
+	return t
+end
+R.PuntosDe = puntosDe
+
+local function cuantosPuntos(v)
+	if type(v) == "string" then
+		if v == "" then return 0 end
+		local _, comas = v:gsub(",", ",")
+		return floor((comas + 1) / 2)
+	end
+	return type(v) == "table" and floor(#v / 2) or 0
+end
+
 local function grupoDe(rec)
 	if type(rec) ~= "table" then return nil end
 	return (rec.k and M.porClave[rec.k]) or (rec.o and M.porObjeto[rec.o]) or nil
@@ -256,9 +280,9 @@ function R.Indice(mapID)
 	if idx then return idx end
 	idx = { mapa = mapID, n = 0, x = {}, y = {}, g = {}, d = {}, base = {}, celdas = {} }
 	for obj, porMapa in pairs(M.BASE or {}) do
-		local puntos = porMapa[mapID]
 		local g = M.porObjeto[obj]
-		if puntos and g then
+		local puntos = g and puntosDe(porMapa[mapID])
+		if puntos then
 			for i = 1, #puntos - 1, 2 do
 				local x, y = puntos[i], puntos[i + 1]
 				if not cercano(idx, x, y, g, DUPLICADO) then agregar(idx, x, y, g, nil, true) end
@@ -332,9 +356,13 @@ end
 -- Cuántos puntos trae la base y cuántos descubriste: base, propios, zonas.
 function R.Conteos()
 	local D = datos()
-	local base, propios = 0, 0
-	for _, porMapa in pairs(M.BASE or {}) do
-		for _, puntos in pairs(porMapa) do base = base + floor(#puntos / 2) end
+	local base, propios = R.cuentaBase, 0
+	if not base then
+		base = 0
+		for _, porMapa in pairs(M.BASE or {}) do
+			for _, puntos in pairs(porMapa) do base = base + cuantosPuntos(puntos) end
+		end
+		R.cuentaBase = base
 	end
 	for _, lista in pairs(D.nodos) do
 		if type(lista) == "table" then propios = propios + #lista end

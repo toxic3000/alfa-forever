@@ -217,6 +217,24 @@ do
 	if not ok and geterrorhandler then geterrorhandler()(err) end
 end
 
+-- 1.2.8: lo que Alfa te dice en el camino, en Ajustes > Misiones > Misiones.
+do
+	local LM = A.L or {}
+	local ok, err = A.RegisterOptions({ page = "questing", key = "questing", tab = LM["Quests"] or "Quests",
+		section = L["En el camino"], controls = {
+			{ kind = "toggle", key = M.ID .. ".vueltaEntregar", label = L["Ofrecer «Vuelta a entregar»"],
+				help = L["Con 2 o más misiones listas, el rastreador ofrece llevarte a entregarlas por el camino más corto."],
+				search = "turn in route, hand in, ready quests" },
+			{ kind = "toggle", key = M.ID .. ".piedraHogar", label = L["Sugerir la piedra de hogar"],
+				help = L["Si casi todo lo que vas a entregar está en el pueblo de tu piedra y estás lejos, Lya te lo dice."],
+				search = "hearthstone, bind location, turn in" },
+			{ kind = "toggle", key = M.ID .. ".zonaPeligrosa", label = L["Avisar de zonas peligrosas"],
+				help = L["Al entrar a una zona con enemigos muy arriba de tu nivel, un aviso corto (una vez por zona)."],
+				search = "dangerous zone, zone level, high level" },
+		} })
+	if not ok and geterrorhandler then geterrorhandler()(err) end
+end
+
 N.Modulo({
 	id = M.ID, nombre = L["Ruta"], icono = "ic-ruta", orden = 12,
 	subtitulo = L["Qué hacer ahora, cerrar tus misiones y tus rutas propias."],

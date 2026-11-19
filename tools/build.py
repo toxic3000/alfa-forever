@@ -148,6 +148,17 @@ def main() -> int:
                 escribir(toc, ajustar_toc(leer(toc), cfg, False))  # version unica
             propios += 1
 
+    # Carga ligera (1.2.8): la base de nodos de Recoleccion (datos de GatherLite,
+    # src/ los guarda tal cual) va al juego compacta: cada zona un texto
+    # "x,y,..." en lugar de una lista de numeros, y Nodos.lua lo lee la primera
+    # vez que esa zona hace falta. Los mismos numeros, menos memoria al entrar.
+    base_rec = dist / "Alfa_Recoleccion" / "Base.lua"
+    if base_rec.exists():
+        texto = leer(base_rec)
+        compacto = re.sub(r"(\[\d+\]\s*=\s*)\{([-0-9.,\s]*)\}",
+                          lambda m: m.group(1) + '"' + ",".join(re.findall(r"-?[0-9.]+", m.group(2))) + '"', texto)
+        escribir(base_rec, compacto)
+
     # Archivos de terceros que usan los modulos (vendor/<Modulo>/...), con su
     # licencia al lado: por ejemplo, las texturas de detalle de Mundo (MIT, ver
     # su VENDOR.md).

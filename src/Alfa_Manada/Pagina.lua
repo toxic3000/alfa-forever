@@ -809,6 +809,305 @@ local function bloqueGuaridas(padre)
 end
 
 ---------------------------------------------------------------------------
+-- 1.2.8: la manada se organiza. Tres bloques con la misma forma (bloqueLista):
+-- la cabeza (icono, sobre, título, texto), unos controles propios y una
+-- lista de filas con su nombre, su dato y hasta dos botones.
+--   Citas de la manada (Cita.lua), Notas del lobo (Notas.lua) y Raros con
+--   reloj (Reloj.lua).
+---------------------------------------------------------------------------
+
+local FILAS = 6
+
+-- Un campo para escribir, con su ayuda tenue mientras está vacío.
+local function campoTexto(padre, ayuda, alEnter)
+	local c = CreateFrame("Frame", nil, padre)
+	c:SetHeight(K.ALTO.control)
+	c.caja = K.Caja(c, { fondo = "hundido", borde = "lineaFuerte", corte = K.CORTE.control })
+	local e = CreateFrame("EditBox", nil, c)
+	c.Campo = e
+	e:SetAutoFocus(false)
+	e:SetMaxLetters(40)
+	e:SetPoint("LEFT", c, "LEFT", ESP.m, 0)
+	e:SetPoint("RIGHT", c, "RIGHT", -ESP.m, 0)
+	e:SetHeight(K.ALTO.control - 4)
+	K.Pintar(e, function(x) K.FuenteSegura(x, K.Cara("medium"), K.Tamano("cuerpo"), "") x:SetTextColor(K.Color("texto")) end)
+	c.Ayuda = K.Texto(c, "nota", "textoTenue")
+	c.Ayuda:SetPoint("LEFT", e, "LEFT", 1, 0)
+	c.Ayuda:SetPoint("RIGHT", e, "RIGHT", 0, 0)
+	K.Escribir(c.Ayuda, ayuda or "")
+	e:SetScript("OnTextChanged", function(self) c.Ayuda:SetShown((self:GetText() or "") == "") end)
+	e:SetScript("OnEditFocusGained", function() c.caja:Estilo({ borde = "acento", alfaBorde = 0.8 }) end)
+	e:SetScript("OnEditFocusLost", function() c.caja:Estilo({ borde = "lineaFuerte", alfaBorde = 1 }) end)
+	e:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	e:SetScript("OnEnterPressed", function(self) self:ClearFocus() if alEnter then alEnter() end end)
+	c:EnableMouse(true)
+	c:SetScript("OnMouseDown", function() e:SetFocus() end)
+	function c:Texto() return ((e:GetText() or ""):gsub("^%s+", ""):gsub("%s+$", "")) end
+	function c:Vaciar() e:SetText("") e:ClearFocus() end
+	function c:SetActivo(si)
+		e:EnableMouse(si ~= false)
+		if si == false then e:ClearFocus() end
+		self:SetAlpha(si == false and 0.45 or 1)
+	end
+	return c
+end
+
+local function bloqueLista(padre, o)
+	local b = CreateFrame("Frame", nil, padre)
+	b.caja = K.Caja(b, { fondo = "panel", borde = "linea", corte = K.CORTE.panel })
+	b.Icono = K.Icono(b, o.icono or "ic-huella", 24, "acento")
+	b.Sobre = K.Texto(b, "mayus", "textoTenue")
+	b.Titulo = K.Texto(b, "subtitulo", "texto")
+	b.Texto = K.Texto(b, "texto", "textoSuave")
+	b.Linea = K.Linea(b, "linea")
+	b.Vacio = K.Texto(b, "nota", "textoTenue")
+	b.filas = {}
+	if o.controles then o.controles(b) end
+
+	local function boton(x) if x.alfaFn then K.Llamar(x.alfaFn) end end
+	local function fila(i)
+		local f = b.filas[i]
+		if f then return f end
+		f = {
+			Nombre = K.Texto(b, "cuerpo", "texto"),
+			Dato = K.Texto(b, "nota", "textoSuave"),
+			B1 = K.Boton(b, " ", boton, { tipo = "primario", tam = "chico" }),
+			B2 = K.Boton(b, " ", boton, { tipo = "secundario", tam = "chico" }),
+		}
+		b.filas[i] = f
+		return f
+	end
+
+	function b:Llenar()
+		local d = o.llenar(self) or {}
+		K.Escribir(self.Sobre, U.Mayus(o.sobre))
+		K.Escribir(self.Titulo, d.titulo or "")
+		K.Escribir(self.Texto, d.texto or "")
+		local lista = d.filas or {}
+		self.alfaN = min(#lista, FILAS)
+		for i = 1, self.alfaN do
+			local x, f = lista[i], fila(i)
+			K.Escribir(f.Nombre, x.nombre or "")
+			K.Escribir(f.Dato, x.dato or "")
+			for j, bt in ipairs({ f.B1, f.B2 }) do
+				local a = x.botones and x.botones[j]
+				K.Mostrar(bt, a ~= nil)
+				if a then
+					bt:SetTexto(a.texto)
+					bt.alfaFn = a.alClic
+					bt:SetActivo(a.activo ~= false)
+				end
+			end
+		end
+		for i, f in ipairs(self.filas) do
+			local v = i <= self.alfaN
+			K.Mostrar(f.Nombre, v) K.Mostrar(f.Dato, v)
+			if not v then K.Mostrar(f.B1, false) K.Mostrar(f.B2, false) end
+		end
+		K.Escribir(self.Vacio, #lista == 0 and (d.vacio or "") or "")
+	end
+
+	local function en(x, px, py)
+		x:ClearAllPoints()
+		x:SetPoint("TOPLEFT", b, "TOPLEFT", px, -py)
+	end
+	b.En = en
+
+	function b:Acomodar(ancho)
+		self:SetWidth(ancho)
+		local pad = ESP.l
+		local xt = pad + 24 + ESP.base
+		local w = ancho - xt - pad
+		en(self.Icono, pad, pad + 2)
+		local y = pad
+		en(self.Sobre, xt, y)
+		self.Sobre:SetWidth(w)
+		y = y + K.AltoTexto(self.Sobre) + 4
+		en(self.Titulo, xt, y)
+		y = y + K.Parrafo(self.Titulo, w, 2) + ESP.s
+		if (self.Texto:GetText() or "") ~= "" then
+			en(self.Texto, xt, y)
+			y = y + K.Parrafo(self.Texto, min(w, 720)) + ESP.m
+		end
+		if o.acomodar then y = o.acomodar(self, xt, y, w) + ESP.m end
+		self.Linea:ClearAllPoints()
+		self.Linea:SetPoint("TOPLEFT", self, "TOPLEFT", xt, -y)
+		self.Linea:SetPoint("TOPRIGHT", self, "TOPRIGHT", -pad, -y)
+		y = y + 1 + ESP.m
+		for i = 1, self.alfaN or 0 do
+			local f = self.filas[i]
+			local bw, bh = 0, 0
+			local derecha = -pad
+			for _, bt in ipairs({ f.B2, f.B1 }) do
+				if bt:IsShown() then
+					bt:ClearAllPoints()
+					bt:SetPoint("TOPRIGHT", self, "TOPRIGHT", derecha, -y)
+					local an = K.num(bt:GetWidth(), 90)
+					derecha = derecha - an - ESP.s
+					bw = bw + an + ESP.s
+					bh = max(bh, K.num(bt:GetHeight(), K.ALTO.botonChico))
+				end
+			end
+			local tw = max(80, w - bw - ESP.s)
+			en(f.Nombre, xt, y)
+			local hy = K.Parrafo(f.Nombre, tw, 2)
+			en(f.Dato, xt, y + hy + 2)
+			local hd = K.Parrafo(f.Dato, tw, 3)
+			y = y + max(bh, hy + 2 + hd) + ESP.m
+		end
+		if (self.Vacio:GetText() or "") ~= "" then
+			en(self.Vacio, xt, y)
+			y = y + K.Parrafo(self.Vacio, w) + ESP.s
+		end
+		y = y + pad - ESP.s
+		self:SetHeight(y)
+		return y
+	end
+	return b
+end
+
+-- Citas de la manada (Cita.lua).
+local function bloqueCitas(padre)
+	local Ci = M.Cita
+	local proponer
+	local b = bloqueLista(padre, {
+		icono = "ic-reloj", sobre = L["Citas de la manada"],
+		controles = function(b)
+			b.Que = campoTexto(b, L["¿Qué hacemos? Una mazmorra, una misión..."], function() proponer(b) end)
+			b.Dia = K.Desplegable(b, { opciones = Ci.OpcionesDia(), valor = 0, ancho = 110 })
+			b.Hora = K.Desplegable(b, { opciones = Ci.OpcionesHora(), valor = 21 * 60, ancho = 100 })
+			b.Proponer = K.Boton(b, L["Proponer"], function() proponer(b) end, { tipo = "primario", icono = "ic-manada" })
+		end,
+		acomodar = function(b, xt, y, w)
+			b.En(b.Que, xt, y)
+			b.Que:SetWidth(min(w, 420))
+			y = y + K.ALTO.control + ESP.s
+			b.En(b.Dia, xt, y)
+			b.En(b.Hora, xt + 110 + ESP.s, y)
+			b.En(b.Proponer, xt + 210 + 2 * ESP.s, y)
+			return y + max(K.ALTO.control, K.num(b.Proponer:GetHeight(), K.ALTO.boton))
+		end,
+		llenar = function(b)
+			local comparte = on("compartir")
+			local activo = N.Get(ID, "citas") ~= false
+			b.Dia:SetOpciones(Ci.OpcionesDia())
+			for _, x in ipairs({ b.Que, b.Dia, b.Hora, b.Proponer }) do x:SetActivo(comparte and activo) end
+			local filas = {}
+			for _, c in ipairs(activo and Ci.Lista() or {}) do
+				local cuando = Ci.CuandoTexto(c.cuando)
+				local dato, botones
+				if c.mia then
+					local si, no = Ci.Quienes(c)
+					local partes = { format(L["Tu cita, %s"], cuando) }
+					partes[#partes + 1] = #si > 0 and format(L["Van: %s"], table.concat(si, ", ")) or L["Aún nadie responde"]
+					if #no > 0 then partes[#partes + 1] = format(L["No pueden: %s"], table.concat(no, ", ")) end
+					dato = table.concat(partes, DOT)
+					botones = { { texto = L["Quitar"], alClic = function() Ci.Quitar(c.llave) end } }
+				else
+					local estado = c.mi == true and L["vas"] or (c.mi == false and L["no puedes"]) or nil
+					dato = format(L["De %s, %s"], c.de or "?", cuando) .. (estado and (DOT .. estado) or "")
+					botones = {
+						{ texto = L["Voy"], activo = c.mi ~= true, alClic = function() Ci.Responder(c.llave, true) end },
+						{ texto = L["No puedo"], activo = c.mi ~= false, alClic = function() Ci.Responder(c.llave, false) end },
+					}
+				end
+				filas[#filas + 1] = { nombre = c.que, dato = dato, botones = botones }
+			end
+			local vacio
+			if not activo then vacio = L[Ci.MOTIVOS.apagado]
+			elseif not comparte then vacio = L[Ci.MOTIVOS.compartir]
+			else vacio = L["No hay citas por ahora. ¡Propón la primera!"] end
+			return {
+				titulo = L["Junta a la manada para salir de caza"],
+				texto = L["Propón qué, el día y la hora: a los lobos de tu hermandad con Alfa les llega con «Voy». Te recuerdo 15 minutos antes."],
+				filas = filas, vacio = vacio,
+			}
+		end,
+	})
+	proponer = function(x)
+		local que = x.Que:Texto()
+		local cuando = Ci.Cuando(x.Dia:Valor() or 0, x.Hora:Valor() or 0)
+		if Ci.ProponerYDecir(que, cuando) then x.Que:Vaciar() end
+	end
+	return b
+end
+
+-- Notas del lobo (Notas.lua).
+local function bloqueNotas(padre)
+	local No = M.Notas
+	local dejar
+	local b = bloqueLista(padre, {
+		icono = "icon-note", sobre = L["Notas del lobo"],
+		controles = function(b)
+			b.Nota = campoTexto(b, L["¿Qué dice la nota?"], function() dejar(b) end)
+			b.Dejar = K.Boton(b, L["Nota aquí"], function() dejar(b) end, { tipo = "primario", icono = "ic-mapa" })
+		end,
+		acomodar = function(b, xt, y, w)
+			local bw = K.num(b.Dejar:GetWidth(), 110)
+			b.En(b.Nota, xt, y)
+			b.Nota:SetWidth(max(120, min(w - bw - ESP.s, 420)))
+			b.Dejar:ClearAllPoints()
+			b.Dejar:SetPoint("LEFT", b.Nota, "RIGHT", ESP.s, 0)
+			return y + max(K.ALTO.control, K.num(b.Dejar:GetHeight(), K.ALTO.boton))
+		end,
+		llenar = function(b)
+			local activo = N.Get(ID, "notas") ~= false
+			b.Nota:SetActivo(activo)
+			b.Dejar:SetActivo(activo)
+			local filas = {}
+			for _, x in ipairs(activo and No.Lista() or {}) do
+				local zona = U.NombreMapa(U.ZonaDe(x.map)) or ""
+				local partes = { x.de and format(L["De %s"], x.de) or L["Tuya"] }
+				if zona ~= "" then partes[#partes + 1] = zona end
+				local hace = U.Hace(U.Reloj() - (x.at or U.Reloj()))
+				if hace then partes[#partes + 1] = hace end
+				filas[#filas + 1] = { nombre = x.texto, dato = table.concat(partes, DOT), botones = {
+					{ texto = L["Llevarme"], alClic = function() No.Ir(x) end },
+					{ texto = L["Borrar"], alClic = function() No.Borrar(x.id) end },
+				} }
+			end
+			return {
+				titulo = L["Tus notas en el mapa"],
+				texto = L["Escribe algo y pulsa «Nota aquí»: queda en tu mapa donde estás parado. Un clic en la marca y la flecha te lleva."],
+				filas = filas,
+				vacio = activo and L["Aún no dejas notas. También sirve /alfa nota <texto>."] or L[No.MOTIVOS.apagado],
+			}
+		end,
+	})
+	dejar = function(x)
+		if No.AgregarYDecir(x.Nota:Texto()) then x.Nota:Vaciar() end
+	end
+	return b
+end
+
+-- Raros con reloj (Reloj.lua).
+local function bloqueCazados(padre)
+	local Rl = M.Reloj
+	return bloqueLista(padre, {
+		icono = "ic-raros", sobre = L["Raros con reloj"],
+		llenar = function()
+			local filas = {}
+			for _, x in ipairs(Rl.Lista()) do
+				local t, volver = Rl.Texto(x.nombre)
+				local partes = { t or "" }
+				if volver then partes[#partes + 1] = volver end
+				local zona = x.map and U.NombreMapa(U.ZonaDe(x.map))
+				if zona then partes[#partes + 1] = zona end
+				if x.por then partes[#partes + 1] = format(L["lo dijo %s"], x.por) end
+				filas[#filas + 1] = { nombre = x.nombre, dato = table.concat(partes, DOT),
+					botones = x.map and x.x and { { texto = L["Ir de caza"], alClic = function() Rl.Ir(x) end } } or nil }
+			end
+			return {
+				titulo = L["Los raros que cayeron hace poco"],
+				texto = L["Un raro vuelve más o menos entre media hora y una hora después de caer. Aquí ves hace cuánto lo cazaron tú o la manada."],
+				filas = filas,
+				vacio = N.Get(ID, "rarosReloj") == false and L["Apagado en los ajustes de abajo."] or L["Ningún raro cazado en las últimas horas."],
+			}
+		end,
+	})
+end
+
+---------------------------------------------------------------------------
 -- 5. Los ajustes
 ---------------------------------------------------------------------------
 
@@ -865,7 +1164,20 @@ local function grupos(ui, padre)
 		texto = L["La manada sabe qué misiones llevas (solo cuáles son) y tú las suyas. Si un lobo de tu zona hace una contigo, su tarjeta lo dice y Lya te propone invitarlo."] })
 	caza:Fila({ titulo = L["El saludo de la manada"], control = interruptor("saludo"),
 		texto = L["Al entrar al juego, Lya te dice quién de tu hermandad anda conectado y dónde."] })
-	return { rastro, mapa, invitar, guaridas, caza }
+	-- 1.2.8: la manada se organiza.
+	local junta = K.GrupoAjustes(padre, { titulo = L["La manada se organiza"] })
+	junta:Fila({ titulo = L["Citas de la manada"], control = interruptor("citas"), activa = function() return on("compartir") end,
+		texto = L["Propón una salida con día y hora y recibe las de tu hermandad con «Voy». Lya te la recuerda 15 minutos antes."] })
+	junta:Fila({ titulo = L["¿Quién va?"], control = interruptor("quienVa"), activa = function() return on("compartir") end,
+		texto = L["Al llegar a una zona con una mazmorra para tu nivel, Lya te dice quién de la manada anda cerca y va a tu nivel, con «Invitar»."] })
+	junta:Fila({ titulo = L["Raros con reloj"], control = interruptor("rarosReloj"),
+		texto = L["Alfa recuerda cuándo cayó cada raro: su cuadro dice hace cuánto lo cazaron y si pudo volver ya."] })
+	junta:Fila({ titulo = L["Notas del lobo"], control = interruptor("notas"),
+		texto = L["Tus notas en el mapa, donde las dejas. Un clic en la marca y la flecha te lleva."] })
+	junta:Fila({ titulo = L["Compartir con la manada"], control = interruptor("notasCompartir"),
+		activa = function() return on("compartir") and N.Get(ID, "notas") ~= false end,
+		texto = L["Tus notas nuevas también salen en el mapa de los lobos de tu hermandad, y ves las suyas."] })
+	return { rastro, mapa, invitar, guaridas, caza, junta }
 end
 
 ---------------------------------------------------------------------------
@@ -944,6 +1256,9 @@ local function firma(ui, gente)
 	partes[#partes + 1] = #gente
 	partes[#partes + 1] = M.Guaridas.version
 	partes[#partes + 1] = M.Juntos and M.Juntos.version or 0 -- 1.2.7
+	-- 1.2.8: citas, notas, raros con reloj y la hora (los «hace X min»).
+	partes[#partes + 1] = (M.Cita and M.Cita.version or 0) .. ":" .. (M.Notas and M.Notas.version or 0) .. ":" .. (M.Reloj and M.Reloj.version or 0)
+	partes[#partes + 1] = floor(U.Reloj() / 60)
 	return table.concat(partes, "|")
 end
 
@@ -962,6 +1277,9 @@ local function llenar(ui)
 	t:SetOpciones(lista, L["La manada a la vista"], { cuenta = #gente > 0 and #gente or nil, enlace = enlace })
 	pintarPersonas(t.Rejilla, lista)
 	ui.guaridas:Llenar()
+	ui.citas:Llenar()
+	ui.notas:Llenar()
+	ui.cazados:Llenar()
 	ui.clan:Llenar()
 	ui.lya:Llenar()
 	ui.filaCompartir.alfaDatos.texto = textoCompartir()
@@ -993,6 +1311,9 @@ function P.Construir(view)
 	local t = K.Tablero(view, { margen = N.MargenPagina(), accion = "accion", tituloOpciones = L["La manada a la vista"], min = 256 })
 	ui.tablero = t
 	ui.guaridas = t:AgregarBloque(bloqueGuaridas(t.Extra))
+	ui.citas = t:AgregarBloque(bloqueCitas(t.Extra), { espacio = ESP.l })
+	ui.notas = t:AgregarBloque(bloqueNotas(t.Extra), { espacio = ESP.l })
+	ui.cazados = t:AgregarBloque(bloqueCazados(t.Extra), { espacio = ESP.l })
 	ui.clan = t:AgregarBloque(bloqueClan(ui, t.Extra), { espacio = ESP.l })
 	ui.lya = t:AgregarBloque(bloqueLya(t.Extra), { espacio = ESP.l })
 	ui.ajustes = grupos(ui, t.Extra)

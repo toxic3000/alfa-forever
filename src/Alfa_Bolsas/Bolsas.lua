@@ -54,6 +54,7 @@ M.AJUSTES = {
 	barra = true,             -- la barra de las bolsas equipadas en la ventana
 	avisoLleno = true,        -- avisar (y sugerir qué vender) cuando se llenan
 	avisoLibres = 4,          -- ... al quedar estas casillas libres o menos
+	avisoCasiLleno = true,    -- 1.2.8: aviso con 2 casillas libres o menos (Sugerencias.lua)
 	deposito = "banco",       -- lo último que elegiste en "Depositar"
 }
 
@@ -100,6 +101,9 @@ local CONTROLES = {
 		search = "bags full, sell, junk" },
 	{ kind = "slider", key = clave("avisoLibres"), label = L["Avisar cuando queden"], min = 1, max = 10, step = 1, format = entero,
 		child = true, disabled = apagado("avisoLleno"), help = L["Cuántas casillas libres quedan cuando Alfa te avisa."], search = "free slots" },
+	{ kind = "toggle", key = clave("avisoCasiLleno"), label = L["Avisar cuando estén casi llenas"],
+		help = L["Con 2 casillas libres o menos, un aviso con lo primero que puedes soltar y un botón para vender o ver tus bolsas."],
+		search = "bags almost full, free slots, sell junk" },
 	{ kind = "toggle", key = clave("marcaNivel"), label = L["Nivel de objeto"], help = L["El número abajo a la izquierda de cada pieza de equipo."], search = "item level, ilvl" },
 	{ kind = "toggle", key = clave("marcaCalidad"), label = L["Borde de calidad"], help = L["Un borde del color de la calidad: verde, azul, morado..."], search = "quality border, rarity" },
 	{ kind = "toggle", key = clave("marcaChatarra"), label = L["Chatarra"], help = L["Una moneda sobre lo gris y lo que marcaste como chatarra."], search = "junk, grey items" },

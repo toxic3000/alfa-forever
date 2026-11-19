@@ -616,15 +616,23 @@ local function revisarDescanso(entrar)
 		return
 	end
 	local activo = on("recDescanso")
-	-- Al entrar a una posada o ciudad.
+	-- Al entrar a una posada o ciudad. 1.2.8: se lee un segundo después (al
+	-- entrar el juego aún no la actualiza) y con menos de 1 % ya no dice «0 %»:
+	-- dice que empiezas a juntarla.
 	if entrar and resting and descansando == false and activo and ahora() - descansoEn >= 600 then
 		descansoEn = ahora()
-		Aviso.Mostrar({
-			clave = "descanso", tipo = "exito", icono = "ic-hoy",
-			titulo = L["Estás descansando"],
-			linea = format(L["XP descansada: %d%% de un nivel"], floor(pct + 0.5)),
-			texto = L["En posadas y ciudades acumulas XP descansada: ganas el doble de XP por enemigo hasta gastarla. Si cierras sesión aquí, también se acumula."],
-		})
+		A.After(1, function()
+			local _, p, sigue = leerDescanso()
+			if not sigue then return end
+			local redondo = floor(p + 0.5)
+			Aviso.Mostrar({
+				clave = "descanso", tipo = "exito", icono = "ic-hoy",
+				titulo = L["Estás descansando"],
+				linea = redondo >= 1 and format(L["XP descansada: %d%% de un nivel"], redondo) or L["Empiezas a juntar XP descansada"],
+				texto = redondo >= 1 and L["En posadas y ciudades acumulas XP descansada: ganas el doble de XP por enemigo hasta gastarla. Si cierras sesión aquí, también se acumula."]
+					or L["Aquí juntas XP descansada poco a poco (más si cierras sesión aquí): luego ganas el doble por enemigo hasta gastarla."],
+			})
+		end)
 	end
 	-- Al bajar del umbral (con umbral 0: al acabarse). Un aviso, no dos.
 	local umbral = valor("descansoBajo", 5)

@@ -129,4 +129,27 @@ M.EN = {
 	-- 1.2.7: el anuncio animado
 	["¡Tierra a la vista! La manada desembarca en %s"] = "Land ahoy! The pack goes ashore in %s",
 	["Clic: ir de caza"] = "Click: go hunt",
+	-- 1.2.8: Acerca de Alfa (UI/Options.lua)
+	["La historia de Alfa y de La Jauría, el Discord, los comandos y los créditos."] = "The story of Alfa and La Jauría, the Discord, the commands and the credits.",
+	["La historia de Alfa"] = "The story of Alfa",
+	["Alfa nació en La Jauría, la comunidad de Toxic (toxic3000) en WoW Forever: un solo addon con todo lo que la manada necesita para jugar, con un solo estilo."] = "Alfa was born in La Jauría, the WoW Forever community of Toxic (toxic3000): one addon with everything the pack needs to play, all with one look.",
+	["Lya, la loba negra que te acompaña, está en memoria de la perrita de Toxic. Te platica de cada zona, te da consejos y, claro, le encantan las salchichas."] = "Lya, the black wolf at your side, is in memory of Toxic's dog. She tells you about every zone, gives you tips and, of course, loves sausages.",
+	["Por dentro, Alfa está construido sobre Polestar, de fitzforge y The Polestar authors (GPL-3.0): su motor de guías, flecha y datos. Alfa lo adapta, le suma sus propios módulos y sigue siendo libre."] = "Under the hood, Alfa is built on Polestar, by fitzforge and The Polestar authors (GPL-3.0): its guide, arrow and data engine. Alfa adapts it, adds its own modules and stays free.",
+	["La Jauría en Discord"] = "La Jauría on Discord",
+	["Ven a jugar con la manada, pregunta lo que quieras o cuéntanos si algo falla. Haz clic en el cuadro y cópialo con Ctrl+C (Cmd+C en Mac)."] = "Come play with the pack, ask anything or tell us when something breaks. Click the box and copy it with Ctrl+C (Cmd+C on a Mac).",
+	["• Los datos que trae Polestar también vienen de QuestieDB, Efficient Games (CC BY 4.0), VMaNGOS, CMaNGOS y Factoruide (GPL) y de ForeverLevelingBiS de Thunder (MIT); sus avisos están en cada LICENSE-DATA.txt."] = "• The data Polestar ships also comes from QuestieDB, Efficient Games (CC BY 4.0), VMaNGOS, CMaNGOS and Factoruide (GPL) and from ForeverLevelingBiS by Thunder (MIT); their notices are in each LICENSE-DATA.txt.",
+	["• El logo, el lobo, Lya y los módulos propios de Alfa son de toxic3000 / La Jauría (GPL-3.0)."] = "• The logo, the wolf, Lya and Alfa's own modules are by toxic3000 / La Jauría (GPL-3.0).",
+	-- 1.2.8: Estrellas guía son los créditos de Polestar (UI/Thanks.lua, parches; UI/Options.lua)
+	["Quienes apoyan, construyen y reportan errores de Polestar, el motor en el que se basa Alfa."] = "The supporters, contributors and bug reporters of Polestar, the engine Alfa is built on.",
+	["Quienes apoyan y construyen Polestar, el motor en el que se basa Alfa."] = "The people who support and build Polestar, the engine Alfa is built on.",
+	["Gracias a quienes apoyan y construyen Polestar, el motor de Alfa"] = "Thank you to everyone who supports and builds Polestar, Alfa's engine",
+	["Polestar es de código abierto:"] = "Polestar is open source:",
+	["Gracias por hacer posible el motor de Alfa."] = "Thank you for making Alfa's engine possible.",
+	-- 1.2.8: Buscar en todo Alfa (UI/Options.lua)
+	["En todo Alfa"] = "Across Alfa",
+	["Misiones"] = "Quests",
+	["Raros"] = "Rares",
+	["PNJ"] = "NPCs",
+	["Abrir su ficha en la Enciclopedia"] = "Open its page in the Encyclopedia",
+	["Poner la flecha hasta ahí"] = "Point the arrow there",
 }

@@ -1034,8 +1034,9 @@ local function revision(enAlertas)
 	if not d.maximo then
 		local pct = floor((d.pct or 0) + 0.5)
 		if d.activo then
-			t[#t + 1] = { format(L["Descansando: %d %%"], pct), "exito", "ic-hoy", L["Descanso"], L["En posadas y ciudades juntas XP descansada: ganas el doble por enemigo hasta gastarla."] }
-		elseif (d.xp or 0) > 0 then
+			-- 1.2.8: con menos de 1 % no dice «0 %».
+			t[#t + 1] = { pct >= 1 and format(L["Descansando: %d %%"], pct) or L["Descansando"], "exito", "ic-hoy", L["Descanso"], L["En posadas y ciudades juntas XP descansada: ganas el doble por enemigo hasta gastarla."] }
+		elseif (d.xp or 0) > 0 and pct >= 1 then
 			t[#t + 1] = { format(L["Descanso %d %%"], pct), "neutro", "ic-hoy", L["Descanso"], format(L["XP descansada: %d %% de un nivel."], pct) }
 		end
 	end

@@ -18,6 +18,9 @@ Cerrar.lua
 Recoger.lua
 Hora.lua
 Cadenas.lua
+Vuelta.lua
+Hogar.lua
+Peligro.lua
 Rutas.lua
 Cerca.lua
 Planes.lua

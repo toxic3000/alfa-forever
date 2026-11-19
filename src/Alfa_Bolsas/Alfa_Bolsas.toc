@@ -12,6 +12,7 @@ Textos.lua
 Compat.lua
 Bolsas.lua
 Datos.lua
+Sesion.lua
 Objetos.lua
 Botones.lua
 Lotes.lua

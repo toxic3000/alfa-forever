@@ -29,6 +29,10 @@
 --   AlfaRuta.Estimado() -> minutos | nil  (1.2.7) lo que te falta de tu guía, por tu ritmo
 --       (los pasos que quedan por lo que tardas en cada uno); nil con muy pocas medidas
 --   AlfaRuta.GrisValiosa(questID) -> motivo | nil  (1.2.7) «Vale la pena: …» de una misión gris
+--   AlfaRuta.VueltaEntregar() -> ok, motivo  (1.2.8) «Vuelta a entregar»: tus misiones listas
+--       por el camino más corto (vecino más cercano), la flecha de una en una (Vuelta.lua)
+--   AlfaRuta.CancelarVuelta()        la deja
+--   AlfaRuta.Vuelta() -> { i, total, parada } | nil   la vuelta en curso («Entrega 2 de 4»)
 -- Buscar cerca (AlfaCerca, Cerca.lua) y Mis planes (AlfaPlanes, Planes.lua)
 -- tienen su propio global.
 -- Las misiones también se agregan y se quitan del plan desde el menú del
@@ -105,6 +109,10 @@ function R.Pagina() N.Abrir(M.ID) end
 function R.UnaHora() return M.Hora.UnaHora() end
 function R.Estimado() return M.Hora.Estimado() end
 function R.GrisValiosa(qid) return M.GrisValiosa(qid) end
+-- 1.2.8
+function R.VueltaEntregar() return M.Vuelta.Empezar() end
+function R.CancelarVuelta() return M.Vuelta.Cancelar() end
+function R.Vuelta() return M.Vuelta.Estado() end
 
 ---------------------------------------------------------------------------
 -- El menú del registro de misiones y del seguimiento de objetivos

@@ -353,11 +353,79 @@ local function avisar(est)
 		duracion = 9, accion = accion })
 end
 
+---------------------------------------------------------------------------
+-- 1.2.8: casi llenas (2 casillas libres o menos). Un aviso con lo primero
+-- que conviene soltar (lo gris, luego lo que menos vale: la lista de
+-- vender ya va en ese orden) y un botón: «Vender» con el comerciante
+-- abierto, si no «Ver bolsas». Uno cada 10 minutos, salvo al llegar a 0.
+---------------------------------------------------------------------------
+
+S.CASI = 2
+local ultimoCasi, avisoCero, casiPendiente = 0, false, false
+
+function S.VerBolsas()
+	if M.EnCombate() then
+		N.Imprimir(L["No se puede en combate."])
+		return
+	end
+	local V = M.Ventana
+	if V and V.MostrarBolsas then V.MostrarBolsas(true) end
+end
+
+function S.TextoCasi(est)
+	local base = est.libres == 0 and L["Ya no te queda ninguna casilla libre."]
+		or est.libres == 1 and L["Te queda 1 casilla libre."]
+		or format(L["Te quedan %d casillas libres."], est.libres)
+	local g = est.vender[1]
+	if not g then return base .. " " .. L["No llevas nada que convenga vender: guarda algo en el banco."] end
+	local nombre = g.cantidad > 1 and format("%s \195\151%d", g.nombre, g.cantidad) or g.nombre
+	local texto = base .. " " .. format(L["Lo primero que puedes soltar: %s (%s)."], nombre, N.Dinero(g.valor or 0, true))
+	if #est.vender > 1 then
+		texto = texto .. " " .. format(L["En total, %d cosas por unos %s."], #est.vender, N.Dinero(est.valorVenta, true))
+	end
+	return texto
+end
+
+local function avisarCasi(est)
+	if not (K and K.Aviso) then return end
+	local accion
+	if comercianteAbierto and #chatarraAhora() > 0 then
+		accion = { texto = L["Vender [botón]"], alClic = S.VenderChatarra }
+	else
+		accion = { texto = L["Ver bolsas"], alClic = S.VerBolsas }
+	end
+	K.Aviso({ titulo = est.libres == 0 and L["Tus bolsas están llenas"] or L["Tus bolsas están casi llenas"],
+		texto = S.TextoCasi(est), icono = "ic-bolsas", tono = "aviso", duracion = 10, accion = accion })
+end
+
+-- -> true si las bolsas están casi llenas (y el aviso normal no hace falta).
+local function revisarCasi(est, ahora)
+	if not M.Get("avisoCasiLleno") or not (est.total > 0 and est.libres <= S.CASI) then
+		if est.libres > 0 then avisoCero = false end
+		casiPendiente = false
+		return false
+	end
+	if est.libres > 0 then avisoCero = false end
+	-- En combate no se avisa: se mira otra vez al salir.
+	if M.EnCombate() then casiPendiente = true return true end
+	casiPendiente = false
+	local cero = est.libres == 0 and not avisoCero
+	if cero or ultimoCasi == 0 or ahora - ultimoCasi >= CADA_AVISO then
+		ultimoCasi, ultimoAviso = ahora, ahora
+		if est.libres == 0 then avisoCero = true end
+		avisarCasi(est)
+	end
+	return true
+end
+S.RevisarCasi = revisarCasi
+
 local function revisar()
 	pendiente = false
-	if not M.Get("avisoLleno") then estabaLleno = false return end
+	if not M.Get("avisoLleno") and not M.Get("avisoCasiLleno") then estabaLleno = false return end
 	local est = S.Estado()
 	local ahora = GetTime and GetTime() or 0
+	if revisarCasi(est, ahora) then estabaLleno = est.lleno return end
+	if not M.Get("avisoLleno") then estabaLleno = false return end
 	if est.lleno and not estabaLleno then
 		-- En combate no se avisa: se mira otra vez al salir (PLAYER_REGEN_ENABLED).
 		if M.EnCombate() then return end
@@ -378,7 +446,7 @@ local function programar(seg)
 end
 
 A.RegisterEvent("BAG_UPDATE_DELAYED", function() programar(1) end)
-A.RegisterEvent("PLAYER_REGEN_ENABLED", function() if not estabaLleno then programar(2) end end)
+A.RegisterEvent("PLAYER_REGEN_ENABLED", function() if not estabaLleno or casiPendiente then programar(2) end end)
 A.RegisterEvent("MERCHANT_SHOW", function() comercianteAbierto = true programar(1.5) end)
 A.RegisterEvent("MERCHANT_CLOSED", function()
 	comercianteAbierto = false
@@ -388,7 +456,7 @@ end)
 A.On("ITEM_MARKS", function() programar(0.2) end)
 A.On("ALFA_COMERCIO", function() programar(2) end)
 A.On("SETTING_CHANGED", function(ruta)
-	if ruta == M.ID .. ".avisoLibres" or ruta == M.ID .. ".avisoLleno" then
+	if ruta == M.ID .. ".avisoLibres" or ruta == M.ID .. ".avisoLleno" or ruta == M.ID .. ".avisoCasiLleno" then
 		estabaLleno = false
 		programar(0.2)
 	end

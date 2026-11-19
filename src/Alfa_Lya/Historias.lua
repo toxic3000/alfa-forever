@@ -431,6 +431,7 @@ local function intentar(mio)
 	else
 		local c = p.armar(r)
 		if not c then pendiente = nil return end
+		c.clase = c.clase or "historia" -- 1.2.8 (Aprende.lua)
 		local ok, motivo = Ce.Decir(c)
 		if ok == true then
 			lista[p.q] = true
@@ -503,7 +504,7 @@ H.Personaje = personaje
 local function decirNota(id, es, pedido)
 	local t = L[es]
 	local c = {
-		texto = t, pedido = pedido, lineas = 5, ancho = 360,
+		texto = t, pedido = pedido, lineas = 5, ancho = 360, clase = "dato",
 		segundos = 9 + floor(#t / 28),
 		alDecir = function()
 			local hp = personaje()

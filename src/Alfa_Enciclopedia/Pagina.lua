@@ -14,6 +14,9 @@
 --       o "guia" con id "montura" (Mi primera montura) o "legado" (Puntos del legado)
 --       o el del motor ("item", "npc", "quest", "zone", "rare", "treasure", "object"...);
 --       sin id abre ese tipo. AlfaEnciclopedia.Buscar(texto), .Cerrar(), .Visible()
+--   AlfaEnciclopedia.Flecha(tipo, id) -> bool   la flecha al lugar más cercano de un PNJ o
+--       raro ("npc", "rare", "pnj", "raro"); false si el Codex no está o no se sabe dónde
+--       (1.2.8, para «Buscar en todo Alfa» de la ventana de Ajustes)
 
 local ADDON, M = ...
 local N, A, K, L = M.N, M.A, M.K, M.L
@@ -41,6 +44,19 @@ function API.Abrir(tipo, id)
 end
 function API.Buscar(texto) return V.Abrir({ texto = texto }) end
 function API.Cerrar() return V.Cerrar() end
+function API.Flecha(tipo, id)
+	local kind = M.KindDe(tipo)
+	if not (kind == "npc" or kind == "rare") or id == nil then return false end
+	local C = M.Codex()
+	if not (C and C.Npc) then return false end
+	local ok, ent = pcall(C.Npc, id)
+	if not (ok and type(ent) == "table" and type(ent.spawns) == "table" and ent.spawns[1]) then return false end
+	local Lk = A.Lookup
+	local s = Lk and Lk.Nearest and Lk.Nearest(ent.spawns, A.PlayerPoint and A.PlayerPoint(), true) or ent.spawns[1]
+	if not (s and s.map and s.x and s.y) then return false end
+	V.Flecha({ map = s.map, x = s.x, y = s.y, f = s.f, z = s.z, nombre = ent.name })
+	return true
+end
 function API.Visible() return V.Visible() end
 
 ---------------------------------------------------------------------------

@@ -100,7 +100,7 @@ Sale de una revisión del código del 18/11. En cada versión va primero lo que 
 - [ ] Núcleo: `N.Repintar(id)` oficial para volver a dibujar una página propia (Mazmorras, Pesca e Inicio usan piezas internas de Options).
 - [ ] Mazmorras: confirmar en el juego si Forever trae las CVars de avisos de jefes (la variante "Camelot" dice `HasBossWarnings = false`).
 - [x] Builds y Rutas: terminados y en git el 16/11.
-- [ ] Mundo: Recolección debería publicar sus nodos en `Alfa.Pins` (id `recoleccion.<tipo>`) para verse en el mapa continuo.
+- [x] Mundo: Recolección debería publicar sus nodos en `Alfa.Pins` (id `recoleccion.<tipo>`) para verse en el mapa continuo.
 - [x] Idiomas: en Builds, "Protección" y "Restauración" son la misma clave para dos clases (guerrero/paladín, druida/chamán), pero en coreano y otros idiomas tienen nombres distintos. Separar las claves en español.
 - [x] Idiomas: las fechas "el %d/%d a las %s" llevan el orden día/mes del español; en coreano y chino conviene que el formato de fecha sea parte de la traducción.
 - [ ] Idiomas: nombres de hechizos que los traductores dejaron en inglés o marcaron como dudosos (lista en sus reportes); que los revise alguien nativo.

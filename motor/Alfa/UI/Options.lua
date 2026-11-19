@@ -813,6 +813,15 @@ local function buildAbout(view)
 	whyText:SetText(table.concat(paras, "\n\n"))
 	local whyClose = W.Text(view, "title", "text")
 	whyClose:SetText(L["Lead your pack."])
+	-- Alfa (1.2.8): la historia de Alfa y de La Jauría, Lya, y en qué se basa.
+	local storyH, storyText = block(T("La historia de Alfa"), T("Alfa nació en La Jauría, la comunidad de Toxic (toxic3000) en WoW Forever: un solo addon con todo lo que la manada necesita para jugar, con un solo estilo.") .. "\n\n"
+		.. T("Lya, la loba negra que te acompaña, está en memoria de la perrita de Toxic. Te platica de cada zona, te da consejos y, claro, le encantan las salchichas.") .. "\n\n"
+		.. T("Por dentro, Alfa está construido sobre Polestar, de fitzforge y The Polestar authors (GPL-3.0): su motor de guías, flecha y datos. Alfa lo adapta, le suma sus propios módulos y sigue siendo libre."))
+	-- El Discord de La Jauría, en un cuadro para copiar (sin abrir nada fuera del juego).
+	local discH, discText = block(T("La Jauría en Discord"), T("Ven a jugar con la manada, pregunta lo que quieras o cuéntanos si algo falla. Haz clic en el cuadro y cópialo con Ctrl+C (Cmd+C en Mac)."))
+	local discBox = W.CopyBox(view)
+	W.SetCopyText(discBox, ns.DiscordURL or "https://discord.gg/hUNjA6BJwh")
+	view.DiscordBox = discBox
 	local cmdH, cmdText = block(L["Commands"], hex .. "/alfa|r   " .. T("abrir o cerrar esta ventana") .. "\n"
 		.. hex .. "/alfa guia|r   " .. T("mostrar u ocultar la ventana de guía") .. "\n"
 		.. hex .. "/alfa guides|r   " .. L["choose a guide"] .. "\n"
@@ -832,7 +841,9 @@ local function buildAbout(view)
 		.. T("• GatherLite, de Wuild (MIT): la base de nodos de recolección.") .. "\n"
 		.. T("• OpenMap, de OpenMap contributors (MIT): la lógica del mapa continuo y las máscaras de territorio.") .. "\n"
 		.. T("• TerrainWorldMap, de Dramacydal (MIT): la tabla de mosaicos del terreno del mapa.") .. "\n"
-		.. T("• Letras Inter, Fira Sans y Open Sans (SIL Open Font License 1.1).") .. "\n\n"
+		.. T("• Letras Inter, Fira Sans y Open Sans (SIL Open Font License 1.1).") .. "\n"
+		.. T("• Los datos que trae Polestar también vienen de QuestieDB, Efficient Games (CC BY 4.0), VMaNGOS, CMaNGOS y Factoruide (GPL) y de ForeverLevelingBiS de Thunder (MIT); sus avisos están en cada LICENSE-DATA.txt.") .. "\n"
+		.. T("• El logo, el lobo, Lya y los módulos propios de Alfa son de toxic3000 / La Jauría (GPL-3.0).") .. "\n\n"
 		.. T("Alfa no está afiliado a esos proyectos ni ellos lo respaldan; gracias a todos por compartir su trabajo.") .. "\n\n"
 		.. T("World of Warcraft, Warcraft y Blizzard Entertainment son marcas de Blizzard Entertainment, Inc. El arte del juego y del mapa es de Blizzard. Alfa no está afiliado a Blizzard. Discord es marca de Discord Inc."))
 	local maintH = W.SectionHeader(view)
@@ -878,7 +889,7 @@ local function buildAbout(view)
 		whyClose:ClearAllPoints()
 		whyClose:SetPoint("TOPLEFT", view, "TOPLEFT", SH.pad, -y)
 		y = y + whyClose:GetStringHeight() + 8
-		for _, pair in ipairs({ { cmdH, cmdText }, { credH, credText } }) do
+		for _, pair in ipairs({ { storyH, storyText }, { discH, discText }, { cmdH, cmdText }, { credH, credText } }) do
 			pair[1]:ClearAllPoints()
 			pair[1]:SetPoint("TOPLEFT", view, "TOPLEFT", SH.pad, -y)
 			pair[1]:SetWidth(width)
@@ -887,6 +898,15 @@ local function buildAbout(view)
 			pair[2]:ClearAllPoints()
 			pair[2]:SetPoint("TOPLEFT", view, "TOPLEFT", SH.pad, -y)
 			y = y + pair[2]:GetStringHeight() + 8
+			-- Alfa: el cuadro con la invitación, debajo de su texto.
+			if pair[1] == discH then
+				y = y + 4
+				discBox:SetWidth(math.min(width, 320))
+				discBox:ClearAllPoints()
+				discBox:SetPoint("TOPLEFT", view, "TOPLEFT", SH.pad, -y)
+				W.SetCopyText(discBox, ns.DiscordURL or "https://discord.gg/hUNjA6BJwh")
+				y = y + discBox:GetHeight() + 12
+			end
 			-- The welcome and what's new again, under the commands that
 			-- they introduce.
 			if pair[1] == cmdH then
@@ -1098,10 +1118,10 @@ add({ page = "Tu guía", key = "guia", icon = "guides", order = 3,
 
 add({ page = L["Community guides"], key = "guidepacks", icon = "layers", order = 70, subtitle = L["Guides made by other players: switch them on or off, and choose where suggestions come from."],
 	custom = UI.Packs.Build, dot = UI.Packs.HasProblems }, true)
-add({ page = L["Guiding Stars"], key = "thanks", icon = "star", order = 80, subtitle = L["Celebrating the supporters, contributors and bug reporters behind Alfa."],
+add({ page = L["Guiding Stars"], key = "thanks", icon = "star", order = 80, subtitle = T("Quienes apoyan, construyen y reportan errores de Polestar, el motor en el que se basa Alfa."),
 	custom = UI.Thanks.Build }, true)
 add({ page = REC, key = "recorder", icon = "record", order = 90, subtitle = L["The data recorder for guide authors."], custom = buildRecorder }, true)
-add({ page = ABOUT, key = "about", icon = "info", order = 100, subtitle = L["Why Alfa exists, its commands and its credits."], custom = buildAbout }, true)
+add({ page = ABOUT, key = "about", icon = "info", order = 100, subtitle = T("La historia de Alfa y de La Jauría, el Discord, los comandos y los créditos."), custom = buildAbout }, true)
 
 -- Page keys from before the pages were regrouped (and older section names)
 -- reach the page, and the tab, that holds those settings now.
@@ -1764,7 +1784,155 @@ function O.Search(q)
 	return groups, count
 end
 
-local function renderSearch()
+---------------------------------------------------------------------------
+-- Alfa (1.2.8): Buscar en todo Alfa. Debajo de los ajustes, las misiones,
+-- los raros y los PNJ del Codex que se llaman como lo que escribes (la
+-- búsqueda del motor, Search.Query, sobre los índices del Codex: unos
+-- string.find, sin leer registros). Con 3 letras o más, un momento después
+-- de la última tecla (TODO_ESPERA), hasta TODO_POR_GRUPO por grupo. Un clic:
+-- la misión abre su ficha de la Enciclopedia; un raro o un PNJ, la flecha a
+-- su lugar más cercano (o su ficha si no se sabe dónde). En combate no se
+-- carga el Codex: solo se busca si ya estaba cargado.
+---------------------------------------------------------------------------
+local TODO_GRUPOS = {
+	{ kind = "quest", titulo = "Misiones" },
+	{ kind = "rare", titulo = "Raros" },
+	{ kind = "npc", titulo = "PNJ" },
+}
+local TODO_POR_GRUPO, TODO_MIN, TODO_ESPERA = 5, 3, 0.3
+local todo = { query = nil, grupos = nil, pendiente = false }
+O.Todo = todo
+
+local function encAPI()
+	local E = rawget(_G, "AlfaEnciclopedia")
+	if type(E) == "table" and type(E.Abrir) == "function" then return E end
+	return nil
+end
+
+local function todoDisponible()
+	local S, C = ns.Search, ns.Codex
+	return encAPI() ~= nil and S and type(S.Query) == "function" and C and C.IsLoaded and true or false
+end
+
+-- Letras de lo escrito, sin espacios (una letra con acento cuenta una).
+local function letras(q)
+	local n = 0
+	for _ in tostring(q or ""):gsub("%s", ""):gmatch("[%z\1-\127\194-\244][\128-\191]*") do n = n + 1 end
+	return n
+end
+
+-- -> { { kind, titulo, filas = { result, ... } }, ... }
+function O.BuscarTodo(q)
+	local grupos = {}
+	if not todoDisponible() or letras(q) < TODO_MIN then return grupos end
+	local C = ns.Codex
+	if InCombatLockdown and InCombatLockdown() and not C.IsLoaded() then return grupos end
+	local kinds = {}
+	for _, g in ipairs(TODO_GRUPOS) do kinds[g.kind] = true end
+	local ok, res = pcall(ns.Search.Query, q, { kinds = kinds, perKind = TODO_POR_GRUPO, limit = TODO_POR_GRUPO * #TODO_GRUPOS })
+	if not ok or type(res) ~= "table" then return grupos end
+	for _, g in ipairs(TODO_GRUPOS) do
+		local filas = {}
+		for _, r in ipairs(res) do
+			if r.kind == g.kind and #filas < TODO_POR_GRUPO then filas[#filas + 1] = r end
+		end
+		if #filas > 0 then grupos[#grupos + 1] = { kind = g.kind, titulo = T(g.titulo), filas = filas } end
+	end
+	return grupos
+end
+
+-- Un resultado elegido: la ficha de la misión, la flecha al raro o al PNJ.
+function O.AbrirTodo(r)
+	local E = encAPI()
+	if not (E and type(r) == "table") then return end
+	if (r.kind == "rare" or r.kind == "npc") and type(E.Flecha) == "function" then
+		local ok, puesta = pcall(E.Flecha, r.kind, r.id)
+		if ok and puesta then return end
+	end
+	pcall(E.Abrir, r.kind, r.id)
+end
+
+local renderSearch
+
+-- Los grupos de lo escrito: ya buscados, o nil mientras espera la búsqueda
+-- (que se agenda una sola vez y busca lo que haya escrito al llegar).
+local function todoPara(q)
+	if not todoDisponible() or letras(q) < TODO_MIN then return nil end
+	if todo.query == q then return todo.grupos end
+	if not todo.pendiente then
+		todo.pendiente = true
+		ns.After(TODO_ESPERA, function()
+			todo.pendiente = false
+			if not (win and win:IsShown()) or letras(query) < TODO_MIN then return end
+			todo.query, todo.grupos = query, O.BuscarTodo(query)
+			renderSearch()
+		end)
+	end
+	return nil
+end
+
+-- Dibuja los grupos debajo de y. -> la y de abajo
+local function layoutTodo(grupos, y)
+	local sv = searchView
+	sv.todo = sv.todo or { heads = {}, links = {}, subs = {} }
+	local pool = sv.todo
+	if not pool.header then
+		pool.header = W.SectionHeader(sv)
+		W.SetSection(pool.header, T("En todo Alfa"))
+	end
+	for _, w in ipairs(pool.heads) do w:Hide() end
+	for _, w in ipairs(pool.links) do w:Hide() end
+	for _, w in ipairs(pool.subs) do w:Hide() end
+	pool.header:Hide()
+	if not (grupos and #grupos > 0) then return y end
+	local width = win.BodyWidth
+	pool.header:ClearAllPoints()
+	pool.header:SetPoint("TOPLEFT", sv, "TOPLEFT", SH.pad, -y)
+	pool.header:SetWidth(width)
+	pool.header:Show()
+	y = y + 44 + 4
+	local nh, nl = 0, 0
+	for _, g in ipairs(grupos) do
+		nh = nh + 1
+		local h = pool.heads[nh]
+		if not h then
+			h = W.Text(sv, "small", "textMuted")
+			pool.heads[nh] = h
+		end
+		h:SetText(g.titulo)
+		h:ClearAllPoints()
+		h:SetPoint("TOPLEFT", sv, "TOPLEFT", SH.pad, -y)
+		h:Show()
+		y = y + 20
+		for _, r in ipairs(g.filas) do
+			nl = nl + 1
+			local link, sub = pool.links[nl], pool.subs[nl]
+			if not link then
+				link = W.Link(sv, "", function(self) O.AbrirTodo(self.psResultado) end)
+				sub = W.Text(sv, "note", "textDim")
+				sub:SetWordWrap(false)
+				pool.links[nl], pool.subs[nl] = link, sub
+			end
+			link.psResultado = r
+			link.psTip = (r.kind == "quest") and T("Abrir su ficha en la Enciclopedia") or T("Poner la flecha hasta ahí")
+			W.SetLinkText(link, tostring(r.title or r.id))
+			link:ClearAllPoints()
+			link:SetPoint("TOPLEFT", sv, "TOPLEFT", SH.pad + 8, -y)
+			link:Show()
+			local st = type(r.subtitle) == "string" and r.subtitle or nil
+			sub:SetText(st or "")
+			sub:ClearAllPoints()
+			sub:SetPoint("LEFT", link, "RIGHT", 10, 0)
+			-- Solo si cabe en la línea: nunca un texto cortado.
+			sub:SetShown(st ~= nil and (8 + link:GetWidth() + 10 + sub:GetStringWidth()) <= width)
+			y = y + 24
+		end
+		y = y + 6
+	end
+	return y
+end
+
+renderSearch = function()
 	if not searchView then
 		searchView = CreateFrame("Frame", nil, win.Body)
 		searchView:SetPoint("TOPLEFT", win.Body, "TOPLEFT", 0, 0)
@@ -1834,6 +2002,7 @@ local function renderSearch()
 		searchView.Enciclopedia:Hide()
 	end
 	for i = shown + 1, #links do links[i]:Hide() end
+	y = layoutTodo(todoPara(query), y)
 	if O.RefreshNav then O.RefreshNav() end
 	if O.LyaHelp then O.LyaHelp(nil) end
 	W.ShellTitle(win, L["Search"], count == 1 and L["1 setting matches"] or string.format(L["%d settings match"], count))

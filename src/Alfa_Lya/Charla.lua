@@ -197,6 +197,7 @@ local function decir(id, e, opts)
 	end
 	local c = {
 		texto = t, pedido = opts.pedido, lineas = 5, ancho = 360, cara = opts.cara, pose = opts.pose,
+		clase = "charla", -- 1.2.8: su tipo, para «Consejos que callaste» (Aprende.lua)
 		segundos = 9 + floor(#t / 28), acciones = acciones,
 		alDecir = function()
 			memoria().v[id] = reloj()

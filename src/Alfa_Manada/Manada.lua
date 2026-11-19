@@ -54,6 +54,11 @@ N.Modulo({
 		marcarRaro = true, -- en grupo, ofrecer la calavera para el raro que seleccionas (1.2.7)
 		cazarJuntos = true, -- compartir tus misiones con la manada y ver con quién cazar (1.2.7)
 		saludo = true, -- al entrar, quién de tu hermandad anda conectado (1.2.7)
+		citas = true, -- proponer y recibir citas de la manada (1.2.8)
+		quienVa = true, -- al llegar a una zona con mazmorra, quién de la manada podría ir (1.2.8)
+		rarosReloj = true, -- cuándo cazaron un raro y si pudo volver (1.2.8)
+		notas = true, -- tus notas en el mapa (1.2.8)
+		notasCompartir = false, -- tus notas también para la manada, y las suyas (1.2.8)
 	},
 	construir = P.Construir,
 })
@@ -108,6 +113,8 @@ local function ayuda()
 		{ "/alfa manada compartir sí|no", L["que la manada vea a tu personaje en el mapa"] },
 		{ "/alfa manada estado", L["qué se envía y qué se recibe ahora"] },
 		{ "/alfa manada llamar", L["pide ayuda a los lobos de tu zona"] },
+		{ "/alfa cita mañana 21:30 <qué>", L["propón una salida a la manada"] },
+		{ "/alfa nota <texto>", L["deja una nota en tu mapa donde estás"] },
 	}) do
 		DEFAULT_CHAT_FRAME:AddMessage("  " .. hex .. l[1] .. "|r  " .. l[2])
 	end
@@ -169,6 +176,13 @@ A.RegisterCommand("manada", function(rest)
 		end
 	elseif cmd == "estado" or cmd == "status" then
 		estado()
+	elseif cmd == "cita" and M.Cita then
+		if arg == "" then P.Abrir() else
+			local que, cuando = M.Cita.Leer(arg)
+			if que then M.Cita.ProponerYDecir(que, cuando) else U.Decir(L["Así: /alfa cita mañana 21:30 Minas de la Muerte"]) end
+		end
+	elseif cmd == "nota" and M.Notas then
+		if arg == "" then U.Decir(L[M.Notas.MOTIVOS.texto]) else M.Notas.AgregarYDecir(arg) end
 	else
 		ayuda()
 	end
@@ -309,4 +323,21 @@ A.OnLogin(function()
 		if on("compartir") and R.Via() == "hermandad" then R.Saludar() end
 	end)
 	A.After(20, function() preguntarSola(1) end)
+	-- 1.2.8: Lya sabe contar lo nuevo de la manada (Pregúntale a Lya).
+	local Lya = rawget(_G, "AlfaLya")
+	if type(Lya) == "table" and type(Lya.Ensenar) == "function" then
+		for _, p in ipairs({
+			{ id = "manada.cita", icono = "ic-reloj", pregunta = L["¿Cómo junto a la manada para una mazmorra?"],
+				respuesta = L["En La Jauría, en «Citas de la manada», escribe qué, elige día y hora y pulsa «Proponer». A tu hermandad le llega con «Voy» y yo te recuerdo 15 minutos antes."] },
+			{ id = "manada.quienva", icono = "ic-mazmorra", pregunta = L["¿Quién de la manada puede ir a una mazmorra conmigo?"],
+				respuesta = L["Al llegar a una zona con una mazmorra para tu nivel, te digo quién de la manada anda cerca y va a tu nivel, con «Invitar»."] },
+			{ id = "manada.reloj", icono = "ic-raros", pregunta = L["¿Cuándo vuelve un raro?"],
+				respuesta = L["Cuando ves caer a un raro, me acuerdo: en su cuadro y en La Jauría te digo hace cuánto lo cazaron y si pudo volver ya (a la media hora, más o menos)."] },
+			{ id = "manada.notas", icono = "icon-note", pregunta = L["¿Puedo dejar notas en el mapa?"],
+				respuesta = L["Sí: escribe /alfa nota y tu texto, o usa «Nota aquí» en La Jauría. Sale en tu mapa donde estás; un clic y la flecha te lleva."] },
+		}) do
+			p.modulo = ID
+			pcall(Lya.Ensenar, p)
+		end
+	end
 end)

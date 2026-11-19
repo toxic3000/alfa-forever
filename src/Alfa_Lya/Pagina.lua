@@ -38,6 +38,14 @@ local MODOS_HISTORIA = {
 }
 local NOMBRE_MODO ={ muchos = L["Consejos: muchos"], pocos = L["Consejos: pocos"], importantes = L["Consejos: solo importantes"] }
 
+-- "2026-11-19" -> "19/11/2026"
+local function fechaBonita(f)
+	if type(f) ~= "string" then return "" end
+	local y, m, d = f:match("^(%d+)%-(%d+)%-(%d+)$")
+	if not y then return f end
+	return d .. "/" .. m .. "/" .. y
+end
+
 local function bienvenidaPendiente()
 	local B = rawget(_G, "AlfaBienvenida")
 	if not (type(B) == "table" and type(B.Pendiente) == "function") then return false end
@@ -161,7 +169,79 @@ local function grupos(padre)
 	historias:Fila({ titulo = L["Tus historias"],
 		texto = L["Todas las misiones que Lya te guardó, por zona, con su historia completa. También con /alfa historias."],
 		control = function(fila) return K.Boton(fila, L["Abrir Historias"], function() if Hi then Hi.Abrir() end end, { tipo = "secundario", tam = "chico", icono = "ic-misiones" }) end })
-	return { ella, consejos, historias }
+	-- 1.2.8: tu historia, el fin de la mazmorra, tus oficios y lo que aprende.
+	local nota = K.GrupoAjustes(padre, { titulo = L["Lo que Lya nota"] })
+	nota:Fila({ titulo = L["Tu historia"], control = interruptor("historia"),
+		texto = L["Lya apunta tus pasos grandes (tu primera mazmorra, tus niveles, tu primera montura...) y festeja cada página nueva."] })
+	nota:Fila({ titulo = L["Al salir de una mazmorra"], control = interruptor("finMazmorra"), activa = visible,
+		texto = L["Lya te cuenta cuánto tardaron, cuántas veces caíste y lo mejor que sacaste."] })
+	nota:Fila({ titulo = L["Tus oficios"], control = interruptor("oficios"),
+		texto = L["Cuando un oficio llega al tope de su rango, Lya te dice que ya puedes aprender el siguiente y dónde está tu instructor."] })
+	nota:Fila({ titulo = L["Lya aprende"], control = interruptor("aprende"), activa = visible,
+		texto = L["Si cierras tres veces el mismo tipo de consejo, Lya te pregunta si ya no quieres que te lo diga."] })
+
+	local Ap = M.Aprende
+	local callados = K.GrupoAjustes(padre, { titulo = L["Consejos que callaste"] })
+	callados.vacia = callados:Fila({ titulo = L["Ninguno por ahora"],
+		texto = L["Si le dices «Ya no» a un consejo, sale aquí para que puedas devolverlo cuando quieras."] })
+	callados.pool = {}
+	for i = 1, 16 do
+		local fila
+		fila = callados:Fila({ titulo = "", control = function(f)
+			return K.Boton(f, L["Devolver"], function() if Ap and fila and fila.alfaClave then Ap.Devolver(fila.alfaClave) end end,
+				{ tipo = "secundario", tam = "chico" })
+		end })
+		K.Mostrar(fila, false)
+		callados.pool[i] = fila
+	end
+	callados.todos = callados:Fila({ titulo = L["Todos los que callaste"],
+		texto = L["Lya vuelve a decirte todos esos consejos."],
+		control = function(f) return K.Boton(f, L["Devolverlos todos"], function() if Ap then Ap.DevolverTodos() end end, { tipo = "secundario", tam = "chico" }) end })
+	function callados:Llenar()
+		local lista = Ap and Ap.Lista() or {}
+		for i, fila in ipairs(self.pool) do
+			local e = lista[i]
+			fila.alfaClave = e and e.clave or nil
+			if e then
+				fila.alfaDatos.titulo = e.nombre
+				fila.alfaDatos.texto = e.fecha and format(L["Lo callaste el %s."], fechaBonita(e.fecha)) or ""
+			end
+			K.Mostrar(fila, e ~= nil)
+		end
+		K.Mostrar(self.vacia, #lista == 0)
+		K.Mostrar(self.todos, #lista > 1)
+	end
+	return { ella, consejos, historias, nota, callados }
+end
+
+---------------------------------------------------------------------------
+-- 1.2.8: Tu historia (TuHistoria.lua)
+---------------------------------------------------------------------------
+local MOSTRAR = 8
+
+local function tuHistoria(padre)
+	local p = K.Pila(padre, { espacio = K.ESP.m })
+	p.Seccion = p:Agregar(K.Seccion(p, L["Tu historia"]))
+	p.Rejilla = p:Agregar(K.Rejilla(p, { min = 260, variante = "normal" }))
+	function p:Llenar()
+		local Di = M.Diario
+		local lista = Di and Di.Lista() or {}
+		local datos = {}
+		for i = 1, math.min(MOSTRAR, #lista) do
+			local e = lista[i]
+			datos[i] = { icono = e.icono or "ic-huella", tono = "acento", sobre = fechaBonita(e.fecha),
+				titulo = Di.Titulo(e), texto = Di.Linea(e) }
+		end
+		if #datos == 0 then
+			datos[1] = { icono = "ic-huella", tono = "neutro", titulo = L["Tu historia empieza pronto"],
+				texto = (Di and not Di.Activo()) and L["El diario está apagado. Préndelo abajo, en «Lo que Lya nota»."]
+					or L["Lya apunta aquí tus pasos grandes: tu primera mazmorra, tus niveles, tu primera montura y más."] }
+		end
+		self.Rejilla:Llenar(datos)
+		self.Seccion:Set(L["Tu historia"], { cuenta = #lista > 0 and #lista or nil,
+			enlace = #lista > 0 and Di and { texto = L["Que Lya te la cuente"], alClic = function() Di.Contar() end } or nil })
+	end
+	return p
 end
 
 local function recuerdo(padre)
@@ -179,13 +259,18 @@ end
 local function construir(view)
 	local ui = {}
 	local t = K.Tablero(view, { margen = N.MargenPagina(), accion = "estado", tituloOpciones = L["Sus consejos"], min = 240 })
+	ui.historia = t:AgregarBloque(tuHistoria(t.Extra))
 	ui.recuerdo = t:AgregarBloque(recuerdo(t.Extra))
 	ui.ajustes = grupos(t.Extra)
 	for i, g in ipairs(ui.ajustes) do t:AgregarBloque(g, { espacio = i == 1 and K.ESP.xl or K.ESP.l }) end
 	K.EnPagina(view, t, function()
 		t:SetAccion(estado())
 		t:SetOpciones(numeros(), L["Lo que te ha contado"])
-		for _, g in ipairs(ui.ajustes) do g:Refrescar() end
+		ui.historia:Llenar()
+		for _, g in ipairs(ui.ajustes) do
+			if g.Llenar then g:Llenar() end
+			g:Refrescar()
+		end
 	end)
 	M.vista = view
 end
@@ -244,6 +329,18 @@ local CONTROLES = {
 		help = L["Lo menos que espera Lya entre una historia y otra. Nunca en combate ni en mazmorras."], search = "stories interval, minutes" },
 	{ kind = "toggle", key = clave("epilogo"), label = L["El final de cada misión"], child = true, disabled = no(cuentaHistorias),
 		help = L["Al entregar una misión, Lya te ofrece contarte cómo terminó."], search = "quest epilogue, ending" },
+	-- 1.2.8
+	{ kind = "toggle", key = clave("historia"), label = L["Tu historia"],
+		help = L["Lya apunta tus pasos grandes (tu primera mazmorra, tus niveles, tu primera montura...) y festeja cada página nueva."], search = "diary, milestones, journal, history" },
+	{ kind = "toggle", key = clave("finMazmorra"), label = L["Al salir de una mazmorra"], disabled = no(visible),
+		help = L["Lya te cuenta cuánto tardaron, cuántas veces caíste y lo mejor que sacaste."], search = "dungeon summary, run, loot, deaths" },
+	{ kind = "toggle", key = clave("oficios"), label = L["Tus oficios"],
+		help = L["Cuando un oficio llega al tope de su rango, Lya te dice que ya puedes aprender el siguiente y dónde está tu instructor."], search = "professions, skill cap, trainer, rank" },
+	{ kind = "toggle", key = clave("aprende"), label = L["Lya aprende"], disabled = no(visible),
+		help = L["Si cierras tres veces el mismo tipo de consejo, Lya te pregunta si ya no quieres que te lo diga."], search = "learn, mute tips, stop telling" },
+	{ kind = "button", label = L["Consejos que callaste"], button = L["Devolverlos todos"], icon = "reset",
+		help = L["Lya vuelve a decirte todos esos consejos."],
+		onClick = function() if M.Aprende then M.Aprende.DevolverTodos() end end, search = "muted tips, restore" },
 	{ kind = "button", label = L["Tus historias"], button = L["Abrir Historias"], icon = "info",
 		needs = function() return M.Historias ~= nil end,
 		help = L["Todas las misiones que Lya te guardó, por zona, con su historia completa. También con /alfa historias."],
