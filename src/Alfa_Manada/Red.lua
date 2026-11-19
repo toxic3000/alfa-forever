@@ -383,6 +383,11 @@ end
 
 local respOficialEn = {} -- clave -> GetTime(): a quién respondí "aquí estoy"
 
+-- Otros tipos de mensaje (1.2.4, Guaridas.lua): R.Oyentes[tipo] =
+-- fn(clave, remitente, via, campos, canal). Los susurros llegan aunque no
+-- compartas; lo difundido, solo si compartes.
+R.Oyentes = {}
+
 -- (evento, prefijo, texto, canal, remitente, destino, zona, número del canal, nombre del canal)
 local function alMensaje(_, prefijo, texto, canal, remitente, _, _, localID, nombreCanal)
 	if U.Secreto(prefijo) or U.Secreto(texto) or U.Secreto(canal) or U.Secreto(remitente) then return end
@@ -408,6 +413,12 @@ local function alMensaje(_, prefijo, texto, canal, remitente, _, _, localID, nom
 
 	-- "Quiero unirme", por susurro: respondo si soy de la hermandad del clan,
 	-- a cualquiera, una vez por minuto por persona.
+	local oyente = R.Oyentes[tipo]
+	if oyente then
+		if canal ~= "WHISPER" and not on("compartir") then return end
+		oyente(clave, remitente, via or "susurro", dividir(resto or ""), canal)
+		return
+	end
 	if canal == "WHISPER" then
 		if tipo == "J" then
 			if not U.EnElClan() then return end

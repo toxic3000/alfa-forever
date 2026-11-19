@@ -786,6 +786,8 @@ local function comando(resto)
 		Ce.Pedir()
 	elseif palabra == "ajustes" then
 		N.Abrir(ID)
+	elseif palabra == "ayuda" and M.Guia then
+		M.Guia.Abrir()
 	elseif palabra == "historias" and M.Historias then
 		M.Historias.Abrir()
 	elseif palabra == "dato" and M.Historias then
@@ -802,7 +804,7 @@ local function comando(resto)
 		end
 	end
 end
-A.RegisterCommand("lya", comando, L["muestra u oculta a Lya, tu loba compañera (también: consejo, dato, historias, ajustes)"])
+A.RegisterCommand("lya", comando, L["muestra u oculta a Lya, tu loba compañera (también: ayuda, consejo, dato, historias, ajustes)"])
 A.RegisterCommand("lobito", comando, L["lo mismo que /alfa lya"], true)
 
 ---------------------------------------------------------------------------
@@ -810,6 +812,9 @@ A.RegisterCommand("lobito", comando, L["lo mismo que /alfa lya"], true)
 --   AlfaLya.Decir(texto, { importante = true, accion = { texto, fn }, id = "mio1" })
 --   AlfaLya.Mostrar(si)   AlfaLya.Consejo()   AlfaLya.Visible()   AlfaLya.Recuerdo()
 ---------------------------------------------------------------------------
+-- Para la guía (Guia.lua, 1.2.4): lo que Lya mira del juego.
+Ce.PeorDurabilidad, Ce.BolsasLibres, Ce.EntregarTodas, Ce.AbrirBolsas = peorDurabilidad, bolsasLibres, entregarTodas, abrirBolsas
+
 local API = type(AlfaLya) == "table" and AlfaLya or {}
 AlfaLya = API
 AlfaLobito = API

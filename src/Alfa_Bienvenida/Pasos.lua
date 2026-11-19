@@ -323,6 +323,50 @@ function M.PantallasDeAjustes()
 	}
 end
 
+---------------------------------------------------------------------------
+-- 1.2.4: el asistente ya no enseña las listas de entrada. Tres perfiles
+-- (tarjetas grandes) escriben de un clic las filas de misiones, tu guía,
+-- comerciantes y viajes y otros jugadores; las listas siguen detrás de
+-- «Afinar cosa por cosa». Un valor nil deja esa fila como está (lo que
+-- rechazas de otros jugadores es muy tuyo: ningún perfil lo toca).
+---------------------------------------------------------------------------
+M.PANTALLAS_PERFIL = { misiones = true, guia = true, comercio = true, gente = true }
+
+M.PERFILES = {
+	{ valor = "manada", icono = "ic-lobo", titulo = "Alfa lo hace por ti",
+		texto = "Acepta y entrega tus misiones, elige tu guía y sigue sola, vende, repara y toma tus vuelos. Tú solo juegas.",
+		filas = { aceptar = true, entregar = true, soloRuta = true, todas = true, grises = true, cerrarSaltadas = true, avisarCierra = true,
+			mejorRecompensa = true, ponerRecompensa = true, elegirGuia = true, siguienteGuia = true, zona = true, mientras = true,
+			clase = true, instructor = "2", flecha = true, camino = true, charla = true, pasoPide = true,
+			vender = true, reparar = true, repararHermandad = true, comprar = true, despojar = true, mapaVuelo = true,
+			tomarVuelo = true, hogar = true, invocar = true, resucitar = true, grupoAmigos = true, liberar = true,
+			progresoGrupo = true, chatGrupo = false, barcos = true } },
+	{ valor = "equilibrio", icono = "ic-huella", titulo = "Equilibrado", sobre = "Recomendado",
+		texto = "Alfa se encarga de lo repetitivo (aceptar, entregar, vender, reparar) y te pregunta en los cruces del camino.",
+		filas = { aceptar = true, entregar = true, soloRuta = true, todas = false, grises = true, cerrarSaltadas = false, avisarCierra = true,
+			mejorRecompensa = false, ponerRecompensa = true, elegirGuia = true, siguienteGuia = false, zona = false, mientras = true,
+			clase = true, instructor = "2", flecha = true, camino = true, charla = true, pasoPide = true,
+			vender = true, reparar = true, repararHermandad = true, comprar = false, despojar = true, mapaVuelo = true,
+			tomarVuelo = false, hogar = false, invocar = true, resucitar = true, grupoAmigos = true, liberar = true,
+			progresoGrupo = true, chatGrupo = false, barcos = true } },
+	{ valor = "yo", icono = "ic-personaje", titulo = "Yo decido",
+		texto = "Alfa te guía con la flecha y te avisa, pero tú aceptas, entregas, eliges y viajas. Lo mínimo: vender lo gris y reparar.",
+		filas = { aceptar = false, entregar = false, soloRuta = true, todas = false, grises = true, cerrarSaltadas = false, avisarCierra = true,
+			mejorRecompensa = false, ponerRecompensa = false, elegirGuia = false, siguienteGuia = false, zona = false, mientras = false,
+			clase = true, instructor = "2", flecha = true, camino = true, charla = false, pasoPide = false,
+			vender = true, reparar = true, repararHermandad = false, comprar = false, despojar = true, mapaVuelo = false,
+			tomarVuelo = false, hogar = false, invocar = false, resucitar = false, grupoAmigos = false, liberar = false,
+			progresoGrupo = true, chatGrupo = false, barcos = true } },
+}
+
+-- Los extras: un mosaico de tarjetas que se prenden con un clic (filas de
+-- las pantallas «apariencia» y «personaje», y resaltar lo de misión).
+M.EXTRAS = {
+	{ "rotacion", "ic-nivel" }, { "curar", "ic-curacion" }, { "avisos", "ic-alerta" }, { "resaltar", "ic-misiones" },
+	{ "recoleccion", "ic-recoleccion" }, { "terreno", "ic-mapa" }, { "paisaje", "ic-mundo" },
+	{ "estiloChat", "ic-conexiones" }, { "estiloMinimapa", "ic-cerca" }, { "estiloBarras", "ic-rejilla" },
+}
+
 -- Lo que el resumen y la página dicen de los idiomas: cada uno en el suyo.
 M.IDIOMAS = {
 	{ "esMX", "Español (Latinoamérica)" },

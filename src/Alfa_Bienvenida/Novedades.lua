@@ -31,6 +31,14 @@ M.NOVEDADES = {
 --   { version, titulo, puntos = { { icono (ic-*), texto } } }
 ---------------------------------------------------------------------------
 M.NOTAS = {
+	{ version = "1.2.4", titulo = "Lya te guía, un asistente más sencillo y las guaridas", puntos = {
+		{ "ic-lobo", "Pregúntale a Lya: clic derecho en ella y «¿En qué te ayudo?». Te explica cada parte de Alfa y te lleva con un clic." },
+		{ "ic-ajustes", "La configuración es más visual: tres tarjetas para decidir cuánto te ayuda Alfa y tus extras en un mosaico." },
+		{ "ic-manada", "Nuevo: las guaridas. Alfa te dice en qué capa de la zona estás y en cuáles anda la manada; con «Pedir entrar» te pasas a la de un lobo con la puerta abierta." },
+		{ "ic-huella", "Los avisos de viaje hablan como la manada: «La manada viaja», el lobo en el aro y una huellita que camina mientras llega tu barco." },
+		{ "ic-lobo", "Lya es quien olfatea los raros y los tesoros: su tarjeta trae «Ir de caza», «Su ficha» y «Seleccionarlo»." },
+		{ "ic-manada", "Si Toxic, el fundador de La Jauría, anda cerca, Alfa te avisa para que lo saludes." },
+	} },
 	{ version = "1.2.3", titulo = "Invitar a una comunidad sin bloqueos", puntos = {
 		{ "ic-manada", "Al invitar a una comunidad ya no sale el aviso de bloqueo: Alfa te deja el nombre listo para copiar y te abre la ventana. A tu hermandad, un clic como antes." },
 		{ "ic-ruta", "El rastreador te avisa si tu plan se quedó sin paso y lo rearma con un clic." },

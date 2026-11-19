@@ -536,6 +536,14 @@ REQUISITOS = [
 ]
 PARCHES += REQUISITOS
 
+# El fundador de Alfa (1.2.4): el aviso de "el fundador anda cerca" buscaba al
+# de Polestar, y el cambio de nombre lo dejo en "Fitz Alfa", que no existe.
+# Ahora es Toxic, con su nombre y apellido como los da Compat.UnitFullName.
+PARCHES += [
+    ("Alfa/Rares/Rares.lua", 'Rares.FOUNDER = "Fitz Alfa"\n',
+     lambda cfg: 'Rares.FOUNDER = "Toxic Darunia" -- Alfa: el fundador de Alfa y de La Jauria\n'),
+]
+
 # Textos que se agregan al final de un archivo: las traducciones de lo nuevo.
 # Textos del motor que el paquete de idioma de Polestar deja en inglés.
 SIN_TRADUCIR_ES = {"Recorder": "Grabadora"}

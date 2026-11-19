@@ -47,6 +47,7 @@ N.Modulo({
 		minimapa = true,
 		invitarMenu = true, -- «Invitar al clan» en el clic derecho de un jugador
 		insigniaRetrato = true, -- la insignia de La Jauría en el borde del retrato (1.2.2)
+		guaridaAbierta = false, -- invitar a quien pida entrar a tu guarida (capa) (1.2.4)
 	},
 	construir = P.Construir,
 })

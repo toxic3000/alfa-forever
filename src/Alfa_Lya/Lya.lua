@@ -447,11 +447,13 @@ local function menu()
 	local SIGUE = { muchos = "pocos", pocos = "importantes", importantes = "muchos" }
 	local frec = Ce.Frecuencia()
 	local grupos = {
-		{ { valor = "silencio", texto = silencio and L["Quitar el silencio"] or L["Silenciar 1 hora"], icono = "ic-reloj" } },
+		-- 1.2.4: lo primero, la guía de todo Alfa («Volver a mostrar los consejos
+		-- vistos» se quedó en la página de Lya para que el menú siga en 10 filas).
+		{ { valor = "guia", texto = L["¿En qué te ayudo?"], icono = "ic-info" },
+		  { valor = "silencio", texto = silencio and L["Quitar el silencio"] or L["Silenciar 1 hora"], icono = "ic-reloj" } },
 		{},
 		{ { valor = "frec", texto = L[FREC[frec]], icono = "ic-filtro" } },
 		{ { valor = "bloquear", texto = bloqueado and L["Desbloquear posición"] or L["Bloquear posición"], icono = "ic-seguir" },
-		  { valor = "vistos", texto = L["Volver a mostrar los consejos vistos"], icono = "ic-lista" },
 		  { valor = "ajustes", texto = L["Ajustes de Lya"], icono = "ic-ajustes" },
 		  { valor = "ocultar", texto = L["Ocultar a Lya"], icono = "ic-cerrar" } },
 	}
@@ -477,7 +479,8 @@ local function menu()
 		end
 	end
 	K.Menu(f, opciones, nil, function(v)
-		if v == "silencio" then Ce.Silenciar(not silencio)
+		if v == "guia" then if M.Guia then M.Guia.Abrir() end
+		elseif v == "silencio" then Ce.Silenciar(not silencio)
 		elseif v == "dato" then Hi.Contar()
 		elseif v == "algo" then Ch.Contar()
 		elseif v == "gente" then Ch.Gente()
@@ -650,8 +653,8 @@ local function construirLya()
 		M.Cerebro.Pedir()
 	end)
 	f:SetScript("OnEnter", function(self)
-		local texto = N.Get(ID, "bloqueado") and L["Clic: un consejo. Clic derecho: mis opciones."]
-			or L["Clic: un consejo. Clic derecho: mis opciones. Arrástrame para moverme."]
+		local texto = N.Get(ID, "bloqueado") and L["Clic: un consejo. Clic derecho: «¿En qué te ayudo?» y mis opciones."]
+			or L["Clic: un consejo. Clic derecho: «¿En qué te ayudo?» y mis opciones. Arrástrame para moverme."]
 		K.MostrarInfo(self, L["Lya, la loba de confianza del Alfa"], texto)
 	end)
 	f:SetScript("OnLeave", function(self) K.OcultarInfo(self) end)

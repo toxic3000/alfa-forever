@@ -1,0 +1,365 @@
+-- Alfa - Lya: «Pregúntale a Lya», la guía de todo Alfa (1.2.4).
+-- toxic3000 / La Jauría. GPL-3.0.
+--
+-- Una ventana del Kit donde Lya te explica Alfa con sus palabras y te lleva
+-- a cada cosa con un clic:
+--   * su globo arriba: lo que te responde, con «Llévame» cuando hay a dónde;
+--   * «Ahora mismo»: lo que te serviría ya (bolsas llenas, equipo roto,
+--     misiones por entregar...), solo si aplica;
+--   * «Preguntas»: dudas comunes con su respuesta corta;
+--   * «Todo lo que hay en Alfa»: una tarjeta por página, sacada de las
+--     páginas registradas (N.modulos). Lo que Alfa agregue en el futuro sale
+--     aquí solo, sin tocar este archivo.
+-- Un buscador filtra las tres listas.
+--
+-- Otros módulos (y los que vengan) le enseñan a Lya con:
+--   AlfaLya.Ensenar({ id, pregunta, respuesta, icono, modulo = "id" | abrir = fn, palabras = "..." })
+--   AlfaLya.Guia()   abre la ventana
+-- Y cuando llega una página nueva de Alfa (una versión nueva), Lya la
+-- presenta una vez: «Hay algo nuevo en Alfa: …», con «Conocerlo».
+
+local ADDON, M = ...
+local N = AlfaNucleo
+local A = N.A
+local K = N.Kit
+local L = M.L
+local ID = M.ID
+local ESP = K.ESP
+
+local Gi = {}
+M.Guia = Gi
+
+local type, ipairs, pairs, format, lower = type, ipairs, pairs, string.format, string.lower
+
+---------------------------------------------------------------------------
+-- Lo que Lya sabe responder
+---------------------------------------------------------------------------
+
+local PREGUNTAS = {}
+local porId = {}
+
+function Gi.Ensenar(p)
+	if type(p) ~= "table" or type(p.id) ~= "string" or type(p.pregunta) ~= "string" or type(p.respuesta) ~= "string" then return false end
+	if porId[p.id] then
+		for i, x in ipairs(PREGUNTAS) do if x.id == p.id then PREGUNTAS[i] = p end end
+	else
+		PREGUNTAS[#PREGUNTAS + 1] = p
+	end
+	porId[p.id] = p
+	return true
+end
+
+local function hay(id) return N.ModuloPorId and N.ModuloPorId(id) ~= nil end
+
+-- Las de fábrica. Los textos son claves (se traducen al mostrarlos).
+local BASE = {
+	{ id = "empezar", icono = "ic-hoy", modulo = "inicio", pregunta = "¿Por dónde empiezo?",
+		respuesta = "Abre Hoy: ahí te digo lo más útil para este momento en grande, y tu camino a un par de clics." },
+	{ id = "guia", icono = "ic-ruta", modulo = "rutas", pregunta = "¿Cómo sigo una guía para subir de nivel?",
+		respuesta = "En Ruta eliges a dónde ir y yo te armo el camino. La flecha te lleva paso a paso y el rastrador te dice qué toca." },
+	{ id = "cerrar", icono = "ic-misiones", modulo = "rutas", pregunta = "Tengo muchas misiones a medias, ¿qué hago?",
+		respuesta = "Pide «Cerrar mis misiones» en Ruta: te llevo a terminar las que llevas y luego a entregarlas, en el mejor orden." },
+	{ id = "buscar", icono = "ic-enciclopedia", modulo = "enciclopedia", pregunta = "¿Dónde consigo un objeto o encuentro a alguien?",
+		respuesta = "Búscalo en la Enciclopedia: objetos, PNJ, misiones, zonas y raros, con dónde están y el botón «Guíame»." },
+	{ id = "talentos", icono = "ic-talentos", modulo = "builds", pregunta = "¿Qué talentos pongo?",
+		respuesta = "En Talentos te digo qué punto poner y por qué, según tu clase y cómo juegas." },
+	{ id = "rotacion", icono = "ic-nivel", modulo = "combate", pregunta = "¿Qué habilidad uso en combate?",
+		respuesta = "Prende la ayuda de rotación en Combate: te sugiero qué usar ahora y qué sigue. Solo sugiero; los botones los presionas tú." },
+	{ id = "mazmorras", icono = "ic-mazmorra", modulo = "mazmorras", pregunta = "¿Qué mazmorra me toca?",
+		respuesta = "En Mazmorras ves cuáles van con tu nivel, sus jefes, su botín, sus misiones y cómo llegar a la entrada." },
+	{ id = "bolsas", icono = "ic-bolsas", modulo = "bolsas", pregunta = "Mis bolsas son un desorden",
+		respuesta = "Las bolsas de Alfa acomodan todo por categorías, marcan lo nuevo y lo de misión, y depositan rápido en el banco." },
+	{ id = "dinero", icono = "ic-comercio", modulo = "comercio", pregunta = "¿Cuánto vale lo que tengo?",
+		respuesta = "En Comercio ves precios de la subasta y qué te conviene vender. Yo vendo lo gris por ti con el comerciante." },
+	{ id = "recolectar", icono = "ic-recoleccion", modulo = "recoleccion", pregunta = "¿Dónde hay minas o hierbas?",
+		respuesta = "Recolección te marca en el mapa y el minimapa las de tus profesiones, y recuerda dónde las encontraste." },
+	{ id = "manada", icono = "ic-manada", modulo = "manada", pregunta = "¿Cómo encuentro a la manada?",
+		respuesta = "En La Jauría ves a tu grupo y a los lobos que se dejan ver en el mapa. Puedes seguirlos con la flecha o invitarlos." },
+	{ id = "guaridas", icono = "ic-huella", modulo = "manada", pregunta = "¿Cómo me cambio de capa (guarida)?",
+		respuesta = "En La Jauría > Guaridas te digo en cuál estás y en cuáles anda la manada. Con «Pedir entrar» te pasas a la de un lobo con la puerta abierta." },
+	{ id = "invitar", icono = "ic-manada", modulo = "manada", pregunta = "¿Cómo invito a alguien al clan?",
+		respuesta = "Clic derecho en su retrato o en su nombre del chat y elige «Invitar al clan». A tu hermandad le llega con un clic." },
+	{ id = "estilo", icono = "ic-apariencia", modulo = "bienvenida", pregunta = "¿Puedo cambiar cómo se ve Alfa?",
+		respuesta = "Sí: Alfa, Clásico WoW o Cristal, con tu color. También puede vestir el chat, el minimapa y las barras." },
+	{ id = "auto", icono = "ic-ajustes", pregunta = "¿Qué hace Alfa sola por mí?",
+		respuesta = "Lo que elegiste al configurarlo: aceptar y entregar misiones, vender lo gris, reparar, tomar vuelos... Lo cambias cuando quieras.",
+		abrir = function() local B = rawget(_G, "AlfaBienvenida") if B and B.Abrir then B.Abrir("asistente") end end,
+		existe = function() return rawget(_G, "AlfaBienvenida") ~= nil end },
+	{ id = "historias", icono = "ic-misiones", pregunta = "Me salté la historia de una misión",
+		respuesta = "¡Yo te la guardé! En Historias está todo lo que cuentan tus misiones, para leerlo cuando quieras.",
+		abrir = function() if M.Historias then M.Historias.Abrir() end end, existe = function() return M.Historias ~= nil end },
+	{ id = "lya", icono = "ic-lobo", modulo = "lya", pregunta = "¿Quién eres, Lya?",
+		respuesta = "Soy Lya, la loba de confianza del Alfa. Te acompaño, te cuento el lore de cada lugar y te ayudo con todo lo de Alfa. Y me encantan las salchichas." },
+	{ id = "comandos", icono = "ic-info", pregunta = "¿Cómo abro Alfa?",
+		respuesta = "Con /alfa, con el lobo del minimapa o dándome clic derecho. Para hablar conmigo de todo esto: /alfa ayuda." },
+}
+for _, p in ipairs(BASE) do p.base = true Gi.Ensenar(p) end
+
+local function vigente(p)
+	if p.existe then
+		local ok, si = pcall(p.existe)
+		return ok and si and true or false
+	end
+	if p.modulo then return hay(p.modulo) end
+	return true
+end
+
+local function texto(p, campo)
+	local t = p[campo]
+	if p.base then return L[t] end
+	return t
+end
+
+-- Abrir lo de una pregunta o una página.
+local function llevar(p)
+	if p.abrir then return K.Llamar(p.abrir) end
+	if p.modulo then N.Abrir(p.modulo) end
+end
+
+---------------------------------------------------------------------------
+-- Ahora mismo: lo que te serviría ya
+---------------------------------------------------------------------------
+local function ahora()
+	local Ce = M.Cerebro
+	local lista = {}
+	local d = Ce.PeorDurabilidad and Ce.PeorDurabilidad()
+	if d and d <= 40 then
+		lista[#lista + 1] = { icono = "ic-alerta", titulo = L["Tu equipo está por romperse"],
+			texto = format(L["Lo más gastado va al %d %%. Te llevo con quien repare."], math.floor(d + 0.5)),
+			fn = function() local C = rawget(_G, "AlfaCerca") if C and C.Ir then C.Ir("repair") end end,
+			existe = rawget(_G, "AlfaCerca") ~= nil }
+	end
+	local libres = Ce.BolsasLibres and Ce.BolsasLibres()
+	if libres and libres <= 4 then
+		lista[#lista + 1] = { icono = "ic-bolsas", titulo = L["Casi no te queda espacio"],
+			texto = format(L["Te quedan %d espacios en las bolsas. Vende lo gris o guarda en el banco."], libres),
+			fn = function() if Ce.AbrirBolsas then Ce.AbrirBolsas() end end, existe = true }
+	end
+	local R = rawget(_G, "AlfaRuta")
+	if type(R) == "table" and type(R.Listas) == "function" then
+		local ok, n = pcall(R.Listas)
+		if ok and type(n) == "number" and n >= 2 then
+			lista[#lista + 1] = { icono = "ic-misiones", titulo = format(L["%d misiones listas para entregar"], n),
+				texto = L["Te llevo a entregarlas todas en el mejor orden."], fn = function() if Ce.EntregarTodas then Ce.EntregarTodas() end end, existe = true }
+		end
+	end
+	local B = rawget(_G, "AlfaBienvenida")
+	if B and B.Notas then
+		lista[#lista + 1] = { icono = "ic-lobo", titulo = L["Lo nuevo de esta versión"],
+			texto = L["Lo que trajo la última versión de Alfa, contado corto."], fn = function() B.Notas() end, existe = true }
+	end
+	local out = {}
+	for _, x in ipairs(lista) do if x.existe then out[#out + 1] = x end end
+	return out
+end
+
+---------------------------------------------------------------------------
+-- La ventana
+---------------------------------------------------------------------------
+local v
+local ui = {}
+
+local function coincide(filtro, ...)
+	if filtro == "" then return true end
+	for i = 1, select("#", ...) do
+		local s = select(i, ...)
+		if type(s) == "string" and lower(s):find(filtro, 1, true) then return true end
+	end
+	return false
+end
+
+-- El globo de Lya: lo que dice y a dónde lleva.
+local function globo(padre)
+	local b = CreateFrame("Frame", nil, padre)
+	b.caja = K.Caja(b, { fondo = "panel", borde = "acento", corte = K.CORTE.panel, alfaBorde = 0.6 })
+	b.Lobo = b:CreateTexture(nil, "ARTWORK")
+	b.Lobo:SetSize(64, 64)
+	b.Lobo:SetTexture(K.Lobo("atento"))
+	K.Pintar(b.Lobo, function(t) t:SetVertexColor(K.Color("acento")) end)
+	b.Nombre = K.Texto(b, "mayus", "acento")
+	b.Texto = K.Texto(b, "cuerpo", "texto")
+	b.Ir = K.Boton(b, L["Llévame"], function() if b.alfaP then llevar(b.alfaP) end end, { tipo = "primario", icono = "ic-seguir" })
+	function b:Decir(t, p)
+		self.alfaP = p
+		K.Escribir(self.Nombre, K.Mayus and K.Mayus("Lya") or "LYA")
+		K.Escribir(self.Texto, t)
+		K.Mostrar(self.Ir, p ~= nil and (p.abrir ~= nil or p.modulo ~= nil or p.fn ~= nil))
+		if p and p.fn then self.Ir.alClic = function() K.Llamar(p.fn) end
+		else self.Ir.alClic = function() if self.alfaP then llevar(self.alfaP) end end end
+		if v and v.alAcomodar then v.alAcomodar() end
+	end
+	function b:Acomodar(ancho)
+		self:SetWidth(ancho)
+		local pad = ESP.l
+		local x = pad + 64 + ESP.base
+		local w = ancho - x - pad
+		self.Lobo:ClearAllPoints()
+		self.Lobo:SetPoint("TOPLEFT", self, "TOPLEFT", pad, -pad)
+		local y = pad
+		self.Nombre:ClearAllPoints()
+		self.Nombre:SetPoint("TOPLEFT", self, "TOPLEFT", x, -y)
+		y = y + K.AltoTexto(self.Nombre) + 4
+		self.Texto:ClearAllPoints()
+		self.Texto:SetPoint("TOPLEFT", self, "TOPLEFT", x, -y)
+		y = y + K.Parrafo(self.Texto, w) + ESP.m
+		if self.Ir:IsShown() and not self.Ir.alfaOculto then
+			self.Ir:ClearAllPoints()
+			self.Ir:SetPoint("TOPLEFT", self, "TOPLEFT", x, -y)
+			y = y + K.num(self.Ir:GetHeight(), K.ALTO.boton) + ESP.m
+		end
+		local alto = math.max(y - ESP.m + pad, pad * 2 + 64)
+		self:SetHeight(alto)
+		return alto
+	end
+	return b
+end
+
+local function decir(t, p)
+	if ui.globo then ui.globo:Decir(t, p) end
+	-- Si está en pantalla, da un saltito al responder.
+	local UI = M.UI
+	if UI and UI.Saltar and UI.Visible and UI.Visible() then pcall(UI.Saltar) end
+end
+
+local function llenar()
+	local filtro = lower(ui.buscador and ui.buscador:Texto() or "")
+	-- Ahora mismo
+	local ya = {}
+	if filtro == "" then
+		for _, x in ipairs(ahora()) do
+			ya[#ya + 1] = { icono = x.icono, titulo = x.titulo, texto = x.texto, tono = "aviso", alClic = function() decir(x.texto, x) end }
+		end
+	end
+	ui.secAhora:SetShown(#ya > 0)
+	K.Mostrar(ui.secAhora, #ya > 0)
+	K.Mostrar(ui.rejAhora, #ya > 0)
+	ui.rejAhora:Llenar(ya)
+	-- Preguntas
+	local qs = {}
+	for _, p in ipairs(PREGUNTAS) do
+		if vigente(p) then
+			local q, r = texto(p, "pregunta"), texto(p, "respuesta")
+			if coincide(filtro, q, r, p.palabras) then
+				qs[#qs + 1] = { icono = p.icono or "ic-info", titulo = q, alClic = function() decir(r, p) end }
+			end
+		end
+	end
+	K.Mostrar(ui.secPreg, #qs > 0)
+	K.Mostrar(ui.rejPreg, #qs > 0)
+	ui.rejPreg:Llenar(qs)
+	-- Todo lo que hay en Alfa: las páginas registradas (también las futuras).
+	local mods = {}
+	local lista = {}
+	for _, m in ipairs(N.modulos or {}) do lista[#lista + 1] = m end
+	table.sort(lista, function(a, b) return (a.orden or 99) < (b.orden or 99) end)
+	for _, m in ipairs(lista) do
+		local nombre, sub = m.nombre or m.id, m.subtitulo or ""
+		if coincide(filtro, nombre, sub, m.id) then
+			mods[#mods + 1] = { icono = m.icono or "ic-lobo", titulo = nombre, texto = sub,
+				alClic = function()
+					decir(sub ~= "" and format(L["%s: %s"], nombre, sub) or nombre, { modulo = m.id })
+				end }
+		end
+	end
+	K.Mostrar(ui.secMods, #mods > 0)
+	K.Mostrar(ui.rejMods, #mods > 0)
+	ui.rejMods:Llenar(mods)
+	K.Mostrar(ui.vacio, #qs == 0 and #mods == 0)
+	if v and v.alAcomodar then v.alAcomodar() end
+end
+
+local function acomodar()
+	if not (v and v:IsShown() and ui.pila) then return end
+	local ancho = v:AnchoCuerpo() - 2 * v.margen
+	local h = ui.pila:Acomodar(ancho)
+	ui.pila:ClearAllPoints()
+	ui.pila:SetPoint("TOPLEFT", v.Cuerpo, "TOPLEFT", v.margen, -v.margen)
+	v:SetAltoContenido(h + 2 * v.margen)
+end
+
+local function armar()
+	v = K.Ventana({ nombre = "AlfaLyaGuia", titulo = L["Pregúntale a Lya"], icono = "ic-lobo", ancho = 760, alto = 640, desplazar = true })
+	v:SetTitulo(L["Pregúntale a Lya"], L["Todo lo de Alfa, explicado por Lya y a un clic"], "ic-lobo")
+	v.alAcomodar = acomodar
+	local p = K.Pila(v.Cuerpo, { espacio = ESP.base })
+	ui.pila = p
+	ui.globo = p:Agregar(globo(p))
+	ui.buscador = p:Agregar(K.Buscador(p, { ayuda = L["¿Qué buscas? Escribe una palabra"], alCambiar = function() llenar() end }), { espacio = ESP.l })
+	ui.secAhora = p:Agregar(K.Seccion(p, L["Ahora mismo te ayudaría con"]), { espacio = ESP.l })
+	ui.rejAhora = p:Agregar(K.Rejilla(p, { min = 220, variante = "compacta" }), { espacio = ESP.s })
+	ui.secPreg = p:Agregar(K.Seccion(p, L["Preguntas"]), { espacio = ESP.l })
+	ui.rejPreg = p:Agregar(K.Rejilla(p, { min = 300, variante = "compacta" }), { espacio = ESP.s })
+	ui.secMods = p:Agregar(K.Seccion(p, L["Todo lo que hay en Alfa"]), { espacio = ESP.l })
+	ui.rejMods = p:Agregar(K.Rejilla(p, { min = 220 }), { espacio = ESP.s })
+	local vacio = CreateFrame("Frame", nil, p)
+	vacio.Texto = K.Texto(vacio, "nota", "textoTenue")
+	vacio.Texto:SetPoint("TOPLEFT")
+	K.Escribir(vacio.Texto, L["No sé de eso todavía. Prueba con otra palabra, o pregúntale a la manada en el Discord."])
+	function vacio:Acomodar(ancho) local h = K.Parrafo(self.Texto, ancho) self:SetHeight(h) return h end
+	ui.vacio = p:Agregar(vacio, { espacio = ESP.l })
+end
+
+local SALUDOS = {
+	"¡Hola! Pregúntame lo que quieras de Alfa: te lo explico corto y te llevo.",
+	"¿En qué te ayudo? Toca una pregunta o una página y te cuento.",
+	"Aquí estoy. Si no sabes por dónde empezar, toca «¿Por dónde empiezo?».",
+}
+
+function Gi.Abrir(pregunta)
+	if not N.Permitido or N.Permitido() then
+		if not v then armar() end
+		v:Abrir()
+		if ui.buscador and ui.buscador.SetTexto then ui.buscador:SetTexto("") end
+		llenar()
+		local p = pregunta and porId[pregunta]
+		if p and vigente(p) then decir(texto(p, "respuesta"), p)
+		else decir(L[SALUDOS[math.random(#SALUDOS)]], nil) end
+		K.Despues(0.05, acomodar)
+		return true
+	end
+	return false
+end
+
+function Gi.Visible() return v ~= nil and v:IsShown() end
+
+---------------------------------------------------------------------------
+-- Lo nuevo de Alfa: Lya presenta cada página nueva una vez
+---------------------------------------------------------------------------
+local function presentarNuevas()
+	local d = N.Datos(ID)
+	local primera = type(d.conocidos) ~= "table"
+	d.conocidos = type(d.conocidos) == "table" and d.conocidos or {}
+	local nueva
+	for _, m in ipairs(N.modulos or {}) do
+		if not d.conocidos[m.id] then
+			d.conocidos[m.id] = true
+			if not primera and not nueva then nueva = m end
+		end
+	end
+	if not nueva then return end
+	local Ce = M.Cerebro
+	Ce.Decir({ id = "nuevo:" .. nueva.id, importante = true, salto = true,
+		texto = format(L["¡Hay algo nuevo en Alfa: %s! ¿Te lo enseño?"], nueva.nombre or nueva.id),
+		acciones = { { texto = L["Conocerlo"], fn = function() N.Abrir(nueva.id) end },
+			{ texto = L["Pregúntale a Lya"], fn = function() Gi.Abrir() end } } })
+end
+
+A.OnLogin(function() A.After(25, function() pcall(presentarNuevas) end) end)
+
+---------------------------------------------------------------------------
+-- Entradas: /alfa ayuda, /alfa lya ayuda (Cerebro.lua), el menú de Lya
+-- (Lya.lua) y AlfaLya.Guia()
+---------------------------------------------------------------------------
+A.RegisterCommand("ayuda", function() Gi.Abrir() end, L["Pregúntale a Lya: todo lo de Alfa explicado y a un clic"])
+
+local API = AlfaLya
+if type(API) == "table" then
+	API.Guia = function(pregunta) return Gi.Abrir(pregunta) end
+	API.Ensenar = function(p)
+		if type(p) ~= "table" then return false end
+		local c = {}
+		for k, x in pairs(p) do c[k] = x end
+		c.base = nil
+		return Gi.Ensenar(c)
+	end
+end

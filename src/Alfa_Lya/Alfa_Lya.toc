@@ -18,3 +18,4 @@ Historias.lua
 Charla.lua
 VentanaHistorias.lua
 Pagina.lua
+Guia.lua

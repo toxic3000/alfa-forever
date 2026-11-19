@@ -400,6 +400,236 @@ local function recomendar()
 end
 
 ---------------------------------------------------------------------------
+-- 1.2.4: un asistente para elegir con la vista, no con listas.
+--   * Lya se presenta y habla en cada paso (su globo arriba);
+--   * «¿Cuánto te ayudo?»: tres tarjetas grandes (M.PERFILES) que escriben
+--     de un clic todo lo de misiones, guía, comerciantes y otros jugadores;
+--     las listas de siempre quedan detrás de «Afinar cosa por cosa»;
+--   * «Tus extras»: un mosaico (M.EXTRAS) que se prende con un clic.
+---------------------------------------------------------------------------
+
+-- El globo de Lya sobre un paso: su cara y lo que dice.
+local function lyaDice(pila, texto, lobo)
+	local b = CreateFrame("Frame", nil, pila)
+	b.caja = K.Caja(b, { fondo = "panel", borde = "acento", corte = K.CORTE.panel, alfaBorde = 0.5 })
+	b.Lobo = b:CreateTexture(nil, "ARTWORK")
+	b.Lobo:SetSize(40, 40)
+	b.Lobo:SetTexture(K.Lobo(lobo or "normal"))
+	K.Pintar(b.Lobo, function(t) t:SetVertexColor(K.Color("acento")) end)
+	b.Nombre = K.Texto(b, "mayus", "acento")
+	K.Escribir(b.Nombre, K.Mayus("Lya"))
+	b.Texto = K.Texto(b, "texto", "texto")
+	K.Escribir(b.Texto, texto)
+	function b:Acomodar(ancho)
+		local pad = ESP.m
+		local x = pad + 40 + ESP.m
+		self.Lobo:ClearAllPoints()
+		self.Lobo:SetPoint("TOPLEFT", self, "TOPLEFT", pad, -pad)
+		self.Nombre:ClearAllPoints()
+		self.Nombre:SetPoint("TOPLEFT", self, "TOPLEFT", x, -pad)
+		local y = pad + K.AltoTexto(self.Nombre) + 3
+		self.Texto:ClearAllPoints()
+		self.Texto:SetPoint("TOPLEFT", self, "TOPLEFT", x, -y)
+		y = y + K.Parrafo(self.Texto, ancho - x - pad) + pad
+		local h = math.max(y, pad * 2 + 40)
+		self:SetHeight(h)
+		return h
+	end
+	pila:Agregar(b)
+	return b
+end
+
+local function lyaHay() return rawget(_G, "AlfaLya") ~= nil and A.Get("lya.mostrar") ~= nil end
+
+-- Todas las filas que existen, por id (con su leer y escribir).
+local function filasPorId(soloPantallas)
+	local t = {}
+	for _, p in ipairs(M.PantallasDeAjustes()) do
+		if not soloPantallas or soloPantallas[p.id] then
+			for _, g in ipairs(filtrar(p)) do
+				for _, f in ipairs(g.filas) do t[f.id] = f end
+			end
+		end
+	end
+	return t
+end
+
+local function perfilDe(valor)
+	for _, x in ipairs(M.PERFILES) do if x.valor == valor then return x end end
+end
+
+local function aplicarPerfil(valor)
+	local per = perfilDe(valor)
+	if not per then return end
+	local filas = filasPorId(M.PANTALLAS_PERFIL)
+	for id, x in pairs(per.filas) do
+		local f = filas[id]
+		if f and x ~= nil then pcall(f.escribir, x) end
+	end
+	datos().perfil = valor
+end
+M.AplicarPerfil = aplicarPerfil
+
+local function pasoPerfil()
+	local pantallas = {}
+	for _, p in ipairs(M.PantallasDeAjustes()) do
+		if M.PANTALLAS_PERFIL[p.id] then
+			local grupos = filtrar(p)
+			if #grupos > 0 then pantallas[#pantallas + 1] = { p = p, grupos = grupos } end
+		end
+	end
+	local bloques = {}
+	return {
+		id = "perfil", corto = "Cuánto te ayuda Alfa",
+		titulo = L["¿Cuánto quieres que Alfa haga por ti?"],
+		texto = L["Elige una y listo: Alfa ajusta tus misiones, tu guía, los comerciantes y los viajes. Mantén presionado Mayús en el juego para decidir tú en el momento."],
+		construir = function(pila)
+			lyaDice(pila, L["Unos prefieren que yo haga lo aburrido y otros quieren hacerlo todo. Tú dime, y si cambias de idea, lo cambias cuando quieras."], "atento")
+			local opciones = {}
+			for i, x in ipairs(M.PERFILES) do
+				opciones[i] = { valor = x.valor, icono = x.icono, titulo = x.titulo, texto = x.texto, sobre = x.sobre }
+			end
+			ui.opPerfil = eleccion(pila, { opciones = opciones, min = 250, variante = "accion",
+				leer = function() return datos().perfil end,
+				guardar = function(x)
+					aplicarPerfil(x)
+					for _, b in ipairs(bloques) do b:Refrescar() end
+				end })
+			-- Las listas, solo para quien las pide.
+			local fila = CreateFrame("Frame", nil, pila)
+			fila:SetHeight(K.ALTO.boton)
+			local afinar = K.Boton(fila, L["Afinar cosa por cosa"], nil, { tipo = "fantasma", icono = "ic-filtro" })
+			afinar:SetPoint("LEFT", fila, "LEFT", 0, 0)
+			pila:Agregar(fila, { espacio = ESP.l })
+			local detalle = K.Pila(pila, { espacio = ESP.l })
+			pila:Agregar(detalle, { espacio = ESP.m })
+			for _, x in ipairs(pantallas) do
+				detalle:Agregar(K.Seccion(detalle, L[x.p.corto]))
+				for _, g in ipairs(x.grupos) do
+					local ga = K.GrupoAjustes(detalle, { titulo = L[g.titulo] })
+					local porIdG = {}
+					for _, f in ipairs(g.filas) do porIdG[f.id] = f end
+					for _, f in ipairs(g.filas) do
+						local madre = f.hija and porIdG[f.hija]
+						ga:Fila({
+							titulo = L[f.titulo], texto = L[f.texto], hija = madre ~= nil,
+							activa = madre and function() local ok, v2 = pcall(madre.leer) return ok and v2 and true or false end or nil,
+							control = function(filaC)
+								local function cambio()
+									datos().perfil = "propio"
+									if ui.opPerfil then ui.opPerfil:Refrescar() end
+									for _, b in ipairs(bloques) do b:Refrescar() end
+								end
+								if f.opciones then
+									return K.Desplegable(filaC, { opciones = opcionesTraducidas(f), ancho = 170, get = f.leer,
+										set = function(x2) f.escribir(x2) cambio() end })
+								end
+								return K.Interruptor(filaC, { get = f.leer, set = f.escribir, alCambiar = cambio })
+							end,
+						})
+					end
+					bloques[#bloques + 1] = detalle:Agregar(ga, { espacio = ESP.s })
+				end
+			end
+			K.Mostrar(detalle, false)
+			afinar.alClic = function()
+				local ver = detalle.alfaOculto and true or false
+				K.Mostrar(detalle, ver)
+				afinar:SetTexto(ver and L["Ocultar los detalles"] or L["Afinar cosa por cosa"])
+				for _, b in ipairs(bloques) do b:Refrescar() end
+				acomodarYa()
+			end
+		end,
+		alMostrar = function()
+			if ui.opPerfil then ui.opPerfil:Refrescar() end
+			for _, b in ipairs(bloques) do b:Refrescar() end
+		end,
+		resumen = function()
+			local per = perfilDe(datos().perfil)
+			return per and L[per.titulo] or L["A tu medida"]
+		end,
+	}
+end
+
+local function pasoExtras()
+	local filas = filasPorId()
+	local lista = {}
+	for _, x in ipairs(M.EXTRAS) do
+		local f = filas[x[1]]
+		if f and not f.opciones then lista[#lista + 1] = { f = f, icono = x[2] } end
+	end
+	if #lista == 0 then return nil end
+	return {
+		id = "extras", corto = "Tus extras",
+		titulo = L["Elige tus extras"],
+		texto = L["Toca una tarjeta para prenderla o apagarla. Las encendidas llevan el borde de color."],
+		construir = function(pila)
+			lyaDice(pila, L["Ya te dejé prendido lo que le va a tu clase. Agrega o quita lo que quieras: nada de esto juega por ti."], "normal")
+			local r = pila:Agregar(K.Rejilla(pila, { min = 220, gap = ESP.m }))
+			function r:Refrescar()
+				local datosR = {}
+				for i, x in ipairs(lista) do
+					local ok, on = pcall(x.f.leer)
+					on = ok and on and true or false
+					datosR[i] = { icono = x.icono, tono = on and "acento" or "neutro", titulo = L[x.f.titulo], texto = L[x.f.texto],
+						elegida = on, insignias = { on and { L["Encendido"], "acento", "ic-exito" } or { L["Apagado"], "neutro" } },
+						alClic = function()
+							pcall(x.f.escribir, not on)
+							r:Refrescar()
+							acomodar()
+						end }
+				end
+				self:Llenar(datosR)
+			end
+			ui.rejExtras = r
+			r:Refrescar()
+		end,
+		alMostrar = function() if ui.rejExtras then ui.rejExtras:Refrescar() end end,
+		resumen = function()
+			local si = {}
+			for _, x in ipairs(lista) do
+				local ok, on = pcall(x.f.leer)
+				if ok and on then si[#si + 1] = L[x.f.titulo] end
+			end
+			if #si == 0 then return L["Ninguno"] end
+			return table.concat(si, ", ")
+		end,
+	}
+end
+
+-- Lya se presenta (en vez de «Qué es Alfa», con el mismo mensaje en su voz).
+local LYA_HOLA = {
+	"¡Hola! Soy Lya, la loba de confianza del Alfa. Voy a acompañarte en esta configuración y después en tu camino.",
+	"Alfa lo creó toxic3000 para sus amigos y quiso compartirlo con todos. No juega por ti: te ayuda a entender y disfrutar el juego a tu ritmo.",
+	"Cuando no sepas algo de Alfa, dame clic derecho y elige «¿En qué te ayudo?»: te explico cada cosa y te llevo a ella. También te cuento historias del lugar donde estás.",
+}
+
+local function pasoLya()
+	return {
+		id = "lya", corto = "Lya",
+		titulo = L["Te presento a Lya"],
+		texto = L["Tu compañera en Alfa. Lleva el nombre de una gran perrita, en su memoria."],
+		construir = function(pila)
+			for i, t in ipairs(LYA_HOLA) do
+				lyaDice(pila, L[t], i == 1 and "aullando" or (i == 2 and "normal" or "atento"))
+			end
+			ui.opLya = eleccion(pila, { min = 260,
+				opciones = {
+					{ valor = true, icono = "ic-lobo", titulo = "¡Sí, acompáñame!", sobre = "Recomendado",
+						texto = "Lya se queda en tu pantalla: consejos cortos, historias y atajos a todo Alfa." },
+					{ valor = false, icono = "ic-cerrar", titulo = "Solo cuando te llame",
+						texto = "Lya descansa. La llamas con /alfa lya o /alfa ayuda cuando quieras." },
+				},
+				leer = function() return A.Get("lya.mostrar") ~= false end,
+				guardar = function(x) A.Set("lya.mostrar", x and true or false) end,
+			})
+		end,
+		alMostrar = function() if ui.opLya then ui.opLya:Refrescar() end end,
+		resumen = function() return A.Get("lya.mostrar") ~= false and L["Te acompaña"] or L["Descansa hasta que la llames"] end,
+	}
+end
+
+---------------------------------------------------------------------------
 -- 8. La Jauría: siempre un sí explícito
 ---------------------------------------------------------------------------
 local function pasoJauria()
@@ -408,6 +638,7 @@ local function pasoJauria()
 		titulo = L["¿Quieres que la manada te vea en el mapa del juego?"],
 		texto = L["Es opcional. Si dices que sí, los lobos de La Jauría que usan Alfa ven a tu personaje en el mapa de WoW, como ves a tu grupo, y pueden llegar a donde estás con la flecha; y tú a ellos. Alfa solo comparte dónde anda tu personaje dentro del juego: la zona, el punto en el mapa, su nivel y su clase. Nada de tu ubicación real, tu computadora ni tu cuenta."],
 		construir = function(pila)
+			lyaDice(pila, L["Así la manada se encuentra para cazar juntos. Es tu decisión, y la cambias cuando quieras."], "atento")
 			ui.opJauria = eleccion(pila, {
 				opciones = {
 					{ valor = false, icono = "ic-cerrar", titulo = "No, por ahora",
@@ -485,11 +716,11 @@ local function pasoResumen()
 end
 
 local function pasos()
-	local lista = { pasoIdioma(), pasoQueEs(), pasoEstilo() }
-	for _, p in ipairs(M.PantallasDeAjustes()) do
-		local grupos = filtrar(p)
-		if #grupos > 0 then lista[#lista + 1] = pasoAjustes(p, grupos) end
-	end
+	-- 1.2.4: siete pasos en vez de diez, sin listas a la vista (pasoAjustes
+	-- queda para quien quiera volver a las pantallas de interruptores).
+	local lista = { pasoIdioma(), lyaHay() and pasoLya() or pasoQueEs(), pasoEstilo(), pasoPerfil() }
+	local extras = pasoExtras()
+	if extras then lista[#lista + 1] = extras end
 	if manada() then lista[#lista + 1] = pasoJauria() end
 	lista[#lista + 1] = pasoResumen()
 	return lista

@@ -655,6 +655,144 @@ local function bloqueLya(padre)
 end
 
 ---------------------------------------------------------------------------
+-- Las guaridas (1.2.4, Guaridas.lua): en qué capa andas y a cuál de la
+-- manada puedes pedir entrar.
+---------------------------------------------------------------------------
+
+local MOTIVO_PEDIR = {
+	compartir = "Para ver las guaridas de la manada, deja que te vean en el mapa.",
+	grupo = "Sal de tu grupo primero: el juego te pasa a la guarida de quien te invita.",
+	instancia = "En una mazmorra no hay guaridas.",
+	mapa = "Alfa no sabe en qué zona estás.",
+	ya = "Ya estás en esa guarida.",
+	nadie = "Nadie tiene esa guarida abierta ahora.",
+}
+
+local function pedir(capa)
+	local ok, por = M.Guaridas.Pedir(capa)
+	if not ok and MOTIVO_PEDIR[por] then U.Decir(L[MOTIVO_PEDIR[por]]) end
+end
+
+local function bloqueGuaridas(padre)
+	local Gu = M.Guaridas
+	local b = CreateFrame("Frame", nil, padre)
+	b.caja = K.Caja(b, { fondo = "panel", borde = "linea", corte = K.CORTE.panel })
+	b.Icono = K.Icono(b, "ic-huella", 24, "acento")
+	b.Sobre = K.Texto(b, "mayus", "textoTenue")
+	b.Titulo = K.Texto(b, "subtitulo", "texto")
+	b.Texto = K.Texto(b, "texto", "textoSuave")
+	b.Abrir = K.Boton(b, "", function()
+		Gu.Abrir(not Gu.Abierta())
+		U.Decir(Gu.Abierta() and L["Tu guarida está abierta: si alguien de la manada pide entrar, Alfa lo invita a tu grupo."]
+			or L["Cerraste tu guarida."])
+	end, { tipo = "secundario", icono = "ic-manada" })
+	b.AbrirNota = K.Texto(b, "nota", "textoSuave")
+	b.Linea = K.Linea(b, "linea")
+	b.Vacio = K.Texto(b, "nota", "textoTenue")
+	b.filas = {}
+
+	local function fila(i)
+		local f = b.filas[i]
+		if f then return f end
+		f = {
+			Nombre = K.Texto(b, "cuerpo", "texto"),
+			Dato = K.Texto(b, "nota", "textoSuave"),
+			Ir = K.Boton(b, L["Pedir entrar"], function(x) pedir(x.alfaCapa) end, { tipo = "primario", tam = "chico", icono = "ic-huella" }),
+		}
+		b.filas[i] = f
+		return f
+	end
+
+	function b:Llenar()
+		local comparte = on("compartir")
+		local mia = Gu.Actual()
+		local pedido = Gu.Pedido()
+		K.Escribir(self.Sobre, U.Mayus(L["Guaridas"]))
+		K.Escribir(self.Titulo, mia and format(L["Estás en la %s"], Gu.Etiqueta(mia.capa))
+			or L["Mira a una criatura y Alfa te dice en qué guarida estás"])
+		K.Escribir(self.Texto, L["Cuando una zona se llena, el juego la parte en guaridas (capas): el mismo lugar con otra gente, otros raros y otros minerales. Pide entrar a la de alguien de la manada y el juego te pasa al unirte a su grupo."])
+		self.Abrir:SetTexto(Gu.Abierta() and L["Cerrar mi guarida"] or L["Abrir mi guarida"])
+		self.Abrir:SetActivo(comparte)
+		K.Escribir(self.AbrirNota, Gu.Abierta() and L["Abierta: si alguien de la manada pide entrar, Alfa lo invita a tu grupo (fuera de combate)."]
+			or L["Cerrada: nadie te pide entrar. Ábrela para echarle la mano a la manada."])
+		local lista = {}
+		if comparte then
+			for _, g in ipairs(Gu.Lista()) do if not g.mia then lista[#lista + 1] = g end end
+		end
+		for i, g in ipairs(lista) do
+			if i > 6 then break end
+			local f = fila(i)
+			K.Escribir(f.Nombre, g.etiqueta)
+			local dato = format(L["%d de la manada"], g.gente)
+			if g.abiertas > 0 then dato = dato .. DOT .. format(L["%d con la puerta abierta"], g.abiertas) end
+			if pedido and pedido.capa == g.capa then dato = dato .. DOT .. L["tocando a la puerta..."] end
+			K.Escribir(f.Dato, dato)
+			f.Ir.alfaCapa = g.capa
+			f.Ir:SetActivo(g.abiertas > 0 and not pedido)
+		end
+		self.alfaN = math.min(#lista, 6)
+		for i, f in ipairs(self.filas) do
+			local v = i <= self.alfaN
+			K.Mostrar(f.Nombre, v) K.Mostrar(f.Dato, v) K.Mostrar(f.Ir, v)
+		end
+		K.Escribir(self.Vacio, not comparte and L[MOTIVO_PEDIR.compartir]
+			or (#lista == 0 and L["Nadie de la manada anda en otra guarida de esta zona ahora."]) or "")
+	end
+
+	local function en(x, px, py)
+		x:ClearAllPoints()
+		x:SetPoint("TOPLEFT", b, "TOPLEFT", px, -py)
+	end
+
+	function b:Acomodar(ancho)
+		self:SetWidth(ancho)
+		local pad = ESP.l
+		local xt = pad + 24 + ESP.base
+		local w = ancho - xt - pad
+		en(self.Icono, pad, pad + 2)
+		local y = pad
+		en(self.Sobre, xt, y)
+		self.Sobre:SetWidth(w)
+		y = y + K.AltoTexto(self.Sobre) + 4
+		en(self.Titulo, xt, y)
+		y = y + K.Parrafo(self.Titulo, w, 2) + ESP.s
+		en(self.Texto, xt, y)
+		y = y + K.Parrafo(self.Texto, min(w, 720)) + ESP.m
+		en(self.Abrir, xt, y)
+		local bw = K.num(self.Abrir:GetWidth(), 120)
+		local bh = K.num(self.Abrir:GetHeight(), K.ALTO.boton)
+		en(self.AbrirNota, xt + bw + ESP.m, y + 2)
+		local hn = K.Parrafo(self.AbrirNota, w - bw - ESP.m, 3)
+		y = y + max(bh, hn) + ESP.m
+		self.Linea:ClearAllPoints()
+		self.Linea:SetPoint("TOPLEFT", self, "TOPLEFT", xt, -y)
+		self.Linea:SetPoint("TOPRIGHT", self, "TOPRIGHT", -pad, -y)
+		y = y + 1 + ESP.m
+		for i = 1, self.alfaN or 0 do
+			local f = self.filas[i]
+			local iw = K.num(f.Ir:GetWidth(), 100)
+			local ih = K.num(f.Ir:GetHeight(), K.ALTO.botonChico)
+			f.Ir:ClearAllPoints()
+			f.Ir:SetPoint("TOPRIGHT", self, "TOPRIGHT", -pad, -y)
+			en(f.Nombre, xt, y)
+			K.Ajustar(f.Nombre, w - iw - ESP.m)
+			local hy = K.AltoTexto(f.Nombre)
+			en(f.Dato, xt, y + hy + 2)
+			K.Ajustar(f.Dato, w - iw - ESP.m)
+			y = y + max(ih, hy + 2 + K.AltoTexto(f.Dato)) + ESP.m
+		end
+		if (self.Vacio:GetText() or "") ~= "" then
+			en(self.Vacio, xt, y)
+			y = y + K.Parrafo(self.Vacio, w) + ESP.s
+		end
+		y = y + pad - ESP.s
+		self:SetHeight(y)
+		return y
+	end
+	return b
+end
+
+---------------------------------------------------------------------------
 -- 5. Los ajustes
 ---------------------------------------------------------------------------
 
@@ -773,6 +911,7 @@ local function firma(ui, gente)
 			f.edad and f.edad >= M.Gente.VIEJA and floor(f.edad / 60) or "", f.conectado == false and "x" or "")
 	end
 	partes[#partes + 1] = #gente
+	partes[#partes + 1] = M.Guaridas.version
 	return table.concat(partes, "|")
 end
 
@@ -790,6 +929,7 @@ local function llenar(ui)
 	end
 	t:SetOpciones(lista, L["La manada a la vista"], { cuenta = #gente > 0 and #gente or nil, enlace = enlace })
 	pintarPersonas(t.Rejilla, lista)
+	ui.guaridas:Llenar()
 	ui.clan:Llenar()
 	ui.lya:Llenar()
 	ui.filaCompartir.alfaDatos.texto = textoCompartir()
@@ -820,7 +960,8 @@ function P.Construir(view)
 	P.ui = ui
 	local t = K.Tablero(view, { margen = N.MargenPagina(), accion = "accion", tituloOpciones = L["La manada a la vista"], min = 256 })
 	ui.tablero = t
-	ui.clan = t:AgregarBloque(bloqueClan(ui, t.Extra))
+	ui.guaridas = t:AgregarBloque(bloqueGuaridas(t.Extra))
+	ui.clan = t:AgregarBloque(bloqueClan(ui, t.Extra), { espacio = ESP.l })
 	ui.lya = t:AgregarBloque(bloqueLya(t.Extra), { espacio = ESP.l })
 	ui.ajustes = grupos(ui, t.Extra)
 	for i, g in ipairs(ui.ajustes) do t:AgregarBloque(g, { espacio = i == 1 and ESP.xl or ESP.l }) end

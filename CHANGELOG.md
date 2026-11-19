@@ -1,5 +1,29 @@
 # Cambios de Alfa
 
+## 1.2.4 — Lya te guía, un asistente más sencillo y las guaridas (19/11/2026)
+
+**Español**
+- Nuevo: «Pregúntale a Lya». Dale clic derecho a Lya y elige «¿En qué te ayudo?» (o escribe /alfa ayuda): te explica cada parte de Alfa con sus palabras y te lleva a ella con «Llévame». Tiene preguntas comunes, lo que te serviría ahora mismo (bolsas llenas, equipo roto, misiones por entregar) y todas las páginas de Alfa, con un buscador. Lo que Alfa agregue en el futuro también sale ahí solo, y cuando llegue algo nuevo, Lya te lo presenta.
+- La configuración ahora es más visual y más corta: 7 pasos en vez de 10 y sin listas a la vista. Lya se presenta y te habla en cada paso; eliges cuánto quieres que Alfa haga por ti con tres tarjetas grandes («Alfa lo hace por ti», «Equilibrado» o «Yo decido») y prendes tus extras en un mosaico con un clic. Las listas de siempre siguen ahí, detrás de «Afinar cosa por cosa».
+- Nuevo: las guaridas. Cuando una zona se llena, el juego la parte en capas: el mismo lugar con otra gente, otros raros y otros minerales. Alfa le pone nombre a cada una (Guarida Colmillo, Guarida Brasa...) y en La Jauría > Guaridas te dice en cuál estás y en cuáles anda la manada de tu zona.
+- «Pedir entrar»: un clic y Alfa le toca la puerta a alguien de la manada con su guarida abierta; te invita a su grupo, aceptas, el juego te pasa a su guarida y Alfa te avisa para salir del grupo.
+- «Abrir mi guarida» (apagado de fábrica): si alguien de la manada pide entrar, Alfa lo invita a tu grupo, fuera de combate y solo si puedes invitar. Necesita que compartas tu rastro con la manada.
+- Los avisos de viaje ahora son de La Jauría: «La manada viaja», el lobo en el aro con el barco en una chapita, y una huellita que camina sobre la barra mientras llega. Los mensajes también cambiaron: «El barco a Puerto de Menethil ya viene», «Prepárate: llega en 0:30», «¡Tierra a la vista!» y «La manada desembarca en 0:12».
+- La tarjeta de raros y tesoros también es nuestra: Lya, atenta, es la que lo olfatea («Lya olfateó un raro», «Lya encontró un tesoro»), con los botones «Ir de caza» (o «Ir por él»), «Su ficha» y «Seleccionarlo», y la huellita en su barra.
+- Arreglo: el aviso «¡El fundador de Alfa está cerca!» buscaba a un personaje que no existe. Ahora te avisa cuando Toxic, el fundador de Alfa y de La Jauría, anda cerca, una vez al día, y puedes saludarlo.
+- La prueba de cada versión revisa los dos avisos nuevos y que sus textos no se salgan de la tarjeta.
+
+**English**
+- New: "Ask Lya". Right-click Lya and choose "How can I help?" (or type /alfa ayuda): she explains every part of Alfa in her own words and takes you there with "Take me there". It has common questions, what would help you right now (full bags, broken gear, quests to turn in) and every Alfa page, with a search box. Whatever Alfa adds in the future shows up there on its own, and when something new arrives, Lya introduces it.
+- Setup is now more visual and shorter: 7 steps instead of 10 and no lists in sight. Lya introduces herself and talks to you on each step; you choose how much Alfa does for you with three big cards ("Alfa does it for you", "Balanced" or "I decide") and turn on your extras in a tile grid with one click. The usual lists are still there, behind "Fine-tune one by one".
+- New: dens. When a zone fills up, the game splits it into layers: the same place with other people, other rares and other ore. Alfa names each one (Fang Den, Ember Den...) and La Jauría > Dens tells you which one you're in and which ones the pack in your zone is in.
+- "Ask to enter": one click and Alfa knocks on the door of a pack member with their den open; they invite you to their group, you accept, the game moves you to their den and Alfa tells you so you can leave the group.
+- "Open my den" (off by default): if someone from the pack asks to come in, Alfa invites them to your group, out of combat and only if you can invite. It needs you to share your trail with the pack.
+- Travel alerts now belong to La Jauría: "The pack travels", the wolf in the ring with the boat on a small badge, and a paw print that walks along the bar as it arrives. The messages changed too: "The boat to Menethil Harbor is coming", "Get ready: it arrives in 0:30", "Land ahoy!" and "The pack goes ashore in 0:12".
+- The rare and treasure card is ours too: Lya, on alert, is the one who sniffs it out ("Lya sniffed out a rare", "Lya found a treasure"), with the buttons "Go hunt" (or "Go get it"), "Its page" and "Target it", and the paw print on its bar.
+- Fix: the "Alfa's founder is nearby!" alert looked for a character that doesn't exist. Now it tells you when Toxic, the founder of Alfa and La Jauría, is nearby, once a day, and you can wave hello.
+- Each release's test checks both new alerts and that their texts stay inside the card.
+
 ## 1.2.3 — Invitar a una comunidad sin bloqueos, y más pulido (18/11/2026)
 
 **Español**
