@@ -4,7 +4,7 @@
 
 **The all-in-one for World of Warcraft: Forever.** Guides, route, map, bags, talents, encyclopedia, dungeons, healing, fishing, trading and your guild, in one addon with one look — and **Lya**, a black she-wolf companion who chats with you about lore, your zone and your adventures. Made by **toxic3000** for **La Jauría**. Free, open source, 10 languages.
 
-> 🐺 **New in 1.2.2:** invite players to your guild or community from their right-click menu, without typing their name, and the La Jauría badge on the edge of portraits. Plus fixes: "Close my quests" builds your route again, the rotation helper suggests again, the map no longer shows pasted rectangles, and every button was checked one by one. PDF manual in 10 languages ([download it](https://github.com/toxic3000/alfa-forever/releases/latest)).
+> 🐺 **New in 1.2.3:** invite players to your guild from their right-click menu without typing their name (for a community, the name comes ready to paste), and the La Jauría badge on portraits. "Close my quests" builds your route again, the rotation helper suggests again, the map no longer shows pasted rectangles, and every button, font and alignment was checked. PDF manual in 10 languages ([download it](https://github.com/toxic3000/alfa-forever/releases/latest)).
 > If something breaks, tell us with `/alfa reportar`, on [Discord](https://discord.gg/hUNjA6BJwh), in the comments or on [GitHub](https://github.com/toxic3000/alfa-forever/issues).
 
 ## A quick look / Un vistazo
@@ -70,7 +70,7 @@ It doesn't switch your brain off: Alfa backs you up and you decide. The first ti
 
 **El todo en uno para World of Warcraft: Forever.** Guías, ruta, mapa, bolsas, talentos, enciclopedia, mazmorras, curación, pesca, comercio y tu clan, en un solo addon y con un solo estilo. Hecho por **toxic3000** para **La Jauría**.
 
-> **Novedades de la 1.2.2:** invita a tu hermandad o tu comunidad desde el clic derecho de un jugador, sin escribir su nombre, y la insignia de La Jauría en el borde de los retratos. Y arreglos: «Cerrar mis misiones» vuelve a armar tu ruta, la ayuda de rotación vuelve a sugerir, el mapa ya no muestra rectángulos pegados y revisamos cada botón, uno por uno. Manual en PDF en 10 idiomas ([descárgalo](https://github.com/toxic3000/alfa-forever/releases/latest)).
+> **Novedades de la 1.2.3:** invita a tu hermandad desde el clic derecho de un jugador sin escribir su nombre (para una comunidad, el nombre te queda listo para pegar) y la insignia de La Jauría en los retratos. «Cerrar mis misiones» vuelve a armar tu ruta, la ayuda de rotación vuelve a sugerir, el mapa ya no muestra rectángulos pegados y revisamos cada botón, la letra y la alineación. Manual en PDF en 10 idiomas ([descárgalo](https://github.com/toxic3000/alfa-forever/releases/latest)).
 > Si algo falla, avísanos con `/alfa reportar`, en el [Discord de La Jauría](https://discord.gg/hUNjA6BJwh), en los comentarios o en [GitHub](https://github.com/toxic3000/alfa-forever/issues).
 
 ¿Cansado de tener un montón de addons que se enciman y te llenan el mapa de marcas? Alfa los junta en uno solo, ordenado y guiado, que se adapta a tu clase. **No necesita ningún otro addon.**
