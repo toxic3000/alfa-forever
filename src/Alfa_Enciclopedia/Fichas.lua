@@ -467,6 +467,11 @@ function F.Objeto(id)
 		f.acciones.ruta = function() return AlfaRuta.AgregarObjeto(id) end
 		f.acciones.rutaAyuda = L["Un tramo más en la ruta que armas en la página Ruta: Alfa elige el camino para conseguirlo."]
 	end
+	-- 1.2.9: a la lista de compras de Alfa_Comercio (si está).
+	local C = rawget(_G, "AlfaComercio")
+	if type(C) == "table" and type(C.Lista) == "table" and type(C.Lista.Agregar) == "function" then
+		f.acciones.compra = function() return C.Lista.Agregar(id, 1) end
+	end
 	f.acciones.vincular = function() return F.Vincular("item", id) end
 	return f
 end

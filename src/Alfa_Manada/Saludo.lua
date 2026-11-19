@@ -67,7 +67,7 @@ function Sa.Decir()
 	if not texto then return false end
 	dicho = true
 	local K = N.Kit
-	local o = { titulo = L["La manada te saluda"], texto = texto, icono = "ic-manada", duracion = 12 }
+	local o = { titulo = L["La manada te saluda"], texto = texto, icono = "ic-manada", duracion = 12, detalle = true }
 	if K and K.Aviso then K.Aviso(o) else U.Decir(o.titulo .. " " .. texto) end
 	return true
 end

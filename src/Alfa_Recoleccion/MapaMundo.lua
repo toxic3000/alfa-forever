@@ -136,7 +136,7 @@ end
 
 function MM.Instalar()
 	if ticker or not (R.mundo and type(AlfaMundo) == "table" and type(AlfaMundo.ZonasALaVista) == "function") then return end
-	ticker = A.NewTicker(CADA, function() MM.Refrescar(false) end)
+	ticker = N.Ticker("recoleccion.mapaMundo", CADA, function() MM.Refrescar(false) end)
 	MM.Refrescar(true)
 end
 

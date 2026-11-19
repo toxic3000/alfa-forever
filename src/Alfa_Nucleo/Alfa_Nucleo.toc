@@ -11,6 +11,9 @@
 
 Textos.lua
 Nucleo.lua
+Reloj.lua
+Errores.lua
+Respaldos.lua
 Kit\Tokens.lua
 Kit\Formas.lua
 Kit\Basicos.lua
@@ -19,3 +22,4 @@ Kit\Ventanas.lua
 Kit\Anuncio.lua
 Kit\Plantillas.lua
 Kit\Estilos.lua
+Modo.lua

@@ -2115,8 +2115,13 @@ O.SectionOf = function(key)
 	return nil
 end
 
+-- Alfa 1.2.9: «Alfa sencillo» (AlfaNucleo.PaginaVisible) deja fuera de la
+-- barra lo que no es esencial; la página abierta siempre sale.
 local function listed(p)
-	return (pageShown(p) and not OCULTAS[p.key]) or p == current
+	if p == current then return true end
+	local N = rawget(_G, "AlfaNucleo")
+	if N and N.PaginaVisible and not N.PaginaVisible(p.key) then return false end
+	return pageShown(p) and not OCULTAS[p.key]
 end
 
 -- The pages of a section in their order: those SECCIONES names first, in

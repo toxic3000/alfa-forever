@@ -545,6 +545,19 @@ PARCHES += [
      lambda cfg: "\tt.map, t.x, t.y = map, x, y\n\tlocal tr = Nav.Trip and Nav.Trip()\n\tif tr and tr.target == t and tr.ends == \"follow\" then arrived = false end -- Alfa: seguir sin soltarse\n"),
 ]
 
+# 1.2.9: el paso de nivel en palabras llanas. En español decía «Alcanza el
+# nivel nivel y porcentaje del mismo: 30 (80%)» (la traducción del motor trae
+# la clave con su contexto adentro); ahora «Sube al nivel 30 (80% de la
+# barra)», con los textos propios del motor (ns.T, motor/Alfa/Interfaz/Textos.lua).
+PARCHES += [
+    ("Alfa/Core/Engine.lua",
+     '\t\tif goal.frac then return L["Reach level"], ns.LC("level and share of it", "%d (%d%%)"):format(goal.level, math.floor(goal.frac * 100 + 0.5)), "level", nil end\n'
+     '\t\treturn L["Reach level"], tostring(goal.level), "level", nil\n',
+     _fijo('\t\t-- Alfa 1.2.9: «Sube al nivel 30 (80% de la barra)».\n'
+           '\t\tif goal.frac then return ns.T("Sube al nivel"), ns.T("%d (%d%% de la barra)"):format(goal.level, math.floor(goal.frac * 100 + 0.5)), "level", nil end\n'
+           '\t\treturn ns.T("Sube al nivel"), tostring(goal.level), "level", nil\n')),
+]
+
 # El aviso de misiones en el chat (1.2.5): tus propias líneas te salen siempre
 # a ti (motor/Alfa/Quests/PartyChat.lua); mandarlas al chat del grupo sigue
 # apagado de fábrica (REGLAS-BLIZZARD.md, regla 3: el parche de arriba) y la

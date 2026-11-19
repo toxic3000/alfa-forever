@@ -60,6 +60,9 @@ local function grupos(ui, padre)
 		control = function(fila) return K.Boton(fila, L["Escuchar"], function() M.Aullar(true) end, { tipo = "secundario", icono = "ic-lobo" }) end })
 
 	local bienvenida = K.GrupoAjustes(padre, { titulo = L["Configuración y ayuda"] })
+	-- 1.2.9: Alfa sencillo o completo (Alfa_Nucleo/Modo.lua).
+	bienvenida:Fila({ titulo = L["Cómo ves Alfa"], texto = L["Sencillo: solo Hoy, Ruta, Mapa, Bolsas y Lya a la vista, y menos avisos. Completo: todo Alfa. Lo demás sigue funcionando."],
+		control = function(fila) return K.Desplegable(fila, { opciones = M.OPCIONES_MODO(), clave = ID .. ".modo", ancho = 150 }) end })
 	bienvenida:Fila({ titulo = L["Tu configuración de Alfa"],
 		texto = L["El idioma, el estilo, lo que Alfa hace sola por ti y La Jauría, con «Cambiar» en cada cosa. También con /alfa bienvenida."],
 		control = function(fila) return K.Boton(fila, L["Abrir"], function() M.Abrir("pedido", "asistente") end, { tipo = "secundario" }) end })
@@ -69,6 +72,9 @@ local function grupos(ui, padre)
 	bienvenida:Fila({ titulo = L["Reportar un error, una mejora o un comentario"],
 		texto = L["Alfa arma el reporte y tú lo pegas en el buzón privado del Discord de La Jauría. También con /alfa reportar."],
 		control = function(fila) return K.Boton(fila, L["Reportar"], function() M.AbrirReporte() end, { tipo = "secundario" }) end })
+	bienvenida:Fila({ titulo = L["Revisar Alfa"],
+		texto = L["Busca addons que chocan con Alfa, partes apagadas y ajustes raros, con el arreglo a un clic. También con /alfa diagnostico."],
+		control = function(fila) return K.Boton(fila, L["Revisar"], function() M.Diagnostico.Abrir() end, { tipo = "secundario", icono = "ic-buscar" }) end })
 	bienvenida:Fila({ titulo = format(L["Lo nuevo en Alfa %s"], M.VERSION_ALFA),
 		texto = L["La bienvenida con las novedades de esta versión."],
 		control = function(fila) return K.Boton(fila, L["Ver"], function()
@@ -122,7 +128,44 @@ local function grupos(ui, padre)
 		control = function(fila) return K.Boton(fila, L["Importar"], function() Pf.AbrirImportar() end, { tipo = "secundario" }) end })
 	perfiles:Fila({ titulo = L["Memoria de Alfa"], texto = L["Cuánta memoria usa cada parte de Alfa ahora, y suelta la que ya no ocupa. También con /alfa rendimiento."],
 		control = function(fila) return K.Boton(fila, L["Revisar"], function() Pf.Rendimiento() end, { tipo = "secundario" }) end })
-	return { sonido, bienvenida, perfiles }
+	-- 1.2.9: los respaldos de cada semana (Respaldos.lua y Alfa_Nucleo/Respaldos.lua).
+	local Rs = M.Respaldos
+	local respaldos = K.GrupoAjustes(padre, { titulo = L["Respaldos"] })
+	respaldos:Fila({ titulo = L["Respaldo de tus ajustes"],
+		texto = L["Alfa guarda una copia de tus ajustes y perfiles cada semana y antes de cada actualización. Quedan las últimas 3."],
+		control = function(fila) return K.Boton(fila, L["Respaldar ahora"], function() Rs.Ahora() end, { tipo = "secundario", icono = "ic-exito" }) end })
+	local filasRespaldo = {}
+	for i = 1, 3 do
+		filasRespaldo[i] = respaldos:Fila({ titulo = "", texto = "",
+			control = function(fila) return K.Boton(fila, L["Restaurar"], function() Rs.Restaurar(fila.alfaIndice) end, { tipo = "secundario", icono = "ic-reloj" }) end })
+	end
+	local refrescarRespaldos = respaldos.Refrescar
+	function respaldos:Refrescar()
+		local lista = Rs.Lista()
+		for i, fila in ipairs(filasRespaldo) do
+			-- El más nuevo arriba.
+			local j = #lista - i + 1
+			local r = lista[j]
+			fila.alfaIndice = j
+			fila.alfaDatos.titulo = r and (i == 1 and L["El más reciente"] or format(L["Respaldo %d"], i)) or ""
+			fila.alfaDatos.texto = r and Rs.Texto(r) or ""
+			K.Mostrar(fila, r ~= nil)
+		end
+		refrescarRespaldos(self)
+	end
+
+	-- 1.2.9: los errores de Alfa que se atraparon (Alfa_Nucleo/Errores.lua).
+	local errores = K.GrupoAjustes(padre, { titulo = L["Errores atrapados"] })
+	local filaErrores = errores:Fila({ titulo = L["Errores de Alfa"], texto = "",
+		control = function(fila) return K.Boton(fila, L["Copiar"], function() Rs.CopiarErrores() end, { tipo = "secundario" }) end })
+	errores:Fila({ titulo = L["Borrar la lista"], texto = L["Empieza de cero, por ejemplo después de mandar tu reporte."],
+		control = function(fila) return K.Boton(fila, L["Borrar"], function() Rs.BorrarErrores() end, { tipo = "secundario", icono = "ic-cerrar" }) end })
+	local refrescarErrores = errores.Refrescar
+	function errores:Refrescar()
+		filaErrores.alfaDatos.texto = Rs.ResumenErrores() .. " " .. L["«Reportar» ya los lleva."]
+		refrescarErrores(self)
+	end
+	return { sonido, bienvenida, perfiles, respaldos, errores }
 end
 
 local function construir(view)
@@ -164,6 +207,21 @@ local CONTROLES = {
 	{ kind = "button", label = L["Reportar un error, una mejora o un comentario"], button = L["Reportar"], icon = "info",
 		help = L["Alfa arma el reporte y tú lo pegas en el buzón privado del Discord de La Jauría. También con /alfa reportar."],
 		onClick = function() M.AbrirReporte() end, search = "bug report, feedback, suggestion, discord" },
+	{ kind = "dropdown", key = ID .. ".modo", label = L["Cómo ves Alfa"],
+		help = L["Sencillo: solo Hoy, Ruta, Mapa, Bolsas y Lya a la vista, y menos avisos. Completo: todo Alfa. Lo demás sigue funcionando."],
+		choices = function()
+			local out = {}
+			for i, o in ipairs(M.OPCIONES_MODO()) do out[i] = { value = o.valor, label = o.texto } end
+			return out
+		end, search = "simple mode, full mode, basic, advanced, beginner, sidebar, sencillo, completo" },
+	{ kind = "button", label = L["Revisar Alfa"], button = L["Revisar"], icon = "info",
+		help = L["Busca addons que chocan con Alfa, partes apagadas y ajustes raros, con el arreglo a un clic. También con /alfa diagnostico."],
+		onClick = function() M.Diagnostico.Abrir() end, search = "diagnostics, conflicts, addon conflict, troubleshoot, compatibility" },
+	{ kind = "button", label = L["Respaldar ahora"], button = L["Respaldar ahora"], icon = "info",
+		help = L["Alfa guarda una copia de tus ajustes y perfiles cada semana y antes de cada actualización. Quedan las últimas 3."],
+		onClick = function() M.Respaldos.Ahora() end, search = "backup, restore, settings backup, respaldo" },
+	{ kind = "button", label = L["Errores atrapados"], button = L["Copiar"], icon = "info",
+		help = L["Los errores de Alfa que se atraparon, para copiarlos en tu reporte."], onClick = function() M.Respaldos.CopiarErrores() end, search = "errors, lua errors, bugs, copy errors" },
 	{ kind = "button", label = function() return format(L["Lo nuevo en Alfa %s"], M.VERSION_ALFA) end, button = L["Ver"], icon = "info",
 		help = L["La bienvenida con las novedades de esta versión."],
 		onClick = function()
@@ -178,7 +236,10 @@ N.Modulo({
 	comando = "estilo",
 	ajustes = { aullido = true, idioma = "", introSiempre = true,
 		-- 1.2.7: los avisos de viaje y de raros como un anuncio animado (Kit/Anuncio.lua)
-		anuncios = true },
+		anuncios = true,
+		-- 1.2.9: "sencillo" (lo esencial a la vista) | "completo" (todo Alfa).
+		-- Quien ya tenía Alfa queda en completo (migración 3, Pasos.lua).
+		modo = "sencillo" },
 	controles = CONTROLES,
 	construir = construir,
 })

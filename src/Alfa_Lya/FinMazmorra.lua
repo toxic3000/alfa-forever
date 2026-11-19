@@ -214,9 +214,7 @@ A.RegisterEvent("CHAT_MSG_LOOT", function(_, t, _, _, _, _, _, _, _, _, _, _, gu
 	local ok, e = pcall(Fm.AlBotin, t, guid)
 	if not ok and geterrorhandler then geterrorhandler()(e) end
 end)
-if A.NewTicker then
-	A.NewTicker(ADENTRO, function()
-		local r = Fm.Corrida()
-		if r and tipoInstancia() == "party" then r.ultimo = reloj() end
-	end)
-end
+N.Cada("lya.finMazmorra", ADENTRO, function() -- un solo reloj (1.2.9)
+	local r = Fm.Corrida()
+	if r and tipoInstancia() == "party" then r.ultimo = reloj() end
+end)

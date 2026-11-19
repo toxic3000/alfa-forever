@@ -18,6 +18,11 @@
 --   AlfaManada.InsigniaDeUnidad(unit)  lo mismo para una unidad del juego
 --   AlfaManada.EstiloInsignia(tipo)  { texto, icono, color = { r, g, b } } o
 --       nil: cómo se dibuja, para que se vea igual en todas partes
+--   AlfaManada.CambiarPlano()    (1.2.9) «Cambiar de plano»: pide a la manada
+--       con la guarida abierta en otro plano de tu zona que te invite; avisa
+--       si no se puede (y ofrece preguntar a la manada). -> ok, motivo
+--   AlfaManada.Plano()           (1.2.9) { capa, nombre, nivel, puntos, texto }
+--       o nil: tu plano ahora y cómo está de lleno
 --
 -- Sin asistente de primer arranque (Alfa_Bienvenida), la pregunta sale sola
 -- una vez, al poco de entrar, fuera de combate y de instancias.
@@ -59,6 +64,11 @@ N.Modulo({
 		rarosReloj = true, -- cuándo cazaron un raro y si pudo volver (1.2.8)
 		notas = true, -- tus notas en el mapa (1.2.8)
 		notasCompartir = false, -- tus notas también para la manada, y las suyas (1.2.8)
+		planoAviso = true, -- Lya propone cambiar de plano cuando está lleno (1.2.9)
+		quienTiene = false, -- contestar «¿Quién tiene...?» con lo que llevas (1.2.9)
+		logros = true, -- festejar los logros de la manada (1.2.9)
+		logrosCompartir = false, -- tu hermandad se entera de tus logros (1.2.9)
+		semanaCompartir = false, -- tu semana suma en la de la manada (1.2.9)
 	},
 	construir = P.Construir,
 })
@@ -97,6 +107,18 @@ function AlfaManada.Guarida()
 	return a and M.Guaridas.Nombre(a.capa) or nil
 end
 function AlfaManada.InsigniaDeUnidad(unit) return M.Insignias.DeUnidad(unit) end
+-- 1.2.9: cambiar de plano (Plano.lua). Lo usa el botón de la página, /alfa
+-- plano y quien quiera ofrecerlo (el menú de Lya, por ejemplo).
+function AlfaManada.CambiarPlano()
+	if not M.Plano then return false, "sinplano" end
+	return M.Plano.CambiarYDecir()
+end
+function AlfaManada.Plano()
+	local a = M.Guaridas and M.Guaridas.Actual()
+	if not (a and M.Plano) then return nil end
+	local e = M.Plano.Estado()
+	return { capa = a.capa, nombre = M.Guaridas.Nombre(a.capa), nivel = e.nivel, puntos = e.puntos, texto = M.Plano.Texto(e) }
+end
 function AlfaManada.EstiloInsignia(tipo) return M.Insignias.Estilo(tipo) end
 
 ---------------------------------------------------------------------------
@@ -113,6 +135,8 @@ local function ayuda()
 		{ "/alfa manada compartir sí|no", L["que la manada vea a tu personaje en el mapa"] },
 		{ "/alfa manada estado", L["qué se envía y qué se recibe ahora"] },
 		{ "/alfa manada llamar", L["pide ayuda a los lobos de tu zona"] },
+		{ "/alfa plano", L["pásate al plano de un lobo de la manada"] },
+		{ "/alfa manada tiene <objeto>", L["pregunta a tu hermandad quién lo tiene"] },
 		{ "/alfa cita mañana 21:30 <qué>", L["propón una salida a la manada"] },
 		{ "/alfa nota <texto>", L["deja una nota en tu mapa donde estás"] },
 	}) do
@@ -159,6 +183,10 @@ A.RegisterCommand("manada", function(rest)
 		P.Abrir()
 	elseif cmd == "llamar" or cmd == "call" then
 		if M.Llamado then M.Llamado.LlamarYDecir() end
+	elseif cmd == "plano" or cmd == "layer" then
+		AlfaManada.CambiarPlano()
+	elseif (cmd == "tiene" or cmd == "quien" or cmd == "quién" or cmd == "who") and M.QuienTiene then
+		if arg == "" then P.Abrir() else M.QuienTiene.BuscarYDecir(arg) end
 	elseif cmd == "seguir" or cmd == "follow" then
 		if arg == "" then P.Abrir() else S.PorNombre(arg) end
 	elseif cmd == "parar" or cmd == "stop" then
@@ -187,6 +215,17 @@ A.RegisterCommand("manada", function(rest)
 		ayuda()
 	end
 end, L["La Jauría: tu manada en el mapa, Seguir y el clan (/alfa manada ayuda)"])
+
+-- 1.2.9: /alfa plano (sin más: cambiar de plano; «estado»: cómo está el tuyo).
+A.RegisterCommand("plano", function(rest)
+	local cmd = U.Plegar(tostring(rest or ""))
+	if cmd == "estado" or cmd == "status" then
+		local p = AlfaManada.Plano()
+		U.Decir(p and L["Estás en la %s. Cómo está: %s."]:format(p.nombre, p.texto) or L[M.Plano.MOTIVOS.sincapa])
+	else
+		AlfaManada.CambiarPlano()
+	end
+end, L["Cambiar de plano: te pasa al de un lobo de la manada con su guarida abierta"])
 
 ---------------------------------------------------------------------------
 -- Eventos
@@ -309,8 +348,8 @@ A.OnLogin(function()
 	dentro = U.EnInstancia()
 	R.Escuchar()
 	Mapa.RegistrarEnMundo()
-	A.NewTicker(PULSO, alPulso)
-	A.NewTicker(LIMPIEZA, function()
+	N.Cada("manada.pulso", PULSO, alPulso)
+	N.Cada("manada.limpieza", LIMPIEZA, function()
 		G.Limpiar()
 		Mapa.Refrescar(true)
 	end)
@@ -335,6 +374,13 @@ A.OnLogin(function()
 				respuesta = L["Cuando ves caer a un raro, me acuerdo: en su cuadro y en La Jauría te digo hace cuánto lo cazaron y si pudo volver ya (a la media hora, más o menos)."] },
 			{ id = "manada.notas", icono = "icon-note", pregunta = L["¿Puedo dejar notas en el mapa?"],
 				respuesta = L["Sí: escribe /alfa nota y tu texto, o usa «Nota aquí» en La Jauría. Sale en tu mapa donde estás; un clic y la flecha te lleva."] },
+			-- 1.2.9
+			{ id = "manada.plano", icono = "ic-manada", pregunta = L["¿Cómo me cambio de plano si hay mucha gente?"],
+				respuesta = L["Pulsa «Cambiar de plano» en La Jauría o escribe /alfa plano: le pido a un lobo con su guarida abierta en otro plano que te invite. Acepta, y al llegar sales del grupo."] },
+			{ id = "manada.quientiene", icono = "ic-bolsas", pregunta = L["¿Alguien de la manada tiene lo que busco?"],
+				respuesta = L["En La Jauría, en «¿Quién tiene...?», escribe el objeto y pulsa «Buscar». Te contestan los lobos de tu hermandad que lo permiten, con «Susurrar» para pedírselo."] },
+			{ id = "manada.semana", icono = "ic-reloj", pregunta = L["¿Qué hizo la manada esta semana?"],
+				respuesta = L["En La Jauría está «La semana de la manada»: misiones, raros, mazmorras y niveles de los lobos que la comparten. Nadie compite: todo suma."] },
 		}) do
 			p.modulo = ID
 			pcall(Lya.Ensenar, p)

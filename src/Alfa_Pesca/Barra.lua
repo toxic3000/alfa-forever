@@ -842,7 +842,7 @@ function M.AnunciarLogros(nuevos)
 		for _, lg in ipairs(nuevos) do nombres[#nombres + 1] = lg.nombre end
 		texto = table.concat(nombres, " · ")
 	end
-	K.Aviso({ lobo = "aullando", titulo = titulo, texto = texto, tono = "acento", duracion = 6,
+	K.Aviso({ lobo = "aullando", titulo = titulo, texto = texto, tono = "acento", duracion = 6, detalle = true,
 		accion = { texto = L["Ver logros"], alClic = function() abrirVentana("logros") end } })
 	if opt("alertas") and PlaySound then pcall(PlaySound, M.SONIDO_LOGRO, "Master") end
 end
@@ -851,7 +851,7 @@ function M.AnunciarMetas(cumplidas)
 	if #cumplidas == 0 then return end
 	local texto = M.TextoMeta and M.TextoMeta(cumplidas[1]) or ""
 	if #cumplidas > 1 then texto = format(L["%s y %d más"], texto, #cumplidas - 1) end
-	K.Aviso({ icono = M.ICONO.meta, titulo = L["Meta cumplida"], texto = texto, tono = "exito", duracion = 5 })
+	K.Aviso({ icono = M.ICONO.meta, titulo = L["Meta cumplida"], texto = texto, tono = "exito", duracion = 5, detalle = true })
 	M.Alerta("meta", M.SONIDO_LOGRO)
 end
 

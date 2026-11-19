@@ -187,6 +187,70 @@ local function opciones()
 end
 
 ---------------------------------------------------------------------------
+-- 1.2.9: qué guardar (Guardar.lua)
+---------------------------------------------------------------------------
+
+local MAX_GUARDAR = 12
+
+local function iconoDe(id)
+	local CI = C_Item
+	if CI and CI.GetItemIconByID then
+		local t = M.Llamar(CI.GetItemIconByID, id)
+		if t then return t end
+	end
+	return nil
+end
+
+local function nombreDe(x)
+	if x.link then return x.link end
+	local CI = C_Item
+	local n = CI and CI.GetItemNameByID and M.Texto(M.Llamar(CI.GetItemNameByID, x.id))
+	return n or ("#" .. tostring(x.id))
+end
+
+local function bloqueGuardar(padre)
+	local b = K.Pila(padre, { espacio = ESP.m })
+	b.Seccion = b:Agregar(K.Seccion(b, L["Qué guardar"]))
+	local nota = CreateFrame("Frame", nil, b)
+	nota.Texto = K.Texto(nota, "nota", "textoSuave")
+	nota.Texto:SetPoint("TOPLEFT")
+	function nota:Acomodar(ancho) local h = K.Parrafo(self.Texto, ancho, 3) self:SetSize(ancho, h) return h end
+	b.Nota = b:Agregar(nota)
+	b.Rejilla = b:Agregar(K.Rejilla(b, { min = 300, gap = ESP.s, variante = "compacta" }), { espacio = ESP.s })
+	function b:Llenar()
+		local Gu = M.Guardar
+		local lista = M.Get("queGuardar") ~= false and Gu.Sugerencias() or {}
+		local abierto = D.BancoAbierto()
+		local enlace
+		if #lista > 0 then
+			if abierto then
+				enlace = { texto = format(L["Al banco (%d)"], #lista), alClic = function() Gu.AlBanco() P.Rehacer() end }
+			else
+				enlace = { texto = L["Llévame al banco"], alClic = S.LlevarBanco }
+			end
+		end
+		self.Seccion:Set(L["Qué guardar"], { cuenta = #lista > 0 and #lista or nil, enlace = enlace })
+		K.Escribir(self.Nota.Texto, abierto and L["Estás con un banquero: «Al banco» los deposita con un clic, o toca uno para guardar solo ese."]
+			or L["Esto te sirve más en el banco o con otro de tus personajes (mándaselo por correo). Con un banquero, se guarda con un clic."])
+		local tarjetas = {}
+		for i = 1, math.min(#lista, MAX_GUARDAR) do
+			local x = lista[i]
+			local icono = iconoDe(x.id)
+			tarjetas[i] = {
+				icono = icono or "ic-bolsas", tenir = icono and false or nil,
+				titulo = nombreDe(x), texto = x.motivo,
+				valor = x.cantidad > 1 and format(L["×%d"], x.cantidad) or nil,
+				alClic = abierto and function() Gu.AlBanco({ x }) P.Rehacer() end or nil,
+				ayuda = abierto and L["Clic: guardar este en el banco."] or nil,
+			}
+		end
+		self.Rejilla:Llenar(tarjetas)
+		K.Mostrar(self, #lista > 0)
+	end
+	return b
+end
+
+---------------------------------------------------------------------------
 -- 3. Tus personajes
 ---------------------------------------------------------------------------
 
@@ -394,6 +458,13 @@ local function grupos(padre)
 	lleno:Fila({ titulo = L["Avisar cuando estén casi llenas"], control = interruptor("avisoCasiLleno"),
 		texto = L["Con 2 casillas libres o menos, un aviso con lo primero que puedes soltar y un botón para vender o ver tus bolsas."] })
 
+	-- 1.2.9
+	local equipo = K.GrupoAjustes(padre, { titulo = L["Equipo y banco"] })
+	equipo:Fila({ titulo = L["«Ponte esto» con el equipo mejor"], control = interruptor("ponteEsto"),
+		texto = L["Cuando te llega equipo mejor que lo que llevas puesto, un aviso con un botón para ponértelo (solo con tu clic y fuera de combate)."] })
+	equipo:Fila({ titulo = L["Sugerir qué guardar"], control = interruptor("queGuardar"),
+		texto = L["En esta página, lo que te sirve más en el banco o con otro personaje: materiales de sus recetas, lo que piden sus misiones y equipo que tu clase no usa."] })
+
 	local marcas = K.GrupoAjustes(padre, { titulo = L["Marcas sobre cada objeto"] })
 	marcas:Fila({ titulo = L["Nivel de objeto"], control = interruptor("marcaNivel"), texto = L["El número abajo a la izquierda de cada pieza de equipo."] })
 	marcas:Fila({ titulo = L["Borde de calidad"], control = interruptor("marcaCalidad"), texto = L["Un borde del color de la calidad: verde, azul, morado..."] })
@@ -427,7 +498,7 @@ local function grupos(padre)
 		end })
 	marcas:Fila({ titulo = L["Cuántos tienes, en el cuadro de cada objeto"], control = interruptor("cuadroConteo"),
 		texto = L["Al pasar el ratón por un objeto: «Tienes 12 (Lobato: 7 en bolsas, Alt: 5 en banco)», con todos tus personajes."] })
-	return { ventana, juego, ordenar, lleno, marcas }
+	return { ventana, juego, ordenar, lleno, equipo, marcas }
 end
 
 ---------------------------------------------------------------------------
@@ -437,12 +508,14 @@ end
 function M.ConstruirPagina(view)
 	local ui = {}
 	local t = K.Tablero(view, { margen = N.MargenPagina(), accion = "estado", tituloOpciones = L["Tu banco y lo que llevas"], min = 240 })
+	ui.guardar = t:AgregarBloque(bloqueGuardar(t.Extra))
 	ui.personajes = t:AgregarBloque(bloquePersonajes(t.Extra))
 	ui.ajustes = grupos(t.Extra)
 	for i, g in ipairs(ui.ajustes) do t:AgregarBloque(g, { espacio = i == 1 and ESP.xl or ESP.l }) end
 	K.EnPagina(view, t, function()
 		t:SetAccion(estado())
 		t:SetOpciones(opciones(), L["Tu banco y lo que llevas"])
+		ui.guardar:Llenar()
 		ui.personajes:Llenar()
 		for _, g in ipairs(ui.ajustes) do g:Refrescar() end
 	end)
@@ -464,6 +537,7 @@ M.Escuchar("DATOS", P.Rehacer)
 M.Escuchar("COMPRA", P.Rehacer)
 M.Escuchar("SUGERENCIAS", P.Rehacer)
 M.Escuchar("SESION", P.Rehacer)
+M.Escuchar("LOTE", function(nombre) if nombre == "depositar" and not M.Lotes.Activo("depositar") then P.Rehacer() end end)
 A.RegisterEvent("BANKFRAME_OPENED", P.Rehacer)
 A.RegisterEvent("BANKFRAME_CLOSED", P.Rehacer)
 A.On("SETTING_CHANGED", function(r)

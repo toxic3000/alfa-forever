@@ -135,7 +135,7 @@ function S.A(fila)
 	s.objetivo = objetivo
 	s.map = map
 	s.c, s.wx, s.wy = U.AlMundo(map, x, y)
-	s.ticker = A.NewTicker(CADA, tick)
+	s.ticker = N.Ticker("manada.seguir", CADA, tick)
 	sig = s
 	U.Decir(L["Siguiendo el rastro de %s. La flecha te lleva hasta su posición."]:format(s.nombre))
 	if Nav.SayGuideHidden then Nav.SayGuideHidden() end

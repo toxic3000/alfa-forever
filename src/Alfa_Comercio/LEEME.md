@@ -13,6 +13,10 @@ Responde la pregunta "¿lo vendo al comerciante, lo subasto o lo convierto en al
 - **Cuadro del objeto.** Dos líneas al pasar el ratón: `Subasta: 1o 20p (hace 3 h) · Comerciante: 15p` y `Mejor: subastar 1o 14p (+660%)`.
 - **Página "Comercio"** (Oficios > Comercio, hecha con el Kit, plantilla Tablero): arriba y en grande, **qué hacer con lo que llevas** (cuánto ganas si sigues los consejos, cuántas cosas vender, subastar, transformar o guardar, y la acción que toca: escanear, *Llévame a la subasta* o *al comerciante*, con la flecha del motor); tus números; lo que llevas, ordenado por lo que más ganas, con insignias de color y filtros (los 10 primeros y "Ver todo"); los precios de la subasta (al día, viejos o sin precios, con su acción); tus recetas que dejan ganancia; cómo decide Alfa y los ajustes.
 - **Para Bolsas.** Publica `AlfaComercio.Consejo`, `TextoMejor`, `ValorVenta`, `PrecioSubasta` y `AnalizarBolsas`: Bolsas los usa para sugerir qué vender y qué conservar cuando se llenan.
+- **Lista de compras (1.2.9, `Lista.lua`).** Para una receta (las tuyas o las de la guía) o una meta: los materiales, cuántos tienes en bolsas y banco (`AlfaBolsas.Cuantos`), cuántos faltan, cuánto cuesta comprarlos y de dónde sale cada uno (Codex). Se llena sola mientras juntas, con un aviso al completar un material o la lista. Es de cada personaje (`N.DatosPersonaje("comercio").lista`). Para otros módulos: `AlfaComercio.Lista.Agregar(itemID, cantidad)`, `AgregarOficio(línea)`, `Quitar`, `Vaciar`, `Metas`, `Materiales`, `Completa`.
+- **Oficios de 1 a 300 (1.2.9, `OficiosDatos.lua`, `Oficios.lua`, `VentanaOficios.lua`).** Una guía por oficio (los 11: Alquimia, Herrería, Encantamiento, Ingeniería, Peletería, Sastrería, Herboristería, Minería, Desuello, Cocina y Primeros auxilios) con los tramos de habilidad, su receta y reactivos, lo que te falta de aquí a 300 y dónde aprender el siguiente rango. Los pasos inciertos son generales (qué hacer y unos materiales), nunca una receta inventada; si ya conoces la receta, se usan los reactivos del juego. En la página, la sección Oficios; la guía en su ventana (`/alfa comercio oficios`).
+- **Subastar fácil (1.2.9, `Vender.lua`).** Con un objeto en la pestaña de vender de la subasta, un panel a un lado con el precio sugerido, su historial de 14 días (barras, más bajo, promedio y más alto) y un aviso si tu precio queda muy por debajo. Nunca pone ni cambia el precio.
+- **Para Bolsas (1.2.9).** `AlfaComercio.Usan(id)`: quién de tus personajes usa un objeto en sus recetas («Qué guardar»).
 - **Sin otros addons.** Alfa usa solo sus propios escaneos y lo que ves al buscar; no lee precios de otros addons.
 
 ## Comandos
@@ -20,6 +24,7 @@ Responde la pregunta "¿lo vendo al comerciante, lo subasto o lo convierto en al
 - `/alfa comercio`: abre la página.
 - `/alfa comercio escanear`: escaneo completo (con la subasta abierta).
 - `/alfa comercio precio <enlace>`: escribe el consejo de un objeto en el chat.
+- `/alfa comercio oficios`: la guía de oficios de 1 a 300.
 
 ## Ajustes (al final de la página: En el juego, Las cuentas, Tus datos)
 
@@ -31,6 +36,10 @@ Responde la pregunta "¿lo vendo al comerciante, lo subasto o lo convierto en al
 | Comisión de la subasta | 5 % | Lo que se queda la subasta de cada venta (estimado) |
 | Considerar desencantar | Si tú o tus personajes pueden | O Siempre (un amigo te ayuda) o Nunca |
 | Avisar cuando los precios tengan más de | 3 días | Cuándo un precio cuenta como viejo |
+| Ayuda al subastar | sí | El panel junto a la pestaña de vender (`vender`) |
+| Avisar si lo das más barato de | 30 % | Cuánto por debajo de lo que vale avisa (`precioBajo`) |
+| Avisar al juntar lo de tu lista | sí | Los avisos de la lista de compras (`listaAviso`) |
+| Oficios de 1 a 300 en esta página | sí | La sección Oficios (`oficios`) |
 | Borrar los precios de este reino | — | Pide confirmación |
 
 Datos: `N.Datos("comercio")` (`AlfaNucleoDB.comercio`): `reinos["Reino-Facción"]` con precios (`p`), historial (`h`), último escaneo y última petición; `comprar` (precios del comerciante); `recetas` y `encantar` por personaje.

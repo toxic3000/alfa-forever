@@ -131,6 +131,8 @@ local function motivo(c)
 	-- 1.2.7: c.enMazmorra deja hablar dentro de una instancia (el consejo de la
 	-- mazmorra, la despedida); nunca en combate.
 	if enCombate() or (enInstancia() and not c.enMazmorra) or escribiendo() then return "esperar" end
+	-- 1.2.9: en el modo foco (Foco.lua) se calla; lo importante y lo que pides, sí.
+	if UI.EnFoco and UI.EnFoco() and not c.importante and not c.pedido and not c.enMazmorra then return "foco" end
 	if not c.importante and not c.pedido then
 		if UI.Hablando() or avisoDeHoy() then return "ocupada" end
 		if ahora() - ultimo < intervalo() then return "pronto" end
@@ -855,6 +857,8 @@ local dichosAviso = {} -- texto -> cuándo lo dijo
 K.AvisoPorLya = function(o)
 	if N.Get(ID, "avisos") == false or Ce.Silenciada() then return false end
 	if not (Ce.Activa() and UI.Visible()) or enCombate() then return false end
+	-- 1.2.9: en el modo foco los avisos salen como siempre (Lya está chiquita).
+	if UI.EnFoco and UI.EnFoco() then return false end
 	local t = unir(o.titulo, o.texto)
 	if t == "" then return false end
 	-- El mismo aviso dentro de 90 s: ya lo dijo (no se repite ni sale arriba).

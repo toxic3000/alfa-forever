@@ -131,9 +131,28 @@ local AVISOS = {
 		end },
 }
 
+---------------------------------------------------------------------------
+-- 1.2.9: la mazmorra en vivo (EnVivo.lua)
+---------------------------------------------------------------------------
+local EN_VIVO = {
+	{ kind = "toggle", key = ID .. ".enVivo", label = L["La mazmorra en vivo"],
+		help = L["Dentro de una mazmorra, al apuntar a un jefe sale una tarjeta chica con lo que te toca según tu papel y cómo van tus misiones de ahí. No atrapa clics."] },
+	{ kind = "dropdown", key = ID .. ".enVivoRol", label = L["Tu papel"], child = true,
+		help = L["Automático: el del buscador de grupo, o por tu clase y tu forma (postura defensiva u oso tanquean)."],
+		choices = {
+			{ value = "auto", text = L["Automático"] },
+			{ value = "tanque", text = L["Tanque"] },
+			{ value = "cura", text = L["Cura"] },
+			{ value = "dano", text = L["Daño"] },
+		},
+		disabled = function() return N.Get(ID, "enVivo") == false end },
+}
+
 A.RegisterDefaults(ID, { nivelAvisos = 1 })
 
 local ok, err = A.RegisterOptions({ page = PAGINA, tab = PESTANA, section = L["Tu diario de mazmorras"], controls = DIARIO })
 if not ok and geterrorhandler then geterrorhandler()(err) end
 ok, err = A.RegisterOptions({ page = PAGINA, tab = PESTANA, section = L["Avisos de jefes"], controls = AVISOS })
+if not ok and geterrorhandler then geterrorhandler()(err) end
+ok, err = A.RegisterOptions({ page = PAGINA, tab = PESTANA, section = L["La mazmorra en vivo"], controls = EN_VIVO })
 if not ok and geterrorhandler then geterrorhandler()(err) end

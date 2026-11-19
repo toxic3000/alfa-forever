@@ -389,9 +389,213 @@ local function showSkinArrival(on)
 	return own
 end
 
+---------------------------------------------------------------------------
+-- Alfa 1.2.9: la llegada con la cara de La Jauría. Al llegar (o al buscar en
+-- un área) ya no sale el bloque de texto suelto del motor: arriba, en
+-- mayúsculas y en el color de llegada, «Llegaste» o «Busca por aquí»; debajo
+-- lo que hay que hacer, en palabras llanas (el texto de la meta del motor; el
+-- de nivel, «Sube al nivel 30: te falta 20%»), luego el avance («4 de 6») con
+-- una barrita, y en un área con varios lugares un botón chico «Siguiente
+-- lugar» (fuera de combate; en combate no toma el ratón: el clic en la flecha
+-- sigue sirviendo). La letra y los colores son los del Kit de Alfa
+-- (AlfaNucleo.Kit, se lee al llegar: el núcleo carga después del motor), con
+-- contorno para leerse sobre el mundo en los tres estilos. Sin el Kit, el
+-- texto de antes. La huella del lobo late suave (OnUpdate de la flecha).
+---------------------------------------------------------------------------
+local llegada        -- el bloque (se arma la primera vez)
+local llegadaVista = false
+local LLEGADA_ANCHO = 260
+
+local function kit()
+	local N = rawget(_G, "AlfaNucleo")
+	local K = type(N) == "table" and N.Kit or nil
+	return type(K) == "table" and type(K.Cara) == "function" and type(K.Tamano) == "function" and K or nil
+end
+
+local function enCombate() return InCombatLockdown and InCombatLockdown() or false end
+
+-- La letra de Alfa para un rol del Kit, con contorno y la sombra del tema.
+local function letra(K, fs, rol)
+	local spec = K.TIPO and K.TIPO[rol] or { "medium", 12 }
+	local ok = pcall(fs.SetFont, fs, K.Cara(spec[1]), K.Tamano(rol), "OUTLINE")
+	if not ok then fs:SetFont(STANDARD_TEXT_FONT, K.Tamano(rol), "OUTLINE") end
+	local r, g, b = Nav.RGB("shade")
+	fs:SetShadowColor(r, g, b, 0.8)
+	fs:SetShadowOffset(1, -1)
+	fs.alfaRol = rol
+end
+
+local function armarLlegada(K)
+	if llegada then return llegada end
+	local f = CreateFrame("Frame", nil, frame)
+	f:SetSize(LLEGADA_ANCHO, 60)
+	f:SetPoint("TOP", dial, "BOTTOM", 0, -10)
+	f:Hide()
+	f.Sobre = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	f.Sobre:SetPoint("TOP", f, "TOP", 0, 0)
+	f.Sobre:SetJustifyH("CENTER")
+	f.Accion = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	f.Accion:SetPoint("TOP", f.Sobre, "BOTTOM", 0, -4)
+	f.Accion:SetWidth(LLEGADA_ANCHO)
+	f.Accion:SetJustifyH("CENTER")
+	f.Accion:SetWordWrap(true)
+	f.Accion:SetMaxLines(2)
+	f.Avance = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	f.Avance:SetJustifyH("CENTER")
+	-- La barrita del avance: la pista oscura y el relleno en el color de llegada.
+	f.Pista = f:CreateTexture(nil, "ARTWORK")
+	f.Pista:SetSize(120, 4)
+	f.Relleno = f:CreateTexture(nil, "ARTWORK", nil, 1)
+	f.Relleno:SetPoint("TOPLEFT", f.Pista, "TOPLEFT", 0, 0)
+	f.Relleno:SetPoint("BOTTOMLEFT", f.Pista, "BOTTOMLEFT", 0, 0)
+	if K.Boton then
+		f.Siguiente = K.Boton(f, ns.T("Siguiente lugar"), function()
+			if not enCombate() then Nav.NextSpot() end
+		end, { tam = "chico", icono = "ic-huella" })
+		f.Siguiente:Hide()
+	end
+	llegada = f
+	Arrow.llegada = f
+	return f
+end
+
+-- Lo que dice la meta a la que llegaste: { accion, cur, max, avance } o nil.
+local function metaDeLlegada(target)
+	local E = ns.Engine
+	if not (target and E and E.GetStepView and target.stepIndex and target.goalIndex) then return nil end
+	local ok, v = pcall(E.GetStepView, target.stepIndex)
+	local gv = ok and type(v) == "table" and type(v.goals) == "table" and v.goals[target.goalIndex] or nil
+	if type(gv) ~= "table" then return nil end
+	local d = {}
+	if gv.t == "level" then
+		local lvl
+		local p = ns.Levels and ns.Levels.Player and ns.Levels.Player() or {}
+		local xpMax = tonumber(p.xpMax) or 0
+		local falta = tonumber(gv.xpLeft)
+		local goal = E.GetGuide and E.GetGuide()
+		local step = goal and goal.steps and goal.steps[target.stepIndex]
+		local g = step and step.goals and step.goals[target.goalIndex]
+		lvl = lvl or (g and tonumber(g.level))
+		if lvl and falta and xpMax > 0 then
+			if falta <= xpMax then
+				d.accion = ns.T("Sube al nivel %d: te falta %d%%"):format(lvl, math.max(1, math.ceil(falta / xpMax * 100)))
+				d.cur, d.max = xpMax - falta, xpMax
+			else
+				d.accion = ns.T("Sube al nivel %d: te faltan %s de experiencia"):format(lvl, BreakUpLargeNumbers and BreakUpLargeNumbers(falta) or tostring(falta))
+			end
+		elseif lvl then
+			d.accion = ns.T("Sube al nivel %d"):format(lvl)
+		end
+		return d
+	end
+	local pr = gv.progress
+	if type(pr) == "table" and tonumber(pr.cur) and tonumber(pr.max) and pr.max > 1 then
+		d.cur, d.max = pr.cur, pr.max
+		d.avance = ns.T("%d de %d"):format(pr.cur, pr.max)
+	end
+	return d
+end
+
+local function pintarLlegada(m)
+	local K = kit()
+	if not K then return false end
+	local f = armarLlegada(K)
+	local target = Nav.GetTarget()
+	local nr, ng, nb = Nav.RGB("arrowNearText")
+	letra(K, f.Sobre, "mayus")
+	f.Sobre:SetTextColor(nr, ng, nb, 1)
+	f.Sobre:SetText(K.Mayus(m == "search" and ns.T("Busca por aquí") or ns.T("Llegaste")))
+	letra(K, f.Accion, "cuerpo")
+	f.Accion:SetTextColor(K.Color("texto"))
+	local d = metaDeLlegada(target) or {}
+	local accion = d.accion or (target and target.label) or ""
+	if issecretvalue and issecretvalue(accion) then accion = "" end
+	f.Accion:SetText(accion)
+	local y = 0
+	local hs = K.num and K.num(f.Sobre:GetStringHeight(), 10) or 10
+	local ha = accion ~= "" and (K.num and K.num(f.Accion:GetStringHeight(), 14) or 14) or 0
+	y = hs + 4 + ha
+	f.Accion:SetShown(accion ~= "")
+	-- El avance: «4 de 6» y la barrita.
+	f.Avance:ClearAllPoints()
+	f.Pista:ClearAllPoints()
+	if d.max and d.max > 0 then
+		local frac = math.max(0, math.min(1, (d.cur or 0) / d.max))
+		f.Pista:SetPoint("TOP", f, "TOP", 0, -(y + 6))
+		f.Pista:SetColorTexture(K.ConAlfa("hundido", 0.85))
+		f.Relleno:SetColorTexture(Nav.RGB("arrowNear"))
+		f.Relleno:SetWidth(math.max(1, 120 * frac))
+		f.Relleno:SetShown(frac > 0)
+		f.Pista:Show()
+		y = y + 10
+	else
+		f.Pista:Hide()
+		f.Relleno:Hide()
+	end
+	if d.avance then
+		letra(K, f.Avance, "pequeno")
+		f.Avance:SetTextColor(K.Color("textoSuave"))
+		f.Avance:SetPoint("TOP", f, "TOP", 0, -(y + 4))
+		f.Avance:SetText(d.avance)
+		f.Avance:Show()
+		y = y + 4 + (K.num and K.num(f.Avance:GetStringHeight(), 11) or 11)
+	else
+		f.Avance:Hide()
+	end
+	-- «Siguiente lugar»: un área con varios lugares (el clic en la flecha
+	-- también lo hace). En combate se ve pero no toma el ratón.
+	local b = f.Siguiente
+	if b then
+		local otro = m == "search" and target and target.spots ~= nil
+		if otro then
+			b:ClearAllPoints()
+			b:SetPoint("TOP", f, "TOP", 0, -(y + 6))
+			local pelea = enCombate()
+			b:EnableMouse(not pelea)
+			b:SetAlpha(pelea and 0.5 or 1)
+			b:Show()
+			y = y + 6 + (K.ALTO and K.ALTO.botonChico or 24)
+		else
+			b:Hide()
+		end
+	end
+	f:SetHeight(math.max(1, y))
+	f:Show()
+	distText:Hide()
+	labelText:Hide()
+	etaText:Hide()
+	timerText:ClearAllPoints()
+	timerText:SetPoint("TOP", f, "BOTTOM", 0, -4)
+	llegadaVista = true
+	return true
+end
+
+local function quitarLlegada()
+	if llegada then llegada:Hide() end
+	if not llegadaVista then return end
+	llegadaVista = false
+	distText:Show()
+	labelText:Show()
+	timerText:ClearAllPoints()
+	timerText:SetPoint("TOP", distText, "BOTTOM", 0, -4)
+end
+
+-- Para el banco y para quien quiera saber qué dice la llegada.
+function Arrow.Llegada()
+	if not (llegadaVista and llegada and llegada:IsShown()) then return nil end
+	local b = llegada.Siguiente
+	return {
+		sobre = llegada.Sobre:GetText(), accion = llegada.Accion:IsShown() and llegada.Accion:GetText() or nil,
+		avance = llegada.Avance:IsShown() and llegada.Avance:GetText() or nil,
+		barra = llegada.Pista:IsShown() or nil,
+		siguiente = b ~= nil and b:IsShown() or nil, clicable = b ~= nil and b:IsShown() and b:IsMouseEnabled() or nil,
+	}
+end
+
 local function setMode(m)
 	if m == mode then return end
 	mode = m
+	if not (m == "arrived" or m == "search") then quitarLlegada() end
 	local travel, done, act = m == "travel", m == "arrived" or m == "search", m == "instruction"
 	dial:SetShown(travel or done or act)
 	grabArea(travel or done or act)
@@ -413,14 +617,19 @@ local function setMode(m)
 		skinCheck:SetVertexColor(r, g, b, 1)
 		wolfPaw:SetVertexColor(r, g, b, 1)
 		skinDisc:SetVertexColor(0.031, 0.024, 0.016, 0.45)
-		distText:SetTextColor(Nav.RGB("arrowNearText"))
-		-- An area objective is never done by standing somewhere: look around,
-		-- then move on (a click on the arrow, or the next spot comes up by itself).
-		distText:SetText(m == "search" and L["Search here"] or L["Arrived"])
-		if m == "search" then
-			etaColor()
-			etaText:SetText(L["Click the arrow for the next spot"])
-			etaText:Show()
+		wolfPaw:SetSize(DIAL * 0.5, DIAL * 0.5)
+		wolfPaw:SetAlpha(1)
+		-- Alfa 1.2.9: la llegada de La Jauría (pintarLlegada); sin el Kit, la de antes.
+		if not pintarLlegada(m) then
+			distText:SetTextColor(Nav.RGB("arrowNearText"))
+			-- An area objective is never done by standing somewhere: look around,
+			-- then move on (a click on the arrow, or the next spot comes up by itself).
+			distText:SetText(m == "search" and L["Search here"] or L["Arrived"])
+			if m == "search" then
+				etaColor()
+				etaText:SetText(L["Click the arrow for the next spot"])
+				etaText:Show()
+			end
 		end
 	elseif m == "far" then
 		local r, g, b = Nav.RGB("place")
@@ -673,6 +882,13 @@ frame:SetScript("OnUpdate", ns.Safe(function(_, elapsed)
 		local s = 1 + 0.06 * sin(pulse * 4)
 		ring:SetSize(DIAL * s, DIAL * s)
 		halo:SetAlpha(0.35 + 0.25 * (0.5 + 0.5 * sin(pulse * 4)))
+		-- La huella del lobo late suave, más lento que el aro (1.2.9).
+		if style == "lobo" then
+			local h = 0.5 + 0.5 * sin(pulse * 2.4)
+			local ps = DIAL * 0.5 * (1 + 0.05 * h)
+			wolfPaw:SetSize(ps, ps)
+			wolfPaw:SetAlpha(0.8 + 0.2 * h)
+		end
 	end
 end))
 
@@ -860,6 +1076,7 @@ function Arrow.SetBusy(on)
 	dial:SetAlpha(a)
 	distText:SetAlpha(a)
 	labelText:SetAlpha(a)
+	if llegada then llegada:SetAlpha(a) end
 	etaText:SetAlpha(a)
 	timerText:SetAlpha(a)
 end
@@ -869,6 +1086,17 @@ function Arrow.IsBusy()
 end
 
 ns.On("CATCH_UP", function(on) Arrow.SetBusy(on) end)
+
+-- La llegada al día (1.2.9): el avance cambia mientras estás ahí («4 de 6»
+-- -> «5 de 6») y el botón «Siguiente lugar» toma el ratón solo fuera de combate.
+local function llegadaAlDia()
+	if llegadaVista and (mode == "arrived" or mode == "search") and frame:IsShown() then pintarLlegada(mode) end
+end
+Arrow.LlegadaAlDia = llegadaAlDia
+ns.On("STEP_UPDATED", llegadaAlDia)
+ns.RegisterEvent("PLAYER_REGEN_DISABLED", llegadaAlDia)
+ns.RegisterEvent("PLAYER_REGEN_ENABLED", llegadaAlDia)
+ns.RegisterEvent("PLAYER_XP_UPDATE", llegadaAlDia)
 
 function Arrow.GetMode()
 	return frame:IsShown() and mode or nil

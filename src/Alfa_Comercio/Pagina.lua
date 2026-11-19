@@ -9,6 +9,8 @@
 --   4. los precios de la subasta (al día o no, y escanear);
 --   5. tus recetas que dejan ganancia;
 --   6. cómo decide Alfa y los ajustes.
+-- 1.2.9: tu lista de compras (Lista.lua) va tras los precios, y Oficios
+-- (de 1 a 300, la ventana de VentanaOficios.lua) tras tus recetas.
 -- Todo es información: Alfa nunca vende, compra ni publica nada por ti.
 --
 -- Bolsas: C_Container.GetContainerNumSlots / GetContainerItemInfo
@@ -137,6 +139,11 @@ end
 local function nombreObjeto(id)
 	local C = A.Compat
 	return (C and C.GetItemName and C.GetItemName(id)) or ("#" .. tostring(id))
+end
+
+local function iconoObjeto(id)
+	local VO = M.VentanaOficios
+	return VO and VO.Icono and VO.Icono(id) or nil
 end
 
 local function detalleDe(c)
@@ -323,6 +330,7 @@ local function nuevaFila(padre)
 	end)
 	f:SetScript("OnClick", function(self)
 		local d = self.dato
+		if d and d.alClic and not (IsModifiedClick and IsModifiedClick()) then K.Llamar(d.alClic, self) return end
 		if not (d and d.id and IsModifiedClick and IsModifiedClick()) then return end
 		local C = A.Compat
 		local link = (d.grupo and d.grupo.link) or (C and C.ItemLink and C.ItemLink(d.id))
@@ -572,6 +580,172 @@ local function bloqueRecetas(padre)
 end
 
 ---------------------------------------------------------------------------
+-- 1.2.9: tu lista de compras
+---------------------------------------------------------------------------
+
+local MAX_MATERIALES = 20
+
+-- El menú de «Agregar»: lo que falta para subir tus oficios y tus recetas.
+local function menuAgregar(dueno)
+	local ops = {}
+	for _, o in ipairs(M.Oficios.Lista()) do
+		if o.conocido and o.guia.tipo == "crear" and (o.rank or 0) < 300 then
+			ops[#ops + 1] = { valor = "oficio:" .. o.linea, texto = format(L["Lo que falta para subir %s"], L[o.guia.nombre]), icono = "ic-oficios" }
+		end
+	end
+	local recetas, vistos = {}, {}
+	for _, e in ipairs(M.TodasLasRecetas()) do
+		local rec = e.rec
+		if e.propio and type(rec.o) == "number" and not vistos[rec.o] then
+			vistos[rec.o] = true
+			recetas[#recetas + 1] = { valor = "receta:" .. rec.o, texto = tostring(rec.n or nombreObjeto(rec.o)) }
+		end
+	end
+	table.sort(recetas, function(a, b) return a.texto < b.texto end)
+	if #ops > 0 and #recetas > 0 then ops[#ops + 1] = { separador = true } end
+	for _, r in ipairs(recetas) do ops[#ops + 1] = r end
+	if #ops == 0 then
+		-- Sin recetas ni oficios: la guía de oficios, para elegir uno.
+		M.VentanaOficios.Abrir()
+		return
+	end
+	K.Menu(dueno, ops, nil, function(v)
+		local tipo, id = tostring(v):match("^(%a+):(%d+)$")
+		id = tonumber(id)
+		if tipo == "oficio" then M.Lista.AgregarOficio(id)
+		elseif tipo == "receta" then M.Lista.Agregar(id, 1) end
+	end, 280)
+end
+M.MenuAgregar = menuAgregar
+
+local function bloqueCompras(padre)
+	local b = K.Pila(padre, { espacio = ESP.m })
+	b.Seccion = b:Agregar(K.Seccion(b, L["Tu lista de compras"]))
+	b.Tarjeta = b:Agregar(K.Tarjeta(b, { variante = "estado" }))
+	b.Panel = b:Agregar(panelDeFilas(b), { espacio = ESP.s })
+	b.Metas = b:Agregar(K.Rejilla(b, { min = 220, gap = ESP.s, variante = "compacta" }), { espacio = ESP.s })
+	function b:Llenar()
+		local Li = M.Lista
+		local metas = Li.Metas()
+		if #metas > 0 then Li.Codex(true) end
+		local mats, listos, total = Li.Materiales()
+		local d = { icono = "ic-lista" }
+		local tarjeta = self.Tarjeta
+		local function agregar() menuAgregar(tarjeta.Accion or tarjeta) end
+		if #metas == 0 then
+			d.titulo, d.tono = L["Tu lista está vacía"], "neutro"
+			d.texto = L["Elige una receta o un oficio y Alfa te dice qué materiales te faltan y de dónde sale cada uno. También desde la Enciclopedia."]
+			d.estado = { texto = L["Vacía"], tono = "neutro" }
+			d.accion = { texto = L["Agregar a mi lista"], icono = "ic-mas", alClic = agregar }
+		else
+			local nombres = {}
+			for i, m in ipairs(metas) do
+				if i > 4 then nombres[#nombres + 1] = format(L["%d más"], #metas - 4) break end
+				nombres[#nombres + 1] = (m.oficio or (m.n or 1) <= 1) and Li.NombreMeta(m) or format(L["%s ×%d"], Li.NombreMeta(m), m.n)
+			end
+			local costo, completo = Li.Costo(mats)
+			if listos == total then
+				d.titulo, d.tono = L["¡Tienes todo!"], "exito"
+				d.estado = { texto = L["Completa"], tono = "exito" }
+			else
+				d.titulo, d.tono = format(L["Te faltan %d de %d materiales"], total - listos, total), "acento"
+			end
+			d.texto = format(L["Para: %s."], table.concat(nombres, ", "))
+			if costo > 0 then
+				d.texto = d.texto .. " " .. format(completo and L["Comprar lo que falta cuesta unos %s."] or L["Comprar lo que falta cuesta más de %s (faltan precios)."], M.Dinero(costo))
+			end
+			d.lineas = 4
+			d.progreso = { actual = listos, total = max(1, total), texto = format(L["%d de %d listos"], listos, total) }
+			d.accion = { texto = L["Agregar a mi lista"], icono = "ic-mas", alClic = agregar }
+			d.secundaria = { texto = L["Vaciar la lista"], alClic = function()
+				K.Dialogo({ titulo = L["¿Vaciar tu lista de compras?"], texto = L["Se quitan todas las metas. Tus objetos no se tocan."],
+					aceptar = L["Vaciar"], peligro = true, alAceptar = function() Li.Vaciar() end })
+			end }
+		end
+		self.Seccion:Set(L["Tu lista de compras"], { cuenta = total > 0 and total or nil })
+		self.Tarjeta:Set(d)
+		local filas = {}
+		for i = 1, min(#mats, MAX_MATERIALES) do
+			local x = mats[i]
+			local donde = Li.Donde(x.id)
+			local costo = x.faltan > 0 and M.CostoCompra(x.id) or nil
+			filas[i] = {
+				id = x.id, cantidad = x.necesita, nombre = nombreObjeto(x.id),
+				detalle = format(L["Tienes %d de %d"], x.tienes, x.necesita) .. (donde and (DOT .. donde) or ""),
+				chip = x.listo and L["Listo"] or format(L["Faltan %d"], x.faltan), tono = x.listo and "exito" or "aviso",
+				valor = costo and M.Dinero(costo * x.faltan) or nil,
+				extra = costo and L["si lo compras"] or nil, colorExtra = "textoTenue",
+				alClic = not x.listo and function() Li.Guiar(x.id) end or nil,
+			}
+		end
+		self.Panel:Llenar(filas)
+		K.Mostrar(self.Panel, #filas > 0)
+		local tarjetas = {}
+		for i, m in ipairs(metas) do
+			local nombre = Li.NombreMeta(m)
+			local icono = m.id and iconoObjeto(m.id)
+			tarjetas[i] = {
+				variante = "compacta", icono = icono or "ic-oficios", tenir = icono and false or nil,
+				titulo = nombre, valor = (not m.oficio and (m.n or 1) > 1) and format(L["×%d"], m.n) or nil,
+				ayuda = L["Clic: quitarla de tu lista."],
+				alClic = function()
+					K.Dialogo({ titulo = L["¿Quitar de tu lista?"], texto = format(L["Se quita %s de tu lista de compras."], nombre),
+						aceptar = L["Quitar"], alAceptar = function()
+							for j, x in ipairs(Li.Metas()) do if x == m then Li.Quitar(j) break end end
+						end })
+				end,
+			}
+		end
+		self.Metas:Llenar(tarjetas)
+		K.Mostrar(self.Metas, #tarjetas > 0)
+	end
+	return b
+end
+
+---------------------------------------------------------------------------
+-- 1.2.9: Oficios de 1 a 300
+---------------------------------------------------------------------------
+
+local function bloqueOficios(padre)
+	local b = K.Pila(padre, { espacio = ESP.m })
+	b.Seccion = b:Agregar(K.Seccion(b, L["Oficios: de 1 a 300"]))
+	b.Rejilla = b:Agregar(K.Rejilla(b, { min = 240, gap = ESP.s, variante = "compacta" }))
+	function b:Llenar()
+		local Of = M.Oficios
+		local conocidos, otros = {}, {}
+		for _, o in ipairs(Of.Lista()) do
+			if o.conocido then conocidos[#conocidos + 1] = o else otros[#otros + 1] = o end
+		end
+		for _, o in ipairs(otros) do conocidos[#conocidos + 1] = o end
+		local tarjetas = {}
+		for _, o in ipairs(conocidos) do
+			local linea = o.linea
+			local texto
+			if o.conocido then
+				local p = Of.PasoActual(linea, o.rank)
+				if o.rank >= 300 then texto = L["¡Al máximo!"]
+				elseif p and p.o then texto = format(L["Ahora: %s"], nombreObjeto(p.o))
+				elseif p and p.da then texto = format(L["Ahora: %s"], nombreObjeto(p.da[1]))
+				else texto = L["Sigue con los pasos de la guía"] end
+			else
+				texto = o.guia.secundario and L["Secundario: no cuenta en tus dos"] or L["Aún no lo aprendes"]
+			end
+			local icono = iconoObjeto(o.guia.icono)
+			tarjetas[#tarjetas + 1] = {
+				icono = icono or "ic-oficios", tenir = icono and false or nil,
+				titulo = L[o.guia.nombre], texto = texto,
+				valor = o.conocido and format(L["%d/%d"], o.rank, o.max) or nil,
+				alClic = function() M.VentanaOficios.Abrir(linea) end, ayuda = L["Clic: abrir su guía de 1 a 300."],
+			}
+		end
+		self.Seccion:Set(L["Oficios: de 1 a 300"], { enlace = { texto = L["Abrir la guía"], alClic = function() M.VentanaOficios.Abrir() end } })
+		self.Rejilla:Llenar(tarjetas)
+		K.Mostrar(self, M.Ajuste("oficios") ~= false)
+	end
+	return b
+end
+
+---------------------------------------------------------------------------
 -- 6. Cómo decide Alfa y los ajustes
 ---------------------------------------------------------------------------
 
@@ -606,6 +780,21 @@ local function grupos(padre)
 		texto = L["Una barra bajo el buzón para tomar el dinero y los objetos de tus cartas con un clic, y lo que recibiste al final."] })
 	juego:Fila({ titulo = L["Avisar de cartas que vencen"], control = function(f) return K.Interruptor(f, { clave = ruta("buzonVence") }) end,
 		texto = L["Al abrir el buzón, un aviso si una carta con objetos vence en menos de 3 días."] })
+	juego:Fila({ titulo = L["Ayuda al subastar"], control = function(f) return K.Interruptor(f, { clave = ruta("vender") }) end,
+		texto = L["Al poner algo a la venta en la subasta: su precio sugerido, su historial de 14 días y un aviso si lo das muy barato."] })
+	juego:Fila({ titulo = L["Avisar si lo das más barato de"], hija = true, activa = function() return M.Ajuste("vender") ~= false end,
+		texto = L["Cuánto por debajo de lo que vale tiene que estar tu precio para avisarte."],
+		control = function(f)
+			local d = K.Deslizador(f, { min = 10, max = 70, paso = 5, clave = ruta("precioBajo"), formato = function(v) return ("%d %%"):format(floor((v or 0) + 0.5)) end })
+			d.alfaAnchoFila = 220
+			return d
+		end })
+
+	local compras = K.GrupoAjustes(padre, { titulo = L["Lista de compras y oficios"] })
+	compras:Fila({ titulo = L["Avisar al juntar lo de tu lista"], control = function(f) return K.Interruptor(f, { clave = ruta("listaAviso") }) end,
+		texto = L["Un aviso cuando juntas todo lo de un material o la lista entera."] })
+	compras:Fila({ titulo = L["Oficios de 1 a 300 en esta página"], control = function(f) return K.Interruptor(f, { clave = ruta("oficios") }) end,
+		texto = L["Tus oficios con su paso de ahora y la guía de cada uno. La guía también se abre con /alfa comercio oficios."] })
 
 	local cuentas = K.GrupoAjustes(padre, { titulo = L["Las cuentas"] })
 	cuentas:Fila({ titulo = L["Comisión de la subasta"],
@@ -641,7 +830,7 @@ local function grupos(padre)
 				})
 			end, { tipo = "peligro", icono = "ic-cerrar" })
 		end })
-	return { juego, cuentas, datos }
+	return { juego, compras, cuentas, datos }
 end
 
 ---------------------------------------------------------------------------
@@ -654,7 +843,9 @@ local function construir(view)
 	local t = K.Tablero(view, { margen = N.MargenPagina(), accion = "accion", tituloOpciones = L["Tus números"], min = 240 })
 	ui.lista = t:AgregarBloque(bloqueLista(ui, t.Extra))
 	ui.precios = t:AgregarBloque(bloquePrecios(t.Extra))
+	ui.compras = t:AgregarBloque(bloqueCompras(t.Extra))
 	ui.recetas = t:AgregarBloque(bloqueRecetas(t.Extra))
+	ui.oficios = t:AgregarBloque(bloqueOficios(t.Extra))
 	ui.como = t:AgregarBloque(bloqueComo(t.Extra))
 	ui.ajustes = grupos(t.Extra)
 	for i, g in ipairs(ui.ajustes) do t:AgregarBloque(g, { espacio = i == 1 and ESP.xl or ESP.l }) end
@@ -664,7 +855,9 @@ local function construir(view)
 		t:SetOpciones(numeros(tot), L["Tus números"])
 		ui.lista:Llenar(datos, tot)
 		ui.precios:Llenar(tot)
+		ui.compras:Llenar()
 		ui.recetas:Llenar()
+		ui.oficios:Llenar()
 		ui.como:Llenar()
 		for _, g in ipairs(ui.ajustes) do g:Refrescar() end
 	end)
@@ -698,6 +891,17 @@ local CONTROLES = {
 		search = "mail, mailbox, open all, take all, inbox" },
 	{ kind = "toggle", key = ruta("buzonVence"), label = L["Avisar de cartas que vencen"],
 		help = L["Al abrir el buzón, un aviso si una carta con objetos vence en menos de 3 días."], search = "mail expires, expiring mail" },
+	{ kind = "toggle", key = ruta("vender"), label = L["Ayuda al subastar"],
+		help = L["Al poner algo a la venta en la subasta: su precio sugerido, su historial de 14 días y un aviso si lo das muy barato."],
+		search = "auction sell, suggested price, price history, undercut" },
+	{ kind = "slider", key = ruta("precioBajo"), label = L["Avisar si lo das más barato de"], min = 10, max = 70, step = 5,
+		format = function(v) return ("%d %%"):format(floor((v or 0) + 0.5)) end,
+		help = L["Cuánto por debajo de lo que vale tiene que estar tu precio para avisarte."], search = "low price warning, cheap" },
+	{ kind = "toggle", key = ruta("listaAviso"), label = L["Avisar al juntar lo de tu lista"],
+		help = L["Un aviso cuando juntas todo lo de un material o la lista entera."], search = "shopping list, materials, reagents" },
+	{ kind = "toggle", key = ruta("oficios"), label = L["Oficios de 1 a 300 en esta página"],
+		help = L["Tus oficios con su paso de ahora y la guía de cada uno. La guía también se abre con /alfa comercio oficios."],
+		search = "professions, leveling guide, 1-300, crafting" },
 	{ kind = "slider", key = ruta("comision"), label = L["Comisión de la subasta"], min = 0, max = 15, step = 1,
 		format = function(v) return ("%d %%"):format(floor((v or 0) + 0.5)) end,
 		help = L["Lo que se queda la subasta de cada venta. Suele ser 5 % en la de tu facción y 15 % en la neutral. Es un estimado."],
@@ -722,6 +926,7 @@ N.Modulo({
 	ajustes = {
 		tooltip = true, boton = true, busquedas = true, buzon = true, buzonVence = true,
 		comision = 5, desencantar = "auto", diasViejo = 3,
+		vender = true, precioBajo = 30, listaAviso = true, oficios = true,
 	},
 	controles = CONTROLES,
 	construir = construir,
@@ -734,6 +939,10 @@ local function comando(resto)
 	verbo = (verbo or ""):lower()
 	if verbo == "escanear" or verbo == "scan" then
 		M.Escanear()
+		return
+	end
+	if verbo == "oficios" or verbo == "professions" then
+		M.VentanaOficios.Abrir()
 		return
 	end
 	if verbo == "precio" or verbo == "price" then
@@ -754,7 +963,24 @@ local function comando(resto)
 	end
 	N.Abrir(M.ID)
 end
-A.RegisterCommand(M.ID, comando, L["¿Vender, subastar o transformar? (escanear, precio <objeto>)"])
+A.RegisterCommand(M.ID, comando, L["¿Vender, subastar o transformar? (escanear, precio <objeto>, oficios)"])
+
+-- 1.2.9: Lya sabe contar lo nuevo de Comercio (Pregúntale a Lya).
+A.OnLogin(function()
+	local Lya = rawget(_G, "AlfaLya")
+	if type(Lya) ~= "table" or type(Lya.Ensenar) ~= "function" then return end
+	for _, p in ipairs({
+		{ id = "comercio.lista", icono = "ic-lista", pregunta = L["¿Qué me falta para una receta?"],
+			respuesta = L["En Comercio, en «Tu lista de compras», agrega una receta o un oficio: te digo cuánto tienes, cuánto te falta y de dónde sale. Se va llenando sola mientras juntas."] },
+		{ id = "comercio.oficios", icono = "ic-oficios", pregunta = L["¿Cómo subo mi oficio de 1 a 300?"],
+			respuesta = L["En Comercio, en «Oficios», cada uno tiene su guía de 1 a 300: qué hacer en cada tramo, lo que te falta y dónde aprender el siguiente rango."] },
+		{ id = "comercio.vender", icono = "ic-oro", pregunta = L["¿A cuánto vendo en la subasta?"],
+			respuesta = L["Pon tu objeto en la pestaña de vender: a un lado te digo su precio sugerido, cómo le fue estos días y te aviso si lo das muy barato. El precio lo pones tú."] },
+	}) do
+		p.modulo = M.ID
+		pcall(Lya.Ensenar, p)
+	end
+end)
 
 A.On("ALFA_COMERCIO", rehacerLuego)
 A.On("SETTING_CHANGED", function(path)

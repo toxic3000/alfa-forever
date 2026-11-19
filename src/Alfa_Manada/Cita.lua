@@ -376,6 +376,6 @@ end, L["Propón una salida a la manada (/alfa cita mañana 21:30 Minas)"])
 
 A.OnLogin(function()
 	caducar()
-	A.NewTicker(30, Ci.Recordar)
-	A.NewTicker(REPITE, repetir)
+	N.Cada("manada.citaRecordar", 30, Ci.Recordar)
+	N.Cada("manada.citaRepetir", REPITE, repetir)
 end)

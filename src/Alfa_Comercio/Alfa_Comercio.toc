@@ -15,4 +15,9 @@ Recetas.lua
 Consejo.lua
 Tooltip.lua
 Buzon.lua
+OficiosDatos.lua
+Oficios.lua
+Lista.lua
+Vender.lua
+VentanaOficios.lua
 Pagina.lua

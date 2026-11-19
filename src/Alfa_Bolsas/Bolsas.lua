@@ -55,6 +55,8 @@ M.AJUSTES = {
 	avisoLleno = true,        -- avisar (y sugerir qué vender) cuando se llenan
 	avisoLibres = 4,          -- ... al quedar estas casillas libres o menos
 	avisoCasiLleno = true,    -- 1.2.8: aviso con 2 casillas libres o menos (Sugerencias.lua)
+	ponteEsto = true,         -- 1.2.9: «Ponte esto» con el equipo nuevo que es mejor (Mejora.lua)
+	queGuardar = true,        -- 1.2.9: qué guardar en el banco o para otro personaje (Guardar.lua)
 	deposito = "banco",       -- lo último que elegiste en "Depositar"
 }
 
@@ -104,6 +106,12 @@ local CONTROLES = {
 	{ kind = "toggle", key = clave("avisoCasiLleno"), label = L["Avisar cuando estén casi llenas"],
 		help = L["Con 2 casillas libres o menos, un aviso con lo primero que puedes soltar y un botón para vender o ver tus bolsas."],
 		search = "bags almost full, free slots, sell junk" },
+	{ kind = "toggle", key = clave("ponteEsto"), label = L["«Ponte esto» con el equipo mejor"],
+		help = L["Cuando te llega equipo mejor que lo que llevas puesto, un aviso con un botón para ponértelo (solo con tu clic y fuera de combate)."],
+		search = "upgrade, equip, wear it, better gear" },
+	{ kind = "toggle", key = clave("queGuardar"), label = L["Sugerir qué guardar"],
+		help = L["En esta página, lo que te sirve más en el banco o con otro personaje: materiales de sus recetas, lo que piden sus misiones y equipo que tu clase no usa."],
+		search = "bank, store, alts, boe, what to keep" },
 	{ kind = "toggle", key = clave("marcaNivel"), label = L["Nivel de objeto"], help = L["El número abajo a la izquierda de cada pieza de equipo."], search = "item level, ilvl" },
 	{ kind = "toggle", key = clave("marcaCalidad"), label = L["Borde de calidad"], help = L["Un borde del color de la calidad: verde, azul, morado..."], search = "quality border, rarity" },
 	{ kind = "toggle", key = clave("marcaChatarra"), label = L["Chatarra"], help = L["Una moneda sobre lo gris y lo que marcaste como chatarra."], search = "junk, grey items" },

@@ -46,6 +46,9 @@ N.SinContexto = sinContexto
 
 function N.Textos(en)
 	if N.espanol then
+		-- En español nadie vuelve a leer la tabla en inglés (el idioma no cambia
+		-- sin /reload): se vacía para que sus textos no ocupen memoria (1.2.9).
+		if type(en) == "table" and wipe then wipe(en) end
 		return setmetatable({}, { __index = function(_, k) return sinContexto(k) end })
 	end
 	return setmetatable({}, { __index = function(_, k)
@@ -400,6 +403,10 @@ function N.CorrerMigraciones()
 	local hecha = tonumber(db.alfaSchema) or 0
 	table.sort(migraciones, function(a, b) return a.n < b.n end)
 	local corridas = 0
+	-- 1.2.9: antes de mudar nada, un respaldo de los ajustes (Respaldos.lua).
+	local falta = false
+	for _, m in ipairs(migraciones) do if m.n > hecha then falta = true break end end
+	if falta and type(N.AntesDeMigrar) == "function" then pcall(N.AntesDeMigrar) end
 	for _, m in ipairs(migraciones) do
 		if m.n > hecha then
 			local ok, err = pcall(m.fn, db)
@@ -415,4 +422,10 @@ function N.CorrerMigraciones()
 	return corridas
 end
 
-A.OnLogin(function() N.CorrerMigraciones() end)
+-- 1.2.9: al entrar, primero se mira si los ajustes llegaron vacíos (antes de
+-- que una migración los llene), luego las migraciones y el respaldo semanal.
+A.OnLogin(function()
+	if type(N.RevisarAjustes) == "function" then pcall(N.RevisarAjustes) end
+	N.CorrerMigraciones()
+	if type(N.RespaldoSemanal) == "function" then pcall(N.RespaldoSemanal) end
+end)

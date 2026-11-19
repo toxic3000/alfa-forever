@@ -259,10 +259,20 @@ local function pasoEstilo()
 					return K.Interruptor(fila, { clave = ID .. ".aullido", alCambiar = function(x) if x then M.Aullar(true) end end })
 				end })
 			ui.grupoSonido = pila:Agregar(g, { espacio = ESP.l })
+			-- 1.2.9: Alfa sencillo o completo (Pasos.lua, M.MODOS).
+			pila:Agregar(K.Seccion(pila, L["¿Cuánto de Alfa quieres ver?"]), { espacio = ESP.l })
+			ui.opModo = eleccion(pila, { opciones = M.MODOS, min = 260,
+				leer = function() return N.Modo and N.Modo() or "completo" end,
+				guardar = function(x) N.Set(ID, "modo", x) end })
+			nota(pila, L["Lo cambias cuando quieras en Ajustes > Estilo y sonido."])
 		end,
-		alMostrar = refrescarEstilo,
+		alMostrar = function()
+			if ui.opModo then ui.opModo:Refrescar() end
+			refrescarEstilo()
+		end,
 		resumen = function()
-			return (K.NombreEstilo(K.Estilo()) or "") .. DOT .. (N.Get(ID, "aullido") and L["Con aullido"] or L["Sin aullido"])
+			local modo = (N.Modo and N.Modo() == "sencillo") and L["Sencillo"] or L["Completo"]
+			return (K.NombreEstilo(K.Estilo()) or "") .. DOT .. (N.Get(ID, "aullido") and L["Con aullido"] or L["Sin aullido"]) .. DOT .. modo
 		end,
 	}
 end

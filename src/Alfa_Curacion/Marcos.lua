@@ -1068,7 +1068,7 @@ end)
 -- El alcance cambia sin evento si el cliente no trae UNIT_IN_RANGE_UPDATE:
 -- cada medio segundo se revisan unos pocos botones (TOPE_ALCANCE) por turno.
 local turno = 0
-A.NewTicker(CADA_ALCANCE, function()
+N.Cada("curacion.alcance", CADA_ALCANCE, function() -- un solo reloj (1.2.9)
 	local lista = M.botones
 	local n = #lista
 	if n == 0 or not opt("alcance") or not (cabecera and cabecera:IsVisible()) then return end

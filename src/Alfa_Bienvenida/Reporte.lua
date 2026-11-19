@@ -125,19 +125,38 @@ end
 -- Los errores que el motor atrapó en esta sesión y lo que el juego le
 -- bloqueó, los más nuevos al final.
 local function errores()
+	-- 1.2.9: los que Alfa atrapó y guardó (Alfa_Nucleo/Errores.lua), con su
+	-- versión y cuántas veces salieron, los más nuevos al final.
+	local guardados, vistos = {}, {}
+	for _, x in ipairs(N.Errores and N.Errores() or {}) do
+		if type(x) == "table" then
+			local msg = tostring(x.msg or "")
+			vistos[msg] = true
+			guardados[#guardados + 1] = format("%dx [%s] %s", tonumber(x.n) or 1, tostring(x.v or "?"), msg)
+		end
+	end
+	-- Y los del motor en esta sesión que no estén ya, con lo bloqueado.
 	local lista = {}
 	local ok, e = pcall(function() return A.Errors and A.Errors() end)
 	for _, x in ipairs(ok and type(e) == "table" and e or {}) do
 		local msg = tostring(x.msg or ""):gsub("^Interface[/\\]AddOns[/\\]", "")
-		lista[#lista + 1] = { seq = x.seq or 0, texto = format("%dx %s", x.count or 1, msg) }
+		if not vistos[msg] then
+			lista[#lista + 1] = { seq = x.seq or 0, texto = format("%dx %s", x.count or 1, msg) }
+		end
 	end
 	local ok2, b = pcall(function() return A.Blocked and A.Blocked() end)
 	for _, x in ipairs(ok2 and type(b) == "table" and b or {}) do
 		lista[#lista + 1] = { seq = x.seq or 0, texto = format(L["%dx bloqueado: %s en %s (%s)"], x.count or 1, plano(x.fn), tostring(x.addon or "?"), tostring(x.where or x.at or "?")) }
 	end
 	table.sort(lista, function(a, c) return a.seq < c.seq end)
+	-- Hasta MAX_ERRORES: lo bloqueado y lo del motor guardan 2 lugares si
+	-- los hay; el resto, los guardados más nuevos.
+	local otros = min(#lista, 2)
+	local deGuardados = min(#guardados, MAX_ERRORES - otros)
+	otros = min(#lista, MAX_ERRORES - deGuardados)
 	local out = {}
-	for i = max(1, #lista - MAX_ERRORES + 1), #lista do out[#out + 1] = cortar(lista[i].texto, MAX_LINEA) end
+	for i = #guardados - deGuardados + 1, #guardados do out[#out + 1] = cortar(guardados[i], MAX_LINEA) end
+	for i = #lista - otros + 1, #lista do out[#out + 1] = cortar(lista[i].texto, MAX_LINEA) end
 	return out
 end
 

@@ -235,6 +235,49 @@ do
 	if not ok and geterrorhandler then geterrorhandler()(err) end
 end
 
+-- 1.2.9: tu guía, más lista (Nivel, Grupo, Siguiente y Vuelo.lua), en Ajustes > Misiones > Misiones.
+do
+	local LM = A.L or {}
+	local ok, err = A.RegisterOptions({ page = "questing", key = "questing", tab = LM["Quests"] or "Quests",
+		section = L["Tu guía, más lista"], controls = {
+			{ kind = "toggle", key = M.ID .. ".nivelClaro", label = L["Pasos de nivel claros"],
+				help = L["En un paso de «Sube al nivel», cuánta experiencia te falta y dónde rinde más: enemigos de tu nivel que cuentan para tus misiones."],
+				search = "level step, xp, experience, grind, where to level" },
+			{ kind = "toggle", key = M.ID .. ".avisoElite", label = L["Avisar de misiones de élite"],
+				help = L["Antes de una misión de élite o de grupo, un aviso con «Llamar a la manada»."],
+				search = "elite quest, group quest, call the pack" },
+			{ kind = "toggle", key = M.ID .. ".compartirMisiones", label = L["Ofrecer compartir misiones"],
+				help = L["En grupo, si alguien no tiene una misión tuya, un botón para compartírsela."],
+				search = "share quest, party, group" },
+			{ kind = "toggle", key = M.ID .. ".siguienteGuia", label = L["Proponer la siguiente guía"],
+				help = L["Al terminar una guía, la que sigue para tu nivel a un clic."],
+				search = "next guide, guide finished, continue" },
+			{ kind = "toggle", key = M.ID .. ".vueloListo", label = L["Marcar el mejor vuelo"],
+				help = L["Con el mapa de vuelos abierto, marca el destino más cerca de tu paso de ahora."],
+				search = "flight master, taxi, flight map, fly" },
+		} })
+	if not ok and geterrorhandler then geterrorhandler()(err) end
+end
+
+-- 1.2.9: Lya sabe contar lo nuevo de la ruta (Pregúntale a Lya).
+A.RegisterEvent("PLAYER_LOGIN", function()
+	local Lya = rawget(_G, "AlfaLya")
+	if not (type(Lya) == "table" and type(Lya.Ensenar) == "function") then return end
+	for _, p in ipairs({
+		{ id = "rutas.nivel", icono = "ic-nivel", pregunta = L["¿Cuánto me falta para el nivel de mi guía?"],
+			respuesta = L["Cuando tu guía dice «Sube al nivel», el rastreador te dice cuánta experiencia te falta y dónde rinde más: enemigos de tu nivel que también cuentan para tus misiones. «Llévame» y la flecha te lleva."] },
+		{ id = "rutas.compartir", icono = "ic-manada", pregunta = L["¿Cómo comparto una misión con mi grupo?"],
+			respuesta = L["En grupo, si alguien no tiene una misión que tú llevas, el rastreador te lo dice con «Compartir». Un clic y se la ofreces."] },
+		{ id = "rutas.siguiente", icono = "ic-ruta", pregunta = L["¿Qué hago al terminar una guía?"],
+			respuesta = L["Al terminarla, te propongo la siguiente para tu nivel. Un clic en «Seguir con…» y seguimos de caza."] },
+		{ id = "rutas.vuelo", icono = "ic-huella", pregunta = L["¿A dónde vuelo?"],
+			respuesta = L["Con el mapa de vuelos abierto, marco con una huella el destino más cerca de tu paso de ahora."] },
+	}) do
+		p.modulo = M.ID
+		pcall(Lya.Ensenar, p)
+	end
+end)
+
 N.Modulo({
 	id = M.ID, nombre = L["Ruta"], icono = "ic-ruta", orden = 12,
 	subtitulo = L["Qué hacer ahora, cerrar tus misiones y tus rutas propias."],

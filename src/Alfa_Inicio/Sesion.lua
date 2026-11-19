@@ -237,7 +237,7 @@ local function empezar(inicial, recarga)
 	motorPrev = st and num(st.sessionXP) or nil
 	leerPropio()
 	if not ticker then
-		ticker = A.NewTicker(S.VISTO_CADA, function()
+		ticker = N.Ticker("inicio.sesion", S.VISTO_CADA, function()
 			if empezado then S.Actual().visto = ahora() end
 		end)
 	end

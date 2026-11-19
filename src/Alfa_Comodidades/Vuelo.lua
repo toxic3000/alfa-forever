@@ -206,7 +206,7 @@ end
 local function arrancar()
 	if ticker then return end
 	actualizar()
-	ticker = A.NewTicker(TICK, actualizar)
+	ticker = N.Ticker("comodidades.vuelo", TICK, actualizar)
 end
 
 local function parar()

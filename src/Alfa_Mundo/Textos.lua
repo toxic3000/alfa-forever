@@ -272,4 +272,18 @@ M.EN = {
 	["%d yd"] = "%d yd",
 	["Tu vuelo en el mapa"] = "Your flight on the map",
 	["Mientras vuelas en grifo, la línea de tu viaje en el mapa de Alfa: por dónde vas y dónde aterrizas."] = "While you fly on a gryphon, your trip's line on Alfa's map: where you are and where you land.",
+	-- 1.2.9: lo que te falta en tu zona (Descubrir.lua)
+	["tu zona"] = "your zone",
+	["Por descubrir"] = "Undiscovered",
+	["Un rincón de %s que todavía no pisas."] = "A corner of %s you haven't set foot in yet.",
+	["Descubrir aquí te dio %d de experiencia la última vez."] = "Discovering here gave you %d experience last time.",
+	["Descubrirlo te da experiencia."] = "Discovering it gives you experience.",
+	["Maestro de vuelo"] = "Flight master",
+	["Te falta este vuelo: háblale al maestro de vuelo para aprenderlo."] = "You're missing this flight path: talk to the flight master to learn it.",
+	["Clic: la flecha te lleva."] = "Click: the arrow takes you there.",
+	["¿Qué me falta por explorar en esta zona?"] = "What's left to explore in this zone?",
+	["En el mapa de Alfa, la capa «Por descubrir» marca los rincones de tu zona que no has pisado, y «Vuelos que te faltan» los maestros de vuelo que aún no conoces. Clic en un vuelo y la flecha te lleva."] = "On Alfa's map, the \"Undiscovered\" layer marks the corners of your zone you haven't visited, and \"Missing flight paths\" the flight masters you don't know yet. Click a flight path and the arrow takes you there.",
+	["Vuelos que te faltan"] = "Missing flight paths",
+	["Los maestros de vuelo de tu zona que todavía no conoces, resaltados. Clic: la flecha te lleva."] = "The flight masters in your zone you don't know yet, highlighted. Click: the arrow takes you there.",
+	["Los rincones de tu zona que todavía no pisas, con la experiencia que da descubrirlos."] = "The corners of your zone you haven't visited yet, with the experience discovering them gives.",
 }

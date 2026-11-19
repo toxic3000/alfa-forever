@@ -55,3 +55,9 @@ Forever (tipo de juego "Camelot" en el código de Blizzard) vende **casillas de 
 8. Ordenar, buscar ("espada", "verde", ">20", "20-30"), las marcas y el cuadro "Tienes N".
 9. Apagar "Usar las bolsas de Alfa" devuelve las de Blizzard sin recargar (con las bolsas cerradas).
 10. Objetos de misión: brillan con su «!»; uno que empieza misión lleva la insignia llena y deja de llevarla al aceptar la misión; apagar `brilloMision` vuelve al marco fijo sin recargar.
+
+## 1.2.9
+
+- **«Ponte esto» (`Mejora.lua`).** Equipo nuevo que es mejor para tu clase (lo decide `Alfa.Gear` del motor; la oferta, su vigía `QoL.Wear` o, si está apagado, Alfa mirando tus bolsas): un aviso con «Ponérmelo», solo con tu clic y fuera de combate (en combate, al terminar). Ajuste `bolsas.ponteEsto`.
+- **Qué guardar (`Guardar.lua`).** En la página, lo que te sirve más en el banco o con otro personaje: materiales de sus recetas (`AlfaComercio.Usan`), objetos que piden sus misiones (cada personaje anota sus misiones; el Codex dice qué piden) y equipo que se liga al equiparlo y tu clase no usa. Con un banquero, «Al banco» (por lotes, `Banco.PlanCasillas` y `Banco.Mandar`). Ajuste `bolsas.queGuardar`.
+- **Para Comercio:** `AlfaBolsas.Cuantos(id)` -> tuyos (bolsas + banco), en bolsas, en banco, en toda la cuenta; `AlfaBolsas.QueGuardar()`.

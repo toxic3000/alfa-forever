@@ -181,7 +181,7 @@ end
 function Mini.Vigia()
 	local on = N.Get(ID, "minimapa") ~= false
 	if on and not vigia then
-		vigia = A.NewTicker(0.5, function()
+		vigia = N.Ticker("recoleccion.minimapa", 0.5, function()
 			if dibujar(false) then despertar() end
 		end)
 	elseif not on and vigia then

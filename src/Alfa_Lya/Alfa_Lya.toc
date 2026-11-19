@@ -25,3 +25,7 @@ Aprende.lua
 Oficios.lua
 TuHistoria.lua
 FinMazmorra.lua
+Muerte.lua
+Ahora.lua
+Clase.lua
+Foco.lua

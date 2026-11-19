@@ -28,3 +28,4 @@ Ajustes.lua
 Vista.lua
 Reemplazos.lua
 Capa.lua
+EnVivo.lua

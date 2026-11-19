@@ -31,6 +31,12 @@ M.NOVEDADES = {
 --   { version, titulo, puntos = { { icono (ic-*), texto } } }
 ---------------------------------------------------------------------------
 M.NOTAS = {
+	{ version = "1.2.9", titulo = "La gran cacería", puntos = {
+		{ "ic-flecha", "La flecha con el estilo de La Jauría, y «¿Cuánto tiempo tienes?» arma tu plan paso a paso." },
+		{ "ic-manada", "Cambia de plano cuando está lleno, «¿Quién tiene...?» y los festejos de la manada." },
+		{ "ic-bolsas", "«Ponte esto», lista de compras, oficios del 1 al 300 y subastar fácil." },
+		{ "ic-huella", "Lya te enseña tu clase y te ayuda al morir; respaldos, diagnóstico y Alfa más ligero." },
+	} },
 	{ version = "1.2.8", titulo = "La manada se organiza y tu historia", puntos = {
 		{ "ic-manada", "Citas de la manada, «¿Quién va?», raros con reloj y notas en tu mapa." },
 		{ "ic-ruta", "Vuelta a entregar por el camino más corto, la piedra de hogar a tiempo y la mejor recompensa marcada." },

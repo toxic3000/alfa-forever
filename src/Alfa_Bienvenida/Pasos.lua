@@ -342,6 +342,29 @@ N.Migracion(2, function(db)
 	s.party.chatEcho = true
 end)
 
+-- 1.2.9: Alfa sencillo o completo (Alfa_Nucleo/Modo.lua). De fábrica,
+-- sencillo (quien empieza ve lo esencial); quien ya tenía Alfa sigue con
+-- todo Alfa a la vista: se le anota «completo» una vez. Nunca encima de lo
+-- que ya eligió.
+N.Migracion(3, function(db)
+	local s = type(db.settings) == "table" and db.settings or nil
+	if not s then return end
+	if A.IsNewAccount and A.IsNewAccount() then return end
+	s.bienvenida = type(s.bienvenida) == "table" and s.bienvenida or {}
+	if s.bienvenida.modo == nil then s.bienvenida.modo = "completo" end
+end)
+
+-- { valor, texto, icono, titulo, explica }: el desplegable de Ajustes y las tarjetas del asistente.
+M.MODOS = {
+	{ valor = "sencillo", icono = "ic-huella", titulo = "Alfa sencillo", sobre = "Para empezar",
+		texto = "Solo lo esencial a la vista: Hoy, Ruta, Mapa, Bolsas y Lya, y menos avisos. Lo demás sigue ahí cuando lo busques." },
+	{ valor = "completo", icono = "ic-lobo", titulo = "Alfa completo",
+		texto = "Todas las páginas de Alfa a la vista: mazmorras, talentos, combate, oficios, la manada y más." },
+}
+function M.OPCIONES_MODO()
+	return { { valor = "sencillo", texto = M.L["Sencillo"] }, { valor = "completo", texto = M.L["Completo"] } }
+end
+
 M.PERFILES = {
 	{ valor = "manada", icono = "ic-lobo", titulo = "Alfa lo hace por ti",
 		texto = "Acepta y entrega tus misiones, elige tu guía y sigue sola, vende, repara y toma tus vuelos. Tú solo juegas.",

@@ -398,6 +398,10 @@ motor(G_ENTRADAS, "entradas.portales", ID .. ".portales", L["Portales"],
 motor(G_VIAJE, "viaje.vuelo", "maps.taxiPins", L["Puntos de vuelo"],
 	L["Los maestros de vuelo de tu facción y los neutrales: verdes si ya los conoces, ámbar con «?» si te falta descubrirlos. Clic: seguirlo con la flecha."],
 	MAPA .. "flightmaster", "success")
+-- 1.2.9: los vuelos que te faltan en tu zona (Descubrir.lua).
+motor(G_VIAJE, "viaje.vuelosFaltan", ID .. ".vuelosFaltan", L["Vuelos que te faltan"],
+	L["Los maestros de vuelo de tu zona que todavía no conoces, resaltados. Clic: la flecha te lleva."],
+	MAPA .. "flightmaster", "warning", { propia = true })
 motor(G_ENTRADAS, "viaje.barcos", "maps.dockPins", L["Barcos, zepelines y tranvía"],
 	L["Muelles y torres de zepelín, con a dónde van."], MAPA .. "boat", "link", { orden = 3 })
 motor(G_VIAJE, "viaje.posadas", "maps.innPins", L["Posadas"],
@@ -416,6 +420,10 @@ motor(G_ZONAS, "zonas.descubrir", "maps.reveal", L["Zonas sin descubrir"],
 	{ esencial = true, apagado = "off",
 	  leer = function(v) return v == "on" or v == "tint" end,
 	  encendido = function() return "tint" end })
+-- 1.2.9: los rincones de tu zona que no exploras (Descubrir.lua).
+motor(G_ZONAS, "zonas.porDescubrir", ID .. ".porDescubrir", L["Por descubrir"],
+	L["Los rincones de tu zona que todavía no pisas, con la experiencia que da descubrirlos."],
+	UI .. "icon-explore", "accent", { propia = true })
 motor(G_ZONAS, "zonas.niveles", "maps.zoneLevels", L["Niveles de zona"],
 	L["El rango de niveles de cada zona, con color según tu nivel."], UI .. "icon-level", "quest")
 motor(G_ZONAS, "zonas.nombres", ID .. ".nombres", L["Nombres de zona"],

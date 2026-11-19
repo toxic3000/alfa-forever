@@ -254,7 +254,9 @@ local function bloqueAcciones(pila)
 	b.Plan = K.Boton(b, L["Agregar a Mis planes"], nil, { tipo = "secundario", icono = "ic-ruta",
 		ayuda = L["Suma «conseguir este objeto» a tu plan de ahora (o a uno nuevo)."] })
 	b.Extra = K.Boton(b, "", nil, { tipo = "secundario", icono = "ic-ventana" })
-	b.lista = { b.Guiar, b.Plan, b.Falta, b.Extra, b.Mapa, b.Ruta, b.Vincular }
+	b.Compra = K.Boton(b, L["A mi lista de compras"], nil, { tipo = "secundario", icono = "ic-oro",
+		ayuda = L["Lo suma a tu lista de compras de Comercio, con lo que pide su receta."] })
+	b.lista = { b.Guiar, b.Plan, b.Falta, b.Extra, b.Mapa, b.Ruta, b.Compra, b.Vincular }
 	function b:Set(f)
 		local a = f.acciones or {}
 		local clave = f.kind .. ":" .. tostring(f.id)
@@ -284,6 +286,16 @@ local function bloqueAcciones(pila)
 			local ok, r = pcall(a.ruta)
 			if not ok then aviso(false, L["Tu ruta no pudo agregarlo."]) end
 			if ok and r ~= false then K.Despues(0.1, rehacerFichaActual) end
+		end
+		-- La lista de compras (Alfa_Comercio): una pieza más de este objeto.
+		self.Compra:SetShown(a.compra ~= nil)
+		self.Compra.alClic = function()
+			local ok, r = pcall(a.compra)
+			if ok and r ~= false then
+				aviso(true, L["Está en tu lista de compras."])
+			elseif not ok then
+				aviso(false, L["Tu lista de compras no pudo agregarlo."])
+			end -- r == false: la lista ya dijo por qué (por ejemplo, llena)
 		end
 		self.Falta:SetShown(a.desbloquear ~= nil)
 		self.Falta.alClic = function() pcall(a.desbloquear) end
@@ -879,7 +891,7 @@ end
 
 local function vigilarAvance()
 	if reloj then return end
-	reloj = A.NewTicker(0.3, function() -- por A.Safe: un error, una vez (1.2.0)
+	reloj = N.Ticker("enciclopedia.avance", 0.3, function() -- por A.Safe: un error, una vez (1.2.0)
 		if not (v and v:IsShown()) then reloj:Cancel() reloj = nil return end
 		K.Escribir(ui.lf.Cuenta, cuentaTexto(#(est.resultados[est.tipo] or {})))
 		local ocupado = false

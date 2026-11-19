@@ -164,7 +164,7 @@ if A.On then
 		if type(a) == "table" and a.kind ~= "founder" then sumar("raros") end
 	end)
 end
-if A.NewTicker then A.NewTicker(60, function() sumar("minutos") end) end
+N.Cada("lya.minutos", 60, function() sumar("minutos") end) -- un solo reloj (1.2.9)
 
 local PORRAS = {
 	"¡Van %d misiones hoy! La manada está orgullosa.",

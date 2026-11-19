@@ -51,6 +51,8 @@ De dónde salen: el listado de archivos de la comunidad, [wowdev/wow-listfile](h
 - `/alfa bienvenida`: abre la configuración (pendiente: donde la dejaste; terminada: el resumen). `/alfa bienvenida novedades`: lo nuevo de la versión. `/alfa bienvenida aullido [corto|largo|manada]`: suena ese aullido y queda como el de la intro.
 - `/alfa reportar [error | mejora | comentario]`: la ventana de reportes.
 - `/alfa estilo`: abre Ajustes > Estilo y sonido.
+- `/alfa diagnostico` (1.2.9, `Diagnostico.lua`): «Revisar Alfa», lo que choca con Alfa y su arreglo a un clic (nunca apaga el otro addon).
+- `/alfa rendimiento`: memoria, procesador (C_AddOnProfiler o scriptProfile) y las tareas del reloj del núcleo.
 - `/alfa welcome` y Acerca de > "Mostrar la bienvenida otra vez" (del motor) abren lo nuevo de la versión.
 
 ## Contrato
@@ -70,7 +72,7 @@ De dónde salen: el listado de archivos de la comunidad, [wowdev/wow-listfile](h
 | Pantalla | Claves |
 |---|---|
 | Idioma | `AlfaIdiomaDB.idioma` (por `N.PonerIdioma`), `bienvenida.idioma` |
-| Estilo | `ui.skin` (por `K.SetEstilo`), el acento (`K.SetAcento`, `ui.classAccent`), `bienvenida.aullido` |
+| Estilo | `ui.skin` (por `K.SetEstilo`), el acento (`K.SetAcento`, `ui.classAccent`), `bienvenida.aullido`, `bienvenida.modo` (1.2.9: `sencillo` de fábrica, `completo`; la migración 3 deja en completo a quien ya tenía Alfa) |
 | Misiones | `behavior.autoAccept`, `behavior.autoTurnin`, `ruta.soloRuta`, `comodidades.misiones`, `behavior.skipGrey`, `behavior.closeSkipped`, `behavior.warnClosing`, `qol.rewardAutoPick`, `qol.rewardEquip`, `combate.marcaMision` + `bolsas.brilloMision` |
 | Tu guía | `behavior.autoSelectGuide`, `behavior.guideEnd` (`continue`/`ask`), `behavior.routeChoice` (`recommended`/`ask`), `behavior.whileHere`, `behavior.offerClassQuests`, `behavior.trainReminder` (`2`/`1`/`off`), `qol.skipGossip`, `qol.stepGossip` |
 | Comerciantes y viajes | `qol.sellJunk`, `qol.autoRepair`, `qol.repairGuild`, `qol.buyGoals`, `qol.fastLoot`, `qol.flightAutoOpen`, `qol.flightAutoTake`, `qol.autoBind` |
@@ -85,6 +87,8 @@ De dónde salen: el listado de archivos de la comunidad, [wowdev/wow-listfile](h
 | `AlfaNucleoDB.bienvenida` | `respondio` (la versión de la configuración terminada), `paso` (dónde va, mientras falta), `recomendado` (ya se aplicó lo recomendado por rol), `visto`, `cuando`, `versionVista` (la versión de Alfa cuyas notas ya viste) |
 | `AlfaNucleoCharDB.bienvenida.aulloSesion` | Ya aulló en esta sesión |
 | `AlfaNucleoDB.kit.acentos` | El acento propio que recuerda cada estilo |
+| `AlfaNucleoDB.respaldos` | 1.2.9: los últimos 3 respaldos de los ajustes y perfiles (`Alfa_Nucleo/Respaldos.lua`; restaurar y el aviso de ajustes vacíos en `Respaldos.lua`) |
+| `AlfaNucleoDB.errores` | 1.2.9: los últimos 30 errores de Alfa atrapados (`Alfa_Nucleo/Errores.lua`), en Estilo y sonido > Errores atrapados |
 
 ## Para verificar en el juego
 

@@ -418,7 +418,8 @@ end
 -- Avisos flotantes (toasts): arriba al centro, el más nuevo arriba, hasta 3.
 -- Se van solos (no mientras el ratón está encima) o con su X.
 --   K.Aviso({ titulo, texto, icono, lobo, tono = "acento", duracion = 6,
---             accion = { texto, alClic }, alCerrar = fn(aviso) }) -> aviso
+--             accion = { texto, alClic }, alCerrar = fn(aviso),
+--             detalle = true (1.2.9: no sale con Alfa sencillo) }) -> aviso
 --   aviso:Cerrar()   lo cierra desde fuera. El marco se reutiliza: Cerrar()
 --   cierra el mensaje que muestra ahora (aviso.turno dice cuál es; con
 --   aviso:Cerrar(turno) solo cierra si sigue mostrando ese).
@@ -501,6 +502,9 @@ end
 
 function K.Aviso(o)
 	o = o or {}
+	-- 1.2.9: con Alfa sencillo (Modo.lua) no salen los avisos de detalle
+	-- (o.detalle = true: lo que es bueno saber, pero no hace falta). -> false
+	if o.detalle and N.Sencillo and N.Sencillo() then return false end
 	-- 1.2.5: con Lya a la vista, ella lo dice en su globo (K.AvisoPorLya, de
 	-- Alfa_Lya) y no salen avisos por todos lados. Siempre el aviso: o.lya =
 	-- false (quien usa la ventanita que se devuelve) o un botón seguro (abre

@@ -15,7 +15,7 @@
 -- dibujo mide 1 px (ella, unos 57 x 50 parada), con filtro NEAREST para que
 -- se vea nítida. Todo se repinta solo al cambiar de estilo (K.Pintar).
 --
--- Vida (nada en OnUpdate): un solo temporizador (C_Timer.NewTicker, de 1 a 10
+-- Vida (nada en OnUpdate): una tarea del reloj de Alfa (N.Ticker, de 1 a 10
 -- cuadros por segundo según la pose) pasa los cuadros, y solo corre con Lya a
 -- la vista y fuera de combate. Poses:
 --   quieta (respira y mueve la cola), atenta (las orejas paradas, la cola
@@ -110,6 +110,7 @@ local parpadeando = false
 local alReves = false            -- mira a la izquierda (está en la mitad derecha)
 local vuelta = false             -- de regreso de una carrera (mira al otro lado)
 local dormida, combate = false, false
+local foco = false               -- 1.2.9: el modo foco (Foco.lua): chiquita, tenue y sin atrapar clics
 local turnoGlobo, turnoPose, turnoParpadeo = 0, 0, 0
 local actual                     -- lo que dice ahora
 
@@ -174,10 +175,8 @@ local function andar()
 	if not (f and f:IsVisible()) or combate or not p or #p < 2 then parar() return end
 	if ticker and tickerCada == p.cada then return end
 	parar()
-	if C_Timer and C_Timer.NewTicker then
-		tickerCada = p.cada
-		ticker = C_Timer.NewTicker(p.cada, paso)
-	end
+	tickerCada = p.cada
+	ticker = N.Ticker("lya.cuadros", p.cada, paso) -- un solo reloj (1.2.9)
 end
 
 -- Pone la pose que toca (si cambió, desde su primer cuadro).
@@ -414,10 +413,32 @@ function UI.Llegar(fn)
 	return true
 end
 
+-- La transparencia de ahora: tenue en combate, más en el modo foco.
+local function alfa()
+	if foco then return combate and 0.3 or 0.55 end
+	return combate and 0.45 or 1
+end
+
+-- 1.2.9: el modo foco (Foco.lua): en mazmorras y en combate se hace chiquita y
+-- tenue, se calla y en combate no atrapa clics; al salir vuelve como estaba.
+function UI.Foco(si)
+	si = si and true or false
+	if si == foco then return end
+	foco = si
+	if not f then return end
+	f.Andar:SetScale(si and 0.6 or 1)
+	f.Base:SetAlpha(si and 0.4 or 1)
+	f:SetAlpha(alfa())
+	f:EnableMouse(not (si and combate))
+	if si then UI.Callar(true) end
+end
+function UI.EnFoco() return foco end
+
 function UI.Combate(si)
 	combate = si and true or false
 	if not f then return end
-	f:SetAlpha(combate and 0.45 or 1)
+	f:SetAlpha(alfa())
+	f:EnableMouse(not (foco and combate))
 	if combate then
 		-- en combate no corre: aparece en su lugar (lo que iba a decir espera)
 		if llegando() then
@@ -466,6 +487,14 @@ local function menu()
 		  { valor = "ajustes", texto = L["Ajustes de Lya"], icono = "ic-ajustes" },
 		  { valor = "ocultar", texto = L["Ocultar a Lya"], icono = "ic-cerrar" } },
 	}
+	-- 1.2.9: cambiar de plano (la API la pone Alfa_Manada). Para que el menú
+	-- siga en 10 filas, con ella «Bloquear posición» se queda en sus ajustes.
+	local Mn = rawget(_G, "AlfaManada")
+	local plano = type(Mn) == "table" and type(Mn.CambiarPlano) == "function"
+	if plano then
+		table.insert(grupos[1], { valor = "plano", texto = L["Cambiar de plano"], icono = "ic-comunidad" })
+		table.remove(grupos[4], 1)
+	end
 	local hist = grupos[2]
 	if Hi and Hi.Modo() ~= "nunca" then hist[#hist + 1] = { valor = "dato", texto = L["Cuéntame algo de aquí"], icono = "ic-mundo" } end
 	if Ch then
@@ -489,6 +518,9 @@ local function menu()
 	K.Menu(f, opciones, nil, function(v)
 		if v == "guia" then if M.Guia then M.Guia.Abrir() end
 		elseif v == "silencio" then Ce.Silenciar(not silencio)
+		elseif v == "plano" then
+			local Mn2 = rawget(_G, "AlfaManada")
+			if type(Mn2) == "table" and type(Mn2.CambiarPlano) == "function" then K.Llamar(Mn2.CambiarPlano) end
 		elseif v == "dato" then Hi.Contar()
 		elseif v == "algo" then Ch.Contar()
 		elseif v == "gente" then Ch.Gente()
@@ -691,6 +723,11 @@ local function construirLya()
 	end)
 	actualPose = nil
 	lugar()
+	if foco then
+		f.Andar:SetScale(0.6)
+		f.Base:SetAlpha(0.4)
+		f:SetAlpha(alfa())
+	end
 	f:Hide()
 end
 

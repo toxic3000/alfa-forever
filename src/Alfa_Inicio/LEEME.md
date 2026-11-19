@@ -22,6 +22,15 @@ Cada pieza sale solo si tiene algo útil o una acción; lo vacío no se muestra.
 
 Mientras la página se ve, los números, la distancia y las tarjetas de la clase se repintan una vez por segundo (un temporizador que se apaga al ocultarla).
 
+## Desde la 1.2.9
+
+- **¿Cuánto tiempo tienes?** (`Tiempo.lua`, `M.Tiempo`): eliges 30 min, 1 h, 2 h u *Otro* (`inicio.horaMin`, de 15 min a 4 h) y Alfa arma el plan: entregar las listas, cerrar las de tu zona, una mazmorra de tu nivel si cabe (`AlfaMazmorras.Recomendada`), un rato de recolección si tienes Minería, Herboristería o Desuello, tu guía (o recoger misiones) con lo que sobra y la entrega del final. Los minutos salen de tu ritmo (tu diario: minutos por misión; si no, los pasos de tu guía con `AlfaRuta.Estimado`). *Empezar* guarda el plan por personaje (`hora`) y pone la flecha en el primer paso con la API de la ruta; *Siguiente* pasa al que sigue. Un paso de entregar o de tu zona que se cumple solo avisa con *Llévame* (`inicio.horaAuto`); la flecha siempre la pone el clic. Con el plan en marcha su tarjeta va hasta arriba. Sustituye la tarjeta «Una hora de caza» mientras está encendido (`inicio.horaPlan`).
+- **Camino al 60** (`Camino.lua`, `M.Camino`, `inicio.camino`): la tarjeta dice cuántos niveles y horas faltan a tu ritmo (la XP por hora de tus últimos 7 días, anotada cada minuto en `camino.dias`; si no, la de la sesión), «Hoy avanzaste 1.4 niveles» y en cuántos días llegas; *Ver el camino* abre su ventana: las guías por tramos (`Alfa.Guides.List`), las mazmorras a su mejor nivel (`Alfa.Dungeons`) y tus días. `/alfa camino`.
+- **Listo para la mazmorra** (`Listo.lua`, `M.Listo`): equipo (`inicio.listoDur`), espacio (`inicio.listoBolsas`), comida y agua (`inicio.listoComida`), la munición del cazador y los componentes de tu clase (solo con el hechizo sabido). Sola (`inicio.listoAuto`) al entrar a una mazmorra o con un grupo de 4 o más, una vez; nunca en combate. El aviso lleva la flecha a lo primero que falta. `/alfa listo`, `AlfaInicio.RevisarMazmorra(nombre)` y *Revisar* en el paso de mazmorra de tu plan.
+- **Comida y agua** (`Comida.lua`, `M.Comida`, `inicio.comidaAviso`, `inicio.comidaMin`): avisa al bajar (no a quien nunca lleva), el agua solo con maná; dice qué comprar a tu nivel (`Co.NIVELES`) y lleva al vendedor de comida (`AlfaCerca.Ir("food")`). Sale también en Alertas.
+- `AlfaInicio` (global): `RevisarMazmorra(nombre)`, `Faltas()`, `Comida()`, `TengoTiempo(minutos)`, `Plan()`, `Camino()`.
+- Prueba: `tools/banco/prueba_129_inicio.lua`.
+
 ## Avisos
 
 - **La tarjeta de aviso** (`Avisos.lua`, `M.Aviso`): Kit (franja, baldosa con el ícono o el del hechizo, título, línea, texto y hasta dos botones). Se va sola a los `inicio.segAviso` segundos (no con el ratón encima), se arrastra (`inicio.avisoPos`), una a la vez con cola corta. La usan los recordatorios y el resumen de la sesión anterior.

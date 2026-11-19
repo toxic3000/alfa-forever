@@ -320,4 +320,22 @@ M.EN = {
 	-- Minimapa
 	["Clic: ver su diario en Alfa"] = "Click: see its journal in Alfa",
 	["La entrada de cada mazmorra en el minimapa, en verde las que ya hiciste. El mapa del mundo ya las marca con «Entradas de mazmorras»."] = "Each dungeon's entrance on the minimap, in green the ones you've done. The world map already marks them with \"Dungeon entrances\".",
+	-- 1.2.9: la mazmorra en vivo (EnVivo.lua)
+	["%s: %s"] = "%s: %s",
+	["Jefe"] = "Boss",
+	["Tanqueas"] = "You tank",
+	["Curas"] = "You heal",
+	["Haces daño"] = "You deal damage",
+	["Sin consejos para este jefe: vayan con calma y escuchen al tanque."] = "No tips for this boss: take it slow and listen to the tank.",
+	["Tus misiones aquí"] = "Your quests here",
+	["¿Qué hago contra este jefe?"] = "What do I do against this boss?",
+	["Dentro de una mazmorra, apunta al jefe: arriba te sale una tarjeta con lo que te toca según tu papel y cómo van tus misiones de ahí."] = "Inside a dungeon, target the boss: a card at the top shows what to do for your role and how your quests there are going.",
+	["La mazmorra en vivo"] = "The dungeon live",
+	["Dentro de una mazmorra, al apuntar a un jefe sale una tarjeta chica con lo que te toca según tu papel y cómo van tus misiones de ahí. No atrapa clics."] = "Inside a dungeon, targeting a boss shows a small card with what to do for your role and how your quests there are going. It never catches clicks.",
+	["Tu papel"] = "Your role",
+	["Automático: el del buscador de grupo, o por tu clase y tu forma (postura defensiva u oso tanquean)."] = "Automatic: the group finder's role, or by your class and form (defensive stance or bear form tank).",
+	["Automático"] = "Automatic",
+	-- 1.2.9: revisar lo que llevas (Alfa_Inicio)
+	["Revisar"] = "Check",
+	["Mira si llevas lo que hace falta: el equipo reparado, espacio, comida y lo de tu clase."] = "Checks you carry what you need: repaired gear, bag space, food and your class items.",
 }

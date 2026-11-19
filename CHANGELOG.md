@@ -1,5 +1,75 @@
 # Cambios de Alfa
 
+## 1.2.9 — La gran cacería: tu plan, la flecha de La Jauría y Alfa más ligero (19/11/2026)
+
+La última de la serie 1.2: 32 mejoras y Alfa más ligero antes de la 1.3.
+
+**Español**
+- La llegada de la flecha, con el estilo de La Jauría: «LLEGASTE» o «BUSCA POR AQUÍ», la huella latiendo, lo que toca hacer, el avance («4 de 6») con su barra y el botón «Siguiente lugar». Y ya no dice «nivel nivel»: «Sube al nivel 30: te falta 20%».
+- Pasos de nivel claros: cuánta experiencia te falta y dónde rinde más (enemigos de tu nivel que además cuentan para tus misiones), con «Llévame».
+- Misiones de élite o de grupo: Alfa te avisa antes y te propone llamar a la manada.
+- Compartir misiones: en grupo, si a alguien le falta una misión que llevas, un botón para compartírsela.
+- La siguiente guía sola: al terminar una guía, Alfa te propone la que sigue para tu nivel.
+- El mejor vuelo: en el maestro de vuelo, Alfa marca el destino que más te acerca a tu siguiente paso.
+- «¿Cuánto tiempo tienes?»: eliges 30 min, 1 h, 2 h u otro, y Alfa arma el plan (entregar, cerrar misiones de la zona, una mazmorra si cabe, recolección y tu guía) y te lleva paso a paso.
+- Camino al 60: cuántas horas te faltan a tu ritmo, cuánto avanzaste hoy y el camino de guías y mazmorras (/alfa camino).
+- Listo para la mazmorra: antes de entrar, Alfa revisa tu equipo, bolsas, comida, agua, flechas y componentes, con la flecha a lo que falta (/alfa listo).
+- Comida y agua: te avisa cuando se te acaban y qué conviene comprar a tu nivel.
+- Una mejora en tus bolsas: si traes algo mejor que lo que llevas puesto, «Ponte esto» con un clic (fuera de combate).
+- Lista de compras: para una receta o una meta, qué te falta y dónde conseguirlo.
+- Qué guardar: sugerencias de qué mandar al banco o a otro de tus personajes.
+- Oficios del 1 al 300: la guía de cada oficio con sus materiales, lo que te falta y dónde entrenar.
+- Subastar fácil: el precio sugerido y la historia del precio al poner algo en la subasta.
+- Cambiar de plano: si tu plano se llena de cazadores, Lya te propone pasarte al de un lobo de la manada con su guarida abierta (también /alfa plano).
+- ¿Quién tiene...?: pregunta a tu hermandad quién tiene un objeto; cada quien decide si contesta.
+- Festejos de la manada: Lya festeja cuando un lobo llega a 60, consigue su primera montura o caza un raro (compartir es opcional).
+- La semana de la manada: lo que hizo el clan esta semana, sin rankings: todo suma.
+- Al morir: Lya te dice si conviene correr por tu cuerpo o el ángel, y te pone la flecha.
+- Lya según el momento: frases según la hora, las fiestas del juego y la zona.
+- Lya te enseña tu clase: al aprender un hechizo, para qué sirve y cuándo usarlo.
+- Modo foco: en mazmorras y en combate, Lya y el rastreador se hacen chiquitos y no estorban.
+- Por descubrir: los rincones de tu zona que aún no exploras, en el mapa.
+- Vuelos que te faltan: los maestros de vuelo de tu zona que aún no tienes, con la flecha.
+- La mazmorra en vivo: al ponerle el objetivo a un jefe, una tarjetita con lo que te toca según tu papel y tus misiones de ahí.
+- Errores atrapados: Alfa guarda sus propios errores y /alfa reportar los manda listos.
+- Respaldos: Alfa respalda tus ajustes cada semana y antes de cada cambio grande; restauras con un clic.
+- Revisar Alfa: /alfa diagnostico encuentra choques con otros addons y te ofrece apagar solo la parte de Alfa que choca.
+- Alfa sencillo o completo: el modo sencillo muestra solo lo esencial para quien empieza (quien ya usa Alfa sigue en completo).
+- Más ligero: un solo reloj para todo Alfa que se duerme cuando no hay nada que hacer, Alfa ocupa menos memoria al entrar, y /alfa rendimiento mide también el procesador.
+
+**English**
+- The arrow's arrival, in La Jauría's style: "YOU MADE IT" or "SEARCH AROUND HERE", a pulsing paw, what to do there, the progress ("4 of 6") with its bar and a "Next spot" button. And no more "level level": "Reach level 30: 20% to go".
+- Clear level steps: how much XP you need and where it pays most (enemies of your level that also count for your quests), with "Take me".
+- Elite or group quests: Alfa warns you before and suggests calling the pack.
+- Share quests: in a group, if someone lacks a quest you have, a button to share it.
+- The next guide by itself: when you finish a guide, Alfa suggests the next one for your level.
+- The best flight: at the flight master, Alfa marks the destination that gets you closest to your next step.
+- "How much time do you have?": pick 30 min, 1 h, 2 h or other, and Alfa builds the plan (turn in, finish zone quests, a dungeon if it fits, gathering and your guide) and takes you step by step.
+- Road to 60: how many hours you have left at your pace, how much you advanced today and the path of guides and dungeons (/alfa camino).
+- Ready for the dungeon: before going in, Alfa checks your gear, bags, food, water, ammo and reagents, with the arrow to what's missing (/alfa listo).
+- Food and water: a warning when you run low and what to buy for your level.
+- An upgrade in your bags: if you carry something better than what you wear, "Put this on" in one click (out of combat).
+- Shopping list: for a recipe or a goal, what you're missing and where to get it.
+- What to store: suggestions of what to send to the bank or to another of your characters.
+- Professions 1 to 300: a guide for every profession with its materials, what you're missing and where to train.
+- Easy auctions: the suggested price and the price history when you post something.
+- Change layer: if your layer fills up with hunters, Lya suggests moving to a pack wolf's layer with an open den (also /alfa plano).
+- Who has...?: ask your guild who has an item; everyone decides whether to answer.
+- Pack celebrations: Lya celebrates when a wolf reaches 60, gets their first mount or hunts a rare (sharing is optional).
+- The pack's week: what the guild did this week, no rankings: it all adds up.
+- When you die: Lya tells you whether to run back or use the spirit healer, and sets the arrow.
+- Lya by the moment: lines for the time of day, the game's holidays and the zone.
+- Lya teaches your class: when you learn a spell, what it's for and when to use it.
+- Focus mode: in dungeons and in combat, Lya and the tracker shrink and stay out of the way.
+- Undiscovered: the spots of your zone you haven't explored yet, on the map.
+- Missing flight paths: your zone's flight masters you don't have yet, with the arrow.
+- The dungeon live: when you target a boss, a small card with what your role should do and your quests there.
+- Caught errors: Alfa keeps its own errors and /alfa reportar sends them ready.
+- Backups: Alfa backs up your settings every week and before every big change; restore in one click.
+- Check Alfa: /alfa diagnostico finds clashes with other addons and offers to turn off just the part of Alfa that clashes.
+- Simple or full Alfa: simple mode shows only the essentials for newcomers (current players stay on full).
+- Lighter: one clock for all of Alfa that sleeps when there's nothing to do, Alfa uses less memory at login, and /alfa rendimiento also measures CPU.
+
 ## 1.2.8 — La manada se organiza, tu historia y el buzón (19/11/2026)
 
 **Español**

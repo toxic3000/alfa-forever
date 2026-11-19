@@ -614,7 +614,7 @@ end
 local function relojLugar(m)
 	local quiere = m ~= nil and m.tipo == "lugar"
 	if quiere and not ticker then
-		ticker = A.NewTicker(1.5, function() Pl.Revisar(true) end)
+		ticker = N.Ticker("rutas.planes", 1.5, function() Pl.Revisar(true) end)
 	elseif not quiere and ticker then
 		ticker:Cancel()
 		ticker = nil

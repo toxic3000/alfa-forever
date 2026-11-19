@@ -108,7 +108,9 @@ function Rs.Omitir()
 end
 
 -- La vista compacta (de fábrica) o la amplia.
+-- 1.2.9: con el modo foco de Lya, compacta en mazmorras y en combate (Foco.lua).
 local function compacto()
+	if M.Foco and M.Foco.Activo() then return true end
 	return A.Get(M.ID .. ".seguimientoCompleto") ~= true or A.Get("ui.compact") == true
 end
 Rs.Compacto = compacto
@@ -826,6 +828,8 @@ local function construir()
 	local b = CreateFrame("Frame", nil, F)
 	ui.aviso = b
 	b.caja = K.Caja(b, { fondo = "panel", borde = "linea", corte = K.CORTE.control })
+	b.Barra = K.Progreso(b, { alto = 4, tono = "exito" })
+	b.Barra:Hide()
 	b.Franja = K.Plano(b, "acento", "ARTWORK", 1)
 	b.Franja:SetWidth(2)
 	b.Franja:SetPoint("TOPLEFT", b, "TOPLEFT", 0, -6)
@@ -909,7 +913,7 @@ local function construir()
 
 	F:SetScript("OnShow", function()
 		Rs.Pintar()
-		if not ui.reloj then ui.reloj = A.NewTicker(1, latido) end
+		if not ui.reloj then ui.reloj = N.Ticker("rutas.rastreador", 1, latido) end
 	end)
 	F:SetScript("OnHide", function()
 		if ui.reloj then ui.reloj:Cancel() ui.reloj = nil end
@@ -958,10 +962,16 @@ local function aviso(v, live)
 		local m = fin.modelo
 		local texto = m.complete and L["Terminaste esta guía."] or format(L["Llegaste al final; quedaron %d pasos sin hacer."], m.undone or 0)
 		if m.carried and #m.carried > 0 then texto = texto .. " " .. format(L["Guarda %d misiones: las entregas en una guía que sigue."], #m.carried) end
-		local uno = (m.choose and L["Elegir mi camino"]) or (m.next and format(L["Seguir con %s"], m.nextLabel or "")) or L["Elegir otra guía"]
+		-- 1.2.9: sin una que siga en el motor, Alfa propone la siguiente para tu nivel (Siguiente.lua).
+		local sig = m.complete and not m.choose and not m.next and M.Siguiente and M.Siguiente.Proponer() or nil
+		local uno = (m.choose and L["Elegir mi camino"]) or (m.next and format(L["Seguir con %s"], m.nextLabel or ""))
+			or (sig and format(L["Seguir con %s"], sig.nombre)) or L["Elegir otra guía"]
 		return { tono = m.complete and "exito" or "acento", icono = m.complete and "ic-exito" or "ic-huella",
 			titulo = format(m.complete and L["¡Bien hecho! %s"] or L["Final de %s"], m.label or ""), texto = texto,
-			uno = { uno, function() est.fin = nil if fin.Empezar then fin.Empezar() end end },
+			uno = { uno, function()
+				est.fin = nil
+				if sig then M.Siguiente.Seguir(sig) elseif fin.Empezar then fin.Empezar() end
+			end },
 			dos = { L["Después"], function() est.fin = nil if fin.Despues then fin.Despues() end Rs.Pintar() end } }
 	end
 	local q, titulo = engine("LostQuestion")
@@ -1035,8 +1045,25 @@ local function aviso(v, live)
 			texto = cual .. " " .. L["La flecha te lleva a este paso, no al de ahora."],
 			uno = { format(L["Volver al paso %d"], numeroPaso(live)), function() engine("Goto", live) end } }
 	end
+	-- 1.2.9: lo que sigue es de élite o alguien de tu grupo no tiene una
+	-- misión tuya (Grupo.lua); en modo foco, eso espera.
+	if not (M.Foco and M.Foco.Activo()) then
+		local d = M.Grupo and M.Grupo.Aviso(v, live)
+		if d then return d end
+	end
 	-- 1.2.8: con 2 o más misiones listas, ofrecer la vuelta a entregar.
-	return Vt and Vt.Aviso() or nil
+	local d = Vt and Vt.Aviso() or nil
+	if d then return d end
+	-- 1.2.9: un paso de nivel, claro: lo que falta y dónde rinde más (Nivel.lua).
+	return M.Nivel and M.Nivel.Aviso(v, live) or nil
+end
+
+-- El aviso que el rastreador mostraría ahora (para el banco y Hoy, 1.2.9).
+function Rs.AvisoDeAhora()
+	local g = engine("GetGuide")
+	local i = g and engine("GetStepIndex")
+	local live = g and engine("GetLiveStep")
+	return aviso(i and engine("GetStepView", i), live)
 end
 
 -- La meta de ahora de tu plan, si sigues uno. comp: compacta (el título en
@@ -1122,6 +1149,18 @@ local function pintarAviso(d, ancho)
 		b.Texto:Show()
 	else
 		b.Texto:Hide()
+	end
+	-- 1.2.9: una barrita (la experiencia de un paso de nivel).
+	if d.barra and b.Barra then
+		b.Barra:ClearAllPoints()
+		b.Barra:SetPoint("TOPLEFT", b, "TOPLEFT", x, -(y + 6))
+		b.Barra:Acomodar(tw)
+		b.Barra:SetTono(d.tono or "exito")
+		b.Barra:Set(d.barra)
+		b.Barra:Show()
+		y = y + 6 + K.num(b.Barra:GetHeight(), 4)
+	elseif b.Barra then
+		b.Barra:Hide()
 	end
 	local bx = x
 	for _, k in ipairs({ "Uno", "Dos" }) do
@@ -1229,10 +1268,24 @@ local function terminada()
 end
 M.GuiaTerminada = terminada
 
+local vacioSig -- el cuadro de «terminaste» con la siguiente guía (1.2.9)
 local function cuadroVacio(g)
 	if not g then return VACIO_SIN_GUIA end
 	local esp = M.Guias and M.Guias.Especial(g.id)
-	if terminada() then return esp == "desbloquear" and VACIO_DESBLOQUEADA or VACIO_HECHA end
+	if terminada() then
+		if esp == "desbloquear" then return VACIO_DESBLOQUEADA end
+		-- 1.2.9: con la siguiente para tu nivel a un clic (Siguiente.lua).
+		local sig = M.Siguiente and M.Siguiente.Proponer(g.id)
+		if sig then
+			if not (vacioSig and vacioSig.alfaId == sig.id) then
+				vacioSig = { lobo = "aullando", titulo = VACIO_HECHA.titulo, alfaId = sig.id,
+					texto = format(L["Lo que sigue para tu nivel: %s."], sig.nombre),
+					accion = { texto = format(L["Seguir con %s"], sig.nombre), icono = "ic-ruta", alClic = function() M.Siguiente.Seguir(sig) end } }
+			end
+			return vacioSig
+		end
+		return VACIO_HECHA
+	end
 	if esp == "liberar" then return VACIO_PLAN end
 	return VACIO_GUIA
 end
@@ -1654,9 +1707,13 @@ local function pedidoFin(p)
 		finAlDia()
 		local m = p.modelo or {}
 		if m.complete then
-			local uno = (m.next and format(L["Seguir con %s"], m.nextLabel or "")) or L["¿Qué sigue?"]
+			local sig = not m.next and not m.choose and M.Siguiente and M.Siguiente.Proponer() or nil
+			local uno = (m.next and format(L["Seguir con %s"], m.nextLabel or "")) or (sig and format(L["Seguir con %s"], sig.nombre)) or L["¿Qué sigue?"]
 			K.Aviso({ lobo = "aullando", titulo = format(L["¡Bien hecho! %s"], m.label or ""), texto = L["Terminaste esta guía."],
-				duracion = 12, accion = { texto = uno, alClic = function() est.fin = nil if p.Empezar then p.Empezar() else M.Empezar() end end } })
+				duracion = 12, accion = { texto = uno, alClic = function()
+					est.fin = nil
+					if sig then M.Siguiente.Seguir(sig) elseif p.Empezar then p.Empezar() else M.Empezar() end
+				end } })
 		else
 			K.Aviso({ lobo = "atento", titulo = format(L["Final de %s"], m.label or ""),
 				texto = format(L["Llegaste al final; quedaron %d pasos sin hacer."], m.undone or 0),

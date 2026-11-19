@@ -180,6 +180,17 @@ local function grupos(padre)
 	nota:Fila({ titulo = L["Lya aprende"], control = interruptor("aprende"), activa = visible,
 		texto = L["Si cierras tres veces el mismo tipo de consejo, Lya te pregunta si ya no quieres que te lo diga."] })
 
+	-- 1.2.9: al caer, la hora y la fiesta, tu clase y el modo foco.
+	local contigo = K.GrupoAjustes(padre, { titulo = L["Lya contigo"] })
+	contigo:Fila({ titulo = L["Cuando caes"], control = interruptor("muerte"), activa = visible,
+		texto = L["Como espíritu, Lya te dice a cuánto está tu cuerpo, lo que cuesta el ángel a tu nivel y qué conviene. La flecha te lleva."] })
+	contigo:Fila({ titulo = L["La hora, la fiesta y el lugar"], control = interruptor("momento"), activa = visible,
+		texto = L["Lya platica según la hora del día, las fiestas de Azeroth y la zona donde andas."] })
+	contigo:Fila({ titulo = L["Lya te enseña tu clase"], control = interruptor("clase"), activa = visible,
+		texto = L["Cuando aprendes un hechizo importante de tu clase, Lya te dice para qué sirve y cuándo usarlo."] })
+	contigo:Fila({ titulo = L["Modo foco"], control = interruptor("foco"), activa = visible,
+		texto = L["En mazmorras y en combate Lya se hace chiquita, se calla y no estorba tus clics. Al terminar vuelve."] })
+
 	local Ap = M.Aprende
 	local callados = K.GrupoAjustes(padre, { titulo = L["Consejos que callaste"] })
 	callados.vacia = callados:Fila({ titulo = L["Ninguno por ahora"],
@@ -211,7 +222,7 @@ local function grupos(padre)
 		K.Mostrar(self.vacia, #lista == 0)
 		K.Mostrar(self.todos, #lista > 1)
 	end
-	return { ella, consejos, historias, nota, callados }
+	return { ella, consejos, historias, nota, contigo, callados }
 end
 
 ---------------------------------------------------------------------------
@@ -338,6 +349,15 @@ local CONTROLES = {
 		help = L["Cuando un oficio llega al tope de su rango, Lya te dice que ya puedes aprender el siguiente y dónde está tu instructor."], search = "professions, skill cap, trainer, rank" },
 	{ kind = "toggle", key = clave("aprende"), label = L["Lya aprende"], disabled = no(visible),
 		help = L["Si cierras tres veces el mismo tipo de consejo, Lya te pregunta si ya no quieres que te lo diga."], search = "learn, mute tips, stop telling" },
+	-- 1.2.9
+	{ kind = "toggle", key = clave("muerte"), label = L["Cuando caes"], disabled = no(visible),
+		help = L["Como espíritu, Lya te dice a cuánto está tu cuerpo, lo que cuesta el ángel a tu nivel y qué conviene. La flecha te lleva."], search = "death, corpse, spirit healer, ghost, durability" },
+	{ kind = "toggle", key = clave("momento"), label = L["La hora, la fiesta y el lugar"], disabled = no(visible),
+		help = L["Lya platica según la hora del día, las fiestas de Azeroth y la zona donde andas."], search = "time of day, holidays, events, festival, zone" },
+	{ kind = "toggle", key = clave("clase"), label = L["Lya te enseña tu clase"], disabled = no(visible),
+		help = L["Cuando aprendes un hechizo importante de tu clase, Lya te dice para qué sirve y cuándo usarlo."], search = "class spells, new spell, trainer, abilities" },
+	{ kind = "toggle", key = clave("foco"), label = L["Modo foco"], disabled = no(visible),
+		help = L["En mazmorras y en combate Lya se hace chiquita, se calla y no estorba tus clics. Al terminar vuelve."], search = "focus mode, quiet, small, combat, dungeon" },
 	{ kind = "button", label = L["Consejos que callaste"], button = L["Devolverlos todos"], icon = "reset",
 		help = L["Lya vuelve a decirte todos esos consejos."],
 		onClick = function() if M.Aprende then M.Aprende.DevolverTodos() end end, search = "muted tips, restore" },

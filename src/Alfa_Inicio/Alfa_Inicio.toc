@@ -12,5 +12,9 @@ Avisos.lua
 Sesion.lua
 AvisosMotor.lua
 Recordatorios.lua
+Comida.lua
+Listo.lua
+Tiempo.lua
+Camino.lua
 Clase.lua
 Inicio.lua

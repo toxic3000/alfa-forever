@@ -437,12 +437,26 @@ end
 ---------------------------------------------------------------------------
 -- Insignia
 ---------------------------------------------------------------------------
+-- Su ancho sale de su texto. El texto queda sin tope (1.2.9): con otra letra
+-- (otro estilo, o la letra que el juego aún no termina de cargar al medir)
+-- no se corta en «Hec…»; al repintar se vuelve a medir con la letra nueva.
+local function medirInsignia(c)
+	local w = K.Ajustar(c.Texto) + (c.alfaIcono and 31 or 16)
+	c.Texto:SetWidth(0)
+	c:SetWidth(w)
+	return w
+end
+
 local function pintarInsignia(c)
 	local relleno, texto = K.Tono(c.alfaTono)
 	c.caja:Estilo({ fondo = relleno, alfaFondo = c.alfaLleno and 1 or 0.16, borde = relleno, alfaBorde = c.alfaLleno and 1 or 0.45 })
 	local color = c.alfaLleno and "sobreAcento" or texto
 	K.ColorTexto(c.Texto, color)
 	if c.Icono then K.SetIcono(c.Icono, c.alfaIcono, color) end
+	if (c.Texto:GetText() or "") ~= "" then
+		K.Fuente(c.Texto)
+		medirInsignia(c)
+	end
 end
 
 function K.Insignia(padre, texto, tono, opts)
@@ -463,8 +477,7 @@ function K.Insignia(padre, texto, tono, opts)
 		K.Escribir(self.Texto, s or "")
 		self.Texto:ClearAllPoints()
 		self.Texto:SetPoint("LEFT", self, "LEFT", icono and 23 or 8, 0)
-		local w = K.Ajustar(self.Texto) + (icono and 31 or 16)
-		self:SetWidth(w)
+		local w = medirInsignia(self)
 		pintarInsignia(self)
 		self:SetShown(s ~= nil and s ~= "")
 		return w

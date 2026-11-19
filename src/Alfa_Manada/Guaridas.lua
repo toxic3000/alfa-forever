@@ -26,6 +26,10 @@
 --   1G|<mapa>|<capa>|<abierta 0/1>   mi guarida (al cambiar y cada REFRESCO)
 --   1Q|<mapa>|<capa>                 por susurro: ¿me dejas entrar?
 --   1R|ok  /  1R|no|<por qué>        por susurro: la respuesta
+--   1L|<mapa>|<capa de donde vengo>  por susurro (1.2.9): ¿me pasas a tu
+--                                    plano, sea cual sea, si no es el mío?
+--   1O|<mapa>|<capa>                 a la manada (1.2.9): busco otro plano,
+--                                    ¿alguien me abre su guarida?
 --
 --   Gu.Actual() -> { capa, map, at } | nil      tu guarida ahora
 --   Gu.Nombre(capa) -> "Guarida Colmillo"
@@ -33,6 +37,8 @@
 --   Gu.Pedir(capa) -> ok, motivo               pide entrar
 --   Gu.Abrir(si), Gu.Abierta()
 --   Gu.DeGuid(guid) -> capa | nil              (para las pruebas)
+--   Gu.CambiarPlano(antes) -> ok, motivo       (1.2.9) a cualquier otro plano
+--   Gu.PreguntarManada() -> ok, motivo         (1.2.9) 1O: ¿quién me abre?
 
 local ADDON, M = ...
 local N = AlfaNucleo
@@ -99,6 +105,7 @@ end
 
 local pedido -- { capa, map, anfitrion, nombre, hasta, invitado }
 local candidata -- una capa distinta vista una vez: se cree a la segunda
+local esperandoPuerta = -math.huge -- (1.2.9) hasta cuándo avisar si alguien abre su guarida en otro plano
 local avisadoCambio = -math.huge -- el aviso de «el juego te pasó», uno cada 2 min
 local llegar -- forward
 
@@ -114,7 +121,11 @@ local function ver(capa)
 	-- Un cambio de capa en la misma zona se cree a la segunda lectura igual
 	-- (una criatura de la zona vecina, o una placa de antes de cambiar de
 	-- zona, trae otro número).
-	if actual and actual.map == map and (not pedido or pedido.capa ~= capa) then
+	-- (1.2.9) Cambiar de plano: cualquier capa que no sea la de antes, ya
+	-- invitado, es la buscada.
+	local buscada = pedido and pedido.map == map and (pedido.capa == capa
+		or (pedido.cualquiera and pedido.invitado and capa ~= pedido.desde))
+	if actual and actual.map == map and not buscada then
 		if candidata ~= capa then
 			candidata = capa
 			return
@@ -125,7 +136,7 @@ local function ver(capa)
 	actual = { capa = capa, map = map, at = ahora }
 	Gu.Anunciar(true)
 	cambio()
-	if pedido and pedido.capa == capa and pedido.map == map then
+	if buscada then
 		llegar()
 	elseif antes and antes.map == map and antes.capa ~= capa and on("guaridaVisible") then
 		-- El juego te cambió de capa por su cuenta (1.2.5): Lya te lo dice.
@@ -206,7 +217,15 @@ end
 M.Red.Oyentes.G = function(clave, remitente, _, f)
 	local map, capa = numeroEntero(f[1]), numeroEntero(f[2])
 	if not (map and capa) or map < 1 or map > 100000 or capa < 1 then return end
+	local antes = vistas[clave]
 	vistas[clave] = { clave = clave, nombre = remitente, map = map, capa = capa, abierta = f[3] == "1", at = U.Ahora() }
+	-- (1.2.9) Le preguntaste a la manada: alguien abrió su guarida en otro plano.
+	local mia = Gu.Actual()
+	if f[3] == "1" and U.Ahora() < esperandoPuerta and mia and mia.map == map and mia.capa ~= capa
+		and not (antes and antes.abierta and antes.capa == capa) and not pedido then
+		esperandoPuerta = -math.huge
+		Gu.AvisarPuerta(remitente, capa)
+	end
 	cambio()
 end
 
@@ -280,15 +299,20 @@ local function probar()
 	local siguiente = table.remove(p.cola, 1)
 	if not siguiente then
 		pedido = nil
-		aviso({ titulo = L["Nadie abrió la puerta"], texto = format(L["Nadie respondió desde la %s. Prueba en un rato o pídelo en el Discord de La Jauría."], p.nombre),
-			icono = "ic-manada", duracion = 10 })
+		local t = p.cualquiera and L["Nadie de la manada respondió desde otro plano. Prueba en un rato o pídelo en el Discord de La Jauría."]
+			or format(L["Nadie respondió desde la %s. Prueba en un rato o pídelo en el Discord de La Jauría."], p.nombre)
+		aviso({ titulo = L["Nadie abrió la puerta"], texto = t, icono = "ic-manada", duracion = 10 })
 		cambio()
 		return
 	end
 	p.anfitrion = siguiente
 	p.turno = (p.turno or 0) + 1
 	local turno = p.turno
-	M.Red.Enviar("Q:" .. siguiente.clave, format("%sQ|%d|%d", V, p.map, p.capa), "WHISPER", U.Destino(siguiente.nombre))
+	if p.cualquiera then
+		M.Red.Enviar("L:" .. siguiente.clave, format("%sL|%d|%d", V, p.map, p.desde), "WHISPER", U.Destino(siguiente.nombre))
+	else
+		M.Red.Enviar("Q:" .. siguiente.clave, format("%sQ|%d|%d", V, p.map, p.capa), "WHISPER", U.Destino(siguiente.nombre))
+	end
 	A.After(ESPERA, function()
 		if pedido == p and p.turno == turno and not p.invitado then probar() end
 	end)
@@ -318,6 +342,63 @@ function Gu.Pedir(capa)
 end
 
 function Gu.Pedido() return pedido end
+
+-- (1.2.9) Cambiar de plano: a cualquier otra guarida de tu zona que alguien
+-- de la manada tenga abierta. Se le pregunta a uno por uno (1L) y el primero
+-- cuyo Alfa dice que sí te invita (su guarida abierta es su permiso).
+-- `antes`: cómo estaba de lleno tu plano (Plano.lua), para comparar al llegar.
+function Gu.CambiarPlano(antes)
+	if not on("compartir") then return false, "compartir" end
+	if enGrupo() then return false, "grupo" end
+	if U.EnInstancia() then return false, "instancia" end
+	local map = miMapa()
+	if not map then return false, "mapa" end
+	local mia = Gu.Actual()
+	if not mia then return false, "sincapa" end
+	if pedido then return false, "pedido" end
+	local cola = {}
+	for _, g in ipairs(Gu.Lista()) do
+		if not g.mia and g.capa ~= mia.capa then
+			for _, v in ipairs(g.anfitriones) do
+				if #cola < INTENTOS + 1 then cola[#cola + 1] = v end
+			end
+		end
+	end
+	if #cola == 0 then return false, "nadie" end
+	pedido = { cualquiera = true, desde = mia.capa, map = map, nombre = L["otro plano"], cola = cola, antes = antes,
+		hasta = U.Ahora() + LLEGAR + ESPERA * (INTENTOS + 1) + 10 }
+	aviso({ titulo = L["Buscando otro plano"],
+		texto = L["Si te invitan a su grupo, acepta con el botón del juego: el juego te pasa a su plano al rato."], icono = "ic-manada", duracion = 8 })
+	probar()
+	cambio()
+	return true
+end
+
+-- (1.2.9) Nadie en otro plano: se le pregunta a la manada de tu zona si
+-- alguien abre su guarida (un aviso en su pantalla, nada en el chat).
+local CADA_PREGUNTA = 300
+local preguntado = -math.huge
+function Gu.PreguntarManada()
+	if not on("compartir") then return false, "compartir" end
+	local mia = Gu.Actual()
+	if not mia then return false, "sincapa" end
+	local ahora = U.Ahora()
+	if ahora - preguntado < CADA_PREGUNTA then return false, "espera" end
+	if not M.Red.Enviar("O", format("%sO|%d|%d", V, mia.map, mia.capa)) then return false, "red" end
+	preguntado = ahora
+	esperandoPuerta = ahora + CADA_PREGUNTA
+	return true
+end
+-- Alguien abrió su guarida en otro plano después de tu pregunta.
+function Gu.AvisarPuerta(remitente, capa)
+	aviso({ titulo = format(L["%s te abre su guarida"], U.Mostrar(remitente)),
+		texto = format(L["Está en la %s, otro plano de tu zona."], Gu.Nombre(capa)), icono = "ic-manada", duracion = 15,
+		accion = { texto = L["Cambiar de plano"], alClic = function()
+			local P = M.Plano
+			if P and P.CambiarYDecir then P.CambiarYDecir() else Gu.CambiarPlano() end
+		end } })
+end
+function Gu.OlvidarPregunta() preguntado, esperandoPuerta = -math.huge, -math.huge end
 
 local MOTIVOS = {
 	cerrada = "Su guarida ya no está abierta.",
@@ -364,6 +445,14 @@ end
 llegar = function()
 	local p = pedido
 	pedido = nil
+	if p.cualquiera then
+		aviso({ titulo = L["¡Ya estás en otro plano!"],
+			texto = format(L["Ahora estás en la %s. Ya puedes salir del grupo: el plano se queda contigo."], actual and Gu.Nombre(actual.capa) or ""),
+			lobo = "aullando", duracion = 20, accion = { texto = L["Salir del grupo"], alClic = function() Gu.SalirDelGrupo() end } })
+		if M.Plano and M.Plano.AlLlegar then M.Plano.AlLlegar(p.antes) end
+		cambio()
+		return
+	end
 	aviso({ titulo = format(L["¡Ya estás en la %s!"], p.nombre), texto = L["Ya puedes salir del grupo: la guarida se queda contigo."],
 		lobo = "aullando", duracion = 20, accion = { texto = L["Salir del grupo"], alClic = function() Gu.SalirDelGrupo() end } })
 	cambio()
@@ -394,10 +483,11 @@ local function puedoInvitar()
 end
 
 -- La respuesta a «¿me dejas entrar?»: "ok" (y la invitación) o el motivo.
-function Gu.Responder(clave, remitente, map, capa)
+-- `desde` (1.2.9, 1L): cualquier plano sirve si no es ese.
+function Gu.Responder(clave, remitente, map, capa, desde)
 	local mia = Gu.Actual()
 	if not Gu.Abierta() then return "cerrada" end
-	if not mia or mia.map ~= map or mia.capa ~= capa then return "otra" end
+	if not mia or mia.map ~= map or (capa and mia.capa ~= capa) or (desde and mia.capa == desde) then return "otra" end
 	if InCombatLockdown and InCombatLockdown() then return "combate" end
 	if not puedoInvitar() then return "lleno" end
 	local ahora = U.Ahora()
@@ -415,6 +505,36 @@ M.Red.Oyentes.Q = function(clave, remitente, _, f, canal)
 	local r = Gu.Responder(clave, remitente, map, capa)
 	local texto = r == "ok" and (V .. "R|ok") or (V .. "R|no|" .. r)
 	M.Red.Enviar("R:" .. clave, texto, "WHISPER", U.Destino(remitente))
+end
+
+-- (1.2.9) ¿Me pasas a tu plano? Igual que 1Q, con cualquier plano que no sea
+-- el de quien pregunta.
+M.Red.Oyentes.L = function(clave, remitente, _, f, canal)
+	if canal ~= "WHISPER" or not on("compartir") then return end
+	local map, desde = numeroEntero(f[1]), numeroEntero(f[2])
+	if not (map and desde) then return end
+	local r = Gu.Responder(clave, remitente, map, nil, desde)
+	local texto = r == "ok" and (V .. "R|ok") or (V .. "R|no|" .. r)
+	M.Red.Enviar("R:" .. clave, texto, "WHISPER", U.Destino(remitente))
+end
+
+-- (1.2.9) Un lobo de tu zona busca otro plano: si tu guarida está cerrada y
+-- estás en otro, te pregunto si se la abres. Una vez por lobo cada 5 min.
+local pidieron = {}
+M.Red.Oyentes.O = function(clave, remitente, _, f, canal)
+	if canal == "WHISPER" then return end
+	local map, capa = numeroEntero(f[1]), numeroEntero(f[2])
+	if not (map and capa) then return end
+	local mia = Gu.Actual()
+	if not mia or mia.map ~= map or mia.capa == capa or Gu.Abierta() then return end
+	if InCombatLockdown and InCombatLockdown() then return end
+	local ahora = U.Ahora()
+	if pidieron[clave] and ahora - pidieron[clave] < CADA_PREGUNTA then return end
+	pidieron[clave] = ahora
+	aviso({ titulo = format(L["%s busca otro plano"], U.Mostrar(remitente)),
+		texto = L["Su plano está lleno de gente. Si le abres tu guarida, Alfa lo invita a tu grupo y sale solo al llegar."],
+		icono = "ic-manada", duracion = 20,
+		accion = { texto = L["Abrir mi guarida"], alClic = function() Gu.Abrir(true) end } })
 end
 
 ---------------------------------------------------------------------------
@@ -554,10 +674,8 @@ A.RegisterEvent("GROUP_ROSTER_UPDATE", function()
 	A.After(3, revisarPlacas)
 end)
 
-if A.NewTicker then
-	A.NewTicker(10, function()
-		revisarPlacas()
-		Gu.Anunciar(false)
-		if pedido and U.Ahora() > pedido.hasta then pedido = nil cambio() end
-	end)
-end
+N.Cada("manada.guaridas", 10, function() -- un solo reloj (1.2.9)
+	revisarPlacas()
+	Gu.Anunciar(false)
+	if pedido and U.Ahora() > pedido.hasta then pedido = nil cambio() end
+end)

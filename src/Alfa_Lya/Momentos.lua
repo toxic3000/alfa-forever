@@ -241,12 +241,10 @@ function Mo.Minuto()
 	return false
 end
 
-if A.NewTicker then
-	A.NewTicker(60, function()
-		local ok, e = pcall(Mo.Minuto)
-		if not ok and geterrorhandler then geterrorhandler()(e) end
-	end)
-end
+N.Cada("lya.momentos", 60, function() -- un solo reloj (1.2.9)
+	local ok, e = pcall(Mo.Minuto)
+	if not ok and geterrorhandler then geterrorhandler()(e) end
+end)
 
 ---------------------------------------------------------------------------
 -- 9. Antes de irte

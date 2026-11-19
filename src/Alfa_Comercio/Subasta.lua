@@ -205,7 +205,7 @@ function refrescarBarra()
 		if reloj then reloj:Cancel() reloj = nil end
 		return
 	end
-	if not reloj and C_Timer and C_Timer.NewTicker then reloj = C_Timer.NewTicker(0.5, function() refrescarBarra() end) end
+	if not reloj then reloj = N.Ticker("comercio.subasta", 0.5, function() refrescarBarra() end) end
 	local texto, color = textoEstado()
 	K.Escribir(barra.Estado, texto)
 	K.ColorTexto(barra.Estado, color)

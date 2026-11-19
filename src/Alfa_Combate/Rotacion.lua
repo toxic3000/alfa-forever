@@ -406,7 +406,7 @@ local function conTicker(seg)
 	if ticker and cada == seg then return end
 	sinTicker()
 	cada = seg
-	ticker = A.NewTicker(seg, R.Actualizar)
+	ticker = N.Ticker("combate.rotacion", seg, R.Actualizar)
 end
 
 local function ocultar()

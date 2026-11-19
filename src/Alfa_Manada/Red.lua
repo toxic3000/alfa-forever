@@ -22,6 +22,10 @@
 --   1J|<versión>, 1K|<versión>           "Quiero unirme" (susurro a un oficial
 --                                        del clan, solo al pulsar el botón)
 -- La 0.1.0 también mandaba 1Y (respuesta al saludo): se acepta y se ignora.
+-- Otros tipos viven en su archivo (R.Oyentes): 1G/1Q/1R/1V/1L/1O en
+-- Guaridas.lua, 1A/1B en Llamado.lua, 1M en Juntos.lua, 1C/1D en Cita.lua,
+-- 1T en Reloj.lua, 1N en Notas.lua, 1W/1U en QuienTiene.lua y 1E/1S/1F en
+-- Logros.lua (1.2.9).
 --
 -- La posición sale cada ENVIO segundos como mínimo y solo si te moviste más
 -- de MOVER yardas; quieto, una vez cada REFRESCO para que tu pin no caduque.
@@ -202,6 +206,21 @@ function R.Enviar(clave, texto, canal, destino, despedida)
 end
 
 function R.Pendientes() return #orden end
+
+-- 1.2.9: lo que va solo a tu hermandad y tiene su propio permiso (los logros,
+-- la semana, «¿Quién tiene...?»): sale aunque no compartas tu ubicación, pero
+-- nunca por el canal de Alfa ni a quien no es de tu hermandad. Sin hermandad,
+-- nada.
+function R.EnviarHermandad(clave, texto)
+	if not U.EnHermandad() then return false end
+	return R.Enviar(clave, texto, "GUILD", nil, true)
+end
+
+-- Por susurro, con su propio permiso (sin pedir compartir la ubicación).
+function R.EnviarLibre(clave, texto, destino)
+	if not destino then return false end
+	return R.Enviar(clave, texto, "WHISPER", destino, true)
+end
 
 ---------------------------------------------------------------------------
 -- Mi posición
@@ -387,6 +406,9 @@ local respOficialEn = {} -- clave -> GetTime(): a quién respondí "aquí estoy"
 -- fn(clave, remitente, via, campos, canal). Los susurros llegan aunque no
 -- compartas; lo difundido, solo si compartes.
 R.Oyentes = {}
+-- (1.2.9) Tipos que llegan por la hermandad aunque no compartas tu ubicación:
+-- cada uno revisa su propio ajuste (Logros.lua, QuienTiene.lua).
+R.Libres = {}
 
 -- (evento, prefijo, texto, canal, remitente, destino, zona, número del canal, nombre del canal)
 local function alMensaje(_, prefijo, texto, canal, remitente, _, _, localID, nombreCanal)
@@ -415,7 +437,7 @@ local function alMensaje(_, prefijo, texto, canal, remitente, _, _, localID, nom
 	-- a cualquiera, una vez por minuto por persona.
 	local oyente = R.Oyentes[tipo]
 	if oyente then
-		if canal ~= "WHISPER" and not on("compartir") then return end
+		if canal ~= "WHISPER" and not on("compartir") and not (R.Libres[tipo] and canal == "GUILD") then return end
 		oyente(clave, remitente, via or "susurro", dividir(resto or ""), canal)
 		return
 	end

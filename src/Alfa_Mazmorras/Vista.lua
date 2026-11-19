@@ -458,7 +458,13 @@ local function construirResumen(padre)
 			texto = format(L["Se borran los jefes vencidos, las veces completada y el botín anotado de %s para este personaje."], D.Nombre(k)),
 			aceptar = L["Olvidar"], alAceptar = function() D.Olvidar(k) end })
 	end, { tipo = "fantasma", tam = "chico", icono = "ic-cerrar" })
-	B:Set({ r.Mapa, r.Antes, r.Olvidar })
+	-- 1.2.9: «Listo para la mazmorra» de Alfa_Inicio (equipo, bolsas, comida, lo de tu clase).
+	r.Revisar = K.Boton(B, L["Revisar"], function()
+		local I = rawget(_G, "AlfaInicio")
+		if type(I) == "table" and type(I.RevisarMazmorra) == "function" then llamar(I.RevisarMazmorra, D.Nombre(estado.clave)) end
+	end, { tipo = "fantasma", tam = "chico", icono = "ic-lista",
+		ayuda = L["Mira si llevas lo que hace falta: el equipo reparado, espacio, comida y lo de tu clase."] })
+	B:Set({ r.Revisar, r.Mapa, r.Antes, r.Olvidar })
 	return r
 end
 
@@ -512,6 +518,8 @@ local function llenarResumen(r, key, d, e, nivel, lado)
 	r.Antes:SetShown(D.Historia() and not h and total > 0)
 	r.Olvidar:SetShown(h ~= nil or v > 0)
 	r.Mapa:SetShown(d.entrance ~= nil)
+	local I = rawget(_G, "AlfaInicio")
+	r.Revisar:SetShown(type(I) == "table" and type(I.RevisarMazmorra) == "function")
 	K.Mostrar(r.Botones, r.Botones:Hay())
 end
 
@@ -1157,7 +1165,9 @@ end
 N.Modulo({
 	id = ID, nombre = L["Mazmorras"], icono = "ic-mazmorra", orden = 50, seccion = "aventura",
 	subtitulo = L["La mazmorra para tu nivel, sus jefes, botín, misiones y consejos."],
-	ajustes = { historia = true, avisoDescubrir = true, avisoEntrar = true, meSirve = false, capaEntradas = true },
+	ajustes = { historia = true, avisoDescubrir = true, avisoEntrar = true, meSirve = false, capaEntradas = true,
+		-- 1.2.9: la tarjeta del jefe en vivo (EnVivo.lua) y tu papel ("auto" | "tanque" | "cura" | "dano")
+		enVivo = true, enVivoRol = "auto" },
 	construir = function(view) V.Construir(view) end,
 })
 

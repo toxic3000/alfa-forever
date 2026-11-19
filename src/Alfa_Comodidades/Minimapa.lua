@@ -194,7 +194,7 @@ local function ponerBotones(si)
 	if si then
 		buscar()
 		visibles = false
-		if not reloj then reloj = A.NewTicker(0.15, vigilar) end
+		if not reloj then reloj = N.Ticker("comodidades.minimapa", 0.15, vigilar) end
 		ponerAlfa(encima() and 1 or 0)
 	else
 		if reloj then reloj:Cancel() end

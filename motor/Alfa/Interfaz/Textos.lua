@@ -152,4 +152,14 @@ M.EN = {
 	["PNJ"] = "NPCs",
 	["Abrir su ficha en la Enciclopedia"] = "Open its page in the Encyclopedia",
 	["Poner la flecha hasta ahí"] = "Point the arrow there",
+	-- 1.2.9: la llegada de la flecha (Nav/Arrow.lua) y el paso de nivel (parche de Core/Engine.lua)
+	["Llegaste"] = "You made it",
+	["Busca por aquí"] = "Search around here",
+	["Siguiente lugar"] = "Next spot",
+	["%d de %d"] = "%d of %d",
+	["Sube al nivel %d"] = "Reach level %d",
+	["Sube al nivel %d: te falta %d%%"] = "Reach level %d: %d%% to go",
+	["Sube al nivel %d: te faltan %s de experiencia"] = "Reach level %d: %s experience to go",
+	["Sube al nivel"] = "Reach level",
+	["%d (%d%% de la barra)"] = "%d (%d%% of the bar)",
 }

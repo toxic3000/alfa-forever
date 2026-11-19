@@ -18,6 +18,8 @@ Botones.lua
 Lotes.lua
 Banco.lua
 Sugerencias.lua
+Mejora.lua
+Guardar.lua
 Barra.lua
 Ventana.lua
 Reemplazo.lua

@@ -130,6 +130,15 @@ local BASE = {
 		existe = function() return M.Dia ~= nil end, abrir = function() if M.Dia then M.Dia.ContarSemana() end end },
 	{ id = "tecla", icono = "ic-mando", pregunta = "¿Puedo llamarte con una tecla?",
 		respuesta = "Sí: en las asignaciones de teclas del juego, en la sección Alfa, ponle una tecla a «Pregúntale a Lya» y otra a «Lo que te ofrece Lya», que hace lo de su botón." },
+	-- 1.2.9
+	{ id = "muerte", icono = "ic-huella", modulo = "lya", pregunta = "Me morí, ¿corro por mi cuerpo o voy con el ángel?",
+		respuesta = "Cuando sales como espíritu te digo a cuánto está tu cuerpo, lo que cuesta el ángel a tu nivel y qué conviene. La flecha te lleva." },
+	{ id = "claseHechizos", icono = "ic-talentos", modulo = "lya", pregunta = "Aprendí un hechizo nuevo, ¿para qué sirve?",
+		respuesta = "Cada vez que aprendes uno de los principales de tu clase te digo en corto para qué sirve y cuándo usarlo." },
+	{ id = "foco", icono = "ic-mazmorra", modulo = "lya", pregunta = "¿Te puedes hacer a un lado en las peleas?",
+		respuesta = "Sí: con el modo foco, en mazmorras y en combate me hago chiquita y me callo. Al terminar vuelvo. Está en mis ajustes." },
+	{ id = "momento", icono = "ic-reloj", modulo = "lya", pregunta = "¿Hay alguna fiesta hoy en Azeroth?",
+		respuesta = "Si hay fiesta te lo digo al entrar. Y según la hora y la zona te cuento lo que pasa por ahí." },
 }
 for _, p in ipairs(BASE) do p.base = true Gi.Ensenar(p) end
 

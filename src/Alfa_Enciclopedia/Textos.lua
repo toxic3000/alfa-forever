@@ -595,4 +595,9 @@ M.EN = {
 	["Qué necesitas a tu nivel: equitación, oro y a quién ir."] = "What you need at your level: riding, gold and who to visit.",
 	-- 1.2.7
 	["Lya te cuenta"] = "Lya tells you",
+	-- 1.2.9: a la lista de compras de Comercio
+	["A mi lista de compras"] = "To my shopping list",
+	["Lo suma a tu lista de compras de Comercio, con lo que pide su receta."] = "Adds it to your Trade shopping list, with what its recipe needs.",
+	["Está en tu lista de compras."] = "It's on your shopping list.",
+	["Tu lista de compras no pudo agregarlo."] = "Your shopping list couldn't add it.",
 }

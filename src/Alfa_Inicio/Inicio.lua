@@ -17,6 +17,9 @@
 --      y «Una hora de caza» (AlfaRuta.UnaHora(), 1.2.7). El avance de la
 --      tarjeta dice cuánto falta por tu ritmo (AlfaRuta.Estimado(), 1.2.7).
 --      Tu plan: la meta de ahora del plan que sigues (AlfaPlanes.Tarjeta()).
+--      1.2.9: «¿Cuánto tiempo tienes?» (M.Tiempo): eliges 30 min, 1 h, 2 h u
+--      otro y Alfa arma el plan en pasos con sus minutos; con el plan en
+--      marcha, su tarjeta (paso, avance, Llévame y Siguiente) va arriba.
 --   4. Alertas: equipo gastado, bolsas casi llenas, habilidades por
 --      entrenar, tu buff y, si curas, preparar tus marcos de curación.
 --      Debajo, Buscar cerca: vuelo, posada, reparar, banco, buzón y tu
@@ -24,6 +27,8 @@
 --   5. Para tu <clase>: el talento que toca (AlfaBuilds.SiguienteTalento) y
 --      tres tarjetas de tu clase (M.Clase), cada una abre su módulo.
 --   6. Hoy en números: XP por hora, para subir, oro de hoy, esta sesión.
+--      1.2.9: Camino al 60 (M.Camino), con su ventana aparte (las guías y
+--      mazmorras por tramos y tus días de caza).
 --   7. Abajo y compacto: la revisión rápida en una fila, tu diario (lo de
 --      ahora, desde los 5 minutos de sesión; las sesiones pasadas al
 --      pedirlas) y los ajustes de tus avisos (plegados). Los módulos ya están
@@ -65,6 +70,10 @@ local AJUSTES = {
 	resumen = "ambos", segAviso = 10, sonido = true, diarioMax = 30,
 	-- Lo plegable de abajo: el diario completo y los ajustes de los avisos.
 	verDiario = false, verAjustes = false,
+	-- 1.2.9: tu tiempo de juego, el camino al 60, listo para la mazmorra y la comida.
+	horaPlan = true, horaMin = 60, horaAuto = true, camino = true,
+	listoAuto = true, listoDur = 50, listoBolsas = 6, listoComida = 10,
+	comidaAviso = true, comidaMin = 5,
 }
 
 local function apagado(clave) return function() return not N.Get("inicio", clave) end end
@@ -132,12 +141,44 @@ local C = {
 		confirmText = L["Se borran las sesiones guardadas de este personaje. La sesión de ahora sigue contando."],
 		help = L["Las sesiones guardadas de este personaje."], onClick = function() S.Borrar() end,
 		search = "diario, borrar, historial, clear, journal" },
+	-- 1.2.9
+	horaPlan = { kind = "toggle", key = "inicio.horaPlan", label = L["«¿Cuánto tiempo tienes?» en Hoy"],
+		help = L["Dices cuánto vas a jugar y Alfa arma tu plan: entregar, cerrar misiones, una mazmorra si cabe y lo demás."],
+		search = "tiempo, hora, plan, una hora, minutos, time, hour, plan, minutes" },
+	horaMin = { kind = "slider", key = "inicio.horaMin", label = L["Tu tiempo de juego"], min = 15, max = 240, step = 15,
+		format = function(v) return M.Tiempo.Minutos(v) end, child = true, disabled = apagado("horaPlan"),
+		search = "tiempo, minutos, time, minutes" },
+	horaAuto = { kind = "toggle", key = "inicio.horaAuto", label = L["Pasar solo al siguiente paso"],
+		help = L["Cuando ya entregaste todo o cerraste tu zona, te dice qué sigue (la flecha la pones tú con «Llévame»)."],
+		child = true, disabled = apagado("horaPlan"), search = "siguiente, paso, plan, next, step" },
+	camino = { kind = "toggle", key = "inicio.camino", label = L["«Camino al 60» en Hoy"],
+		help = L["Cuánto te falta para el 60 a tu ritmo, qué guías y mazmorras te tocan y cuánto avanzas cada día."],
+		search = "camino, 60, nivel máximo, horas, ritmo, road, level 60, max level, hours, pace" },
+	listoAuto = { kind = "toggle", key = "inicio.listoAuto", label = L["Revisar sola al entrar a una mazmorra"],
+		help = L["Al entrar o al juntarse tu grupo: equipo, bolsas, comida, agua, munición y lo de tu clase. Nunca en combate."],
+		search = "mazmorra, listo, revisar, reparar, munición, componentes, dungeon, ready, check, ammo, reagents" },
+	listoDur = { kind = "slider", key = "inicio.listoDur", label = L["Reparar si mi equipo baja de"], min = 20, max = 90, step = 10, format = porc,
+		child = true, disabled = apagado("listoAuto"), search = "mazmorra, durabilidad, reparar, dungeon, durability" },
+	listoBolsas = { kind = "slider", key = "inicio.listoBolsas", label = L["Espacios libres para el botín"], min = 0, max = 16, step = 1,
+		format = function(v) return v == 1 and L["1 espacio"] or format(L["%d espacios"], v) end,
+		child = true, disabled = apagado("listoAuto"), search = "mazmorra, bolsas, espacio, dungeon, bags" },
+	listoComida = { kind = "slider", key = "inicio.listoComida", label = L["Comida y agua para llevar"], min = 0, max = 40, step = 5,
+		format = function(v) return format("%d", v) end, child = true, disabled = apagado("listoAuto"),
+		search = "mazmorra, comida, agua, dungeon, food, water" },
+	comidaAviso = { kind = "toggle", key = "inicio.comidaAviso", label = L["Avisarme cuando se me acabe la comida o el agua"],
+		help = L["Te dice qué comprar a tu nivel y te lleva al vendedor de comida más cercano. El agua, solo si usas maná."],
+		search = "comida, agua, beber, comer, posadero, food, water, drink, eat, innkeeper" },
+	comidaMin = { kind = "slider", key = "inicio.comidaMin", label = L["Avisar cuando me queden"], min = 1, max = 20, step = 1,
+		format = function(v) return format("%d", v) end, child = true, disabled = apagado("comidaAviso"),
+		search = "comida, agua, food, water" },
 }
 
 local CONTROLES = {
 	C.recDurabilidad, C.durAviso, C.durUrgente, C.recBolsas, C.bolsasLibres, C.recEntrenar, C.entrenarMin,
 	C.recBuff, C.buffCada, C.buffQueda, C.recDescanso, C.descansoBajo,
 	C.resumen, C.segAviso, C.sonido, C.diarioMax, C.probar, C.lugar, C.borrar,
+	C.horaPlan, C.horaMin, C.horaAuto, C.camino, C.listoAuto, C.listoDur, C.listoBolsas, C.listoComida,
+	C.comidaAviso, C.comidaMin,
 }
 
 ---------------------------------------------------------------------------
@@ -583,8 +624,9 @@ local function misiones()
 			ayuda = L["Te lleva a las misiones de tu ruta que ya puedes tomar."] }
 	end
 	-- 1.2.7: «Una hora de caza»: Alfa elige lo que más rinde cerca de ti.
+	-- 1.2.9: con «¿Cuánto tiempo tienes?» a la vista, ese plan ya lo incluye.
 	local unaHora = deRuta("UnaHora")
-	if unaHora then
+	if unaHora and not N.Get("inicio", "horaPlan") then
 		lista[#lista + 1] = { variante = "compacta", icono = "ic-reloj", titulo = L["Una hora de caza"],
 			texto = L["Lo que más rinde cerca de ti"],
 			alClic = function() K.Llamar(unaHora) end,
@@ -639,6 +681,16 @@ local function alertas()
 		lista[#lista + 1] = { clave = "buff", tono = "aviso", icono = "ic-aviso",
 			titulo = b.estado == "poco" and format(L["A %s le queda poco"], b.nombre) or format(L["Te falta %s"], b.nombre),
 			texto = L["Lánzalo antes de la siguiente pelea."] }
+	end
+	-- 1.2.9: comida y agua, después de que se te acabaron (M.Comida).
+	local Co = M.Comida
+	if Co and Co.Bajo() then
+		local ec = Co.Estado()
+		local faltan = { comida = ec.bajo.comida, agua = ec.bajo.agua }
+		local titulo = (faltan.comida and faltan.agua and L["Te queda poca comida y agua"]) or (faltan.agua and L["Te queda poca agua"]) or L["Te queda poca comida"]
+		lista[#lista + 1] = { clave = "comida", tono = "aviso", icono = "ic-comercio", titulo = titulo,
+			texto = format(L["A tu nivel: %s"], Co.QueComprar(faltan)),
+			accion = { texto = L["Llévame a comprar"], icono = "ic-flecha", alClic = function() Co.Ir() end } }
 	end
 	local Cu = curacion()
 	if Cu and type(Cu.AsistentePendiente) == "function" and Cu.AsistentePendiente() then
@@ -1210,6 +1262,24 @@ local function gruposAvisos(padre)
 			alAceptar = function() S.Borrar() end })
 	end, "peligro") })
 	g[#g + 1] = av
+	-- 1.2.9
+	local tie = K.GrupoAjustes(padre, { titulo = L["Tu tiempo y tu camino al 60"] })
+	tie:Fila({ titulo = C.horaPlan.label, texto = C.horaPlan.help, control = interruptor("horaPlan") })
+	tie:Fila({ titulo = C.horaAuto.label, texto = C.horaAuto.help, hija = true, activa = encendido("horaPlan"), control = interruptor("horaAuto") })
+	tie:Fila({ titulo = C.camino.label, texto = C.camino.help, control = interruptor("camino") })
+	g[#g + 1] = tie
+	local maz = K.GrupoAjustes(padre, { titulo = L["Listo para la mazmorra"] })
+	maz:Fila({ titulo = C.listoAuto.label, texto = C.listoAuto.help, control = interruptor("listoAuto") })
+	maz:Fila({ titulo = C.listoDur.label, hija = true, activa = encendido("listoAuto"), control = deslizador(C.listoDur) })
+	maz:Fila({ titulo = C.listoBolsas.label, hija = true, activa = encendido("listoAuto"), control = deslizador(C.listoBolsas) })
+	maz:Fila({ titulo = C.listoComida.label, hija = true, activa = encendido("listoAuto"), control = deslizador(C.listoComida) })
+	maz:Fila({ titulo = L["Revisar ahora"], texto = L["Lo que te falta para una mazmorra, en un aviso. También con /alfa listo."],
+		control = boton(L["Revisar"], function() M.Listo.Revisar("boton") end) })
+	g[#g + 1] = maz
+	local com = K.GrupoAjustes(padre, { titulo = L["Comida y agua"] })
+	com:Fila({ titulo = C.comidaAviso.label, texto = C.comidaAviso.help, control = interruptor("comidaAviso") })
+	com:Fila({ titulo = C.comidaMin.label, hija = true, activa = encendido("comidaAviso"), control = deslizador(C.comidaMin) })
+	g[#g + 1] = com
 	return g
 end
 
@@ -1230,7 +1300,7 @@ local function nuevosAjustes(padre)
 		local ver = N.Get("inicio", "verAjustes") and true or false
 		self.Seccion:Set(L["Tus avisos"], { enlace = { texto = ver and L["Ocultar ajustes"] or L["Ajustar"],
 			alClic = function() N.Set("inicio", "verAjustes", not N.Get("inicio", "verAjustes")) end } })
-		K.Escribir(self.Nota.Texto, L["Alfa te avisa del equipo gastado, las bolsas llenas, lo que puedes entrenar, tu buff y tu descanso. Aquí eliges cuáles y cuándo."])
+		K.Escribir(self.Nota.Texto, L["Alfa te avisa del equipo gastado, las bolsas llenas, lo que puedes entrenar, tu buff, tu descanso, tu comida y lo que te falta para una mazmorra. Aquí eliges cuáles y cuándo."])
 		K.Mostrar(self.Nota, not ver)
 		if ver and not self.grupos then
 			self.grupos = gruposAvisos(self)
@@ -1245,6 +1315,295 @@ local function nuevosAjustes(padre)
 end
 
 ---------------------------------------------------------------------------
+-- 3c. ¿Cuánto tiempo tienes? (1.2.9, M.Tiempo)
+---------------------------------------------------------------------------
+
+local TM = M.Tiempo
+local OTRO = "otro"
+
+local function opcionesHora()
+	return { { valor = 30, texto = L["30 min"] }, { valor = 60, texto = L["1 h"] }, { valor = 120, texto = L["2 h"] },
+		{ valor = OTRO, texto = L["Otro"], ayuda = L["Elige tus minutos con la barra de abajo."] } }
+end
+
+local function valorHora()
+	local m = tonumber(N.Get("inicio", "horaMin")) or 60
+	if P.horaOtro then return OTRO end
+	for _, v in ipairs(TM.OPCIONES) do if v == m then return m end end
+	return OTRO
+end
+
+local FUENTE = { diario = L["por tu diario"], guia = L["por tu guía"] }
+
+-- Un paso del plan en una tarjeta compacta.
+local function tarjetaDePaso(p, hecho)
+	local titulo, txt = TM.Textos(p)
+	return { variante = "compacta", icono = hecho and "ic-exito" or (p.icono or "ic-reloj"), tono = hecho and "exito" or nil,
+		titulo = titulo, texto = txt, valor = hecho and L["Hecho"] or TM.Minutos(p.min),
+		colorValor = hecho and "exito" or "textoSuave" }
+end
+
+local function nuevaHora(padre)
+	local b = K.Pila(padre, { espacio = ESP.m })
+	b.Seccion = b:Agregar(K.Seccion(b, L["¿Cuánto tiempo tienes?"]))
+	b.Elegir = b:Agregar(K.Segmentos(b, { estilo = "segmentos", opciones = opcionesHora(), valor = 60, alCambiar = function(v)
+		if v == OTRO then
+			P.horaOtro = true
+			P.Relayout()
+		else
+			P.horaOtro = false
+			N.Set("inicio", "horaMin", v)
+		end
+	end }), { espacio = ESP.s })
+	b.Elegir.alfaAnchoPropio = true
+	b.Otro = b:Agregar(K.GrupoAjustes(b, {}), { espacio = ESP.s })
+	b.Otro:Fila({ titulo = C.horaMin.label, texto = L["De 15 minutos a 4 horas."], control = deslizador(C.horaMin) })
+	b.Ahora = b:Agregar(K.Tarjeta(b, { variante = "normal" }), { espacio = ESP.s })
+	b.Pasos = b:Agregar(K.Rejilla(b, { min = 300, gap = ESP.s }), { espacio = ESP.s })
+	-- El pie: el total y tu ritmo, y «Empezar».
+	local pie = CreateFrame("Frame", nil, b)
+	pie.Texto = K.Texto(pie, "nota", "textoSuave")
+	pie.Boton = K.Boton(pie, L["Empezar"], function() if P.planHora then TM.Empezar(P.planHora) end end, { tipo = "primario", icono = "ic-seguir" })
+	K.ConInfo(pie.Boton, L["Empezar"], L["La flecha te lleva al primer paso. En Hoy ves cuánto llevas y «Siguiente» pasa al que sigue."])
+	function pie:Acomodar(ancho)
+		local bw = self.Boton:AnchoNatural()
+		self.Boton:SetAncho(bw)
+		self.Boton:ClearAllPoints()
+		self.Boton:SetPoint("TOPRIGHT", self, "TOPRIGHT", 0, 0)
+		self.Texto:ClearAllPoints()
+		self.Texto:SetPoint("TOPLEFT", self, "TOPLEFT", 0, -6)
+		local h = K.Parrafo(self.Texto, max(80, ancho - bw - ESP.base), 3)
+		local alto = max(K.num(self.Boton:GetHeight(), 32), h + 6)
+		self:SetSize(ancho, alto)
+		return alto
+	end
+	b.Pie = b:Agregar(pie, { espacio = ESP.m })
+
+	-- -> true si hay un plan en marcha (la tarjeta va arriba)
+	function b:Llenar()
+		if not N.Get("inicio", "horaPlan") then
+			K.Mostrar(self, false)
+			return false
+		end
+		K.Mostrar(self, true)
+		local h = TM.Actual()
+		self.alfaFirma = h and (h.i .. ":" .. TM.Llevas(h)) or nil
+		if h then
+			local n = #h.pasos
+			local p = h.pasos[h.i]
+			self.Seccion:Set(L["Tu plan de juego"], { cuenta = format(L["Paso %d de %d"], h.i, n),
+				enlace = { texto = L["Dejar el plan"], alClic = function() TM.Dejar() end } })
+			local titulo, txt = TM.Textos(p)
+			local llevas = TM.Llevas(h)
+			self.Ahora:Set({ icono = p.icono or "ic-reloj", tono = "acento", sobre = format(L["Ahora · %s"], TM.Minutos(p.min)),
+				titulo = titulo, texto = txt,
+				progreso = { actual = h.i - 1, total = n, huellas = true,
+					texto = format(L["Llevas %s de %s"], TM.Minutos(llevas), TM.Minutos(h.total)) },
+				accion = { texto = L["Llévame"], icono = "ic-flecha", alClic = function() TM.Ir(p) end },
+				secundaria = { texto = h.i >= n and L["Terminar"] or L["Siguiente"], alClic = function() TM.Siguiente() end },
+				ayuda = L["«Llévame» pone la flecha en este paso; «Siguiente» lo da por hecho y te lleva al que sigue."] })
+			local lista = {}
+			-- Antes de una mazmorra: ¿llevas todo?
+			if p.tipo == "mazmorra" and M.Listo then
+				lista[#lista + 1] = { variante = "compacta", icono = "ic-mazmorra", titulo = L["Listo para la mazmorra"],
+					texto = L["Equipo, bolsas, comida y lo de tu clase"], valor = L["Revisar"], colorValor = "acento",
+					alClic = function() M.Listo.Revisar("boton", p.nombre) end }
+			end
+			for k = h.i + 1, n do lista[#lista + 1] = tarjetaDePaso(h.pasos[k]) end
+			llenar(self.Pasos, lista)
+			K.Mostrar(self.Ahora, true)
+			K.Mostrar(self.Pasos, #lista > 0)
+			K.Mostrar(self.Elegir, false)
+			K.Mostrar(self.Otro, false)
+			K.Mostrar(self.Pie, false)
+			return true
+		end
+		self.Seccion:Set(L["¿Cuánto tiempo tienes?"], {})
+		local v = valorHora()
+		self.Elegir:SetValor(v)
+		K.Mostrar(self.Elegir, true)
+		K.Mostrar(self.Otro, v == OTRO)
+		if v == OTRO then self.Otro:Refrescar() end
+		local plan = TM.Armar(tonumber(N.Get("inicio", "horaMin")) or 60)
+		P.planHora = plan
+		local lista = {}
+		for i, p in ipairs(plan.pasos) do lista[i] = tarjetaDePaso(p) end
+		llenar(self.Pasos, lista)
+		K.Mostrar(self.Pasos, #lista > 0)
+		K.Mostrar(self.Ahora, false)
+		local nota = format(L["Tu plan para %s, con tus minutos de verdad."], TM.Minutos(plan.total))
+		if FUENTE[plan.fuente] then
+			nota = format(L["Tu plan para %s: unos %d min por misión, %s."], TM.Minutos(plan.total), floor(plan.ritmo + 0.5), FUENTE[plan.fuente])
+		end
+		K.Escribir(self.Pie.Texto, nota)
+		K.Mostrar(self.Pie, #lista > 0)
+		return false
+	end
+	-- Cada segundo: los minutos que llevas cambian una vez por minuto.
+	function b:Repintar()
+		if not self:IsShown() then return end
+		local h = TM.Actual()
+		local firma = h and (h.i .. ":" .. TM.Llevas(h)) or nil
+		return firma ~= self.alfaFirma
+	end
+	return b
+end
+
+---------------------------------------------------------------------------
+-- 6b. Camino al 60 (1.2.9, M.Camino)
+---------------------------------------------------------------------------
+
+local CA = M.Camino
+
+-- 1.4 -> "1.4"; los enteros sin decimal.
+local function decimal(v)
+	v = floor((tonumber(v) or 0) * 10 + 0.5) / 10
+	if v == floor(v) then return tostring(floor(v)) end
+	return format("%.1f", v)
+end
+
+local function horasTexto(h)
+	if not h then return nil end
+	if h >= 999 then return L["más de 999 h"] end
+	return TM.Minutos(h * 60 >= 120 and floor(h + 0.5) * 60 or h * 60)
+end
+
+local function lineaHoy(r)
+	local hoy = r.hoy or 0
+	if hoy < 0.05 then return L["Hoy todavía no avanzas: ¡a cazar!"] end
+	if decimal(hoy) == "1" then return L["Hoy avanzaste 1 nivel"] end
+	return format(L["Hoy avanzaste %s niveles"], decimal(hoy))
+end
+
+local abrirCamino -- la ventana, abajo
+
+local function datosCamino()
+	local r = CA.Resumen()
+	if not r then return nil end
+	local lineas = {}
+	if r.horas then
+		lineas[#lineas + 1] = format(L["Unos %s de juego a tu ritmo (%s XP por hora)."], horasTexto(r.horas), miles(r.ritmo))
+	else
+		lineas[#lineas + 1] = L["Juega un rato y Alfa calcula cuánto te falta a tu ritmo."]
+	end
+	lineas[#lineas + 1] = lineaHoy(r)
+	if r.dias then lineas[#lineas + 1] = r.dias == 1 and L["Como juegas, llegas en 1 día."] or format(L["Como juegas, llegas en unos %d días."], r.dias) end
+	local faltan = decimal(r.faltan)
+	return { icono = "ic-nivel", tono = "acento", sobre = L["Camino al 60"],
+		titulo = faltan == "1" and L["Te falta 1 nivel para el 60"] or format(L["Te faltan %s niveles para el %d"], faltan, r.tope),
+		texto = table.concat(lineas, "\n"), lineas = 4,
+		progreso = { actual = floor(r.frac * 10), total = r.tope * 10, texto = format(L["Nivel %s de %d"], decimal(r.frac), r.tope) },
+		accion = { texto = L["Ver el camino"], icono = "ic-ruta", alClic = function() abrirCamino() end },
+		ayuda = L["Las guías y mazmorras de tu nivel al 60, y cuánto avanzas cada día."] }
+end
+
+local function nuevoCamino(padre)
+	local b = K.Pila(padre, { espacio = ESP.m })
+	b.Tarjeta = b:Agregar(K.Tarjeta(b, { variante = "normal" }))
+	function b:Llenar()
+		local d = N.Get("inicio", "camino") and datosCamino() or nil
+		self.alfaFirma = d and (d.titulo .. (d.texto or "")) or nil
+		if d then self.Tarjeta:Set(d) end
+		K.Mostrar(self, d ~= nil)
+	end
+	function b:Repintar()
+		if not self:IsShown() then return end
+		local d = N.Get("inicio", "camino") and datosCamino() or nil
+		return (d and (d.titulo .. (d.texto or "")) or nil) ~= self.alfaFirma
+	end
+	return b
+end
+
+-- La ventana: lo detallado va aparte (Hoy queda compacta).
+local VC = {}
+P.Camino = VC
+
+local function llenarCamino()
+	local v = VC.v
+	if not (v and v:IsShown()) then return end
+	local d = datosCamino()
+	if d then
+		d.accion = nil
+		VC.resumen:Set(d)
+	else
+		VC.resumen:Set({ lobo = "aullando", tono = "exito", titulo = L["¡Ya llegaste al 60!"], texto = L["La manada aúlla por ti."] })
+	end
+	local ritmo = CA.Ritmo()
+	local tramos = d and CA.Tramos() or {}
+	local lista = {}
+	for _, t in ipairs(tramos) do
+		local xp = 0
+		for l = t.desde, t.hasta do xp = xp + (CA.XP[l] or 0) end
+		local txt = t.titulo
+		if #t.mazmorras > 0 then
+			local nombres = {}
+			for _, m in ipairs(t.mazmorras) do nombres[#nombres + 1] = m.nombre end
+			txt = txt .. DOT .. table.concat(nombres, ", ")
+		end
+		lista[#lista + 1] = { variante = "compacta", icono = #t.mazmorras > 0 and "ic-mazmorra" or "ic-ruta",
+			titulo = t.desde == t.hasta and format(L["Nivel %d: %s"], t.desde, t.zona or t.titulo)
+				or format(L["Niveles %d a %d: %s"], t.desde, t.hasta, t.zona or t.titulo),
+			texto = txt, valor = ritmo and horasTexto(xp / ritmo) or nil }
+	end
+	llenar(VC.rejTramos, lista)
+	K.Mostrar(VC.secTramos, #lista > 0)
+	K.Mostrar(VC.rejTramos, #lista > 0)
+	local mz = {}
+	for _, m in ipairs(d and CA.Mazmorras() or {}) do
+		mz[#mz + 1] = { variante = "compacta", icono = "ic-mazmorra", titulo = m.nombre,
+			texto = format(L["Mejor a nivel %d · niveles %d a %d"], m.nivel, m.min, m.max), valor = format(L["Nv %d"], m.nivel) }
+	end
+	llenar(VC.rejMaz, mz)
+	K.Mostrar(VC.secMaz, #mz > 0)
+	K.Mostrar(VC.rejMaz, #mz > 0)
+	local dias = {}
+	for _, x in ipairs(CA.Dias(7)) do
+		dias[#dias + 1] = { variante = "compacta", icono = "ic-reloj", titulo = x.hoy and L["Hoy"] or S.Dia(x.t),
+			texto = format(L["%s de juego"], TM.Minutos(x.seg / 60)),
+			valor = x.niveles >= 0.05 and ("+" .. decimal(x.niveles)) or "0", colorValor = x.niveles >= 0.05 and "acento" or "textoSuave",
+			ayuda = format(L["%s niveles · %s XP"], decimal(x.niveles), miles(x.xp)) }
+	end
+	llenar(VC.rejDias, dias)
+	K.Mostrar(VC.secDias, #dias > 0)
+	K.Mostrar(VC.rejDias, #dias > 0)
+	K.Mostrar(VC.vacio, d ~= nil and #lista == 0)
+	if VC.acomodar then VC.acomodar() end
+end
+VC.Llenar = llenarCamino
+
+abrirCamino = function()
+	if not VC.v then
+		local v = K.Ventana({ nombre = "AlfaInicioCamino", titulo = L["Camino al 60"], subtitulo = L["De tu nivel al 60, a tu ritmo"],
+			icono = "ic-nivel", ancho = 640, alto = 620, desplazar = true })
+		VC.v = v
+		local p = K.Pila(v.Cuerpo, { espacio = ESP.base })
+		VC.pila = p
+		VC.resumen = p:Agregar(K.Tarjeta(p, { variante = "normal" }))
+		VC.secTramos = p:Agregar(K.Seccion(p, L["Tu ruta, guía por guía"]), { espacio = ESP.l })
+		VC.rejTramos = p:Agregar(K.Rejilla(p, { min = 420, gap = ESP.s }), { espacio = ESP.s })
+		VC.secMaz = p:Agregar(K.Seccion(p, L["Mazmorras en el camino"]), { espacio = ESP.l })
+		VC.rejMaz = p:Agregar(K.Rejilla(p, { min = 420, gap = ESP.s }), { espacio = ESP.s })
+		VC.secDias = p:Agregar(K.Seccion(p, L["Tus días de caza"]), { espacio = ESP.l })
+		VC.rejDias = p:Agregar(K.Rejilla(p, { min = 260, gap = ESP.s }), { espacio = ESP.s })
+		VC.vacio = p:Agregar(K.Vacio(p, { lobo = "dormido", titulo = L["Todavía no hay guías para tu camino"],
+			texto = L["Cuando tengas las guías de tu facción, aquí sale tu ruta al 60."] }), { espacio = ESP.l })
+		VC.acomodar = function()
+			if not (v:IsShown() and VC.pila) then return end
+			local ancho = v:AnchoCuerpo()
+			local h = VC.pila:Acomodar(ancho)
+			VC.pila:ClearAllPoints()
+			VC.pila:SetPoint("TOPLEFT", v.Cuerpo, "TOPLEFT", v.margen, -v.margen)
+			v:SetAltoContenido(h + 2 * v.margen)
+		end
+		v.alAcomodar = VC.acomodar
+	end
+	VC.v:Abrir()
+	llenarCamino()
+	K.Despues(0.05, VC.acomodar)
+end
+P.AbrirCamino = function() abrirCamino() end
+
+---------------------------------------------------------------------------
 -- La página
 ---------------------------------------------------------------------------
 
@@ -1255,16 +1614,19 @@ local function enGuia(paso) return paso ~= nil and not paso.fin end
 -- en grande primero (la portada). Con una guía: tu siguiente paso, tus
 -- misiones y tu plan; con solo un plan, tu plan primero. En los dos casos
 -- los caminos bajan a la fila compacta. Lo de abajo (t.Extra) no se mueve.
+-- 1.2.9: «¿Cuánto tiempo tienes?» va junto a tus misiones; con su plan en
+-- marcha, hasta arriba (es lo que estás haciendo).
 local ORDEN = {
-	guia = { "accion", "opciones", "rejilla", "plan", "otra", "portada" },
-	plan = { "plan", "accion", "opciones", "rejilla", "otra", "portada" },
-	nada = { "portada", "accion", "opciones", "rejilla", "plan", "otra" },
+	guia = { "accion", "opciones", "hora", "rejilla", "plan", "otra", "portada" },
+	plan = { "plan", "accion", "opciones", "hora", "rejilla", "otra", "portada" },
+	nada = { "portada", "accion", "opciones", "hora", "rejilla", "plan", "otra" },
+	hora = { "hora", "accion", "opciones", "rejilla", "plan", "otra", "portada" },
 }
 
-local function ordenar(guia, plan)
+local function ordenar(guia, plan, hora)
 	local E = P.entradas
 	local orden, ya = {}, {}
-	for _, k in ipairs(ORDEN[guia and "guia" or (plan and "plan" or "nada")]) do
+	for _, k in ipairs(ORDEN[hora and "hora" or (guia and "guia" or (plan and "plan" or "nada"))]) do
 		if E[k] then orden[#orden + 1] = E[k] ya[E[k]] = true end
 	end
 	-- Lo que el Kit tenga además no se pierde; lo de abajo (t.Extra) al final.
@@ -1273,16 +1635,18 @@ local function ordenar(guia, plan)
 	end
 	if E.extra then orden[#orden + 1] = E.extra end
 	P.tablero.bloques = orden
-	K.Mostrar(P.portada, not (guia or plan))
-	K.Mostrar(P.otra, (guia or plan) and true or false)
+	K.Mostrar(P.portada, not (guia or plan or hora))
+	K.Mostrar(P.otra, (guia or plan or hora) and true or false)
 end
 
 local function llenarTodo()
 	R.Leer()
 	local paso = tarjetaPaso()
 	local plan = P.plan:Llenar()
+	local hora = P.hora:Llenar()
 	P.enGuia = enGuia(paso)
-	ordenar(P.enGuia, plan)
+	P.enHora = hora
+	ordenar(P.enGuia, plan, hora)
 	P.portada:Llenar()
 	P.otra:Llenar()
 	P.firmaPaso = firmaPaso(paso)
@@ -1296,6 +1660,7 @@ local function llenarTodo()
 	P.cerca:Llenar()
 	P.clase:Llenar()
 	P.numeros:Llenar()
+	P.camino:Llenar()
 	P.revision:Llenar(lista)
 	P.diario:Llenar()
 	P.ajustes:Llenar()
@@ -1310,7 +1675,9 @@ local function construir(view)
 	P.portada = nuevaPortada(t)
 	P.plan = nuevoPlan(t)
 	P.otra = nuevaOtra(t)
-	local E = { portada = { b = P.portada, sangria = 0 }, plan = { b = P.plan, sangria = 0 }, otra = { b = P.otra, sangria = 0 } }
+	P.hora = nuevaHora(t)
+	local E = { portada = { b = P.portada, sangria = 0 }, plan = { b = P.plan, sangria = 0 }, otra = { b = P.otra, sangria = 0 },
+		hora = { b = P.hora, sangria = 0 } }
 	for _, e in ipairs(t.bloques) do
 		if e.b == t.Accion then E.accion = e
 		elseif e.b == t.Opciones then E.opciones = e
@@ -1318,11 +1685,12 @@ local function construir(view)
 		elseif e.b == t.Extra then E.extra = e end
 	end
 	P.entradas = E
-	ordenar(false, false)
+	ordenar(false, false, false)
 	P.alertas = t:AgregarBloque(nuevoAlertas(t.Extra))
 	P.cerca = t:AgregarBloque(nuevoCerca(t.Extra))
 	P.clase = t:AgregarBloque(nuevaClase(t.Extra))
 	P.numeros = t:AgregarBloque(nuevoNumeros(t.Extra))
+	P.camino = t:AgregarBloque(nuevoCamino(t.Extra))
 	P.revision = t:AgregarBloque(nuevaRevision(t.Extra), { espacio = ESP.xl })
 	P.diario = t:AgregarBloque(nuevoDiario(t.Extra))
 	P.ajustes = t:AgregarBloque(nuevosAjustes(t.Extra))
@@ -1376,13 +1744,13 @@ function P.Pintar()
 		t.Accion:Set(paso)
 		if t.Accion:Acomodar(K.num(t.Accion:GetWidth(), N.AnchoPagina())) ~= antes then return relayoutPronto() end
 	end
-	if P.numeros:Repintar() or P.clase:Repintar() or P.diario:Repintar() then return relayoutPronto() end
+	if P.numeros:Repintar() or P.clase:Repintar() or P.diario:Repintar() or P.hora:Repintar() or P.camino:Repintar() then return relayoutPronto() end
 end
 
 function P.AlMostrar()
 	if P.ticker then P.ticker:Cancel() end
 	CL.Sucio()
-	P.ticker = A.NewTicker(1, P.Pintar)
+	P.ticker = N.Ticker("inicio.pagina", 1, P.Pintar)
 end
 
 function P.AlOcultar()
@@ -1395,7 +1763,7 @@ end
 A.On("ALFA_MODULO", function(spec)
 	if type(spec) == "table" and type(spec.id) == "string" and spec.id ~= "inicio" then relayoutPronto() end
 end)
-for _, msg in ipairs({ "STEP_CHANGED", "GUIDE_CHANGED", "GUIDE_COMPLETED", "TABS_CHANGED", "INICIO_DIARIO", "ALFA_REEMPLAZO", "ALFA_CURACION_ASISTENTE", "ALFA_PLAN" }) do
+for _, msg in ipairs({ "STEP_CHANGED", "GUIDE_CHANGED", "GUIDE_COMPLETED", "TABS_CHANGED", "INICIO_DIARIO", "ALFA_REEMPLAZO", "ALFA_CURACION_ASISTENTE", "ALFA_PLAN", "INICIO_HORA" }) do
 	A.On(msg, relayoutPronto)
 end
 -- Otra rama (o nivel) cambia el rol y las tarjetas de la clase.
@@ -1406,6 +1774,7 @@ A.On("SETTING_CHANGED", function(path)
 	if type(path) ~= "string" then return end
 	if path == "inicio.verDiario" or path == "inicio.verAjustes" or path == "curacion.activo" or path == "manada.compartir"
 		or path == "rutas.cercaHoy"
+		or path == "inicio.horaPlan" or path == "inicio.horaMin" or path == "inicio.camino" or path == "inicio.comidaAviso"
 		or path:find("^gear%.spec") then
 		relayoutPronto()
 	elseif path:find("^inicio%.") and P.ajustes and P.ajustes.grupos then
@@ -1430,3 +1799,41 @@ N.Modulo({
 	controles = CONTROLES,
 	construir = construir,
 })
+
+---------------------------------------------------------------------------
+-- 1.2.9: lo que Inicio ofrece a los demás, lo que Lya sabe contar y los comandos
+---------------------------------------------------------------------------
+
+--   AlfaInicio.RevisarMazmorra(nombre) -> faltas   «Listo para la mazmorra» (el aviso con lo que falta)
+--   AlfaInicio.Faltas() -> { { clave, texto, ir }, ... }   lo mismo, sin aviso
+--   AlfaInicio.Comida() -> comida, agua           lo que llevas
+--   AlfaInicio.TengoTiempo(minutos) -> plan        el plan para ese tiempo (sin empezarlo)
+--   AlfaInicio.Plan() -> plan en curso | nil
+--   AlfaInicio.Camino()                            abre «Camino al 60»
+AlfaInicio = type(rawget(_G, "AlfaInicio")) == "table" and rawget(_G, "AlfaInicio") or {}
+AlfaInicio.RevisarMazmorra = function(nombre) return M.Listo.Revisar("boton", nombre) end
+AlfaInicio.Faltas = function() return M.Listo.Faltas() end
+AlfaInicio.Comida = function() return M.Comida.Contar() end
+AlfaInicio.TengoTiempo = function(minutos) return M.Tiempo.Armar(minutos) end
+AlfaInicio.Plan = function() return M.Tiempo.Actual() end
+AlfaInicio.Camino = function() P.AbrirCamino() end
+
+A.RegisterCommand("camino", function() P.AbrirCamino() end, L["tu camino al 60"], true)
+
+A.OnLogin(function()
+	local Lya = rawget(_G, "AlfaLya")
+	if type(Lya) ~= "table" or type(Lya.Ensenar) ~= "function" then return end
+	for _, q in ipairs({
+		{ id = "inicio.hora", icono = "ic-reloj", pregunta = L["Tengo poco tiempo, ¿qué hago?"],
+			respuesta = L["En Hoy, en «¿Cuánto tiempo tienes?», elige 30 minutos, 1 hora, 2 o los que quieras. Armo tu plan con tu ritmo y, con «Empezar», la flecha te lleva paso por paso."] },
+		{ id = "inicio.camino", icono = "ic-nivel", pregunta = L["¿Cuánto me falta para el 60?"],
+			respuesta = L["Mira «Camino al 60» en Hoy: cuántas horas te faltan a tu ritmo y cuánto avanzaste hoy. «Ver el camino» te dice qué guías y mazmorras te tocan."] },
+		{ id = "inicio.listo", icono = "ic-mazmorra", pregunta = L["¿Estoy listo para la mazmorra?"],
+			respuesta = L["Al entrar o al juntarse tu grupo reviso tu equipo, tus bolsas, tu comida y lo de tu clase. Si falta algo te digo qué y te llevo a conseguirlo. También con /alfa listo."] },
+		{ id = "inicio.comida", icono = "ic-comercio", pregunta = L["¿Qué comida y agua compro?"],
+			respuesta = L["Cuando se te acaban te digo qué te conviene a tu nivel y te llevo al vendedor más cercano. El agua solo si usas maná."] },
+	}) do
+		q.modulo = "inicio"
+		pcall(Lya.Ensenar, q)
+	end
+end)

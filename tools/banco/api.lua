@@ -125,8 +125,20 @@ C_ClassColor = { GetClassColor = function(f) local c = RAID_CLASS_COLORS[f] retu
 LOCALIZED_CLASS_NAMES_MALE = { WARRIOR = "Guerrero" }
 CLASS_ICON_TCOORDS = {}
 
--- Timers: run when the driver says.
+-- Timers: run when the driver says. The tasks of Alfa's own clock (N.Cada,
+-- N.Ticker: src/Alfa_Nucleo/Reloj.lua, 1.2.9) run once per round too, like
+-- the game's tickers, unless a scene sets BANCO_RELOJ_REAL to drive that
+-- clock by hand (FIRE(N.Reloj.marco, "OnUpdate", dt)).
 local timers = {}
+local function relojAlfa()
+  if rawget(_G, "BANCO_RELOJ_REAL") then return false end
+  local N = rawget(_G, "AlfaNucleo")
+  local R = type(N) == "table" and N.Reloj
+  if not (R and R.Adelantar) then return false end
+  local ok, hay = pcall(R.Adelantar)
+  if not ok then NOTE("reloj", hay) return false end
+  return hay
+end
 function RUN_TIMERS(n)
   for _ = 1, n or 5 do
     local list = timers
@@ -139,7 +151,8 @@ function RUN_TIMERS(n)
         if t.ticker and not t.cancelled then timers[#timers + 1] = t end
       end
     end
-    if #timers == 0 then break end
+    local hay = relojAlfa()
+    if #timers == 0 and not hay then break end
   end
 end
 C_Timer = {

@@ -695,6 +695,10 @@ local function bloqueGuaridas(padre)
 	b.Llamar = K.Boton(b, L["Llamar a la manada"], function() if M.Llamado then M.Llamado.LlamarYDecir() end end,
 		{ tipo = "secundario", icono = "ic-huella" })
 	b.LlamarNota = K.Texto(b, "nota", "textoSuave")
+	-- 1.2.9: cambiar de plano cuando está lleno (Plano.lua).
+	b.Plano = K.Boton(b, L["Cambiar de plano"], function() if M.Plano then M.Plano.CambiarYDecir() end end,
+		{ tipo = "secundario", icono = "ic-manada" })
+	b.PlanoNota = K.Texto(b, "nota", "textoSuave")
 	b.Linea = K.Linea(b, "linea")
 	b.Vacio = K.Texto(b, "nota", "textoTenue")
 	b.filas = {}
@@ -723,6 +727,10 @@ local function bloqueGuaridas(padre)
 		self.Abrir:SetActivo(comparte)
 		self.Llamar:SetActivo(comparte)
 		K.Escribir(self.LlamarNota, L["Pide ayuda con un élite o un raro: los lobos de tu zona reciben tu lugar y te avisa quién viene."])
+		local Pl = M.Plano
+		self.Plano:SetActivo(comparte and mia ~= nil and not pedido)
+		K.Escribir(self.PlanoNota, mia and Pl and format(L["Cómo está tu plano: %s."], Pl.Texto())
+			or L["¿Mucha gente? Te paso al plano de un lobo de la manada con su guarida abierta."])
 		K.Escribir(self.AbrirNota, Gu.Abierta() and L["Abierta: si alguien de la manada pide entrar, Alfa lo invita a tu grupo (fuera de combate)."]
 			or L["Cerrada: nadie te pide entrar. Ábrela para echarle la mano a la manada."])
 		local lista = {}
@@ -780,6 +788,12 @@ local function bloqueGuaridas(padre)
 		en(self.LlamarNota, xt + lw + ESP.m, y + 2)
 		local ln = K.Parrafo(self.LlamarNota, w - lw - ESP.m, 3)
 		y = y + max(lh, ln) + ESP.m
+		en(self.Plano, xt, y)
+		local pw = K.num(self.Plano:GetWidth(), 120)
+		local ph = K.num(self.Plano:GetHeight(), K.ALTO.boton)
+		en(self.PlanoNota, xt + pw + ESP.m, y + 2)
+		local pn = K.Parrafo(self.PlanoNota, w - pw - ESP.m, 3)
+		y = y + max(ph, pn) + ESP.m
 		self.Linea:ClearAllPoints()
 		self.Linea:SetPoint("TOPLEFT", self, "TOPLEFT", xt, -y)
 		self.Linea:SetPoint("TOPRIGHT", self, "TOPRIGHT", -pad, -y)
@@ -1107,6 +1121,85 @@ local function bloqueCazados(padre)
 	})
 end
 
+-- 1.2.9: «¿Quién tiene...?» (QuienTiene.lua).
+local function bloqueQuienTiene(padre)
+	local Qt = M.QuienTiene
+	local buscar
+	local b = bloqueLista(padre, {
+		icono = "ic-bolsas", sobre = L["¿Quién tiene...?"],
+		controles = function(b)
+			b.Que = campoTexto(b, L["¿Qué buscas? Un objeto, un material..."], function() buscar(b) end)
+			b.Buscar = K.Boton(b, L["Buscar"], function() buscar(b) end, { tipo = "primario", icono = "ic-manada" })
+		end,
+		acomodar = function(b, xt, y, w)
+			local bw = K.num(b.Buscar:GetWidth(), 100)
+			b.En(b.Que, xt, y)
+			b.Que:SetWidth(max(120, min(w - bw - ESP.s, 420)))
+			b.Buscar:ClearAllPoints()
+			b.Buscar:SetPoint("LEFT", b.Que, "RIGHT", ESP.s, 0)
+			return y + max(K.ALTO.control, K.num(b.Buscar:GetHeight(), K.ALTO.boton))
+		end,
+		llenar = function(b)
+			local hermandad = U.EnHermandad()
+			b.Que:SetActivo(hermandad)
+			b.Buscar:SetActivo(hermandad)
+			local c = Qt.Consulta()
+			local filas = {}
+			for _, r in ipairs(Qt.Resultados()) do
+				filas[#filas + 1] = { nombre = r.nombre, dato = format(L["%s: %d"], r.objeto, r.cuantos),
+					botones = { { texto = L["Susurrar"], alClic = function() Qt.Susurrar(r) end } } }
+			end
+			local vacio
+			if not hermandad then vacio = L[Qt.MOTIVOS.hermandad]
+			elseif c then vacio = format(L["Nadie de la manada dijo tener «%s» (todavía)."], c.texto)
+			else vacio = L["Escribe un objeto y pulsa «Buscar»: te contestan los lobos de tu hermandad que lo permiten."] end
+			return {
+				titulo = c and format(L["Quién tiene «%s»"], c.texto) or L["Pregúntale a la manada"],
+				texto = on("quienTiene") and L["Tú también contestas: si alguien busca algo que llevas, Alfa le dice cuántos tienes (solo eso)."]
+					or L["Tú no contestas: actívalo en los ajustes de abajo si quieres ayudar a la manada."],
+				filas = filas, vacio = vacio,
+			}
+		end,
+	})
+	buscar = function(x)
+		if Qt.BuscarYDecir(x.Que:Texto()) then x.Que:Vaciar() end
+	end
+	return b
+end
+
+-- 1.2.9: la semana de la manada (Logros.lua). Sin primeros lugares.
+local function bloqueSemana(padre)
+	local Lo = M.Logros
+	local orden = "nombre"
+	return bloqueLista(padre, {
+		icono = "ic-reloj", sobre = L["La semana de la manada"],
+		controles = function(b)
+			b.Orden = K.Boton(b, L["Ordenar por lo que aportó"], function()
+				orden = orden == "nombre" and "aporte" or "nombre"
+				M.Avisar()
+			end, { tipo = "secundario", tam = "chico" })
+		end,
+		acomodar = function(b, xt, y)
+			b.En(b.Orden, xt, y)
+			return y + K.num(b.Orden:GetHeight(), K.ALTO.botonChico)
+		end,
+		llenar = function(b)
+			pcall(Lo.PedirSemanas)
+			b.Orden:SetTexto(orden == "nombre" and L["Ordenar por lo que aportó"] or L["Ordenar por nombre"])
+			local lista, tot = Lo.Manada(orden)
+			local filas = {}
+			for _, x in ipairs(lista) do filas[#filas + 1] = { nombre = x.nombre, dato = Lo.TextoCuenta(x) } end
+			local texto = on("semanaCompartir") and L["Tu semana se comparte con tu hermandad. Cada lobo suma; aquí nadie compite."]
+				or L["Tu semana solo la ves tú. Compártela en los ajustes de abajo para sumar con la manada."]
+			return {
+				titulo = tot.lobos > 1 and format(L["Esta semana, entre %d lobos: %s"], tot.lobos, Lo.TextoCuenta(tot, ", "))
+					or format(L["Tu semana: %s"], Lo.TextoCuenta(tot, ", ")),
+				texto = texto, filas = filas,
+			}
+		end,
+	})
+end
+
 ---------------------------------------------------------------------------
 -- 5. Los ajustes
 ---------------------------------------------------------------------------
@@ -1177,7 +1270,19 @@ local function grupos(ui, padre)
 	junta:Fila({ titulo = L["Compartir con la manada"], control = interruptor("notasCompartir"),
 		activa = function() return on("compartir") and N.Get(ID, "notas") ~= false end,
 		texto = L["Tus notas nuevas también salen en el mapa de los lobos de tu hermandad, y ves las suyas."] })
-	return { rastro, mapa, invitar, guaridas, caza, junta }
+	-- 1.2.9: planos, ¿quién tiene...?, logros y la semana.
+	local juntos = K.GrupoAjustes(padre, { titulo = L["La manada unida"] })
+	juntos:Fila({ titulo = L["Cambiar de plano si está lleno"], control = interruptor("planoAviso"), activa = function() return on("compartir") end,
+		texto = L["Si tu plano se llena de cazadores, Lya te propone pasarte al de un lobo de la manada con su guarida abierta. Una vez cada 15 minutos."] })
+	juntos:Fila({ titulo = L["Contestar «¿Quién tiene...?»"], control = interruptor("quienTiene"),
+		texto = L["Si un lobo de tu hermandad busca un objeto que llevas, Alfa le dice cuántos tienes. Solo eso y solo cuando pregunta."] })
+	juntos:Fila({ titulo = L["Festejos de la manada"], control = interruptor("logros"),
+		texto = L["Lya festeja cuando un lobo de tu hermandad llega al nivel 60, consigue su primera montura o caza un raro."] })
+	juntos:Fila({ titulo = L["Compartir mis logros"], control = interruptor("logrosCompartir"),
+		texto = L["Tu hermandad se entera cuando llegas al nivel 60, consigues tu primera montura o cazas un raro."] })
+	juntos:Fila({ titulo = L["Compartir mi semana"], control = interruptor("semanaCompartir"),
+		texto = L["Tus misiones, raros, mazmorras y niveles de la semana suman en «La semana de la manada» de tu hermandad."] })
+	return { rastro, mapa, invitar, guaridas, caza, junta, juntos }
 end
 
 ---------------------------------------------------------------------------
@@ -1259,6 +1364,8 @@ local function firma(ui, gente)
 	-- 1.2.8: citas, notas, raros con reloj y la hora (los «hace X min»).
 	partes[#partes + 1] = (M.Cita and M.Cita.version or 0) .. ":" .. (M.Notas and M.Notas.version or 0) .. ":" .. (M.Reloj and M.Reloj.version or 0)
 	partes[#partes + 1] = floor(U.Reloj() / 60)
+	-- 1.2.9: el plano, ¿quién tiene...? y la semana.
+	partes[#partes + 1] = (M.Plano and M.Plano.version or 0) .. ":" .. (M.QuienTiene and M.QuienTiene.version or 0) .. ":" .. (M.Logros and M.Logros.version or 0)
 	return table.concat(partes, "|")
 end
 
@@ -1280,6 +1387,8 @@ local function llenar(ui)
 	ui.citas:Llenar()
 	ui.notas:Llenar()
 	ui.cazados:Llenar()
+	ui.quienTiene:Llenar()
+	ui.semana:Llenar()
 	ui.clan:Llenar()
 	ui.lya:Llenar()
 	ui.filaCompartir.alfaDatos.texto = textoCompartir()
@@ -1291,7 +1400,7 @@ local ticker
 
 local function alMostrar()
 	if ticker then return end
-	ticker = A.NewTicker(REFRESCO, function()
+	ticker = N.Ticker("manada.pagina", REFRESCO, function()
 		local view, ui = P.view, P.ui
 		if not (view and ui and view:IsVisible()) then return end
 		if firma(ui, M.Gente.Manada()) ~= ui.firma then N.RehacerPagina(view) end
@@ -1314,6 +1423,8 @@ function P.Construir(view)
 	ui.citas = t:AgregarBloque(bloqueCitas(t.Extra), { espacio = ESP.l })
 	ui.notas = t:AgregarBloque(bloqueNotas(t.Extra), { espacio = ESP.l })
 	ui.cazados = t:AgregarBloque(bloqueCazados(t.Extra), { espacio = ESP.l })
+	ui.quienTiene = t:AgregarBloque(bloqueQuienTiene(t.Extra), { espacio = ESP.l })
+	ui.semana = t:AgregarBloque(bloqueSemana(t.Extra), { espacio = ESP.l })
 	ui.clan = t:AgregarBloque(bloqueClan(ui, t.Extra), { espacio = ESP.l })
 	ui.lya = t:AgregarBloque(bloqueLya(t.Extra), { espacio = ESP.l })
 	ui.ajustes = grupos(ui, t.Extra)

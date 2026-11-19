@@ -125,7 +125,11 @@ function Rl.Anotar(nombre, map, x, y, muerto, por)
 	e = { nombre = nombre, map = tonumber(map), x = tonumber(x), y = tonumber(y), muerto = muerto, por = por }
 	c[k] = e
 	caducar()
-	if not por then compartir(e) end
+	if not por then
+		compartir(e)
+		-- 1.2.9: tu semana y el logro de la manada (Logros.lua).
+		if M.Logros and M.Logros.Raro then pcall(M.Logros.Raro, nombre) end
+	end
 	cambio()
 	return e
 end
@@ -265,5 +269,5 @@ function Rl.Olvidar() wipe(datos()) avisados = {} enviados = {} cambio() end
 
 A.OnLogin(function()
 	caducar()
-	A.NewTicker(60, function() pcall(Rl.Revisar) end)
+	N.Cada("manada.relojRaros", 60, function() pcall(Rl.Revisar) end)
 end)

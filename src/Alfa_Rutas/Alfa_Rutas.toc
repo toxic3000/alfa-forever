@@ -21,6 +21,11 @@ Cadenas.lua
 Vuelta.lua
 Hogar.lua
 Peligro.lua
+Nivel.lua
+Grupo.lua
+Siguiente.lua
+Vuelo.lua
+Foco.lua
 Rutas.lua
 Cerca.lua
 Planes.lua

@@ -37,8 +37,8 @@ local FLECHA = "Interface\\Minimap\\MinimapArrow"
 -- conoces y ámbar con "?" si no) entran con el continente entero.
 local CAPAS_MOTOR = {
 	{ "maps.services", 7 }, { "quests.available", 4 }, { "quests.objectives", 3.5 }, { "quests.turnin", 3.5 },
-	{ "mundo.salidas", 6 }, { "mundo.portales", 3 },
-	{ "rares.treasure", 4 }, { "rares.rare", 3.5 }, { "maps.inns", 3.5 }, { "maps.docks", 2.2 }, { "maps.taxi", 1.5 },
+	{ "mundo.salidas", 6 }, { "mundo.portales", 3 }, { "mundo.porDescubrir", 2.5 },
+	{ "rares.treasure", 4 }, { "rares.rare", 3.5 }, { "maps.inns", 3.5 }, { "maps.docks", 2.2 }, { "maps.taxi", 1.5 }, { "mundo.vuelosFaltan", 1.5 },
 	{ "maps.dungeons", 1.6 }, { "nav.upcoming", 1.6 }, { "nav.goals", 2.5 }, { "nav.spots", 3 }, { "nav.route", 1.4 },
 	{ "qol.death", 0 }, { "nav.target", 0 },
 }

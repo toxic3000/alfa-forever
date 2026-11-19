@@ -17,5 +17,7 @@ Pasos.lua
 Asistente.lua
 Reporte.lua
 Perfiles.lua
+Respaldos.lua
+Diagnostico.lua
 Recorrido.lua
 Pagina.lua

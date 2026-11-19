@@ -224,16 +224,63 @@ function Pf.NombreSugerido()
 end
 
 ---------------------------------------------------------------------------
--- /alfa rendimiento: la memoria de cada parte de Alfa
+-- /alfa rendimiento: la memoria y el procesador de cada parte de Alfa
 ---------------------------------------------------------------------------
-local function rendimiento()
-	if UpdateAddOnMemoryUsage then pcall(UpdateAddOnMemoryUsage) end
+-- Las partes de Alfa cargadas, por nombre.
+local function partesCargadas()
 	local CA = C_AddOns
-	local total, lista = 0, {}
+	local out = {}
 	local cuantos = CA and CA.GetNumAddOns and CA.GetNumAddOns() or 0
 	for i = 1, cuantos do
 		local nombre = CA.GetAddOnInfo(i)
-		if type(nombre) == "string" and nombre:find("^Alfa") and CA.IsAddOnLoaded(nombre) and GetAddOnMemoryUsage then
+		if type(nombre) == "string" and nombre:find("^Alfa") and CA.IsAddOnLoaded(nombre) then out[#out + 1] = nombre end
+	end
+	return out
+end
+
+-- El procesador (1.2.9): el perfilador del juego (C_AddOnProfiler, siempre
+-- encendido en los clientes nuevos) o, si no, el de scriptProfile.
+-- -> "perfilador" | "script" | nil, { { nombre, ms } }, total
+local function procesador(nombres)
+	local P = C_AddOnProfiler
+	local metrica = Enum and Enum.AddOnProfilerMetric and Enum.AddOnProfilerMetric.RecentAverageTime
+	if P and P.GetAddOnMetric and metrica ~= nil then
+		local ok, on = pcall(function() return not P.IsEnabled or P.IsEnabled() end)
+		if ok and on then
+			local lista, total = {}, 0
+			for _, n in ipairs(nombres) do
+				local ok2, ms = pcall(P.GetAddOnMetric, n, metrica)
+				ms = ok2 and tonumber(ms) or 0
+				total = total + ms
+				lista[#lista + 1] = { n, ms }
+			end
+			sort(lista, function(a, b) return a[2] > b[2] end)
+			return "perfilador", lista, total
+		end
+	end
+	local perfil = GetCVar and GetCVar("scriptProfile")
+	if (perfil == "1" or perfil == 1) and GetAddOnCPUUsage then
+		if UpdateAddOnCPUUsage then pcall(UpdateAddOnCPUUsage) end
+		local lista, total = {}, 0
+		for _, n in ipairs(nombres) do
+			local ok, ms = pcall(GetAddOnCPUUsage, n)
+			ms = ok and tonumber(ms) or 0
+			total = total + ms
+			lista[#lista + 1] = { n, ms }
+		end
+		sort(lista, function(a, b) return a[2] > b[2] end)
+		return "script", lista, total
+	end
+	return nil, {}, 0
+end
+Pf.Procesador = procesador
+
+local function rendimiento()
+	if UpdateAddOnMemoryUsage then pcall(UpdateAddOnMemoryUsage) end
+	local nombres = partesCargadas()
+	local total, lista = 0, {}
+	for _, nombre in ipairs(nombres) do
+		if GetAddOnMemoryUsage then
 			local ok, kb = pcall(GetAddOnMemoryUsage, nombre)
 			kb = ok and tonumber(kb) or 0
 			total = total + kb
@@ -245,14 +292,36 @@ local function rendimiento()
 	for i = 1, math.min(6, #lista) do
 		DEFAULT_CHAT_FRAME:AddMessage(format("  %s: %.1f MB", lista[i][1], lista[i][2] / 1024))
 	end
+	-- 1.2.9: el procesador.
+	local como, cpu, cpuTotal = procesador(nombres)
+	local info = { memoria = total, como = como, cpu = cpu, cpuTotal = cpuTotal }
+	if como == "perfilador" then
+		N.Imprimir(format(L["Procesador: Alfa usa %.2f ms por cuadro ahora. Lo que más usa:"], cpuTotal))
+	elseif como == "script" then
+		N.Imprimir(format(L["Procesador: Alfa usó %.0f ms desde que entraste o recargaste. Lo que más usa:"], cpuTotal))
+	else
+		N.Imprimir(L["Para ver cuánto procesador usa cada parte, escribe /console scriptProfile 1 y luego /reload. Hace el juego un poco más lento: cuando termines, /console scriptProfile 0 y /reload."])
+	end
+	if como then
+		for i = 1, math.min(4, #cpu) do
+			DEFAULT_CHAT_FRAME:AddMessage(format(como == "perfilador" and "  %s: %.2f ms" or "  %s: %.0f ms", cpu[i][1], cpu[i][2]))
+		end
+	end
+	-- 1.2.9: las tareas del reloj de Alfa (Alfa_Nucleo/Reloj.lua).
+	local tareas = N.Tareas and N.Tareas() or {}
+	info.tareas = #tareas
+	if #tareas > 0 then
+		local t = tareas[1]
+		N.Imprimir(format(L["El reloj de Alfa mueve %d tareas. La que más tarda: %s (%.1f ms en %d veces)."], #tareas, t.clave, t.ms, t.veces))
+	end
 	if collectgarbage then
 		local antes = total
 		pcall(collectgarbage, "collect")
 		if UpdateAddOnMemoryUsage then pcall(UpdateAddOnMemoryUsage) end
 		N.Imprimir(L["Listo: Alfa soltó la memoria que ya no ocupaba."])
-		return antes
+		return antes, info
 	end
-	return total
+	return total, info
 end
 Pf.Rendimiento = rendimiento
-A.RegisterCommand("rendimiento", function() rendimiento() end, L["cuánta memoria usa cada parte de Alfa"])
+A.RegisterCommand("rendimiento", function() rendimiento() end, L["cuánta memoria y procesador usa cada parte de Alfa"])

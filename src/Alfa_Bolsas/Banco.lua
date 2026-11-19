@@ -147,6 +147,30 @@ function Banco.Plan(clave, cat)
 	return { lista = lista, total = total, noCaben = noCaben }
 end
 
+-- 1.2.9: el plan para unas casillas sueltas (lo que sugiere Guardar.lua):
+-- casillas = { { bolsa, casilla, id, cantidad }, ... } -> { lista, total, noCaben }
+function Banco.PlanCasillas(casillas)
+	local libres, huecos = espacioDelBanco()
+	local CI = C_Item
+	local lista, noCaben = {}, 0
+	for _, x in ipairs(casillas or {}) do
+		local cantidad = x.cantidad or 1
+		local hueco = huecos[x.id] or 0
+		if hueco >= cantidad then
+			huecos[x.id] = hueco - cantidad
+			lista[#lista + 1] = { x.bolsa, x.casilla, x.id }
+		elseif libres > 0 then
+			libres = libres - 1
+			local tope = CI and M.Num(M.Llamar(CI.GetItemMaxStackSizeByID, x.id)) or 1
+			huecos[x.id] = math.max(0, (tope or 1) - (cantidad - hueco))
+			lista[#lista + 1] = { x.bolsa, x.casilla, x.id }
+		else
+			noCaben = noCaben + 1
+		end
+	end
+	return { lista = lista, total = #(casillas or {}), noCaben = noCaben }
+end
+
 -- Cuántas casillas mueve cada opción y cada categoría (para el menú).
 -- -> { [clave] = n }, { { clave = cat, nombre, n }, ... }
 function Banco.Cuentas()
@@ -199,8 +223,13 @@ function Banco.Depositar(clave, cat)
 		N.Imprimir(L["El banco está lleno: compra otra casilla o pon una bolsa más grande en el banco."])
 		return
 	end
+	return Banco.Mandar(plan)
+end
+
+-- Mueve al banco las casillas de un plan ({ lista, noCaben }) por lotes.
+function Banco.Mandar(plan)
 	local C = C_Container
-	M.Lotes.Iniciar({
+	return M.Lotes.Iniciar({
 		nombre = "depositar", lista = plan.lista,
 		puede = function()
 			if not D.BancoAbierto() then return false, "cerrado" end
