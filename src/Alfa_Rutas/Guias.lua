@@ -119,7 +119,7 @@ end
 -- seguía omitido en cada plan nuevo con esa misión, y con todos omitidos el
 -- plan quedaba sin paso (ni terminado ni con algo que seguir). Se olvida lo
 -- guardado de esa guía: omitidos, marcados, su forma y su paso fijado.
-local ESTADO = { "manual", "skipped", "when", "skipStored", "added", "gone", "behind", "passedBefore",
+local ESTADO = { "manual", "skipped", "when", "skipStored", "added", "gone", "behind", "passedBefore", "lostQuests",
 	"guideEnds", "shapes", "stepKeys", "shapeVersions", "ownShapes", "pins" }
 function G.Olvidar(id)
 	if type(id) ~= "string" or type(A.CharState) ~= "function" then return end

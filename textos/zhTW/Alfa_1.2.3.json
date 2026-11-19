@@ -1,0 +1,20 @@
+{
+ "comunidad: te digo cómo": "社群：我告訴你怎麼做",
+ "Para invitar a %s a %s: abre «Hermandad y comunidades», elige %s, pulsa «Invitar a miembro» y escribe: %s": "要邀請%s加入%s：打開「公會與社群」，選擇%s，點擊「邀請成員」並輸入：%s",
+ "Invitar a una comunidad sin bloqueos": "邀請加入社群不再被阻擋",
+ "Invitar a %s": "邀請加入%s",
+ "Cópialo con Ctrl+C. Luego abre «Hermandad y comunidades», elige %s, pulsa «Invitar a miembro» y pégalo con Ctrl+V.": "用 Ctrl+C 複製。然後打開「公會與社群」，選擇%s，點擊「邀請成員」並用 Ctrl+V 貼上。",
+ "%s no se puede invitar desde Alfa: el juego solo lo deja desde su ventana. Ábrela aquí y pega el nombre.": "Alfa 無法邀請加入%s：遊戲只允許在它自己的視窗中邀請。在這裡打開視窗並貼上名字。",
+ "Abrir Hermandad y comunidades": "打開公會與社群",
+ "Tu plan se quedó sin paso": "你的計畫沒有步驟了",
+ "Lo que tenía ya está hecho, omitido o fuera de tu registro. Ármalo otra vez con las misiones que tienes ahora.": "裡面的內容已完成、已略過或不在你的任務日誌中。用你現在的任務重新規劃。",
+ "Rearmar el plan": "重新規劃",
+ "Esta guía no tiene un paso para ti ahora": "這份指南現在沒有適合你的步驟",
+ "Puede que hayas omitido lo que queda o que aún no te toque. Elige otra guía o vuelve a esta más adelante.": "你可能略過了剩下的部分，或者還沒輪到。選擇另一份指南，或稍後再回來。",
+ "Elegir otra guía": "選擇另一份指南",
+ "Al invitar a una comunidad ya no sale el aviso de bloqueo: Alfa te deja el nombre listo para copiar y te abre la ventana. A tu hermandad, un clic como antes.": "邀請加入社群時不再出現阻擋警告：Alfa 會準備好要複製的名字並為你打開視窗。邀請加入公會仍然一鍵完成。",
+ "El rastreador te avisa si tu plan se quedó sin paso y lo rearma con un clic.": "追蹤器會在你的計畫沒有步驟時提醒你，並一鍵重新規劃。",
+ "Clic derecho en un jugador (su retrato, su nombre en el chat o tu grupo) y elige tu hermandad: la invitación le llega sin escribir su nombre. Para una comunidad, Alfa te deja el nombre listo para pegar en la ventana del juego.": "右鍵點擊一名玩家（頭像、聊天中的名字或你的隊伍），選擇你的公會：不必輸入名字，邀請就會送達。對於社群，Alfa 會準備好名字，讓你貼到遊戲視窗中。",
+ "Invitación a %s para %s enviada. Si no puede unirse, el juego te dirá por qué.": "已送出加入%s的邀請給%s。如果對方無法加入，遊戲會告訴你原因。",
+ "Sugiere con la prioridad de Alfa para tu clase. Apagado, usa la ayuda de Blizzard cuando el juego da una sugerencia que Alfa puede leer; en combate Forever la oculta, así que ahí sigue la de Alfa.": "依 Alfa 為你職業設定的優先順序給出建議。關閉時，若遊戲給出 Alfa 能讀取的建議，則使用暴雪的戰鬥輔助；戰鬥中 Forever 會隱藏它，因此仍使用 Alfa 的。"
+}

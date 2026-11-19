@@ -1254,7 +1254,7 @@ end)
 --   K.Seguro(boton, atrib)  atrib: { type, clickbutton, macrotext } o
 --                           fn(boton) -> atributos | nil (nil: su clic normal)
 --   boton.alfaTrasClic = fn(boton, raton)  lo que sigue después del clic seguro
---   K.AbrirJuego(cual) -> atributos | nil  "talentos" | "hechizos" | "clicLanzar" | "bolsas" | "legado"
+--   K.AbrirJuego(cual) -> atributos | nil  "talentos" | "hechizos" | "clicLanzar" | "bolsas" | "legado" | "comunidades"
 --   K.TeclaJuego(accion) -> "N" | nil      la tecla del juego de esa acción
 -- El seguro va en la capa del botón, un nivel arriba (lo que tapa al botón
 -- también lo tapa a él), y se va si el botón se oculta, se apaga, cambia de
@@ -1408,6 +1408,7 @@ local MICRO = {
 	hechizos = { "SpellbookMicroButton", "PlayerSpellsMicroButton" },
 	bolsas = { "MainMenuBarBackpackButton" },
 	legado = { "LegacyMicroButton" },
+	comunidades = { "GuildMicroButton", "CommunitiesMicroButton" }, -- Hermandad y comunidades (1.2.3)
 }
 
 function K.AbrirJuego(cual)

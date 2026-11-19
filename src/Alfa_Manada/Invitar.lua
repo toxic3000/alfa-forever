@@ -1,7 +1,8 @@
 -- Alfa - La Jauría: «Invitar al clan» en el menú del clic derecho de un
 -- jugador (su retrato, su nombre en el chat, tu grupo o banda, la lista de
 -- una comunidad). Se abre con tu hermandad y tus comunidades de WoW donde
--- puedes invitar; un clic y la invitación le llega sin escribir su nombre.
+-- puedes invitar. A la hermandad, un clic y la invitación le llega sin
+-- escribir su nombre; a una comunidad, el nombre listo para pegar (abajo).
 -- toxic3000 / La Jauría. GPL-3.0.
 --
 -- Se engancha con la vía oficial de los menús (Menu.ModifyMenu): no toca
@@ -13,6 +14,15 @@
 -- persona no esté ya en tu hermandad y que sea de tu facción.
 -- Comunidades: solo las de personajes (las de Battle.net piden BattleTag) y
 -- solo donde tu rango deja invitar (canSendInvitation).
+--
+-- 1.2.3: a una comunidad Alfa NO manda la invitación. El juego reserva
+-- C_Club.SendCharacterInvitation para su propia ventana ("Invitar a
+-- miembro"): llamada desde un addon sale "Alfa_Manada se ha bloqueado de
+-- una acción disponible solo para la interfaz de Blizzard" (le pasó a Toxic
+-- en la 1.2.2), y abrir esa ventana con los datos puestos desde Alfa también
+-- la bloquea. Al elegir una comunidad, Alfa dice en el chat cómo invitarla y
+-- con qué nombre. La hermandad sí se invita directo: C_GuildInfo.Invite no
+-- está restringida en la documentación del juego (la de comunidades sí).
 
 local ADDON, M = ...
 local N = AlfaNucleo
@@ -140,6 +150,36 @@ end
 -- Invitar (un clic de quien juega)
 ---------------------------------------------------------------------------
 
+-- Invitar a una comunidad, con lo que sí se puede (1.2.3): el nombre listo
+-- para copiar (la ventanita de copiar del motor, con el texto elegido) y un
+-- aviso con «Abrir Hermandad y comunidades», que pulsa el botón del juego
+-- (K.Seguro: el clic lo hace el juego, sin bloqueo; en combate no se ofrece).
+-- Sin la ventanita, los pasos van al chat.
+function I.AyudaComunidad(persona, destino, quien)
+	local nombre = U.Mostrar(persona.nombre)
+	local pasos = L["Para invitar a %s a %s: abre «Hermandad y comunidades», elige %s, pulsa «Invitar a miembro» y escribe: %s"]
+		:format(nombre, destino.nombre, destino.nombre, quien)
+	local UI = A.UI
+	local copiar = type(UI) == "table" and type(UI.ShowCopy) == "function"
+	if not (copiar and pcall(UI.ShowCopy, L["Invitar a %s"]:format(destino.nombre), quien, {
+		icon = "ic-manada", iconColor = "accent",
+		hint = L["Cópialo con Ctrl+C. Luego abre «Hermandad y comunidades», elige %s, pulsa «Invitar a miembro» y pégalo con Ctrl+V."]:format(destino.nombre),
+	})) then
+		U.Decir(pasos)
+	end
+	local K = N.Kit
+	local abrir = K and K.AbrirJuego and K.AbrirJuego("comunidades")
+	if K and K.Aviso and abrir and not (InCombatLockdown and InCombatLockdown()) and not (A.GamepadUI and A.GamepadUI()) then
+		K.Aviso({
+			titulo = L["Invitar a %s"]:format(destino.nombre),
+			texto = L["%s no se puede invitar desde Alfa: el juego solo lo deja desde su ventana. Ábrela aquí y pega el nombre."]:format(destino.nombre),
+			icono = "ic-manada", duracion = 20,
+			accion = { texto = L["Abrir Hermandad y comunidades"], seguro = abrir },
+		})
+	end
+	return pasos
+end
+
 function I.Enviar(persona, destino)
 	local quien = U.Destino(persona.nombre)
 	if not quien then return false end
@@ -150,11 +190,13 @@ function I.Enviar(persona, destino)
 		elseif type(GuildInvite) == "function" then
 			ok = pcall(GuildInvite, quien)
 		end
-	elseif C_Club and type(C_Club.SendCharacterInvitation) == "function" then
-		ok = pcall(C_Club.SendCharacterInvitation, destino.id, quien)
+	else
+		-- Una comunidad: el juego no deja que un addon la invite (arriba).
+		I.AyudaComunidad(persona, destino, quien)
+		return false
 	end
 	if ok then
-		U.Decir(L["Le enviaste a %s una invitación a %s."]:format(U.Mostrar(persona.nombre), destino.nombre))
+		U.Decir(L["Invitación a %s para %s enviada. Si no puede unirse, el juego te dirá por qué."]:format(destino.nombre, U.Mostrar(persona.nombre)))
 	else
 		U.Decir(L["No se pudo enviar la invitación a %s. Prueba desde la ventana de Hermandad y comunidades."]:format(U.Mostrar(persona.nombre)))
 	end
@@ -169,7 +211,7 @@ local function texto(d)
 	if d.tipo == "hermandad" then
 		return "|cff40ff40" .. d.nombre .. "|r  |cff9d9d9d" .. L["hermandad"] .. "|r"
 	end
-	return d.nombre .. "  |cff9d9d9d" .. L["comunidad"] .. "|r"
+	return d.nombre .. "  |cff9d9d9d" .. L["comunidad: te digo cómo"] .. "|r"
 end
 
 function I.Armar(etiqueta, raiz, contexto)

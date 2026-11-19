@@ -59,7 +59,9 @@ local CLUBES = {
 C_Club = {
   GetSubscribedClubs = function() return CLUBES end,
   GetClubPrivileges = function(id) return { canSendInvitation = id ~= 13 } end,
-  SendCharacterInvitation = function(id, n) table.insert(ENVIADAS, { id, n }) end,
+  -- Como en el juego (1.2.3): reservada para la ventana de Blizzard; desde un
+  -- addon sale "Alfa_Manada se ha bloqueado de una acción...".
+  SendCharacterInvitation = function() NOTE("ADDON_ACTION_BLOCKED", "Alfa_Manada llamó a C_Club.SendCharacterInvitation") end,
 }
 -- El Enum del banco da 0 a todo: el de las comunidades, como en el juego.
 rawset(Enum, "ClubType", { BattleNet = 0, Character = 1, Guild = 2, Other = 3 })
@@ -140,20 +142,32 @@ end)
 step("un clic invita con el nombre completo y avisa", function()
   local sub = submenu(abrir("MENU_UNIT_PLAYER", RETRATO))
   ENVIADAS, DICHO = {}, {}
+  -- 1.2.3: la comunidad no se invita desde Alfa; sale el nombre para copiar.
+  local copia
+  local showCopy = A.UI.ShowCopy
+  A.UI.ShowCopy = function(titulo, texto, opts) copia = { titulo = titulo, texto = texto, opts = opts } end
   sub.hijos[1].fn()
   sub.hijos[2].fn()
-  check(#ENVIADAS == 2, "esperaba 2 invitaciones, hubo " .. #ENVIADAS)
+  A.UI.ShowCopy = showCopy
+  check(copia and copia.texto == "Nimzy Tinkerwidget" and tostring(copia.titulo):find("La Jauria", 1, true),
+    "para la comunidad no salió el nombre listo para copiar")
+  check(copia and copia.opts and tostring(copia.opts.hint):find("Invitar a miembro", 1, true), "la ventanita no dice los pasos")
+  check(#ENVIADAS == 1, "solo la hermandad se invita directo; hubo " .. #ENVIADAS)
   check(ENVIADAS[1] and ENVIADAS[1][1] == "hermandad" and ENVIADAS[1][2] == "Nimzy Tinkerwidget", "la de hermandad no llevó el nombre completo")
-  check(ENVIADAS[2] and ENVIADAS[2][1] == 11 and ENVIADAS[2][2] == "Nimzy Tinkerwidget", "la de La Jauria no fue a su comunidad")
-  check(#DICHO == 2 and DICHO[2]:find("La Jauria", 1, true), "no avisó en el chat")
-  print("  aviso:", DICHO[2])
+  check(#DICHO == 1, "la hermandad avisa en el chat y la comunidad usa la ventanita (avisos: " .. #DICHO .. ")")
+  -- Sin la ventanita de copiar, los pasos van al chat.
+  A.UI.ShowCopy = nil
+  DICHO = {}
+  sub.hijos[2].fn()
+  A.UI.ShowCopy = showCopy
+  check(#DICHO == 1 and DICHO[1]:find("Nimzy Tinkerwidget", 1, true), "sin la ventanita, los pasos no fueron al chat")
 end)
 
 step("su nombre en el chat (sin unidad)", function()
   ENVIADAS = {}
   local sub = submenu(abrir("MENU_UNIT_FRIEND", { name = "Yuki Zoldyck", chatTarget = "Yuki Zoldyck" }))
   check(sub and #sub.hijos == 2, "desde el chat deben salir los 2 destinos")
-  if sub then sub.hijos[2].fn() end
+  if sub then sub.hijos[1].fn() end
   check(ENVIADAS[1] and ENVIADAS[1][2] == "Yuki Zoldyck", "no invitó a quien escribió en el chat")
 end)
 

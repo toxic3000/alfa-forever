@@ -1120,6 +1120,35 @@ local function cabecera(g, v)
 	return total and total > 0
 end
 
+-- Lo que dice el cuadro vacío (1.2.3). Sin guía: elige qué hacer. Con una
+-- guía abierta pero sin paso (todo lo que queda está omitido o aún no te
+-- toca), antes decía «No sigues ninguna guía» y confundía: ahora dice qué
+-- pasa y, si es «Cerrar mis misiones», lo vuelve a armar con un clic.
+local VACIO_SIN_GUIA = { lobo = "dormido", titulo = L["No sigues ninguna guía"],
+	texto = L["Elige qué quieres hacer y Alfa te lleva paso a paso."],
+	accion = { texto = L["¿Qué quieres hacer?"], icono = "ic-lobo", alClic = function() if M.Asistente then M.Asistente.Abrir() end end } }
+local VACIO_PLAN = { lobo = "atento", titulo = L["Tu plan se quedó sin paso"],
+	texto = L["Lo que tenía ya está hecho, omitido o fuera de tu registro. Ármalo otra vez con las misiones que tienes ahora."],
+	accion = { texto = L["Rearmar el plan"], icono = "ic-ruta", alClic = function() if M.Cerrar then M.Cerrar.Ahora() end end } }
+local VACIO_GUIA = { lobo = "atento", titulo = L["Esta guía no tiene un paso para ti ahora"],
+	texto = L["Puede que hayas omitido lo que queda o que aún no te toque. Elige otra guía o vuelve a esta más adelante."],
+	accion = { texto = L["Elegir otra guía"], icono = "ic-guia", alClic = function() A.Fire("SHOW_PICKER") end } }
+
+local function cuadroVacio(g)
+	if not g then return VACIO_SIN_GUIA end
+	if M.Guias and M.Guias.Especial(g.id) == "liberar" then return VACIO_PLAN end
+	return VACIO_GUIA
+end
+
+-- Pone en el cuadro vacío lo que toca (solo si cambió).
+local function ponerVacio(cuadro, g)
+	local o = cuadroVacio(g)
+	if cuadro.alfaVacio ~= o then
+		cuadro.alfaVacio = o
+		cuadro:Set(o)
+	end
+end
+
 function Rs.Pintar()
 	if not (F and F:IsShown()) then return end
 	local comp = compacto()
@@ -1151,6 +1180,7 @@ function Rs.Pintar()
 		y = y + hp + K.ESP.m
 	end
 	local conVacio = vacio and not est.fin and hp == 0
+	if conVacio then ponerVacio(ui.vacio, g) end
 	ui.vacio:SetShown(conVacio)
 	-- El aviso
 	local h = pintarAviso(aviso(v, live), ancho)
@@ -1416,6 +1446,7 @@ function Rs.PintarDetalle()
 		cy = cy + K.ESP.m
 	end
 	-- El paso
+	if vacio and not conPlan then ponerVacio(dui.vacio, g) end
 	dui.vacio:SetShown(vacio and not conPlan)
 	dui.titulo:SetShown(not vacio)
 	dui.nota:Hide()

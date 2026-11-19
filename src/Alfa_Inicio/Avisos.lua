@@ -296,6 +296,7 @@ function Aviso.Probar()
 	for i = #cola, 1, -1 do
 		if cola[i].clave == "prueba" then table.remove(cola, i) end
 	end
+	while #cola > COLA_MAX do avisarCierre(table.remove(cola)) end
 	pintar({
 		clave = "prueba", tipo = "info", lobo = "normal",
 		titulo = L["Así se ven tus avisos"],

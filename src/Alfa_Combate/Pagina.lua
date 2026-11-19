@@ -410,7 +410,7 @@ local function grupos(padre)
 	plegada({ titulo = L["Barrido de recarga"], control = interruptor("barrido"), hija = true, activa = si("rotacion"),
 		texto = L["Un barrido oscuro y suave sobre los íconos mientras su recarga corre."] })
 	local fuente = plegada({ titulo = L["Usar siempre la prioridad de Alfa"], hija = true, activa = si("rotacion"), control = interruptor("prioridadAlfa"),
-		texto = L["Aunque el juego ofrezca la ayuda de Blizzard, sugiere con la prioridad de Alfa para tu clase."] })
+		texto = L["Sugiere con la prioridad de Alfa para tu clase. Apagado, usa la ayuda de Blizzard cuando el juego da una sugerencia que Alfa puede leer; en combate Forever la oculta, así que ahí sigue la de Alfa."] })
 	g1:Fila({ titulo = L["Volver a su lugar"], texto = L["Tus marcos de combate vuelven a su lugar de siempre."],
 		control = function(fila) return K.Boton(fila, L["Devolver"], function()
 			M.ReiniciarPosiciones()
@@ -565,7 +565,7 @@ local CONTROLES = {
 	toggle("porque", L["Explicar por qué, unas pocas veces"], L["Una línea corta debajo del ícono, como «Golpe mortal: recarga lista». Cada una sale hasta 4 veces y luego se calla; su × la calla antes."], "rotacion", "explain why, reason"),
 	toggle("barrido", L["Barrido de recarga"], L["Un barrido oscuro y suave sobre los íconos mientras su recarga corre."], "rotacion", "cooldown swipe"),
 	(function()
-		local c = toggle("prioridadAlfa", L["Usar siempre la prioridad de Alfa"], L["Aunque el juego ofrezca la ayuda de Blizzard, sugiere con la prioridad de Alfa para tu clase."], "rotacion", "alfa priority, blizzard assisted combat")
+		local c = toggle("prioridadAlfa", L["Usar siempre la prioridad de Alfa"], L["Sugiere con la prioridad de Alfa para tu clase. Apagado, usa la ayuda de Blizzard cuando el juego da una sugerencia que Alfa puede leer; en combate Forever la oculta, así que ahí sigue la de Alfa."], "rotacion", "alfa priority, blizzard assisted combat")
 		c.needs = function() return R.Disponible() and true or false end
 		return c
 	end)(),

@@ -31,6 +31,10 @@ M.NOVEDADES = {
 --   { version, titulo, puntos = { { icono (ic-*), texto } } }
 ---------------------------------------------------------------------------
 M.NOTAS = {
+	{ version = "1.2.3", titulo = "Invitar a una comunidad sin bloqueos", puntos = {
+		{ "ic-manada", "Al invitar a una comunidad ya no sale el aviso de bloqueo: Alfa te deja el nombre listo para copiar y te abre la ventana. A tu hermandad, un clic como antes." },
+		{ "ic-ruta", "El rastreador te avisa si tu plan se quedó sin paso y lo rearma con un clic." },
+	} },
 	{ version = "1.2.2", titulo = "Invita a tu clan con un clic, y arreglos", puntos = {
 		{ "ic-manada", "Clic derecho en un jugador y «Invitar al clan»: eliges tu hermandad o tu comunidad y la invitación le llega sin escribir su nombre." },
 		{ "ic-exito", "Solo salen los clanes donde puedes invitar, y Alfa te confirma en el chat a quién invitaste. Lo apagas en La Jauría > Invitar." },

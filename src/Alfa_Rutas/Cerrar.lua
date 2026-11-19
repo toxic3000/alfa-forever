@@ -570,6 +570,16 @@ function Cr.Ahora(filtro, alListo)
 		-- un plan anterior (Guias.Olvidar). El rearmado solo (Cr.Actualizar)
 		-- sí conserva lo hecho.
 		M.Guias.Olvidar(def.id)
+		-- Y las misiones de tu registro que omitiste con «Omitir esta misión»
+		-- (1.2.3): el motor las guarda por misión, para todas las guías, y
+		-- sin esto cada plan nuevo las seguía saltando y quedaba sin paso.
+		-- Pediste cerrarlas: vuelven.
+		local Eng = M.Motor("Engine")
+		if Eng and Eng.IsQuestSkipped and Eng.SkipQuest then
+			for qid in pairs(sello and sello.dentro or {}) do
+				if Eng.IsQuestSkipped(qid) then Eng.SkipQuest(qid, false) end
+			end
+		end
 		local ok = M.Guias.Instalar(def)
 		if not ok then
 			M.Aviso(L["No armé el plan"], L["El motor no aceptó la guía."], { icono = "ic-aviso", tono = "aviso" })
@@ -578,6 +588,12 @@ function Cr.Ahora(filtro, alListo)
 		end
 		pj().liberarSello = sello
 		local i, por = M.Guias.Abrir(def.id)
+		-- Que abra en su paso de ahora, no en uno que mirabas del plan viejo
+		-- (el motor puede volver a guardar ese paso al cambiar la guía).
+		if i and Eng and Eng.GetLiveStep and Eng.GetStepIndex and Eng.Goto then
+			local vivo = Eng.GetLiveStep()
+			if vivo and Eng.GetStepIndex() ~= vivo then pcall(Eng.Goto, vivo) end
+		end
 		for k, n in ipairs(notas or {}) do
 			if k > 3 then break end
 			M.Aviso(L["Ojo con tu plan"], n, { icono = "ic-info", tono = "aviso" })

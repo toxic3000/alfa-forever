@@ -307,6 +307,10 @@ M.EN = {
 	["El lobo te recibe al entrar"] = "The wolf greets you when you log in",
 	["Cada vez que entras al juego, la intro del lobo y la luna te da la bienvenida. Un clic o Esc la saltan."] = "Every time you log in, the wolf and moon intro welcomes you. A click or Esc skips it.",
 	["¡De vuelta en la manada, %s!"] = "Back with the pack, %s!",
+	-- Novedades 1.2.3
+	["Invitar a una comunidad sin bloqueos"] = "Inviting to a community without blocks",
+	["Al invitar a una comunidad ya no sale el aviso de bloqueo: Alfa te deja el nombre listo para copiar y te abre la ventana. A tu hermandad, un clic como antes."] = "Inviting to a community no longer shows the block warning: Alfa gives you the name ready to copy and opens the window. Your guild is one click, as before.",
+	["El rastreador te avisa si tu plan se quedó sin paso y lo rearma con un clic."] = "The tracker tells you if your plan ran out of steps and rebuilds it with one click.",
 	-- Novedades 1.2.2
 	["Tu insignia de La Jauría en el borde de tu retrato, y en el de tu objetivo si la lleva."] = "Your La Jauría badge on the edge of your portrait, and on your target's if they have it.",
 	["Invita a tu clan con un clic, y arreglos"] = "Invite to your guild with one click, and fixes",

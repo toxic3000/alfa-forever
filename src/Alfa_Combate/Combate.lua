@@ -41,7 +41,8 @@ M.AJUSTES = {
 	rotacion = true,      -- el ícono con la siguiente habilidad
 	-- La prioridad de Alfa antes que la ayuda de Blizzard (1.2.2: de fábrica;
 	-- en combate Forever da la de Blizzard "secreta" y sin las que siguen ni
-	-- el porqué). Apagado: la de Blizzard cuando el juego la ofrece.
+	-- el porqué). Apagado: la de Blizzard cuando el juego da una sugerencia
+	-- legible; secreta o vacía (en combate), la de Alfa (Rotacion.lua).
 	prioridadAlfa = true,
 	despues = 2,          -- cuántas habilidades después (0 a 3)
 	fuera = true,         -- también fuera de combate, con un enemigo elegido

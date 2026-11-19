@@ -1,0 +1,20 @@
+{
+ "comunidad: te digo cómo": "comunidade: eu te digo como",
+ "Para invitar a %s a %s: abre «Hermandad y comunidades», elige %s, pulsa «Invitar a miembro» y escribe: %s": "Para convidar %s para %s: abra “Guilda e Comunidades”, escolha %s, clique em “Convidar membro” e digite: %s",
+ "Invitar a una comunidad sin bloqueos": "Convidar para uma comunidade sem bloqueios",
+ "Invitar a %s": "Convidar para %s",
+ "Cópialo con Ctrl+C. Luego abre «Hermandad y comunidades», elige %s, pulsa «Invitar a miembro» y pégalo con Ctrl+V.": "Copie com Ctrl+C. Depois abra “Guilda e Comunidades”, escolha %s, clique em “Convidar membro” e cole com Ctrl+V.",
+ "%s no se puede invitar desde Alfa: el juego solo lo deja desde su ventana. Ábrela aquí y pega el nombre.": "O Alfa não pode convidar para %s: o jogo só permite pela própria janela. Abra-a aqui e cole o nome.",
+ "Abrir Hermandad y comunidades": "Abrir Guilda e Comunidades",
+ "Tu plan se quedó sin paso": "Seu plano ficou sem passo",
+ "Lo que tenía ya está hecho, omitido o fuera de tu registro. Ármalo otra vez con las misiones que tienes ahora.": "O que ele tinha está feito, pulado ou fora do seu registro. Monte de novo com as missões que você tem agora.",
+ "Rearmar el plan": "Montar o plano de novo",
+ "Esta guía no tiene un paso para ti ahora": "Este guia não tem um passo para você agora",
+ "Puede que hayas omitido lo que queda o que aún no te toque. Elige otra guía o vuelve a esta más adelante.": "Talvez você tenha pulado o que resta, ou ainda não é a sua vez. Escolha outro guia ou volte a este mais tarde.",
+ "Elegir otra guía": "Escolher outro guia",
+ "Al invitar a una comunidad ya no sale el aviso de bloqueo: Alfa te deja el nombre listo para copiar y te abre la ventana. A tu hermandad, un clic como antes.": "Convidar para uma comunidade não mostra mais o aviso de bloqueio: o Alfa deixa o nome pronto para copiar e abre a janela. Para sua guilda, um clique como antes.",
+ "El rastreador te avisa si tu plan se quedó sin paso y lo rearma con un clic.": "O rastreador avisa se seu plano ficou sem passo e o monta de novo com um clique.",
+ "Clic derecho en un jugador (su retrato, su nombre en el chat o tu grupo) y elige tu hermandad: la invitación le llega sin escribir su nombre. Para una comunidad, Alfa te deja el nombre listo para pegar en la ventana del juego.": "Clique com o botão direito em um jogador (o retrato, o nome no bate-papo ou seu grupo) e escolha sua guilda: o convite chega sem digitar o nome. Para uma comunidade, o Alfa deixa o nome pronto para colar na janela do jogo.",
+ "Invitación a %s para %s enviada. Si no puede unirse, el juego te dirá por qué.": "Convite para %s enviado a %s. Se não puder entrar, o jogo dirá por quê.",
+ "Sugiere con la prioridad de Alfa para tu clase. Apagado, usa la ayuda de Blizzard cuando el juego da una sugerencia que Alfa puede leer; en combate Forever la oculta, así que ahí sigue la de Alfa.": "Sugere com a prioridade do Alfa para sua classe. Desligado, usa a ajuda de combate da Blizzard quando o jogo dá uma sugestão que o Alfa consegue ler; em combate o Forever a esconde, então fica a do Alfa."
+}

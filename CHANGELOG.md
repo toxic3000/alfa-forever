@@ -1,5 +1,25 @@
 # Cambios de Alfa
 
+## 1.2.3 — Invitar a una comunidad sin bloqueos, y más pulido (18/11/2026)
+
+**Español**
+- Arreglo: al invitar a alguien a una comunidad (como La Jauria) desde «Invitar al clan», el juego mostraba «Alfa_Manada se ha bloqueado de una acción disponible solo para la interfaz de Blizzard». Forever solo deja invitar a una comunidad desde su propia ventana, así que ahora Alfa te deja el nombre listo para copiar (Ctrl+C) y un aviso con el botón «Abrir Hermandad y comunidades»: eliges la comunidad, pulsas «Invitar a miembro» y pegas el nombre.
+- La invitación a tu hermandad sigue igual: un clic y le llega.
+- El rastreador ya no dice «No sigues ninguna guía» cuando tu guía está abierta pero sin paso. Si es «Cerrar mis misiones», dice que tu plan se quedó sin paso y lo rearma con un clic; si es otra guía, te ofrece elegir otra.
+- Arreglo: «Cerrar mis misiones» tampoco hereda las misiones que omitiste con «Omitir esta misión»: al pedir el plan, vuelven, y el plan abre en su paso de ahora. La confirmación de la invitación a tu hermandad ya no da por hecho que llegó: si no puede unirse, el juego te dice por qué.
+- Revisamos la letra y la alineación de todo Alfa: todos los textos usan la misma letra y los mismos tamaños, y van centrados en sus botones. La prueba de cada versión ahora lo revisa.
+- Revisamos que Alfa no use ninguna otra función que el juego reserva para su propia interfaz.
+- La prueba de cada versión ahora trata esa llamada como lo hace el juego, para que no vuelva a pasar.
+
+**English**
+- Fix: inviting someone to a community (like La Jauria) from "Invite to guild or community" made the game show "Alfa_Manada has been blocked from an action only available to the Blizzard UI". Forever only lets you invite to a community from its own window, so Alfa now gives you the name ready to copy (Ctrl+C) and a notice with an "Open Guild & Communities" button: pick the community, press "Invite Member" and paste the name.
+- Inviting to your guild stays the same: one click and it reaches them.
+- The tracker no longer says "You are not following a guide" when your guide is open but has no step. For "Close my quests" it says your plan ran out of steps and rebuilds it with one click; for any other guide it offers to pick another.
+- Fix: "Close my quests" no longer inherits the quests you skipped with "Skip this quest" either: asking for the plan brings them back, and the plan opens on its current step. The guild invitation confirmation no longer assumes it arrived: if they can't join, the game tells you why.
+- We checked the type and alignment across all of Alfa: every text uses the same font and sizes, centred in its buttons. Each release's test now checks it.
+- We checked that Alfa uses no other function the game reserves for its own interface.
+- Each release's test now treats that call the way the game does, so it won't happen again.
+
 ## 1.2.2 — Invita a tu clan con un clic, y arreglos (18/11/2026)
 
 **Español**

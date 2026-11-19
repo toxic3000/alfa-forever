@@ -693,7 +693,7 @@ local function grupos(ui, padre)
 		texto = L["Las marcas de la manada también en el minimapa, no solo en el mapa del mundo."] })
 	local invitar = K.GrupoAjustes(padre, { titulo = L["Invitar"] })
 	invitar:Fila({ titulo = L["«Invitar al clan» en el clic derecho"], control = interruptor("invitarMenu"),
-		texto = L["Clic derecho en un jugador (su retrato, su nombre en el chat o tu grupo) y elige tu hermandad o tu comunidad: la invitación le llega sin escribir su nombre."] })
+		texto = L["Clic derecho en un jugador (su retrato, su nombre en el chat o tu grupo) y elige tu hermandad: la invitación le llega sin escribir su nombre. Para una comunidad, Alfa te deja el nombre listo para pegar en la ventana del juego."] })
 	invitar:Fila({ titulo = L["Tu insignia en los retratos"], control = interruptor("insigniaRetrato"),
 		texto = L["Quien lleva la insignia de La Jauría la luce en el borde de su retrato: en el tuyo, el de tu objetivo y el de tu foco."] })
 	return { rastro, mapa, invitar }

@@ -647,6 +647,10 @@
   "en": "%s is left out: %s.",
   "origen": "Alfa_Rutas"
  },
+ "%s no se puede invitar desde Alfa: el juego solo lo deja desde su ventana. Ábrela aquí y pega el nombre.": {
+  "en": "%s can't be invited from Alfa: the game only allows it from its own window. Open it here and paste the name.",
+  "origen": "Alfa_Manada"
+ },
  "%s no se puede tomar": {
   "en": "%s can't be taken",
   "origen": "Alfa_Rutas"
@@ -1395,6 +1399,10 @@
   "en": "Open",
   "origen": "Alfa_Bienvenida"
  },
+ "Abrir Hermandad y comunidades": {
+  "en": "Open Guild & Communities",
+  "origen": "Alfa_Manada"
+ },
  "Abrir Historias": {
   "en": "Open Stories",
   "origen": "Alfa_Lya"
@@ -1998,6 +2006,10 @@
  "Al hurtar a los humanoides ganas monedas y a veces cajas cerradas.": {
   "en": "Pick-pocketing humanoids gets you coins and sometimes locked boxes.",
   "origen": "Alfa_Lya"
+ },
+ "Al invitar a una comunidad ya no sale el aviso de bloqueo: Alfa te deja el nombre listo para copiar y te abre la ventana. A tu hermandad, un clic como antes.": {
+  "en": "Inviting to a community no longer shows the block warning: Alfa gives you the name ready to copy and opens the window. Your guild is one click, as before.",
+  "origen": "Alfa_Bienvenida"
  },
  "Al llegar a una ciudad o posada. También repite la nota de entrenar de la guía cuando su ventana está oculta.": {
   "en": "When you reach a town or an inn. It also repeats the guide's training note while the guide window is hidden.",
@@ -3094,10 +3106,6 @@
  "Aullido al abrir Alfa": {
   "en": "Howl when Alfa opens",
   "origen": "Alfa_Bienvenida"
- },
- "Aunque el juego ofrezca la ayuda de Blizzard, sugiere con la prioridad de Alfa para tu clase.": {
-  "en": "Even if the game offers Blizzard's assist, suggest with Alfa's priority for your class.",
-  "origen": "Alfa_Combate"
  },
  "Aura": {
   "en": "Aura",
@@ -4523,8 +4531,8 @@
   "en": "Right-click (or Shift-click): a marker there. Ctrl-click: the arrow and the route take you there without saving anything.",
   "origen": "Alfa_Mundo"
  },
- "Clic derecho en un jugador (su retrato, su nombre en el chat o tu grupo) y elige tu hermandad o tu comunidad: la invitación le llega sin escribir su nombre.": {
-  "en": "Right-click a player (their portrait, their name in chat or your group) and pick your guild or community: the invitation reaches them without typing their name.",
+ "Clic derecho en un jugador (su retrato, su nombre en el chat o tu grupo) y elige tu hermandad: la invitación le llega sin escribir su nombre. Para una comunidad, Alfa te deja el nombre listo para pegar en la ventana del juego.": {
+  "en": "Right-click a player (their portrait, their name in chat or your group) and pick your guild: the invitation reaches them without typing their name. For a community, Alfa gives you the name ready to paste in the game's window.",
   "origen": "Alfa_Manada"
  },
  "Clic derecho en un jugador y «Invitar al clan»: eliges tu hermandad o tu comunidad y la invitación le llega sin escribir su nombre.": {
@@ -5834,6 +5842,10 @@
  "Cómprala con un vendedor.": {
   "en": "Buy it from a vendor.",
   "origen": "Alfa_Inicio"
+ },
+ "Cópialo con Ctrl+C. Luego abre «Hermandad y comunidades», elige %s, pulsa «Invitar a miembro» y pégalo con Ctrl+V.": {
+  "en": "Copy it with Ctrl+C. Then open \"Guild & Communities\", pick %s, press \"Invite Member\" and paste it with Ctrl+V.",
+  "origen": "Alfa_Manada"
  },
  "DPS": {
   "en": "DPS",
@@ -7594,6 +7606,10 @@
  "El rango de niveles de cada zona, con color según tu nivel.": {
   "en": "Each zone's level range, coloured for your level.",
   "origen": "Alfa_Mundo"
+ },
+ "El rastreador te avisa si tu plan se quedó sin paso y lo rearma con un clic.": {
+  "en": "The tracker tells you if your plan ran out of steps and rebuilds it with one click.",
+  "origen": "Alfa_Bienvenida"
  },
  "El rastreador te dice el siguiente paso y la flecha te lleva.": {
   "en": "The tracker tells you the next step and the arrow takes you there.",
@@ -9827,6 +9843,10 @@
   "en": "This explanation won't show again. You can turn them back on in Combat.",
   "origen": "Alfa_Combate"
  },
+ "Esta guía no tiene un paso para ti ahora": {
+  "en": "This guide has no step for you right now",
+  "origen": "Alfa_Rutas"
+ },
  "Esta sesión": {
   "en": "This session",
   "origen": "Alfa_Inicio"
@@ -11455,9 +11475,21 @@
   "en": "Group invites from strangers",
   "origen": "Alfa_Bienvenida"
  },
+ "Invitación a %s para %s enviada. Si no puede unirse, el juego te dirá por qué.": {
+  "en": "Invitation to %s sent to %s. If they can't join, the game will tell you why.",
+  "origen": "Alfa_Manada"
+ },
  "Invitar": {
   "en": "Invite",
   "origen": "Alfa_Manada"
+ },
+ "Invitar a %s": {
+  "en": "Invite to %s",
+  "origen": "Alfa_Manada"
+ },
+ "Invitar a una comunidad sin bloqueos": {
+  "en": "Inviting to a community without blocks",
+  "origen": "Alfa_Bienvenida"
  },
  "Invitar al clan": {
   "en": "Invite to guild or community",
@@ -12819,10 +12851,6 @@
   "en": "Lavender",
   "origen": "Alfa_Mundo"
  },
- "Le enviaste a %s una invitación a %s.": {
-  "en": "You sent %s an invitation to %s.",
-  "origen": "Alfa_Manada"
- },
  "Lechúcico": {
   "en": "Moonkin",
   "origen": "Alfa_Comodidades"
@@ -13422,6 +13450,10 @@
  "Lo que te piden": {
   "en": "What they ask of you",
   "origen": "Alfa_Lya"
+ },
+ "Lo que tenía ya está hecho, omitido o fuera de tu registro. Ármalo otra vez con las misiones que tienes ahora.": {
+  "en": "What it had is done, skipped or no longer in your log. Build it again with the quests you have now.",
+  "origen": "Alfa_Rutas"
  },
  "Lo que tu build necesita de tu equipo y dónde conseguirlo.": {
   "en": "What your build needs from your gear and where to get it.",
@@ -17015,6 +17047,10 @@
   "en": "To spend",
   "origen": "Alfa_Enciclopedia"
  },
+ "Para invitar a %s a %s: abre «Hermandad y comunidades», elige %s, pulsa «Invitar a miembro» y escribe: %s": {
+  "en": "To invite %s to %s: open \"Guild & Communities\", pick %s, press \"Invite Member\" and type: %s",
+  "origen": "Alfa_Manada"
+ },
  "Para ir de Los Humedales a las Tierras Altas de Arathi cruza el Puente Thandol, pero ojo con los Hierro Negro.": {
   "en": "To go from the Wetlands to the Arathi Highlands, cross Thandol Span, but watch out for the Dark Irons.",
   "origen": "Alfa_Lya"
@@ -18199,6 +18235,10 @@
   "en": "He can trample melee players: keep their health high.",
   "origen": "Alfa_Mazmorras/Consejos"
  },
+ "Puede que hayas omitido lo que queda o que aún no te toque. Elige otra guía o vuelve a esta más adelante.": {
+  "en": "You may have skipped what is left, or it isn't your turn yet. Pick another guide or come back to this one later.",
+  "origen": "Alfa_Rutas"
+ },
  "Puedes Cargar en actitud defensiva: empiezas a tanquear sin cambiar de actitud.": {
   "en": "You can Charge in Defensive Stance: you start tanking without switching stances.",
   "origen": "Alfa_Builds"
@@ -18706,6 +18746,10 @@
  "Reanudar": {
   "en": "Resume",
   "origen": "Alfa_Comodidades"
+ },
+ "Rearmar el plan": {
+  "en": "Rebuild the plan",
+  "origen": "Alfa_Rutas"
  },
  "Recalcular": {
   "en": "Recalculate",
@@ -20638,6 +20682,10 @@
  "Sugerir qué vender": {
   "en": "Suggest what to sell",
   "origen": "Alfa_Bolsas"
+ },
+ "Sugiere con la prioridad de Alfa para tu clase. Apagado, usa la ayuda de Blizzard cuando el juego da una sugerencia que Alfa puede leer; en combate Forever la oculta, así que ahí sigue la de Alfa.": {
+  "en": "Suggest with Alfa's priority for your class. Off, it uses Blizzard's assist when the game gives a suggestion Alfa can read; in combat Forever hides it, so Alfa's is used there.",
+  "origen": "Alfa_Combate"
  },
  "Sulfuras es el martillo de Ragnaros. Con su ojo, los más valientes pueden forjar una versión legendaria.": {
   "en": "Sulfuras is Ragnaros's hammer. With its eye, the bravest can forge a legendary version.",
@@ -22581,6 +22629,10 @@
  },
  "Tu plan no tiene metas todavía": {
   "en": "Your plan has no goals yet",
+  "origen": "Alfa_Rutas"
+ },
+ "Tu plan se quedó sin paso": {
+  "en": "Your plan ran out of steps",
   "origen": "Alfa_Rutas"
  },
  "Tu plan se quedó sin paso. Seguir lo vuelve a armar con las misiones que tienes ahora.": {
@@ -24805,6 +24857,10 @@
  },
  "comunidad": {
   "en": "community",
+  "origen": "Alfa_Manada"
+ },
+ "comunidad: te digo cómo": {
+  "en": "community: I'll tell you how",
   "origen": "Alfa_Manada"
  },
  "común": {

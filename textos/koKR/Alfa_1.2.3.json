@@ -1,0 +1,20 @@
+{
+ "comunidad: te digo cómo": "커뮤니티: 방법을 알려 줄게요",
+ "Para invitar a %s a %s: abre «Hermandad y comunidades», elige %s, pulsa «Invitar a miembro» y escribe: %s": "%s님을 %s에 초대하려면: '길드 및 커뮤니티'를 열고 %s을(를) 고른 뒤 '구성원 초대'를 누르고 입력하세요: %s",
+ "Invitar a una comunidad sin bloqueos": "차단 없이 커뮤니티에 초대",
+ "Invitar a %s": "%s에 초대",
+ "Cópialo con Ctrl+C. Luego abre «Hermandad y comunidades», elige %s, pulsa «Invitar a miembro» y pégalo con Ctrl+V.": "Ctrl+C로 복사하세요. 그런 다음 '길드 및 커뮤니티'를 열고 %s을(를) 고른 뒤 '구성원 초대'를 누르고 Ctrl+V로 붙여 넣으세요.",
+ "%s no se puede invitar desde Alfa: el juego solo lo deja desde su ventana. Ábrela aquí y pega el nombre.": "Alfa에서는 %s에 초대할 수 없습니다. 게임이 자체 창에서만 허용합니다. 여기서 창을 열고 이름을 붙여 넣으세요.",
+ "Abrir Hermandad y comunidades": "길드 및 커뮤니티 열기",
+ "Tu plan se quedó sin paso": "계획에 남은 단계가 없습니다",
+ "Lo que tenía ya está hecho, omitido o fuera de tu registro. Ármalo otra vez con las misiones que tienes ahora.": "있던 것은 완료되었거나 건너뛰었거나 퀘스트 목록에 없습니다. 지금 가진 퀘스트로 다시 만드세요.",
+ "Rearmar el plan": "계획 다시 만들기",
+ "Esta guía no tiene un paso para ti ahora": "지금은 이 가이드에 할 단계가 없습니다",
+ "Puede que hayas omitido lo que queda o que aún no te toque. Elige otra guía o vuelve a esta más adelante.": "남은 것을 건너뛰었거나 아직 차례가 아닐 수 있습니다. 다른 가이드를 고르거나 나중에 다시 오세요.",
+ "Elegir otra guía": "다른 가이드 고르기",
+ "Al invitar a una comunidad ya no sale el aviso de bloqueo: Alfa te deja el nombre listo para copiar y te abre la ventana. A tu hermandad, un clic como antes.": "커뮤니티에 초대할 때 더 이상 차단 경고가 뜨지 않습니다. Alfa가 복사할 이름을 준비하고 창을 열어 줍니다. 길드는 예전처럼 클릭 한 번.",
+ "El rastreador te avisa si tu plan se quedó sin paso y lo rearma con un clic.": "추적기가 계획에 남은 단계가 없으면 알려 주고 클릭 한 번으로 다시 만듭니다.",
+ "Clic derecho en un jugador (su retrato, su nombre en el chat o tu grupo) y elige tu hermandad: la invitación le llega sin escribir su nombre. Para una comunidad, Alfa te deja el nombre listo para pegar en la ventana del juego.": "플레이어(초상화, 대화창의 이름 또는 파티)를 우클릭하고 길드를 고르세요. 이름을 입력하지 않아도 초대가 전달됩니다. 커뮤니티는 Alfa가 게임 창에 붙여 넣을 이름을 준비해 줍니다.",
+ "Invitación a %s para %s enviada. Si no puede unirse, el juego te dirá por qué.": "%s 초대를 %s님에게 보냈습니다. 가입할 수 없다면 게임이 이유를 알려 줍니다.",
+ "Sugiere con la prioridad de Alfa para tu clase. Apagado, usa la ayuda de Blizzard cuando el juego da una sugerencia que Alfa puede leer; en combate Forever la oculta, así que ahí sigue la de Alfa.": "직업에 맞는 Alfa 우선순위로 제안합니다. 끄면 게임이 Alfa가 읽을 수 있는 제안을 줄 때 블리자드 전투 보조를 씁니다. 전투 중에는 Forever가 이를 숨기므로 Alfa 것을 씁니다."
+}

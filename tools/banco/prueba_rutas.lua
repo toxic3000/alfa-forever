@@ -259,12 +259,29 @@ step("rutas: un plan pedido otra vez no hereda los pasos omitidos", function()
   if E.GetStepIndex() then error("no se pudieron omitir todos los pasos") end
   local hechos, todos = E.GetProgress()
   print("  todo omitido: " .. tostring(hechos) .. " de " .. tostring(todos) .. " hechos, sin paso")
+  -- 1.2.3: el rastreador dice que el plan se quedó sin paso (no «No sigues ninguna guía»).
+  if not rastreadorDice("Tu plan se quedó sin paso") then error("el rastreador no dice que el plan se quedó sin paso") end
+  if rastreadorDice("No sigues ninguna guía") then error("con el plan abierto, el rastreador dice que no sigues ninguna guía") end
   Ru.Cerrar.Ahora("todas")
   correr()
   T(3)
   local g = E.GetGuide()
   if not (g and g.id == Ru.Guias.IdLiberar()) then error("el plan nuevo no es la guía activa") end
   if not E.GetStepIndex() then error("el plan pedido otra vez sigue sin paso (heredó lo omitido)\n" .. describir()) end
+end)
+
+-- 1.2.3: lo mismo con «Omitir esta misión», que el motor guarda por misión
+-- (para todas las guías) y no por paso.
+step("rutas: un plan pedido otra vez no hereda las misiones omitidas", function()
+  for _, q in ipairs(ORDEN) do E.SkipQuest(q, true) end
+  T(2)
+  Ru.Cerrar.Ahora("todas")
+  correr()
+  T(3)
+  for _, q in ipairs(ORDEN) do
+    if E.IsQuestSkipped(q) then error("la misión " .. q .. " sigue omitida en el plan nuevo") end
+  end
+  if not E.GetStepIndex() then error("el plan pedido otra vez sigue sin paso (heredó las misiones omitidas)\n" .. describir()) end
 end)
 
 ---------------------------------------------------------------------------
