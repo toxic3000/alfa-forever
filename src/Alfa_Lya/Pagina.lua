@@ -84,6 +84,12 @@ local function numeros()
 		lista[#lista + 1] = { variante = "compacta", icono = "ic-misiones", titulo = L["Historias guardadas"], valor = tostring(Hi.Cuantas()),
 			alClic = function() Hi.Abrir() end, ayuda = L["Abre la ventana Historias."] }
 	end
+	-- 1.2.7: las salchichas que le has dado (Momentos.lua).
+	local Mo = M.Momentos
+	if Mo then
+		lista[#lista + 1] = { variante = "compacta", icono = "ic-huella", titulo = L["Salchichas que le diste"], valor = tostring(Mo.Salchichas()),
+			ayuda = L["De vez en cuando Lya te pide una. Te las tiene bien contadas."] }
+	end
 	return lista
 end
 
@@ -126,6 +132,11 @@ local function grupos(padre)
 	consejos:Fila({ titulo = L["Tamaño de su letra"], activa = visible,
 		texto = L["Qué tan grande escribe Lya en su globo. También con clic derecho sobre ella."],
 		control = function(fila) return K.Desplegable(fila, { opciones = LETRAS, clave = ID .. ".letra", ancho = 200 }) end })
+	-- 1.2.7: el globo compacto y su consejo en las mazmorras.
+	consejos:Fila({ titulo = L["Globo compacto"], control = interruptor("compacto"), activa = visible,
+		texto = L["El globo de Lya en una sola línea, con sus botones. Pasa el ratón encima para leerlo completo."] })
+	consejos:Fila({ titulo = L["Lya en las mazmorras"], control = interruptor("mazmorras"), activa = visible,
+		texto = L["Al entrar a una mazmorra, Lya te da un consejo corto y un botón para verla. Nunca en combate."] })
 	consejos:Fila({ titulo = L["Lya te dice los avisos"], control = interruptor("avisos"), activa = visible,
 		texto = L["Los avisos pequeños de Alfa los dice Lya en su globo, con su botón, en vez de salir arriba. Si está oculta o en combate, salen como siempre."] })
 	consejos:Fila({ titulo = L["Aullar al completar una misión"], control = interruptor("aullidoMision"),
@@ -217,6 +228,11 @@ local CONTROLES = {
 		help = L["Lo menos que espera Lya entre un consejo y otro. Lo importante no espera."], search = "tips interval, minutes" },
 	{ kind = "toggle", key = clave("sonido"), label = L["Sonido suave"], disabled = no(visible),
 		help = L["Un clic bajito cuando Lya te dice algo."], search = "lya sound" },
+	-- 1.2.7
+	{ kind = "toggle", key = clave("compacto"), label = L["Globo compacto"], disabled = no(visible),
+		help = L["El globo de Lya en una sola línea, con sus botones. Pasa el ratón encima para leerlo completo."], search = "compact bubble, one line, small" },
+	{ kind = "toggle", key = clave("mazmorras"), label = L["Lya en las mazmorras"], disabled = no(visible),
+		help = L["Al entrar a una mazmorra, Lya te da un consejo corto y un botón para verla. Nunca en combate."], search = "dungeon tip, instance" },
 	{ kind = "button", label = L["Consejos vistos"], button = L["Volver a mostrarlos"], icon = "reset", disabled = no(visible),
 		help = L["Cada frase sale tres veces como mucho. Con esto vuelven a salir desde el principio."],
 		onClick = function() Ce.OlvidarVistos() end, search = "seen tips, show again" },

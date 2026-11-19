@@ -16,6 +16,8 @@ Plan.lua
 Guias.lua
 Cerrar.lua
 Recoger.lua
+Hora.lua
+Cadenas.lua
 Rutas.lua
 Cerca.lua
 Planes.lua

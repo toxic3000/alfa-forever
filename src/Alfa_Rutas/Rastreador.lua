@@ -73,6 +73,40 @@ end
 
 local function datos() return N.Datos(M.ID) end
 
+---------------------------------------------------------------------------
+-- 1.2.7: Omitir, con «Deshacer» un rato
+---------------------------------------------------------------------------
+-- Solo lo que omites tú con el botón Omitir (del rastreador o de «Ver
+-- detalle»); lo que el motor pasa solo no pregunta.
+local DESHACER_SEG = 60
+
+function Rs.OfrecerDeshacer(guia, paso)
+	if not (guia and type(paso) == "number") then return end
+	local cuando = GetTime()
+	local v = engine("GetStepView", paso)
+	local titulo = type(v) == "table" and Rs.TituloPaso and Rs.TituloPaso(v) or nil
+	M.Aviso(L["Omitiste un paso"], (titulo and titulo ~= "") and titulo or nil, {
+		icono = "ic-cerrar",
+		accion = { texto = L["Deshacer"], alClic = function()
+			local e = E()
+			local g = e and e.GetGuide and e.GetGuide()
+			if not (g and g.id == guia) or GetTime() - cuando > DESHACER_SEG then
+				M.Aviso(L["Ya no se puede deshacer"], L["Puedes volver a ese paso desde «Ver detalle»."], { icono = "ic-info" })
+				return
+			end
+			engine("Unskip", paso)
+		end },
+	})
+end
+
+function Rs.Omitir()
+	local e = E()
+	local g = e and e.GetGuide and e.GetGuide()
+	if not g then return end
+	local paso = engine("Skip")
+	if type(paso) == "number" then Rs.OfrecerDeshacer(g.id, paso) end
+end
+
 -- La vista compacta (de fábrica) o la amplia.
 local function compacto()
 	return A.Get(M.ID .. ".seguimientoCompleto") ~= true or A.Get("ui.compact") == true
@@ -185,6 +219,7 @@ local function tituloPaso(v)
 	if ok and type(s) == "string" and s ~= "" and not Rs.SinTraducir(s) then return s end
 	return ""
 end
+Rs.TituloPaso = tituloPaso -- 1.2.7 (el aviso de Omitir)
 
 -- El número de un paso como lo cuenta la guía (los pasos ocultos no cuentan).
 local function numeroPaso(i)
@@ -455,6 +490,11 @@ local function pintarFila(cx, n, v, g, x, y, ancho, mapa, lineas, conSub, conBar
 		if not fuera and sinTerminar(g) then
 			local falta = faltaDe(g.quest)
 			sub = falta and format(L["Aún no está terminada: te falta %s."], falta) or L["Aún no está terminada: termínala antes de entregarla."]
+		end
+		-- 1.2.7: una misión gris que vale la pena: por qué (Cadenas.lua).
+		if not fuera and g.quest and (g.t == "accept" or g.t == "turnin") and M.GrisValiosa then
+			local vale = M.GrisValiosa(g.quest)
+			if vale then sub = sub and (sub .. "\n" .. vale) or vale end
 		end
 	end
 	if sub and sub ~= "" then
@@ -861,10 +901,7 @@ local function construir()
 	-- El pie
 	ui.detalle = K.Boton(F, L["Ver detalle"], function() Rs.AlternarDetalle() end,
 		{ tipo = "fantasma", tam = "chico", icono = "ic-lista", ayuda = L["Todas las metas, notas y pasos de esta guía en otra ventana."] })
-	ui.omitir = K.Boton(F, L["Omitir"], function()
-		local e = E()
-		if e and e.GetGuide and e.GetGuide() then engine("Skip") end
-	end, { tipo = "fantasma", tam = "chico", ayuda = L["Omite este paso: la guía sigue con el siguiente. Puedes volver a él desde «Ver detalle»."] })
+	ui.omitir = K.Boton(F, L["Omitir"], function() Rs.Omitir() end, { tipo = "fantasma", tam = "chico", ayuda = L["Omite este paso: la guía sigue con el siguiente. Puedes volver a él desde «Ver detalle»."] })
 	-- Engine.Next solo deja mirar el paso que sigue (la guía avanza sola).
 	ui.siguiente = K.Boton(F, L["Ver el siguiente"], function() engine("Next") end,
 		{ tipo = "secundario", tam = "chico", ayuda = L["Solo para mirar: tu paso de ahora no cambia. Alfa avanza sola cuando lo cumples."] })
@@ -1427,10 +1464,7 @@ local function construirDetalle()
 	})
 	-- El pie: Anterior a la izquierda; Omitir y Siguiente a la derecha.
 	dui.atras = K.Boton(D, L["Anterior"], function() engine("Prev") end, { tipo = "fantasma", tam = "chico" })
-	dui.omitir = K.Boton(D, L["Omitir"], function()
-		local e = E()
-		if e and e.GetGuide and e.GetGuide() then engine("Skip") end
-	end, { tipo = "fantasma", tam = "chico", ayuda = L["Omite este paso: la guía sigue con el siguiente. Puedes volver a él con Anterior."] })
+	dui.omitir = K.Boton(D, L["Omitir"], function() Rs.Omitir() end, { tipo = "fantasma", tam = "chico", ayuda = L["Omite este paso: la guía sigue con el siguiente. Puedes volver a él con Anterior."] })
 	dui.siguiente = K.Boton(D, L["Ver el siguiente"], function() engine("Next") end,
 		{ tipo = "secundario", tam = "chico", ayuda = L["Solo para mirar: tu paso de ahora no cambia. Alfa avanza sola cuando lo cumples."] })
 	D:SetPie({ dui.omitir, dui.siguiente }, { dui.atras })

@@ -51,7 +51,16 @@ La lista `I.LISTA` la lleva Toxic a mano, con permiso de cada persona: `["Nombre
 
 ## Ajustes (`manada.*`)
 
-`compartir` (se pregunta), `capaGrupo`, `capaJauria`, `minimapa`. Datos: `AlfaNucleoDB.manada` (`preguntado`, `consentimiento`).
+`compartir` (se pregunta), `capaGrupo`, `capaJauria`, `minimapa`, `marcarRaro`, `cazarJuntos`, `saludo` (1.2.7). Datos: `AlfaNucleoDB.manada` (`preguntado`, `consentimiento`).
+
+## 1.2.7: cazar en manada
+
+- **El mapa de la manada** (`Mapa.lua`): el cuadro de un lobo dice su guarida (`Gu.DeLobo`); un llamado de ayuda (`1A`) deja 3 minutos una marca propia en ese lugar (capa `manada.llamados`; clic: la flecha).
+- **Marcar el raro** (`Raro.lua`, `manada.marcarRaro`): `SetRaidTarget` tiene restricciones, así que Alfa no marca solo. En grupo (en banda, líder o ayudante), fuera de combate, al seleccionar un raro sin marca sale un aviso con «Marcar con calavera»: el botón seguro del Kit pulsa un botón seguro de Blizzard (acción `raidtarget`, `set-unmarked`, marca 8). Una vez por criatura en la sesión.
+- **Cazar juntos** (`Juntos.lua`, `manada.cazarJuntos`): `1M|id,id,...` (hasta 15 misiones; al cambiar el diario, una vez por minuto como mucho, y cada 5 min para quien llegó después). Con los lobos de tu zona: «Hacen N misiones contigo» en su tarjeta y, una vez por lobo, «¿Cazan juntos?» con «Invitar».
+- **El saludo** (`Saludo.lua`, `manada.saludo`): a los 30 s de entrar, una vez, quién de tu hermandad anda conectado y dónde (hasta 3 y «y N más»). Solo lee la lista de la hermandad.
+- **Logros de la insignia** (`Retrato.lua`): una estrella en el nivel máximo y, en el tuyo, el ícono de raros con 100 raros vistos (`A.Rares.History`, de la cuenta en el reino). Solo visual.
+- Prueba: `tools/banco/prueba_127_manada.lua`.
 
 ## Para el clan: `Clan.lua`
 

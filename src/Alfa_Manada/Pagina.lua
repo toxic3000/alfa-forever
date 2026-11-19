@@ -219,13 +219,17 @@ local function datoPersona(f)
 	local siguiendo = S.Sigue(f.clave)
 	local nc = nivelClase(f)
 	local ins = M.Insignias.DeFila(f)
+	-- 1.2.7: las misiones que hace contigo (Juntos.lua), si anda en tu zona.
+	local J = M.Juntos
+	local comunes = J and f.tipo ~= "grupo" and J.Comunes(f.clave) or 0
+	local juntos = comunes == 1 and L["Hacen 1 misión contigo"] or (comunes > 1 and format(L["Hacen %d misiones contigo"], comunes)) or nil
 	return {
 		variante = "normal", icono = "ic-huella",
 		sobre = U.Mayus(siguiendo and L["Siguiendo"] or (f.tipo == "grupo" and L["Tu grupo"] or L["La Jauría"])),
 		titulo = conInsignia(f, f.nombre),
 		-- Al pasar el ratón por la tarjeta: qué es el lobo junto al nombre.
 		ayuda = ins and (M.Insignias.Linea(ins)) or nil,
-		texto = (nc ~= "" and (nc .. "\n") or "") .. lugar(f),
+		texto = (nc ~= "" and (nc .. "\n") or "") .. lugar(f) .. (juntos and ("\n" .. juntos) or ""),
 		accion = { texto = siguiendo and L["Dejar de seguir"] or L["Seguir"], icono = siguiendo and "ic-cerrar" or "ic-seguir", alClic = function() seguir(f) end },
 		secundaria = invitable(f) and { texto = L["Invitar"], alClic = function() invitar(f) end } or nil,
 		persona = f,
@@ -853,7 +857,15 @@ local function grupos(ui, padre)
 		texto = L["Cuando un lobo de tu zona pide ayuda, te avisa dónde está con «¡Voy!»: la flecha te lleva y le dice que vas."] })
 	guaridas:Fila({ titulo = L["Tu guarida a la vista"], control = interruptor("guaridaVisible"),
 		texto = L["Tu guarida en el rastreador y en el cuadro de los lobos, y Lya te avisa si el juego te cambia de capa."] })
-	return { rastro, mapa, invitar, guaridas }
+	-- 1.2.7: cazar en manada.
+	local caza = K.GrupoAjustes(padre, { titulo = L["Cazar en manada"] })
+	caza:Fila({ titulo = L["Marcar el raro para todos"], control = interruptor("marcarRaro"),
+		texto = L["En grupo, al seleccionar un raro sin marca, Alfa te ofrece ponerle la calavera con un clic: todo tu grupo la ve. En banda, si eres líder o ayudante."] })
+	caza:Fila({ titulo = L["Cazar juntos"], control = interruptor("cazarJuntos"), activa = function() return on("compartir") end,
+		texto = L["La manada sabe qué misiones llevas (solo cuáles son) y tú las suyas. Si un lobo de tu zona hace una contigo, su tarjeta lo dice y Lya te propone invitarlo."] })
+	caza:Fila({ titulo = L["El saludo de la manada"], control = interruptor("saludo"),
+		texto = L["Al entrar al juego, Lya te dice quién de tu hermandad anda conectado y dónde."] })
+	return { rastro, mapa, invitar, guaridas, caza }
 end
 
 ---------------------------------------------------------------------------
@@ -931,6 +943,7 @@ local function firma(ui, gente)
 	end
 	partes[#partes + 1] = #gente
 	partes[#partes + 1] = M.Guaridas.version
+	partes[#partes + 1] = M.Juntos and M.Juntos.version or 0 -- 1.2.7
 	return table.concat(partes, "|")
 end
 

@@ -520,4 +520,11 @@ M.EN = {
 	["Ver lo que quedó"] = "See what's left",
 	["¡Ya la desbloqueaste!"] = "You unlocked it!",
 	["¿Qué sigue?"] = "What's next?",
+	-- 1.2.7: una hora de caza y cuánto te falta
+	["Una hora de caza"] = "An hour of hunting",
+	["Lo que más rinde cerca de ti"] = "What pays off most near you",
+	["Alfa elige por ti: entregar las que tienes listas, cerrar las de esta zona o recoger misiones nuevas."] = "Alfa picks for you: turn in the ones you have ready, finish the ones in this zone or pick up new quests.",
+	["unos %d min"] = "about %d min",
+	["como %d h"] = "about %d h",
+	["como %d h %d min"] = "about %d h %d min",
 }

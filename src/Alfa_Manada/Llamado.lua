@@ -101,6 +101,8 @@ M.Red.Oyentes.A = function(clave, remitente, _, f)
 	oidos[clave] = ahora
 	local quien = U.Mostrar(remitente)
 	local que = limpiar(f[4])
+	-- 1.2.7: una marca en el mapa en el lugar del llamado, 3 minutos (Mapa.lua).
+	if M.Mapa and M.Mapa.Llamado then pcall(M.Mapa.Llamado, map, x, y, quien, que) end
 	aviso({ titulo = format(L["%s llama a la manada"], quien),
 		texto = que and format(L["Pide ayuda con %s."], que) or L["Pide ayuda donde está."],
 		icono = "ic-manada", duracion = 20,

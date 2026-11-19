@@ -13,7 +13,9 @@
 --      Seguir y Ver pasos. Sin guía no sale: los caminos de arriba la eligen.
 --      Al terminar una guía: elegir qué sigue.
 --   3. Cerrar mis misiones y Recoger misiones a un clic (AlfaRuta.Liberar() y
---      AlfaRuta.Recoger(), si la ruta los tiene; Cerrar, si tienes misiones).
+--      AlfaRuta.Recoger(), si la ruta los tiene; Cerrar, si tienes misiones),
+--      y «Una hora de caza» (AlfaRuta.UnaHora(), 1.2.7). El avance de la
+--      tarjeta dice cuánto falta por tu ritmo (AlfaRuta.Estimado(), 1.2.7).
 --      Tu plan: la meta de ahora del plan que sigues (AlfaPlanes.Tarjeta()).
 --   4. Alertas: equipo gastado, bolsas casi llenas, habilidades por
 --      entrenar, tu buff y, si curas, preparar tus marcos de curación.
@@ -456,6 +458,21 @@ local function diceAlgoMas(hacia, info)
 	return true
 end
 
+-- 1.2.7: «unos 40 min», «como 1 h 30 min»: lo que te falta de tu guía por tu
+-- ritmo (AlfaRuta.Estimado), o nil si todavía no se sabe.
+local function tiempoQueFalta()
+	local est = deRuta("Estimado")
+	local ok, m = false, nil
+	if est then ok, m = pcall(est) end
+	m = ok and tonumber(m) or nil
+	if not m or m <= 0 then return nil end
+	if m < 60 then return format(L["unos %d min"], m) end
+	local h, r = floor(m / 60), floor((m % 60) / 5 + 0.5) * 5
+	if r >= 60 then h, r = h + 1, 0 end
+	if r == 0 then return format(L["como %d h"], h) end
+	return format(L["como %d h %d min"], h, r)
+end
+
 -- Los datos de la tarjeta grande, o nil (sin guía: los caminos de arriba la eligen).
 -- fin = true: la guía ya terminó (no cuenta como una guía en marcha).
 local function tarjetaPaso()
@@ -522,6 +539,9 @@ local function tarjetaPaso()
 	if (info.todos or 0) > 0 then
 		d.progreso = { actual = info.hechos, total = info.todos,
 			texto = format(L["%s: %d de %d pasos hechos"], info.guia ~= "" and info.guia or L["Tu guía"], info.hechos, info.todos) }
+		-- 1.2.7: cuánto te falta, por tu ritmo (AlfaRuta.Estimado).
+		local falta = tiempoQueFalta()
+		if falta then d.progreso.texto = d.progreso.texto .. DOT .. falta end
 	end
 	return d
 end
@@ -561,6 +581,14 @@ local function misiones()
 			texto = L["Toma las de tu ruta que tienes cerca"],
 			alClic = function() K.Llamar(recoger) end,
 			ayuda = L["Te lleva a las misiones de tu ruta que ya puedes tomar."] }
+	end
+	-- 1.2.7: «Una hora de caza»: Alfa elige lo que más rinde cerca de ti.
+	local unaHora = deRuta("UnaHora")
+	if unaHora then
+		lista[#lista + 1] = { variante = "compacta", icono = "ic-reloj", titulo = L["Una hora de caza"],
+			texto = L["Lo que más rinde cerca de ti"],
+			alClic = function() K.Llamar(unaHora) end,
+			ayuda = L["Alfa elige por ti: entregar las que tienes listas, cerrar las de esta zona o recoger misiones nuevas."] }
 	end
 	return lista
 end

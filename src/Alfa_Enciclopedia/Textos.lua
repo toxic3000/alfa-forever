@@ -593,4 +593,6 @@ M.EN = {
 	["Suma «conseguir este objeto» a tu plan de ahora (o a uno nuevo)."] = "Adds «get this item» to your current plan (or a new one).",
 	["Tu plan no pudo agregarlo."] = "Your plan couldn't add it.",
 	["Qué necesitas a tu nivel: equitación, oro y a quién ir."] = "What you need at your level: riding, gold and who to visit.",
+	-- 1.2.7
+	["Lya te cuenta"] = "Lya tells you",
 }

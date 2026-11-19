@@ -719,6 +719,15 @@ local function construirGlobo()
 	g.Cerrar:SetPoint("TOPRIGHT", g, "TOPRIGHT", -4, -4)
 	g.B1 = K.Boton(g, "", clicBoton, { tipo = "acento", tam = "chico" })
 	g.B2 = K.Boton(g, "", clicBoton, { tipo = "fantasma", tam = "chico" })
+	-- 1.2.7: en el globo compacto, el texto completo con el ratón encima.
+	g:SetScript("OnEnter", function(self)
+		local t = self.Texto
+		if actual and type(actual.texto) == "string" and N.Get(ID, "compacto") == true
+			and t.IsTruncated and t:IsTruncated() then
+			K.MostrarInfo(self, L["Lya"], actual.texto)
+		end
+	end)
+	g:SetScript("OnLeave", function(self) K.OcultarInfo(self) end)
 
 	local entra = g:CreateAnimationGroup()
 	local a1 = entra:CreateAnimation("Alpha")
@@ -795,7 +804,15 @@ function UI.Hablar(c)
 	local y = PAD
 	g.Texto:ClearAllPoints()
 	g.Texto:SetPoint("TOPLEFT", g, "TOPLEFT", PAD, -y)
-	y = y + K.Parrafo(g.Texto, ancho - 2 * PAD - 14, max(3, min(6, tonumber(c.lineas) or 3)) + (letra == "enorme" and 2 or 1))
+	-- 1.2.7: el globo compacto (lya.compacto): una sola línea, cortada con los
+	-- tres puntos del juego; el texto completo, con el ratón encima.
+	if N.Get(ID, "compacto") == true then
+		K.Parrafo(g.Texto, ancho - 2 * PAD - 14, 1)
+		g.Texto:SetWordWrap(false)
+		y = y + K.AltoTexto(g.Texto)
+	else
+		y = y + K.Parrafo(g.Texto, ancho - 2 * PAD - 14, max(3, min(6, tonumber(c.lineas) or 3)) + (letra == "enorme" and 2 or 1))
+	end
 	if w1 > 0 then
 		y = y + 8
 		g.B1:ClearAllPoints()
@@ -887,6 +904,8 @@ end
 -- Un ajuste cambió: el tamaño, el lugar o el estilo del borde.
 A.On("SETTING_CHANGED", function(path)
 	if type(path) ~= "string" or not f then return end
+	-- 1.2.7: el globo compacto se rehace al momento.
+	if path == ID .. ".compacto" and UI.Hablando() and actual then UI.Hablar(actual) return end
 	if path == ID .. ".tamano" or path == ID .. ".pos" or path == ID or path == "" then
 		pararCarrera()
 		medir()

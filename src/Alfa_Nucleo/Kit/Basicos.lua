@@ -903,7 +903,9 @@ local function armarMenu()
 			if o.icono and not sep then K.SetIcono(f.Icono, o.icono, o.apagada and "textoTenue" or "textoSuave") end
 			f.Texto:ClearAllPoints()
 			f.Texto:SetPoint("LEFT", f, "LEFT", o.icono and 32 or 12, 0)
-			f.Texto:SetPoint("RIGHT", f.Marca, "LEFT", -8, 0)
+			-- Sin marca posible (menú sin valor, como el de Lya) el texto usa todo el ancho.
+			if menu.valor ~= nil then f.Texto:SetPoint("RIGHT", f.Marca, "LEFT", -8, 0)
+			else f.Texto:SetPoint("RIGHT", f, "RIGHT", -12, 0) end
 			K.Escribir(f.Texto, sep and "" or (o.texto or tostring(o.valor)))
 			K.ColorTexto(f.Texto, o.apagada and "textoTenue" or "texto")
 			f.Texto:SetAlpha(o.apagada and 0.7 or 1)
@@ -921,6 +923,9 @@ local function armarMenu()
 		elegir = false,
 	})
 	menu.lista:SetPoint("TOPLEFT", menu, "TOPLEFT", 4, -4)
+	-- Para medir los textos y que el menú sea tan ancho como el más largo.
+	menu.Medir = K.Texto(menu, "etiqueta", "texto")
+	menu.Medir:SetAlpha(0)
 	menu:SetScript("OnHide", function() if atrapa then atrapa:Hide() end end)
 	menu:Hide()
 end
@@ -932,13 +937,30 @@ function K.Menu(dueno, opciones, valor, alElegir, ancho)
 	local n = #opciones
 	local filas = min(n, 10)
 	local w = max(ancho or 0, K.num(dueno:GetWidth(), 160))
+	-- 1.2.7: lo bastante ancho para el texto más largo (otros idiomas son más largos).
+	local largo = 0
+	for _, o in ipairs(opciones) do
+		if not o.separador then
+			K.Escribir(menu.Medir, o.texto or tostring(o.valor))
+			largo = max(largo, K.num(K.AnchoTexto(menu.Medir), 0) + (o.icono and 32 or 12))
+		end
+	end
+	local barra = n > 10 and 10 or 0
+	w = min(420, max(w, math.ceil(largo + (valor ~= nil and 32 or 12) + 8 + barra)))
 	local h = filas * K.ALTO.filaCompacta
 	menu:SetSize(w, h + 8)
 	menu.lista:Acomodar(w - 8, h)
 	menu.lista:SetDatos(opciones)
 	for i, o in ipairs(opciones) do if o.valor ~= nil and o.valor == valor then menu.lista:IrA(i) end end
+	-- 1.2.7: abajo del dueño si cabe; si no (Lya vive abajo de la pantalla), arriba.
 	menu:ClearAllPoints()
-	menu:SetPoint("TOPLEFT", dueno, "BOTTOMLEFT", 0, -4)
+	local abajo = dueno.GetBottom and dueno:GetBottom()
+	local escala = (dueno.GetEffectiveScale and dueno:GetEffectiveScale() or 1) / (UIParent:GetEffectiveScale() or 1)
+	if type(abajo) == "number" and abajo * escala - (h + 8) - 8 < 0 then
+		menu:SetPoint("BOTTOMLEFT", dueno, "TOPLEFT", 0, 4)
+	else
+		menu:SetPoint("TOPLEFT", dueno, "BOTTOMLEFT", 0, -4)
+	end
 	atrapa:Show()
 	menu:Show()
 end

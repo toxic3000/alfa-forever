@@ -22,6 +22,8 @@ local function T(n) RUN_TIMERS(n or 2) end
 local function check(cond, msg) if not cond then NOTE("1.2.4", msg) end end
 
 local ns = NS_OF("Alfa")
+-- (1.2.7: estas pruebas revisan las tarjetas; el anuncio animado va en prueba_127)
+AlfaNucleo.A.Set("bienvenida.anuncios", false)
 local medidos = 0
 
 -- Los textos a la vista dentro de un marco (y sus hijos).

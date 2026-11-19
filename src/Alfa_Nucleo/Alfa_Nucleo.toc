@@ -16,5 +16,6 @@ Kit\Formas.lua
 Kit\Basicos.lua
 Kit\Bloques.lua
 Kit\Ventanas.lua
+Kit\Anuncio.lua
 Kit\Plantillas.lua
 Kit\Estilos.lua

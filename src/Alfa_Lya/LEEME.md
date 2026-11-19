@@ -35,6 +35,11 @@ Seguir la flecha hace que uno se salte la historia: Lya la guarda y te la cuenta
 | 10 y 25 misiones entregadas en el día | Un logro, con salto |
 | 2 y 4 horas de sesión | Que descanses un poco |
 | De vez en cuando y al pedirlo | «¿Sabías que…?» de Alfa (solo lo que está cargado), consejos del juego, ánimo y, muy rara vez, cariño |
+| Entrar a una mazmorra de grupo (1.2.7, `Momentos.lua`) | Fuera de combate, un consejo corto con el nombre de la mazmorra (de `AlfaMazmorras.Recomendada()` en modo `dentro`, o `GetInstanceInfo`) y *Ver la mazmorra* (`AlfaMazmorras.Abrir(key)` o la página Mazmorras). Una vez por entrada (la misma, no antes de 30 min). `lya.mazmorras`. Habla dentro de la instancia con `c.enMazmorra` (nunca en combate) |
+| 3 caídas en 10 min (1.2.7) | Se sienta a tu lado y te consuela (una vez cada 10 min), con *Llévame a reparar* y *Pedir ayuda a la manada*, después del «¡Arriba, lobo!» |
+| 2 niveles en 30 min (1.2.7) | Un aullido de más por la racha, después del de siempre |
+| Cada 45 a 90 min de juego (1.2.7) | Te pide una salchicha (pose de pedir) con *Darle una salchicha*; te las cuenta (`salchichas`, en su página) y te da las gracias |
+| `/camp` o `/quit` (1.2.7, `PLAYER_CAMPING`, `PLAYER_QUITING`) | Las misiones listas para entregar (*Entregar todas*) o su despedida con tu día de caza; también con «Solo importantes» y en una instancia |
 | Tras 3 minutos sin hablar («pocos»: 10) | La plática (`Charla.lua`): el lugar, el lore, tu raza, clase y profesiones, un consejo de amiga, el momento o las salchichas |
 
 Los consejos del momento se revisan con los eventos del juego (`UPDATE_INVENTORY_DURABILITY`, `BAG_UPDATE_DELAYED`, `QUEST_LOG_UPDATE`, `PLAYER_UPDATE_RESTING`, juntados a 3 s) y en un latido de 60 s que solo corre con Lya a la vista. Nada en `OnUpdate`.
@@ -61,8 +66,10 @@ Los consejos del momento se revisan con los eventos del juego (`UPDATE_INVENTORY
 | `historias` | `aveces` | `siempre` (el gancho de cada misión y un dato en cada zona nueva), `aveces` (las que tomas sin leer: aceptadas al momento o con la guía andando, una de cada dos; un dato en la mitad de las zonas nuevas), `pedir` (solo con clic derecho) o `nunca`. Las historias se guardan siempre |
 | `minutosHistoria` | 10 | Lo menos entre un globo de historia y otro (3 a 60) |
 | `epilogo` | sí | «¿Te cuento el final?» al entregar (en `aveces`, solo de las que ya te ofreció) |
+| `mazmorras` | sí | El consejo al entrar a una mazmorra (1.2.7) |
+| `compacto` | no | El globo en una sola línea (cortada con los tres puntos del juego; completo con el ratón encima), con sus botones (1.2.7) |
 
-Datos por personaje (`N.DatosPersonaje("lya")`): `vistos`, `presentada`, `silencio`, `ultimaVez`, `sesionInicio`, `sesionAvisos`, `hoy`, `entrenarNivel`, `giro`, `charla` (la plática: `v[id]` = cuándo dijo cada nota, `ronda`, `paso`, `ultima`, `zona`).
+Datos por personaje (`N.DatosPersonaje("lya")`): `vistos`, `presentada`, `silencio`, `ultimaVez`, `sesionInicio`, `sesionAvisos`, `hoy`, `entrenarNivel`, `giro`, `charla` (la plática: `v[id]` = cuándo dijo cada nota, `ronda`, `paso`, `ultima`, `zona`), `salchichas` y `salchichaFaltan` (minutos para la siguiente), `mazmorra` (`{ marca, hora }`, la última en que dio su consejo) (1.2.7).
 
 ## Comandos y contrato
 

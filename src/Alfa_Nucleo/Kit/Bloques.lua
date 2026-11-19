@@ -622,6 +622,9 @@ function K.Lista(padre, opts)
 	l.Area:SetPoint("TOPLEFT", l, "TOPLEFT", 0, 0)
 	l.Area:SetPoint("BOTTOMRIGHT", l, "BOTTOMRIGHT", -10, 0)
 	l.Area:SetClipsChildren(true)
+	-- 1.2.7: al cambiar de tamaño (el juego acomoda el área un cuadro después)
+	-- las filas se vuelven a medir; antes guardaban el ancho anterior.
+	l.Area:SetScript("OnSizeChanged", function() if l.alfaListo then l:Refrescar() end end)
 	l:EnableMouseWheel(true)
 	l:SetScript("OnMouseWheel", function(self, d) self:Desplazar(-d * 3 * self.alfaAlto) end)
 	-- La barra de desplazamiento: una pista fina y su pulgar facetado.
@@ -681,8 +684,13 @@ function K.Lista(padre, opts)
 	function l:Elegida() return self.alfaElegida, self.alfaElegida and self.datos[self.alfaElegida] end
 	function l:Refrescar()
 		local alto = self.alfaAlto
-		local h = K.num(self.Area:GetHeight(), 0)
-		local w = K.num(self.Area:GetWidth(), 0)
+		local h = K.num(self:GetHeight(), 0)
+		if h <= 0 then h = K.num(self.Area:GetHeight(), 0) end
+		self.alfaListo = true
+		-- El ancho se saca del de la lista (puesto a mano), no del área, que el
+		-- juego puede no haber acomodado todavía.
+		local w = K.num(self:GetWidth(), 0) - (self.BarraDesp:IsShown() and 10 or 0)
+		if w <= 0 then w = K.num(self.Area:GetWidth(), 0) end
 		local primero = floor(self.alfaPos / alto) + 1
 		local cuantas = ceil(h / alto) + 1
 		local desfase = self.alfaPos % alto

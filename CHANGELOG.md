@@ -1,5 +1,51 @@
 # Cambios de Alfa
 
+## 1.2.7 — Anuncios animados, la manada a la vista y Lya más viva (19/11/2026)
+
+**Español**
+- Anuncios animados: al llegar en barco o cuando Lya encuentra un raro, ya no sale una tarjeta: sale un anuncio grande, como la intro de Alfa, con el lobo y su halo, el nombre de a dónde llegas o de lo que apareció y, abajo, lo demás («¡Tierra a la vista! La manada desembarca en 0:20», o el nivel y la distancia del raro). Entra con animación y se va solo; el del raro, con un clic, te lleva de caza. Se apaga en Ajustes > Estilo y sonido.
+- La manada en el mapa: el cuadro de cada lobo dice su guarida, y cuando alguien llama a la manada sale una marca en el mapa durante 3 minutos (clic: la flecha te lleva).
+- Marcar el raro para todos: en grupo, al seleccionar un raro sin marca, Alfa te ofrece ponerle la calavera con un clic; todo tu grupo la ve.
+- Cazar juntos: la manada sabe qué misiones llevas (solo cuáles); si un lobo de tu zona hace una contigo, su tarjeta lo dice y Lya te propone invitarlo.
+- El saludo de la manada: al entrar, Lya te dice quién de tu hermandad anda conectado y dónde.
+- La insignia gana detalles: una estrella al nivel máximo y, en la tuya, una marca de cazador al ver 100 raros.
+- Lya en las mazmorras: al entrar te da un consejo corto con «Ver la mazmorra» (nunca en combate).
+- Lya tiene ánimo: si caes seguido te consuela y te ofrece ayuda; si subes niveles rápido, festeja.
+- Lya y su salchicha: de vez en cuando te pide una («Darle una salchicha») y te las lleva contadas.
+- Antes de irte: al salir del juego, Lya te dice si te quedaron misiones listas para entregar, o se despide con tu día de caza.
+- El globo de Lya puede ir compacto, en una sola línea.
+- Lya en la Enciclopedia: la ficha de cada zona trae lo que Lya cuenta de ella.
+- «Una hora de caza» en Hoy: Alfa elige por ti lo que más rinde cerca (entregar, cerrar las de la zona o recoger nuevas).
+- Aviso de cadena: si vas a abandonar una misión que abre otras, te dice cuál pierdes.
+- Grises que valen la pena: el rastreador te dice cuándo una misión gris da algo bueno o abre otra.
+- «Deshacer» al omitir un paso, durante un minuto.
+- Tiempo estimado: Hoy te dice cuánto te falta de tu guía según tu ritmo.
+- Perfiles: guarda tu configuración con un nombre y vuelve a ella con un clic; exporta e importa tus ajustes como texto para respaldarlos o compartirlos (Ajustes > Estilo y sonido > Tus perfiles).
+- /alfa rendimiento: cuánta memoria usa cada parte de Alfa, y suelta la que ya no ocupa.
+- El recorrido: la primera vez que abres Alfa, Lya te enseña la ventana en 5 pasos (/alfa recorrido para verlo otra vez).
+
+**English**
+- Animated announcements: when you arrive by boat or Lya finds a rare, there's no card anymore: a big announcement, like the Alfa intro, with the wolf and its halo, the name of where you arrive or what showed up and, below, the rest ("Land ahoy! The pack goes ashore in 0:20", or the rare's level and distance). It animates in and leaves on its own; the rare's one takes you hunting with a click. Turn it off in Settings > Style and sound.
+- The pack on the map: each wolf's tooltip shows their den, and when someone calls the pack a mark shows on the map for 3 minutes (click: the arrow takes you).
+- Mark the rare for everyone: in a group, targeting an unmarked rare, Alfa offers to put the skull on it in one click; your whole group sees it.
+- Hunt together: the pack knows which quests you have (just which ones); if a wolf in your zone shares one, their card says so and Lya suggests inviting them.
+- The pack's greeting: at login, Lya tells you who from your guild is online and where.
+- The badge gains details: a star at max level and, on yours, a hunter's mark after seeing 100 rares.
+- Lya in dungeons: when you enter, she gives a short tip with "See the dungeon" (never in combat).
+- Lya has moods: if you keep falling she comforts you and offers help; if you level up fast, she celebrates.
+- Lya and her sausage: now and then she asks for one ("Give her a sausage") and keeps count.
+- Before you leave: when you log out, Lya tells you if you left quests ready to turn in, or says goodbye with your hunting day.
+- Lya's bubble can be compact, on a single line.
+- Lya in the Encyclopedia: each zone's page has what Lya tells about it.
+- "An hour of hunting" on Today: Alfa picks what pays off most nearby (turn in, close this zone's quests or pick up new ones).
+- Chain warning: if you're about to abandon a quest that unlocks others, it tells you which one you'd lose.
+- Grey quests worth it: the tracker tells you when a grey quest gives something good or unlocks another.
+- "Undo" after skipping a step, for a minute.
+- Time estimate: Today tells you how long your guide has left at your pace.
+- Profiles: save your setup under a name and return to it in one click; export and import your settings as text to back them up or share them (Settings > Style and sound > Your profiles).
+- /alfa rendimiento: how much memory each part of Alfa uses, and frees what it no longer needs.
+- The tour: the first time you open Alfa, Lya shows you the window in 5 steps (/alfa recorrido to see it again).
+
 ## 1.2.6 — Lya te lo dice todo, llamar a la manada y el seguimiento de misiones al día (19/11/2026)
 
 **Español**

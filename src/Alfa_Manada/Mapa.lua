@@ -113,6 +113,16 @@ local function cuadro(f, capa)
 			if lugar ~= "" then tip:AddLine(lugar, 0.8, 0.8, 0.8) end
 			if capa ~= "grupo" and edad and edad >= 20 then tip:AddLine(L["Ubicación de %s"]:format(U.Hace(edad)), 0.6, 0.6, 0.6) end
 		end
+		-- 1.2.7: su guarida (lo último que dijo, si es de tu zona; Guaridas.lua).
+		local Gu = M.Guaridas
+		local v = Gu and N.Get(ID, "guaridaVisible") ~= false and Gu.DeLobo(f.envio or f.nombre)
+		if v then
+			local mia = Gu.Actual()
+			local t = L["En la %s"]:format(Gu.Etiqueta(v.capa))
+			if mia and mia.capa == v.capa then t = t .. " " .. L["(la tuya)"]
+			elseif v.abierta then t = t .. " " .. L["(puerta abierta)"] end
+			tip:AddLine(t, 0.55, 0.88, 0.31)
+		end
 		local ar, ag, ab = themeRGB("accent")
 		tip:AddLine(capa == "grupo" and L["Tu grupo"] or L["La Jauría"], ar, ag, ab)
 		if M.Seguir.Sigue(f.clave) then
@@ -136,10 +146,87 @@ local hecho = -1     -- G.version dibujada
 local sigHecho       -- a quién se seguía al dibujar
 local ultimoDibujo = -math.huge
 
+---------------------------------------------------------------------------
+-- 1.2.7: los llamados de ayuda (Llamado.lua, 1A) en el mapa: una marca
+-- distinta (el lobo de la manada en el color de aviso, con halo) en el lugar
+-- del llamado, LLAMADO_DURA segundos. Clic: la flecha te lleva.
+---------------------------------------------------------------------------
+
+local LLAMADOS = "manada.llamados"
+local LLAMADO_DURA = 180
+local llamados = {} -- quien -> { map, x, y, quien, que, at, hasta }
+local firmaLlamados
+
+function Mapa.Llamado(map, x, y, quien, que)
+	if type(map) ~= "number" or type(x) ~= "number" or type(y) ~= "number" then return end
+	quien = quien or "?"
+	local ahora = U.Ahora()
+	llamados[quien] = { map = map, x = x, y = y, quien = quien, que = que, at = ahora, hasta = ahora + LLAMADO_DURA }
+	Mapa.PintarLlamados(true)
+end
+
+-- Para el banco: los llamados a la vista.
+function Mapa.Llamados()
+	local out = {}
+	for _, l in pairs(llamados) do out[#out + 1] = l end
+	return out
+end
+
+local function cuadroLlamado(l)
+	return function(tip)
+		local wr, wg, wb = themeRGB("warning")
+		tip:SetText(L["%s pidió ayuda aquí"]:format(l.quien), wr, wg, wb)
+		if l.que then tip:AddLine(L["Pide ayuda con %s."]:format(l.que), 1, 1, 1) end
+		local hace = U.Hace(U.Ahora() - l.at)
+		if hace then tip:AddLine(hace, 0.6, 0.6, 0.6) end
+		tip:AddLine(L["Clic: la flecha te lleva aquí."], themeRGB("success"))
+	end
+end
+
+function Mapa.PintarLlamados(forzar)
+	local P = A.Pins
+	if not (P and P.SetLayer) then return end
+	local ahora = U.Ahora()
+	local pins, firma = {}, {}
+	local mini = N.Get(ID, "minimapa") and true or false
+	local wr, wg, wb = themeRGB("warning")
+	for quien, l in pairs(llamados) do
+		if ahora >= l.hasta then
+			llamados[quien] = nil
+		else
+			pins[#pins + 1] = {
+				map = l.map, x = l.x, y = l.y,
+				icon = media("ic-manada"), color = { wr, wg, wb, 1 }, backdrop = true, glow = true,
+				ring = { wr, wg, wb, 0.9 },
+				size = 16, minimapSize = 13, priority = 20,
+				badge = corto(l.quien),
+				tooltip = cuadroLlamado(l),
+				onClick = function(button)
+					if button ~= "LeftButton" and button ~= nil then return end
+					local Nav = A.Nav
+					if Nav and Nav.SetTarget then
+						Nav.SetTarget(l.map, l.x, l.y, l.quien)
+						N.EmpezarRuta()
+					end
+				end,
+			}
+			firma[#firma + 1] = ("%s%d:%.1f:%.1f"):format(quien, l.map, l.x, l.y)
+		end
+	end
+	table.sort(firma)
+	firma = (mini and "m" or "-") .. table.concat(firma, "|")
+	if forzar or firma ~= firmaLlamados then
+		firmaLlamados = firma
+		pcall(P.SetLayer, LLAMADOS, pins, { world = true, minimap = mini, edge = false })
+	end
+	pcall(P.SetLayerVisible, LLAMADOS, N.Get(ID, "llamados") ~= false)
+end
+
 -- Rehace los pines si algo cambió (o con `forzar`).
 function Mapa.Refrescar(forzar)
 	local P = A.Pins
 	if not (P and P.SetLayer) then return end
+	Mapa.PintarLlamados(forzar) -- 1.2.7 (barato: solo si cambió o caducó)
 	local G = M.Gente
 	local sigue = M.Seguir.Actual()
 	local ahora = U.Ahora()

@@ -771,11 +771,14 @@ function P.Abandonar(ids)
 			puede = not ok or si ~= false
 		end
 		if puede and I.EnRegistro(qid) then
+			-- 1.2.7: ya lo confirmaste: sin el aviso de la cadena (Cadenas.lua).
+			M.abandonando = true
 			local ok = pcall(function()
 				QL.SetSelectedQuest(qid)
 				QL.SetAbandonQuest()
 				QL.AbandonQuest()
 			end)
+			M.abandonando = nil
 			if ok then
 				n = n + 1
 				M.Personaje().marcas[qid] = nil

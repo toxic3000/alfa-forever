@@ -51,6 +51,9 @@ N.Modulo({
 		rarosManada = true, -- los raros que encuentra la manada, con su guarida (1.2.5)
 		guaridaVisible = true, -- tu guarida en el rastreador y el aviso al cambiar (1.2.5)
 		llamados = true, -- recibir los llamados de ayuda de la manada (1.2.6)
+		marcarRaro = true, -- en grupo, ofrecer la calavera para el raro que seleccionas (1.2.7)
+		cazarJuntos = true, -- compartir tus misiones con la manada y ver con quién cazar (1.2.7)
+		saludo = true, -- al entrar, quién de tu hermandad anda conectado (1.2.7)
 	},
 	construir = P.Construir,
 })

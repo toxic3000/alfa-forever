@@ -880,6 +880,14 @@ function F.Zona(id)
 		elseif lo > nivel + 3 then f.insignias[#f.insignias + 1] = { L["Peligrosa para tu nivel"], "aviso" }
 		elseif hi and hi < nivel - 5 then f.insignias[#f.insignias + 1] = { L["Por debajo de tu nivel"], "neutro" } end
 	end
+	-- 1.2.7: Lya cuenta algo de la zona (sus datos curiosos, AlfaLya.DatoDeZona).
+	local Lya = rawget(_G, "AlfaLya")
+	if type(Lya) == "table" and type(Lya.DatoDeZona) == "function" then
+		local ok, dato = pcall(Lya.DatoDeZona, id)
+		if ok and type(dato) == "string" and dato ~= "" then
+			f.mejor = { sobre = L["Lya te cuenta"], titulo = nombre, texto = dato, icono = "ic-lobo" }
+		end
+	end
 	local pendiente = {}
 	-- Lo que la zona necesita y aún no está: se prepara ya (la ficha se rehace sola).
 	if not I.Listo("misiones") then I.PrepararMisiones() end

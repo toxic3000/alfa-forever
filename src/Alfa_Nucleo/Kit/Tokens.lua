@@ -299,6 +299,8 @@ K.TIPO = {
 	-- 1.2.6: el globo de Lya, en grande o muy grande (lya.letra)
 	globoGrande = { "medium", 15 },
 	globoEnorme = { "medium", 18 },
+	-- 1.2.7: el nombre grande del anuncio animado (Anuncio.lua)
+	anuncio = { "semibold", 30 },
 }
 
 local function letraDelJuego()

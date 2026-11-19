@@ -233,6 +233,74 @@ F.ambiente = {
 	"*bosteza* Cazar contigo es lo mejor de mi día.",
 }
 
+-- 1.2.7 (Momentos.lua): al entrar a una mazmorra (%s: su nombre).
+F.mazmorra = {
+	"¡Ya estamos en %s! Deja que el tanque jale primero y quédate cerca de quien cura.",
+	"%s… huele a peligro y a buen botín. Pelea al objetivo que marque tu grupo.",
+	"Entramos a %s. Antes de cada pelea, espera a que quien cura tenga maná.",
+	"¡%s! Si algo te pega, corre hacia el tanque, no lejos de él.",
+	"Bienvenido a %s. Mira bien antes de jalar: un grupo de más nos puede tumbar a todos.",
+	"%s, ¡en manada! Pregunten cómo se reparte el botín antes del primer jefe.",
+}
+-- Al entrar a una mazmorra sin saber su nombre.
+F.mazmorraSin = {
+	"¡Ya estamos en la mazmorra! Deja que el tanque jale primero y quédate cerca de quien cura.",
+	"Mazmorra a la vista. Pelea al objetivo que marque tu grupo y todo sale mejor.",
+	"Aquí adentro se caza en equipo: espera a que quien cura tenga maná antes de seguir.",
+}
+
+-- Tres caídas en 10 minutos: se sienta a tu lado y te consuela.
+F.consuelo = {
+	"Ay, lobo… van varias caídas seguidas. Respira, repara tu equipo y, si quieres, pide ayuda a la manada.",
+	"Hoy está difícil, ¿verdad? No pasa nada. Descansa un poco, repara y volvemos con más fuerza.",
+	"Me quedo aquí sentadita contigo. Tres caídas no te hacen menos lobo. ¿Reparamos y pedimos ayuda?",
+	"Calma, que la cacería no se va a ningún lado. Come algo, repara y, si es mucho, la manada te echa la mano.",
+}
+
+-- Dos niveles en menos de media hora (%d: el nivel nuevo).
+F.racha = {
+	"¡Auuuu! ¡Nivel %d y dos niveles en menos de media hora! Vas como lobo en luna llena.",
+	"¡Otro nivel tan pronto! Nivel %d. ¡Auuuu, esta racha no la para nadie!",
+	"¡Nivel %d, y el anterior hace nada! Aúllo dos veces, una por cada uno. ¡Auuuu, auuuu!",
+}
+
+-- Te pide una salchicha (se sienta a pedir, con el botón «Darle una salchicha»).
+F.pideSalchicha = {
+	"*se sienta y te mira con ojitos tiernos* ¿Me das una salchicha? Solo una… bueno, una.",
+	"Llevamos un buen rato cazando… ¿no traerás por ahí una salchichita para tu loba?",
+	"*mueve la cola* Huelo una salchicha en tu mochila. ¿Me la das?",
+	"Una loba que cuida tan bien a su lobo merece una salchicha, ¿no crees?",
+	"*levanta la manita* ¿Salchicha? Prometo cuidarte el doble.",
+}
+-- Te da las gracias.
+F.gracias = {
+	"¡Mmm, qué rica! Gracias, eres el mejor lobo de la manada.",
+	"*la devora en un segundo* ¡Gracias! Ahora sí, a cazar.",
+	"¡Salchicha! *mueve la cola a toda velocidad* Gracias, gracias.",
+	"Ñam. Esto me da energía para cuidarte otras tres horas.",
+}
+-- Te da las gracias y lleva la cuenta (%d: cuántas le has dado).
+F.graciasTotal = {
+	"¡Gracias! Ya van %d salchichas que me das. Las llevo contadas, eh.",
+	"¡Ñam! Con esta van %d. Eres mi persona favorita de todo Azeroth.",
+	"%d salchichas… y cada una me supo a gloria. ¡Gracias!",
+}
+
+-- Antes de irte (/camp o /quit): misiones listas (%d: cuántas, 2 o más).
+F.antesDeIrte = {
+	"Antes de irte: tienes %d misiones listas para entregar. ¿Pasamos a cobrarlas?",
+	"¡Espera! Dejas %d misiones listas sin entregar. Si no, mañana empezamos por ahí.",
+}
+-- Antes de irte, sin pendientes (%s: tu día de caza, "3 misiones en 20 min de caza.").
+F.adios = {
+	"¡Hasta pronto! Hoy cazamos %s Aquí te espero.",
+	"Buena caza hoy: %s Descansa, que yo cuido tu lugar.",
+}
+F.adiosSin = {
+	"¡Hasta pronto! Aquí te espero, cuidando tu lugar.",
+	"¿Ya te vas? Descansa bien. Yo me quedo vigilando hasta que vuelvas.",
+}
+
 -- Cuando ya dijo todo (no se cuenta).
 M.AGOTADOS = "Ya te conté todo lo que sé por ahora. Con clic derecho puedo empezar de nuevo."
 

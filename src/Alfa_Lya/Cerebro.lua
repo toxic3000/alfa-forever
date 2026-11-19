@@ -115,6 +115,9 @@ local LIBRES = {
 	nivel = true, muerte = true, reparar = true, bolsas = true, entrenar = true, entregar = true,
 	descanso = true, misionesHoy = true, animo = true, carino = true, ambiente = true, zona = true,
 	hambre = true, salchichas = true,
+	-- 1.2.7: las mazmorras, los ánimos de racha, la salchicha y la despedida (Momentos.lua)
+	mazmorra = true, mazmorraSin = true, consuelo = true, racha = true, pideSalchicha = true,
+	gracias = true, graciasTotal = true, antesDeIrte = true, adios = true, adiosSin = true,
 }
 local function libre(id) return type(id) == "string" and LIBRES[id:match("^(%a+)") or ""] or false end
 
@@ -123,7 +126,9 @@ local function motivo(c)
 	if c.id and not libre(c.id) and veces(c.id) >= MAX_VECES then return "vista" end
 	if Ce.Silenciada() and not c.pedido then return "silencio" end
 	if not c.importante and not c.pedido and Ce.Frecuencia() == "importantes" then return "modo" end
-	if enCombate() or enInstancia() or escribiendo() then return "esperar" end
+	-- 1.2.7: c.enMazmorra deja hablar dentro de una instancia (el consejo de la
+	-- mazmorra, la despedida); nunca en combate.
+	if enCombate() or (enInstancia() and not c.enMazmorra) or escribiendo() then return "esperar" end
 	if not c.importante and not c.pedido then
 		if UI.Hablando() or avisoDeHoy() then return "ocupada" end
 		if ahora() - ultimo < intervalo() then return "pronto" end
@@ -134,7 +139,7 @@ end
 local function reintentar()
 	if not espera then return end
 	if ahora() > espera.hasta then espera = nil return end
-	if escribiendo() and not enCombate() and not enInstancia() and not reintento then
+	if escribiendo() and not enCombate() and (not enInstancia() or espera.c.enMazmorra) and not reintento then -- 1.2.7
 		reintento = K.Despues(4, function() reintento = nil reintentar() end)
 		return
 	end
@@ -899,6 +904,13 @@ function API.Decir(texto, opts)
 end
 function API.Mostrar(on) Ce.Mostrar(on ~= false) end
 function API.Consejo() Ce.Pedir() end
+-- 1.2.7: un dato curioso de una zona (para la ficha de la Enciclopedia), o nil.
+-- Uno al azar de los que sabe de esa zona (Lore.lua).
+function API.DatoDeZona(mapID)
+	local lista = M.DATOS_ZONA and M.DATOS_ZONA[tonumber(mapID) or -1]
+	if type(lista) ~= "table" or #lista == 0 then return nil end
+	return L[lista[random(#lista)]]
+end
 -- La tecla de su botón (1.2.6).
 function API.Responder() return UI.Responder() end
 function API.Visible() return UI.Visible() end

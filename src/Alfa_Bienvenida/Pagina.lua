@@ -53,6 +53,9 @@ local function grupos(ui, padre)
 	sonido:Fila({ titulo = L["El lobo te recibe al entrar"],
 		texto = L["Cada vez que entras al juego, la intro del lobo y la luna te da la bienvenida. Un clic o Esc la saltan."],
 		control = function(fila) return K.Interruptor(fila, { clave = ID .. ".introSiempre" }) end })
+	sonido:Fila({ titulo = L["Anuncios animados"],
+		texto = L["Al llegar en barco o cuando Lya encuentra un raro, un anuncio grande con animación, como la intro, en vez de una tarjeta."],
+		control = function(fila) return K.Interruptor(fila, { clave = ID .. ".anuncios" }) end })
 	sonido:Fila({ titulo = L["Escuchar el aullido"], texto = L["Suena ahora, aunque el aullido esté apagado."],
 		control = function(fila) return K.Boton(fila, L["Escuchar"], function() M.Aullar(true) end, { tipo = "secundario", icono = "ic-lobo" }) end })
 
@@ -60,6 +63,9 @@ local function grupos(ui, padre)
 	bienvenida:Fila({ titulo = L["Tu configuración de Alfa"],
 		texto = L["El idioma, el estilo, lo que Alfa hace sola por ti y La Jauría, con «Cambiar» en cada cosa. También con /alfa bienvenida."],
 		control = function(fila) return K.Boton(fila, L["Abrir"], function() M.Abrir("pedido", "asistente") end, { tipo = "secundario" }) end })
+	bienvenida:Fila({ titulo = L["El recorrido por Alfa"],
+		texto = L["Lya te enseña la ventana de Alfa en 5 pasos. También con /alfa recorrido."],
+		control = function(fila) return K.Boton(fila, L["Ver"], function() if M.Recorrido then M.Recorrido.Empezar() end end, { tipo = "secundario", icono = "ic-lobo" }) end })
 	bienvenida:Fila({ titulo = L["Reportar un error, una mejora o un comentario"],
 		texto = L["Alfa arma el reporte y tú lo pegas en el buzón privado del Discord de La Jauría. También con /alfa reportar."],
 		control = function(fila) return K.Boton(fila, L["Reportar"], function() M.AbrirReporte() end, { tipo = "secundario" }) end })
@@ -69,7 +75,54 @@ local function grupos(ui, padre)
 			if M.AbrirNotas and M.AbrirNotas() then return end
 			M.Abrir("pedido", "portada")
 		end, { tipo = "secundario" }) end })
-	return { sonido, bienvenida }
+	-- 1.2.7: tus perfiles y la copia de tus ajustes (Perfiles.lua).
+	local Pf = M.Perfiles
+	local perfiles = K.GrupoAjustes(padre, { titulo = L["Tus perfiles"] })
+	local function elegir(boton, alElegir)
+		local ops = {}
+		for _, n in ipairs(Pf.Lista()) do ops[#ops + 1] = { valor = n, texto = n, icono = "ic-ajustes" } end
+		if #ops == 0 then
+			K.Aviso({ titulo = L["Aún no tienes perfiles"], texto = L["Guarda tu configuración como perfil primero."], icono = "ic-info" })
+			return
+		end
+		K.Menu(boton, ops, nil, alElegir, 240)
+	end
+	perfiles:Fila({ titulo = L["Guardar mi configuración"],
+		texto = L["Guarda cómo tienes Alfa ahora con el nombre de tu personaje, para volver a ella con un clic. Útil si juegas con varios personajes."],
+		control = function(fila) return K.Boton(fila, L["Guardar"], function()
+			local n = Pf.NombreSugerido()
+			Pf.Guardar(n)
+			K.Aviso({ titulo = L["Perfil guardado"], texto = format(L["Tu configuración quedó guardada como «%s»."], n), icono = "ic-exito" })
+		end, { tipo = "secundario", icono = "ic-exito" }) end })
+	perfiles:Fila({ titulo = L["Usar un perfil"],
+		texto = L["Pone los ajustes de un perfil que guardaste. Algunas cosas se ven completas al recargar."],
+		control = function(fila)
+			local b
+			b = K.Boton(fila, L["Elegir"], function()
+				elegir(b, function(n)
+					if Pf.Aplicar(n) then
+						K.Aviso({ titulo = format(L["Usas el perfil «%s»"], n), texto = L["Algunas cosas se ven completas al recargar."], icono = "ic-exito",
+							accion = { texto = L["Recargar ahora"], alClic = function() if ReloadUI then ReloadUI() end end } })
+					end
+				end)
+			end, { tipo = "secundario" })
+			return b
+		end })
+	perfiles:Fila({ titulo = L["Borrar un perfil"], texto = L["Quita un perfil que ya no usas. Tus ajustes de ahora no cambian."],
+		control = function(fila)
+			local b
+			b = K.Boton(fila, L["Borrar"], function()
+				elegir(b, function(n) Pf.Borrar(n) K.Aviso({ titulo = format(L["Borraste «%s»"], n), icono = "ic-cerrar" }) end)
+			end, { tipo = "secundario" })
+			return b
+		end })
+	perfiles:Fila({ titulo = L["Exportar mis ajustes"], texto = L["Tu configuración como texto: guárdalo de respaldo o pásaselo a la manada."],
+		control = function(fila) return K.Boton(fila, L["Exportar"], function() Pf.MostrarExportar() end, { tipo = "secundario" }) end })
+	perfiles:Fila({ titulo = L["Importar ajustes"], texto = L["Pega el texto de «Exportar» para traer esa configuración. Lo de ahora queda guardado como perfil por si acaso."],
+		control = function(fila) return K.Boton(fila, L["Importar"], function() Pf.AbrirImportar() end, { tipo = "secundario" }) end })
+	perfiles:Fila({ titulo = L["Memoria de Alfa"], texto = L["Cuánta memoria usa cada parte de Alfa ahora, y suelta la que ya no ocupa. También con /alfa rendimiento."],
+		control = function(fila) return K.Boton(fila, L["Revisar"], function() Pf.Rendimiento() end, { tipo = "secundario" }) end })
+	return { sonido, bienvenida, perfiles }
 end
 
 local function construir(view)
@@ -123,7 +176,9 @@ N.Modulo({
 	id = ID, nombre = L["Estilo y sonido"], icono = "ic-apariencia", orden = 90, seccion = "ajustes",
 	subtitulo = L["Tu estilo (Alfa, Clásico WoW o Cristal), el color de acento y el aullido."],
 	comando = "estilo",
-	ajustes = { aullido = true, idioma = "", introSiempre = true },
+	ajustes = { aullido = true, idioma = "", introSiempre = true,
+		-- 1.2.7: los avisos de viaje y de raros como un anuncio animado (Kit/Anuncio.lua)
+		anuncios = true },
 	controles = CONTROLES,
 	construir = construir,
 })

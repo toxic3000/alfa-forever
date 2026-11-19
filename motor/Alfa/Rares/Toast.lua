@@ -359,8 +359,26 @@ local function build()
 	T.frame = f
 end
 
+-- Alfa 1.2.7: the animated announcement (AlfaNucleo.Kit.Anuncio) in place
+-- of the card, unless turned off (bienvenida.anuncios). A click hunts it
+-- (the waypoint); targeting stays on the rare button and its key.
+local function anuncio(a)
+	local N = rawget(_G, "AlfaNucleo")
+	local K = N and N.Kit
+	if not (K and K.Anuncio) or (N.Get and N.Get("bienvenida", "anuncios") == false) then return false end
+	if a.kind == "founder" then return false end
+	local dist = T.Distance(a)
+	local texto = T.Facts(a) .. (dist and ("  \194\183  " .. dist) or "")
+	local puede = a.map ~= nil and a.x ~= nil
+	current = a
+	return K.Anuncio({ sobre = a.kind == "treasure" and ns.T("Lya encontró un tesoro") or ns.T("Lya olfateó un raro"),
+		titulo = a.name or "", texto = texto, lobo = "atento", segundos = 7,
+		alClic = puede and waypoint or nil, pista = puede and ns.T("Clic: ir de caza") or nil })
+end
+
 function T.Show(a)
 	if type(a) ~= "table" then return end
+	if anuncio(a) then return end
 	if not f then build() end
 	current = a
 	local founder = a.kind == "founder"

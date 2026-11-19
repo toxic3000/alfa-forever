@@ -788,4 +788,13 @@ M.EN = {
 	["Ya no queda nada por hacer aquí. Elige qué sigue y la manada va contigo."] = "There's nothing left to do here. Choose what's next and the pack goes with you.",
 	["¡Terminaste esta guía!"] = "You finished this guide!",
 	["¡Ya la desbloqueaste!"] = "You unlocked it!",
+	-- 1.2.7: cadenas, grises que valen la pena y deshacer lo omitido
+	["Antes de abandonarla"] = "Before you abandon it",
+	["Si la abandonas, pierdes la cadena: después sigue “%s”."] = "If you abandon it, you lose the chain: next comes “%s”.",
+	["Vale la pena: da %s"] = "Worth it: gives %s",
+	["Vale la pena: abre “%s”"] = "Worth it: opens “%s”",
+	["Omitiste un paso"] = "You skipped a step",
+	["Deshacer"] = "Undo",
+	["Ya no se puede deshacer"] = "It can't be undone anymore",
+	["Puedes volver a ese paso desde «Ver detalle»."] = "You can go back to that step from \"See details\".",
 }

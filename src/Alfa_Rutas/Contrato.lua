@@ -23,6 +23,12 @@
 --   AlfaRuta.MostrarGuia()           muestra el rastreador
 --   AlfaRuta.RastreadorVisible() -> bool  si el rastreador está a la vista (Hoy no repite "Mientras estás aquí")
 --   AlfaRuta.Pagina()                la página Ruta
+--   AlfaRuta.UnaHora() -> por qué     (1.2.7) «Una hora de caza»: un plan corto con lo que más
+--       rinde cerca de ti: 2 o más listas -> Entregar(); misiones sin terminar en tu zona ->
+--       Liberar("zona"); si no, Recoger(). Devuelve "entregar" | "zona" | "recoger" (Hora.lua)
+--   AlfaRuta.Estimado() -> minutos | nil  (1.2.7) lo que te falta de tu guía, por tu ritmo
+--       (los pasos que quedan por lo que tardas en cada uno); nil con muy pocas medidas
+--   AlfaRuta.GrisValiosa(questID) -> motivo | nil  (1.2.7) «Vale la pena: …» de una misión gris
 -- Buscar cerca (AlfaCerca, Cerca.lua) y Mis planes (AlfaPlanes, Planes.lua)
 -- tienen su propio global.
 -- Las misiones también se agregan y se quitan del plan desde el menú del
@@ -95,6 +101,10 @@ function R.RastreadorVisible() return M.Rastreador.Visible() and true or false e
 -- { complete, undone, label, next, nextLabel } o nil.
 function R.FinGuia() return M.Rastreador.Fin and M.Rastreador.Fin() or nil end
 function R.Pagina() N.Abrir(M.ID) end
+-- 1.2.7
+function R.UnaHora() return M.Hora.UnaHora() end
+function R.Estimado() return M.Hora.Estimado() end
+function R.GrisValiosa(qid) return M.GrisValiosa(qid) end
 
 ---------------------------------------------------------------------------
 -- El menú del registro de misiones y del seguimiento de objetivos
@@ -129,6 +139,9 @@ end
 local function agregarAlMenu(root, qid)
 	if not qid or (A.Hidden and A.Hidden()) then return end
 	root:CreateDivider()
+	-- 1.2.7: una gris que vale la pena, dicho en el menú.
+	local vale = M.GrisValiosa and M.GrisValiosa(qid)
+	if vale and root.CreateTitle then root:CreateTitle(vale) end
 	if Cr.EnPlan(qid) then
 		root:CreateButton(L["Alfa: quitar de Cerrar mis misiones"], function() R.QuitarMision(qid) end)
 	else

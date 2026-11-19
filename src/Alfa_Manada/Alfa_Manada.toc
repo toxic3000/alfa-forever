@@ -20,6 +20,9 @@ Seguir.lua
 Invitar.lua
 Guaridas.lua
 Llamado.lua
+Raro.lua
+Juntos.lua
+Saludo.lua
 Mapa.lua
 Pagina.lua
 Manada.lua

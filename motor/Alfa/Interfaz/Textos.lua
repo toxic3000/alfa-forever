@@ -126,4 +126,7 @@ M.EN = {
 	["Pregúntale a Lya"] = "Ask Lya",
 	-- 1.2.5: la ayuda del aviso al grupo
 	["Manda al chat del grupo una línea con el enlace de la misión cuando completas sus objetivos, otra cuando está lista para entregar y otra al entregarla; todo el grupo la ve, con o sin Alfa. Apagado, esas líneas solo te salen a ti. Nunca en banda."] = "Sends a line with the quest's link to party chat when you finish its objectives, another when it's ready to turn in and another when you turn it in; the whole party sees it, Alfa or not. Off, those lines show only for you. Never in a raid.",
+	-- 1.2.7: el anuncio animado
+	["¡Tierra a la vista! La manada desembarca en %s"] = "Land ahoy! The pack goes ashore in %s",
+	["Clic: ir de caza"] = "Click: go hunt",
 }

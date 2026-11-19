@@ -31,6 +31,12 @@ M.NOVEDADES = {
 --   { version, titulo, puntos = { { icono (ic-*), texto } } }
 ---------------------------------------------------------------------------
 M.NOTAS = {
+	{ version = "1.2.7", titulo = "Anuncios animados y la manada a la vista", puntos = {
+		{ "ic-lobo", "Al llegar en barco o al encontrar un raro, un anuncio grande con animación, como la intro." },
+		{ "ic-manada", "La manada en el mapa, cazar juntos, el saludo al entrar y la calavera para el raro con un clic." },
+		{ "ic-huella", "Lya en las mazmorras, con ánimo, su salchicha y su despedida; y te enseña Alfa en 5 pasos." },
+		{ "ic-ruta", "Una hora de caza, aviso de cadena, «Deshacer» al omitir y cuánto te falta de tu guía." },
+	} },
 	{ version = "1.2.6", titulo = "Lya te lo dice todo", puntos = {
 		{ "ic-manada", "Llama a la manada cuando necesites ayuda; los lobos de tu zona llegan con «¡Voy!». Y «Seguir» ya no se suelta al alcanzar a alguien." },
 		{ "ic-nivel", "Lya recuerda lo que te dijo, tiene una tecla para su botón y te cuenta tu semana de caza y tu mejor día." },

@@ -12,7 +12,9 @@ M.AJUSTES = { mostrar = true, frecuencia = "muchos", minutos = 3, tamano = 64, s
 	-- 1.2.5: los avisos pequeños de Alfa los dice Lya cuando está a la vista
 	avisos = true,
 	-- 1.2.6: el tamaño de su letra: "normal" | "grande" | "enorme"
-	letra = "grande" }
+	letra = "grande",
+	-- 1.2.7: un consejo al entrar a una mazmorra; el globo en una sola línea
+	mazmorras = true, compacto = false }
 M.Avisar = function() end -- Pagina.lua la cambia: rehace la página si está a la vista
 
 M.EN = {
@@ -1289,6 +1291,53 @@ M.EN = {
 	["¿Cómo me fue esta semana?"] = "How did I do this week?",
 	["Te llevo la cuenta de tu semana de caza y tu mejor día. Escribe /alfa lya semana y te lo cuento."] = "I keep track of your hunting week and your best day. Type /alfa lya semana and I'll tell you.",
 	["Sí: en las asignaciones de teclas del juego, en la sección Alfa, ponle una tecla a «Pregúntale a Lya» y otra a «Lo que te ofrece Lya», que hace lo de su botón."] = "Yes: in the game's key bindings, in the Alfa section, give \"Ask Lya\" a key and another to \"What Lya offers\", which does what her button does.",
+	-- 1.2.7: mazmorras, su ánimo, la salchicha, antes de irte y el globo compacto (Momentos.lua)
+	["Ver la mazmorra"] = "See the dungeon",
+	["¡Ya estamos en %s! Deja que el tanque jale primero y quédate cerca de quien cura."] = "We're in %s! Let the tank pull first and stay close to your healer.",
+	["%s… huele a peligro y a buen botín. Pelea al objetivo que marque tu grupo."] = "%s… smells like danger and good loot. Attack the target your group marks.",
+	["Entramos a %s. Antes de cada pelea, espera a que quien cura tenga maná."] = "We're in %s. Before each fight, wait until your healer has mana.",
+	["¡%s! Si algo te pega, corre hacia el tanque, no lejos de él."] = "%s! If something hits you, run toward the tank, not away from them.",
+	["Bienvenido a %s. Mira bien antes de jalar: un grupo de más nos puede tumbar a todos."] = "Welcome to %s. Look carefully before pulling: one pack too many can wipe us all.",
+	["%s, ¡en manada! Pregunten cómo se reparte el botín antes del primer jefe."] = "%s, as a pack! Agree on how loot is shared before the first boss.",
+	["¡Ya estamos en la mazmorra! Deja que el tanque jale primero y quédate cerca de quien cura."] = "We're in the dungeon! Let the tank pull first and stay close to your healer.",
+	["Mazmorra a la vista. Pelea al objetivo que marque tu grupo y todo sale mejor."] = "Dungeon ahead. Attack the target your group marks and everything goes better.",
+	["Aquí adentro se caza en equipo: espera a que quien cura tenga maná antes de seguir."] = "In here we hunt as a team: wait until your healer has mana before moving on.",
+	["Ay, lobo… van varias caídas seguidas. Respira, repara tu equipo y, si quieres, pide ayuda a la manada."] = "Oh, wolf… that's several falls in a row. Breathe, repair your gear and, if you like, ask the pack for help.",
+	["Hoy está difícil, ¿verdad? No pasa nada. Descansa un poco, repara y volvemos con más fuerza."] = "It's a tough day, isn't it? That's okay. Rest a little, repair and we'll come back stronger.",
+	["Me quedo aquí sentadita contigo. Tres caídas no te hacen menos lobo. ¿Reparamos y pedimos ayuda?"] = "I'll sit right here with you. Three falls don't make you any less of a wolf. Shall we repair and ask for help?",
+	["Calma, que la cacería no se va a ningún lado. Come algo, repara y, si es mucho, la manada te echa la mano."] = "Easy, the hunt isn't going anywhere. Eat something, repair and, if it's too much, the pack will lend a paw.",
+	["Pedir ayuda a la manada"] = "Ask the pack for help",
+	["¡Auuuu! ¡Nivel %d y dos niveles en menos de media hora! Vas como lobo en luna llena."] = "Awooo! Level %d, and two levels in under half an hour! You're like a wolf under a full moon.",
+	["¡Otro nivel tan pronto! Nivel %d. ¡Auuuu, esta racha no la para nadie!"] = "Another level already! Level %d. Awooo, nobody can stop this streak!",
+	["¡Nivel %d, y el anterior hace nada! Aúllo dos veces, una por cada uno. ¡Auuuu, auuuu!"] = "Level %d, and the last one was just now! I'll howl twice, once for each. Awooo, awooo!",
+	["*se sienta y te mira con ojitos tiernos* ¿Me das una salchicha? Solo una… bueno, una."] = "*sits and gives you puppy eyes* Can I have a sausage? Just one… well, one.",
+	["Llevamos un buen rato cazando… ¿no traerás por ahí una salchichita para tu loba?"] = "We've been hunting for a good while… you wouldn't happen to have a little sausage for your wolf?",
+	["*mueve la cola* Huelo una salchicha en tu mochila. ¿Me la das?"] = "*wags her tail* I smell a sausage in your backpack. Can I have it?",
+	["Una loba que cuida tan bien a su lobo merece una salchicha, ¿no crees?"] = "A wolf who takes such good care of her wolf deserves a sausage, don't you think?",
+	["*levanta la manita* ¿Salchicha? Prometo cuidarte el doble."] = "*raises a paw* Sausage? I promise to look after you twice as hard.",
+	["Darle una salchicha"] = "Give her a sausage",
+	["¡Mmm, qué rica! Gracias, eres el mejor lobo de la manada."] = "Mmm, delicious! Thank you, you're the best wolf in the pack.",
+	["*la devora en un segundo* ¡Gracias! Ahora sí, a cazar."] = "*gobbles it up in a second* Thanks! Now, let's hunt.",
+	["¡Salchicha! *mueve la cola a toda velocidad* Gracias, gracias."] = "Sausage! *wags her tail at full speed* Thank you, thank you.",
+	["Ñam. Esto me da energía para cuidarte otras tres horas."] = "Nom. This gives me energy to look after you for three more hours.",
+	["¡Gracias! Ya van %d salchichas que me das. Las llevo contadas, eh."] = "Thanks! That's %d sausages you've given me. I'm keeping count, you know.",
+	["¡Ñam! Con esta van %d. Eres mi persona favorita de todo Azeroth."] = "Nom! That makes %d. You're my favorite person in all of Azeroth.",
+	["%d salchichas… y cada una me supo a gloria. ¡Gracias!"] = "%d sausages… and every one tasted like heaven. Thank you!",
+	["¡Mi primera salchicha contigo! Esta no la voy a olvidar nunca."] = "My first sausage with you! I'll never forget this one.",
+	["Esa ya me la diste, ¡gracias! Guárdame la siguiente."] = "You already gave me that one, thanks! Save me the next.",
+	["Antes de irte: tienes %d misiones listas para entregar. ¿Pasamos a cobrarlas?"] = "Before you go: you have %d quests ready to turn in. Shall we go collect?",
+	["¡Espera! Dejas %d misiones listas sin entregar. Si no, mañana empezamos por ahí."] = "Wait! You're leaving %d finished quests unturned. If not now, we'll start there next time.",
+	["Antes de irte: tienes una misión lista para entregar. ¿Pasamos a cobrarla?"] = "Before you go: you have a quest ready to turn in. Shall we go collect?",
+	["¡Hasta pronto! Hoy cazamos %s Aquí te espero."] = "See you soon! Today we hunted %s I'll be waiting here.",
+	["Buena caza hoy: %s Descansa, que yo cuido tu lugar."] = "Good hunting today: %s Get some rest, I'll keep your spot.",
+	["¡Hasta pronto! Aquí te espero, cuidando tu lugar."] = "See you soon! I'll be waiting here, keeping your spot.",
+	["¿Ya te vas? Descansa bien. Yo me quedo vigilando hasta que vuelvas."] = "Leaving already? Rest well. I'll keep watch until you're back.",
+	["Salchichas que le diste"] = "Sausages you gave her",
+	["De vez en cuando Lya te pide una. Te las tiene bien contadas."] = "Every now and then Lya asks you for one. She keeps careful count.",
+	["Globo compacto"] = "Compact bubble",
+	["El globo de Lya en una sola línea, con sus botones. Pasa el ratón encima para leerlo completo."] = "Lya's bubble on a single line, with its buttons. Hover over it to read it all.",
+	["Lya en las mazmorras"] = "Lya in dungeons",
+	["Al entrar a una mazmorra, Lya te da un consejo corto y un botón para verla. Nunca en combate."] = "When you enter a dungeon, Lya gives you a short tip and a button to see it. Never in combat.",
 }
 
 M.L = AlfaNucleo.Textos(M.EN)
