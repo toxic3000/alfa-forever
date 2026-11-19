@@ -1,5 +1,35 @@
 # Cambios de Alfa
 
+## 1.2.5 — La manada caza junta: raros por guarida, tu día de caza y Lya te dice los avisos (19/11/2026)
+
+**Español**
+- Nuevo: raros de la manada. Cuando un lobo de La Jauría encuentra un raro o un tesoro en tu zona, te llega un aviso con su guarida: si es la tuya, «Ir de caza»; si es otra, «Pedir entrar».
+- Tu guarida a la vista: sale en el rastreador («· Guarida Colmillo») y en el cuadro de cada lobo de la manada, y Lya te avisa si el juego te cambia de capa.
+- Clic derecho en un lobo con la puerta abierta: «Pedir entrar a su guarida».
+- Nuevo: tu día de caza. Lya te lleva la cuenta de las misiones, los niveles, el oro, los raros y el tiempo de cada día; te lo cuenta con /alfa lya dia, sale en «Pregúntale a Lya» y, al volver otro día, te dice cómo te fue la última vez.
+- Lya festeja tus misiones: da su saltito al entregar una y cada 5 en el día te echa porras. En La Jauría también aúlla cuando alguien de tu grupo sube de nivel, con «Felicitar en el grupo». Y si quieres, un aullido corto cada vez que entregas una misión (en la página de Lya, apagado de fábrica).
+- Un «?» junto al título de cada página de Alfa: Lya te explica esa página y empieza por sus preguntas. «Pregúntale a Lya» suma 14 preguntas (Pesca, Mazmorras, Comercio, Recolección, Curación, Combate, Mundo, Paisaje, raros de la manada) y ahora tiene su propia tecla en las asignaciones del juego, sección Alfa.
+- Los ajustes de la barra y la vista de Pesca también salen en el buscador de Ajustes.
+- Lya te dice los avisos: los mensajes pequeños de Alfa (invitaciones, guaridas, rutas...) los dice ella en su globo, con su botón, en vez de salir arriba. Si está oculta o estás en combate, salen como siempre. Se apaga en la página de Lya.
+- Los tres estilos más finos: esquinas más chicas en Alfa y Cristal, el marco delgado del juego en las ventanas de Clásico WoW y la sombra de las letras más suave en Cristal.
+- La insignia de La Jauría en el retrato, un poco más grande.
+- Al completar una misión vuelve a salir en tu chat, con el lobo de Alfa: «[Misión] está lista para entregar» y, al entregarla, «¡Misión completada: [Misión]!», solo o en grupo. Si prendes «Avisar a tu grupo» (lo pregunta la configuración, en Tus extras), también lo ve todo tu grupo, con o sin Alfa; viene apagado para no llenar el chat de nadie.
+- Arreglos: tu guarida ya no se olvida cuando alguien entra o sale de tu grupo; el cambio de guarida se confirma con dos lecturas (cerca de la orilla de una zona ya no salta de una a otra) y su aviso sale una vez cada 2 minutos como mucho; quien te pide entrar justo después de otro lee «acaba de abrirle la puerta a alguien», no «está en combate»; y el rastreador muestra tu guarida solo si cabe entera.
+
+**English**
+- New: pack rares. When a La Jauría wolf finds a rare or a treasure in your zone, you get an alert with its den: if it's yours, "Go hunt"; if it's another, "Ask to enter".
+- Your den in sight: it shows in the tracker ("· Fang Den") and in every pack wolf's tooltip, and Lya tells you if the game changes your layer.
+- Right-click a wolf with their door open: "Ask to enter their den".
+- New: your hunting day. Lya keeps count of each day's quests, levels, gold, rares and time; she tells you with /alfa lya dia, it shows in "Ask Lya" and, when you come back another day, she tells you how the last one went.
+- Lya cheers your quests: she hops when you turn one in and cheers every 5 in a day. She also howls when someone in your group levels up, with "Congratulate in group". And if you like, a short howl every time you turn in a quest (on Lya's page, off by default).
+- A "?" next to every Alfa page title: Lya explains that page and starts with its questions. "Ask Lya" gains 14 questions (Fishing, Dungeons, Trade, Gathering, Healing, Combat, World, Scenery, pack rares) and now has its own key in the game's key bindings, Alfa section.
+- Fishing's bar and view settings also show in the Settings search.
+- Lya tells you the alerts: Alfa's small messages (invites, dens, routes...) are said by her in her bubble, with their button, instead of popping up at the top. If she's hidden or you're in combat, they show as usual. Turn it off on Lya's page.
+- The three styles are finer: smaller corners in Alfa and Crystal, the game's thin frame on Classic WoW windows and a softer text shadow in Crystal.
+- La Jauría's badge on the portrait, a little bigger.
+- Completing a quest shows in your chat again, with Alfa's wolf: "[Quest] is ready to turn in" and, when you turn it in, "Quest complete: [Quest]!", solo or in a group. Turn on "Tell your group" (the setup asks, in Your extras) and your whole group sees it too, Alfa or not; it's off by default so nobody's chat gets flooded.
+- Fixes: your den is no longer forgotten when someone joins or leaves your group; a den change is confirmed with two readings (near a zone edge it no longer flips back and forth) and its notice shows at most once every 2 minutes; whoever asks to enter right after someone else reads "just opened the door for someone", not "in combat"; and the tracker shows your den only when it fits whole.
+
 ## 1.2.4 — Lya te guía, un asistente más sencillo y las guaridas (19/11/2026)
 
 **Español**

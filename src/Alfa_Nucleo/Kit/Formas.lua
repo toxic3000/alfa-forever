@@ -325,7 +325,9 @@ local function rolDe(opts)
 	return "control"
 end
 
-local JUEGO = { ventana = "dialogo", panel = "info" }
+-- 1.2.5: las ventanas también con el marco fino de los cuadros de información
+-- (antes el grueso de los cuadros de diálogo): se ve más limpio y fino.
+local JUEGO = { ventana = "info", panel = "info" }
 
 local function pintarCaja(c)
 	local e = c.estilo

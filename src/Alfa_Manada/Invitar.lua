@@ -219,9 +219,21 @@ function I.Armar(etiqueta, raiz, contexto)
 	if type(raiz) ~= "table" or type(raiz.CreateButton) ~= "function" then return end
 	local persona = I.Persona(contexto)
 	if not persona then return end
+	-- 1.2.5: su guarida abierta, distinta de la tuya: «Pedir entrar a su guarida».
+	local Gu = M.Guaridas
+	local v = Gu and Gu.DeLobo and Gu.DeLobo(persona.nombre)
+	local mia = Gu and Gu.Actual and Gu.Actual()
+	local entrar = v and v.abierta and not (mia and mia.capa == v.capa)
 	local destinos = I.Destinos(persona, etiqueta)
-	if #destinos == 0 then return end
+	if #destinos == 0 and not entrar then return end
 	if raiz.CreateDivider then raiz:CreateDivider() end
+	if entrar then
+		raiz:CreateButton(string.format(L["Pedir entrar a su guarida (%s)"], Gu.Nombre(v.capa)), function()
+			local ok, por = Gu.PedirA(persona.nombre)
+			if not ok and por == "grupo" then U.Decir(L["Sal de tu grupo primero: el juego te pasa a la guarida de quien te invita."]) end
+		end)
+	end
+	if #destinos == 0 then return end
 	local sub = raiz:CreateButton(L["Invitar al clan"])
 	for _, d in ipairs(destinos) do
 		sub:CreateButton(texto(d), function() I.Enviar(persona, d) end)

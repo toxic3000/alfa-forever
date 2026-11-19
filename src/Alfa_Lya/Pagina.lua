@@ -116,6 +116,12 @@ local function grupos(padre)
 		texto = L["Lo menos que espera Lya entre un consejo y otro. Lo importante no espera."] })
 	consejos:Fila({ titulo = L["Sonido suave"], control = interruptor("sonido"), activa = visible,
 		texto = L["Un clic bajito cuando Lya te dice algo."] })
+	consejos:Fila({ titulo = L["Lya te dice los avisos"], control = interruptor("avisos"), activa = visible,
+		texto = L["Los avisos pequeños de Alfa los dice Lya en su globo, con su botón, en vez de salir arriba. Si está oculta o en combate, salen como siempre."] })
+	consejos:Fila({ titulo = L["Aullar al completar una misión"], control = interruptor("aullidoMision"),
+		texto = L["Un aullido corto cada vez que entregas una misión. Viene apagado."] })
+	consejos:Fila({ titulo = L["Aullar con tu grupo"], control = interruptor("aullarGrupo"), activa = visible,
+		texto = L["Cuando alguien de tu grupo sube de nivel, Lya aúlla, lo felicita y te deja felicitarlo en el chat con un clic."] })
 	consejos:Fila({ titulo = L["Consejos vistos"], activa = visible,
 		texto = L["Cada frase sale tres veces como mucho. Con esto vuelven a salir desde el principio."],
 		control = function(fila) return K.Boton(fila, L["Volver a mostrarlos"], function() Ce.OlvidarVistos() end, { tipo = "secundario", tam = "chico" }) end })

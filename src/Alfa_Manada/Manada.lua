@@ -48,6 +48,8 @@ N.Modulo({
 		invitarMenu = true, -- «Invitar al clan» en el clic derecho de un jugador
 		insigniaRetrato = true, -- la insignia de La Jauría en el borde del retrato (1.2.2)
 		guaridaAbierta = false, -- invitar a quien pida entrar a tu guarida (capa) (1.2.4)
+		rarosManada = true, -- los raros que encuentra la manada, con su guarida (1.2.5)
+		guaridaVisible = true, -- tu guarida en el rastreador y el aviso al cambiar (1.2.5)
 	},
 	construir = P.Construir,
 })
@@ -79,6 +81,12 @@ function AlfaManada.Resumen()
 end
 
 function AlfaManada.Insignia(nombre) return M.Insignias.De(nombre) end
+-- El nombre de tu guarida ahora («Guarida Colmillo»), o nil (1.2.5).
+function AlfaManada.Guarida()
+	if not on("guaridaVisible") then return nil end
+	local a = M.Guaridas and M.Guaridas.Actual()
+	return a and M.Guaridas.Nombre(a.capa) or nil
+end
 function AlfaManada.InsigniaDeUnidad(unit) return M.Insignias.DeUnidad(unit) end
 function AlfaManada.EstiloInsignia(tipo) return M.Insignias.Estilo(tipo) end
 

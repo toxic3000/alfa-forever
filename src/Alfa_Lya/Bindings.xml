@@ -1,0 +1,6 @@
+<Bindings>
+	<!-- 1.2.5: una tecla para «Pregúntale a Lya» (Guia.lua pone su nombre). -->
+	<Binding name="ALFA_LYA_GUIA" category="Alfa" searchTags="BINDING_TAG_ALFA">
+		if AlfaLya and AlfaLya.Guia then AlfaLya.Guia() end
+	</Binding>
+</Bindings>

@@ -834,7 +834,12 @@ local function grupos(ui, padre)
 		texto = L["Clic derecho en un jugador (su retrato, su nombre en el chat o tu grupo) y elige tu hermandad: la invitación le llega sin escribir su nombre. Para una comunidad, Alfa te deja el nombre listo para pegar en la ventana del juego."] })
 	invitar:Fila({ titulo = L["Tu insignia en los retratos"], control = interruptor("insigniaRetrato"),
 		texto = L["Quien lleva la insignia de La Jauría la luce en el borde de su retrato: en el tuyo, el de tu objetivo y el de tu foco."] })
-	return { rastro, mapa, invitar }
+	local guaridas = K.GrupoAjustes(padre, { titulo = L["Guaridas"] })
+	guaridas:Fila({ titulo = L["Raros de la manada"], control = interruptor("rarosManada"), activa = function() return on("compartir") end,
+		texto = L["Cuando un lobo encuentra un raro o un tesoro en tu zona, te avisa en qué guarida está. Si es la tuya, «Ir de caza»; si es otra, «Pedir entrar»."] })
+	guaridas:Fila({ titulo = L["Tu guarida a la vista"], control = interruptor("guaridaVisible"),
+		texto = L["Tu guarida en el rastreador y en el cuadro de los lobos, y Lya te avisa si el juego te cambia de capa."] })
+	return { rastro, mapa, invitar, guaridas }
 end
 
 ---------------------------------------------------------------------------

@@ -439,4 +439,17 @@ M.EN = {
 	["Lya se queda en tu pantalla: consejos cortos, historias y atajos a todo Alfa."] = "Lya stays on your screen: short tips, stories and shortcuts to all of Alfa.",
 	["Solo cuando te llame"] = "Only when I call you",
 	["Lya descansa. La llamas con /alfa lya o /alfa ayuda cuando quieras."] = "Lya rests. Call her with /alfa lya or /alfa ayuda whenever you like.",
+	-- 1.2.5
+	["Avisar en el chat cuando completas una misión"] = "Announce in chat when you complete a quest",
+	["«[Misión] está lista para entregar» y «¡Misión completada!». En grupo lo ve todo el grupo; solo, sale en tu chat."] = "\"[Quest] is ready to turn in\" and \"Quest complete!\". In a party everyone sees it; solo, it shows in your chat.",
+	["Las misiones avisan otra vez"] = "Quests announce again",
+	["Al completar una misión vuelve a salir en el chat: «[Misión] está lista para entregar» y, al entregarla, «¡Misión completada!». En grupo lo ve todo el grupo; solo, tú."] = "Completing a quest shows in chat again: \"[Quest] is ready to turn in\" and, when you turn it in, \"Quest complete!\". In a party the whole party sees it; solo, just you.",
+	["La manada caza junta"] = "The pack hunts together",
+	["Raros de la manada: cuando un lobo encuentra un raro en tu zona, te avisa en qué guarida está, con «Ir de caza» o «Pedir entrar»."] = "Pack rares: when a wolf finds a rare in your zone, it tells you which den it's in, with \"Go hunt\" or \"Ask to enter\".",
+	["Tu día de caza: Lya cuenta tus misiones, niveles, oro y raros del día. Pídeselo con /alfa lya dia."] = "Your hunting day: Lya counts the day's quests, levels, gold and rares. Ask her with /alfa lya dia.",
+	["Un «?» en cada página de Alfa para que Lya te la explique, y su propia tecla."] = "A \"?\" on every Alfa page so Lya explains it, and her own key.",
+	-- 1.2.5: avisar a tu grupo
+	["Avisar a tu grupo cuando completas una misión"] = "Tell your group when you complete a quest",
+	["«[Misión] está lista para entregar» y «¡Misión completada!» en el chat del grupo, para todos. Apagado, solo te salen a ti."] = "\"[Quest] is ready to turn in\" and \"Quest complete!\" in party chat, for everyone. Off, they show only for you.",
+	["Al completar una misión vuelve a salir en tu chat: «[Misión] está lista para entregar» y «¡Misión completada!». Si lo prendes, también tu grupo lo ve."] = "Completing a quest shows in your chat again: \"[Quest] is ready to turn in\" and \"Quest complete!\". Turn it on and your group sees it too.",
 }

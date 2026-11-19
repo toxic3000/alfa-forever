@@ -286,8 +286,8 @@ function M.PantallasDeAjustes()
 				{ titulo = "Comparte por ti", filas = {
 					{ id = "progresoGrupo", clave = "party.share", titulo = "Tu avance de misiones con tu grupo",
 						texto = "Quienes van contigo y usan Alfa ven cómo vas en las misiones que comparten." },
-					{ id = "chatGrupo", clave = "party.chat", titulo = "Contar tu avance en el chat del grupo",
-						texto = "Escribe en el chat del grupo cuando terminas un objetivo de una misión compartida. Viene apagado para no llenar el chat de nadie." },
+					{ id = "chatGrupo", clave = "party.chat", titulo = "Avisar a tu grupo cuando completas una misión",
+						texto = "«[Misión] está lista para entregar» y «¡Misión completada!» en el chat del grupo, para todos. Apagado, solo te salen a ti." },
 					{ id = "barcos", clave = "nav.shareTransit", titulo = "Horarios de barcos y zepelines",
 						texto = "Tu hermandad y tu grupo reciben los horarios que tomas, y tú los suyos." },
 				} },
@@ -332,6 +332,16 @@ end
 ---------------------------------------------------------------------------
 M.PANTALLAS_PERFIL = { misiones = true, guia = true, comercio = true, gente = true }
 
+-- 1.2.5: tus líneas de misiones («[Misión] está lista para entregar»,
+-- «¡Misión completada!») te salen a ti; quien las mandaba al grupo también las
+-- ve en su chat. Mandarlas al grupo no se toca: es decisión de cada quien.
+N.Migracion(2, function(db)
+	local s = type(db.settings) == "table" and db.settings or nil
+	if not s then return end
+	s.party = type(s.party) == "table" and s.party or {}
+	s.party.chatEcho = true
+end)
+
 M.PERFILES = {
 	{ valor = "manada", icono = "ic-lobo", titulo = "Alfa lo hace por ti",
 		texto = "Acepta y entrega tus misiones, elige tu guía y sigue sola, vende, repara y toma tus vuelos. Tú solo juegas.",
@@ -340,7 +350,7 @@ M.PERFILES = {
 			clase = true, instructor = "2", flecha = true, camino = true, charla = true, pasoPide = true,
 			vender = true, reparar = true, repararHermandad = true, comprar = true, despojar = true, mapaVuelo = true,
 			tomarVuelo = true, hogar = true, invocar = true, resucitar = true, grupoAmigos = true, liberar = true,
-			progresoGrupo = true, chatGrupo = false, barcos = true } },
+			progresoGrupo = true, barcos = true } },
 	{ valor = "equilibrio", icono = "ic-huella", titulo = "Equilibrado", sobre = "Recomendado",
 		texto = "Alfa se encarga de lo repetitivo (aceptar, entregar, vender, reparar) y te pregunta en los cruces del camino.",
 		filas = { aceptar = true, entregar = true, soloRuta = true, todas = false, grises = true, cerrarSaltadas = false, avisarCierra = true,
@@ -348,7 +358,7 @@ M.PERFILES = {
 			clase = true, instructor = "2", flecha = true, camino = true, charla = true, pasoPide = true,
 			vender = true, reparar = true, repararHermandad = true, comprar = false, despojar = true, mapaVuelo = true,
 			tomarVuelo = false, hogar = false, invocar = true, resucitar = true, grupoAmigos = true, liberar = true,
-			progresoGrupo = true, chatGrupo = false, barcos = true } },
+			progresoGrupo = true, barcos = true } },
 	{ valor = "yo", icono = "ic-personaje", titulo = "Yo decido",
 		texto = "Alfa te guía con la flecha y te avisa, pero tú aceptas, entregas, eliges y viajas. Lo mínimo: vender lo gris y reparar.",
 		filas = { aceptar = false, entregar = false, soloRuta = true, todas = false, grises = true, cerrarSaltadas = false, avisarCierra = true,
@@ -356,12 +366,14 @@ M.PERFILES = {
 			clase = true, instructor = "2", flecha = true, camino = true, charla = false, pasoPide = false,
 			vender = true, reparar = true, repararHermandad = false, comprar = false, despojar = true, mapaVuelo = false,
 			tomarVuelo = false, hogar = false, invocar = false, resucitar = false, grupoAmigos = false, liberar = false,
-			progresoGrupo = true, chatGrupo = false, barcos = true } },
+			progresoGrupo = true, barcos = true } },
 }
 
 -- Los extras: un mosaico de tarjetas que se prenden con un clic (filas de
 -- las pantallas «apariencia» y «personaje», y resaltar lo de misión).
 M.EXTRAS = {
+	-- 1.2.5: avisar a tu grupo de tus misiones, a la vista (REGLAS-BLIZZARD.md: se pregunta, viene apagado).
+	{ "chatGrupo", "ic-manada" },
 	{ "rotacion", "ic-nivel" }, { "curar", "ic-curacion" }, { "avisos", "ic-alerta" }, { "resaltar", "ic-misiones" },
 	{ "recoleccion", "ic-recoleccion" }, { "terreno", "ic-mapa" }, { "paisaje", "ic-mundo" },
 	{ "estiloChat", "ic-conexiones" }, { "estiloMinimapa", "ic-cerca" }, { "estiloBarras", "ic-rejilla" },

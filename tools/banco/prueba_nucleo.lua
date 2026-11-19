@@ -248,7 +248,7 @@ step("aviso: el clic en el cuerpo no corre una acción del juego", function()
   if n ~= 0 then error("el cuerpo del aviso corrió el clic de Alfa de una acción del juego") end
   if not a.alfaVivo then error("el aviso se cerró sin hacer nada") end
   a:Cerrar()
-  local b2 = K.Aviso({ titulo = "Prueba", accion = { texto = "Ir", alClic = function() n = n + 1 end } })
+  local b2 = K.Aviso({ titulo = "Prueba", lya = false, accion = { texto = "Ir", alClic = function() n = n + 1 end } })
   FIRE(b2, "OnClick", "LeftButton")
   if n ~= 1 then error("el cuerpo de un aviso normal ya no hace su acción") end
 end)

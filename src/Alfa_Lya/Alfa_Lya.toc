@@ -18,4 +18,5 @@ Historias.lua
 Charla.lua
 VentanaHistorias.lua
 Pagina.lua
+Dia.lua
 Guia.lua

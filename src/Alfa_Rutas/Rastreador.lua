@@ -1102,15 +1102,27 @@ local function resumenGuia(g, v)
 	-- la vista previa; "Paso 2" junto a "54 %" se contradecía).
 	local done, total = engine("GetProgress")
 	local linea = (total and total > 0) and format(L["%d de %d pasos hechos"], done or 0, total) or ""
-	return nombre, linea, done, total
+	-- Tu guarida (1.2.5, La Jauría): «· Guarida Colmillo» al final.
+	local Ma = rawget(_G, "AlfaManada")
+	local guarida = type(Ma) == "table" and type(Ma.Guarida) == "function" and Ma.Guarida()
+	local corta = linea
+	if type(guarida) == "string" and guarida ~= "" then
+		linea = linea ~= "" and (linea .. "  \194\183  " .. guarida) or guarida
+	end
+	return nombre, linea, done, total, corta
 end
 
 local function cabecera(g, v)
 	local c = ui.cab
-	local nombre, linea, done, total = resumenGuia(g, v)
+	local nombre, linea, done, total, corta = resumenGuia(g, v)
 	c.alfaNombre = g and nombre or nil
 	K.Escribir(c.Titulo, nombre)
 	K.Escribir(c.Sub, linea)
+	-- Con la guarida, solo si cabe entera (nada de textos cortados).
+	if linea ~= corta and K.AnchoTexto(c.Sub) > (c.alfaAnchoTitulo or (ANCHO - 120)) then
+		linea = corta
+		K.Escribir(c.Sub, linea)
+	end
 	-- El nombre en hasta dos renglones; la cabecera crece con él.
 	local ht = K.Parrafo(c.Titulo, c.alfaAnchoTitulo or (ANCHO - 120), 2)
 	local hs = linea ~= "" and K.AltoTexto(c.Sub) or 0

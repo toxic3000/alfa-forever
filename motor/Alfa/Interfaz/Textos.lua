@@ -119,4 +119,11 @@ M.EN = {
 	["Seleccionarlo"] = "Target it",
 	["Dejarlo ir"] = "Let it go",
 	["Toca «Seleccionarlo» otra vez, o usa el botón de raros."] = "Tap \"Target it\" again, or use the rare button.",
+	-- Aviso de misiones en el chat (1.2.5)
+	["¡Misión completada: %s!"] = "Quest complete: %s!",
+	["Una línea con el enlace de la misión cuando completas sus objetivos, otra cuando está lista para entregar y otra al entregarla. En grupo la ve todo el grupo, con o sin Alfa; solo, sale en tu chat. Nunca en banda."] = "A line with the quest's link when you finish its objectives, another when it's ready to turn in and another when you turn it in. In a party everyone sees it, Alfa or not; solo, it shows in your chat. Never in a raid.",
+	-- 1.2.5: el «?» de cada página
+	["Pregúntale a Lya"] = "Ask Lya",
+	-- 1.2.5: la ayuda del aviso al grupo
+	["Manda al chat del grupo una línea con el enlace de la misión cuando completas sus objetivos, otra cuando está lista para entregar y otra al entregarla; todo el grupo la ve, con o sin Alfa. Apagado, esas líneas solo te salen a ti. Nunca en banda."] = "Sends a line with the quest's link to party chat when you finish its objectives, another when it's ready to turn in and another when you turn it in; the whole party sees it, Alfa or not. Off, those lines show only for you. Never in a raid.",
 }

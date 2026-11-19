@@ -234,4 +234,21 @@ M.EN = {
 	["%d con la puerta abierta"] = "%d with the door open",
 	["tocando a la puerta..."] = "knocking on the door...",
 	["Nadie de la manada anda en otra guarida de esta zona ahora."] = "Nobody from the pack is in another den of this zone right now.",
+	-- 1.2.5: raros de la manada y tu guarida a la vista
+	["%s lo encontró en la %s."] = "%s found it in %s.",
+	["%s lo encontró en tu guarida."] = "%s found it in your den.",
+	["(la tuya)"] = "(yours)",
+	["(puerta abierta)"] = "(door open)",
+	["Cuando un lobo encuentra un raro o un tesoro en tu zona, te avisa en qué guarida está. Si es la tuya, «Ir de caza»; si es otra, «Pedir entrar»."] = "When a wolf finds a rare or a treasure in your zone, it tells you which den it's in. If it's yours, \"Go hunt\"; if it's another, \"Ask to enter\".",
+	["El juego te pasó a la %s. Otra gente, otros raros, otros minerales."] = "The game moved you to %s. Other people, other rares, other ore.",
+	["En la %s"] = "In %s",
+	["Ir de caza"] = "Go hunt",
+	["Pedir entrar a su guarida (%s)"] = "Ask to enter their den (%s)",
+	["Raro de la manada: %s"] = "Pack rare: %s",
+	["Raros de la manada"] = "Pack rares",
+	["Tesoro de la manada: %s"] = "Pack treasure: %s",
+	["Tu guarida a la vista"] = "Your den in sight",
+	["Tu guarida en el rastreador y en el cuadro de los lobos, y Lya te avisa si el juego te cambia de capa."] = "Your den in the tracker and in wolves' tooltips, and Lya tells you if the game changes your layer.",
+	-- 1.2.5: guaridas
+	["Acaba de abrirle la puerta a alguien. Prueba en un momento."] = "They just opened the door for someone. Try again in a moment.",
 }

@@ -788,6 +788,9 @@ local function comando(resto)
 		N.Abrir(ID)
 	elseif palabra == "ayuda" and M.Guia then
 		M.Guia.Abrir()
+	elseif palabra == "dia" or palabra == "día" then
+		if not Ce.Activa() then Ce.Mostrar(true) end
+		if M.Dia then M.Dia.Contar() end
 	elseif palabra == "historias" and M.Historias then
 		M.Historias.Abrir()
 	elseif palabra == "dato" and M.Historias then
@@ -804,7 +807,7 @@ local function comando(resto)
 		end
 	end
 end
-A.RegisterCommand("lya", comando, L["muestra u oculta a Lya, tu loba compañera (también: ayuda, consejo, dato, historias, ajustes)"])
+A.RegisterCommand("lya", comando, L["muestra u oculta a Lya, tu loba compañera (también: ayuda, dia, consejo, dato, historias, ajustes)"])
 A.RegisterCommand("lobito", comando, L["lo mismo que /alfa lya"], true)
 
 ---------------------------------------------------------------------------
@@ -812,6 +815,32 @@ A.RegisterCommand("lobito", comando, L["lo mismo que /alfa lya"], true)
 --   AlfaLya.Decir(texto, { importante = true, accion = { texto, fn }, id = "mio1" })
 --   AlfaLya.Mostrar(si)   AlfaLya.Consejo()   AlfaLya.Visible()   AlfaLya.Recuerdo()
 ---------------------------------------------------------------------------
+-- 1.2.5: los avisos pequeños de Alfa (K.Aviso) los dice Lya cuando está a la
+-- vista, para que no salgan mensajes por todos lados. Si está oculta,
+-- silenciada, en combate o hablando de algo importante, sale el aviso de
+-- siempre. lya.avisos lo apaga.
+local function unir(titulo, texto)
+	titulo = type(titulo) == "string" and titulo or ""
+	texto = type(texto) == "string" and texto or ""
+	if titulo == "" then return texto end
+	if texto == "" then return titulo end
+	if titulo:find("[%.!?:…]$") then return titulo .. " " .. texto end
+	return titulo .. ". " .. texto
+end
+K.AvisoPorLya = function(o)
+	if N.Get(ID, "avisos") == false or Ce.Silenciada() then return false end
+	if not (Ce.Activa() and UI.Visible()) or enCombate() then return false end
+	local t = unir(o.titulo, o.texto)
+	if t == "" then return false end
+	local acciones
+	local ac = o.accion
+	if type(ac) == "table" and type(ac.texto) == "string" and ac.texto ~= "" then
+		acciones = { { texto = ac.texto, fn = function() K.Llamar(ac.alClic) end } }
+	end
+	return Ce.Decir({ texto = t, pedido = true, acciones = acciones, lineas = 5, ancho = 360,
+		cara = acciones and "atenta" or nil, segundos = tonumber(o.duracion) }) == true
+end
+
 -- Para la guía (Guia.lua, 1.2.4): lo que Lya mira del juego.
 Ce.PeorDurabilidad, Ce.BolsasLibres, Ce.EntregarTodas, Ce.AbrirBolsas = peorDurabilidad, bolsasLibres, entregarTodas, abrirBolsas
 

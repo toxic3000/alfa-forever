@@ -435,6 +435,14 @@ local CONTROLES = {
 	{ kind = "dropdown", key = clave("ceboPreferido"), label = L["Cebo preferido"], choices = opciones(opcionesCebo),
 		child = true, disabled = apagadoDe("prepararCebo"), search = "lure, bait" },
 	toggle("restaurarEquipo", L["Volver a mi equipo al cerrar el modo"], L["Alfa recuerda lo que llevabas antes de ponerte lo de pesca y te lo vuelve a poner."], nil, "swap back, gear"),
+	-- 1.2.5: lo de la barra y la vista, también en el buscador de Ajustes.
+	toggle("barra", L["Mostrar la barra en el modo pesca"], nil, nil, "barra, bar, fishing bar"),
+	toggle("barraVertical", L["Barra vertical"], nil, nil, "barra, vertical, bar"),
+	toggle("barraPlegar", L["Plegarla sola"], nil, nil, "barra, plegar, collapse, bar"),
+	toggle("vistaMinima", L["Vista mínima al lanzar"], nil, nil, "vista, minimal, cast"),
+	toggle("resumen", L["Aviso con lo que sacas"], nil, nil, "aviso, botín, loot, catch"),
+	toggle("metasVentana", L["Ventana de metas"], nil, nil, "metas, goals, window"),
+	toggle("ocultarUI", L["Ocultar la interfaz al pescar"], nil, nil, "interfaz, ocultar, hide ui"),
 }
 -- "No cambiar: ..." de cada grupo de ranuras (no es un ajuste suelto: va en la tabla excluir).
 for _, gr in ipairs(Eq.GRUPOS) do

@@ -493,6 +493,14 @@ end
 
 function K.Aviso(o)
 	o = o or {}
+	-- 1.2.5: con Lya a la vista, ella lo dice en su globo (K.AvisoPorLya, de
+	-- Alfa_Lya) y no salen avisos por todos lados. Siempre el aviso: o.lya =
+	-- false (quien usa la ventanita que se devuelve) o un botón seguro (abre
+	-- una ventana del juego; el globo de Lya no puede).
+	if o.lya ~= false and not (o.accion and o.accion.seguro) and type(K.AvisoPorLya) == "function" then
+		local ok, dijo = pcall(K.AvisoPorLya, o)
+		if ok and dijo then return true end
+	end
 	local a
 	for _, x in ipairs(avisos) do if not x.alfaVivo then a = x break end end
 	if not a then

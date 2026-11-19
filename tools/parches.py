@@ -536,6 +536,17 @@ REQUISITOS = [
 ]
 PARCHES += REQUISITOS
 
+# El aviso de misiones en el chat (1.2.5): tus propias líneas te salen siempre
+# a ti (motor/Alfa/Quests/PartyChat.lua); mandarlas al chat del grupo sigue
+# apagado de fábrica (REGLAS-BLIZZARD.md, regla 3: el parche de arriba) y la
+# bienvenida lo pregunta. Su ayuda lo explica.
+PARCHES += [
+    ("Alfa/Quests/Party.lua", "chatLoot = true, chatEcho = false,", lambda cfg: "chatLoot = true, chatEcho = true,"),
+    ("Alfa/Quests/Party.lua",
+     'help = L["A party chat line with the quest\'s link when you finish its objectives, and one when the quest is ready to turn in. Everyone in the party sees it, Alfa or not. Never solo or in a raid."] },',
+     lambda cfg: 'help = ns.T("Manda al chat del grupo una línea con el enlace de la misión cuando completas sus objetivos, otra cuando está lista para entregar y otra al entregarla; todo el grupo la ve, con o sin Alfa. Apagado, esas líneas solo te salen a ti. Nunca en banda.") },'),
+]
+
 # El fundador de Alfa (1.2.4): el aviso de "el fundador anda cerca" buscaba al
 # de Polestar, y el cambio de nombre lo dejo en "Fitz Alfa", que no existe.
 # Ahora es Toxic, con su nombre y apellido como los da Compat.UnitFullName.

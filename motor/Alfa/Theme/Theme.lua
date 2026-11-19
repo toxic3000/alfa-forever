@@ -1215,7 +1215,8 @@ end
 --       on frame.psCutBorder.
 ---------------------------------------------------------------------------
 
-local CUT = { window = 10, panel = 8, control = 6, small = 4, check = 3 }
+-- Alfa 1.2.5: finer corners (were 10, 8, 6), as the Kit (K.CORTE).
+local CUT = { window = 8, panel = 6, control = 4, small = 4, check = 3 }
 Theme.CUT = CUT
 local CUT_LINES = { 4, 6, 8, 10 } -- Media/UI/cut-line<n>: a 1 unit diagonal for an n unit cut
 

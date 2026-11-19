@@ -24,7 +24,7 @@ M.Retrato = R
 local type, pairs, pcall = type, pairs, pcall
 
 local ARO = "Interface\\AddOns\\Alfa\\Media\\Map\\medallion-halo"
-local TAM = 22 -- el aro; el lobo va a 14
+local TAM, LOBO = 28, 18 -- el aro y el lobo (1.2.5: un poco más grandes; antes 22 y 14)
 
 -- unidad -> { contenedor, retrato } del marco del juego (Camelot y moderno).
 local function partes(unit)
@@ -47,9 +47,9 @@ local function chapa(unit)
 	local aro = c:CreateTexture(nil, "OVERLAY", nil, 6)
 	aro:SetTexture(ARO)
 	aro:SetSize(TAM, TAM)
-	aro:SetPoint("CENTER", retrato, "TOPLEFT", 7, -7)
+	aro:SetPoint("CENTER", retrato, "TOPLEFT", 9, -9)
 	local lobo = c:CreateTexture(nil, "OVERLAY", nil, 7)
-	lobo:SetSize(14, 14)
+	lobo:SetSize(LOBO, LOBO)
 	lobo:SetPoint("CENTER", aro, "CENTER", 0, 0)
 	aro:Hide()
 	lobo:Hide()

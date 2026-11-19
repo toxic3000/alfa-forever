@@ -92,6 +92,36 @@ local BASE = {
 		respuesta = "Soy Lya, la loba de confianza del Alfa. Te acompaño, te cuento el lore de cada lugar y te ayudo con todo lo de Alfa. Y me encantan las salchichas." },
 	{ id = "comandos", icono = "ic-info", pregunta = "¿Cómo abro Alfa?",
 		respuesta = "Con /alfa, con el lobo del minimapa o dándome clic derecho. Para hablar conmigo de todo esto: /alfa ayuda." },
+	-- 1.2.5: más de cada página.
+	{ id = "pesca", icono = "ic-pesca", modulo = "pesca", pregunta = "¿Cómo pesco más fácil?",
+		respuesta = "En Pesca tienes una sola tecla para equiparte, lanzar y recoger, un diario de lo que sacas y una guía de 1 a 300." },
+	{ id = "pescaDonde", icono = "ic-pesca", modulo = "pesca", pregunta = "¿Dónde subo mi pesca?",
+		respuesta = "La guía de Pesca te dice a qué agua ir según tu nivel de pesca, y la flecha te lleva." },
+	{ id = "mazmorraEntrada", icono = "ic-mazmorra", modulo = "mazmorras", pregunta = "¿Cómo llego a la entrada de una mazmorra?",
+		respuesta = "Abre su ficha en Mazmorras y toca «Guíame»: la flecha te lleva hasta la puerta, aunque esté escondida en una cueva." },
+	{ id = "mazmorraBotin", icono = "ic-mazmorra", modulo = "mazmorras", pregunta = "¿Qué me puede caer en una mazmorra?",
+		respuesta = "En la ficha de cada mazmorra está el botín de cada jefe y lo que mejora tu equipo." },
+	{ id = "vender", icono = "ic-comercio", modulo = "comercio", pregunta = "¿Qué me conviene vender en la subasta?",
+		respuesta = "Comercio te dice qué vale más en la subasta que con el comerciante, y cuánto pedir." },
+	{ id = "recolectarRuta", icono = "ic-recoleccion", modulo = "recoleccion", pregunta = "¿Cómo junto minerales o hierbas más rápido?",
+		respuesta = "En Recolección eliges qué buscar y te marco en el mapa los puntos de tus profesiones, con los que ya encontraste." },
+	{ id = "curar", icono = "ic-curacion", modulo = "curacion", pregunta = "¿Cómo curo a mi grupo más fácil?",
+		respuesta = "Prende los marcos de Curación: pasas el ratón sobre un compañero y con un clic lo curas." },
+	{ id = "medidor", icono = "ic-nivel", modulo = "combate", pregunta = "¿Cuánto daño hago?",
+		respuesta = "En Combate tienes el medidor de daño del grupo y la ayuda de rotación para tu clase." },
+	{ id = "mapa", icono = "ic-mapa", modulo = "mundo", pregunta = "¿Cómo marco un lugar en el mapa?",
+		respuesta = "En Mundo pones tus marcadores, los compartes con tu grupo y la flecha te lleva a ellos." },
+	{ id = "paisaje", icono = "ic-mundo", modulo = "vista", pregunta = "¿Cómo hago que el juego se vea mejor?",
+		respuesta = "En Paisaje y gráficos hay un paisaje más bonito con un clic, y cada ajuste gráfico explicado." },
+	{ id = "dia", icono = "ic-huella", pregunta = "¿Cómo me fue hoy?",
+		respuesta = "Te llevo la cuenta de tu día de caza: misiones, niveles, oro, raros y el tiempo. Escribe /alfa lya dia y te lo cuento.",
+		existe = function() return M.Dia ~= nil end, abrir = function() if M.Dia then M.Dia.Contar() end end },
+	{ id = "anunciar", icono = "ic-misiones", pregunta = "¿Mi grupo ve cuando completo una misión?",
+		respuesta = "Sí: sale «[Misión] está lista para entregar» y «¡Misión completada!» en el chat del grupo. Solo, te sale a ti." },
+	{ id = "rarosManada", icono = "ic-raros", modulo = "manada", pregunta = "¿Cómo me entero de raros de la manada?",
+		respuesta = "Cuando un lobo de la manada encuentra un raro, te aviso en qué guarida está y te dejo pedir entrar con un clic." },
+	{ id = "tecla", icono = "ic-mando", pregunta = "¿Puedo llamarte con una tecla?",
+		respuesta = "Sí: en las asignaciones de teclas del juego, en la sección Alfa, ponle una tecla a «Pregúntale a Lya»." },
 }
 for _, p in ipairs(BASE) do p.base = true Gi.Ensenar(p) end
 
@@ -122,6 +152,12 @@ end
 local function ahora()
 	local Ce = M.Cerebro
 	local lista = {}
+	-- Tu día de caza (Dia.lua, 1.2.5), siempre primero.
+	if M.Dia then
+		local r = M.Dia.Resumen()
+		lista[#lista + 1] = { icono = "ic-huella", titulo = L["Tu día de caza"],
+			texto = r and format(L["Hoy llevas %s"], r) or L["Hoy todavía no cazamos nada. ¿Salimos?"], existe = true }
+	end
 	local d = Ce.PeorDurabilidad and Ce.PeorDurabilidad()
 	if d and d <= 40 then
 		lista[#lista + 1] = { icono = "ic-alerta", titulo = L["Tu equipo está por romperse"],
@@ -236,8 +272,13 @@ local function llenar()
 	ui.rejAhora:Llenar(ya)
 	-- Preguntas
 	local qs = {}
+	-- Desde el «?» de una página (1.2.5): primero lo de esa página.
+	local tema = filtro == "" and ui.tema or nil
+	local delTema = 0
+	if tema then for _, p in ipairs(PREGUNTAS) do if p.modulo == tema and vigente(p) then delTema = delTema + 1 end end end
+	if delTema == 0 then tema = nil end
 	for _, p in ipairs(PREGUNTAS) do
-		if vigente(p) then
+		if vigente(p) and (not tema or p.modulo == tema) then
 			local q, r = texto(p, "pregunta"), texto(p, "respuesta")
 			if coincide(filtro, q, r, p.palabras) then
 				qs[#qs + 1] = { icono = p.icono or "ic-info", titulo = q, alClic = function() decir(r, p) end }
@@ -284,7 +325,7 @@ local function armar()
 	local p = K.Pila(v.Cuerpo, { espacio = ESP.base })
 	ui.pila = p
 	ui.globo = p:Agregar(globo(p))
-	ui.buscador = p:Agregar(K.Buscador(p, { ayuda = L["¿Qué buscas? Escribe una palabra"], alCambiar = function() llenar() end }), { espacio = ESP.l })
+	ui.buscador = p:Agregar(K.Buscador(p, { ayuda = L["¿Qué buscas? Escribe una palabra"], alCambiar = function() ui.tema = nil llenar() end }), { espacio = ESP.l })
 	ui.secAhora = p:Agregar(K.Seccion(p, L["Ahora mismo te ayudaría con"]), { espacio = ESP.l })
 	ui.rejAhora = p:Agregar(K.Rejilla(p, { min = 220, variante = "compacta" }), { espacio = ESP.s })
 	ui.secPreg = p:Agregar(K.Seccion(p, L["Preguntas"]), { espacio = ESP.l })
@@ -305,14 +346,20 @@ local SALUDOS = {
 	"Aquí estoy. Si no sabes por dónde empezar, toca «¿Por dónde empiezo?».",
 }
 
-function Gi.Abrir(pregunta)
+-- pregunta: el id de una pregunta para responderla; tema: el id de una
+-- página (el «?» de su cabecera) para empezar por lo de esa página.
+function Gi.Abrir(pregunta, tema)
 	if not N.Permitido or N.Permitido() then
 		if not v then armar() end
 		v:Abrir()
-		if ui.buscador and ui.buscador.SetTexto then ui.buscador:SetTexto("") end
+		if ui.buscador and ui.buscador.SetTexto then ui.buscador:SetTexto("", true) end
+		ui.tema = tema
 		llenar()
 		local p = pregunta and porId[pregunta]
+		local m = tema and N.ModuloPorId and N.ModuloPorId(tema)
 		if p and vigente(p) then decir(texto(p, "respuesta"), p)
+		elseif m then
+			decir(format(L["Estás en %s. %s Abajo tienes lo que más me preguntan de aquí."], m.nombre or tema, m.subtitulo or ""), nil)
 		else decir(L[SALUDOS[math.random(#SALUDOS)]], nil) end
 		K.Despues(0.05, acomodar)
 		return true
@@ -351,10 +398,12 @@ A.OnLogin(function() A.After(25, function() pcall(presentarNuevas) end) end)
 -- (Lya.lua) y AlfaLya.Guia()
 ---------------------------------------------------------------------------
 A.RegisterCommand("ayuda", function() Gi.Abrir() end, L["Pregúntale a Lya: todo lo de Alfa explicado y a un clic"])
+-- La tecla (Bindings.xml, 1.2.5), en la sección Alfa de las teclas del juego.
+BINDING_NAME_ALFA_LYA_GUIA = L["Pregúntale a Lya"]
 
 local API = AlfaLya
 if type(API) == "table" then
-	API.Guia = function(pregunta) return Gi.Abrir(pregunta) end
+	API.Guia = function(pregunta, tema) return Gi.Abrir(pregunta, tema) end
 	API.Ensenar = function(p)
 		if type(p) ~= "table" then return false end
 		local c = {}

@@ -6,7 +6,11 @@ M.ID = "lya"
 -- Ajustes (AlfaDB.settings.lya); lya.pos se guarda al arrastrarla.
 M.AJUSTES = { mostrar = true, frecuencia = "muchos", minutos = 3, tamano = 64, sonido = false, bloqueado = false,
 	-- Historias.lua: siempre | aveces | pedir | nunca; minutos entre historias; el final al entregar
-	historias = "aveces", minutosHistoria = 10, epilogo = true }
+	historias = "aveces", minutosHistoria = 10, epilogo = true,
+	-- Dia.lua (1.2.5): un aullido al entregar una misión; aullar cuando sube de nivel alguien de tu grupo
+	aullidoMision = false, aullarGrupo = true,
+	-- 1.2.5: los avisos pequeños de Alfa los dice Lya cuando está a la vista
+	avisos = true }
 M.Avisar = function() end -- Pagina.lua la cambia: rehace la página si está a la vista
 
 M.EN = {
@@ -1199,6 +1203,65 @@ M.EN = {
 	["Soy Lya, la loba de confianza del Alfa. Te acompaño, te cuento el lore de cada lugar y te ayudo con todo lo de Alfa. Y me encantan las salchichas."] = "I'm Lya, the Alpha's trusted wolf. I keep you company, tell you the lore of each place and help you with everything in Alfa. And I love sausages.",
 	["¿Cómo abro Alfa?"] = "How do I open Alfa?",
 	["Con /alfa, con el lobo del minimapa o dándome clic derecho. Para hablar conmigo de todo esto: /alfa ayuda."] = "With /alfa, the wolf on the minimap, or by right-clicking me. To talk to me about all this: /alfa ayuda.",
+	-- 1.2.5: tu día de caza, festejos y más preguntas
+	[" y "] = " and ",
+	["%d h %d min"] = "%d h %d min",
+	["%s en %s de caza."] = "%s in %s of hunting.",
+	["%s ganados"] = "%s earned",
+	["%d misión"] = "%d quest",
+	["%d misiones"] = "%d quests",
+	["%d nivel"] = "%d level",
+	["%d niveles"] = "%d levels",
+	["%d raro visto"] = "%d rare spotted",
+	["%d raros vistos"] = "%d rares spotted",
+	["Aullar al completar una misión"] = "Howl when you complete a quest",
+	["Aullar con tu grupo"] = "Howl with your group",
+	["Caíste %d veces, pero siempre te levantaste."] = "You fell %d times, but you always got back up.",
+	["Caíste %d vez, pero te levantaste."] = "You fell %d time, but you got back up.",
+	["Cuando alguien de tu grupo sube de nivel, Lya aúlla, lo felicita y te deja felicitarlo en el chat con un clic."] = "When someone in your group levels up, Lya howls, congratulates them and lets you congratulate them in chat with one click.",
+	["Estás en %s. %s Abajo tienes lo que más me preguntan de aquí."] = "You're in %s. %s Below is what I'm asked most about here.",
+	["Felicitar en el grupo"] = "Congratulate in group",
+	["Hoy llevas %s"] = "Today you have %s",
+	["Hoy todavía no cazamos nada. ¿Salimos?"] = "We haven't hunted anything yet today. Shall we head out?",
+	["La última vez cazamos %s"] = "Last time we hunted %s",
+	["Tu día de caza"] = "Your hunting day",
+	["Un aullido corto cada vez que entregas una misión. Viene apagado."] = "A short howl every time you turn in a quest. Off by default.",
+	["muestra u oculta a Lya, tu loba compañera (también: ayuda, dia, consejo, dato, historias, ajustes)"] = "shows or hides Lya, your wolf companion (also: help, day, tip, fact, stories, settings)",
+	["¡%s subió a nivel %d! Auuuu, felicidades."] = "%s reached level %d! Awoooo, congratulations.",
+	["¡Felicidades por el nivel %d, %s! Auuuu."] = "Congrats on level %d, %s! Awoooo.",
+	["¡Van %d misiones hoy! La manada está orgullosa."] = "%d quests today! The pack is proud.",
+	["¡%d misiones hoy! A este paso me debes una salchicha."] = "%d quests today! At this rate you owe me a sausage.",
+	["%d misiones y contando. ¡Qué buena caza!"] = "%d quests and counting. What a hunt!",
+	["¿Cómo pesco más fácil?"] = "How do I fish more easily?",
+	["En Pesca tienes una sola tecla para equiparte, lanzar y recoger, un diario de lo que sacas y una guía de 1 a 300."] = "In Fishing you have a single key to gear up, cast and loot, a journal of your catches and a 1-300 guide.",
+	["¿Dónde subo mi pesca?"] = "Where do I level my fishing?",
+	["La guía de Pesca te dice a qué agua ir según tu nivel de pesca, y la flecha te lleva."] = "The Fishing guide tells you which water to go to for your fishing skill, and the arrow takes you there.",
+	["¿Cómo llego a la entrada de una mazmorra?"] = "How do I get to a dungeon entrance?",
+	["Abre su ficha en Mazmorras y toca «Guíame»: la flecha te lleva hasta la puerta, aunque esté escondida en una cueva."] = "Open its page in Dungeons and tap \"Guide me\": the arrow takes you to the door, even if it's hidden in a cave.",
+	["¿Qué me puede caer en una mazmorra?"] = "What can drop in a dungeon?",
+	["En la ficha de cada mazmorra está el botín de cada jefe y lo que mejora tu equipo."] = "Each dungeon's page has every boss's loot and what upgrades your gear.",
+	["¿Qué me conviene vender en la subasta?"] = "What should I sell at the auction house?",
+	["Comercio te dice qué vale más en la subasta que con el comerciante, y cuánto pedir."] = "Trade tells you what's worth more at the auction house than at the vendor, and how much to ask.",
+	["¿Cómo junto minerales o hierbas más rápido?"] = "How do I gather ore or herbs faster?",
+	["En Recolección eliges qué buscar y te marco en el mapa los puntos de tus profesiones, con los que ya encontraste."] = "In Gathering you choose what to look for and I mark your professions' spots on the map, along with the ones you've found.",
+	["¿Cómo curo a mi grupo más fácil?"] = "How do I heal my group more easily?",
+	["Prende los marcos de Curación: pasas el ratón sobre un compañero y con un clic lo curas."] = "Turn on the Healing frames: hover over a teammate and heal them with one click.",
+	["¿Cuánto daño hago?"] = "How much damage do I do?",
+	["En Combate tienes el medidor de daño del grupo y la ayuda de rotación para tu clase."] = "In Combat you have the group damage meter and the rotation helper for your class.",
+	["¿Cómo marco un lugar en el mapa?"] = "How do I mark a place on the map?",
+	["En Mundo pones tus marcadores, los compartes con tu grupo y la flecha te lleva a ellos."] = "In World you place your markers, share them with your group and the arrow takes you to them.",
+	["¿Cómo hago que el juego se vea mejor?"] = "How do I make the game look better?",
+	["En Paisaje y gráficos hay un paisaje más bonito con un clic, y cada ajuste gráfico explicado."] = "In Scenery and graphics there's a nicer landscape in one click, and every graphics setting explained.",
+	["¿Cómo me fue hoy?"] = "How did I do today?",
+	["Te llevo la cuenta de tu día de caza: misiones, niveles, oro, raros y el tiempo. Escribe /alfa lya dia y te lo cuento."] = "I keep track of your hunting day: quests, levels, gold, rares and time. Type /alfa lya dia and I'll tell you.",
+	["¿Mi grupo ve cuando completo una misión?"] = "Does my group see when I complete a quest?",
+	["Sí: sale «[Misión] está lista para entregar» y «¡Misión completada!» en el chat del grupo. Solo, te sale a ti."] = "Yes: \"[Quest] is ready to turn in\" and \"Quest complete!\" show in group chat. Solo, they show just for you.",
+	["¿Cómo me entero de raros de la manada?"] = "How do I hear about the pack's rares?",
+	["Cuando un lobo de la manada encuentra un raro, te aviso en qué guarida está y te dejo pedir entrar con un clic."] = "When a pack wolf finds a rare, I tell you which den it's in and let you ask to enter with one click.",
+	["¿Puedo llamarte con una tecla?"] = "Can I call you with a key?",
+	["Sí: en las asignaciones de teclas del juego, en la sección Alfa, ponle una tecla a «Pregúntale a Lya»."] = "Yes: in the game's key bindings, in the Alfa section, give \"Ask Lya\" a key.",
+	["Lya te dice los avisos"] = "Lya tells you the alerts",
+	["Los avisos pequeños de Alfa los dice Lya en su globo, con su botón, en vez de salir arriba. Si está oculta o en combate, salen como siempre."] = "Alfa's small alerts are said by Lya in her bubble, with their button, instead of popping up at the top. If she's hidden or you're in combat, they show as usual.",
 }
 
 M.L = AlfaNucleo.Textos(M.EN)

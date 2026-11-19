@@ -98,6 +98,8 @@ local function miMapa()
 end
 
 local pedido -- { capa, map, anfitrion, nombre, hasta, invitado }
+local candidata -- una capa distinta vista una vez: se cree a la segunda
+local avisadoCambio = -math.huge -- el aviso de «el juego te pasó», uno cada 2 min
 local llegar -- forward
 
 local function ver(capa)
@@ -109,10 +111,31 @@ local function ver(capa)
 		actual.at = ahora
 		return
 	end
+	-- Un cambio de capa en la misma zona se cree a la segunda lectura igual
+	-- (una criatura de la zona vecina, o una placa de antes de cambiar de
+	-- zona, trae otro número).
+	if actual and actual.map == map and (not pedido or pedido.capa ~= capa) then
+		if candidata ~= capa then
+			candidata = capa
+			return
+		end
+	end
+	candidata = nil
+	local antes = actual
 	actual = { capa = capa, map = map, at = ahora }
 	Gu.Anunciar(true)
 	cambio()
-	if pedido and pedido.capa == capa and pedido.map == map then llegar() end
+	if pedido and pedido.capa == capa and pedido.map == map then
+		llegar()
+	elseif antes and antes.map == map and antes.capa ~= capa and on("guaridaVisible") then
+		-- El juego te cambió de capa por su cuenta (1.2.5): Lya te lo dice.
+		if ahora - avisadoCambio > 120 then
+			avisadoCambio = ahora
+			local Lya = rawget(_G, "AlfaLya")
+			local t = format(L["El juego te pasó a la %s. Otra gente, otros raros, otros minerales."], Gu.Nombre(capa))
+			if not (type(Lya) == "table" and Lya.Decir and Lya.Decir(t)) then U.Decir(t) end
+		end
+	end
 end
 Gu.Ver = ver
 
@@ -286,7 +309,7 @@ function Gu.Pedir(capa)
 	if not (g and #g.anfitriones > 0) then return false, "nadie" end
 	local cola = {}
 	for i = 1, math.min(INTENTOS, #g.anfitriones) do cola[i] = g.anfitriones[i] end
-	pedido = { capa = capa, map = map, nombre = g.nombre, cola = cola, hasta = U.Ahora() + LLEGAR + ESPERA * INTENTOS }
+	pedido = { capa = capa, map = map, nombre = g.nombre, cola = cola, hasta = U.Ahora() + LLEGAR + ESPERA * INTENTOS + 10 }
 	aviso({ titulo = format(L["Tocando a la puerta de la %s"], g.nombre),
 		texto = L["Si te invitan a su grupo, acepta con el botón del juego: el juego te pasa a su guarida al rato."], icono = "ic-manada", duracion = 8 })
 	probar()
@@ -301,6 +324,7 @@ local MOTIVOS = {
 	combate = "Está en combate. Prueba en un momento.",
 	lleno = "Su grupo está lleno o no puede invitar.",
 	otra = "Ya no está en esa guarida.",
+	espera = "Acaba de abrirle la puerta a alguien. Prueba en un momento.",
 }
 
 M.Red.Oyentes.R = function(clave, remitente, _, f, canal)
@@ -309,7 +333,8 @@ M.Red.Oyentes.R = function(clave, remitente, _, f, canal)
 	if not (p and p.anfitrion and p.anfitrion.clave == clave) or p.invitado then return end
 	if f[1] == "ok" then
 		p.invitado = true
-		p.hasta = U.Ahora() + LLEGAR
+		-- (después del aviso de LLEGAR: ese es el que lo cierra con «Salir del grupo»)
+		p.hasta = U.Ahora() + LLEGAR + 15
 		aviso({ titulo = format(L["%s te abre la puerta"], U.Mostrar(remitente)),
 			texto = L["Acepta su invitación al grupo. Al llegar a su guarida, Alfa te avisa para salir del grupo."], icono = "ic-manada", duracion = 15 })
 		A.After(LLEGAR, function()
@@ -376,7 +401,7 @@ function Gu.Responder(clave, remitente, map, capa)
 	if InCombatLockdown and InCombatLockdown() then return "combate" end
 	if not puedoInvitar() then return "lleno" end
 	local ahora = U.Ahora()
-	if (invitadoA[clave] and ahora - invitadoA[clave] < CADA_PERSONA) or ahora - ultimoInvite < CADA_INVITE then return "combate" end
+	if (invitadoA[clave] and ahora - invitadoA[clave] < CADA_PERSONA) or ahora - ultimoInvite < CADA_INVITE then return "espera" end
 	if not U.Invitar(remitente) then return "lleno" end
 	invitadoA[clave], ultimoInvite = ahora, ahora
 	U.Decir(format(L["%s pidió entrar a tu guarida: lo invitaste a tu grupo. Saldrá solo al llegar."], U.Mostrar(remitente)))
@@ -390,6 +415,117 @@ M.Red.Oyentes.Q = function(clave, remitente, _, f, canal)
 	local r = Gu.Responder(clave, remitente, map, capa)
 	local texto = r == "ok" and (V .. "R|ok") or (V .. "R|no|" .. r)
 	M.Red.Enviar("R:" .. clave, texto, "WHISPER", U.Destino(remitente))
+end
+
+---------------------------------------------------------------------------
+-- Raros de la manada (1.2.5): cuando Lya olfatea un raro o un tesoro, la
+-- manada de tu zona sabe en qué guarida está. Si es la tuya, «Ir de caza»;
+-- si es otra, «Pedir entrar» (si alguien la tiene abierta).
+--   1V|<mapa>|<capa>|<r|t>|<mapa del raro>|<x>|<y>|<nombre>
+-- x, y en 0-100. Uno por raro cada CADA_RARO segundos; los avisos recibidos,
+-- uno por raro cada CADA_RARO también. Ajuste manada.rarosManada.
+---------------------------------------------------------------------------
+local CADA_RARO = 300
+local dichos, oidos = {}, {}
+
+local function limpiar(s)
+	if type(s) ~= "string" or U.Secreto(s) then return nil end
+	s = s:gsub("[|\n\r]", ""):sub(1, 48)
+	return s ~= "" and s or nil
+end
+
+local function alAvistar(a)
+	if type(a) ~= "table" or (a.kind ~= "rare" and a.kind ~= "treasure") then return end
+	if a.source == "sample" or not on("compartir") or not on("rarosManada") then return end
+	local mia = Gu.Actual()
+	local nombre = limpiar(a.name)
+	if not (mia and nombre and a.map and a.x and a.y) then return end
+	local clave = tostring(a.key or a.id or nombre)
+	local ahora = U.Ahora()
+	if dichos[clave] and ahora - dichos[clave] < CADA_RARO then return end
+	dichos[clave] = ahora
+	M.Red.Enviar("V:" .. clave, format("%sV|%d|%d|%s|%d|%.2f|%.2f|%s", V, mia.map, mia.capa,
+		a.kind == "treasure" and "t" or "r", a.map, a.x * 100, a.y * 100, nombre))
+end
+if A.On then A.On("RARE_SPOTTED", alAvistar) end
+Gu.AlAvistar = alAvistar
+
+local function numeroDecimal(s)
+	if type(s) ~= "string" or not s:match("^%d+%.?%d*$") or #s > 8 then return nil end
+	return tonumber(s)
+end
+
+M.Red.Oyentes.V = function(clave, remitente, _, f)
+	if not on("rarosManada") then return end
+	local map, capa, rmap = numeroEntero(f[1]), numeroEntero(f[2]), numeroEntero(f[4])
+	local x, y = numeroDecimal(f[5]), numeroDecimal(f[6])
+	local nombre = limpiar(f[7])
+	if not (map and capa and rmap and x and y and nombre) or x > 100 or y > 100 then return end
+	if miMapa() ~= map then return end
+	local llave = rmap .. ":" .. nombre
+	local ahora = U.Ahora()
+	if oidos[llave] and ahora - oidos[llave] < CADA_RARO then return end
+	oidos[llave] = ahora
+	local tesoro = f[3] == "t"
+	local quien = U.Mostrar(remitente)
+	local mia = Gu.Actual()
+	local K = N.Kit
+	local titulo = format(tesoro and L["Tesoro de la manada: %s"] or L["Raro de la manada: %s"], nombre)
+	if mia and mia.capa == capa then
+		aviso({ titulo = titulo, texto = format(L["%s lo encontró en tu guarida."], quien), icono = "ic-raros", duracion = 15,
+			accion = { texto = L["Ir de caza"], alClic = function()
+				local Nav = A.Nav
+				if Nav and Nav.SetTarget then Nav.SetTarget(rmap, x / 100, y / 100, nombre) N.EmpezarRuta() end
+			end } })
+	else
+		local abierta = false
+		for _, g in ipairs(Gu.Lista()) do if g.capa == capa and g.abiertas > 0 then abierta = true end end
+		aviso({ titulo = titulo, texto = format(L["%s lo encontró en la %s."], quien, Gu.Nombre(capa)), icono = "ic-raros", duracion = 15,
+			accion = abierta and { texto = L["Pedir entrar"], alClic = function()
+				local ok, por = Gu.Pedir(capa)
+				if not ok and por == "grupo" then U.Decir(L["Sal de tu grupo primero: el juego te pasa a la guarida de quien te invita."]) end
+			end } or nil })
+	end
+	cambio()
+end
+
+---------------------------------------------------------------------------
+-- Un lobo de la manada (1.2.5): su guarida en su cuadro, y «Pedir entrar a
+-- su guarida» en su clic derecho (Invitar.lua).
+---------------------------------------------------------------------------
+
+-- Lo último que dijo un lobo de su guarida, si sigue vigente y es de tu zona.
+function Gu.DeLobo(nombre)
+	local clave = U.Clave(nombre)
+	local v = clave and vistas[clave]
+	if not v or U.Ahora() - v.at > CADUCA or v.map ~= miMapa() then return nil end
+	return v
+end
+
+function Gu.AlCuadro(tooltip, unit)
+	if not on("guaridaVisible") or type(unit) ~= "string" or not (tooltip and tooltip.AddLine) then return end
+	local C = A.Compat
+	local ok, nombre = pcall(C.UnitFullName, unit)
+	if not ok or type(nombre) ~= "string" then return end
+	local v = Gu.DeLobo(nombre)
+	if not v then return end
+	local mia = Gu.Actual()
+	local t = format(L["En la %s"], Gu.Etiqueta(v.capa))
+	if mia and mia.capa == v.capa then t = t .. " " .. L["(la tuya)"]
+	elseif v.abierta then t = t .. " " .. L["(puerta abierta)"] end
+	tooltip:AddLine(t, 0.55, 0.88, 0.31)
+end
+
+local H = A.Hooks
+if type(H) == "table" and type(H.UnitLines) == "function" then
+	H.UnitLines(ADDON .. ":guaridas", function(tooltip, unit) pcall(Gu.AlCuadro, tooltip, unit) end)
+end
+
+-- Pide entrar a la guarida de un lobo en particular.
+function Gu.PedirA(nombre)
+	local v = Gu.DeLobo(nombre)
+	if not (v and v.abierta) then return false, "nadie" end
+	return Gu.Pedir(v.capa)
 end
 
 ---------------------------------------------------------------------------
@@ -413,7 +549,8 @@ A.RegisterEvent("ZONE_CHANGED_NEW_AREA", olvidarMia)
 A.RegisterEvent("PLAYER_ENTERING_WORLD", olvidarMia)
 -- Al entrar o salir de un grupo la capa puede cambiar: se vuelve a mirar.
 A.RegisterEvent("GROUP_ROSTER_UPDATE", function()
-	if actual then actual.at = actual.at - VIGENTE / 2 end
+	-- (una sola vez por ráfaga de eventos: antes cada uno restaba otra vez)
+	if actual then actual.at = math.min(actual.at, U.Ahora() - VIGENTE / 2) end
 	A.After(3, revisarPlacas)
 end)
 

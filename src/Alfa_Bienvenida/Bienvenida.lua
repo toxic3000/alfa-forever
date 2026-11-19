@@ -448,6 +448,6 @@ function AlfaBienvenida.Abrir(vista)
 end
 function AlfaBienvenida.Pendiente() return M.Pendiente() end
 function AlfaBienvenida.Exigir() return M.Exigir() end
-function AlfaBienvenida.Aullar() return M.Aullar() end
+function AlfaBienvenida.Aullar(forzar) return M.Aullar(forzar and true or nil) end
 function AlfaBienvenida.Visto() return M.Visto() end
 function AlfaBienvenida.Notas() return M.AbrirNotas and M.AbrirNotas() or false end

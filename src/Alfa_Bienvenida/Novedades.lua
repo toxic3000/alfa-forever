@@ -31,6 +31,12 @@ M.NOVEDADES = {
 --   { version, titulo, puntos = { { icono (ic-*), texto } } }
 ---------------------------------------------------------------------------
 M.NOTAS = {
+	{ version = "1.2.5", titulo = "La manada caza junta", puntos = {
+		{ "ic-raros", "Raros de la manada: cuando un lobo encuentra un raro en tu zona, te avisa en qué guarida está, con «Ir de caza» o «Pedir entrar»." },
+		{ "ic-huella", "Tu día de caza: Lya cuenta tus misiones, niveles, oro y raros del día. Pídeselo con /alfa lya dia." },
+		{ "ic-lobo", "Un «?» en cada página de Alfa para que Lya te la explique, y su propia tecla." },
+		{ "ic-misiones", "Al completar una misión vuelve a salir en tu chat: «[Misión] está lista para entregar» y «¡Misión completada!». Si lo prendes, también tu grupo lo ve." },
+	} },
 	{ version = "1.2.4", titulo = "Lya te guía, un asistente más sencillo y las guaridas", puntos = {
 		{ "ic-lobo", "Pregúntale a Lya: clic derecho en ella y «¿En qué te ayudo?». Te explica cada parte de Alfa y te lleva con un clic." },
 		{ "ic-ajustes", "La configuración es más visual: tres tarjetas para decidir cuánto te ayuda Alfa y tus extras en un mosaico." },

@@ -151,6 +151,7 @@ N.Reemplazar("SPELL_CARDS", function(p)
 	local m = p.modelo or {}
 	local datos, tex
 	if m.kind == "oldRanks" then datos, tex = avisoRangos(p) else datos, tex = avisoHechizos(p) end
+	datos.lya = false -- (se le pone el ícono y se vigila: la ventanita hace falta)
 	local a = K.Aviso(datos)
 	M.IconoEnAviso(a, tex)
 	tarjeta = { aviso = a, turno = a.alfaTurno, cerrar = p.Cerrar }
@@ -208,7 +209,7 @@ N.Reemplazar("CLASS_CARD", function(p)
 	end
 	local a = K.Aviso({
 		titulo = format(L["Misión de clase: %s"], m.titulo or ""), texto = concat(partes, " "),
-		icono = "ic-misiones", tono = "clase", duracion = 12, accion = accion,
+		icono = "ic-misiones", tono = "clase", duracion = 12, accion = accion, lya = false,
 	})
 	M.IconoEnAviso(a, m.icono)
 end)

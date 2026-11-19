@@ -23,7 +23,8 @@ K.ESP = { xs = 4, s = 8, m = 12, base = 16, l = 24, xl = 32, xxl = 48 }
 
 -- Las esquinas cortadas del diseño A (arriba a la izquierda y abajo a la
 -- derecha). Alfa no usa radios redondos: el "radio" de cada pieza es su corte.
-K.CORTE = { ventana = 10, panel = 8, tarjeta = 8, control = 6, chico = 4, casilla = 3 }
+-- 1.2.5: más finos (antes 10, 8, 8, 6, 4, 3), igual que el motor (Theme.CUT).
+K.CORTE = { ventana = 8, panel = 6, tarjeta = 6, control = 4, chico = 4, casilla = 3 }
 
 -- Alturas fijas de las piezas, para que todo alinee en la rejilla.
 K.ALTO = {
@@ -340,8 +341,9 @@ function K.Fuente(fs, rol)
 		fs:SetShadowOffset(1, -1)
 		fs:SetShadowColor(0, 0, 0, 1)
 	elseif estilo == "cristal" then
+		-- 1.2.5: más suave (antes 0.55): se lee igual y se ve más fino.
 		fs:SetShadowOffset(1, -1)
-		fs:SetShadowColor(0, 0, 0, 0.55)
+		fs:SetShadowColor(0, 0, 0, 0.4)
 	else
 		fs:SetShadowOffset(0, 0)
 	end

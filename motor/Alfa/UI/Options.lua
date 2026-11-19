@@ -1835,6 +1835,7 @@ local function renderSearch()
 	end
 	for i = shown + 1, #links do links[i]:Hide() end
 	if O.RefreshNav then O.RefreshNav() end
+	if O.LyaHelp then O.LyaHelp(nil) end
 	W.ShellTitle(win, L["Search"], count == 1 and L["1 setting matches"] or string.format(L["%d settings match"], count))
 	W.ShellTabs(win, nil)
 	searchView:Show()
@@ -2017,9 +2018,32 @@ local function renderNav()
 	W.ShellPills(win, pills, current.key, function(k) O.Select(k) end)
 end
 
+-- Alfa 1.2.5: un «?» junto al título de cada página. Lya (AlfaLya.Guia)
+-- explica esa página y empieza por sus preguntas. Sin Lya, no sale.
+local function lyaHelp(p)
+	if not (win and win.Title) then return end
+	local b = win.psLyaHelp
+	if not b then
+		b = W.IconButton(win.Title:GetParent(), "ic-info", 22, ns.T("Pregúntale a Lya"), function()
+			local Lya = rawget(_G, "AlfaLya")
+			if type(Lya) == "table" and type(Lya.Guia) == "function" then Lya.Guia(nil, win.psLyaKey) end
+		end, 14)
+		win.psLyaHelp = b
+	end
+	local Lya = rawget(_G, "AlfaLya")
+	win.psLyaKey = p and p.key or nil
+	b:ClearAllPoints()
+	b:SetPoint("LEFT", win.Title, "LEFT", math.ceil(win.Title:GetStringWidth() or 0) + 8, 0)
+	b:SetShown(p ~= nil and type(Lya) == "table" and type(Lya.Guia) == "function")
+end
+O.LyaHelp = lyaHelp
+
 function O.RefreshNav()
 	renderNav()
-	if win and current and query == "" then W.ShellTitle(win, O.PageLabel(current), T(current.subtitle)) end
+	if win and current and query == "" then
+		W.ShellTitle(win, O.PageLabel(current), T(current.subtitle))
+		lyaHelp(current)
+	end
 end
 
 -- A section's page: the one last shown there, else its first.
@@ -2128,6 +2152,7 @@ function O.Select(key, tabName)
 	end
 	W.ShellTabs(win, tabs, t.name, function(name) O.Select(p.key, name) end)
 	W.ShellTitle(win, O.PageLabel(p), T(p.subtitle))
+	lyaHelp(p)
 	local h = view.Refresh()
 	view:SetHeight(h)
 	view:Show()

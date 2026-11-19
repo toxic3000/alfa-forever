@@ -80,7 +80,7 @@ N.Reemplazar("DUNGEON_TOAST", function(p)
 	partes[#partes + 1] = P.Frase(e)
 	local a = { pedido = p }
 	a.aviso = K.Aviso({
-		lobo = "atento", tono = "mazmorra", duracion = 14,
+		lobo = "atento", tono = "mazmorra", duracion = 14, lya = false,
 		titulo = format(L["%s ya es para ti"], d.name or key),
 		texto = table.concat(partes, " "),
 		accion = { texto = #e.recoger > 0 and L["Prepárame"] or L["Ver la mazmorra"], alClic = function()

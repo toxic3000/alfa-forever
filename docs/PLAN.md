@@ -89,9 +89,9 @@ Sale de una revisión del código del 18/11. En cada versión va primero lo que 
 - [ ] Núcleo: `N.Modulo` dentro de una página que ya existe del motor (Comodidades lo hace a mano reenviando `SHOW_OPTIONS`), y que `N.Abrir(id)` llegue a esa página.
 - [ ] Núcleo: vía pública entre módulos (por ejemplo, que Bolsas e Inicio pregunten a Comercio el valor y el consejo de un objeto).
 - [ ] Motor: forma estable de obtener el marco del temporizador de vuelo (hoy Comodidades usa el global `AlfaFlightTimer`).
-- [ ] Choque: `behavior.closeSkipped` del motor puede cerrar la ventana antes de que "todas las misiones" de Comodidades actúe.
+- [x] Choque: `behavior.closeSkipped` del motor puede cerrar la ventana antes de que "todas las misiones" de Comodidades actúe.
 - [ ] Comodidades: cada grupo viene apagado; decidir con Toxic cuáles vienen encendidos.
-- [ ] Páginas propias (Pesca, Comercio, Inicio): sus ajustes no salen en el buscador de opciones.
+- [x] Páginas propias (Pesca, Comercio, Inicio): sus ajustes no salen en el buscador de opciones.
 - [~] Mundo: `AlfaMundo.ActivarCapa` ya existe; falta una proyección para pintar pines en el mapa continuo (Recolección solo pinta en mapas de zona).
 - [x] Acerca de: créditos visibles del código y los datos reutilizados bajo MIT.
 - [ ] Núcleo: opción `alComando(rest)` en `N.Modulo` para comandos con argumentos (Manada y Pesca lo registran aparte).
@@ -101,15 +101,15 @@ Sale de una revisión del código del 18/11. En cada versión va primero lo que 
 - [ ] Mazmorras: confirmar en el juego si Forever trae las CVars de avisos de jefes (la variante "Camelot" dice `HasBossWarnings = false`).
 - [x] Builds y Rutas: terminados y en git el 16/11.
 - [ ] Mundo: Recolección debería publicar sus nodos en `Alfa.Pins` (id `recoleccion.<tipo>`) para verse en el mapa continuo.
-- [ ] Idiomas: en Builds, "Protección" y "Restauración" son la misma clave para dos clases (guerrero/paladín, druida/chamán), pero en coreano y otros idiomas tienen nombres distintos. Separar las claves en español.
-- [ ] Idiomas: las fechas "el %d/%d a las %s" llevan el orden día/mes del español; en coreano y chino conviene que el formato de fecha sea parte de la traducción.
+- [x] Idiomas: en Builds, "Protección" y "Restauración" son la misma clave para dos clases (guerrero/paladín, druida/chamán), pero en coreano y otros idiomas tienen nombres distintos. Separar las claves en español.
+- [x] Idiomas: las fechas "el %d/%d a las %s" llevan el orden día/mes del español; en coreano y chino conviene que el formato de fecha sea parte de la traducción.
 - [ ] Idiomas: nombres de hechizos que los traductores dejaron en inglés o marcaron como dudosos (lista en sus reportes); que los revise alguien nativo.
-- [ ] Bolsas: la búsqueda en ruso (y otros alfabetos) depende de minúsculas; `string.lower` de WoW no convierte el cirílico, así que buscar con mayúscula inicial puede no encontrar nada.
+- [x] Bolsas: la búsqueda en ruso (y otros alfabetos) depende de minúsculas; `string.lower` de WoW no convierte el cirílico, así que buscar con mayúscula inicial puede no encontrar nada.
 
 ## Interfaz propia (diseño A, 16/11/2026)
 
 - [x] Tema, componentes, ventana principal con secciones, página Hoy por clase, ventana de guía, bienvenida, novedades, selector de guías, buscador y diario de mazmorras con acomodo propio (27 archivos en `motor/`).
 - [ ] En el centro de guías, las secciones Talentos, Raros, Personajes e Importar ya usan el ancho completo y píldoras, pero su acomodo interior sigue siendo el original.
-- [ ] Términos: los textos del motor en esMX dicen "Calabozos"; los de Alfa dicen "Mazmorras". Hay que unificarlos.
+- [x] Términos: los textos del motor en esMX dicen "Calabozos"; los de Alfa dicen "Mazmorras". Hay que unificarlos.
 - [ ] Documentar `UI.HubKit` (piezas compartidas del centro de guías) en `docs/INTERFAZ.md`.
 - [ ] Revisar en el juego la lista "Qué revisar" de cada parte (esquinas cortadas, que quepan las píldoras, desplazamiento, mando).

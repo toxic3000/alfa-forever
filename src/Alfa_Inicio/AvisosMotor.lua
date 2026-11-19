@@ -69,7 +69,7 @@ N.Reemplazar("WHILE_HERE", function(p)
 	if rastreadorLoMuestra() or (A.Hidden and A.Hidden()) then return end
 	local guiar = p.Guiar
 	local a = K.Aviso({
-		titulo = L["Mientras estás aquí"], texto = p.texto, icono = "ic-huella", tono = "acento", duracion = 8,
+		titulo = L["Mientras estás aquí"], texto = p.texto, icono = "ic-huella", tono = "acento", duracion = 8, lya = false,
 		accion = { texto = L["Llévame"], alClic = function() llamar(guiar) end },
 	})
 	aqui.aviso, aqui.turno = a, a and a.alfaTurno
