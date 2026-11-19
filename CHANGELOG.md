@@ -1,5 +1,37 @@
 # Cambios de Alfa
 
+## 1.2.6 — Lya te lo dice todo, llamar a la manada y el seguimiento de misiones al día (19/11/2026)
+
+**Español**
+- Nuevo: llamar a la manada. En La Jauría > Guaridas (o con /alfa manada llamar) pides ayuda y los lobos de tu zona que comparten su rastro reciben tu lugar; si tienes seleccionado un élite o un raro, el llamado dice cuál. Ellos tocan «¡Voy!», la flecha los lleva y a ti te avisa quién viene. Se apaga en «Llamados de la manada».
+- «Seguir» a alguien de la manada ya no se suelta al alcanzarlo: si sigue caminando, la flecha te vuelve a llevar con esa persona hasta que tú la sueltes.
+- Lo que te dijo Lya: «Pregúntale a Lya» muestra arriba lo último que te dijo, con sus botones, por si su globo se fue antes de leerlo (/alfa lya historial, los 20 más recientes).
+- Una tecla para el botón de Lya: en las asignaciones de teclas, sección Alfa, «Lo que te ofrece Lya» hace lo de su primer botón («Llévame», «Entregar todas»...) sin soltar el ratón.
+- Tus récords de caza: Lya te avisa cuando rompes tu récord de misiones en un día y te cuenta tu semana de caza con /alfa lya semana (también en «Pregúntale a Lya»).
+- Arreglo: «Ir de caza» de un raro de la manada apuntaba mal (la posición iba en otra escala).
+- Todos los avisos propios de Alfa los dice Lya: también los de la página Hoy (los de al entrar), el de hechizos nuevos al subir de nivel, el de talentos, «Mientras estás aquí», la misión de clase y la mazmorra nueva. Con sus botones. Si Lya está oculta o estás en combate, salen como siempre, y el mismo aviso no se repite en minuto y medio.
+- La letra de Lya, más grande: viene en «grande» y la cambias a normal o muy grande con clic derecho sobre ella («Letra: …») o en su página.
+- Arreglo: al terminar una guía «Desbloquear», Alfa te regresa sola a la guía de la que venías (antes te quedabas en «Esta guía no tiene un paso para ti» y tenías que darle Seguir). Y si la ves terminada, el rastreador y Hoy dicen «¡Ya la desbloqueaste!».
+- Arreglo: una guía con todos sus pasos hechos ya no dice «no tiene un paso para ti»: dice que la terminaste.
+- Arreglo: cuando llegas al final de una guía con pasos sin hacer, el aviso ya no dice «Terminaste esta guía»: dice cuántos quedaron, con «Ver lo que quedó». La página Hoy dice lo mismo (antes te mandaba a «Seguir» como si nada), y si después terminas lo que quedaba, pasa a «terminaste».
+- Arreglo: la página Hoy y el rastreador ya no se contradicen cuando tu guía se queda sin paso.
+- Arreglo: las misiones listas para entregar se cuentan al momento (una que quedaba lista al matar al último monstruo no contaba hasta tomar o entregar otra), y Lya vuelve a avisarte de ellas después de entregar.
+
+**English**
+- New: call the pack. In La Jauría > Dens (or with /alfa manada llamar) you ask for help and the wolves in your zone who share their trail get your spot; if you have an elite or a rare targeted, the call says which. They tap "On my way!", the arrow takes them and you're told who's coming. Turn it off in "Pack calls".
+- "Follow" on a pack member no longer lets go when you catch up: if they keep walking, the arrow leads you to them again until you let go.
+- What Lya told you: "Ask Lya" shows at the top what she told you last, with its buttons, in case her bubble left before you read it (/alfa lya historial, the 20 most recent).
+- A key for Lya's button: in the key bindings, Alfa section, "What Lya offers" does what her first button does ("Take me there", "Turn them all in"...) without the mouse.
+- Your hunting records: Lya tells you when you break your record of quests in a day and tells you about your hunting week with /alfa lya semana (also in "Ask Lya").
+- Fix: "Go hunt" on a pack rare pointed to the wrong spot (the position was in another scale).
+- Lya says all of Alfa's own alerts: the Today page ones too (the ones at login), the new spells at level up, talents, "While you're here", the class quest and the new dungeon. With their buttons. If Lya is hidden or you're in combat, they show as usual, and the same alert doesn't repeat within a minute and a half.
+- Lya's text is bigger: it comes in "large" and you switch it to normal or extra large with a right-click on her ("Text: …") or on her page.
+- Fix: finishing an "Unlock" guide takes you back to the guide you came from on its own (before, you stayed on "This guide has no step for you" and had to press Continue). And if you see it finished, the tracker and Today say "You unlocked it!".
+- Fix: a guide with all its steps done no longer says "has no step for you": it says you finished it.
+- Fix: when you reach the end of a guide with undone steps, the alert no longer says "You finished this guide": it says how many were left, with "See what's left". The Today page says the same (before it sent you to "Continue" as if nothing happened), and if you then finish what was left, it switches to "finished".
+- Fix: the Today page and the tracker no longer contradict each other when your guide runs out of steps.
+- Fix: quests ready to turn in are counted right away (one that became ready by killing the last monster didn't count until you took or turned in another), and Lya tells you about them again after you turn some in.
+
 ## 1.2.5 — La manada caza junta: raros por guarida, tu día de caza y Lya te dice los avisos (19/11/2026)
 
 **Español**

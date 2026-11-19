@@ -151,6 +151,8 @@ N.Reemplazar("SPELL_CARDS", function(p)
 	local m = p.modelo or {}
 	local datos, tex
 	if m.kind == "oldRanks" then datos, tex = avisoRangos(p) else datos, tex = avisoHechizos(p) end
+	-- 1.2.6: Lya lo dice si está a la vista (su botón «Llévame» sigue igual).
+	if K.PorLya(datos) then return end
 	datos.lya = false -- (se le pone el ícono y se vigila: la ventanita hace falta)
 	local a = K.Aviso(datos)
 	M.IconoEnAviso(a, tex)
@@ -207,9 +209,11 @@ N.Reemplazar("CLASS_CARD", function(p)
 			accion = { texto = L["Llévame"], alClic = function() llevarA(goal, quien) end }
 		end
 	end
-	local a = K.Aviso({
+	local o = {
 		titulo = format(L["Misión de clase: %s"], m.titulo or ""), texto = concat(partes, " "),
 		icono = "ic-misiones", tono = "clase", duracion = 12, accion = accion, lya = false,
-	})
+	}
+	if K.PorLya(o) then return end
+	local a = K.Aviso(o)
 	M.IconoEnAviso(a, m.icono)
 end)

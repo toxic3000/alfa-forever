@@ -42,7 +42,13 @@ function Di.Hoy()
 	local d = N.DatosPersonaje(ID)
 	local f = fecha()
 	if type(d.dia) ~= "table" or d.dia.fecha ~= f then
-		if type(d.dia) == "table" then d.diaAyer = d.dia end
+		if type(d.dia) == "table" then
+			d.diaAyer = d.dia
+			-- 1.2.6: los últimos 6 días, para tu semana de caza.
+			d.dias = type(d.dias) == "table" and d.dias or {}
+			table.insert(d.dias, 1, d.dia)
+			while #d.dias > 6 do table.remove(d.dias) end
+		end
 		d.dia = { fecha = f, misiones = 0, niveles = 0, oro = 0, raros = 0, muertes = 0, minutos = 0 }
 	end
 	return d.dia
@@ -87,6 +93,41 @@ function Di.Resumen(d)
 	local caidas = tonumber(d.muertes) or 0
 	if caidas > 0 then t = t .. " " .. format(caidas == 1 and L["Caíste %d vez, pero te levantaste."] or L["Caíste %d veces, pero siempre te levantaste."], caidas) end
 	return t
+end
+
+-- 1.2.6: tu semana de caza: hoy y los 6 días de antes que jugaste, sumados.
+function Di.Semana()
+	local d = N.DatosPersonaje(ID)
+	local s = { misiones = 0, niveles = 0, oro = 0, raros = 0, muertes = 0, minutos = 0, dias = 0 }
+	local lista = { Di.Hoy() }
+	for _, x in ipairs(type(d.dias) == "table" and d.dias or {}) do lista[#lista + 1] = x end
+	for _, x in ipairs(lista) do
+		if type(x) == "table" then
+			for k in pairs(s) do if k ~= "dias" then s[k] = s[k] + (tonumber(x[k]) or 0) end end
+			if (tonumber(x.minutos) or 0) > 0 then s.dias = s.dias + 1 end
+		end
+	end
+	return s
+end
+
+-- Tu mejor día (lo más que entregaste en un día): { misiones, fecha } o nil.
+function Di.Record()
+	local r = N.DatosPersonaje(ID).record
+	return type(r) == "table" and r or nil
+end
+
+function Di.ContarSemana()
+	local s = Di.Semana()
+	local r = Di.Resumen(s)
+	local t = r and format(L["Esta semana llevas %s"], r) or L["Esta semana todavía no cazamos nada. ¿Salimos?"]
+	local rec = Di.Record()
+	if rec and (tonumber(rec.misiones) or 0) > 0 then
+		t = t .. " " .. format(L["Tu mejor día: %d misiones."], rec.misiones)
+	end
+	local Ce = M.Cerebro
+	if Ce and Ce.Activa and Ce.Activa() and Ce.Decir({ texto = t, salto = true, pedido = true, lineas = 5 }) then return true end
+	N.Imprimir(t)
+	return true
 end
 
 -- Lya lo cuenta (o lo dice en el chat si no está a la vista).
@@ -139,6 +180,17 @@ A.RegisterEvent("QUEST_TURNED_IN", function()
 	if N.Get(ID, "aullidoMision") then
 		local B = rawget(_G, "AlfaBienvenida")
 		if B and B.Aullar then pcall(B.Aullar, true) end
+	end
+	-- 1.2.6: tu récord de misiones en un día (lo dice una vez al día, desde 5).
+	local d = N.DatosPersonaje(ID)
+	local rec = type(d.record) == "table" and d.record or { misiones = 0 }
+	local nuevo = n > (tonumber(rec.misiones) or 0)
+	if nuevo then d.record = { misiones = n, fecha = fecha() } end
+	local h = Di.Hoy()
+	if nuevo and n >= 5 and not h.recordDicho and (tonumber(rec.misiones) or 0) > 0 and M.Cerebro then
+		h.recordDicho = true
+		M.Cerebro.Decir({ importante = true, aullar = true, texto = format(L["¡Nuevo récord: %d misiones en un día! Ni la manada te alcanza."], n) })
+		return
 	end
 	if n % 5 == 0 and n ~= 10 and n ~= 25 and M.Cerebro then
 		M.Cerebro.Decir({ texto = format(L[PORRAS[math.random(#PORRAS)]], n), salto = true })

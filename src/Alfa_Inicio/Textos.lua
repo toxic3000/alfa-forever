@@ -511,4 +511,13 @@ M.EN = {
 	["%d de %d"] = "%d of %d",
 	["Ver el plan"] = "See the plan",
 	["Ya la hice"] = "I did it",
+	-- 1.2.6: Hoy dice lo mismo que el rastreador
+	["Elegir otra guía"] = "Choose another guide",
+	["Esta guía no tiene un paso para ti ahora: puede que hayas omitido lo que queda o que aún no te toque. Elige otra guía o vuelve a esta más adelante."] = "This guide has no step for you right now: you may have skipped what's left or it isn't your turn yet. Choose another guide or come back to this one later.",
+	["Final de %s"] = "End of %s",
+	["Hiciste lo que pedía antes. Búscala con su «!» y tómala, o elige qué sigue."] = "You did what it asked for first. Find it by its \"!\" and take it, or choose what's next.",
+	["Llegaste al final; quedaron %d pasos sin hacer."] = "You reached the end; %d steps were left undone.",
+	["Ver lo que quedó"] = "See what's left",
+	["¡Ya la desbloqueaste!"] = "You unlocked it!",
+	["¿Qué sigue?"] = "What's next?",
 }

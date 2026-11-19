@@ -91,6 +91,9 @@ function R.Listas() return Cr.ListasAhora() end
 function R.Biblioteca() M.Biblioteca.Abrir() end
 function R.MostrarGuia() M.Empezar() end
 function R.RastreadorVisible() return M.Rastreador.Visible() and true or false end
+-- 1.2.6: el fin pendiente de tu guía (lo que dice el rastreador), para Hoy:
+-- { complete, undone, label, next, nextLabel } o nil.
+function R.FinGuia() return M.Rastreador.Fin and M.Rastreador.Fin() or nil end
 function R.Pagina() N.Abrir(M.ID) end
 
 ---------------------------------------------------------------------------

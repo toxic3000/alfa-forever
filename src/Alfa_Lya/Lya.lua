@@ -54,6 +54,9 @@ M.UI = UI
 local MEDIA = "Interface\\AddOns\\Alfa_Lya\\Media\\"
 local DEFAULT = { "BOTTOMRIGHT", -330, 150 }
 local ANCHO_MAX, ANCHO_MIN, PAD = 300, 170, 12
+-- 1.2.6: el tamaño de su letra (rol del Kit) y cuánto más ancho va el globo.
+local LETRA = { normal = "texto", grande = "globoGrande", enorme = "globoEnorme" }
+local ESCALA = { normal = 1, grande = 1.15, enorme = 1.35 }
 
 ---------------------------------------------------------------------------
 -- La hoja de cuadros (el mismo orden que ORDEN en tools/lya_cuerpo.py)
@@ -436,6 +439,9 @@ end
 ---------------------------------------------------------------------------
 -- El menú del clic derecho
 ---------------------------------------------------------------------------
+local LETRAS = { normal = "Letra: normal", grande = "Letra: grande", enorme = "Letra: muy grande" }
+local SIGUE_LETRA = { normal = "grande", grande = "enorme", enorme = "normal" }
+
 local function menu()
 	local Ce = M.Cerebro
 	local silencio = Ce.Silenciada()
@@ -452,7 +458,10 @@ local function menu()
 		{ { valor = "guia", texto = L["¿En qué te ayudo?"], icono = "ic-info" },
 		  { valor = "silencio", texto = silencio and L["Quitar el silencio"] or L["Silenciar 1 hora"], icono = "ic-reloj" } },
 		{},
-		{ { valor = "frec", texto = L[FREC[frec]], icono = "ic-filtro" } },
+		{ { valor = "frec", texto = L[FREC[frec]], icono = "ic-filtro" },
+		  -- 1.2.6: el tamaño de su letra, una fila que pasa al siguiente con cada clic
+		  -- («Háblame de mi gente» sigue en el botón de «Cuéntame algo»).
+		  { valor = "letra", texto = L[LETRAS[N.Get(ID, "letra")] or LETRAS.grande], icono = "ic-apariencia" } },
 		{ { valor = "bloquear", texto = bloqueado and L["Desbloquear posición"] or L["Bloquear posición"], icono = "ic-seguir" },
 		  { valor = "ajustes", texto = L["Ajustes de Lya"], icono = "ic-ajustes" },
 		  { valor = "ocultar", texto = L["Ocultar a Lya"], icono = "ic-cerrar" } },
@@ -461,7 +470,6 @@ local function menu()
 	if Hi and Hi.Modo() ~= "nunca" then hist[#hist + 1] = { valor = "dato", texto = L["Cuéntame algo de aquí"], icono = "ic-mundo" } end
 	if Ch then
 		hist[#hist + 1] = { valor = "algo", texto = L["Cuéntame algo"], icono = "ic-info" }
-		hist[#hist + 1] = { valor = "gente", texto = L["Háblame de mi gente"], icono = "ic-manada" }
 	end
 	if Hi then hist[#hist + 1] = { valor = "historias", texto = L["Historias de tus misiones"], icono = "ic-misiones" } end
 	-- El menú muestra 10 filas sin desplazarse: las líneas entre grupos, mientras quepan.
@@ -484,6 +492,11 @@ local function menu()
 		elseif v == "dato" then Hi.Contar()
 		elseif v == "algo" then Ch.Contar()
 		elseif v == "gente" then Ch.Gente()
+		elseif v == "letra" then
+			local nueva = SIGUE_LETRA[N.Get(ID, "letra")] or "enorme"
+			N.Set(ID, "letra", nueva)
+			if UI.Hablando() and actual then UI.Hablar(actual) end
+			N.Imprimir(L[LETRAS[nueva]])
 		elseif v == "frec" then
 			local nueva = SIGUE[frec] or "muchos"
 			N.Set(ID, "frecuencia", nueva)
@@ -764,20 +777,25 @@ function UI.Hablar(c)
 	g:SetAlpha(1)
 
 	local acciones = type(c.acciones) == "table" and c.acciones or {}
+	-- 1.2.6: su letra, más grande y a tu gusto (lya.letra; clic derecho).
+	local letra = N.Get(ID, "letra")
+	local rol = LETRA[letra] or LETRA.grande
+	if g.Texto.alfaRol ~= rol then g.Texto.alfaRol = rol K.Fuente(g.Texto) end
+	local escala = ESCALA[letra] or ESCALA.grande
 	local w1 = ponerBoton(g.B1, acciones[1])
 	local w2 = ponerBoton(g.B2, acciones[2])
 	K.Escribir(g.Texto, K.Tenir(K.Clasico() and "oro" or "acento", L["Lya"] .. ":") .. " " .. (c.texto or ""))
 	local botones = w1 + (w2 > 0 and w2 + 6 or 0)
 	local natural = K.AnchoTexto(g.Texto) + 2 * PAD + 16
 	-- Un dato curioso pide un globo un poco más ancho y alto (c.ancho, c.lineas).
-	local tope = max(ANCHO_MAX, min(420, tonumber(c.ancho) or ANCHO_MAX))
+	local tope = floor(max(ANCHO_MAX, min(420, tonumber(c.ancho) or ANCHO_MAX)) * escala)
 	local ancho = max(ANCHO_MIN, min(tope, natural), botones + 2 * PAD)
 	ancho = min(tope + 40, ancho)
 	g:SetWidth(ancho)
 	local y = PAD
 	g.Texto:ClearAllPoints()
 	g.Texto:SetPoint("TOPLEFT", g, "TOPLEFT", PAD, -y)
-	y = y + K.Parrafo(g.Texto, ancho - 2 * PAD - 14, max(3, min(6, tonumber(c.lineas) or 3)))
+	y = y + K.Parrafo(g.Texto, ancho - 2 * PAD - 14, max(3, min(6, tonumber(c.lineas) or 3)) + (letra == "enorme" and 2 or 1))
 	if w1 > 0 then
 		y = y + 8
 		g.B1:ClearAllPoints()
@@ -825,6 +843,18 @@ function UI.Hablar(c)
 end
 
 -- Se calla (con su fundido; ya = sin fundido).
+-- 1.2.6: la tecla de su botón (Bindings.xml): hace lo del primer botón del
+-- globo, como un clic. Uno que abre algo del juego (seguro) no: ese pide el
+-- clic del juego. -> true si hizo algo.
+function UI.Responder()
+	local c = actual
+	local a = UI.Hablando() and c and type(c.acciones) == "table" and c.acciones[1]
+	if not (a and type(a.fn) == "function") or a.seguro then return false end
+	K.Llamar(a.fn)
+	UI.Callar()
+	return true
+end
+
 function UI.Callar(ya)
 	actual = nil
 	turnoGlobo = turnoGlobo + 1

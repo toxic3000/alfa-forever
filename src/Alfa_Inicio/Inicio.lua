@@ -461,6 +461,22 @@ end
 local function tarjetaPaso()
 	local info = pasoActual()
 	if not info then return nil end
+	-- 1.2.6: «Desbloquear» terminada: ya puedes tomar la misión.
+	if info.fin and info.id == "mis-rutas/desbloquear" then
+		return { fin = true, lobo = "aullando", tono = "acento", sobre = L["Fin del camino"], titulo = L["¡Ya la desbloqueaste!"],
+			texto = L["Hiciste lo que pedía antes. Búscala con su «!» y tómala, o elige qué sigue."],
+			accion = { texto = L["Elegir qué sigue"], icono = "ic-ruta", alClic = function() A.Fire("SHOW_PICKER") end } }
+	end
+	-- 1.2.6: lo mismo que el rastreador cuando la guía llegó a su final con
+	-- pasos sin hacer (antes Hoy decía «Seguir» como si nada).
+	local fin = deRuta("FinGuia")
+	local mf = fin and fin()
+	if type(mf) == "table" and not mf.complete and not info.fin then
+		return { lobo = "atento", tono = "acento", sobre = L["Fin del camino"], titulo = format(L["Final de %s"], mf.label or info.guia or ""),
+			texto = format(L["Llegaste al final; quedaron %d pasos sin hacer."], mf.undone or 0),
+			accion = { texto = L["Ver lo que quedó"], icono = "ic-seguir", alClic = seguirRuta },
+			secundaria = { texto = L["¿Qué sigue?"], alClic = function() A.Fire("SHOW_PICKER") end } }
+	end
 	if info.fin then
 		return { fin = true, lobo = "aullando", tono = "acento", sobre = L["Fin del camino"], titulo = L["¡Terminaste tu guía!"],
 			texto = format(L["%s quedó completa. Elige qué sigue y la manada va contigo."], info.guia ~= "" and info.guia or L["Tu guía"]),
@@ -479,9 +495,11 @@ local function tarjetaPaso()
 					K.Llamar(liberar)
 				end } }
 		end
-		return { icono = "ic-ruta", tono = "acento", sobre = L["Tu siguiente paso"], titulo = info.guia ~= "" and info.guia or L["Tu guía"],
-			texto = L["Tu guía está lista. Ábrela para ver tu paso."],
-			accion = { texto = L["Seguir"], icono = "ic-seguir", alClic = seguirRuta } }
+		-- 1.2.6: sin paso vivo, lo mismo que dice el rastreador (antes decía
+		-- «Tu guía está lista» y Seguir abría un rastreador vacío).
+		return { lobo = "atento", tono = "acento", sobre = L["Tu siguiente paso"], titulo = info.guia ~= "" and info.guia or L["Tu guía"],
+			texto = L["Esta guía no tiene un paso para ti ahora: puede que hayas omitido lo que queda o que aún no te toque. Elige otra guía o vuelve a esta más adelante."],
+			accion = { texto = L["Elegir otra guía"], icono = "ic-guia", alClic = function() A.Fire("SHOW_PICKER") end } }
 	end
 	local lineas = {}
 	for i, m in ipairs(info.metas or {}) do lineas[i] = m.texto end

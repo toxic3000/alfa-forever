@@ -452,4 +452,12 @@ M.EN = {
 	["Avisar a tu grupo cuando completas una misión"] = "Tell your group when you complete a quest",
 	["«[Misión] está lista para entregar» y «¡Misión completada!» en el chat del grupo, para todos. Apagado, solo te salen a ti."] = "\"[Quest] is ready to turn in\" and \"Quest complete!\" in party chat, for everyone. Off, they show only for you.",
 	["Al completar una misión vuelve a salir en tu chat: «[Misión] está lista para entregar» y «¡Misión completada!». Si lo prendes, también tu grupo lo ve."] = "Completing a quest shows in your chat again: \"[Quest] is ready to turn in\" and \"Quest complete!\". Turn it on and your group sees it too.",
+	-- Notas 1.2.6
+	["Lya te lo dice todo"] = "Lya tells you everything",
+	["Todos los avisos de Alfa los dice Lya, también los de al entrar y el de hechizos nuevos, con letra más grande que cambias con su clic derecho."] = "Lya says all of Alfa's alerts, including the ones at login and the new spells one, in bigger text you change with a right-click on her.",
+	["Tu guía y Hoy dicen lo mismo: al terminar «Desbloquear» vuelves solo a tu guía, y el final de una guía con pasos sin hacer ya no dice «terminaste»."] = "Your guide and Today agree: finishing \"Unlock\" takes you back to your guide on its own, and the end of a guide with undone steps no longer says \"finished\".",
+	-- Notas 1.2.6 (2)
+	["Lya, la manada y tus récords"] = "Lya, the pack and your records",
+	["Llama a la manada cuando necesites ayuda; los lobos de tu zona llegan con «¡Voy!». Y «Seguir» ya no se suelta al alcanzar a alguien."] = "Call the pack when you need help; the wolves in your zone come with \"On my way!\". And \"Follow\" no longer lets go when you catch up.",
+	["Lya recuerda lo que te dijo, tiene una tecla para su botón y te cuenta tu semana de caza y tu mejor día."] = "Lya remembers what she told you, has a key for her button and tells you about your hunting week and your best day.",
 }

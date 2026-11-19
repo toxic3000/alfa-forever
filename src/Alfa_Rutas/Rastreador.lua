@@ -902,7 +902,20 @@ local function aceptarBloqueado(v)
 	return nil
 end
 
+-- 1.2.6: el fin de guía al día. Si después terminaste lo que quedaba, ya es
+-- «terminaste»; si el motor ya no tiene fin (abandonaste la última misión),
+-- se quita. Antes se quedaba diciendo «quedaron 3 pasos» con la barra llena.
+local function finAlDia()
+	local fin = est.fin
+	local m = fin and fin.modelo
+	if not m then return end
+	if not m.complete and M.GuiaTerminada and M.GuiaTerminada() then m.complete = true end
+	if not engine("GetGuide") then est.fin = nil end
+end
+Rs.FinAlDia = finAlDia
+
 local function aviso(v, live)
+	finAlDia()
 	local fin = est.fin
 	if fin and fin.modelo then
 		local m = fin.modelo
@@ -1146,15 +1159,60 @@ local VACIO_GUIA = { lobo = "atento", titulo = L["Esta guía no tiene un paso pa
 	texto = L["Puede que hayas omitido lo que queda o que aún no te toque. Elige otra guía o vuelve a esta más adelante."],
 	accion = { texto = L["Elegir otra guía"], icono = "ic-guia", alClic = function() A.Fire("SHOW_PICKER") end } }
 
+-- 1.2.6: la guía con todos sus pasos hechos y sin paso vivo está terminada,
+-- aunque el motor no haya avisado el fin (las guías especiales, como
+-- «Desbloquear», no lo avisan): decía «no tiene un paso para ti» con «2 de 2».
+local VACIO_HECHA = { lobo = "aullando", titulo = L["¡Terminaste esta guía!"],
+	texto = L["Ya no queda nada por hacer aquí. Elige qué sigue y la manada va contigo."],
+	accion = { texto = L["Elegir qué sigue"], icono = "ic-ruta", alClic = function() A.Fire("SHOW_PICKER") end } }
+local VACIO_DESBLOQUEADA = { lobo = "aullando", titulo = L["¡Ya la desbloqueaste!"],
+	texto = L["Hiciste lo que pedía antes. Búscala con su «!» y tómala, o elige qué sigue."],
+	accion = { texto = L["Elegir qué sigue"], icono = "ic-ruta", alClic = function() A.Fire("SHOW_PICKER") end } }
+
+-- Terminada de verdad: sin paso vivo y cada paso suyo hecho (no omitido: sin
+-- paso vivo, el motor cuenta los omitidos como hechos en su avance).
+local function terminada()
+	if engine("GetLiveStep") then return false end
+	local g = engine("GetGuide")
+	local pasos = type(g) == "table" and type(g.steps) == "table" and g.steps or nil
+	if not pasos or #pasos == 0 then return false end
+	local alguno = false
+	for i = 1, #pasos do
+		local v = engine("GetStepView", i)
+		if type(v) == "table" and v.status ~= "na" then
+			if v.status ~= "done" or v.skipped then return false end
+			alguno = true
+		end
+	end
+	return alguno
+end
+M.GuiaTerminada = terminada
+
 local function cuadroVacio(g)
 	if not g then return VACIO_SIN_GUIA end
-	if M.Guias and M.Guias.Especial(g.id) == "liberar" then return VACIO_PLAN end
+	local esp = M.Guias and M.Guias.Especial(g.id)
+	if terminada() then return esp == "desbloquear" and VACIO_DESBLOQUEADA or VACIO_HECHA end
+	if esp == "liberar" then return VACIO_PLAN end
 	return VACIO_GUIA
+end
+
+-- 1.2.6: «Desbloquear» terminada: de vuelta a la guía de la que venías (una
+-- vez), con Lya diciéndolo. Sin guía de antes, el cuadro ofrece qué sigue.
+local volviendo = false
+local function volverDeDesbloquear()
+	if volviendo then return end
+	volviendo = true
+	A.After(1.5, function()
+		volviendo = false
+		if not (M.Guias and M.Guias.Volver and M.Guias.Volver()) then return end
+		if M.Aviso then M.Aviso(L["¡Ya la desbloqueaste!"], L["Volvemos a tu guía: la misión que esperabas ya está lista para ti."], { lobo = "aullando" }) end
+	end)
 end
 
 -- Pone en el cuadro vacío lo que toca (solo si cambió).
 local function ponerVacio(cuadro, g)
 	local o = cuadroVacio(g)
+	if o == VACIO_DESBLOQUEADA then volverDeDesbloquear() end
 	if cuadro.alfaVacio ~= o then
 		cuadro.alfaVacio = o
 		cuadro:Set(o)
@@ -1553,14 +1611,40 @@ local function pedidoFin(p)
 	if F and F:IsShown() then
 		Rs.Pintar()
 	else
+		-- 1.2.6: lo mismo que el rastreador (antes decía «Terminaste» aunque
+		-- quedaran pasos, y la página Hoy te mandaba a seguir).
+		finAlDia()
 		local m = p.modelo or {}
-		K.Aviso({ lobo = "aullando", titulo = format(L["¡Bien hecho! %s"], m.label or ""), texto = L["Terminaste esta guía."],
-			duracion = 12, accion = { texto = L["¿Qué sigue?"], alClic = function() M.Empezar() end } })
+		if m.complete then
+			local uno = (m.next and format(L["Seguir con %s"], m.nextLabel or "")) or L["¿Qué sigue?"]
+			K.Aviso({ lobo = "aullando", titulo = format(L["¡Bien hecho! %s"], m.label or ""), texto = L["Terminaste esta guía."],
+				duracion = 12, accion = { texto = uno, alClic = function() est.fin = nil if p.Empezar then p.Empezar() else M.Empezar() end end } })
+		else
+			K.Aviso({ lobo = "atento", titulo = format(L["Final de %s"], m.label or ""),
+				texto = format(L["Llegaste al final; quedaron %d pasos sin hacer."], m.undone or 0),
+				duracion = 12, accion = { texto = L["Ver lo que quedó"], alClic = function() est.fin = nil AlfaNucleo.EmpezarRuta() end } })
+		end
 	end
 end
 
 N.Reemplazar("GUIDE_FRAME", pedidoVentana, function() return F ~= nil and F:IsShown() end)
 N.Reemplazar("GUIDE_END", pedidoFin, function() return est.fin ~= nil end)
+
+-- Para la página Hoy (1.2.6): el fin pendiente de la guía, al día.
+function Rs.Fin()
+	finAlDia()
+	return est.fin and est.fin.modelo or nil
+end
+
+-- 1.2.6: «Desbloquear» terminada te regresa a tu guía aunque el rastreador
+-- esté oculto o muestre otra cosa (antes solo desde su cuadro vacío).
+local function revisarDesbloqueo()
+	local g = engine("GetGuide")
+	local id = type(g) == "table" and g.id
+	if M.Guias and M.Guias.Especial(id) == "desbloquear" and M.GuiaTerminada and M.GuiaTerminada() then volverDeDesbloquear() end
+end
+for _, msg in ipairs({ "GUIDE_COMPLETED", "STEP_CHANGED", "STEP_UPDATED" }) do A.On(msg, revisarDesbloqueo) end
+A.RegisterEvent("QUEST_TURNED_IN", function() A.After(1, revisarDesbloqueo) end)
 
 for _, msg in ipairs({ "GUIDE_CHANGED", "STEP_CHANGED", "STEP_UPDATED", "WAYPOINT_CHANGED", "WHILE_HERE_CHANGED",
 	"TABS_CHANGED", "GUIDE_COMPLETED", "PINS_CHANGED", "QUEST_TIMER", "STEP_SKIPPED", "ROUTE_CHOSEN" }) do

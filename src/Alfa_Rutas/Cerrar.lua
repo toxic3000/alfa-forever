@@ -155,11 +155,15 @@ local function revisar(ceder)
 	return out
 end
 
+local generacion = 0 -- sube con cada cambio del registro (olvidar)
+
 function Cr.Revisar(alTerminar)
 	local ok, motivo = I.CodexListo()
 	if not ok then return alTerminar(nil, motivo) end
+	local gen = generacion
 	T.Lanzar("cerrar:revisar", revisar, function(lista, err)
-		if lista then revision = lista end
+		-- (una revisión que empezó antes de una entrega no pisa a la de después)
+		if lista and gen == generacion then revision = lista end
 		alTerminar(lista, err and "error" or nil)
 		M.Avisar("CERRAR")
 	end)
@@ -272,7 +276,8 @@ end
 -- Las listas para entregar (para Hoy, la página y los avisos): las de la
 -- última revisión, o al momento si no hay.
 function Cr.ListasAhora()
-	if revision then return Cr.Cuentas(revision).listas end
+	-- 1.2.6: siempre al momento (la revisión guardada no se entera de una
+	-- misión que queda lista al matar al último monstruo).
 	local Cp = CP()
 	local n = 0
 	if not (Cp and Cp.GetLogQuests) then return 0 end
@@ -715,7 +720,12 @@ local function programar()
 end
 
 -- El registro cambió: la revisión vieja ya no vale.
-local function olvidar() revision = nil M.Avisar("CERRAR") programar() end
+local function olvidar()
+	revision = nil
+	generacion = generacion + 1
+	M.Avisar("CERRAR")
+	programar()
+end
 A.RegisterEvent("QUEST_ACCEPTED", olvidar)
 A.RegisterEvent("QUEST_REMOVED", olvidar)
 A.RegisterEvent("QUEST_TURNED_IN", olvidar)

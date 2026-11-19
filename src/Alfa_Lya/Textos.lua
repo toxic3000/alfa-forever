@@ -10,7 +10,9 @@ M.AJUSTES = { mostrar = true, frecuencia = "muchos", minutos = 3, tamano = 64, s
 	-- Dia.lua (1.2.5): un aullido al entregar una misión; aullar cuando sube de nivel alguien de tu grupo
 	aullidoMision = false, aullarGrupo = true,
 	-- 1.2.5: los avisos pequeños de Alfa los dice Lya cuando está a la vista
-	avisos = true }
+	avisos = true,
+	-- 1.2.6: el tamaño de su letra: "normal" | "grande" | "enorme"
+	letra = "grande" }
 M.Avisar = function() end -- Pagina.lua la cambia: rehace la página si está a la vista
 
 M.EN = {
@@ -1262,6 +1264,31 @@ M.EN = {
 	["Sí: en las asignaciones de teclas del juego, en la sección Alfa, ponle una tecla a «Pregúntale a Lya»."] = "Yes: in the game's key bindings, in the Alfa section, give \"Ask Lya\" a key.",
 	["Lya te dice los avisos"] = "Lya tells you the alerts",
 	["Los avisos pequeños de Alfa los dice Lya en su globo, con su botón, en vez de salir arriba. Si está oculta o en combate, salen como siempre."] = "Alfa's small alerts are said by Lya in her bubble, with their button, instead of popping up at the top. If she's hidden or you're in combat, they show as usual.",
+	-- 1.2.6: la letra de Lya
+	["Grande"] = "Large",
+	["Muy grande"] = "Extra large",
+	["Normal"] = "Normal",
+	["Qué tan grande escribe Lya en su globo. También con clic derecho sobre ella."] = "How big Lya writes in her bubble. Also with a right-click on her.",
+	["Tamaño de su letra"] = "Text size",
+	["Letra: normal"] = "Text: normal",
+	["Letra: grande"] = "Text: large",
+	["Letra: muy grande"] = "Text: extra large",
+	-- 1.2.6: historial, tecla y récords
+	["Esta semana llevas %s"] = "This week you have %s",
+	["Esta semana todavía no cazamos nada. ¿Salimos?"] = "We haven't hunted anything this week yet. Shall we head out?",
+	["Lo que te ofrece Lya (su botón)"] = "What Lya offers (her button)",
+	["Lo último que te dije"] = "What I told you last",
+	["Tu mejor día: %d misiones."] = "Your best day: %d quests.",
+	["Tu semana de caza"] = "Your hunting week",
+	["muestra u oculta a Lya, tu loba compañera (también: ayuda, dia, semana, historial, consejo, dato, historias, ajustes)"] = "shows or hides Lya, your wolf companion (also: help, day, week, history, tip, fact, stories, settings)",
+	["¡Nuevo récord: %d misiones en un día! Ni la manada te alcanza."] = "New record: %d quests in a day! Not even the pack can keep up.",
+	["¿Cómo pido ayuda a la manada?"] = "How do I ask the pack for help?",
+	["En La Jauría > Guaridas toca «Llamar a la manada» (o escribe /alfa manada llamar): los lobos de tu zona reciben tu lugar y te aviso quién viene."] = "In La Jauría > Dens tap \"Call the pack\" (or type /alfa manada llamar): the wolves in your zone get your spot and I tell you who's coming.",
+	["¿Qué me dijiste hace rato?"] = "What did you tell me earlier?",
+	["Arriba en esta ventana está lo último que te dije, con sus botones. Para ver los 20 más recientes: /alfa lya historial."] = "At the top of this window is what I told you last, with its buttons. To see the 20 most recent: /alfa lya historial.",
+	["¿Cómo me fue esta semana?"] = "How did I do this week?",
+	["Te llevo la cuenta de tu semana de caza y tu mejor día. Escribe /alfa lya semana y te lo cuento."] = "I keep track of your hunting week and your best day. Type /alfa lya semana and I'll tell you.",
+	["Sí: en las asignaciones de teclas del juego, en la sección Alfa, ponle una tecla a «Pregúntale a Lya» y otra a «Lo que te ofrece Lya», que hace lo de su botón."] = "Yes: in the game's key bindings, in the Alfa section, give \"Ask Lya\" a key and another to \"What Lya offers\", which does what her button does.",
 }
 
 M.L = AlfaNucleo.Textos(M.EN)

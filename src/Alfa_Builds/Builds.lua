@@ -360,10 +360,12 @@ local function avisarTalento(alEntrar)
 	else
 		titulo = format(L["Tienes %d puntos de talento: empieza por %s"], s.libres, s.nombre)
 	end
-	local a = K.Aviso({
+	local o = {
 		titulo = titulo, texto = s.porque, icono = "ic-talentos", tono = "acento", duracion = alEntrar and 10 or 14, lya = false,
 		accion = { texto = s.compras > 1 and format(L["Aplicar %d puntos"], s.compras) or L["Aplicar"], alClic = function() M.PedirAplicar() end },
-	})
+	}
+	if K.PorLya(o) then return end
+	local a = K.Aviso(o)
 	M.IconoEnAviso(a, s.icono)
 end
 M.AvisarTalento = avisarTalento

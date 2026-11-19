@@ -120,8 +120,16 @@ local BASE = {
 		respuesta = "Sí: sale «[Misión] está lista para entregar» y «¡Misión completada!» en el chat del grupo. Solo, te sale a ti." },
 	{ id = "rarosManada", icono = "ic-raros", modulo = "manada", pregunta = "¿Cómo me entero de raros de la manada?",
 		respuesta = "Cuando un lobo de la manada encuentra un raro, te aviso en qué guarida está y te dejo pedir entrar con un clic." },
+	-- 1.2.6
+	{ id = "llamar", icono = "ic-manada", modulo = "manada", pregunta = "¿Cómo pido ayuda a la manada?",
+		respuesta = "En La Jauría > Guaridas toca «Llamar a la manada» (o escribe /alfa manada llamar): los lobos de tu zona reciben tu lugar y te aviso quién viene." },
+	{ id = "dijiste", icono = "ic-lobo", pregunta = "¿Qué me dijiste hace rato?",
+		respuesta = "Arriba en esta ventana está lo último que te dije, con sus botones. Para ver los 20 más recientes: /alfa lya historial." },
+	{ id = "semana", icono = "ic-nivel", pregunta = "¿Cómo me fue esta semana?",
+		respuesta = "Te llevo la cuenta de tu semana de caza y tu mejor día. Escribe /alfa lya semana y te lo cuento.",
+		existe = function() return M.Dia ~= nil end, abrir = function() if M.Dia then M.Dia.ContarSemana() end end },
 	{ id = "tecla", icono = "ic-mando", pregunta = "¿Puedo llamarte con una tecla?",
-		respuesta = "Sí: en las asignaciones de teclas del juego, en la sección Alfa, ponle una tecla a «Pregúntale a Lya»." },
+		respuesta = "Sí: en las asignaciones de teclas del juego, en la sección Alfa, ponle una tecla a «Pregúntale a Lya» y otra a «Lo que te ofrece Lya», que hace lo de su botón." },
 }
 for _, p in ipairs(BASE) do p.base = true Gi.Ensenar(p) end
 
@@ -157,6 +165,14 @@ local function ahora()
 		local r = M.Dia.Resumen()
 		lista[#lista + 1] = { icono = "ic-huella", titulo = L["Tu día de caza"],
 			texto = r and format(L["Hoy llevas %s"], r) or L["Hoy todavía no cazamos nada. ¿Salimos?"], existe = true }
+		-- 1.2.6: tu semana y tu mejor día.
+		local rs = M.Dia.Resumen(M.Dia.Semana())
+		if rs then
+			local rec = M.Dia.Record()
+			lista[#lista + 1] = { icono = "ic-nivel", titulo = L["Tu semana de caza"],
+				texto = format(L["Esta semana llevas %s"], rs) .. ((rec and (tonumber(rec.misiones) or 0) > 0) and (" " .. format(L["Tu mejor día: %d misiones."], rec.misiones)) or ""),
+				existe = true }
+		end
 	end
 	local d = Ce.PeorDurabilidad and Ce.PeorDurabilidad()
 	if d and d <= 40 then
@@ -259,6 +275,20 @@ end
 
 local function llenar()
 	local filtro = lower(ui.buscador and ui.buscador:Texto() or "")
+	-- Lo último que dijo (sin buscar; con «historial», los 20; si no, 3).
+	local dijo = {}
+	local Ce = M.Cerebro
+	if filtro == "" and Ce and Ce.historial then
+		for i, h in ipairs(Ce.historial) do
+			if i > (ui.todoDijo and 20 or 3) then break end
+			local a = h.acciones and h.acciones[1]
+			dijo[#dijo + 1] = { icono = "ic-lobo", titulo = h.texto, texto = h.hora,
+				alClic = function() decir(h.texto, a and not a.seguro and { fn = a.fn } or nil) end }
+		end
+	end
+	K.Mostrar(ui.secDijo, #dijo > 0)
+	K.Mostrar(ui.rejDijo, #dijo > 0)
+	ui.rejDijo:Llenar(dijo)
 	-- Ahora mismo
 	local ya = {}
 	if filtro == "" then
@@ -326,6 +356,9 @@ local function armar()
 	ui.pila = p
 	ui.globo = p:Agregar(globo(p))
 	ui.buscador = p:Agregar(K.Buscador(p, { ayuda = L["¿Qué buscas? Escribe una palabra"], alCambiar = function() ui.tema = nil llenar() end }), { espacio = ESP.l })
+	-- 1.2.6: lo último que dijo Lya, con sus botones.
+	ui.secDijo = p:Agregar(K.Seccion(p, L["Lo último que te dije"]), { espacio = ESP.l })
+	ui.rejDijo = p:Agregar(K.Rejilla(p, { min = 300, variante = "compacta" }), { espacio = ESP.s })
 	ui.secAhora = p:Agregar(K.Seccion(p, L["Ahora mismo te ayudaría con"]), { espacio = ESP.l })
 	ui.rejAhora = p:Agregar(K.Rejilla(p, { min = 220, variante = "compacta" }), { espacio = ESP.s })
 	ui.secPreg = p:Agregar(K.Seccion(p, L["Preguntas"]), { espacio = ESP.l })
@@ -348,7 +381,8 @@ local SALUDOS = {
 
 -- pregunta: el id de una pregunta para responderla; tema: el id de una
 -- página (el «?» de su cabecera) para empezar por lo de esa página.
-function Gi.Abrir(pregunta, tema)
+function Gi.Abrir(pregunta, tema, historial)
+	ui.todoDijo = historial and true or false
 	if not N.Permitido or N.Permitido() then
 		if not v then armar() end
 		v:Abrir()
@@ -400,6 +434,7 @@ A.OnLogin(function() A.After(25, function() pcall(presentarNuevas) end) end)
 A.RegisterCommand("ayuda", function() Gi.Abrir() end, L["Pregúntale a Lya: todo lo de Alfa explicado y a un clic"])
 -- La tecla (Bindings.xml, 1.2.5), en la sección Alfa de las teclas del juego.
 BINDING_NAME_ALFA_LYA_GUIA = L["Pregúntale a Lya"]
+BINDING_NAME_ALFA_LYA_BOTON = L["Lo que te ofrece Lya (su botón)"]
 
 local API = AlfaLya
 if type(API) == "table" then

@@ -241,6 +241,14 @@ function Aviso.Mostrar(spec)
 		avisarCierre(spec)
 		return
 	end
+	-- 1.2.6: con Lya a la vista lo dice ella (también los de al entrar), con
+	-- sus botones; «Probar» sigue mostrando este aviso.
+	if spec.clave ~= "prueba" and K.PorLya and K.PorLya({ titulo = spec.titulo,
+		texto = (spec.linea and spec.linea ~= "" and (spec.linea .. " ") or "") .. (spec.texto or ""),
+		acciones = spec.botones, duracion = spec.segundos }) then
+		avisarCierre(spec)
+		return
+	end
 	if not f then construir() end
 	if f:IsShown() and actual and actual.clave ~= spec.clave then
 		for i = #cola, 1, -1 do

@@ -144,6 +144,10 @@ local function reintentar()
 	Ce.Decir(c)
 end
 
+-- Lo último que dijo, lo más nuevo primero (esta sesión).
+Ce.historial = {}
+local HISTORIAL = 20
+
 function Ce.Decir(c)
 	if type(c) ~= "table" or type(c.texto) ~= "string" or c.texto == "" then return false end
 	local por = motivo(c)
@@ -155,6 +159,9 @@ function Ce.Decir(c)
 	if por then return false, por end
 	if c.id then contar(c.id) end
 	ultimo = ahora()
+	-- 1.2.6: lo que dijo, por si el globo se fue antes de leerlo.
+	table.insert(Ce.historial, 1, { texto = c.texto, acciones = c.acciones, hora = date and date("%H:%M") or "" })
+	while #Ce.historial > HISTORIAL do table.remove(Ce.historial) end
 	UI.Hablar(c)
 	if type(c.alDecir) == "function" then K.Llamar(c.alDecir) end
 	return true
@@ -358,6 +365,9 @@ local CONTEXTO = {
 	end,
 	function(c)
 		local n = listas()
+		-- 1.2.6: si entregaste, la cuenta baja (antes se quedaba en lo más alto
+		-- y no volvía a avisar hasta pasar ese número).
+		if n < listasDichas then listasDichas = n end
 		if n < 3 or (n <= listasDichas and not c.pedido) then return false end
 		local R = rawget(_G, "AlfaRuta")
 		if type(R) == "table" and type(R.Entregar) == "function" then
@@ -788,6 +798,11 @@ local function comando(resto)
 		N.Abrir(ID)
 	elseif palabra == "ayuda" and M.Guia then
 		M.Guia.Abrir()
+	elseif palabra == "historial" or palabra == "dijiste" then
+		if M.Guia then M.Guia.Abrir(nil, nil, true) end
+	elseif palabra == "semana" then
+		if not Ce.Activa() then Ce.Mostrar(true) end
+		if M.Dia then M.Dia.ContarSemana() end
 	elseif palabra == "dia" or palabra == "día" then
 		if not Ce.Activa() then Ce.Mostrar(true) end
 		if M.Dia then M.Dia.Contar() end
@@ -807,7 +822,7 @@ local function comando(resto)
 		end
 	end
 end
-A.RegisterCommand("lya", comando, L["muestra u oculta a Lya, tu loba compañera (también: ayuda, dia, consejo, dato, historias, ajustes)"])
+A.RegisterCommand("lya", comando, L["muestra u oculta a Lya, tu loba compañera (también: ayuda, dia, semana, historial, consejo, dato, historias, ajustes)"])
 A.RegisterCommand("lobito", comando, L["lo mismo que /alfa lya"], true)
 
 ---------------------------------------------------------------------------
@@ -827,18 +842,35 @@ local function unir(titulo, texto)
 	if titulo:find("[%.!?:…]$") then return titulo .. " " .. texto end
 	return titulo .. ". " .. texto
 end
+local dichosAviso = {} -- texto -> cuándo lo dijo
 K.AvisoPorLya = function(o)
 	if N.Get(ID, "avisos") == false or Ce.Silenciada() then return false end
 	if not (Ce.Activa() and UI.Visible()) or enCombate() then return false end
 	local t = unir(o.titulo, o.texto)
 	if t == "" then return false end
+	-- El mismo aviso dentro de 90 s: ya lo dijo (no se repite ni sale arriba).
+	local ya = dichosAviso[t]
+	if ya and ahora() - ya < 90 then return true end
 	local acciones
 	local ac = o.accion
 	if type(ac) == "table" and type(ac.texto) == "string" and ac.texto ~= "" then
 		acciones = { { texto = ac.texto, fn = function() K.Llamar(ac.alClic) end } }
+	elseif type(o.acciones) == "table" then
+		-- (los avisos de Hoy: { { texto, fn }, ... }, hasta dos)
+		for _, b in ipairs(o.acciones) do if type(b) == "table" and b.seguro then return false end end
+		acciones = {}
+		for i = 1, math.min(2, #o.acciones) do
+			local b = o.acciones[i]
+			if type(b) == "table" and type(b.texto) == "string" and type(b.fn) == "function" and not b.seguro then
+				acciones[#acciones + 1] = { texto = b.texto, fn = b.fn }
+			end
+		end
+		if #acciones == 0 then acciones = nil end
 	end
-	return Ce.Decir({ texto = t, pedido = true, acciones = acciones, lineas = 5, ancho = 360,
+	local dijo = Ce.Decir({ texto = t, pedido = true, acciones = acciones, lineas = 5, ancho = 360,
 		cara = acciones and "atenta" or nil, segundos = tonumber(o.duracion) }) == true
+	if dijo then dichosAviso[t] = ahora() end
+	return dijo
 end
 
 -- Para la guía (Guia.lua, 1.2.4): lo que Lya mira del juego.
@@ -867,6 +899,8 @@ function API.Decir(texto, opts)
 end
 function API.Mostrar(on) Ce.Mostrar(on ~= false) end
 function API.Consejo() Ce.Pedir() end
+-- La tecla de su botón (1.2.6).
+function API.Responder() return UI.Responder() end
 function API.Visible() return UI.Visible() end
 -- El recuerdo de Lya (para una línea en otra página): titulo, texto, pie.
 function API.Recuerdo() return L[M.RECUERDO_TITULO], L[M.RECUERDO], L[M.RECUERDO_PIE] end

@@ -491,16 +491,21 @@ local function armarAviso()
 	return a
 end
 
+-- 1.2.6: ¿lo dijo Lya? Para quien arma su aviso aparte (usa la ventanita):
+-- si Lya lo dice, no hace falta el aviso. Nunca con un botón seguro.
+function K.PorLya(o)
+	if type(o) ~= "table" or (o.accion and o.accion.seguro) or type(K.AvisoPorLya) ~= "function" then return false end
+	local ok, dijo = pcall(K.AvisoPorLya, o)
+	return ok and dijo == true
+end
+
 function K.Aviso(o)
 	o = o or {}
 	-- 1.2.5: con Lya a la vista, ella lo dice en su globo (K.AvisoPorLya, de
 	-- Alfa_Lya) y no salen avisos por todos lados. Siempre el aviso: o.lya =
 	-- false (quien usa la ventanita que se devuelve) o un botón seguro (abre
 	-- una ventana del juego; el globo de Lya no puede).
-	if o.lya ~= false and not (o.accion and o.accion.seguro) and type(K.AvisoPorLya) == "function" then
-		local ok, dijo = pcall(K.AvisoPorLya, o)
-		if ok and dijo then return true end
-	end
+	if o.lya ~= false and K.PorLya(o) then return true end
 	local a
 	for _, x in ipairs(avisos) do if not x.alfaVivo then a = x break end end
 	if not a then

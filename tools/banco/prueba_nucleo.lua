@@ -199,6 +199,7 @@ end)
 -- 9. Talentos: los avisos de hechizos nuevos se reemplazan y se ocultan sin errores.
 local Bd = ns("Alfa_Builds")
 step("talentos: avisos de hechizos nuevos (uno tras otro y ocultar)", function()
+  AlfaNucleo.A.Set("lya.avisos", false) -- (aquí se prueba el aviso mismo; con Lya lo diría ella)
   local fn = A.Reemplazo and A.Reemplazo("SPELL_CARDS")
   if not fn then print("AVISO: Talentos no tomó SPELL_CARDS") return end
   -- Los avisos del Kit a la vista (los de al entrar pueden seguir ahí).

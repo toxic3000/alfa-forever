@@ -536,6 +536,15 @@ REQUISITOS = [
 ]
 PARCHES += REQUISITOS
 
+# Seguir a alguien de La Jauria sin soltarse (1.2.6): un viaje "follow" no
+# termina al llegar; si la persona se mueve, la flecha vuelve a llevarte.
+PARCHES += [
+    ("Alfa/Nav/Nav.lua", 'ends = ends == "instance" and "instance" or "arrive"',
+     lambda cfg: 'ends = (ends == "instance" or ends == "follow") and ends or "arrive"'),
+    ("Alfa/Nav/Nav.lua", "\tt.map, t.x, t.y = map, x, y\n",
+     lambda cfg: "\tt.map, t.x, t.y = map, x, y\n\tlocal tr = Nav.Trip and Nav.Trip()\n\tif tr and tr.target == t and tr.ends == \"follow\" then arrived = false end -- Alfa: seguir sin soltarse\n"),
+]
+
 # El aviso de misiones en el chat (1.2.5): tus propias líneas te salen siempre
 # a ti (motor/Alfa/Quests/PartyChat.lua); mandarlas al chat del grupo sigue
 # apagado de fábrica (REGLAS-BLIZZARD.md, regla 3: el parche de arriba) y la

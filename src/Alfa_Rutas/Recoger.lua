@@ -206,6 +206,9 @@ function R.Desbloquear(qid, alTerminar)
 			local def = M.Guias.Def(M.Guias.IdEspecial("desbloquear"), titulo, pasos, {
 				pitch = L["Las misiones previas y el nivel que pide, para poder tomarla."],
 			})
+			-- 1.2.6: de qué guía venías, para regresarte a ella al terminar
+			-- (Rastreador.lua: antes te quedabas en «no tiene un paso para ti»).
+			M.Guias.RecordarVuelta()
 			alTerminar(instalarYAbrir(def, L["Guía para desbloquearla en marcha"]))
 		end)
 	end)

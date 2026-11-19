@@ -19,6 +19,7 @@ Gente.lua
 Seguir.lua
 Invitar.lua
 Guaridas.lua
+Llamado.lua
 Mapa.lua
 Pagina.lua
 Manada.lua

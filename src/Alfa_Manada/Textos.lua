@@ -251,4 +251,23 @@ M.EN = {
 	["Tu guarida en el rastreador y en el cuadro de los lobos, y Lya te avisa si el juego te cambia de capa."] = "Your den in the tracker and in wolves' tooltips, and Lya tells you if the game changes your layer.",
 	-- 1.2.5: guaridas
 	["Acaba de abrirle la puerta a alguien. Prueba en un momento."] = "They just opened the door for someone. Try again in a moment.",
+	-- 1.2.6: llamar a la manada y seguir
+	["%s llama a la manada"] = "%s calls the pack",
+	["%s va en camino"] = "%s is on the way",
+	["Cuando un lobo de tu zona pide ayuda, te avisa dónde está con «¡Voy!»: la flecha te lleva y le dice que vas."] = "When a wolf in your zone asks for help, you're told where they are with \"On my way!\": the arrow takes you and tells them you're coming.",
+	["Llamados de la manada"] = "Pack calls",
+	["Llamar a la manada"] = "Call the pack",
+	["Llamaste a la manada"] = "You called the pack",
+	["Llegaste con %s. La flecha te sigue llevando mientras se mueve; para soltar el rastro, «Dejar de seguir»."] = "You reached %s. The arrow keeps leading you while they move; to drop the trail, \"Stop following\".",
+	["Los lobos de tu zona saben dónde estás. Te aviso quién viene."] = "The wolves in your zone know where you are. I'll tell you who's coming.",
+	["Pediste ayuda con %s. Te aviso quién viene."] = "You asked for help with %s. I'll tell you who's coming.",
+	["Pide ayuda con %s."] = "Asks for help with %s.",
+	["Pide ayuda con un élite o un raro: los lobos de tu zona reciben tu lugar y te avisa quién viene."] = "Ask for help with an elite or a rare: the wolves in your zone get your spot and you're told who's coming.",
+	["Pide ayuda donde está."] = "Asks for help where they are.",
+	["Respondió a tu llamado."] = "Answered your call.",
+	["pide ayuda a los lobos de tu zona"] = "asks the wolves in your zone for help",
+	["¡Voy!"] = "On my way!",
+	["Para llamar a la manada, deja que te vean en el mapa (La Jauría)."] = "To call the pack, let them see you on the map (La Jauría).",
+	["Ya llamaste a la manada hace un momento. Espera un poco."] = "You called the pack a moment ago. Wait a little.",
+	["Ahora no se puede llamar a la manada: Alfa busca cómo unirse a ella."] = "The pack can't be called right now: Alfa is looking for a way to join it.",
 }

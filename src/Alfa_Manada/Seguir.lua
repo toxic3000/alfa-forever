@@ -8,9 +8,11 @@
 -- "Volver a la guía", y el viaje termina solo al llegar. Mientras se mueve,
 -- el destino se mueve con ella cada CADA segundos (Alfa.Nav.MoveTarget: una
 -- sola llegada, un solo sonido) cuando cambió más de MOVER yardas.
--- Se detiene al llegar, al cancelar (aquí, en la flecha o en la guía), cuando
--- otro destino toma la flecha, o cuando su posición se pierde por más de
--- PERDIDO segundos (salió del grupo, entró a una mazmorra, dejó de compartir).
+-- 1.2.6: no se suelta al llegar (un viaje "follow" del motor): si la persona
+-- sigue caminando, la flecha te vuelve a llevar con ella. Se detiene al
+-- cancelar (aquí, en la flecha o en la guía), cuando otro destino toma la
+-- flecha, o cuando su posición se pierde por más de PERDIDO segundos (salió
+-- del grupo, entró a una mazmorra, dejó de compartir).
 
 local ADDON, M = ...
 local N = AlfaNucleo
@@ -128,7 +130,7 @@ function S.A(fila)
 	if type(objetivo) ~= "table" then return false end
 	-- Que un paso nuevo de la guía no le quite la flecha (1.1.6).
 	if Nav.KeepTarget then Nav.KeepTarget(objetivo) end
-	if Nav.StartTrip then Nav.StartTrip(objetivo, s.nombre, etiqueta(s.tipo)) end
+	if Nav.StartTrip then Nav.StartTrip(objetivo, s.nombre, etiqueta(s.tipo), "follow") end
 	if N.EmpezarRuta then N.EmpezarRuta() end -- cierra las ventanas de Alfa y muestra el seguimiento
 	s.objetivo = objetivo
 	s.map = map
@@ -185,14 +187,10 @@ function S.PorNombre(texto)
 	return false
 end
 
--- Al llegar el motor termina el viaje solo; aquí solo se dice con quién.
+-- Al llegar se dice una vez con quién; el seguimiento sigue (1.2.6).
 A.On("NAV_ARRIVED", function(t)
-	if sig and t == sig.objetivo then
-		local nombre = sig.nombre
+	if sig and t == sig.objetivo and not sig.llego then
 		sig.llego = true
-		A.After(0, function()
-			if sig and sig.objetivo == t then soltar() end
-		end)
-		U.Decir(L["Llegaste con %s."]:format(nombre))
+		U.Decir(L["Llegaste con %s. La flecha te sigue llevando mientras se mueve; para soltar el rastro, «Dejar de seguir»."]:format(sig.nombre))
 	end
 end)

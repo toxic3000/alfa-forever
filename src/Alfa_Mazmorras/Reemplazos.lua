@@ -79,14 +79,21 @@ N.Reemplazar("DUNGEON_TOAST", function(p)
 	partes[1] = rango and d.zoneName and format(L["Niveles %s, en %s."], rango, d.zoneName) or nil
 	partes[#partes + 1] = P.Frase(e)
 	local a = { pedido = p }
-	a.aviso = K.Aviso({
+	local o = {
 		lobo = "atento", tono = "mazmorra", duracion = 14, lya = false,
 		titulo = format(L["%s ya es para ti"], d.name or key),
 		texto = table.concat(partes, " "),
 		accion = { texto = #e.recoger > 0 and L["Prepárame"] or L["Ver la mazmorra"], alClic = function()
 			if #e.recoger > 0 then P.Preparar(key) else V.AbrirMazmorra(key) end
 		end },
-	})
+	}
+	-- 1.2.6: si Lya lo dice, el motor no se queda esperando el aviso.
+	if K.PorLya(o) then
+		if actual and actual ~= a then cerrar(actual) end
+		cerrar(a)
+		return
+	end
+	a.aviso = K.Aviso(o)
 	local f = a.aviso
 	if f then
 		a.turno = f.alfaTurno

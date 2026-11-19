@@ -50,6 +50,7 @@ N.Modulo({
 		guaridaAbierta = false, -- invitar a quien pida entrar a tu guarida (capa) (1.2.4)
 		rarosManada = true, -- los raros que encuentra la manada, con su guarida (1.2.5)
 		guaridaVisible = true, -- tu guarida en el rastreador y el aviso al cambiar (1.2.5)
+		llamados = true, -- recibir los llamados de ayuda de la manada (1.2.6)
 	},
 	construir = P.Construir,
 })
@@ -103,6 +104,7 @@ local function ayuda()
 		{ "/alfa manada parar", L["deja de seguir"] },
 		{ "/alfa manada compartir sí|no", L["que la manada vea a tu personaje en el mapa"] },
 		{ "/alfa manada estado", L["qué se envía y qué se recibe ahora"] },
+		{ "/alfa manada llamar", L["pide ayuda a los lobos de tu zona"] },
 	}) do
 		DEFAULT_CHAT_FRAME:AddMessage("  " .. hex .. l[1] .. "|r  " .. l[2])
 	end
@@ -145,6 +147,8 @@ A.RegisterCommand("manada", function(rest)
 	cmd = U.Plegar(cmd or "")
 	if cmd == "" then
 		P.Abrir()
+	elseif cmd == "llamar" or cmd == "call" then
+		if M.Llamado then M.Llamado.LlamarYDecir() end
 	elseif cmd == "seguir" or cmd == "follow" then
 		if arg == "" then P.Abrir() else S.PorNombre(arg) end
 	elseif cmd == "parar" or cmd == "stop" then

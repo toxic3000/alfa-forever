@@ -95,7 +95,7 @@ Sale de una revisión del código del 18/11. En cada versión va primero lo que 
 - [~] Mundo: `AlfaMundo.ActivarCapa` ya existe; falta una proyección para pintar pines en el mapa continuo (Recolección solo pinta en mapas de zona).
 - [x] Acerca de: créditos visibles del código y los datos reutilizados bajo MIT.
 - [ ] Núcleo: opción `alComando(rest)` en `N.Modulo` para comandos con argumentos (Manada y Pesca lo registran aparte).
-- [ ] Motor: destino "persistente" en `Nav.SetTarget` para que Seguir (La Jauría) no se suelte cuando la guía cambia de paso.
+- [x] Motor: destino "persistente" en `Nav.SetTarget` para que Seguir (La Jauría) no se suelte cuando la guía cambia de paso.
 - [x] La Jauría: "Quiero unirme" lleva al Discord (sin oficiales con nombre de personaje en el código).
 - [ ] Núcleo: `N.Repintar(id)` oficial para volver a dibujar una página propia (Mazmorras, Pesca e Inicio usan piezas internas de Options).
 - [ ] Mazmorras: confirmar en el juego si Forever trae las CVars de avisos de jefes (la variante "Camelot" dice `HasBossWarnings = false`).

@@ -445,7 +445,7 @@ local function alAvistar(a)
 	if dichos[clave] and ahora - dichos[clave] < CADA_RARO then return end
 	dichos[clave] = ahora
 	M.Red.Enviar("V:" .. clave, format("%sV|%d|%d|%s|%d|%.2f|%.2f|%s", V, mia.map, mia.capa,
-		a.kind == "treasure" and "t" or "r", a.map, a.x * 100, a.y * 100, nombre))
+		a.kind == "treasure" and "t" or "r", a.map, a.x, a.y, nombre)) -- (x, y ya en 0-100, como la flecha)
 end
 if A.On then A.On("RARE_SPOTTED", alAvistar) end
 Gu.AlAvistar = alAvistar
@@ -475,7 +475,7 @@ M.Red.Oyentes.V = function(clave, remitente, _, f)
 		aviso({ titulo = titulo, texto = format(L["%s lo encontró en tu guarida."], quien), icono = "ic-raros", duracion = 15,
 			accion = { texto = L["Ir de caza"], alClic = function()
 				local Nav = A.Nav
-				if Nav and Nav.SetTarget then Nav.SetTarget(rmap, x / 100, y / 100, nombre) N.EmpezarRuta() end
+				if Nav and Nav.SetTarget then Nav.SetTarget(rmap, x, y, nombre) N.EmpezarRuta() end
 			end } })
 	else
 		local abierta = false

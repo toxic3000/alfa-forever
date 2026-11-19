@@ -3,4 +3,8 @@
 	<Binding name="ALFA_LYA_GUIA" category="Alfa" searchTags="BINDING_TAG_ALFA">
 		if AlfaLya and AlfaLya.Guia then AlfaLya.Guia() end
 	</Binding>
+	<!-- 1.2.6: lo que ofrece su globo (el primer botón), sin el ratón. -->
+	<Binding name="ALFA_LYA_BOTON" category="Alfa" searchTags="BINDING_TAG_ALFA">
+		if AlfaLya and AlfaLya.Responder then AlfaLya.Responder() end
+	</Binding>
 </Bindings>

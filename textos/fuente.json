@@ -683,6 +683,10 @@
   "en": "%s smells different from everywhere else. I like sniffing it out.",
   "origen": "Alfa_Lya"
  },
+ "%s llama a la manada": {
+  "en": "%s calls the pack",
+  "origen": "Alfa_Manada"
+ },
  "%s lo encontró en la %s.": {
   "en": "%s found it in %s.",
   "origen": "Alfa_Manada"
@@ -758,6 +762,10 @@
  "%s tiene sus razones para pedirte «%s». ¿Te las cuento?": {
   "en": "%s has their reasons for asking you “%s”. Shall I tell you?",
   "origen": "Alfa_Lya"
+ },
+ "%s va en camino": {
+  "en": "%s is on the way",
+  "origen": "Alfa_Manada"
  },
  "%s y %d más": {
   "en": "%s and %d more",
@@ -1923,6 +1931,10 @@
   "en": "You can't announce right now",
   "origen": "Alfa_Combate"
  },
+ "Ahora no se puede llamar a la manada: Alfa busca cómo unirse a ella.": {
+  "en": "The pack can't be called right now: Alfa is looking for a way to join it.",
+  "origen": "Alfa_Manada"
+ },
  "Ahora no se pueden enviar mensajes (en una instancia o con una cuenta de prueba). %s": {
   "en": "Messages can't be sent right now (in an instance or on a trial account). %s",
   "origen": "Alfa_Manada"
@@ -3078,6 +3090,10 @@
  "Arriba de la ventana, cada bolsa equipada con su espacio: pasa el ratón para resaltar lo que lleva y arrastra otra bolsa para cambiarla.": {
   "en": "At the top of the window, each equipped bag with its space: hover to highlight what it holds and drag another bag to swap it.",
   "origen": "Alfa_Bolsas"
+ },
+ "Arriba en esta ventana está lo último que te dije, con sus botones. Para ver los 20 más recientes: /alfa lya historial.": {
+  "en": "At the top of this window is what I told you last, with its buttons. To see the 20 most recent: /alfa lya historial.",
+  "origen": "Alfa_Lya"
  },
  "Arriba, lo que Alfa recomienda. Un clic y empiezas.": {
   "en": "At the top, what Alfa recommends. One click and you start.",
@@ -5811,6 +5827,10 @@
   "en": "When a pack wolf finds a rare, I tell you which den it's in and let you ask to enter with one click.",
   "origen": "Alfa_Lya"
  },
+ "Cuando un lobo de tu zona pide ayuda, te avisa dónde está con «¡Voy!»: la flecha te lleva y le dice que vas.": {
+  "en": "When a wolf in your zone asks for help, you're told where they are with \"On my way!\": the arrow takes you and tells them you're coming.",
+  "origen": "Alfa_Manada"
+ },
  "Cuando un lobo encuentra un raro o un tesoro en tu zona, te avisa en qué guarida está. Si es la tuya, «Ir de caza»; si es otra, «Pedir entrar».": {
   "en": "When a wolf finds a rare or a treasure in your zone, it tells you which den it's in. If it's yours, \"Go hunt\"; if it's another, \"Ask to enter\".",
   "origen": "Alfa_Manada"
@@ -8443,6 +8463,10 @@
   "en": "In La Jauría > Dens I tell you which one you're in and where the pack is. With \"Ask to enter\" you move to the den of a wolf with the door open.",
   "origen": "Alfa_Lya"
  },
+ "En La Jauría > Guaridas toca «Llamar a la manada» (o escribe /alfa manada llamar): los lobos de tu zona reciben tu lugar y te aviso quién viene.": {
+  "en": "In La Jauría > Dens tap \"Call the pack\" (or type /alfa manada llamar): the wolves in your zone get your spot and I tell you who's coming.",
+  "origen": "Alfa_Lya"
+ },
  "En La Jauría ves a tu grupo y a los lobos que se dejan ver en el mapa. Puedes seguirlos con la flecha o invitarlos.": {
   "en": "In La Jauría you see your group and the wolves who show themselves on the map. You can follow them with the arrow or invite them.",
   "origen": "Alfa_Lya"
@@ -10199,6 +10223,18 @@
   "en": "This guide has no step for you right now",
   "origen": "Alfa_Rutas"
  },
+ "Esta guía no tiene un paso para ti ahora: puede que hayas omitido lo que queda o que aún no te toque. Elige otra guía o vuelve a esta más adelante.": {
+  "en": "This guide has no step for you right now: you may have skipped what's left or it isn't your turn yet. Choose another guide or come back to this one later.",
+  "origen": "Alfa_Inicio"
+ },
+ "Esta semana llevas %s": {
+  "en": "This week you have %s",
+  "origen": "Alfa_Lya"
+ },
+ "Esta semana todavía no cazamos nada. ¿Salimos?": {
+  "en": "We haven't hunted anything this week yet. Shall we head out?",
+  "origen": "Alfa_Lya"
+ },
  "Esta sesión": {
   "en": "This session",
   "origen": "Alfa_Inicio"
@@ -10641,7 +10677,7 @@
  },
  "Final de %s": {
   "en": "End of %s",
-  "origen": "Alfa_Rutas"
+  "origen": "Alfa_Inicio"
  },
  "Firma de Alfa": {
   "en": "Alfa's signature",
@@ -11010,6 +11046,10 @@
  "Gran golpe de escudo con mucha amenaza.": {
   "en": "A big shield strike with lots of threat.",
   "origen": "Alfa_Builds"
+ },
+ "Grande": {
+  "en": "Large",
+  "origen": "Alfa_Lya"
  },
  "Grano": {
   "en": "Grain",
@@ -11562,6 +11602,10 @@
  "Herrería y Minería van de la mano: tú sacas el metal y tú lo forjas.": {
   "en": "Blacksmithing and Mining go hand in hand: you dig the metal and you forge it.",
   "origen": "Alfa_Lya"
+ },
+ "Hiciste lo que pedía antes. Búscala con su «!» y tómala, o elige qué sigue.": {
+  "en": "You did what it asked for first. Find it by its \"!\" and take it, or choose what's next.",
+  "origen": "Alfa_Inicio"
  },
  "Hielo": {
   "en": "Ice",
@@ -13327,6 +13371,18 @@
   "en": "Style font",
   "origen": "Alfa_Comodidades"
  },
+ "Letra: grande": {
+  "en": "Text: large",
+  "origen": "Alfa_Lya"
+ },
+ "Letra: muy grande": {
+  "en": "Text: extra large",
+  "origen": "Alfa_Lya"
+ },
+ "Letra: normal": {
+  "en": "Text: normal",
+  "origen": "Alfa_Lya"
+ },
  "Letras grandes en el centro de la pantalla cuando el jefe hace algo importante.": {
   "en": "Big letters in the middle of the screen when the boss does something important.",
   "origen": "Alfa_Mazmorras"
@@ -13439,9 +13495,25 @@
   "en": "Done: your map also works on Blizzard's frames.",
   "origen": "Alfa_Curacion"
  },
+ "Llama a la manada cuando necesites ayuda; los lobos de tu zona llegan con «¡Voy!». Y «Seguir» ya no se suelta al alcanzar a alguien.": {
+  "en": "Call the pack when you need help; the wolves in your zone come with \"On my way!\". And \"Follow\" no longer lets go when you catch up.",
+  "origen": "Alfa_Bienvenida"
+ },
  "Llama a varios lobos al empezar: usen ataques en área o maten primero a los lobos.": {
   "en": "He calls several wolves at the start: use area attacks or kill the wolves first.",
   "origen": "Alfa_Mazmorras/Consejos"
+ },
+ "Llamados de la manada": {
+  "en": "Pack calls",
+  "origen": "Alfa_Manada"
+ },
+ "Llamar a la manada": {
+  "en": "Call the pack",
+  "origen": "Alfa_Manada"
+ },
+ "Llamaste a la manada": {
+  "en": "You called the pack",
+  "origen": "Alfa_Manada"
  },
  "Llave": {
   "en": "Key",
@@ -13529,10 +13601,14 @@
  },
  "Llegaste al final; quedaron %d pasos sin hacer.": {
   "en": "You reached the end; %d steps were left undone.",
-  "origen": "Alfa_Rutas"
+  "origen": "Alfa_Inicio"
  },
  "Llegaste con %s.": {
   "en": "You reached %s.",
+  "origen": "Alfa_Manada"
+ },
+ "Llegaste con %s. La flecha te sigue llevando mientras se mueve; para soltar el rastro, «Dejar de seguir».": {
+  "en": "You reached %s. The arrow keeps leading you while they move; to drop the trail, \"Stop following\".",
   "origen": "Alfa_Manada"
  },
  "Llenar mi barra": {
@@ -13887,6 +13963,10 @@
   "en": "What she has told you",
   "origen": "Alfa_Lya"
  },
+ "Lo que te ofrece Lya (su botón)": {
+  "en": "What Lya offers (her button)",
+  "origen": "Alfa_Lya"
+ },
  "Lo que te pasa a ti: curación recibida, esquivas, recursos. Puede necesitar /reload la primera vez.": {
   "en": "What happens to you: healing received, dodges, resources. May need /reload the first time.",
   "origen": "Alfa_Vista"
@@ -13958,6 +14038,10 @@
  "Lo último que consultaste": {
   "en": "What you looked up last",
   "origen": "Alfa_Enciclopedia"
+ },
+ "Lo último que te dije": {
+  "en": "What I told you last",
+  "origen": "Alfa_Lya"
  },
  "Lobo": {
   "en": "Wolf",
@@ -14415,6 +14499,10 @@
   "en": "Wolves learn Furious Howl, which boosts your group's damage. See? Wolves are the best!",
   "origen": "Alfa_Lya"
  },
+ "Los lobos de tu zona saben dónde estás. Te aviso quién viene.": {
+  "en": "The wolves in your zone know where you are. I'll tell you who's coming.",
+  "origen": "Alfa_Manada"
+ },
  "Los lobos que se dejan ver en el mapa. Un clic en su marca y la flecha te lleva.": {
   "en": "The wolves who let themselves be seen on the map. Click their mark and the arrow takes you.",
   "origen": "Alfa_Manada"
@@ -14815,6 +14903,10 @@
   "en": "Lya chats a lot more: Warcraft lore, facts about every zone, your race, your class and your professions, and tips for events and farming. And she loves sausages!",
   "origen": "Alfa_Bienvenida"
  },
+ "Lya recuerda lo que te dijo, tiene una tecla para su botón y te cuenta tu semana de caza y tu mejor día.": {
+  "en": "Lya remembers what she told you, has a key for her button and tells you about your hunting week and your best day.",
+  "origen": "Alfa_Bienvenida"
+ },
  "Lya se fue a descansar. Vuelve con /alfa lya.": {
   "en": "Lya went to rest. Bring her back with /alfa lya.",
   "origen": "Alfa_Lya"
@@ -14843,6 +14935,10 @@
   "en": "Lya guides you, a simpler setup and dens",
   "origen": "Alfa_Bienvenida"
  },
+ "Lya te lo dice todo": {
+  "en": "Lya tells you everything",
+  "origen": "Alfa_Bienvenida"
+ },
  "Lya tiene mucho que contar": {
   "en": "Lya has a lot to tell",
   "origen": "Alfa_Bienvenida"
@@ -14862,6 +14958,10 @@
  "Lya, la loba de confianza del Alfa": {
   "en": "Lya, the Alpha's trusted she-wolf",
   "origen": "Alfa_Lya"
+ },
+ "Lya, la manada y tus récords": {
+  "en": "Lya, the pack and your records",
+  "origen": "Alfa_Bienvenida"
  },
  "Lánzalo antes de la siguiente pelea.": {
   "en": "Cast it before the next fight.",
@@ -15902,6 +16002,10 @@
  "Muro de escudo dura más: te salva en los jefes.": {
   "en": "Shield Wall lasts longer: it saves you on bosses.",
   "origen": "Alfa_Builds"
+ },
+ "Muy grande": {
+  "en": "Extra large",
+  "origen": "Alfa_Lya"
  },
  "Muy pronto": {
   "en": "Coming soon",
@@ -17017,7 +17121,7 @@
  },
  "Normal": {
   "en": "Normal",
-  "origen": "Alfa_Vista"
+  "origen": "Alfa_Lya"
  },
  "Nota de entrenar en la ventana de la guía": {
   "en": "Training note in the guide window",
@@ -17591,6 +17695,10 @@
   "en": "To go from the Wetlands to the Arathi Highlands, cross Thandol Span, but watch out for the Dark Irons.",
   "origen": "Alfa_Lya"
  },
+ "Para llamar a la manada, deja que te vean en el mapa (La Jauría).": {
+  "en": "To call the pack, let them see you on the map (La Jauría).",
+  "origen": "Alfa_Manada"
+ },
  "Para llegar a la Fuente del Sol, la Plaga de Arthas arrasó Quel'Thalas y su capital, Lunargenta.": {
   "en": "To reach the Sunwell, Arthas's Scourge ravaged Quel'Thalas and its capital, Silvermoon.",
   "origen": "Alfa_Lya"
@@ -17814,6 +17922,10 @@
  "Pediste %s; el juego lo dejó en %s.": {
   "en": "You asked for %s; the game set it to %s.",
   "origen": "Alfa_Vista"
+ },
+ "Pediste ayuda con %s. Te aviso quién viene.": {
+  "en": "You asked for help with %s. I'll tell you who's coming.",
+  "origen": "Alfa_Manada"
  },
  "Pega aquí (Ctrl+V) el texto de una ruta de Alfa.": {
   "en": "Paste an Alfa route's text here (Ctrl+V).",
@@ -18050,6 +18162,18 @@
  "Pide al grupo que espere unos segundos antes de atacar.": {
   "en": "Ask the group to wait a few seconds before attacking.",
   "origen": "Alfa_Builds"
+ },
+ "Pide ayuda con %s.": {
+  "en": "Asks for help with %s.",
+  "origen": "Alfa_Manada"
+ },
+ "Pide ayuda con un élite o un raro: los lobos de tu zona reciben tu lugar y te avisa quién viene.": {
+  "en": "Ask for help with an elite or a rare: the wolves in your zone get your spot and you're told who's coming.",
+  "origen": "Alfa_Manada"
+ },
+ "Pide ayuda donde está.": {
+  "en": "Asks for help where they are.",
+  "origen": "Alfa_Manada"
  },
  "Pide grupo": {
   "en": "Needs a group",
@@ -19223,6 +19347,10 @@
   "en": "How hard the quests Alfa picks can be (always ones you can already take).",
   "origen": "Alfa_Rutas"
  },
+ "Qué tan grande escribe Lya en su globo. También con clic derecho sobre ella.": {
+  "en": "How big Lya writes in her bubble. Also with a right-click on her.",
+  "origen": "Alfa_Lya"
+ },
  "Qué tan grande se ve Lya.": {
   "en": "How big Lya looks.",
   "origen": "Alfa_Lya"
@@ -19674,6 +19802,10 @@
  "Resplandor": {
   "en": "Glow",
   "origen": "Alfa_Vista"
+ },
+ "Respondió a tu llamado.": {
+  "en": "Answered your call.",
+  "origen": "Alfa_Manada"
  },
  "Restablecer": {
   "en": "Reset",
@@ -21415,6 +21547,10 @@
   "en": "Yes: Alfa, Classic WoW or Crystal, with your colour. It can also dress the chat, the minimap and the bars.",
   "origen": "Alfa_Lya"
  },
+ "Sí: en las asignaciones de teclas del juego, en la sección Alfa, ponle una tecla a «Pregúntale a Lya» y otra a «Lo que te ofrece Lya», que hace lo de su botón.": {
+  "en": "Yes: in the game's key bindings, in the Alfa section, give \"Ask Lya\" a key and another to \"What Lya offers\", which does what her button does.",
+  "origen": "Alfa_Lya"
+ },
  "Sí: en las asignaciones de teclas del juego, en la sección Alfa, ponle una tecla a «Pregúntale a Lya».": {
   "en": "Yes: in the game's key bindings, in the Alfa section, give \"Ask Lya\" a key.",
   "origen": "Alfa_Lya"
@@ -21462,6 +21598,10 @@
  "Tamaño de lo que atraviesa": {
   "en": "Size it passes through",
   "origen": "Alfa_Vista"
+ },
+ "Tamaño de su letra": {
+  "en": "Text size",
+  "origen": "Alfa_Lya"
  },
  "Tamaño del ícono": {
   "en": "Icon size",
@@ -21793,6 +21933,10 @@
  },
  "Te llevo la cuenta de tu día de caza: misiones, niveles, oro, raros y el tiempo. Escribe /alfa lya dia y te lo cuento.": {
   "en": "I keep track of your hunting day: quests, levels, gold, rares and time. Type /alfa lya dia and I'll tell you.",
+  "origen": "Alfa_Lya"
+ },
+ "Te llevo la cuenta de tu semana de caza y tu mejor día. Escribe /alfa lya semana y te lo cuento.": {
+  "en": "I keep track of your hunting week and your best day. Type /alfa lya semana and I'll tell you.",
   "origen": "Alfa_Lya"
  },
  "Te lo da un PNJ": {
@@ -22583,6 +22727,10 @@
   "en": "All of them lead to %s",
   "origen": "Alfa_Rutas"
  },
+ "Todos los avisos de Alfa los dice Lya, también los de al entrar y el de hechizos nuevos, con letra más grande que cambias con su clic derecho.": {
+  "en": "Lya says all of Alfa's alerts, including the ones at login and the new spells one, in bigger text you change with a right-click on her.",
+  "origen": "Alfa_Bienvenida"
+ },
  "Todos los de ese tipo, o solo uno (por ejemplo, solo cobre). Entre paréntesis, cuántos hay en tu zona.": {
   "en": "All of that kind, or just one (for example, only copper). In brackets, how many are in your zone.",
   "origen": "Alfa_Recoleccion"
@@ -23151,6 +23299,10 @@
   "en": "Your guide ended and the road splits",
   "origen": "Alfa_Rutas"
  },
+ "Tu guía y Hoy dicen lo mismo: al terminar «Desbloquear» vuelves solo a tu guía, y el final de una guía con pasos sin hacer ya no dice «terminaste».": {
+  "en": "Your guide and Today agree: finishing \"Unlock\" takes you back to your guide on its own, and the end of a guide with undone steps no longer says \"finished\".",
+  "origen": "Alfa_Bienvenida"
+ },
  "Tu guía ya no te manda a entregar misiones sin terminar: primero te lleva a lo que falta, y «Cerrar mis misiones» se pone al día sola.": {
   "en": "Your guide no longer sends you to hand in unfinished quests: it takes you to what's missing first, and \"Close my quests\" keeps itself up to date.",
   "origen": "Alfa_Bienvenida"
@@ -23266,6 +23418,10 @@
  "Tu mascota tiene poca vida: cúrala.": {
   "en": "Your pet is low on health: heal it.",
   "origen": "Alfa_Combate"
+ },
+ "Tu mejor día: %d misiones.": {
+  "en": "Your best day: %d quests.",
+  "origen": "Alfa_Lya"
  },
  "Tu montura de clase": {
   "en": "Your class mount",
@@ -23506,6 +23662,10 @@
  "Tu ruta, tus misiones y tus guías (/alfa rutas ayuda).": {
   "en": "Your route, your quests and your guides (/alfa rutas ayuda).",
   "origen": "Alfa_Rutas"
+ },
+ "Tu semana de caza": {
+  "en": "Your hunting week",
+  "origen": "Alfa_Lya"
  },
  "Tu sesión anterior (%s): %s": {
   "en": "Your last session (%s): %s",
@@ -24783,6 +24943,10 @@
   "en": "See past sessions",
   "origen": "Alfa_Inicio"
  },
+ "Ver lo que quedó": {
+  "en": "See what's left",
+  "origen": "Alfa_Inicio"
+ },
  "Ver logros": {
   "en": "View achievements",
   "origen": "Alfa_Pesca"
@@ -25023,6 +25187,10 @@
   "en": "Effects volume",
   "origen": "Alfa_Pesca"
  },
+ "Volvemos a tu guía: la misión que esperabas ya está lista para ti.": {
+  "en": "Back to your guide: the quest you were waiting for is ready for you.",
+  "origen": "Alfa_Rutas"
+ },
  "Volver": {
   "en": "Back",
   "origen": "Alfa_Bolsas"
@@ -25231,6 +25399,10 @@
   "en": "You have it: your guide takes you to hand it in.",
   "origen": "Alfa_Builds"
  },
+ "Ya llamaste a la manada hace un momento. Espera un poco.": {
+  "en": "You called the pack a moment ago. Wait a little.",
+  "origen": "Alfa_Manada"
+ },
  "Ya llegaste": {
   "en": "You're there",
   "origen": "Alfa_Inicio"
@@ -25274,6 +25446,10 @@
  "Ya no está sobre un cuadro negro: la acompañan una sombra suave y una elipse del color de tu estilo.": {
   "en": "No more black box behind her: a soft shadow and an ellipse in your style's colour keep her company.",
   "origen": "Alfa_Bienvenida"
+ },
+ "Ya no queda nada por hacer aquí. Elige qué sigue y la manada va contigo.": {
+  "en": "There's nothing left to do here. Choose what's next and the pack goes with you.",
+  "origen": "Alfa_Rutas"
  },
  "Ya no se consigue": {
   "en": "No longer obtainable",
@@ -26103,6 +26279,10 @@
   "en": "shows or hides Lya, your wolf companion (also: help, day, tip, fact, stories, settings)",
   "origen": "Alfa_Lya"
  },
+ "muestra u oculta a Lya, tu loba compañera (también: ayuda, dia, semana, historial, consejo, dato, historias, ajustes)": {
+  "en": "shows or hides Lya, your wolf companion (also: help, day, week, history, tip, fact, stories, settings)",
+  "origen": "Alfa_Lya"
+ },
  "muestra u oculta a Lya, tu loba compañera (también: consejo, dato, historias, ajustes)": {
   "en": "shows or hides Lya, your she-wolf companion (also: consejo, dato, historias, ajustes)",
   "origen": "Alfa_Lya"
@@ -26202,6 +26382,10 @@
  "pide Pesca %d": {
   "en": "needs Fishing %d",
   "origen": "Alfa_Pesca"
+ },
+ "pide ayuda a los lobos de tu zona": {
+  "en": "asks the wolves in your zone for help",
+  "origen": "Alfa_Manada"
  },
  "pobre": {
   "en": "poor",
@@ -26739,6 +26923,10 @@
   "en": "Level 60! You made it, alpha! Now it's time to hunt big.",
   "origen": "Alfa_Lya"
  },
+ "¡Nuevo récord: %d misiones en un día! Ni la manada te alcanza.": {
+  "en": "New record: %d quests in a day! Not even the pack can keep up.",
+  "origen": "Alfa_Lya"
+ },
  "¡Plan terminado!": {
   "en": "Plan finished!",
   "origen": "Alfa_Rutas"
@@ -26791,6 +26979,10 @@
   "en": "You finished %s!",
   "origen": "Alfa_Rutas"
  },
+ "¡Terminaste esta guía!": {
+  "en": "You finished this guide!",
+  "origen": "Alfa_Rutas"
+ },
  "¡Terminaste esta guía! Elige la siguiente y sigue subiendo con la manada.": {
   "en": "You finished this guide! Pick the next one and keep climbing with the pack.",
   "origen": "Alfa_Inicio"
@@ -26815,6 +27007,10 @@
   "en": "You're back, %s! Stretch your legs and let's go.",
   "origen": "Alfa_Lya"
  },
+ "¡Voy!": {
+  "en": "On my way!",
+  "origen": "Alfa_Manada"
+ },
  "¡Ya eres nivel %d! La manada aúlla por ti.": {
   "en": "You're level %d now! The pack howls for you.",
   "origen": "Alfa_Lya"
@@ -26822,6 +27018,10 @@
  "¡Ya estás en la %s!": {
   "en": "You're in %s!",
   "origen": "Alfa_Manada"
+ },
+ "¡Ya la desbloqueaste!": {
+  "en": "You unlocked it!",
+  "origen": "Alfa_Inicio"
  },
  "¡Ya llegaste, %s! Te extrañé. ¿A dónde vamos hoy?": {
   "en": "You're here, %s! I missed you. Where are we off to today?",
@@ -27007,12 +27207,20 @@
   "en": "How do I hear about the pack's rares?",
   "origen": "Alfa_Lya"
  },
+ "¿Cómo me fue esta semana?": {
+  "en": "How did I do this week?",
+  "origen": "Alfa_Lya"
+ },
  "¿Cómo me fue hoy?": {
   "en": "How did I do today?",
   "origen": "Alfa_Lya"
  },
  "¿Cómo pesco más fácil?": {
   "en": "How do I fish more easily?",
+  "origen": "Alfa_Lya"
+ },
+ "¿Cómo pido ayuda a la manada?": {
+  "en": "How do I ask the pack for help?",
   "origen": "Alfa_Lya"
  },
  "¿Cómo quieres hacerlo?": {
@@ -27171,6 +27379,10 @@
   "en": "What should I sell at the auction house?",
   "origen": "Alfa_Lya"
  },
+ "¿Qué me dijiste hace rato?": {
+  "en": "What did you tell me earlier?",
+  "origen": "Alfa_Lya"
+ },
  "¿Qué me puede caer en una mazmorra?": {
   "en": "What can drop in a dungeon?",
   "origen": "Alfa_Lya"
@@ -27193,7 +27405,7 @@
  },
  "¿Qué sigue?": {
   "en": "What's next?",
-  "origen": "Alfa_Rutas"
+  "origen": "Alfa_Inicio"
  },
  "¿Qué talentos pongo?": {
   "en": "Which talents should I pick?",

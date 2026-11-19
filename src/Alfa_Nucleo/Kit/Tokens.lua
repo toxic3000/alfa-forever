@@ -296,6 +296,9 @@ K.TIPO = {
 	mayus = { "semibold", 10 },      -- sobretítulos en mayúsculas ("RECOMENDADO")
 	numero = { "semibold", 13 },     -- contadores
 	cifra = { "semibold", 22 },      -- números grandes
+	-- 1.2.6: el globo de Lya, en grande o muy grande (lya.letra)
+	globoGrande = { "medium", 15 },
+	globoEnorme = { "medium", 18 },
 }
 
 local function letraDelJuego()

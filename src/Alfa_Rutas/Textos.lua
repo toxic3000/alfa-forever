@@ -780,4 +780,12 @@ M.EN = {
 	["Las de tu ruta, las de la guía o todas: se eligen en Ajustes > Misiones, con lo demás de las misiones."] = "Your route's, the guide's or all of them: chosen in Settings > Questing, with everything else about quests.",
 	["Abrir Misiones"] = "Open Questing",
 	["Alfa no toma misiones que no sirven a tu ruta, ni las entrega solas. Lo respeta también «todas las misiones»."] = "Alfa doesn't take quests your route doesn't need, nor turn them in by itself. \"All quests\" respects it too.",
+	-- 1.2.6: el fin de una guía y Desbloquear
+	["Elegir qué sigue"] = "Choose what's next",
+	["Hiciste lo que pedía antes. Búscala con su «!» y tómala, o elige qué sigue."] = "You did what it asked for first. Find it by its \"!\" and take it, or choose what's next.",
+	["Ver lo que quedó"] = "See what's left",
+	["Volvemos a tu guía: la misión que esperabas ya está lista para ti."] = "Back to your guide: the quest you were waiting for is ready for you.",
+	["Ya no queda nada por hacer aquí. Elige qué sigue y la manada va contigo."] = "There's nothing left to do here. Choose what's next and the pack goes with you.",
+	["¡Terminaste esta guía!"] = "You finished this guide!",
+	["¡Ya la desbloqueaste!"] = "You unlocked it!",
 }

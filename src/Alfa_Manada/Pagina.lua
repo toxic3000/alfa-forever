@@ -687,6 +687,10 @@ local function bloqueGuaridas(padre)
 			or L["Cerraste tu guarida."])
 	end, { tipo = "secundario", icono = "ic-manada" })
 	b.AbrirNota = K.Texto(b, "nota", "textoSuave")
+	-- 1.2.6: llamar a la manada.
+	b.Llamar = K.Boton(b, L["Llamar a la manada"], function() if M.Llamado then M.Llamado.LlamarYDecir() end end,
+		{ tipo = "secundario", icono = "ic-huella" })
+	b.LlamarNota = K.Texto(b, "nota", "textoSuave")
 	b.Linea = K.Linea(b, "linea")
 	b.Vacio = K.Texto(b, "nota", "textoTenue")
 	b.filas = {}
@@ -713,6 +717,8 @@ local function bloqueGuaridas(padre)
 		K.Escribir(self.Texto, L["Cuando una zona se llena, el juego la parte en guaridas (capas): el mismo lugar con otra gente, otros raros y otros minerales. Pide entrar a la de alguien de la manada y el juego te pasa al unirte a su grupo."])
 		self.Abrir:SetTexto(Gu.Abierta() and L["Cerrar mi guarida"] or L["Abrir mi guarida"])
 		self.Abrir:SetActivo(comparte)
+		self.Llamar:SetActivo(comparte)
+		K.Escribir(self.LlamarNota, L["Pide ayuda con un élite o un raro: los lobos de tu zona reciben tu lugar y te avisa quién viene."])
 		K.Escribir(self.AbrirNota, Gu.Abierta() and L["Abierta: si alguien de la manada pide entrar, Alfa lo invita a tu grupo (fuera de combate)."]
 			or L["Cerrada: nadie te pide entrar. Ábrela para echarle la mano a la manada."])
 		local lista = {}
@@ -764,6 +770,12 @@ local function bloqueGuaridas(padre)
 		en(self.AbrirNota, xt + bw + ESP.m, y + 2)
 		local hn = K.Parrafo(self.AbrirNota, w - bw - ESP.m, 3)
 		y = y + max(bh, hn) + ESP.m
+		en(self.Llamar, xt, y)
+		local lw = K.num(self.Llamar:GetWidth(), 120)
+		local lh = K.num(self.Llamar:GetHeight(), K.ALTO.boton)
+		en(self.LlamarNota, xt + lw + ESP.m, y + 2)
+		local ln = K.Parrafo(self.LlamarNota, w - lw - ESP.m, 3)
+		y = y + max(lh, ln) + ESP.m
 		self.Linea:ClearAllPoints()
 		self.Linea:SetPoint("TOPLEFT", self, "TOPLEFT", xt, -y)
 		self.Linea:SetPoint("TOPRIGHT", self, "TOPRIGHT", -pad, -y)
@@ -837,6 +849,8 @@ local function grupos(ui, padre)
 	local guaridas = K.GrupoAjustes(padre, { titulo = L["Guaridas"] })
 	guaridas:Fila({ titulo = L["Raros de la manada"], control = interruptor("rarosManada"), activa = function() return on("compartir") end,
 		texto = L["Cuando un lobo encuentra un raro o un tesoro en tu zona, te avisa en qué guarida está. Si es la tuya, «Ir de caza»; si es otra, «Pedir entrar»."] })
+	guaridas:Fila({ titulo = L["Llamados de la manada"], control = interruptor("llamados"), activa = function() return on("compartir") end,
+		texto = L["Cuando un lobo de tu zona pide ayuda, te avisa dónde está con «¡Voy!»: la flecha te lleva y le dice que vas."] })
 	guaridas:Fila({ titulo = L["Tu guarida a la vista"], control = interruptor("guaridaVisible"),
 		texto = L["Tu guarida en el rastreador y en el cuadro de los lobos, y Lya te avisa si el juego te cambia de capa."] })
 	return { rastro, mapa, invitar, guaridas }

@@ -149,6 +149,25 @@ function G.Abrir(id)
 	return i
 end
 
+-- 1.2.6: la guía que tenías antes de abrir «Desbloquear», para volver a
+-- ella al terminar. Se guarda por personaje (sobrevive a un /reload).
+function G.RecordarVuelta()
+	local E = M.Motor("Engine")
+	local g = E and E.GetGuide and E.GetGuide()
+	local id = g and g.id
+	if type(id) ~= "string" or G.Especial(id) == "desbloquear" then return end
+	M.Personaje().vuelta = id
+end
+
+-- Regresa a la guía de antes (si sigue existiendo); true si la abrió.
+function G.Volver()
+	local p = M.Personaje()
+	local id = p.vuelta
+	p.vuelta = nil
+	if type(id) ~= "string" then return false end
+	return G.Abrir(id) ~= nil
+end
+
 function G.Activa()
 	local E = M.Motor("Engine")
 	local g = E and E.GetGuide and E.GetGuide()

@@ -18,6 +18,13 @@ local Ce = M.Cerebro
 
 local format, floor, type = string.format, math.floor, type
 
+-- 1.2.6: el tamaño de su letra.
+local LETRAS = {
+	{ valor = "normal", texto = L["Normal"] },
+	{ valor = "grande", texto = L["Grande"] },
+	{ valor = "enorme", texto = L["Muy grande"] },
+}
+
 local MODOS = {
 	{ valor = "muchos", texto = L["Muchos"] },
 	{ valor = "pocos", texto = L["Pocos"] },
@@ -116,6 +123,9 @@ local function grupos(padre)
 		texto = L["Lo menos que espera Lya entre un consejo y otro. Lo importante no espera."] })
 	consejos:Fila({ titulo = L["Sonido suave"], control = interruptor("sonido"), activa = visible,
 		texto = L["Un clic bajito cuando Lya te dice algo."] })
+	consejos:Fila({ titulo = L["Tamaño de su letra"], activa = visible,
+		texto = L["Qué tan grande escribe Lya en su globo. También con clic derecho sobre ella."],
+		control = function(fila) return K.Desplegable(fila, { opciones = LETRAS, clave = ID .. ".letra", ancho = 200 }) end })
 	consejos:Fila({ titulo = L["Lya te dice los avisos"], control = interruptor("avisos"), activa = visible,
 		texto = L["Los avisos pequeños de Alfa los dice Lya en su globo, con su botón, en vez de salir arriba. Si está oculta o en combate, salen como siempre."] })
 	consejos:Fila({ titulo = L["Aullar al completar una misión"], control = interruptor("aullidoMision"),

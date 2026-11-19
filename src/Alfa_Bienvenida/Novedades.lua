@@ -31,6 +31,12 @@ M.NOVEDADES = {
 --   { version, titulo, puntos = { { icono (ic-*), texto } } }
 ---------------------------------------------------------------------------
 M.NOTAS = {
+	{ version = "1.2.6", titulo = "Lya te lo dice todo", puntos = {
+		{ "ic-manada", "Llama a la manada cuando necesites ayuda; los lobos de tu zona llegan con «¡Voy!». Y «Seguir» ya no se suelta al alcanzar a alguien." },
+		{ "ic-nivel", "Lya recuerda lo que te dijo, tiene una tecla para su botón y te cuenta tu semana de caza y tu mejor día." },
+		{ "ic-lobo", "Todos los avisos de Alfa los dice Lya, también los de al entrar y el de hechizos nuevos, con letra más grande que cambias con su clic derecho." },
+		{ "ic-ruta", "Tu guía y Hoy dicen lo mismo: al terminar «Desbloquear» vuelves solo a tu guía, y el final de una guía con pasos sin hacer ya no dice «terminaste»." },
+	} },
 	{ version = "1.2.5", titulo = "La manada caza junta", puntos = {
 		{ "ic-raros", "Raros de la manada: cuando un lobo encuentra un raro en tu zona, te avisa en qué guarida está, con «Ir de caza» o «Pedir entrar»." },
 		{ "ic-huella", "Tu día de caza: Lya cuenta tus misiones, niveles, oro y raros del día. Pídeselo con /alfa lya dia." },
