@@ -365,7 +365,7 @@ end
 local function anuncio(a)
 	local N = rawget(_G, "AlfaNucleo")
 	local K = N and N.Kit
-	if not (K and K.Anuncio) or (N.Get and N.Get("bienvenida", "anuncios") == false) then return false end
+	if not (K and K.Anuncio) or (N.Get and N.Get("bienvenida", "anuncios") == false) or (N.Ligero and N.Ligero()) then return false end
 	-- 1.3.2 (Toxic): el fundador también sale con el anuncio de Alfa, y corto.
 	if a.kind == "founder" then
 		current = a

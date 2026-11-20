@@ -80,6 +80,12 @@ function Ce.Revisar(unit)
 	local K = N.Kit
 	if not (K and K.Anuncio) then return false end
 	vistos[clave], ultimo = ahora, ahora
+	-- 1.3.5: en el modo ligero, una tarjeta sin animación.
+	if N.Ligero and N.Ligero() and K.Aviso then
+		K.Aviso({ titulo = L["Un lobo de La Jauría anda cerca"],
+			texto = (U.Mostrar(nombre) or nombre) .. ". " .. L["También usa Alfa: salúdalo."], icono = "ic-lobo" })
+		return true
+	end
 	K.Anuncio({
 		sobre = L["Un lobo de La Jauría anda cerca"],
 		titulo = U.Mostrar(nombre) or nombre,

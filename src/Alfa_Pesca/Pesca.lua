@@ -794,7 +794,7 @@ end)
 ---------------------------------------------------------------------------
 local turnoCorcho = 0
 
-A.RegisterEvent("UNIT_SPELLCAST_CHANNEL_START", function(_, unidad, _, spell)
+AlfaNucleo.DeUnidad("UNIT_SPELLCAST_CHANNEL_START", "player", function(_, unidad, _, spell)
 	if not legible(unidad) or unidad ~= "player" or not esPesca(spell) then return end
 	E.canal = GetTime()
 	local ok, _, _, _, ini, fin = pcall(UnitChannelInfo, "player")
@@ -823,7 +823,7 @@ A.RegisterEvent("PLAYER_SOFT_INTERACT_CHANGED", function(_, _, nuevo)
 	end
 end)
 
-A.RegisterEvent("UNIT_SPELLCAST_CHANNEL_STOP", function(_, unidad, _, spell)
+AlfaNucleo.DeUnidad("UNIT_SPELLCAST_CHANNEL_STOP", "player", function(_, unidad, _, spell)
 	if not legible(unidad) or unidad ~= "player" then return end
 	if not (E.canal or esPesca(spell)) then return end
 	local ahora = GetTime()
@@ -1026,7 +1026,7 @@ end)
 
 -- El cebo que entra en la caña cuenta para tus logros.
 local habiaCebo = nil
-A.RegisterEvent("UNIT_INVENTORY_CHANGED", function(_, unidad)
+AlfaNucleo.DeUnidad("UNIT_INVENTORY_CHANGED", "player", function(_, unidad)
 	if not legible(unidad) or unidad ~= "player" then return end
 	local ahora = Eq.CeboActivo() ~= nil
 	if habiaCebo == false and ahora then R.Cebo() end

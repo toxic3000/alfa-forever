@@ -1,0 +1,11 @@
+{
+ "Modo ligero": "輕量模式",
+ "Para computadoras modestas: lo que Alfa revisa en segundo plano va a la mitad de velocidad, Lya se anima más despacio y los anuncios salen como tarjeta, sin animación.": "適合配備較低的電腦：Alfa 在背景檢查的內容以一半速度執行，莉婭的動作更慢，通知以卡片顯示，沒有動畫。",
+ "%s usa %.1f ms por cuadro": "%s 每幀使用 %.1f 毫秒",
+ "%s junta %.0f KB de memoria por segundo": "%s 每秒增加 %.0f KB 記憶體",
+ "En %d segundos, Alfa fue juntando %.1f KB de memoria por segundo. Lo que más junta:": "在 %d 秒內，Alfa 每秒增加 %.1f KB 記憶體。增加最多的是：",
+ "Alfa está trabajando de más": "Alfa 工作量過大",
+ "%s. Si notas el juego lento, prueba el «Modo ligero» en Ajustes > Estilo y sonido.": "%s。如果覺得遊戲變慢，試試「設定 > 風格與聲音」裡的「輕量模式」。",
+ "Al entrar, Alfa tardó %.0f ms en cargar sus archivos y %.0f ms en arrancar.": "登入時，Alfa 載入檔案用了 %.0f 毫秒，啟動用了 %.0f 毫秒。",
+ "Midiendo cuánta memoria va juntando Alfa durante %d segundos...": "正在測量 Alfa 在 %d 秒內增加多少記憶體……"
+}

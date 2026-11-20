@@ -1371,7 +1371,7 @@ end
 A.RegisterEvent("QUEST_ACCEPTED", porMisiones)
 A.RegisterEvent("QUEST_REMOVED", porMisiones)
 A.RegisterEvent("QUEST_TURNED_IN", porMisiones)
-A.RegisterEvent("UNIT_QUEST_LOG_CHANGED", function(_, u) if not (issecretvalue and issecretvalue(u)) and u == "player" then porMisiones() end end)
+AlfaNucleo.DeUnidad("UNIT_QUEST_LOG_CHANGED", "player", function(_, u) if not (issecretvalue and issecretvalue(u)) and u == "player" then porMisiones() end end)
 A.RegisterEvent("PLAYERBANKSLOTS_CHANGED", function(_, slot)
 	local f = ventanas.banco
 	if not (f and f:IsShown() and f.esVivo) then return end

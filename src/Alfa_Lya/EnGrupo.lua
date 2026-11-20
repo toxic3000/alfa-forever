@@ -260,7 +260,7 @@ function Gr.DeLaRed(_, remitente, campos)
 	return Gr.Oir(campos[1], campos[2] or "", remitente)
 end
 
-A.RegisterEvent("CHAT_MSG_ADDON", function(_, pre, texto, canalDe, emisor)
+AlfaNucleo.PorPrefijo(Gr.PREFIJO, function(_, pre, texto, canalDe, emisor)
 	if secreto(pre) or pre ~= Gr.PREFIJO then return end
 	Gr.Mensaje(texto, canalDe, emisor)
 end)

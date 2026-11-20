@@ -108,7 +108,7 @@ end
 -- peligro, peligroRelleno) y los de los perjuicios con K.ColorPerjuicio.
 ---------------------------------------------------------------------------
 if A and A.RegisterDefaults then
-	A.RegisterDefaults("nucleo", { daltonico = false, letraGrande = false })
+	A.RegisterDefaults("nucleo", { daltonico = false, letraGrande = false, ligero = false })
 end
 
 function K.Daltonico() return A and A.Get and A.Get("nucleo.daltonico") and true or false end
@@ -529,6 +529,14 @@ function K.Escribir(fs, texto)
 	if otra ~= fs.alfaEscritura then
 		fs.alfaEscritura = otra
 		K.Fuente(fs)
+	end
+	-- 1.3.5: el mismo texto no se vuelve a poner (el juego lo mediría y
+	-- acomodaría otra vez): las ventanas que se repintan seguido solo
+	-- cambian lo que cambió. Se compara con lo que el texto tiene de verdad.
+	-- (Lo que tenía antes puede ser secreto: eso no se compara.)
+	if texto ~= "" and fs.GetText then
+		local antes = fs:GetText()
+		if not (issecretvalue and issecretvalue(antes)) and antes == texto then return end
 	end
 	fs:SetText(texto)
 end

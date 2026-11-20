@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "La 1.3.4 : la meute légère", "items": ["**Connexion bien plus rapide :** à la connexion et avec `/reload`, Alfa ne prépare plus tous les guides, seulement celui que tu suis ; les autres, quand tu les ouvres.", "**Moins de mémoire :** environ 12 Mo de moins, donc le jeu fait moins de pauses pour la nettoyer.", "**Plus d'à-coups chez les donneurs de quêtes :** l'avertissement « prendre cette quête en ferme une autre » ne regarde que les guides concernés.", "**Et plus :** les bateaux de la carte travaillent moins chaque seconde, et en combat Alfa ne libère ni ne prépare de guides."]}
+    "mapa": {"titulo": "La 1.3.5 : la meute plus légère", "items": ["**Beaucoup moins de travail en groupe et en raid :** ce que font les autres n'atteint plus les parties d'Alfa qui ne regardent que toi.", "**Mode combat et mode donjon :** en combat, Lya et les pages ouvertes attendent ; dans un donjon, la récolte ne cherche plus de gisements.", "**Mode léger** (Réglages > Style et son) : pour les ordinateurs modestes, tout l'arrière-plan plus lent et les annonces sans animation.", "**Et plus :** changer de zone coûte moins, le guide suivant est prêt à l'avance et `/alfa rendimiento` te dit combien de temps Alfa a mis à la connexion."]}
   },
   "contraportada": {
     "titulo": "Rejoignez la meute",

@@ -494,7 +494,7 @@ local function alRecibir(_, pre, texto, tipoCanal, emisor)
 	})
 end
 
-A.RegisterEvent("CHAT_MSG_ADDON", alRecibir)
+AlfaNucleo.PorPrefijo(PREFIJO, alRecibir)
 A.RegisterEvent("PLAYER_ENTERING_WORLD", function() prefijo() vaciarEspera() end)
 A.RegisterEvent("ZONE_CHANGED_NEW_AREA", vaciarEspera)
 -- El grupo solo cambia si se puede compartir: los pines no se rehacen y los

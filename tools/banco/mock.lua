@@ -219,7 +219,15 @@ function Frame:GetScript(s) return self._scripts[s] end
 function Frame:HasScript(s) return true end
 function Frame:HookScript(s, fn) self._hooks[s] = self._hooks[s] or {}; table.insert(self._hooks[s], fn) end
 function Frame:RegisterEvent(ev) self._events[ev] = true; eventFrames[self] = true end
-function Frame:RegisterUnitEvent(ev) self._events[ev] = true; eventFrames[self] = true end
+-- Como el juego: un evento de unidad registrado para ciertas unidades solo
+-- llega por ellas (1.3.5, N.DeUnidad / ns.RegisterUnitOnly).
+function Frame:RegisterUnitEvent(ev, u1, u2)
+  self._events[ev] = true; eventFrames[self] = true
+  if u1 then
+    self._unidades = self._unidades or {}
+    self._unidades[ev] = { [u1] = true, [u2 or u1] = true }
+  end
+end
 function Frame:UnregisterEvent(ev) self._events[ev] = nil end
 function Frame:UnregisterAllEvents() self._events = {} end
 function Frame:IsEventRegistered(ev) return self._events[ev] == true end
@@ -454,7 +462,10 @@ end
 
 function FIRE_EVENT(ev, ...)
   local list = {}
-  for f in pairs(eventFrames) do if f._events[ev] then list[#list + 1] = f end end
+  local unidad = ...
+  for f in pairs(eventFrames) do
+    if f._events[ev] and not (f._unidades and f._unidades[ev] and not f._unidades[ev][unidad]) then list[#list + 1] = f end
+  end
   for _, f in ipairs(list) do fire(f, "OnEvent", ev, ...) end
 end
 

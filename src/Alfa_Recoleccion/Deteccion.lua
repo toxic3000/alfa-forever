@@ -235,8 +235,8 @@ local function alAbrirBotin()
 	limpiar()
 end
 
-A.RegisterEvent("UNIT_SPELLCAST_SENT", alEnviar)
-A.RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", alTerminar)
-A.RegisterEvent("UNIT_SPELLCAST_FAILED", alFallar)
-A.RegisterEvent("UNIT_SPELLCAST_INTERRUPTED", alFallar)
+AlfaNucleo.DeUnidad("UNIT_SPELLCAST_SENT", "player", alEnviar)
+AlfaNucleo.DeUnidad("UNIT_SPELLCAST_SUCCEEDED", "player", alTerminar)
+AlfaNucleo.DeUnidad("UNIT_SPELLCAST_FAILED", "player", alFallar)
+AlfaNucleo.DeUnidad("UNIT_SPELLCAST_INTERRUPTED", "player", alFallar)
 A.RegisterEvent("LOOT_OPENED", alAbrirBotin)

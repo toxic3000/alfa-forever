@@ -1,0 +1,11 @@
+{
+ "Modo ligero": "Modo leve",
+ "Para computadoras modestas: lo que Alfa revisa en segundo plano va a la mitad de velocidad, Lya se anima más despacio y los anuncios salen como tarjeta, sin animación.": "Para computadores modestos: o que o Alfa verifica em segundo plano roda na metade da velocidade, a Lya se anima mais devagar e os anúncios aparecem como cartão, sem animação.",
+ "%s usa %.1f ms por cuadro": "%s usa %.1f ms por quadro",
+ "%s junta %.0f KB de memoria por segundo": "%s junta %.0f KB de memória por segundo",
+ "En %d segundos, Alfa fue juntando %.1f KB de memoria por segundo. Lo que más junta:": "Em %d segundos, o Alfa juntou %.1f KB de memória por segundo. O que mais junta:",
+ "Alfa está trabajando de más": "O Alfa está trabalhando demais",
+ "%s. Si notas el juego lento, prueba el «Modo ligero» en Ajustes > Estilo y sonido.": "%s. Se o jogo parecer lento, experimente o \"Modo leve\" em Ajustes > Estilo e som.",
+ "Al entrar, Alfa tardó %.0f ms en cargar sus archivos y %.0f ms en arrancar.": "Ao entrar, o Alfa levou %.0f ms para carregar seus arquivos e %.0f ms para iniciar.",
+ "Midiendo cuánta memoria va juntando Alfa durante %d segundos...": "Medindo quanta memória o Alfa junta durante %d segundos..."
+}

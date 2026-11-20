@@ -12,6 +12,7 @@
 Textos.lua
 Nucleo.lua
 Reloj.lua
+Eventos.lua
 Entrada.lua
 Errores.lua
 Respaldos.lua

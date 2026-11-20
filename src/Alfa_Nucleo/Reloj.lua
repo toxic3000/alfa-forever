@@ -8,7 +8,8 @@
 --
 --   N.Cada(clave, seg, fn, o)   fn(dt) cada seg segundos (dt: desde su última vez).
 --                               o.ya = true: la primera vez en el siguiente cuadro;
---                               o.fueraDeCombate = true: en combate espera a que termine.
+--                               o.fueraDeCombate = true: en combate espera a que termine
+--                               (1.3.5: las de fondo, N.DeFondo(clave), también).
 --                               Otra tarea con la misma clave la reemplaza.
 --   N.Una(clave, seg, fn, o)    lo mismo, una sola vez.
 --   N.Quitar(clave)             la tarea ya no corre.
@@ -45,6 +46,77 @@ local function medir()
 	return ok and tonumber(t) or nil
 end
 local function enCombate() return InCombatLockdown and InCombatLockdown() and true or false end
+
+-- 1.3.5: el modo combate de Alfa. Lo que de veras no sirve en una pelea espera
+-- a que termine, como las tareas marcadas con fueraDeCombate: lo que Lya
+-- piensa y comenta, y las páginas de Hoy, La Jauría y la Enciclopedia
+-- abiertas. Es una lista cerrada a propósito: la ruta de recolección (llegar
+-- a un nodo peleando), los pines del minimapa, «Ir a un lugar», el pulso de
+-- La Jauría (tu lugar para los demás), la sesión y la mazmorra (sus tiempos)
+-- tienen que seguir aunque estés peleando.
+local DE_FONDO = {
+	["lya.latido"] = true, ["lya.momentos"] = true, ["lya.retos"] = true,
+	["inicio.pagina"] = true, ["manada.pagina"] = true, ["enciclopedia.avance"] = true,
+}
+function N.DeFondo(clave) return DE_FONDO[clave] == true end
+
+-- Lo que el modo ligero (más abajo) puede hacer más despacio sin que se
+-- pierda nada: la mitad de veces, pero sigue.
+local LIGERABLES = { "manada.", "lya.", "inicio.", "recoleccion.", "rutas.planes", "rutas.rutaGrupo", "enciclopedia." }
+local NUNCA_LENTAS = { ["manada.seguir"] = true, ["lya.minutos"] = true }
+local ligerableCache = {}
+function N.Ligerable(clave)
+	local v = ligerableCache[clave]
+	if v == nil then
+		v = false
+		if type(clave) == "string" and not NUNCA_LENTAS[clave] then
+			for _, p in ipairs(LIGERABLES) do
+				if clave:sub(1, #p) == p then v = true break end
+			end
+		end
+		ligerableCache[clave] = v
+	end
+	return v
+end
+
+-- 1.3.5: el modo mazmorra. Dentro de una instancia (mazmorra, banda, campo de
+-- batalla) lo que solo sirve afuera duerme: buscar nodos de recolección.
+local DE_AFUERA = { "recoleccion." }
+local afueraCache = {}
+function N.DeAfuera(clave)
+	local v = afueraCache[clave]
+	if v == nil then
+		v = false
+		if type(clave) == "string" then
+			for _, p in ipairs(DE_AFUERA) do
+				if clave:sub(1, #p) == p then v = true break end
+			end
+		end
+		afueraCache[clave] = v
+	end
+	return v
+end
+
+-- 1.3.5: el modo ligero (ajuste nucleo.ligero, para equipos modestos): lo de
+-- fondo y la animación de Lya corren a la mitad de velocidad.
+function N.Ligero()
+	local A = rawget(_G, "Alfa")
+	return A and A.Get and A.Get("nucleo.ligero") and true or false
+end
+function N.Ritmo(clave, ligero)
+	if ligero and N.Ligerable(clave) then return 2 end
+	return 1
+end
+
+local adentro = false
+function N.EnInstancia() return adentro end
+local vigiaInstancia = CreateFrame("Frame")
+vigiaInstancia:RegisterEvent("PLAYER_ENTERING_WORLD")
+vigiaInstancia:RegisterEvent("ZONE_CHANGED_NEW_AREA")
+vigiaInstancia:SetScript("OnEvent", function()
+	local ok, dentro = pcall(function() return IsInInstance and IsInInstance() end)
+	adentro = ok and dentro == true or false
+end)
 local wipe = wipe or function(t) for k in pairs(t) do t[k] = nil end return t end
 
 -- 1.3.1: un solo despertador para todos los planes (antes, una función nueva
@@ -107,16 +179,20 @@ local function tic()
 		if t.proxima <= now then lista[#lista + 1] = clave end
 	end
 	local combate = enCombate()
+	local instancia = N.EnInstancia()
+	local ligero = N.Ligero()
 	for _, clave in ipairs(lista) do
 		local t = tareas[clave]
 		if t and t.proxima <= now then
-			if t.fueraDeCombate and combate then
+			if instancia and N.DeAfuera(clave) then
+				t.proxima = now + 5 -- 1.3.5: en una mazmorra no sirve: se vuelve a mirar en 5 s
+			elseif combate and (t.fueraDeCombate or N.DeFondo(clave)) then
 				t.proxima = now + 1 -- se vuelve a mirar en un segundo
 			else
 				correr(t, now)
 				if tareas[clave] == t then
 					if t.una or t.muerta then tareas[clave] = nil
-					else t.proxima = now + t.cada end
+					else t.proxima = now + t.cada * N.Ritmo(clave, ligero) end
 				end
 			end
 		end
@@ -180,9 +256,11 @@ function N.Reloj.Adelantar()
 	for clave in pairs(tareas) do claves[#claves + 1] = clave end
 	table.sort(claves, function(a, b) return tareas[a].seq < tareas[b].seq end)
 	local combate = enCombate()
+	-- 1.3.5: con las mismas reglas que el reloj del juego (combate y mazmorra).
+	local instancia = N.EnInstancia()
 	for _, clave in ipairs(claves) do
 		local t = tareas[clave]
-		if t and not (t.fueraDeCombate and combate) then
+		if t and not ((t.fueraDeCombate or N.DeFondo(clave)) and combate) and not (instancia and N.DeAfuera(clave)) then
 			correr(t, now)
 			if tareas[clave] == t then
 				if t.una or t.muerta then tareas[clave] = nil

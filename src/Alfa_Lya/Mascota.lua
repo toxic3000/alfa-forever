@@ -101,11 +101,11 @@ function Ma.Revisar()
 	return dicho
 end
 
-A.RegisterEvent("UNIT_PET", function(_, unit)
+AlfaNucleo.DeUnidad("UNIT_PET", "player", function(_, unit)
 	if unit ~= "player" then return end
 	A.After(2, Ma.Revisar)
 end)
-A.RegisterEvent("UNIT_HAPPINESS", function(_, unit)
+AlfaNucleo.DeUnidad("UNIT_HAPPINESS", "pet", function(_, unit)
 	if unit ~= "pet" then return end
 	Ma.Revisar()
 end)

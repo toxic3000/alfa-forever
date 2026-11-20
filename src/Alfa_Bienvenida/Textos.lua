@@ -735,4 +735,13 @@ M.EN = {
 	["Más de 40 arreglos: combate y curación en mazmorras, el buzón cuenta bien tu dinero y la placa de llegada se va sola."] = "Over 40 fixes: combat and healing in dungeons, the mailbox counts your money right and the arrival plate goes away on its own.",
 	["Los anuncios esperan a que el juego termine de escribir la zona, y el botón de Alfa queda siempre a la vista en el minimapa."] = "Announcements wait for the game to finish writing the zone, and Alfa's button always stays in view on the minimap.",
 	["La Jauría más cuidadosa y Alfa más ligero: el mapa del grupo, los barcos y tus bolsas trabajan menos."] = "A more careful La Jauría and a lighter Alfa: the group map, boats and your bags do less work.",
+	["Modo ligero"] = "Light mode",
+	["Para computadoras modestas: lo que Alfa revisa en segundo plano va a la mitad de velocidad, Lya se anima más despacio y los anuncios salen como tarjeta, sin animación."] = "For modest computers: what Alfa checks in the background runs at half speed, Lya animates more slowly and announcements show as a card, without animation.",
+	["%s usa %.1f ms por cuadro"] = "%s uses %.1f ms per frame",
+	["%s junta %.0f KB de memoria por segundo"] = "%s gathers %.0f KB of memory per second",
+	["En %d segundos, Alfa fue juntando %.1f KB de memoria por segundo. Lo que más junta:"] = "In %d seconds, Alfa gathered %.1f KB of memory per second. What gathers the most:",
+	["Alfa está trabajando de más"] = "Alfa is working too hard",
+	["%s. Si notas el juego lento, prueba el «Modo ligero» en Ajustes > Estilo y sonido."] = "%s. If the game feels slow, try \"Light mode\" in Settings > Style and sound.",
+	["Al entrar, Alfa tardó %.0f ms en cargar sus archivos y %.0f ms en arrancar."] = "When you logged in, Alfa took %.0f ms to load its files and %.0f ms to start.",
+	["Midiendo cuánta memoria va juntando Alfa durante %d segundos..."] = "Measuring how much memory Alfa gathers over %d seconds...",
 }

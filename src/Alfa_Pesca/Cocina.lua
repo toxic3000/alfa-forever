@@ -241,7 +241,7 @@ A.RegisterEvent("TRADE_SKILL_CLOSE", function() cocinaAbierta = false M.Avisar("
 local HECHIZOS = {}
 for _, r in ipairs(M.RECETAS) do HECHIZOS[r.hechizo] = true end
 
-A.RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", function(_, unidad, _, spell)
+AlfaNucleo.DeUnidad("UNIT_SPELLCAST_SUCCEEDED", "player", function(_, unidad, _, spell)
 	-- Lo secreto primero: un token de unidad secreto no se compara (1.2.0).
 	if not legible(unidad) or unidad ~= "player" or not legible(spell) or not HECHIZOS[spell] then return end
 	local c = Co.cola[1]

@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "1.3.4: the light pack", "items": ["**Much faster login:** when you log in and on `/reload`, Alfa no longer builds every guide, only the one you follow; the rest, when you open them.", "**Less memory:** about 12 MB less, so the game pauses less often to clean it up.", "**No stutter at quest givers:** the \"taking this quest closes another\" warning only looks at the guides that touch it.", "**And more:** the map's boats do less work every second, and in combat Alfa doesn't release or build guides."]}
+    "mapa": {"titulo": "1.3.5: the lighter pack", "items": ["**Much less work in groups and raids:** what others do no longer reaches the parts of Alfa that only look at you.", "**Combat mode and dungeon mode:** in a fight, Lya and open pages wait; inside a dungeon, gathering stops looking for nodes.", "**Light mode** (Settings > Style and sound): for modest computers, everything in the background slower and announcements without animation.", "**And more:** changing zones costs less, the next guide is ready ahead of time and `/alfa rendimiento` tells you how long Alfa took at login."]}
   },
   "contraportada": {
     "titulo": "Join the pack",

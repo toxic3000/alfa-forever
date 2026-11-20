@@ -1,5 +1,35 @@
 # Cambios de Alfa
 
+## 1.3.5 — La manada más ligera: menos trabajo en banda, en combate y en mazmorras (20/11/2026)
+
+La segunda parte de la cacería del lag: todo lo que quedaba de la lista, revisado uno por uno con el perfilador. Cada cambio trae su prueba en el banco.
+
+**Español**
+- En grupo y en banda, mucho menos trabajo: lo que pasa con los demás jugadores (sus hechizos, sus auras, su registro de misiones) ya ni siquiera llega a las partes de Alfa que solo te miran a ti. En una banda de 40 eso son cientos de avisos por segundo menos.
+- Modo combate: en una pelea, lo que Lya piensa y comenta y las páginas de Hoy, La Jauría y la Enciclopedia esperan a que termine. Lo que sí importa peleando sigue: Combate, Curación, la flecha, tu ruta de recolección, «Ir a un lugar» y tu lugar en el mapa de La Jauría.
+- Modo mazmorra: dentro de una mazmorra o una banda, la recolección deja de buscar nodos en el minimapa.
+- Nuevo «Modo ligero» (Ajustes > Estilo y sonido): para computadoras modestas, lo que Alfa revisa en segundo plano va a la mitad de velocidad, Lya se anima más despacio y los anuncios (también el de «Un lobo de La Jauría anda cerca») salen como tarjeta, sin animación.
+- Cambiar de zona cuesta menos: el juego avisa dos o tres veces del mismo cambio y Alfa ya solo lo atiende una vez.
+- Las ventanas de Alfa ya no vuelven a escribir un texto que no cambió, así que el rastreador, Hoy y las demás se repintan más ligeras.
+- Las placas de nombre y el ratón: Alfa recuerda las criaturas que ya vio y no las vuelve a revisar.
+- Los mensajes de otros addons (de banda, de daño...) ya no pasan por cinco partes de Alfa: uno solo los recibe y entrega a cada quien lo suyo.
+- La siguiente guía de tu ruta (o todas, si la ruta tiene caminos para elegir) queda lista de antemano, así que pasar a ella no da ni un tirón.
+- /alfa rendimiento ahora te dice cuánto tardó Alfa en cargar al entrar y mide durante 10 segundos cuánta memoria va juntando cada parte. Si algo se pasa, Lya te avisa y te sugiere el modo ligero.
+- Revisado y ya en orden, sin cambios: la flecha, las bolsas, la pesca, Curación en banda, lo que guarda La Jauría y el historial de Lya. Una prueba nueva confirma que con todo cerrado no queda nada corriendo en cada cuadro.
+
+**English**
+- Much less work in groups and raids: what happens with other players (their spells, auras and quest logs) no longer even reaches the parts of Alfa that only look at you. In a 40-player raid, that's hundreds of fewer alerts per second.
+- Combat mode: during a fight, Lya's thoughts and comments and the Today, La Jauría and Encyclopedia pages wait until it's over. What matters while fighting keeps going: Combat, Healing, the arrow, your gathering route, "Go to a place" and your spot on La Jauría's map.
+- Dungeon mode: inside a dungeon or raid, gathering stops looking for nodes on the minimap.
+- New "Light mode" (Settings > Style and sound): for modest computers, what Alfa checks in the background runs at half speed, Lya animates more slowly and announcements show as a card, without animation.
+- Changing zones costs less: the game reports the same change two or three times and Alfa now handles it only once.
+- Alfa's windows no longer rewrite text that didn't change, so the tracker, Today and the rest redraw more lightly.
+- Nameplates and the mouse: Alfa remembers the creatures it has already seen and doesn't check them again.
+- Messages from other addons (raid, damage meters...) no longer go through five parts of Alfa: one receives them and hands each its own.
+- The next guide on your route (or all of them, if the route offers a choice) is ready ahead of time, so moving on to it doesn't stutter at all.
+- /alfa rendimiento now tells you how long Alfa took to load when you logged in and measures for 10 seconds how much memory each part gathers. If something goes over, Lya tells you and suggests light mode.
+- Reviewed and already in order, no changes: the arrow, bags, fishing, raid Healing, what La Jauría saves and Lya's history. A new test confirms that with everything closed nothing keeps running every frame.
+
 ## 1.3.4 — La manada ligera: Alfa entra al juego mucho más rápido (20/11/2026)
 
 Una versión para quitar el lag: medimos con un perfilador nuevo dónde se iba el tiempo y atacamos lo que más pesaba. Cada cambio trae su prueba en el banco.

@@ -842,6 +842,224 @@ end'''),
 ]
 
 
+
+# 1.3.5: ClassToast y FollowLog miran la ficha (qref) antes de armar una guía.
+PARCHES += [
+    ("Alfa/UI/ClassToast.lua",
+     '''	local chain, other = C.ChainOf(q), nil
+	for _, h in ipairs(G.List()) do
+		if h.category == "Class" and (not G.GuideMatches or G.GuideMatches(h, p)) then
+			local g = G.Get(h.id)
+			for _, step in ipairs(g and g.steps or {}) do''',
+     lambda c: '''	local chain, other = C.ChainOf(q), nil
+	-- Alfa (1.3.5): a guide whose header (qref, tools/diferir.py) names no
+	-- quest of q's chain can't be the answer; its steps stay unread.
+	local function puede(g)
+		local ref = g and rawget(g, "qref")
+		if type(ref) ~= "table" or type(ref.q) ~= "table" then return true end
+		for _, n in ipairs(ref.q) do
+			if n == q or (C.Entry(n) ~= nil and C.ChainOf(n) == chain) then return true end
+		end
+		return false
+	end
+	for _, h in ipairs(G.List()) do
+		if h.category == "Class" and (not G.GuideMatches or G.GuideMatches(h, p)) and puede(G.Get(h.id)) then
+			local g = G.Get(h.id)
+			for _, step in ipairs(g and g.steps or {}) do'''),
+    ("Alfa/Core/Guides.lua",
+     '''	local own, best, bestN = score(g), nil, 0
+	for _, other in ipairs(r.guides) do
+		local o = other ~= id and Guides.Get(other)
+		if o and (o.category == nil or o.category == "Leveling") and guideMatches(o, player) then
+			local n = score(o)''',
+     lambda c: '''	-- Alfa (1.3.5): the most a guide can score, from its header (qref):
+	-- one that can't beat the best so far (or the tab's own) is not read.
+	local function bound(guide)
+		-- A tab's guide with steps put in from other guides (Own.rebuilt:
+		-- feeders) holds quests its header doesn't list: read it.
+		if rawget(guide, "feeders") ~= nil or rawget(guide, "fromBase") ~= nil then return math.huge end
+		local ref = rawget(guide, "qref")
+		if type(ref) ~= "table" or type(ref.q) ~= "table" then return math.huge end
+		local n = 0
+		for _, q in ipairs(ref.q) do if log[q] then n = n + 1 end end
+		return n
+	end
+	local own, best, bestN = score(g), nil, 0
+	for _, other in ipairs(r.guides) do
+		local o = other ~= id and Guides.Get(other)
+		if o and (o.category == nil or o.category == "Leveling") and guideMatches(o, player) and bound(o) > math.max(bestN, own) then
+			local n = score(o)'''),
+]
+
+
+
+# 1.3.5: eventos más baratos en el motor.
+PARCHES += [
+    # Un ayudante: fn una sola vez por cuadro aunque la llamen varias veces.
+    ("Alfa/Core/Init.lua",
+     "function ns.NewTimer(seconds, fn) return C_Timer.NewTimer(seconds, ns.Safe(fn)) end\n",
+     lambda c: '''function ns.NewTimer(seconds, fn) return C_Timer.NewTimer(seconds, ns.Safe(fn)) end
+
+-- Alfa (1.3.5): g(...) any number of times in a frame runs fn once, on the
+-- next frame, with the last call's arguments (events that come in bursts:
+-- a zone change fires two or three at once).
+function ns.Coalesced(fn)
+	local pending, args, n = false, {}, 0
+	local function run()
+		pending = false
+		call(fn, unpack(args, 1, n))
+	end
+	return function(...)
+		n = select("#", ...)
+		for i = 1, n do args[i] = select(i, ...) end
+		if pending then return end
+		pending = true
+		C_Timer.After(0, run)
+	end
+end
+
+-- Alfa (1.3.5): a unit event for these units only (the client filters the
+-- rest: in a raid, UNIT_SPELLCAST_* and UNIT_AURA come hundreds of times a
+-- second from everyone). fn(event, ...) like ns.RegisterEvent's.
+function ns.RegisterUnitOnly(event, units, fn)
+	local f = CreateFrame("Frame")
+	if not pcall(f.RegisterUnitEvent, f, event, units[1], units[2]) then
+		if not pcall(f.RegisterEvent, f, event) then return nil end
+	end
+	f:SetScript("OnEvent", function(_, ev, ...) call(fn, ev, ...) end)
+	return f
+end
+'''),
+    ("Alfa/Core/Engine.lua",
+     'ns.RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", function(_, unit, _, spellID)',
+     lambda c: 'ns.RegisterUnitOnly("UNIT_SPELLCAST_SUCCEEDED", { "player" }, function(_, unit, _, spellID)'),
+    ("Alfa/Nav/Nav.lua",
+     '''	"PLAYER_CONTROL_LOST", "PLAYER_CONTROL_GAINED",
+}) do
+	ns.RegisterEvent(event, situationChanged)
+end''',
+     lambda c: '''	"PLAYER_CONTROL_LOST", "PLAYER_CONTROL_GAINED",
+}) do
+	ns.RegisterEvent(event, Nav.situationOnce)
+end'''),
+    ("Alfa/Nav/Nav.lua",
+     "local function situationChanged()\n",
+     lambda c: "local situationChanged\n-- Alfa (1.3.5): the zone events of one change come together: once a frame.\nNav.situationOnce = ns.Coalesced(function() situationChanged() end)\nfunction situationChanged()\n"),
+    ("Alfa/Nav/Travel.lua",
+     '''for _, event in ipairs({ "ZONE_CHANGED_NEW_AREA", "ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "PLAYER_ENTERING_WORLD", "PLAYER_CONTROL_GAINED" }) do
+	ns.RegisterEvent(event, onZone)
+end''',
+     lambda c: '''-- Alfa (1.3.5): the zone events of one change come together: once a frame.
+local onZoneOnce = ns.Coalesced(onZone)
+for _, event in ipairs({ "ZONE_CHANGED_NEW_AREA", "ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "PLAYER_ENTERING_WORLD", "PLAYER_CONTROL_GAINED" }) do
+	ns.RegisterEvent(event, onZoneOnce)
+end'''),
+]
+
+
+
+# 1.3.5: Names.Learn recuerda los GUID ya vistos (placas, ratón, objetivo).
+PARCHES += [
+    ("Alfa/Core/Names.lua",
+     """	local guid = C.Readable(UnitGUID(unit))
+	if type(guid) ~= "string" then return nil end
+	local gk, _, _, _, _, sid = strsplit("-", guid)""",
+     lambda c: """	local guid = C.Readable(UnitGUID(unit))
+	if type(guid) ~= "string" then return nil end
+	-- Alfa (1.3.5): a creature seen a moment ago (its plate, the mouse, the
+	-- target) was learned then: no split, no lookups.
+	local seen = Names.seenGuids
+	if not seen or Names.seenCount > 400 or Names.seenStore ~= mine then
+		seen = {}
+		Names.seenGuids, Names.seenCount, Names.seenStore = seen, 0, mine
+	end
+	local was = seen[guid]
+	if was then return was end
+	local learned = Names.learnGuid(unit, guid, mine, C)
+	-- Only a name learned is kept: one not loaded yet is asked again.
+	if learned then
+		seen[guid] = learned
+		Names.seenCount = Names.seenCount + 1
+	end
+	return learned
+end
+
+function Names.learnGuid(unit, guid, mine, C)
+	local gk, _, _, _, _, sid = strsplit("-", guid)"""),
+    ("Alfa/Core/Names.lua",
+     "\t\t\tif #order > LEARN_CAP then prune(mine) end\n",
+     lambda c: "\t\t\t-- Alfa (1.3.5): what the GUID cache remembers may be pruned now.\n\t\t\tif #order > LEARN_CAP then prune(mine) Names.seenGuids = nil end\n"),
+]
+
+
+
+
+# 1.3.5: el reloj de la carga (/alfa rendimiento) y la siguiente guía armada.
+PARCHES += [
+    ("Alfa/Core/Init.lua",
+     "local ADDON, ns = ...\nAlfa = ns\n",
+     lambda c: '''local ADDON, ns = ...
+Alfa = ns
+-- Alfa (1.3.5): how long Alfa takes to load and start (/alfa rendimiento):
+-- start (its first file), last (the last Alfa addon loaded before login),
+-- login (the login callbacks, the guides they load included). In ms.
+ns.loadClock = { start = debugprofilestop and debugprofilestop() or nil }
+'''),
+    ("Alfa/Core/Init.lua",
+     '''local function onLogin()
+	ns.UnregisterEvent("PLAYER_LOGIN", onLogin)
+	loggedIn = true
+	local queue = loginQueue
+	loginQueue = nil
+	for i = 1, #queue do call(queue[i]) end
+end''',
+     lambda c: '''local function onLogin()
+	ns.UnregisterEvent("PLAYER_LOGIN", onLogin)
+	loggedIn = true
+	local t0 = debugprofilestop and debugprofilestop()
+	local queue = loginQueue
+	loginQueue = nil
+	for i = 1, #queue do call(queue[i]) end
+	if t0 then ns.loadClock.login = debugprofilestop() - t0 end
+end
+-- Alfa (1.3.5): the last of Alfa's addons loaded before login.
+ns.RegisterEvent("ADDON_LOADED", function(_, name)
+	if loggedIn or type(name) ~= "string" or name:sub(1, 4) ~= "Alfa" then return end
+	if debugprofilestop then ns.loadClock.last = debugprofilestop() end
+end)'''),
+    ("Alfa/Core/Guides.lua",
+     '''function Guides.Release(id)
+	local def = guides[id]
+	if not (def and Own.live[id] and type(rawget(def, "stepsSrc")) == "string") then return false end''',
+     lambda c: '''-- Alfa (1.3.5): the guides an open tab's route goes to next (`next` and
+-- every `nextChoices`) stay read: Alfa_Rutas/Siguiente.lua reads them ahead,
+-- so moving on to one has no wait. Whoever releases (the sweep, a plan) asks.
+function Own.aheadOfTabs()
+	local E = ns.Engine
+	local out = {}
+	if not (E and E.TabIds) then return out end
+	for tid in pairs(E.TabIds()) do
+		local g = guides[tid]
+		local nx = g and rawget(g, "next")
+		if type(nx) == "string" then out[nx] = true end
+		local ch = g and rawget(g, "nextChoices")
+		if type(ch) == "table" then
+			for _, c in ipairs(ch) do
+				local cid = type(c) == "table" and (c.id or c.guide) or c
+				if type(cid) == "string" then out[cid] = true end
+			end
+		end
+	end
+	return out
+end
+
+function Guides.Release(id)
+	local def = guides[id]
+	if not (def and Own.live[id] and type(rawget(def, "stepsSrc")) == "string") then return false end
+	if Own.aheadOfTabs()[id] then return false end'''),
+]
+
+
 def aplicar(dist: pathlib.Path, cfg: dict) -> list:
     errores = []
     for rel, viejo, nuevo in PARCHES:

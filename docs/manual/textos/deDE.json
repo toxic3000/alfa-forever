@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "Die 1.3.4: Das leichte Rudel", "items": ["**Viel schnelleres Einloggen:** Beim Einloggen und bei `/reload` baut Alfa nicht mehr alle Guides auf, nur den, dem du folgst; die anderen, wenn du sie öffnest.", "**Weniger Speicher:** etwa 12 MB weniger, daher macht das Spiel seltener Pausen zum Aufräumen.", "**Kein Ruckeln bei Questgebern:** Die Warnung „diese Quest schließt eine andere“ schaut nur in die Guides, die sie betreffen.", "**Und mehr:** Die Schiffe auf der Karte arbeiten jede Sekunde weniger, und im Kampf lässt Alfa keine Guides los und baut keine auf."]}
+    "mapa": {"titulo": "Die 1.3.5: Das leichtere Rudel", "items": ["**Viel weniger Arbeit in Gruppe und Schlachtzug:** Was andere tun, erreicht die Teile von Alfa nicht mehr, die nur auf dich schauen.", "**Kampfmodus und Dungeonmodus:** Im Kampf warten Lya und offene Seiten; in einem Dungeon sucht das Sammeln keine Vorkommen mehr.", "**Leichter Modus** (Einstellungen > Stil und Klang): für einfache Computer, alles im Hintergrund langsamer und Ankündigungen ohne Animation.", "**Und mehr:** Zonenwechsel kosten weniger, der nächste Guide ist vorab bereit und `/alfa rendimiento` zeigt, wie lange Alfa beim Einloggen brauchte."]}
   },
   "contraportada": {
     "titulo": "Komm ins Rudel",

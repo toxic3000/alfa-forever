@@ -331,7 +331,65 @@ local function procesador(nombres)
 end
 Pf.Procesador = procesador
 
+-- 1.3.5: lo que Alfa deja de basura (memoria nueva) por segundo, por parte,
+-- medido durante MIDE_SEG segundos justo después de soltar la memoria. Si algo
+-- se pasa (BASURA_MUCHA en total o CPU_MUCHO ms por cuadro en una parte), Lya
+-- te lo dice y te sugiere el modo ligero.
+local MIDE_SEG, BASURA_MUCHA, CPU_MUCHO = 10, 40, 1.5
+local function memorias(nombres)
+	local out = {}
+	if UpdateAddOnMemoryUsage then pcall(UpdateAddOnMemoryUsage) end
+	for _, n in ipairs(nombres) do
+		local ok, kb = pcall(GetAddOnMemoryUsage, n)
+		out[n] = ok and tonumber(kb) or 0
+	end
+	return out
+end
+
+function Pf.Pasado(basura, cpu)
+	local peor
+	for _, x in ipairs(cpu or {}) do
+		if x[2] > CPU_MUCHO then peor = format(L["%s usa %.1f ms por cuadro"], x[1], x[2]) break end
+	end
+	if not peor and basura and basura.total > BASURA_MUCHA and basura.lista[1] then
+		peor = format(L["%s junta %.0f KB de memoria por segundo"], basura.lista[1][1], basura.lista[1][2])
+	end
+	return peor
+end
+
+function Pf.MedirBasura(nombres, cpu, alTerminar)
+	if not (GetAddOnMemoryUsage and N.Una) then return false end
+	local antes = memorias(nombres)
+	N.Una("bienvenida.basura", MIDE_SEG, function()
+		local despues = memorias(nombres)
+		local lista, total = {}, 0
+		for n, kb in pairs(despues) do
+			local d = math.max(0, (kb - (antes[n] or kb)) / MIDE_SEG)
+			total = total + d
+			lista[#lista + 1] = { n, d }
+		end
+		sort(lista, function(a, b) return a[2] > b[2] end)
+		local basura = { total = total, lista = lista }
+		N.Imprimir(format(L["En %d segundos, Alfa fue juntando %.1f KB de memoria por segundo. Lo que más junta:"], MIDE_SEG, total))
+		for i = 1, math.min(3, #lista) do
+			DEFAULT_CHAT_FRAME:AddMessage(format("  %s: %.1f KB/s", lista[i][1], lista[i][2]))
+		end
+		local peor = Pf.Pasado(basura, cpu)
+		if peor and K.Aviso then
+			K.Aviso({ titulo = L["Alfa está trabajando de más"], icono = "ic-aviso",
+				texto = format(L["%s. Si notas el juego lento, prueba el «Modo ligero» en Ajustes > Estilo y sonido."], peor) })
+		end
+		if alTerminar then alTerminar(basura, peor) end
+	end)
+	return true
+end
+
 local function rendimiento()
+	-- 1.3.5: cuánto tardó Alfa al entrar (el motor lo mide: Core/Init.lua).
+	local rc = A.loadClock
+	if type(rc) == "table" and rc.start and rc.last then
+		N.Imprimir(format(L["Al entrar, Alfa tardó %.0f ms en cargar sus archivos y %.0f ms en arrancar."], rc.last - rc.start, rc.login or 0))
+	end
 	if UpdateAddOnMemoryUsage then pcall(UpdateAddOnMemoryUsage) end
 	local nombres = partesCargadas()
 	local total, lista = 0, {}
@@ -375,6 +433,10 @@ local function rendimiento()
 		pcall(collectgarbage, "collect")
 		if UpdateAddOnMemoryUsage then pcall(UpdateAddOnMemoryUsage) end
 		N.Imprimir(L["Listo: Alfa soltó la memoria que ya no ocupaba."])
+		-- 1.3.5: y ahora mide la basura de los próximos segundos.
+		if Pf.MedirBasura(nombres, como == "perfilador" and cpu or nil) then
+			N.Imprimir(format(L["Midiendo cuánta memoria va juntando Alfa durante %d segundos..."], MIDE_SEG))
+		end
 		return antes, info
 	end
 	return total, info

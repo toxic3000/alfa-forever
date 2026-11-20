@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "A 1.3.4: a matilha leve", "items": ["**Entrar, muito mais rápido:** ao entrar e com `/reload`, o Alfa não monta mais todos os guias, só o que você segue; os outros, quando você os abre.", "**Menos memória:** uns 12 MB a menos, então o jogo faz menos pausas para limpá-la.", "**Sem travadas ao falar com NPCs:** o aviso de \"pegar esta missão fecha outra\" olha só os guias que a envolvem.", "**E mais:** os barcos do mapa trabalham menos a cada segundo e, em combate, o Alfa não solta nem monta guias."]}
+    "mapa": {"titulo": "A 1.3.5: a matilha mais leve", "items": ["**Muito menos trabalho em grupo e em raide:** o que os outros fazem não chega mais às partes do Alfa que só olham para você.", "**Modo combate e modo masmorra:** numa luta, a Lya e as páginas abertas esperam; dentro de uma masmorra, a coleta para de procurar nós.", "**Modo leve** (Ajustes > Estilo e som): para computadores modestos, tudo em segundo plano mais devagar e os anúncios sem animação.", "**E mais:** mudar de zona custa menos, o próximo guia fica pronto antes e `/alfa rendimiento` diz quanto o Alfa levou ao entrar."]}
   },
   "contraportada": {
     "titulo": "Entre para a matilha",

@@ -60,6 +60,10 @@ local function grupos(ui, padre)
 	sonido:Fila({ titulo = L["Anuncios animados"],
 		texto = L["Al llegar en barco o cuando Lya encuentra un raro, un anuncio grande con animación, como la intro, en vez de una tarjeta."],
 		control = function(fila) return K.Interruptor(fila, { clave = ID .. ".anuncios" }) end })
+	-- 1.3.5: para equipos modestos (Alfa_Nucleo/Reloj.lua, N.Ligero).
+	sonido:Fila({ titulo = L["Modo ligero"],
+		texto = L["Para computadoras modestas: lo que Alfa revisa en segundo plano va a la mitad de velocidad, Lya se anima más despacio y los anuncios salen como tarjeta, sin animación."],
+		control = function(fila) return K.Interruptor(fila, { clave = "nucleo.ligero" }) end })
 	sonido:Fila({ titulo = L["Escuchar el aullido"], texto = L["Suena ahora, aunque el aullido esté apagado."],
 		control = function(fila) return K.Boton(fila, L["Escuchar"], function() M.Aullar(true) end, { tipo = "secundario", icono = "ic-lobo" }) end })
 
@@ -281,6 +285,10 @@ local CONTROLES = {
 	{ kind = "toggle", key = "nucleo.letraGrande", label = L["Letra más grande"],
 		help = L["Todo el texto de Alfa un poco más grande, en cada ventana. Se suma al tamaño de Ajustes > Apariencia."],
 		search = "bigger text, large font, accessibility, readability, letra grande, accesibilidad" },
+	-- 1.3.5
+	{ kind = "toggle", key = "nucleo.ligero", label = L["Modo ligero"],
+		help = L["Para computadoras modestas: lo que Alfa revisa en segundo plano va a la mitad de velocidad, Lya se anima más despacio y los anuncios salen como tarjeta, sin animación."],
+		search = "light mode, low end, performance, fps, lag, slow computer, modo ligero, rendimiento, lento" },
 	{ kind = "toggle", key = "nucleo.daltonico", label = L["Colores para daltonismo"],
 		help = L["Lo bueno en azul, los avisos en amarillo y el peligro en naranja, y los perjuicios con colores que se distinguen sin el rojo y el verde."],
 		search = "colorblind, color blind, colour blind, deuteranopia, protanopia, accessibility, daltonismo, debuff colors" },

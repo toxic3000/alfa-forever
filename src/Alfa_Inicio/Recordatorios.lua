@@ -631,7 +631,7 @@ function R.Grupo(g)
 	return out
 end
 
-A.RegisterEvent("UNIT_AURA", function(_, unit)
+AlfaNucleo.DeUnidad("UNIT_AURA", "player", function(_, unit)
 	if unit == "player" and not combate() then revisarBuffsPronto() end
 end)
 A.RegisterEvent("PLAYER_REGEN_ENABLED", function() A.After(1, function() revisarBuffs() end) end)

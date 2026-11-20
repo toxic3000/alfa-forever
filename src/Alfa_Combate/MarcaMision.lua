@@ -306,7 +306,7 @@ A.RegisterEvent("NAME_PLATE_UNIT_REMOVED", cada(function(_, unidad)
 	soltar(unidad)
 end))
 A.RegisterEvent("QUEST_LOG_UPDATE", cada(function() if encendida() then pronto(0.3) end end))
-A.RegisterEvent("UNIT_QUEST_LOG_CHANGED", cada(function(_, unidad)
+AlfaNucleo.DeUnidad("UNIT_QUEST_LOG_CHANGED", "player", cada(function(_, unidad)
 	if not M.Secreto(unidad) and unidad == "player" and encendida() then pronto(0.3) end
 end))
 A.RegisterEvent("QUEST_ACCEPTED", cada(function() if encendida() then pronto(0.3) end end))

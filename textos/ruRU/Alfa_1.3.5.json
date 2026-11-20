@@ -1,0 +1,11 @@
+{
+ "Modo ligero": "Лёгкий режим",
+ "Para computadoras modestas: lo que Alfa revisa en segundo plano va a la mitad de velocidad, Lya se anima más despacio y los anuncios salen como tarjeta, sin animación.": "Для скромных компьютеров: то, что Alfa проверяет в фоне, работает вдвое медленнее, Лия двигается спокойнее, а объявления показываются карточкой, без анимации.",
+ "%s usa %.1f ms por cuadro": "%s тратит %.1f мс на кадр",
+ "%s junta %.0f KB de memoria por segundo": "%s набирает %.0f КБ памяти в секунду",
+ "En %d segundos, Alfa fue juntando %.1f KB de memoria por segundo. Lo que más junta:": "За %d секунд Alfa набирала %.1f КБ памяти в секунду. Больше всего набирает:",
+ "Alfa está trabajando de más": "Alfa работает слишком много",
+ "%s. Si notas el juego lento, prueba el «Modo ligero» en Ajustes > Estilo y sonido.": "%s. Если игра кажется медленной, попробуй «Лёгкий режим» в Настройки > Стиль и звук.",
+ "Al entrar, Alfa tardó %.0f ms en cargar sus archivos y %.0f ms en arrancar.": "При входе Alfa загружала свои файлы %.0f мс и запускалась %.0f мс.",
+ "Midiendo cuánta memoria va juntando Alfa durante %d segundos...": "Измеряю, сколько памяти набирает Alfa за %d секунд…"
+}

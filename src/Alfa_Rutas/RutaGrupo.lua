@@ -464,7 +464,7 @@ end
 -- Para el banco.
 function RG.Reiniciar() sig, seguidores, ultimo, pedidas, porCompartir, ultimoW = nil, {}, {}, {}, {}, nil N.Quitar("rutas.rutaGrupo") end
 
-A.RegisterEvent("CHAT_MSG_ADDON", alAddon)
+AlfaNucleo.PorPrefijo(PREFIJO, alAddon)
 A.On("WAYPOINT_CHANGED", anunciarLuego)
 A.RegisterEvent("GROUP_ROSTER_UPDATE", function()
 	-- Fuera del grupo (o ya en banda), todo se deja.

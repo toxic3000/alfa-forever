@@ -947,6 +947,10 @@
   "en": "%s smells different from everywhere else. I like sniffing it out.",
   "origen": "Alfa_Lya"
  },
+ "%s junta %.0f KB de memoria por segundo": {
+  "en": "%s gathers %.0f KB of memory per second",
+  "origen": "Alfa_Bienvenida"
+ },
  "%s le queda a su clase y su nivel (%d). ¿Se lo regalas?": {
   "en": "%s fits their class and level (%d). Will you give it to them?",
   "origen": "Alfa_Manada"
@@ -1127,6 +1131,10 @@
   "en": "%s has their reasons for asking you “%s”. Shall I tell you?",
   "origen": "Alfa_Lya"
  },
+ "%s usa %.1f ms por cuadro": {
+  "en": "%s uses %.1f ms per frame",
+  "origen": "Alfa_Bienvenida"
+ },
  "%s va a tu cita": {
   "en": "%s is coming to your outing",
   "origen": "Alfa_Manada"
@@ -1274,6 +1282,10 @@
  "%s. Llevas %d de %d para %s.": {
   "en": "%s. You have %d of %d for %s.",
   "origen": "Alfa_Pesca"
+ },
+ "%s. Si notas el juego lento, prueba el «Modo ligero» en Ajustes > Estilo y sonido.": {
+  "en": "%s. If the game feels slow, try \"Light mode\" in Settings > Style and sound.",
+  "origen": "Alfa_Bienvenida"
  },
  "%s: %d": {
   "en": "%s: %d",
@@ -2823,6 +2835,10 @@
   "en": "At login only the animation plays; the rest waits for you on Today and with Lya.",
   "origen": "Alfa_Bienvenida"
  },
+ "Al entrar, Alfa tardó %.0f ms en cargar sus archivos y %.0f ms en arrancar.": {
+  "en": "When you logged in, Alfa took %.0f ms to load its files and %.0f ms to start.",
+  "origen": "Alfa_Bienvenida"
+ },
  "Al entregar una misión, Lya te ofrece contarte cómo terminó.": {
   "en": "When you turn in a quest, Lya offers to tell you how it ended.",
   "origen": "Alfa_Lya"
@@ -3138,6 +3154,10 @@
  "Alfa está oculto: clic para mostrarlo y abrir su ventana": {
   "en": "Alfa is hidden: click to show it and open its window",
   "origen": "Interfaz"
+ },
+ "Alfa está trabajando de más": {
+  "en": "Alfa is working too hard",
+  "origen": "Alfa_Bienvenida"
  },
  "Alfa guarda una copia de tus ajustes y perfiles cada semana y antes de cada actualización. Quedan las últimas 3.": {
   "en": "Alfa keeps a copy of your settings and profiles every week and before every update. The last 3 are kept.",
@@ -10722,6 +10742,10 @@
  "Empiezas: nivel %d": {
   "en": "You start: level %d",
   "origen": "Alfa_Inicio"
+ },
+ "En %d segundos, Alfa fue juntando %.1f KB de memoria por segundo. Lo que más junta:": {
+  "en": "In %d seconds, Alfa gathered %.1f KB of memory per second. What gathers the most:",
+  "origen": "Alfa_Bienvenida"
  },
  "En %s": {
   "en": "In %s",
@@ -19559,6 +19583,10 @@
   "en": "My route: level fast",
   "origen": "Alfa_Rutas"
  },
+ "Midiendo cuánta memoria va juntando Alfa durante %d segundos...": {
+  "en": "Measuring how much memory Alfa gathers over %d seconds...",
+  "origen": "Alfa_Bienvenida"
+ },
  "Mientras caminas o corres, tu tecla hace lo de siempre (con Espacio, saltar).": {
   "en": "While you walk or run, your key does what it always does (with Space, jump).",
   "origen": "Alfa_Pesca"
@@ -19906,6 +19934,10 @@
  "Modo historia: 1 jefe por descubrir. Vence a cada uno para ver su nombre y su botín (puedes apagarlo en Ajustes).": {
   "en": "Story mode: 1 boss to discover. Defeat each one to see its name and loot (you can turn this off in Settings).",
   "origen": "Alfa_Mazmorras"
+ },
+ "Modo ligero": {
+  "en": "Light mode",
+  "origen": "Alfa_Bienvenida"
  },
  "Modo limpio": {
   "en": "Clean mode",
@@ -22166,6 +22198,10 @@
  "Para comprar espacio, habla con un banquero.": {
   "en": "To buy space, talk to a banker.",
   "origen": "Alfa_Bolsas"
+ },
+ "Para computadoras modestas: lo que Alfa revisa en segundo plano va a la mitad de velocidad, Lya se anima más despacio y los anuncios salen como tarjeta, sin animación.": {
+  "en": "For modest computers: what Alfa checks in the background runs at half speed, Lya animates more slowly and announcements show as a card, without animation.",
+  "origen": "Alfa_Bienvenida"
  },
  "Para conservar": {
   "en": "To keep",

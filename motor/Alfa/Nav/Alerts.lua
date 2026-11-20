@@ -265,7 +265,7 @@ end
 local function anuncio(title, whenFormat, seconds, kind)
 	local N = rawget(_G, "AlfaNucleo")
 	local K = N and N.Kit
-	if not (K and K.Anuncio) or (N.Get and N.Get("bienvenida", "anuncios") == false) then return false end
+	if not (K and K.Anuncio) or (N.Get and N.Get("bienvenida", "anuncios") == false) or (N.Ligero and N.Ligero()) then return false end
 	return K.Anuncio({ sobre = ns.T(KICKER), titulo = title, lobo = "aullando", segundos = math.min(8, math.max(4, seconds or 6)),
 		cuenta = { hasta = GetTime() + (seconds or 0), formato = whenFormat, final = ns.T("¡Ya llegó! Vamos, manada") } })
 end

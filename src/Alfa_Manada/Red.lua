@@ -543,7 +543,7 @@ function R.Escuchar()
 	if escuchando then return end
 	escuchando = true
 	R.Prefijo()
-	A.RegisterEvent("CHAT_MSG_ADDON", alMensaje)
+	AlfaNucleo.PorPrefijo(R.PREFIJO, alMensaje)
 end
 
 -- Al entrar al canal: saludar.

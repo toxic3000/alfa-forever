@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "La 1.3.4: la manada ligera", "items": ["**Entrar, mucho más rápido:** al entrar y con `/reload`, Alfa ya no arma todas las guías, solo la que sigues; las demás, cuando las abres.", "**Menos memoria:** unos 12 MB menos, así que el juego hace menos pausas para limpiarla.", "**Sin tirones al hablar con PNJ:** el aviso de «coger esta misión cierra otra» mira solo las guías que la tocan.", "**Y más:** los barcos del mapa trabajan menos cada segundo y, en combate, Alfa no suelta ni arma guías."]}
+    "mapa": {"titulo": "La 1.3.5: la manada más ligera", "items": ["**En grupo y en banda, mucho menos trabajo:** lo que hacen los demás ya no llega a las partes de Alfa que solo te miran a ti.", "**Modo combate y modo mazmorra:** en una pelea, Lya y las páginas abiertas esperan; dentro de una mazmorra, la recolección deja de buscar nodos.", "**Modo ligero** (Ajustes > Estilo y sonido): para ordenadores modestos, todo lo de fondo más despacio y los anuncios sin animación.", "**Y más:** cambiar de zona cuesta menos, la siguiente guía queda lista de antemano y `/alfa rendimiento` te dice cuánto tardó Alfa al entrar."]}
   },
   "contraportada": {
     "titulo": "Únete a la manada",

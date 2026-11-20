@@ -83,3 +83,37 @@ end
 
 A.On("GUIDE_CHANGED", function() guardada = nil end)
 A.RegisterEvent("PLAYER_LEVEL_UP", function() guardada = nil end)
+
+---------------------------------------------------------------------------
+-- 1.3.5: la siguiente guía de tu ruta, armada de antemano. Las guías traen
+-- sus pasos como texto y se arman al abrirlas (tools/diferir.py): la que
+-- sigue a la tuya se arma unos segundos después de cambiar de guía, fuera de
+-- combate, para que al pasar a ella no haya ni un tirón. El motor no la
+-- suelta mientras tu pestaña vaya a ella (Own.sweep, tools/parches.py).
+---------------------------------------------------------------------------
+
+function Sg.ArmarSiguiente()
+	local E, G = A.Engine, A.Guides
+	local g = E and E.GetGuide and E.GetGuide()
+	if type(g) ~= "table" or not (G and G.Get) then return nil end
+	-- La que sigue, o todas las de una ruta con ramas (nextChoices).
+	local ids = rawget(g, "nextChoices")
+	if type(ids) ~= "table" then ids = { rawget(g, "next") } end
+	local primera
+	for _, id in ipairs(ids) do
+		local s = type(id) == "string" and G.Get(id)
+		if s then
+			local _ = s.steps
+			primera = primera or id
+		end
+	end
+	return primera
+end
+
+local function armarLuego()
+	local N = AlfaNucleo
+	if not (N and N.Una and N.FueraDeCombate) then return end
+	N.Una("rutas.armarSiguiente", 3, function() N.FueraDeCombate("rutas.armarSiguiente", Sg.ArmarSiguiente) end)
+end
+A.On("GUIDE_CHANGED", armarLuego)
+A.OnLogin(armarLuego)
