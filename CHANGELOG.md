@@ -12,6 +12,7 @@ La primera de la serie 1.3: la más grande hasta ahora.
 - Buffo que falta: un puntito azul cuando a alguien le falta tu buffo, con el clic que se lo da.
 - El tanque en apuros late en rojo bajo 40%, el maná de los sanadores en una lista y los marcos de banda por grupo.
 - Bolsas revisadas a fondo: 8 errores arreglados (bolsas especiales que contaban como espacio, munición y fragmentos que se iban al banco, objetos bloqueados que no se movían, nombres con sufijo que no se encontraban, el banco que no se volvía a leer y más).
+- Arreglado: «Tomar todo» en el buzón ya no dice «No había nada que tomar» si lo pulsas mientras cargan las cartas; espera y toma todo.
 - Conjuntos de equipo: guarda lo que llevas con un nombre y póntelo con un clic.
 - Comparar: al pasar el ratón, lo que ganas o pierdes contra lo que llevas, en números claros.
 - Qué fabricar para ganar más con lo que ya tienes.
@@ -55,6 +56,7 @@ La primera de la serie 1.3: la más grande hasta ahora.
 - Missing buff: a small blue dot when someone lacks your buff, with the click that gives it.
 - The tank in trouble pulses red under 40%, healers' mana in a list and raid frames by group.
 - Bags reviewed in depth: 8 bugs fixed (special bags counted as space, ammo and shards sent to the bank, locked items never moved, suffix names not found, the bank not re-read and more).
+- Fixed: "Take all" at the mailbox no longer says "There was nothing to take" if you press it while the mail is loading; it waits and takes everything.
 - Gear sets: save what you wear under a name and put it on in one click.
 - Compare: on mouse-over, what you gain or lose against what you wear, in clear numbers.
 - What to craft for the most gold with what you already have.
