@@ -137,7 +137,7 @@
               "Einstellungen: Stil, Komfort, Quests und alles andere.",
               "Seite zurücksetzen und UI neu laden, falls etwas seltsam aussieht."
             ]},
-            {"t": "h", "texto": "Die Bereiche"},
+            {"t": "h", "texto": "Ein einziges Alfa-Menü"}, {"t": "lista", "items": ["**Klick** auf Alfas Symbol an der Minikarte, seinen schwebenden Button, seinen Eintrag in der Addon-Liste oder den Button **Alfa** im [[Esc]]-Menü: Das Fenster öffnet sich auf der Seite, die du zuletzt gesehen hast.", "**Rechtsklick** auf eines davon: dasselbe Menü mit den sieben Bereichen des Fensters und ihren Seiten, dazu **Frag Lya**, **Bildschirm einrichten**, den Pfeil zeigen oder ausblenden, **Alfa ausblenden** und **Ein Problem melden**."]}, {"t": "h", "texto": "Die Bereiche"},
             {"t": "tarjetas", "cols": 2, "items": [
               {"icono": "hoy", "titulo": "Heute", "texto": "Dein Tag: der nächste Schritt, das Dringende und deine Klasse."},
               {"icono": "aventura", "titulo": "Abenteuer", "texto": "Route und Guides, Dungeons und Enzyklopädie."},
@@ -148,7 +148,7 @@
               {"icono": "ajustes", "titulo": "Einstellungen", "texto": "Stil und Klang, Komfort, Questen und mehr."},
               {"icono": "buscar", "titulo": "Einstellungen durchsuchen", "texto": "Finde jede Option, indem du ihren Namen eintippst."}
             ]},
-            {"t": "nota", "texto": "Mit **Alfa einfach** siehst du nur Heute, Route, Karte, Taschen und Lya, dazu die Einstellungen. Alles andere läuft weiter: Öffne es mit seinem Befehl oder über „Einstellungen durchsuchen“."},
+            {"t": "nota", "texto": "Mit **Alfa einfach** siehst du nur Heute, Route, Karte, Taschen und Lya, dazu die Einstellungen, ohne ihre fortgeschrittenen Seiten (etwa die für Guide-Autoren). Alles andere läuft weiter: Öffne es mit seinem Befehl oder über „Einstellungen durchsuchen“."},
             {"t": "h", "texto": "Fünf Stile"},
             {"t": "img", "img": "estilo", "pie": "Einstellungen > Stil und Klang: dein Stil und die anderen zur Auswahl."},
             {"t": "p", "texto": "Alfa kleidet sich, wie du willst. **Alfa** ist Graphit mit abgeschrägten Ecken und dem Grün von La Jauría; **La Jauría Nacht** Mitternachtsblau mit Mondsilber; **Lagerfeuer** warme Kohle mit dem Orange der Glut; **Klassisches WoW** nutzt die Rahmen, Buttons und Schriften des Spiels selbst, mit goldenen Titeln; **Glas** lässt die Welt durch transparente Hintergründe scheinen, in der Akzentfarbe deiner Wahl. Der Stil kann auch den Chat, die Minikarte und deine Aktionsleisten einkleiden (unter Komfort). Ändere ihn unter **Einstellungen > Stil und Klang** oder mit `/alfa estilo`."},
@@ -401,7 +401,7 @@
               {"icono": "nivel", "titulo": "Kampfübersicht", "texto": "Am Ende: wie lange er gedauert hat, dein Schaden und deine Heilung pro Sekunde und was dich am härtesten getroffen hat. Die letzte mit `/alfa combate pelea`."},
               {"icono": "reloj", "titulo": "Deine langen Abklingzeiten", "texto": "Eine unauffällige Leiste mit allem, was 30 Sekunden oder länger braucht; jede verschwindet von selbst, sobald sie bereit ist."}
             ]},
-            {"t": "nota", "texto": "All das zeigt nur an: Im Kampf nimmt nichts die Maus an, und nichts wirkt für dich. Heiler beginnen mit ausgeschalteter Rotationshilfe (die Begrüßung entscheidet das nach deiner Rolle); jede Hilfe schaltest du unter Kampf ein oder aus."}
+            {"t": "consejo", "texto": "Allein unterwegs stört der Kampf nicht: Der Ton des Unterbrechen-Hinweises und die Kampfübersicht kommen in der Gruppe, in Instanzen oder bei langen Kämpfen. Willst du sie immer, findest du auf der Kampf-Seite **Auch allein unterwegs** und **Allein: Kämpfe von mindestens**."}, {"t": "nota", "texto": "All das zeigt nur an: Im Kampf nimmt nichts die Maus an, und nichts wirkt für dich. Heiler beginnen mit ausgeschalteter Rotationshilfe (die Begrüßung entscheidet das nach deiner Rolle); jede Hilfe schaltest du unter Kampf ein oder aus."}
           ]
         },
         {
@@ -412,7 +412,7 @@
           "bloques": [
             {"t": "intro", "texto": "„Heilung“ bringt Gruppen- und Schlachtzugsrahmen, gemacht zum Heilen mit einem Klick: Du fährst mit der Maus über einen Gefährten, klickst und wirkst den Zauber, den du gewählt hast. Mit demselben Klick ist er anvisiert, seine Schwächungen und der fehlende Buff sind auf einen Blick zu sehen, und es sagt dir, welcher Klick sie behebt. Jeder Priester, Druide, Paladin oder Schamane nutzt es ohne Einrichtung; die anderen Klassen für ihre Buffs, einen Verband und zum Anvisieren."},
             {"t": "img", "img": "curacion", "pie": "Die Seite „Heilung“: „Deine Klicks“ oben, deine Rahmen und die Voreinstellungen."},
-            {"t": "h", "texto": "Deine Klicks"},
+            {"t": "nota", "texto": "Keine Gruppe? Deine Rahmen erscheinen, sobald du einer beitrittst. Bis dahin zeigt dir die Seite sie mit **Ansehen, wie sie aussehen**."}, {"t": "h", "texto": "Deine Klicks"},
             {"t": "p", "texto": "Ganz oben auf der Seite stehen **Deine Klicks**: eine Zeile für jeden der meistgenutzten Klicks (links, rechts, Mitte und die mit Umschalt und Strg). Öffne ihre Liste und wähle: deine Heilungen, **Schwächungszauber entfernen**, deine Buffs, **Wiederbeleben**, andere Zauber aus deinem Zauberbuch, **Einen Verband benutzen**, **Anvisieren** oder das **Spielermenü**. Du weißt nicht, was du nehmen sollst? Die **Voreinstellungen** schlagen dir Klicks für deine Klasse vor; danach änderst du, was du willst."},
             {"t": "pasos", "titulo": "Der Assistent in 3 Schritten (`/alfa curacion asistente`)", "items": [
               "**Wähle deine Klicks.** Eine Voreinstellung für deine Klasse und „Heilen und ins Ziel nehmen“; wenn du heilst, kann der Linksklick nur zum Anvisieren bleiben.",
@@ -583,10 +583,10 @@
           "bloques": [
             {"t": "intro", "texto": "Alfas Karte zeigt die ganze Welt auf einer einzigen Karte mit Zoom: das echte Gelände, die Flugpunkte, die Ein- und Ausgänge, deine Markierungen und deine Gruppe. Sie öffnet sich wie immer mit [[M]] (oder mit `/alfa mapa`) und zentriert sich auf dein Gebiet."},
             {"t": "ilustracion", "id": "mapa", "e": {
-              "titulo": "Weltkarte",
+              "titulo": "Alfas Karte",
               "cerca": "In der Nähe suchen",
               "marcadores": "Deine Markierungen",
-              "capas": "Ebenen",
+              "capas": "Alfa-Ebenen",
               "limpio": "Fokusmodus",
               "juego": "Zur Spielkarte",
               "engrane": "Kartenstil",
@@ -620,7 +620,7 @@
               "Gib ihr einen Namen und wähle eines von 13 Symbolen und 10 Farben. Drück **Speichern**.",
               "Klick auf ihre Nadel, um sie zu ändern, mit deiner Gruppe zu teilen, zu löschen oder ihr zu **Folgen**: Pfeil und Route bringen dich hin."
             ]},
-            {"t": "p", "texto": "Deine Markierungen siehst du auf Alfas Karte, auf der des Spiels und auf der Minikarte. Die ganze Liste findest du hinter dem Button mit dem Pfotenabdruck und auf der Seite **Welt**, zusammen mit den Kartenebenen und dem Fokusmodus."},
+            {"t": "p", "texto": "Deine Markierungen siehst du auf Alfas Karte, auf der des Spiels und auf der Minikarte. Die ganze Liste findest du hinter dem Button mit dem Pfotenabdruck und auf der Seite **Welt**, zusammen mit den **Alfa-Ebenen** und dem Fokusmodus."},
             {"t": "lista", "titulo": "Dein Weg auf der Karte", "items": [
               "Dein Platz sticht hervor: Dein Pfeil hat einen Ring und ein sanftes Pulsieren, und du findest dich sofort.",
               "Die Weglinie bis zu deinem Ziel, die pulsiert, damit du sie siehst, mit Entfernung und Restweg.",
@@ -637,7 +637,7 @@
               {"icono": "seguir", "titulo": "Fehlende Flugrouten", "texto": "Die Flugmeister deines Gebiets, die du noch nicht hast. Ein Klick, und der Pfeil bringt dich hin."},
               {"icono": "mundo", "titulo": "Entdeckermodus", "texto": "Auf der Seite Welt, wie viel du von jedem Gebiet schon erkundet hast."}
             ]},
-            {"t": "nota", "texto": "In Dungeons öffnet [[M]] die Spielkarte. Auf Alfas Karte öffnet „Zur Spielkarte“ die des Spiels im selben Gebiet, und auf der Spielkarte bringt dich der Button „Alfas Karte“ zurück."}
+            {"t": "nota", "texto": "In Dungeons öffnet [[M]] die Spielkarte. Auf Alfas Karte öffnet „Zur Spielkarte“ die des Spiels dort, wo du bist, und auf der Spielkarte bringt dich der Button „Alfas Karte“ zurück."}
           ]
         },
         {
@@ -835,7 +835,7 @@
               {"icono": "conexiones", "titulo": "Baue auf der Karte", "texto": "Live: in welchen Bauen das Rudel in jedem Gebiet ist und wie viele Wölfe in jedem sind."},
               {"icono": "hoy", "titulo": "Der Kalender des Rudels", "texto": "Die nächsten sieben Tage, jeder mit seinen Terminen nach Uhrzeit."}
             ]},
-            {"t": "nota", "texto": "Fast alles beim Rudel setzt voraus, dass du deine Spur teilst. Jedes hat seinen eigenen Schalter in den Einstellungen am Ende dieser Seite."},
+            {"t": "nota", "texto": "Fast alles beim Rudel setzt voraus, dass du deine Spur teilst; Treffen und Notizen nicht. Jedes hat seinen eigenen Schalter in den Einstellungen am Ende dieser Seite, und was du ausschaltest, nimmt keinen Platz mehr ein."},
             {"t": "h", "texto": "Der Clan"},
             {"t": "p", "texto": "Am Ende der Seite steht La Jauría, der Clan: sein Motto, was er bietet, der Discord-Link zum Kopieren und **Ich will beitreten**, um deinen Platz im Rudel zu erbitten."},
             {"t": "comandos", "items": [
@@ -912,7 +912,7 @@
             {"t": "consejo", "texto": "Weißt du nicht, wo du anfangen sollst? Drück **Die empfohlenen einschalten**: Klassenfarben, besserer Tooltip, Anprobe, der nächste Halt beim Fliegen und keine Fehlerstimmen."},
             {"t": "tarjetas", "cols": 2, "items": [
               {"icono": "seguir", "titulo": "Reisen", "texto": "Der nächste Halt bei Flügen mit Zwischenstopps und wie lange es noch dauert."},
-              {"icono": "mapa", "titulo": "Minikarte", "texto": "Eckig, mit Addon-Buttons, die erst erscheinen, wenn du mit der Maus darüberfährst. Der Alfa-Button bleibt immer sichtbar."},
+              {"icono": "mapa", "titulo": "Minikarte", "texto": "Im Reiter **Minikarte und Koordinaten**: eckig, mit Addon-Buttons, die erst erscheinen, wenn du mit der Maus darüberfährst. Der Alfa-Button bleibt immer sichtbar."},
               {"icono": "apariencia", "titulo": "Stil für Chat, Minikarte und Leisten", "texto": "Kleide diese Teile des Spiels in deinen Stil; ausgeschaltet ist alles wieder wie vorher."},
               {"icono": "personaje", "titulo": "Rahmen und Aktionsleiste", "texto": "Klassenfarben in deinem Rahmen und dem deines Ziels, dazu ein Hinweis, wenn die Leiste einer Gestalt leer ist."},
               {"icono": "info", "titulo": "Tooltip", "texto": "Wen jemand anvisiert, sein Gildenrang und den Tooltip nur mit Umschalt zeigen."},
@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "Die 1.3.1: Das Rudel, fein abgestimmt", "items": ["**Bildschirm einrichten:** Verschiebe Lya, deinen Guide, den Pfeil, die Hinweise, das Angeln und die Rahmen von Kampf und Heilung mit der Maus, alles auf einmal (`/alfa acomodar`).", "**Der Alfa-Button an der Minikarte** bleibt immer sichtbar, auch wenn du die anderer Addons ausblendest.", "**Die Ankunftsplakette:** Mit Fortschritt („1 von 10“) bleibt sie, solange er läuft; ohne verschwindet sie nach ein paar Sekunden von selbst.", "**Die Ankündigungen** für Schiff, Tiefenbahn und Rares überdecken nicht mehr den Zonennamen oder die Hinweise des Spiels.", "**„Bring mich zu …“** nutzt auch die Tiefenbahn und Portale.", "**Und über 40 Korrekturen** bei Kampf, Heilung, La Jauría, Route, Taschen und Lya."]}
+    "mapa": {"titulo": "Die 1.3.2: Das Rudel in Ordnung", "items": ["**Ein einziges Alfa-Menü:** Das Symbol an der Minikarte, die Addon-Liste, der schwebende Button und der Button **Alfa** im [[Esc]]-Menü machen dasselbe. Klick öffnet die zuletzt gesehene Seite; Rechtsklick das Menü mit allen Bereichen.", "**Der Kampf stört allein nicht:** Der Unterbrechen-Ton und die Kampfübersicht kommen in der Gruppe, in Instanzen oder bei langen Kämpfen.", "**Heilung ohne Gruppe:** „Ansehen, wie sie aussehen“ zeigt dir deine Rahmen, bevor du einer Gruppe beitrittst.", "**Die Karte:** Die Ebenen heißen überall gleich, „Alfa-Ebenen“, und „Zur Spielkarte“ öffnet dort, wo du bist.", "**La Jauría:** Treffen und Notizen verlangen nicht mehr, dass du deinen Standort teilst.", "**Und 39 Verbesserungen** für ein klareres, leichteres Alfa."]}
   },
   "contraportada": {
     "titulo": "Komm ins Rudel",

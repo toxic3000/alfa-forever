@@ -137,7 +137,7 @@
               "Opções: estilo, comodidades, missões e todo o resto.",
               "Redefinir página e Recarregar IU, caso algo pareça estranho."
             ]},
-            {"t": "h", "texto": "As seções"},
+            {"t": "h", "texto": "Um só menu do Alfa"}, {"t": "lista", "items": ["**Clique** no ícone do Alfa no minimapa, no botão flutuante, na lista de addons ou no botão **Alfa** do menu do [[Esc]]: a janela abre na última página que você viu.", "**Clique direito** em qualquer um deles: o mesmo menu, com as sete seções da janela e suas páginas, mais **Pergunte à Lya**, **Arrumar a tela**, mostrar ou ocultar a seta, **Ocultar o Alfa** e **Relatar um problema**."]}, {"t": "h", "texto": "As seções"},
             {"t": "tarjetas", "cols": 2, "items": [
               {"icono": "hoy", "titulo": "Hoje", "texto": "Seu dia: o próximo passo, o urgente e sua classe."},
               {"icono": "aventura", "titulo": "Aventura", "texto": "Rota e guias, Masmorras e Enciclopédia."},
@@ -148,7 +148,7 @@
               {"icono": "ajustes", "titulo": "Opções", "texto": "Estilo e som, Comodidades, Missões e mais."},
               {"icono": "buscar", "titulo": "Buscar opções", "texto": "Encontre qualquer opção digitando o nome dela."}
             ]},
-            {"t": "nota", "texto": "Com o **Alfa simples** você só vê Hoje, Rota, Mapa, Bolsas e Lya, mais as Opções. O resto continua funcionando: abra com o comando ou com «Buscar opções»."},
+            {"t": "nota", "texto": "Com o **Alfa simples** você só vê Hoje, Rota, Mapa, Bolsas e Lya, mais as Opções, sem as páginas avançadas (como as dos autores de guias). O resto continua funcionando: abra com o comando ou com «Buscar opções»."},
             {"t": "h", "texto": "Cinco estilos"},
             {"t": "img", "img": "estilo", "pie": "Opções > Estilo e som: seu estilo e os outros para escolher."},
             {"t": "p", "texto": "O Alfa se veste do jeito que você quiser. **Alfa** é grafite com cantos cortados e o verde de La Jauría; **La Jauría noturno**, azul da meia-noite com prata de lua; **Fogueira**, carvão quente com o laranja das brasas; **WoW Clássico** usa as molduras, os botões e as letras do próprio jogo, com títulos em ouro; **Cristal** deixa ver o mundo através de fundos transparentes, com a cor de destaque que você escolher. O estilo também pode vestir o chat, o minimapa e suas barras de ação (em Comodidades). Mude em **Opções > Estilo e som** ou com `/alfa estilo`."},
@@ -401,7 +401,7 @@
               {"icono": "nivel", "titulo": "Resumo da luta", "texto": "Ao terminar: quanto durou, seu dano e cura por segundo e o que mais bateu em você. A última, com `/alfa combate pelea`."},
               {"icono": "reloj", "titulo": "Suas recargas longas", "texto": "Uma barra discreta com o que leva 30 segundos ou mais para voltar; cada uma some sozinha quando fica pronta."}
             ]},
-            {"t": "nota", "texto": "Tudo isso só mostra: nada recebe o mouse em combate e nada lança por você. Quem cura começa com a ajuda de rotação desligada (as boas-vindas decidem conforme seu papel); cada ajuda se liga ou desliga em Combate."}
+            {"t": "consejo", "texto": "Sozinho, o Combate não atrapalha: o som do aviso para interromper e o resumo da luta aparecem em grupo, em instâncias ou em lutas longas. Se quiser sempre, a página de Combate tem **Também quando estiver sozinho** e **Sozinho, lutas de pelo menos**."}, {"t": "nota", "texto": "Tudo isso só mostra: nada recebe o mouse em combate e nada lança por você. Quem cura começa com a ajuda de rotação desligada (as boas-vindas decidem conforme seu papel); cada ajuda se liga ou desliga em Combate."}
           ]
         },
         {
@@ -412,7 +412,7 @@
           "bloques": [
             {"t": "intro", "texto": "Cura coloca quadros de grupo e de raide pensados para curar com um clique: você passa o mouse sobre um companheiro, clica e lança o feitiço que escolheu. Com o mesmo clique ele fica selecionado, as penalidades e o buff que falta aparecem num relance e você vê qual clique resolve. Qualquer sacerdote, druida, paladino ou xamã usa sem configurar nada; as outras classes, para os buffs, uma atadura e para selecionar."},
             {"t": "img", "img": "curacion", "pie": "A página de Cura: «Seus cliques» em cima, seus quadros e as predefinições."},
-            {"t": "h", "texto": "Seus cliques"},
+            {"t": "nota", "texto": "Sem grupo? Seus quadros aparecem quando você entra em um. Enquanto isso, a página deixa você vê-los com **Ver como ficam**."}, {"t": "h", "texto": "Seus cliques"},
             {"t": "p", "texto": "A primeira coisa na página é **Seus cliques**: uma linha para cada clique mais usado (esquerdo, direito, do meio e os com Shift e Ctrl). Abra a lista e escolha: suas curas, **Remover penalidades**, seus buffs, **Reviver**, outros feitiços do seu grimório, **Usar uma atadura**, **Selecionar alvo** ou o **Menu do jogador**. Não sabe o que pôr? As **Predefinições** sugerem cliques para sua classe; depois você muda o que quiser."},
             {"t": "pasos", "titulo": "O assistente de 3 passos (`/alfa curacion asistente`)", "items": [
               "**Escolha seus cliques.** Uma predefinição para sua classe e «Curar e selecionar»; se você cura, o clique esquerdo pode ficar só para selecionar.",
@@ -583,10 +583,10 @@
           "bloques": [
             {"t": "intro", "texto": "O mapa do Alfa coloca o mundo inteiro num só mapa com zoom: o terreno real, os pontos de voo, as entradas e saídas, seus marcadores e seu grupo. Ele abre com a [[M]] de sempre (ou com `/alfa mapa`) e se centraliza na sua zona."},
             {"t": "ilustracion", "id": "mapa", "e": {
-              "titulo": "Mapa-múndi",
+              "titulo": "Mapa do Alfa",
               "cerca": "Buscar perto",
               "marcadores": "Seus marcadores",
-              "capas": "Camadas",
+              "capas": "Camadas do Alfa",
               "limpio": "Modo limpo",
               "juego": "Ir para o mapa do jogo",
               "engrane": "Estilo do mapa",
@@ -620,7 +620,7 @@
               "Dê um nome e escolha um de 13 ícones e 10 cores. Aperte **Salvar**.",
               "Clique no pino dele para mudar, compartilhar com seu grupo, apagar ou **Seguir**: a seta e a rota levam você até ele."
             ]},
-            {"t": "p", "texto": "Seus marcadores aparecem no mapa do Alfa, no do jogo e no minimapa. A lista completa está no botão da pegada, e na página **Mundo** junto com as camadas do mapa e o modo limpo."},
+            {"t": "p", "texto": "Seus marcadores aparecem no mapa do Alfa, no do jogo e no minimapa. A lista completa está no botão da pegada, e na página **Mundo** junto com as **Camadas do Alfa** e o modo limpo."},
             {"t": "lista", "titulo": "Seu caminho no mapa", "items": [
               "Seu lugar se destaca: sua seta ganha um aro e um pulso suave, e você se acha na hora.",
               "A linha do caminho até seu destino, que pulsa para você ver, com a distância e quanto falta.",
@@ -637,7 +637,7 @@
               {"icono": "seguir", "titulo": "Voos que faltam", "texto": "Os mestres de voo da sua zona que você ainda não tem. Um clique e a seta leva você."},
               {"icono": "mundo", "titulo": "Modo explorador", "texto": "Na página Mundo, quanto você já explorou de cada zona."}
             ]},
-            {"t": "nota", "texto": "Dentro de uma masmorra, a [[M]] abre o mapa do jogo. No mapa do Alfa, «Ir para o mapa do jogo» abre o do jogo na mesma zona, e no mapa do jogo o botão «Mapa do Alfa» traz você de volta."}
+            {"t": "nota", "texto": "Dentro de uma masmorra, a [[M]] abre o mapa do jogo. No mapa do Alfa, «Ir para o mapa do jogo» abre o do jogo onde você está, e no mapa do jogo o botão «Mapa do Alfa» traz você de volta."}
           ]
         },
         {
@@ -835,7 +835,7 @@
               {"icono": "conexiones", "titulo": "Tocas no mapa", "texto": "Ao vivo: em que tocas a matilha de cada zona está e quantos lobos há em cada uma."},
               {"icono": "hoy", "titulo": "O calendário da matilha", "texto": "Os próximos sete dias, cada um com seus encontros por hora."}
             ]},
-            {"t": "nota", "texto": "Quase tudo da matilha precisa que você compartilhe seu rastro. Cada coisa tem seu interruptor nas opções, no fim desta página."},
+            {"t": "nota", "texto": "Quase tudo da matilha precisa que você compartilhe seu rastro; os encontros e as notas, não. Cada coisa tem seu interruptor nas opções, no fim desta página, e o que você desliga não ocupa mais espaço."},
             {"t": "h", "texto": "O clã"},
             {"t": "p", "texto": "No final da página está La Jauría, o clã: o lema, o que oferece, o link do Discord para copiar e **Quero entrar**, para pedir seu lugar na matilha."},
             {"t": "comandos", "items": [
@@ -912,7 +912,7 @@
             {"t": "consejo", "texto": "Não sabe por onde começar? Aperte **Ativar as recomendadas**: cores de classe, dica melhorada, provador, a próxima parada do voo e sem vozes de erro."},
             {"t": "tarjetas", "cols": 2, "items": [
               {"icono": "seguir", "titulo": "Viagens", "texto": "A próxima parada em voos com escalas, e quanto falta."},
-              {"icono": "mapa", "titulo": "Minimapa", "texto": "Quadrado, com os botões de addons escondidos até você passar o mouse. O botão do Alfa fica sempre à vista."},
+              {"icono": "mapa", "titulo": "Minimapa", "texto": "Na aba **Minimapa e coordenadas**: quadrado, com os botões de addons escondidos até você passar o mouse. O botão do Alfa fica sempre à vista."},
               {"icono": "apariencia", "titulo": "Estilo do chat, do minimapa e das barras", "texto": "Veste essas partes do jogo com seu estilo; ao desativar, tudo volta como estava."},
               {"icono": "personaje", "titulo": "Quadros e barra", "texto": "Cores de classe no seu quadro e no do seu alvo, e aviso se a barra de uma forma estiver vazia."},
               {"icono": "info", "titulo": "Dica", "texto": "O alvo de cada um, a patente na guilda e mostrar a dica só com Shift."},
@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "A 1.3.1: a matilha afinada", "items": ["**Arrumar a tela:** mova com o mouse a Lya, seu guia, a seta, os avisos, a pesca e os quadros de Combate e Cura, tudo de uma vez (`/alfa acomodar`).", "**O botão do Alfa no minimapa** fica sempre à vista, mesmo se você esconder os de outros addons.", "**A placa de chegada:** com avanço («1 de 10») fica enquanto durar; sem avanço, some sozinha depois de alguns segundos.", "**Os anúncios** de barco, bonde e raros não ficam mais por cima do nome da zona nem dos avisos do jogo.", "**«Me leve até…»** também usa o bonde e os portais.", "**E mais de 40 correções** em Combate, Cura, La Jauría, Rota, Bolsas e Lya."]}
+    "mapa": {"titulo": "A 1.3.2: a matilha em ordem", "items": ["**Um só menu do Alfa:** o ícone do minimapa, a lista de addons, o botão flutuante e o botão **Alfa** do menu do [[Esc]] fazem o mesmo. Clique abre a última página que você viu; clique direito, o menu com todas as seções.", "**O Combate não atrapalha sozinho:** o som do aviso para interromper e o resumo da luta aparecem em grupo, em instâncias ou em lutas longas.", "**Cura sem grupo:** «Ver como ficam» mostra seus quadros antes de você entrar em um.", "**O mapa:** as camadas têm o mesmo nome em todo lugar, «Camadas do Alfa», e «Ir para o mapa do jogo» abre onde você está.", "**La Jauría:** os encontros e as notas não pedem mais para compartilhar sua localização.", "**E 39 melhorias** para um Alfa mais claro e mais leve."]}
   },
   "contraportada": {
     "titulo": "Entre para a matilha",

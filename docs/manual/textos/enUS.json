@@ -137,7 +137,7 @@
               "Settings: style, conveniences, quests and everything else.",
               "Reset page and Reload UI, in case something looks off."
             ]},
-            {"t": "h", "texto": "The sections"},
+            {"t": "h", "texto": "One Alfa menu"}, {"t": "lista", "items": ["**Click** Alfa’s minimap icon, its floating button, its entry in the addon list or the **Alfa** button in the [[Esc]] menu: the window opens on the last page you saw.", "**Right-click** any of them: the same menu, with the window’s seven sections and their pages, plus **Ask Lya**, **Arrange your screen**, show or hide the arrow, **Hide Alfa** and **Report a problem**."]}, {"t": "h", "texto": "The sections"},
             {"t": "tarjetas", "cols": 2, "items": [
               {"icono": "hoy", "titulo": "Today", "texto": "Your day: the next step, what’s urgent and your class."},
               {"icono": "aventura", "titulo": "Adventure", "texto": "Route and guides, Dungeons and Encyclopedia."},
@@ -148,7 +148,7 @@
               {"icono": "ajustes", "titulo": "Settings", "texto": "Style and sound, Conveniences, Questing and more."},
               {"icono": "buscar", "titulo": "Search settings", "texto": "Find any option by typing its name."}
             ]},
-            {"t": "nota", "texto": "With **Simple Alfa** you only see Today, Route, Map, Bags and Lya, plus Settings. Everything else keeps working: open it with its command or with “Search settings”."},
+            {"t": "nota", "texto": "With **Simple Alfa** you only see Today, Route, Map, Bags and Lya, plus Settings, without its advanced pages (like the ones for guide authors). Everything else keeps working: open it with its command or with “Search settings”."},
             {"t": "h", "texto": "Five styles"},
             {"t": "img", "img": "estilo", "pie": "Settings > Style and sound: your style and the others to choose from."},
             {"t": "p", "texto": "Alfa dresses the way you like. **Alfa** is graphite with cut corners and La Jauría’s green; **La Jauría Night**, midnight blue with moonlit silver; **Campfire**, warm charcoal with the orange of embers; **Classic WoW** uses the game’s own frames, buttons and fonts, with gold titles; **Glass** lets the world show through transparent backgrounds, in the accent color you choose. The style can also dress the chat, the minimap and your action bars (in Conveniences). Change it in **Settings > Style and sound** or with `/alfa estilo`."},
@@ -401,7 +401,7 @@
               {"icono": "nivel", "titulo": "Fight summary", "texto": "When it ends: how long it lasted, your damage and healing per second and what hit you hardest. The last one, with `/alfa combate pelea`."},
               {"icono": "reloj", "titulo": "Your long cooldowns", "texto": "A discreet bar with whatever takes 30 seconds or more to come back; each one leaves on its own when it’s ready."}
             ]},
-            {"t": "nota", "texto": "All of this only shows: nothing takes the mouse in combat and nothing casts for you. Healers start with the rotation helper off (the welcome decides based on your role); each helper is turned on or off in Combat."}
+            {"t": "consejo", "texto": "When you’re solo, Combat stays out of the way: the interrupt alert’s sound and the fight summary show in a group, in instances or in long fights. If you always want them, the Combat page has **Also when solo** and **Solo, fights of at least**."}, {"t": "nota", "texto": "All of this only shows: nothing takes the mouse in combat and nothing casts for you. Healers start with the rotation helper off (the welcome decides based on your role); each helper is turned on or off in Combat."}
           ]
         },
         {
@@ -412,7 +412,7 @@
           "bloques": [
             {"t": "intro", "texto": "Healing adds party and raid frames made for click healing: hover over a teammate, click and cast the spell you chose. The same click targets them, their debuffs and missing buff show at a glance, and it tells you which click fixes them. Any priest, druid, paladin or shaman uses it with no setup; other classes use it for their buffs, a bandage and targeting."},
             {"t": "img", "img": "curacion", "pie": "The Healing page: “Your clicks” at the top, your frames and the presets."},
-            {"t": "h", "texto": "Your clicks"},
+            {"t": "nota", "texto": "No group? Your frames appear when you join one. Meanwhile, the page lets you see them with **See how they look**."}, {"t": "h", "texto": "Your clicks"},
             {"t": "p", "texto": "The first thing on the page is **Your clicks**: a row for each of the most used clicks (left, right, middle and the Shift and Ctrl ones). Open its list and choose: your heals, **Remove debuffs**, your buffs, **Revive**, other spells from your spellbook, **Use a bandage**, **Target** or the **Player menu**. Not sure what to pick? The **Presets** suggest some clicks for your class; then change whatever you like."},
             {"t": "pasos", "titulo": "The 3-step wizard (`/alfa curacion asistente`)", "items": [
               "**Choose your clicks.** A preset for your class and “Heal and target”; if you heal, the left click can stay just for targeting.",
@@ -583,10 +583,10 @@
           "bloques": [
             {"t": "intro", "texto": "Alfa’s map puts the whole world on one zoomable map: the real terrain, flight points, entrances and exits, your markers and your group. It opens with the usual [[M]] (or with `/alfa mapa`) and centers on your zone."},
             {"t": "ilustracion", "id": "mapa", "e": {
-              "titulo": "World map",
+              "titulo": "Alfa’s map",
               "cerca": "Find nearby",
               "marcadores": "Your markers",
-              "capas": "Layers",
+              "capas": "Alfa layers",
               "limpio": "Clean mode",
               "juego": "Go to the game’s map",
               "engrane": "Map style",
@@ -620,7 +620,7 @@
               "Give it a name and choose one of 13 icons and 10 colors. Press **Save**.",
               "Click its pin to change it, share it with your group, delete it or **Follow** it: the arrow and the route take you there."
             ]},
-            {"t": "p", "texto": "Your markers show up on Alfa’s map, on the game’s map and on the minimap. The full list is under the paw print button, and on the **World** page along with the map layers and clean mode."},
+            {"t": "p", "texto": "Your markers show up on Alfa’s map, on the game’s map and on the minimap. The full list is under the paw print button, and on the **World** page along with the **Alfa layers** and clean mode."},
             {"t": "lista", "titulo": "Your path on the map", "items": [
               "Your spot stands out: your arrow has a ring and a soft pulse, so you find yourself instantly.",
               "The route line to your destination, pulsing so you see it, with the distance and how much is left.",
@@ -637,7 +637,7 @@
               {"icono": "seguir", "titulo": "Missing flight paths", "texto": "Flight masters in your zone you don’t have yet; one click sets the arrow."},
               {"icono": "mundo", "titulo": "Explorer mode", "texto": "On the World page, how much of each zone you’ve explored."}
             ]},
-            {"t": "nota", "texto": "Inside a dungeon, [[M]] opens the game’s map. From Alfa’s map, “Go to the game’s map” opens the game’s map on the same zone, and on the game’s map the “Alfa’s map” button takes you back."}
+            {"t": "nota", "texto": "Inside a dungeon, [[M]] opens the game’s map. From Alfa’s map, “Go to the game’s map” opens the game’s map where you are, and on the game’s map the “Alfa’s map” button takes you back."}
           ]
         },
         {
@@ -835,7 +835,7 @@
               {"icono": "conexiones", "titulo": "Dens on the map", "texto": "Live: which dens the pack is in for each zone and how many wolves are in each one."},
               {"icono": "hoy", "titulo": "The pack calendar", "texto": "The next seven days, each with its events by the hour."}
             ]},
-            {"t": "nota", "texto": "Almost everything in the pack needs you to share your trail. Each thing has its own switch in the settings, at the end of this page."},
+            {"t": "nota", "texto": "Almost everything in the pack needs you to share your trail; meetups and notes don’t. Each thing has its own switch in the settings, at the end of this page, and whatever you switch off no longer takes up room."},
             {"t": "h", "texto": "The clan"},
             {"t": "p", "texto": "At the bottom of the page is La Jauría, the clan: its motto, what it offers, the Discord link to copy and **I want to join**, to ask for your place in the pack."},
             {"t": "comandos", "items": [
@@ -912,7 +912,7 @@
             {"t": "consejo", "texto": "Not sure where to start? Press **Turn on the recommended ones**: class colors, a better tooltip, the dressing room, the flight’s next stop and no error speech."},
             {"t": "tarjetas", "cols": 2, "items": [
               {"icono": "seguir", "titulo": "Travel", "texto": "The next stop on flights with layovers, and how long is left."},
-              {"icono": "mapa", "titulo": "Minimap", "texto": "Square, with addon buttons hidden until you hover. Alfa’s own button always stays in view."},
+              {"icono": "mapa", "titulo": "Minimap", "texto": "On the **Minimap and coordinates** tab: square, with addon buttons hidden until you hover. Alfa’s own button always stays in view."},
               {"icono": "apariencia", "titulo": "Chat, minimap and bars style", "texto": "Dresses those parts of the game in your style; turn it off and everything goes back to how it was."},
               {"icono": "personaje", "titulo": "Frames and action bar", "texto": "Class colors on your frame and your target’s, and a warning if a form’s bar is empty."},
               {"icono": "info", "titulo": "Tooltip", "texto": "Who someone is targeting, their guild rank and showing it only with Shift."},
@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "1.3.1: the pack, fine-tuned", "items": ["**Arrange your screen:** move Lya, your guide, the arrow, the alerts, fishing and the Combat and Healing frames with the mouse, all at once (`/alfa acomodar`).", "**Alfa’s minimap button,** always in view, even when you hide other addons’ buttons.", "**The arrival plate:** with progress (“1 of 10”) it stays while it lasts; without it, it goes away on its own after a few seconds.", "**Announcements** for boats, the tram and rares no longer overlap the zone name or the game’s banners.", "**“Take me to…”** also uses the tram and portals.", "**And over 40 fixes** in Combat, Healing, La Jauría, Route, Bags and Lya."]}
+    "mapa": {"titulo": "1.3.2: the pack in order", "items": ["**One Alfa menu:** the minimap icon, the addon list, the floating button and the **Alfa** button in the [[Esc]] menu all do the same. Click opens the last page you saw; right-click, the menu with every section.", "**Combat stays out of the way when solo:** the interrupt sound and the fight summary show in a group, in instances or in long fights.", "**Healing without a group:** “See how they look” shows your frames before you join one.", "**The map:** the layers have one name everywhere, “Alfa layers”, and “Go to the game’s map” opens where you are.", "**La Jauría:** meetups and notes no longer ask you to share your location.", "**And 39 improvements** for a clearer, lighter Alfa."]}
   },
   "contraportada": {
     "titulo": "Join the pack",

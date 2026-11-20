@@ -137,7 +137,7 @@
               "Ajustes: estilo, comodidades, misiones y todo lo demás.",
               "Restablecer página y Recargar, por si algo se ve raro."
             ]},
-            {"t": "h", "texto": "Las secciones"},
+            {"t": "h", "texto": "Un solo menú de Alfa"}, {"t": "lista", "items": ["**Clic** en el ícono de Alfa del minimapa, en su botón flotante, en la lista de addons o en el botón **Alfa** del menú de [[Esc]]: se abre la ventana en la última página que viste.", "**Clic derecho** en cualquiera de ellos: el mismo menú, con las siete secciones de la ventana y sus páginas, más **Pregúntale a Lya**, **Acomodar la pantalla**, mostrar u ocultar la flecha, **Ocultar Alfa** y **Reportar un problema**."]}, {"t": "h", "texto": "Las secciones"},
             {"t": "tarjetas", "cols": 2, "items": [
               {"icono": "hoy", "titulo": "Hoy", "texto": "Tu día: el siguiente paso, lo urgente y tu clase."},
               {"icono": "aventura", "titulo": "Aventura", "texto": "Ruta y guías, Mazmorras y Enciclopedia."},
@@ -148,7 +148,7 @@
               {"icono": "ajustes", "titulo": "Ajustes", "texto": "Estilo y sonido, Comodidades, Misiones y más."},
               {"icono": "buscar", "titulo": "Buscar ajustes", "texto": "Encuentra cualquier opción escribiendo su nombre."}
             ]},
-            {"t": "nota", "texto": "Con **Alfa sencillo** solo ves Hoy, Ruta, Mapa, Bolsas y Lya, más los Ajustes. Lo demás sigue funcionando: ábrelo con su comando o con «Buscar ajustes»."},
+            {"t": "nota", "texto": "Con **Alfa sencillo** solo ves Hoy, Ruta, Mapa, Bolsas y Lya, más los Ajustes, sin sus páginas avanzadas (como las de autores de guías). Lo demás sigue funcionando: ábrelo con su comando o con «Buscar ajustes»."},
             {"t": "h", "texto": "Cinco estilos"},
             {"t": "img", "img": "estilo", "pie": "Ajustes > Estilo y sonido: tu estilo y los demás para elegir."},
             {"t": "p", "texto": "Alfa se viste como tú quieras. **Alfa** es grafito con esquinas cortadas y el verde de La Jauría; **La Jauría nocturno**, azul de medianoche con plata de luna; **Fogata**, carbón cálido con el naranja de las brasas; **Clásico WoW** usa los marcos, botones y letras del propio juego, con títulos en oro; **Cristal** deja ver el mundo a través de fondos transparentes, con el color de acento que elijas. El estilo también puede vestir el chat, el minimapa y tus barras de acción (en Comodidades). Cámbialo en **Ajustes > Estilo y sonido** o con `/alfa estilo`."},
@@ -401,7 +401,7 @@
               {"icono": "nivel", "titulo": "Resumen de la pelea", "texto": "Al terminar: cuánto duró, tu daño y curación por segundo y lo que más te pegó. La última, con `/alfa combate pelea`."},
               {"icono": "reloj", "titulo": "Tus recargas largas", "texto": "Una barra discreta con lo que tarda 30 segundos o más en volver; cada una se va sola cuando está lista."}
             ]},
-            {"t": "nota", "texto": "Todo esto solo muestra: nada recibe el ratón en combate y nada lanza por ti. Quien cura empieza con la ayuda de rotación apagada (la bienvenida lo decide según tu papel); cada ayuda se enciende o se apaga en Combate."}
+            {"t": "consejo", "texto": "Yendo solo, Combate no estorba: el sonido del aviso para cortar y el resumen de la pelea salen en grupo, en instancias o en peleas largas. Si los quieres siempre, en la página de Combate están **También yendo solo** y **Yendo solo, peleas de al menos**."}, {"t": "nota", "texto": "Todo esto solo muestra: nada recibe el ratón en combate y nada lanza por ti. Quien cura empieza con la ayuda de rotación apagada (la bienvenida lo decide según tu papel); cada ayuda se enciende o se apaga en Combate."}
           ]
         },
         {
@@ -412,7 +412,7 @@
           "bloques": [
             {"t": "intro", "texto": "Curación pone marcos de grupo y de banda pensados para curar con un clic: pasas el ratón sobre un compañero, haces clic y lanzas el hechizo que elegiste. Con el mismo clic queda seleccionado, sus perjuicios y el buff que le falta se ven de un vistazo y te dice qué clic los arregla. Cualquier sacerdote, druida, paladín o chamán lo usa sin configurar nada; las demás clases, para sus buffs, una venda y para seleccionar."},
             {"t": "img", "img": "curacion", "pie": "La página de Curación: «Tus clics» arriba, tus marcos y los preajustes."},
-            {"t": "h", "texto": "Tus clics"},
+            {"t": "nota", "texto": "¿Vas sin grupo? Tus marcos aparecen al entrar a uno. Mientras, la página te deja verlos con **Ver cómo se ven**."}, {"t": "h", "texto": "Tus clics"},
             {"t": "p", "texto": "Lo primero en la página es **Tus clics**: una fila para cada clic que más se usa (izquierdo, derecho, central y los de Mayús y Ctrl). Abre su lista y elige: tus curas, **Quitar perjuicios**, tus buffs, **Revivir**, otros hechizos de tu libro, **Usar una venda**, **Seleccionar objetivo** o el **Menú del jugador**. ¿No sabes qué poner? Los **Preajustes** te sugieren unos clics para tu clase; luego cambias lo que quieras."},
             {"t": "pasos", "titulo": "El asistente de 3 pasos (`/alfa curacion asistente`)", "items": [
               "**Elige tus clics.** Un preajuste para tu clase y «Curar y seleccionar»; si curas, el clic izquierdo puede quedarse solo para seleccionar.",
@@ -583,10 +583,10 @@
           "bloques": [
             {"t": "intro", "texto": "El mapa de Alfa pone todo el mundo en un solo mapa con zoom: el terreno real, los puntos de vuelo, las entradas y salidas, tus marcadores y tu grupo. Se abre con la [[M]] de siempre (o con `/alfa mapa`) y se centra en tu zona."},
             {"t": "ilustracion", "id": "mapa", "e": {
-              "titulo": "Mapa del mundo",
+              "titulo": "Mapa de Alfa",
               "cerca": "Buscar cerca",
               "marcadores": "Tus marcadores",
-              "capas": "Capas",
+              "capas": "Capas de Alfa",
               "limpio": "Modo limpio",
               "juego": "Ir al mapa del juego",
               "engrane": "Estilo del mapa",
@@ -620,7 +620,7 @@
               "Ponle nombre y elige uno de 13 íconos y 10 colores. Pulsa **Guardar**.",
               "Da clic en su pin para cambiarlo, compartirlo con tu grupo, borrarlo o **Seguir**: la flecha y la ruta te llevan hasta él."
             ]},
-            {"t": "p", "texto": "Tus marcadores se ven en el mapa de Alfa, en el del juego y en el minimapa. La lista completa está en el botón de la huella, y en la página **Mundo** con las capas del mapa y el modo limpio."},
+            {"t": "p", "texto": "Tus marcadores se ven en el mapa de Alfa, en el del juego y en el minimapa. La lista completa está en el botón de la huella, y en la página **Mundo** con las **Capas de Alfa** y el modo limpio."},
             {"t": "lista", "titulo": "Tu camino en el mapa", "items": [
               "Tu lugar resalta: tu flecha lleva un aro y un pulso suave, y te encuentras al instante.",
               "La línea del camino hasta tu destino, que late para que lo veas, con la distancia y cuánto falta.",
@@ -637,7 +637,7 @@
               {"icono": "seguir", "titulo": "Vuelos que te faltan", "texto": "Los maestros de vuelo de tu zona que aún no tienes. Un clic y la flecha te lleva."},
               {"icono": "mundo", "titulo": "Modo explorador", "texto": "En la página Mundo, cuánto llevas explorado de cada zona."}
             ]},
-            {"t": "nota", "texto": "Dentro de una mazmorra, la [[M]] abre el mapa del juego. Desde el mapa de Alfa, «Ir al mapa del juego» abre el del juego en la misma zona, y en el mapa del juego el botón «Mapa de Alfa» te regresa."}
+            {"t": "nota", "texto": "Dentro de una mazmorra, la [[M]] abre el mapa del juego. Desde el mapa de Alfa, «Ir al mapa del juego» abre el del juego donde estás, y en el mapa del juego el botón «Mapa de Alfa» te regresa."}
           ]
         },
         {
@@ -835,7 +835,7 @@
               {"icono": "conexiones", "titulo": "Guaridas en el mapa", "texto": "En vivo: en qué guaridas anda la manada de cada zona y cuántos lobos hay en cada una."},
               {"icono": "hoy", "titulo": "El calendario de la manada", "texto": "Los siete días que vienen, cada uno con sus citas por hora."}
             ]},
-            {"t": "nota", "texto": "Casi todo lo de la manada necesita que compartas tu rastro. Cada cosa tiene su interruptor en los ajustes, al final de esta página."},
+            {"t": "nota", "texto": "Casi todo lo de la manada necesita que compartas tu rastro; las citas y las notas, no. Cada cosa tiene su interruptor en los ajustes, al final de esta página, y lo que apagas ya no ocupa lugar."},
             {"t": "h", "texto": "El clan"},
             {"t": "p", "texto": "Al final de la página está La Jauría, el clan: su lema, lo que ofrece, el enlace del Discord para copiar y **Quiero unirme**, para pedir tu lugar en la manada."},
             {"t": "comandos", "items": [
@@ -912,7 +912,7 @@
             {"t": "consejo", "texto": "¿No sabes por dónde empezar? Pulsa **Encender las recomendadas**: colores de clase, cuadro de información mejorado, probador, la siguiente parada del vuelo y sin voces de error."},
             {"t": "tarjetas", "cols": 2, "items": [
               {"icono": "seguir", "titulo": "Viajes", "texto": "La siguiente parada en vuelos con escalas, y cuánto falta."},
-              {"icono": "mapa", "titulo": "Minimapa", "texto": "Cuadrado, con los botones de addons ocultos hasta que pasas el ratón. El botón de Alfa siempre queda a la vista."},
+              {"icono": "mapa", "titulo": "Minimapa", "texto": "En la pestaña **Minimapa y coordenadas**: cuadrado, con los botones de addons ocultos hasta que pasas el ratón. El botón de Alfa siempre queda a la vista."},
               {"icono": "apariencia", "titulo": "Estilo del chat, el minimapa y las barras", "texto": "Viste esas partes del juego con tu estilo; al apagarlo, todo vuelve como estaba."},
               {"icono": "personaje", "titulo": "Marcos y barra", "texto": "Colores de clase en tu marco y en el de tu objetivo, y aviso si la barra de una forma está vacía."},
               {"icono": "info", "titulo": "Cuadro de información", "texto": "A quién apunta alguien, su rango de hermandad y verlo solo con Mayús."},
@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "La 1.3.1: la manada afinada", "items": ["**Acomodar la pantalla:** mueve con el ratón a Lya, tu guía, la flecha, los avisos, la pesca y los marcos de Combate y Curación, todo de una vez (`/alfa acomodar`).", "**El botón de Alfa en el minimapa,** siempre a la vista, aunque escondas los de otros addons.", "**La placa de llegada:** con avance («1 de 10») se queda mientras dure; sin avance, se va sola a los pocos segundos.", "**Los anuncios** de barco, tranvía y raros ya no se enciman con el nombre de la zona ni con los avisos del juego.", "**«Llévame a…»** también usa el tranvía y los portales.", "**Y más de 40 arreglos** en Combate, Curación, La Jauría, Ruta, Bolsas y Lya."]}
+    "mapa": {"titulo": "La 1.3.2: la manada en orden", "items": ["**Un solo menú de Alfa:** el ícono del minimapa, la lista de addons, el botón flotante y el botón **Alfa** del menú de [[Esc]] hacen lo mismo. Clic abre la última página que viste; clic derecho, el menú con todas las secciones.", "**Combate no estorba yendo solo:** el sonido del corte y el resumen de la pelea salen en grupo, en instancias o en peleas largas.", "**Curación sin grupo:** «Ver cómo se ven» te muestra tus marcos antes de entrar a uno.", "**El mapa:** las capas se llaman igual en todas partes, «Capas de Alfa», e «Ir al mapa del juego» abre donde estás.", "**La Jauría:** las citas y las notas ya no piden compartir tu ubicación.", "**Y 39 mejoras** para un Alfa más claro y más ligero."]}
   },
   "contraportada": {
     "titulo": "Únete a la manada",

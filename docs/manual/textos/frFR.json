@@ -137,7 +137,7 @@
               "Réglages : style, confort de jeu, quêtes et tout le reste.",
               "Réinitialiser la page et Recharger l'interface, si quelque chose s'affiche bizarrement."
             ]},
-            {"t": "h", "texto": "Les sections"},
+            {"t": "h", "texto": "Un seul menu d'Alfa"}, {"t": "lista", "items": ["**Clic** sur l'icône d'Alfa de la minicarte, son bouton flottant, sa ligne dans la liste des addons ou le bouton **Alfa** du menu [[Échap]] : la fenêtre s'ouvre sur la dernière page que vous avez vue.", "**Clic droit** sur l'un d'eux : le même menu, avec les sept sections de la fenêtre et leurs pages, plus **Demande à Lya**, **Arranger l'écran**, afficher ou masquer la flèche, **Masquer Alfa** et **Signaler un problème**."]}, {"t": "h", "texto": "Les sections"},
             {"t": "tarjetas", "cols": 2, "items": [
               {"icono": "hoy", "titulo": "Aujourd'hui", "texto": "Votre journée : la prochaine étape, l'urgent et votre classe."},
               {"icono": "aventura", "titulo": "Aventure", "texto": "Itinéraire et guides, Donjons et Encyclopédie."},
@@ -148,7 +148,7 @@
               {"icono": "ajustes", "titulo": "Réglages", "texto": "Style et son, Confort de jeu, Quêtes et plus."},
               {"icono": "buscar", "titulo": "Chercher un réglage", "texto": "Trouvez n'importe quelle option en tapant son nom."}
             ]},
-            {"t": "nota", "texto": "Avec **Alfa simple**, vous ne voyez qu'Aujourd'hui, Itinéraire, Carte, Sacs et Lya, plus les Réglages. Le reste fonctionne toujours : ouvrez-le avec sa commande ou avec « Chercher un réglage »."},
+            {"t": "nota", "texto": "Avec **Alfa simple**, vous ne voyez qu'Aujourd'hui, Itinéraire, Carte, Sacs et Lya, plus les Réglages, sans leurs pages avancées (comme celles des auteurs de guides). Le reste fonctionne toujours : ouvrez-le avec sa commande ou avec « Chercher un réglage »."},
             {"t": "h", "texto": "Cinq styles"},
             {"t": "img", "img": "estilo", "pie": "Réglages > Style et son : votre style et les autres au choix."},
             {"t": "p", "texto": "Alfa s'habille comme vous voulez. **Alfa**, c'est du graphite aux coins coupés avec le vert de La Jauría ; **La Jauría nocturne**, un bleu de minuit avec un argent de lune ; **Feu de camp**, un charbon chaleureux avec l'orange des braises ; **WoW classique** reprend les cadres, les boutons et les polices du jeu, avec des titres dorés ; **Cristal** laisse voir le monde à travers des fonds transparents, avec la couleur d'accent de votre choix. Le style peut aussi habiller la discussion, la minicarte et vos barres d'action (dans Confort de jeu). Changez-le dans **Réglages > Style et son** ou avec `/alfa estilo`."},
@@ -401,7 +401,7 @@
               {"icono": "nivel", "titulo": "Résumé du combat", "texto": "À la fin : sa durée, vos dégâts et vos soins par seconde et ce qui vous a le plus frappé. Le dernier, avec `/alfa combate pelea`."},
               {"icono": "reloj", "titulo": "Vos longs temps de recharge", "texto": "Une barre discrète avec ce qui met 30 secondes ou plus à revenir ; chacun s'en va tout seul quand il est prêt."}
             ]},
-            {"t": "nota", "texto": "Tout cela ne fait qu'afficher : rien ne capte la souris en combat et rien ne lance à votre place. Les soigneurs commencent avec l'aide à la rotation désactivée (l'accueil le décide selon votre rôle) ; chaque aide s'active ou se désactive dans Combat."}
+            {"t": "consejo", "texto": "En solo, Combat ne vous gêne pas : le son de l'alerte d'interruption et le résumé du combat s'affichent en groupe, en instance ou lors de longs combats. Pour les avoir toujours, la page Combat propose **Aussi en solo** et **En solo, combats d'au moins**."}, {"t": "nota", "texto": "Tout cela ne fait qu'afficher : rien ne capte la souris en combat et rien ne lance à votre place. Les soigneurs commencent avec l'aide à la rotation désactivée (l'accueil le décide selon votre rôle) ; chaque aide s'active ou se désactive dans Combat."}
           ]
         },
         {
@@ -412,7 +412,7 @@
           "bloques": [
             {"t": "intro", "texto": "Soins affiche des cadres de groupe et de raid pensés pour soigner en un clic : vous survolez un membre du groupe, vous cliquez et vous lancez le sort que vous avez choisi. Du même clic, il devient votre cible, ses effets néfastes et le buff qui lui manque se voient d'un coup d'œil, et Soins vous dit quel clic les règle. Tout prêtre, druide, paladin ou chaman s'en sert sans rien configurer ; les autres classes, pour leurs buffs, un bandage et pour cibler."},
             {"t": "img", "img": "curacion", "pie": "La page Soins : « Vos clics » en haut, vos cadres et les préréglages."},
-            {"t": "h", "texto": "Vos clics"},
+            {"t": "nota", "texto": "Pas de groupe ? Vos cadres apparaissent dès que vous en rejoignez un. En attendant, la page vous les montre avec **Voir à quoi ils ressemblent**."}, {"t": "h", "texto": "Vos clics"},
             {"t": "p", "texto": "La première chose sur la page, c'est **Vos clics** : une ligne pour chaque clic le plus utilisé (gauche, droit, milieu et ceux avec Maj et Ctrl). Ouvrez sa liste et choisissez : vos soins, **Dissiper les effets néfastes**, vos buffs, **Ressusciter**, d'autres sorts de votre grimoire, **Utiliser un bandage**, **Cibler** ou le **Menu du joueur**. Vous ne savez pas quoi mettre ? Les **Préréglages** vous suggèrent des clics pour votre classe ; ensuite, changez ce que vous voulez."},
             {"t": "pasos", "titulo": "L'assistant en 3 étapes (`/alfa curacion asistente`)", "items": [
               "**Choisissez vos clics.** Un préréglage pour votre classe et « Soigner et cibler » ; si vous soignez, le clic gauche peut servir uniquement à cibler.",
@@ -583,10 +583,10 @@
           "bloques": [
             {"t": "intro", "texto": "La carte d'Alfa met tout le monde sur une seule carte avec zoom : le vrai terrain, les points de vol, les entrées et sorties, vos marqueurs et votre groupe. Elle s'ouvre avec la touche [[M]] habituelle (ou avec `/alfa mapa`) et se centre sur votre zone."},
             {"t": "ilustracion", "id": "mapa", "e": {
-              "titulo": "Carte du monde",
+              "titulo": "Carte d'Alfa",
               "cerca": "Chercher à proximité",
               "marcadores": "Vos marqueurs",
-              "capas": "Calques",
+              "capas": "Calques d'Alfa",
               "limpio": "Mode épuré",
               "juego": "Aller à la carte du jeu",
               "engrane": "Style de la carte",
@@ -620,7 +620,7 @@
               "Donnez-lui un nom et choisissez l'une des 13 icônes et des 10 couleurs. Appuyez sur **Enregistrer**.",
               "Cliquez sur son épingle pour le modifier, le partager avec votre groupe, l'effacer ou le **Suivre** : la flèche et l'itinéraire vous mènent jusqu'à lui."
             ]},
-            {"t": "p", "texto": "Vos marqueurs s'affichent sur la carte d'Alfa, sur celle du jeu et sur la minicarte. La liste complète se trouve sous le bouton de l'empreinte, et dans la page **Monde** avec les calques de la carte et le mode épuré."},
+            {"t": "p", "texto": "Vos marqueurs s'affichent sur la carte d'Alfa, sur celle du jeu et sur la minicarte. La liste complète se trouve sous le bouton de l'empreinte, et dans la page **Monde** avec les **Calques d'Alfa** et le mode épuré."},
             {"t": "lista", "titulo": "Votre chemin sur la carte", "items": [
               "Votre position ressort : votre flèche porte un anneau et une pulsation douce, et vous vous retrouvez en un instant.",
               "La ligne du chemin jusqu'à votre destination, qui pulse pour que vous la voyiez, avec la distance et ce qui reste.",
@@ -637,7 +637,7 @@
               {"icono": "seguir", "titulo": "Vols qui te manquent", "texto": "Les maîtres de vol de votre zone que vous n'avez pas encore. Un clic et la flèche vous y emmène."},
               {"icono": "mundo", "titulo": "Mode explorateur", "texto": "Sur la page Monde, ce que vous avez déjà exploré de chaque zone."}
             ]},
-            {"t": "nota", "texto": "Dans un donjon, la touche [[M]] ouvre la carte du jeu. Depuis la carte d'Alfa, « Aller à la carte du jeu » ouvre celle du jeu sur la même zone, et sur la carte du jeu, le bouton « Carte d'Alfa » vous ramène."}
+            {"t": "nota", "texto": "Dans un donjon, la touche [[M]] ouvre la carte du jeu. Depuis la carte d'Alfa, « Aller à la carte du jeu » ouvre celle du jeu là où vous êtes, et sur la carte du jeu, le bouton « Carte d'Alfa » vous ramène."}
           ]
         },
         {
@@ -835,7 +835,7 @@
               {"icono": "conexiones", "titulo": "Tanières sur la carte", "texto": "En direct : dans quelles tanières se trouve la meute de chaque zone et combien de loups il y a dans chacune."},
               {"icono": "hoy", "titulo": "Le calendrier de la meute", "texto": "Les sept prochains jours, chacun avec ses sorties par heure."}
             ]},
-            {"t": "nota", "texto": "Presque tout ce qui concerne la meute demande que vous partagiez votre piste. Chaque chose a son interrupteur dans les réglages, en bas de cette page."},
+            {"t": "nota", "texto": "Presque tout ce qui concerne la meute demande que vous partagiez votre piste ; pas les rendez-vous ni les notes. Chaque chose a son interrupteur dans les réglages, en bas de cette page, et ce que vous désactivez ne prend plus de place."},
             {"t": "h", "texto": "Le clan"},
             {"t": "p", "texto": "Au bas de la page se trouve La Jauría, le clan : sa devise, ce qu'il propose, le lien du Discord à copier et **Je veux rejoindre**, pour demander votre place dans la meute."},
             {"t": "comandos", "items": [
@@ -912,7 +912,7 @@
             {"t": "consejo", "texto": "Vous ne savez pas par où commencer ? Appuyez sur **Activer celles recommandées** : couleurs de classe, infobulle améliorée, cabine d'essayage, prochaine étape des vols et plus de voix d'erreur."},
             {"t": "tarjetas", "cols": 2, "items": [
               {"icono": "seguir", "titulo": "Voyages", "texto": "La prochaine étape des vols avec escales, et le temps restant."},
-              {"icono": "mapa", "titulo": "Minicarte", "texto": "Carrée, avec les boutons des addons cachés jusqu'au survol. Le bouton d'Alfa reste toujours visible."},
+              {"icono": "mapa", "titulo": "Minicarte", "texto": "Dans l'onglet **Minicarte et coordonnées** : carrée, avec les boutons des addons cachés jusqu'au survol. Le bouton d'Alfa reste toujours visible."},
               {"icono": "apariencia", "titulo": "Style de la discussion, de la minicarte et des barres", "texto": "Habillez ces parties du jeu à votre style ; désactivé, tout redevient comme avant."},
               {"icono": "personaje", "titulo": "Cadres et barre d'action", "texto": "Couleurs de classe sur votre cadre et celui de votre cible, et alerte si la barre d'une forme est vide."},
               {"icono": "info", "titulo": "Infobulle", "texto": "Qui quelqu'un cible, son rang de guilde et ne l'afficher qu'avec Maj."},
@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "La 1.3.1 : la meute peaufinée", "items": ["**Arranger l'écran :** déplacez à la souris Lya, votre guide, la flèche, les alertes, la pêche et les cadres de Combat et de Soins, tout d'un coup (`/alfa acomodar`).", "**Le bouton d'Alfa sur la minicarte** reste toujours visible, même si vous cachez ceux des autres addons.", "**La plaque d'arrivée :** avec une avancée (« 1 sur 10 »), elle reste tant qu'elle dure ; sans, elle s'en va toute seule au bout de quelques secondes.", "**Les annonces** de bateau, de tram et de rares ne chevauchent plus le nom de la zone ni les annonces du jeu.", "**« Emmène-moi à… »** utilise aussi le tram et les portails.", "**Et plus de 40 corrections** en Combat, Soins, La Jauría, Itinéraire, Sacs et Lya."]}
+    "mapa": {"titulo": "La 1.3.2 : la meute en ordre", "items": ["**Un seul menu d'Alfa :** l'icône de la minicarte, la liste des addons, le bouton flottant et le bouton **Alfa** du menu [[Échap]] font la même chose. Un clic ouvre la dernière page vue ; un clic droit, le menu avec toutes les sections.", "**Combat ne gêne plus en solo :** le son d'interruption et le résumé du combat s'affichent en groupe, en instance ou lors de longs combats.", "**Soins sans groupe :** « Voir à quoi ils ressemblent » vous montre vos cadres avant d'en rejoindre un.", "**La carte :** les calques ont partout le même nom, « Calques d'Alfa », et « Aller à la carte du jeu » s'ouvre là où vous êtes.", "**La Jauría :** les rendez-vous et les notes ne demandent plus de partager votre position.", "**Et 39 améliorations** pour un Alfa plus clair et plus léger."]}
   },
   "contraportada": {
     "titulo": "Rejoignez la meute",
