@@ -18,6 +18,11 @@
 --   N.RespaldoExtra(clave, leer, poner)    algo más que va en cada respaldo:
 --                                          leer() -> tabla, poner(tabla) al restaurar
 --   N.AjustesDanados() -> respaldo | nil
+--   N.EsquemaDeRespaldo(r) -> n            1.3.1: el número de migración de sus ajustes
+--
+-- 1.3.1: cada respaldo lleva el número de la última migración (esquema); al
+-- restaurar uno de antes, sus ajustes se mudan con las migraciones que le
+-- faltan (N.MigrarDesde), como se mudó la cuenta.
 
 local _, N = ...
 local A = N.A
@@ -92,6 +97,7 @@ function N.Respaldar(motivo)
 		t = time and time() or 0, cuando = date and date("%d/%m/%Y %H:%M") or "",
 		v = tostring(N.version or "dev"), motivo = motivo or "manual",
 		ajustes = copia(s), n = contar(s), extras = {},
+		esquema = N.Esquema and N.Esquema() or nil, -- 1.3.1
 	}
 	for clave, e in pairs(extras) do
 		local ok, x = pcall(e.leer)
@@ -105,6 +111,20 @@ function N.Respaldar(motivo)
 	return true, r
 end
 
+-- 1.3.1: los respaldos de antes no traen su número. Uno de antes de la 1.2.9,
+-- o el de «antes de actualizar» (se hizo antes de la migración 3 de su misma
+-- versión), cuenta como 2; los demás, como 3 (la última hasta la 1.3.0).
+function N.EsquemaDeRespaldo(r)
+	if type(r) ~= "table" then return nil end
+	local e = tonumber(r.esquema)
+	if e then return e end
+	local x, y, z = tostring(r.v or ""):match("^(%d+)%.(%d+)%.(%d+)")
+	x, y, z = tonumber(x), tonumber(y), tonumber(z)
+	local antes129 = x ~= nil and (x * 10000 + y * 100 + z) < 10209
+	if antes129 or r.motivo == "migracion" then return 2 end
+	return 3
+end
+
 function N.RestaurarRespaldo(i)
 	local l = guardados()
 	local r = l[tonumber(i) or #l]
@@ -115,6 +135,8 @@ function N.RestaurarRespaldo(i)
 		local e = extras[clave]
 		if e and type(e.poner) == "function" and type(x) == "table" then pcall(e.poner, copia(x)) end
 	end
+	-- 1.3.1: lo que le falta mudar (Nucleo.lua).
+	if type(N.MigrarDesde) == "function" then pcall(N.MigrarDesde, N.EsquemaDeRespaldo(r)) end
 	danado = nil
 	-- Todos los módulos escuchan el cambio general ("" = todo).
 	if A.Fire then A.Fire("SETTING_CHANGED", "") end

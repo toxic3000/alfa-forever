@@ -13,9 +13,13 @@
 --   1T|<mapa>|<x>|<y>|<hace>|<nombre>   un raro cazado (x, y en 0-100; hace:
 --                                        segundos desde que cayó, sin relojes)
 -- Uno por raro cada CADA. Se guarda en N.Datos("manada").cazados y se olvida
--- a las OLVIDA horas. Ajuste manada.rarosReloj.
+-- a las OLVIDA horas. Ajuste manada.rarosReloj. (1.3.1) Nunca por susurro;
+-- de cada lobo, uno cada CADA_LOBO segundos y como mucho POR_LOBO guardados.
+-- El aviso «pudo volver ya», uno por vuelta (el siguiente, en la otra).
 --
---   Rl.Anotar(nombre, map, x, y, muerto, por)   un raro cazado
+--   Rl.Anotar(nombre, map, x, y, muerto, por, soloVisto)   un raro cazado
+--   Rl.CazadoPorTi(nombre) -> bool              (1.3.1) tu objetivo o el del
+--                                                ratón, muerto y no de otro
 --   Rl.De(nombre) -> { nombre, map, x, y, muerto, por } | nil
 --   Rl.Texto(nombre) -> "Lo cazaron hace 25 min", "pudo volver ya" | nil
 --   Rl.Lista() -> { cazado }                    los de tu zona primero, el más nuevo arriba
@@ -36,6 +40,8 @@ local VUELVE_MIN, VUELVE_MAX = 1800, 3600
 local OLVIDA = 6 * 3600
 local CADA = 300
 local TOPE = 40
+local CADA_LOBO = 30 -- (1.3.1) segundos entre dos 1T del mismo lobo
+local POR_LOBO = 5   -- y sus raros guardados, como mucho
 
 Rl.VUELVE_MIN, Rl.VUELVE_MAX = VUELVE_MIN, VUELVE_MAX
 
@@ -56,7 +62,7 @@ end
 
 local function limpiar(s)
 	if type(s) ~= "string" or U.Secreto(s) then return nil end
-	s = s:gsub("[|\n\r]", ""):sub(1, 48)
+	s = U.Cortar((s:gsub("[|\n\r]", "")), 48) -- (1.3.1) 48 letras, no bytes
 	return s ~= "" and s or nil
 end
 
@@ -100,13 +106,16 @@ local function compartir(x)
 	local k = llave(x.nombre)
 	local t = U.Ahora()
 	if enviados[k] and t - enviados[k] < CADA then return end
+	U.Podar(enviados, CADA, t) -- (1.3.1)
 	if not (x.map and x.x and x.y) then return end
 	local hace = math.max(0, floor(U.Reloj() - x.muerto))
 	if M.Red.Enviar("T:" .. k, format("%sT|%d|%.2f|%.2f|%d|%s", V, x.map, x.x, x.y, hace, x.nombre)) then enviados[k] = t end
 end
 
 -- Un raro cazado. `muerto`: segundos del servidor; `por`: quién lo dijo (nil: tú).
-function Rl.Anotar(nombre, map, x, y, muerto, por)
+-- `soloVisto` (1.3.1): lo viste muerto, pero no lo cazaste tú (el reloj sí,
+-- tu semana y el logro no).
+function Rl.Anotar(nombre, map, x, y, muerto, por, soloVisto)
 	nombre = limpiar(nombre)
 	muerto = tonumber(muerto)
 	if not (nombre and muerto) or not activo() then return nil end
@@ -127,8 +136,8 @@ function Rl.Anotar(nombre, map, x, y, muerto, por)
 	caducar()
 	if not por then
 		compartir(e)
-		-- 1.2.9: tu semana y el logro de la manada (Logros.lua).
-		if M.Logros and M.Logros.Raro then pcall(M.Logros.Raro, nombre) end
+		-- 1.2.9: tu semana y el logro de la manada (Logros.lua), solo si es tu caza.
+		if not soloVisto and M.Logros and M.Logros.Raro then pcall(M.Logros.Raro, nombre) end
 	end
 	cambio()
 	return e
@@ -173,6 +182,28 @@ end
 -- Del historial de raros del motor
 ---------------------------------------------------------------------------
 
+local function leer(fn, ...)
+	if type(fn) ~= "function" then return nil end
+	local ok, v = pcall(fn, ...)
+	if not ok then return nil end
+	return U.Leer(v)
+end
+
+-- (1.3.1) ¿Lo cazaste tú (o tu grupo)? El motor anota muerto cualquier raro
+-- que ves caído, aunque lo haya matado otro. Es tuyo solo si es tu objetivo o
+-- está bajo el ratón, muerto y sin «ya lo tomó otro» (UnitIsTapDenied false).
+function Rl.CazadoPorTi(nombre)
+	local q = U.Plegar(nombre)
+	if q == "" then return false end
+	for _, unit in ipairs({ "target", "mouseover" }) do
+		if leer(UnitExists, unit) and not leer(UnitIsPlayer, unit) and leer(UnitIsDead, unit)
+			and U.Plegar(leer(UnitName, unit)) == q and leer(UnitIsTapDenied, unit) == false then
+			return true
+		end
+	end
+	return false
+end
+
 local function alHistorial(key)
 	if not activo() or type(key) ~= "string" then return end
 	local Ra = A.Rares
@@ -184,7 +215,7 @@ local function alHistorial(key)
 	if not nombre then return end
 	local muerto, visto = tonumber(e.dead), tonumber(e.t)
 	if muerto and visto and visto - muerto <= 10 then
-		Rl.Anotar(nombre, e.map, e.x, e.y, muerto)
+		Rl.Anotar(nombre, e.map, e.x, e.y, muerto, nil, not Rl.CazadoPorTi(nombre))
 	elseif visto and Rl.De(nombre) and visto > Rl.De(nombre).muerto + 60 then
 		-- Lo volvieron a ver (y no muerto): ya volvió.
 		Rl.Vivo(nombre)
@@ -210,12 +241,25 @@ local function numero(s, max)
 	return n
 end
 
-M.Red.Oyentes.T = function(clave, remitente, _, f)
-	if not (activo() and on("rarosManada")) then return end
+local deLobo = {} -- clave -> GetTime del último 1T aceptado (1.3.1)
+M.Red.Oyentes.T = function(clave, remitente, _, f, canal)
+	if canal == "WHISPER" or not (activo() and on("rarosManada")) then return end
 	local map, x, y, hace = numero(f[1], 100000), numero(f[2], 100), numero(f[3], 100), numero(f[4], OLVIDA)
 	local nombre = limpiar(f[5])
 	if not (map and x and y and hace and nombre) then return end
-	Rl.Anotar(nombre, floor(map), x, y, U.Reloj() - hace, U.Mostrar(remitente))
+	-- (1.3.1) Freno por lobo: uno cada CADA_LOBO y como mucho POR_LOBO suyos.
+	local ahora = U.Ahora()
+	if deLobo[clave] and ahora - deLobo[clave] < CADA_LOBO then return end
+	U.Podar(deLobo, CADA_LOBO, ahora)
+	deLobo[clave] = ahora
+	local quien = U.Mostrar(remitente)
+	local c = datos()
+	if not c[llave(nombre)] then
+		local suyos = 0
+		for _, x2 in pairs(c) do if type(x2) == "table" and x2.por == quien then suyos = suyos + 1 end end
+		if suyos >= POR_LOBO then return end
+	end
+	Rl.Anotar(nombre, floor(map), x, y, U.Reloj() - hace, quien)
 end
 
 ---------------------------------------------------------------------------
@@ -259,13 +303,15 @@ function Rl.Revisar()
 				accion = x.map and x.x and { texto = L["Ir de caza"], alClic = function() Rl.Ir(x) end } or nil,
 			}
 			if K and K.Aviso then K.Aviso(o) else U.Decir(o.titulo) end
+			-- (1.3.1) Uno por vuelta: los demás, en la siguiente (cada minuto).
+			break
 		end
 	end
 	return n
 end
 
 -- Para el banco.
-function Rl.Olvidar() wipe(datos()) avisados = {} enviados = {} cambio() end
+function Rl.Olvidar() wipe(datos()) avisados = {} enviados = {} deLobo = {} cambio() end
 
 A.OnLogin(function()
 	caducar()

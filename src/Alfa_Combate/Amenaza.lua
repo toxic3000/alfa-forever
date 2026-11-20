@@ -148,7 +148,10 @@ function Am.Ver()
 	crear()
 	local r = Am.Leer()
 	if r.vacia then f:Hide() antes = nil return end
-	pcall(f.Barra.SetValue, f.Barra, r.pct or 0)
+	-- 1.3.1: un secreto va tal cual a SetValue (sin `or`, que lo compararía).
+	local valor = r.pct
+	if not M.Secreto(valor) and type(valor) ~= "number" then valor = 0 end
+	pcall(f.Barra.SetValue, f.Barra, valor)
 	if r.estado then
 		color(TONO[r.estado])
 		f.Valor:SetText(format("%d %%", floor((r.pct or 0) + 0.5)))

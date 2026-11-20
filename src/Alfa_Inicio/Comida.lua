@@ -74,6 +74,17 @@ local function llamar(fn, ...)
 	return nil
 end
 
+-- 1.3.1: lo de los objetos, primero con C_Item (el de Forever) y el global
+-- viejo solo de respaldo. Antes, sin el GetItemSpell global, solo contaba la
+-- comida de la lista de abajo (la de cocina o de botín no).
+local function deItem(nombre)
+	local CI = rawget(_G, "C_Item")
+	local f = type(CI) == "table" and CI[nombre]
+	if type(f) == "function" then return f end
+	f = rawget(_G, nombre)
+	return type(f) == "function" and f or nil
+end
+
 ---------------------------------------------------------------------------
 -- Qué es comida y qué es agua
 ---------------------------------------------------------------------------
@@ -103,10 +114,14 @@ function Co.Tipo(id)
 	if CONOCIDOS[id] then return CONOCIDOS[id] end
 	local t = tipos[id]
 	if t ~= nil then return t or nil end
-	if not GetItemSpell then return nil end
-	local n = texto(llamar(GetItemSpell, id))
+	local f = deItem("GetItemSpell")
+	if not f then return nil end
+	local n = texto((llamar(f, id)))
 	if not n then return nil end -- aún no lo sabe: se vuelve a preguntar después
-	t = porHechizo()[n] or false
+	-- Sin los nombres de «Comida» y «Bebida» todavía, no se anota que no lo es.
+	local h = porHechizo()
+	if not next(h) then return nil end
+	t = h[n] or false
 	tipos[id] = t
 	return t or nil
 end
@@ -139,9 +154,10 @@ function Co.Contar()
 		end
 		return comida, agua
 	end
-	if GetItemCount then
+	local contar = deItem("GetItemCount")
+	if contar then
 		for id, t in pairs(CONOCIDOS) do
-			local c = num(llamar(GetItemCount, id)) or 0
+			local c = num(llamar(contar, id)) or 0
 			if t == "agua" then agua = agua + c else comida = comida + c end
 		end
 	end
@@ -158,7 +174,7 @@ function Co.Sugerencia(lv)
 end
 
 function Co.Nombre(id)
-	local n = GetItemInfo and texto((llamar(GetItemInfo, id)))
+	local n = texto((llamar(deItem("GetItemInfo"), id)))
 	return n or NOMBRES[id] or ("#" .. tostring(id))
 end
 

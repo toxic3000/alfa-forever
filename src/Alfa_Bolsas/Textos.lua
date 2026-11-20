@@ -225,7 +225,7 @@ M.EN = {
 	["Banco: sin foto todavía"] = "Bank: no snapshot yet",
 	["Olvidar"] = "Forget",
 	["¿Olvidar a este personaje?"] = "Forget this character?",
-	["Alfa borrará lo que guardó de %s: sus bolsas, su banco y su equipo. Si vuelves a jugar con él, se guarda de nuevo."] = "Alfa will delete what it saved of %s: bags, bank and gear. Play that character again and it is saved anew.",
+	["Alfa borrará lo que guardó de %s: sus bolsas, su banco, su equipo y sus recetas de Comercio. Si vuelves a jugar con él, se guarda de nuevo."] = "Alfa will delete what it saved of %s: bags, bank, gear and their Trade recipes. Play that character again and it is saved anew.",
 	["Dinero de toda la cuenta"] = "Money on the whole account",
 	["La suma de lo que guardó Alfa de cada personaje (el tuyo, al día)."] = "The sum of what Alfa saved for each character (yours, up to date).",
 	["Juega con cada personaje una vez y Alfa recordará sus bolsas y su banco."] = "Play each character once and Alfa will remember its bags and bank.",
@@ -421,4 +421,7 @@ M.EN = {
 	["En Bolsas, «Buscar en todos tus personajes» revisa bolsas, bancos y equipo de todos, con filtros de tipo, calidad y personaje."] = "In Bags, \"Search all your characters\" checks everyone's bags, banks and gear, with type, quality and character filters.",
 	["¿Cómo limpio mis bolsas rápido?"] = "How do I clean my bags quickly?",
 	["Con un comerciante o un banquero abierto, «Acomodar» en tus bolsas vende tu chatarra o guarda tus materiales en el banco. Un clic, y otro para detenerlo."] = "With a vendor or banker open, \"Tidy up\" in your bags sells your junk or stores your materials in the bank. One click, and another to stop it.",
+	-- 1.3.1: vender y depositar dicen lo que no se movió (Lotes.lua)
+	["1 no se movió: ya no estaba ahí o el juego no lo soltó."] = "1 wasn't moved: it was no longer there or the game didn't let it go.",
+	["%d no se movieron: ya no estaban ahí o el juego no los soltó."] = "%d weren't moved: they were no longer there or the game didn't let them go.",
 }

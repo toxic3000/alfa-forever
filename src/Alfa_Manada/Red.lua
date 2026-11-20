@@ -41,6 +41,13 @@
 -- esperaba (una posición vieja nunca sale después de una nueva). Si el
 -- servidor frena (AddonMessageThrottle, ChannelThrottle), la cola espera
 -- FRENO segundos y lo vuelve a intentar.
+--
+-- 1.3.1: un susurro oculto a alguien desconectado hace que el juego diga «No
+-- hay ningún jugador llamado...» en tu chat. Cada destino de un susurro queda
+-- SILENCIO segundos en una lista: ese aviso se oculta y quien lo pidió se
+-- entera (R.AlNoEstar[nombre] = fn(clave), Mentor.lua). Lo que se difunde
+-- (1G, 1V, 1A, 1T, 1M) no se acepta por susurro: solo por el canal o la
+-- hermandad, y solo si compartes.
 
 local ADDON, M = ...
 local N = AlfaNucleo
@@ -59,6 +66,7 @@ local ENVIO, REFRESCO, MOVER = 10, 240, 10
 local RESP_HUECO = 30      -- segundos entre dos respuestas a saludos
 local RESP_AZAR = { 2, 8 } -- espera al azar antes de responder
 local OFICIAL_ESPERA = 5   -- segundos esperando que un oficial responda
+local SILENCIO = 10        -- (1.3.1) segundos que se oculta el «no está conectado» de un susurro
 
 local RES = Enum and Enum.SendAddonMessageResult
 local EXITO = RES and RES.Success or 0
@@ -117,6 +125,78 @@ function R.Prefijo()
 end
 
 ---------------------------------------------------------------------------
+-- Susurros a quien no está (1.3.1)
+---------------------------------------------------------------------------
+
+local silencio = {} -- clave -> hasta (GetTime): a quién se le susurró hace poco
+R.AlNoEstar = {}    -- nombre -> fn(clave): un susurro de Alfa no llegó (desconectado)
+
+-- El aviso del juego para un susurro a alguien desconectado, como patrón.
+local patronNoEsta
+local function patron()
+	if patronNoEsta ~= nil then return patronNoEsta end
+	local s = type(ERR_CHAT_PLAYER_NOT_FOUND_S) == "string" and ERR_CHAT_PLAYER_NOT_FOUND_S or nil
+	if not s then patronNoEsta = false return false end
+	s = s:gsub("([%(%)%.%%%+%-%*%?%[%]%^%$])", "%%%1")
+	patronNoEsta = "^" .. s:gsub("%%%%s", "(.+)") .. "$"
+	return patronNoEsta
+end
+
+-- La clave de quien no está, si el aviso es por un susurro de Alfa; o nil.
+local function quienNoEsta(msg)
+	if next(silencio) == nil or type(msg) ~= "string" or U.Secreto(msg) then return nil end
+	local p = patron()
+	local quien = p and msg:match(p)
+	if not quien then return nil end
+	quien = quien:gsub("^['\"]", ""):gsub("['\"]$", "")
+	local clave = U.Clave(quien)
+	local hasta = clave and silencio[clave]
+	if not hasta then return nil end
+	if U.Ahora() > hasta then silencio[clave] = nil return nil end
+	return clave
+end
+
+-- Oculta en el chat el aviso "no hay ningún jugador llamado..." de los
+-- susurros ocultos de Alfa (los oficiales a los que se les preguntó, tu
+-- mentor, las Lyas del grupo...).
+local function filtroSistema(_, _, msg) return quienNoEsta(msg) ~= nil end
+
+-- Quien pidió el susurro se entera una vez (el filtro corre por cada ventana de chat).
+local function alSistema(_, msg)
+	local clave = quienNoEsta(msg)
+	if not clave then return end
+	R.diag.noEsta = (R.diag.noEsta or 0) + 1
+	for _, fn in pairs(R.AlNoEstar) do pcall(fn, clave) end
+end
+
+local filtroPuesto = false
+local function ponerFiltro()
+	if filtroPuesto then return end
+	filtroPuesto = true
+	local CFU = ChatFrameUtil
+	if type(CFU) == "table" and type(CFU.AddMessageEventFilter) == "function" then
+		pcall(CFU.AddMessageEventFilter, "CHAT_MSG_SYSTEM", filtroSistema)
+	elseif ChatFrame_AddMessageEventFilter then
+		pcall(ChatFrame_AddMessageEventFilter, "CHAT_MSG_SYSTEM", filtroSistema)
+	end
+	A.RegisterEvent("CHAT_MSG_SYSTEM", alSistema)
+end
+
+-- `nombre` recibe un susurro: su "no está conectado" se oculta `seg` segundos.
+local function anotarSilencio(nombre, seg)
+	local clave = U.Clave(nombre)
+	if not clave then return end
+	ponerFiltro()
+	local ahora = U.Ahora()
+	for k, hasta in pairs(silencio) do
+		if ahora > hasta then silencio[k] = nil end
+	end
+	silencio[clave] = math.max(silencio[clave] or 0, ahora + (seg or SILENCIO))
+end
+R.Silenciar = anotarSilencio
+R.FiltroSistema = filtroSistema -- (para las pruebas)
+
+---------------------------------------------------------------------------
 -- La cola
 ---------------------------------------------------------------------------
 
@@ -172,6 +252,8 @@ motor:SetScript("OnUpdate", A.Safe(function(self, dt)
 		local canal, destino = destinoDe(m)
 		if puede and canal then
 			fichas = fichas - 1
+			-- 1.3.1: si no está conectado, su aviso no sale en tu chat.
+			if canal == "WHISPER" and destino then anotarSilencio(destino) end
 			local ok, r = pcall(C_ChatInfo.SendAddonMessage, R.PREFIJO, m.texto, canal, destino)
 			R.diag.enviados = R.diag.enviados + 1
 			R.diag.ultimo, R.diag.por = m.texto:sub(1, 2), canal
@@ -316,44 +398,6 @@ end
 ---------------------------------------------------------------------------
 
 local busqueda -- { nombres = { clave -> nombre }, hasta, alListo }
-local silencio -- { nombres = { clave -> true }, hasta }: avisos "no está conectado" a ocultar
-
--- El aviso del juego para un susurro a alguien desconectado, como patrón.
-local patronNoEsta
-local function patron()
-	if patronNoEsta ~= nil then return patronNoEsta end
-	local s = type(ERR_CHAT_PLAYER_NOT_FOUND_S) == "string" and ERR_CHAT_PLAYER_NOT_FOUND_S or nil
-	if not s then patronNoEsta = false return false end
-	s = s:gsub("([%(%)%.%%%+%-%*%?%[%]%^%$])", "%%%1")
-	patronNoEsta = "^" .. s:gsub("%%%%s", "(.+)") .. "$"
-	return patronNoEsta
-end
-
--- Oculta en el chat el aviso "no hay ningún jugador llamado..." de los
--- oficiales a los que se les preguntó en silencio (los desconectados).
-local function filtroSistema(_, _, msg, ...)
-	if not silencio or U.Ahora() > silencio.hasta then return false end
-	if type(msg) ~= "string" or U.Secreto(msg) then return false end
-	local p = patron()
-	local quien = p and msg:match(p)
-	if quien then
-		quien = quien:gsub("^['\"]", ""):gsub("['\"]$", "")
-		if silencio.nombres[U.Clave(quien) or ""] then return true end
-	end
-	return false
-end
-
-local filtroPuesto = false
-local function ponerFiltro()
-	if filtroPuesto then return end
-	filtroPuesto = true
-	local CFU = ChatFrameUtil
-	if type(CFU) == "table" and type(CFU.AddMessageEventFilter) == "function" then
-		pcall(CFU.AddMessageEventFilter, "CHAT_MSG_SYSTEM", filtroSistema)
-	elseif ChatFrame_AddMessageEventFilter then
-		pcall(ChatFrame_AddMessageEventFilter, "CHAT_MSG_SYSTEM", filtroSistema)
-	end
-end
 
 -- Pregunta en silencio a los oficiales si están conectados; alListo(nombre)
 -- con el primero que responde, o alListo(nil) si nadie responde a tiempo.
@@ -364,15 +408,13 @@ function R.BuscarOficial(nombres, alListo)
 	if not puede then alListo(nil, "nopuede") return false end
 	local mia = U.MiClave()
 	busqueda = { nombres = {}, hasta = U.Ahora() + OFICIAL_ESPERA, alListo = alListo }
-	silencio = { nombres = {}, hasta = U.Ahora() + OFICIAL_ESPERA + 5 }
-	ponerFiltro()
 	local n = 0
 	for _, nombre in ipairs(nombres or {}) do
 		local clave = U.Clave(nombre)
 		if clave and clave ~= mia and not busqueda.nombres[clave] and n < 6 then
 			n = n + 1
 			busqueda.nombres[clave] = nombre
-			silencio.nombres[clave] = true
+			anotarSilencio(nombre, OFICIAL_ESPERA + 5)
 			R.Enviar("J:" .. clave, V .. "J|" .. version(), "WHISPER", U.Destino(nombre), true)
 		end
 	end
@@ -452,6 +494,7 @@ local function alMensaje(_, prefijo, texto, canal, remitente, _, _, localID, nom
 			if not U.EnElClan() then return end
 			local ahora = U.Ahora()
 			if respOficialEn[clave] and ahora - respOficialEn[clave] < 60 then return end
+			U.Podar(respOficialEn, 60, ahora) -- (1.3.1)
 			respOficialEn[clave] = ahora
 			R.Enviar("K:" .. clave, V .. "K|" .. version(), "WHISPER", remitente, true)
 		elseif tipo == "K" then

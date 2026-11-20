@@ -14,6 +14,9 @@
 -- Ajuste bolsas.conjuntos (de fábrica, encendido).
 --   Cj.Lista() ; Cj.Guardar(nombre) ; Cj.Poner(nombre) ; Cj.Olvidar(nombre)
 --   Cj.Estado(c) -> puestas, enBolsas, faltan, total ; Cj.Puesto() -> nombre | nil
+-- 1.3.1: una pieza en su ranura gemela (anillos 11↔12, abalorios 13↔14, armas
+-- 16↔17) cuenta como puesta (Cj.DondeLaLlevas), y lo que quedó debajo de otra
+-- pieza al cambiar se pone en una segunda pasada (PLAYER_EQUIPMENT_CHANGED).
 
 local ADDON, M = ...
 local N, A, L = M.N, M.A, M.L
@@ -27,6 +30,11 @@ M.Conjuntos = Cj
 local RANURAS = { 1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 }
 local MAX = 10
 local ORIGEN = { 0, 1, 2, 3, 4 }
+-- 1.3.1: las ranuras gemelas (anillos, abalorios, las dos manos): una pieza
+-- puesta en la otra cuenta como puesta.
+local GEMELA = { [11] = 12, [12] = 11, [13] = 14, [14] = 13, [16] = 17, [17] = 16 }
+Cj.GEMELA = GEMELA
+local SEGUNDA = 5 -- segundos: lo que queda de la segunda pasada después de esto ya no se pone
 
 -- Nombres listos para elegir (el menú de la ventana y la página).
 Cj.NOMBRES = { L["Curación"], L["Daño"], L["Tanque"], L["Pesca"], L["Recolectar"], L["Ciudad"] }
@@ -137,16 +145,39 @@ local function hallar(pieza, lista, usadas)
 	return nil
 end
 
+-- 1.3.1: dónde llevas cada pieza del conjunto: en su ranura o, si no, en su
+-- gemela (anillos al revés, el anillo que comparte con otro conjunto). Primero
+-- las de su ranura, para que una gemela no le gane el lugar a la dueña.
+-- -> { [ranura del conjunto] = ranura donde la llevas }
+local function dondeLaLlevas(c)
+	local donde, ocupadas = {}, {}
+	for _, r in ipairs(RANURAS) do
+		local pieza = c.p[r]
+		if type(pieza) == "table" and pieza.i and puesto(r) == pieza.i then
+			donde[r], ocupadas[r] = r, true
+		end
+	end
+	for _, r in ipairs(RANURAS) do
+		local pieza, g = c.p[r], GEMELA[r]
+		if g and not donde[r] and not ocupadas[g] and type(pieza) == "table" and pieza.i and puesto(g) == pieza.i then
+			donde[r], ocupadas[g] = g, true
+		end
+	end
+	return donde
+end
+Cj.DondeLaLlevas = dondeLaLlevas
+
 -- Lo que falta de un conjunto: -> puestas, enBolsas, faltan, total
 function Cj.Estado(c)
 	local puestas, bolsas, faltan, total = 0, 0, 0, 0
 	if type(c) ~= "table" or type(c.p) ~= "table" then return 0, 0, 0, 0 end
 	local lista, usadas = enBolsas(), {}
+	local donde = dondeLaLlevas(c)
 	for _, r in ipairs(RANURAS) do
 		local pieza = c.p[r]
 		if type(pieza) == "table" and pieza.i then
 			total = total + 1
-			if puesto(r) == pieza.i then
+			if donde[r] then
 				puestas = puestas + 1
 			else
 				local k = hallar(pieza, lista, usadas)
@@ -171,6 +202,63 @@ function Cj.Puesto()
 	return nil
 end
 
+-- Pone desde tus bolsas lo que falta del conjunto (lo que llevas en su ranura
+-- o en la gemela no se toca). -> puestas, faltan, desplazadas (las piezas del
+-- conjunto que estaban en una ranura que ahora ocupa otra: van a tus bolsas y
+-- se ponen en la segunda pasada)
+local function deBolsas(c)
+	local CI = C_Item
+	local donde = dondeLaLlevas(c)
+	local prestada = {} -- ranura -> true: lo que lleva cuenta para su gemela
+	for r, s in pairs(donde) do if s ~= r then prestada[s] = true end end
+	local lista, usadas = enBolsas(), {}
+	local puestas, faltan, desplazadas = 0, 0, 0
+	for _, r in ipairs(RANURAS) do
+		local pieza = c.p[r]
+		if type(pieza) == "table" and pieza.i and not donde[r] then
+			local k, x = hallar(pieza, lista, usadas)
+			if k then
+				usadas[k] = true
+				M.Seguro(CI.EquipItemByName, x.link or pieza.l or pieza.i, r)
+				puestas = puestas + 1
+				if prestada[r] then desplazadas = desplazadas + 1 end
+			else
+				faltan = faltan + 1
+			end
+		end
+	end
+	return puestas, faltan, desplazadas
+end
+
+-- 1.3.1: la segunda pasada. Una pieza que estaba en la gemela y quedó debajo
+-- de otra (dos conjuntos con el mismo anillo en ranuras distintas) cae a tus
+-- bolsas al cambiar el equipo; al llegar PLAYER_EQUIPMENT_CHANGED se pone en
+-- su ranura (N.Una, fuera de combate). Una sola vez por clic.
+local segunda -- { n = nombre, hasta = GetTime() } | nil
+
+local function ahora() return GetTime and GetTime() or 0 end
+
+local function segundaPasada()
+	local s = segunda
+	segunda = nil
+	if not (s and ahora() <= s.hasta and encendido()) then return end
+	local c = buscar(s.n)
+	local CI = C_Item
+	if not (c and CI and CI.EquipItemByName) then return end
+	local _, faltan = deBolsas(c)
+	if faltan > 0 then N.Imprimir(format(L["Faltan %d que no están en tus bolsas (¿en el banco?)."], faltan)) end
+	M.Avisar("CONJUNTOS")
+end
+Cj.SegundaPasada = segundaPasada
+function Cj.SegundaPendiente() return segunda ~= nil end
+
+A.RegisterEvent("PLAYER_EQUIPMENT_CHANGED", function()
+	if not segunda then return end
+	if ahora() > segunda.hasta then segunda = nil return end
+	-- Con la misma clave: varias piezas que cambian juntas, una sola pasada.
+	N.Una("bolsas.conjuntoSegunda", 0.3, segundaPasada, { fueraDeCombate = true })
+end)
+
 -- -> true (se puso), "espera" (en combate: al terminar), false
 function Cj.Poner(nombre)
 	if not encendido() then return false end
@@ -186,25 +274,13 @@ function Cj.Poner(nombre)
 	end
 	local CI = C_Item
 	if not (CI and CI.EquipItemByName) then return false end
-	local lista, usadas = enBolsas(), {}
-	local puestas, faltan = 0, 0
-	for _, r in ipairs(RANURAS) do
-		local pieza = c.p[r]
-		if type(pieza) == "table" and pieza.i and puesto(r) ~= pieza.i then
-			local k, x = hallar(pieza, lista, usadas)
-			if k then
-				usadas[k] = true
-				M.Seguro(CI.EquipItemByName, x.link or pieza.l or pieza.i, r)
-				puestas = puestas + 1
-			else
-				faltan = faltan + 1
-			end
-		end
-	end
+	local puestas, faltan, desplazadas = deBolsas(c)
+	segunda = desplazadas > 0 and { n = c.n, hasta = ahora() + SEGUNDA } or nil
 	if puestas == 0 and faltan == 0 then
 		N.Imprimir(format(L["Ya llevas puesto «%s»."], c.n))
 	else
-		local texto = format(L["Te pusiste «%s»: %d piezas."], c.n, puestas)
+		-- Las que vuelven en la segunda pasada también se cuentan.
+		local texto = format(L["Te pusiste «%s»: %d piezas."], c.n, puestas + desplazadas)
 		if faltan > 0 then texto = texto .. " " .. format(L["Faltan %d que no están en tus bolsas (¿en el banco?)."], faltan) end
 		N.Imprimir(texto)
 	end

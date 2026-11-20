@@ -293,6 +293,14 @@ end
 -- Las palomitas mientras juntas
 ---------------------------------------------------------------------------
 
+-- ¿Los mismos materiales listos? (a: lo de antes, puede faltar)
+local function mismos(a, b)
+	if not a then return false end
+	for k in pairs(a) do if not b[k] then return false end end
+	for k in pairs(b) do if not a[k] then return false end end
+	return true
+end
+
 local function revisar()
 	local l = datos()
 	if #l.metas == 0 then
@@ -310,7 +318,11 @@ local function revisar()
 		end
 	end
 	l.listos = ahora
-	cambio()
+	-- 1.3.1: el aviso a los demás (ALFA_COMERCIO y ALFA_COMERCIO_LISTA) solo si
+	-- cambió lo que está listo. Antes salía con cada cambio de tus bolsas y
+	-- rehacía de más las sugerencias, la ventana de bolsas y las páginas (que ya
+	-- se rehacen solas con BAG_UPDATE_DELAYED para el «Tienes X de Y»).
+	if not mismos(antes, ahora) then cambio() end
 	if not antes or #nuevos == 0 or N.Get(M.ID, "listaAviso") == false then return end
 	local function avisar()
 		if listos == total then

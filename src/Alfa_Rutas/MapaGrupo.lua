@@ -11,8 +11,17 @@
 -- (Indice.PasosMision), solo si ya está cargado: aquí no se carga. Nada en
 -- combate (se pone al día al salir). Ajuste rutas.mapaGrupo.
 --
+-- 1.3.1: los pines solo se ven con un mapa abierto (el del juego o el de
+-- Alfa), así que con los dos cerrados lo que cambia en el grupo solo deja la
+-- capa «pendiente» y se pinta al abrir uno (su OnShow o, el de Alfa, un
+-- vistazo por segundo mientras haya algo pendiente). El lugar de cada misión
+-- se guarda (lugares[qid], por si está lista para entregar o no) y se
+-- olvida al cambiar de zona, al cargar el Codex o al dejar el grupo.
+--
 --   MapaGrupo.Datos() -> { { qid, titulo, quienes = { nombre... }, tuya, p = { map, x, y, f } } }
---   MapaGrupo.Pintar()
+--   MapaGrupo.Pintar()       pinta ya (aunque no haya mapa abierto)
+--   MapaGrupo.Luego()        lo de los eventos: en 2 s, o «pendiente» si no hay mapa
+--   MapaGrupo.Pendiente() -> bool    MapaGrupo.Olvidar()   (los lugares guardados)
 
 local ADDON, M = ...
 local A, L, K = M.A, M.L, M.K
@@ -37,25 +46,50 @@ local function enGrupo()
 	return IsInGroup and IsInGroup() and not (IsInRaid and IsInRaid()) or false
 end
 
--- Los de tu grupo: { unidad, nombre }.
+-- El nombre completo de una unidad («Ana Smith» en Forever, «Ana-Reino»
+-- fuera) y el corto para mostrar (Compat.UnitFullName); sin él, UnitName.
+local function nombres(u)
+	local Cp = CP()
+	if Cp and type(Cp.UnitFullName) == "function" then
+		local ok, completo, corto = pcall(Cp.UnitFullName, u)
+		if ok and completo == false then return nil end -- secreto
+		if ok and type(completo) == "string" and completo ~= "" then
+			return completo, (type(corto) == "string" and corto ~= "") and corto or completo
+		end
+	end
+	local n, reino = UnitName(u)
+	if type(n) ~= "string" or secreto(n) or n == "" then return nil end
+	if type(reino) == "string" and not secreto(reino) and reino ~= "" then return n .. "-" .. reino, n end
+	return n, n
+end
+
+-- Lo que la manada sabe que lleva ese lobo: { [qid] = true } | nil (no se sabe).
+local function deLaManada(completo)
+	local Ma = rawget(_G, "AlfaManada")
+	if not (completo and type(Ma) == "table" and type(Ma.MisionesDe) == "function") then return nil end
+	local ok, set = pcall(Ma.MisionesDe, completo)
+	return ok and type(set) == "table" and set or nil
+end
+
+-- Los de tu grupo: { unidad, nombre (para mostrar), completo, misiones }.
+-- 1.3.1: el nombre completo, para que La Jauría lo encuentre (antes iba
+-- solo el primer valor de UnitName), y su lista una vez por lobo, no una vez
+-- por misión.
 local function miembros()
 	local out = {}
 	for i = 1, 4 do
 		local u = "party" .. i
 		if UnitExists and UnitExists(u) then
-			local n = UnitName(u)
-			if type(n) == "string" and not secreto(n) and n ~= "" then out[#out + 1] = { u = u, nombre = n } end
+			local completo, corto = nombres(u)
+			if completo then out[#out + 1] = { u = u, nombre = corto, completo = completo, misiones = deLaManada(completo) } end
 		end
 	end
 	return out
 end
+Mg.Miembros = miembros
 
 local function laLleva(m, qid)
-	local Ma = rawget(_G, "AlfaManada")
-	if type(Ma) == "table" and type(Ma.MisionesDe) == "function" then
-		local ok, set = pcall(Ma.MisionesDe, m.nombre)
-		if ok and type(set) == "table" then return set[qid] and true or false end
-	end
+	if m.misiones then return m.misiones[qid] and true or false end
 	local QL = C_QuestLog
 	if QL and QL.IsUnitOnQuest then
 		local ok, si = pcall(QL.IsUnitOnQuest, m.u, qid)
@@ -64,18 +98,25 @@ local function laLleva(m, qid)
 	return false
 end
 
+-- 1.3.1: el lugar ya calculado de cada misión (Indice.PasosMision busca entre
+-- todas las apariciones y fuentes: es lo caro). qid -> { lista, p | false }
+local lugares = {}
+function Mg.Olvidar() lugares = {} end
+
 -- El lugar de la misión: lo que falta o su entrega.
 local function lugar(qid, desde)
+	local Cp = CP()
+	local lista = Cp and Cp.IsOnQuest and Cp.IsOnQuest(qid) and Cp.IsQuestReadyForTurnIn and Cp.IsQuestReadyForTurnIn(qid) and true or false
+	local g = lugares[qid]
+	if g and g.lista == lista then return g.p or nil end
 	local C = CX()
 	local q = C and C.Quest(qid)
 	local I = M.Indice
 	local ok, pm = pcall(I.PasosMision, q, desde)
-	if not (ok and pm) then return nil end
-	local Cp = CP()
-	local lista = Cp and Cp.IsOnQuest and Cp.IsOnQuest(qid) and Cp.IsQuestReadyForTurnIn and Cp.IsQuestReadyForTurnIn(qid)
-	local p = (not lista and pm.objetivo) or pm.fin
-	if p and p.map and p.x and p.y then return { map = p.map, x = p.x, y = p.y, f = p.f } end
-	return nil
+	local p = ok and pm and ((not lista and pm.objetivo) or pm.fin) or nil
+	local out = p and p.map and p.x and p.y and { map = p.map, x = p.x, y = p.y, f = p.f } or nil
+	lugares[qid] = { lista = lista, p = out or false }
+	return out
 end
 
 function Mg.Datos()
@@ -104,15 +145,11 @@ function Mg.Datos()
 			end
 		end
 	end
-	-- Lo que la manada sabe que llevan y tú no.
-	local Ma = rawget(_G, "AlfaManada")
-	if type(Ma) == "table" and type(Ma.MisionesDe) == "function" then
-		for _, m in ipairs(gente) do
-			local ok, set = pcall(Ma.MisionesDe, m.nombre)
-			for qid in pairs(ok and type(set) == "table" and set or {}) do
-				qid = tonumber(qid)
-				if qid and not (Cp and Cp.IsOnQuest and Cp.IsOnQuest(qid)) then sumar(qid, m.nombre, false) end
-			end
+	-- Lo que la manada sabe que llevan y tú no (la lista ya leída en miembros()).
+	for _, m in ipairs(gente) do
+		for qid in pairs(m.misiones or {}) do
+			qid = tonumber(qid)
+			if qid and not (Cp and Cp.IsOnQuest and Cp.IsOnQuest(qid)) then sumar(qid, m.nombre, false) end
 		end
 	end
 	local out = {}
@@ -164,11 +201,55 @@ function Mg.Pintar()
 	if #pines > 0 then P.SetLayer(CAPA, pines, { world = true, minimap = false, edge = false }) else P.ClearLayer(CAPA) end
 end
 
-local pendiente = false
+-- 1.3.1: ¿hay un mapa a la vista? El del juego o el de Alfa
+-- (AlfaMundo.ZonasALaVista da nil con el mapa de Alfa cerrado).
+local function mapaAbierto()
+	local w = rawget(_G, "WorldMapFrame")
+	if w and w.IsShown and w:IsShown() then return true end
+	local Mu = rawget(_G, "AlfaMundo")
+	if type(Mu) == "table" and type(Mu.ZonasALaVista) == "function" then
+		local ok, z = pcall(Mu.ZonasALaVista)
+		if ok and z ~= nil then return true end
+	end
+	return false
+end
+Mg.MapaAbierto = mapaAbierto
+
+local RELOJ = "rutas.mapaGrupo"
+local programado = false -- la tanda de 2 s ya va en camino
+local porPintar = false  -- algo cambió con los mapas cerrados
+
+function Mg.Pendiente() return porPintar end
+
+local function pintarPendiente()
+	porPintar = false
+	M.N.Quitar(RELOJ)
+	Mg.Pintar()
+end
+
+-- Mientras haya algo pendiente, un vistazo por segundo (dos IsShown): el
+-- mapa de Alfa no avisa al abrirse.
+local function vigilar()
+	if not porPintar then M.N.Quitar(RELOJ) return end
+	if mapaAbierto() then pintarPendiente() end
+end
+
 local function luego()
-	if pendiente then return end
-	pendiente = true
-	A.After(2, function() pendiente = false Mg.Pintar() end)
+	if programado then return end
+	programado = true
+	A.After(2, function()
+		programado = false
+		if not (encendido() and enGrupo()) then
+			-- Sin grupo (o apagado): solo se limpia la capa, que no cuesta nada.
+			Mg.Olvidar()
+			pintarPendiente()
+		elseif mapaAbierto() then
+			pintarPendiente()
+		else
+			porPintar = true
+			if not M.N.HayTarea(RELOJ) then M.N.Cada(RELOJ, 1, vigilar, { fueraDeCombate = true }) end
+		end
+	end)
 end
 Mg.Luego = luego
 
@@ -176,9 +257,15 @@ A.RegisterEvent("GROUP_ROSTER_UPDATE", luego)
 A.RegisterEvent("QUEST_ACCEPTED", luego)
 A.RegisterEvent("QUEST_REMOVED", luego)
 A.RegisterEvent("UNIT_QUEST_LOG_CHANGED", function(_, u) if type(u) == "string" and u:match("^party") then luego() end end)
-A.On("CODEX_LOADED", luego)
+A.RegisterEvent("ZONE_CHANGED_NEW_AREA", function() Mg.Olvidar() luego() end)
+A.On("CODEX_LOADED", function() Mg.Olvidar() luego() end)
 
 A.OnLogin(function()
+	-- El mapa del juego avisa al abrirse: lo pendiente se pinta ya.
+	local w = rawget(_G, "WorldMapFrame")
+	if w and w.HookScript then
+		w:HookScript("OnShow", function() if porPintar then pintarPendiente() end end)
+	end
 	local Mu = rawget(_G, "AlfaMundo")
 	if type(Mu) == "table" and type(Mu.RegistrarCapa) == "function" then
 		pcall(Mu.RegistrarCapa, { id = CAPA, grupo = L["Viajes"], nombre = L["Misiones de tu grupo"],

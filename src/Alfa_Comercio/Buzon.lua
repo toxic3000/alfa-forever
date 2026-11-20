@@ -132,7 +132,11 @@ local function terminar(corte)
 	tomando = nil
 	if t.ticker then t.ticker:Cancel() end
 	abriendoTodo(false)
-	local dinero = max(0, (num(GetMoney and GetMoney()) or t.dinero0) - t.dinero0)
+	-- 1.3.1: en el juego tu oro sube un momento después de tomarlo (PLAYER_MONEY
+	-- llega tarde), así que no basta con comparar tu oro: también cuenta el
+	-- dinero que ya salió de las cartas (t.recibido). Sin esto decía «No había
+	-- nada que tomar» aunque el chat dijera «Obtuviste: 7s 35c».
+	local dinero = max(0, (num(GetMoney and GetMoney()) or t.dinero0) - t.dinero0, t.recibido or 0)
 	-- Las que se abren a mano y siguen ahí (contra entrega o de un MJ).
 	t.saltadas = 0
 	if corte ~= "cerrado" then
@@ -177,10 +181,18 @@ local function paso()
 	end
 	while t.i >= 1 do
 		local c = carta(t.i)
+		-- El dinero pedido a esta carta ya salió de ella: es tuyo aunque tu oro
+		-- todavía no suba (si la carta se borró al vaciarse, también).
+		local monto = t.dineroMonto[t.i]
+		if monto and c.dinero < monto then
+			t.recibido = t.recibido + (monto - c.dinero)
+			t.dineroMonto[t.i] = nil
+		end
 		if c.cod > 0 or c.mj then
 			t.i = t.i - 1
 		elseif c.dinero > 0 and not t.dineroPedido[t.i] then
 			t.dineroPedido[t.i] = true
+			t.dineroMonto[t.i] = c.dinero
 			llamar(TakeInboxMoney, t.i)
 			t.esperando, t.desde = "evento", ahora
 			return
@@ -234,13 +246,16 @@ function Bz.Tomar()
 	-- no cambian de lugar.
 	tomando = {
 		i = cuantas(), objetos = 0, dineroPedido = {}, fallidos = {}, intentos = {},
+		dineroMonto = {}, recibido = 0,
 		dinero0 = num(GetMoney and GetMoney()) or 0,
 	}
 	abriendoTodo(true)
 	if refrescarBarra then refrescarBarra() end
 	paso()
-	if tomando and C_Timer and C_Timer.NewTicker then
-		tomando.ticker = C_Timer.NewTicker(CADA, paso)
+	-- 1.3.1: el paso lo mueve el reloj de Alfa (N.Ticker: se ve en /alfa
+	-- rendimiento y un error repetido lo quita), no un C_Timer.NewTicker suelto.
+	if tomando and N.Ticker then
+		tomando.ticker = N.Ticker("comercio.buzon", CADA, paso)
 	end
 	return true
 end

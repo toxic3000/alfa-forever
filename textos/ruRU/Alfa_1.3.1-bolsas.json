@@ -1,0 +1,5 @@
+{
+ "%d no se movieron: ya no estaban ahí o el juego no los soltó.": "Не перемещено предметов: %d. Их уже не было на месте или игра их не отпустила.",
+ "1 no se movió: ya no estaba ahí o el juego no lo soltó.": "1 предмет не перемещен: его уже не было на месте или игра его не отпустила.",
+ "Alfa borrará lo que guardó de %s: sus bolsas, su banco, su equipo y sus recetas de Comercio. Si vuelves a jugar con él, se guarda de nuevo.": "Alfa удалит все, что сохранил о персонаже %s: сумки, банк, экипировку и рецепты в разделе «Торговля». Если снова зайдете им в игру, данные сохранятся заново."
+}

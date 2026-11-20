@@ -8,7 +8,11 @@
 --     al texto con UnitPowerPercent y una curva, sin compararse.
 --   * Al terminar una pelea la lista se destaca unos segundos («Maná tras la
 --     pelea»): es cuando el grupo decide si esperar a sus curanderos.
---   M.Mana.Lista() ; M.Mana.Refrescar()
+--   * 1.3.1: quiénes curan (nombre, color, si eres tú) se arma solo cuando
+--     cambia el grupo (GROUP_ROSTER_UPDATE, PLAYER_ROLES_ASSIGNED,
+--     UNIT_NAME_UPDATE, al entrar); el reloj de cada segundo solo repinta los
+--     porcentajes, sin tablas nuevas.
+--   M.Mana.Lista() ; M.Mana.Refrescar() ; M.Mana.Sucia()
 
 local ADDON, M = ...
 local N = AlfaNucleo
@@ -144,7 +148,8 @@ local function pintarValor(f, u)
 	f.pct = nil
 	if curva and UnitPowerPercent then
 		local ok, p = pcall(UnitPowerPercent, u, MANA, false, curva)
-		if ok and p ~= nil then
+		-- 1.3.1: lo secreto primero (ni siquiera se compara con nil).
+		if ok and (secreto(p) or type(p) == "number") then
 			f.valor:SetTextColor(0.55, 0.8, 1, 1)
 			if pcall(f.valor.SetFormattedText, f.valor, "%.0f%%", p) then return true end
 		end
@@ -152,17 +157,32 @@ local function pintarValor(f, u)
 	return false
 end
 
+-- 1.3.1: los curanderos de ahora; se arman solo cuando cambia el grupo.
+local lista, otros, sucia = {}, 0, true
+
+function Mn.Sucia() sucia = true end
+
+local function armar()
+	sucia = false
+	lista = Mn.Lista()
+	-- Contigo solo, no hace falta: la lista sirve cuando hay otro curandero.
+	otros = 0
+	for _, d in ipairs(lista) do
+		d.yo = leer(UnitIsUnit, d.unidad, "player") and true or false
+		if not d.yo then otros = otros + 1 end
+		if d.clase and M.ColorDeClase then d.r, d.g, d.b = M.ColorDeClase(d.clase) end
+	end
+end
+
 function Mn.Refrescar()
 	if not crear() then return end
 	local quiere = opt("activo") and opt("mana") and IsInGroup and IsInGroup()
-	local lista = quiere and Mn.Lista() or {}
-	-- Contigo solo, no hace falta: la lista sirve cuando hay otro curandero.
-	local otros = 0
-	for _, d in ipairs(lista) do
-		local yo = leer(UnitIsUnit, d.unidad, "player")
-		if not yo then otros = otros + 1 end
+	if not quiere then
+		Mn.filas = 0
+		return marco:Hide()
 	end
-	if not quiere or otros == 0 then
+	if sucia then armar() end
+	if otros == 0 then
 		Mn.filas = 0
 		return marco:Hide()
 	end
@@ -171,9 +191,12 @@ function Mn.Refrescar()
 		local d = lista[i]
 		if d and pintarValor(f, d.unidad) then
 			n = n + 1
-			f.nombre:SetText(d.nombre)
-			local col = d.clase and M.ColorDeClase and { M.ColorDeClase(d.clase) }
-			if col and col[1] then f.nombre:SetTextColor(col[1], col[2], col[3], 1) else f.nombre:SetTextColor(1, 1, 1, 1) end
+			-- El nombre y su color, solo si la fila cambió de curandero.
+			if f.alfaDato ~= d then
+				f.alfaDato = d
+				f.nombre:SetText(d.nombre)
+				if d.r then f.nombre:SetTextColor(d.r, d.g, d.b, 1) else f.nombre:SetTextColor(1, 1, 1, 1) end
+			end
 			f.nombre:Show()
 			f.valor:Show()
 		else
@@ -195,9 +218,16 @@ A.RegisterEvent("PLAYER_REGEN_ENABLED", function()
 	destacarHasta = (GetTime and GetTime() or 0) + DESTACAR
 	Mn.Refrescar()
 end)
-A.RegisterEvent("GROUP_ROSTER_UPDATE", function() Mn.Refrescar() end)
-A.RegisterEvent("PLAYER_ROLES_ASSIGNED", function() Mn.Refrescar() end)
+-- Cambió el grupo (quién está, sus roles o un nombre): la lista se vuelve a armar.
+local function cambioGrupo() sucia = true Mn.Refrescar() end
+A.RegisterEvent("GROUP_ROSTER_UPDATE", cambioGrupo)
+A.RegisterEvent("PLAYER_ROLES_ASSIGNED", cambioGrupo)
+A.RegisterEvent("PLAYER_ENTERING_WORLD", cambioGrupo)
+A.RegisterEvent("UNIT_NAME_UPDATE", function(_, u)
+	if type(u) == "string" and (u == "player" or u:find("^party%d") or u:find("^raid%d")) then cambioGrupo() end
+end)
 -- Un reloj chico: el maná cambia muy seguido para ir por eventos de cada uno.
+-- Solo repinta los porcentajes: la lista ya está armada.
 N.Cada("curacion.mana", 1, function()
 	if marco and marco:IsShown() or (IsInGroup and IsInGroup() and opt("mana")) then Mn.Refrescar() end
 end)

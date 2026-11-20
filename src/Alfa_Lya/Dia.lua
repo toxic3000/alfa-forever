@@ -200,16 +200,30 @@ A.RegisterEvent("QUEST_TURNED_IN", function()
 end)
 
 -- Otro día: cómo te fue la última vez (una vez).
+-- 1.3.1: queda dicho cuando de verdad sale (alDecir). Al entrar, Lya acaba de
+-- saludar y no habla de nuevo hasta que pase su espera entre globos: entonces
+-- lo vuelve a intentar («lya.diaAyer», unas veces como mucho).
+local INTENTOS_AYER = 6
+function Di.ContarAyer(vez)
+	vez = tonumber(vez) or 1
+	Di.Hoy()
+	local d = N.DatosPersonaje(ID)
+	local ayer = d.diaAyer
+	if type(ayer) ~= "table" or ayer.dicho then return false end
+	local r = Di.Resumen(ayer)
+	if not r then ayer.dicho = true return false end
+	local Ce = M.Cerebro
+	if not Ce then return false end
+	local ok, por = Ce.Decir({ texto = format(L["La última vez cazamos %s"], r), alDecir = function() ayer.dicho = true end })
+	if ok == true then return true end
+	local espera = Ce.Reintento and Ce.Reintento(por)
+	if espera and vez < INTENTOS_AYER then
+		N.Una("lya.diaAyer", espera, function() Di.ContarAyer(vez + 1) end)
+	end
+	return false
+end
 A.OnLogin(function()
-	A.After(40, function()
-		Di.Hoy()
-		local d = N.DatosPersonaje(ID)
-		local ayer = d.diaAyer
-		if type(ayer) ~= "table" or ayer.dicho then return end
-		ayer.dicho = true
-		local r = Di.Resumen(ayer)
-		if r and M.Cerebro then M.Cerebro.Decir({ texto = format(L["La última vez cazamos %s"], r) }) end
-	end)
+	A.After(40, function() Di.ContarAyer() end)
 end)
 
 ---------------------------------------------------------------------------

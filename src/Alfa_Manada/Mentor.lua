@@ -14,7 +14,10 @@
 --   1a|n             no, gracias
 --   1a|x             se acabó (cualquiera de los dos)
 --   1a|e|<nivel>|<xp>|<mapa>|<hechos>|<total>|<misión>
---                    cómo voy (del aprendiz a su mentor, cada ESTADO)
+--                    cómo voy (del aprendiz a su mentor, cada ESTADO). (1.3.1)
+--                    Si el juego dice que tu mentor no está conectado (el
+--                    aviso se oculta: Red.lua), no sale otra vez en CALLADO
+--                    segundos o hasta que se le oiga (un 1a suyo o la manada).
 -- Ajuste manada.mentor (recibir propuestas y adoptar). Se guarda por
 -- personaje: N.DatosPersonaje("manada").mentor y .aprendices.
 --
@@ -41,6 +44,7 @@ local CONECTADO = 330 -- sin noticias en este tiempo, no está conectado
 Me.ATORADO = 1200     -- 20 minutos sin experiencia: empujoncito
 local EMPUJE = 1800   -- y no más de uno cada media hora por aprendiz
 local PROPUESTA = 600 -- una propuesta vale 10 minutos
+local CALLADO = 600   -- (1.3.1) tu mentor no estaba conectado: no se le cuenta nada en 10 min
 
 local function activo() return N.Get(ID, "mentor") ~= false end
 
@@ -116,6 +120,7 @@ end
 
 local propuestas = {}  -- clave -> { nombre, destino, nivel, at }  (te quieren adoptar)
 local propuse = {}     -- clave -> at  (tú propusiste)
+local mentorFuera = -math.huge -- (1.3.1) cuándo dijo el juego que tu mentor no estaba conectado
 
 function Me.Propuestas()
 	local out, ahora = {}, U.Ahora()
@@ -198,6 +203,7 @@ function Me.Aceptar(clave)
 	local viejo = Me.Mentor()
 	if viejo and viejo.clave ~= clave then enviar(viejo.clave, viejo.destino, "x") end
 	datos().mentor = { clave = clave, nombre = p.nombre, destino = p.destino, desde = U.Reloj() }
+	mentorFuera = -math.huge -- (acaba de proponértelo: está conectado)
 	enviar(clave, p.destino, "s")
 	cambio()
 	A.After(3, function() enviarEstado(true) end)
@@ -238,7 +244,7 @@ end
 
 local function limpiar(s, largo)
 	if type(s) ~= "string" or U.Secreto(s) then return nil end
-	s = s:gsub("[|\n\r]", ""):gsub("^%s+", ""):gsub("%s+$", ""):sub(1, largo or 60)
+	s = U.Cortar((s:gsub("[|\n\r]", ""):gsub("^%s+", ""):gsub("%s+$", "")), largo or 60) -- (1.3.1) letras, no bytes
 	return s ~= "" and s or nil
 end
 
@@ -284,10 +290,27 @@ function Me.Estado()
 end
 
 local ultimoEstado = -math.huge
+
+-- Se le oyó a tu mentor después de eso (su Alfa en la manada): ya volvió.
+local function mentorVolvio(m)
+	local G = M.Gente
+	local e = G and G.Alfa and G.Alfa(m.clave)
+	if e and (e.oido or -math.huge) > mentorFuera then mentorFuera = -math.huge end
+	return U.Ahora() - mentorFuera >= CALLADO
+end
+
+M.Red.AlNoEstar.mentor = function(clave)
+	local m = Me.Mentor()
+	if m and m.clave == clave then mentorFuera = U.Ahora() end
+end
+
+function Me.MentorFuera() return U.Ahora() - mentorFuera < CALLADO end
+
 enviarEstado = function(forzar)
 	local m = Me.Mentor()
 	if not (m and activo()) then return false end
 	local ahora = U.Ahora()
+	if not mentorVolvio(m) then return false end
 	if not forzar and ahora - ultimoEstado < ESTADO - 1 then return false end
 	local e = Me.Estado()
 	ultimoEstado = ahora
@@ -344,6 +367,9 @@ M.Red.Oyentes.a = function(clave, remitente, _, f, canal)
 	if canal ~= "WHISPER" or not activo() then return end
 	local que = f[1]
 	local d = datos()
+	-- (1.3.1) Tu mentor habló: está conectado.
+	local mio = Me.Mentor()
+	if mio and mio.clave == clave then mentorFuera = -math.huge end
 	if que == "p" then
 		local nivel = entero(f[2], 200)
 		if not nivel or nivel < miNivel() + Me.DIF then return end

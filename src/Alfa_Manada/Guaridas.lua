@@ -23,7 +23,8 @@
 -- Ninguna de las dos funciones tiene restricciones (PartyInfoDocumentation).
 --
 -- Mensajes (Red.lua, prefijo AlfaManada, solo entre quienes comparten):
---   1G|<mapa>|<capa>|<abierta 0/1>   mi guarida (al cambiar y cada REFRESCO)
+--   1G|<mapa>|<capa>|<abierta 0/1>   mi guarida (al cambiar y cada REFRESCO;
+--                                    1.3.1: por susurro no se acepta)
 --   1Q|<mapa>|<capa>                 por susurro: ¿me dejas entrar?
 --   1R|ok  /  1R|no|<por qué>        por susurro: la respuesta
 --   1L|<mapa>|<capa de donde vengo>  por susurro (1.2.9): ¿me pasas a tu
@@ -216,7 +217,8 @@ local function numeroEntero(s)
 	return tonumber(s)
 end
 
-M.Red.Oyentes.G = function(clave, remitente, _, f)
+M.Red.Oyentes.G = function(clave, remitente, _, f, canal)
+	if canal == "WHISPER" then return end -- (1.3.1) lo difundido, nunca por susurro
 	local map, capa = numeroEntero(f[1]), numeroEntero(f[2])
 	if not (map and capa) or map < 1 or map > 100000 or capa < 1 then return end
 	local antes = vistas[clave]
@@ -495,6 +497,7 @@ function Gu.Responder(clave, remitente, map, capa, desde)
 	local ahora = U.Ahora()
 	if (invitadoA[clave] and ahora - invitadoA[clave] < CADA_PERSONA) or ahora - ultimoInvite < CADA_INVITE then return "espera" end
 	if not U.Invitar(remitente) then return "lleno" end
+	U.Podar(invitadoA, CADA_PERSONA, ahora) -- (1.3.1)
 	invitadoA[clave], ultimoInvite = ahora, ahora
 	U.Decir(format(L["%s pidió entrar a tu guarida: lo invitaste a tu grupo. Saldrá solo al llegar."], U.Mostrar(remitente)))
 	return "ok"
@@ -532,6 +535,7 @@ M.Red.Oyentes.O = function(clave, remitente, _, f, canal)
 	if InCombatLockdown and InCombatLockdown() then return end
 	local ahora = U.Ahora()
 	if pidieron[clave] and ahora - pidieron[clave] < CADA_PREGUNTA then return end
+	U.Podar(pidieron, CADA_PREGUNTA, ahora) -- (1.3.1)
 	pidieron[clave] = ahora
 	aviso({ titulo = format(L["%s busca otro plano"], U.Mostrar(remitente)),
 		texto = L["Su plano está lleno de gente. Si le abres tu guarida, Alfa lo invita a tu grupo y sale solo al llegar."],
@@ -545,14 +549,16 @@ end
 -- si es otra, «Pedir entrar» (si alguien la tiene abierta).
 --   1V|<mapa>|<capa>|<r|t>|<mapa del raro>|<x>|<y>|<nombre>
 -- x, y en 0-100. Uno por raro cada CADA_RARO segundos; los avisos recibidos,
--- uno por raro cada CADA_RARO también. Ajuste manada.rarosManada.
+-- uno por raro cada CADA_RARO también y (1.3.1) uno por lobo cada CADA_LOBO,
+-- nunca por susurro. Ajuste manada.rarosManada.
 ---------------------------------------------------------------------------
 local CADA_RARO = 300
-local dichos, oidos = {}, {}
+local CADA_LOBO = 60
+local dichos, oidos, deLobo = {}, {}, {}
 
 local function limpiar(s)
 	if type(s) ~= "string" or U.Secreto(s) then return nil end
-	s = s:gsub("[|\n\r]", ""):sub(1, 48)
+	s = U.Cortar((s:gsub("[|\n\r]", "")), 48) -- (1.3.1) 48 letras, no bytes
 	return s ~= "" and s or nil
 end
 
@@ -565,6 +571,7 @@ local function alAvistar(a)
 	local clave = tostring(a.key or a.id or nombre)
 	local ahora = U.Ahora()
 	if dichos[clave] and ahora - dichos[clave] < CADA_RARO then return end
+	U.Podar(dichos, CADA_RARO, ahora) -- (1.3.1)
 	dichos[clave] = ahora
 	M.Red.Enviar("V:" .. clave, format("%sV|%d|%d|%s|%d|%.2f|%.2f|%s", V, mia.map, mia.capa,
 		a.kind == "treasure" and "t" or "r", a.map, a.x, a.y, nombre)) -- (x, y ya en 0-100, como la flecha)
@@ -577,8 +584,8 @@ local function numeroDecimal(s)
 	return tonumber(s)
 end
 
-M.Red.Oyentes.V = function(clave, remitente, _, f)
-	if not on("rarosManada") then return end
+M.Red.Oyentes.V = function(clave, remitente, _, f, canal)
+	if canal == "WHISPER" or not on("rarosManada") then return end
 	local map, capa, rmap = numeroEntero(f[1]), numeroEntero(f[2]), numeroEntero(f[4])
 	local x, y = numeroDecimal(f[5]), numeroDecimal(f[6])
 	local nombre = limpiar(f[7])
@@ -587,7 +594,11 @@ M.Red.Oyentes.V = function(clave, remitente, _, f)
 	local llave = rmap .. ":" .. nombre
 	local ahora = U.Ahora()
 	if oidos[llave] and ahora - oidos[llave] < CADA_RARO then return end
-	oidos[llave] = ahora
+	-- (1.3.1) Un aviso por lobo cada minuto: nadie llena tu pantalla de raros.
+	if deLobo[clave] and ahora - deLobo[clave] < CADA_LOBO then return end
+	U.Podar(oidos, CADA_RARO, ahora)
+	U.Podar(deLobo, CADA_LOBO, ahora)
+	oidos[llave], deLobo[clave] = ahora, ahora
 	local tesoro = f[3] == "t"
 	local quien = U.Mostrar(remitente)
 	local mia = Gu.Actual()

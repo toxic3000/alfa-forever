@@ -36,10 +36,14 @@ local K = N.Kit
 local I = NS_OF("Alfa_Inicio")
 local Co, Li, TM, CA, R = I.Comida, I.Listo, I.Tiempo, I.Camino, I.Rec
 
--- Cambia campos de una tabla mientras corre fn y los devuelve.
+-- Cambia campos de una tabla mientras corre fn y los devuelve (NADA: a nil).
+local NADA = {}
 local function con(t, campos, fn)
   local antes = {}
-  for k, v in pairs(campos) do antes[k] = { v = rawget(t, k) } rawset(t, k, v) end
+  for k, v in pairs(campos) do
+    antes[k] = { v = rawget(t, k) }
+    if v == NADA then rawset(t, k, nil) else rawset(t, k, v) end
+  end
   local ok, e = pcall(fn)
   for k, a in pairs(antes) do rawset(t, k, a.v) end
   if not ok then error(e, 0) end
@@ -164,20 +168,26 @@ end)
 -- 8. Listo para la mazmorra
 ---------------------------------------------------------------------------
 
-local function conMazmorra(clase, cosas, fn, extra)
+-- 1.3.1: forma = "c_item" (lo de Forever: C_Item.GetItemCount, sin el global)
+-- o "global" (solo el GetItemCount viejo, de respaldo). Las dos deben contar igual.
+local function conMazmorra(clase, cosas, fn, extra, forma)
+  local items = function(id) return (cosas.items or {})[id] or 0 end
   local g = { UnitClass = function() return "X", clase, 1 end, AlfaCerca = CercaFalsa,
     C_Container = bolsas(cosas.bolsas or {}), UnitPowerMax = function() return cosas.mana and 900 or 0 end,
-    GetItemCount = function(id) return (cosas.items or {})[id] or 0 end,
+    GetItemCount = forma == "global" and items or NADA,
     IsPlayerSpell = function(id) return (cosas.hechizos or {})[id] or false end,
     GetInventoryItemCount = function(u, slot) return slot == 0 and (cosas.municion or 0) or 0 end }
   for k, v in pairs(extra or {}) do g[k] = v end
   con(_G, g, function()
-    con(R, { LeerDurabilidad = function() return cosas.dur and { { slot = 5, pct = cosas.dur } } or {} end,
-      Bolsas = function() return cosas.libres or 12, 16 end }, fn)
+    con(C_Item, { GetItemCount = forma == "global" and NADA or items }, function()
+      con(R, { LeerDurabilidad = function() return cosas.dur and { { slot = 5, pct = cosas.dur } } or {} end,
+        Bolsas = function() return cosas.libres or 12, 16 end }, fn)
+    end)
   end)
 end
 
-step("Listo para la mazmorra: lo que falta, lo urgente primero", function()
+for _, forma in ipairs({ "c_item", "global" }) do
+step("Listo para la mazmorra: lo que falta, lo urgente primero (" .. forma .. ")", function()
   idas = {}
   conMazmorra("ROGUE", { dur = 30, libres = 2, bolsas = { [4542] = 3 }, items = { [5140] = 1 }, hechizos = { [1856] = true } }, function()
     local f = Li.Faltas()
@@ -186,13 +196,14 @@ step("Listo para la mazmorra: lo que falta, lo urgente primero", function()
     check(table.concat(claves, ",") == "reparar,comida,componente,bolsas", "faltas en otro orden: " .. table.concat(claves, ","))
     check(f[1] and f[1].texto:find("30 %", 1, true), "no dice cómo va tu equipo: " .. tostring(f[1] and f[1].texto))
     check(f[3] and f[3].texto:find("Polvo cegador", 1, true), "al pícaro no le pidió polvo cegador")
+    check(f[3] and f[3].texto:find("llevas 1 de 5", 1, true), "no contó el polvo cegador que llevas (" .. forma .. "): " .. tostring(f[3] and f[3].texto))
     local a = conAvisos(function() Li.Revisar("boton", "Sima ígnea") end)
     local o = a[1] or {}
     check(o.titulo == "Antes de Sima ígnea te falta:", "el aviso no dice de qué mazmorra: " .. tostring(o.titulo))
     check(o.accion and o.accion.texto == "Llévame a reparar", "lo primero no fue reparar")
     if o.accion then o.accion.alClic() end
     check(idas[#idas] == "repair", "la flecha no fue a reparar")
-  end)
+  end, nil, forma)
   -- Sin el hechizo, no pide el componente; un guerrero no pide agua.
   conMazmorra("ROGUE", { dur = 90, bolsas = { [4542] = 20 }, hechizos = {} }, function()
     check(#Li.Faltas() == 0, "pidió polvo cegador sin saber Esfumarse")
@@ -200,17 +211,24 @@ step("Listo para la mazmorra: lo que falta, lo urgente primero", function()
     check(a[1] and a[1].titulo == "¡Todo listo para la mazmorra!", "con todo, el botón no dijo «¡Todo listo!»")
     a = conAvisos(function() Li.Revisar("entrar") end)
     check(#a == 0, "sola, sin faltas, salió un aviso")
-  end)
+  end, nil, forma)
+  -- 1.3.1: el brujo con sus fragmentos de alma no oye que le faltan.
+  conMazmorra("WARLOCK", { dur = 90, bolsas = { [4542] = 20 }, items = { [6265] = 10 } }, function()
+    for _, x in ipairs(Li.Faltas()) do
+      check(x.clave ~= "componente", "al brujo con 10 fragmentos le dijo (" .. forma .. "): " .. tostring(x.texto))
+    end
+  end, { UnitLevel = function() return 30 end }, forma)
   -- El cazador y su munición; el sacerdote y su agua.
   conMazmorra("HUNTER", { dur = 90, bolsas = { [4542] = 20, [1205] = 20 }, mana = true, municion = 150 }, function()
     local f = Li.Faltas()
     check(f[1] and f[1].clave == "municion" and f[1].ir == "arrows", "al cazador no le pidió flechas")
-  end)
+  end, nil, forma)
   conMazmorra("PRIEST", { dur = 90, bolsas = { [4542] = 20, [1205] = 2 }, mana = true }, function()
     local f = Li.Faltas()
     check(f[1] and f[1].clave == "agua", "al sacerdote no le pidió agua")
-  end)
+  end, nil, forma)
 end)
+end
 
 step("Listo para la mazmorra: sola al entrar y con tu grupo, nunca en combate", function()
   Li.Reiniciar()

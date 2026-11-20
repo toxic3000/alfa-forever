@@ -63,8 +63,10 @@ end
 ---------------------------------------------------------------------------
 -- #23 Un solo reloj
 ---------------------------------------------------------------------------
+-- (1.3.1: «lya.finMazmorra» solo corre dentro de una mazmorra y «lya.latido»
+-- solo con Lya a la vista: los prueba prueba_131_nucleo.lua.)
 local FIJAS = {
-  "lya.minutos", "lya.finMazmorra", "lya.momentos",
+  "lya.minutos", "lya.momentos",
   "manada.citaRecordar", "manada.citaRepetir", "manada.guaridas", "manada.juntos", "manada.juntosOfrecer",
   "manada.logros", "manada.pulso", "manada.limpieza", "manada.plano", "manada.quienVa", "manada.relojRaros",
   "curacion.alcance", "inicio.camino", "inicio.sesion",

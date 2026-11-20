@@ -4,6 +4,10 @@
 --   adentro, cuántas veces caíste (PLAYER_DEAD adentro) y lo mejor que
 --   sacaste (CHAT_MSG_LOOT, solo lo tuyo, de la calidad más alta). Lo festeja
 --   y lo apunta en tu historia como «Última mazmorra» (TuHistoria.lua).
+--   1.3.1: si caes y sales como espíritu (o te revives afuera con el ángel
+--   y vuelves), la corrida sigue: se cierra cuando sales vivo. Mientras
+--   estás adentro, una tarea del reloj apunta cada minuto que sigues ahí
+--   («lya.finMazmorra»); afuera no corre.
 --   La corrida se guarda por personaje (una recarga adentro no la pierde) y
 --   cuenta hasta tu último minuto adentro (si te desconectas, no suma horas).
 --   Una visita de menos de 3 minutos no cuenta. En las instancias, los textos
@@ -34,6 +38,14 @@ local function texto(v) if secreto(v) or type(v) ~= "string" or v == "" then ret
 local function reloj() return (GetServerTime and GetServerTime()) or (time and time()) or 0 end
 
 local function datos() return N.DatosPersonaje(ID) end
+
+-- 1.3.1: muerto o espíritu (un valor secreto no se lee: cuenta como vivo).
+local function muerto()
+	if not UnitIsDeadOrGhost then return false end
+	local ok, v = pcall(UnitIsDeadOrGhost, "player")
+	return ok and not secreto(v) and v == true
+end
+Fm.Muerto = muerto
 
 local function tipoInstancia()
 	if not IsInInstance then return nil end
@@ -176,8 +188,14 @@ end
 -- -> true si Lya contó el resumen (o lo dirá en cuanto pueda).
 function Fm.Salir()
 	local r = Fm.Corrida()
-	datos().corrida = nil
 	if not r then return false end
+	-- 1.3.1: liberaste el espíritu adentro (caíste el grupo): la corrida sigue;
+	-- se retoma al volver a entrar (Fm.Entrar, por su marca) y se cierra al salir vivo.
+	if muerto() then
+		r.ultimo = reloj()
+		return false
+	end
+	datos().corrida = nil
 	local dur = max(0, (tonumber(r.ultimo) or 0) - (tonumber(r.inicio) or 0))
 	if dur < MINIMO then return false end
 	if M.Diario then
@@ -196,25 +214,46 @@ end
 ---------------------------------------------------------------------------
 -- Eventos
 ---------------------------------------------------------------------------
+-- Mientras estás adentro, cada minuto se apunta que sigues ahí (un solo
+-- reloj, 1.2.9); afuera, la tarea no corre (1.3.1).
+local function seguirAdentro()
+	local r = Fm.Corrida()
+	if r and tipoInstancia() == "party" then r.ultimo = reloj() end
+end
+local function vigilar()
+	if tipoInstancia() == "party" then
+		if not N.HayTarea("lya.finMazmorra") then N.Cada("lya.finMazmorra", ADENTRO, seguirAdentro) end
+	else
+		N.Quitar("lya.finMazmorra")
+	end
+end
+Fm.Vigilar = vigilar
+
+-- Afuera (o en otra clase de instancia) con una corrida: tras un respiro, el resumen.
+local function salirPronto()
+	if not Fm.Corrida() then return end
+	A.After(3, function()
+		if tipoInstancia() == "party" then return end
+		local ok, e = pcall(Fm.Salir)
+		if not ok and geterrorhandler then geterrorhandler()(e) end
+	end)
+end
+
 A.RegisterEvent("PLAYER_ENTERING_WORLD", function()
 	local tipo = tipoInstancia()
 	if tipo == "party" then
 		Fm.Entrar()
-	elseif Fm.Corrida() then
-		-- Afuera (o en otra clase de instancia): tras un respiro, el resumen.
-		A.After(3, function()
-			if tipoInstancia() == "party" then return end
-			local ok, e = pcall(Fm.Salir)
-			if not ok and geterrorhandler then geterrorhandler()(e) end
-		end)
+	else
+		salirPronto()
 	end
+	vigilar()
 end)
+-- 1.3.1: revivir afuera (el ángel, o una resurrección fuera de la mazmorra)
+-- cierra la corrida que quedó abierta al caer.
+A.RegisterEvent("PLAYER_UNGHOST", function() if tipoInstancia() ~= "party" then salirPronto() end end)
+A.RegisterEvent("PLAYER_ALIVE", function() if tipoInstancia() ~= "party" then salirPronto() end end)
 A.RegisterEvent("PLAYER_DEAD", function() Fm.AlMorir() end)
 A.RegisterEvent("CHAT_MSG_LOOT", function(_, t, _, _, _, _, _, _, _, _, _, _, guid)
 	local ok, e = pcall(Fm.AlBotin, t, guid)
 	if not ok and geterrorhandler then geterrorhandler()(e) end
-end)
-N.Cada("lya.finMazmorra", ADENTRO, function() -- un solo reloj (1.2.9)
-	local r = Fm.Corrida()
-	if r and tipoInstancia() == "party" then r.ultimo = reloj() end
 end)

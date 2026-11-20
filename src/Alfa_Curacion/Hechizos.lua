@@ -264,14 +264,36 @@ local function enLibro(nombre)
 end
 
 -- clave de H -> spellID con el que se reconoce (el primero que conoces), o nil.
-function M.Conocido(clave)
-	local ids = H[clave]
-	if not ids then return nil end
+-- 1.3.1: se recuerda (clave -> id, o false si no lo conoces) hasta que cambia
+-- tu libro: la página y los marcos lo preguntan cientos de veces.
+local conocidos = {}
+local function buscar(ids)
 	for i = 1, #ids do
 		if sabe(ids[i]) then return ids[i] end
 	end
 	if enLibro(M.NombreHechizo(ids[1])) then return ids[1] end
 	return nil
+end
+
+function M.Conocido(clave)
+	local ids = H[clave]
+	if not ids then return nil end
+	local v = conocidos[clave]
+	if v == nil then
+		v = buscar(ids) or false
+		conocidos[clave] = v
+	end
+	return v or nil
+end
+
+-- Tu libro cambió (aprendiste, subiste de nivel, entraste al mundo): se
+-- vuelve a preguntar. Se registra aquí, antes que Mapa.lua y Marcos.lua,
+-- para que sus avisos de SPELLS_CHANGED ya lean el libro nuevo.
+function M.OlvidarConocidos()
+	for k in pairs(conocidos) do conocidos[k] = nil end
+end
+for _, ev in ipairs({ "SPELLS_CHANGED", "LEARNED_SPELL_IN_SKILL_LINE", "PLAYER_LEVEL_UP", "PLAYER_ENTERING_WORLD" }) do
+	A.RegisterEvent(ev, M.OlvidarConocidos)
 end
 
 ---------------------------------------------------------------------------

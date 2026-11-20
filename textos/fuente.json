@@ -543,6 +543,10 @@
   "en": "%d levels",
   "origen": "Alfa_Inicio"
  },
+ "%d no se movieron: ya no estaban ahí o el juego no los soltó.": {
+  "en": "%d weren't moved: they were no longer there or the game didn't let them go.",
+  "origen": "Alfa_Bolsas"
+ },
  "%d no vale la pena: suéltala para hacer espacio.": {
   "en": "%d isn't worth it: drop it to make room.",
   "origen": "Alfa_Rutas"
@@ -1663,6 +1667,10 @@
   "en": "1 level",
   "origen": "Alfa_Inicio"
  },
+ "1 no se movió: ya no estaba ahí o el juego no lo soltó.": {
+  "en": "1 wasn't moved: it was no longer there or the game didn't let it go.",
+  "origen": "Alfa_Bolsas"
+ },
  "1 objeto": {
   "en": "1 item",
   "origen": "Alfa_Comercio"
@@ -2295,6 +2303,10 @@
   "en": "Zoom in",
   "origen": "Alfa_Mundo"
  },
+ "Acomoda con el ratón a Lya, tu guía, la flecha y tus marcos: Ajustes > Estilo y sonido o /alfa acomodar.": {
+  "en": "Arrange Lya, your guide, the arrow and your frames with the mouse: Settings > Style and sound or /alfa acomodar.",
+  "origen": "Alfa_Bienvenida"
+ },
  "Acomoda tus marcos": {
   "en": "Place your frames",
   "origen": "Alfa_Curacion"
@@ -2302,6 +2314,14 @@
  "Acomodar": {
   "en": "Tidy up",
   "origen": "Alfa_Bolsas"
+ },
+ "Acomodar [pantalla]": {
+  "en": "Arrange",
+  "origen": "Alfa_Bienvenida"
+ },
+ "Acomodar la pantalla": {
+  "en": "Arrange your screen",
+  "origen": "Alfa_Bienvenida"
  },
  "Actitud de batalla": {
   "en": "Battle Stance",
@@ -2538,6 +2558,10 @@
  "Ahora no": {
   "en": "Not now",
   "origen": "Alfa_Curacion"
+ },
+ "Ahora no hay nada de Alfa a la vista para mover. Abre tu guía, la pesca o Lya y vuelve a entrar.": {
+  "en": "There's nothing of Alfa on screen to move right now. Open your guide, fishing or Lya and come back.",
+  "origen": "Alfa_Bienvenida"
  },
  "Ahora no pude armar el camino a esta misión.": {
   "en": "I couldn't build the way to this quest right now.",
@@ -3031,8 +3055,8 @@
   "en": "Alfa caught errors",
   "origen": "Alfa_Bienvenida"
  },
- "Alfa borrará lo que guardó de %s: sus bolsas, su banco y su equipo. Si vuelves a jugar con él, se guarda de nuevo.": {
-  "en": "Alfa will delete what it saved of %s: bags, bank and gear. Play that character again and it is saved anew.",
+ "Alfa borrará lo que guardó de %s: sus bolsas, su banco, su equipo y sus recetas de Comercio. Si vuelves a jugar con él, se guarda de nuevo.": {
+  "en": "Alfa will delete what it saved of %s: bags, bank, gear and their Trade recipes. Play that character again and it is saved anew.",
   "origen": "Alfa_Bolsas"
  },
  "Alfa completo": {
@@ -3987,6 +4011,10 @@
   "en": "Drag each combat frame wherever suits you. When you're done, lock them so they stay out of the way.",
   "origen": "Alfa_Combate"
  },
+ "Arrastra lo que quieras mover. Clic derecho en uno: vuelve a su lugar de siempre.": {
+  "en": "Drag whatever you want to move. Right-click one: it goes back to its usual place.",
+  "origen": "Alfa_Bienvenida"
+ },
  "Arrastra otra bolsa aquí para cambiarla.": {
   "en": "Drag another bag here to swap it.",
   "origen": "Alfa_Bolsas"
@@ -4042,6 +4070,14 @@
  "Arrástralo para moverlo": {
   "en": "Drag it to move it",
   "origen": "Alfa_Inicio"
+ },
+ "Arrástralo para moverlo.": {
+  "en": "Drag it to move it.",
+  "origen": "Alfa_Bienvenida"
+ },
+ "Arrástralo para moverlo. Clic derecho: vuelve a su lugar de siempre.": {
+  "en": "Drag it to move it. Right-click: back to its usual place.",
+  "origen": "Alfa_Bienvenida"
  },
  "Artefacto": {
   "en": "Artifact",
@@ -15371,6 +15407,10 @@
   "en": "La Jauría is celebrating",
   "origen": "Alfa_Lya"
  },
+ "La Jauría más cuidadosa y Alfa más ligero: el mapa del grupo, los barcos y tus bolsas trabajan menos.": {
+  "en": "A more careful La Jauría and a lighter Alfa: the group map, boats and your bags do less work.",
+  "origen": "Alfa_Bienvenida"
+ },
  "La Jauría nocturno": {
   "en": "La Jauría Night",
   "origen": "Interfaz"
@@ -15485,7 +15525,7 @@
  },
  "La barra de pesca": {
   "en": "The fishing bar",
-  "origen": "Alfa_Pesca"
+  "origen": "Alfa_Bienvenida"
  },
  "La barra de tu vuelo con sus paradas sale siempre al despegar.": {
   "en": "Your flight bar with its stops always shows when you take off.",
@@ -15618,6 +15658,10 @@
  "La familia Barov le entregó su castillo de Caer Darrow al Culto a cambio de vida eterna. Así nació Scholomance, y así les fue.": {
   "en": "The Barov family handed their castle at Caer Darrow to the Cult in exchange for eternal life. That's how Scholomance was born, and look how it went for them.",
   "origen": "Alfa_Lya"
+ },
+ "La flecha": {
+  "en": "The arrow",
+  "origen": "Alfa_Bienvenida"
  },
  "La flecha con el estilo de La Jauría, y «¿Cuánto tiempo tienes?» arma tu plan paso a paso.": {
   "en": "The arrow in La Jauría's style, and \"How much time do you have?\" builds your plan step by step.",
@@ -15790,6 +15834,10 @@
  "La manada a la vista": {
   "en": "The pack in sight",
   "origen": "Alfa_Manada"
+ },
+ "La manada afinada": {
+  "en": "A finely tuned pack",
+  "origen": "Alfa_Bienvenida"
  },
  "La manada aúlla contigo.": {
   "en": "The pack howls with you.",
@@ -17447,6 +17495,10 @@
   "en": "What hit you hardest: %s, from %s (%s).",
   "origen": "Alfa_Combate"
  },
+ "Lo que no está a la vista no sale aquí.": {
+  "en": "Anything not on screen won't show here.",
+  "origen": "Alfa_Bienvenida"
+ },
  "Lo que obtuviste en esta sesión": {
   "en": "What you got this session",
   "origen": "Alfa_Recoleccion"
@@ -17739,9 +17791,17 @@
   "en": "The anti-venoms you make cure poisons. With Ashenvale's spiders, they're welcome!",
   "origen": "Alfa_Lya"
  },
+ "Los anuncios esperan a que el juego termine de escribir la zona, y el botón de Alfa queda siempre a la vista en el minimapa.": {
+  "en": "Announcements wait for the game to finish writing the zone, and Alfa's button always stays in view on the minimap.",
+  "origen": "Alfa_Bienvenida"
+ },
  "Los aqir eran un imperio antiguo de insectos que peleó contra los trols. De ellos vienen los qiraji de Ahn'Qiraj y los nerubianos del norte.": {
   "en": "The aqir were an ancient insect empire that fought the trolls. From them came the qiraji of Ahn'Qiraj and the nerubians of the north.",
   "origen": "Alfa_Lya"
+ },
+ "Los avisos": {
+  "en": "Alerts",
+  "origen": "Alfa_Bienvenida"
  },
  "Los avisos de viaje hablan como la manada: «La manada viaja», el lobo en el aro y una huellita que camina mientras llega tu barco.": {
   "en": "Travel alerts speak like the pack: \"The pack travels\", the wolf in the ring and a paw print that walks while your boat arrives.",
@@ -17755,8 +17815,8 @@
   "en": "Enemies' helpers.",
   "origen": "Alfa_Vista"
  },
- "Los botones de otros addons alrededor del minimapa (también el de Alfa) solo aparecen al pasar el ratón por encima.": {
-  "en": "Other addons' buttons around the minimap (Alfa's too) only show while the pointer is over it.",
+ "Los botones de otros addons alrededor del minimapa solo aparecen al pasar el ratón por encima. El de Alfa siempre queda a la vista.": {
+  "en": "Other addons' buttons around the minimap only show while the pointer is over it. Alfa's always stays in view.",
   "origen": "Alfa_Comodidades"
  },
  "Los cebos suben tu habilidad de pesca un rato: úsalos en aguas difíciles.": {
@@ -18108,8 +18168,8 @@
   "origen": "Alfa_Curacion"
  },
  "Los marcos se mueven fuera de combate.": {
-  "en": "Frames can only be moved out of combat.",
-  "origen": "Alfa_Combate"
+  "en": "Frames can be moved out of combat.",
+  "origen": "Alfa_Bienvenida"
  },
  "Los marcos, fondos, botones y letras del propio juego, con títulos en oro.": {
   "en": "The game's own frames, backgrounds, buttons and fonts, with gold titles.",
@@ -18649,6 +18709,10 @@
  },
  "Lya, la manada y tus récords": {
   "en": "Lya, the pack and your records",
+  "origen": "Alfa_Bienvenida"
+ },
+ "Lya, tu guía, la flecha, los avisos, la pesca y los marcos de Combate y Curación: los arrastras a donde quieras. También con /alfa acomodar.": {
+  "en": "Lya, your guide, the arrow, the alerts, fishing and the Combat and Healing frames: drag them wherever you like. Also with /alfa acomodar.",
   "origen": "Alfa_Bienvenida"
  },
  "Lánzalo antes de la siguiente pelea.": {
@@ -19831,6 +19895,10 @@
   "en": "Shows an icon above the bobber, so you know your key will reel it in.",
   "origen": "Alfa_Pesca"
  },
+ "Mueve lo de Alfa con el ratón": {
+  "en": "Move Alfa's things with the mouse",
+  "origen": "Alfa_Bienvenida"
+ },
  "Mueve tus marcos": {
   "en": "Move your frames",
   "origen": "Alfa_Combate"
@@ -20030,6 +20098,10 @@
  "Más daño y más riesgo. Matas rápido, pero un error se paga caro.": {
   "en": "More damage and more risk. You kill fast, but a mistake costs you dearly.",
   "origen": "Alfa_Builds"
+ },
+ "Más de 40 arreglos: combate y curación en mazmorras, el buzón cuenta bien tu dinero y la placa de llegada se va sola.": {
+  "en": "Over 40 fixes: combat and healing in dungeons, the mailbox counts your money right and the arrival plate goes away on its own.",
+  "origen": "Alfa_Bienvenida"
  },
  "Más de mi gente": {
   "en": "More about my people",
@@ -25123,6 +25195,10 @@
   "en": "%d settings were put on. Some things show fully after reloading.",
   "origen": "Alfa_Bienvenida"
  },
+ "Se pusieron %d ajustes. Las líneas que no eran válidas (%d) se dejaron fuera.": {
+  "en": "%d settings were put on. The lines that weren't valid (%d) were left out.",
+  "origen": "Alfa_Bienvenida"
+ },
  "Se pusieron %d de %d opciones": {
   "en": "%d of %d options were set",
   "origen": "Alfa_Mazmorras"
@@ -28231,6 +28307,10 @@
   "en": "Transmuting iron into gold really exists: every alchemist's dream.",
   "origen": "Alfa_Lya"
  },
+ "Tranvía de %s": {
+  "en": "%s tram station",
+  "origen": "Alfa_Rutas"
+ },
  "Tras aceptar o entregar, cierra la ventana del PNJ si solo ofrece misiones que tu guía no hace.": {
   "en": "After accepting or turning in, closes the NPC window if it only offers quests your guide doesn't do.",
   "origen": "Alfa_Bienvenida"
@@ -29666,6 +29746,10 @@
  "Tus marcos están listos": {
   "en": "Your frames are ready",
   "origen": "Alfa_Curacion"
+ },
+ "Tus metas de pesca": {
+  "en": "Your fishing goals",
+  "origen": "Alfa_Bienvenida"
  },
  "Tus metas en tu orden: un objeto, oro, una profesión, un lugar...": {
   "en": "Your goals in your order: an item, gold, a profession, a place...",
@@ -31894,6 +31978,10 @@
  "abrir o cerrar esta ventana": {
   "en": "open or close this window",
   "origen": "Interfaz"
+ },
+ "acomoda con el ratón lo de Alfa en tu pantalla": {
+  "en": "arrange Alfa's things on your screen with the mouse",
+  "origen": "Alfa_Bienvenida"
  },
  "ahora": {
   "en": "just now",

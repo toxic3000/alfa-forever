@@ -173,6 +173,38 @@ function M.MiEncantamiento()
 end
 
 ---------------------------------------------------------------------------
+-- 1.3.1: olvidar a un personaje («Olvidar» en la página de Bolsas): sus
+-- recetas y su Encantamiento. La clave es nombre-reino con el reino del juego
+-- (GetRealmName, con espacios); también se reconoce sin espacios ni guiones,
+-- como la clave de Bolsas (GetNormalizedRealmName). Tu personaje de ahora no se
+-- olvida. -> true si quitó algo
+---------------------------------------------------------------------------
+
+local function sinEspacios(s) return (tostring(s):gsub("[%s%-]", "")):lower() end
+
+function M.OlvidarPersonaje(nombre, reino)
+	if type(nombre) ~= "string" or nombre == "" then return false end
+	local d = datos()
+	local yo = M.ClavePersonaje()
+	local exacta = type(reino) == "string" and reino ~= "" and (nombre .. "-" .. reino) or nil
+	local parecida = exacta and sinEspacios(exacta) or nil
+	local quitado = false
+	for _, t in ipairs({ d.recetas, d.encantar }) do
+		for clave in pairs(t) do
+			if clave ~= yo and type(clave) == "string" and (clave == exacta or (parecida and sinEspacios(clave) == parecida)) then
+				t[clave] = nil
+				quitado = true
+			end
+		end
+	end
+	if quitado then M.RecetasCambiaron() end
+	return quitado
+end
+
+AlfaComercio = type(AlfaComercio) == "table" and AlfaComercio or {}
+AlfaComercio.OlvidarPersonaje = M.OlvidarPersonaje
+
+---------------------------------------------------------------------------
 -- Lectura de la ventana de profesión
 ---------------------------------------------------------------------------
 

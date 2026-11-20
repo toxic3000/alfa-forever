@@ -61,13 +61,7 @@ Tb.MOTIVOS = {
 local function limpiar(s)
 	if type(s) ~= "string" or U.Secreto(s) then return nil end
 	s = s:gsub("[|\n\r]", ""):gsub("^%s+", ""):gsub("%s+$", "")
-	local out, n = {}, 0
-	for c in s:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
-		n = n + 1
-		if n > 50 then break end
-		out[n] = c
-	end
-	s = table.concat(out)
+	s = U.Cortar(s, 50) -- hasta 50 letras (1.3.1: U.Cortar)
 	return s ~= "" and s or nil
 end
 
@@ -214,6 +208,7 @@ M.Red.Oyentes.b = function(clave, remitente, _, f, canal)
 	local ahora = U.Ahora()
 	local antes = suyos[clave]
 	if oidos[clave] and ahora - oidos[clave] < CADA_OIDO and antes then return end
+	U.Podar(oidos, CADA_OIDO, ahora) -- (1.3.1)
 	oidos[clave] = ahora
 	if not antes then
 		local n = 0

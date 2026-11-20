@@ -345,11 +345,12 @@ end)
 -- 1.2.9: Alfa sencillo o completo (Alfa_Nucleo/Modo.lua). De fábrica,
 -- sencillo (quien empieza ve lo esencial); quien ya tenía Alfa sigue con
 -- todo Alfa a la vista: se le anota «completo» una vez. Nunca encima de lo
--- que ya eligió.
-N.Migracion(3, function(db)
+-- que ya eligió. 1.3.1: unos ajustes de antes que se restauran o se aplican
+-- (o.vieja, N.MigrarDesde) son de quien ya tenía Alfa aunque la cuenta parezca nueva.
+N.Migracion(3, function(db, o)
 	local s = type(db.settings) == "table" and db.settings or nil
 	if not s then return end
-	if A.IsNewAccount and A.IsNewAccount() then return end
+	if not (type(o) == "table" and o.vieja) and A.IsNewAccount and A.IsNewAccount() then return end
 	s.bienvenida = type(s.bienvenida) == "table" and s.bienvenida or {}
 	if s.bienvenida.modo == nil then s.bienvenida.modo = "completo" end
 end)

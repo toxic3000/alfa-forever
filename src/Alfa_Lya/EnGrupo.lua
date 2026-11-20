@@ -16,7 +16,8 @@
 -- Ligero y raro: un saludo por compañero por sesión, una plática cada
 -- PLATICA segundos como mucho (y solo a veces, al entregar una misión), lo que
 -- llega se acepta una vez cada ESCUCHA segundos por persona. Nada en combate
--- ni dentro de instancias.
+-- ni dentro de instancias. (1.3.1) Nada a quien está desconectado, y la
+-- respuesta R va solo a quien saludó.
 --
 --   Gr.Mensaje(texto, canal, emisor)  (lo que llega; para pruebas)
 --   Gr.Platicar()  Gr.Saludar()
@@ -92,26 +93,37 @@ local function puede()
 	return C_ChatInfo ~= nil and C_ChatInfo.SendAddonMessage ~= nil
 end
 
--- Los compañeros del grupo (nombre-reino), para el susurro oculto.
+-- 1.3.1: un compañero desconectado no recibe nada (el susurro haría que el
+-- juego dijera «No hay ningún jugador llamado...»). Lo que no se sabe, sí.
+local function conectado(u)
+	if not UnitIsConnected then return true end
+	local ok, si = pcall(UnitIsConnected, u)
+	if not ok or secreto(si) then return true end
+	return si ~= false
+end
+
+-- Los compañeros conectados del grupo (nombre-reino), para el susurro oculto.
 local function companeros()
 	local out = {}
 	for i = 1, 4 do
 		local n, reino
 		if UnitName then n, reino = UnitName("party" .. i) end
-		if type(n) == "string" and not secreto(n) and n ~= "" and not secreto(reino) then
+		if type(n) == "string" and not secreto(n) and n ~= "" and not secreto(reino) and conectado("party" .. i) then
 			out[#out + 1] = (type(reino) == "string" and reino ~= "") and (n .. "-" .. reino) or n
 		end
 	end
 	return out
 end
 
--- texto: "H", "R" o "C|n".
-local function enviar(texto)
+-- texto: "H", "R" o "C|n". `solo` (1.3.1): por la red, solo a esa persona
+-- (la respuesta a un saludo va a quien saludó, no a todo el grupo).
+local function enviar(texto, solo)
 	if not puede() then return false end
 	local R = red()
 	if R then
 		local alguno = false
-		for _, quien in ipairs(companeros()) do
+		local para = solo and { solo } or companeros()
+		for _, quien in ipairs(para) do
 			local ok, r = pcall(R.EnviarLibre, "lya:" .. texto:sub(1, 1) .. ":" .. quien, "Y", texto, quien)
 			if ok and r then alguno = true end
 		end
@@ -172,7 +184,8 @@ function Gr.Saludar()
 	for i = 1, 4 do
 		local u = "party" .. i
 		local n = UnitName and UnitName(u)
-		if type(n) == "string" and not secreto(n) and n ~= "" and not saludados[n] then
+		-- (1.3.1) A quien está desconectado se le saluda cuando vuelva.
+		if type(n) == "string" and not secreto(n) and n ~= "" and not saludados[n] and conectado(u) then
 			saludados[n] = true
 			nuevo = true
 		end
@@ -209,7 +222,7 @@ function Gr.Oir(tipo, resto, emisor)
 		local frase = tipo == "H" and L["¡La Lya de %s me saludó! Entre lobas nos entendemos."]
 			or L["¡La Lya de %s me contestó el saludo! Ya somos manada."]
 		decir(format(frase, quien), { id = "manadaHola" })
-		if tipo == "H" then enviar("R") end
+		if tipo == "H" then enviar("R", emisor) end
 		return true
 	elseif tipo == "C" then
 		local n = tonumber(resto)

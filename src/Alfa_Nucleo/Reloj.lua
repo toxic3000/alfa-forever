@@ -27,8 +27,10 @@ local pairs, pcall, type, tonumber, max, huge = pairs, pcall, type, tonumber, ma
 local tareas = {}            -- clave -> tarea
 local marco = CreateFrame("Frame")
 marco:Hide()
-local turno = 0              -- cada plan nuevo invalida el despertador anterior
 local siguiente = huge       -- cuándo toca la próxima tarea (GetTime)
+local alarma = -huge         -- 1.3.1: cuándo suena el último despertador puesto
+local tocan = {}             -- 1.3.1: las claves que tocan en un tic (la misma tabla siempre)
+local enTic = false
 local DESPIERTO = 0.1        -- con menos de esto para la próxima, el marco no duerme
 local ANTES = 0.05           -- el despertador suena esto antes (unos 3 cuadros)
 local MAX_FALLOS = 5
@@ -43,9 +45,16 @@ local function medir()
 	return ok and tonumber(t) or nil
 end
 local function enCombate() return InCombatLockdown and InCombatLockdown() and true or false end
+local wipe = wipe or function(t) for k in pairs(t) do t[k] = nil end return t end
+
+-- 1.3.1: un solo despertador para todos los planes (antes, una función nueva
+-- por plan). Uno que suena de un plan viejo no hace daño: solo despierta al
+-- marco si la próxima tarea ya casi toca.
+local function despertar()
+	if siguiente ~= huge and siguiente - ahora() <= ANTES + DESPIERTO then marco:Show() end
+end
 
 local function planificar()
-	turno = turno + 1
 	local now = ahora()
 	siguiente = huge
 	for _, t in pairs(tareas) do
@@ -60,12 +69,14 @@ local function planificar()
 		marco:Show()
 		return
 	end
-	-- Duerme y se despierta un poco antes (el OnUpdate afina el momento).
+	-- Duerme y se despierta un poco antes (el OnUpdate afina el momento). Si
+	-- el despertador que ya está puesto suena a tiempo (no después ni mucho
+	-- antes), no hace falta otro.
 	marco:Hide()
-	local mio = turno
-	C_Timer.After(max(0, falta - ANTES), function()
-		if mio == turno then marco:Show() end
-	end)
+	local cuando = now + max(0, falta - ANTES)
+	if alarma > now and alarma <= cuando and cuando - alarma < DESPIERTO then return end
+	alarma = cuando
+	C_Timer.After(max(0, falta - ANTES), despertar)
 end
 
 local function correr(t, now)
@@ -88,12 +99,15 @@ local function tic()
 	local now = ahora()
 	if now < siguiente then return end
 	-- Primero las que tocan (una tarea puede anotar o quitar otras al correr).
-	local tocan = {}
+	-- La misma tabla en cada tic (1.3.1); una nueva solo si una tarea mueve el reloj.
+	local lista = enTic and {} or wipe(tocan)
+	local antes = enTic
+	enTic = true
 	for clave, t in pairs(tareas) do
-		if t.proxima <= now then tocan[#tocan + 1] = clave end
+		if t.proxima <= now then lista[#lista + 1] = clave end
 	end
 	local combate = enCombate()
-	for _, clave in ipairs(tocan) do
+	for _, clave in ipairs(lista) do
 		local t = tareas[clave]
 		if t and t.proxima <= now then
 			if t.fueraDeCombate and combate then
@@ -107,6 +121,7 @@ local function tic()
 			end
 		end
 	end
+	enTic = antes
 	planificar()
 end
 marco:SetScript("OnUpdate", tic)

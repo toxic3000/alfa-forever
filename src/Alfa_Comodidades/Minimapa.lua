@@ -11,10 +11,11 @@
 --     (al girar el minimapa, Camelot/Minimap.lua): se engancha con
 --     hooksecurefunc y se vuelve a aplicar.
 --   Botones de addons: los botones de otros addons alrededor del minimapa
---     (LibDBIcon y los que llevan "Minimap" y "Button"/"Icon" en su nombre,
---     también el de Alfa) se vuelven invisibles y aparecen al pasar el ratón
---     sobre el minimapa. Solo se cambia su transparencia: nunca se ocultan,
---     se mueven ni se tocan marcos protegidos.
+--     (LibDBIcon y los que llevan "Minimap" y "Button"/"Icon" en su nombre)
+--     se vuelven invisibles y aparecen al pasar el ratón sobre el minimapa.
+--     Solo se cambia su transparencia: nunca se ocultan, se mueven ni se
+--     tocan marcos protegidos. El de Alfa (AlfaMinimapButton) siempre queda
+--     a la vista (1.3.1): es por donde un jugador nuevo encuentra Alfa.
 --   Menú de addons: el botón con el número de addons (AddonCompartmentFrame)
 --     se oculta, y su UpdateDisplay (enganchado) no lo vuelve a mostrar.
 --
@@ -130,6 +131,8 @@ local BLIZZARD = {
 	MinimapBackdrop = true, MinimapCompassTexture = true, MinimapCluster = true,
 	GameTimeFrame = true, TimeManagerClockButton = true, AddonCompartmentFrame = true,
 	MiniMapMailIcon = true, MinimapZoneText = true, QueueStatusButton = true, MiniMapCraftingOrderIcon = true,
+	-- El de Alfa tampoco: es la puerta de entrada a Alfa (1.3.1).
+	AlfaMinimapButton = true,
 }
 
 local botones = {}    -- marco -> true: los que se atenúan

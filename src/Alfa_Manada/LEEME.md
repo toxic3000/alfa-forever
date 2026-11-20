@@ -41,6 +41,7 @@ La lista `I.LISTA` la lleva Toxic a mano, con permiso de cada persona: `["Nombre
 - `AlfaManada.Apoyar()`: abre la página en "Apoya a Alfa".
 - `AlfaManada.Resumen()` → `{ comparte, manada, grupo, siguiendo, via }` (para Hoy, por ejemplo).
 - `AlfaManada.Insignia(nombre)` → `"alfa"` | `"jauria"` | `nil`; `AlfaManada.InsigniaDeUnidad(unit)`; `AlfaManada.EstiloInsignia(tipo)` → `{ texto, icono, color }`.
+- `AlfaManada.MisionesDe(nombre)` (1.3.1) → `{ [questID] = true }` con lo que ese lobo dijo por `1M`, o `nil` si no se sabe (no compartes, `cazarJuntos` apagado, no lo dijo o hace más de 15 min). Acepta "Ana Smith" y "Ana Smith-Reino". La usan `Alfa_Rutas/MapaGrupo.lua` y `Grupo.lua`; con `nil` siguen con `C_QuestLog.IsUnitOnQuest`.
 
 ## Comandos
 
@@ -61,6 +62,18 @@ La lista `I.LISTA` la lleva Toxic a mano, con permiso de cada persona: `["Nombre
 - **El saludo** (`Saludo.lua`, `manada.saludo`): a los 30 s de entrar, una vez, quién de tu hermandad anda conectado y dónde (hasta 3 y «y N más»). Solo lee la lista de la hermandad.
 - **Logros de la insignia** (`Retrato.lua`): una estrella en el nivel máximo y, en el tuyo, el ícono de raros con 100 raros vistos (`A.Rares.History`, de la cuenta en el reino). Solo visual.
 - Prueba: `tools/banco/prueba_127_manada.lua`.
+
+## 1.3.1: la red, más cuidadosa
+
+- **Susurros a quien no está** (`Red.lua`): cada destino de un susurro oculto queda 10 s en una lista; si el juego dice «No hay ningún jugador llamado...», ese aviso no sale en tu chat y quien lo pidió se entera (`R.AlNoEstar[nombre] = fn(clave)`). El aprendiz deja de contarle a su mentor desconectado cómo va (`1a|e`) por 10 min o hasta que se le oiga. Las Lyas del grupo (`Alfa_Lya/EnGrupo.lua`) no le hablan a quien está desconectado y la respuesta al saludo va solo a quien saludó.
+- **Lo difundido no llega por susurro**: `1G`, `1V`, `1A`, `1T` y `1M` solo valen por el canal o la hermandad (y solo si compartes), como `1O`.
+- **Frenos por lobo**: `1V`, un aviso por lobo cada 60 s; `1T`, uno cada 30 s y como mucho 5 raros suyos guardados; `1B` («¡voy!»), solo si llamaste hace menos de 5 min y uno por lobo. El aviso «pudo volver ya» sale de uno en uno (uno por minuto).
+- **Tu caza, solo si es tuya** (`Reloj.lua`, `Rl.CazadoPorTi`): el motor anota muerto cualquier raro que ves caído. El reloj se anota igual, pero tu semana y el logro `1E|r` solo cuentan si el raro es tu objetivo o está bajo el ratón, muerto y sin «ya lo tomó otro» (`UnitIsTapDenied` en false).
+- **Los logros que se quedan en la mazmorra** (`Logros.lua`): un `1E` que no sale por estar en una instancia (o con el bloqueo de mensajes) se guarda en `N.DatosPersonaje("manada").logrosPendientes` (hasta 10, un día) y sale al volver a entrar al mundo, o en la vuelta de cada minuto (`Lo.MandarPendientes`).
+- **La página, una vez por ráfaga** (`Pagina.lua`): `M.Avisar` anota `manada.avisar` (0.2 s) si no está ya; una ráfaga de mensajes rehace la página una sola vez.
+- **Tablas con poda** (`U.Podar(t, edad)`): los frenos por persona o por raro (`oidos`, `pidieron`, `dichos`, `invitadoA`, `festejados`, `respondidoA`, el tablón, `respOficialEn`) olvidan lo que ya no frena. «Cazar juntos» olvida a quien dijo sus misiones hace más de 15 min y mira tu zona una vez por vuelta (`J.OfrecerATodos`, `J.Cuantos`).
+- **Cortar por letras** (`U.Cortar(s, n)`): los nombres de raros, llamados, logros, misiones del aprendiz y «¿Quién tiene...?» se cortan por letras, no por bytes (en ruso o chino quedaba una letra partida). Citas, notas y el tablón usan el mismo.
+- Prueba: `tools/banco/prueba_131_manada.lua`.
 
 ## Para el clan: `Clan.lua`
 

@@ -7,8 +7,11 @@
 -- (sin tapar ni atrapar clics). Lya lo dice con «Siguiente» y «Saltar»; si
 -- no está a la vista, un aviso. Se repite con /alfa recorrido o desde la
 -- página Estilo y sonido.
+-- 1.3.1: si no le das «Siguiente» (el globo se va), a los 40 s de un paso se
+-- termina solo («alfa.recorrido», N.Una), y cerrar la ventana lo termina en
+-- cualquier paso: el marco nunca se queda señalando y el recorrido queda visto.
 --
---   Rc.Empezar()   Rc.Paso()   Rc.Terminar()
+--   Rc.Empezar()   Rc.Paso()   Rc.Terminar()   Rc.Activo() -> bool
 
 local ADDON, M = ...
 local N = AlfaNucleo
@@ -36,6 +39,9 @@ local PASOS = {
 
 local marco
 local paso = 0
+local ESPERA = 40 -- s que un paso espera su «Siguiente» antes de terminar solo
+
+function Rc.Activo() return paso > 0 end
 
 local function senalar(f)
 	if not marco then
@@ -53,6 +59,7 @@ end
 
 function Rc.Terminar()
 	paso = 0
+	if N.Quitar then N.Quitar("alfa.recorrido") end
 	if marco then marco:Hide() end
 	N.Datos(M.ID).recorrido = true
 end
@@ -61,6 +68,8 @@ function Rc.Paso()
 	paso = paso + 1
 	local p = PASOS[paso]
 	if not p then return Rc.Terminar() end
+	-- La espera de seguridad, otra vez desde cero en cada paso.
+	if N.Una then N.Una("alfa.recorrido", ESPERA, Rc.Terminar) end
 	senalar(p.parte(ventana()))
 	local ultimo = paso == #PASOS
 	local siguiente = { texto = ultimo and L["Listo"] or L["Siguiente"], fn = function() Rc.Paso() end }
@@ -68,7 +77,7 @@ function Rc.Paso()
 	local t = format("%s (%d/%d). %s", L[p.titulo], paso, #PASOS, L[p.texto])
 	local Lya = rawget(_G, "AlfaLya")
 	if type(Lya) == "table" and Lya.Decir and Lya.Visible and Lya.Visible()
-		and Lya.Decir(t, { importante = true, acciones = ultimo and { siguiente } or { siguiente, saltar }, id = "recorrido" .. paso .. ":" .. tostring(time and time() or 0) }) then
+		and Lya.Decir(t, { importante = true, acciones = ultimo and { siguiente } or { siguiente, saltar } }) then
 		return
 	end
 	K.Aviso({ titulo = L[p.titulo], texto = format("(%d/%d) %s", paso, #PASOS, L[p.texto]), lobo = "atento", duracion = 30, lya = false,
@@ -76,11 +85,12 @@ function Rc.Paso()
 end
 
 function Rc.Empezar()
-	-- Si cierras la ventana a medias, el marco se va (y el recorrido se da por visto).
+	-- Si cierras la ventana a medias (en cualquier paso), el marco se va y el
+	-- recorrido se da por visto.
 	local w = ventana()
 	if w and w.HookScript and not w.alfaRecorrido then
 		w.alfaRecorrido = true
-		w:HookScript("OnHide", function() if paso > 0 and paso < #PASOS then Rc.Terminar() end end)
+		w:HookScript("OnHide", function() if paso > 0 then Rc.Terminar() end end)
 	end
 	paso = 0
 	Rc.Paso()

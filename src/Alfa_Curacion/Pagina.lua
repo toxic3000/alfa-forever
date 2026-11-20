@@ -272,6 +272,11 @@ end
 
 local ICONO_CAT = { cura = "ic-curacion", quitar = "ic-exito", buff = "ic-huella", revivir = "ic-seguir", otro = "ic-curacion" }
 
+-- 1.3.1: las categorías de un repintado, calculadas una sola vez (las 7 filas
+-- de «Tus clics» las comparten); fuera de un repintado se calculan al momento.
+local catsRepintado
+local function categorias() return catsRepintado or M.HechizosPorCategoria() end
+
 -- 1.3.0: tus hechizos por tipo (curas, quitar perjuicios, buffs, revivir y
 -- otros de tu libro), con un separador entre tipos. El de ahora siempre está.
 local function opcionesDe(r)
@@ -283,7 +288,7 @@ local function opcionesDe(r)
 	lista[#lista + 1] = { valor = "venda", texto = L["Usar una venda"], icono = "ic-curacion" }
 	local hay = {}
 	for _, o in ipairs(lista) do hay[o.valor] = true end
-	for _, cat in ipairs(M.HechizosPorCategoria()) do
+	for _, cat in ipairs(categorias()) do
 		lista[#lista + 1] = { separador = true }
 		for _, h in ipairs(cat.lista) do
 			local v = "spell:" .. h.id
@@ -559,7 +564,7 @@ local function construir(view)
 	t:AgregarBloque(ui.grupos[1])
 	ui.raton = t:AgregarBloque(nuevoRaton(t.Extra))
 	for i = 2, #ui.grupos do t:AgregarBloque(ui.grupos[i]) end
-	K.EnPagina(view, t, function()
+	local function repintar()
 		filaIzquierdo(ui)
 		t:SetAccion(estado())
 		t:SetOpciones(preajustes(), L["Preajustes"])
@@ -567,6 +572,13 @@ local function construir(view)
 		local r = M.Datos().blizzard
 		ui.filaBlizzard.alfaDatos.texto = BASE_BLIZZARD .. ((type(r) == "table" and type(r.texto) == "string") and ("\n" .. r.texto) or "")
 		for _, g in ipairs(ui.grupos) do g:Refrescar() end
+	end
+	K.EnPagina(view, t, function()
+		-- 1.3.1: tus hechizos por tipo, una vez para todo el repintado.
+		catsRepintado = M.HechizosPorCategoria()
+		local ok, err = pcall(repintar)
+		catsRepintado = nil
+		if not ok then error(err, 0) end
 	end)
 	M.vista = view
 end
@@ -660,6 +672,9 @@ AlfaCuracion = {
 	-- 1.3.0
 	CurarSelecciona = function() return M.CurarSelecciona() end,
 	QuitarSinClic = function() return M.QuitarSinClic() end,
+	-- 1.3.1: para «Acomodar la pantalla» (Alfa_Bienvenida/Acomodar.lua).
+	Mover = function(si) M.Mover(si) end,
+	Moviendo = function() return M.Moviendo() end,
 }
 
 -- 1.3.0: Lya sabe contar lo nuevo de Curación (Pregúntale a Lya).

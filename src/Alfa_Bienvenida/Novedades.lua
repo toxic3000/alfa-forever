@@ -31,6 +31,12 @@ M.NOVEDADES = {
 --   { version, titulo, puntos = { { icono (ic-*), texto } } }
 ---------------------------------------------------------------------------
 M.NOTAS = {
+	{ version = "1.3.1", titulo = "La manada afinada", puntos = {
+		{ "ic-ventana", "Acomoda con el ratón a Lya, tu guía, la flecha y tus marcos: Ajustes > Estilo y sonido o /alfa acomodar." },
+		{ "ic-alerta", "Más de 40 arreglos: combate y curación en mazmorras, el buzón cuenta bien tu dinero y la placa de llegada se va sola." },
+		{ "ic-lobo", "Los anuncios esperan a que el juego termine de escribir la zona, y el botón de Alfa queda siempre a la vista en el minimapa." },
+		{ "ic-manada", "La Jauría más cuidadosa y Alfa más ligero: el mapa del grupo, los barcos y tus bolsas trabajan menos." },
+	} },
 	{ version = "1.3.0", titulo = "La manada sana", puntos = {
 		{ "ic-curacion", "Cura con un clic y ese compañero queda seleccionado; limpia maldiciones y venenos con otro clic." },
 		{ "ic-flecha", "La llegada de la flecha, nueva; circuito de la zona y «Llévame a…» con vuelos y barcos." },

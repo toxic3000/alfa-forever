@@ -23,6 +23,8 @@
 --   Lo.Semana() -> { s, misiones, raros, mazmorras, niveles }   la tuya
 --   Lo.Manada(orden) -> lista, totales   orden "nombre" | "aporte"
 --   Lo.Festejar(tipo, quien, dato) -> true si lo dijo (para las pruebas)
+--   Lo.MandarPendientes() -> n   (1.3.1) los logros que no salieron por estar
+--                                en una instancia salen al volver (y cada minuto)
 
 local ADDON, M = ...
 local N = AlfaNucleo
@@ -52,7 +54,7 @@ end
 
 local function limpiar(s, largo)
 	if type(s) ~= "string" or U.Secreto(s) then return nil end
-	s = s:gsub("[|\n\r]", ""):sub(1, largo or 48)
+	s = U.Cortar((s:gsub("[|\n\r]", "")), largo or 48) -- (1.3.1) letras, no bytes
 	return s ~= "" and s or nil
 end
 
@@ -210,11 +212,55 @@ end
 -- Los logros
 ---------------------------------------------------------------------------
 
+-- (1.3.1) Lo que no pudo salir por estar en una instancia (o con el bloqueo de
+-- mensajes del juego): se guarda por personaje y sale al volver. Hasta
+-- PENDIENTES_MAX, y lo de más de un día ya no.
+local PENDIENTES_MAX, PENDIENTES_DURA = 10, 86400
+
+local function pendientes()
+	local d = N.DatosPersonaje(ID)
+	if type(d.logrosPendientes) ~= "table" then d.logrosPendientes = {} end
+	return d.logrosPendientes
+end
+
+local function enviarLogro(tipo, dato)
+	-- (la clave lleva el dato: dos raros seguidos no se pisan en la cola)
+	return M.Red.EnviarHermandad("E:" .. tipo .. ":" .. tostring(dato or ""), format("%sE|%s|%s", V, tipo, dato or ""))
+end
+
 local function compartirLogro(tipo, dato)
 	if not on("logrosCompartir") then return false end
-	return M.Red.EnviarHermandad("E:" .. tipo, format("%sE|%s|%s", V, tipo, dato or ""))
+	if enviarLogro(tipo, dato) then return true end
+	local _, por = M.Red.PuedeEnviar(true)
+	if (por == "instancia" or por == "bloqueo") and U.EnHermandad() then
+		local p = pendientes()
+		local n = 0
+		for _ in pairs(p) do n = n + 1 end
+		local llave = tipo .. ":" .. tostring(dato or "")
+		if p[llave] or n < PENDIENTES_MAX then p[llave] = { tipo = tipo, dato = dato, at = U.Reloj() } end
+	end
+	return false
 end
 Lo.CompartirLogro = compartirLogro
+
+-- Manda lo que quedó pendiente, si ya se puede. -> cuántos salieron.
+function Lo.MandarPendientes()
+	local d = N.DatosPersonaje(ID)
+	local p = d.logrosPendientes
+	if type(p) ~= "table" or next(p) == nil then return 0 end
+	if not on("logrosCompartir") then wipe(p) return 0 end
+	if not (M.Red.PuedeEnviar(true) and U.EnHermandad()) then return 0 end
+	local n, t = 0, U.Reloj()
+	for llave, x in pairs(p) do
+		if type(x) ~= "table" or t - (tonumber(x.at) or 0) > PENDIENTES_DURA then
+			p[llave] = nil
+		elseif enviarLogro(x.tipo, x.dato) then
+			p[llave] = nil
+			n = n + 1
+		end
+	end
+	return n
+end
 
 local festejados = {}
 function Lo.Festejar(tipo, quien, dato)
@@ -222,6 +268,7 @@ function Lo.Festejar(tipo, quien, dato)
 	local llave = tostring(quien) .. ":" .. tipo .. ":" .. tostring(dato or "")
 	local ahora = U.Ahora()
 	if festejados[llave] and ahora - festejados[llave] < CADA_LOGRO then return false end
+	U.Podar(festejados, CADA_LOGRO, ahora) -- (1.3.1)
 	festejados[llave] = ahora
 	local titulo, texto
 	if tipo == "n" then
@@ -300,6 +347,12 @@ end)
 A.RegisterEvent("PLAYER_ENTERING_WORLD", function()
 	if not IsInInstance then return end
 	local ok, dentro, tipo = pcall(IsInInstance)
+	-- (1.3.1) Afuera otra vez: sale lo que se quedó en la instancia (al ratito,
+	-- cuando la hermandad ya está a la mano).
+	if ok and not U.Leer(dentro) then
+		N.Una("manada.logrosPendientes", 5, function() pcall(Lo.MandarPendientes) end)
+		return
+	end
 	if not (ok and U.Leer(dentro) and tipo == "party") then return end
 	local okN, nombre = pcall(GetInstanceInfo)
 	nombre = okN and limpiar(nombre) or "?"
@@ -324,6 +377,7 @@ A.OnLogin(function()
 	Lo.Semana()
 	N.Cada("manada.logros", 60, function()
 		if sucia then pcall(Lo.CompartirSemana, false) end
+		pcall(Lo.MandarPendientes) -- (1.3.1) por si salir de la instancia no lo mandó
 	end)
 	A.After(45, function() if on("semanaCompartir") then Lo.CompartirSemana(true) end end)
 end)

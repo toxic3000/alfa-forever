@@ -21,4 +21,5 @@ Respaldos.lua
 Diagnostico.lua
 Recorrido.lua
 Teclas.lua
+Acomodar.lua
 Pagina.lua

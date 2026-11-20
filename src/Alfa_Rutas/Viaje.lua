@@ -3,9 +3,10 @@
 -- 1.3.0
 --
 -- Una ventana con todos los lugares a los que se viaja: los pueblos con
--- maestro de vuelo, las posadas, los muelles de barcos y zepelines y los
--- portales (de los datos de viaje del motor, Nav.GetTravelData, solo los de
--- tu facción o neutrales). Eliges uno y la flecha te lleva: el motor arma el
+-- maestro de vuelo, las posadas, los muelles de barcos y zepelines, las
+-- estaciones del tranvía y los portales (de los datos de viaje del motor,
+-- Nav.GetTravelData, solo los de tu facción o neutrales). 1.3.1: el tranvía
+-- salía como «Muelle de Forjaz» y los portales no salían. Eliges uno y la flecha te lleva: el motor arma el
 -- camino más rápido con vuelos, barcos, zepelines, portales, tu piedra de
 -- hogar y a pie (Nav/Travel.lua) y Alfa te enseña la lista de tramos
 -- («1. Vuela a Ventormenta · 3 min»). Ajuste rutas.llevame. Tecla
@@ -42,7 +43,7 @@ local function mia(mascara)
 	return (mascara == 3) or (mascara == f)
 end
 
-local ICONO = { vuelo = "ic-ruta", posada = "ic-hogar", muelle = "ic-huella", portal = "ic-cerca" }
+local ICONO = { vuelo = "ic-ruta", posada = "ic-hogar", muelle = "ic-huella", tranvia = "ic-ruta", portal = "ic-cerca" }
 
 local cache
 function Vj.Destinos()
@@ -73,8 +74,21 @@ function Vj.Destinos()
 			if mia(t.faction) then
 				for _, e in ipairs({ t.a, t.b }) do
 					local lugar = (T and T.PlaceName and T.PlaceName(e)) or e.name
-					agregar(e, format(t.kind == "zeppelin" and L["Torre de zepelines de %s"] or L["Muelle de %s"], tostring(lugar)), "muelle")
+					-- 1.3.1: el tranvía (Ventormenta-Forjaz) no es un muelle.
+					if t.kind == "tram" then
+						agregar(e, format(L["Tranvía de %s"], tostring(lugar)), "tranvia")
+					else
+						agregar(e, format(t.kind == "zeppelin" and L["Torre de zepelines de %s"] or L["Muelle de %s"], tostring(lugar)), "muelle")
+					end
 				end
+			end
+		end
+		-- 1.3.1: los portales (Darnassus-Rut'theran y los de Forever): la
+		-- entrada de cada uno, con el lugar al que lleva.
+		for _, t in ipairs(d.portals or {}) do
+			if mia(t.faction) and type(t.a) == "table" and type(t.b) == "table" then
+				local destino = (T and T.PlaceName and T.PlaceName(t.b)) or t.b.name or t.name
+				agregar(t.a, format(L["Portal a %s"], tostring(destino)), "portal")
 			end
 		end
 	end

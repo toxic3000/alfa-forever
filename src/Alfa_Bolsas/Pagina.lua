@@ -436,7 +436,8 @@ local function controlPersonaje(fila)
 		if not r then return end
 		K.Dialogo({
 			titulo = L["¿Olvidar a este personaje?"],
-			texto = (L["Alfa borrará lo que guardó de %s: sus bolsas, su banco y su equipo. Si vuelves a jugar con él, se guarda de nuevo."]):format(tostring(r.nombre or k)),
+			-- 1.3.1: también sus recetas y su Encantamiento en Comercio (D.Olvidar).
+			texto = (L["Alfa borrará lo que guardó de %s: sus bolsas, su banco, su equipo y sus recetas de Comercio. Si vuelves a jugar con él, se guarda de nuevo."]):format(tostring(r.nombre or k)),
 			aceptar = L["Olvidar"], peligro = true,
 			alAceptar = function()
 				D.Olvidar(k)

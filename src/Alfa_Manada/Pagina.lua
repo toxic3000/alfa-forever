@@ -37,10 +37,19 @@ local DOT = "  \194\183  "
 
 local function on(clave) return N.Get(ID, clave) and true or false end
 
--- Algo cambió: la página se rehace si está a la vista.
-function M.Avisar()
+-- Algo cambió: la página se rehace si está a la vista. (1.3.1) Una sola vez
+-- por ráfaga, AVISAR segundos después: treinta respuestas de «¿Quién
+-- tiene...?» o las guaridas de todo el canal eran treinta páginas rehechas
+-- seguidas. (Con la tarea ya anotada no se reemplaza: si no, un goteo
+-- constante la aplazaría para siempre.)
+local AVISAR = 0.2
+local function rehacer()
 	local view = P.view
 	if view then N.RehacerPagina(view) end
+end
+function M.Avisar()
+	if not P.view or N.HayTarea("manada.avisar") then return end
+	N.Una("manada.avisar", AVISAR, rehacer)
 end
 P.Rehacer = M.Avisar
 

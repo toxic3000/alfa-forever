@@ -243,7 +243,7 @@ function Banco.Mandar(plan)
 		mover = function(bolsa, casilla)
 			C.UseContainerItem(bolsa, casilla, nil, D.TIPO_BANCO, false)
 		end,
-		alTerminar = function(hechos, total, corte)
+		alTerminar = function(hechos, total, corte, saltados)
 			local faltan = total - hechos
 			if corte == "combate" then
 				N.Imprimir(format(L["Se detuvo al entrar en combate: guardaste %d y faltaron %d."], hechos, faltan))
@@ -252,7 +252,11 @@ function Banco.Mandar(plan)
 			elseif corte == "cancelado" then
 				N.Imprimir(format(L["Depósito detenido: guardaste %d."], hechos))
 			else
-				N.Imprimir(format(hechos == 1 and L["Guardaste %d objeto en el banco."] or L["Guardaste %d objetos en el banco."], hechos))
+				-- 1.3.1: y lo que no se movió (ya no estaba o siguió bloqueado).
+				if hechos > 0 or (saltados or 0) == 0 then
+					N.Imprimir(format(hechos == 1 and L["Guardaste %d objeto en el banco."] or L["Guardaste %d objetos en el banco."], hechos))
+				end
+				if (saltados or 0) > 0 then N.Imprimir(M.Lotes.TextoSaltados(saltados)) end
 			end
 			if plan.noCaben > 0 then
 				N.Imprimir(format(L["No cupieron %d: el banco está lleno. Compra otra casilla o pon una bolsa más grande."], plan.noCaben))

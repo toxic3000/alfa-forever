@@ -54,6 +54,32 @@ local function texto(v)
 end
 U.Texto = texto
 
+-- (1.3.1) Hasta `n` letras de `s`, sin partir una letra de varios bytes (una
+-- con acento, la cirílica, la china...): cortar por bytes dejaba un pedazo
+-- suelto al final y la letra salía rota.
+function U.Cortar(s, n)
+	if type(s) ~= "string" then return s end
+	n = tonumber(n) or 0
+	if #s <= n then return s end
+	local out, k = {}, 0
+	for c in s:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
+		k = k + 1
+		if k > n then break end
+		out[k] = c
+	end
+	return table.concat(out)
+end
+
+-- (1.3.1) Olvida de `t` (clave -> GetTime) lo que tiene más de `edad`
+-- segundos: los frenos por persona no crecen sin fin.
+function U.Podar(t, edad, ahora)
+	if type(t) ~= "table" then return end
+	ahora = ahora or (GetTime and GetTime() or 0)
+	for k, at in pairs(t) do
+		if type(at) ~= "number" or ahora - at > edad then t[k] = nil end
+	end
+end
+
 ---------------------------------------------------------------------------
 -- Nombres
 ---------------------------------------------------------------------------

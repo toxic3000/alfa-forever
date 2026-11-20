@@ -382,12 +382,33 @@ end)
 -- Migraciones de los ajustes (1.1.9). Cuando una versión cambia dónde vive
 -- un ajuste (la 1.2.0 reacomoda Ajustes), su módulo registra un paso:
 --   N.Migracion(n, function(db) ... end)   -- db: AlfaDB (sus .settings)
--- Al entrar, los pasos con número mayor al último hecho
--- (AlfaDB.alfaSchema) corren una sola vez, en orden; cada uno que termina
--- bien se anota, así nadie pierde su configuración ni la muda dos veces.
--- Un paso que falla se avisa y detiene los siguientes hasta la próxima vez.
+-- Al entrar, los pasos que faltan corren una sola vez, en orden; cada uno
+-- que termina bien se anota, así nadie pierde su configuración ni la muda dos
+-- veces. Un paso que falla se avisa y detiene los siguientes hasta la próxima vez.
+-- 1.3.1: los hechos se anotan uno por uno (AlfaDB.alfaMigraciones[n] = true;
+-- la primera vez se siembra con todo lo que sea <= AlfaDB.alfaSchema). Así un
+-- paso de un módulo que estaba apagado corre cuando se prende, aunque ya
+-- hayan corrido otros con número mayor. AlfaDB.alfaSchema sigue siendo el
+-- número más alto hecho; bajarlo (N.MigrarDesde) vuelve a correr los de después.
 ---------------------------------------------------------------------------
 local migraciones = {}
+
+-- 1.3.1: el conjunto de las hechas (sembrado la primera vez; lo que pasa de
+-- alfaSchema, porque alguien lo bajó, se vuelve a hacer).
+local function hechas(db)
+	local hasta = math.max(0, math.min(1000, math.floor(tonumber(db.alfaSchema) or 0)))
+	local h = db.alfaMigraciones
+	if type(h) ~= "table" then
+		h = {}
+		for n = 1, hasta do h[n] = true end
+		db.alfaMigraciones = h
+	else
+		for n in pairs(h) do
+			if type(n) ~= "number" or n > hasta then h[n] = nil end
+		end
+	end
+	return h
+end
 
 function N.Migracion(n, fn)
 	n = tonumber(n)
@@ -396,30 +417,54 @@ function N.Migracion(n, fn)
 	migraciones[#migraciones + 1] = { n = n, fn = fn }
 end
 
--- -> cuántos pasos corrieron
-function N.CorrerMigraciones()
+-- o (1.3.1, opcional): { sinRespaldo = true } no respalda antes (ya se
+-- respaldó o se restauró), { vieja = true } le dice a cada paso que esos
+-- ajustes vienen de antes aunque la cuenta parezca nueva. Cada paso recibe
+-- fn(db, o). -> cuántos pasos corrieron
+function N.CorrerMigraciones(o)
 	local db = A.DB and A.DB()
 	if type(db) ~= "table" then return 0 end
-	local hecha = tonumber(db.alfaSchema) or 0
+	o = type(o) == "table" and o or nil
+	local h = hechas(db)
 	table.sort(migraciones, function(a, b) return a.n < b.n end)
 	local corridas = 0
 	-- 1.2.9: antes de mudar nada, un respaldo de los ajustes (Respaldos.lua).
 	local falta = false
-	for _, m in ipairs(migraciones) do if m.n > hecha then falta = true break end end
-	if falta and type(N.AntesDeMigrar) == "function" then pcall(N.AntesDeMigrar) end
+	for _, m in ipairs(migraciones) do if not h[m.n] then falta = true break end end
+	if falta and not (o and o.sinRespaldo) and type(N.AntesDeMigrar) == "function" then pcall(N.AntesDeMigrar) end
 	for _, m in ipairs(migraciones) do
-		if m.n > hecha then
-			local ok, err = pcall(m.fn, db)
+		if not h[m.n] then
+			local ok, err = pcall(m.fn, db, o)
 			if not ok then
 				if geterrorhandler then geterrorhandler()(err) end
 				return corridas
 			end
-			hecha = m.n
-			db.alfaSchema = hecha
+			h[m.n] = true
+			if m.n > (tonumber(db.alfaSchema) or 0) then db.alfaSchema = m.n end
 			corridas = corridas + 1
 		end
 	end
 	return corridas
+end
+
+-- 1.3.1: el número de la última migración hecha (lo guardan los respaldos y
+-- los perfiles, para mudar lo que traen si vienen de antes).
+function N.Esquema()
+	local db = A.DB and A.DB()
+	return type(db) == "table" and tonumber(db.alfaSchema) or 0
+end
+
+-- 1.3.1: unos ajustes que vienen de antes (un respaldo que se restaura, un
+-- perfil que se aplica o se importa) se mudan como se mudó la cuenta: se baja
+-- el número al suyo (las de después dejan de contar como hechas) y corren las
+-- migraciones que les faltan, sin otro respaldo.
+-- -> cuántos pasos corrieron
+function N.MigrarDesde(n)
+	local db = A.DB and A.DB()
+	n = tonumber(n)
+	if type(db) ~= "table" or not n then return 0 end
+	if n < (tonumber(db.alfaSchema) or 0) then db.alfaSchema = math.max(0, math.floor(n)) end
+	return N.CorrerMigraciones({ sinRespaldo = true, vieja = true })
 end
 
 -- 1.2.9: al entrar, primero se mira si los ajustes llegaron vacíos (antes de

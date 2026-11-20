@@ -50,7 +50,7 @@ local GRUPOS = {
 		{ k = "minimapaCuadrado", hija = "minimapa", titulo = L["Minimapa cuadrado"],
 			texto = L["El minimapa pasa de redondo a cuadrado, con un borde fino. No se recomienda junto con girar el minimapa."], buscar = "square minimap, minimap shape" },
 		{ k = "minimapaBotones", hija = "minimapa", titulo = L["Ocultar los botones de addons"],
-			texto = L["Los botones de otros addons alrededor del minimapa (también el de Alfa) solo aparecen al pasar el ratón por encima."],
+			texto = L["Los botones de otros addons alrededor del minimapa solo aparecen al pasar el ratón por encima. El de Alfa siempre queda a la vista."],
 			buscar = "hide minimap buttons, addon buttons, libdbicon, minimap icons" },
 		{ k = "minimapaMenu", hija = "minimapa", titulo = L["Ocultar el menú de addons"],
 			texto = L["Oculta el botón con el número de addons en la esquina del minimapa. Esos addons se siguen abriendo con su comando, como /alfa."],

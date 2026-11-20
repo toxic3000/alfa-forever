@@ -9,14 +9,18 @@
 --   * Nunca en combate, en instancias ni mientras escribes: lo importante
 --     espera a que se pueda (10 minutos como mucho); lo demás se pierde.
 --   * Nunca encima del aviso de Hoy (Alfa_Inicio) ni de otro globo suyo.
+--     1.3.1: lo importante que llega mientras dice otra cosa importante
+--     espera su turno (una cola) y sale cuando se calla; un aviso de Alfa
+--     nunca pisa lo importante ni un globo con botones (sale como aviso).
 --   * Silenciar 1 hora calla todo menos lo que pides tú (clic).
 --   * Mientras falte la bienvenida de Alfa (AlfaBienvenida.Pendiente), Lya
 --     no aparece.
 --
 -- Lo que mira (eventos, sin OnUpdate; un latido de 60 s solo con Lya a la
--- vista): entrar (presentarse la primera vez, saludar, "hace días que no te
--- veía"), subir de nivel (aúlla; 10, 20, 30, 40 la montura, 50 y 60), morir,
--- durabilidad, bolsas, habilidades por entrenar al llegar a una ciudad,
+-- vista, «lya.latido» en el reloj del núcleo): entrar (presentarse la
+-- primera vez, saludar, "hace días que no te veía"), subir de nivel (aúlla;
+-- 10, 20, 30, 40 la montura, 50 y 60), morir, durabilidad, bolsas,
+-- habilidades por entrenar al llegar a una ciudad,
 -- misiones listas para entregar, misiones entregadas hoy (10 y 25), la sesión
 -- larga (2 y 4 horas), ausente (se duerme) y descansando un rato (también).
 -- De vez en cuando y al pedirlo: "¿Sabías que…?" de Alfa, consejos del juego,
@@ -157,6 +161,17 @@ end
 Ce.historial = {}
 local HISTORIAL = 20
 
+-- 1.3.1: la cola de lo importante. Lo que llega mientras dice otra cosa
+-- importante espera su turno, en orden (10 minutos como mucho), y sale cuando
+-- se calla el globo de ahora (M.AlCallarGlobo, de Lya.lua).
+local cola = {}
+local MAX_COLA = 6
+local sacarCola
+local function hablaImportante()
+	local a = UI.Actual and UI.Actual()
+	return type(a) == "table" and a.importante == true
+end
+
 function Ce.Decir(c)
 	if type(c) ~= "table" or type(c.texto) ~= "string" or c.texto == "" then return false end
 	local por = motivo(c)
@@ -166,6 +181,12 @@ function Ce.Decir(c)
 		return "espera", por -- verdadero: ya lo dirá en cuanto se pueda
 	end
 	if por then return false, por end
+	-- 1.3.1: lo importante no pisa lo importante: a la cola.
+	if c.importante and not c.pedido and hablaImportante() then
+		if #cola < MAX_COLA then cola[#cola + 1] = { c = c, hasta = ahora() + ESPERA_IMPORTANTE } end
+		N.Una("lya.cola", 3, sacarCola) -- por si acaso: lo normal es al callarse
+		return "espera", "cola"
+	end
 	if c.id then contar(c.id) end
 	ultimo = ahora()
 	-- 1.2.6: lo que dijo, por si el globo se fue antes de leerlo.
@@ -174,6 +195,33 @@ function Ce.Decir(c)
 	UI.Hablar(c)
 	if type(c.alDecir) == "function" then K.Llamar(c.alDecir) end
 	return true
+end
+
+-- El siguiente de la cola, si ya se puede (si no, lo vuelve a mirar en 3 s).
+sacarCola = function()
+	local t = ahora()
+	while cola[1] and t > cola[1].hasta do table.remove(cola, 1) end
+	if not cola[1] then return end
+	-- Mientras dice algo importante o viene corriendo a su lugar (la llegada), espera.
+	if hablaImportante() or (UI.Llegando and UI.Llegando()) then
+		N.Una("lya.cola", 3, sacarCola)
+		return
+	end
+	local x = table.remove(cola, 1)
+	Ce.Decir(x.c)
+	if cola[1] then N.Una("lya.cola", 3, sacarCola) end
+end
+M.AlCallarGlobo = function() if cola[1] then N.Una("lya.cola", 1, sacarCola) end end
+function Ce.Cola() return cola end
+
+-- 1.3.1: algo que no es importante y no pudo salir (el motivo de Ce.Decir):
+-- en cuántos segundos vale la pena volver a intentarlo, o nil (oculta,
+-- silenciada, callada, «solo importantes» o ya vista: no se insiste).
+function Ce.Reintento(por)
+	if por == "pronto" then return max(5, intervalo() - (ahora() - ultimo)) + 1 end
+	if por == "ocupada" then return 15 end
+	if por == "esperar" or por == "foco" then return 60 end
+	return nil
 end
 
 -- La frase de una categoría que menos ha dicho (y menos de 3 veces): id, texto.
@@ -539,8 +587,6 @@ end
 -- El latido (solo con Lya a la vista): sueño, sesión larga y un consejo
 -- suelto tras un buen rato sin hablar.
 ---------------------------------------------------------------------------
-local latidoTurno = 0
-
 local function revisarSesion()
 	local d = datos()
 	d.ultimaVez = reloj()
@@ -555,8 +601,8 @@ local function revisarSesion()
 	return ok
 end
 
-local function latido(mio)
-	if mio ~= latidoTurno or not UI.Visible() then return end
+local function latido()
+	if not UI.Visible() then N.Quitar("lya.latido") return end
 	revisarSueno()
 	if not UI.Dormida() and not enCombate() then
 		if not revisarSesion() and not revisarContexto(false) then
@@ -587,14 +633,10 @@ local function latido(mio)
 			end
 		end
 	end
-	K.Despues(60, function() latido(mio) end)
 end
 
-local function arrancarLatido()
-	latidoTurno = latidoTurno + 1
-	local mio = latidoTurno
-	K.Despues(60, function() latido(mio) end)
-end
+-- 1.3.1: en el reloj del núcleo («lya.latido»), solo con Lya a la vista.
+local function arrancarLatido() N.Cada("lya.latido", 60, latido) end
 
 ---------------------------------------------------------------------------
 -- Mostrar / ocultar
@@ -621,7 +663,7 @@ function Ce.Aplicar()
 			K.Despues(3, presentarse)
 		end
 	elseif not ahoraVisible then
-		latidoTurno = latidoTurno + 1
+		N.Quitar("lya.latido")
 	end
 	M.Avisar()
 end
@@ -864,6 +906,9 @@ K.AvisoPorLya = function(o)
 	-- El mismo aviso dentro de 90 s: ya lo dijo (no se repite ni sale arriba).
 	local ya = dichosAviso[t]
 	if ya and ahora() - ya < 90 then return true end
+	-- 1.3.1: nunca encima de lo importante ni de un globo con botones: sale el aviso de siempre.
+	local a = UI.Actual and UI.Actual()
+	if type(a) == "table" and (a.importante or (type(a.acciones) == "table" and #a.acciones > 0)) then return false end
 	local acciones
 	local ac = o.accion
 	if type(ac) == "table" and type(ac.texto) == "string" and ac.texto ~= "" then

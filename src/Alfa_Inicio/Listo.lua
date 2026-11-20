@@ -39,6 +39,21 @@ local function llamar(fn, ...)
 	return nil
 end
 
+local function secreto(v) return v ~= nil and issecretvalue ~= nil and issecretvalue(v) and true or false end
+
+-- 1.3.1: lo de los objetos, primero con C_Item (el de Forever,
+-- ItemDocumentation.lua) y el global viejo solo de respaldo, como M.Tienes de
+-- Comercio. Antes se usaba solo el global: sin él, los fragmentos de alma y el
+-- polvo cegador contaban 0.
+local function deItem(nombre)
+	local CI = rawget(_G, "C_Item")
+	local f = type(CI) == "table" and CI[nombre]
+	if type(f) == "function" then return f end
+	f = rawget(_G, nombre)
+	return type(f) == "function" and f or nil
+end
+Li.DeItem = deItem
+
 local function claseJugador()
 	if not UnitClass then return nil end
 	local _, file = UnitClass("player")
@@ -72,22 +87,38 @@ local NOMBRES = {
 }
 
 local function nombreObjeto(id)
-	local n = GetItemInfo and texto((llamar(GetItemInfo, id)))
+	local n = texto((llamar(deItem("GetItemInfo"), id)))
 	return n or NOMBRES[id] or ("#" .. tostring(id))
 end
 
+-- ¿Sabes alguno de estos hechizos? Primero C_SpellBook.IsSpellKnown (Forever),
+-- luego IsPlayerSpell / IsSpellKnown; con que uno diga que sí basta.
+-- -> true | false | nil (el cliente no sabe decirlo)
 local function sabe(lista)
-	local f = rawget(_G, "IsPlayerSpell") or rawget(_G, "IsSpellKnown")
-	if type(f) ~= "function" or not lista then return nil end
+	if not lista then return nil end
+	local fuentes = {}
+	local B = rawget(_G, "C_SpellBook")
+	if type(B) == "table" and type(B.IsSpellKnown) == "function" then fuentes[#fuentes + 1] = B.IsSpellKnown end
+	for _, nombre in ipairs({ "IsPlayerSpell", "IsSpellKnown" }) do
+		local f = rawget(_G, nombre)
+		if type(f) == "function" then fuentes[#fuentes + 1] = f end
+	end
+	if #fuentes == 0 then return nil end
 	for _, id in ipairs(lista) do
-		if llamar(f, id) then return true end
+		for _, f in ipairs(fuentes) do
+			local si = llamar(f, id)
+			if not secreto(si) and si then return true end
+		end
 	end
 	return false
 end
+Li.Sabe = sabe
 
+-- Lo que llevas encima de un objeto (sin el banco).
 local function cuantos(id)
-	return GetItemCount and (num(llamar(GetItemCount, id)) or 0) or 0
+	return num(llamar(deItem("GetItemCount"), id)) or 0
 end
+Li.Cuantos = cuantos
 
 -- Los componentes que te faltan: { { item, tienes, min, comprar } }.
 function Li.Componentes()

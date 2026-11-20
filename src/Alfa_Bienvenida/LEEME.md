@@ -46,11 +46,16 @@ Sonidos, por FileDataID, en este orden (si el cliente no tiene uno, prueba el si
 
 De dónde salen: el listado de archivos de la comunidad, [wowdev/wow-listfile](https://github.com/wowdev/wow-listfile) (`parts/sound.csv`, versión 202611141741). Los dos son archivos del juego original (1.x), así que el cliente clásico los trae; el motor ya toca sonidos del juego por FileDataID del mismo rango (las campanas de barco y zepelín, 566652 y 566719). Alfa no reparte ningún sonido propio.
 
+## Acomodar la pantalla (`Acomodar.lua`, 1.3.1)
+
+Un solo modo para mover con el ratón lo de Alfa que está en pantalla: Lya, tu guía (el rastreador), la flecha, la tarjeta de avisos, la barra y las metas de pesca, y los marcos de Combate y Curación (prende los suyos con `AlfaCombate.Mover()` y `AlfaCuracion.Mover(true)`). Cada cosa sale con un marco verde y su nombre; se arrastra y guarda su lugar con su propio `OnDragStop` (nada nuevo se guarda aquí); clic derecho la regresa a su lugar de siempre (Lya, la flecha y los avisos). Mientras está abierto, `A.DragLocked` da false. Se abre con `/alfa acomodar` o con «Acomodar» en Ajustes > Estilo y sonido; «Listo», Esc o una pelea lo terminan; en combate no se abre. Prueba: `tools/banco/prueba_131_varios.lua`.
+
 ## Comandos
 
 - `/alfa bienvenida`: abre la configuración (pendiente: donde la dejaste; terminada: el resumen). `/alfa bienvenida novedades`: lo nuevo de la versión. `/alfa bienvenida aullido [corto|largo|manada]`: suena ese aullido y queda como el de la intro.
 - `/alfa reportar [error | mejora | comentario]`: la ventana de reportes.
 - `/alfa estilo`: abre Ajustes > Estilo y sonido.
+- `/alfa acomodar`: acomodar la pantalla con el ratón (1.3.1).
 - `/alfa diagnostico` (1.2.9, `Diagnostico.lua`): «Revisar Alfa», lo que choca con Alfa y su arreglo a un clic (nunca apaga el otro addon).
 - `/alfa rendimiento`: memoria, procesador (C_AddOnProfiler o scriptProfile) y las tareas del reloj del núcleo.
 - `/alfa welcome` y Acerca de > "Mostrar la bienvenida otra vez" (del motor) abren lo nuevo de la versión.
@@ -87,7 +92,8 @@ De dónde salen: el listado de archivos de la comunidad, [wowdev/wow-listfile](h
 | `AlfaNucleoDB.bienvenida` | `respondio` (la versión de la configuración terminada), `paso` (dónde va, mientras falta), `recomendado` (ya se aplicó lo recomendado por rol), `visto`, `cuando`, `versionVista` (la versión de Alfa cuyas notas ya viste) |
 | `AlfaNucleoCharDB.bienvenida.aulloSesion` | Ya aulló en esta sesión |
 | `AlfaNucleoDB.kit.acentos` | El acento propio que recuerda cada estilo |
-| `AlfaNucleoDB.respaldos` | 1.2.9: los últimos 3 respaldos de los ajustes y perfiles (`Alfa_Nucleo/Respaldos.lua`; restaurar y el aviso de ajustes vacíos en `Respaldos.lua`) |
+| `AlfaNucleoDB.respaldos` | 1.2.9: los últimos 3 respaldos de los ajustes y perfiles (`Alfa_Nucleo/Respaldos.lua`; restaurar y el aviso de ajustes vacíos en `Respaldos.lua`). 1.3.1: cada uno lleva su `esquema` (la última migración); al restaurar uno de antes, sus ajustes se mudan con las migraciones que le faltan (`N.MigrarDesde`). Los de antes de la 1.3.1: el de «antes de actualizar» o uno de antes de la 1.2.9 cuenta como 2, los demás como 3 |
+| `AlfaNucleoDB.bienvenida.perfiles` | 1.2.7: tus perfiles (`Perfiles.lua`), cada uno como `{ ["ruta.del.ajuste"] = valor }`. 1.3.1: con `_alfa.esquema` y `_alfa.version` (también en el texto de «Exportar»), que no son ajustes: al aplicarlo o importarlo se mudan sus ajustes desde ese número. Uno de antes, sin número, conserva tu modo (sencillo o completo) si no trae el suyo |
 | `AlfaNucleoDB.errores` | 1.2.9: los últimos 30 errores de Alfa atrapados (`Alfa_Nucleo/Errores.lua`), en Estilo y sonido > Errores atrapados |
 
 ## Para verificar en el juego

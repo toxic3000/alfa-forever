@@ -11,8 +11,18 @@
 -- «ruta=tipo:valor» (b = sí/no, n = número, s = texto con \n y \\ escapados).
 -- Al leerlo no se ejecuta nada: solo se aceptan esas líneas.
 --
+-- 1.3.1: cada perfil (guardado o en texto) lleva de dónde viene: «_alfa.esquema»
+-- (la última migración de los ajustes, N.Esquema) y «_alfa.version». No son
+-- ajustes: al ponerlo, sus ajustes se mudan con las migraciones que les faltan
+-- (N.MigrarDesde). Uno de antes, sin número, conserva tu modo (sencillo o
+-- completo) si no trae el suyo.
+-- 1.3.1: al leer el texto, una línea que no sirve (una ruta con un pedazo
+-- vacío, un número que no es finito o un valor de otro tipo que el del ajuste,
+-- A.GetDefault) se salta y se cuenta como ignorada; lo demás entra.
+--
 --   Pf.Guardar(nombre) -> ok      Pf.Aplicar(nombre) -> ok      Pf.Borrar(nombre)
---   Pf.Lista() -> { nombre, ... } Pf.Exportar() -> texto        Pf.Importar(texto) -> ok, n | false, por qué
+--   Pf.Lista() -> { nombre, ... } Pf.Exportar() -> texto        Pf.Importar(texto) -> ok, n, ignoradas | false, por qué
+--   Pf.Leer(texto) -> ok, n, plano, ignoradas | false, "vacio" | "formato"
 --   /alfa rendimiento: cuánta memoria usa cada parte de Alfa ahora.
 
 local ADDON, M = ...
@@ -73,6 +83,21 @@ local function ajustes()
 	return type(db) == "table" and type(db.settings) == "table" and db.settings or {}
 end
 
+-- 1.3.1: lo que dice de dónde viene un perfil (no son ajustes).
+local META = "_alfa."
+local ESQUEMA, VERSION = META .. "esquema", META .. "version"
+local function esMeta(ruta) return type(ruta) == "string" and ruta:sub(1, #META) == META end
+
+-- Tus ajustes de ahora como perfil, con su número de migración y su versión.
+local function foto()
+	local plano = aplanar(ajustes())
+	for ruta in pairs(plano) do if esMeta(ruta) then plano[ruta] = nil end end
+	plano[ESQUEMA] = N.Esquema and N.Esquema() or nil
+	plano[VERSION] = tostring(N.version or "dev")
+	return plano
+end
+Pf.Foto = foto
+
 function Pf.Lista()
 	local out = {}
 	for nombre in pairs(guardados()) do out[#out + 1] = nombre end
@@ -82,14 +107,25 @@ end
 
 function Pf.Guardar(nombre)
 	if type(nombre) ~= "string" or nombre == "" then return false end
-	guardados()[nombre] = aplanar(ajustes())
+	guardados()[nombre] = foto()
 	return true
 end
 
 local function poner(plano)
 	local db = A.DB and A.DB()
 	if type(db) ~= "table" then return false end
-	db.settings = armar(plano)
+	-- 1.3.1: de dónde viene (sin pasarlo a los ajustes).
+	local esquema = tonumber(plano[ESQUEMA])
+	local limpio = {}
+	for ruta, v in pairs(plano) do if not esMeta(ruta) then limpio[ruta] = v end end
+	-- Un perfil de antes de la 1.3.1 (sin número) que no trae tu modo: el de ahora.
+	if not esquema and limpio["bienvenida.modo"] == nil then
+		local b = type(db.settings) == "table" and db.settings.bienvenida
+		local modo = type(b) == "table" and b.modo or nil
+		if modo ~= nil then limpio["bienvenida.modo"] = modo end
+	end
+	db.settings = armar(limpio)
+	if esquema and type(N.MigrarDesde) == "function" then pcall(N.MigrarDesde, esquema) end
 	-- Todos los módulos escuchan el cambio general ("" = todo).
 	A.Fire("SETTING_CHANGED", "")
 	if K.Repintar then pcall(K.Repintar) end
@@ -108,7 +144,7 @@ local function escapar(s) return (s:gsub("\\", "\\\\"):gsub("\n", "\\n")) end
 local function desescapar(s) return (s:gsub("\\(.)", function(c) return c == "n" and "\n" or c end)) end
 
 function Pf.Exportar()
-	local plano = aplanar(ajustes())
+	local plano = foto()
 	local rutas = {}
 	for r in pairs(plano) do rutas[#rutas + 1] = r end
 	sort(rutas)
@@ -123,40 +159,57 @@ function Pf.Exportar()
 	return concat(lineas, "\n")
 end
 
--- -> ok, cuántos ajustes | false, "vacio" | "formato"
+-- 1.3.1: lo que se revisa de cada línea.
+local function rutaBuena(ruta) return not (ruta:find("^%.") or ruta:find("%.$") or ruta:find("..", 1, true)) end
+local function finito(x) return x == x and x ~= math.huge and x ~= -math.huge end
+local function tipoBueno(ruta, v)
+	if esMeta(ruta) or not A.GetDefault then return true end
+	local def = A.GetDefault(ruta)
+	return def == nil or type(def) == type(v)
+end
+
+-- -> ok, cuántos ajustes, plano, cuántas líneas se ignoraron | false, "vacio" | "formato"
 function Pf.Leer(texto)
 	if type(texto) ~= "string" or texto == "" then return false, "vacio" end
 	texto = texto:gsub("\r", "")
-	local plano, n, primera = {}, 0, true
+	local plano, n, ignoradas, lineas, primera = {}, 0, 0, 0, true
 	for linea in (texto .. "\n"):gmatch("([^\n]*)\n") do
 		linea = linea:match("^%s*(.-)%s*$")
 		if primera and linea ~= "" then
 			if linea ~= CABECERA then return false, "formato" end
 			primera = false
 		elseif linea ~= "" then
-			n = n + 1
-			if n > MAX_LINEAS then return false, "formato" end
+			lineas = lineas + 1
+			if lineas > MAX_LINEAS then return false, "formato" end
 			local ruta, tipo, valor = linea:match("^([%w_%.]+)=([bns]):(.*)$")
 			if not ruta then return false, "formato" end
-			if tipo == "b" then plano[ruta] = valor == "1"
+			local v
+			if tipo == "b" then v = valor == "1"
 			elseif tipo == "n" then
-				local x = tonumber(valor)
-				if not x or x ~= x then return false, "formato" end
-				plano[ruta] = x
-			else plano[ruta] = desescapar(valor) end
+				v = tonumber(valor)
+				if v == nil then return false, "formato" end
+			else v = desescapar(valor) end
+			if not rutaBuena(ruta) or (tipo == "n" and not finito(v)) or not tipoBueno(ruta, v) then
+				ignoradas = ignoradas + 1
+			else
+				if plano[ruta] == nil and not esMeta(ruta) then n = n + 1 end
+				plano[ruta] = v
+			end
 		end
 	end
 	if primera then return false, "vacio" end
-	return true, n, plano
+	return true, n, plano, ignoradas
 end
 
 function Pf.Importar(texto)
-	local ok, n, plano = Pf.Leer(texto)
+	local ok, n, plano, ignoradas = Pf.Leer(texto)
 	if not ok then return false, n end
+	-- 1.3.1: si no quedó nada bueno, no se borra lo de ahora.
+	if n == 0 and ignoradas > 0 then return false, "formato" end
 	-- Antes de cambiar nada, lo de ahora queda guardado por si acaso.
-	guardados()[L["Antes de importar"]] = aplanar(ajustes())
+	guardados()[L["Antes de importar"]] = foto()
 	poner(plano)
-	return true, n
+	return true, n, ignoradas
 end
 
 ---------------------------------------------------------------------------
@@ -184,10 +237,13 @@ local function armarVentana()
 	caja:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
 	sf:SetScrollChild(caja)
 	local b = K.Boton(v.Cuerpo, L["Importar"], function()
-		local ok, n = Pf.Importar(caja:GetText() or "")
+		local ok, n, ignoradas = Pf.Importar(caja:GetText() or "")
 		if ok then
 			v:Cerrar()
-			K.Aviso({ titulo = L["Ajustes importados"], texto = format(L["Se pusieron %d ajustes. Algunas cosas se ven completas al recargar."], n),
+			-- 1.3.1: cuántas líneas no servían y se dejaron fuera.
+			local t = (tonumber(ignoradas) or 0) > 0 and format(L["Se pusieron %d ajustes. Las líneas que no eran válidas (%d) se dejaron fuera."], n, ignoradas)
+				or format(L["Se pusieron %d ajustes. Algunas cosas se ven completas al recargar."], n)
+			K.Aviso({ titulo = L["Ajustes importados"], texto = t,
 				icono = "ic-exito", accion = { texto = L["Recargar ahora"], alClic = function() if ReloadUI then ReloadUI() end end } })
 		else
 			K.Aviso({ titulo = L["No se pudo importar"], texto = n == "vacio" and L["No pegaste nada."]

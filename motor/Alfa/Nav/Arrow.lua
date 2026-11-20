@@ -403,16 +403,36 @@ end
 -- subiendo. La letra, el panel y los colores son los del Kit de Alfa
 -- (AlfaNucleo.Kit, se lee al llegar: el núcleo carga después del motor). Sin
 -- el Kit, la llegada de antes.
+--
+-- 1.3.1: la placa sin nada que contar no se queda. Con avance que seguir
+-- (las huellas o la barra: «1 de 10», la experiencia) se queda mientras dure,
+-- como antes. Sin él («Completa “Campamento básico: Peletería”», un
+-- «Llegaste» suelto, también con «Siguiente lugar») entra, se queda QUEDA
+-- segundos y se desvanece sola; solo vuelve, un rato más corto
+-- (QUEDA_CAMBIO), cuando cambia lo que dice de verdad: otro paso, otro
+-- destino o el estado (su firma), y si aparece un avance vuelve y se queda.
+-- Un repintado igual no la trae de vuelta. Al irte (la flecha vuelve a
+-- apuntar) se olvida: al llegar a otro lugar sale entera, como siempre. Ya
+-- ida, la flecha tampoco toma el ratón (no queda un área invisible que atrape
+-- clics). Se ancla una vez (solo se mueve mientras entra) y con
+-- ui.reduceMotion ni sube, ni respira, ni olfatea: solo aparece y se va con
+-- un fundido corto.
 ---------------------------------------------------------------------------
 local llegada        -- la placa (se arma la primera vez)
-local llegadaVista = false
+local llegadaVista = false -- en modo llegada (la placa a la vista o ya ida)
 local PLACA_ANCHO = 264   -- la placa entera
 local PLACA_PAD = 10      -- su margen
 local MEDALLA = 46        -- el círculo del lobo, a la izquierda
 local COLUMNA = PLACA_ANCHO - PLACA_PAD * 3 - MEDALLA -- lo que queda para el texto
 local HUELLAS_MAX = 8
 
-local ENTRA_PLACA = 0.3
+local ENTRA_PLACA = 0.3   -- segundos que tarda en entrar subiendo
+local QUEDA = 6           -- segundos a la vista al llegar
+local QUEDA_CAMBIO = 3.5  -- segundos a la vista cuando vuelve por un cambio
+local SALE = 0.6          -- segundos del fundido al irse
+local QUIETA_ENTRA, QUIETA_SALE = 0.15, 0.2 -- con ui.reduceMotion: fundidos cortos
+local LOBO_TAM = MEDALLA * 0.62
+Arrow.PLACA = { QUEDA = QUEDA, QUEDA_CAMBIO = QUEDA_CAMBIO, SALE = SALE, ENTRA = ENTRA_PLACA } -- (para el banco)
 
 local function kit()
 	local N = rawget(_G, "AlfaNucleo")
@@ -420,7 +440,12 @@ local function kit()
 	return type(K) == "table" and type(K.Cara) == "function" and type(K.Tamano) == "function" and K or nil
 end
 
-local function enCombate() return InCombatLockdown and InCombatLockdown() or false end
+-- 1.3.1: PLAYER_REGEN_DISABLED llega antes del bloqueo de combate (ahí
+-- InCombatLockdown todavía es false): sin esta bandera, «Siguiente lugar»
+-- seguía tomando el ratón al empezar la pelea. Entre REGEN_DISABLED y
+-- REGEN_ENABLED cuenta como combate.
+local pelea = false
+local function enCombate() return pelea or (InCombatLockdown and InCombatLockdown()) or false end
 
 -- La letra de Alfa para un rol del Kit, con la sombra del tema (la placa ya
 -- da el fondo: sin contorno grueso).
@@ -434,16 +459,45 @@ local function letra(K, fs, rol)
 	fs.alfaRol = rol
 end
 
+-- 1.3.1: se fue sola. Oculta (su OnUpdate ya no corre) y la flecha sin
+-- ratón mientras siga la llegada: nada invisible atrapa clics.
+local function desvanecida(self)
+	self.alfaOculta = true
+	self:Hide()
+	frame:EnableMouse(false)
+end
+
 -- La placa anima sola mientras se ve: entra subiendo, el halo respira y el
--- lobo olfatea (busca) o levanta el hocico (llegaste). Nada se crea aquí.
+-- lobo olfatea (busca) o levanta el hocico (llegaste); al cumplir su rato se
+-- desvanece. Nada se crea aquí, y solo se ancla mientras entra (1.3.1).
 local function animarPlaca(self, dt)
-	local t = (self.alfaT or 0) + (tonumber(dt) or 0)
+	if self.alfaOculta then return end
+	dt = tonumber(dt) or 0
+	local quieta = self.alfaQuieta
+	local t = (self.alfaT or 0) + dt
 	self.alfaT = t
-	local e = t < ENTRA_PLACA and t / ENTRA_PLACA or 1
+	local entra = quieta and QUIETA_ENTRA or ENTRA_PLACA
+	local e = t < entra and t / entra or 1
 	e = e * e * (3 - 2 * e)
-	self:SetAlpha(e * (self.alfaVisible or 1))
-	self:ClearAllPoints()
-	self:SetPoint("TOP", dial, "TOP", 0, -(1 - e) * 10)
+	-- Su rato a la vista y después el fundido.
+	local queda = (self.alfaQueda or QUEDA) - dt
+	self.alfaQueda = queda
+	local sale = 1
+	if queda < 0 then
+		sale = 1 + queda / (quieta and QUIETA_SALE or SALE)
+		if sale <= 0 then desvanecida(self) return end
+	end
+	self:SetAlpha(e * sale * (self.alfaVisible or 1))
+	if not self.alfaAnclada then
+		self:ClearAllPoints()
+		if quieta or e >= 1 then
+			self:SetPoint("TOP", dial, "TOP", 0, 0)
+			self.alfaAnclada = true
+		else
+			self:SetPoint("TOP", dial, "TOP", 0, -(1 - e) * 10)
+		end
+	end
+	if quieta then return end
 	self.Halo:SetAlpha(0.3 + 0.2 * (0.5 + 0.5 * sin(t * 2.4)))
 	if self.Lobo.SetRotation then
 		if self.alfaBusca then
@@ -453,7 +507,7 @@ local function animarPlaca(self, dt)
 		end
 	end
 	local s = 1 + 0.04 * (0.5 + 0.5 * sin(t * (self.alfaBusca and 3.1 or 1.8)))
-	self.Lobo:SetSize(MEDALLA * 0.62 * s, MEDALLA * 0.62 * s)
+	self.Lobo:SetSize(LOBO_TAM * s, LOBO_TAM * s)
 end
 
 local function armarLlegada(K)
@@ -573,14 +627,39 @@ local function sinLlegadaVieja()
 	skinCheck:Hide()
 end
 
+-- 1.3.1: lo que dice la placa, en una línea: si cambia, la placa vuelve.
+local function firmaDe(m, accion, texto, d, t, otro)
+	t = type(t) == "table" and t or {}
+	return table.concat({ m, accion, texto or "", tostring(d.cur or ""), tostring(d.max or ""),
+		tostring(t.map or ""), tostring(t.x or ""), tostring(t.y or ""), tostring(t.stepIndex or ""),
+		tostring(t.goalIndex or ""), otro and "1" or "0" }, "|")
+end
+
 local function pintarLlegada(m)
 	local K = kit()
 	if not K then return false end
 	local f = armarLlegada(K)
-	local nueva = not f:IsShown() or f.alfaModo ~= m
+	local target = Nav.GetTarget()
+	local d = metaDeLlegada(target) or {}
+	local accion = d.accion or (target and target.label) or ""
+	if issecretvalue and issecretvalue(accion) then accion = "" end
+	local hay = d.max and d.max > 0
+	local frac = hay and math.max(0, math.min(1, (d.cur or 0) / d.max)) or 0
+	local texto = d.avance or (d.xp and ("%d%%"):format(math.floor(frac * 100)) or nil)
+	local otro = m == "search" and target ~= nil and target.spots ~= nil
+	local firma = firmaDe(m, accion, texto, d, target, otro)
+	local cambio = firma ~= f.alfaFirma
+	if not cambio and f.alfaOculta then
+		-- Ya se fue y nada cambió: sigue ida, y lo de la llegada de antes también.
+		sinLlegadaVieja()
+		distText:Hide()
+		labelText:Hide()
+		etaText:Hide()
+		llegadaVista = true
+		return true
+	end
 	f.alfaModo = m
 	f.alfaBusca = m == "search"
-	local target = Nav.GetTarget()
 	local nr, ng, nb = Nav.RGB("arrowNear")
 	local tr, tg, tb = Nav.RGB("arrowNearText")
 	-- Los colores: la llegada del jugador (verde de fábrica) en la franja, el
@@ -596,9 +675,6 @@ local function pintarLlegada(m)
 	f.Sobre:SetText(K.Mayus(m == "search" and ns.T("Busca por aquí") or ns.T("Llegaste")))
 	letra(K, f.Accion, "cuerpo")
 	f.Accion:SetTextColor(K.Color("texto"))
-	local d = metaDeLlegada(target) or {}
-	local accion = d.accion or (target and target.label) or ""
-	if issecretvalue and issecretvalue(accion) then accion = "" end
 	f.Accion:SetText(accion)
 	local x = PLACA_PAD * 2 + 2 + MEDALLA
 	local y = PLACA_PAD + 1 + altoTexto(K, f.Sobre, 10)
@@ -610,12 +686,9 @@ local function pintarLlegada(m)
 	-- experiencia o para muchos lugares.
 	f.Avance:ClearAllPoints()
 	f.Pista:ClearAllPoints()
-	local hay = d.max and d.max > 0
 	local conHuellas = hay and f.Huellas and not d.xp and d.max <= HUELLAS_MAX
-	local frac = hay and math.max(0, math.min(1, (d.cur or 0) / d.max)) or 0
 	letra(K, f.Avance, "pequeno")
 	f.Avance:SetTextColor(K.Color("textoSuave"))
-	local texto = d.avance or (d.xp and ("%d%%"):format(math.floor(frac * 100)) or nil)
 	f.Avance:SetText(texto or "")
 	f.Avance:SetShown(texto ~= nil)
 	local anchoAvance = texto and math.ceil(f.Avance:GetStringWidth() or 0) + 6 or 0
@@ -651,13 +724,12 @@ local function pintarLlegada(m)
 	-- también lo hace). En combate se ve pero no toma el ratón.
 	local b = f.Siguiente
 	if b then
-		local otro = m == "search" and target and target.spots ~= nil
 		if otro then
 			b:ClearAllPoints()
 			b:SetPoint("TOPLEFT", f, "TOPLEFT", x, -(y + 8))
-			local pelea = enCombate()
-			b:EnableMouse(not pelea)
-			b:SetAlpha(pelea and 0.5 or 1)
+			local peleando = enCombate()
+			b:EnableMouse(not peleando)
+			b:SetAlpha(peleando and 0.5 or 1)
 			b:Show()
 			y = y + 8 + (K.ALTO and K.ALTO.botonChico or 24)
 		else
@@ -666,7 +738,31 @@ local function pintarLlegada(m)
 	end
 	y = math.max(y, PLACA_PAD + MEDALLA) + PLACA_PAD
 	f:SetHeight(y)
-	if nueva then f.alfaT = 0 end
+	-- 1.3.1: su rato a la vista. Con algo que contar (huellas o barra) se
+	-- queda mientras dure. Sin avance que seguir: al llegar, QUEDA; si vuelve
+	-- por un cambio, QUEDA_CAMBIO. Si ya se había ido, entra otra vez. Un
+	-- repintado igual no le cambia el rato.
+	f.alfaQuieta = ns.Get("ui.reduceMotion") and true or false
+	f.alfaCuenta = hay and true or false
+	if cambio then
+		local queda = hay and math.huge or (f.alfaFirma == nil and QUEDA or QUEDA_CAMBIO)
+		f.alfaFirma = firma
+		if f.alfaOculta or not f:IsShown() then
+			f.alfaT, f.alfaAnclada = 0, false
+			f.alfaQueda = queda
+		elseif hay or f.alfaQueda == math.huge or (f.alfaQueda or 0) < queda then
+			-- (de contar a no contar: ahora sí corre su rato)
+			f.alfaQueda = queda
+		end
+		f.alfaOculta = false
+	end
+	if f.alfaQuieta then
+		-- Sin movimiento: el halo y el lobo quietos (animarPlaca no los toca).
+		f.Halo:SetAlpha(0.4)
+		if f.Lobo.SetRotation then f.Lobo:SetRotation(0) end
+		f.Lobo:SetSize(LOBO_TAM, LOBO_TAM)
+	end
+	frame:EnableMouse(true)
 	f:Show()
 	sinLlegadaVieja()
 	-- La placa es más ancha que la flecha: que no se salga de la pantalla.
@@ -682,7 +778,12 @@ local function pintarLlegada(m)
 end
 
 local function quitarLlegada()
-	if llegada then llegada:Hide() end
+	if llegada then
+		llegada:Hide()
+		-- 1.3.1: te fuiste: la próxima llegada sale entera.
+		llegada.alfaFirma, llegada.alfaOculta = nil, false
+	end
+	frame:EnableMouse(true)
 	if frame.SetClampRectInsets then frame:SetClampRectInsets(0, 0, 0, 0) end
 	if not llegadaVista then return end
 	llegadaVista = false
@@ -703,6 +804,7 @@ function Arrow.Llegada()
 		huellas = llegada.Huellas ~= nil and llegada.Huellas:IsShown() or nil,
 		lobo = llegada.Lobo:GetTexture(), aroViejo = ring:IsShown() or wolfPaw:IsShown() or skinRing:IsShown() or nil,
 		siguiente = b ~= nil and b:IsShown() or nil, clicable = b ~= nil and b:IsShown() and b:IsMouseEnabled() or nil,
+		seVa = llegada.alfaQueda ~= math.huge or nil, -- 1.3.1: se desvanece sola (sin avance que contar)
 	}
 end
 
@@ -991,7 +1093,8 @@ frame:SetScript("OnUpdate", ns.Safe(function(_, elapsed)
 	elseif (mode == "arrived" or mode == "search") and skinStyle() then
 		pulse = pulse + elapsed
 		if pulse >= SKIN_CHECK_AFTER and not llegadaVista and not skinCheck:IsShown() then skinCheck:Show() end
-	elseif mode == "arrived" or mode == "search" then
+	elseif (mode == "arrived" or mode == "search") and not llegadaVista then
+		-- (1.3.1: con la placa de Alfa el aro viejo está oculto: no se anima)
 		pulse = pulse + elapsed
 		local s = 1 + 0.06 * sin(pulse * 4)
 		ring:SetSize(DIAL * s, DIAL * s)
@@ -1158,6 +1261,8 @@ end
 function Arrow:OnTarget(target)
 	labelText:SetText(target and target.label or "")
 	mode, hasAngle, routeSeen, loneSeen, warning = nil, false, -1, -1, nil
+	-- 1.3.1: sin destino, la llegada se olvida (el siguiente sale entero).
+	if not target and llegada then llegada.alfaFirma = nil end
 	syncTimer()
 	self:Refresh()
 end
@@ -1203,14 +1308,17 @@ ns.On("CATCH_UP", function(on) Arrow.SetBusy(on) end)
 
 -- La llegada al día (1.2.9): el avance cambia mientras estás ahí («4 de 6»
 -- -> «5 de 6») y el botón «Siguiente lugar» toma el ratón solo fuera de combate.
+-- 1.3.1: si la placa ya se fue, solo vuelve cuando lo que dice cambió.
 local function llegadaAlDia()
 	if llegadaVista and (mode == "arrived" or mode == "search") and frame:IsShown() then pintarLlegada(mode) end
 end
 Arrow.LlegadaAlDia = llegadaAlDia
 ns.On("STEP_UPDATED", llegadaAlDia)
-ns.RegisterEvent("PLAYER_REGEN_DISABLED", llegadaAlDia)
-ns.RegisterEvent("PLAYER_REGEN_ENABLED", llegadaAlDia)
+-- 1.3.1: la bandera de la pelea (ver `pelea`, arriba de la placa).
+ns.RegisterEvent("PLAYER_REGEN_DISABLED", function() pelea = true llegadaAlDia() end)
+ns.RegisterEvent("PLAYER_REGEN_ENABLED", function() pelea = false llegadaAlDia() end)
 ns.RegisterEvent("PLAYER_XP_UPDATE", llegadaAlDia)
+Arrow.EnPelea = enCombate -- (para el banco)
 
 function Arrow.GetMode()
 	return frame:IsShown() and mode or nil

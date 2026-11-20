@@ -10,15 +10,18 @@
 --
 --   Lotes.Iniciar({ nombre, lista = { { bolsa, casilla, id }, ... },
 --                   puede = fn() -> true | false, por qué,
---                   mover = fn(bolsa, casilla, info),
---                   alAvanzar = fn(hechos, total), alTerminar = fn(hechos, total, corte) })
+--                   mover = fn(bolsa, casilla, info, entrada),
+--                   alAvanzar = fn(hechos, total), alTerminar = fn(hechos, total, corte, saltados) })
 --   Lotes.Activo(nombre) -> bool ; Lotes.Cancelar(nombre) ; Lotes.Avance(nombre) -> hechos, total
+-- 1.3.1: el paso lo mueve el reloj de Alfa (N.Ticker("bolsas.lote.<nombre>")),
+-- y `saltados` dice cuántas no se movieron (ya no estaban o el juego no las
+-- soltó tras sus intentos), para que el aviso diga lo que de verdad se hizo.
 -- Cliente: C_Container.GetContainerItemInfo (ContainerDocumentation.lua).
 
 local ADDON, M = ...
 local N, A, L = M.N, M.A, M.L
 
-local type, ipairs, pairs = type, ipairs, pairs
+local type, ipairs, pairs, format = type, ipairs, pairs, string.format
 
 local Lotes = {}
 M.Lotes = Lotes
@@ -32,7 +35,7 @@ local tandas = {} -- nombre -> tanda
 local function terminar(t, corte)
 	if t.ticker then t.ticker:Cancel() t.ticker = nil end
 	tandas[t.nombre] = nil
-	if t.alTerminar then M.Seguro(t.alTerminar, t.hechos, t.total, corte) end
+	if t.alTerminar then M.Seguro(t.alTerminar, t.hechos, t.total, corte, t.saltados) end
 	M.Avisar("LOTE", t.nombre)
 end
 
@@ -57,12 +60,15 @@ local function paso(t)
 		if id and id == e[3] then
 			if M.Leer(info.isLocked) then
 				e[4] = (e[4] or 0) + 1
-				if e[4] <= REINTENTOS then luego[#luego + 1] = e end
+				if e[4] <= REINTENTOS then luego[#luego + 1] = e else t.saltados = t.saltados + 1 end
 			else
-				M.Seguro(t.mover, e[1], e[2], info)
+				M.Seguro(t.mover, e[1], e[2], info, e)
 				t.hechos = t.hechos + 1
 				hechos = hechos + 1
 			end
+		else
+			-- Ya no está ahí (lo vendió el motor, lo moviste tú): no se cuenta.
+			t.saltados = t.saltados + 1
 		end
 	end
 	for _, e in ipairs(luego) do t.lista[#t.lista + 1] = e end
@@ -80,22 +86,30 @@ function Lotes.Iniciar(o)
 		return false
 	end
 	local t = {
-		nombre = o.nombre, lista = o.lista, i = 1, hechos = 0, total = #o.lista,
+		nombre = o.nombre, lista = o.lista, i = 1, hechos = 0, saltados = 0, total = #o.lista,
 		puede = o.puede, mover = o.mover, alAvanzar = o.alAvanzar, alTerminar = o.alTerminar,
 	}
 	if t.total == 0 then
-		if t.alTerminar then M.Seguro(t.alTerminar, 0, 0, nil) end
+		if t.alTerminar then M.Seguro(t.alTerminar, 0, 0, nil, 0) end
 		return false
 	end
 	tandas[t.nombre] = t
 	paso(t)
-	if tandas[t.nombre] == t and C_Timer and C_Timer.NewTicker then
-		t.ticker = C_Timer.NewTicker(CADA, function() paso(t) end)
+	if tandas[t.nombre] == t and N.Ticker then
+		-- 1.3.1: con el reloj de Alfa (se ve en /alfa rendimiento; un error
+		-- repetido lo quita), no con un C_Timer.NewTicker suelto.
+		t.ticker = N.Ticker("bolsas.lote." .. t.nombre, CADA, function() paso(t) end)
 	elseif tandas[t.nombre] == t then
 		-- Sin temporizador (pruebas): todo de una vez.
 		while tandas[t.nombre] == t do paso(t) end
 	end
 	return true
+end
+
+-- 1.3.1: "3 no se movieron: ..." (para el aviso al terminar).
+function Lotes.TextoSaltados(n)
+	if n == 1 then return L["1 no se movió: ya no estaba ahí o el juego no lo soltó."] end
+	return format(L["%d no se movieron: ya no estaban ahí o el juego no los soltó."], n)
 end
 
 function Lotes.Activo(nombre) return tandas[nombre] ~= nil end

@@ -78,6 +78,15 @@ local function grupos(ui, padre)
 		texto = L["Sin tener una tecla abajo: lo prendes o lo apagas con su atajo, o aquí."],
 		control = function(fila) return K.Boton(fila, L["Prender o apagar"], function() K.AlternarAyuda() end, { tipo = "secundario", icono = "ic-info" }) end })
 
+	-- 1.3.1: acomodar con el ratón lo de Alfa en tu pantalla (Acomodar.lua).
+	local acomodar = K.GrupoAjustes(padre, { titulo = L["Acomodar la pantalla"] })
+	acomodar:Fila({ titulo = L["Mueve lo de Alfa con el ratón"],
+		texto = L["Lya, tu guía, la flecha, los avisos, la pesca y los marcos de Combate y Curación: los arrastras a donde quieras. También con /alfa acomodar."],
+		control = function(fila) return K.Boton(fila, L["Acomodar [pantalla]"], function()
+			if N.CerrarVentana then N.CerrarVentana() elseif A.UI and A.UI.Options and A.UI.Options.frame then A.UI.Options.frame:Hide() end
+			if M.Acomodar then M.Acomodar.Abrir() end
+		end, { tipo = "secundario", icono = "ic-ventana" }) end })
+
 	-- 1.3.0: la pantalla limpia (Alfa_Nucleo/Limpia.lua).
 	local Pl = N.PantallaLimpia
 	local limpia = K.GrupoAjustes(padre, { titulo = L["Pantalla limpia"] })

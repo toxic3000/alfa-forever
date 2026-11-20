@@ -281,7 +281,8 @@ local function chatarraAhora()
 			local id, cantidad, precio = M.Llamar(junkAt, bolsa, s)
 			id = M.Num(id)
 			if id then
-				lista[#lista + 1] = { bolsa, s, id }
+				-- 1.3.1: con su precio, para sumar al vender solo lo que de verdad se vendió.
+				lista[#lista + 1] = { bolsa, s, id, precio = M.Num(precio) or 0 }
 				valor = valor + (M.Num(cantidad) or 1) * (M.Num(precio) or 0)
 			end
 		end
@@ -301,25 +302,32 @@ function S.VenderChatarra()
 		N.Imprimir(L["Para vender, habla con un comerciante."])
 		return
 	end
-	local lista, valor = chatarraAhora()
+	local lista = chatarraAhora()
 	if #lista == 0 then
 		N.Imprimir(L["No llevas chatarra para vender."])
 		return
 	end
 	local C = C_Container
+	-- 1.3.1: lo que se vendió de verdad (antes decía el valor de toda la lista,
+	-- aunque algo ya no estuviera: lo había vendido el motor al abrir).
+	local vendido = 0
 	M.Lotes.Iniciar({
 		nombre = "vender", lista = lista,
 		puede = function()
 			if not comercianteAbierto then return false, "cerrado" end
 			return true
 		end,
-		mover = function(bolsa, casilla) C.UseContainerItem(bolsa, casilla) end,
-		alTerminar = function(hechos, total, corte)
+		mover = function(bolsa, casilla, info, e)
+			C.UseContainerItem(bolsa, casilla)
+			vendido = vendido + (M.Num(type(info) == "table" and info.stackCount) or 1) * (type(e) == "table" and e.precio or 0)
+		end,
+		alTerminar = function(hechos, total, corte, saltados)
 			if corte and corte ~= "cancelado" then
 				N.Imprimir(format(L["La venta se detuvo: vendiste %d de %d."], hechos, total))
 			elseif hechos > 0 then
-				N.Imprimir(format(L["Vendiste %d objetos de chatarra por unos %s."], hechos, N.Dinero(valor, true)))
+				N.Imprimir(format(L["Vendiste %d objetos de chatarra por unos %s."], hechos, N.Dinero(vendido, true)))
 			end
+			if not corte and (saltados or 0) > 0 then N.Imprimir(M.Lotes.TextoSaltados(saltados)) end
 			S.Invalidar()
 			M.Avisar("SUGERENCIAS")
 		end,

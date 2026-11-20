@@ -9,8 +9,14 @@
 -- se abandona solo). Ajuste rutas.grises (la tarjeta de la página Ruta y el
 -- aviso de cuántas hay).
 --
---   Grises.Lista() -> { { qid, titulo, nivel }, ... } | nil, motivo
---   Grises.Abrir()                la ventana
+-- 1.3.1: sin el Codex no se juzga. Lo que da cada misión (un objeto raro)
+-- solo está en el Codex: sin él, una gris que da un objeto azul salía como
+-- «no vale la pena». Ahora, sin el Codex, la lista no sale (nil, "sinDatos")
+-- y la tarjeta tampoco; «Misiones grises» lo carga con tu clic (fuera de
+-- combate) antes de armar la lista.
+--
+--   Grises.Lista() -> { { qid, titulo, nivel }, ... } | nil, motivo ("combat" | "missing" | "sinDatos")
+--   Grises.Abrir()                la ventana (carga el Codex si hace falta)
 --   Grises.Abandonar(qid, sinPreguntar) -> pregunta (o abandona con sinPreguntar)
 
 local ADDON, M = ...
@@ -24,13 +30,21 @@ local type, ipairs, tonumber = type, ipairs, tonumber
 local format = string.format
 
 local function CP() return M.Motor("Compat") end
+local function CX() return M.Motor("Codex") end
 local function encendido() return A.Get(M.ID .. ".grises") ~= false end
 local function enCombate() return InCombatLockdown and InCombatLockdown() or false end
+
+-- ¿Ya se puede juzgar? El premio de cada misión sale del Codex.
+local function codexListo()
+	local C = CX()
+	return C and C.IsLoaded and C.IsLoaded() and true or false
+end
 
 function Gr.Lista()
 	if enCombate() then return nil, "combat" end
 	local Cp, Ch = CP(), M.Cadenas
 	if not (Cp and Cp.GetLogQuests and Ch and Ch.EsGris) then return nil, "missing" end
+	if not codexListo() then return nil, "sinDatos" end
 	local out = {}
 	for _, qid in ipairs(Cp.GetLogQuests() or {}) do
 		qid = tonumber(qid)
@@ -99,14 +113,23 @@ function Gr.Abrir()
 		M.Aviso(L["Misiones grises"], L["Se puede al salir de combate."], { icono = "ic-aviso", tono = "aviso" })
 		return false
 	end
+	-- 1.3.1: el Codex dice qué da cada una; se carga con este clic.
+	local I = M.Indice
+	local ok, motivo = I.CodexListo()
+	local lista
+	if ok then lista, motivo = Gr.Lista() end
+	if not lista then
+		M.Aviso(L["Misiones grises"], I.TextoMotivo(motivo), { icono = "ic-aviso", tono = "aviso" })
+		return false
+	end
 	if not ventana then armar() end
-	local lista = Gr.Lista() or {}
 	ventana:Llenar(lista, L["Misiones grises"], format(L["%d que no valen la pena"], #lista),
 		#lista > 0 and L["Ya no te dan casi experiencia y no abren nada que valga la pena. Abandónalas para tener espacio en tu registro."] or "")
 	return true
 end
 
--- Cuántas hay, para la tarjeta de la página (0 con el ajuste apagado).
+-- Cuántas hay, para la tarjeta de la página (0 con el ajuste apagado y,
+-- 1.3.1, sin el Codex: la página no lo carga).
 function Gr.Cuantas()
 	if not encendido() then return 0 end
 	local l = Gr.Lista()

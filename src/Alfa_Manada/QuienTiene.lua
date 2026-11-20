@@ -52,7 +52,7 @@ Qt.MOTIVOS = {
 
 local function limpiar(s, largo)
 	if type(s) ~= "string" or U.Secreto(s) then return nil end
-	s = s:gsub("[|\n\r]", ""):gsub("^%s+", ""):gsub("%s+$", ""):sub(1, largo or 40)
+	s = U.Cortar((s:gsub("[|\n\r]", ""):gsub("^%s+", ""):gsub("%s+$", "")), largo or 40) -- (1.3.1) letras, no bytes
 	return s ~= "" and s or nil
 end
 
@@ -211,6 +211,7 @@ M.Red.Oyentes.W = function(clave, remitente, _, f, canal)
 	if respondidoA[clave] and ahora - respondidoA[clave] < CADA_RESPUESTA then return end
 	local mios = Qt.Mios(texto)
 	if #mios == 0 then return end
+	U.Podar(respondidoA, CADA_RESPUESTA, ahora) -- (1.3.1)
 	respondidoA[clave] = ahora
 	local destino = U.Destino(remitente)
 	for i, x in ipairs(mios) do

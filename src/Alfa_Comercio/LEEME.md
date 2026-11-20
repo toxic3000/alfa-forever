@@ -18,6 +18,7 @@ Responde la pregunta "¿lo vendo al comerciante, lo subasto o lo convierto en al
 - **Subastar fácil (1.2.9, `Vender.lua`).** Con un objeto en la pestaña de vender de la subasta, un panel a un lado con el precio sugerido, su historial de 14 días (barras, más bajo, promedio y más alto) y un aviso si tu precio queda muy por debajo. Nunca pone ni cambia el precio.
 - **Para Bolsas (1.2.9).** `AlfaComercio.Usan(id)`: quién de tus personajes usa un objeto en sus recetas («Qué guardar»).
 - **Sin otros addons.** Alfa usa solo sus propios escaneos y lo que ves al buscar; no lee precios de otros addons.
+- **1.3.1.** `AlfaComercio.OlvidarPersonaje(nombre, reino)` (`Recetas.lua`): «Olvidar» en la página de Bolsas borra también las recetas y el Encantamiento de ese personaje (la clave es nombre-reino con espacios; también se reconoce sin ellos) y rehace el índice (`M.RecetasCambiaron`). La lista de compras avisa (`ALFA_COMERCIO`, `ALFA_COMERCIO_LISTA`) solo cuando cambia lo que está listo, no con cada cambio de tus bolsas. «Tomar todo» del buzón da sus pasos con el reloj de Alfa (`N.Ticker("comercio.buzon")`). Prueba: `tools/banco/prueba_131_bolsas.lua`.
 
 ## Comandos
 

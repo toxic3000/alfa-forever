@@ -10,7 +10,7 @@ Su propia página, hecha con el Kit (`Pagina.lua`): **Ajustes > Comodidades** (`
 |---|---|
 | Misiones | **Aceptar y entregar todas las misiones**, con normales, diarias, semanales y entregar las completadas. Con «solo las misiones de mi ruta» (`ruta.soloRuta`, de la ruta de Alfa) encendido, **no acepta nada fuera de tu ruta** (lo dice en la fila) |
 | Viajes | **Mostrar la siguiente parada** en vuelos con escalas |
-| Minimapa | Cuadrado, ocultar los botones de addons (aparecen con el ratón) y el menú de addons |
+| Minimapa | Cuadrado, ocultar los botones de addons (aparecen con el ratón; el de Alfa siempre a la vista) y el menú de addons |
 | Estilo del chat | **Dar al chat el estilo de Alfa**: panel, pestañas, caja para escribir y letra con el estilo elegido; opacidad del fondo y ocultar la columna de botones |
 | Estilo del minimapa | **Dar al minimapa el estilo de Alfa**: bisel (cuadrado) o aro (redondo) y la barra de la zona y la hora |
 | Estilo de las barras | **Dar a las barras el estilo de Alfa**: barra principal, botones de acción, barras extra, experiencia y reputación, menú y bolsas; grifos como están, del color del estilo u ocultos |
@@ -76,7 +76,7 @@ Para que un grupo venga encendido de fábrica basta cambiar su valor en `M.AJUST
 1. `/reload` y abrir `/alfa comodidades`: la página propia en Ajustes, con el botón "Encender las recomendadas" (al pulsarlo, la tarjeta dice que están listas) y cada grupo con sus opciones atenuadas mientras está apagado.
 2. **Misiones**: con «solo las misiones de mi ruta» encendido en la ruta, un PNJ con una misión que no es de tu ruta no se la acepta (la fila de Misiones lo avisa). Con él apagado y "Aceptar y entregar todas las misiones" encendido, hablar con un PNJ que da misiones que no son de la guía; que acepte y entregue solo. Mayús lo detiene. Una misión que pide tela no se entrega y lo dice una vez. Una misión con varias recompensas espera a que elijas. Con una misión de la guía no debe pasar nada raro (la hace el motor).
 3. **Vuelo**: un vuelo con escalas (uno en el que el mapa de vuelo dibuja varios tramos): bajo el temporizador sale "Siguiente parada" con el lugar y el tiempo, cambia al pasar cada escala y desaparece en el último tramo. Probar un `/reload` en el aire.
-4. **Minimapa**: cuadrado con borde fino; el aro de Blizzard desaparece; los botones de addons (también el de Alfa) aparecen al pasar el ratón; el número de addons de la esquina no está. Al apagarlo, todo vuelve. Revisar que no se oculte nada de Blizzard (correo, rastreo, reloj, cola de grupo) ni pines de mapas.
+4. **Minimapa**: cuadrado con borde fino; el aro de Blizzard desaparece; los botones de addons aparecen al pasar el ratón; el de Alfa siempre está a la vista (1.3.1); el número de addons de la esquina no está. Al apagarlo, todo vuelve. Revisar que no se oculte nada de Blizzard (correo, rastreo, reloj, cola de grupo) ni pines de mapas.
 5. **Colores de clase**: el fondo bajo tu nombre en tu marco (que encaje con el arte del marco, en espejo del objetivo) y el de un jugador objetivo en su color de clase; una criatura sigue en rojo/amarillo/verde.
 6. **Grifos**: desaparecen de la barra principal y vuelven al apagar; Edit Mode sigue funcionando.
 7. **Cuadro de información**: "Objetivo: ..." y "¡Tú!" cuando una criatura te apunta; rango de alguien de tu hermandad; en combate el cuadro de las unidades del mundo no sale y con Mayús sí; el de los marcos sigue. En mazmorras en combate no debe dar errores.

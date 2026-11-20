@@ -436,7 +436,18 @@ end
 
 function D.Olvidar(k)
 	if type(k) ~= "string" or k == D.Clave() then return false end
+	local r = D.Raiz().personajes[k]
 	D.Raiz().personajes[k] = nil
+	-- 1.3.1: lo que Comercio sabe de él (sus recetas y su Encantamiento) también
+	-- se va; si no, «Qué guardar» y los consejos seguían contando con él. La
+	-- clave de Comercio es nombre-reino con el reino del juego (con espacios):
+	-- r.reino es ese (GetRealmName); sin él, el de la clave de Bolsas.
+	local C = rawget(_G, "AlfaComercio")
+	if type(C) == "table" and type(C.OlvidarPersonaje) == "function" then
+		local nombre = type(r) == "table" and type(r.nombre) == "string" and r.nombre or k:match("^(.-)%-") or k
+		local reino = type(r) == "table" and type(r.reino) == "string" and r.reino or k:match("%-(.+)$")
+		M.Seguro(C.OlvidarPersonaje, nombre, reino)
+	end
 	M.Avisar("DATOS", k)
 	return true
 end
@@ -528,6 +539,24 @@ function D.Conteo(id)
 		end
 	end
 	return total, partes
+end
+
+-- 1.3.1: solo las sumas, sin ordenar a tus personajes (para AlfaBolsas.Cuantos,
+-- que se pide una vez por material): -> banco del actual (su foto), todo lo de los demás
+function D.Sumas(id)
+	id = tonumber(id)
+	if not id then return 0, 0 end
+	local actual = D.Clave()
+	local banco, otros = 0, 0
+	for k, r in pairs(D.Raiz().personajes) do
+		if type(k) == "string" and type(r) == "table" then
+			local e = indice(r)[id]
+			if e then
+				if k == actual then banco = e[2] else otros = otros + e[1] + e[2] + e[3] end
+			end
+		end
+	end
+	return banco, otros
 end
 
 -- "Tienes 12 (Lobato: 7 en bolsas, Alt: 5 en banco)" -> texto | nil

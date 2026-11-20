@@ -12,6 +12,14 @@
 --               cuenta = { hasta = GetTime() + s, formato = "Llega en %s" },
 --               alClic = fn, pista = "Clic: ir de caza" })
 --   K.QuitarAnuncio()
+--
+-- El turno con el juego (1.3.1): arriba del centro el juego escribe el nombre
+-- de la zona al llegar (ZoneTextFrame / SubZoneTextFrame, que se desvanecen
+-- solos en unos segundos) y saca sus estandartes (jefes, subir de nivel,
+-- avisos de evento). Un anuncio de Alfa nunca se cruza con ellos: si están a
+-- la vista, espera a que se vayan (como mucho ESPERA_MAX s) y sale después; y
+-- si el juego saca uno mientras el de Alfa se ve, el de Alfa se va rápido y
+-- vuelve en cuanto el juego termina, con el tiempo que le quedaba.
 
 local _, N = ...
 local K = N.Kit
@@ -19,8 +27,48 @@ local K = N.Kit
 local floor, max, min, format = math.floor, math.max, math.min, string.format
 
 local HALO = "Interface\\AddOns\\Alfa_Bienvenida\\Media\\intro-halo"
-local ENTRA, SALE = 0.55, 1.0
+local ENTRA, SALE, SALE_RAPIDO = 0.55, 1.0, 0.35
+local ESPERA_MAX = 10   -- s: si el juego no suelta la pantalla, sale igual
+local MIRAR = 0.4       -- s entre una mirada y otra mientras espera
 local f
+
+-- Lo que el juego pinta arriba del centro y que un anuncio no debe tapar.
+local DEL_JUEGO = { "ZoneTextFrame", "SubZoneTextFrame", "BossBanner", "EventToastManagerFrame", "LevelUpDisplay" }
+local function juegoOcupado()
+	for _, nombre in ipairs(DEL_JUEGO) do
+		local g = rawget(_G, nombre)
+		if type(g) == "table" and g.IsShown and g:IsShown() then
+			local a = g.GetAlpha and g:GetAlpha()
+			if type(a) ~= "number" or a > 0.05 then return true end
+		end
+	end
+	return false
+end
+K.JuegoOcupaArriba = juegoOcupado
+
+local espera       -- { o, desde }: el anuncio que espera su turno
+local mostrar      -- abajo
+local function despues(s, fn)
+	if N.Una then N.Una("kit.anuncio", s, fn)
+	elseif C_Timer and C_Timer.After then C_Timer.After(s, fn) end
+end
+local function revisarEspera()
+	local e = espera
+	if not e then return end
+	local ahora = GetTime and GetTime() or 0
+	if juegoOcupado() and ahora - e.desde < ESPERA_MAX then
+		despues(MIRAR, revisarEspera)
+		return
+	end
+	espera = nil
+	mostrar(e.o)
+end
+-- Guarda el anuncio para después (si ya había otro esperando, manda el nuevo).
+local function esperar(o)
+	local ahora = GetTime and GetTime() or 0
+	espera = { o = o, desde = espera and espera.desde or ahora }
+	despues(MIRAR, revisarEspera)
+end
 
 local function mmss(s)
 	s = max(0, floor((s or 0) + 0.5))
@@ -83,11 +131,28 @@ local function armar()
 		local t = (self.alfaT or 0) + (tonumber(dt) or 0)
 		self.alfaT = t
 		local dura = self.alfaDura or 6
+		-- El juego sacó lo suyo (llegaste a una zona, un jefe…): este se va rápido
+		-- y vuelve después con el tiempo que le quedaba.
+		if not self.alfaSaliendo and t < dura and juegoOcupado() then
+			self.alfaSaliendo = true
+			local queda = dura - t
+			if self.alfaO and queda > 1.5 then
+				local o = {}
+				for k, v in pairs(self.alfaO) do o[k] = v end
+				o.segundos = max(3, queda)
+				esperar(o)
+			end
+			self.alfaSale = SALE_RAPIDO
+			self.alfaFin = t
+		end
+		local sale = self.alfaSale or SALE
+		local fin = self.alfaFin or dura
 		local a
-		if t < ENTRA then a = t / ENTRA
-		elseif t < dura then a = 1
-		elseif t < dura + SALE then a = 1 - (t - dura) / SALE
+		if t < ENTRA and not self.alfaSaliendo then a = t / ENTRA
+		elseif t < fin then a = 1
+		elseif t < fin + sale then a = (self.alfaDesde or 1) * (1 - (t - fin) / sale)
 		else self:Hide() return end
+		if not self.alfaSaliendo or t <= fin then self.alfaDesde = a end
 		self:SetAlpha(a)
 		-- Entra subiendo un poco; el halo respira; las rayas se abren.
 		local sube = t < ENTRA and (1 - t / ENTRA) * 14 or 0
@@ -128,7 +193,21 @@ function K.Anuncio(o)
 	if type(o) ~= "table" or type(o.titulo) ~= "string" then return false end
 	local A = N.A
 	if A and A.Hidden and A.Hidden() then return false end
+	-- El juego está escribiendo arriba (el nombre de la zona, un estandarte):
+	-- este sale cuando termine.
+	if juegoOcupado() then
+		esperar(o)
+		return true
+	end
+	return mostrar(o)
+end
+
+mostrar = function(o)
+	local A = N.A
+	if A and A.Hidden and A.Hidden() then return false end
 	if not f then armar() end
+	f.alfaO = o
+	f.alfaSaliendo, f.alfaSale, f.alfaFin, f.alfaDesde = nil, nil, nil, nil
 	f.Lobo:SetTexture(K.Lobo(o.lobo or "aullando"))
 	K.Escribir(f.Sobre, o.sobre and K.Mayus(o.sobre) or "")
 	K.Escribir(f.Titulo, o.titulo)
@@ -151,7 +230,11 @@ function K.Anuncio(o)
 	return true
 end
 
-function K.QuitarAnuncio() if f then f:Hide() end end
+function K.QuitarAnuncio()
+	espera = nil
+	if f then f:Hide() end
+end
+function K.AnuncioEsperando() return espera ~= nil end
 
 -- En combate deja pasar los clics (no atrapa nada).
 local ev = CreateFrame("Frame")

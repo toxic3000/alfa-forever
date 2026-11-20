@@ -93,20 +93,24 @@ local function codex()
 end
 
 -- Una criatura y sus apariciones en cada zona (agrupadas).
+-- 1.3.1: cada punto lleva su marco (f = "e": Era, como casi todo el Codex).
+-- Sin él, el mapa leía el punto como del juego y en las zonas que Forever
+-- movió el pin salía corrido. Solo se juntan puntos del mismo marco.
 local function anotar(porZona, id, n)
 	if type(n) ~= "table" or n.instance or n.boss or not (n.elite or n.rare) then return end
 	if type(n.spawns) ~= "table" then return end
 	local zonas = {}
 	for _, s in ipairs(n.spawns) do
 		local map, x, y = tonumber(s.map), tonumber(s.x), tonumber(s.y)
+		local f = s.f == "e" and "e" or nil
 		if map and x and y then
 			local g = zonas[map]
 			if not g then g = {} zonas[map] = g end
 			local junto = false
 			for _, p in ipairs(g) do
-				if abs(p.x - x) < CERCA and abs(p.y - y) < CERCA then junto = true break end
+				if p.f == f and abs(p.x - x) < CERCA and abs(p.y - y) < CERCA then junto = true break end
 			end
-			if not junto then g[#g + 1] = { x = x, y = y } end
+			if not junto then g[#g + 1] = { x = x, y = y, f = f } end
 		end
 	end
 	for map, puntos in pairs(zonas) do
@@ -207,7 +211,7 @@ local function pines(zona)
 		for _, pt in ipairs(c.puntos) do
 			if #lista >= PINES then return lista end
 			lista[#lista + 1] = {
-				map = zona, x = pt.x, y = pt.y, icon = c.rare and "map:rare" or "map:kill", size = 14, color = col, ring = col,
+				map = zona, x = pt.x, y = pt.y, f = pt.f, icon = c.rare and "map:rare" or "map:kill", size = 14, color = col, ring = col,
 				priority = p == "alto" and 3 or 2, label = nombre,
 				tooltip = function(tip)
 					tip:SetText(nombre, rgb(p == "alto" and "danger" or "warning"))

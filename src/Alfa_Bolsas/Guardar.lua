@@ -220,36 +220,53 @@ end)
 -- Las bolsas, en vivo; el banco, en vivo con el banquero o de la última foto.
 ---------------------------------------------------------------------------
 
-local function enVivo(bolsas, id)
+-- 1.3.1: lo que llevas, contado en una sola pasada (id -> cantidad) y guardado
+-- hasta que cambian tus bolsas o el banco (BAG_UPDATE, PLAYERBANKSLOTS_CHANGED,
+-- BANKFRAME_*) o pasa el cuadro. Antes cada material de la lista de compras y
+-- cada reactivo de «Fabricar» recorría todas tus bolsas (y el banco) otra vez.
+local conteo = {} -- "bolsas" | "banco" -> { t = GetTime(), [id] = cantidad }
+
+local function ahora() return GetTime and GetTime() or 0 end
+
+local function contar(cual)
+	local hit = conteo[cual]
+	if hit and hit.t == ahora() then return hit end
 	local C = C_Container
-	local n = 0
-	if not C then return 0 end
-	for _, b in ipairs(bolsas) do
-		for s = 1, M.Num(M.Llamar(C.GetContainerNumSlots, b)) or 0 do
-			local info = M.Llamar(C.GetContainerItemInfo, b, s)
-			if type(info) == "table" and M.Num(info.itemID) == id then n = n + (M.Num(info.stackCount) or 1) end
+	local t = { t = ahora() }
+	if C then
+		for _, b in ipairs(cual == "banco" and D.BANCO or ORIGEN) do
+			for s = 1, M.Num(M.Llamar(C.GetContainerNumSlots, b)) or 0 do
+				local info = M.Llamar(C.GetContainerItemInfo, b, s)
+				local id = type(info) == "table" and M.Num(info.itemID)
+				if id then t[id] = (t[id] or 0) + (M.Num(info.stackCount) or 1) end
+			end
 		end
 	end
-	return n
+	conteo[cual] = t
+	return t
 end
+
+function Gu.Olvidar(cual)
+	if cual then conteo[cual] = nil else conteo.bolsas, conteo.banco = nil, nil end
+end
+A.RegisterEvent("BAG_UPDATE", function(_, bolsa)
+	bolsa = M.Num(bolsa)
+	if bolsa and D.EsBanco[bolsa] then conteo.banco = nil
+	elseif bolsa and D.EsBolsa[bolsa] then conteo.bolsas = nil
+	else Gu.Olvidar() end
+end)
+A.RegisterEvent("BAG_UPDATE_DELAYED", function() Gu.Olvidar() end)
+A.RegisterEvent("BAG_CONTAINER_UPDATE", function() Gu.Olvidar() end)
+A.RegisterEvent("PLAYERBANKSLOTS_CHANGED", function() conteo.banco = nil end)
+A.RegisterEvent("BANKFRAME_OPENED", function() conteo.banco = nil end)
+A.RegisterEvent("BANKFRAME_CLOSED", function() conteo.banco = nil end)
 
 function Gu.Cuantos(id)
 	id = tonumber(id)
-	if not id then return 0, 0, 0, 0 end
-	local bolsas = enVivo(ORIGEN, id)
-	local banco = 0
-	local total, partes = D.Conteo(id)
-	if D.BancoAbierto() then
-		banco = enVivo(D.BANCO, id)
-	else
-		for _, p in ipairs(partes) do
-			if D.EsActual(p.clave) then banco = p.banco end
-		end
-	end
-	local otros = 0
-	for _, p in ipairs(partes) do
-		if not D.EsActual(p.clave) then otros = otros + p.bolsas + p.banco + p.equipo end
-	end
+	if not id or id == 0 then return 0, 0, 0, 0 end
+	local bolsas = contar("bolsas")[id] or 0
+	local bancoFoto, otros = D.Sumas(id)
+	local banco = D.BancoAbierto() and (contar("banco")[id] or 0) or bancoFoto
 	return bolsas + banco, bolsas, banco, bolsas + banco + otros
 end
 

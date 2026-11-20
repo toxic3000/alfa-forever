@@ -17,6 +17,8 @@
 --     (cura Y lo deja seleccionado para tus otros poderes). La venda igual,
 --     con "/use [@<unidad>] item:<id>". El texto se rehace en el entorno
 --     seguro con la unidad nueva (REFRESCO), con "alfa-cmd-" y "alfa-arg-".
+--     1.3.1: apagado, la venda va como "type" = "item", "item" = "item:<id>"
+--     (el juego la usa sobre la unidad del botón) y no te cambia el objetivo.
 -- La cabecera copia los mismos atributos a cualquier botón nuevo
 -- (_initialAttributeNames), aunque se cree en combate.
 --
@@ -104,7 +106,7 @@ local function atributos(unidad)
 	for _, r in ipairs(M.RANURAS) do
 		local p, s = M.Partes(r)
 		local e = mapa[r]
-		local tipo, hechizo, macro, cmd, arg
+		local tipo, hechizo, macro, cmd, arg, objeto
 		local sel = M.CurarSelecciona()
 		if type(e) == "table" then
 			if e.t == "spell" then
@@ -115,8 +117,14 @@ local function atributos(unidad)
 					tipo, hechizo = "spell", n
 				end
 			elseif e.t == "venda" then
-				tipo, cmd = "macro", "/use"
-				if M.venda then arg = "item:" .. M.venda end
+				if sel then
+					tipo, cmd = "macro", "/use"
+					if M.venda then arg = "item:" .. M.venda end
+				elseif M.venda then
+					-- 1.3.1: sin «Curar y seleccionar», solo la venda sobre ese
+					-- compañero (el tipo "item" la usa en la unidad del botón), sin /target.
+					tipo, objeto = "item", "item:" .. M.venda
+				end
 			elseif e.t == "target" then
 				if p == "" and (s == "1" or s == "2") then
 					tipo = "target"
@@ -135,6 +143,7 @@ local function atributos(unidad)
 		end
 		t[#t + 1] = { p .. "type" .. s, tipo }
 		t[#t + 1] = { p .. "spell" .. s, hechizo }
+		t[#t + 1] = { p .. "item" .. s, objeto }
 		t[#t + 1] = { p .. "macrotext" .. s, macro }
 		t[#t + 1] = { "alfa-cmd-" .. p .. s, arg and cmd or nil }
 		t[#t + 1] = { "alfa-arg-" .. p .. s, arg }

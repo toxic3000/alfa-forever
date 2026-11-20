@@ -30,6 +30,11 @@
 --       una letra que nadie use (Red.lua: la lista); 1Y es de Alfa_Lya.
 --   AlfaManada.Tablon(), .Mentor(), .Botin()  (1.3.0) lo que hay: anuncios del
 --       tablón, tu mentor y tus aprendices, las sugerencias de regalo
+--   AlfaManada.MisionesDe(nombre)  (1.3.1) { [questID] = true } con las
+--       misiones que ese lobo dijo a la manada (1M, Juntos.lua), o nil si no
+--       se sabe (no compartes, cazarJuntos apagado, no lo dijo o hace más de
+--       15 min): con nil, quien pregunta usa lo del juego. "Ana Smith" o
+--       "Ana Smith-Reino". (Rutas: MapaGrupo.lua y Grupo.lua)
 --
 -- Sin asistente de primer arranque (Alfa_Bienvenida), la pregunta sale sola
 -- una vez, al poco de entrar, fuera de combate y de instancias.
@@ -168,6 +173,11 @@ function AlfaManada.Mentor()
 	return { mentor = M.Mentor.Mentor(), aprendices = M.Mentor.Aprendices() }
 end
 function AlfaManada.Botin() return M.Botin and M.Botin.Sugerencias() or {} end
+-- 1.3.1: las misiones de un lobo (Juntos.lua), o nil si no se sabe.
+function AlfaManada.MisionesDe(nombre)
+	if not (M.Juntos and M.Juntos.De) then return nil end
+	return M.Juntos.De(nombre)
+end
 
 ---------------------------------------------------------------------------
 -- Comando: /alfa manada [seguir <nombre> | parar | compartir sí/no | estado]

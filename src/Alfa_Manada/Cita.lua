@@ -63,14 +63,8 @@ end
 local function limpiar(s)
 	if type(s) ~= "string" or U.Secreto(s) then return nil end
 	s = s:gsub("[|\n\r]", ""):gsub("^%s+", ""):gsub("%s+$", "")
-	-- Hasta 40 letras (sin partir una letra con acento).
-	local out, n = {}, 0
-	for c in s:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
-		n = n + 1
-		if n > 40 then break end
-		out[n] = c
-	end
-	s = table.concat(out)
+	-- Hasta 40 letras (sin partir una letra con acento; 1.3.1: U.Cortar).
+	s = U.Cortar(s, 40)
 	return s ~= "" and s or nil
 end
 Ci.Limpiar = limpiar

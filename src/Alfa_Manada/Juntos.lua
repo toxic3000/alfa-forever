@@ -15,6 +15,11 @@
 --   J.Mias() -> { [id] = título }        tus misiones ahora
 --   J.Comunes(clave) -> n, { ids }       las que haces con ese lobo (de tu zona)
 --   J.Enviar(forzar)                     manda tu lista si toca
+--   J.De(nombre) -> { [id] = true } | nil (1.3.1) las que dijo, esté donde esté
+--                                        (AlfaManada.MisionesDe)
+--   J.OfrecerATodos(), J.Cuantos()       (1.3.1) cada 20 s: lo caducado se
+--                                        olvida y tu zona se mira una vez
+-- 1M solo se acepta por el canal o la hermandad, nunca por susurro (1.3.1).
 
 local ADDON, M = ...
 local N = AlfaNucleo
@@ -86,19 +91,26 @@ function J.Mias() return mias end
 
 local suyas = {} -- clave -> { ids = { [id] = true }, at, remitente }
 
--- El mismo continente y la misma zona que tú (con su última posición).
-local function deMiZona(clave)
-	local G = M.Gente
+-- Tu zona ahora, o false (sin posición).
+local function miZona()
 	local map = U.MiPosicion()
-	if not map then return false end
-	local e = G.Alfa(clave) or G.EnGrupo(clave)
-	if not (e and e.map) then return false end
-	return U.ZonaDe(e.map) == U.ZonaDe(map)
+	return map and U.ZonaDe(map) or false
 end
 
-function J.Comunes(clave)
+-- El mismo continente y la misma zona que tú (con su última posición).
+-- `zona` (1.3.1): tu zona ya calculada (una vez por vuelta, no por lobo).
+local function deMiZona(clave, zona)
+	if zona == nil then zona = miZona() end
+	if not zona then return false end
+	local G = M.Gente
+	local e = G.Alfa(clave) or G.EnGrupo(clave)
+	if not (e and e.map) then return false end
+	return U.ZonaDe(e.map) == zona
+end
+
+function J.Comunes(clave, zona)
 	local s = clave and suyas[clave]
-	if not s or not activo() or U.Ahora() - s.at > CADUCA or not deMiZona(clave) then return 0, {} end
+	if not s or not activo() or U.Ahora() - s.at > CADUCA or not deMiZona(clave, zona) then return 0, {} end
 	local lista = {}
 	for id in pairs(s.ids) do
 		if mias[id] then lista[#lista + 1] = id end
@@ -115,9 +127,9 @@ local function aviso(o)
 end
 
 -- Si un lobo de tu zona hace una misión contigo: la invitación, una vez.
-local function ofrecer(clave)
+local function ofrecer(clave, zona)
 	if dichos[clave] then return end
-	local n, lista = J.Comunes(clave)
+	local n, lista = J.Comunes(clave, zona)
 	if n == 0 then return end
 	local s = suyas[clave]
 	local remitente = s and s.remitente
@@ -137,6 +149,30 @@ local function ofrecer(clave)
 end
 J.Ofrecer = ofrecer
 
+-- (1.3.1) A todos los lobos que dijeron sus misiones, de una vez: lo que
+-- caducó se olvida (la tabla no crece con cada lobo del reino) y tu zona se
+-- calcula una sola vez.
+local function ofrecerATodos()
+	local ahora = U.Ahora()
+	for clave, s in pairs(suyas) do
+		if ahora - (s.at or 0) > CADUCA then suyas[clave] = nil end
+	end
+	if not activo() then return end
+	local zona = miZona()
+	for clave in pairs(suyas) do ofrecer(clave, zona) end
+end
+J.OfrecerATodos = ofrecerATodos
+
+-- Para el banco y /alfa rendimiento: cuántos lobos dijeron sus misiones.
+function J.Cuantos()
+	local n = 0
+	for _ in pairs(suyas) do n = n + 1 end
+	return n
+end
+
+-- "Ana Smith-Reino" -> "Ana Smith" (1.3.1, para J.De).
+local function sinReino(s) return type(s) == "string" and s:match("^(.-)%-[^%-%s]+$") or s end
+
 local function numeros(s)
 	local ids, n = {}, 0
 	if type(s) ~= "string" or #s > 200 then return nil end
@@ -149,13 +185,38 @@ local function numeros(s)
 	return ids
 end
 
-M.Red.Oyentes.M = function(clave, remitente, _, f)
-	if N.Get(ID, "cazarJuntos") == false then return end
+M.Red.Oyentes.M = function(clave, remitente, _, f, canal)
+	if canal == "WHISPER" or N.Get(ID, "cazarJuntos") == false then return end -- (1.3.1) nunca por susurro
 	local ids = numeros(f[1] or "")
 	if not ids then return end
-	suyas[clave] = { ids = ids, at = U.Ahora(), remitente = remitente }
+	suyas[clave] = { ids = ids, at = U.Ahora(), remitente = remitente, corta = U.Clave(sinReino(remitente)) }
 	cambio()
 	ofrecer(clave)
+end
+
+-- (1.3.1) Las misiones que dijo un lobo: { [id] = true } (una copia), o nil
+-- si no se sabe (no compartes, cazarJuntos apagado, nunca lo dijo o hace más
+-- de CADUCA). Acepta "Ana Smith", "Ana-Smith" y "Ana Smith-Reino": el de otro
+-- reino llega con su reino y el cuadro del grupo puede darlo sin él.
+function J.De(nombre)
+	if not activo() then return nil end
+	local clave = U.Clave(nombre)
+	if not clave then return nil end
+	local s = suyas[clave]
+	if not s then
+		-- Sin reino de un lado: se compara sin el reino de los dos (y solo si es uno).
+		local corta = U.Clave(sinReino(U.Texto(nombre)))
+		for _, x in pairs(suyas) do
+			if x.corta and (x.corta == corta or x.corta == clave) then
+				if s then return nil end
+				s = x
+			end
+		end
+	end
+	if not s or U.Ahora() - s.at > CADUCA then return nil end
+	local out = {}
+	for id in pairs(s.ids) do out[id] = true end
+	return out
 end
 
 -- Quien deja de compartir se olvida también aquí.
@@ -204,7 +265,7 @@ local function alDiario()
 		mias, ordenMias = leerDiario()
 		J.Enviar()
 		-- Con lo nuevo puede haber alguien con quien cazar.
-		for clave in pairs(suyas) do ofrecer(clave) end
+		ofrecerATodos()
 		cambio()
 	end)
 end
@@ -230,9 +291,10 @@ A.OnLogin(function()
 		if activo() and #ordenMias > 0 then J.Enviar(true) end
 	end)
 	-- Su lista pudo llegar antes que su posición: se vuelve a mirar.
+	-- (1.3.1) Y lo que caducó se olvida aquí.
 	N.Cada("manada.juntosOfrecer", 20, function()
-		if not activo() or (InCombatLockdown and InCombatLockdown()) then return end
-		for clave in pairs(suyas) do ofrecer(clave) end
+		if InCombatLockdown and InCombatLockdown() then return end
+		ofrecerATodos()
 	end)
 end)
 

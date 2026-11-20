@@ -40,19 +40,22 @@ Co.HABILIDADES = {
 
 -- -> el id que conoces para cortar, o nil. Si conoces varios, el que el juego
 --    te deja usar ahora (Patada solo en actitud rabiosa, Golpe de escudo con escudo).
+--    1.3.1: si a una solo le falta recurso (ira, energía, maná), esa es la que
+--    toca: en actitud defensiva con poca ira gana Golpe con escudo, no Patada.
 function Co.Habilidad()
-	local primero
+	local primero, sinRecurso
 	for _, ids in ipairs(Co.HABILIDADES[M.Clase() or ""] or {}) do
 		for i = #ids, 1, -1 do
 			if M.Conoce(ids[i]) then
-				local usable = M.Legible(M.Llamar(C_Spell and C_Spell.IsSpellUsable, ids[i]))
-				if usable == true then return ids[i] end
+				local usable, falta = M.Llamar(C_Spell and C_Spell.IsSpellUsable, ids[i])
+				if M.Legible(usable) == true then return ids[i] end
+				if M.Legible(falta) == true then sinRecurso = sinRecurso or ids[i] end
 				primero = primero or ids[i]
 				break
 			end
 		end
 	end
-	return primero
+	return sinRecurso or primero
 end
 
 ---------------------------------------------------------------------------
@@ -162,7 +165,10 @@ end
 
 local function pintar(x, id)
 	crear()
-	pcall(f.Lanza.SetTexture, f.Lanza, x.textura or K.Lobo("atento"))
+	-- 1.3.1: un secreto va tal cual a SetTexture (sin `or`, que lo probaría).
+	local tex = x.textura
+	if not M.Secreto(tex) and tex == nil then tex = K.Lobo("atento") end
+	pcall(f.Lanza.SetTexture, f.Lanza, tex)
 	f.Tuyo.Icono:SetTexture(M.IconoHechizo(id) or K.Lobo("atento"))
 	local titulo
 	if not x.seguro then titulo = L["¡Está lanzando!"]
@@ -180,14 +186,16 @@ local function pintar(x, id)
 		f.Tecla:Hide()
 	end
 	if f.Tuyo.Recarga then
-		local falta, dur = M.Recargas and M.Recargas.Falta(id)
+		-- 1.3.1: las dos respuestas de Falta (con `and` solo llegaba la primera).
+		local falta, dur
+		if M.Recargas then falta, dur = M.Recargas.Falta(id) end
 		if falta and falta > 0 and dur then pcall(f.Tuyo.Recarga.SetCooldown, f.Tuyo.Recarga, GetTime() + falta - dur, dur)
 		else pcall(f.Tuyo.Recarga.Clear, f.Tuyo.Recarga) end
 	end
 	f.Tuyo.Icono:SetDesaturated(tono ~= "exito")
 	-- Si el juego oculta si se puede cortar, que el juego decida si se ve.
 	f.Cuerpo:SetAlpha(1)
-	if x.inmune ~= nil and f.Cuerpo.SetAlphaFromBoolean then
+	if M.Secreto(x.inmune) and f.Cuerpo.SetAlphaFromBoolean then
 		pcall(f.Cuerpo.SetAlphaFromBoolean, f.Cuerpo, x.inmune, 0, 1)
 	end
 	f:Show()

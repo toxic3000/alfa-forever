@@ -1,5 +1,35 @@
 # Cambios de Alfa
 
+## 1.3.1 — La manada afinada: acomodar la pantalla y más de 40 arreglos (19/11/2026)
+
+La segunda de la serie 1.3: revisamos a fondo todo lo que llegó de la 1.2.4 a la 1.3.0 y lo dejamos fino. Cada arreglo trae su prueba nueva en el banco.
+
+**Español**
+- Nuevo: «Acomodar la pantalla». Mueve con el ratón a Lya, tu guía, la flecha, los avisos, la pesca y los marcos de Combate y Curación, todo de una vez. Está en Ajustes > Estilo y sonido y con /alfa acomodar; clic derecho regresa cada cosa a su lugar.
+- El buzón: «Tomar todo» ya no dice «No había nada que tomar» cuando sí tomó dinero (el juego te suma el oro un momento después).
+- El botón de Alfa en el minimapa siempre a la vista, aunque escondas los de otros addons.
+- Los anuncios de barco, tranvía y raros ya no se cruzan con el nombre de la zona ni con los avisos del juego: salen antes o después.
+- La placa de llegada: si trae avance («1 de 10») se queda mientras dure; si no, se va sola a los pocos segundos.
+- Combate y Curación en mazmorras: «¡Está lanzando!», la barra de amenaza contra jefes y el maná de los curanderos ya funcionan con lo que el juego esconde en combate. El aviso para cortar muestra su recarga y elige bien cuando solo te falta ira. La venda respeta «Curar y seleccionar».
+- La Jauría más cuidadosa: sin avisos de «No hay ningún jugador llamado…» por mensajes a quien se desconectó; si no compartes, ya no te llega nada por susurro; frenos contra mensajes repetidos; un raro que viste muerto ya no cuenta como tuyo; los logros que ganas en una mazmorra salen al salir; y los nombres en ruso o chino ya no se cortan a media letra.
+- Rutas: «Misiones grises» ya no te pide soltar una que vale la pena; «Siguiente lugar» no atrapa clics al empezar una pelea; las misiones de tu grupo sí salen en el mapa; los peligros caen en su lugar; y «Llévame a…» trae el tranvía y los portales.
+- Hoy y Bolsas: los fragmentos de alma, el polvo y la comida cocinada se cuentan bien; los conjuntos reconocen anillos y abalorios en la otra ranura; el plan de una hora ya no da por hecho el paso de una zona al irte; «Olvidar» un personaje también borra sus recetas de Comercio; y los mensajes de venta y depósito dicen lo que de verdad pasó.
+- Lya y tus ajustes: restaurar un respaldo o un perfil viejo ya no te pasa a «Sencillo»; un wipe en una mazmorra no cierra tu corrida ni festeja antes de tiempo; el recorrido ya no se atora; Lya ya no se pisa a sí misma (lo importante espera su turno); «La última vez cazamos…» sí sale; e importar un perfil revisa cada línea.
+- Más ligero: el mapa del grupo, los barcos, las páginas de Curación y de La Jauría, contar tus objetos y el reloj de Alfa trabajan mucho menos.
+
+**English**
+- New: "Arrange your screen". Move Lya, your guide, the arrow, the alerts, fishing and the Combat and Healing frames with the mouse, all at once. It's in Settings > Style and sound and with /alfa acomodar; right-click puts each thing back in its place.
+- The mailbox: "Take all" no longer says "There was nothing to take" when it did take money (the game adds the gold a moment later).
+- Alfa's minimap button always in view, even when you hide other addons' buttons.
+- Boat, tram and rare announcements no longer overlap the zone name or the game's own banners: they show before or after.
+- The arrival plate: with progress ("1 of 10") it stays while it lasts; without it, it goes away on its own after a few seconds.
+- Combat and Healing in dungeons: "Casting!", the threat bar against bosses and the healers' mana now work with what the game hides in combat. The interrupt alert shows its cooldown and picks right when you're only short on rage. The bandage respects "Heal and select".
+- A more careful La Jauría: no more "No player named..." notices from messages to someone who logged off; if you don't share, nothing reaches you by whisper; limits against repeated messages; a rare you saw dead no longer counts as yours; achievements earned in a dungeon go out when you leave; and Russian or Chinese names are no longer cut mid-letter.
+- Route: "Grey quests" no longer asks you to drop one worth keeping; "Next spot" doesn't catch clicks when a fight starts; your group's quests do show on the map; dangers land in their place; and "Take me to..." brings the tram and portals.
+- Today and Bags: soul shards, powder and cooked food are counted right; gear sets recognize rings and trinkets in the other slot; the one-hour plan no longer marks a zone step as done when you leave; "Forget" a character also clears their Trade recipes; and sell and deposit messages say what really happened.
+- Lya and your settings: restoring a backup or an old profile no longer switches you to "Simple"; a dungeon wipe doesn't close your run or celebrate early; the tour no longer gets stuck; Lya no longer talks over herself (important things wait their turn); "Last time we hunted..." does show; and importing a profile checks every line.
+- Lighter: the group map, boats, the Healing and La Jauría pages, counting your items and Alfa's clock do much less work.
+
 ## 1.3.0 — La manada sana: curar con un clic, la llegada de La Jauría y 40 mejoras (19/11/2026)
 
 La primera de la serie 1.3: la más grande hasta ahora.

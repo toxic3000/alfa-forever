@@ -42,7 +42,7 @@ Seguir la flecha hace que uno se salte la historia: Lya la guarda y te la cuenta
 | `/camp` o `/quit` (1.2.7, `PLAYER_CAMPING`, `PLAYER_QUITING`) | Las misiones listas para entregar (*Entregar todas*) o su despedida con tu día de caza; también con «Solo importantes» y en una instancia |
 | Tras 3 minutos sin hablar («pocos»: 10) | La plática (`Charla.lua`): el lugar, el lore, tu raza, clase y profesiones, un consejo de amiga, el momento o las salchichas |
 
-Los consejos del momento se revisan con los eventos del juego (`UPDATE_INVENTORY_DURABILITY`, `BAG_UPDATE_DELAYED`, `QUEST_LOG_UPDATE`, `PLAYER_UPDATE_RESTING`, juntados a 3 s) y en un latido de 60 s que solo corre con Lya a la vista. Nada en `OnUpdate`.
+Los consejos del momento se revisan con los eventos del juego (`UPDATE_INVENTORY_DURABILITY`, `BAG_UPDATE_DELAYED`, `QUEST_LOG_UPDATE`, `PLAYER_UPDATE_RESTING`, juntados a 3 s) y en un latido de 60 s que solo corre con Lya a la vista (1.3.1: la tarea `lya.latido` del reloj del núcleo, que se quita cuando se oculta). Nada en `OnUpdate`.
 
 ## Contra el spam
 
@@ -50,6 +50,8 @@ Los consejos del momento se revisan con los eventos del juego (`UPDATE_INVENTORY
 - Lo importante se salta la espera, pero nunca sale en combate, en una instancia ni mientras escribes: espera hasta 10 minutos a que se pueda. Lo demás se pierde (y se vuelve a revisar luego).
 - **Cada frase sale 3 veces por personaje como mucho** y luego nunca más (`AlfaNucleoCharDB.lya.vistos`); «Volver a mostrar los consejos vistos» las devuelve. Las frases tienen varias versiones, así que no se repite la misma.
 - Nunca encima del aviso de Hoy (`AlfaInicioAviso`) ni de otro globo suyo. «Silenciar 1 hora» calla todo menos lo que pides con clic.
+- 1.3.1: lo importante no pisa lo importante: lo que llega mientras dice otra cosa importante espera en una cola (en orden, 10 minutos como mucho) y sale cuando se calla el globo de ahora (`M.AlCallarGlobo`, tarea `lya.cola`); nunca mientras llega corriendo. Un aviso de Alfa (`K.AvisoPorLya`) no pisa lo importante ni un globo con botones: sale como aviso de siempre. `M.UI.Actual()` dice lo que está diciendo ahora.
+- 1.3.1: lo de la entrada que no es importante (cómo te fue la última vez, `Dia.ContarAyer`; la fiesta del día, `Ahora.Festejo`) no se pierde por el saludo: vuelve a intentarlo cuando pasa su espera entre globos (`Ce.Reintento`, tareas `lya.diaAyer` y `lya.fiesta`) y queda dicho solo cuando de verdad sale.
 - Mientras falte la bienvenida de Alfa (`AlfaBienvenida.Pendiente()`), Lya no aparece; al terminarla (`ALFA_CONFIGURADO`) sale y se presenta.
 
 ## Ajustes (`AlfaDB.settings.lya`) — página Personaje > Lya
@@ -75,7 +77,7 @@ Datos por personaje (`N.DatosPersonaje("lya")`): `vistos`, `presentada`, `silenc
 
 - `/alfa lya`: la muestra o la oculta. `/alfa lya consejo`: un consejo. `/alfa lya dato`: un dato curioso de donde estás. `/alfa lya historias` o `/alfa historias`: la ventana Historias. `/alfa lya ajustes`: su página. `/alfa lobito` hace lo mismo.
 - `AlfaLya` (y su alias `AlfaLobito`):
-  - `Decir(texto, opts)`: que Lya diga algo. `opts = { importante = true, accion = { texto, fn }, acciones = { { texto, fn }, ... }, id = "mio1" }`. Con `id`, esa frase también sale 3 veces como mucho. Respeta todas las reglas de arriba. -> `true`, `"espera"` (importante, saldrá en cuanto se pueda) o `false, motivo`.
+  - `Decir(texto, opts)`: que Lya diga algo. `opts = { importante = true, accion = { texto, fn }, acciones = { { texto, fn }, ... }, id = "mio1" }`. Con `id`, esa frase también sale 3 veces como mucho. Respeta todas las reglas de arriba. -> `true`, `"espera"` (importante, saldrá en cuanto se pueda: en combate o en la cola de lo importante) o `false, motivo`.
   - `Mostrar(si)`, `Consejo()`, `Visible()`, `Recuerdo()` -> título, texto y pie de «Sobre Lya» (para mostrarlo en otra página, por ejemplo La Jauría).
   - `Historias(questID)`: abre la ventana Historias (en esa misión, si está guardada). `DatoCurioso()`: «Cuéntame algo de aquí». `Contar()`: «Cuéntame algo». `Gente()`: «Háblame de mi gente».
 

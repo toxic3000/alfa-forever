@@ -11,20 +11,27 @@
 -- (Nav.GetTravelData().transports). Mientras el mapa está abierto la cuenta
 -- se pone al día cada segundo; cerrado, nada corre. Ajuste rutas.horarios.
 --
+-- 1.3.1: el segundo lo da el reloj de Alfa (N.Cada "rutas.barcos", fuera de
+-- combate), que empieza al abrir el mapa y se quita al cerrarlo. Y la capa
+-- solo se publica si cambió lo que dice (su firma: cada muelle, su cuenta y
+-- su texto): sin horario medido, el texto no cambia y antes se redibujaban
+-- el mapa entero y el minimapa cada segundo.
+--
 --   Barcos.Lista() -> { { id, tipo, lado, desde, hasta, texto, segundos, map, x, y, f } }
 --   Barcos.Pines() -> los pines de la capa
 --   Barcos.Pintar()
 
 local ADDON, M = ...
-local A, L, K = M.A, M.L, M.K
+local A, L, K, N = M.A, M.L, M.K, M.N
 local Bc = {}
 M.Barcos = Bc
 
 A.RegisterDefaults(M.ID, { horarios = true })
 
 local CAPA = "rutas.barcos"
+local RELOJ = "rutas.barcos"
 local type, ipairs, tostring, pcall = type, ipairs, tostring, pcall
-local format, floor, ceil, max = string.format, math.floor, math.ceil, math.max
+local format, floor, ceil, max, concat = string.format, math.floor, math.ceil, math.max, table.concat
 
 local function encendido() return A.Get(M.ID .. ".horarios") ~= false end
 local function TR() return M.Motor("Transit") end
@@ -95,11 +102,15 @@ function Bc.Pines()
 	local out = {}
 	for _, h in ipairs(Bc.Lista()) do
 		local titulo = format(h.tipo == "zeppelin" and L["Zepelín de %s"] or L["Barco de %s"], h.desde)
+		local tono = h.segundos and h.segundos <= 60 and "exito" or "acento"
+		local badge = h.segundos and (h.segundos <= 0 and L["¡Ya!"] or cuenta(h.segundos)) or nil
 		out[#out + 1] = {
 			map = h.map, x = h.x, y = h.y, f = h.f,
 			icon = h.tipo == "zeppelin" and "map:zeppelin" or "map:boat", size = 15, priority = 2,
-			color = rgb(h.segundos and h.segundos <= 60 and "exito" or "acento"),
-			badge = h.segundos and (h.segundos <= 0 and L["¡Ya!"] or cuenta(h.segundos)) or nil,
+			color = rgb(tono),
+			badge = badge,
+			-- 1.3.1: lo que dice este pin (Bc.Pintar solo publica si cambia).
+			alfaFirma = concat({ tostring(h.id), h.lado, tono, badge or "", h.texto or "", tostring(h.map), tostring(h.x), tostring(h.y) }, "|"),
 			tooltip = function(tip)
 				tip:SetText(titulo, K.Color("texto"))
 				tip:AddLine(h.texto, K.Color("acento"))
@@ -114,33 +125,47 @@ function Bc.Pines()
 	return out
 end
 
+local firma -- 1.3.1: lo último publicado (nil: la capa está vacía)
+
+local function firmaDe(pines)
+	local partes = {}
+	for i, p in ipairs(pines) do partes[i] = p.alfaFirma or "" end
+	return concat(partes, ";")
+end
+
+-- Sin mapa (o apagado): la capa vacía y el reloj quieto.
+local function quitar(P)
+	N.Quitar(RELOJ)
+	firma = nil
+	if P and P.ClearLayer then P.ClearLayer(CAPA) end
+end
+
 function Bc.Pintar()
 	local P = A.Pins
 	if not (P and P.SetLayer and P.ClearLayer) then return end
 	local mapa = rawget(_G, "WorldMapFrame")
 	if not encendido() or not (mapa and mapa:IsShown()) then
-		P.ClearLayer(CAPA)
+		quitar(P)
 		return
 	end
+	-- Con el mapa abierto, una vez por segundo (en combate espera).
+	if not N.HayTarea(RELOJ) then N.Cada(RELOJ, 1, function() Bc.Pintar() end, { fueraDeCombate = true }) end
 	local pines = Bc.Pines()
+	local nueva = firmaDe(pines)
+	if nueva == firma then return end
+	firma = nueva
 	if #pines > 0 then P.SetLayer(CAPA, pines, { world = true, minimap = false, edge = false }) else P.ClearLayer(CAPA) end
 end
 
--- Con el mapa abierto, una vez por segundo.
-local reloj
+-- El mapa del juego dice cuándo se abre y se cierra.
+local vigilado = false
 local function vigilar()
 	local mapa = rawget(_G, "WorldMapFrame")
-	if not mapa or reloj then return end
-	reloj = CreateFrame("Frame", nil, mapa)
-	local cada = 0
-	reloj:SetScript("OnUpdate", function(_, dt)
-		cada = cada + (dt or 0)
-		if cada < 1 then return end
-		cada = 0
-		if not (InCombatLockdown and InCombatLockdown()) then Bc.Pintar() end
-	end)
+	if not mapa or vigilado then return end
+	vigilado = true
 	mapa:HookScript("OnShow", function() Bc.Pintar() end)
-	mapa:HookScript("OnHide", function() local P = A.Pins if P and P.ClearLayer then P.ClearLayer(CAPA) end end)
+	mapa:HookScript("OnHide", function() quitar(A.Pins) end)
+	if mapa:IsShown() then Bc.Pintar() end
 end
 
 A.OnLogin(function()

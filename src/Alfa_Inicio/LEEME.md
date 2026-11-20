@@ -31,6 +31,11 @@ Mientras la página se ve, los números, la distancia y las tarjetas de la clase
 - `AlfaInicio` (global): `RevisarMazmorra(nombre)`, `Faltas()`, `Comida()`, `TengoTiempo(minutos)`, `Plan()`, `Camino()`.
 - Prueba: `tools/banco/prueba_129_inicio.lua`.
 
+## 1.3.1
+
+- **Listo y Comida con las funciones de Forever.** Contar objetos, sus nombres y si son comida o bebida va primero por `C_Item.GetItemCount`, `C_Item.GetItemInfo` y `C_Item.GetItemSpell` (`ItemDocumentation.lua`); el global viejo queda solo de respaldo, como `M.Tienes` de Comercio. Antes, sin el global, los fragmentos de alma, el polvo cegador y los demás componentes contaban 0 («llevas 0 de 3») y solo contaba la comida de la lista fija (no la de cocina ni la de botín). Saber un hechizo pregunta primero a `C_SpellBook.IsSpellKnown` y luego a `IsPlayerSpell`. Prueba: `tools/banco/prueba_131_bolsas.lua` (y `prueba_129_inicio.lua` con las dos formas).
+- **«Cierra misiones de esta zona» con su zona.** El paso guarda la zona donde se armó el plan (`p.zona`) y cuenta con `T.EnZona(p.zona)`; fuera de esa zona no se da por hecho solo. Antes, al ir a otra zona (a entrenar a la ciudad, por ejemplo) contaba las de la nueva, 0, y saltaba al siguiente paso.
+
 ## Avisos
 
 - **La tarjeta de aviso** (`Avisos.lua`, `M.Aviso`): Kit (franja, baldosa con el ícono o el del hechizo, título, línea, texto y hasta dos botones). Se va sola a los `inicio.segAviso` segundos (no con el ratón encima), se arrastra (`inicio.avisoPos`), una a la vez con cola corta. La usan los recordatorios y el resumen de la sesión anterior.

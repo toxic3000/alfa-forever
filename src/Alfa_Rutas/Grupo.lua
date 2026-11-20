@@ -147,7 +147,18 @@ end
 -- Compartir con tu grupo
 ---------------------------------------------------------------------------
 
+-- -> nombre para mostrar, nombre completo. 1.3.1: el completo es el de
+-- Compat.UnitFullName («Ana Smith» en Forever, «Ana-Reino» fuera), el que
+-- La Jauría reconoce; sin él, nombre y reino de UnitName.
 local function nombreDe(unit)
+	local Cp = CP()
+	if Cp and type(Cp.UnitFullName) == "function" then
+		local ok, completo, corto = pcall(Cp.UnitFullName, unit)
+		if ok and completo == false then return nil end -- secreto
+		if ok and type(completo) == "string" and completo ~= "" then
+			return (type(corto) == "string" and corto ~= "") and corto or completo, completo
+		end
+	end
 	if not UnitName then return nil end
 	local ok, n, reino = pcall(UnitName, unit)
 	n, reino = ok and leer(n), ok and leer(reino)
@@ -155,13 +166,18 @@ local function nombreDe(unit)
 	return n, (type(reino) == "string" and reino ~= "") and (n .. "-" .. reino) or n
 end
 
--- ¿Tiene esa misión? true | false | nil (no se sabe).
-local function tiene(unit, completo, qid)
+-- Lo que la manada sabe que lleva: { [qid] = true } | nil (no se sabe).
+-- 1.3.1: se pide una vez por lobo (Gr.Compartibles), no una vez por misión.
+local function deLaManada(completo)
 	local Ma = manada()
-	if Ma and type(Ma.MisionesDe) == "function" then
-		local ok, lista = pcall(Ma.MisionesDe, completo)
-		if ok and type(lista) == "table" then return lista[qid] and true or false end
-	end
+	if not (completo and Ma and type(Ma.MisionesDe) == "function") then return nil end
+	local ok, lista = pcall(Ma.MisionesDe, completo)
+	return ok and type(lista) == "table" and lista or nil
+end
+
+-- ¿Tiene esa misión? true | false | nil (no se sabe). misiones: su lista de La Jauría.
+local function tiene(unit, misiones, qid)
+	if misiones then return misiones[qid] and true or false end
 	local QL = C_QuestLog
 	if QL and type(QL.IsUnitOnQuest) == "function" then
 		local ok, si = pcall(QL.IsUnitOnQuest, unit, qid)
@@ -207,7 +223,7 @@ function Gr.Compartibles(forzar)
 		local u = "party" .. i
 		if UnitExists and UnitExists(u) then
 			local n, completo = nombreDe(u)
-			if n then unidades[#unidades + 1] = { u = u, n = n, completo = completo } end
+			if n then unidades[#unidades + 1] = { u = u, n = n, completo = completo, misiones = deLaManada(completo) } end
 		end
 	end
 	if #unidades == 0 then return out end
@@ -215,7 +231,7 @@ function Gr.Compartibles(forzar)
 		if compartible(qid) then
 			local quienes = {}
 			for _, x in ipairs(unidades) do
-				if tiene(x.u, x.completo, qid) == false and leAlcanza(x.u, qid) then quienes[#quienes + 1] = x.n end
+				if tiene(x.u, x.misiones, qid) == false and leAlcanza(x.u, qid) then quienes[#quienes + 1] = x.n end
 			end
 			if #quienes > 0 then out[#out + 1] = { qid = qid, titulo = M.TituloMision(qid), quienes = quienes } end
 		end

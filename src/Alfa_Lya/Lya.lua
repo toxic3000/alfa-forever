@@ -34,6 +34,8 @@
 --   M.UI.Aplicar()               mostrar u ocultar según los ajustes y la bienvenida
 --   M.UI.Hablar(c)               c = { texto, acciones = { { texto, fn }, ... }, cara, salto, aullar, segundos, pose }
 --   M.UI.Callar()  M.UI.Hablando()  M.UI.Visible()  M.UI.Frame()
+--   M.UI.Actual()                1.3.1: lo que dice ahora (la c de Hablar), o nil
+--   M.UI.Llegando()              1.3.1: si viene corriendo a su lugar (la llegada)
 --   M.UI.Dormir(si)  M.UI.Dormida()  M.UI.Saltar()  M.UI.Aullar()  M.UI.Combate(si)
 --   M.UI.Gesto()                 un gesto sin palabras (un saltito, ponerse atenta)
 --   M.UI.Pose(nombre, segundos)  una pose un rato y de vuelta a quieta; sin nombre,
@@ -124,6 +126,8 @@ local function px() return tam() / 64 end
 function UI.Frame() return f end
 function UI.Visible() return f and f:IsShown() and true or false end
 function UI.Hablando() return g and g:IsShown() and actual ~= nil end
+-- 1.3.1: lo que dice ahora (para no pisar lo importante ni un globo con botones).
+function UI.Actual() if UI.Hablando() then return actual end return nil end
 function UI.Dormida() return dormida end
 
 ---------------------------------------------------------------------------
@@ -238,6 +242,7 @@ local function carrera()
 end
 
 local function llegando() return f and f.Llegada and f.Llegada:IsPlaying() or false end
+function UI.Llegando() return llegando() and true or false end
 
 function UI.Pose(nombre, segundos)
 	if not (f and f:IsVisible()) or combate or llegando() then return false end
@@ -922,20 +927,24 @@ function UI.Responder()
 end
 
 function UI.Callar(ya)
+	local habia = actual ~= nil
 	actual = nil
 	turnoGlobo = turnoGlobo + 1
 	if f and hablaPose then
 		hablaPose = nil
 		ponerPose()
 	end
-	if not (g and g:IsShown()) then return end
-	if ya then
-		g.Sale:Stop()
-		g:Hide()
-		g:SetAlpha(1)
-	else
-		g.Sale:Play()
+	if g and g:IsShown() then
+		if ya then
+			g.Sale:Stop()
+			g:Hide()
+			g:SetAlpha(1)
+		else
+			g.Sale:Play()
+		end
 	end
+	-- 1.3.1: lo importante que esperaba su turno (la cola de Cerebro.lua).
+	if habia and M.AlCallarGlobo then pcall(M.AlCallarGlobo) end
 end
 
 ---------------------------------------------------------------------------

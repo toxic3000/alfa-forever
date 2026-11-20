@@ -270,7 +270,11 @@ function Ah.Decir(pedido)
 end
 
 -- La primera vez del día que hay fiesta: Lya te lo dice al entrar.
-function Ah.Festejo()
+-- 1.3.1: si Lya acaba de saludar (no habla de nuevo hasta que pase su espera
+-- entre globos), lo vuelve a intentar entonces («lya.fiesta», unas veces).
+local INTENTOS_FIESTA = 6
+function Ah.Festejo(vez)
+	vez = tonumber(vez) or 1
 	if N.Get(ID, "momento") == false then return false end
 	local f = Ah.Fiestas()[1]
 	if not f then return false end
@@ -280,9 +284,18 @@ function Ah.Festejo()
 	local lista = f.clave and FIESTA[f.clave]
 	local t = lista and L[lista[random(#lista)]] or format(L["Hoy en Azeroth hay fiesta: %s. ¿Vamos a ver qué hay?"], f.nombre)
 	local Ce = M.Cerebro
-	local ok = Ce and Ce.Decir({ texto = t, clase = "momento", salto = true, lineas = 4, ancho = 340, segundos = 12,
+	if not Ce then return false end
+	local ok, por = Ce.Decir({ texto = t, clase = "momento", salto = true, lineas = 4, ancho = 340, segundos = 12,
 		alDecir = function() memoria().festejo = hoy end })
-	return ok == true
+	if ok == true then return true end
+	local espera = Ce.Reintento and Ce.Reintento(por)
+	if espera and vez < INTENTOS_FIESTA then
+		N.Una("lya.fiesta", espera, function()
+			local bien, e = pcall(Ah.Festejo, vez + 1)
+			if not bien and geterrorhandler then geterrorhandler()(e) end
+		end)
+	end
+	return false
 end
 
 -- Lo del momento de Cerebro (plática y latido): a veces, esto primero.

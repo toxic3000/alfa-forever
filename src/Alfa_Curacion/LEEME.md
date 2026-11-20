@@ -65,3 +65,9 @@ Se guardan en `AlfaDB.settings.curacion`. El mapa del ratón, el preajuste, "el 
 - **Maná de los curanderos** (`Mana.lua`): arriba de los marcos, solo con otro curandero; fuera de combate con color, en combate con `UnitPowerPercent` y una curva; «Maná tras la pelea» 12 s al terminar cada pelea. Reloj `curacion.mana`.
 - **Banda por grupos**: 8 cabeceras `AlfaCuracionBanda1..8` (`groupFilter`, solo banda); la de siempre se oculta en banda con `RegisterStateDriver(..., "visibility", "[group:raid] hide; show")`. Solo con el orden por grupo.
 - Ajustes nuevos: `tipoPerjuicio`, `buffs`, `tanque`, `mana`, `porGrupos` (todos sí). Prueba: `tools/banco/prueba_130_curacion.lua`.
+
+## 1.3.1: arreglos
+
+- **La venda sin «Curar y seleccionar»**: apagado, la venda va como `type` = `"item"` e `item` = `"item:<id>"` (el juego la usa sobre la unidad del botón) y no te cambia el objetivo. Prendido sigue siendo la macro `/target` + `/use [@<unidad>]`.
+- **Maná de los curanderos**: el porcentaje secreto de `UnitPowerPercent` ya no se compara con nil (daba error en combate dentro de mazmorras y, a los 5, el reloj `curacion.mana` se quitaba). Quiénes curan (nombre, color, si eres tú) se arma solo cuando cambia el grupo (`GROUP_ROSTER_UPDATE`, `PLAYER_ROLES_ASSIGNED`, `UNIT_NAME_UPDATE`, al entrar; `M.Mana.Sucia()`); el reloj de cada segundo solo repinta los porcentajes, sin tablas nuevas.
+- **Más ligero**: `M.Conocido` recuerda lo que conoces (clave -> id o `false`) y se vacía en `SPELLS_CHANGED`, `LEARNED_SPELL_IN_SKILL_LINE`, `PLAYER_LEVEL_UP` y `PLAYER_ENTERING_WORLD` (`M.OlvidarConocidos`). La página calcula tus hechizos por tipo una vez por repintado: las 7 filas de «Tus clics» comparten la lista. Prueba: `tools/banco/prueba_131_combate.lua`.

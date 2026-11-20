@@ -132,12 +132,16 @@ local function zonaActual()
 	return nil
 end
 
--- Las de tu registro sin terminar bajo el encabezado de tu zona.
-function T.EnZona()
+T.ZonaActual = zonaActual
+
+-- Las de tu registro sin terminar bajo el encabezado de una zona (sin zona: la
+-- tuya de ahora). 1.3.1: el paso «Cierra misiones de esta zona» guarda la suya
+-- (p.zona), así que contar las de otra zona ya no lo da por hecho.
+function T.EnZona(zona)
 	local QL = C_QuestLog
 	local Cp = A.Compat
 	if not (QL and QL.GetNumQuestLogEntries and QL.GetInfo) then return 0 end
-	local zona = zonaActual()
+	zona = zona or zonaActual()
 	if not zona then return 0 end
 	local ok, n = pcall(QL.GetNumQuestLogEntries)
 	n = ok and num(n) or 0
@@ -247,12 +251,13 @@ function T.Armar(total)
 	-- 1. Lo que ya está listo: entregarlo primero.
 	local nl = listas()
 	if nl > 0 then agregar({ tipo = "entregar", n = nl, min = min(resto, max(3, ceil(nl * 1.5) + 2)) }) end
-	-- 2. Lo de esta zona.
-	local nz = T.EnZona()
+	-- 2. Lo de esta zona (con su nombre: el paso es de esta zona, no de la que pises luego).
+	local zona = zonaActual()
+	local nz = zona and T.EnZona(zona) or 0
 	if nz > 0 and resto >= 5 then
 		local cabe = max(1, floor(resto * 0.6 / mpm))
 		local n = min(nz, cabe)
-		agregar({ tipo = "zona", n = n, min = min(resto, max(5, n * mpm)) })
+		agregar({ tipo = "zona", n = n, zona = zona, min = min(resto, max(5, n * mpm)) })
 	end
 	-- 3. Una mazmorra, si cabe.
 	local mz = T.Mazmorra()
@@ -347,7 +352,7 @@ function T.Empezar(plan)
 	local copia = { total = plan.total, t0 = ahora(), i = 1, pasos = {},
 		misiones0 = S and (num(S.Actual().misiones) or 0) or 0, xp0 = S and (num(S.Actual().xp) or 0) or 0 }
 	for i, p in ipairs(plan.pasos) do
-		copia.pasos[i] = { tipo = p.tipo, min = p.min, n = p.n, key = p.key, nombre = p.nombre, prof = p.prof }
+		copia.pasos[i] = { tipo = p.tipo, min = p.min, n = p.n, key = p.key, nombre = p.nombre, prof = p.prof, zona = p.zona }
 	end
 	db().hora = copia
 	avisarCambio()
@@ -391,7 +396,10 @@ local function revisarSolo()
 	local h = T.Actual()
 	if not h or not on("horaAuto") then return end
 	local p = h.pasos[h.i]
-	local hecho = ((p.tipo == "entregar" or p.tipo == "final") and listas() == 0) or (p.tipo == "zona" and T.EnZona() == 0)
+	-- 1.3.1: el de tu zona solo se da por hecho estando en ella (antes, al ir a
+	-- otra zona contaba las de la nueva, 0, y lo daba por hecho).
+	if p.tipo == "zona" and p.zona and zonaActual() ~= p.zona then return end
+	local hecho = ((p.tipo == "entregar" or p.tipo == "final") and listas() == 0) or (p.tipo == "zona" and T.EnZona(p.zona) == 0)
 	if not hecho then return end
 	local ultimo = h.i >= #h.pasos
 	T.Siguiente(false)

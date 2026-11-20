@@ -9,7 +9,8 @@
 --   1A|<mapa>|<x>|<y>|<qué>   el llamado (x, y en 0-100; qué: el nombre del enemigo o vacío)
 --   1B                        por susurro: «¡voy!»
 -- Uno por persona cada ESPERA segundos, al enviar y al recibir. Recibirlos se
--- apaga con manada.llamados.
+-- apaga con manada.llamados. (1.3.1) 1A nunca por susurro; un 1B solo vale
+-- si llamaste hace menos de VALE segundos, y uno por persona en cada llamado.
 --
 --   Ll.Llamar() -> ok, por qué ("compartir" | "lugar" | "pronto" | "via")
 
@@ -24,6 +25,7 @@ M.Llamado = Ll
 local format, type, tonumber = string.format, type, tonumber
 local V = "1"
 local ESPERA = 60
+local VALE = 300 -- (1.3.1) un «¡voy!» cuenta hasta 5 min después de tu llamado
 
 local function on(clave) return N.Get(ID, clave) and true or false end
 
@@ -34,7 +36,7 @@ end
 
 local function limpiar(s)
 	if type(s) ~= "string" or U.Secreto(s) then return nil end
-	s = s:gsub("[|\n\r]", ""):sub(1, 48)
+	s = U.Cortar((s:gsub("[|\n\r]", "")), 48) -- (1.3.1) 48 letras, no bytes
 	return s ~= "" and s or nil
 end
 
@@ -56,6 +58,7 @@ local function enemigo()
 end
 
 local ultimo = -math.huge
+local vienen = {} -- clave -> true: ya dijo «¡voy!» a este llamado (1.3.1)
 function Ll.Llamar()
 	if not on("compartir") then return false, "compartir" end
 	local map, x, y = U.MiPosicion()
@@ -65,6 +68,7 @@ function Ll.Llamar()
 	local que = enemigo() or ""
 	if not M.Red.Enviar("A", format("%sA|%d|%.2f|%.2f|%s", V, map, x, y, que)) then return false, "via" end
 	ultimo = ahora
+	wipe(vienen)
 	aviso({ titulo = L["Llamaste a la manada"], texto = que ~= "" and format(L["Pediste ayuda con %s. Te aviso quién viene."], que)
 		or L["Los lobos de tu zona saben dónde estás. Te aviso quién viene."], icono = "ic-manada", duracion = 8 })
 	return true
@@ -82,6 +86,9 @@ function Ll.LlamarYDecir()
 	return ok
 end
 
+-- Para el banco: olvidar tu último llamado.
+function Ll.Olvidar() ultimo = -math.huge wipe(vienen) end
+
 local function numero(s, max)
 	if type(s) ~= "string" or not s:match("^%-?%d+%.?%d*$") or #s > 10 then return nil end
 	local n = tonumber(s)
@@ -90,14 +97,15 @@ local function numero(s, max)
 end
 
 local oidos = {} -- clave -> cuándo
-M.Red.Oyentes.A = function(clave, remitente, _, f)
-	if not on("llamados") then return end
+M.Red.Oyentes.A = function(clave, remitente, _, f, canal)
+	if canal == "WHISPER" or not on("llamados") then return end -- (1.3.1) nunca por susurro
 	local map, x, y = numero(f[1], 100000), numero(f[2], 100), numero(f[3], 100)
 	if not (map and x and y) then return end
 	local mio = U.MiPosicion()
 	if mio ~= map then return end
 	local ahora = U.Ahora()
 	if oidos[clave] and ahora - oidos[clave] < ESPERA then return end
+	U.Podar(oidos, ESPERA, ahora) -- (1.3.1)
 	oidos[clave] = ahora
 	local quien = U.Mostrar(remitente)
 	local que = limpiar(f[4])
@@ -116,7 +124,10 @@ M.Red.Oyentes.A = function(clave, remitente, _, f)
 		end } })
 end
 
-M.Red.Oyentes.B = function(_, remitente, _, _, canal)
+M.Red.Oyentes.B = function(clave, remitente, _, _, canal)
 	if canal ~= "WHISPER" then return end
+	-- (1.3.1) Solo a tu llamado de hace poco, y una vez por lobo.
+	if U.Ahora() - ultimo >= VALE or vienen[clave] then return end
+	vienen[clave] = true
 	aviso({ titulo = format(L["%s va en camino"], U.Mostrar(remitente)), texto = L["Respondió a tu llamado."], icono = "ic-manada", duracion = 8 })
 end

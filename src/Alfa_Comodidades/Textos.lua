@@ -39,7 +39,7 @@ M.EN = {
 	["Minimapa cuadrado"] = "Square minimap",
 	["El minimapa pasa de redondo a cuadrado, con un borde fino. No se recomienda junto con girar el minimapa."] = "The minimap goes from round to square, with a thin border. Not recommended with a rotating minimap.",
 	["Ocultar los botones de addons"] = "Hide addon buttons",
-	["Los botones de otros addons alrededor del minimapa (también el de Alfa) solo aparecen al pasar el ratón por encima."] = "Other addons' buttons around the minimap (Alfa's too) only show while the pointer is over it.",
+	["Los botones de otros addons alrededor del minimapa solo aparecen al pasar el ratón por encima. El de Alfa siempre queda a la vista."] = "Other addons' buttons around the minimap only show while the pointer is over it. Alfa's always stays in view.",
 	["Ocultar el menú de addons"] = "Hide the addon menu",
 	["Oculta el botón con el número de addons en la esquina del minimapa. Esos addons se siguen abriendo con su comando, como /alfa."] = "Hides the button with the number of addons in the corner of the minimap. Those addons still open with their command, such as /alfa.",
 
