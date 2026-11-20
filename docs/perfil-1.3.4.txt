@@ -1,0 +1,295 @@
+== CARGA de archivos: 47.7 ms
+     26.04 ms  Alfa
+      4.35 ms  Alfa_Guides
+      3.61 ms  Alfa_Guides_Horde
+      1.35 ms  Alfa_Lya
+      1.17 ms  Alfa_Mundo
+      1.11 ms  Alfa_esMX
+      1.11 ms  Alfa_Rutas
+      1.03 ms  Alfa_Builds
+      0.98 ms  Alfa_Nav
+      0.76 ms  Alfa_Mazmorras
+      0.76 ms  Alfa_Manada
+      0.64 ms  Alfa_Combate
+      0.63 ms  Alfa_Pesca
+      0.58 ms  Alfa_Bolsas
+      0.53 ms  Alfa_Inicio
+  -- archivos más lentos:
+     15.98 ms  Alfa\Core\Locale.lua
+      4.30 ms  Alfa_Guides\Guides.lua
+      3.61 ms  Alfa_Guides_Horde\Guides.lua
+      0.91 ms  Alfa_esMX\Texts.lua
+      0.68 ms  Alfa\Talents\Builds.lua
+      0.66 ms  Alfa\UI\Options.lua
+      0.62 ms  Alfa\Nav\TravelData.lua
+      0.54 ms  Alfa_Mundo\Capas.lua
+      0.52 ms  Alfa\Core\Engine.lua
+      0.48 ms  Alfa_Builds\Builds\Warrior.lua
+      0.44 ms  Alfa\UI\ClassRewards.lua
+      0.41 ms  Alfa\Maps\FlightPaths.lua
+      0.35 ms  Alfa\Nav\Pins.lua
+      0.34 ms  Alfa\Quests\NewQuestIds.lua
+      0.33 ms  Alfa_Nav\Nav\Nav0.lua
+== ENTRAR (PLAYER_LOGIN + ENTERING_WORLD + 30 relojes): 85.4 ms en total
+     67.36 ms  x4     OnEvent Alfa\Core\Init.lua:561
+     29.76 ms  x1     OnLogin Alfa_Mundo\Mundo.lua:440
+      8.15 ms  x1     OnLogin Alfa\Quests\Tracker.lua:1391
+      6.20 ms  x1     OnLogin Alfa\UI\GuideFrame.lua:5505
+      5.00 ms  x1     OnLogin Alfa\Theme\Theme.lua:2313
+      4.59 ms  x1     OnLogin Alfa\Core\Guides.lua:1745
+      4.20 ms  x1     OnLogin Alfa\Core\Engine.lua:13045
+      4.14 ms  x30    reloj N.Reloj (todo)
+      4.01 ms  x1     reloj Alfa\QoL\ClassQuests.lua:232
+      2.54 ms  x1     reloj Alfa\UI\DungeonToast.lua:286
+      1.44 ms  x1     reloj Alfa\Core\Engine.lua:8198
+      1.22 ms  x1     OnLogin Alfa_Comodidades\Comodidades.lua:191
+      1.05 ms  x1     OnLogin Alfa_Combate\Combate.lua:508
+      0.99 ms  x1     OnLogin Alfa\Dungeons\Dungeons.lua:578
+      0.80 ms  x1     reloj Alfa_Rutas\Rastreador.lua:1682
+      0.61 ms  x1     evento PLAYER_ENTERING_WORLD Alfa_Curacion\Marcos.lua:1472
+      0.57 ms  x1     OnShow Alfa_Rutas\Rastreador.lua:929
+      0.52 ms  x1     OnLogin Alfa\QoL\Buttons.lua:1938
+      0.50 ms  x1     evento PLAYER_ENTERING_WORLD Alfa\UI\GuideFrame.lua:5947
+      0.47 ms  x30    reloj Alfa\Nav\Nav.lua:162
+      0.44 ms  x1     reloj Alfa_Mundo\Capas.lua:159
+      0.42 ms  x1     OnLogin Alfa\Dungeons\Dungeons.lua:601
+      0.40 ms  x1     reloj Alfa\UI\Welcome.lua:419
+      0.40 ms  x1     reloj Alfa_Mundo\Entradas.lua:205
+      0.36 ms  x5     reloj Alfa\QoL\QoL.lua:237
+     65.54 ms  evento PLAYER_LOGIN
+      1.72 ms  evento PLAYER_ENTERING_WORLD
+      0.10 ms  evento ADDON_LOADED
+  addons cargados después de entrar: Alfa, Alfa_Bienvenida, Alfa_Bolsas, Alfa_Builds, Alfa_Codex, Alfa_Combate, Alfa_Comercio, Alfa_Comodidades, Alfa_Curacion, Alfa_Enciclopedia, Alfa_Guides, Alfa_Guides_Horde, Alfa_Guides_Orc, Alfa_Idioma, Alfa_Inicio, Alfa_Lya, Alfa_Manada, Alfa_Mazmorras, Alfa_Mundo, Alfa_Nav, Alfa_Nucleo, Alfa_Pesca, Alfa_QuestDB, Alfa_Recoleccion, Alfa_Rutas, Alfa_Vista, Alfa_esMX
+  LoadAddOn Alfa_esMX: 15.9 ms
+      stack traceback:
+      	Alfa\Core\Locale.lua:24: in main chunk
+      	(tail call): ?
+      	api.lua:370: in function <api.lua:366>
+  LoadAddOn Alfa_Nav: 16.5 ms
+      stack traceback:
+      	Alfa\Core\Data.lua:74: in function <Alfa\Core\Data.lua:54>
+      	Alfa\Nav\Walk.lua:229: in function 'load'
+      	Alfa\Nav\Walk.lua:2164: in function <Alfa\Nav\Walk.lua:2162>
+      	Alfa\Core\Init.lua:252: in function 'SafeCall'
+      	Alfa\Nav\Nav.lua:154: in function 'notify'
+      	Alfa\Nav\Nav.lua:675: in function <Alfa\Nav\Nav.lua:665>
+      	Alfa\Core\Init.lua:252: in function 'call'
+      	Alfa\Core\Init.lua:770: in function <Alfa\Core\Init.lua:759>
+      	Alfa\Core\Init.lua:252: in function 'call'
+      	Alfa\Core\Init.lua:567: in function <Alfa\Core\Init.lua:561>
+      	mock.lua:81: in function 'correr'
+      	mock.lua:90: in function 'fire'
+      	mock.lua:458: in function <mock.lua:455>
+  LoadAddOn Alfa_Guides_Horde: 26.8 ms
+      stack traceback:
+      	Alfa\Core\Data.lua:74: in function 'Pack'
+      	Alfa\Core\Guides.lua:1292: in function 'loadParts'
+      	Alfa\Core\Guides.lua:1348: in function 'fn'
+      	api.lua:387: in function <api.lua:385>
+      	Alfa\Core\Init.lua:252: in function 'call'
+      	Alfa\Core\Init.lua:567: in function <Alfa\Core\Init.lua:561>
+      	mock.lua:81: in function 'correr'
+      	mock.lua:90: in function 'fire'
+      	mock.lua:458: in function <mock.lua:455>
+  LoadAddOn Alfa_Guides_Orc: 2.9 ms
+      stack traceback:
+      	Alfa\Core\Data.lua:74: in function 'Pack'
+      	Alfa\Core\Guides.lua:1300: in function 'loadParts'
+      	Alfa\Core\Guides.lua:1348: in function 'fn'
+      	api.lua:387: in function <api.lua:385>
+      	Alfa\Core\Init.lua:252: in function 'call'
+      	Alfa\Core\Init.lua:567: in function <Alfa\Core\Init.lua:561>
+      	mock.lua:81: in function 'correr'
+      	mock.lua:90: in function 'fire'
+      	mock.lua:458: in function <mock.lua:455>
+  LoadAddOn Alfa_Rutas_Horde: 0.2 ms
+      stack traceback:
+      	Alfa\Core\Data.lua:74: in function 'Pack'
+      	Alfa\Core\Guides.lua:1292: in function 'loadParts'
+      	Alfa\Core\Guides.lua:1348: in function 'fn'
+      	api.lua:387: in function <api.lua:385>
+      	Alfa\Core\Init.lua:252: in function 'call'
+      	Alfa\Core\Init.lua:567: in function <Alfa\Core\Init.lua:561>
+      	mock.lua:81: in function 'correr'
+      	mock.lua:90: in function 'fire'
+      	mock.lua:458: in function <mock.lua:455>
+  LoadAddOn Alfa_Rutas_Orc: 0.0 ms
+      stack traceback:
+      	Alfa\Core\Data.lua:74: in function 'Pack'
+      	Alfa\Core\Guides.lua:1300: in function 'loadParts'
+      	Alfa\Core\Guides.lua:1348: in function 'fn'
+      	api.lua:387: in function <api.lua:385>
+      	Alfa\Core\Init.lua:252: in function 'call'
+      	Alfa\Core\Init.lua:567: in function <Alfa\Core\Init.lua:561>
+      	mock.lua:81: in function 'correr'
+      	mock.lua:90: in function 'fire'
+      	mock.lua:458: in function <mock.lua:455>
+  LoadAddOn Alfa_Rutas_esMX: 0.0 ms
+      stack traceback:
+      	Alfa\Core\Data.lua:74: in function 'Pack'
+      	Alfa\Core\GuideTexts.lua:268: in function 'Load'
+      	Alfa\Core\Guides.lua:1353: in function 'fn'
+      	api.lua:387: in function <api.lua:385>
+      	Alfa\Core\Init.lua:252: in function 'call'
+      	Alfa\Core\Init.lua:567: in function <Alfa\Core\Init.lua:561>
+      	mock.lua:81: in function 'correr'
+      	mock.lua:90: in function 'fire'
+      	mock.lua:458: in function <mock.lua:455>
+  LoadAddOn Alfa_QuestDB: 4.4 ms
+      stack traceback:
+      	Alfa\Core\Data.lua:74: in function 'Pack'
+      	Alfa\Quests\QuestDB.lua:684: in function 'Load'
+      	Alfa\Quests\Tracker.lua:1396: in function 'fn'
+      	api.lua:400: in function <api.lua:400>
+      	Alfa\Core\Init.lua:252: in function 'call'
+      	Alfa\Core\Init.lua:778: in function <Alfa\Core\Init.lua:773>
+      	Alfa\Core\Init.lua:252: in function 'call'
+      	Alfa\Core\Init.lua:567: in function <Alfa\Core\Init.lua:561>
+      	mock.lua:81: in function 'correr'
+      	mock.lua:90: in function 'fire'
+      	mock.lua:458: in function 'FIRE_EVENT'
+      	drive.lua:56: in main chunk
+      	(tail call): ?
+  LoadAddOn Alfa_Codex: 24.5 ms
+      stack traceback:
+      	Alfa\Core\Data.lua:74: in function 'Pack'
+      	Alfa\Lookup\Codex.lua:499: in function 'Load'
+      	Alfa\Maps\Dungeons.lua:146: in function 'onMapShown'
+      	Alfa\Maps\Dungeons.lua:169: in function <Alfa\Maps\Dungeons.lua:166>
+      	Alfa\Core\Init.lua:252: in function 'call'
+      	Alfa\Core\Init.lua:502: in function 'Fire'
+      	Alfa\Core\Init.lua:655: in function 'Set'
+      	Alfa_Mundo\Mundo.lua:444: in function 'fn'
+      	...
+      	Alfa\Core\Init.lua:778: in function <Alfa\Core\Init.lua:773>
+      	Alfa\Core\Init.lua:252: in function 'call'
+      	Alfa\Core\Init.lua:567: in function <Alfa\Core\Init.lua:561>
+      	mock.lua:81: in function 'correr'
+      	mock.lua:90: in function 'fire'
+      	mock.lua:458: in function 'FIRE_EVENT'
+      	drive.lua:56: in main chunk
+      	(tail call): ?
+  GUÍAS al entrar: 173 registradas, 6 diferidas con los pasos ya leídos: forever/class/warrior/quelserrar, forever/class/warrior/voodoo-feathers, forever/class/warrior/whirlwind-weapon, forever/class/warrior/brutal-armor, forever/class/warrior/heirloom-weapon, forever/horde/05-stonetalon-mountains
+== RELOJ 60 s sin hacer nada: basura 1535 KB
+      476 KB    2.59 ms  x60  tarea rutas.barcos (cada 1 s)
+      268 KB    3.44 ms  x60  tarea manada.reloj (cada 10 s)
+      157 KB    0.57 ms  x60  tarea lya.retos (cada 300 s)
+      136 KB    0.99 ms  x60  reloj Alfa\Nav\Nav.lua:162
+       83 KB    0.20 ms  x60  reloj Alfa\Core\Engine.lua:6882
+       83 KB    0.43 ms  x60  reloj Alfa\Nav\Pins.lua:2376
+       83 KB    0.29 ms  x60  reloj Alfa\Nav\Pins.lua:2405
+       70 KB    0.27 ms  x60  reloj Alfa\Nav\Transit.lua:881
+       49 KB    0.14 ms  x60  reloj Alfa_Nucleo\Reloj.lua:53
+       32 KB    0.33 ms  x60  tarea rutas.rastreador (cada 1 s)
+       22 KB    0.18 ms  x60  tarea manada.pulso (cada 2 s)
+       19 KB    0.12 ms  x60  tarea recoleccion.minimapa (cada 0.5 s)
+        4 KB    0.08 ms  x60  tarea lya.minutos (cada 60 s)
+        4 KB    0.16 ms  x60  tarea inicio.camino (cada 60 s)
+        4 KB    0.04 ms  x60  tarea inicio.sesion (cada 30 s)
+== RÁFAGA x100 BAG_UPDATE_DELAYED         5.53 ms  basura 541 KB
+          2.95 ms  x100     326 KB  OnEvent Alfa\Core\Init.lua:561
+          0.78 ms  x1        40 KB  reloj Alfa_Rutas\Rastreador.lua:1682
+          0.78 ms  x5        85 KB  reloj N.Reloj (todo)
+          0.30 ms  x5        22 KB  tarea manada.reloj (cada 10 s)
+      basura    326 KB  OnEvent Alfa\Core\Init.lua:561
+      basura     40 KB  tarea rutas.barcos (cada 1 s)
+      basura     40 KB  reloj Alfa_Rutas\Rastreador.lua:1682
+== RÁFAGA x100 QUEST_LOG_UPDATE           4.64 ms  basura 482 KB
+          2.03 ms  x100     269 KB  OnEvent Alfa\Core\Init.lua:561
+          0.81 ms  x1        40 KB  reloj Alfa_Rutas\Rastreador.lua:1682
+          0.72 ms  x5        85 KB  reloj N.Reloj (todo)
+          0.29 ms  x5        22 KB  tarea manada.reloj (cada 10 s)
+      basura    269 KB  OnEvent Alfa\Core\Init.lua:561
+      basura     40 KB  tarea rutas.barcos (cada 1 s)
+      basura     40 KB  reloj Alfa_Rutas\Rastreador.lua:1682
+== RÁFAGA x100 UNIT_AURA                  2.00 ms  basura 320 KB
+          0.86 ms  x5        85 KB  reloj N.Reloj (todo)
+          0.34 ms  x100      94 KB  OnEvent Alfa\Core\Init.lua:561
+          0.34 ms  x5        22 KB  tarea manada.reloj (cada 10 s)
+          0.29 ms  x5        40 KB  tarea rutas.barcos (cada 1 s)
+      basura     94 KB  OnEvent Alfa\Core\Init.lua:561
+      basura     75 KB  OnEvent Alfa_Combate\Panel.lua:173
+      basura     40 KB  tarea rutas.barcos (cada 1 s)
+== RÁFAGA x100 PLAYER_TARGET_CHANGED      4.06 ms  basura 373 KB
+          2.72 ms  x100     230 KB  OnEvent Alfa\Core\Init.lua:561
+          0.76 ms  x5        85 KB  reloj N.Reloj (todo)
+          0.51 ms  x100       6 KB  evento PLAYER_TARGET_CHANGED Alfa_Combate\Combate.lua:400
+          0.34 ms  x5        22 KB  tarea manada.reloj (cada 10 s)
+      basura    230 KB  OnEvent Alfa\Core\Init.lua:561
+      basura     40 KB  tarea rutas.barcos (cada 1 s)
+      basura     27 KB  evento PLAYER_TARGET_CHANGED Alfa\Core\Names.lua:351
+== RÁFAGA x100 UPDATE_MOUSEOVER_UNIT      2.33 ms  basura 315 KB
+          1.08 ms  x100     173 KB  OnEvent Alfa\Core\Init.lua:561
+          0.72 ms  x5        85 KB  reloj N.Reloj (todo)
+          0.28 ms  x5        22 KB  tarea manada.reloj (cada 10 s)
+          0.21 ms  x5        40 KB  tarea rutas.barcos (cada 1 s)
+      basura    173 KB  OnEvent Alfa\Core\Init.lua:561
+      basura     40 KB  tarea rutas.barcos (cada 1 s)
+      basura     27 KB  evento UPDATE_MOUSEOVER_UNIT Alfa\Core\Names.lua:352
+== RÁFAGA x100 UNIT_HEALTH                1.29 ms  basura 223 KB
+          0.71 ms  x5        85 KB  reloj N.Reloj (todo)
+          0.31 ms  x5        22 KB  tarea manada.reloj (cada 10 s)
+          0.21 ms  x5        40 KB  tarea rutas.barcos (cada 1 s)
+          0.09 ms  x100      81 KB  OnEvent Alfa\Core\Init.lua:561
+      basura     81 KB  OnEvent Alfa\Core\Init.lua:561
+      basura     40 KB  tarea rutas.barcos (cada 1 s)
+      basura     22 KB  tarea manada.reloj (cada 10 s)
+== RÁFAGA x100 BAG_UPDATE                 1.56 ms  basura 246 KB
+          0.74 ms  x5        85 KB  reloj N.Reloj (todo)
+          0.28 ms  x100     104 KB  OnEvent Alfa\Core\Init.lua:561
+          0.28 ms  x5        22 KB  tarea manada.reloj (cada 10 s)
+          0.26 ms  x5        40 KB  tarea rutas.barcos (cada 1 s)
+      basura    104 KB  OnEvent Alfa\Core\Init.lua:561
+      basura     40 KB  tarea rutas.barcos (cada 1 s)
+      basura     22 KB  tarea manada.reloj (cada 10 s)
+== RÁFAGA x100 UNIT_POWER_UPDATE          1.17 ms  basura 134 KB
+          0.89 ms  x5        85 KB  reloj N.Reloj (todo)
+          0.34 ms  x5        22 KB  tarea manada.reloj (cada 10 s)
+          0.29 ms  x5        40 KB  tarea rutas.barcos (cada 1 s)
+          0.08 ms  x5        11 KB  reloj Alfa\Nav\Nav.lua:162
+      basura     40 KB  tarea rutas.barcos (cada 1 s)
+      basura     22 KB  tarea manada.reloj (cada 10 s)
+      basura     13 KB  tarea lya.retos (cada 300 s)
+== RÁFAGA x100 ZONE_CHANGED               3.25 ms  basura 464 KB
+          1.78 ms  x100     315 KB  OnEvent Alfa\Core\Init.lua:561
+          1.05 ms  x100     120 KB  evento ZONE_CHANGED Alfa\Nav\Nav.lua:651
+          0.71 ms  x5        86 KB  reloj N.Reloj (todo)
+          0.34 ms  x100      95 KB  evento ZONE_CHANGED Alfa\Nav\Travel.lua:2843
+      basura    315 KB  OnEvent Alfa\Core\Init.lua:561
+      basura    120 KB  evento ZONE_CHANGED Alfa\Nav\Nav.lua:651
+      basura     95 KB  evento ZONE_CHANGED Alfa\Nav\Travel.lua:2843
+== RÁFAGA x100 CHAT_MSG_ADDON             1.65 ms  basura 254 KB
+          0.70 ms  x5        85 KB  reloj N.Reloj (todo)
+          0.46 ms  x100     112 KB  OnEvent Alfa\Core\Init.lua:561
+          0.30 ms  x5        22 KB  tarea manada.reloj (cada 10 s)
+          0.21 ms  x5        40 KB  tarea rutas.barcos (cada 1 s)
+      basura    112 KB  OnEvent Alfa\Core\Init.lua:561
+      basura     40 KB  tarea rutas.barcos (cada 1 s)
+      basura     22 KB  tarea manada.reloj (cada 10 s)
+== CUADROS x300, 1 OnUpdate vivos: 47.8 ms en total
+      8.17 ms  x1     OnUpdate Alfa_Bienvenida\Intro.lua:563
+      0.60 ms  x300   OnUpdate Alfa\Nav\Arrow.lua:1227
+      0.04 ms  x26    OnUpdate Alfa_Recoleccion\Minimapa.lua:157
+      0.04 ms  x20    OnUpdate Alfa\Nav\Pins.lua:2358
+      0.02 ms  x1     OnHide Alfa_Nucleo\Kit\Ventanas.lua:273
+      0.01 ms  x1     OnUpdate Alfa\Theme\Anim.lua:71
+      0.00 ms  x1     OnShow Alfa_Nucleo\Kit\Ventanas.lua:269
+      0.00 ms  x1     OnShow Alfa_Bienvenida\Asistente.lua:868
+      0.00 ms  x2     OnValueChanged Alfa_Nucleo\Kit\Ventanas.lua:57
+  basura en 5 s de cuadros: 3253 KB
+== COMBATE (entrar, 50 golpes, salir): 7.4 ms en total
+      2.47 ms  x102   OnEvent Alfa\Core\Init.lua:561
+      1.73 ms  x10    reloj N.Reloj (todo)
+      1.37 ms  x1     evento PLAYER_REGEN_DISABLED Alfa\UI\GuideFrame.lua:5877
+      1.26 ms  x1     reloj Alfa_Bienvenida\Asistente.lua:894
+      0.72 ms  x10    tarea manada.reloj (cada 10 s)
+      0.59 ms  x1     evento PLAYER_REGEN_ENABLED Alfa\UI\GuideFrame.lua:5884
+      0.54 ms  x10    tarea rutas.barcos (cada 1 s)
+      0.49 ms  x8     reloj Alfa_Bienvenida\Asistente.lua:55
+      0.28 ms  x1     reloj Alfa_Rutas\Rastreador.lua:1682
+      0.19 ms  x10    reloj Alfa\Nav\Nav.lua:162
+      0.11 ms  x10    tarea lya.retos (cada 300 s)
+      0.10 ms  x10    reloj Alfa\Nav\Pins.lua:2376
+  GUÍAS al final: 173 registradas, 0 diferidas con los pasos ya leídos
+MEMORIA Lua al final: 80.3 MB
+errors: 0

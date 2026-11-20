@@ -389,15 +389,15 @@
               "El borde late cuando el juego hace brillar esa habilidad. «Área» sale con tres enemigos o más.",
               "Debajo, una línea corta te dice por qué."
             ]},
-            {"t": "p", "texto": "La ayuda de rotación conoce las **27 especializaciones** de las 9 clases y crece contigo: solo te sugiere lo que ya aprendiste, con tu rango más alto. La primera vez, un aviso te explica cómo leerla. El ícono se mueve a donde quieras, ahora puede ser mucho más grande y lleva encima, bien clara, la tecla de tu barra."},
+            {"t": "p", "texto": "La ayuda de rotación conoce las **27 especializaciones** de las 9 clases y crece contigo: solo te sugiere lo que ya aprendiste, con tu rango más alto. La primera vez que abres Combate (o al terminar tu primera pelea), un aviso te explica cómo leerla. El ícono se mueve a donde quieras, ahora puede ser mucho más grande y lleva encima, bien clara, la tecla de tu barra."},
             {"t": "tarjetas", "cols": 3, "items": [
               {"icono": "aviso", "titulo": "Avisos de reacción", "texto": "Abrumar, Revancha, Ejecutar, Contraataque… justo cuando se pueden usar."},
               {"icono": "misiones", "titulo": "Lo de misión, resaltado", "texto": "Los enemigos que necesitas, marcados en su placa de nombre."},
               {"icono": "reloj", "titulo": "Medidor de daño", "texto": "El daño de tu grupo, cuando tu juego trae el medidor (`/alfa dps`)."}
             ]},
             {"t": "tarjetas", "cols": 2, "titulo": "Ayudas de pelea", "items": [
-              {"icono": "alerta", "titulo": "Cortar hechizos", "texto": "Cuando tu objetivo lanza algo que puedes cortar, te avisa con tu habilidad, su tecla y si ya está lista (`/alfa combate corte` lo prueba)."},
-              {"icono": "aviso", "titulo": "Tu amenaza", "texto": "Una barrita que te avisa antes de quitarle el enemigo al tanque o, si tú tanqueas, antes de perderlo."},
+              {"icono": "alerta", "titulo": "Cortar hechizos", "texto": "Cuando tu objetivo lanza algo que puedes cortar, te avisa con tu habilidad, su tecla y si ya está lista (`/alfa combate corte` lo prueba). En mazmorras, si el juego oculta el hechizo, suena más suave (y a veces también con lo que no se puede cortar)."},
+              {"icono": "aviso", "titulo": "Tu amenaza", "texto": "Una barrita que te avisa antes de quitarle el enemigo al tanque o, si tú tanqueas, antes de perderlo. Contra jefes también avisa, sin porcentaje: «¡Te está atacando a ti!»."},
               {"icono": "nivel", "titulo": "Resumen de la pelea", "texto": "Al terminar: cuánto duró, tu daño y curación por segundo y lo que más te pegó. La última, con `/alfa combate pelea`."},
               {"icono": "reloj", "titulo": "Tus recargas largas", "texto": "Una barra discreta con lo que tarda 30 segundos o más en volver; cada una se va sola cuando está lista."}
             ]},
@@ -434,7 +434,7 @@
             {"t": "pasos", "titulo": "Limpiar con un clic, paso a paso", "items": [
               "Elige en **Tus clics** uno para **Quitar perjuicios** (por ejemplo, Mayús + clic izquierdo). Si tu clase quita algo y ningún clic lo hace, la página y tu chat te lo avisan.",
               "En la pelea, el marco de quien tiene algo que **tú** puedes quitar se pinta del color del perjuicio: magia, maldición, veneno o enfermedad, con su ícono arriba a la derecha.",
-              "Pasa el ratón sobre ese marco: el cuadro te dice qué tiene y con qué clic se quita, como «Veneno: quítalo con Mayús + clic izquierdo».",
+              "Pasa el ratón sobre ese marco: el cuadro te dice qué tiene y con qué clic se quita, como «Veneno: quítalo con Mayús + clic izquierdo». En combate el cuadro sale corto, solo con eso (**Cuadro corto en combate**).",
               "Haz ese clic y listo: el color y el ícono se van solos."
             ]},
             {"t": "pasos", "titulo": "El puntito azul: le falta tu buff", "items": [
@@ -450,7 +450,7 @@
             ]},
             {"t": "tarjetas", "cols": 2, "titulo": "Más ayudas para quien cura", "items": [
               {"icono": "alerta", "titulo": "Tanque en apuros", "texto": "El marco del tanque late en rojo cuando le queda menos del 40 % de vida."},
-              {"icono": "curacion", "titulo": "Maná de los curanderos", "texto": "Arriba de tus marcos, el maná de quienes curan en tu grupo. Se destaca al terminar cada pelea, para saber si conviene esperar."},
+              {"icono": "curacion", "titulo": "Maná de los curanderos", "texto": "Arriba de tus marcos, el maná de quienes curan en tu grupo. Se destaca al terminar cada pelea, para saber si conviene esperar. Si nadie tiene rol en tu grupo, salen solo quienes Alfa vio curar: «Maná: quienes curaron»."},
               {"icono": "rejilla", "titulo": "La banda por grupos", "texto": "Con «En banda, un grupo por columna», cada grupo va en su columna, como en la ventana de banda."},
               {"icono": "bolsas", "titulo": "Una venda en un clic", "texto": "Cualquier clase puede poner en un clic «Usar una venda»: Alfa usa la mejor de tus bolsas."}
             ]},
@@ -805,7 +805,7 @@
             {"t": "h", "texto": "Las guaridas"},
             {"t": "p", "texto": "Cuando una zona se llena, el juego la parte en capas: el mismo lugar con otra gente, otros raros y otros minerales. Alfa le pone nombre a cada una (Guarida Colmillo, Guarida Brasa…) y en la sección **Guaridas** de esta página te dice en cuál estás y en cuáles anda la manada de tu zona. Tu guarida también sale en tu guía en pantalla."},
             {"t": "lista", "items": [
-              "**Pedir entrar.** Un clic (o clic derecho en el lobo) y Alfa le toca la puerta a alguien con su guarida abierta: te invita a su grupo, aceptas, el juego te pasa a su guarida y Alfa te avisa para salir del grupo.",
+              "**Pedir entrar.** Un clic (o clic derecho en el lobo) y Alfa le toca la puerta a alguien con su guarida abierta: te invita a su grupo, aceptas, el juego te pasa a su guarida y, mientras sigas en su grupo, Lya te recuerda salir con **Salir del grupo** (la guarida se queda contigo).",
               "**Abrir mi guarida** (apagado de fábrica). Si alguien de la manada pide entrar, Alfa lo invita a tu grupo, fuera de combate.",
               "**Raros de la manada.** Cuando un lobo encuentra un raro o un tesoro en tu zona, te llega un aviso con su guarida: «Ir de caza» si es la tuya, «Pedir entrar» si es otra.",
               "**Llamar a la manada.** ¿Un élite o un raro muy duro? Pide ayuda (o `/alfa manada llamar`): los lobos de tu zona reciben tu lugar, tocan «¡Voy!» y a ti te avisa quién viene. Tu llamado sale 3 minutos en su mapa."
@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "La 1.3.3: la manada en calma", "items": ["**Entrar en silencio:** solo la animación, y Lya llega sin hablar. Lo demás te espera en Hoy («Mientras entrabas») y con Lya («¿Qué hay de nuevo?»). Lo eliges en **Al entrar al juego**.", "**La intro, más viva:** el lobo se dibuja con luz, se le encienden los ojos y vuela en chispas al ícono del minimapa.", "**Seguir la ruta de tu grupo:** «Seguir su ruta», «Pedírselas» y «Dejar de seguir».", "**La piedra de hogar, clara:** la placa «USA TU PIEDRA DE HOGAR» con el botón «Usar la piedra».", "**Una sola voz:** Hoy, las bolsas y Lya ya no te dicen lo mismo a la vez, y Talentos sale también en Alfa sencillo.", "**Y más:** «Otro nombre…» en tus conjuntos, «Soltar las N» grises, «Llévame a una zona de tu nivel», el corte que suena en mazmorras, «Te perdiste esto» con Lya y «Armar el grupo» en las citas."]}
+    "mapa": {"titulo": "La 1.3.4: la manada ligera", "items": ["**Entrar, mucho más rápido:** al entrar y con `/reload`, Alfa ya no arma todas las guías, solo la que sigues; las demás, cuando las abres.", "**Menos memoria:** unos 12 MB menos, así que el juego hace menos pausas para limpiarla.", "**Sin tirones al hablar con PNJ:** el aviso de «tomar esta misión cierra otra» mira solo las guías que la tocan.", "**Y más:** los barcos del mapa trabajan menos cada segundo y, en combate, Alfa no suelta ni arma guías."]}
   },
   "contraportada": {
     "titulo": "Únete a la manada",

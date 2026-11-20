@@ -146,12 +146,16 @@ function RUN_TIMERS(n)
     NOW = NOW + 1
     for _, t in ipairs(list) do
       if not t.cancelled then
+        local m0, t0 = PERFIL_ON and PERFIL_MARCA(), PERFIL_ON and PERFIL_RELOJ()
         local ok, e = pcall(t.fn, t)
+        if t0 then PERFIL_SUMAR("reloj " .. PERFIL_CLAVE(t.fn), PERFIL_RELOJ() - t0, m0) end
         if not ok then NOTE("timer", e) end
         if t.ticker and not t.cancelled then timers[#timers + 1] = t end
       end
     end
+    local m1, t1 = PERFIL_ON and PERFIL_MARCA(), PERFIL_ON and PERFIL_RELOJ()
     local hay = relojAlfa()
+    if t1 then PERFIL_SUMAR("reloj N.Reloj (todo)", PERFIL_RELOJ() - t1, m1) end
     if #timers == 0 and not hay then break end
   end
 end
@@ -180,7 +184,7 @@ C_AddOns = {
   GetAddOnInfo = function(n) local m = ADDON_META[n] if not m then return nil end return n, m.Title, m.Notes, true, nil, "INSECURE", false end,
   GetAddOnEnableState = function(n) return ADDON_META[n] and 2 or 0 end,
   IsAddOnLoadOnDemand = function() return false end,
-  LoadAddOn = function(n) if PY_LOAD_ADDON then local ok = PY_LOAD_ADDON(n) return ok, (not ok) and "MISSING" or nil end return false, "MISSING" end,
+  LoadAddOn = function(n) if PERFIL_ON and not LOADED[n] then PERFIL_PIDIO = PERFIL_PIDIO or {}; local t0 = PERFIL_RELOJ(); local ok = PY_LOAD_ADDON(n); PERFIL_PIDIO[#PERFIL_PIDIO + 1] = { n, PERFIL_RELOJ() - t0, debug.traceback("", 2) }; return ok, (not ok) and "MISSING" or nil end if PY_LOAD_ADDON then local ok = PY_LOAD_ADDON(n) return ok, (not ok) and "MISSING" or nil end return false, "MISSING" end,
   EnableAddOn = function() end, DisableAddOn = function() end,
   DoesAddOnExist = function(n) return ADDON_META[n] ~= nil end,
 }
@@ -362,6 +366,41 @@ function seterrorhandler() end
 function LOAD_FILE(name, src, addon, ns)
   local fn, err = loadstring(src, "@" .. name)
   if not fn then NOTE(name, err) return end
+  local t0 = PERFIL_RELOJ()
   local ok, e = xpcall(function() return fn(addon, ns) end, debug.traceback)
   if not ok then NOTE("load " .. name, e) end
+  if PERFIL_ON then
+    PERFIL_CARGA = PERFIL_CARGA or {}
+    PERFIL_CARGA[#PERFIL_CARGA + 1] = { name, PERFIL_RELOJ() - t0, addon }
+    -- Los eventos del motor pasan por un solo marco: se envuelve cada
+    -- manejador para saber de quién es el tiempo.
+    if type(ns) == "table" and type(ns.RegisterEvent) == "function" and not ns._perfilEnvuelto then
+      ns._perfilEnvuelto = true
+      local reg, unreg, mapa = ns.RegisterEvent, ns.UnregisterEvent, setmetatable({}, { __mode = "k" })
+      local function envolver(ev, fn)
+        if type(fn) ~= "function" then return fn end
+        mapa[fn] = mapa[fn] or {}
+        if not mapa[fn][ev] then
+          local clave = "evento " .. ev .. " " .. PERFIL_CLAVE(fn)
+          mapa[fn][ev] = function(...)
+            local m0, t = PERFIL_MARCA(), PERFIL_RELOJ()
+            local r = { fn(...) }
+            PERFIL_SUMAR(clave, PERFIL_RELOJ() - t, m0)
+            return unpack(r)
+          end
+        end
+        return mapa[fn][ev]
+      end
+      ns.RegisterEvent = function(ev, fn) return reg(ev, envolver(ev, fn)) end
+      if type(ns.OnLogin) == "function" then
+        local ol = ns.OnLogin
+        ns.OnLogin = function(fn)
+          if type(fn) ~= "function" then return ol(fn) end
+          local clave = "OnLogin " .. PERFIL_CLAVE(fn)
+          return ol(function(...) local t = PERFIL_RELOJ(); local r = { fn(...) }; PERFIL_SUMAR(clave, PERFIL_RELOJ() - t); return unpack(r) end)
+        end
+      end
+      if unreg then ns.UnregisterEvent = function(ev, fn) return unreg(ev, envolver(ev, fn)) end end
+    end
+  end
 end

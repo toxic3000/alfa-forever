@@ -1,5 +1,25 @@
 # Cambios de Alfa
 
+## 1.3.4 — La manada ligera: Alfa entra al juego mucho más rápido (20/11/2026)
+
+Una versión para quitar el lag: medimos con un perfilador nuevo dónde se iba el tiempo y atacamos lo que más pesaba. Cada cambio trae su prueba en el banco.
+
+**Español**
+- Entrar al juego y hacer /reload, mucho más rápido: Alfa ya no arma todas las guías de tu facción al entrar, solo la que estás siguiendo. Las demás se arman cuando las abres. En nuestras pruebas, lo que Alfa lee al entrar bajó de unos 185 a unos 40 milisegundos.
+- Alfa usa unos 12 MB menos de memoria, así que el juego hace menos pausas para limpiarla.
+- Hablar con quien da misiones ya no da un tirón: el aviso de «tomar esta misión cierra otra» y lo que abre cada misión miran solo las guías que la tocan.
+- Con el mapa abierto, los barcos y zepelines dejan mucho menos trabajo cada segundo.
+- En combate, Alfa no suelta ni vuelve a armar guías: espera a que termine la pelea.
+- Todo lo demás se queda igual: las 260 guías se comparan una por una para confirmar que dicen exactamente lo mismo que antes.
+
+**English**
+- Logging in and /reload are much faster: Alfa no longer builds every guide of your faction when you log in, only the one you're following. The rest are built when you open them. In our tests, what Alfa reads at login dropped from about 185 to about 40 milliseconds.
+- Alfa uses about 12 MB less memory, so the game pauses less often to clean it up.
+- Talking to quest givers no longer stutters: the "taking this quest closes another" warning and what each quest unlocks only look at the guides that touch it.
+- With the map open, boats and zeppelins do much less work every second.
+- In combat, Alfa doesn't release or rebuild guides: it waits until the fight is over.
+- Everything else stays the same: all 260 guides are compared one by one to confirm they say exactly what they said before.
+
 ## 1.3.3 — La manada en calma: entrar en silencio, seguir la ruta de tu grupo y 20 mejoras (20/11/2026)
 
 La cuarta de la serie 1.3: lo que pidió Toxic al jugarla. Al entrar, solo la animación; lo demás te espera. Cada mejora trae su prueba en el banco.

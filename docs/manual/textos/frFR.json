@@ -389,15 +389,15 @@
               "La bordure pulse quand le jeu fait briller cette technique. « Zone » s'affiche à partir de trois ennemis.",
               "En dessous, une courte ligne vous dit pourquoi."
             ]},
-            {"t": "p", "texto": "L'aide à la rotation connaît les **27 spécialisations** des 9 classes et grandit avec vous : elle ne vous suggère que ce que vous avez déjà appris, avec votre rang le plus élevé. La première fois, une alerte vous explique comment la lire. L'icône se déplace où vous voulez, peut maintenant être beaucoup plus grande et porte, bien lisible, la touche de votre barre."},
+            {"t": "p", "texto": "L'aide à la rotation connaît les **27 spécialisations** des 9 classes et grandit avec vous : elle ne vous suggère que ce que vous avez déjà appris, avec votre rang le plus élevé. La première fois que vous ouvrez Combat (ou à la fin de votre premier combat), une alerte vous explique comment la lire. L'icône se déplace où vous voulez, peut maintenant être beaucoup plus grande et porte, bien lisible, la touche de votre barre."},
             {"t": "tarjetas", "cols": 3, "items": [
               {"icono": "aviso", "titulo": "Alertes de réaction", "texto": "Fulgurance, Vengeance, Exécution, Contre-attaque… pile quand on peut les utiliser."},
               {"icono": "misiones", "titulo": "Quêtes en évidence", "texto": "Les ennemis dont vous avez besoin, marqués sur leur barre de nom."},
               {"icono": "reloj", "titulo": "Compteur de dégâts", "texto": "Les dégâts de votre groupe, quand votre jeu a le compteur (`/alfa dps`)."}
             ]},
             {"t": "tarjetas", "cols": 2, "titulo": "Aides au combat", "items": [
-              {"icono": "alerta", "titulo": "Interrompre les sorts", "texto": "Quand votre cible lance quelque chose que vous pouvez interrompre, il vous prévient avec votre technique, sa touche et si elle est prête (`/alfa combate corte` le teste)."},
-              {"icono": "aviso", "titulo": "Votre menace", "texto": "Une petite barre qui vous prévient avant que vous ne preniez l'ennemi au tank ou, si vous tankez, avant de le perdre."},
+              {"icono": "alerta", "titulo": "Interrompre les sorts", "texto": "Quand votre cible lance quelque chose que vous pouvez interrompre, il vous prévient avec votre technique, sa touche et si elle est prête (`/alfa combate corte` le teste). En donjon, si le jeu cache le sort, le son est plus doux (et sonne parfois aussi pour ce qu'on ne peut pas interrompre)."},
+              {"icono": "aviso", "titulo": "Votre menace", "texto": "Une petite barre qui vous prévient avant que vous ne preniez l'ennemi au tank ou, si vous tankez, avant de le perdre. Contre les boss aussi, sans pourcentage : « Il t'attaque, toi ! »."},
               {"icono": "nivel", "titulo": "Résumé du combat", "texto": "À la fin : sa durée, vos dégâts et vos soins par seconde et ce qui vous a le plus frappé. Le dernier, avec `/alfa combate pelea`."},
               {"icono": "reloj", "titulo": "Vos longs temps de recharge", "texto": "Une barre discrète avec ce qui met 30 secondes ou plus à revenir ; chacun s'en va tout seul quand il est prêt."}
             ]},
@@ -423,10 +423,10 @@
               "botones": ["Gauche", "Milieu", "Droit"],
               "mods": ["Sans touche", "Maj", "Ctrl", "Alt"],
               "acciones": [
-                ["Cibler", "Les captures de ce manuel montrent Alfa en espagnol. Dans votre jeu, vous verrez les mêmes boutons, avec leurs noms en français.", "Menu du joueur"],
-                ["Votre soin rapide", "Les captures de ce manuel montrent Alfa en espagnol. Dans votre jeu, vous verrez les mêmes boutons, avec leurs noms en français.", "Votre gros soin"],
-                ["Dissiper", "Les captures de ce manuel montrent Alfa en espagnol. Dans votre jeu, vous verrez les mêmes boutons, avec leurs noms en français.", "Votre buff"],
-                ["Soin sur la durée", "Les captures de ce manuel montrent Alfa en espagnol. Dans votre jeu, vous verrez les mêmes boutons, avec leurs noms en français.", "Les captures de ce manuel montrent Alfa en espagnol. Dans votre jeu, vous verrez les mêmes boutons, avec leurs noms en français."]
+                ["Cibler", "", "Menu du joueur"],
+                ["Votre soin rapide", "", "Votre gros soin"],
+                ["Dissiper", "", "Votre buff"],
+                ["Soin sur la durée", "", ""]
               ]
             }, "pie": "Douze clics pour douze actions : trois boutons de la souris, avec ou sans Maj, Ctrl ou Alt. (Exemple)"},
             {"t": "h", "texto": "Soigner et cibler"},
@@ -434,7 +434,7 @@
             {"t": "pasos", "titulo": "Dissiper en un clic, pas à pas", "items": [
               "Dans **Vos clics**, choisissez-en un pour **Dissiper les effets néfastes** (par exemple, Maj + clic gauche). Si votre classe peut retirer quelque chose et qu'aucun clic ne le fait, la page et votre discussion vous le signalent.",
               "En combat, le cadre de celui qui a quelque chose que **vous** pouvez retirer prend la couleur de l'effet néfaste : magie, malédiction, poison ou maladie, avec son icône en haut à droite.",
-              "Survolez ce cadre : l'infobulle vous dit ce qu'il a et quel clic le retire, comme « Poison : retire-le avec Maj + clic gauche ».",
+              "Survolez ce cadre : l'infobulle vous dit ce qu'il a et quel clic le retire, comme « Poison : retire-le avec Maj + clic gauche ». En combat, l'infobulle est courte, rien que ça (**Petite bulle en combat**).",
               "Faites ce clic et c'est réglé : la couleur et l'icône s'en vont toutes seules."
             ]},
             {"t": "pasos", "titulo": "Le petit point bleu : il lui manque votre buff", "items": [
@@ -450,7 +450,7 @@
             ]},
             {"t": "tarjetas", "cols": 2, "titulo": "Plus d'aides pour les soigneurs", "items": [
               {"icono": "alerta", "titulo": "Tank en danger", "texto": "Le cadre du tank bat en rouge quand il lui reste moins de 40 % de vie."},
-              {"icono": "curacion", "titulo": "Mana des soigneurs", "texto": "Au-dessus de vos cadres, le mana des soigneurs de votre groupe. Il ressort à la fin de chaque combat, pour savoir s'il vaut mieux attendre."},
+              {"icono": "curacion", "titulo": "Mana des soigneurs", "texto": "Au-dessus de vos cadres, le mana des soigneurs de votre groupe. Il ressort à la fin de chaque combat, pour savoir s'il vaut mieux attendre. Si personne n'a de rôle dans votre groupe, seuls ceux qu'Alfa a vus soigner s'affichent : « Mana : ceux qui ont soigné »."},
               {"icono": "rejilla", "titulo": "Le raid par groupes", "texto": "Avec « En raid, un groupe par colonne », chaque groupe a sa colonne, comme dans la fenêtre de raid."},
               {"icono": "bolsas", "titulo": "Un bandage en un clic", "texto": "Toute classe peut mettre sur un clic « Utiliser un bandage » : Alfa utilise le meilleur de vos sacs."}
             ]},
@@ -805,7 +805,7 @@
             {"t": "h", "texto": "Les tanières"},
             {"t": "p", "texto": "Quand une zone se remplit, le jeu la divise en couches : le même endroit avec d'autres gens, d'autres rares et d'autres minerais. Alfa donne un nom à chacune (Tanière Croc, Tanière Braise…) et dans la section **Tanières** de cette page, vous dit dans laquelle vous êtes et dans lesquelles se trouve la meute de votre zone. Votre tanière s'affiche aussi dans votre guide à l'écran."},
             {"t": "lista", "items": [
-              "**Demander à entrer.** Un clic (ou clic droit sur le loup) et Alfa frappe à la porte de quelqu'un dont la tanière est ouverte : il vous invite dans son groupe, vous acceptez, le jeu vous passe dans sa tanière et Alfa vous prévient pour quitter le groupe.",
+              "**Demander à entrer.** Un clic (ou clic droit sur le loup) et Alfa frappe à la porte de quelqu'un dont la tanière est ouverte : il vous invite dans son groupe, vous acceptez, le jeu vous passe dans sa tanière et, tant que vous êtes encore dans son groupe, Lya vous rappelle d'en sortir avec **Quitter le groupe** (la tanière reste avec vous).",
               "**Ouvrir ma tanière** (désactivé par défaut). Si quelqu'un de la meute demande à entrer, Alfa l'invite dans votre groupe, hors combat.",
               "**Rares de la meute.** Quand un loup trouve un rare ou un trésor dans votre zone, vous recevez une alerte avec sa tanière : « Partir en chasse » si c'est la vôtre, « Demander à entrer » si c'est une autre.",
               "**Appeler la meute.** Un élite ou un rare trop coriace ? Demandez de l'aide (ou `/alfa manada llamar`) : les loups de votre zone reçoivent votre position, appuient sur « J’arrive ! » et vous êtes prévenu de qui vient. Votre appel reste 3 minutes sur leur carte."
@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "La 1.3.3 : la meute au calme", "items": ["**Entrer en silence :** seulement l'animation, et Lya arrive sans un mot. Le reste vous attend dans Aujourd'hui (« Pendant votre connexion ») et avec Lya (« Quoi de neuf ? »). À choisir dans **En entrant dans le jeu**.", "**Une intro plus vivante :** le loup se dessine en lumière, ses yeux s'allument et il s'envole en étincelles vers l'icône de la minicarte.", "**Suivre la route de votre groupe :** « Suivre sa route », « Les lui demander » et « Ne plus suivre ».", "**La pierre de foyer, claire :** la plaque « UTILISE TA PIERRE DE FOYER » avec le bouton « Utiliser la pierre ».", "**Une seule voix :** Aujourd'hui, les sacs et Lya ne vous disent plus la même chose en même temps, et Talents s'affiche aussi dans Alfa simple.", "**Et plus encore :** « Autre nom… » pour vos ensembles, « Abandonner les N » quêtes grises, « Emmène-moi dans une zone de mon niveau », le son d'interruption en donjon, « Tu as manqué ceci » avec Lya et « Former le groupe » pour les sorties."]}
+    "mapa": {"titulo": "La 1.3.4 : la meute légère", "items": ["**Connexion bien plus rapide :** à la connexion et avec `/reload`, Alfa ne prépare plus tous les guides, seulement celui que tu suis ; les autres, quand tu les ouvres.", "**Moins de mémoire :** environ 12 Mo de moins, donc le jeu fait moins de pauses pour la nettoyer.", "**Plus d'à-coups chez les donneurs de quêtes :** l'avertissement « prendre cette quête en ferme une autre » ne regarde que les guides concernés.", "**Et plus :** les bateaux de la carte travaillent moins chaque seconde, et en combat Alfa ne libère ni ne prépare de guides."]}
   },
   "contraportada": {
     "titulo": "Rejoignez la meute",

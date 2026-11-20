@@ -389,15 +389,15 @@
               "The border pulses when the game makes that ability glow. “Area” shows up with three or more enemies.",
               "Below, a short line tells you why."
             ]},
-            {"t": "p", "texto": "The rotation helper knows all **27 specializations** of the 9 classes and grows with you: it only suggests what you’ve already learned, at your highest rank. The first time, a note explains how to read it. The icon moves wherever you want, can now be much bigger and shows your bar’s key on top, nice and clear."},
+            {"t": "p", "texto": "The rotation helper knows all **27 specializations** of the 9 classes and grows with you: it only suggests what you’ve already learned, at your highest rank. The first time you open Combat (or after your first fight), a note explains how to read it. The icon moves wherever you want, can now be much bigger and shows your bar’s key on top, nice and clear."},
             {"t": "tarjetas", "cols": 3, "items": [
               {"icono": "aviso", "titulo": "Reaction alerts", "texto": "Overpower, Revenge, Execute, Counterattack… right when they can be used."},
               {"icono": "misiones", "titulo": "Quest things, highlighted", "texto": "The enemies you need, marked on their nameplate."},
               {"icono": "reloj", "titulo": "Damage meter", "texto": "Your group’s damage, when your game includes the meter (`/alfa dps`)."}
             ]},
             {"t": "tarjetas", "cols": 2, "titulo": "Fight helpers", "items": [
-              {"icono": "alerta", "titulo": "Interrupt spells", "texto": "When your target casts something you can interrupt, it tells you with your ability, its key and whether it’s ready (`/alfa combate corte` tests it)."},
-              {"icono": "aviso", "titulo": "Your threat", "texto": "A small bar that warns you before you pull the enemy off the tank or, if you tank, before you lose it."},
+              {"icono": "alerta", "titulo": "Interrupt spells", "texto": "When your target casts something you can interrupt, it tells you with your ability, its key and whether it’s ready (`/alfa combate corte` tests it). In dungeons, if the game hides the spell, it sounds softer (and sometimes also for things you can’t interrupt)."},
+              {"icono": "aviso", "titulo": "Your threat", "texto": "A small bar that warns you before you pull the enemy off the tank or, if you tank, before you lose it. It warns you against bosses too, without a percentage: “It’s attacking you!”."},
               {"icono": "nivel", "titulo": "Fight summary", "texto": "When it ends: how long it lasted, your damage and healing per second and what hit you hardest. The last one, with `/alfa combate pelea`."},
               {"icono": "reloj", "titulo": "Your long cooldowns", "texto": "A discreet bar with whatever takes 30 seconds or more to come back; each one leaves on its own when it’s ready."}
             ]},
@@ -434,7 +434,7 @@
             {"t": "pasos", "titulo": "Cleanse with one click, step by step", "items": [
               "In **Your clicks**, pick one for **Remove debuffs** (for example, Shift + left click). If your class removes something and no click does it, the page and your chat let you know.",
               "In a fight, the frame of anyone with something **you** can remove turns the color of the debuff: magic, curse, poison or disease, with its icon at the top right.",
-              "Hover over that frame: the tooltip tells you what they have and which click removes it, such as “Poison: remove it with Shift + left click”.",
+              "Hover over that frame: the tooltip tells you what they have and which click removes it, such as “Poison: remove it with Shift + left click”. In combat the tooltip is short, just that (**Short box in combat**).",
               "Make that click and you’re done: the color and the icon go away on their own."
             ]},
             {"t": "pasos", "titulo": "The little blue dot: they’re missing your buff", "items": [
@@ -450,7 +450,7 @@
             ]},
             {"t": "tarjetas", "cols": 2, "titulo": "More help for healers", "items": [
               {"icono": "alerta", "titulo": "Tank in trouble", "texto": "The tank’s frame pulses red when they have less than 40% health left."},
-              {"icono": "curacion", "titulo": "Healers’ mana", "texto": "Above your frames, the mana of your group’s healers. It stands out after each fight, so you know whether it’s worth waiting."},
+              {"icono": "curacion", "titulo": "Healers’ mana", "texto": "Above your frames, the mana of your group’s healers. It stands out after each fight, so you know whether it’s worth waiting. If nobody in your group has a role, it shows only those Alfa saw healing: “Mana: who has healed”."},
               {"icono": "rejilla", "titulo": "The raid by groups", "texto": "With “In a raid, one group per column”, each group goes in its own column, like in the raid window."},
               {"icono": "bolsas", "titulo": "A bandage in one click", "texto": "Any class can put “Use a bandage” on a click: Alfa uses the best one in your bags."}
             ]},
@@ -805,7 +805,7 @@
             {"t": "h", "texto": "Dens"},
             {"t": "p", "texto": "When a zone fills up, the game splits it into layers: the same place with other people, other rares and other ore. Alfa names each one (Fang Den, Ember Den…) and in the **Dens** section of this page tells you which one you’re in and where the pack in your zone is. Your den also shows in your on-screen guide."},
             {"t": "lista", "items": [
-              "**Ask to enter.** One click (or right-click on the wolf) and Alfa knocks on the door of someone with an open den: they invite you to their group, you accept, the game moves you to their den and Alfa reminds you to leave the group.",
+              "**Ask to enter.** One click (or right-click on the wolf) and Alfa knocks on the door of someone with an open den: they invite you to their group, you accept, the game moves you to their den and, while you’re still in their group, Lya reminds you to leave with **Leave group** (the den stays with you).",
               "**Open my den** (off by default). If someone from the pack asks to enter, Alfa invites them to your group, out of combat.",
               "**Pack rares.** When a wolf finds a rare or a treasure in your zone, you get a notice with their den: “Go hunt” if it’s yours, “Ask to enter” if it’s another.",
               "**Call the pack.** An elite or a really tough rare? Ask for help (or `/alfa manada llamar`): the wolves in your zone get your location, press “On my way!” and you’re told who’s coming. Your call shows on their map for 3 minutes."
@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "1.3.3: the pack at ease", "items": ["**A quiet login:** only the animation, and Lya arrives without a word. Everything else waits on Today (“While you were logging in”) and with Lya (“What’s new?”). Choose it in **When you log in**.", "**A livelier intro:** the wolf is drawn with light, its eyes light up and it flies in sparks to the minimap icon.", "**Follow your group’s route:** “Follow their route”, “Ask for them” and “Stop following”.", "**The Hearthstone, made clear:** the “USE YOUR HEARTHSTONE” plate with the “Use the stone” button.", "**One voice:** Today, the bags and Lya no longer tell you the same thing at once, and Talents shows in Simple Alfa too.", "**And more:** “Another name…” for your gear sets, “Drop all N” grey quests, “Take me to a zone for my level”, the interrupt sound in dungeons, “You missed this” with Lya and “Build the group” in pack outings."]}
+    "mapa": {"titulo": "1.3.4: the light pack", "items": ["**Much faster login:** when you log in and on `/reload`, Alfa no longer builds every guide, only the one you follow; the rest, when you open them.", "**Less memory:** about 12 MB less, so the game pauses less often to clean it up.", "**No stutter at quest givers:** the \"taking this quest closes another\" warning only looks at the guides that touch it.", "**And more:** the map's boats do less work every second, and in combat Alfa doesn't release or build guides."]}
   },
   "contraportada": {
     "titulo": "Join the pack",

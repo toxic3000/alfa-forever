@@ -389,15 +389,15 @@
               "A borda pulsa quando o jogo faz essa habilidade brilhar. «Área» aparece com três inimigos ou mais.",
               "Embaixo, uma linha curta diz por quê."
             ]},
-            {"t": "p", "texto": "A ajuda de rotação conhece as **27 especializações** das 9 classes e cresce com você: só sugere o que você já aprendeu, com seu grau mais alto. Na primeira vez, um aviso explica como lê-la. O ícone vai para onde você quiser, agora pode ser bem maior e traz em cima, bem clara, a tecla da sua barra."},
+            {"t": "p", "texto": "A ajuda de rotação conhece as **27 especializações** das 9 classes e cresce com você: só sugere o que você já aprendeu, com seu grau mais alto. Na primeira vez que você abre Combate (ou ao fim da sua primeira luta), um aviso explica como lê-la. O ícone vai para onde você quiser, agora pode ser bem maior e traz em cima, bem clara, a tecla da sua barra."},
             {"t": "tarjetas", "cols": 3, "items": [
               {"icono": "aviso", "titulo": "Avisos de reação", "texto": "Sobrepujar, Revanche, Executar, Contra-ataque… bem na hora de usar."},
               {"icono": "misiones", "titulo": "O de missão, destacado", "texto": "Os inimigos que você precisa, marcados na placa de nome."},
               {"icono": "reloj", "titulo": "Medidor de dano", "texto": "O dano do seu grupo, quando seu jogo traz o medidor (`/alfa dps`)."}
             ]},
             {"t": "tarjetas", "cols": 2, "titulo": "Ajudas de luta", "items": [
-              {"icono": "alerta", "titulo": "Interromper feitiços", "texto": "Quando seu alvo lança algo que você pode interromper, ele avisa com sua habilidade, a tecla e se já está pronta (`/alfa combate corte` testa)."},
-              {"icono": "aviso", "titulo": "Sua ameaça", "texto": "Uma barrinha que avisa antes de você tirar o inimigo do tanque ou, se você tanqueia, antes de perdê-lo."},
+              {"icono": "alerta", "titulo": "Interromper feitiços", "texto": "Quando seu alvo lança algo que você pode interromper, ele avisa com sua habilidade, a tecla e se já está pronta (`/alfa combate corte` testa). Em masmorras, se o jogo esconder o feitiço, soa mais suave (e às vezes também com o que não dá para interromper)."},
+              {"icono": "aviso", "titulo": "Sua ameaça", "texto": "Uma barrinha que avisa antes de você tirar o inimigo do tanque ou, se você tanqueia, antes de perdê-lo. Contra chefes também avisa, sem porcentagem: «Está atacando você!»."},
               {"icono": "nivel", "titulo": "Resumo da luta", "texto": "Ao terminar: quanto durou, seu dano e cura por segundo e o que mais bateu em você. A última, com `/alfa combate pelea`."},
               {"icono": "reloj", "titulo": "Suas recargas longas", "texto": "Uma barra discreta com o que leva 30 segundos ou mais para voltar; cada uma some sozinha quando fica pronta."}
             ]},
@@ -423,10 +423,10 @@
               "botones": ["Esquerdo", "Do meio", "Direito"],
               "mods": ["Sem tecla", "Shift", "Ctrl", "Alt"],
               "acciones": [
-                ["Selecionar", "As capturas deste manual mostram o Alfa em espanhol. No seu jogo você verá os mesmos botões, com os nomes em português.", "Menu do jogador"],
-                ["Sua cura rápida", "As capturas deste manual mostram o Alfa em espanhol. No seu jogo você verá os mesmos botões, com os nomes em português.", "Sua cura grande"],
-                ["Remover penalidade", "As capturas deste manual mostram o Alfa em espanhol. No seu jogo você verá os mesmos botões, com os nomes em português.", "Seu buff"],
-                ["Cura contínua", "As capturas deste manual mostram o Alfa em espanhol. No seu jogo você verá os mesmos botões, com os nomes em português.", "As capturas deste manual mostram o Alfa em espanhol. No seu jogo você verá os mesmos botões, com os nomes em português."]
+                ["Selecionar", "", "Menu do jogador"],
+                ["Sua cura rápida", "", "Sua cura grande"],
+                ["Remover penalidade", "", "Seu buff"],
+                ["Cura contínua", "", ""]
               ]
             }, "pie": "Doze cliques para doze ações: três botões do mouse, com ou sem Shift, Ctrl ou Alt. (Exemplo)"},
             {"t": "h", "texto": "Curar e selecionar"},
@@ -434,7 +434,7 @@
             {"t": "pasos", "titulo": "Limpar com um clique, passo a passo", "items": [
               "Em **Seus cliques**, escolha um para **Remover penalidades** (por exemplo, Shift + clique esquerdo). Se sua classe remove algo e nenhum clique faz isso, a página e seu chat avisam.",
               "Na luta, o quadro de quem tem algo que **você** pode remover fica da cor da penalidade: magia, maldição, veneno ou doença, com o ícone em cima à direita.",
-              "Passe o mouse sobre esse quadro: a dica diz o que ele tem e com que clique se remove, como «Veneno: remova com Shift + clique esquerdo».",
+              "Passe o mouse sobre esse quadro: a dica diz o que ele tem e com que clique se remove, como «Veneno: remova com Shift + clique esquerdo». Em combate a dica sai curta, só com isso (**Quadro curto em combate**).",
               "Dê esse clique e pronto: a cor e o ícone somem sozinhos."
             ]},
             {"t": "pasos", "titulo": "O pontinho azul: falta o seu buff", "items": [
@@ -450,7 +450,7 @@
             ]},
             {"t": "tarjetas", "cols": 2, "titulo": "Mais ajudas para quem cura", "items": [
               {"icono": "alerta", "titulo": "Tanque em apuros", "texto": "O quadro do tanque pulsa em vermelho quando ele tem menos de 40% de vida."},
-              {"icono": "curacion", "titulo": "Mana dos curadores", "texto": "Acima dos seus quadros, a mana de quem cura no seu grupo. Ela se destaca ao fim de cada luta, para saber se vale esperar."},
+              {"icono": "curacion", "titulo": "Mana dos curadores", "texto": "Acima dos seus quadros, a mana de quem cura no seu grupo. Ela se destaca ao fim de cada luta, para saber se vale esperar. Se ninguém no grupo tem função, aparecem só os que o Alfa viu curar: «Mana: quem curou»."},
               {"icono": "rejilla", "titulo": "A raide por grupos", "texto": "Com «Em raide, um grupo por coluna», cada grupo fica na sua coluna, como na janela de raide."},
               {"icono": "bolsas", "titulo": "Uma atadura num clique", "texto": "Qualquer classe pode pôr num clique «Usar uma atadura»: o Alfa usa a melhor das suas bolsas."}
             ]},
@@ -805,7 +805,7 @@
             {"t": "h", "texto": "As tocas"},
             {"t": "p", "texto": "Quando uma zona enche, o jogo a divide em camadas: o mesmo lugar com outras pessoas, outros raros e outros minérios. O Alfa dá nome a cada uma (Toca Presa, Toca Brasa…) e na seção **Tocas** desta página diz em qual você está e em quais anda a matilha da sua zona. Sua toca também aparece no seu guia na tela."},
             {"t": "lista", "items": [
-              "**Pedir para entrar.** Um clique (ou clique direito no lobo) e o Alfa bate na porta de alguém com a toca aberta: ele convida você para o grupo, você aceita, o jogo leva você para a toca dele e o Alfa avisa para sair do grupo.",
+              "**Pedir para entrar.** Um clique (ou clique direito no lobo) e o Alfa bate na porta de alguém com a toca aberta: ele convida você para o grupo, você aceita, o jogo leva você para a toca dele e, enquanto você continuar no grupo, a Lya lembra de sair com **Sair do grupo** (a toca fica com você).",
               "**Abrir minha toca** (desativado por padrão). Se alguém da matilha pedir para entrar, o Alfa convida para seu grupo, fora de combate.",
               "**Raros da matilha.** Quando um lobo encontra um raro ou um tesouro na sua zona, chega um aviso com a toca dele: «Ir caçar» se é a sua, «Pedir para entrar» se é outra.",
               "**Chamar a matilha.** Um elite ou um raro muito duro? Peça ajuda (ou `/alfa manada llamar`): os lobos da sua zona recebem sua posição, tocam «Estou indo!» e você é avisado de quem vem. Seu chamado fica 3 minutos no mapa deles."
@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "A 1.3.3: a matilha em calma", "items": ["**Entrar em silêncio:** só a animação, e a Lya chega sem falar. O resto espera em Hoje («Enquanto você entrava») e com a Lya («O que há de novo?»). Escolha em **Ao entrar no jogo**.", "**Uma intro mais viva:** o lobo é desenhado com luz, os olhos acendem e ele voa em faíscas até o ícone do minimapa.", "**Seguir a rota do seu grupo:** «Seguir a rota», «Pedir a ela» e «Parar de seguir».", "**A pedra de regresso, clara:** a placa «USE SUA PEDRA DE REGRESSO» com o botão «Usar a pedra».", "**Uma só voz:** Hoje, as bolsas e a Lya não dizem mais a mesma coisa ao mesmo tempo, e Talentos aparece também no Alfa simples.", "**E mais:** «Outro nome…» para seus conjuntos, «Abandonar as N» missões cinzas, «Leve-me a uma zona do meu nível», o som de interrupção em masmorras, «Você perdeu isto» com a Lya e «Montar o grupo» nos encontros."]}
+    "mapa": {"titulo": "A 1.3.4: a matilha leve", "items": ["**Entrar, muito mais rápido:** ao entrar e com `/reload`, o Alfa não monta mais todos os guias, só o que você segue; os outros, quando você os abre.", "**Menos memória:** uns 12 MB a menos, então o jogo faz menos pausas para limpá-la.", "**Sem travadas ao falar com NPCs:** o aviso de \"pegar esta missão fecha outra\" olha só os guias que a envolvem.", "**E mais:** os barcos do mapa trabalham menos a cada segundo e, em combate, o Alfa não solta nem monta guias."]}
   },
   "contraportada": {
     "titulo": "Entre para a matilha",

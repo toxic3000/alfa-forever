@@ -72,6 +72,54 @@ def correr(escena: str, entorno: dict | None = None):
     return salida, cortado
 
 
+def guias_iguales() -> bool:
+    """-> True si algo salió mal."""
+    global DIST
+    import shutil
+    import tempfile
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+    import diferir
+    original = DIST
+    copia = pathlib.Path(tempfile.mkdtemp(prefix="alfa_guias_")) / "dist"
+    try:
+        shutil.copytree(DIST, copia, ignore=shutil.ignore_patterns("Media", "*.tga", "*.blp", "*.ogg", "*.mp3", "*.ttf"))
+        for nombre in diferir.PAQUETES:
+            p = copia / nombre / "Guides.lua"
+            if p.exists():
+                p.write_bytes(diferir.revertir(p.read_bytes().decode("latin-1")).encode("latin-1"))
+        a, ca = correr("volcar_guias.lua")
+        DIST = copia
+        b, cb = correr("volcar_guias.lua")
+    finally:
+        DIST = original
+        shutil.rmtree(copia.parent, ignore_errors=True)
+    ga = [l for l in a if l.startswith("GUIA ")]
+    gb = [l for l in b if l.startswith("GUIA ")]
+    distintas = [x for x, y in zip(ga, gb) if x != y]
+    print(f"GUÍAS DIFERIDAS: {len(ga)} guías comparadas, {len(distintas)} distintas de como venían")
+    for x in distintas[:5]:
+        print("   ", x)
+    return bool(ca or cb or not ga or len(ga) != len(gb) or distintas)
+
+
+TOPE_CARGA_MS, TOPE_ARMADAS = 120, 8
+
+
+def tope_entrada() -> bool:
+    """-> True si la entrada pasa del tope (tools/perfil.py)."""
+    import re
+    r = subprocess.run([sys.executable, "-I", str(RAIZ / "tools" / "perfil.py")], cwd=RAIZ, capture_output=True,
+                       text=True, encoding="utf-8", errors="replace", env={**os.environ, "ALFA_DIST": str(DIST), "PYTHONIOENCODING": "utf-8"})
+    m = re.search(r"== CARGA de archivos: ([\d.]+) ms", r.stdout)
+    g = re.search(r"GU\S{1,3}AS al entrar: \d+ registradas, (\d+) diferidas", r.stdout)
+    if not (m and g):
+        print("PERFIL: no se pudo medir la entrada")
+        return True
+    carga, armadas = float(m.group(1)), int(g.group(1))
+    print(f"PERFIL: lectura al entrar {carga:.0f} ms (tope {TOPE_CARGA_MS}), {armadas} guías armadas (tope {TOPE_ARMADAS})")
+    return carga > TOPE_CARGA_MS or armadas > TOPE_ARMADAS
+
+
 def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8", errors="backslashreplace")
     if not (DIST / "Alfa").is_dir():
@@ -120,6 +168,11 @@ def main() -> int:
     if salen:
         print(f"{salen} textos se salen de su caja (revisar: alineación)")
         malo = True
+    # Guías diferidas (1.3.4): las 260 guías, ya armadas por el motor, deben
+    # quedar iguales con los pasos diferidos y como venían (diferir.py --revertir).
+    malo = guias_iguales() or malo
+    # El tope de la entrada (tools/perfil.py): lectura de archivos y guías armadas.
+    malo = tope_entrada() or malo
     # Orillas limpias en los iconos (tools/sangrado.py, 1.1.8): casi ningún
     # pixel transparente negro junto a uno visible (los que quedan son sombras).
     sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))

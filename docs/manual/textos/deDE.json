@@ -389,15 +389,15 @@
               "Der Rand pulsiert, wenn das Spiel diese Fähigkeit aufleuchten lässt. „Fläche“ erscheint ab drei Gegnern.",
               "Darunter sagt dir eine kurze Zeile, warum."
             ]},
-            {"t": "p", "texto": "Die Rotationshilfe kennt alle **27 Spezialisierungen** der 9 Klassen und wächst mit dir: Sie schlägt nur vor, was du schon gelernt hast, in deinem höchsten Rang. Beim ersten Mal erklärt dir ein Hinweis, wie man sie liest. Das Symbol lässt sich hinschieben, wohin du willst, kann jetzt viel größer sein und zeigt gut lesbar die Taste deiner Leiste."},
+            {"t": "p", "texto": "Die Rotationshilfe kennt alle **27 Spezialisierungen** der 9 Klassen und wächst mit dir: Sie schlägt nur vor, was du schon gelernt hast, in deinem höchsten Rang. Wenn du Kampf zum ersten Mal öffnest (oder nach deinem ersten Kampf), erklärt dir ein Hinweis, wie man sie liest. Das Symbol lässt sich hinschieben, wohin du willst, kann jetzt viel größer sein und zeigt gut lesbar die Taste deiner Leiste."},
             {"t": "tarjetas", "cols": 3, "items": [
               {"icono": "aviso", "titulo": "Reaktionshinweise", "texto": "Überwältigen, Rache, Hinrichten, Gegenangriff … genau dann, wenn sie nutzbar sind."},
               {"icono": "misiones", "titulo": "Questsachen hervorgehoben", "texto": "Die Gegner, die du brauchst, markiert auf ihrer Namensplakette."},
               {"icono": "reloj", "titulo": "Schadensmesser", "texto": "Der Schaden deiner Gruppe, wenn dein Spiel den Messer hat (`/alfa dps`)."}
             ]},
             {"t": "tarjetas", "cols": 2, "titulo": "Kampfhilfen", "items": [
-              {"icono": "alerta", "titulo": "Zauber unterbrechen", "texto": "Wenn dein Ziel etwas wirkt, das du unterbrechen kannst, sagt es dir das mit deiner Fähigkeit, ihrer Taste und ob sie bereit ist (`/alfa combate corte` testet es)."},
-              {"icono": "aviso", "titulo": "Deine Bedrohung", "texto": "Eine kleine Leiste, die dich warnt, bevor du dem Tank den Gegner abnimmst, oder, wenn du tankst, bevor du ihn verlierst."},
+              {"icono": "alerta", "titulo": "Zauber unterbrechen", "texto": "Wenn dein Ziel etwas wirkt, das du unterbrechen kannst, sagt es dir das mit deiner Fähigkeit, ihrer Taste und ob sie bereit ist (`/alfa combate corte` testet es). In Dungeons klingt es leiser, wenn das Spiel den Zauber verbirgt (und manchmal auch bei etwas, das man nicht unterbrechen kann)."},
+              {"icono": "aviso", "titulo": "Deine Bedrohung", "texto": "Eine kleine Leiste, die dich warnt, bevor du dem Tank den Gegner abnimmst, oder, wenn du tankst, bevor du ihn verlierst. Auch gegen Bosse warnt sie, ohne Prozent: „Er greift dich an!“."},
               {"icono": "nivel", "titulo": "Kampfübersicht", "texto": "Am Ende: wie lange er gedauert hat, dein Schaden und deine Heilung pro Sekunde und was dich am härtesten getroffen hat. Die letzte mit `/alfa combate pelea`."},
               {"icono": "reloj", "titulo": "Deine langen Abklingzeiten", "texto": "Eine unauffällige Leiste mit allem, was 30 Sekunden oder länger braucht; jede verschwindet von selbst, sobald sie bereit ist."}
             ]},
@@ -434,7 +434,7 @@
             {"t": "pasos", "titulo": "Mit einem Klick reinigen, Schritt für Schritt", "items": [
               "Wähle unter **Deine Klicks** einen für **Schwächungszauber entfernen** (zum Beispiel Umschalt + Linksklick). Wenn deine Klasse etwas entfernen kann und kein Klick das tut, sagen es dir die Seite und dein Chat.",
               "Im Kampf färbt sich der Rahmen von jemandem, der etwas hat, das **du** entfernen kannst, in der Farbe der Schwächung: Magie, Fluch, Gift oder Krankheit, mit ihrem Symbol oben rechts.",
-              "Fahr mit der Maus über diesen Rahmen: Der Tooltip sagt dir, was er hat und mit welchem Klick es weggeht, etwa „Gift: entferne es mit Umschalt + Linksklick“.",
+              "Fahr mit der Maus über diesen Rahmen: Der Tooltip sagt dir, was er hat und mit welchem Klick es weggeht, etwa „Gift: entferne es mit Umschalt + Linksklick“. Im Kampf ist der Tooltip kurz, nur mit diesem Hinweis (**Kurzer Kasten im Kampf**).",
               "Mach diesen Klick, fertig: Farbe und Symbol verschwinden von selbst."
             ]},
             {"t": "pasos", "titulo": "Der kleine blaue Punkt: Ihm fehlt dein Buff", "items": [
@@ -450,7 +450,7 @@
             ]},
             {"t": "tarjetas", "cols": 2, "titulo": "Mehr Hilfe für Heiler", "items": [
               {"icono": "alerta", "titulo": "Tank in Not", "texto": "Der Rahmen des Tanks pulsiert rot, wenn er weniger als 40 % Gesundheit hat."},
-              {"icono": "curacion", "titulo": "Mana der Heiler", "texto": "Über deinen Rahmen das Mana der Heiler deiner Gruppe. Nach jedem Kampf wird es hervorgehoben, damit du weißt, ob sich Warten lohnt."},
+              {"icono": "curacion", "titulo": "Mana der Heiler", "texto": "Über deinen Rahmen das Mana der Heiler deiner Gruppe. Nach jedem Kampf wird es hervorgehoben, damit du weißt, ob sich Warten lohnt. Hat niemand in deiner Gruppe eine Rolle, stehen dort nur die, die Alfa heilen sah: „Mana: wer geheilt hat“."},
               {"icono": "rejilla", "titulo": "Der Schlachtzug nach Gruppen", "texto": "Mit „Im Schlachtzug eine Gruppe pro Spalte“ steht jede Gruppe in ihrer eigenen Spalte, wie im Schlachtzugsfenster."},
               {"icono": "bolsas", "titulo": "Ein Verband mit einem Klick", "texto": "Jede Klasse kann „Einen Verband benutzen“ auf einen Klick legen: Alfa nimmt den besten aus deinen Taschen."}
             ]},
@@ -805,7 +805,7 @@
             {"t": "h", "texto": "Die Baue"},
             {"t": "p", "texto": "Wird ein Gebiet voll, teilt das Spiel es in Ebenen: derselbe Ort mit anderen Leuten, anderen Rares und anderen Erzen. Alfa gibt jeder einen Namen (Bau Reißzahn, Bau Glut …) und sagt dir im Abschnitt **Baue** dieser Seite, in welchem du bist und in welchen das Rudel deines Gebiets ist. Dein Bau steht auch in deinem Guide auf dem Bildschirm."},
             {"t": "lista", "items": [
-              "**Um Einlass bitten.** Ein Klick (oder Rechtsklick auf den Wolf), und Alfa klopft bei jemandem mit offenem Bau an: Er lädt dich in seine Gruppe ein, du nimmst an, das Spiel bringt dich in seinen Bau, und Alfa erinnert dich, die Gruppe zu verlassen.",
+              "**Um Einlass bitten.** Ein Klick (oder Rechtsklick auf den Wolf), und Alfa klopft bei jemandem mit offenem Bau an: Er lädt dich in seine Gruppe ein, du nimmst an, das Spiel bringt dich in seinen Bau, und solange du noch in seiner Gruppe bist, erinnert dich Lya mit **Gruppe verlassen** daran, sie zu verlassen (der Bau bleibt bei dir).",
               "**Meinen Bau öffnen** (standardmäßig aus). Bittet jemand aus dem Rudel um Einlass, lädt Alfa ihn außerhalb des Kampfes in deine Gruppe ein.",
               "**Rares des Rudels.** Findet ein Wolf in deinem Gebiet einen Rare oder einen Schatz, bekommst du einen Hinweis mit seinem Bau: „Auf die Jagd“, wenn es deiner ist, „Um Einlass bitten“, wenn es ein anderer ist.",
               "**Das Rudel rufen.** Ein Elite oder ein sehr harter Rare? Bitte um Hilfe (oder `/alfa manada llamar`): Die Wölfe deines Gebiets bekommen deinen Ort, drücken „Komme!“, und du erfährst, wer kommt. Dein Ruf steht 3 Minuten auf ihrer Karte."
@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "Die 1.3.3: Das Rudel in Ruhe", "items": ["**Leise einloggen:** nur die Animation, und Lya kommt ohne ein Wort. Alles andere wartet unter Heute („Während du dich eingeloggt hast“) und bei Lya („Was gibt's Neues?“). Einstellbar unter **Beim Einloggen**.", "**Ein lebendigeres Intro:** Der Wolf wird mit Licht gezeichnet, seine Augen leuchten auf, und er fliegt in Funken zum Symbol an der Minikarte.", "**Der Route deiner Gruppe folgen:** „Ihrer Route folgen“, „Darum bitten“ und „Nicht mehr folgen“.", "**Der Ruhestein, klar und deutlich:** die Plakette „BENUTZE DEINEN RUHESTEIN“ mit dem Button „Stein benutzen“.", "**Eine einzige Stimme:** Heute, die Taschen und Lya sagen dir nicht mehr gleichzeitig dasselbe, und Talente gibt es jetzt auch in Alfa einfach.", "**Und mehr:** „Anderer Name…“ für deine Ausrüstungssets, „Alle N abbrechen“ für graue Quests, „Bring mich in ein Gebiet für meine Stufe“, der Unterbrechen-Ton in Dungeons, „Das hast du verpasst“ bei Lya und „Gruppe bilden“ bei Rudeltreffen."]}
+    "mapa": {"titulo": "Die 1.3.4: Das leichte Rudel", "items": ["**Viel schnelleres Einloggen:** Beim Einloggen und bei `/reload` baut Alfa nicht mehr alle Guides auf, nur den, dem du folgst; die anderen, wenn du sie öffnest.", "**Weniger Speicher:** etwa 12 MB weniger, daher macht das Spiel seltener Pausen zum Aufräumen.", "**Kein Ruckeln bei Questgebern:** Die Warnung „diese Quest schließt eine andere“ schaut nur in die Guides, die sie betreffen.", "**Und mehr:** Die Schiffe auf der Karte arbeiten jede Sekunde weniger, und im Kampf lässt Alfa keine Guides los und baut keine auf."]}
   },
   "contraportada": {
     "titulo": "Komm ins Rudel",

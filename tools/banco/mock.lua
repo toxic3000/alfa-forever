@@ -45,14 +45,53 @@ frame_mt.__index = function(t, k)
   return Frame[k]
 end
 
+-- Perfilador (tools/perfil.py): con PERFIL_ON, cada script suma su tiempo
+-- en PERFIL_T[clave] (archivo:línea de la función) y PERFIL_N[clave].
+PERFIL_T, PERFIL_N, PERFIL_EV = {}, {}, {}
+local clock = function() return PERFIL_RELOJ() end
+PERFIL_RELOJ = os.clock
+local function claveDe(fn)
+  -- ns.Safe(fn) envuelve: se mira la función de adentro.
+  for _ = 1, 3 do
+    local i, dentro = debug.getinfo(fn, "S"), nil
+    if i and i.short_src:find("Init.lua", 1, true) then
+      for u = 1, 4 do
+        local n, v = debug.getupvalue(fn, u)
+        if n == "fn" and type(v) == "function" then dentro = v end
+      end
+    end
+    if dentro then fn = dentro else break end
+  end
+  local i = debug.getinfo(fn, "S")
+  return (i and i.short_src or "?") .. ":" .. tostring(i and i.linedefined or 0)
+end
+PERFIL_CLAVE = claveDe
+PERFIL_KB = {}
+-- Memoria nueva (KB) desde PERFIL_MARCA(): con el recolector parado, es la
+-- basura que deja cada manejador (perfil.lua lo para).
+function PERFIL_MARCA() return collectgarbage("count") end
+function PERFIL_SUMAR(clave, dt, m0)
+  PERFIL_T[clave] = (PERFIL_T[clave] or 0) + dt
+  PERFIL_N[clave] = (PERFIL_N[clave] or 0) + 1
+  if m0 then PERFIL_KB[clave] = (PERFIL_KB[clave] or 0) + (collectgarbage("count") - m0) end
+end
+local function correr(fn, self, script, ...)
+  if not PERFIL_ON then return pcall(fn, self, ...) end
+  local m0, t0 = PERFIL_MARCA(), clock()
+  local ok, e = pcall(fn, self, ...)
+  local dt = clock() - t0
+  PERFIL_SUMAR(script .. " " .. claveDe(fn), dt, m0)
+  if script == "OnEvent" then local ev = ...; PERFIL_EV[ev] = (PERFIL_EV[ev] or 0) + dt end
+  return ok, e
+end
 local function fire(self, script, ...)
   local fn = self._scripts[script]
   if fn then
-    local ok, e = pcall(fn, self, ...)
+    local ok, e = correr(fn, self, script, ...)
     if not ok then note("script " .. script, e) end
   end
   for _, h in ipairs(self._hooks[script] or {}) do
-    local ok, e = pcall(h, self, ...)
+    local ok, e = correr(h, self, script, ...)
     if not ok then note("hook " .. script, e) end
   end
 end

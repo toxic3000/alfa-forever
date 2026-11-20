@@ -18,7 +18,7 @@
 -- el mapa entero y el minimapa cada segundo.
 --
 --   Barcos.Lista() -> { { id, tipo, lado, desde, hasta, texto, segundos, map, x, y, f } }
---   Barcos.Pines() -> los pines de la capa
+--   Barcos.Pines([lista]) -> los pines de la capa
 --   Barcos.Pintar()
 
 local ADDON, M = ...
@@ -58,36 +58,43 @@ local function nombre(p)
 	return (T and T.PlaceName and T.PlaceName(p)) or (p and p.name) or "?"
 end
 
+-- 1.3.4: sin tablas ni funciones nuevas que no hagan falta (corre cada
+-- segundo con el mapa abierto).
+local function agregar(out, t, lado, e, otro, X, ahora)
+	if not (e and e.map and e.x and e.y) then return end
+	local llega, sale, texto
+	if X and X.NextArrival then
+		local okA, a, s = pcall(X.NextArrival, t.kind, t.id, ahora, lado)
+		if okA then llega, sale = a, s end
+	end
+	local hasta = nombre(otro)
+	if llega then
+		if llega <= 0 then texto = format(L["En el muelle: sale en %s hacia %s"], cuenta(sale or 0), hasta)
+		else texto = format(L["Llega en %s; va a %s"], cuenta(llega), hasta) end
+	else
+		local espera
+		if X and X.NextDeparture then
+			local okD, v = pcall(X.NextDeparture, t.kind, t.id, ahora, lado)
+			espera = okD and v or nil
+		end
+		texto = espera and format(L["Espera de unos %d min; va a %s"], max(1, floor(espera / 60 + 0.5)), hasta)
+			or format(L["Va a %s"], hasta)
+	end
+	out[#out + 1] = { id = t.id, tipo = t.kind, lado = lado, desde = nombre(e), hasta = hasta, texto = texto,
+		segundos = llega, sale = sale, map = e.map, x = e.x, y = e.y, f = e.f }
+end
+
 function Bc.Lista()
 	local Nav, X = A.Nav, TR()
-	local ok, d = pcall(function() return Nav and Nav.GetTravelData and Nav.GetTravelData() end)
+	if not (Nav and Nav.GetTravelData) then return {} end
+	local ok, d = pcall(Nav.GetTravelData)
 	if not (ok and type(d) == "table") then return {} end
 	local ahora = X and X.Now and X.Now() or 0
 	local out = {}
 	for _, t in ipairs(d.transports or {}) do
 		if (t.kind == "boat" or t.kind == "zeppelin") and mia(t.faction) then
-			for _, par in ipairs({ { "a", t.a, t.b }, { "b", t.b, t.a } }) do
-				local lado, e, otro = par[1], par[2], par[3]
-				if e and e.map and e.x and e.y then
-					local llega, sale, texto
-					if X and X.NextArrival then
-						local okA, a, s = pcall(X.NextArrival, t.kind, t.id, ahora, lado)
-						if okA then llega, sale = a, s end
-					end
-					local hasta = nombre(otro)
-					if llega then
-						if llega <= 0 then texto = format(L["En el muelle: sale en %s hacia %s"], cuenta(sale or 0), hasta)
-						else texto = format(L["Llega en %s; va a %s"], cuenta(llega), hasta) end
-					else
-						local okD, espera = pcall(function() return X and X.NextDeparture and X.NextDeparture(t.kind, t.id, ahora, lado) end)
-						espera = okD and espera or nil
-						texto = espera and format(L["Espera de unos %d min; va a %s"], max(1, floor(espera / 60 + 0.5)), hasta)
-							or format(L["Va a %s"], hasta)
-					end
-					out[#out + 1] = { id = t.id, tipo = t.kind, lado = lado, desde = nombre(e), hasta = hasta, texto = texto,
-						segundos = llega, sale = sale, map = e.map, x = e.x, y = e.y, f = e.f }
-				end
-			end
+			agregar(out, t, "a", t.a, t.b, X, ahora)
+			agregar(out, t, "b", t.b, t.a, X, ahora)
 		end
 	end
 	return out
@@ -117,21 +124,28 @@ function Bc.TextoDe(id, lado)
 	return nil
 end
 
-function Bc.Pines()
+local function tonoDe(h) return h.segundos and h.segundos <= 60 and "exito" or "acento" end
+
+-- 1.3.1: lo que dice un muelle (Bc.Pintar solo publica si cambia).
+-- (1.3.2: con cuenta atrás el texto cambia cada segundo: no entra en la firma)
+local partesFirma = {}
+local function firmaDeMuelle(h)
+	partesFirma[1], partesFirma[2], partesFirma[3] = tostring(h.id), h.lado, tonoDe(h)
+	partesFirma[4], partesFirma[5] = insignia(h.segundos) or "", h.segundos and "" or (h.texto or "")
+	partesFirma[6], partesFirma[7], partesFirma[8] = tostring(h.map), tostring(h.x), tostring(h.y)
+	return concat(partesFirma, "|")
+end
+
+function Bc.Pines(lista)
 	local out = {}
-	for _, h in ipairs(Bc.Lista()) do
+	for _, h in ipairs(lista or Bc.Lista()) do
 		local titulo = format(h.tipo == "zeppelin" and L["Zepelín de %s"] or L["Barco de %s"], h.desde)
-		local tono = h.segundos and h.segundos <= 60 and "exito" or "acento"
-		local badge = insignia(h.segundos)
 		out[#out + 1] = {
 			map = h.map, x = h.x, y = h.y, f = h.f,
 			icon = h.tipo == "zeppelin" and "map:zeppelin" or "map:boat", size = 15, priority = 2,
-			color = rgb(tono),
-			badge = badge,
-			-- 1.3.1: lo que dice este pin (Bc.Pintar solo publica si cambia).
-			-- (1.3.2: con cuenta atrás el texto cambia cada segundo: no entra en la firma)
-			alfaFirma = concat({ tostring(h.id), h.lado, tono, badge or "", h.segundos and "" or (h.texto or ""),
-				tostring(h.map), tostring(h.x), tostring(h.y) }, "|"),
+			color = rgb(tonoDe(h)),
+			badge = insignia(h.segundos),
+			alfaFirma = firmaDeMuelle(h),
 			tooltip = function(tip)
 				tip:SetText(titulo, K.Color("texto"))
 				tip:AddLine(Bc.TextoDe(h.id, h.lado) or h.texto, K.Color("acento"))
@@ -148,9 +162,11 @@ end
 
 local firma -- 1.3.1: lo último publicado (nil: la capa está vacía)
 
-local function firmaDe(pines)
+-- 1.3.4: la firma sale de la lista, sin armar los pines (sus funciones y
+-- colores) cada segundo; los pines se arman solo cuando la firma cambia.
+local function firmaDe(lista)
 	local partes = {}
-	for i, p in ipairs(pines) do partes[i] = p.alfaFirma or "" end
+	for i, h in ipairs(lista) do partes[i] = firmaDeMuelle(h) end
 	return concat(partes, ";")
 end
 
@@ -171,10 +187,11 @@ function Bc.Pintar()
 	end
 	-- Con el mapa abierto, una vez por segundo (en combate espera).
 	if not N.HayTarea(RELOJ) then N.Cada(RELOJ, 1, function() Bc.Pintar() end, { fueraDeCombate = true }) end
-	local pines = Bc.Pines()
-	local nueva = firmaDe(pines)
+	local lista = Bc.Lista()
+	local nueva = firmaDe(lista)
 	if nueva == firma then return end
 	firma = nueva
+	local pines = Bc.Pines(lista)
 	if #pines > 0 then P.SetLayer(CAPA, pines, { world = true, minimap = false, edge = false }) else P.ClearLayer(CAPA) end
 end
 

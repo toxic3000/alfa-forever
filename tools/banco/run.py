@@ -57,6 +57,10 @@ def main() -> int:
             meta[k] = v
         g.ADDON_META[name] = meta
     load = g.LOAD_FILE
+    g.PERFIL_ON = bool(os.environ.get("BANCO_PERFIL"))
+    if g.PERFIL_ON:
+        import time
+        g.PERFIL_RELOJ = time.perf_counter
     def load_addon(name):
         folder = DIST / name
         if g.LOADED[name]:

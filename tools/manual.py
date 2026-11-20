@@ -73,7 +73,7 @@ IDIOMAS = {
 # Si la versión de tools/alfa.json ya llegó a esa versión, la caja dice "Lo nuevo
 # desde la X" en lugar de "Lo que llega con la X". Para quitarla, borra su bloque
 # {"t": "novedad", ...} de los JSON (o la entrada de aquí: entonces no sale).
-NOVEDADES = {"mapa": "1.3.3"}
+NOVEDADES = {"mapa": "1.3.4"}
 
 # Capturas: id -> (archivo de origen, recorte (x0, y0, x1, y1) o None).
 # Con --capturas se copian a docs/manual/imagenes/<id>.png.
@@ -1349,6 +1349,9 @@ def comparar(base, otro, ruta="") -> list:
                 dif.append("%s: falta o sobra %s" % (ruta, hueco))
         if base.startswith("http") and base != otro:
             dif.append("%s: el enlace debe quedar %r" % (ruta, base))
+        # lo vacío en español (una celda sin acción, que sale «—») queda vacío; los textos de ui.* sí se llenan
+        if base == "" and otro != "" and not ruta.startswith(".ui."):
+            dif.append("%s: debe quedar vacío (dice %r)" % (ruta, otro[:40]))
     return dif
 
 

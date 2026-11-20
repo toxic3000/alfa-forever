@@ -660,6 +660,188 @@ AGREGADOS = [
 ]
 
 
+
+# 1.3.4 (la manada ligera): guías con pasos diferidos (tools/diferir.py,
+# docs/DISENO-GUIAS-DIFERIDAS.md). Lo que antes recorría los pasos de TODAS
+# las guías pregunta primero qué guías tocan una misión (Guides.QuestGuides,
+# desde la ficha `qref`) y abre solo esas.
+PARCHES += [
+    ("Alfa/Core/Guides.lua",
+     "function Guides.List()\n",
+     lambda c: '''-- Alfa (1.3.4): which guides may touch quest q, from their headers' `qref`
+-- (tools/diferir.py writes it: q any `quest = N`, p the `pre`/`preAll`, c the
+-- `closedBy`), so a lookup over every guide reads the steps of a few only. A
+-- guide without one (imported, or not deferred) is read once to fill it.
+-- Candidates: one may touch q only in a way the caller then skips; none that
+-- touches it is left out. Ids in registration order; nil for none.
+local questIndex
+function Guides.QuestGuides(kind, q)
+	if not questIndex then
+		local idx = { q = {}, p = {}, c = {} }
+		local function add(k, n, id)
+			if type(n) ~= "number" then return end
+			local list = idx[k][n]
+			if not list then
+				idx[k][n] = { id }
+			elseif list[#list] ~= id then
+				list[#list + 1] = id
+			end
+		end
+		for i = 1, #order do
+			local id = order[i]
+			local g = guides[id]
+			local ref = g and rawget(g, "qref")
+			if type(ref) == "table" then
+				for _, k in ipairs({ "q", "p", "c" }) do
+					for _, n in ipairs(type(ref[k]) == "table" and ref[k] or {}) do add(k, n, id) end
+				end
+			elseif g then
+				for _, step in ipairs(g.steps or {}) do
+					for _, goal in ipairs(step.goals or {}) do
+						add("q", goal.quest, id)
+						for _, n in ipairs(type(goal.pre) == "table" and goal.pre or {}) do add("p", n, id) end
+						for _, n in ipairs(type(goal.preAll) == "table" and goal.preAll or {}) do add("p", n, id) end
+						for _, n in ipairs(type(goal.closedBy) == "table" and goal.closedBy or {}) do add("c", n, id) end
+					end
+				end
+			end
+		end
+		questIndex = idx
+	end
+	local by = questIndex[kind]
+	return by and by[q] or nil
+end
+ns.On("GUIDES_REGISTERED", function() questIndex = nil end)
+ns.On("PACKS_CHANGED", function() questIndex = nil end)
+
+function Guides.List()
+'''),
+    # Soltar pasos en combate es trabajo de más: espera a que termine.
+    ("Alfa/Core/Guides.lua",
+     "function Own.sweep()\n\tlocal E = ns.Engine\n",
+     lambda c: "function Own.sweep()\n\tif InCombatLockdown and InCombatLockdown() then Own.sweepAfter = true return end\n\tlocal E = ns.Engine\n"),
+    ("Alfa/Core/Guides.lua",
+     "ns.On(\"TABS_CHANGED\", Own.sweep)\n",
+     lambda c: "ns.On(\"TABS_CHANGED\", Own.sweep)\nns.RegisterEvent(\"PLAYER_REGEN_ENABLED\", function()\n\tif Own.sweepAfter then Own.sweepAfter = nil; Own.sweep() end\nend)\n"),
+    # Closes: el índice por misión se arma al preguntar, con las guías candidatas.
+    ("Alfa/Core/Closes.lua",
+     '''local function guideIndex()
+	if index then return index end
+	index = {}
+	local Guides = ns.Guides
+	for _, h in ipairs(Guides.List()) do
+		local g = Guides.Get(h.id)
+		for _, step in ipairs(g and g.steps or {}) do
+			for _, goal in ipairs(step.goals) do
+				if goal.t == "accept" and type(goal.closedBy) == "table" then
+					for _, by in ipairs(goal.closedBy) do
+						local list = index[by]
+						if not list then
+							list = {}
+							index[by] = list
+						end
+						list[#list + 1] = { goal = goal, step = step, guide = g }
+					end
+				end
+			end
+		end
+	end
+	return index
+end''',
+     lambda c: '''-- Alfa (1.3.4): built per quest when asked, from the guides that may name
+-- it in a `closedBy` (Guides.QuestGuides), not from every guide's steps.
+local function guideIndex()
+	if index then return index end
+	index = setmetatable({}, { __index = function(t, by)
+		local Guides, list = ns.Guides, false
+		for _, id in ipairs(Guides.QuestGuides("c", by) or {}) do
+			local g = Guides.Get(id)
+			for _, step in ipairs(g and g.steps or {}) do
+				for _, goal in ipairs(step.goals) do
+					if goal.t == "accept" and type(goal.closedBy) == "table" then
+						for _, b in ipairs(goal.closedBy) do
+							if b == by then
+								list = list or {}
+								list[#list + 1] = { goal = goal, step = step, guide = g }
+							end
+						end
+					end
+				end
+			end
+		end
+		rawset(t, by, list)
+		return list
+	end })
+	return index
+end'''),
+    # Unlocks: igual, tres índices que se llenan por misión.
+    ("Alfa/Core/Unlocks.lua",
+     '''local function guideIndex()
+	if index then return index end
+	local follow, accepts, turnins = {}, {}, {}
+	local Guides = ns.Guides
+	for _, h in ipairs(Guides.List()) do
+		local g = Guides.Get(h.id)
+		for _, step in ipairs(g and g.steps or NONE) do
+			for _, goal in ipairs(step.goals) do
+				local q = goal.quest
+				if q and goal.t == "accept" then
+					local e = { goal = goal, step = step, guide = g }
+					push(accepts, q, e)
+					for _, p in ipairs(type(goal.pre) == "table" and goal.pre or NONE) do push(follow, p, e) end
+					for _, p in ipairs(type(goal.preAll) == "table" and goal.preAll or NONE) do push(follow, p, e) end
+				elseif q and goal.t == "turnin" then
+					push(turnins, q, { goal = goal, step = step, guide = g })
+				end
+			end
+		end
+	end
+	index = { follow = follow, accepts = accepts, turnins = turnins }
+	return index
+end''',
+     lambda c: '''-- Alfa (1.3.4): each map fills per quest when asked, from the guides that
+-- may touch it (Guides.QuestGuides), not from every guide's steps. Same
+-- entries in the same order as reading them all.
+local function lazy(kind, collect)
+	return setmetatable({}, { __index = function(t, q)
+		local Guides, list = ns.Guides, {}
+		for _, id in ipairs(Guides.QuestGuides(kind, q) or NONE) do
+			local g = Guides.Get(id)
+			for _, step in ipairs(g and g.steps or NONE) do
+				for _, goal in ipairs(step.goals) do collect(list, q, goal, step, g) end
+			end
+		end
+		list = #list > 0 and list or false
+		rawset(t, q, list)
+		return list
+	end })
+end
+
+local function guideIndex()
+	if index then return index end
+	index = {
+		accepts = lazy("q", function(list, q, goal, step, g)
+			if goal.quest == q and goal.t == "accept" then list[#list + 1] = { goal = goal, step = step, guide = g } end
+		end),
+		turnins = lazy("q", function(list, q, goal, step, g)
+			if goal.quest == q and goal.t == "turnin" then list[#list + 1] = { goal = goal, step = step, guide = g } end
+		end),
+		follow = lazy("p", function(list, p, goal, step, g)
+			if goal.quest and goal.t == "accept" then
+				for _, x in ipairs(type(goal.pre) == "table" and goal.pre or NONE) do
+					if x == p then list[#list + 1] = { goal = goal, step = step, guide = g } end
+				end
+				for _, x in ipairs(type(goal.preAll) == "table" and goal.preAll or NONE) do
+					if x == p then list[#list + 1] = { goal = goal, step = step, guide = g } end
+				end
+			end
+		end),
+	}
+	return index
+end'''),
+]
+
+
 def aplicar(dist: pathlib.Path, cfg: dict) -> list:
     errores = []
     for rel, viejo, nuevo in PARCHES:
