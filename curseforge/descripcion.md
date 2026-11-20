@@ -41,7 +41,7 @@
 
 Tired of a pile of addons stepping on each other and filling your map with icons? Alfa puts it all in one, tidy and guided, and it adapts to your class. **It needs no other addon.**
 
-Open everything with `/alfa`. The main window has six pages: **Today, Adventure, Character, World, Professions and Pack**, plus **Settings**. Pick one of 3 styles (Alfa, Classic WoW and Crystal), which also dress the chat, the minimap and, if you like, the action bars.
+Open everything with `/alfa`, the minimap icon or the **Alfa** button in the Esc menu — all three open the same window, and right-click gives the same menu. The main window has six pages: **Today, Adventure, Character, World, Professions and Pack**, plus **Settings**. Move Lya, your guide, the arrow and your frames with the mouse with **Arrange your screen** (`/alfa acomodar`). Pick one of 3 styles (Alfa, Classic WoW and Crystal), which also dress the chat, the minimap and, if you like, the action bars.
 
 It doesn't switch your brain off: Alfa backs you up and you decide. The first time, it asks one by one what you want it to do for you and whether you want the arrow and the path on screen.
 
@@ -55,13 +55,13 @@ It doesn't switch your brain off: Alfa backs you up and you decide. The first ti
 - **Talents** — which talent to take now and why, applied in one click. Pick a goal (solo leveling, dungeons, tank, PvP) and a style (safe, balanced, risky).
 - **Combat** — a rotation helper for all 27 specializations, your quest mobs highlighted, reaction alerts and a group damage meter.
 - **Healing** — click-to-heal party and raid frames: your heal also targets the teammate, every click set up in a minute, curses/poisons/magic/disease shown and cleansed in one click, missing buffs marked, the tank in trouble and healers' mana.
-- **Bags** — three views (all, categories, per bag), a bag bar, your bank from anywhere with quick deposit and slot purchase, every character's inventory, and what to sell when they fill up. **Take all** at the mailbox and your gold per hour.
+- **Bags** — three views (all, categories, per bag), a bag bar, your bank from anywhere with quick deposit and slot purchase, every character's inventory, and what to sell when they fill up. Your gold per hour (mailbox gold kept apart) and an alert for expiring mail with **Take all**.
 - **World** — all of Azeroth on one zoomable map with real terrain, flight points, entrances and exits (dungeons, boats, zeppelins, portals), your own markers and one layer control.
 - **Gathering** — ore, herbs, fishing pools and treasures on map and minimap, with farming routes.
 - **Trade** — auction prices and what to do with each item: vendor, auction or craft.
 - **Fishing** — fully re-engineered: a one-key fishing mode (gear, lure, cast and loot), a fishing bar, catch journal, achievements, goals, a 1–300 guide and cooking by the water.
 - **Scenery** — the game's graphics settings in plain words, presets, one-click undo and screen filters.
-- **La Jauría** — your group and Alfa users who opt in to be seen, on the map; a **Follow** button with the arrow; call the pack; dens to play together; rares shared by the pack with their timers; **outings** with a day and time; "Who's going?"; notes on your map; the La Jauría badge and the guild page.
+- **La Jauría** — your group and Alfa users who opt in to be seen, on the map; a **Follow** button with the arrow; call the pack; dens to play together; rares shared by the pack with their timers; **outings** with a day and time; "Who's going?"; notes on your map; a short announcement when a wolf who uses Alfa is nearby, so you can say hi; the La Jauría badge and the guild page.
 - **Comforts** (Settings) — minimap, class colors, info box, dressing room, flight bar, quest automation and sounds.
 
 **Plays by Forever's and Blizzard's rules:** nothing decides for you in combat. Healing, fishing, applying talents and using items always need your key or click, and out of combat when the game requires it. Free, open source, no ads, and nothing posts to other players' chat on its own.
@@ -75,7 +75,7 @@ It doesn't switch your brain off: Alfa backs you up and you decide. The first ti
 
 ¿Cansado de tener un montón de addons que se enciman y te llenan el mapa de marcas? Alfa los junta en uno solo, ordenado y guiado, que se adapta a tu clase. **No necesita ningún otro addon.**
 
-Abre todo con `/alfa`. La ventana principal tiene seis páginas: **Hoy, Aventura, Personaje, Mundo, Oficios y Manada**, más **Ajustes** aparte. Elige entre 3 estilos (Alfa, Clásico WoW y Cristal), que también visten el chat, el minimapa y, si quieres, las barras de acción.
+Abre todo con `/alfa`, el ícono del minimapa o el botón **Alfa** del menú Esc: los tres abren la misma ventana y, con clic derecho, el mismo menú. La ventana principal tiene seis páginas: **Hoy, Aventura, Personaje, Mundo, Oficios y Manada**, más **Ajustes** aparte. Mueve a Lya, tu guía, la flecha y tus marcos con el ratón con **Acomodar la pantalla** (`/alfa acomodar`). Elige entre 3 estilos (Alfa, Clásico WoW y Cristal), que también visten el chat, el minimapa y, si quieres, las barras de acción.
 
 No busca apagarte el cerebro: Alfa te apoya, y tú decides. La primera vez te pregunta, una por una, qué quieres que haga solo y si quieres la flecha y el camino en pantalla.
 
@@ -91,13 +91,13 @@ No busca apagarte el cerebro: Alfa te apoya, y tú decides. La primera vez te pr
 | **Talentos** `/alfa builds` | Qué talento poner ahora y por qué, aplicado con un clic. Eliges objetivo (subir solo, mazmorras, tanque, JcJ) y estilo (tranquilo, equilibrado, arriesgado). |
 | **Combate** `/alfa combate` · `/alfa dps` | Ayuda de rotación para las 27 especializaciones, los enemigos de tus misiones resaltados, avisos de reacción y un medidor de daño de tu grupo. |
 | **Curación** `/alfa curacion` | Marcos de grupo y banda para curar con un clic: al curar también seleccionas al compañero, tus clics listos en un minuto, maldiciones, venenos, magia y enfermedades a la vista y fuera con un clic, buffos que faltan, el tanque en apuros y el maná de los sanadores. |
-| **Bolsas** `/alfa bolsas` | Tres vistas (todo junto, por categorías o por bolsa), barra de bolsas, banco desde cualquier lugar con depósito rápido y compra de espacios, el inventario de tus personajes y qué vender cuando se llenan. **Tomar todo** en el buzón y tu oro por hora. |
+| **Bolsas** `/alfa bolsas` | Tres vistas (todo junto, por categorías o por bolsa), barra de bolsas, banco desde cualquier lugar con depósito rápido y compra de espacios, el inventario de tus personajes y qué vender cuando se llenan. Tu oro por hora (el del buzón aparte) y un aviso de cartas por vencer con **Tomar todo**. |
 | **Mundo** `/alfa mapa` (o la tecla M) | Todo Azeroth en un solo mapa con zoom y el terreno real, puntos de vuelo, entradas y salidas (mazmorras, barcos, zepelines y portales), tus marcadores y un solo control de capas. |
 | **Recolección** `/alfa recoleccion` | Minerales, hierbas, bancos de peces y tesoros en el mapa y el minimapa, con ruta de farmeo. |
 | **Comercio** `/alfa comercio` | Precios de la subasta y qué hacer con cada objeto: venderlo, subastarlo o transformarlo. |
 | **Pesca** `/alfa pesca` | Reingeniería completa: modo pesca de una tecla (equipo, cebo, lanzar y recoger), barra, diario de capturas, logros, metas, guía de 1 a 300 y cocina junto al agua. |
 | **Paisaje** `/alfa paisaje` | Los ajustes gráficos del juego explicados en palabras simples, preajustes, deshacer de un clic y filtros de pantalla. |
-| **La Jauría** `/alfa manada` · `/alfa cita` · `/alfa nota` | Tu grupo y quienes usan Alfa y aceptan que la manada los vea, en el mapa; botón **Seguir** con la flecha; llamar a la manada; guaridas para jugar juntos; raros compartidos por la manada con su reloj; **citas** con día y hora; «¿Quién va?»; notas en tu mapa; la insignia de La Jauría y la página del clan. |
+| **La Jauría** `/alfa manada` · `/alfa cita` · `/alfa nota` | Tu grupo y quienes usan Alfa y aceptan que la manada los vea, en el mapa; botón **Seguir** con la flecha; llamar a la manada; guaridas para jugar juntos; raros compartidos por la manada con su reloj; **citas** con día y hora; «¿Quién va?»; notas en tu mapa; un anuncio corto cuando anda cerca un lobo que usa Alfa, para que lo saludes; la insignia de La Jauría y la página del clan. |
 | **Comodidades** (Ajustes) | Minimapa, colores de clase, cuadro de información, probador, barra de vuelo, misiones automáticas y sonidos. |
 
 **Respeta las reglas de Forever y de Blizzard:** nada decide por ti en combate. Curar, pescar, aplicar talentos y usar objetos siempre es con tu tecla o tu clic, y fuera de combate cuando el juego lo pide. Gratis, código abierto, sin anuncios y nada escribe solo en el chat de otros.

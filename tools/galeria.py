@@ -222,13 +222,16 @@ def main() -> int:
     SALIDA.mkdir(parents=True, exist_ok=True)
     faltan = [a for a, *_ in VISTAS if not (BANCO / a).exists()]
     if faltan:
-        print("Faltan vistas del banco (corre tools/banco/run.py ... galeria.lua):", ", ".join(faltan))
-        return 1
+        # 1.3.2: una vista que el banco no dibujó se queda con su imagen de antes.
+        print("AVISO: sin vista nueva del banco, se queda la imagen de antes:", ", ".join(faltan))
     for viejo in SALIDA.glob("*.png"):
-        viejo.unlink()
+        if not any(viejo.name.endswith(a[len("shot-"):]) for a in faltan):
+            viejo.unlink()
     portada([Image.open(BANCO / "shot-g-rutas.png"), Image.open(BANCO / "shot-g-inicio.png")]).save(SALIDA / "00-portada.png")
     banner().save(SALIDA / "00-banner.png")
     for i, (archivo, titulo, es, en) in enumerate(VISTAS, 1):
+        if archivo in faltan:
+            continue
         nombre = archivo[len("shot-"):]
         for prefijo in ("g-", "v-"):
             if nombre.startswith(prefijo):

@@ -41,7 +41,7 @@ A mano: descarga `Alfa-<versión>.zip` de [Releases](https://github.com/toxic300
 
 | Comando | Módulo | Qué hace |
 |---|---|---|
-| `/alfa` | Ventana principal | Hoy, Aventura, Personaje, Mundo, Oficios y Manada, con Ajustes aparte; 3 estilos (Alfa, Clásico WoW, Cristal) que también visten el chat, el minimapa y las barras |
+| `/alfa` | Ventana principal | Hoy, Aventura, Personaje, Mundo, Oficios y Manada, con Ajustes aparte; el ícono del minimapa y el botón Alfa del menú Esc abren lo mismo (clic derecho: el mismo menú); 3 estilos (Alfa, Clásico WoW, Cristal) que también visten el chat, el minimapa y las barras |
 | `/alfa bienvenida` | Bienvenida | Intro del lobo, idioma de Alfa (10 idiomas), qué es Alfa y cada opción automática como una pregunta |
 | `/alfa inicio` | Hoy | "¿Qué hacemos hoy?", tu siguiente paso, entregar o recoger misiones, alertas, tu clase y tus números |
 | `/alfa rutas` | Ruta | Asistente de 4 caminos, seguimiento compacto con detalle aparte, biblioteca de guías, **Mis planes**, misiones previas agregadas solas, solo misiones que sí puedes hacer, vuelta a entregar y la mejor recompensa marcada |
@@ -51,14 +51,14 @@ A mano: descarga `Alfa-<versión>.zip` de [Releases](https://github.com/toxic300
 | `/alfa builds` | Talentos | Qué poner ahora y por qué, con un clic; equipo y compartir |
 | `/alfa combate` · `/alfa dps` | Combate | Ayuda de rotación para las 27 especializaciones, objetivos de misión resaltados, avisos de reacción y medidor de daño |
 | `/alfa curacion` | Curación | Marcos para curar con clic y asistente de 3 pasos |
-| `/alfa bolsas` | Bolsas | Tres vistas, banco con depositar rápido, objetos de misión que brillan, qué vender, «Tomar todo» en el buzón y tu oro por hora |
+| `/alfa bolsas` | Bolsas | Tres vistas, banco con depositar rápido, objetos de misión que brillan, qué vender, tu oro por hora (el del buzón aparte) y el aviso de cartas por vencer |
 | `/alfa mapa` (o M) | Mundo | Mapa de todo el mundo con el terreno real, puntos de vuelo, entradas y salidas, marcadores propios y capas |
 | `/alfa recoleccion` | Recolección | Nodos, pines y ruta de farmeo |
 | `/alfa comercio` | Comercio | Precios de la subasta y qué hacer con cada objeto |
 | `/alfa pesca` | Pesca | Modo pesca de una tecla (equipo, cebo, lanzar y recoger), barra, diario, logros, guía de 1 a 300 y cocina |
 | `/alfa paisaje` | Paisaje y gráficos | Ajustes gráficos explicados, preajustes, deshacer y filtros de pantalla |
 | `/alfa lya` · `/alfa ayuda` | Lya | Una loba negra compañera: consejos, ánimo e historias de tus misiones y zonas; te dice los avisos, te responde «¿Cómo hago...?», lleva tu historia y te avisa de tus oficios. En memoria de una gran perrita |
-| `/alfa manada` · `/alfa cita` · `/alfa nota` | La Jauría | Tu grupo y quienes usan Alfa y aceptan que la manada los vea en el mapa; Seguir; llamar a la manada; guaridas; raros con reloj; citas; «¿Quién va?»; notas en tu mapa; insignia y el clan |
+| `/alfa manada` · `/alfa cita` · `/alfa nota` | La Jauría | Tu grupo y quienes usan Alfa y aceptan que la manada los vea en el mapa; Seguir; llamar a la manada; guaridas; raros con reloj; citas; «¿Quién va?»; notas en tu mapa; «Un lobo de La Jauría anda cerca»; insignia y el clan |
 | `/alfa plano` | Cambiar de plano | Te pasa al plano de un lobo de la manada con su guarida abierta cuando el tuyo está lleno |
 | `/alfa camino` · `/alfa listo` | Hoy | El camino al 60 a tu ritmo y la revisión antes de la mazmorra |
 | `/alfa diagnostico` | Diagnóstico | Revisa choques con otros addons, partes apagadas y ajustes raros, con arreglo de un clic |
