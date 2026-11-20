@@ -732,7 +732,7 @@
           "lema": "Je le vends, je le mets aux enchères ou je le transforme ?",
           "icono": "comercio",
           "bloques": [
-            {"t": "intro", "texto": "Commerce répond à une seule question pour chaque objet : je le vends au marchand, je le mets aux enchères ou je le transforme en quelque chose qui vaut plus ? Aux enchères, il ne fait qu'informer : il n'achète, ne vend et ne met jamais rien en vente à votre place. Et à la boîte aux lettres, il vous épargne des clics."},
+            {"t": "intro", "texto": "Commerce répond à une seule question pour chaque objet : je le vends au marchand, je le mets aux enchères ou je le transforme en quelque chose qui vaut plus ? Aux enchères, il ne fait qu'informer : il n'achète, ne vend et ne met jamais rien en vente à votre place. Et à la boîte aux lettres, il vous prévient des lettres qui vont expirer."},
             {"t": "img", "img": "comercio", "pie": "La page Commerce : que faire de ce que vous portez et les prix de l'hôtel des ventes."},
             {"t": "pasos", "items": [
               "Allez à l'hôtel des ventes : sous sa fenêtre apparaît la barre d'Alfa.",
@@ -741,10 +741,10 @@
               "Dans **Métiers > Commerce**, vous voyez combien vous gagnez en suivant les conseils et ce qu'il vaut mieux vendre, mettre aux enchères, transformer ou garder."
             ]},
             {"t": "ilustracion", "id": "cuadro", "e": {"lineas": [
-              {"t": "Tela de seda", "c": ""},
-              {"t": "Tela", "c": "g"},
-              {"t": "Subasta: 1o 20p (hace 3 h) · Comerciante: 15p", "c": "a"},
-              {"t": "Mejor: subastar 1o 14p (+660%)", "c": "a"}
+              {"t": "Étoffe de soie", "c": ""},
+              {"t": "Tissu", "c": "g"},
+              {"t": "Hôtel des ventes : 1po 20pa (il y a 3 h) · Marchand : 15pa", "c": "a"},
+              {"t": "Meilleur : mettre aux enchères 1po 14pa (+660 %)", "c": "a"}
             ]}, "pie": "Les deux lignes d'Alfa dans l'infobulle d'un objet (exemple)."},
             {"t": "lista", "items": [
               "Il apprend de ce que vous cherchez à la main à l'hôtel des ventes et de ce que coûtent les choses chez les marchands.",
@@ -762,10 +762,10 @@
             ]},
             {"t": "h", "texto": "La boîte aux lettres : Tout prendre"},
             {"t": "lista", "items": [
-              "Avec la boîte aux lettres ouverte, la barre d'Alfa propose **Tout prendre** : il prend l'argent et les objets de vos lettres, une par une, et à la fin vous dit ce que vous avez reçu.",
+              "Le jeu a déjà son propre **Tout ouvrir** à la boîte aux lettres, Alfa n'y ajoute donc aucune barre.",
+              "En ouvrant la boîte, Alfa vous prévient si une lettre avec des objets expire dans moins de 3 jours. Cette alerte propose **Tout prendre** : il prend l'argent et les objets de vos lettres, une par une, et à la fin vous dit ce que vous avez reçu.",
               "Les lettres contre remboursement et celles d'un MJ restent là pour que vous les ouvriez vous-même.",
-              "Il s'arrête si vous fermez la boîte, entrez en combat ou si vos sacs se remplissent (l'argent, il continue de le prendre).",
-              "En ouvrant la boîte, il vous prévient si une lettre avec des objets va bientôt expirer."
+              "Il s'arrête si vous fermez la boîte, entrez en combat ou si vos sacs se remplissent (l'argent, il continue de le prendre)."
             ]}
           ]
         }
@@ -813,7 +813,7 @@
             {"t": "tarjetas", "cols": 2, "titulo": "Chasser en meute", "items": [
               {"icono": "raros", "titulo": "Marquer le rare pour tous", "texto": "En groupe, en ciblant un rare sans marque, mettez-lui la tête de mort d'un clic."},
               {"icono": "misiones", "titulo": "Chasser ensemble", "texto": "Si un loup de votre zone a votre quête, sa carte le dit et Lya vous propose de l'inviter. Seule la liste de vos quêtes est partagée."},
-              {"icono": "manada", "titulo": "Le salut de la meute", "texto": "En entrant, Lya vous dit qui de votre guilde est connecté et où. Et si Toxic, le fondateur, est dans le coin, elle vous prévient pour que vous le saluiez."},
+              {"icono": "manada", "titulo": "Le salut de la meute", "texto": "En entrant, Lya vous dit qui de votre guilde est connecté et où. Et quand vous croisez un loup de la meute qui utilise aussi Alfa (Toxic, le fondateur, compris), une courte annonce vous le dit pour que vous le saluiez. Ça se désactive avec **Un loup de La Jauría est dans le coin**."},
               {"icono": "reloj", "titulo": "Minuteurs de rares", "texto": "Alfa se souvient de quand chaque rare est tombé : son infobulle dit il y a combien de temps il a été chassé et s'il a déjà pu revenir."}
             ]},
             {"t": "tarjetas", "cols": 3, "titulo": "La meute s'organise", "items": [
@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "La 1.3.2 : la meute en ordre", "items": ["**Un seul menu d'Alfa :** l'icône de la minicarte, la liste des addons, le bouton flottant et le bouton **Alfa** du menu [[Échap]] font la même chose. Un clic ouvre la dernière page vue ; un clic droit, le menu avec toutes les sections.", "**Combat ne gêne plus en solo :** le son d'interruption et le résumé du combat s'affichent en groupe, en instance ou lors de longs combats.", "**Soins sans groupe :** « Voir à quoi ils ressemblent » vous montre vos cadres avant d'en rejoindre un.", "**La carte :** les calques ont partout le même nom, « Calques d'Alfa », et « Aller à la carte du jeu » s'ouvre là où vous êtes.", "**La Jauría :** les rendez-vous et les notes ne demandent plus de partager votre position.", "**Et 39 améliorations** pour un Alfa plus clair et plus léger."]}
+    "mapa": {"titulo": "La 1.3.2 : la meute en ordre", "items": ["**Un seul menu d'Alfa :** l'icône de la minicarte, la liste des addons, le bouton flottant et le bouton **Alfa** du menu [[Échap]] font la même chose. Un clic ouvre la dernière page vue ; un clic droit, le menu avec toutes les sections.", "**Combat ne gêne plus en solo :** le son d'interruption et le résumé du combat s'affichent en groupe, en instance ou lors de longs combats.", "**Soins sans groupe :** « Voir à quoi ils ressemblent » vous montre vos cadres avant d'en rejoindre un.", "**La carte :** les calques ont partout le même nom, « Calques d'Alfa », et « Aller à la carte du jeu » s'ouvre là où vous êtes.", "**La Jauría :** une courte annonce vous prévient quand un loup de la meute qui utilise Alfa est dans le coin, et les rendez-vous et les notes ne demandent plus de partager votre position.", "**Et 39 améliorations** pour un Alfa plus clair et plus léger."]}
   },
   "contraportada": {
     "titulo": "Rejoignez la meute",

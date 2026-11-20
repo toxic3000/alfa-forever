@@ -922,6 +922,9 @@ body.cjk .apretar2 .faq-a,body.cjk .apretar3 .faq-a{ line-height:1.6 }
 .tarjeta{ display:flex; gap:3mm; align-items:flex-start; background:var(--crema); border:.3mm solid var(--linea);
   border-radius:2mm; padding:3.2mm; break-inside:avoid }
 .tarjeta b{ display:block; font-size:9.6pt; line-height:1.3; margin-bottom:.6mm } .tarjeta span{ display:block; font-size:8.6pt; color:var(--suave); line-height:1.42 }
+/* la negrita dentro del texto de una tarjeta va en línea (el título es el <b> de afuera) */
+.tarjeta span b,.etapa span b,.cl-it span b,.ins span b,.rp span b{ display:inline; font-size:inherit; line-height:inherit; margin:0; color:var(--tinta) }
+.rp span b{ color:#f3f7f3 }
 .tico{ flex:none; width:8.6mm; height:8.6mm; display:flex; align-items:center; justify-content:center; background:var(--grafito);
   clip-path:polygon(0 0,calc(100% - 1.6mm) 0,100% 1.6mm,100% 100%,1.6mm 100%,0 calc(100% - 1.6mm)) }
 .tico img{ width:5.2mm; height:5.2mm }

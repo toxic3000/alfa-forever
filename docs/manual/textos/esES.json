@@ -732,7 +732,7 @@
           "lema": "¿Lo vendo, lo subasto o lo transformo?",
           "icono": "comercio",
           "bloques": [
-            {"t": "intro", "texto": "Comercio responde a una sola pregunta para cada objeto: ¿lo vendo al comerciante, lo subasto o lo convierto en algo que valga más? En la subasta solo informa: nunca compra, vende ni publica nada por ti. Y en el buzón te ahorra clics."},
+            {"t": "intro", "texto": "Comercio responde a una sola pregunta para cada objeto: ¿lo vendo al comerciante, lo subasto o lo convierto en algo que valga más? En la subasta solo informa: nunca compra, vende ni publica nada por ti. Y en el buzón te avisa de las cartas que están por vencer."},
             {"t": "img", "img": "comercio", "pie": "La página de Comercio: qué hacer con lo que llevas y los precios de la subasta."},
             {"t": "pasos", "items": [
               "Ve a la casa de subastas: bajo su ventana aparece la barra de Alfa.",
@@ -741,7 +741,7 @@
               "En **Oficios > Comercio** ves cuánto ganas si sigues los consejos y qué conviene vender, subastar, transformar o guardar."
             ]},
             {"t": "ilustracion", "id": "cuadro", "e": {"lineas": [
-              {"t": "Tela de seda", "c": ""},
+              {"t": "Paño de seda", "c": ""},
               {"t": "Tela", "c": "g"},
               {"t": "Subasta: 1o 20p (hace 3 h) · Comerciante: 15p", "c": "a"},
               {"t": "Mejor: subastar 1o 14p (+660%)", "c": "a"}
@@ -762,10 +762,10 @@
             ]},
             {"t": "h", "texto": "El buzón: Tomar todo"},
             {"t": "lista", "items": [
-              "Con el buzón abierto, la barra de Alfa trae **Tomar todo**: toma el dinero y los objetos de tus cartas, una por una, y al final te dice lo que recibiste.",
+              "El juego ya trae su propio **Abrir todo** en el buzón, así que Alfa no le agrega ninguna barra.",
+              "Al abrir el buzón, Alfa te avisa si alguna carta con objetos vence en menos de 3 días. Ese aviso trae **Tomar todo**: toma el dinero y los objetos de tus cartas, una por una, y al final te dice lo que recibiste.",
               "Las cartas con pago contra reembolso y las de un MJ se quedan para que las abras tú.",
-              "Se detiene si cierras el buzón, entras en combate o se llenan tus bolsas (el dinero lo sigue tomando).",
-              "Al abrir el buzón, te avisa si una carta con objetos está por vencer."
+              "Se detiene si cierras el buzón, entras en combate o se llenan tus bolsas (el dinero lo sigue tomando)."
             ]}
           ]
         }
@@ -813,7 +813,7 @@
             {"t": "tarjetas", "cols": 2, "titulo": "Cazar en manada", "items": [
               {"icono": "raros", "titulo": "Marcar el raro para todos", "texto": "En grupo, al seleccionar un raro sin marca, ponle la calavera con un clic."},
               {"icono": "misiones", "titulo": "Cazar juntos", "texto": "Si un lobo de tu zona lleva tu misión, su tarjeta lo dice y Lya te propone invitarlo. Solo se comparte cuáles misiones llevas."},
-              {"icono": "manada", "titulo": "El saludo de la manada", "texto": "Al entrar, Lya te dice quién de tu hermandad está conectado y dónde. Y si Toxic, el fundador, está cerca, te avisa para que lo saludes."},
+              {"icono": "manada", "titulo": "El saludo de la manada", "texto": "Al entrar, Lya te dice quién de tu hermandad está conectado y dónde. Y cuando ves cerca a un lobo de la manada que también usa Alfa (incluido Toxic, el fundador), un anuncio corto te lo dice para que lo saludes. Se desactiva en **Un lobo de La Jauría anda cerca**."},
               {"icono": "reloj", "titulo": "Raros con reloj", "texto": "Alfa recuerda cuándo cayó cada raro: su cuadro dice hace cuánto lo cazaron y si ya pudo volver."}
             ]},
             {"t": "tarjetas", "cols": 3, "titulo": "La manada se organiza", "items": [
@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "La 1.3.2: la manada en orden", "items": ["**Un solo menú de Alfa:** el ícono del minimapa, la lista de addons, el botón flotante y el botón **Alfa** del menú de [[Esc]] hacen lo mismo. Clic abre la última página que viste; clic derecho, el menú con todas las secciones.", "**Combate no estorba yendo solo:** el sonido del corte y el resumen de la pelea salen en grupo, en instancias o en peleas largas.", "**Curación sin grupo:** «Ver cómo se ven» te muestra tus marcos antes de entrar a uno.", "**El mapa:** las capas se llaman igual en todas partes, «Capas de Alfa», e «Ir al mapa del juego» abre donde estás.", "**La Jauría:** las citas y las notas ya no piden compartir tu ubicación.", "**Y 39 mejoras** para un Alfa más claro y más ligero."]}
+    "mapa": {"titulo": "La 1.3.2: la manada en orden", "items": ["**Un solo menú de Alfa:** el ícono del minimapa, la lista de addons, el botón flotante y el botón **Alfa** del menú de [[Esc]] hacen lo mismo. Clic abre la última página que viste; clic derecho, el menú con todas las secciones.", "**Combate no estorba yendo solo:** el sonido del corte y el resumen de la pelea salen en grupo, en instancias o en peleas largas.", "**Curación sin grupo:** «Ver cómo se ven» te muestra tus marcos antes de entrar a uno.", "**El mapa:** las capas se llaman igual en todas partes, «Capas de Alfa», e «Ir al mapa del juego» abre donde estás.", "**La Jauría:** un anuncio corto te avisa cuando un lobo de la manada que usa Alfa anda cerca, y las citas y las notas ya no piden compartir tu ubicación.", "**Y 39 mejoras** para un Alfa más claro y más ligero."]}
   },
   "contraportada": {
     "titulo": "Únete a la manada",

@@ -732,7 +732,7 @@
           "lema": "Vendo, leiloo ou transformo?",
           "icono": "comercio",
           "bloques": [
-            {"t": "intro", "texto": "Comércio responde uma só pergunta para cada item: vendo para o mercador, leiloo ou transformo em algo que valha mais? No leilão ele só informa: nunca compra, vende nem anuncia nada por você. E na caixa de correio poupa cliques."},
+            {"t": "intro", "texto": "Comércio responde uma só pergunta para cada item: vendo para o mercador, leiloo ou transformo em algo que valha mais? No leilão ele só informa: nunca compra, vende nem anuncia nada por você. E na caixa de correio avisa das cartas que estão para vencer."},
             {"t": "img", "img": "comercio", "pie": "A página de Comércio: o que fazer com o que você leva e os preços do leilão."},
             {"t": "pasos", "items": [
               "Vá à casa de leilões: embaixo da janela dela aparece a barra do Alfa.",
@@ -741,10 +741,10 @@
               "Em **Profissões > Comércio** você vê quanto ganha se seguir as dicas e o que vale a pena vender, leiloar, transformar ou guardar."
             ]},
             {"t": "ilustracion", "id": "cuadro", "e": {"lineas": [
-              {"t": "Tela de seda", "c": ""},
-              {"t": "Tela", "c": "g"},
-              {"t": "Subasta: 1o 20p (hace 3 h) · Comerciante: 15p", "c": "a"},
-              {"t": "Mejor: subastar 1o 14p (+660%)", "c": "a"}
+              {"t": "Tecido de Seda", "c": ""},
+              {"t": "Tecido", "c": "g"},
+              {"t": "Leilão: 1po 20pp (há 3 h) · Mercador: 15pp", "c": "a"},
+              {"t": "Melhor: leiloar 1po 14pp (+660%)", "c": "a"}
             ]}, "pie": "As duas linhas do Alfa na dica de um item (exemplo)."},
             {"t": "lista", "items": [
               "Aprende com o que você busca à mão no leilão e com o que as coisas custam nos mercadores.",
@@ -762,10 +762,10 @@
             ]},
             {"t": "h", "texto": "A caixa de correio: Pegar tudo"},
             {"t": "lista", "items": [
-              "Com a caixa de correio aberta, a barra do Alfa traz **Pegar tudo**: pega o dinheiro e os itens das suas cartas, uma por uma, e no fim diz o que você recebeu.",
+              "O jogo já tem o próprio **Abrir tudo** na caixa de correio, então o Alfa não adiciona nenhuma barra.",
+              "Ao abrir a caixa, o Alfa avisa se alguma carta com itens vence em menos de 3 dias. Esse aviso traz **Pegar tudo**: pega o dinheiro e os itens das suas cartas, uma por uma, e no fim diz o que você recebeu.",
               "As cartas com pagamento na entrega e as de um GM ficam para você abrir.",
-              "Para se você fechar a caixa, entrar em combate ou suas bolsas encherem (o dinheiro ele continua pegando).",
-              "Ao abrir a caixa, avisa se uma carta com itens está para vencer."
+              "Para se você fechar a caixa, entrar em combate ou suas bolsas encherem (o dinheiro ele continua pegando)."
             ]}
           ]
         }
@@ -813,7 +813,7 @@
             {"t": "tarjetas", "cols": 2, "titulo": "Caçar em matilha", "items": [
               {"icono": "raros", "titulo": "Marcar o raro para todos", "texto": "Em grupo, ao selecionar um raro sem marca, coloque a caveira com um clique."},
               {"icono": "misiones", "titulo": "Caçar juntos", "texto": "Se um lobo da sua zona tem a sua missão, o cartão dele mostra e a Lya sugere convidá-lo. Só se compartilha quais missões você tem."},
-              {"icono": "manada", "titulo": "A saudação da matilha", "texto": "Ao entrar, a Lya diz quem da sua guilda está conectado e onde. E se Toxic, o fundador, estiver por perto, ela avisa para você cumprimentá-lo."},
+              {"icono": "manada", "titulo": "A saudação da matilha", "texto": "Ao entrar, a Lya diz quem da sua guilda está conectado e onde. E quando você vê por perto um lobo da matilha que também usa o Alfa (incluindo Toxic, o fundador), um anúncio curto avisa para você cumprimentá-lo. Desliga em **Um lobo de La Jauría está por perto**."},
               {"icono": "reloj", "titulo": "Timers de raros", "texto": "O Alfa lembra quando cada raro caiu: a dica dele diz há quanto tempo foi caçado e se já pode ter voltado."}
             ]},
             {"t": "tarjetas", "cols": 3, "titulo": "A matilha se organiza", "items": [
@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "A 1.3.2: a matilha em ordem", "items": ["**Um só menu do Alfa:** o ícone do minimapa, a lista de addons, o botão flutuante e o botão **Alfa** do menu do [[Esc]] fazem o mesmo. Clique abre a última página que você viu; clique direito, o menu com todas as seções.", "**O Combate não atrapalha sozinho:** o som do aviso para interromper e o resumo da luta aparecem em grupo, em instâncias ou em lutas longas.", "**Cura sem grupo:** «Ver como ficam» mostra seus quadros antes de você entrar em um.", "**O mapa:** as camadas têm o mesmo nome em todo lugar, «Camadas do Alfa», e «Ir para o mapa do jogo» abre onde você está.", "**La Jauría:** os encontros e as notas não pedem mais para compartilhar sua localização.", "**E 39 melhorias** para um Alfa mais claro e mais leve."]}
+    "mapa": {"titulo": "A 1.3.2: a matilha em ordem", "items": ["**Um só menu do Alfa:** o ícone do minimapa, a lista de addons, o botão flutuante e o botão **Alfa** do menu do [[Esc]] fazem o mesmo. Clique abre a última página que você viu; clique direito, o menu com todas as seções.", "**O Combate não atrapalha sozinho:** o som do aviso para interromper e o resumo da luta aparecem em grupo, em instâncias ou em lutas longas.", "**Cura sem grupo:** «Ver como ficam» mostra seus quadros antes de você entrar em um.", "**O mapa:** as camadas têm o mesmo nome em todo lugar, «Camadas do Alfa», e «Ir para o mapa do jogo» abre onde você está.", "**La Jauría:** um anúncio curto avisa quando um lobo da matilha que usa o Alfa está por perto, e os encontros e as notas não pedem mais para compartilhar sua localização.", "**E 39 melhorias** para um Alfa mais claro e mais leve."]}
   },
   "contraportada": {
     "titulo": "Entre para a matilha",

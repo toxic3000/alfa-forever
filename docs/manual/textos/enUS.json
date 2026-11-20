@@ -732,7 +732,7 @@
           "lema": "Vendor it, auction it or craft it?",
           "icono": "comercio",
           "bloques": [
-            {"t": "intro", "texto": "Trade answers a single question for every item: should I sell it to a vendor, auction it or turn it into something worth more? At the auction house it only informs: it never buys, sells or posts anything for you. And at the mailbox it saves you clicks."},
+            {"t": "intro", "texto": "Trade answers a single question for every item: should I sell it to a vendor, auction it or turn it into something worth more? At the auction house it only informs: it never buys, sells or posts anything for you. And at the mailbox it warns you about letters about to expire."},
             {"t": "img", "img": "comercio", "pie": "The Trade page: what to do with what you carry, and auction house prices."},
             {"t": "pasos", "items": [
               "Go to the auction house: Alfa’s bar appears below its window.",
@@ -741,10 +741,10 @@
               "In **Trades > Trade** you see how much you earn if you follow the advice, and what’s worth vendoring, auctioning, crafting or keeping."
             ]},
             {"t": "ilustracion", "id": "cuadro", "e": {"lineas": [
-              {"t": "Tela de seda", "c": ""},
-              {"t": "Tela", "c": "g"},
-              {"t": "Subasta: 1o 20p (hace 3 h) · Comerciante: 15p", "c": "a"},
-              {"t": "Mejor: subastar 1o 14p (+660%)", "c": "a"}
+              {"t": "Silk Cloth", "c": ""},
+              {"t": "Cloth", "c": "g"},
+              {"t": "Auction: 1g 20s (3 h ago) · Vendor: 15s", "c": "a"},
+              {"t": "Best: auction 1g 14s (+660%)", "c": "a"}
             ]}, "pie": "Alfa’s two lines in an item’s tooltip (example)."},
             {"t": "lista", "items": [
               "It learns from what you look up by hand at the auction house and from what things cost at vendors.",
@@ -762,10 +762,10 @@
             ]},
             {"t": "h", "texto": "The mailbox: Take all"},
             {"t": "lista", "items": [
-              "With the mailbox open, Alfa’s bar has **Take all**: it takes the money and items from your letters, one by one, and at the end tells you what you received.",
+              "The game already has its own **Open All** at the mailbox, so Alfa doesn’t add a bar of its own.",
+              "When you open the mailbox, Alfa warns you if a letter with items expires in less than 3 days. That alert has **Take all**: it takes the money and items from your letters, one by one, and at the end tells you what you received.",
               "Cash-on-delivery letters and letters from a GM are left for you to open yourself.",
-              "It stops if you close the mailbox, enter combat or your bags fill up (it keeps taking the money).",
-              "When you open the mailbox, it warns you if a letter with items is about to expire."
+              "It stops if you close the mailbox, enter combat or your bags fill up (it keeps taking the money)."
             ]}
           ]
         }
@@ -813,7 +813,7 @@
             {"t": "tarjetas", "cols": 2, "titulo": "Hunting as a pack", "items": [
               {"icono": "raros", "titulo": "Mark the rare for everyone", "texto": "In a group, when you target an unmarked rare, give it the skull with one click."},
               {"icono": "misiones", "titulo": "Hunt together", "texto": "If a wolf in your zone has your quest, their card says so and Lya suggests inviting them. Only which quests you have is shared."},
-              {"icono": "manada", "titulo": "The pack’s greeting", "texto": "When you log in, Lya tells you who from your guild is online and where. And if Toxic, the founder, is nearby, she lets you know so you can say hi."},
+              {"icono": "manada", "titulo": "The pack’s greeting", "texto": "When you log in, Lya tells you who from your guild is online and where. And when you see a pack wolf nearby who also uses Alfa (Toxic, the founder, included), a short announcement tells you so you can say hi. Turn it off with **A wolf from La Jauría is nearby**."},
               {"icono": "reloj", "titulo": "Rare timers", "texto": "Alfa remembers when each rare went down: its tooltip says how long ago it was hunted and whether it could be back."}
             ]},
             {"t": "tarjetas", "cols": 3, "titulo": "The pack gets organized", "items": [
@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "1.3.2: the pack in order", "items": ["**One Alfa menu:** the minimap icon, the addon list, the floating button and the **Alfa** button in the [[Esc]] menu all do the same. Click opens the last page you saw; right-click, the menu with every section.", "**Combat stays out of the way when solo:** the interrupt sound and the fight summary show in a group, in instances or in long fights.", "**Healing without a group:** “See how they look” shows your frames before you join one.", "**The map:** the layers have one name everywhere, “Alfa layers”, and “Go to the game’s map” opens where you are.", "**La Jauría:** meetups and notes no longer ask you to share your location.", "**And 39 improvements** for a clearer, lighter Alfa."]}
+    "mapa": {"titulo": "1.3.2: the pack in order", "items": ["**One Alfa menu:** the minimap icon, the addon list, the floating button and the **Alfa** button in the [[Esc]] menu all do the same. Click opens the last page you saw; right-click, the menu with every section.", "**Combat stays out of the way when solo:** the interrupt sound and the fight summary show in a group, in instances or in long fights.", "**Healing without a group:** “See how they look” shows your frames before you join one.", "**The map:** the layers have one name everywhere, “Alfa layers”, and “Go to the game’s map” opens where you are.", "**La Jauría:** a short announcement tells you when a pack wolf who uses Alfa is nearby, and meetups and notes no longer ask you to share your location.", "**And 39 improvements** for a clearer, lighter Alfa."]}
   },
   "contraportada": {
     "titulo": "Join the pack",
