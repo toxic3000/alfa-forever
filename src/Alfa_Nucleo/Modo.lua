@@ -31,7 +31,12 @@ local function opciones() return A and A.UI and A.UI.Options end
 -- 1.3.2: las páginas avanzadas del motor (para autores de guías y quien usa
 -- mando u otros addons) no salen en Ajustes con Alfa sencillo; siguen ahí con
 -- su comando, la búsqueda o «Completo».
-N.AVANZADAS = { recorder = true, guidepacks = true, integrations = true, gamepad = true, thanks = true }
+N.AVANZADAS = { recorder = true, guidepacks = true, integrations = true, gamepad = true, thanks = true,
+	-- 1.3.6: con Alfa sencillo, Ajustes deja Estilo y sonido, Comodidades (lo
+	-- de cada día, a propósito desde la 1.3.2), Misiones y Acerca de. La guía,
+	-- la apariencia fina, el mapa y el descubrimiento siguen en el buscador,
+	-- con su comando y en «Completo».
+	guide = true, appearance = true, map = true, discovery = true }
 
 function N.PaginaVisible(clave)
 	if not N.Sencillo() or type(clave) ~= "string" then return true end

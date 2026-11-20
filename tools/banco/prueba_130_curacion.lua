@@ -360,7 +360,7 @@ step("La página: Tus clics primero, con sus listas", function()
   A.Fire("SHOW_OPTIONS", "curacion") T(2)
   check(visible("Curar y seleccionar"), "no sale «Curar y seleccionar» en la página")
   check(visible("Clic izquierdo") and visible("Mayús + clic izquierdo") and visible("Ctrl + clic derecho"), "faltan filas de Tus clics")
-  check(visible("En banda, un grupo por columna") and visible("Tanque en apuros") and visible("Le falta tu buff"), "faltan ajustes nuevos")
+  check(visible("En banda, un grupo por columna") and visible("Tanque en apuros") and visible("Le falta tu hechizo de apoyo"), "faltan ajustes nuevos")
   local d
   for _, f in ipairs(ALL_FRAMES()) do if f.alfaRanura == "1" and f:IsVisible() then d = f end end
   check(d and d.Texto:GetText():find("Curación relámpago", 1, true), "el desplegable del izquierdo no dice su hechizo")

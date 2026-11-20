@@ -220,7 +220,12 @@ local function bloqueCapas(ui, padre)
 	function b.Nota:Acomodar(ancho) return K.Parrafo(self, ancho) end
 	b.Grupos = b:Agregar(K.Segmentos(b, { estilo = "pildoras", alCambiar = function(v)
 		ui.grupoCapas = v
+		-- 1.3.6: la píldora solo muestra ese grupo y oculta los otros; la
+		-- página se vuelve a acomodar sin rellenar nada más (ui.soloAcomodar).
+		for nombre, ga in pairs(b.grupos) do K.Mostrar(ga, nombre == v) end
+		ui.soloAcomodar = true
 		N.RehacerPagina(ui.view)
+		ui.soloAcomodar = nil
 	end }))
 	b.grupos = {}   -- nombre -> K.GrupoAjustes
 	b.vistas = {}   -- nombre -> { [capa] = true }
@@ -349,6 +354,8 @@ local function construir(view)
 	ui.capas = t:AgregarBloque(bloqueCapas(ui, t.Extra))
 	t:AgregarBloque(bloqueAyuda(t.Extra))
 	K.EnPagina(view, t, function()
+		-- 1.3.6: tras la píldora de capas solo se mide otra vez (nada cambió).
+		if ui.soloAcomodar then return end
 		t:SetAccion(accion())
 		t:SetOpciones(tarjetas(), L["El mapa a tu gusto"])
 		ui.marcadores:Llenar()
@@ -363,10 +370,21 @@ local function construir(view)
 		ui.capas:Llenar()
 	end)
 	M.vista = view
-	local function rehacer() N.RehacerPagina(view) end
+	-- 1.3.6: varios cambios seguidos (capas, marcadores) rehacen la página
+	-- una sola vez, en el siguiente cuadro. Ya no hay OnShow: la ventana
+	-- mide la página al mostrarla (O.Select -> view.Refresh).
+	local pendiente = false
+	local function rehacer()
+		if pendiente then return end
+		pendiente = true
+		A.After(0, function()
+			pendiente = false
+			N.RehacerPagina(view)
+		end)
+	end
+	M.RehacerPronto = rehacer
 	Capas.AlCambiar(rehacer)
 	Mk.AlCambiar(rehacer)
-	view:HookScript("OnShow", rehacer)
 end
 
 ---------------------------------------------------------------------------
@@ -375,7 +393,8 @@ end
 
 N.Modulo({
 	id = ID, nombre = L["Mundo"], icono = "ic-mundo", orden = 31,
-	subtitulo = L["El mapa del mundo entero con zoom, tus marcadores y un solo control para todo lo que se pinta."],
+	-- 1.3.6: corto, y dice que esta página es la del mapa de Alfa.
+	subtitulo = L["El mapa de Alfa: el mundo entero, tus marcadores y capas"],
 	comando = "mundo",
 	ajustes = {
 		grupo = true,       -- tu grupo en el mapa de Alfa (esencial)
@@ -421,7 +440,10 @@ N.Modulo({
 -- 1.3.0: el modo explorador se rehace al prenderlo o al descubrir algo.
 local function rehacerVista()
 	local v = M.vista
-	if v and v.IsVisible and v:IsVisible() then N.RehacerPagina(v) end
+	-- 1.3.6: por el mismo refresco junto que las capas y los marcadores.
+	if v and v.IsVisible and v:IsVisible() then
+		if M.RehacerPronto then M.RehacerPronto() else N.RehacerPagina(v) end
+	end
 end
 A.On("SETTING_CHANGED", function(path) if path == "mundo.explorador" then rehacerVista() end end)
 A.RegisterEvent("MAP_EXPLORATION_UPDATED", rehacerVista)

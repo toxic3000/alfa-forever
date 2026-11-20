@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "Die 1.3.5: Das leichtere Rudel", "items": ["**Viel weniger Arbeit in Gruppe und Schlachtzug:** Was andere tun, erreicht die Teile von Alfa nicht mehr, die nur auf dich schauen.", "**Kampfmodus und Dungeonmodus:** Im Kampf warten Lya und offene Seiten; in einem Dungeon sucht das Sammeln keine Vorkommen mehr.", "**Leichter Modus** (Einstellungen > Stil und Klang): für einfache Computer, alles im Hintergrund langsamer und Ankündigungen ohne Animation.", "**Und mehr:** Zonenwechsel kosten weniger, der nächste Guide ist vorab bereit und `/alfa rendimiento` zeigt, wie lange Alfa beim Einloggen brauchte."]}
+    "mapa": {"titulo": "Die 1.3.6: Das Rudel führt dich", "items": ["**Ganz Alfa durchsuchen:** Die Suche oben findet Seiten und Einstellungen, wartet, bis du fertig getippt hast, und bietet dir sonst Lya an.", "**Für Einsteiger:** Jede Seite sagt, wofür sie da ist, der einfache Modus ist einfacher, die Tour zeigt den Wolf an der Minikarte und die Taste für „Was ist das?“, und es gibt Knöpfe statt Befehlen.", "**Leichter:** Seiten öffnen schneller und merken sich, wo du warst. **Leichter Modus** für einfache Computer, unter Stil und Klang.", "**Dein Kampf stört nicht:** Die Zusammenfassung verdeckt deine Aktionsleisten nicht mehr, und du kannst sie überallhin ziehen."]}
   },
   "contraportada": {
     "titulo": "Komm ins Rudel",

@@ -28,7 +28,8 @@ local function estado()
 		texto = e and L[e.texto] or nil,
 		accion = { texto = L["Mi configuración"], icono = "ic-ajustes", alClic = function() M.Abrir("pedido", "asistente") end },
 		-- La letra, su tamaño, los bordes y la flecha siguen en Ajustes > Apariencia (del motor).
-		secundaria = { texto = L["Más opciones de apariencia"], alClic = function() N.Abrir("appearance") end },
+		-- 1.3.6: el botón dice qué hay detrás y que es para quien quiere afinar.
+		secundaria = { texto = L["Colores, letra y ventanas (avanzado)"], alClic = function() N.Abrir("appearance") end },
 	}
 end
 
@@ -78,9 +79,12 @@ local function grupos(ui, padre)
 	leer:Fila({ titulo = L["«¿Qué es esto?»"],
 		texto = L["Deja esta tecla abajo y pasa el ratón por cualquier cosa de Alfa: te digo para qué sirve."],
 		control = function(fila) return K.Desplegable(fila, { opciones = M.OPCIONES_AYUDA(), clave = "nucleo.ayudaTecla", ancho = 150 }) end })
+	-- 1.3.6: un interruptor que dice si el modo ayuda está prendido (Kit/Ayuda.lua).
 	leer:Fila({ titulo = L["Modo ayuda"], hija = true,
 		texto = L["Sin tener una tecla abajo: lo prendes o lo apagas con su atajo, o aquí."],
-		control = function(fila) return K.Boton(fila, L["Prender o apagar"], function() K.AlternarAyuda() end, { tipo = "secundario", icono = "ic-info" }) end })
+		control = function(fila) return K.Interruptor(fila, {
+			get = function() return K.ModoAyuda and K.ModoAyuda() or false end,
+			set = function(v) if K.AlternarAyuda then K.AlternarAyuda(v and true or false) end end }) end })
 
 	-- 1.3.1: acomodar con el ratón lo de Alfa en tu pantalla (Acomodar.lua).
 	local acomodar = K.GrupoAjustes(padre, { titulo = L["Acomodar la pantalla"] })
@@ -111,15 +115,18 @@ local function grupos(ui, padre)
 		texto = L["Todas las teclas de Alfa en un lugar, para cambiarlas ahí mismo. También con /alfa teclas."],
 		control = function(fila) return K.Boton(fila, L["Abrir"], function() M.Teclas.Abrir() end, { tipo = "secundario", icono = "ic-ajustes" }) end })
 
+	-- 1.3.6: la ayuda va hasta arriba de la página (construir la pone antes de los estilos).
 	local bienvenida = K.GrupoAjustes(padre, { titulo = L["Configuración y ayuda"] })
 	-- 1.2.9: Alfa sencillo o completo (Alfa_Nucleo/Modo.lua).
-	bienvenida:Fila({ titulo = L["Cómo ves Alfa"], texto = L["Sencillo: solo Hoy, Ruta, Mapa, Bolsas, Talentos y Lya a la vista, y menos avisos. Completo: todo Alfa. Lo demás sigue funcionando."],
+	-- 1.3.6: dice «Mundo», como la página.
+	bienvenida:Fila({ titulo = L["Cómo ves Alfa"], texto = L["Sencillo: solo Hoy, Ruta, Mundo, Bolsas, Talentos y Lya a la vista, y menos avisos. Completo: todo Alfa. Lo demás sigue funcionando."],
 		control = function(fila) return K.Desplegable(fila, { opciones = M.OPCIONES_MODO(), clave = ID .. ".modo", ancho = 150 }) end })
 	bienvenida:Fila({ titulo = L["Tu configuración de Alfa"],
 		texto = L["El idioma, el estilo, lo que Alfa hace sola por ti y La Jauría, con «Cambiar» en cada cosa. También con /alfa bienvenida."],
 		control = function(fila) return K.Boton(fila, L["Abrir"], function() M.Abrir("pedido", "asistente") end, { tipo = "secundario" }) end })
 	bienvenida:Fila({ titulo = L["El recorrido por Alfa"],
-		texto = L["Lya te enseña la ventana de Alfa en 5 pasos. También con /alfa recorrido."],
+		-- 1.3.6: el recorrido ya no tiene 5 pasos fijos (depende de lo que tengas a la vista).
+		texto = L["Lya te enseña la ventana de Alfa paso a paso. También con /alfa recorrido."],
 		control = function(fila) return K.Boton(fila, L["Ver"], function() if M.Recorrido then M.Recorrido.Empezar() end end, { tipo = "secundario", icono = "ic-lobo" }) end })
 	bienvenida:Fila({ titulo = L["Reportar un error, una mejora o un comentario"],
 		texto = L["Alfa arma el reporte y tú lo pegas en el buzón privado del Discord de La Jauría. También con /alfa reportar."],
@@ -217,15 +224,21 @@ local function grupos(ui, padre)
 		filaErrores.alfaDatos.texto = Rs.ResumenErrores() .. " " .. L["«Reportar» ya los lleva."]
 		refrescarErrores(self)
 	end
-	return { sonido, leer, limpia, atajos, bienvenida, perfiles, respaldos, errores }
+	-- 1.3.6: «Configuración y ayuda» primero.
+	return { bienvenida, sonido, leer, limpia, atajos, perfiles, respaldos, errores }
 end
 
 local function construir(view)
 	local ui = {}
 	local t = K.Tablero(view, { margen = N.MargenPagina(), accion = "estado" })
-	ui.estilos = t:AgregarBloque(bloqueEstilos(ui, t.Extra))
+	-- 1.3.6: «Configuración y ayuda» (el recorrido, reportar, revisar) hasta
+	-- arriba; luego los estilos y lo demás.
+	local estilos = bloqueEstilos(ui, t.Extra)
 	ui.grupos = grupos(ui, t.Extra)
-	for i, g in ipairs(ui.grupos) do t:AgregarBloque(g, { espacio = i == 1 and ESP.xl or ESP.l }) end
+	for i, g in ipairs(ui.grupos) do
+		t:AgregarBloque(g, { espacio = i == 1 and ESP.xl or ESP.l })
+		if i == 1 then ui.estilos = t:AgregarBloque(estilos, { espacio = ESP.xl }) end
+	end
 	K.EnPagina(view, t, function()
 		t:SetAccion(estado())
 		ui.estilos:Refrescar()
@@ -269,13 +282,18 @@ local CONTROLES = {
 		help = L["Suena ahora, aunque el aullido esté apagado."], onClick = function() M.Aullar(true) end, search = "howl, play sound, test sound" },
 	{ kind = "button", label = L["Tu configuración de Alfa"], button = L["Abrir"], icon = "info",
 		help = L["El idioma, el estilo, lo que Alfa hace sola por ti y La Jauría, con «Cambiar» en cada cosa. También con /alfa bienvenida."],
-		onClick = function() M.Abrir("pedido", "asistente") end, search = "setup, welcome, wizard, language, configuration" },
+		onClick = function() M.Abrir("pedido", "asistente") end, search = "setup, welcome, wizard, language, configuration, ayuda, help, tutorial" },
+	-- 1.3.6: el recorrido también sale en el buscador.
+	{ kind = "button", label = L["El recorrido por Alfa"], button = L["Ver"], icon = "info",
+		help = L["Lya te enseña la ventana de Alfa paso a paso. También con /alfa recorrido."],
+		onClick = function() if M.Recorrido then M.Recorrido.Empezar() end end,
+		search = "recorrido, ayuda, tutorial, help, tour, guided tour, how to use, como usar, primeros pasos, empezar" },
 	{ kind = "button", label = L["Reportar un error, una mejora o un comentario"], button = L["Reportar"], icon = "info",
 		help = L["Alfa arma el reporte y tú lo pegas en el buzón privado del Discord de La Jauría. También con /alfa reportar."],
-		onClick = function() M.AbrirReporte() end, search = "bug report, feedback, suggestion, discord" },
+		onClick = function() M.AbrirReporte() end, search = "bug report, feedback, suggestion, discord, reportar, ayuda, help" },
 	-- 1.3.2: noReset: «Restablecer página» no lo toca (lo de fábrica, sencillo, es para quien empieza).
 	{ kind = "dropdown", key = ID .. ".modo", label = L["Cómo ves Alfa"], noReset = true,
-		help = L["Sencillo: solo Hoy, Ruta, Mapa, Bolsas, Talentos y Lya a la vista, y menos avisos. Completo: todo Alfa. Lo demás sigue funcionando."],
+		help = L["Sencillo: solo Hoy, Ruta, Mundo, Bolsas, Talentos y Lya a la vista, y menos avisos. Completo: todo Alfa. Lo demás sigue funcionando."],
 		choices = function()
 			local out = {}
 			for i, o in ipairs(M.OPCIONES_MODO()) do out[i] = { value = o.valor, label = o.texto } end
@@ -308,7 +326,7 @@ local CONTROLES = {
 		onClick = function() M.Teclas.Abrir() end, search = "keybindings, key bindings, hotkeys, shortcuts, keys, teclas, atajos" },
 	{ kind = "button", label = L["Revisar Alfa"], button = L["Revisar"], icon = "info",
 		help = L["Busca addons que chocan con Alfa, partes apagadas y ajustes raros, con el arreglo a un clic. También con /alfa diagnostico."],
-		onClick = function() M.Diagnostico.Abrir() end, search = "diagnostics, conflicts, addon conflict, troubleshoot, compatibility" },
+		onClick = function() M.Diagnostico.Abrir() end, search = "diagnostics, conflicts, addon conflict, troubleshoot, compatibility, revisar, ayuda, help, problemas" },
 	{ kind = "button", label = L["Respaldar ahora"], button = L["Respaldar ahora"], icon = "info",
 		help = L["Alfa guarda una copia de tus ajustes y perfiles cada semana y antes de cada actualización. Quedan las últimas 3."],
 		onClick = function() M.Respaldos.Ahora() end, search = "backup, restore, settings backup, respaldo" },
@@ -329,7 +347,8 @@ local CONTROLES = {
 
 N.Modulo({
 	id = ID, nombre = L["Estilo y sonido"], icono = "ic-apariencia", orden = 90, seccion = "ajustes",
-	subtitulo = L["Tu estilo, el color de acento, el aullido, leer mejor y tus atajos."],
+	-- 1.3.6: subtítulo corto (la ventana esconde los de más de 60 letras).
+	subtitulo = L["Tu estilo, el sonido, la ayuda y tus atajos."],
 	comando = "estilo",
 	ajustes = { aullido = true, idioma = "", introSiempre = true,
 		-- 1.3.3: "silencio" (al entrar, solo la animación) | "avisos" (como antes)

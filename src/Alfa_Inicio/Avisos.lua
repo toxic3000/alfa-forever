@@ -343,7 +343,8 @@ function Aviso.Probar()
 		clave = "prueba", tipo = "info", lobo = "normal",
 		titulo = L["Así se ven tus avisos"],
 		linea = L["Arrástralo para moverlo"],
-		texto = L["Alfa te avisa aquí de lo importante: equipo por reparar, bolsas llenas, habilidades nuevas, tu buff y tu descanso."],
+		-- 1.3.6: «la mejora de tu clase» en vez de «buff».
+		texto = L["Alfa te avisa aquí de lo importante: equipo por reparar, bolsas llenas, habilidades nuevas, la mejora de tu clase y tu descanso."],
 	})
 end
 

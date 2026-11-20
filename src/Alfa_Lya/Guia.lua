@@ -56,8 +56,9 @@ local function hay(id) return N.ModuloPorId and N.ModuloPorId(id) ~= nil end
 local BASE = {
 	{ id = "empezar", icono = "ic-hoy", modulo = "inicio", pregunta = "¿Por dónde empiezo?",
 		respuesta = "Abre Hoy: ahí te digo lo más útil para este momento en grande, y tu camino a un par de clics." },
+	-- 1.3.6: «rastreador» (decía «rastrador»).
 	{ id = "guia", icono = "ic-ruta", modulo = "rutas", pregunta = "¿Cómo sigo una guía para subir de nivel?",
-		respuesta = "En Ruta eliges a dónde ir y yo te armo el camino. La flecha te lleva paso a paso y el rastrador te dice qué toca." },
+		respuesta = "En Ruta eliges a dónde ir y yo te armo el camino. La flecha te lleva paso a paso y el rastreador te dice qué toca." },
 	{ id = "cerrar", icono = "ic-misiones", modulo = "rutas", pregunta = "Tengo muchas misiones a medias, ¿qué hago?",
 		respuesta = "Pide «Cerrar mis misiones» en Ruta: te llevo a terminar las que llevas y luego a entregarlas, en el mejor orden." },
 	{ id = "buscar", icono = "ic-enciclopedia", modulo = "enciclopedia", pregunta = "¿Dónde consigo un objeto o encuentro a alguien?",
@@ -117,20 +118,27 @@ local BASE = {
 	{ id = "dia", icono = "ic-huella", pregunta = "¿Cómo me fue hoy?",
 		respuesta = "Te llevo la cuenta de tu día de caza: misiones, niveles, oro, raros y el tiempo. Escribe /alfa lya dia y te lo cuento.",
 		existe = function() return M.Dia ~= nil end, abrir = function() if M.Dia then M.Dia.Contar() end end },
+	-- 1.3.6: depende de party.chat (viene apagado; Ajustes > Misiones > Grupo).
 	{ id = "anunciar", icono = "ic-misiones", pregunta = "¿Mi grupo ve cuando completo una misión?",
-		respuesta = "Sí: sale «[Misión] está lista para entregar» y «¡Misión completada!» en el chat del grupo. Solo, te sale a ti." },
+		respuesta = "Si lo prendes en Ajustes > Misiones: sale «[Misión] está lista para entregar» y «¡Misión completada!» en el chat del grupo. Viene apagado; así, o si vas solo, te sale solo a ti.",
+		boton = L["Abrir Misiones"], abrir = function() N.Abrir("questing") end },
 	{ id = "rarosManada", icono = "ic-raros", modulo = "manada", pregunta = "¿Cómo me entero de raros de la manada?",
 		respuesta = "Cuando un lobo de la manada encuentra un raro, te aviso en qué guarida está y te dejo pedir entrar con un clic." },
 	-- 1.2.6
 	{ id = "llamar", icono = "ic-manada", modulo = "manada", pregunta = "¿Cómo pido ayuda a la manada?",
 		respuesta = "En La Jauría > Guaridas toca «Llamar a la manada» (o escribe /alfa manada llamar): los lobos de tu zona reciben tu lugar y te aviso quién viene." },
+	-- 1.3.6: con su botón, en vez de mandar a escribir /alfa lya historial.
 	{ id = "dijiste", icono = "ic-lobo", pregunta = "¿Qué me dijiste hace rato?",
-		respuesta = "Arriba en esta ventana está lo último que te dije, con sus botones. Para ver los 20 más recientes: /alfa lya historial." },
+		respuesta = "Arriba en esta ventana está lo último que te dije, con sus botones. Toca el botón y te enseño lo más reciente.",
+		boton = L["Ver lo que te dije"], abrir = function() Gi.Abrir(nil, nil, true) end },
 	{ id = "semana", icono = "ic-nivel", pregunta = "¿Cómo me fue esta semana?",
 		respuesta = "Te llevo la cuenta de tu semana de caza y tu mejor día. Escribe /alfa lya semana y te lo cuento.",
 		existe = function() return M.Dia ~= nil end, abrir = function() if M.Dia then M.Dia.ContarSemana() end end },
+	-- 1.3.6: con su botón a tus atajos de Alfa (Alfa_Bienvenida/Teclas.lua).
 	{ id = "tecla", icono = "ic-mando", pregunta = "¿Puedo llamarte con una tecla?",
-		respuesta = "Sí: en las asignaciones de teclas del juego, en la sección Alfa, ponle una tecla a «Pregúntale a Lya» y otra a «Lo que te ofrece Lya», que hace lo de su botón." },
+		respuesta = "Sí: en tus atajos de Alfa ponle una tecla a «Pregúntale a Lya» y otra a «Lo que te ofrece Lya», que hace lo de su botón.",
+		boton = L["Abrir tus atajos"],
+		abrir = function() local B = rawget(_G, "AlfaBienvenida") if B and B.Teclas then B.Teclas() end end },
 	-- 1.2.9
 	{ id = "muerte", icono = "ic-huella", modulo = "lya", pregunta = "Me morí, ¿corro por mi cuerpo o voy con el ángel?",
 		respuesta = "Cuando sales como espíritu te digo a cuánto está tu cuerpo, lo que cuesta el ángel a tu nivel y qué conviene. La flecha te lleva." },
@@ -519,6 +527,17 @@ BINDING_NAME_ALFA_LYA_BOTON = L["Lo que te ofrece Lya (su botón)"]
 local API = AlfaLya
 if type(API) == "table" then
 	API.Guia = function(pregunta, tema) return Gi.Abrir(pregunta, tema) end
+	-- 1.3.6: abre su ventana ya buscando `texto` (el buscador de Alfa, cuando
+	-- lo que escribiste no está en los ajustes).
+	API.Buscar = function(texto)
+		if not Gi.Abrir() then return false end
+		if type(texto) == "string" and texto ~= "" and ui.buscador and ui.buscador.SetTexto then
+			ui.buscador:SetTexto(texto)
+			ui.tema = nil
+			llenar()
+		end
+		return true
+	end
 	API.Ensenar = function(p)
 		if type(p) ~= "table" then return false end
 		local c = {}

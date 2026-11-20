@@ -337,18 +337,25 @@ local function acomodarTitulo()
 	c.Titulo:SetPoint("RIGHT", izq, "LEFT", -ESP.base, 0)
 end
 
-local function pintarBotones()
+-- 1.3.6: el reloj de 0,5 s la llama aunque nada cambie: si el estado de los
+-- botones es el mismo que el último pintado, no se toca nada. forzar: al abrir.
+local ultimoBotones
+local function pintarBotones(forzar)
 	if not F then return end
 	local cerca = hayCerca()
+	local limpio, capas, marcas, n = Capas.Limpio() and true or false, Panel.Visible() and true or false, PM.Visible() and true or false, tonumber(Mk.Cuantos()) or 0
+	local estado = format("%s%s%s%s%d", tostring(cerca), tostring(limpio), tostring(capas), tostring(marcas), n)
+	if not forzar and estado == ultimoBotones then return end
+	ultimoBotones = estado
 	if F.BCerca:IsShown() ~= cerca then
 		F.BCerca:SetShown(cerca)
 		acomodarTitulo()
 	end
-	F.BLimpio:SetMarcado(Capas.Limpio())
-	F.BCapas:SetMarcado(Panel.Visible())
-	F.BMarcas:SetMarcado(PM.Visible())
-	local n = Mk.Cuantos()
-	F.Cuenta:SetText(n > 0 and tostring(n) or "")
+	F.BLimpio:SetMarcado(limpio)
+	F.BCapas:SetMarcado(capas)
+	F.BMarcas:SetMarcado(marcas)
+	-- 1.3.6: con K.Escribir, como todo texto de Alfa.
+	K.Escribir(F.Cuenta, n > 0 and tostring(n) or "")
 end
 
 ---------------------------------------------------------------------------
@@ -591,7 +598,7 @@ local function menuAjustes(boton)
 	local opciones = {}
 	for _, o in ipairs(M.OpcionesEstilo()) do opciones[#opciones + 1] = o end
 	opciones[#opciones + 1] = { separador = true }
-	opciones[#opciones + 1] = { valor = "opciones", texto = L["Más opciones de Mundo"], icono = "ic-ajustes" }
+	opciones[#opciones + 1] = { valor = "opciones", texto = L["Más opciones en la página Mundo"], icono = "ic-ajustes" }
 	local actual = A.Get("mundo.estiloMapa") == "clasico" and "clasico" or "terreno"
 	K.Menu(boton, opciones, actual, function(v)
 		if v == "opciones" then
@@ -622,7 +629,7 @@ local function construir()
 		ancho = w, alto = h,
 		alAbrir = function(self)
 			mostrado.zona, mostrado.coords = -1, nil
-			pintarBotones()
+			pintarBotones(true)
 			actualizarTitulo()
 		end,
 		alCerrar = function()
@@ -636,7 +643,7 @@ local function construir()
 
 	-- Los botones de la cabecera, de derecha a izquierda junto a la X.
 	F.BAjustes = botonCab("ic-ajustes", L["Ajustes del mapa"], function(self) menuAjustes(self) end,
-		L["El estilo del mapa (terreno como el minimapa, o el arte clásico) y las opciones de Mundo."])
+		L["El estilo del mapa (terreno como el minimapa, o el arte clásico) y la página Mundo, con todas las opciones del mapa."]) -- 1.3.6: Mundo es la página del mapa de Alfa
 	F.BAjustes:SetPoint("RIGHT", c.Cerrar, "LEFT", -ESP.xs, 0)
 	F.BJuego = botonCab("ic-mapa", L["Ir al mapa del juego"], function() V.AlMapaDelJuego() end,
 		L["Abre el mapa del juego en esta misma zona. En combate el mapa del juego no se abre desde Alfa."])

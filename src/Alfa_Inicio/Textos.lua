@@ -186,7 +186,8 @@ M.EN = {
 	["Reparar"] = "Repair",
 	["Entrenador"] = "Trainer",
 	["Ir"] = "Go",
-	["Tu buff"] = "Your buff",
+	-- 1.3.6
+	["Tu mejora de clase"] = "Your class buff",
 	["Vendedor"] = "Vendor",
 	["Nada que reparar"] = "Nothing to repair",
 	["%s al %d%%: ¡repara ya!"] = "%s at %d%%: repair now!",
@@ -228,7 +229,8 @@ M.EN = {
 	["Durabilidad"] = "Durability",
 	["Bolsas"] = "Bags",
 	["Habilidades por entrenar"] = "Skills to train",
-	["Buff fuera de combate"] = "Buff out of combat",
+	-- 1.3.6
+	["Mejora de clase fuera de combate"] = "Class buff out of combat",
 	["Descanso"] = "Rest",
 	["Avisos y diario"] = "Alerts and journal",
 	["Avisarme cuando mi equipo se gaste"] = "Warn me when my gear wears down",
@@ -252,7 +254,8 @@ M.EN = {
 	["Cada 2 niveles"] = "Every 2 levels",
 	["Cada nivel"] = "Every level",
 	["No [apagado]"] = "Off",
-	["Avisarme si me falta mi buff fuera de combate"] = "Remind me when my buff is missing out of combat",
+	-- 1.3.6
+	["Avisarme si me falta la mejora de mi clase fuera de combate"] = "Remind me when my class buff is missing out of combat",
 	["Grito de batalla para el guerrero; Intelecto Arcano y una armadura para el mago; Entereza y Fuego interno para el sacerdote; y lo suyo para cada clase."] = "Battle Shout for warriors; Arcane Intellect and an armor for mages; Fortitude and Inner Fire for priests; and the right one for each class.",
 	["Repetir a lo más cada"] = "Repeat at most every",
 	["%d min"] = "%d min",
@@ -292,7 +295,8 @@ M.EN = {
 	["Cerrar"] = "Close",
 	["Así se ven tus avisos"] = "This is how your alerts look",
 	["Arrástralo para moverlo"] = "Drag it to move it",
-	["Alfa te avisa aquí de lo importante: equipo por reparar, bolsas llenas, habilidades nuevas, tu buff y tu descanso."] = "Alfa tells you what matters here: gear to repair, full bags, new skills, your buff and your rest.",
+	-- 1.3.6
+	["Alfa te avisa aquí de lo importante: equipo por reparar, bolsas llenas, habilidades nuevas, la mejora de tu clase y tu descanso."] = "Alfa tells you what matters here: gear to repair, full bags, new skills, your class buff and your rest.",
 	["¡De vuelta con la manada!"] = "Back with the pack!",
 	["Tu última sesión: %s · %s"] = "Your last session: %s · %s",
 	["Una sesión tranquila: nada nuevo que contar."] = "A quiet session: nothing new to report.",
@@ -442,7 +446,8 @@ M.EN = {
 	["Entrenador al día"] = "Trainer up to date",
 	["Nada nuevo por aprender."] = "Nothing new to learn.",
 	["Tu entrenador de clase tiene algo para ti."] = "Your class trainer has something for you.",
-	["Buff activo"] = "Buff active",
+	-- 1.3.6
+	["Mejora de clase puesta"] = "Class buff on",
 	["Lo que tu clase se pone antes de pelear está activo."] = "What your class puts on before a fight is active.",
 	["Descansando: %d %%"] = "Resting: %d %%",
 	["Descanso %d %%"] = "Rested %d %%",
@@ -684,7 +689,9 @@ M.EN = {
 	["Mazmorras en el camino"] = "Dungeons along the way",
 	["Tus días de caza"] = "Your hunting days",
 	["Todavía no hay guías para tu camino"] = "No guides for your road yet",
-	["Cuando tengas las guías de tu facción, aquí sale tu ruta al 60."] = "Once you have your faction's guides, your route to 60 shows up here.",
+	-- 1.3.6
+	["No encontramos las guías de tu facción. Puede que la instalación de Alfa haya quedado incompleta: «Revisar Alfa» te dice qué falta y cómo arreglarlo."] = "We couldn't find your faction's guides. Alfa's installation may be incomplete: \"Check Alfa\" tells you what's missing and how to fix it.",
+	["Revisar Alfa"] = "Check Alfa",
 	["tu camino al 60"] = "your road to 60",
 	-- 1.2.9: ajustes
 	["Revisar sola al entrar a una mazmorra"] = "Check by itself when entering a dungeon",
@@ -696,7 +703,8 @@ M.EN = {
 	["Te dice qué comprar a tu nivel y te lleva al vendedor de comida más cercano. El agua, solo si usas maná."] = "It tells you what to buy at your level and takes you to the nearest food vendor. Water only if you use mana.",
 	["Avisar cuando me queden"] = "Tell me when I have this many left",
 	["Comida y agua"] = "Food and water",
-	["Alfa te avisa del equipo gastado, las bolsas llenas, lo que puedes entrenar, tu buff, tu descanso, tu comida y lo que te falta para una mazmorra. Aquí eliges cuáles y cuándo."] = "Alfa tells you about worn gear, full bags, what you can train, your buff, your rest, your food and what you're missing for a dungeon. Here you choose which and when.",
+	-- 1.3.6
+	["Alfa te avisa del equipo gastado, las bolsas llenas, lo que puedes entrenar, la mejora de tu clase, tu descanso, tu comida y lo que te falta para una mazmorra. Aquí eliges cuáles y cuándo."] = "Alfa tells you about worn gear, full bags, what you can train, your class buff, your rest, your food and what you're missing for a dungeon. Here you choose which and when.",
 	-- 1.2.9: Lya
 	["Tengo poco tiempo, ¿qué hago?"] = "I don't have much time, what should I do?",
 	["En Hoy, en «¿Cuánto tiempo tienes?», elige 30 minutos, 1 hora, 2 o los que quieras. Armo tu plan con tu ritmo y, con «Empezar», la flecha te lleva paso por paso."] = "On Today, in \"How much time do you have?\", pick 30 minutes, 1 hour, 2 or whatever you like. I build your plan at your pace and, with \"Start\", the arrow takes you step by step.",

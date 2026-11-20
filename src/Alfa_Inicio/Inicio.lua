@@ -119,7 +119,8 @@ local C = {
 	entrenarMin = { kind = "slider", key = "inicio.entrenarMin", label = L["Desde cuántas habilidades"], min = 1, max = 5, step = 1,
 		format = function(v) return format("%d", v) end, child = true, disabled = apagado("recEntrenar"),
 		search = "entrenar, habilidades, train, spells" },
-	recBuff = { kind = "toggle", key = "inicio.recBuff", label = L["Avisarme si me falta mi buff fuera de combate"],
+	-- 1.3.6: «la mejora de tu clase» en vez de «buff».
+	recBuff = { kind = "toggle", key = "inicio.recBuff", label = L["Avisarme si me falta la mejora de mi clase fuera de combate"],
 		help = L["Grito de batalla para el guerrero; Intelecto Arcano y una armadura para el mago; Entereza y Fuego interno para el sacerdote; y lo suyo para cada clase."],
 		search = "buff, grito de batalla, battle shout, aura, armadura, intelecto, reminder" },
 	buffCada = { kind = "slider", key = "inicio.buffCada", label = L["Repetir a lo más cada"], min = 1, max = 10, step = 1,
@@ -536,9 +537,25 @@ local function tiempoQueFalta()
 	return format(L["como %d h %d min"], h, r)
 end
 
+-- 1.3.6: la última tarjeta de un paso en marcha y su paso, para que el reloj
+-- de cada segundo solo vuelva a medir la distancia (distanciaPaso).
+local pasoVivo
+
+-- Las insignias de la tarjeta: la distancia (y «Hacia: X») de la flecha.
+local function insigniasPaso(info)
+	local insignias = {}
+	local dist, tono, hacia = distancia()
+	if dist then
+		insignias[#insignias + 1] = { dist, tono, "ic-flecha" }
+		if hacia and diceAlgoMas(hacia, info) then insignias[#insignias + 1] = { format(L["Hacia: %s"], hacia), "neutro" } end
+	end
+	return insignias
+end
+
 -- Los datos de la tarjeta grande, o nil (sin guía: los caminos de arriba la eligen).
 -- fin = true: la guía ya terminó (no cuenta como una guía en marcha).
 local function tarjetaPaso()
+	pasoVivo = nil
 	local info = pasoActual()
 	if not info then return nil end
 	-- 1.2.6: «Desbloquear» terminada: ya puedes tomar la misión.
@@ -585,12 +602,7 @@ local function tarjetaPaso()
 	for i, m in ipairs(info.metas or {}) do lineas[i] = m.texto end
 	-- El avance es uno solo, el de la barra: los pasos hechos de la guía
 	-- (Engine.GetProgress, el mismo de la ventana de guía y de Rutas).
-	local insignias = {}
-	local dist, tono, hacia = distancia()
-	if dist then
-		insignias[#insignias + 1] = { dist, tono, "ic-flecha" }
-		if hacia and diceAlgoMas(hacia, info) then insignias[#insignias + 1] = { format(L["Hacia: %s"], hacia), "neutro" } end
-	end
+	local insignias = insigniasPaso(info)
 	local d = {
 		icono = VERBO[info.verbo] or "ic-ruta", tono = "acento", sobre = L["Tu siguiente paso"],
 		titulo = info.titulo, texto = #lineas > 0 and table.concat(lineas, "\n") or nil, lineas = 4,
@@ -606,7 +618,16 @@ local function tarjetaPaso()
 		local falta = tiempoQueFalta()
 		if falta then d.progreso.texto = d.progreso.texto .. DOT .. falta end
 	end
+	pasoVivo = { d = d, info = info }
 	return d
+end
+
+-- 1.3.6: la misma tarjeta de la última vez con la distancia de ahora (lo
+-- único que cambia cada segundo), o nil si no hay un paso en marcha.
+local function distanciaPaso()
+	if not pasoVivo then return nil end
+	pasoVivo.d.insignias = insigniasPaso(pasoVivo.info)
+	return pasoVivo.d
 end
 
 -- Una firma de lo que la tarjeta dice: si no cambió, no se vuelve a acomodar.
@@ -1157,9 +1178,10 @@ local function revision(enAlertas)
 	end
 	local b = st.buff
 	if b.estado == "ok" then
-		t[#t + 1] = { L["Buff activo"], "exito", "ic-aviso", L["Tu buff"], L["Lo que tu clase se pone antes de pelear está activo."] }
+		-- 1.3.6: «mejora de tu clase» en vez de «buff».
+		t[#t + 1] = { L["Mejora de clase puesta"], "exito", "ic-aviso", L["Tu mejora de clase"], L["Lo que tu clase se pone antes de pelear está activo."] }
 	elseif (b.estado == "falta" or b.estado == "poco") and b.nombre and not enAlertas.buff then
-		t[#t + 1] = { format(L["Te falta %s"], b.nombre), "aviso", "ic-aviso", L["Tu buff"], L["Lánzalo antes de la siguiente pelea."] }
+		t[#t + 1] = { format(L["Te falta %s"], b.nombre), "aviso", "ic-aviso", L["Tu mejora de clase"], L["Lánzalo antes de la siguiente pelea."] }
 	end
 	local d = st.descanso
 	if not d.maximo then
@@ -1323,7 +1345,8 @@ local function gruposAvisos(padre)
 			end })
 	end
 	g[#g + 1] = ent
-	local buf = K.GrupoAjustes(padre, { titulo = L["Buff fuera de combate"] })
+	-- 1.3.6: «la mejora de tu clase» en vez de «buff».
+	local buf = K.GrupoAjustes(padre, { titulo = L["Mejora de clase fuera de combate"] })
 	buf:Fila({ titulo = C.recBuff.label, texto = C.recBuff.help, control = interruptor("recBuff") })
 	buf:Fila({ titulo = C.buffCada.label, hija = true, activa = encendido("recBuff"), control = deslizador(C.buffCada) })
 	buf:Fila({ titulo = C.buffQueda.label, hija = true, activa = encendido("recBuff"), control = deslizador(C.buffQueda) })
@@ -1386,7 +1409,8 @@ local function nuevosAjustes(padre)
 		local ver = N.Get("inicio", "verAjustes") and true or false
 		self.Seccion:Set(L["Tus avisos"], { enlace = { texto = ver and L["Ocultar ajustes"] or L["Ajustar"],
 			alClic = function() N.Set("inicio", "verAjustes", not N.Get("inicio", "verAjustes")) end } })
-		K.Escribir(self.Nota.Texto, L["Alfa te avisa del equipo gastado, las bolsas llenas, lo que puedes entrenar, tu buff, tu descanso, tu comida y lo que te falta para una mazmorra. Aquí eliges cuáles y cuándo."])
+		-- 1.3.6: «la mejora de tu clase» en vez de «buff».
+		K.Escribir(self.Nota.Texto, L["Alfa te avisa del equipo gastado, las bolsas llenas, lo que puedes entrenar, la mejora de tu clase, tu descanso, tu comida y lo que te falta para una mazmorra. Aquí eliges cuáles y cuándo."])
 		K.Mostrar(self.Nota, not ver)
 		if ver and not self.grupos then
 			self.grupos = gruposAvisos(self)
@@ -1680,8 +1704,17 @@ abrirCamino = function()
 		VC.rejMaz = p:Agregar(K.Rejilla(p, { min = 420, gap = ESP.s }), { espacio = ESP.s })
 		VC.secDias = p:Agregar(K.Seccion(p, L["Tus días de caza"]), { espacio = ESP.l })
 		VC.rejDias = p:Agregar(K.Rejilla(p, { min = 260, gap = ESP.s }), { espacio = ESP.s })
+		-- 1.3.6: sin guías, qué hacer: puede que la instalación esté incompleta;
+		-- «Revisar Alfa» abre el diagnóstico (/alfa diagnostico de Alfa_Bienvenida).
 		VC.vacio = p:Agregar(K.Vacio(p, { lobo = "dormido", titulo = L["Todavía no hay guías para tu camino"],
-			texto = L["Cuando tengas las guías de tu facción, aquí sale tu ruta al 60."] }), { espacio = ESP.l })
+			texto = L["No encontramos las guías de tu facción. Puede que la instalación de Alfa haya quedado incompleta: «Revisar Alfa» te dice qué falta y cómo arreglarlo."],
+			accion = { texto = L["Revisar Alfa"], icono = "ic-buscar", alClic = function()
+				if rawget(_G, "AlfaBienvenida") and type(A.RunCommand) == "function" then
+					A.RunCommand("diagnostico")
+				else
+					N.Abrir("bienvenida")
+				end
+			end } }), { espacio = ESP.l })
 		VC.acomodar = function()
 			if not (v:IsShown() and VC.pila) then return end
 			local ancho = v:AnchoCuerpo()
@@ -1823,15 +1856,25 @@ P.Relayout = relayoutPronto
 
 -- Cada segundo (y cuando un recordatorio cambia algo): lo que se mueve solo.
 -- Si algo cambió de forma (una alerta nueva, otro paso), se acomoda todo.
-function P.Pintar()
+-- 1.3.6: las alertas y la tarjeta del paso completa se revisan cada 3 s
+-- (CADA_COMPLETO); en los otros segundos solo la distancia de la tarjeta. Un
+-- paso nuevo o una guía nueva ya rehacen la página por su mensaje (STEP_CHANGED...).
+-- P.Pintar() (lo llama Recordatorios.lua cuando cambia algo) revisa todo.
+local CADA_COMPLETO = 3
+local function pintar(completo)
 	local view = P.view
 	if not (view and view:IsVisible()) or P.acomodando or not P.tablero then return end
-	local lista = alertas()
-	local paso = tarjetaPaso()
-	if firmaAlertas(lista) ~= P.firmaAlertas then return relayoutPronto() end
+	local paso, mirar
+	if completo then
+		local lista = alertas()
+		if firmaAlertas(lista) ~= P.firmaAlertas then return relayoutPronto() end
+		paso, mirar = tarjetaPaso(), true
+	elseif pasoVivo then
+		paso, mirar = distanciaPaso(), true
+	end
 	-- Una guía que empieza o termina cambia el orden de arriba.
-	if enGuia(paso) ~= P.enGuia then return relayoutPronto() end
-	local firma = firmaPaso(paso)
+	if mirar and enGuia(paso) ~= P.enGuia then return relayoutPronto() end
+	local firma = mirar and firmaPaso(paso) or P.firmaPaso
 	if firma ~= P.firmaPaso then
 		-- Solo cambió la distancia: la tarjeta se acomoda sola si su alto no cambia.
 		local t = P.tablero
@@ -1843,11 +1886,19 @@ function P.Pintar()
 	end
 	if P.numeros:Repintar() or P.clase:Repintar() or P.diario:Repintar() or P.hora:Repintar() or P.camino:Repintar() then return relayoutPronto() end
 end
+function P.Pintar() return pintar(true) end
+
+-- 1.3.6: el latido de cada segundo; uno de cada CADA_COMPLETO revisa todo.
+local function latido()
+	P.tick = (P.tick or 0) + 1
+	return pintar(P.tick % CADA_COMPLETO == 0)
+end
 
 function P.AlMostrar()
 	if P.ticker then P.ticker:Cancel() end
 	CL.Sucio()
-	P.ticker = N.Ticker("inicio.pagina", 1, P.Pintar)
+	P.tick = 0 -- 1.3.6: la revisión completa, a los 3 s de abrir
+	P.ticker = N.Ticker("inicio.pagina", 1, latido)
 end
 
 function P.AlOcultar()

@@ -360,7 +360,7 @@ step("Las guaridas en vivo y el calendario", function()
       ui.tablon:Llenar()
       check((ui.tablon.Vacio:GetText() or "") ~= "", "el tablón vacío no explica qué hacer")
       ui.notas:Llenar()
-      check(ui.notas.Spot and ui.notas.Spot.Texto:GetText() == "Spot aquí", "falta «Spot aquí» en las notas")
+      check(ui.notas.Spot and ui.notas.Spot.Texto:GetText() == "Buen lugar aquí", "falta «Buen lugar aquí» en las notas")
     end
     for _, c in pairs(Ci.Lista()) do if c.mia then Ci.Quitar(c.llave) end end
   end)

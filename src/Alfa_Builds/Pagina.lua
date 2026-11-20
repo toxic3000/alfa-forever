@@ -19,6 +19,7 @@
 --
 --   P.Construir(view) ; P.Rehacer() ; P.Ir(vista) ; P.Visible()
 
+-- 1.3.6: en lo que lees dice «plan de talentos» en vez de «build» (las claves de datos siguen igual).
 local ADDON, M = ...
 local N, A, L = M.N, M.A, M.L
 local K = N.Kit
@@ -169,21 +170,21 @@ local function ahora(e)
 	if not b then
 		if not M.DatosClase() then
 			return { lobo = "dormido", tono = "neutro", sobre = L["Tus talentos"],
-				titulo = L["Alfa todavía no tiene builds para tu clase"],
+				titulo = L["Alfa todavía no tiene planes de talentos para tu clase"],
 				texto = L["Si alguien de la manada te pasa uno, impórtalo y Alfa te guía con él punto por punto."],
-				accion = { texto = L["Importar un build"], icono = "ic-mas", alClic = function() P.Ir("compartir") end } }
+				accion = { texto = L["Importar un plan de talentos"], icono = "ic-mas", alClic = function() P.Ir("compartir") end } }
 		end
-		return { icono = "ic-reloj", tono = "neutro", titulo = L["Alfa está leyendo tu clase"], texto = L["En unos segundos aparece tu build."] }
+		return { icono = "ic-reloj", tono = "neutro", titulo = L["Alfa está leyendo tu clase"], texto = L["En unos segundos aparece tu plan de talentos."] }
 	end
 	if e.foto or not st then
 		return { icono = "ic-reloj", tono = "neutro", sobre = L["Tus talentos"], titulo = L["El juego todavía no carga tu árbol"],
-			texto = L["Abre la ventana de talentos del juego una vez o espera unos segundos: en cuanto Alfa la lea, te dice qué poner. Mientras, abajo ves tu build."],
+			texto = L["Abre la ventana de talentos del juego una vez o espera unos segundos: en cuanto Alfa la lea, te dice qué poner. Mientras, abajo ves tu plan de talentos."],
 			accion = { texto = L["Abrir la ventana de talentos"], icono = "ic-talentos", alClic = abrirVentanaJuego, seguro = seguroTalentos } }
 	end
 	local s = M.Siguiente(e)
 	if not s then
-		return { lobo = "aullando", tono = "exito", sobre = L["Build completo"], titulo = format(L["Tienes todo %s"], b.titulo or ""),
-			texto = format(L["Tus %d puntos están donde tu build los pide. Lo que sigue es el equipo: piezas con las estadísticas que le sirven a tu build."], b.total or 0),
+		return { lobo = "aullando", tono = "exito", sobre = L["Plan completo"], titulo = format(L["Tienes todo %s"], b.titulo or ""),
+			texto = format(L["Tus %d puntos están donde tu plan los pide. Lo que sigue es el equipo: piezas con las estadísticas que le sirven a tu plan."], b.total or 0),
 			accion = { texto = L["Ver mi equipo"], icono = "ic-bolsas", alClic = function() P.Ir("equipo") end } }
 	end
 	local fuera = puntosFuera(st)
@@ -197,14 +198,14 @@ local function ahora(e)
 	local desviado = fuera > 0 and (fuera >= 3 or fuera > st.hechos)
 	if libres == 0 and desviado then
 		local d = { icono = "ic-aviso", tono = "aviso", sobre = L["Tus talentos"], titulo = L["Tus puntos van por otro camino"],
-			texto = format(L["Tienes %d puntos fuera de %s. Alfa nunca quita talentos: para seguir este build, reinicia tus talentos con tu entrenador de clase y Alfa te los vuelve a poner con un clic. O elige el build de la rama que ya llevas."], fuera, b.titulo or ""),
+			texto = format(L["Tienes %d puntos fuera de %s. Alfa nunca quita talentos: para seguir este plan, reinicia tus talentos con tu entrenador de clase y Alfa te los vuelve a poner con un clic. O elige el plan de la rama que ya llevas."], fuera, b.titulo or ""),
 			insignias = { { format(L["%d puntos fuera del plan"], fuera), "aviso" } } }
 		local mia = M.SpecActual()
 		if mia and mia ~= b.spec then
 			local e2 = M.Eleccion()
 			local otro = M.Elegir(e2.objetivo, e2.estilo, mia)
 			if otro and otro.spec == mia then
-				d.accion = { texto = format(L["Seguir un build de %s"], M.NombreSpec(otro)), icono = "ic-seguir",
+				d.accion = { texto = format(L["Seguir un plan de %s"], M.NombreSpec(otro)), icono = "ic-seguir",
 					alClic = function() M.ElegirBuild(e2.objetivo, e2.estilo, mia) P.Rehacer() end }
 			end
 		end
@@ -225,7 +226,7 @@ local function ahora(e)
 	end
 	-- Hay punto libre, pero lo que sigue no está en tu árbol.
 	if libres > 0 then
-		return { icono = "ic-aviso", tono = "aviso", sobre = L["Tus talentos"], titulo = L["Lo que sigue en tu build no está en tu árbol"],
+		return { icono = "ic-aviso", tono = "aviso", sobre = L["Tus talentos"], titulo = L["Lo que sigue en tu plan no está en tu árbol"],
 			texto = format(L["Tienes %d puntos libres, pero los talentos que siguen en %s no existen en tu árbol (puede que cambiaran con un parche). Ponlos a mano en la ventana del juego o prueba otro estilo."], libres, b.titulo or ""),
 			insignias = { { libres == 1 and L["1 punto libre"] or format(L["%d puntos libres"], libres), "acento" } },
 			accion = { texto = L["Abrir la ventana de talentos"], icono = "ic-talentos", alClic = abrirVentanaJuego, seguro = seguroTalentos } }
@@ -324,12 +325,12 @@ local function bloqueCamino(padre)
 		if not exacto then
 			insignias[#insignias + 1] = { L["Lo más parecido"], "aviso" }
 			local o, s = M.Objetivo(el.objetivo), M.Estilo(el.estilo)
-			ayuda = format(L["No hay un build exacto para %s y %s: este es el que más se parece."], o and o.nombre or "", s and s.nombre or "")
+			ayuda = format(L["No hay un plan exacto para %s y %s: este es el que más se parece."], o and o.nombre or "", s and s.nombre or "")
 		end
 		local st = e.st
 		local hechos, total = st and not e.foto and st.hechos or 0, b.total or 0
 		self.Build:Set({
-			icono = "ic-talentos", sobre = L["Tu build"], titulo = b.titulo or b.id, texto = b.resumen, lineas = 3,
+			icono = "ic-talentos", sobre = L["Tu plan de talentos"], titulo = b.titulo or b.id, texto = b.resumen, lineas = 3,
 			insignias = insignias, ayuda = ayuda,
 			progreso = (total > 0 and not e.foto) and { actual = hechos, total = total, huellas = true,
 				texto = format(L["%d de %d puntos"], hechos, total) } or nil,
@@ -447,7 +448,7 @@ local function filaPlan(padre)
 		self.alfaBorde = (not foto and x.estado == "siguiente") and "acento" or (x.estado == "hecho" and not foto) and "exito" or "lineaFuerte"
 		self.Marco:Color(self.alfaBorde)
 		self:SetAlpha((x.estado == "hecho" and not foto) and 0.7 or 1)
-		self.lineas = { { format(L["Puntos %d a %d de tu build (niveles %d a %d)."], x.desde, x.hasta, nivelDe(x.desde), nivelDe(x.hasta)), "acento" } }
+		self.lineas = { { format(L["Puntos %d a %d de tu plan (niveles %d a %d)."], x.desde, x.hasta, nivelDe(x.desde), nivelDe(x.hasta)), "acento" } }
 	end
 	function f:Acomodar(ancho)
 		local pad = ESP.base
@@ -593,8 +594,8 @@ local function construirTalentos()
 	local av = K.GrupoAjustes(t.Extra, { titulo = L["Avisos"] })
 	av:Fila({ titulo = L["Avisarme del talento que toca"], control = interruptor("builds.aviso"),
 		texto = L["Al subir de nivel (y al entrar, si te quedan puntos), un aviso dice qué talento poner, con el botón para aplicarlo."] })
-	av:Fila({ titulo = L["Comparar equipo con mi build"], control = interruptor("builds.escalaAuto"),
-		texto = L["Al elegir un build, las flechas de mejora de tus bolsas valoran lo que ese build necesita."] })
+	av:Fila({ titulo = L["Comparar equipo con mi plan de talentos"], control = interruptor("builds.escalaAuto"),
+		texto = L["Al elegir un plan de talentos, las flechas de mejora de tus bolsas valoran lo que ese plan necesita."] })
 	if A.Get("qol.levelUpSpells") ~= nil then
 		av:Fila({ titulo = L["Avisar los hechizos nuevos para entrenar"], control = interruptor("qol.levelUpSpells"),
 			texto = L["Al subir de nivel, un aviso dice qué aprender, cuánto cuesta y con qué entrenador, con el botón Llévame."] })
@@ -668,7 +669,7 @@ local function construirTalentos()
 		local mas = {
 			{ icono = "ic-bolsas", titulo = L["Equipo y estadísticas"], texto = L["Qué estadísticas buscar y lo mejor que puedes usar en tu nivel."],
 				alClic = function() P.Ir("equipo") end, secundaria = { texto = L["Abrir"], alClic = function() P.Ir("equipo") end } },
-			{ icono = "ic-manada", titulo = L["Compartir con la manada"], texto = L["Pasa tu build a un amigo o usa el que te pasen."],
+			{ icono = "ic-manada", titulo = L["Compartir con la manada"], texto = L["Pasa tu plan de talentos a un amigo o usa el que te pasen."],
 				insignias = n > 0 and { { n == 1 and L["1 importado"] or format(L["%d importados"], n), "neutro" } } or nil,
 				alClic = function() P.Ir("compartir") end, secundaria = { texto = L["Abrir"], alClic = function() P.Ir("compartir") end } },
 		}
@@ -864,7 +865,7 @@ end
 local function construirEquipo()
 	local t = K.Tablero(view, { margen = N.MargenPagina(), accion = "estado",
 		encabezado = { icono = "ic-bolsas", sobre = L["Talentos"], titulo = L["Equipo y estadísticas"],
-			subtitulo = L["Lo que tu build necesita de tu equipo y dónde conseguirlo."] } })
+			subtitulo = L["Lo que tu plan necesita de tu equipo y dónde conseguirlo."] } })
 	encabezado(t)
 	local g = grupo(t.Extra, L["Qué estadísticas buscar"])
 	ui.stats = g:Agregar(bloqueStats(g))
@@ -885,8 +886,8 @@ local function construirEquipo()
 	local function llenar()
 		local b = M.BuildElegido()
 		if not b then
-			t:SetAccion({ lobo = "dormido", tono = "neutro", titulo = L["Primero elige tu build"],
-				texto = L["Con tu build, Alfa sabe qué estadísticas te sirven y qué equipo buscar."],
+			t:SetAccion({ lobo = "dormido", tono = "neutro", titulo = L["Primero elige tu plan de talentos"],
+				texto = L["Con tu plan de talentos, Alfa sabe qué estadísticas te sirven y qué equipo buscar."],
 				accion = { texto = L["Volver a Talentos"], alClic = function() P.Ir("talentos") end } })
 			K.Mostrar(t.Extra, false)
 			return
@@ -895,17 +896,17 @@ local function construirEquipo()
 		-- Los pesos de las flechas de mejora.
 		local activa = M.Pesos.Activa() == b.id
 		if activa then
-			t:SetAccion({ icono = "ic-exito", tono = "exito", titulo = L["Tus flechas de mejora usan tu build"],
+			t:SetAccion({ icono = "ic-exito", tono = "exito", titulo = L["Tus flechas de mejora usan tu plan"],
 				texto = format(L["Al comparar objetos, Alfa valora más lo que pide %s: lo de arriba en la lista de estadísticas."], b.titulo or ""),
 				estado = { texto = L["Activo"], tono = "exito" },
 				secundaria = { texto = L["Volver a automático"], alClic = function() M.Pesos.Desactivar() P.Rehacer() end } })
 		else
 			local G = A.Gear
 			local _, nombre = G and G.GetSpec and G.GetSpec()
-			t:SetAccion({ icono = "ic-aviso", tono = "aviso", titulo = L["Tus flechas de mejora no usan tu build"],
-				texto = format(L["Ahora usan: %s. Activa los pesos de %s para que Alfa compare el equipo como lo pide tu build."], tostring(nombre or L["automático"]), b.titulo or ""),
+			t:SetAccion({ icono = "ic-aviso", tono = "aviso", titulo = L["Tus flechas de mejora no usan tu plan"],
+				texto = format(L["Ahora usan: %s. Activa los pesos de %s para que Alfa compare el equipo como lo pide tu plan."], tostring(nombre or L["automático"]), b.titulo or ""),
 				estado = { texto = L["Sin activar"], tono = "aviso" },
-				accion = { texto = L["Usar los pesos de mi build"], icono = "ic-exito", alClic = function()
+				accion = { texto = L["Usar los pesos de mi plan"], icono = "ic-exito", alClic = function()
 					local ok, msg = M.Pesos.Activar(b)
 					if not ok and msg then N.Imprimir(msg) end
 					P.Rehacer()
@@ -926,7 +927,7 @@ local function construirEquipo()
 		elseif not hayRes then
 			ui.buscar:Set({ icono = "ic-buscar", titulo = L["Busca lo mejor que puedes usar"],
 				texto = ui.msgEquipo or (res and L["No se encontró nada mejor cerca de tu nivel. Vuelve a buscar al subir unos niveles."])
-					or L["Alfa revisa su base de objetos, se queda con lo que tu clase puede usar cerca de tu nivel y lo compara con lo que llevas, con los pesos de tu build."],
+					or L["Alfa revisa su base de objetos, se queda con lo que tu clase puede usar cerca de tu nivel y lo compara con lo que llevas, con los pesos de tu plan."],
 				accion = { texto = L["Buscar equipo para mi nivel"], icono = "ic-buscar", alClic = buscarEquipo } })
 		else
 			ui.equipo:Llenar(res)
@@ -998,11 +999,11 @@ local function filaImportado(padre)
 	f.Rama = K.Texto(f, "pequeno", "textoTenue")
 	f.Borrar = K.Boton(f, L["Borrar"], function(self)
 		local id = self:GetParent().id
-		K.Dialogo({ titulo = L["¿Borrar este build?"], peligro = true, aceptar = L["Borrar"],
+		K.Dialogo({ titulo = L["¿Borrar este plan?"], peligro = true, aceptar = L["Borrar"],
 			texto = L["Se quita de tu lista. Si lo necesitas otra vez, vuelve a importar su cadena."],
 			alAceptar = function() M.Compartir.Borrar(id) P.Rehacer() end })
 	end, { tipo = "fantasma", tam = "chico", icono = "ic-cerrar" })
-	f.Usar = K.Boton(f, L["Seguir este build"], function(self)
+	f.Usar = K.Boton(f, L["Seguir este plan"], function(self)
 		M.UsarBuild(self:GetParent().id)
 		P.Ir("talentos")
 	end, { tipo = "secundario", tam = "chico", icono = "ic-seguir" })
@@ -1011,7 +1012,7 @@ local function filaImportado(padre)
 		K.Escribir(self.Nombre, b.titulo or "?")
 		K.Escribir(self.Rama, M.NombreSpec(b) or "")
 		self.Usar:SetActivo(not actual)
-		self.Usar:SetTexto(actual and L["Lo estás siguiendo"] or L["Seguir este build"])
+		self.Usar:SetTexto(actual and L["Lo estás siguiendo"] or L["Seguir este plan"])
 	end
 	function f:Acomodar(ancho)
 		local pad = ESP.base
@@ -1067,11 +1068,11 @@ end
 local function construirCompartir()
 	local t = K.Tablero(view, { margen = N.MargenPagina(), accion = "accion",
 		encabezado = { icono = "ic-manada", sobre = L["Talentos"], titulo = L["Compartir con la manada"],
-			subtitulo = L["Una cadena de texto lleva un build completo: la copias, la pasas y la pegan."] } })
+			subtitulo = L["Una cadena de texto lleva un plan de talentos completo: la copias, la pasas y la pegan."] } })
 	encabezado(t)
 	ui.copia = t:AgregarBloque(campo(t.Extra, { soloLectura = true, alto = 76 }), { espacio = ESP.base })
 	ui.msgCopia = t:AgregarBloque(parrafo(t.Extra, "nota", "aviso"), { espacio = ESP.s })
-	local g = grupo(t.Extra, L["Importar un build"])
+	local g = grupo(t.Extra, L["Importar un plan de talentos"])
 	ui.impTexto = g:Agregar(parrafo(g, "nota", "textoSuave"))
 	ui.impTexto:Set(L["Pega aquí una cadena que empiece con ALFA1; (Ctrl + V) y pulsa Importar. Alfa revisa cada talento contra tu árbol."])
 	ui.entrada = g:Agregar(campo(g, { alto = 76 }))
@@ -1098,7 +1099,7 @@ local function construirCompartir()
 	end
 	g:Agregar(pie)
 	t:AgregarBloque(g)
-	g = grupo(t.Extra, L["Tus builds importados"])
+	g = grupo(t.Extra, L["Tus planes importados"])
 	ui.gImportados = g
 	ui.importados = g:Agregar(bloqueImportados(g))
 	t:AgregarBloque(g)
@@ -1110,9 +1111,9 @@ local function construirCompartir()
 		local nombre = ui.exportando and L["tus talentos de ahora"] or (b and b.titulo) or ""
 		t:SetAccion({ icono = "ic-manada", sobre = L["Compartir"],
 			titulo = b and format(L["Comparte %s"], nombre) or L["Comparte tus talentos"],
-			texto = L["Copia la cadena de abajo y pásala por el chat o por Discord: con Alfa la pegan en Importar y tienen tu mismo build."],
+			texto = L["Copia la cadena de abajo y pásala por el chat o por Discord: con Alfa la pegan en Importar y tienen tu mismo plan de talentos."],
 			accion = { texto = L["Seleccionar para copiar"], icono = "ic-exito", alClic = function() ui.copia:Copiar() end },
-			secundaria = ui.exportando and { texto = format(L["Mejor %s"], b and b.titulo or L["mi build"]), alClic = function() ui.exportando = nil P.Rehacer() end }
+			secundaria = ui.exportando and { texto = format(L["Mejor %s"], b and b.titulo or L["mi plan"]), alClic = function() ui.exportando = nil P.Rehacer() end }
 				or { texto = L["Usar mis talentos de ahora"], alClic = function()
 					local s, razon = M.Compartir.ExportarActual()
 					ui.exportando = s
@@ -1124,7 +1125,7 @@ local function construirCompartir()
 		local lista = M.Compartir.Lista()
 		-- Sin importados, la sección no se muestra: la de arriba ya dice cómo.
 		K.Mostrar(ui.gImportados, #lista > 0)
-		ui.gImportados.Seccion:Set(L["Tus builds importados"], { cuenta = #lista })
+		ui.gImportados.Seccion:Set(L["Tus planes importados"], { cuenta = #lista })
 		ui.importados:Llenar(lista, b and b.id)
 	end
 	return t, llenar

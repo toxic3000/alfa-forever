@@ -82,8 +82,11 @@ function M.MostrarListaSonidos()
 		for i, id in ipairs(ids) do partes[i] = tostring(id) end
 		N.Imprimir(string.format(L["Sonidos en tu lista (%d): %s"], #ids, table.concat(partes, ", ")))
 	end
+	-- 1.3.6: un aviso con el botón que la enciende, en vez de pedir un comando.
 	if not M.Get("silenciarLista") then
-		N.Imprimir(L["La lista está apagada: enciende «Tu lista de sonidos» en Comodidades (/alfa comodidades)."])
+		N.Kit.Aviso({ titulo = L["Tu lista de sonidos está apagada"], icono = "ic-comodidades", tono = "aviso",
+			texto = L["Mientras esté apagada, los sonidos de tu lista se siguen oyendo."],
+			accion = { texto = L["Encenderla"], alClic = function() N.Set(M.ID, "silenciarLista", true) end } })
 	end
 end
 
@@ -110,4 +113,4 @@ A.RegisterCommand("silenciar", function(resto)
 		N.Imprimir(string.format(L["Se agregó el sonido %d a tu lista."], id))
 	end
 	aplicarLista()
-end, L["Silenciar un sonido por su número (FileDataID)"])
+end, L["Silenciar un sonido del juego por su número"]) -- 1.3.6: sin «FileDataID»

@@ -19,6 +19,7 @@
 -- La pregunta de compartir (P.Preguntar) es un diálogo del Kit; la usa
 -- AlfaManada.PreguntarCompartir() (Manada.lua) y el botón de la página.
 
+-- 1.3.6: «Buen lugar aquí» y «Lugares para juntar» en vez de «Spot aquí» y «Spots de farmeo».
 local ADDON, M = ...
 local N = AlfaNucleo
 local A = N.A
@@ -1071,7 +1072,7 @@ local function bloqueNotas(padre)
 			b.Nota = campoTexto(b, L["¿Qué dice la nota?"], function() dejar(b) end)
 			b.Dejar = K.Boton(b, L["Nota aquí"], function() dejar(b) end, { tipo = "primario", icono = "ic-mapa" })
 			-- 1.3.0: un spot de farmeo (su propia capa del mapa).
-			b.Spot = K.Boton(b, L["Spot aquí"], function() dejar(b, "spot") end, { tipo = "secundario", icono = "ic-recoleccion" })
+			b.Spot = K.Boton(b, L["Buen lugar aquí"], function() dejar(b, "spot") end, { tipo = "secundario", icono = "ic-recoleccion" })
 		end,
 		acomodar = function(b, xt, y, w)
 			local bw = K.num(b.Dejar:GetWidth(), 110)
@@ -1093,7 +1094,7 @@ local function bloqueNotas(padre)
 			for _, x in ipairs(activo and No.Lista() or {}) do
 				local zona = U.NombreMapa(U.ZonaDe(x.map)) or ""
 				local partes = { x.de and format(L["De %s"], x.de) or L["Tuya"] }
-				if No.EsSpot(x) then table.insert(partes, 1, L["Spot de farmeo"]) end
+				if No.EsSpot(x) then table.insert(partes, 1, L["Lugar para juntar"]) end
 				if zona ~= "" then partes[#partes + 1] = zona end
 				local hace = U.Hace(U.Reloj() - (x.at or U.Reloj()))
 				if hace then partes[#partes + 1] = hace end
@@ -1104,7 +1105,7 @@ local function bloqueNotas(padre)
 			end
 			return {
 				titulo = L["Tus notas en el mapa"],
-				texto = L["Escribe algo y pulsa «Nota aquí»: queda en tu mapa donde estás parado. «Spot aquí» marca un buen lugar para farmear, en dorado. Un clic en la marca y la flecha te lleva."],
+				texto = L["Escribe algo y pulsa «Nota aquí»: queda en tu mapa donde estás parado. «Buen lugar aquí» marca un buen lugar para juntar cosas, en dorado. Un clic en la marca y la flecha te lleva."],
 				filas = filas,
 				vacio = activo and L["Aún no dejas notas. También sirve /alfa nota <texto>."] or L[No.MOTIVOS.apagado],
 			}
@@ -1566,11 +1567,11 @@ local function grupos(ui, padre)
 		texto = L["Tus misiones, raros, mazmorras y niveles de la semana suman en «La semana de la manada» de tu hermandad."] })
 	-- 1.3.0: la manada crece.
 	local crece = K.GrupoAjustes(padre, { titulo = L["La manada crece"] })
-	crece:Fila({ titulo = L["Spots de farmeo"], control = interruptor("spots"), activa = function() return N.Get(ID, "notas") ~= false end,
-		texto = L["Tus spots de farmeo en el mapa, dorados y en su propia capa."] })
-	crece:Fila({ titulo = L["Compartir mis spots"], control = interruptor("spotsCompartir"),
+	crece:Fila({ titulo = L["Lugares para juntar"], control = interruptor("spots"), activa = function() return N.Get(ID, "notas") ~= false end,
+		texto = L["Tus lugares para juntar en el mapa, dorados y en su propia capa."] })
+	crece:Fila({ titulo = L["Compartir mis lugares"], control = interruptor("spotsCompartir"),
 		activa = function() return N.Get(ID, "notas") ~= false and N.Get(ID, "spots") ~= false end,
-		texto = L["Tus spots nuevos también salen en el mapa de los lobos de tu hermandad, y ves los suyos."] })
+		texto = L["Tus lugares nuevos también salen en el mapa de los lobos de tu hermandad, y ves los suyos."] })
 	crece:Fila({ titulo = L["El tablón de la manada"], control = interruptor("tablon"),
 		texto = L["Ve quién de tu hermandad busca grupo y pon tu anuncio. Se quita solo en una hora."] })
 	crece:Fila({ titulo = L["Mentor"], control = interruptor("mentor"),

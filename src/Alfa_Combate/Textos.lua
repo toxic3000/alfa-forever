@@ -552,4 +552,11 @@ M.EN = {
 	-- 1.3.3
 	["Más suave si el juego oculta el hechizo"] = "Softer when the game hides the spell",
 	["En mazmorras y bandas el juego a veces no dice qué lanza el enemigo: suena más suave, y a veces también con lo que no se puede cortar."] = "In dungeons and raids the game sometimes won't say what the enemy is casting: it plays a softer sound, and sometimes also for things that can't be interrupted.",
+	-- 1.3.6: claridad para quien empieza
+	["Volver a Combate"] = "Back to Combat",
+	["Arrastra tus marcos de combate adonde te acomoden. Para fijarlos, vuelve a Combate."] = "Drag your combat frames wherever suits you. To lock them, go back to Combat.",
+	["Así se ve en pantalla."] = "This is how it looks on screen.",
+	["Qué presionar, cuándo cortar y cómo te fue en cada pelea."] = "What to press, when to interrupt and how each fight went.",
+	-- 1.3.6: el resumen de la pelea se arrastra directo
+	["Arrástralo para moverlo."] = "Drag it to move it.",
 }

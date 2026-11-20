@@ -1,0 +1,23 @@
+== VENTANA DE ALFA la primera vez: 19.2 ms, 5285 KB
+== PÁGINAS (ms y KB: primera vez | otra vez)
+  mazmorras         66.0 ms   8886 KB |    3.1 ms    123 KB
+  builds            23.1 ms   9092 KB |    5.6 ms    316 KB
+  manada            12.7 ms   4082 KB |    7.7 ms    216 KB
+  mundo             12.5 ms   4258 KB |    3.9 ms    148 KB
+  combate           12.4 ms   3839 KB |    7.3 ms    186 KB
+  bienvenida        11.7 ms   3612 KB |    4.9 ms    166 KB
+  lya               11.6 ms   4019 KB |    6.1 ms    170 KB
+  recoleccion       11.3 ms   2149 KB |    3.5 ms    121 KB
+  rutas             11.2 ms   3643 KB |    4.5 ms    194 KB
+  bolsas            10.9 ms   2997 KB |    6.0 ms    175 KB
+  pesca             10.2 ms   3330 KB |    7.3 ms    185 KB
+  curacion           9.7 ms   2736 KB |    5.8 ms    163 KB
+  comodidades        9.3 ms   2568 KB |    2.2 ms     93 KB
+  comercio           8.5 ms   2700 KB |    4.0 ms    156 KB
+  inicio             5.7 ms    348 KB |    5.3 ms    349 KB
+  vista              5.2 ms   1390 KB |    3.3 ms    128 KB
+  enciclopedia       4.7 ms   1354 KB |    2.6 ms    122 KB
+  total primera vez: 237 ms
+errors:	0
+errors: 0
+

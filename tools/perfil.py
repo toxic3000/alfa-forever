@@ -32,8 +32,11 @@ def al_entrar() -> list:
 def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     modulos = ",".join(al_entrar())
-    codigo = ("import sys, runpy; sys.path.insert(0, %r); sys.argv = ['run.py', %r, %r, 'perfil.lua']; "
-              "runpy.run_path(%r, run_name='__main__')" % (str(SITE), str(DIST), modulos, str(RAIZ / "tools" / "banco" / "run.py")))
+    # --paginas: lo que cuesta abrir cada página de Alfa (tools/banco/perfil_paginas.lua).
+    escena = "perfil_paginas.lua" if "--paginas" in sys.argv else "perfil.lua"
+    sys.argv = [a for a in sys.argv if a != "--paginas"]
+    codigo = ("import sys, runpy; sys.path.insert(0, %r); sys.argv = ['run.py', %r, %r, %r]; "
+              "runpy.run_path(%r, run_name='__main__')" % (str(SITE), str(DIST), modulos, escena, str(RAIZ / "tools" / "banco" / "run.py")))
     env = dict(os.environ, BANCO_PERFIL="1")
     r = subprocess.run([sys.executable, "-I", "-c", codigo], env=env, capture_output=True, text=True, encoding="utf-8", errors="replace")
     salida = r.stdout + r.stderr

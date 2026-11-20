@@ -257,15 +257,28 @@ end
 
 local LADO = { Alliance = "A", Horde = "H" }
 
+-- 1.3.6: la lista se arma una vez por (nivel, tope, facción, Codex cargado
+-- sí/no) y se guarda; antes se armaba en cada llenado de Hoy y del camino.
+local guardadas = { clave = nil, lista = nil }
+
+local function codexCargado()
+	local Q = A.QuestDB
+	if type(Q) ~= "table" or type(Q.IsLoaded) ~= "function" then return false end
+	local ok, si = pcall(Q.IsLoaded)
+	return ok and si and true or false
+end
+
 function Ca.Mazmorras()
 	-- Los datos de las mazmorras vienen del Codex: nunca se piden peleando.
 	if InCombatLockdown and InCombatLockdown() then return {} end
 	local Dg = A.Dungeons
 	if type(Dg) ~= "table" or type(Dg.List) ~= "function" then return {} end
-	local ok, lista = pcall(Dg.List)
-	if not ok or type(lista) ~= "table" then return {} end
 	local lv, top = nivelJugador(), tope()
 	local lado = LADO[jugador().faction or ""]
+	local clave = tostring(lv) .. ":" .. tostring(top) .. ":" .. tostring(lado) .. ":" .. (codexCargado() and "1" or "0")
+	if guardadas.clave == clave and guardadas.lista then return guardadas.lista end
+	local ok, lista = pcall(Dg.List)
+	if not ok or type(lista) ~= "table" then return {} end
 	local out = {}
 	for _, d in ipairs(lista) do
 		if type(d) == "table" and d.kind ~= "raid" and tonumber(d.minLevel) then
@@ -287,6 +300,7 @@ function Ca.Mazmorras()
 		end
 	end
 	table.sort(out, function(a, b) return a.nivel < b.nivel end)
+	guardadas.clave, guardadas.lista = clave, out
 	return out
 end
 

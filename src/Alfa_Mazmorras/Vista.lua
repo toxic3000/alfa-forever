@@ -545,6 +545,9 @@ end
 local function construirJefes(padre)
 	local j = K.Pila(padre, { espacio = ESP.m })
 	j.Nota = j:Agregar(Pz.Nota(j, "nota", "textoSuave"))
+	-- 1.3.6: apagar el modo historia ahí mismo (antes decía «en Ajustes»).
+	j.Apagar = j:Agregar(K.Boton(j, L["Apagar el modo historia"], function() N.Set(ID, "historia", false) end,
+		{ tipo = "secundario", tam = "chico", icono = "ic-ajustes" }), { espacio = ESP.s })
 	j.Lista = j:Agregar(K.Pila(j, { espacio = ESP.m }))
 	j.jefes = {}
 	return j
@@ -606,10 +609,12 @@ local function llenarJefes(j, key, e)
 	end
 	for i = #jefes + 1, #j.jefes do K.Mostrar(j.jefes[i], false) end
 	if ocultos > 0 then
-		j.Nota:Set(cuantas(ocultos, L["Modo historia: 1 jefe por descubrir. Vence a cada uno para ver su nombre y su botín (puedes apagarlo en Ajustes)."],
-			L["Modo historia: %d jefes por descubrir. Vence a cada uno para ver su nombre y su botín (puedes apagarlo en Ajustes)."]))
+		-- 1.3.6: sin «en Ajustes»: el botón de abajo lo apaga.
+		j.Nota:Set(cuantas(ocultos, L["Modo historia: 1 jefe por descubrir. Vence a cada uno para ver su nombre y su botín."],
+			L["Modo historia: %d jefes por descubrir. Vence a cada uno para ver su nombre y su botín."]))
 	end
 	K.Mostrar(j.Nota, ocultos > 0)
+	K.Mostrar(j.Apagar, ocultos > 0)
 end
 
 ---------------------------------------------------------------------------
@@ -733,7 +738,9 @@ local function llenarBotin(b, key)
 			b.Vacio:Set({ lobo = "vacio", titulo = L["Nada de esto le sirve a tu clase"], texto = L["Cambia a «Todo» para ver su botín completo."],
 				accion = { texto = L["Ver todo"], alClic = function() N.Set(ID, "meSirve", false) end } })
 		elseif ocultos > 0 then
-			b.Vacio:Set({ lobo = "dormido", titulo = L["Su botín está por descubrir"], texto = L["Vence a sus jefes para ver lo que sueltan, o apaga el modo historia en Ajustes."] })
+			-- 1.3.6: con el botón que apaga el modo historia.
+			b.Vacio:Set({ lobo = "dormido", titulo = L["Su botín está por descubrir"], texto = L["Vence a sus jefes para ver lo que sueltan, o apaga el modo historia."],
+				accion = { texto = L["Apagar el modo historia"], alClic = function() N.Set(ID, "historia", false) end } })
 		else
 			b.Vacio:Set({ lobo = "vacio", titulo = L["No se conoce su botín"], texto = L["Los datos de Alfa no traen botín propio de sus jefes."] })
 		end
@@ -1164,7 +1171,8 @@ end
 
 N.Modulo({
 	id = ID, nombre = L["Mazmorras"], icono = "ic-mazmorra", orden = 50, seccion = "aventura",
-	subtitulo = L["La mazmorra para tu nivel, sus jefes, botín, misiones y consejos."],
+	-- 1.3.6: subtítulo corto (la ventana esconde los de más de 60 letras).
+	subtitulo = L["La mazmorra para tu nivel: jefes, botín y consejos."],
 	ajustes = { historia = true, avisoDescubrir = true, avisoEntrar = true, meSirve = false, capaEntradas = true,
 		-- 1.2.9: la tarjeta del jefe en vivo (EnVivo.lua) y tu papel ("auto" | "tanque" | "cura" | "dano")
 		enVivo = true, enVivoRol = "auto" },

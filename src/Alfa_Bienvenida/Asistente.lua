@@ -685,7 +685,11 @@ local function terminar(despues)
 	if M.MarcarNotasVistas then M.MarcarNotasVistas() end
 	if v then v:Cerrar() end
 	-- Con Hoy (Alfa_Inicio) cargado, el aviso lleva a su página: lo primero que ver.
-	local hoy = N.ModuloPorId and N.ModuloPorId("inicio") and { texto = L["Abrir Hoy"], alClic = function() N.Abrir("inicio") end } or nil
+	local conHoy = N.ModuloPorId and N.ModuloPorId("inicio") and N.Abrir and true or false
+	-- 1.3.6: fuera de combate, Hoy se abre solo y el recorrido (Recorrido.lua,
+	-- con SHOW_OPTIONS) empieza ahí; el aviso ya no necesita «Abrir Hoy».
+	local abrirHoy = conHoy and not (InCombatLockdown and InCombatLockdown())
+	local hoy = (conHoy and not abrirHoy) and { texto = L["Abrir Hoy"], alClic = function() N.Abrir("inicio") end } or nil
 	K.Aviso({
 		lobo = "aullando", tono = "acento", duracion = hoy and 12 or 8,
 		titulo = L["¡Listo! Alfa ya es tuyo"],
@@ -695,6 +699,16 @@ local function terminar(despues)
 	M.Aullar()
 	A.Fire("ALFA_CONFIGURADO")
 	if despues then K.Llamar(despues) end
+	-- 1.3.6: después de ALFA_CONFIGURADO, para que Lya ya esté a la vista y
+	-- el recorrido hable con su voz. Si entraste en combate, se queda el aviso.
+	if abrirHoy then
+		A.After(0.3, function()
+			-- (Si una pelea empezó en ese momento, Hoy se abre al terminarla: el
+			-- aviso ya salió sin «Abrir Hoy».)
+			if N.FueraDeCombate then N.FueraDeCombate("bienvenida.abrirHoy", function() N.Abrir("inicio") end)
+			elseif not (InCombatLockdown and InCombatLockdown()) then N.Abrir("inicio") end
+		end)
+	end
 end
 
 local function pasoResumen()

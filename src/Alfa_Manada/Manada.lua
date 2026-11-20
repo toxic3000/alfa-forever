@@ -39,6 +39,7 @@
 -- Sin asistente de primer arranque (Alfa_Bienvenida), la pregunta sale sola
 -- una vez, al poco de entrar, fuera de combate y de instancias.
 
+-- 1.3.6: «buen lugar para juntar» en vez de «spot de farmeo» en lo que lees (/alfa spot sigue igual).
 local ADDON, M = ...
 local N = AlfaNucleo
 local A = N.A
@@ -56,7 +57,8 @@ N.Modulo({
 	nombre = L["La Jauría"],
 	icono = "ic-manada",
 	orden = 8,
-	subtitulo = L["Tu manada en el mapa: tu grupo y quienes usan Alfa y comparten. Síguelos con la flecha, invítalos y conoce al clan."],
+	-- 1.3.6: subtítulo corto (la ventana esconde los de más de 60 letras).
+	subtitulo = L["Tu grupo y la manada en el mapa: síguelos e invítalos."],
 	comando = "manada",
 	ajustes = {
 		compartir = false,  -- mi ubicación a La Jauría (se pregunta al instalar)
@@ -198,7 +200,7 @@ local function ayuda()
 		{ "/alfa manada tiene <objeto>", L["pregunta a tu hermandad quién lo tiene"] },
 		{ "/alfa cita mañana 21:30 <qué>", L["propón una salida a la manada"] },
 		{ "/alfa nota <texto>", L["deja una nota en tu mapa donde estás"] },
-		{ "/alfa spot <texto>", L["marca un spot de farmeo donde estás"] },
+		{ "/alfa spot <texto>", L["marca un buen lugar para juntar donde estás"] },
 		{ "/alfa manada tablon <texto>", L["pon tu anuncio en el tablón de la manada"] },
 	}) do
 		DEFAULT_CHAT_FRAME:AddMessage("  " .. hex .. l[1] .. "|r  " .. l[2])
@@ -448,7 +450,7 @@ A.OnLogin(function()
 				respuesta = L["En La Jauría está «La semana de la manada»: misiones, raros, mazmorras y niveles de los lobos que la comparten. Nadie compite: todo suma."] },
 			-- 1.3.0
 			{ id = "manada.spots", icono = "ic-recoleccion", pregunta = L["¿Dónde farmea la manada?"],
-				respuesta = L["Marca un spot con «Spot aquí» en La Jauría o /alfa spot. Sale dorado en tu mapa y, si lo compartes, también en el de tu hermandad."] },
+				respuesta = L["Marca un buen lugar con «Buen lugar aquí» en La Jauría o /alfa spot. Sale dorado en tu mapa y, si lo compartes, también en el de tu hermandad."] },
 			{ id = "manada.tablon", icono = "ic-lista", pregunta = L["¿Cómo encuentro grupo en la manada?"],
 				respuesta = L["En La Jauría está «El tablón de la manada»: pon qué buscas y a tu hermandad le llega. Se quita solo en una hora."] },
 			{ id = "manada.mentor", icono = "ic-manada", pregunta = L["¿Puedo cuidar a un lobo nuevo?"],

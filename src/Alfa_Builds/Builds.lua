@@ -19,6 +19,7 @@
 --   AlfaBuilds.Abrir(vista?)  ;  AlfaBuilds.Aplicar()
 -- Al cambiar tus talentos, tu build o tus puntos se avisa ALFA_TALENTOS.
 
+-- 1.3.6: en lo que lees dice «plan de talentos» en vez de «build» (las claves de datos y los comandos siguen igual).
 local ADDON, M = ...
 local N, A, L = M.N, M.A, M.L
 local K = N.Kit
@@ -167,7 +168,7 @@ function M.PorQue(b, p)
 	if por then return por, true end
 	local desc = T.Descripcion(p.spell)
 	if desc then return format(L["Qué hace: %s"], desc), false end
-	return format(L["Es el punto %d de %d de tu build."], p.i, b.total or p.i), false
+	return format(L["Es el punto %d de %d de tu plan de talentos."], p.i, b.total or p.i), false
 end
 
 -- El siguiente talento del plan, listo para mostrarlo.
@@ -289,13 +290,13 @@ function M.PedirAplicar()
 	if #plan.compras == 0 then
 		local msg
 		if not st.siguiente then
-			msg = L["Ya tienes todos los talentos de este build. ¡Bien hecho!"]
+			msg = L["Ya tienes todos los talentos de este plan. ¡Bien hecho!"]
 		elseif (vivo.libres or 0) == 0 and #st.fuera > 0 then
-			msg = L["Todos tus puntos ya están gastados y parte de ellos fuera de este build. Para cambiarte a este build, reinicia tus talentos con tu entrenador de clase; después Alfa te los aplica con un clic."]
+			msg = L["Todos tus puntos ya están gastados y parte de ellos fuera de este plan de talentos. Para cambiarte a este plan, reinicia tus talentos con tu entrenador de clase; después Alfa te los aplica con un clic."]
 		elseif (vivo.libres or 0) == 0 then
 			msg = format(L["No tienes puntos libres. El siguiente talento del plan (%s) te toca en el nivel %d."], T.Nombre(st.siguiente.spell) or st.siguiente.nombre or "?", max(10, nivel() + 1))
 		else
-			msg = L["Los talentos que siguen en el plan no están en tu árbol o no se pueden tomar todavía. Ponlos a mano en la ventana de talentos del juego o elige otro build."]
+			msg = L["Los talentos que siguen en el plan no están en tu árbol o no se pueden tomar todavía. Ponlos a mano en la ventana de talentos del juego o elige otro plan de talentos."]
 		end
 		aviso(L["Nada que aplicar"], msg)
 		return
@@ -376,7 +377,8 @@ M.AvisarTalento = avisarTalento
 
 N.Modulo({
 	id = M.ID, nombre = L["Talentos"], icono = "ic-talentos", orden = 14,
-	subtitulo = L["Qué talento poner ahora y por qué, tu build en dos clics, tu árbol y tu equipo."],
+	-- 1.3.6: subtítulo corto (la ventana esconde los de más de 60 letras).
+	subtitulo = L["Qué talento poner ahora, tu plan de talentos y tu equipo."],
 	ajustes = { aviso = true, escalaAuto = true },
 	construir = function(view) M.Pagina.Construir(view) end,
 })
@@ -407,7 +409,7 @@ A.RegisterCommand("builds", function(resto)
 	else
 		AlfaBuilds.Abrir()
 	end
-end, L["Talentos: qué poner ahora y tu build (/alfa builds aplicar | equipo | compartir)"])
+end, L["Talentos: qué poner ahora y tu plan de talentos (/alfa builds aplicar | equipo | compartir)"])
 A.RegisterCommand("talentos", function() AlfaBuilds.Abrir() end, L["abre Talentos"])
 
 ---------------------------------------------------------------------------

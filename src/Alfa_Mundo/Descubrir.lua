@@ -110,6 +110,10 @@ function Ds.Progreso(zona)
 	return total - #faltan, total
 end
 
+-- 1.3.6: lo ya medido del modo explorador, por continente.
+local explorados = {}
+function Ds.OlvidarExplorador() explorados = {} end
+
 -- Las zonas de tu continente (o de `cont`) con su avance:
 -- { { zona, nombre, hechos, total }, ... } y el resumen { completas, zonas, hechos, total }.
 -- Primero tu zona, luego las empezadas (las que menos faltan) y al final las completas.
@@ -121,13 +125,25 @@ function Ds.Explorador(cont)
 		if u then cont = Geo.Cadena(u, v) end
 	end
 	if not cont then return lista, resumen end
-	local ok, zonas = pcall(Geo.Zonas, cont)
-	if not (ok and type(zonas) == "table") then return lista, resumen end
-	for _, z in ipairs(zonas) do
-		local id = type(z) == "table" and (z.mapID or z.id) or z
-		local hechos, total = Ds.Progreso(id)
-		if hechos then
-			lista[#lista + 1] = { zona = id, nombre = Geo.Nombre(id) or "?", hechos = hechos, total = total, mia = id == mia }
+	-- 1.3.6: el avance de cada zona (FullOverlays/UnexploredOverlays) se
+	-- calcula una vez por continente y se guarda hasta que descubres algo o
+	-- cambias de zona (Ds.OlvidarExplorador); cada refresco solo lo ordena.
+	local zonasCont = explorados[cont]
+	if not zonasCont then
+		local ok, zonas = pcall(Geo.Zonas, cont)
+		if not (ok and type(zonas) == "table") then return lista, resumen end
+		zonasCont = {}
+		for _, z in ipairs(zonas) do
+			local id = type(z) == "table" and (z.mapID or z.id) or z
+			local hechos, total = Ds.Progreso(id)
+			if hechos then zonasCont[#zonasCont + 1] = { id = id, nombre = Geo.Nombre(id) or "?", hechos = hechos, total = total } end
+		end
+		explorados[cont] = zonasCont
+	end
+	for _, z in ipairs(zonasCont) do
+		local id, hechos, total = z.id, z.hechos, z.total
+		do
+			lista[#lista + 1] = { zona = id, nombre = z.nombre, hechos = hechos, total = total, mia = id == mia }
 			resumen.zonas = resumen.zonas + 1
 			resumen.hechos, resumen.total = resumen.hechos + hechos, resumen.total + total
 			if hechos >= total then resumen.completas = resumen.completas + 1 end
@@ -312,10 +328,15 @@ if type(A.OnLogin) == "function" then
 end
 
 for _, ev in ipairs({ "ZONE_CHANGED_NEW_AREA", "MAP_EXPLORATION_UPDATED", "TAXIMAP_OPENED", "TAXI_NODE_STATUS_CHANGED", "PLAYER_LEVEL_UP" }) do
-	A.RegisterEvent(ev, function() if login then pronto(1) end end)
+	A.RegisterEvent(ev, function()
+		-- 1.3.6: descubrir algo o cambiar de zona vuelve a medir el modo explorador.
+		if ev == "ZONE_CHANGED_NEW_AREA" or ev == "MAP_EXPLORATION_UPDATED" then Ds.OlvidarExplorador() end
+		if login then pronto(1) end
+	end)
 end
-A.RegisterEvent("CHAT_MSG_SYSTEM", function(_, texto) if Ds.AlMensaje(texto) then pronto(1) end end)
-A.RegisterEvent("UI_INFO_MESSAGE", function(_, _, texto) if Ds.AlMensaje(texto) then pronto(1) end end)
+-- 1.3.6: un descubrimiento también olvida lo medido del modo explorador.
+A.RegisterEvent("CHAT_MSG_SYSTEM", function(_, texto) if Ds.AlMensaje(texto) then Ds.OlvidarExplorador() pronto(1) end end)
+A.RegisterEvent("UI_INFO_MESSAGE", function(_, _, texto) if Ds.AlMensaje(texto) then Ds.OlvidarExplorador() pronto(1) end end)
 
 A.On("SETTING_CHANGED", function(path)
 	if path == "" or path == "mundo" or path == CAPA_RINCONES or path == CAPA_VUELOS then pronto(0) end

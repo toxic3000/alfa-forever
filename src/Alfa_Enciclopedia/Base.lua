@@ -43,12 +43,13 @@ function M.CodexListo()
 end
 
 -- Por qué no hay datos, en palabras del jugador.
+-- 1.3.6: sin nombres de carpeta ni códigos; «Revisar Alfa» (Ventana.lua) ayuda con el resto.
 function M.MotivoTexto(motivo)
 	if motivo == "combat" then return L["Se abre al salir de combate."] end
-	if motivo == "disabled" then return L["El paquete de datos de Alfa (Alfa_Codex) está desactivado: actívalo en la lista de addons y recarga."] end
-	if motivo == "missing" or motivo == "MISSING" then return L["Falta el paquete de datos de Alfa (Alfa_Codex): vuelve a instalar Alfa completo."] end
+	if motivo == "disabled" then return L["Los datos de la Enciclopedia están apagados: en la lista de addons de la pantalla de personajes, prende «Alfa Codex» y vuelve a entrar."] end
+	if motivo == "missing" or motivo == "MISSING" then return L["Faltan los datos de la Enciclopedia: vuelve a instalar Alfa completo."] end
 	if motivo == "loading" then return L["Cargando los datos…"] end
-	return format(L["Los datos de Alfa no cargaron (%s)."], tostring(motivo or "?"))
+	return L["Los datos de la Enciclopedia no cargaron. Revisa Alfa: te digo qué pasa y cómo arreglarlo."]
 end
 
 ---------------------------------------------------------------------------

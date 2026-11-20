@@ -169,7 +169,14 @@ end
 local antes = {}
 function K.AntesDeRepintar(fn) antes[#antes + 1] = fn end
 
+-- 1.3.6: la generación del pintado. Las piezas que no se repintan si nada
+-- cambió (Caja:Estilo, las tarjetas, el interruptor, las páginas del Kit)
+-- recuerdan con qué generación se pintaron: al subirla aquí, todas se pintan
+-- de nuevo aunque sus datos sean los mismos (el token ya da otro color).
+K.genPintado = 0
+
 function K.Repintar()
+	K.genPintado = K.genPintado + 1
 	for i = 1, #antes do
 		local ok, err = pcall(antes[i])
 		if not ok and geterrorhandler then geterrorhandler()(err) end
@@ -219,13 +226,35 @@ local ESTILO = {}
 for _, e in ipairs(K.ESTILOS) do ESTILO[e.id] = e end
 
 -- -> "alfa" | "clasico" | "cristal" | "nocturno" | "fogata"
-function K.Estilo()
-	if T and T.EstiloKey then
-		local ok, v = pcall(T.EstiloKey)
-		if ok and ESTILO[v] then return v end
-	end
+-- 1.3.6: K.Estilo se lee muchísimo (cada pintado, cada corte). El estilo
+-- sale solo de "ui.skin" (Theme.EstiloKey), así que se recuerda por el valor
+-- crudo de ese ajuste: se sigue leyendo el ajuste (una lectura), pero sin
+-- pcall ni Theme.EstiloKey cada vez. No se limpia con SETTING_CHANGED porque
+-- el tema repinta (y lee el estilo) antes de que el Kit oiga ese aviso; con
+-- la clave cruda nunca queda viejo, ni al importar un perfil o un respaldo.
+local estiloPorPiel = {}
+local SIN_PIEL = {} -- la clave de "ui.skin" sin valor (nil no puede ser clave)
+local function estiloDelTema()
+	local ok, v = pcall(T.EstiloKey)
+	if ok and ESTILO[v] then return v end
 	return "alfa"
 end
+function K.Estilo()
+	if not (T and T.EstiloKey) then return "alfa" end
+	-- Las pruebas que enseñan las pieles ocultas cambian la respuesta: sin memoria.
+	if T._testShowHidden or not (A and A.Get) then return estiloDelTema() end
+	local crudo = A.Get("ui.skin")
+	if crudo == nil then crudo = SIN_PIEL
+	elseif type(crudo) ~= "string" then return estiloDelTema() end
+	local v = estiloPorPiel[crudo]
+	if not v then
+		v = estiloDelTema()
+		estiloPorPiel[crudo] = v
+	end
+	return v
+end
+-- 1.3.6: un cambio de tema vacía la memoria (por si el motor cambia las pieles).
+if T and type(T.OnChanged) == "function" then T.OnChanged(function() for k in pairs(estiloPorPiel) do estiloPorPiel[k] = nil end end) end
 function K.Clasico() return K.Estilo() == "clasico" end
 function K.Cristal() return K.Estilo() == "cristal" end
 -- 1.3.0: si en este estilo se elige el acento (Cristal, nocturno, Fogata).

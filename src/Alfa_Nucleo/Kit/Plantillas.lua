@@ -330,16 +330,100 @@ end
 -- view.Refresh mide la plantilla con el ancho de la página. `antes` (opcional)
 -- pone los datos antes de medir. Con ListaFicha o Asistente, el alto es el
 -- visible de la página (sin desplazar la página entera).
+--
+-- 1.3.6: la página «sucia». Volver a una página ya vista corría siempre el
+-- llenado (`antes`) y el acomodo completos. Ahora una página PUEDE decir
+-- cuándo sus datos siguen igual, con un cuarto argumento (opcional):
+--   K.EnPagina(view, t, llenar, {
+--     firma = function() return "..." end, -- una cadena (o número) que cambia
+--                          -- cuando cambia lo que la página muestra; si al
+--                          -- volver da lo mismo, no se llena ni se acomoda
+--     edad = 30,           -- o/y: segundos que el llenado sigue valiendo
+--   })
+-- (también vale K.EnPagina(view, t, { llenar = fn, firma = fn, edad = n })).
+-- Con las dos, la página se reusa solo si la firma es la misma Y no pasó la edad.
+-- SIN firma NI edad la página se llena y acomoda en cada visita, como antes:
+-- solo cambian las páginas que lo declaran. Una página que lee datos del juego
+-- sin aviso debe poner `edad` o una `firma` que los incluya.
+-- Siempre se vuelve a llenar (sucia) tras: K.Rehacer / N.RehacerPagina /
+-- N.Repintar de esa página (aunque esté oculta: se pinta al volver),
+-- cualquier SETTING_CHANGED, ALFA_MODULO, K.Repintar (cambio de aspecto), un
+-- cambio de letra o de estilo, o view.alfaSucio = true. Si solo cambió el
+-- ancho (o el alto visible) de la página, solo se acomoda (sin llenar).
+-- La firma corre en cada visita: que sea barata y no lea textos secretos.
 ---------------------------------------------------------------------------
-function K.EnPagina(view, plantilla, antes)
+local genPaginas = 0
+-- 1.3.6: todas las páginas del Kit quedan sucias (se llenan en su próxima visita).
+function K.EnsuciarPaginas() genPaginas = genPaginas + 1 end
+if A and A.On then
+	A.On("SETTING_CHANGED", K.EnsuciarPaginas)
+	A.On("ALFA_MODULO", K.EnsuciarPaginas)
+end
+K.AlRepintar(K.EnsuciarPaginas)
+
+-- 1.3.6: la letra y el estilo con que se acomodó. El aviso de letra nueva
+-- (W.OnFontChanged) llega a la ventana antes que K.Repintar al Kit, así que
+-- la página lo compara ella misma.
+local function aspecto()
+	local T = A and A.Theme
+	if T and T.FontSpec then
+		local ok, cara, tam, banderas = pcall(T.FontSpec, "body")
+		if ok then return tostring(cara) .. "|" .. tostring(tam) .. "|" .. tostring(banderas) .. "|" .. K.Estilo() end
+	end
+	return K.Estilo()
+end
+
+function K.EnPagina(view, plantilla, antes, opc)
+	if type(antes) == "table" and opc == nil then opc, antes = antes, antes.llenar end
+	opc = type(opc) == "table" and opc or {}
+	local firma = type(opc.firma) == "function" and opc.firma or nil
+	local edad = type(opc.edad) == "number" and opc.edad or nil
+	local conMemoria = firma ~= nil or edad ~= nil
 	plantilla.alfaVista = view
-	view.Refresh = function()
-		if antes then K.Llamar(antes) end
-		local ancho = N.AnchoPagina()
-		if plantilla.MostrarFicha or plantilla.BotonSiguiente then
-			return plantilla:Acomodar(ancho, N.AltoPagina())
+	view.alfaSucio = true
+	local function leerFirma()
+		local ok, v = pcall(firma)
+		if not ok then
+			if geterrorhandler then geterrorhandler()(v) end
+			return nil
 		end
-		return plantilla:Acomodar(ancho)
+		if issecretvalue and issecretvalue(v) then return nil end
+		return v
+	end
+	view.Refresh = function()
+		local ancho = N.AnchoPagina()
+		local alto = (plantilla.MostrarFicha or plantilla.BotonSiguiente) and N.AltoPagina() or nil
+		local asp = aspecto()
+		local sucio = view.alfaSucio or not conMemoria or view.alfaGen ~= genPaginas
+			or view.alfaGenPintado ~= K.genPintado or view.alfaAspecto ~= asp
+			or type(view.alfaAltoMedido) ~= "number"
+		if not sucio and firma then
+			local f = leerFirma()
+			if f == nil or f ~= view.alfaFirma then sucio = true end
+		end
+		if not sucio and edad then
+			local ahora = GetTime and GetTime()
+			if type(ahora) ~= "number" or type(view.alfaLleno) ~= "number" or ahora - view.alfaLleno >= edad then sucio = true end
+		end
+		if not sucio and ancho == view.alfaAncho and alto == view.alfaAltoPag then
+			return view.alfaAltoMedido -- 1.3.6: nada cambió
+		end
+		if sucio then
+			local ok = true
+			if antes then ok = K.Llamar(antes) end
+			view.alfaSucio = false
+			view.alfaGen, view.alfaGenPintado, view.alfaAspecto = genPaginas, K.genPintado, asp
+			-- La firma se toma tras llenar: la de los datos que se muestran.
+			view.alfaFirma = firma and leerFirma() or nil
+			-- Un llenado que falló, o una firma que no se pudo leer: sigue sucia.
+			if not ok or (firma and view.alfaFirma == nil) then view.alfaSucio = true end
+			local ahora = GetTime and GetTime()
+			view.alfaLleno = type(ahora) == "number" and ahora or nil
+		end
+		local h
+		if alto then h = plantilla:Acomodar(ancho, alto) else h = plantilla:Acomodar(ancho) end
+		view.alfaAncho, view.alfaAltoPag, view.alfaAltoMedido = ancho, alto, h
+		return h
 	end
 	return plantilla
 end
@@ -348,6 +432,8 @@ end
 -- (tras un cambio de datos).
 function K.Rehacer(plantillaOVista)
 	local view = plantillaOVista and (plantillaOVista.alfaVista or plantillaOVista)
+	-- 1.3.6: sucia aunque no se vea: lo que cambió oculto se pinta al volver.
+	if type(view) == "table" and view.Refresh then view.alfaSucio = true end
 	if not (view and view.Refresh and view.IsVisible and view:IsVisible()) then return end
 	N.RehacerPagina(view)
 end

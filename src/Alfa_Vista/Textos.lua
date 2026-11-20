@@ -335,7 +335,8 @@ M.EN = {
 	["Fuera de combate; necesita las placas de enemigos encendidas."] = "Out of combat; needs enemy nameplates turned on.",
 	["Placas de tótems enemigos"] = "Enemy totem nameplates",
 	["Alfa revisa lo que elegiste cuando el juego termina de cargar. Si los cambias en el menú del juego, se queda con lo nuevo."] = "Alfa checks what you chose when the game finishes loading. If you change them in the game menu, it keeps the new ones.",
-	["Preajustes, ajustes escondidos del juego, cámara, placas y filtros para que el mundo se vea mejor."] = "Presets, hidden game settings, camera, nameplates and filters to make the world look better.",
+	-- 1.3.6
+	["Para que el mundo se vea mejor, a tu gusto"] = "Make the world look better, your way",
 	["Abre Paisaje y gráficos"] = "Opens Landscape and graphics",
 }
 

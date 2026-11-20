@@ -26,11 +26,13 @@ local situacion -- más abajo
 
 -- 1.3.2: lo que se prueba o se mueve sale en pantalla, debajo de la ventana
 -- de Alfa: se cierra la ventana y una línea en tu chat dice cómo volver.
+-- 1.3.6: en vez de la línea con el comando, un aviso con «Volver a Combate».
 local function aLaVista(fn, aviso)
 	return function()
 		if fn() == false then return end
 		N.CerrarVentana()
-		N.Imprimir(aviso)
+		K.Aviso({ titulo = L["Combate"], texto = aviso, icono = M.ICONO, duracion = 10,
+			accion = { texto = L["Volver a Combate"], alClic = function() N.Abrir(ID) end } })
 	end
 end
 local function moverMarcos()
@@ -77,7 +79,7 @@ local function estado()
 		end
 		d.estado = { texto = L["Lista"], tono = "exito" }
 		d.accion = { texto = L["Mover marcos"], icono = "ic-seguir",
-			alClic = aLaVista(moverMarcos, L["Arrastra tus marcos de combate adonde te acomoden. Para fijarlos, vuelve a Combate o escribe /alfa combate mover."]) }
+			alClic = aLaVista(moverMarcos, L["Arrastra tus marcos de combate adonde te acomoden. Para fijarlos, vuelve a Combate."]) }
 	end
 	return d
 end
@@ -124,7 +126,7 @@ local function herramientas()
 		a.insignias = { { format(L["%d de %d"], #si, #lista), #si > 0 and "exito" or "neutro" } }
 	end
 	if not M.Opt("avisos") then a.insignias = { { L["Apagados"], "neutro" } } end
-	a.accion = { texto = L["Probar un aviso"], alClic = aLaVista(function() Rc.Probar() end, L["Así se ve en pantalla. Vuelve a Combate con /alfa combate."]) }
+	a.accion = { texto = L["Probar un aviso"], alClic = aLaVista(function() Rc.Probar() end, L["Así se ve en pantalla."]) }
 	out[#out + 1] = a
 	-- 1.3.0: tu última pelea (el resumen) y el aviso para cortar.
 	local u = Rs.Ultima()
@@ -139,7 +141,7 @@ local function herramientas()
 		p.texto = t ~= "" and t or L["El medidor del juego no tiene números de esta pelea."]
 		local dur = D.Tiempo(u.dur)
 		if dur then p.insignias = { { dur, "neutro" } } end
-		p.accion = { texto = L["Ver de nuevo"], alClic = aLaVista(function() return Rs.VerDeNuevo() end, L["Así se ve en pantalla. Vuelve a Combate con /alfa combate."]) }
+		p.accion = { texto = L["Ver de nuevo"], alClic = aLaVista(function() return Rs.VerDeNuevo() end, L["Así se ve en pantalla."]) }
 	else
 		p.texto = L["Al terminar una pelea, aquí queda su resumen: tu daño, tu curación y lo que más te pegó."]
 	end
@@ -153,7 +155,7 @@ local function herramientas()
 		c.texto = L["Cuando aprendas una habilidad para cortar hechizos, te avisa en cuanto tu objetivo empiece a lanzar."]
 	end
 	c.insignias = { M.Opt("corte") and { L["Encendido"], "exito" } or { L["Apagado"], "neutro" } }
-	c.accion = { texto = L["Probar el aviso"], alClic = aLaVista(function() Co.Probar() end, L["Así se ve en pantalla. Vuelve a Combate con /alfa combate."]) }
+	c.accion = { texto = L["Probar el aviso"], alClic = aLaVista(function() Co.Probar() end, L["Así se ve en pantalla."]) }
 	out[#out + 1] = c
 	-- El resaltado del botón no va aquí: es una fila de "Ícono de rotación".
 	return out
@@ -793,7 +795,8 @@ local CONTROLES = {
 
 N.Modulo({
 	id = ID, nombre = L["Combate"], icono = M.ICONO, orden = 15, seccion = "personaje",
-	subtitulo = L["Qué habilidad presionar ahora, cuándo cortar, tu amenaza, tus recargas y el resumen de cada pelea."],
+	-- 1.3.6: subtítulo corto (la ventana esconde los de más de 60 letras).
+	subtitulo = L["Qué presionar, cuándo cortar y cómo te fue en cada pelea."],
 	ajustes = M.AJUSTES,
 	controles = CONTROLES,
 	construir = construir,

@@ -540,4 +540,6 @@ M.EN = {
 	-- Pagina.lua: las ranuras que no se cambian, plegadas
 	["Avanzado"] = "Advanced",
 	["Las ranuras que tu tecla nunca cambia: cabeza, manos, pies, abalorios y las demás."] = "The slots your key never changes: head, hands, feet, trinkets and the rest.",
+	-- 1.3.6: claridad para quien empieza
+	["Una tecla para pescar, con diario, guía y cocina."] = "One key to fish, with a journal, a guide and cooking.",
 }

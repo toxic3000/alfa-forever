@@ -61,7 +61,7 @@ step("Rendimiento no falla", function()
   check(ok, "/alfa rendimiento falló: " .. tostring(e))
 end)
 
-step("El recorrido: 5 pasos y se da por visto", function()
+step("El recorrido: sus pasos y se da por visto", function()
   local Rc = B.Recorrido
   check(Rc and Rc.Empezar, "falta Recorrido.lua")
   local avisos = {}
@@ -70,12 +70,15 @@ step("El recorrido: 5 pasos y se da por visto", function()
   K.Aviso = function(o) avisos[#avisos + 1] = o return {} end
   AlfaNucleo.Datos("bienvenida").recorrido = nil
   Rc.Empezar()
-  for _ = 1, 5 do
+  -- 1.3.6: el recorrido tiene 6 o 7 pasos (el lobo del minimapa, «¿Qué es esto?»).
+  for _ = 1, 10 do
+
     local a = avisos[#avisos]
     if a and a.accion then a.accion.alClic() end
+    if AlfaNucleo.Datos("bienvenida").recorrido == true then break end
   end
   K.Aviso = av
-  check(#avisos >= 5, "el recorrido no mostró sus 5 pasos (" .. #avisos .. ")")
+  check(#avisos >= 5, "el recorrido no mostró sus pasos (" .. #avisos .. ")")
   check(AlfaNucleo.Datos("bienvenida").recorrido == true, "el recorrido no quedó como visto")
 end)
 

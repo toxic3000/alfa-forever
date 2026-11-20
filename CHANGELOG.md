@@ -1,5 +1,43 @@
 # Cambios de Alfa
 
+## 1.3.6 — La manada te guía: Alfa más rápido al navegar y fácil para quien empieza (20/11/2026)
+
+50 mejoras con un solo fin: que moverte por Alfa sea rápido y que alguien que nunca lo ha usado entienda todo a la primera. Cada cambio trae su prueba en el banco y pasó una revisión independiente.
+
+**Español**
+- Moverte entre páginas es más ligero: una página que ya viste no se vuelve a armar dos veces, la que no cambió se reusa (Comodidades abre mucho más rápido la segunda vez) y todas dejan menos memoria al volver a ellas.
+- Al volver a una página, Alfa te deja donde ibas en vez de subirte hasta arriba.
+- Las piezas de las ventanas (tarjetas, botones, interruptores, esquinas) ya no se vuelven a pintar cuando nada cambió, y los textos de Alfa se leen una sola vez.
+- El buscador busca en todo Alfa («Buscar en Alfa»): espera a que termines de escribir en vez de buscar con cada letra, encuentra las páginas por su nombre («pesca», «talentos») con un botón para abrirlas y, si no encuentra nada, te ofrece preguntarle a Lya o buscar en la Enciclopedia.
+- El buscador de guías también espera a que termines de escribir; Enter usa lo que escribiste.
+- Cada página dice para qué sirve: los subtítulos son cortos y, si no caben, salen al pasar el ratón por el «?».
+- Alfa sencillo es más sencillo: en Ajustes solo quedan Estilo y sonido, Comodidades, Misiones y Acerca de. Lo demás lo encuentras con el buscador o en Completo.
+- Al terminar la bienvenida se abre Hoy y empieza el recorrido. El recorrido ahora te enseña el lobo del minimapa (clic: abre Alfa; clic derecho: su menú) y la tecla de «¿Qué es esto?», nombra solo las secciones que ves, y si cierras su aviso, termina.
+- La ayuda está a la mano: «Configuración y ayuda» va primero en Estilo y sonido, el «Modo ayuda» es un interruptor que dice si está prendido y el buscador encuentra «recorrido», «ayuda» o «tutorial».
+- Menos comandos y más botones: Combate te ofrece «Volver a Combate», Curación «Abrir Curación», Recolección «Crear una ruta aquí», tu lista de sonidos «Encenderla», Mazmorras «Apagar el modo historia», y Lya te abre su historial, tus atajos o el ajuste de Misiones.
+- «Esconder todo Alfa» (antes «Ocultar Alfa») te dice cómo volver, y «Acerca de» muestra los comandos de Alfa en tu idioma.
+- «Revisar Alfa» ahora revisa también las guías, el Codex y los datos de misiones, objetos y caminos: te dice si faltan, si están apagados o si son de otra versión. Hoy y la Enciclopedia te lo ofrecen cuando falta algo.
+- Palabras más claras: «plan de talentos» en vez de «build», «hechizo de apoyo» en vez de «buff», «Buen lugar aquí» en vez de «Spot», «para juntar» en vez de «farmeo» y «enemigos élite, más fuertes, para ir en grupo».
+- El resumen de tu pelea («Tu pelea») ya no sale debajo de tus barras de acción: si nunca lo moviste, busca un lugar que no tape ninguna barra, y ahora lo arrastras directo a donde quieras (lo recuerda).
+- Mundo trabaja menos: el modo explorador recuerda lo que ya contó, cambiar varias capas rehace la página una vez y el mapa de Alfa no repinta sus botones si nada cambió. Hoy revisa sus avisos cada 3 segundos en vez de cada segundo.
+
+**English**
+- Moving between pages is lighter: a page you already saw isn't built twice, one that didn't change is reused (Conveniences opens much faster the second time) and every page uses less memory when you come back.
+- When you return to a page, Alfa keeps you where you were instead of scrolling back to the top.
+- Window pieces (cards, buttons, switches, corners) no longer repaint when nothing changed, and Alfa's texts are read only once.
+- The search box searches all of Alfa ("Search Alfa"): it waits until you finish typing instead of searching on every letter, finds pages by name ("fishing", "talents") with a button to open them and, when nothing matches, offers to ask Lya or search the Encyclopedia.
+- The guide search also waits until you finish typing; Enter uses what you typed.
+- Every page says what it's for: subtitles are short and, if they don't fit, they show when you hover the "?".
+- Simple Alfa is simpler: Settings keeps only Style and sound, Conveniences, Quests and About. Everything else is in the search box or in Full mode.
+- When you finish the welcome, Today opens and the tour starts. The tour now shows you the minimap wolf (click: open Alfa; right-click: its menu) and the "What's this?" key, names only the sections you can see, and ends if you close its notice.
+- Help is at hand: "Setup and help" comes first in Style and sound, "Help mode" is a switch that shows whether it's on, and the search finds "tour", "help" or "tutorial".
+- Fewer commands, more buttons: Combat offers "Back to Combat", Healing "Open Healing", Gathering "Create a route here", your sound list "Turn it on", Dungeons "Turn off story mode", and Lya opens her history, your shortcuts or the Quests setting.
+- "Hide all of Alfa" (formerly "Hide Alfa") tells you how to bring it back, and "About" lists Alfa's commands in your language.
+- "Check Alfa" now also checks the guides, the Codex and the quest, item and path data: it tells you if they're missing, turned off or from another version. Today and the Encyclopedia offer it when something is missing.
+- Clearer words: "talent plan" instead of "build", "support spell" instead of "buff", "Good spot here", "for gathering" instead of "farming", and "elite enemies, tougher, best with a group".
+- Your fight summary ("Your fight") no longer shows up under your action bars: if you never moved it, it finds a spot that covers no bar, and now you can drag it anywhere directly (it remembers).
+- World does less work: explorer mode remembers what it already counted, changing several layers rebuilds the page once, and Alfa's map doesn't repaint its buttons when nothing changed. Today checks its alerts every 3 seconds instead of every second.
+
 ## 1.3.5 — La manada más ligera: menos trabajo en banda, en combate y en mazmorras (20/11/2026)
 
 La segunda parte de la cacería del lag: todo lo que quedaba de la lista, revisado uno por uno con el perfilador. Cada cambio trae su prueba en el banco.

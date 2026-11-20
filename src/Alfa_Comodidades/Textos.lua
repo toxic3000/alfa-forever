@@ -83,7 +83,8 @@ M.EN = {
 	["Sonidos de gestos"] = "Emote sounds",
 	["Calla las voces de /bailar, /reír, /aplaudir y otros gestos."] = "Mutes the voices of /dance, /laugh, /applaud and other emotes.",
 	["Tu lista de sonidos"] = "Your sound list",
-	["Silencia los sonidos que agregues por su número de archivo (FileDataID): /alfa silenciar <número>; /alfa silenciar quitar <número> lo quita."] = "Mutes the sounds you add by their file number (FileDataID): /alfa silenciar <number>; /alfa silenciar quitar <number> removes it.",
+	-- 1.3.6
+	["Para quien sabe el número de un sonido del juego: /alfa silenciar <número> lo calla y /alfa silenciar quitar <número> lo devuelve."] = "For those who know a game sound's number: /alfa silenciar <number> mutes it and /alfa silenciar quitar <number> brings it back.",
 	["Ver tu lista"] = "Show your list",
 
 	-- Probador.lua
@@ -111,7 +112,8 @@ M.EN = {
 	["Uso: /alfa silenciar <número>, /alfa silenciar quitar <número>, /alfa silenciar borrar."] = "Usage: /alfa silenciar <number>, /alfa silenciar quitar <number>, /alfa silenciar borrar.",
 	["Se quitó el sonido %d de tu lista."] = "Removed sound %d from your list.",
 	["Se agregó el sonido %d a tu lista."] = "Added sound %d to your list.",
-	["Silenciar un sonido por su número (FileDataID)"] = "Mute a sound by its number (FileDataID)",
+	-- 1.3.6
+	["Silenciar un sonido del juego por su número"] = "Mute a game sound by its number",
 
 	-- Vuelo.lua
 	["Escalas:"] = "Stops:",
@@ -132,7 +134,10 @@ M.EN = {
 	["Listo [estado]"] = "Ready",
 	["Comodidades"] = "Conveniences",
 	["Lo pequeño que hace el juego más cómodo: misiones, vuelos, minimapa, chat y barras con el estilo de Alfa, marcos, cuadro de información, probador, cámara y sonidos."] = "The small things that make the game more comfortable: quests, flights, minimap, chat and bars in Alfa's style, frames, tooltip, dressing room, camera and sounds.",
-	["La lista está apagada: enciende «Tu lista de sonidos» en Comodidades (/alfa comodidades)."] = "The list is off: turn on \"Your sound list\" in Conveniences (/alfa comodidades).",
+	-- 1.3.6
+	["Tu lista de sonidos está apagada"] = "Your sound list is off",
+	["Mientras esté apagada, los sonidos de tu lista se siguen oyendo."] = "While it's off, the sounds on your list can still be heard.",
+	["Encenderla"] = "Turn it on",
 
 	-- Estilo.lua
 	["Igual que Alfa"] = "Same as Alfa",
@@ -196,7 +201,8 @@ M.EN = {
 	-- 1.2.0
 	["Todas las misiones"] = "All quests",
 	["Misiones automáticas"] = "Quest automation",
-	["Lo pequeño que hace el juego más cómodo: el minimapa, el chat y las barras con el estilo de Alfa, marcos, cuadro de información, probador, cámara y sonidos; y en sus pestañas, viajes, invitaciones, comerciantes y más."] = "The small things that make the game more comfortable: the minimap, chat and bars in Alfa's style, frames, tooltip, dressing room, camera and sounds; and in its tabs, travel, invitations, merchants and more.",
+	-- 1.3.6
+	["Detalles que hacen el juego más cómodo"] = "Little touches that make the game more comfortable",
 	["Los grifos (o dragones) a los lados de la barra principal. «Del color del estilo» necesita el estilo de las barras; «Ocultos» funciona siempre."] = "The gryphons (or wyverns) on the sides of the main bar. \"In the style's color\" needs the bars style; \"Hidden\" always works.",
 	-- 1.2.8: la recompensa recomendada
 	["Alfa te recomienda: %s"] = "Alfa recommends: %s",

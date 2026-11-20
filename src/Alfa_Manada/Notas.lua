@@ -25,6 +25,7 @@
 --   1N|<mapa>|<x>|<y>|<texto>|s   (un Alfa viejo que comparte notas lo ve
 --                                  como una nota más)
 
+-- 1.3.6: «buen lugar para juntar» en vez de «spot de farmeo» en lo que lees (la capa y /alfa spot siguen igual).
 local ADDON, M = ...
 local N = AlfaNucleo
 local A = N.A
@@ -142,7 +143,7 @@ No.MOTIVOS = MOTIVOS
 function No.AgregarYDecir(texto, tipo)
 	local nota, por = No.Agregar(texto, tipo)
 	if nota then
-		U.Decir(format(esSpot(nota) and L["Marcaste un spot de farmeo: «%s»."] or L["Dejaste una nota en tu mapa: «%s»."], nota.texto)
+		U.Decir(format(esSpot(nota) and L["Marcaste un buen lugar para juntar: «%s»."] or L["Dejaste una nota en tu mapa: «%s»."], nota.texto)
 			.. (nota.compartida and (" " .. L["La manada también la ve."]) or ""))
 	elseif MOTIVOS[por] then
 		U.Decir(L[MOTIVOS[(por == "texto" and tipo == "spot") and "textoSpot" or por]])
@@ -229,7 +230,7 @@ local function cuadro(x)
 		local r, g, b = acento()
 		tip:SetText(x.texto or "?", 1, 1, 1)
 		if esSpot(x) then
-			tip:AddLine(x.de and format(L["Spot de farmeo de %s"], x.de) or L["Tu spot de farmeo"], 1, 0.82, 0.3)
+			tip:AddLine(x.de and format(L["Lugar para juntar de %s"], x.de) or L["Tu lugar para juntar"], 1, 0.82, 0.3)
 		else
 			tip:AddLine(x.de and format(L["Nota de %s"], x.de) or L["Tu nota"], r, g, b)
 		end
@@ -296,6 +297,6 @@ A.RegisterCommand("spot", function(rest)
 		return
 	end
 	No.AgregarYDecir(rest, "spot")
-end, L["Marca un spot de farmeo donde estás (/alfa spot <texto>)"])
+end, L["Marca un buen lugar para juntar donde estás (/alfa spot <texto>)"])
 
 A.OnLogin(function() A.After(2, function() No.Pintar(true) end) end)

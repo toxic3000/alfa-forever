@@ -72,6 +72,28 @@ VISTAS = [
      "The wolf and moon intro greets you when you log in; with a new version, what's new comes next."),
     ("shot-notas.png", "Lo nuevo, a la vista", "Al actualizar, una ventana te cuenta qué cambió. La cierras y sigues jugando.",
      "After an update, a window tells you what changed. Close it and keep playing."),
+    # 1.3.6 (tools/banco/galeria136.lua, galeria.lua y manual.lua): al final, para
+    # que las imágenes que ya usa curseforge/descripcion.md conserven su número.
+    ("shot-136-buscador.png", "Busca en todo Alfa", "Escribe una palabra: Alfa te encuentra la página y el ajuste, y si no, te ofrece a Lya.",
+     "Type a word: Alfa finds the page and the setting, or offers you Lya."),
+    ("shot-136-lya-guia.png", "Pregúntale a Lya", "Todo Alfa explicado por Lya, con un clic que te lleva a donde se hace.",
+     "All of Alfa explained by Lya, with a click that takes you where it's done."),
+    ("shot-136-resumen.png", "Tu pelea, sin estorbar", "Al terminar una pelea, tu daño y lo que más te pegó, junto a tus barras y nunca encima.",
+     "After a fight, your damage and what hit you hardest, next to your bars, never on top."),
+    ("shot-g-builds.png", "Talentos", "Qué talento poner ahora, tu plan de talentos y tu equipo.",
+     "Which talent to take now, your talent plan and your gear."),
+    ("shot-manual-curacion.png", "Curación con un clic", "Marcos de grupo y banda: cura, selecciona y quita perjuicios con tus clics.",
+     "Party and raid frames: heal, target and cleanse with your clicks."),
+    ("shot-g-mundo.png", "Mundo", "El mapa de Alfa: el mundo entero, tus marcadores y un solo control de capas.",
+     "Alfa's map: the whole world, your markers and one layer control."),
+    ("shot-v-rastreador.png", "Tu rastreador", "Tu paso de ahora, la flecha y lo que sigue, siempre a la vista y compacto.",
+     "Your current step, the arrow and what's next, always in view and compact."),
+    ("shot-manual-comercio.png", "Comercio", "¿Vender, subastar o transformar? Lo que más oro te deja con cada objeto.",
+     "Vendor, auction or craft? What makes you the most gold with each item."),
+    ("shot-manual-recoleccion.png", "Recolección", "Minas, hierbas, pesca y tesoros, con rutas para juntar.",
+     "Mining, herbs, fishing and treasures, with gathering routes."),
+    ("shot-manual-comodidades.png", "Comodidades", "Detalles que hacen el juego más cómodo, todos en un lugar.",
+     "Little touches that make the game more comfortable, all in one place."),
 ]
 
 

@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "La 1.3.5: la manada más ligera", "items": ["**En grupo y en banda, mucho menos trabajo:** lo que hacen los demás ya no llega a las partes de Alfa que solo te miran a ti.", "**Modo combate y modo mazmorra:** en una pelea, Lya y las páginas abiertas esperan; dentro de una mazmorra, la recolección deja de buscar nodos.", "**Modo ligero** (Ajustes > Estilo y sonido): para computadoras modestas, todo lo de fondo más despacio y los anuncios sin animación.", "**Y más:** cambiar de zona cuesta menos, la siguiente guía queda lista de antemano y `/alfa rendimiento` te dice cuánto tardó Alfa al entrar."]}
+    "mapa": {"titulo": "La 1.3.6: la manada te guía", "items": ["**Busca en todo Alfa:** el buscador de arriba encuentra páginas y ajustes, espera a que termines de escribir y, si no encuentra algo, te ofrece a Lya.", "**Para quien empieza:** cada página dice para qué sirve, Alfa sencillo es más sencillo, el recorrido enseña el lobo del minimapa y la tecla de «¿Qué es esto?», y hay botones en vez de comandos.", "**Más ligero:** las páginas se abren más rápido y recuerdan dónde ibas. **Modo ligero** para computadoras modestas, en Estilo y sonido.", "**Tu pelea, sin estorbar:** el resumen ya no tapa tus barras de acción y lo arrastras a donde quieras."]}
   },
   "contraportada": {
     "titulo": "Únete a la manada",

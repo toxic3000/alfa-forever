@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "A 1.3.5: a matilha mais leve", "items": ["**Muito menos trabalho em grupo e em raide:** o que os outros fazem não chega mais às partes do Alfa que só olham para você.", "**Modo combate e modo masmorra:** numa luta, a Lya e as páginas abertas esperam; dentro de uma masmorra, a coleta para de procurar nós.", "**Modo leve** (Ajustes > Estilo e som): para computadores modestos, tudo em segundo plano mais devagar e os anúncios sem animação.", "**E mais:** mudar de zona custa menos, o próximo guia fica pronto antes e `/alfa rendimiento` diz quanto o Alfa levou ao entrar."]}
+    "mapa": {"titulo": "A 1.3.6: a matilha te guia", "items": ["**Busque em todo o Alfa:** a busca no topo encontra páginas e ajustes, espera você terminar de digitar e, se não achar nada, te oferece a Lya.", "**Para quem está começando:** cada página diz para que serve, o modo simples ficou mais simples, o tour mostra o lobo do minimapa e a tecla de \"O que é isto?\", e há botões em vez de comandos.", "**Mais leve:** as páginas abrem mais rápido e lembram onde você estava. **Modo leve** para computadores modestos, em Estilo e som.", "**Sua luta sem atrapalhar:** o resumo não cobre mais suas barras de ação e você o arrasta para onde quiser."]}
   },
   "contraportada": {
     "titulo": "Entre para a matilha",

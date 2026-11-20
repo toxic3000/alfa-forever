@@ -492,7 +492,8 @@ for _, c in ipairs({
 
 N.Modulo({
 	id = ID, nombre = L["Pesca"], icono = "ic-pesca", orden = 55,
-	subtitulo = L["Una tecla para todo: equipo, cebo, lanzar y recoger. Con diario, guía, cocina, metas y estadísticas."],
+	-- 1.3.6: subtítulo corto (la ventana esconde los de más de 60 letras).
+	subtitulo = L["Una tecla para pescar, con diario, guía y cocina."],
 	comando = "pesca",
 	ajustes = M.AJUSTES,
 	controles = CONTROLES,

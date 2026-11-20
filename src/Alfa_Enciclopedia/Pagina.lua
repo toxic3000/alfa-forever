@@ -186,7 +186,8 @@ A.On("CODEX_LOADED", function() if vista then N.RehacerPagina(vista) end end)
 
 N.Modulo({
 	id = ID, nombre = L["Enciclopedia"], icono = "ic-enciclopedia", orden = 25, seccion = "aventura",
-	subtitulo = L["Todo el juego, aunque no lo tengas: objetos, monturas, mascotas, PNJ, misiones, zonas y raros."],
+	-- 1.3.6: subtítulo corto (la ventana esconde los de más de 60 letras).
+	subtitulo = L["Todo el juego: objetos, monturas, PNJ, misiones y más."],
 	construir = construir,
 })
 

@@ -45,15 +45,34 @@ end
 N.SinContexto = sinContexto
 
 function N.Textos(en)
+	-- 1.3.6: cada lectura de L[...] corría un gsub (español) o buscaba en el
+	-- diccionario: el resultado se guarda en la tabla (rawset), y la próxima
+	-- lectura ya no pasa por aquí. El idioma no cambia sin /reload. Solo claves
+	-- de texto que se pueden leer (nunca un valor secreto); la clave guardada es
+	-- la completa, con su contexto («Listo [estado]»), así que cada contexto
+	-- conserva su propia traducción.
+	local function guardable(k)
+		return type(k) == "string" and not (issecretvalue and issecretvalue(k))
+	end
 	if N.espanol then
 		-- En español nadie vuelve a leer la tabla en inglés (el idioma no cambia
 		-- sin /reload): se vacía para que sus textos no ocupen memoria (1.2.9).
 		if type(en) == "table" and wipe then wipe(en) end
-		return setmetatable({}, { __index = function(_, k) return sinContexto(k) end })
+		return setmetatable({}, { __index = function(t, k)
+			local v = sinContexto(k)
+			if guardable(k) then rawset(t, k, v) end
+			return v
+		end })
 	end
-	return setmetatable({}, { __index = function(_, k)
+	return setmetatable({}, { __index = function(t, k)
 		local d = diccionario()
-		return (d and d[k]) or (type(en) == "table" and en[k]) or sinContexto(k)
+		local v = (d and d[k]) or (type(en) == "table" and en[k])
+		if v ~= nil then
+			-- Solo lo traducido: si falta, el paquete de idioma puede llegar después.
+			if guardable(k) and d then rawset(t, k, v) end
+			return v
+		end
+		return sinContexto(k)
 	end })
 end
 
@@ -218,6 +237,9 @@ end
 -- Mide otra vez una página que está a la vista (cambió algo) y ajusta el
 -- desplazamiento de la ventana.
 function N.RehacerPagina(view)
+	-- 1.3.6: sucia antes de ver si se ve: si cambió algo con la página oculta,
+	-- se llena otra vez al volver (K.EnPagina reusa las páginas limpias).
+	if type(view) == "table" then view.alfaSucio = true end
 	if not (view and view.Refresh and view.IsVisible and view:IsVisible()) then return end
 	local h = view.Refresh()
 	if type(h) ~= "number" then return end
@@ -235,6 +257,8 @@ function N.Repintar(id, arriba)
 	if not (O and type(O.Views) == "function") then return false end
 	local hubo = false
 	for _, v in ipairs(O.Views(id)) do
+		-- 1.3.6: las ocultas también quedan sucias (se llenan al volver a ellas).
+		if type(v) == "table" then v.alfaSucio = true end
 		if v.IsVisible and v:IsVisible() then
 			N.RehacerPagina(v)
 			hubo = true

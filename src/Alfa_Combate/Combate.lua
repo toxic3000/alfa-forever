@@ -304,6 +304,9 @@ local function posiciones()
 	return d.pos
 end
 
+-- 1.3.6: si el jugador ya movió ese marco (su lugar guardado), o nil.
+function M.Posicion(clave) return posiciones()[clave] end
+
 local function colocar(f)
 	local p = posiciones()[f.alfaClave]
 	f:ClearAllPoints()

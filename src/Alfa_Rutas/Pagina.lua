@@ -14,6 +14,7 @@
 --      entregar solas, evitar las de grupo y cuántos niveles arriba; y los
 --      de buscar cerca (el botón del rastreador, la fila de Hoy, el aviso).
 
+-- 1.3.6: «Evitar misiones de grupo» explica qué es un élite (más fuerte, para ir en grupo).
 local ADDON, M = ...
 local A, L, N = M.A, M.L, M.N
 local K = M.K
@@ -125,7 +126,7 @@ local function ajustes(padre)
 		texto = L["Las de tu ruta, las de la guía o todas: se eligen en Ajustes > Misiones, con lo demás de las misiones."],
 		control = function(f) return K.Boton(f, L["Abrir Misiones"], function() N.Abrir("questing") end, { tipo = "secundario" }) end })
 	g:Fila({ titulo = L["Evitar misiones de grupo"],
-		texto = L["Al armar tus rutas, Alfa deja fuera las que piden élites."],
+		texto = L["Al armar tus rutas, Alfa deja fuera las que tienen enemigos élite, más fuertes, para ir en grupo."],
 		control = function(f) return K.Interruptor(f, { clave = M.ID .. ".evitarGrupo" }) end })
 	g:Fila({ titulo = L["Niveles arriba del tuyo"],
 		texto = L["Qué tan difíciles pueden ser las misiones que Alfa elige (siempre de las que ya puedes tomar)."],
@@ -208,7 +209,7 @@ local CONTROLES = {
 	-- búsqueda los encuentra en Misiones) y «Restablecer la página» de Ruta no
 	-- debe tocarlos.
 	{ kind = "toggle", key = M.ID .. ".evitarGrupo", label = L["Evitar misiones de grupo"],
-		help = L["Al armar tus rutas, Alfa deja fuera las que piden élites."], search = "group quests, elite quests, skip" },
+		help = L["Al armar tus rutas, Alfa deja fuera las que tienen enemigos élite, más fuertes, para ir en grupo."], search = "group quests, elite quests, skip" },
 	{ kind = "slider", key = M.ID .. ".margen", label = L["Niveles arriba del tuyo"], min = 1, max = 4, step = 1,
 		format = function(v) return format(L["+%d"], v) end,
 		help = L["Qué tan difíciles pueden ser las misiones que Alfa elige (siempre de las que ya puedes tomar)."],

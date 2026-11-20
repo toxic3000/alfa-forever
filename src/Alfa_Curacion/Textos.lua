@@ -265,4 +265,11 @@ M.EN = {
 	["Tiene un perjuicio que puedes quitar:"] = "They have a debuff you can remove:",
 	["Maná: quienes curaron"] = "Mana: who has healed",
 	["Tras la pelea: quienes curaron"] = "After the fight: who has healed",
+	-- 1.3.6: claridad para quien empieza
+	["Hechizo nuevo para tus clics de Curación"] = "New spell for your Healing clicks",
+	["Abrir Curación"] = "Open Healing",
+	["Le falta tu hechizo de apoyo"] = "Missing your buff",
+	["Un punto azul abajo a la derecha si a ese compañero le falta tu hechizo de apoyo (el que le das antes de pelear). Se revisa fuera de combate."] = "A blue dot at the bottom right if that teammate is missing your class buff. Checked out of combat.",
+	["Que a ese compañero le falta tu hechizo de apoyo (el que le das antes de pelear). Pasa el ratón sobre su marco: te digo con qué clic se lo das."] = "That teammate is missing your class buff. Hover over their frame: I'll tell you which click gives it.",
+	["Marcos de grupo y banda para curar con un clic."] = "Party and raid frames to heal with one click.",
 }

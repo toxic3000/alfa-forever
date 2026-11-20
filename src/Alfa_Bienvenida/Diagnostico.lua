@@ -79,7 +79,13 @@ Dg.CHOQUES = {
 -- Las partes de Alfa (las que siempre cargan y las que cargan al pedirlas).
 local PARTES = { "Alfa", "Alfa_Nucleo", "Alfa_Bienvenida", "Alfa_Idioma", "Alfa_Inicio", "Alfa_Rutas", "Alfa_Lya",
 	"Alfa_Manada", "Alfa_Bolsas", "Alfa_Builds", "Alfa_Combate", "Alfa_Comercio", "Alfa_Comodidades", "Alfa_Curacion",
-	"Alfa_Enciclopedia", "Alfa_Mazmorras", "Alfa_Mundo", "Alfa_Pesca", "Alfa_Recoleccion", "Alfa_Vista" }
+	"Alfa_Enciclopedia", "Alfa_Mazmorras", "Alfa_Mundo", "Alfa_Pesca", "Alfa_Recoleccion", "Alfa_Vista",
+	-- 1.3.6: y los paquetes de datos (guías, Codex, misiones, objetos, caminos):
+	-- «Revisar Alfa» los ofrece cuando faltan guías o datos.
+	"Alfa_Guides", "Alfa_Guides_Alliance", "Alfa_Guides_Horde", "Alfa_Codex", "Alfa_QuestDB", "Alfa_ItemDB", "Alfa_Nav" }
+
+-- 1.3.6: sin estos (o sin las guías de tu facción) Alfa no tiene guías ni datos.
+local DATOS_ESENCIALES = { "Alfa_Guides", "Alfa_Codex", "Alfa_QuestDB", "Alfa_Nav" }
 
 -- Los interruptores principales: si casi todos están apagados, algo pasó.
 local PRINCIPALES = { "bolsas.reemplazar", "curacion.activo", "combate.rotacion", "recoleccion.mapa", "pesca.activo",
@@ -174,6 +180,19 @@ local function partes(out)
 			local v = meta(n, "Version")
 			if v and v ~= "dev" and version ~= "dev" and v ~= version then otras[#otras + 1] = format("%s %s", n, v) end
 		end
+	end
+	-- 1.3.6: los paquetes de datos que ni siquiera están instalados.
+	local faltan = {}
+	local esenciales = {}
+	for i, n in ipairs(DATOS_ESENCIALES) do esenciales[i] = n end
+	local f = UnitFactionGroup and UnitFactionGroup("player")
+	if f == "Alliance" or f == "Horde" then esenciales[#esenciales + 1] = "Alfa_Guides_" .. f end
+	for _, n in ipairs(esenciales) do
+		if not existe(n) then faltan[#faltan + 1] = n end
+	end
+	if #faltan > 0 then
+		out[#out + 1] = { id = "partes.faltan", tono = "aviso", titulo = L["Faltan partes de Alfa"],
+			texto = format(L["No están en tu carpeta de addons: %s. Sin ellas faltan guías o datos. Reinstala Alfa completo (el zip entero o el instalador)."], table.concat(faltan, ", ")) }
 	end
 	if #apagadas > 0 then
 		out[#out + 1] = { id = "partes.apagadas", tono = "aviso", titulo = L["Partes de Alfa apagadas"],
@@ -374,6 +393,10 @@ end
 function Dg.Visible() return v ~= nil and v:IsShown() end
 
 A.RegisterCommand("diagnostico", function() Dg.Abrir() end, L["revisa si algo choca con Alfa y cómo arreglarlo"])
+
+-- 1.3.6: para otros módulos («Revisar Alfa» en la Enciclopedia).
+AlfaBienvenida = type(AlfaBienvenida) == "table" and AlfaBienvenida or {}
+function AlfaBienvenida.Diagnostico() return Dg.Abrir() end
 
 -- Lya sabe contar lo de la 1.2.9 (Pregúntale a Lya).
 A.OnLogin(function()

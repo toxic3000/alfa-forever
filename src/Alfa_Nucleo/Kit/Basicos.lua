@@ -111,7 +111,10 @@ end
 -- Información al pasar el ratón. titulo/texto: cadenas, o una función que
 -- devuelve titulo, texto (se lee al mostrarse).
 function K.ConInfo(marco, titulo, texto)
-	marco.alfaInfo = { titulo, texto }
+	-- 1.3.6: la misma tabla, con lo nuevo (no una nueva en cada Set). Quien la
+	-- lee lo hace al mostrarse, nadie se la guarda.
+	local i = rawget(marco, "alfaInfo")
+	if type(i) == "table" then i[1], i[2] = titulo, texto else marco.alfaInfo = { titulo, texto } end
 	if marco.alfaConInfo then return marco end
 	marco.alfaConInfo = true
 	marco:HookScript("OnEnter", function(self)
@@ -195,10 +198,26 @@ local function botonRojo(b, on)
 	b.rojo.brillo:SetShown(activo and true or false)
 end
 
+-- 1.3.6: la caja de cada tipo de botón (y la del secundario bajo el ratón)
+-- se arma una vez aquí, no en cada pintado. Caja:Estilo solo las lee.
+local CAJA_BOTON, CAJA_SOBRE = {}, {}
+for tipo, e in pairs(ESTILO) do
+	local caja = {}
+	for k, v in pairs(e[1]) do caja[k] = v end
+	if caja.fondo == nil then caja.fondo = false end
+	if caja.borde == nil then caja.borde = false end
+	CAJA_BOTON[tipo] = caja
+	local sobre = {}
+	for k, v in pairs(caja) do sobre[k] = v end
+	if tipo == "secundario" then sobre.borde = "textoTenue" end
+	CAJA_SOBRE[tipo] = sobre
+end
+local CAJA_VACIA = { fondo = false, borde = false }
+
 local function pintarBoton(b)
 	if K.Clasico() then
 		local fantasma = b.alfaTipo == "fantasma"
-		b.caja:Estilo({ fondo = false, borde = false })
+		b.caja:Estilo(CAJA_VACIA)
 		botonRojo(b, not fantasma)
 		local color = b.alfaTipo == "peligro" and "peligro" or ((b.alfaSobre or b.alfaMarcado) and "texto" or "titulo")
 		if not b:IsEnabled() then color = "textoTenue" end
@@ -209,12 +228,10 @@ local function pintarBoton(b)
 	end
 	botonRojo(b, false)
 	local e = ESTILO[b.alfaTipo] or ESTILO.secundario
-	local caja = {}
-	for k, v in pairs(e[1]) do caja[k] = v end
-	if caja.fondo == nil then caja.fondo = false end
-	if caja.borde == nil then caja.borde = false end
-	if b.alfaTipo == "secundario" and b.alfaSobre then caja.borde = "textoTenue" end
-	b.caja:Estilo(caja)
+	-- 1.3.6: tablas fijas. Un tipo desconocido se pinta como secundario, pero
+	-- sin el borde del ratón encima (como antes: esa regla era solo del secundario).
+	local tipo = ESTILO[b.alfaTipo] and b.alfaTipo
+	b.caja:Estilo(tipo and (b.alfaSobre and CAJA_SOBRE[tipo] or CAJA_BOTON[tipo]) or CAJA_BOTON.secundario)
 	local color = e[2]
 	if b.alfaTipo == "fantasma" and b.alfaSobre then color = "texto" end
 	K.ColorTexto(b.Texto, color)
@@ -498,6 +515,7 @@ end
 ---------------------------------------------------------------------------
 local function pintarInterruptor(s)
 	local on = s.alfaValor
+	s.pSobre, s.pGen = s.alfaSobre and true or false, K.genPintado -- 1.3.6: lo que se pintó (SetValor)
 	s.caja:Estilo({ fondo = on and "acento" or "hundido", borde = on and false or (s.alfaSobre and "textoTenue" or "lineaFuerte") })
 	s.Perilla:SetVertexColor(K.Color(on and "sobreAcento" or "textoSuave"))
 	s.Perilla:ClearAllPoints()
@@ -540,7 +558,14 @@ function K.Interruptor(padre, opts)
 	s.Perilla:SetSize(14, 14)
 	s.alCambiar = opts.alCambiar
 	s.alfaGet, s.alfaSet = opts.get, opts.set
-	function s:SetValor(v) self.alfaValor = v and true or false pintarInterruptor(self) end
+	-- 1.3.6: el mismo valor, con el mismo ratón encima y sin repintado de por
+	-- medio, ya está pintado (FilaAjuste:Refrescar lo vuelve a leer seguido).
+	function s:SetValor(v)
+		v = v and true or false
+		if v == self.alfaValor and self.pSobre == (self.alfaSobre and true or false) and self.pGen == K.genPintado then return end
+		self.alfaValor = v
+		pintarInterruptor(self)
+	end
 	function s:Valor() return self.alfaValor end
 	function s:Leer()
 		local ok, v = leerControl(self)
@@ -727,7 +752,8 @@ function K.Segmentos(padre, opts)
 			K.Escribir(b.Texto, o.texto or tostring(o.valor))
 			b.Cuenta:SetText(o.cuenta ~= nil and tostring(o.cuenta) or "")
 			-- Sin ayuda, la casilla no conserva la de la opción que tenía antes.
-			if o.ayuda then K.ConInfo(b, o.texto, o.ayuda) elseif b.alfaInfo then b.alfaInfo = { nil, nil } end
+			-- 1.3.6: se vacía la misma tabla (no una nueva).
+			if o.ayuda then K.ConInfo(b, o.texto, o.ayuda) elseif b.alfaInfo then b.alfaInfo[1], b.alfaInfo[2] = nil, nil end
 		end
 		for i = #self.opciones + 1, #self.botones do self.botones[i]:Hide() end
 	end

@@ -11,6 +11,7 @@
 --   S.Borrar(id) ; S.Lista() -> { build... }
 --   M.Importado(id) -> build | nil
 
+-- 1.3.6: en lo que lees dice «plan de talentos» en vez de «build» (la cadena ALFA1; sigue igual).
 local ADDON, M = ...
 local N, A, L = M.N, M.A, M.L
 local S = {}
@@ -72,12 +73,12 @@ function S.ExportarActual()
 end
 
 S.ERRORES = {
-	vacio = L["Pega primero una cadena de build de Alfa."],
-	largo = L["Ese texto es demasiado largo para un build."],
-	formato = L["Eso no es una cadena de build de Alfa. Empieza con ALFA1;"],
-	clase = L["Ese build es para otra clase."],
+	vacio = L["Pega primero una cadena de talentos de Alfa."],
+	largo = L["Ese texto es demasiado largo para un plan de talentos."],
+	formato = L["Eso no es una cadena de talentos de Alfa. Empieza con ALFA1;"],
+	clase = L["Ese plan de talentos es para otra clase."],
 	talentos = L["La cadena no trae talentos válidos."],
-	lleno = L["Ya tienes demasiados builds importados. Borra alguno primero."],
+	lleno = L["Ya tienes demasiados planes importados. Borra alguno primero."],
 }
 
 -- Convierte lo guardado en un build que el resto del módulo entiende.
@@ -90,7 +91,7 @@ local function construir(id, g)
 	local b = {
 		id = id, clase = g.clase, spec = g.spec, objetivo = g.objetivo, estilo = g.estilo,
 		titulo = g.titulo, importado = true, data = M.DatosClase(),
-		resumen = L["Build importado de una cadena. Alfa lo resuelve en tu árbol y te avisa si algún talento no existe."],
+		resumen = L["Plan de talentos importado de una cadena. Alfa lo resuelve en tu árbol y te avisa si algún talento no existe."],
 		talentos = g.talentos, armas = base and base.armas, stats = base and base.stats,
 		consejos = {}, pesos = base and base.pesos,
 	}
@@ -141,7 +142,7 @@ function S.Importar(texto)
 	local objetivo = M.Objetivo(campos[4]) and campos[4] or "solo"
 	local estilo = M.Estilo(campos[5]) and campos[5] or "equilibrado"
 	local titulo = limpio(campos[6], 40)
-	if titulo == "" then titulo = L["Build importado"] end
+	if titulo == "" then titulo = L["Plan importado"] end
 	local id = "imp-" .. tostring(time and time() or 0) .. "-" .. tostring(math.random(1000, 9999))
 	g[id] = { clase = clase, spec = spec, objetivo = objetivo, estilo = estilo, titulo = titulo, talentos = talentos, fecha = time and time() or 0 }
 	return M.Importado(id)

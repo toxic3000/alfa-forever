@@ -4,7 +4,7 @@
 
 **The all-in-one for World of Warcraft: Forever.** Guides, route, map, bags, talents, encyclopedia, dungeons, healing, fishing, trading and your guild, in one addon with one look — and **Lya**, a black she-wolf companion who chats with you about lore, your zone and your adventures. Made by **toxic3000** for **La Jauría**. Free, open source, 10 languages.
 
-> 🐺 **New in 1.3.3, a calm pack:** a quiet login — only Alfa's animation, and everything else waits for you on Today and with Lya; a livelier intro where the wolf draws itself in light and flies to your minimap icon; follow your group's route and ask your partner for their quests; a clear hearthstone plate with a button to use it; one voice for alerts; Talents in Simple mode — and 20 more improvements, each with its own test. PDF manual in 10 languages ([download it](https://github.com/toxic3000/alfa-forever/releases/latest)).
+> 🐺 **New in 1.3.6, the pack guides you:** 50 improvements so moving around Alfa is fast and anyone new understands it at first sight — a search box that searches all of Alfa and finds pages by name, pages that open lighter and remember where you were, every page saying what it's for, a simpler Simple mode, a fuller tour, buttons instead of commands, clearer words, **Light mode** for modest computers and **combat and dungeon modes** that keep Alfa quiet when it matters. Also new: your fight summary never covers your action bars and you can drag it anywhere. PDF manual in 10 languages ([download it](https://github.com/toxic3000/alfa-forever/releases/latest)).
 > If something breaks, tell us with `/alfa reportar`, on [Discord](https://discord.gg/hUNjA6BJwh), in the comments or on [GitHub](https://github.com/toxic3000/alfa-forever/issues).
 
 ## A quick look / Un vistazo
@@ -31,6 +31,34 @@
 
 **Scenery / Paisaje** — the game's graphics settings explained, with presets and one-click undo.
 
+![Search all of Alfa](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/20-136-buscador.png)
+
+**Search all of Alfa / Busca en todo Alfa** — type a word: Alfa finds the page and the setting, and if not, offers you Lya.
+
+![Ask Lya](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/21-136-lya-guia.png)
+
+**Ask Lya / Pregúntale a Lya** — all of Alfa explained by Lya, with a click that takes you there.
+
+![Today](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/01-inicio.png)
+
+**Today / Hoy** — "What do we do today?": your next step, your ready quests and your class on one page.
+
+![Healing](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/24-manual-curacion.png)
+
+**Healing / Curación** — party and raid frames to heal, target and cleanse with your clicks.
+
+![Talents](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/23-builds.png)
+
+**Talents / Talentos** — which talent to take now, your talent plan and your gear.
+
+![World](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/25-mundo.png)
+
+**World / Mundo** — Alfa's map: the whole world, your markers and one layer control.
+
+![Your fight](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/22-136-resumen.png)
+
+**Your fight / Tu pelea** — after a fight, your damage and what hit you hardest, next to your bars, never on top.
+
 ![What's new](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/19-notas.png)
 
 **Every login, a welcome / Cada entrada, una bienvenida** — the wolf and moon intro greets you every time you log in.
@@ -41,7 +69,7 @@
 
 Tired of a pile of addons stepping on each other and filling your map with icons? Alfa puts it all in one, tidy and guided, and it adapts to your class. **It needs no other addon.**
 
-Open everything with `/alfa`, the minimap icon or the **Alfa** button in the Esc menu — all three open the same window, and right-click gives the same menu. The main window has six pages: **Today, Adventure, Character, World, Professions and Pack**, plus **Settings**. Move Lya, your guide, the arrow and your frames with the mouse with **Arrange your screen** (`/alfa acomodar`). Pick one of 3 styles (Alfa, Classic WoW and Crystal), which also dress the chat, the minimap and, if you like, the action bars.
+Open everything with `/alfa`, the minimap icon or the **Alfa** button in the Esc menu — all three open the same window, and right-click gives the same menu. The main window has six pages: **Today, Adventure, Character, World, Professions and Pack**, plus **Settings**. Move Lya, your guide, the arrow and your frames with the mouse with **Arrange your screen** (`/alfa acomodar`). Pick one of 3 styles (Alfa, Classic WoW and Crystal), which also dress the chat, the minimap and, if you like, the action bars. Can't find something? The search box at the top searches **all of Alfa**, and Lya answers the rest (`/alfa ayuda`). On a modest computer, turn on **Light mode** (Settings > Style and sound).
 
 It doesn't switch your brain off: Alfa backs you up and you decide. The first time, it asks one by one what you want it to do for you and whether you want the arrow and the path on screen.
 
@@ -57,7 +85,7 @@ It doesn't switch your brain off: Alfa backs you up and you decide. The first ti
 - **Healing** — click-to-heal party and raid frames: your heal also targets the teammate, every click set up in a minute, curses/poisons/magic/disease shown and cleansed in one click, missing buffs marked, the tank in trouble and healers' mana.
 - **Bags** — three views (all, categories, per bag), a bag bar, your bank from anywhere with quick deposit and slot purchase, every character's inventory, and what to sell when they fill up. Your gold per hour (mailbox gold kept apart) and an alert for expiring mail with **Take all**.
 - **World** — all of Azeroth on one zoomable map with real terrain, flight points, entrances and exits (dungeons, boats, zeppelins, portals), your own markers and one layer control.
-- **Gathering** — ore, herbs, fishing pools and treasures on map and minimap, with farming routes.
+- **Gathering** — ore, herbs, fishing pools and treasures on map and minimap, with gathering routes.
 - **Trade** — auction prices and what to do with each item: vendor, auction or craft.
 - **Fishing** — fully re-engineered: a one-key fishing mode (gear, lure, cast and loot), a fishing bar, catch journal, achievements, goals, a 1–300 guide and cooking by the water.
 - **Scenery** — the game's graphics settings in plain words, presets, one-click undo and screen filters.
@@ -70,12 +98,12 @@ It doesn't switch your brain off: Alfa backs you up and you decide. The first ti
 
 **El todo en uno para World of Warcraft: Forever.** Guías, ruta, mapa, bolsas, talentos, enciclopedia, mazmorras, curación, pesca, comercio y tu clan, en un solo addon y con un solo estilo. Hecho por **toxic3000** para **La Jauría**.
 
-> **Novedades de la 1.3.3, la manada en calma:** entrar en silencio: solo la animación de Alfa, y lo demás te espera en Hoy y con Lya; una intro más viva, con el lobo que se dibuja en luz y vuela a tu ícono del minimapa; sigue la ruta de tu grupo y pide las misiones de tu compañero; la piedra de hogar clara, con su botón; una sola voz para los avisos; Talentos en Sencillo; y 20 mejoras más, cada una con su prueba. Manual en PDF en 10 idiomas ([descárgalo](https://github.com/toxic3000/alfa-forever/releases/latest)).
+> **Novedades de la 1.3.6, la manada te guía:** 50 mejoras para que moverte por Alfa sea rápido y quien empieza lo entienda a la primera: un buscador que busca en todo Alfa y encuentra las páginas por su nombre, páginas que abren más ligeras y recuerdan dónde ibas, cada página dice para qué sirve, Alfa sencillo más sencillo, un recorrido más completo, botones en vez de comandos, palabras más claras, **Modo ligero** para computadoras modestas y **modo combate y modo mazmorra** para que Alfa no estorbe cuando importa. Y el resumen de tu pelea ya nunca tapa tus barras y lo arrastras a donde quieras. Manual en PDF en 10 idiomas ([descárgalo](https://github.com/toxic3000/alfa-forever/releases/latest)).
 > Si algo falla, avísanos con `/alfa reportar`, en el [Discord de La Jauría](https://discord.gg/hUNjA6BJwh), en los comentarios o en [GitHub](https://github.com/toxic3000/alfa-forever/issues).
 
 ¿Cansado de tener un montón de addons que se enciman y te llenan el mapa de marcas? Alfa los junta en uno solo, ordenado y guiado, que se adapta a tu clase. **No necesita ningún otro addon.**
 
-Abre todo con `/alfa`, el ícono del minimapa o el botón **Alfa** del menú Esc: los tres abren la misma ventana y, con clic derecho, el mismo menú. La ventana principal tiene seis páginas: **Hoy, Aventura, Personaje, Mundo, Oficios y Manada**, más **Ajustes** aparte. Mueve a Lya, tu guía, la flecha y tus marcos con el ratón con **Acomodar la pantalla** (`/alfa acomodar`). Elige entre 3 estilos (Alfa, Clásico WoW y Cristal), que también visten el chat, el minimapa y, si quieres, las barras de acción.
+Abre todo con `/alfa`, el ícono del minimapa o el botón **Alfa** del menú Esc: los tres abren la misma ventana y, con clic derecho, el mismo menú. La ventana principal tiene seis páginas: **Hoy, Aventura, Personaje, Mundo, Oficios y Manada**, más **Ajustes** aparte. Mueve a Lya, tu guía, la flecha y tus marcos con el ratón con **Acomodar la pantalla** (`/alfa acomodar`). Elige entre 3 estilos (Alfa, Clásico WoW y Cristal), que también visten el chat, el minimapa y, si quieres, las barras de acción. ¿No encuentras algo? El buscador de arriba busca en **todo Alfa** y Lya te responde lo demás (`/alfa ayuda`). En una computadora modesta, prende el **Modo ligero** (Ajustes > Estilo y sonido).
 
 No busca apagarte el cerebro: Alfa te apoya, y tú decides. La primera vez te pregunta, una por una, qué quieres que haga solo y si quieres la flecha y el camino en pantalla.
 
@@ -90,10 +118,10 @@ No busca apagarte el cerebro: Alfa te apoya, y tú decides. La primera vez te pr
 | **Mazmorras** `/alfa mazmorras` | La que te toca por nivel, con "Prepárame": jefes, botín, misiones que conviene llevar, consejos y cómo llegar a la entrada. |
 | **Talentos** `/alfa builds` | Qué talento poner ahora y por qué, aplicado con un clic. Eliges objetivo (subir solo, mazmorras, tanque, JcJ) y estilo (tranquilo, equilibrado, arriesgado). |
 | **Combate** `/alfa combate` · `/alfa dps` | Ayuda de rotación para las 27 especializaciones, los enemigos de tus misiones resaltados, avisos de reacción y un medidor de daño de tu grupo. |
-| **Curación** `/alfa curacion` | Marcos de grupo y banda para curar con un clic: al curar también seleccionas al compañero, tus clics listos en un minuto, maldiciones, venenos, magia y enfermedades a la vista y fuera con un clic, buffos que faltan, el tanque en apuros y el maná de los sanadores. |
+| **Curación** `/alfa curacion` | Marcos de grupo y banda para curar con un clic: al curar también seleccionas al compañero, tus clics listos en un minuto, maldiciones, venenos, magia y enfermedades a la vista y fuera con un clic, hechizos de apoyo que faltan, el tanque en apuros y el maná de los sanadores. |
 | **Bolsas** `/alfa bolsas` | Tres vistas (todo junto, por categorías o por bolsa), barra de bolsas, banco desde cualquier lugar con depósito rápido y compra de espacios, el inventario de tus personajes y qué vender cuando se llenan. Tu oro por hora (el del buzón aparte) y un aviso de cartas por vencer con **Tomar todo**. |
 | **Mundo** `/alfa mapa` (o la tecla M) | Todo Azeroth en un solo mapa con zoom y el terreno real, puntos de vuelo, entradas y salidas (mazmorras, barcos, zepelines y portales), tus marcadores y un solo control de capas. |
-| **Recolección** `/alfa recoleccion` | Minerales, hierbas, bancos de peces y tesoros en el mapa y el minimapa, con ruta de farmeo. |
+| **Recolección** `/alfa recoleccion` | Minerales, hierbas, bancos de peces y tesoros en el mapa y el minimapa, con rutas para juntar. |
 | **Comercio** `/alfa comercio` | Precios de la subasta y qué hacer con cada objeto: venderlo, subastarlo o transformarlo. |
 | **Pesca** `/alfa pesca` | Reingeniería completa: modo pesca de una tecla (equipo, cebo, lanzar y recoger), barra, diario de capturas, logros, metas, guía de 1 a 300 y cocina junto al agua. |
 | **Paisaje** `/alfa paisaje` | Los ajustes gráficos del juego explicados en palabras simples, preajustes, deshacer de un clic y filtros de pantalla. |

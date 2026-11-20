@@ -119,3 +119,7 @@ function Tc.Visible() return v ~= nil and v:IsShown() end
 function Tc.Filas() return ui.filas or {} end
 
 A.RegisterCommand("teclas", function() Tc.Abrir() end, L["tus atajos de Alfa, para cambiarlos"])
+
+-- 1.3.6: para el botón de Lya («¿Puedo llamarte con una tecla?», Alfa_Lya/Guia.lua).
+AlfaBienvenida = type(AlfaBienvenida) == "table" and AlfaBienvenida or {}
+function AlfaBienvenida.Teclas() return Tc.Abrir() end

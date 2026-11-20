@@ -4,7 +4,8 @@ local _, M = ...
 M.EN = {
 	-- Página y módulo
 	["Mundo"] = "World",
-	["El mapa del mundo entero con zoom, tus marcadores y un solo control para todo lo que se pinta."] = "The whole world on one map with zoom, your markers and one control for everything drawn on it.",
+	-- 1.3.6
+	["El mapa de Alfa: el mundo entero, tus marcadores y capas"] = "Alfa's map: the whole world, your markers and layers",
 	["Tu mapa"] = "Your map",
 	["El mundo entero en un mapa"] = "The whole world on one map",
 	["Todo Azeroth en un solo lienzo: acerca con la rueda, arrastra para moverte y pon tus marcadores con clic derecho."] = "All of Azeroth on one canvas: zoom with the wheel, drag to move around and place your markers with a right-click.",
@@ -164,8 +165,10 @@ M.EN = {
 	["Mapa del mundo"] = "World map",
 	["Azeroth"] = "Azeroth",
 	["Ajustes del mapa"] = "Map settings",
-	["El estilo del mapa (terreno como el minimapa, o el arte clásico) y las opciones de Mundo."] = "The map style (terrain like the minimap, or the classic art) and World's options.",
-	["Más opciones de Mundo"] = "More World options",
+	-- 1.3.6
+	["El estilo del mapa (terreno como el minimapa, o el arte clásico) y la página Mundo, con todas las opciones del mapa."] = "The map style (terrain like the minimap, or the classic art) and the World page, with all the map options.",
+	-- 1.3.6
+	["Más opciones en la página Mundo"] = "More options on the World page",
 	["Buscar cerca: vuelo, posada, banco…"] = "Search nearby: flight, inn, bank…",
 	["Abre el mapa del juego en esta misma zona. En combate el mapa del juego no se abre desde Alfa."] = "Opens the game's map on this same zone. In combat the game's map does not open from Alfa.",
 	["Deja solo lo esencial: tú, tu grupo, tus marcadores y el siguiente paso de la guía."] = "Leaves only the essentials: you, your group, your markers and the guide's next step.",

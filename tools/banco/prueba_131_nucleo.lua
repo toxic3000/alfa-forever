@@ -345,12 +345,18 @@ step("Recorrido: cerrar la ventana en el último paso lo termina", function()
     check(w and w:IsShown(), "no se abrió la ventana de Alfa")
     N.Datos("bienvenida").recorrido = nil
     Rc.Empezar()
-    for _ = 1, 4 do
+    -- 1.3.6: el recorrido tiene 6 o 7 pasos (el lobo del minimapa, «¿Qué es esto?»).
+    local function enUltimo()
+      local u = avisos[#avisos]
+      local k, n = tostring(u and u.texto or ""):match("%((%d+)/(%d+)%)")
+      return k ~= nil and k == n
+    end
+    for _ = 1, 10 do
+      if enUltimo() then break end
       local a = avisos[#avisos]
       if a and a.accion then a.accion.alClic() end
     end
-    local ultimo = avisos[#avisos]
-    check(ultimo and tostring(ultimo.texto):find("(5/5)", 1, true), "el recorrido no llegó al último paso")
+    check(enUltimo(), "el recorrido no llegó al último paso")
     if w then w:Hide() end
     check(not activo(), "cerrar la ventana en el último paso no terminó el recorrido")
     check(N.Datos("bienvenida").recorrido == true, "cerrar la ventana en el último paso no lo dejó como visto")
@@ -367,7 +373,7 @@ step("Recorrido: con Lya no deja claves nuevas en sus frases vistas", function()
     for k in pairs(N.DatosPersonaje("lya").vistos or {}) do if tostring(k):find("recorrido", 1, true) then hay = true end end
     check(not hay, "cada recorrido deja claves nuevas en las frases vistas de Lya")
     local h = Ce.historial and Ce.historial[1]
-    check(h and tostring(h.texto):find("(1/5)", 1, true), "con Lya a la vista no lo dijo ella")
+    check(h and tostring(h.texto):find("%(1/%d+%)"), "con Lya a la vista no lo dijo ella")
     Rc.Terminar()
     UI.Callar(true)
   end)

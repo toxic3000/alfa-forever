@@ -102,7 +102,7 @@ step("El ícono del minimapa: clic derecho abre el menú de Alfa por secciones",
     end
   end
   check(fila("Reportar un problema"), "falta «Reportar un problema»")
-  check(fila("Ocultar Alfa"), "falta «Ocultar Alfa»")
+  check(fila("Esconder todo Alfa"), "falta «Esconder todo Alfa»")
   firmaMini = firma()
   print("  menú: " .. t)
   -- Un segundo clic derecho lo cierra.

@@ -134,8 +134,71 @@ local function crear()
 	f.Dano, f.Cura = fila(f.Fondo), fila(f.Fondo)
 	f.Golpe = K.Texto(f.Fondo, "nota", "textoSuave")
 	f:SetScript("OnHide", function(self) self.alfaHasta = nil end)
+	-- 1.3.6: se arrastra directo (fuera de combate), sin «Mover marcos», y
+	-- recuerda dónde lo dejas (el OnDragStop de M.Marco lo guarda). Al pasar el
+	-- ratón dice que se puede mover. Solo sale fuera de combate (Rs.Empieza lo
+	-- quita al empezar una pelea), así que no atrapa clics peleando.
+	f:SetScript("OnDragStart", function(self) if not InCombatLockdown() then self:StartMoving() end end)
+	f:SetScript("OnEnter", function(self)
+		if not GameTooltip or M.Desbloqueado() then return end
+		GameTooltip:SetOwner(self, "ANCHOR_TOP")
+		GameTooltip:SetText(L["Tu pelea"], 1, 1, 1)
+		GameTooltip:AddLine(L["Arrástralo para moverlo."], nil, nil, nil, true)
+		GameTooltip:Show()
+	end)
+	f:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
 	f:Hide()
 	return f
+end
+
+-- 1.3.6: de fábrica salía pegado al borde derecho, donde van las barras de
+-- acción de la derecha, y quedaba debajo de ellas. Si nunca lo moviste, se
+-- busca un lugar que no tape ninguna barra a la vista: a la izquierda de las
+-- de la derecha, o más arriba. Lo que tú acomodas siempre se respeta.
+local BARRAS = { "MainActionBar", "MainMenuBar", "MultiBarBottomLeft", "MultiBarBottomRight", "MultiBarLeft", "MultiBarRight",
+	"MultiBar5", "MultiBar6", "MultiBar7", "StanceBar", "PetActionBar", "PossessActionBar" }
+
+-- Los rectángulos de las barras a la vista, en píxeles de pantalla.
+local function barrasALaVista()
+	local out = {}
+	for _, n in ipairs(BARRAS) do
+		local b = rawget(_G, n)
+		if type(b) == "table" and b.IsVisible and b:IsVisible() and b.GetRect then
+			local ok, l, bo, w, h = pcall(b.GetRect, b)
+			local e = b.GetEffectiveScale and b:GetEffectiveScale() or 1
+			if ok and type(l) == "number" and type(w) == "number" and w > 0 and h > 0 then
+				out[#out + 1] = { l * e, bo * e, (l + w) * e, (bo + h) * e }
+			end
+		end
+	end
+	return out
+end
+
+local function tapa(rects)
+	local ok, l, bo, w, h = pcall(f.GetRect, f)
+	if not (ok and type(l) == "number" and type(w) == "number") then return false end
+	local e = f.GetEffectiveScale and f:GetEffectiveScale() or 1
+	local x1, y1, x2, y2 = l * e, bo * e, (l + w) * e, (bo + h) * e
+	for _, r in ipairs(rects) do
+		if x1 < r[3] and x2 > r[1] and y1 < r[4] and y2 > r[2] then return r end
+	end
+	return false
+end
+
+-- Prueba lugares hasta uno libre (o deja el de fábrica si todos tapan algo).
+local LUGARES = { { "RIGHT", "RIGHT", -60, 150 }, { "RIGHT", "RIGHT", -150, 150 }, { "RIGHT", "RIGHT", -240, 150 },
+	{ "RIGHT", "RIGHT", -330, 150 }, { "RIGHT", "RIGHT", -150, 330 }, { "CENTER", "CENTER", 320, 160 } }
+function Rs.Colocar()
+	if not f or (M.Posicion and M.Posicion("Resumen")) then return end
+	local rects = barrasALaVista()
+	if #rects == 0 then return end
+	for _, p in ipairs(LUGARES) do
+		f:ClearAllPoints()
+		f:SetPoint(p[1], UIParent, p[2], p[3], p[4])
+		if not tapa(rects) then return p end
+	end
+	f:ClearAllPoints()
+	f:SetPoint(LUGARES[1][1], UIParent, LUGARES[1][2], LUGARES[1][3], LUGARES[1][4])
 end
 
 local function ponerFila(x, nombre, valor, y)
@@ -178,7 +241,11 @@ function Rs.Pintar(r)
 		f.Golpe:Hide()
 	end
 	f:SetHeight(max(48, y + ESP.s))
+	-- 1.3.6: que se pueda arrastrar (M.Desbloquear le quita el ratón al fijar
+	-- los marcos) y, si nunca lo moviste, que no tape tus barras.
+	f:EnableMouse(true)
 	f:Show()
+	Rs.Colocar()
 	local hasta = GetTime() + DURA
 	f.alfaHasta = hasta
 	A.After(DURA, function() if f and f.alfaHasta == hasta and not M.Desbloqueado() then f:Hide() end end)

@@ -283,7 +283,7 @@ local function vigilar()
 	if ruta.objetivo and Nav and Nav.GetTarget and Nav.GetTarget() ~= ruta.objetivo then
 		ruta.objetivo = nil
 		parar()
-		N.Imprimir(L["La flecha ya no sigue tu ruta de farmeo."])
+		N.Imprimir(L["La flecha ya no sigue tu ruta para juntar."]) -- 1.3.6: sin «farmeo»
 		return
 	end
 	local C = A.Compat

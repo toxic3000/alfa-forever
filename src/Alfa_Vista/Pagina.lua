@@ -114,7 +114,7 @@ local function construir(view)
 		g:Refrescar()
 	end)
 	M.vista = view
-	view:HookScript("OnShow", function() N.RehacerPagina(view) end)
+	-- 1.3.6: sin OnShow; la ventana ya mide la página al mostrarla (O.Select).
 end
 
 M.AlCambiar(function() if M.vista then N.RehacerPagina(M.vista) end end)
@@ -132,7 +132,8 @@ local BUSCAR = {
 
 N.Modulo({
 	id = ID, nombre = L["Paisaje y gráficos"], icono = "ic-apariencia", orden = 33, seccion = "mundo",
-	subtitulo = L["Preajustes, ajustes escondidos del juego, cámara, placas y filtros para que el mundo se vea mejor."],
+	-- 1.3.6: subtítulo corto (el largo casi nunca se veía).
+	subtitulo = L["Para que el mundo se vea mejor, a tu gusto"],
 	ajustes = M.AJUSTES,
 	controles = BUSCAR,
 	construir = construir,

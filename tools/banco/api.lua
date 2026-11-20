@@ -14,6 +14,8 @@ function GetServerTime() return 1700000000 end
 time = os.time
 date = os.date
 function GetLocale() return "esMX" end
+-- Los nombres de las marcas de banda (globales del juego).
+for i, n in ipairs({ "Estrella", "Círculo", "Diamante", "Triángulo", "Luna", "Cuadrado", "Cruz", "Calavera" }) do _G["RAID_TARGET_" .. i] = n end
 function AlfaIdioma() return "esMX" end -- src/Alfa_Idioma (tools/build.py)
 function GetRealmName() return "Forever" end
 function GetNormalizedRealmName() return "Forever" end

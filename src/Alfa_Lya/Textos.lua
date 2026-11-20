@@ -1822,6 +1822,14 @@ M.EN = {
 	["Mientras entrabas te guardé %d cosas."] = "While you were coming in, I saved %d things for you.",
 	["Luego"] = "Later",
 	["Te perdiste esto"] = "You missed this",
+	-- 1.3.6: claridad para quien empieza
+	["En Ruta eliges a dónde ir y yo te armo el camino. La flecha te lleva paso a paso y el rastreador te dice qué toca."] = "In Route you choose where to go and I build the path. The arrow takes you step by step and the tracker tells you what's next.",
+	["Si lo prendes en Ajustes > Misiones: sale «[Misión] está lista para entregar» y «¡Misión completada!» en el chat del grupo. Viene apagado; así, o si vas solo, te sale solo a ti."] = "If you turn it on in Settings > Questing: \"[Quest] is ready to turn in\" and \"Quest complete!\" show in party chat. It's off by default; then, or when you're solo, only you see it.",
+	["Arriba en esta ventana está lo último que te dije, con sus botones. Toca el botón y te enseño lo más reciente."] = "At the top of this window is the last thing I told you, with its buttons. Press the button and I'll show you the most recent.",
+	["Sí: en tus atajos de Alfa ponle una tecla a «Pregúntale a Lya» y otra a «Lo que te ofrece Lya», que hace lo de su botón."] = "Yes: in your Alfa shortcuts, give \"Ask Lya\" a key and another to \"What Lya offers\", which does what her button does.",
+	["Ver lo que te dije"] = "See what I told you",
+	["Abrir tus atajos"] = "Open your shortcuts",
+	["Abrir Misiones"] = "Open Questing",
 }
 
 M.L = AlfaNucleo.Textos(M.EN)

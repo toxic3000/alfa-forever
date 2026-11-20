@@ -1198,10 +1198,25 @@ end
 ---------------------------------------------------------------------------
 -- La ventana
 ---------------------------------------------------------------------------
+-- 1.3.6: si faltan o están apagados los datos, «Revisar Alfa» (el diagnóstico
+-- de Alfa_Bienvenida) en vez de «Intentar otra vez», que no lo arregla.
+local function revisarAlfa()
+	local B = rawget(_G, "AlfaBienvenida")
+	return type(B) == "table" and B.Diagnostico or nil
+end
 function V.MostrarMotivo(motivo)
 	if not v then return end
+	local accion
+	if motivo ~= "combat" then
+		local diag = motivo ~= "loading" and revisarAlfa()
+		if diag then
+			accion = { texto = L["Revisar Alfa"], icono = "ic-buscar", alClic = function() diag() end }
+		else
+			accion = { texto = L["Intentar otra vez"], icono = "ic-seguir", alClic = function() V.Abrir() end }
+		end
+	end
 	ui.estado:Set({ lobo = "dormido", titulo = L["La enciclopedia no puede abrir todavía"], texto = M.MotivoTexto(motivo),
-		accion = motivo ~= "combat" and { texto = L["Intentar otra vez"], icono = "ic-seguir", alClic = function() V.Abrir() end } or nil })
+		accion = accion })
 	ui.estado:Show()
 	ui.zona:Hide()
 	ui.buscador:Hide()

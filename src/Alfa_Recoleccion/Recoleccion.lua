@@ -632,7 +632,7 @@ local function construir(view)
 		if V.bDescubiertos then V.bDescubiertos:SetShown(propios > 0) end
 		K.Mostrar(datos.historial, hayHistorial())
 	end)
-	view:HookScript("OnShow", function() M.Pagina.Actualizar() end)
+	-- 1.3.6: sin OnShow; la ventana ya mide la página al mostrarla (O.Select).
 end
 
 ---------------------------------------------------------------------------
@@ -663,7 +663,8 @@ A.RegisterEvent("ZONE_CHANGED_NEW_AREA", function() M.Pagina.Actualizar() end)
 ---------------------------------------------------------------------------
 N.Modulo({
 	id = ID, nombre = L["Recolección"], icono = "ic-recoleccion", orden = 32,
-	subtitulo = L["Minería, hierbas, pesca y tesoros en tu mapa y minimapa, con rutas de farmeo e historial."],
+	-- 1.3.6: subtítulo corto y sin jerga («farmeo»).
+	subtitulo = L["Minas, hierbas, pesca y tesoros, con rutas para juntar"],
 	comando = "recoleccion",
 	ajustes = AJUSTES,
 	controles = BUSCAR,
@@ -678,21 +679,31 @@ local TIPO_POR_PALABRA = {
 	tesoros = "tesoros", cofres = "tesoros", chests = "tesoros",
 }
 
+-- 1.3.6: crear y seguir una ruta, para el comando y para el botón del aviso.
+local function crearRuta(arg)
+	local tipo = TIPO_POR_PALABRA[arg or ""] or tipoRuta() or "mineria"
+	local recurso = TIPO_POR_PALABRA[arg or ""] and "todos" or (N.Get(ID, "rutaRecurso") or "todos")
+	local ok, motivo = Ruta.Crear(tipo, recurso, nil, function(r)
+		if r and r.n then
+			N.Imprimir(L["Ruta lista en %s: %s"]:format(nombreZona(r.mapa), Ruta.Resumen(r) or ""))
+			Ruta.Guiar()
+		end
+	end)
+	if not ok then N.Imprimir(motivo) end
+end
+
 A.RegisterCommand("recoleccion", function(resto)
 	local orden, arg = (resto or ""):lower():match("^%s*(%S*)%s*(%S*)")
 	if orden == "" then return N.Abrir(ID) end
 	if orden == "ruta" then
-		local tipo = TIPO_POR_PALABRA[arg] or tipoRuta() or "mineria"
-		local recurso = TIPO_POR_PALABRA[arg] and "todos" or (N.Get(ID, "rutaRecurso") or "todos")
-		local ok, motivo = Ruta.Crear(tipo, recurso, nil, function(r)
-			if r and r.n then
-				N.Imprimir(L["Ruta lista en %s: %s"]:format(nombreZona(r.mapa), Ruta.Resumen(r) or ""))
-				Ruta.Guiar()
-			end
-		end)
-		if not ok then N.Imprimir(motivo) end
+		crearRuta(arg)
 	elseif orden == "guiar" then
-		if not Ruta.Guiar() then N.Imprimir(L["Primero crea una ruta: /alfa recoleccion ruta"]) end
+		-- 1.3.6: un aviso con el botón que la crea, en vez de pedir otro comando.
+		if not Ruta.Guiar() then
+			K.Aviso({ titulo = L["Todavía no tienes una ruta"], icono = "ic-recoleccion", tono = "acento",
+				texto = L["Alfa arma una con lo que puedes juntar en tu zona y la flecha te lleva de punto en punto."],
+				accion = { texto = L["Crear una ruta aquí"], alClic = function() crearRuta("") end } })
+		end
 	elseif orden == "parar" then
 		Ruta.Detener()
 	elseif orden == "mapa" or orden == "minimapa" then
@@ -701,7 +712,7 @@ A.RegisterCommand("recoleccion", function(resto)
 	else
 		N.Imprimir(L["Uso: /alfa recoleccion [ruta [mineria|hierbas|pesca|tesoros] | guiar | parar | mapa | minimapa]"])
 	end
-end, L["Abre Recolección. Con «ruta», crea y sigue una ruta de farmeo en tu zona."])
+end, L["Abre Recolección. Con «ruta», crea y sigue una ruta para juntar en tu zona."])
 
 ---------------------------------------------------------------------------
 -- Arranque

@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "1.3.5: the lighter pack", "items": ["**Much less work in groups and raids:** what others do no longer reaches the parts of Alfa that only look at you.", "**Combat mode and dungeon mode:** in a fight, Lya and open pages wait; inside a dungeon, gathering stops looking for nodes.", "**Light mode** (Settings > Style and sound): for modest computers, everything in the background slower and announcements without animation.", "**And more:** changing zones costs less, the next guide is ready ahead of time and `/alfa rendimiento` tells you how long Alfa took at login."]}
+    "mapa": {"titulo": "1.3.6: the pack guides you", "items": ["**Search all of Alfa:** the search box at the top finds pages and settings, waits until you finish typing and, if it finds nothing, offers you Lya.", "**For newcomers:** every page says what it's for, Simple mode is simpler, the tour shows the minimap wolf and the \"What's this?\" key, and there are buttons instead of commands.", "**Lighter:** pages open faster and remember where you were. **Light mode** for modest computers, in Style and sound.", "**Your fight, out of the way:** the summary no longer covers your action bars, and you can drag it anywhere."]}
   },
   "contraportada": {
     "titulo": "Join the pack",

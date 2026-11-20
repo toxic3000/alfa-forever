@@ -145,8 +145,11 @@ local GRUPOS = {
 			existe = function() return M.ExisteCVar(cvarDe("silenciarMascotas")) end, buscar = "mute pet sounds, yawns, cat" },
 		{ k = "silenciarGestos", titulo = L["Sonidos de gestos"], texto = L["Calla las voces de /bailar, /reír, /aplaudir y otros gestos."],
 			existe = function() return M.ExisteCVar(cvarDe("silenciarGestos")) end, buscar = "mute emote sounds, dance, laugh" },
+		-- 1.3.6: es para quien sabe el número de un sonido: no sale con Alfa
+		-- sencillo (N.Sencillo) y su texto ya no dice «FileDataID».
 		{ k = "silenciarLista", titulo = L["Tu lista de sonidos"],
-			texto = L["Silencia los sonidos que agregues por su número de archivo (FileDataID): /alfa silenciar <número>; /alfa silenciar quitar <número> lo quita."],
+			existe = function() return not (N.Sencillo and N.Sencillo()) end,
+			texto = L["Para quien sabe el número de un sonido del juego: /alfa silenciar <número> lo calla y /alfa silenciar quitar <número> lo devuelve."],
 			boton = { texto = L["Ver tu lista"], alClic = function() M.MostrarListaSonidos() end },
 			buscar = "mute custom sounds, mute sound file, filedataid" },
 	} },
@@ -281,16 +284,39 @@ local function construir(view)
 			x.ga:Refrescar()
 			K.Mostrar(x.ga, visible > 0)
 		end
-	end)
+	end, {
+		-- 1.3.6: la página se reusa si no cambió nada. Un ajuste que cambia ya la
+		-- marca sucia (SETTING_CHANGED); lo que viene del juego (qué existe en
+		-- este cliente: probador, CVars, formas de tu clase) va en la firma.
+		firma = function()
+			local partes = {}
+			for _, x in ipairs(ui.grupos) do
+				partes[#partes + 1] = (not x.g.existe or existe(x.g)) and "1" or "0"
+				for _, e in ipairs(x.ga.filasDe) do partes[#partes + 1] = existe(e.f) and "1" or "0" end
+			end
+			return table.concat(partes)
+		end,
+	})
 	M.vista = view
-	view:HookScript("OnShow", function() N.RehacerPagina(view) end)
+	-- 1.3.6: sin OnShow; la ventana ya mide la página al mostrarla (O.Select).
 end
 
 -- Cualquier ajuste de aquí (o el de la ruta) rehace la página si está a la vista.
+-- 1.3.6: varios cambios seguidos («Encender las recomendadas» prende cinco)
+-- se juntan en un solo refresco, en el siguiente cuadro.
+local pendiente = false
+local function rehacer()
+	pendiente = false
+	if M.vista then N.RehacerPagina(M.vista) end
+end
 A.On("SETTING_CHANGED", function(path)
 	if type(path) ~= "string" or not M.vista then return end
-	if path == "" or path == ID or path:sub(1, #ID + 1) == ID .. "." or path == "ruta.soloRuta" or path == "maps.flightTimer" then
-		N.RehacerPagina(M.vista)
+	if path == "" or path == ID or path:sub(1, #ID + 1) == ID .. "." or path == "ruta.soloRuta" or path == "maps.flightTimer"
+		or path == "bienvenida.modo" then -- 1.3.6: Sencillo/Completo muestra u oculta la lista de sonidos
+		if not pendiente then
+			pendiente = true
+			A.After(0, rehacer)
+		end
 	end
 end)
 
@@ -343,7 +369,9 @@ end
 
 N.Modulo({
 	id = ID, nombre = L["Comodidades"], icono = "ic-comodidades", orden = 70, seccion = "ajustes",
-	subtitulo = L["Lo pequeño que hace el juego más cómodo: el minimapa, el chat y las barras con el estilo de Alfa, marcos, cuadro de información, probador, cámara y sonidos; y en sus pestañas, viajes, invitaciones, comerciantes y más."],
+	-- 1.3.6: subtítulo corto (el largo casi nunca se veía); el detalle está en
+	-- cada grupo de la página.
+	subtitulo = L["Detalles que hacen el juego más cómodo"],
 	controles = BUSCAR,
 	construir = construir,
 })

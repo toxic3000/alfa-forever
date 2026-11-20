@@ -12,6 +12,7 @@
 --
 --   Lz.Nuevo(padre) -> bloque ; bloque:Set(estado) (el de M.Estado())
 
+-- 1.3.6: en lo que lees dice «plan» en vez de «build».
 local ADDON, M = ...
 local N, A, L = M.N, M.A, M.L
 local K = N.Kit
@@ -239,12 +240,12 @@ function Lz.Nuevo(padre)
 			-- Lo que dice Alfa en el cuadro del talento.
 			local lineas = {}
 			if primero[n.id] then
-				lineas[#lineas + 1] = { format(L["Punto %d de tu build (nivel %d), hasta %d/%d."], primero[n.id], nivelDe(primero[n.id]), plan, n.max or plan), "acento" }
+				lineas[#lineas + 1] = { format(L["Punto %d de tu plan (nivel %d), hasta %d/%d."], primero[n.id], nivelDe(primero[n.id]), plan, n.max or plan), "acento" }
 				if esSig then lineas[#lineas + 1] = { L["Es el que toca ahora."], "acento" } end
 				if porNodo[n.id] then lineas[#lineas + 1] = { porNodo[n.id], "textoSuave" } end
-				if fuera then lineas[#lineas + 1] = { L["Tienes más rangos de los que pide tu build."], "peligro" } end
+				if fuera then lineas[#lineas + 1] = { L["Tienes más rangos de los que pide tu plan."], "peligro" } end
 			elseif activo > 0 then
-				lineas[#lineas + 1] = { L["Este talento no está en tu build."], "peligro" }
+				lineas[#lineas + 1] = { L["Este talento no está en tu plan."], "peligro" }
 			end
 			nb.lineas = lineas
 		end

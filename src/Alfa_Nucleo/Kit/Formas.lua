@@ -45,18 +45,35 @@ end
 local Forma = {}
 Forma.__index = Forma
 
+-- 1.3.6: el color y lo que se ve se recuerdan (cR..cA, vOn/vTl/vBr): pintar
+-- otra vez lo mismo no toca las 5 texturas. Corte y el repintado (recortar)
+-- lo olvidan, para que nada quede viejo.
+local function mismoColor(x, r, g, b, a)
+	return x.cR == r and x.cG == g and x.cB == b and x.cA == a
+end
+local function guardarColor(x, r, g, b, a) x.cR, x.cG, x.cB, x.cA = r, g, b, a end
+local function olvidar(x) x.cR, x.vOn = nil, nil end
+
 function Forma:Color(token, alfa)
 	local r, g, b, a = K.Color(token)
 	if alfa then a = alfa end
+	if mismoColor(self, r, g, b, a) then return end -- 1.3.6
+	guardarColor(self, r, g, b, a)
 	for i = 1, 5 do self.partes[i]:SetVertexColor(r, g, b, a) end
 end
 
 function Forma:RGBA(r, g, b, a)
-	for i = 1, 5 do self.partes[i]:SetVertexColor(r, g, b, a or 1) end
+	a = a or 1
+	if mismoColor(self, r, g, b, a) then return end -- 1.3.6
+	guardarColor(self, r, g, b, a)
+	for i = 1, 5 do self.partes[i]:SetVertexColor(r, g, b, a) end
 end
 
 function Forma:SetShown(on)
 	self.on = on and true or false
+	-- 1.3.6: igual que la última vez (mismo on y mismos cortes): nada que hacer.
+	if self.vOn == self.on and self.vTl == self.tl and self.vBr == self.br then return end
+	self.vOn, self.vTl, self.vBr = self.on, self.tl, self.br
 	local p = self.partes
 	p[1]:SetShown(self.on)
 	p[2]:SetShown(self.on and self.tl > 0)
@@ -88,6 +105,7 @@ function Forma:Corte(tl, br)
 	p[4]:SetSize(max(tl, 0.01), max(tl, 0.01))
 	p[5]:SetPoint("BOTTOMRIGHT", m, "BOTTOMRIGHT", 0, 0)
 	p[5]:SetSize(max(br, 0.01), max(br, 0.01))
+	olvidar(self) -- 1.3.6: tras cortar, se muestra y se pinta de nuevo
 	self:SetShown(self.on ~= false)
 end
 
@@ -114,11 +132,16 @@ Borde.__index = Borde
 function Borde:Color(token, alfa)
 	local r, g, b, a = K.Color(token)
 	if alfa then a = alfa end
+	if mismoColor(self, r, g, b, a) then return end -- 1.3.6
+	guardarColor(self, r, g, b, a)
 	for _, t in ipairs(self.partes) do t:SetVertexColor(r, g, b, a) end
 end
 
 function Borde:SetShown(on)
 	self.on = on and true or false
+	-- 1.3.6: igual que la última vez: nada que hacer.
+	if self.vOn == self.on and self.vTl == self.tl and self.vBr == self.br then return end
+	self.vOn, self.vTl, self.vBr = self.on, self.tl, self.br
 	for i, t in ipairs(self.partes) do
 		if i == 5 then t:SetShown(self.on and self.tl > 0)
 		elseif i == 6 then t:SetShown(self.on and self.br > 0)
@@ -155,6 +178,7 @@ function Borde:Corte(tl, br)
 		p[6]:SetSize(br, br)
 		p[6]:SetPoint("BOTTOMRIGHT", m, "BOTTOMRIGHT", 0, 0)
 	end
+	olvidar(self) -- 1.3.6
 	self:SetShown(self.on ~= false)
 end
 
@@ -173,6 +197,9 @@ end
 
 -- Un cambio de estilo corta de nuevo cada forma y borde (antes de repintar).
 local function recortar()
+	-- 1.3.6: el repintado olvida el color y lo visible guardados de cada
+	-- forma y borde: se pintan otra vez sí o sí.
+	for x in pairs(cortables) do olvidar(x) end
 	local e = K.Estilo()
 	if e == estiloCortado then return end
 	estiloCortado = e
@@ -331,6 +358,7 @@ local JUEGO = { ventana = "info", panel = "info" }
 
 local function pintarCaja(c)
 	local e = c.estilo
+	c.alfaGen = K.genPintado -- 1.3.6: con qué generación se pintó (Caja:Estilo)
 	local tipo = K.Clasico() and JUEGO[c.rol]
 	if tipo then
 		c.fondo:Hide()
@@ -361,11 +389,16 @@ end
 -- borde) vuelve al del token (no se queda el de antes).
 function Caja:Estilo(e)
 	local est = self.estilo
+	-- 1.3.6: lo que pinta la caja son estas cuatro; si quedan iguales y nadie
+	-- repintó desde entonces (K.genPintado), no se pinta otra vez.
+	local f0, b0, af0, ab0 = est.fondo, est.borde, est.alfaFondo, est.alfaBorde
 	for k, v in pairs(e) do est[k] = v end
 	if e.fondo ~= nil or e.alfaFondo ~= nil then est.alfaFondo = e.alfaFondo or nil end
 	if e.borde ~= nil or e.alfaBorde ~= nil then est.alfaBorde = e.alfaBorde or nil end
 	if e.fondo == false then est.fondo = nil end
 	if e.borde == false then est.borde = nil end
+	if self.alfaGen == K.genPintado and est.fondo == f0 and est.borde == b0
+		and est.alfaFondo == af0 and est.alfaBorde == ab0 then return end
 	pintarCaja(self)
 end
 

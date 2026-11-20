@@ -32,7 +32,8 @@ M.EN = {
 	["No hay nodos conocidos en esta zona."] = "No known nodes in this zone.",
 	["Hacen falta al menos 3 lugares distintos de ese recurso en la zona."] = "A route needs at least 3 different spots of that resource in the zone.",
 	["Ruta %d/%d: %s"] = "Route %d/%d: %s",
-	["La flecha ya no sigue tu ruta de farmeo."] = "The arrow no longer follows your farming route.",
+	-- 1.3.6
+	["La flecha ya no sigue tu ruta para juntar."] = "The arrow no longer follows your gathering route.",
 	["%d paradas · %s · unos %d min a pie (%d montado)"] = "%d stops · %s · about %d min on foot (%d mounted)",
 	["Qué recolectar"] = "What to gather",
 	["El tipo de nodos que une la ruta."] = "The kind of nodes the route links.",
@@ -86,11 +87,16 @@ M.EN = {
 	["La base incluida trae %s lugares en %d zonas. Tú descubriste %s."] = "The included database has %s spots in %d zones. You found %s.",
 
 	-- Módulo y comandos
-	["Minería, hierbas, pesca y tesoros en tu mapa y minimapa, con rutas de farmeo e historial."] = "Mining, herbs, fishing and treasures on your map and minimap, with farming routes and history.",
-	["Primero crea una ruta: /alfa recoleccion ruta"] = "Create a route first: /alfa recoleccion ruta",
+	-- 1.3.6
+	["Minas, hierbas, pesca y tesoros, con rutas para juntar"] = "Mining, herbs, fishing and treasures, with gathering routes",
+	-- 1.3.6
+	["Todavía no tienes una ruta"] = "You don't have a route yet",
+	["Alfa arma una con lo que puedes juntar en tu zona y la flecha te lleva de punto en punto."] = "Alfa builds one from what you can gather in your zone, and the arrow takes you from spot to spot.",
+	["Crear una ruta aquí"] = "Create a route here",
 	["Nodos visibles."] = "Nodes shown.",
 	["Nodos ocultos."] = "Nodes hidden.",
-	["Abre Recolección. Con «ruta», crea y sigue una ruta de farmeo en tu zona."] = "Opens Gathering. With \"ruta\", creates and follows a farming route in your zone.",
+	-- 1.3.6
+	["Abre Recolección. Con «ruta», crea y sigue una ruta para juntar en tu zona."] = "Opens Gathering. With \"ruta\", creates and follows a gathering route in your zone.",
 
 	-- Página (Kit)
 	["Calculando la vuelta más corta…"] = "Working out the shortest loop…",

@@ -984,4 +984,6 @@ M.EN = {
 	["Zona peligrosa"] = "Dangerous zone", -- 1.3.3
 	["No encontré una guía para tu nivel: abre la biblioteca de guías."] = "I couldn't find a guide for your level: open the guide library.", -- 1.3.3
 	["Vamos a una zona de tu nivel: %s."] = "Let's go to a zone for your level: %s.", -- 1.3.3
+	-- 1.3.6: claridad para quien empieza
+	["Al armar tus rutas, Alfa deja fuera las que tienen enemigos élite, más fuertes, para ir en grupo."] = "When building your routes, Alfa leaves out quests with elite enemies: stronger ones, meant for a group.",
 }

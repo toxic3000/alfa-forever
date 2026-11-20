@@ -311,7 +311,9 @@ local function ofrecer(lista)
 		end
 	end
 	local texto = L["Aprendiste un hechizo que le queda mejor a tus clics:"] .. "\n" .. table.concat(lineas, "\n")
-	N.Imprimir(L["Hechizo nuevo para tus clics de Curación. Ábrelo en /alfa curacion."])
+	-- 1.3.6: un aviso con su botón, en vez de mandar a escribir un comando.
+	K.Aviso({ titulo = L["Hechizo nuevo para tus clics de Curación"], icono = "ic-curacion", duracion = 10,
+		accion = { texto = L["Abrir Curación"], alClic = function() N.Abrir(ID) end } })
 	local function usar()
 		local d = M.Datos()
 		local mapa = M.Mapa()

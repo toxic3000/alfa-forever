@@ -208,15 +208,16 @@ step("Al entrar: las líneas de Curación esperan a que termine la entrada", fun
   check(hay(lineas, "ningún clic lo hace"), "al terminar la entrada no salió la línea del perjuicio sin clic")
   -- El hechizo nuevo (diálogo y línea) también espera.
   entrando = true
-  lineas = {}
+  lineas, avisos = {}, {}
   local d = Cu.Datos()
   d.preajuste, d.mapa, d.rechazos = "curar", {}, {}
   Cu.RevisarMejoras()
-  check(not hay(lineas, "Hechizo nuevo para tus clics"), "mientras Alfa entra salió el hechizo nuevo")
+  check(not hay(lineas, "Hechizo nuevo para tus clics") and not hay(avisos, "Hechizo nuevo para tus clics"), "mientras Alfa entra salió el hechizo nuevo")
   check(Cu.Esperando("mejoras"), "el hechizo nuevo no quedó esperando")
   entrar() salir()
   T(3)
-  check(hay(lineas, "Hechizo nuevo para tus clics"), "tras la primera pelea no se ofreció el hechizo nuevo")
+  -- (1.3.6: ahora es un aviso con «Abrir Curación», no una línea del chat)
+  check(hay(lineas, "Hechizo nuevo para tus clics") or hay(avisos, "Hechizo nuevo para tus clics"), "tras la primera pelea no se ofreció el hechizo nuevo")
   if K.CerrarDialogo then K.CerrarDialogo() end
   entrando = false
   auras.party1 = nil

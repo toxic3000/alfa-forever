@@ -37,6 +37,8 @@ local win
 local pages, pageList = {}, {} -- name -> page; ordered list
 local current, currentTab
 local query = ""
+-- 1.3.6: lo último tecleado en el buscador y cuánto se espera para buscar.
+local pendienteBusqueda, BUSCAR_ESPERA = nil, 0.15
 local seq = 0
 
 local function percent(v) return floor(v * 100 + 0.5) .. "%" end
@@ -840,12 +842,14 @@ local function buildAbout(view)
 	local discBox = W.CopyBox(view)
 	W.SetCopyText(discBox, ns.DiscordURL or "https://discord.gg/hUNjA6BJwh")
 	view.DiscordBox = discBox
+	-- 1.3.6: los comandos de Alfa en tu idioma, los que más sirven primero.
 	local cmdH, cmdText = block(L["Commands"], hex .. "/alfa|r   " .. T("abrir o cerrar esta ventana") .. "\n"
+		.. hex .. "/alfa ayuda|r   " .. T("pregúntale a Lya cómo funciona Alfa") .. "\n"
+		.. hex .. "/alfa recorrido|r   " .. T("vuelve a ver el recorrido por Alfa") .. "\n"
 		.. hex .. "/alfa guia|r   " .. T("mostrar u ocultar la ventana de guía") .. "\n"
-		.. hex .. "/alfa guides|r   " .. L["choose a guide"] .. "\n"
-		.. hex .. "/alfa next, prev, skip|r   " .. L["move through steps"] .. "\n"
-		.. hex .. "/alfa report|r   " .. L["report a problem with a step on the Alfa Discord"] .. "\n"
-		.. hex .. "/alfa help|r   " .. L["every command"])
+		.. hex .. "/alfa acomodar|r   " .. T("mueve con el ratón lo que Alfa pone en pantalla") .. "\n"
+		.. hex .. "/alfa reportar|r   " .. T("cuéntanos si algo falla") .. "\n"
+		.. hex .. "/alfa rendimiento|r   " .. T("cuánta memoria y procesador usa Alfa"))
 	local welcome = W.Button(view, L["Show the welcome again"], function() ns.Fire("SHOW_WELCOME") end)
 	view.Welcome = welcome
 	local whatsNew = W.Button(view, L["What's new"], function() ns.Fire("SHOW_WHATSNEW") end)
@@ -2013,11 +2017,32 @@ renderSearch = function()
 		end)
 		searchView.Enciclopedia.psTip = nil
 	end
-	local groups, count, suggestions = O.Search(query)
+	-- 1.3.6: con una sola letra no se busca todavía (pintaba cientos de filas);
+	-- un ideograma (coreano, chino) ya son 3 bytes y sí busca.
+	local corta = #query < 2
+	local groups, count, suggestions
+	-- (Lo del juego llega después, TODO_ESPERA, y vuelve a pintar: con el mismo
+	-- texto se reusa la búsqueda de ajustes en vez de repetirla.)
+	local previa = searchView.psRes
+	if corta then groups, count = {}, 0
+	elseif previa and previa.q == query then groups, count, suggestions = previa.groups, previa.count, previa.suggestions
+	else
+		groups, count, suggestions = O.Search(query)
+		searchView.psRes = { q = query, groups = groups, count = count, suggestions = suggestions }
+	end
 	-- Alfa (1.3.2): unos pocos por grupo (los que más coinciden) y «N más».
 	if searchView.psQuery ~= query then searchView.psQuery, searchView.psOpen = query, {} end
 	local sections = {}
-	for i, g in ipairs(groups) do
+	-- 1.3.6: primero las páginas que se llaman como lo que buscas («pesca»,
+	-- «talentos»), con un botón que las abre.
+	local paginas = corta and {} or O.SearchPages()
+	if #paginas > 0 then
+		local fila = {}
+		for i, p in ipairs(paginas) do fila[i] = O.PageControl(p) end
+		sections[1] = { name = T("Páginas de Alfa"), controls = fila }
+	end
+	for _, g in ipairs(groups) do
+		local i = #sections + 1
 		local list = g.controls
 		if #list > SEARCH_PER_GROUP + 1 and not searchView.psOpen[g.title] then
 			list = {}
@@ -2027,12 +2052,14 @@ renderSearch = function()
 		sections[i] = { name = g.title, controls = list }
 	end
 	local y = layoutSections(searchView, sections, 16)
-	searchView.Empty:SetShown(count == 0)
+	-- 1.3.6: «nada» es sin ajustes y sin páginas.
+	local nada = count == 0 and #paginas == 0
+	searchView.Empty:SetShown(nada)
 	local links = searchView.Links
-	local shown = count == 0 and suggestions and #suggestions or 0
+	local shown = nada and suggestions and #suggestions or 0
 	searchView.Hint:SetShown(shown > 0)
-	if count == 0 then
-		searchView.Empty:SetText(string.format(L["No settings match \226\128\156%s\226\128\157."], query))
+	if nada then
+		searchView.Empty:SetText(corta and T("Escribe un poco más para buscar.") or string.format(T("No encontré «%s» en Alfa."), query))
 		searchView.Empty:ClearAllPoints()
 		searchView.Empty:SetPoint("TOPLEFT", searchView, "TOPLEFT", SH.pad, -24)
 		y = 80
@@ -2060,23 +2087,47 @@ renderSearch = function()
 		end
 		local E = rawget(_G, "AlfaEnciclopedia")
 		local enc = searchView.Enciclopedia
-		if type(E) == "table" and type(E.Buscar) == "function" and query and query ~= "" then
+		local yEnc = shown > 0 and (y - 8) or 56
+		if not corta and type(E) == "table" and type(E.Buscar) == "function" and query and query ~= "" then
 			W.SetLinkText(enc, string.format(T("Buscar «%s» en la Enciclopedia"), query))
 			-- Debajo de "¿Quisiste decir?" y sus enlaces, o del aviso si no hay.
-			local yEnc = shown > 0 and (y - 8) or 56
 			enc:ClearAllPoints()
 			enc:SetPoint("TOPLEFT", searchView, "TOPLEFT", SH.pad, -yEnc)
 			enc:Show()
-			y = yEnc + 24 + 16
+			yEnc = yEnc + 24
+			y = yEnc + 16
 		else
 			enc:Hide()
 		end
-	elseif searchView.Enciclopedia then
-		searchView.Enciclopedia:Hide()
+		-- 1.3.6: y si no está en Alfa, que te lo explique Lya.
+		local Lya = rawget(_G, "AlfaLya")
+		if not corta and type(Lya) == "table" and type(Lya.Guia) == "function" then
+			if not searchView.Lya then
+				searchView.Lya = W.Link(searchView, "", function()
+					local Ly = rawget(_G, "AlfaLya")
+					if type(Ly) ~= "table" then return end
+					if type(Ly.Buscar) == "function" then Ly.Buscar(query) elseif type(Ly.Guia) == "function" then Ly.Guia() end
+				end)
+				searchView.Lya.psTip = nil
+			end
+			W.SetLinkText(searchView.Lya, string.format(T("Preguntarle a Lya por «%s»"), query))
+			searchView.Lya:ClearAllPoints()
+			searchView.Lya:SetPoint("TOPLEFT", searchView, "TOPLEFT", SH.pad, -yEnc)
+			searchView.Lya:Show()
+			y = yEnc + 24 + 16
+		elseif searchView.Lya then
+			searchView.Lya:Hide()
+		end
+	else
+		if searchView.Enciclopedia then searchView.Enciclopedia:Hide() end
+		if searchView.Lya then searchView.Lya:Hide() end
 	end
 	for i = shown + 1, #links do links[i]:Hide() end
-	y = layoutTodo(todoPara(query), y)
-	if O.RefreshNav then O.RefreshNav() end
+	y = layoutTodo(todoPara(corta and "" or query), y)
+	-- 1.3.6: la barra de secciones solo cambia al entrar a la búsqueda, no en
+	-- cada búsqueda.
+	if not searchView.psEnBusqueda and O.RefreshNav then O.RefreshNav() end
+	searchView.psEnBusqueda = true
 	if O.LyaHelp then O.LyaHelp(nil) end
 	W.ShellTitle(win, L["Search"], count == 1 and L["1 setting matches"] or string.format(L["%d settings match"], count))
 	W.ShellTabs(win, nil)
@@ -2197,6 +2248,35 @@ local function listed(p)
 	return pageShown(p) and not OCULTAS[p.key]
 end
 
+-- 1.3.6: las páginas cuyo nombre o subtítulo tiene lo que buscas (como el
+-- buscador lo entiende: sin acentos, con errores de dedo y sinónimos). El
+-- buscador las encuentra aunque Sencillo las tenga fuera de la barra.
+local PAGINAS_MAX = 4
+function O.SearchPages()
+	local out = {}
+	local nw = parseQuery(query)
+	if nw == 0 then return out end
+	for _, p in ipairs(pageList) do
+		if pageShown(p) and not OCULTAS[p.key] and placeBonus(nw, O.PageLabel(p), T(p.subtitle)) > 0 then
+			out[#out + 1] = p
+			if #out == PAGINAS_MAX then break end
+		end
+	end
+	return out
+end
+
+-- Una fila del buscador que abre una página (la misma tabla cada vez).
+local filasPagina = {}
+function O.PageControl(p)
+	local c = filasPagina[p.key]
+	if not c then
+		c = { kind = "button", icon = "search", label = O.PageLabel(p), button = T("Abrir"),
+			onClick = function() O.Select(p.key) end }
+		filasPagina[p.key] = c
+	end
+	return c
+end
+
 -- The pages of a section in their order: those SECCIONES names first, in
 -- its order, then the others by their own order (Ajustes: the engine's).
 local function pagesOf(key)
@@ -2286,6 +2366,7 @@ local function lyaHelp(p)
 	-- «?» (antes quedaba debajo: «Hoy ⓘu día con la manada…»); si ya no cabe
 	-- entero en la fila, no sale (como cuando la fila no tiene lugar).
 	local sub = win.Subtitle
+	b.psTip, b.psTipLines = ns.T("Pregúntale a Lya"), nil
 	if sub and b:IsShown() and win.Title:IsShown() and sub.GetNumPoints then
 		for i = 1, sub:GetNumPoints() do
 			local pt, rel, _, _, y = sub:GetPoint(i)
@@ -2293,7 +2374,15 @@ local function lyaHelp(p)
 				sub:SetPoint("LEFT", b, "RIGHT", 10, y or -1)
 				local derecha, desde = sub:GetRight(), b:GetRight()
 				local mide = sub.GetUnboundedStringWidth and sub:GetUnboundedStringWidth() or 0
-				if type(derecha) == "number" and type(desde) == "number" and mide > derecha - desde - 10 then sub:Hide() end
+				if type(derecha) == "number" and type(desde) == "number" and mide > derecha - desde - 10 then
+					sub:Hide()
+					-- 1.3.6: lo que no cabe junto al título (para qué sirve la página)
+					-- no se pierde: sale al pasar el ratón por el «?».
+					local texto = sub:GetText()
+					if type(texto) == "string" and texto ~= "" and not (issecretvalue and issecretvalue(texto)) then
+						b.psTip, b.psTipLines = texto, { ns.T("Clic: pregúntale a Lya") }
+					end
+				end
 				break
 			end
 		end
@@ -2333,9 +2422,11 @@ local function pageByKey(key)
 	end
 end
 
-local function hideViews()
+-- 1.3.6: `keep` (la vista que se va a mostrar) no se oculta: ocultarla y volver
+-- a mostrarla reiniciaba sus relojes (Hoy, La Jauría) y la rehacía otra vez.
+local function hideViews(keep)
 	for _, p in ipairs(pageList) do
-		if p.views then for _, v in pairs(p.views) do v:Hide() end end
+		if p.views then for _, v in pairs(p.views) do if v ~= keep then v:Hide() end end end
 	end
 	if searchView then searchView:Hide() end
 end
@@ -2370,13 +2461,23 @@ local function resetText(p)
 end
 O.ResetText = function(key) local p = pageByKey(key) return p and resetText(p) or nil end
 
+-- 1.3.6: el pie se arma de nuevo solo si cambia su forma (con o sin
+-- «Restablecer página»); al pasar de una página a otra solo cambia a qué
+-- página apunta (pieDe), sin rehacer sus botones.
+local pieDe, pieForma
 local function renderFooter(p)
+	pieDe = p
+	local forma = (p and (#pageKeys(p) > 0 or p.restablecer)) and "restablecer" or "simple"
+	if forma == pieForma and win.psPieHecho then return end
+	pieForma, win.psPieHecho = forma, true
 	local left = {}
-	if p and (#pageKeys(p) > 0 or p.restablecer) then
+	if forma == "restablecer" then
 		left[#left + 1] = { label = L["Reset page"], opts = { icon = "reset", ghost = true }, onClick = function()
+			local pagina = pieDe
+			if not pagina then return end
 			W.Modal({ title = L["Reset this page?"], icon = "reset", danger = true, action = L["Reset page"],
-				text = resetText(p),
-				onAccept = function() O.ResetPage(p) end })
+				text = resetText(pagina),
+				onAccept = function() O.ResetPage(pagina) end })
 		end }
 	end
 	left[#left + 1] = { label = L["Reload UI"], onClick = function() if ReloadUI then ReloadUI() end end, opts = { icon = "reload", ghost = true } }
@@ -2413,12 +2514,20 @@ function O.Select(key, tabName)
 	local p, aliasTab = pageByKey(key)
 	p = p or defaultPage()
 	tabName = tabName or aliasTab
+	-- 1.3.6: dónde ibas en la página que dejas, para volver ahí mismo.
+	if O.view and O.view:IsShown() and win.Scroll and win.Scroll.GetVerticalScroll then
+		O.view.psScrollVisto = win.Scroll:GetVerticalScroll()
+	end
 	current = p
 	ultima[sectionOf(p)] = p.key
 	O.ultimaVista = p.key
 	W.HideMenu()
-	hideViews()
-	if query ~= "" then
+	local desdeBusqueda = query ~= ""
+	-- 1.3.6: elegir una página cancela lo que estaba por buscarse (lo tecleado
+	-- hace menos de BUSCAR_ESPERA) y deja la caja limpia.
+	pendienteBusqueda = nil
+	local enCaja = win.Search and win.Search.GetText and win.Search:GetText()
+	if query ~= "" or (type(enCaja) == "string" and enCaja ~= "") then
 		win.Search:SetText("")
 		query = ""
 	end
@@ -2433,6 +2542,8 @@ function O.Select(key, tabName)
 		view = buildView(p, t)
 		p.views[t.name] = view
 	end
+	hideViews(view)
+	if searchView then searchView.psEnBusqueda, searchView.psRes = false, nil end
 	renderNav()
 	local tabs
 	if #list > 1 or (list[1] and list[1].name ~= "") then
@@ -2445,8 +2556,13 @@ function O.Select(key, tabName)
 	local h = view.Refresh()
 	view:SetHeight(h)
 	view:Show()
-	W.ScrollTo(win.Scroll, 0)
 	W.ShellBody(win, h)
+	-- 1.3.6: al volver a una página, donde la dejaste (si sigue cabiendo); desde
+	-- el buscador o la primera vez, arriba.
+	local visto = not desdeBusqueda and view.psScrollVisto or 0
+	local alto = win.Scroll.GetHeight and win.Scroll:GetHeight() or 0
+	if type(alto) ~= "number" or alto <= 0 or visto > h - alto then visto = 0 end
+	W.ScrollTo(win.Scroll, visto)
 	renderFooter(p)
 	-- Switching pages is frequent: a short fade, no movement.
 	Anim.To(view, "alpha", 0, 1, Anim.FAST, "out")
@@ -2489,10 +2605,21 @@ end
 -- setting. The Discord mark sits in its footer.
 local function build()
 	win = W.Shell("AlfaOptions", {
-		top = true, title = "", scalePath = "ui.menuScale", searchPlaceholder = { T("Buscar ajustes"), L["Search"] },
+		top = true, title = "", scalePath = "ui.menuScale", searchPlaceholder = { T("Buscar en Alfa"), L["Search"] },
+		-- 1.3.6: busca cuando dejas de teclear (BUSCAR_ESPERA), no en cada letra:
+		-- con la primera letra se pintaban cientos de filas y, sin resultados,
+		-- las sugerencias recorrían todo en cada tecla. Borrar es al momento.
 		onSearch = function(text)
-			if (text or "") == query then return end
-			O.SetQuery(text)
+			text = text or ""
+			-- (Lo último que hay en la caja manda, aunque sea lo ya buscado: así una
+			-- letra escrita y borrada enseguida no deja una búsqueda vieja en espera.)
+			pendienteBusqueda = text
+			if text == query then return end
+			if text == "" then return O.SetQuery(text) end
+			ns.After(BUSCAR_ESPERA, function()
+				if pendienteBusqueda ~= text or text == query then return end
+				O.SetQuery(text)
+			end)
 		end,
 	})
 	O.frame = win
@@ -2613,8 +2740,14 @@ function O.MenuItems(anchor, opts)
 	if Nav and Nav.ToggleArrow then
 		items[#items + 1] = { text = ns.Get("nav.arrow") and T("Ocultar la flecha") or T("Mostrar la flecha"), icon = "dart", onClick = Nav.ToggleArrow }
 	end
-	items[#items + 1] = { text = (ns.Hidden and ns.Hidden()) and T("Mostrar Alfa") or T("Ocultar Alfa"), icon = "emblem",
-		onClick = ns.ToggleHidden }
+	-- 1.3.6: «Esconder todo Alfa» (no solo cerrar la ventana) y, al hacerlo,
+	-- cómo volver: quien lo usaba para cerrar la ventana se quedaba sin Alfa.
+	items[#items + 1] = { text = (ns.Hidden and ns.Hidden()) and T("Mostrar Alfa") or T("Esconder todo Alfa"), icon = "emblem",
+		onClick = function()
+			local estaba = ns.Hidden and ns.Hidden()
+			ns.ToggleHidden()
+			if not estaba and ns.Print then ns.Print(T("Alfa quedó escondido. Para volver: clic en el lobo del minimapa o escribe /alfa.")) end
+		end }
 	items[#items + 1] = { text = T("Reportar un problema"), icon = "bug", onClick = function()
 		if ns.Hidden and ns.Hidden() then ns.SetHidden(false) end
 		ns.Fire("SHOW_REPORT")

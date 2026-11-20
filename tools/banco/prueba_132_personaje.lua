@@ -128,6 +128,12 @@ A.PlaySound = function(...) sonidos = sonidos + 1 if tocar then return tocar(...
 local dicho = {}
 local imprimir = N.Imprimir
 N.Imprimir = function(t, ...) dicho[#dicho + 1] = tostring(t) return imprimir(t, ...) end
+-- 1.3.6: Combate ya no escribe el comando en el chat: un aviso con «Volver a Combate».
+local avisoReal = N.Kit.Aviso
+N.Kit.Aviso = function(o, ...)
+  if type(o) == "table" then dicho[#dicho + 1] = tostring(o.titulo or "") .. " " .. tostring(o.texto or "") .. " " .. tostring(o.accion and o.accion.texto or "") end
+  return avisoReal(o, ...)
+end
 local function dijo(trozo)
   for _, t in ipairs(dicho) do if t:find(trozo, 1, true) then return true end end
   return false
@@ -171,13 +177,13 @@ step("Combate: «Probar el aviso» cierra la ventana y dice cómo volver", funct
   clic(b)
   check(not abierta(), "«Probar el aviso» dejó la ventana abierta (el aviso sale debajo)")
   check(visible(rawget(_G, "AlfaCombateCorte")), "no salió el aviso de prueba")
-  check(dijo("/alfa combate"), "no dijo en tu chat cómo volver a Combate")
+  check(dijo("Volver a Combate"), "no ofreció «Volver a Combate»")
   -- Probar un aviso de reacción, igual.
   abrir("combate")
   check(#botones("Probar un aviso") == 1, "«Probar un aviso» sale " .. #botones("Probar un aviso") .. " veces (una sola)")
   dicho = {}
   clic(boton("Probar un aviso"))
-  check(not abierta() and dijo("/alfa combate"), "«Probar un aviso» no cerró la ventana o no dijo cómo volver")
+  check(not abierta() and dijo("Volver a Combate"), "«Probar un aviso» no cerró la ventana o no ofreció volver")
 end)
 
 step("Combate: «Mover marcos» / «Fijar marcos», con la ventana cerrada para verlos", function()
@@ -189,7 +195,7 @@ step("Combate: «Mover marcos» / «Fijar marcos», con la ventana cerrada para 
   clic(b)
   check(Co.Desbloqueado(), "«Mover marcos» no desbloqueó los marcos")
   check(not abierta(), "al mover, la ventana tapa los marcos")
-  check(dijo("/alfa combate mover"), "no dijo cómo fijarlos")
+  check(dijo("Volver a Combate"), "no dijo cómo volver para fijarlos")
   abrir("combate")
   check(boton("Fijar marcos"), "moviendo, Combate no ofrece «Fijar marcos»")
   clic(boton("Fijar marcos"))

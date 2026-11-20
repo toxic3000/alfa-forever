@@ -559,7 +559,8 @@ local function grupos(ui, padre)
 	muestran:Fila({ titulo = L["Ícono del tipo de perjuicio"], control = interruptor("tipoPerjuicio"), hija = true,
 		activa = function() return activo() and N.Get(ID, "disipar") and true or false end,
 		texto = L["Arriba a la derecha, el ícono de magia, maldición, veneno o enfermedad. Al pasar el ratón te dice qué clic lo quita."] })
-	fila(L["Le falta tu buff"], "buffs", L["Un punto azul abajo a la derecha si a ese compañero le falta el buff de tu clase. Se revisa fuera de combate."])
+	-- 1.3.6: «hechizo de apoyo» en vez de «buff».
+	fila(L["Le falta tu hechizo de apoyo"], "buffs", L["Un punto azul abajo a la derecha si a ese compañero le falta tu hechizo de apoyo (el que le das antes de pelear). Se revisa fuera de combate."])
 	fila(L["Tanque en apuros"], "tanque", L["El marco del tanque late en rojo cuando le queda menos del 40 % de vida."])
 	fila(L["Maná de los curanderos"], "mana", L["Arriba de tus marcos, el maná de quienes curan en tu grupo. Se destaca al terminar cada pelea."])
 	fila(L["Porcentaje de vida"], "porcentaje", L["Muestra la vida en número, debajo del nombre."])
@@ -664,7 +665,8 @@ local CONTROLES = {
 	toggle("amenaza", L["Amenaza"], L["Una línea roja arriba avisa cuando un enemigo va por ese compañero."], "threat, aggro"),
 	toggle("disipar", L["Perjuicios que puedes quitar"], L["El borde toma el color del perjuicio (magia, maldición, enfermedad o veneno) cuando tú lo puedes quitar."], "dispel, debuffs, decurse"),
 	toggle("tipoPerjuicio", L["Ícono del tipo de perjuicio"], L["Arriba a la derecha, el ícono de magia, maldición, veneno o enfermedad. Al pasar el ratón te dice qué clic lo quita."], "debuff type icon, dispel", true),
-	toggle("buffs", L["Le falta tu buff"], L["Un punto azul abajo a la derecha si a ese compañero le falta el buff de tu clase. Se revisa fuera de combate."], "missing buffs, fortitude, mark of the wild, arcane intellect, blessing"),
+	-- 1.3.6: «hechizo de apoyo» en vez de «buff».
+	toggle("buffs", L["Le falta tu hechizo de apoyo"], L["Un punto azul abajo a la derecha si a ese compañero le falta tu hechizo de apoyo (el que le das antes de pelear). Se revisa fuera de combate."], "missing buffs, buff, hechizo de apoyo, fortitude, mark of the wild, arcane intellect, blessing"),
 	toggle("tanque", L["Tanque en apuros"], L["El marco del tanque late en rojo cuando le queda menos del 40 % de vida."], "tank alert, low health"),
 	toggle("mana", L["Maná de los curanderos"], L["Arriba de tus marcos, el maná de quienes curan en tu grupo. Se destaca al terminar cada pelea."], "healer mana, group mana"),
 	toggle("porcentaje", L["Porcentaje de vida"], L["Muestra la vida en número, debajo del nombre."], "health percent"),
@@ -675,7 +677,8 @@ local CONTROLES = {
 
 N.Modulo({
 	id = ID, nombre = L["Curación"], icono = "ic-curacion", orden = 16,
-	subtitulo = L["Marcos de grupo y banda para curar con un clic, con preajustes por clase."],
+	-- 1.3.6: subtítulo corto (la ventana esconde los de más de 60 letras).
+	subtitulo = L["Marcos de grupo y banda para curar con un clic."],
 	comando = "curacion",
 	ajustes = M.AJUSTES,
 	controles = CONTROLES,
@@ -704,8 +707,9 @@ A.OnLogin(function()
 			respuesta = L["En Curación, «Curar y seleccionar» viene prendido: cada clic que cura en tus marcos también deja a ese compañero como tu objetivo, para seguir con un buff o quitarle una maldición. En «Tus clics» eliges qué hace cada clic."] },
 		{ id = "curacion.perjuicios", icono = "ic-curacion", pregunta = L["¿Cómo le quito un veneno o una maldición a alguien?"],
 			respuesta = L["Si tu clase lo puede quitar, su marco se pinta del color del perjuicio y sale su ícono arriba a la derecha. Pasa el ratón y te digo con qué clic se quita; si ningún clic lo hace, elígelo en «Tus clics»."] },
+		-- 1.3.6: sin «buff».
 		{ id = "curacion.buffs", icono = "ic-curacion", pregunta = L["¿Qué es el punto azul en mis marcos?"],
-			respuesta = L["Que a ese compañero le falta el buff de tu clase. Pasa el ratón sobre su marco: te digo con qué clic se lo das."] },
+			respuesta = L["Que a ese compañero le falta tu hechizo de apoyo (el que le das antes de pelear). Pasa el ratón sobre su marco: te digo con qué clic se lo das."] },
 	}) do
 		p.modulo = ID
 		pcall(Lya.Ensenar, p)

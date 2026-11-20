@@ -223,6 +223,12 @@ local function pintarTarjeta(c)
 	local v = c.alfaVariante
 	local relleno = K.Tono(d.tono or "acento")
 	local sobre = c.alfaSobre and d.alClic
+	-- 1.3.6: lo que decide el pintado es el tono, si está elegida y si el ratón
+	-- está encima (con clic); igual que la vez pasada y sin repintado de por
+	-- medio (K.genPintado): no se arman ni se aplican los estilos otra vez.
+	local elegida, conSobre = d.elegida and true or false, sobre and true or false
+	if c.pRelleno == relleno and c.pElegida == elegida and c.pSobre == conSobre and c.pGen == K.genPintado then return end
+	c.pRelleno, c.pElegida, c.pSobre, c.pGen = relleno, elegida, conSobre, K.genPintado
 	-- elegida: la opción marcada de un grupo de tarjetas (un asistente), con borde de acento.
 	c.caja:Estilo({ fondo = "panel", borde = d.elegida and "acento" or (sobre and "lineaFuerte" or "linea"), alfaBorde = d.elegida and 0.9 or false })
 	c.velo:SetShown(sobre and true or false)
@@ -340,7 +346,8 @@ function K.Tarjeta(padre, opts)
 		elseif self.Secundaria then
 			self.Secundaria:Hide()
 		end
-		if d.ayuda then K.ConInfo(self, d.titulo, d.ayuda) elseif self.alfaInfo then self.alfaInfo = { nil, nil } end
+		-- 1.3.6: la misma tabla de información, vaciada (no una nueva por Set).
+		if d.ayuda then K.ConInfo(self, d.titulo, d.ayuda) elseif self.alfaInfo then self.alfaInfo[1], self.alfaInfo[2] = nil, nil end
 		pintarTarjeta(self)
 	end
 
@@ -526,8 +533,14 @@ function K.Rejilla(padre, opts)
 			t:Show()
 		end
 		for i = #datos + 1, #self.pool do self.pool[i]:Hide() end
-		self.elementos = {}
-		for i = 1, #datos do self.elementos[i] = self.pool[i] end
+		-- 1.3.6: la lista de tarjetas es una tabla propia de la rejilla que se
+		-- reutiliza (no una nueva en cada Llenar). Nunca la que llegó por
+		-- SetElementos: esa es de quien la pasó y no se toca.
+		local el = self.alfaLlenas
+		if not el then el = {} self.alfaLlenas = el end
+		for i = 1, #datos do el[i] = self.pool[i] end
+		for i = #el, #datos + 1, -1 do el[i] = nil end
+		self.elementos = el
 	end
 	function r:SetElementos(lista) self.elementos = lista or {} end
 	function r:Columnas(ancho)
@@ -539,16 +552,26 @@ function K.Rejilla(padre, opts)
 		local cw = floor((ancho - gap * (cols - 1)) / cols)
 		local y, i = 0, 1
 		local n = #self.elementos
+		-- 1.3.6: el alto de la primera medida de cada tarjeta se guarda; solo se
+		-- acomoda otra vez la que quedó más baja que su fila (la más alta ya
+		-- quedó así: con altoMin igual a su alto se acomoda igual).
+		local altos = self.alfaAltos
+		if not altos then altos = {} self.alfaAltos = altos end
 		while i <= n do
 			local alto = 0
 			for c = 0, cols - 1 do
 				local e = self.elementos[i + c]
-				if e then alto = max(alto, e:Acomodar(cw)) end
+				if e then
+					local h = e:Acomodar(cw)
+					altos[c + 1] = h
+					alto = max(alto, h)
+				end
 			end
 			for c = 0, cols - 1 do
 				local e = self.elementos[i + c]
 				if e then
-					e:Acomodar(cw, alto)
+					local h = altos[c + 1]
+					if type(h) ~= "number" or h < alto then e:Acomodar(cw, alto) end
 					e:ClearAllPoints()
 					e:SetPoint("TOPLEFT", self, "TOPLEFT", c * (cw + gap), -y)
 					e:Show()
@@ -576,7 +599,7 @@ local function pintarFila(f)
 	local l = f.alfaLista
 	local on = l.alfaElegir ~= false and f.alfaI ~= nil and f.alfaI == l.alfaElegida
 	f.Fondo:SetShown(on or (f.alfaSobre and not f.alfaInerte and true or false))
-	f.Fondo:SetColorTexture(1, 1, 1, 1)
+	-- 1.3.6: el SetColorTexture(1, 1, 1, 1) va una sola vez, al crear la fila (filaDe).
 	if on then f.Fondo:SetVertexColor(K.Color("elevado")) else f.Fondo:SetVertexColor(1, 1, 1, 0.04) end
 	f.Barra:SetShown(on)
 end
@@ -589,6 +612,7 @@ local function filaDe(l, i)
 	f:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 	f.Fondo = f:CreateTexture(nil, "BACKGROUND")
 	f.Fondo:SetAllPoints(f)
+	f.Fondo:SetColorTexture(1, 1, 1, 1) -- 1.3.6: antes en cada pintarFila
 	f.Barra = K.Plano(f, "acento", "ARTWORK", 3)
 	f.Barra:SetWidth(2)
 	f.Barra:SetPoint("TOPLEFT", f, "TOPLEFT", 0, -4)
@@ -624,7 +648,13 @@ function K.Lista(padre, opts)
 	l.Area:SetClipsChildren(true)
 	-- 1.2.7: al cambiar de tamaño (el juego acomoda el área un cuadro después)
 	-- las filas se vuelven a medir; antes guardaban el ancho anterior.
-	l.Area:SetScript("OnSizeChanged", function() if l.alfaListo then l:Refrescar() end end)
+	-- 1.3.6: si el tamaño es el mismo de la última vez, no se rehace nada.
+	l.Area:SetScript("OnSizeChanged", function(_, w, h)
+		if not l.alfaListo then return end
+		if w ~= nil and w == l.alfaAreaW and h == l.alfaAreaH then return end
+		l.alfaAreaW, l.alfaAreaH = w, h
+		l:Refrescar()
+	end)
 	l:EnableMouseWheel(true)
 	l:SetScript("OnMouseWheel", function(self, d) self:Desplazar(-d * 3 * self.alfaAlto) end)
 	-- La barra de desplazamiento: una pista fina y su pulgar facetado.
@@ -832,7 +862,13 @@ function K.FilaAjuste(padre, opts)
 		K.Escribir(self.Titulo, d.titulo or "")
 		K.Escribir(self.Texto, d.texto or "")
 		local activa = not d.activa or d.activa()
-		self:SetAlpha(activa and 1 or 0.45)
+		-- 1.3.6: la fila solo cambia su alfa si cambió si está activa. El control
+		-- se sigue activando y leyendo siempre: otros lo activan por su cuenta, y
+		-- su SetValor ya no repinta si el valor es el mismo.
+		if self.alfaActivaP ~= activa then
+			self.alfaActivaP = activa
+			self:SetAlpha(activa and 1 or 0.45)
+		end
 		-- El control: su SetActivo (la fila ya lo atenúa: el control queda a su
 		-- alfa), si no Enable / Disable, y si no tiene, solo deja de tomar el ratón.
 		local c = self.Control

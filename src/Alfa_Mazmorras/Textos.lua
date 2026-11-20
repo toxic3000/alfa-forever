@@ -338,4 +338,10 @@ M.EN = {
 	-- 1.2.9: revisar lo que llevas (Alfa_Inicio)
 	["Revisar"] = "Check",
 	["Mira si llevas lo que hace falta: el equipo reparado, espacio, comida y lo de tu clase."] = "Checks you carry what you need: repaired gear, bag space, food and your class items.",
+	-- 1.3.6: claridad para quien empieza
+	["Modo historia: 1 jefe por descubrir. Vence a cada uno para ver su nombre y su botín."] = "Story mode: 1 boss to discover. Defeat each one to see its name and loot.",
+	["Modo historia: %d jefes por descubrir. Vence a cada uno para ver su nombre y su botín."] = "Story mode: %d bosses to discover. Defeat each one to see its name and loot.",
+	["Vence a sus jefes para ver lo que sueltan, o apaga el modo historia."] = "Defeat its bosses to see what they drop, or turn story mode off.",
+	["Apagar el modo historia"] = "Turn off story mode",
+	["La mazmorra para tu nivel: jefes, botín y consejos."] = "The dungeon for your level: bosses, loot and tips.",
 }

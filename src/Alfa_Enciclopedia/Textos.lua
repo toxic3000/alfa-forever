@@ -600,4 +600,10 @@ M.EN = {
 	["Lo suma a tu lista de compras de Comercio, con lo que pide su receta."] = "Adds it to your Trade shopping list, with what its recipe needs.",
 	["Está en tu lista de compras."] = "It's on your shopping list.",
 	["Tu lista de compras no pudo agregarlo."] = "Your shopping list couldn't add it.",
+	-- 1.3.6: claridad para quien empieza
+	["Los datos de la Enciclopedia están apagados: en la lista de addons de la pantalla de personajes, prende «Alfa Codex» y vuelve a entrar."] = "The Encyclopedia's data is turned off: in the addon list on the character screen, turn on \"Alfa Codex\" and log in again.",
+	["Faltan los datos de la Enciclopedia: vuelve a instalar Alfa completo."] = "The Encyclopedia's data is missing: reinstall the full Alfa.",
+	["Los datos de la Enciclopedia no cargaron. Revisa Alfa: te digo qué pasa y cómo arreglarlo."] = "The Encyclopedia's data didn't load. Check Alfa: I'll tell you what's wrong and how to fix it.",
+	["Revisar Alfa"] = "Check Alfa",
+	["Todo el juego: objetos, monturas, PNJ, misiones y más."] = "The whole game: items, mounts, NPCs, quests and more.",
 }

@@ -2939,10 +2939,23 @@ local function onSearch(text)
 	if query ~= "" then selectFirstResult() end
 end
 
+-- 1.3.6: lo que escribes en el buscador de guías se busca cuando dejas de
+-- teclear (0,15 s), no en cada letra (cada búsqueda vuelve a pintar todas las
+-- guías). Borrar es al momento; P.SetQuery (desde otra parte) también.
+local tecleado
+local function onSearchTecleando(text)
+	text = text or ""
+	tecleado = text
+	if text == "" then return onSearch(text) end
+	ns.After(0.15, function()
+		if tecleado == text then onSearch(text) end
+	end)
+end
+
 local function build()
 	win = W.Shell("AlfaPicker", {
 		top = true, width = HUB_W, height = HUB_H, title = "", scalePath = "ui.menuScale",
-		searchPlaceholder = HUB_SEARCH, onSearch = onSearch, searchWidth = 260,
+		searchPlaceholder = HUB_SEARCH, onSearch = onSearchTecleando, searchWidth = 260,
 	})
 	-- No rail nor sidebar: a section has the window's whole width.
 	win.psSidebar, win.psRail = 0, 0
@@ -2952,14 +2965,22 @@ local function build()
 	win.Content:Hide()
 	W.ShellFooter(win, nil, nil)
 
+	-- 1.3.6: Enter y las flechas usan lo que hay escrito ahora, aunque la
+	-- espera del buscador (onSearchTecleando) no haya llegado todavía.
+	local function alDia(caja)
+		local t = caja and caja:GetText() or ""
+		if t ~= query then tecleado = t onSearch(t) end
+	end
 	win.Search:SetScript("OnEnterPressed", function(self)
+		alDia(self)
 		self:ClearFocus()
 		local s = activeSection()
 		if s and s.enter then s.enter() elseif not s then P.LoadSelected() end
 	end)
-	win.Search:SetScript("OnArrowPressed", function(_, key)
+	win.Search:SetScript("OnArrowPressed", function(self, key)
 		local d = key == "UP" and -1 or (key == "DOWN" and 1 or nil)
 		if not d then return end
+		alDia(self)
 		local s = activeSection()
 		if s and s.step then s.step(d) elseif not s then step(d) end
 	end)
