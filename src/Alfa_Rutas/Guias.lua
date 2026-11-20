@@ -29,7 +29,7 @@ local registrado = false
 
 -- Las guías que no son rutas del árbol: cerrar tus misiones, recoger las de
 -- cerca y desbloquear una misión (lo que pide antes). Se guardan aparte.
-local ESPECIALES = { liberar = true, recoger = true, desbloquear = true }
+local ESPECIALES = { liberar = true, recoger = true, desbloquear = true, circuito = true } -- circuito: 1.3.0 (Circuito.lua)
 
 function G.IdRuta(rutaId) return PACK .. "/" .. tostring(rutaId) end
 function G.IdLiberar() return LIBERAR end

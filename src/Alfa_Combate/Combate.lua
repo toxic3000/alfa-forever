@@ -47,8 +47,10 @@ M.AJUSTES = {
 	despues = 2,          -- cuántas habilidades después (0 a 3)
 	fuera = true,         -- también fuera de combate, con un enemigo elegido
 	alfaFuera = 0.45,     -- opacidad fuera de combate
-	tam = 44,             -- tamaño del ícono principal
+	tam = 52,             -- tamaño del ícono principal (1.3.0: hasta 96, de fábrica más grande)
+	tamDespues = 0.7,     -- 1.3.0: el tamaño de las que siguen, en proporción al principal
 	tecla = true,         -- la tecla sobre el ícono
+	teclaGrande = true,   -- 1.3.0: la tecla grande, abajo y al centro del ícono
 	nombre = false,       -- el nombre de la habilidad debajo
 	porque = true,        -- la línea corta del porqué (con tope: unas pocas veces)
 	barrido = true,       -- el barrido oscuro de la recarga sobre los íconos
@@ -65,7 +67,19 @@ M.AJUSTES = {
 	panel = false,
 	-- Misiones
 	marcaMision = true,   -- marcar en su placa de nombre a quien te falta para una misión
-	marcaMisionBrillo = true, -- y un brillo suave alrededor de su barra        -- el panel de estadísticas (opcional)
+	marcaMisionBrillo = true, -- y un brillo suave alrededor de su barra
+	-- 1.3.0: ayudas de pelea
+	corte = true,         -- aviso cuando tu objetivo lanza algo que puedes cortar (Corte.lua)
+	corteFoco = true,     -- también tu foco
+	corteSonido = true,
+	amenaza = true,       -- la barra de amenaza en grupo o con mascota (Amenaza.lua)
+	amenazaPapel = "auto", -- auto | tanque | dano
+	amenazaAviso = 80,    -- desde qué % avisa (si no eres tanque)
+	amenazaSonido = true,
+	resumen = true,       -- la tarjeta de tu pelea al terminar (Resumen.lua)
+	resumenMin = 10,      -- segundos mínimos de pelea para mostrarla
+	recargas = true,      -- tus recargas largas en una barra discreta (Recargas.lua)
+	recargasMin = 30,     -- desde cuántos segundos cuenta como larga (30, 60, 120)
 	-- Medidor
 	medidor = false,      -- la ventana del medidor abierta (se recuerda)
 	medidorGrupo = false, -- la ventana solo cuando estás en grupo
@@ -152,6 +166,36 @@ function M.Juntar(lista)
 	if n == 0 then return "" end
 	if n == 1 then return lista[1] end
 	return table.concat(lista, ", ", 1, n - 1) .. " " .. L["y"] .. " " .. lista[n]
+end
+
+-- 1.3.0: el barrido de recarga (un marco Cooldown del cliente, sin números)
+-- sobre `region`; lo comparten la rotación, el corte y las recargas.
+function M.CrearBarrido(padre, region)
+	local ok, cd = pcall(CreateFrame, "Cooldown", nil, padre, "CooldownFrameTemplate")
+	if not ok or type(cd) ~= "table" then ok, cd = pcall(CreateFrame, "Cooldown", nil, padre) end
+	if not ok or type(cd) ~= "table" then return nil end
+	cd:SetAllPoints(region or padre)
+	pcall(cd.SetDrawEdge, cd, false)
+	pcall(cd.SetDrawBling, cd, false)
+	pcall(cd.SetHideCountdownNumbers, cd, true)
+	pcall(cd.SetSwipeColor, cd, 0, 0, 0, 0.55)
+	if cd.EnableMouse then cd:EnableMouse(false) end
+	return cd
+end
+
+-- Una línea con lo que dice el aviso y, si se puede, a Lya enseñándolo
+-- en «¿En qué te ayudo?» (se lee con rawget: Lya puede no estar).
+function M.Ensenar(o)
+	local Lya = rawget(_G, "AlfaLya")
+	if type(Lya) == "table" and type(Lya.Ensenar) == "function" then
+		o.modulo = o.modulo or ID
+		pcall(Lya.Ensenar, o)
+	end
+end
+
+function M.Sonar(kit, respaldo)
+	if not (SOUNDKIT and A.PlaySound) then return end
+	pcall(A.PlaySound, SOUNDKIT[kit] or respaldo, "SFX")
 end
 
 ---------------------------------------------------------------------------
@@ -319,7 +363,7 @@ end
 ---------------------------------------------------------------------------
 -- Refrescar: cada parte decide si se ve. La página se rehace si está abierta.
 ---------------------------------------------------------------------------
-local PARTES = { "Rotacion", "Reacciones", "Golpe", "Panel", "Ventana", "MarcaMision" }
+local PARTES = { "Rotacion", "Reacciones", "Golpe", "Panel", "Ventana", "MarcaMision", "Corte", "Amenaza", "Resumen", "Recargas" }
 
 function M.Refrescar()
 	for _, p in ipairs(PARTES) do
@@ -342,17 +386,26 @@ local function cada(fn) return function(...) K.Llamar(fn, ...) end end
 A.RegisterEvent("PLAYER_REGEN_DISABLED", cada(function()
 	if desbloqueado then M.Desbloquear(false) end
 	if M.Reacciones then M.Reacciones.EntrarCombate() end
+	if M.Resumen then M.Resumen.Empieza() end
 	M.Refrescar()
 end))
 A.RegisterEvent("PLAYER_REGEN_ENABLED", cada(function()
 	if M.Rotacion then M.Rotacion.PrepararBarras() end
 	if M.Panel then M.Panel.Pedir() end
+	if M.Resumen then M.Resumen.Termina() end
 	M.Refrescar()
 end))
 A.RegisterEvent("PLAYER_TARGET_CHANGED", cada(function()
 	if M.Prioridad then M.Prioridad.NuevoObjetivo() end
 	if M.Rotacion then M.Rotacion.Ver() end
+	if M.Corte then M.Corte.Revisar() end
+	if M.Amenaza then M.Amenaza.Ver() end
 end))
+A.RegisterEvent("PLAYER_FOCUS_CHANGED", cada(function() if M.Corte then M.Corte.Revisar() end end))
+for _, ev in ipairs({ "UNIT_THREAT_LIST_UPDATE", "UNIT_THREAT_SITUATION_UPDATE" }) do
+	A.RegisterEvent(ev, cada(function() if M.Amenaza then M.Amenaza.Pedir() end end))
+end
+A.RegisterEvent("SPELL_UPDATE_COOLDOWN", cada(function() if M.Recargas then M.Recargas.Pedir() end end))
 A.RegisterEvent("PLAYER_LEVEL_UP", cada(function()
 	if M.Prioridad then M.Prioridad.Olvidar() end
 	M.Avisar()
@@ -442,13 +495,17 @@ local function comando(resto)
 		M.Desbloquear(not desbloqueado)
 	elseif sub == "aviso" then
 		if M.Reacciones then M.Reacciones.Probar() end
+	elseif sub == "corte" then
+		if M.Corte then M.Corte.Probar() end
+	elseif sub == "pelea" or sub == "resumen" then
+		if M.Resumen then M.Resumen.VerDeNuevo() end
 	elseif sub == "medidor" or sub == "dps" then
 		if M.Ventana then M.Ventana.Alternar() end
 	else
 		N.Abrir(ID)
 	end
 end
-A.RegisterCommand("combate", comando, L["abre Combate (también: mover, aviso, medidor)"])
+A.RegisterCommand("combate", comando, L["abre Combate (también: mover, aviso, corte, pelea, medidor)"])
 A.RegisterCommand("dps", function() if M.Ventana then M.Ventana.Alternar() end end, L["abre o cierra el medidor de daño"])
 
 -- Para otros módulos (Hoy, el menú): lo mínimo, sin tocar nada por dentro.
@@ -457,4 +514,7 @@ AlfaCombate = {
 	Mover = function() M.Desbloquear(not desbloqueado) end,
 	Abrir = function() N.Abrir(ID) end,
 	VentanaMedidor = function() return M.Ventana and M.Ventana.Marco() end,
+	-- 1.3.0
+	UltimaPelea = function() return M.Resumen and M.Resumen.Ultima() end,
+	Recargas = function() return M.Recargas and M.Recargas.Activas() end,
 }

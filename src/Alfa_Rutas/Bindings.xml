@@ -2,4 +2,7 @@
 	<Binding name="ALFA_RUTAS_CERCA" category="Alfa" searchTags="BINDING_TAG_ALFA">
 		if AlfaCerca and AlfaCerca.Menu then AlfaCerca.Menu() end
 	</Binding>
+	<Binding name="ALFA_RUTAS_LLEVAME" category="Alfa" searchTags="BINDING_TAG_ALFA">
+		if AlfaRuta and AlfaRuta.AbrirLlevame then AlfaRuta.AbrirLlevame() end
+	</Binding>
 </Bindings>

@@ -497,7 +497,8 @@ P.Ordenar = ordenar
 -- -> pasos, punto final. finas: una parada por aceptar, hacer y entregar
 -- (se aceptan juntas las de un mismo PNJ y se entregan juntas); si son
 -- muchas, una parada por misión entera.
-local function pasosDe(partes, desde, costo)
+-- ordenFn(paradas, desde, costo) -> orden (1.3.0: el circuito de la zona da el suyo).
+local function pasosDe(partes, desde, costo, ordenFn)
 	local paradas, porQuest = {}, {}
 	local finas = 0
 	for _, pm in ipairs(partes) do
@@ -545,7 +546,7 @@ local function pasosDe(partes, desde, costo)
 			for _, pid in ipairs(pm.q.preAny or {}) do pide(pid) end
 		end
 	end
-	local orden = ordenar(paradas, desde, costo)
+	local orden = (ordenFn or ordenar)(paradas, desde, costo)
 	local pasos, ultimo, aqui = {}, nil, desde
 	local function conPnj(meta, tituloPaso)
 		local k = claveNpc(meta)

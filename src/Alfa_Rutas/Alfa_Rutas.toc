@@ -9,6 +9,7 @@
 
 Textos.lua
 Base.lua
+VentanaSimple.lua
 Tareas.lua
 Disponible.lua
 Indice.lua
@@ -18,6 +19,9 @@ Cerrar.lua
 Recoger.lua
 Hora.lua
 Cadenas.lua
+Grises.lua
+Cadena.lua
+Circuito.lua
 Vuelta.lua
 Hogar.lua
 Peligro.lua
@@ -26,6 +30,10 @@ Grupo.lua
 Siguiente.lua
 Vuelo.lua
 Foco.lua
+ObjetoMision.lua
+Viaje.lua
+Barcos.lua
+MapaGrupo.lua
 Rutas.lua
 Cerca.lua
 Planes.lua

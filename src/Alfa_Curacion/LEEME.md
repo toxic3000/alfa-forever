@@ -53,3 +53,15 @@ Se guardan en `AlfaDB.settings.curacion`. El mapa del ratón, el preajuste, "el 
 9. "Usar también en los marcos de Blizzard": confirmar si `SetProfileByInfo` funciona desde un addon y si los bits de Mayús, Ctrl y Alt (sacados de `GetStringFromModifiers`) son los buenos; si no, que abra la ventana oficial. Probar los clics en los marcos de Blizzard.
 10. Ocultar los de Blizzard: el marco de grupo y el de banda de Blizzard desaparecen y vuelven al apagar la opción; entrar al Modo edición no da errores.
 11. Rol: que el ícono salga en grupos con roles asignados.
+
+## 1.3.0: curar y seleccionar
+
+- **Curar y seleccionar** (por personaje, `AlfaNucleoCharDB.curacion.curarSel`, prendido si nunca lo tocaste): cada clic que cura va como macro segura `/target <unidad>` + `/cast [@<unidad>] <Hechizo>` (la venda, `/use [@<unidad>] item:<id>`). Los atributos `alfa-cmd-<ranura>` y `alfa-arg-<ranura>` guardan la orden y el hechizo; el fragmento seguro `REFRESCO` rehace la macro con la unidad nueva, también en combate. Nada se cambia en combate: `N.FueraDeCombate`.
+- **Tus clics** va primero en la página: «Curar y seleccionar» y una lista por cada clic principal (izquierdo, derecho, central, Mayús y Ctrl) con tus hechizos por tipo (`M.HechizosPorCategoria`: curas, quitar perjuicios, buffs, revivir, otros), la venda, seleccionar y el menú. El asistente lo ofrece en el paso 1. Quien no cura tiene la venda en su preajuste.
+- **Perjuicios**: el ícono del tipo arriba a la derecha (`M.TIPOS`, `dispelName` de `C_UnitAuras.GetAuraDataByAuraInstanceID`; si llega secreto, el ícono del aura sin leerlo) y el borde con su color. El cuadro del ratón dice qué clic lo quita (`M.RanuraQueQuita`). Si tu clase lo quita pero ningún clic lo hace: aviso en tu chat una vez por tipo y sesión, y en la tarjeta de arriba (`M.QuitarSinClic`).
+- **Buff que falta**: punto azul abajo a la derecha (`M.BUFF_CLASE`: Entereza, Marca, Intelecto, Bendiciones, con sus versiones de grupo), revisado fuera de combate con `C_UnitAuras.GetAuraDataBySpellName`.
+- **Tanque en apuros**: el borde rojo late bajo el 40 % (curva de color con `UnitHealthPercent`; sin curva, solo con vida legible). Tanque: rol asignado, tanque principal (`GetPartyAssignment`) o, sin roles en grupo, el único guerrero.
+- **Alcance**: sin `UnitInRange`, `CheckInteractDistance(u, 4)` fuera de combate.
+- **Maná de los curanderos** (`Mana.lua`): arriba de los marcos, solo con otro curandero; fuera de combate con color, en combate con `UnitPowerPercent` y una curva; «Maná tras la pelea» 12 s al terminar cada pelea. Reloj `curacion.mana`.
+- **Banda por grupos**: 8 cabeceras `AlfaCuracionBanda1..8` (`groupFilter`, solo banda); la de siempre se oculta en banda con `RegisterStateDriver(..., "visibility", "[group:raid] hide; show")`. Solo con el orden por grupo.
+- Ajustes nuevos: `tipoPerjuicio`, `buffs`, `tanque`, `mana`, `porGrupos` (todos sí). Prueba: `tools/banco/prueba_130_curacion.lua`.

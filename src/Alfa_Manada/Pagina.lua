@@ -1055,23 +1055,30 @@ local function bloqueNotas(padre)
 		controles = function(b)
 			b.Nota = campoTexto(b, L["¿Qué dice la nota?"], function() dejar(b) end)
 			b.Dejar = K.Boton(b, L["Nota aquí"], function() dejar(b) end, { tipo = "primario", icono = "ic-mapa" })
+			-- 1.3.0: un spot de farmeo (su propia capa del mapa).
+			b.Spot = K.Boton(b, L["Spot aquí"], function() dejar(b, "spot") end, { tipo = "secundario", icono = "ic-recoleccion" })
 		end,
 		acomodar = function(b, xt, y, w)
 			local bw = K.num(b.Dejar:GetWidth(), 110)
+			local sw = K.num(b.Spot:GetWidth(), 110)
 			b.En(b.Nota, xt, y)
-			b.Nota:SetWidth(max(120, min(w - bw - ESP.s, 420)))
+			b.Nota:SetWidth(max(120, min(w - bw - sw - 2 * ESP.s, 420)))
 			b.Dejar:ClearAllPoints()
 			b.Dejar:SetPoint("LEFT", b.Nota, "RIGHT", ESP.s, 0)
+			b.Spot:ClearAllPoints()
+			b.Spot:SetPoint("LEFT", b.Dejar, "RIGHT", ESP.s, 0)
 			return y + max(K.ALTO.control, K.num(b.Dejar:GetHeight(), K.ALTO.boton))
 		end,
 		llenar = function(b)
 			local activo = N.Get(ID, "notas") ~= false
 			b.Nota:SetActivo(activo)
 			b.Dejar:SetActivo(activo)
+			b.Spot:SetActivo(activo and N.Get(ID, "spots") ~= false)
 			local filas = {}
 			for _, x in ipairs(activo and No.Lista() or {}) do
 				local zona = U.NombreMapa(U.ZonaDe(x.map)) or ""
 				local partes = { x.de and format(L["De %s"], x.de) or L["Tuya"] }
+				if No.EsSpot(x) then table.insert(partes, 1, L["Spot de farmeo"]) end
 				if zona ~= "" then partes[#partes + 1] = zona end
 				local hace = U.Hace(U.Reloj() - (x.at or U.Reloj()))
 				if hace then partes[#partes + 1] = hace end
@@ -1082,14 +1089,14 @@ local function bloqueNotas(padre)
 			end
 			return {
 				titulo = L["Tus notas en el mapa"],
-				texto = L["Escribe algo y pulsa «Nota aquí»: queda en tu mapa donde estás parado. Un clic en la marca y la flecha te lleva."],
+				texto = L["Escribe algo y pulsa «Nota aquí»: queda en tu mapa donde estás parado. «Spot aquí» marca un buen lugar para farmear, en dorado. Un clic en la marca y la flecha te lleva."],
 				filas = filas,
 				vacio = activo and L["Aún no dejas notas. También sirve /alfa nota <texto>."] or L[No.MOTIVOS.apagado],
 			}
 		end,
 	})
-	dejar = function(x)
-		if No.AgregarYDecir(x.Nota:Texto()) then x.Nota:Vaciar() end
+	dejar = function(x, tipo)
+		if No.AgregarYDecir(x.Nota:Texto(), tipo) then x.Nota:Vaciar() end
 	end
 	return b
 end
@@ -1201,6 +1208,248 @@ local function bloqueSemana(padre)
 end
 
 ---------------------------------------------------------------------------
+-- 1.3.0: la manada crece. El tablón (Tablon.lua), el mentor (Mentor.lua),
+-- el botín para la manada (Botin.lua), las guaridas en vivo (Guaridas.lua)
+-- y el calendario de la semana (Cita.lua).
+---------------------------------------------------------------------------
+
+-- El tablón de la manada: quién busca grupo, para qué y a qué nivel.
+local function bloqueTablon(padre)
+	local Tb = M.Tablon
+	local poner
+	local function opciones()
+		local out = {}
+		for _, t in ipairs(Tb.TIPOS) do out[#out + 1] = { valor = t, texto = Tb.NombreTipo(t) } end
+		return out
+	end
+	local b = bloqueLista(padre, {
+		icono = "ic-lista", sobre = L["El tablón de la manada"],
+		controles = function(b)
+			b.Tipo = K.Desplegable(b, { opciones = opciones(), valor = "m", ancho = 120 })
+			b.Que = campoTexto(b, L["¿Qué buscas? «Minas, falta sanador»"], function() poner(b) end)
+			b.Poner = K.Boton(b, L["Publicar"], function() poner(b) end, { tipo = "primario", icono = "ic-manada" })
+		end,
+		acomodar = function(b, xt, y, w)
+			local bw = K.num(b.Poner:GetWidth(), 100)
+			b.En(b.Tipo, xt, y)
+			b.En(b.Que, xt + 120 + ESP.s, y)
+			b.Que:SetWidth(max(120, min(w - 120 - bw - 2 * ESP.s, 360)))
+			b.Poner:ClearAllPoints()
+			b.Poner:SetPoint("LEFT", b.Que, "RIGHT", ESP.s, 0)
+			return y + max(K.ALTO.control, K.num(b.Poner:GetHeight(), K.ALTO.boton))
+		end,
+		llenar = function(b)
+			local activo = N.Get(ID, "tablon") ~= false
+			local hermandad = U.EnHermandad()
+			for _, x in ipairs({ b.Tipo, b.Que, b.Poner }) do x:SetActivo(activo and hermandad) end
+			local filas = {}
+			for _, x in ipairs(Tb.Lista()) do
+				local botones
+				if x.mio then
+					botones = { { texto = L["Quitar"], alClic = function() Tb.Quitar() end } }
+				else
+					botones = {
+						{ texto = L["Susurrar"], alClic = function() Tb.Susurrar(x) end },
+						{ texto = L["Invitar"], alClic = function() Tb.Invitar(x) end },
+					}
+				end
+				filas[#filas + 1] = { nombre = format("%s: %s", x.nombre or "?", x.texto or ""), dato = Tb.Dato(x), botones = botones }
+			end
+			local vacio
+			if not activo then vacio = L[Tb.MOTIVOS.apagado]
+			elseif not hermandad then vacio = L[Tb.MOTIVOS.hermandad]
+			else vacio = L["Nadie busca grupo ahora. ¡Pon tu anuncio!"] end
+			return {
+				titulo = L["¿Quién busca grupo?"],
+				texto = L["Elige para qué, escribe qué buscas y pulsa «Publicar»: lo ven los lobos de tu hermandad con Alfa. Se quita solo en una hora."],
+				filas = filas, vacio = vacio,
+			}
+		end,
+	})
+	poner = function(x)
+		if Tb.PonerYDecir(x.Tipo:Valor() or "m", x.Que:Texto()) then x.Que:Vaciar() end
+	end
+	return b
+end
+
+-- El mentor: tu mentor, tus aprendices, quién te quiere adoptar y a quién
+-- puedes adoptar tú.
+local function bloqueMentor(padre)
+	local Me = M.Mentor
+	return bloqueLista(padre, {
+		icono = "ic-manada", sobre = L["Mentor"],
+		llenar = function()
+			local activo = N.Get(ID, "mentor") ~= false
+			local filas = {}
+			if activo then
+				for _, p in ipairs(Me.Propuestas()) do
+					filas[#filas + 1] = { nombre = format(L["%s quiere ser tu mentor"], p.nombre),
+						dato = format(L["Nivel %d"], p.nivel),
+						botones = {
+							{ texto = L["Aceptar"], alClic = function() Me.Aceptar(p.clave) end },
+							{ texto = L["No, gracias"], alClic = function() Me.Rechazar(p.clave) end },
+						} }
+				end
+				local m = Me.Mentor()
+				if m then
+					filas[#filas + 1] = { nombre = format(L["Tu mentor: %s"], m.nombre or "?"),
+						dato = L["Solo él ve tu nivel, tu zona y tu misión de ahora."],
+						botones = {
+							{ texto = L["Susurrar"], alClic = function() U.Susurrar(m.destino, "") end },
+							{ texto = L["Terminar"], alClic = function() Me.Terminar(m.clave) end },
+						} }
+				end
+				for _, a in ipairs(Me.Aprendices()) do
+					filas[#filas + 1] = { nombre = format(L["Tu aprendiz: %s"], a.nombre or "?"), dato = Me.Texto(a),
+						botones = {
+							{ texto = L["Susurrar"], alClic = function() U.Susurrar(a.destino, "") end },
+							{ texto = L["Terminar"], alClic = function() Me.Terminar(a.clave) end },
+						} }
+				end
+				for _, c in ipairs(Me.Candidatos()) do
+					local ya = Me.Propuesto(c.clave)
+					filas[#filas + 1] = { nombre = c.nombre, dato = ya and L["Esperando su respuesta"] or format(L["Nivel %d"], c.nivel),
+						botones = { { texto = L["Adoptar"], activo = not ya, alClic = function() Me.AdoptarYDecir(c.destino, c.nivel) end } } }
+				end
+			end
+			return {
+				titulo = L["Échale la mano a un lobo nuevo"],
+				texto = L["Adopta a un lobo 10 niveles menor que tú. Si acepta, ves su nivel, su zona y su misión (solo tú) y te aviso si se atora."],
+				filas = filas,
+				vacio = activo and L["Nadie para adoptar por ahora: los lobos salen aquí cuando la manada los ve."] or L[Me.MOTIVOS.apagado],
+			}
+		end,
+	})
+end
+
+-- El botín para la manada: lo que levantaste y le sirve a otro lobo.
+local function bloqueBotin(padre)
+	local Bo = M.Botin
+	return bloqueLista(padre, {
+		icono = "ic-bolsas", sobre = L["Botín para la manada"],
+		llenar = function()
+			local activo = N.Get(ID, "botin") ~= false
+			local filas = {}
+			for _, s in ipairs(activo and Bo.Sugerencias() or {}) do
+				filas[#filas + 1] = { nombre = s.nombre or "?", dato = format(L["Le sirve a %s"], s.para.nombre or "?"),
+					botones = { { texto = L["Regalárselo"], alClic = function() Bo.Regalar(s) end } } }
+			end
+			local n = #Bo.Conocidos()
+			return {
+				titulo = L["Lo que le sirve a otro lobo"],
+				texto = n > 0 and format(L["Conozco la clase y el nivel de %d lobos conectados. Si levantas algo que les sirve, te lo digo."], n)
+					or L["Cuando levantes algo que le sirve a un lobo conectado, te lo digo aquí. Ellos comparten su clase y nivel en los ajustes."],
+				filas = filas,
+				vacio = activo and L["Nada por regalar por ahora."] or L["Apagado en los ajustes de abajo."],
+			}
+		end,
+	})
+end
+
+-- Las guaridas de la manada, zona por zona.
+local function bloqueGuaridasVivo(padre)
+	local Gu = M.Guaridas
+	return bloqueLista(padre, {
+		icono = "ic-huella", sobre = L["Las guaridas de la manada"],
+		llenar = function()
+			local filas = {}
+			local comparte = on("compartir")
+			for _, e in ipairs(comparte and Gu.PorZona() or {}) do
+				if e.total > 0 or e.mia then
+					local n = e.total == 1 and L["1 lobo"] or format(L["%d lobos"], e.total)
+					filas[#filas + 1] = { nombre = format("%s (%s)", e.nombre, n), dato = Gu.TextoZona(e) }
+				end
+			end
+			return {
+				titulo = L["Dónde anda la manada"],
+				texto = L["Cada zona con lobos y cuántos hay en cada guarida. En el mapa del mundo también sale."],
+				filas = filas,
+				vacio = comparte and L["Ningún lobo dice su guarida ahora."] or L["Comparte tu ubicación para ver las guaridas de la manada."],
+			}
+		end,
+	})
+end
+
+-- El calendario de la semana: siete días con sus citas.
+local function bloqueCalendario(padre)
+	local Ci = M.Cita
+	local b = bloqueLista(padre, {
+		icono = "ic-reloj", sobre = L["El calendario de la manada"],
+		controles = function(b)
+			b.dias = {}
+			for i = 1, 7 do
+				local c = CreateFrame("Frame", nil, b)
+				c.caja = K.Caja(c, { fondo = "hundido", borde = "linea", corte = K.CORTE.control })
+				c.Titulo = K.Texto(c, "cuerpo", "texto")
+				c.Fecha = K.Texto(c, "pequeno", "textoTenue")
+				c.Citas = K.Texto(c, "nota", "textoSuave")
+				b.dias[i] = c
+			end
+		end,
+		acomodar = function(b, xt, y, w)
+			if not b.dias[1]:IsShown() then return y end
+			local cols = w >= 7 * 104 and 7 or (w >= 4 * 104 and 4 or 2)
+			local esp = ESP.s
+			local cw = floor((w - (cols - 1) * esp) / cols)
+			local pad = ESP.s
+			local alto = 0
+			for i, c in ipairs(b.dias) do
+				local col = (i - 1) % cols
+				if col == 0 and i > 1 then
+					y = y + alto + esp
+					alto = 0
+				end
+				local h = pad + K.Parrafo(c.Titulo, cw - 2 * pad) + 2
+				c.Titulo:ClearAllPoints()
+				c.Titulo:SetPoint("TOPLEFT", c, "TOPLEFT", pad, -pad)
+				c.Fecha:ClearAllPoints()
+				c.Fecha:SetPoint("TOPLEFT", c, "TOPLEFT", pad, -h)
+				h = h + K.Parrafo(c.Fecha, cw - 2 * pad) + ESP.s
+				c.Citas:ClearAllPoints()
+				c.Citas:SetPoint("TOPLEFT", c, "TOPLEFT", pad, -h)
+				h = h + K.Parrafo(c.Citas, cw - 2 * pad) + pad
+				c.alfaAlto = h
+				alto = max(alto, h)
+				b.En(c, xt + col * (cw + esp), y)
+				c:SetWidth(cw)
+			end
+			-- La misma altura en cada fila.
+			for i, c in ipairs(b.dias) do
+				local inicio = floor((i - 1) / cols) * cols + 1
+				local h = 0
+				for j = inicio, min(inicio + cols - 1, #b.dias) do h = max(h, b.dias[j].alfaAlto or 0) end
+				c:SetHeight(h)
+			end
+			return y + alto
+		end,
+		llenar = function(b)
+			local activo = N.Get(ID, "citas") ~= false
+			local semana = activo and Ci.Semana() or {}
+			for i, c in ipairs(b.dias) do
+				local d = semana[i]
+				K.Mostrar(c, d ~= nil)
+				if d then
+					K.Escribir(c.Titulo, d.titulo)
+					K.Escribir(c.Fecha, d.fecha)
+					local lineas = {}
+					for _, x in ipairs(d.citas) do
+						lineas[#lineas + 1] = format("%s %s", x.hora, x.cita.que or "")
+					end
+					K.Escribir(c.Citas, #lineas > 0 and table.concat(lineas, "\n") or L["Libre"])
+				end
+			end
+			return {
+				titulo = L["La semana de caza"],
+				texto = L["Las citas de la manada en los próximos siete días. Propón una arriba, en «Citas de la manada»."],
+				filas = {},
+				vacio = not activo and L[Ci.MOTIVOS.apagado] or nil,
+			}
+		end,
+	})
+	return b
+end
+
+---------------------------------------------------------------------------
 -- 5. Los ajustes
 ---------------------------------------------------------------------------
 
@@ -1282,7 +1531,26 @@ local function grupos(ui, padre)
 		texto = L["Tu hermandad se entera cuando llegas al nivel 60, consigues tu primera montura o cazas un raro."] })
 	juntos:Fila({ titulo = L["Compartir mi semana"], control = interruptor("semanaCompartir"),
 		texto = L["Tus misiones, raros, mazmorras y niveles de la semana suman en «La semana de la manada» de tu hermandad."] })
-	return { rastro, mapa, invitar, guaridas, caza, junta, juntos }
+	-- 1.3.0: la manada crece.
+	local crece = K.GrupoAjustes(padre, { titulo = L["La manada crece"] })
+	crece:Fila({ titulo = L["Spots de farmeo"], control = interruptor("spots"), activa = function() return N.Get(ID, "notas") ~= false end,
+		texto = L["Tus spots de farmeo en el mapa, dorados y en su propia capa."] })
+	crece:Fila({ titulo = L["Compartir mis spots"], control = interruptor("spotsCompartir"),
+		activa = function() return N.Get(ID, "notas") ~= false and N.Get(ID, "spots") ~= false end,
+		texto = L["Tus spots nuevos también salen en el mapa de los lobos de tu hermandad, y ves los suyos."] })
+	crece:Fila({ titulo = L["El tablón de la manada"], control = interruptor("tablon"),
+		texto = L["Ve quién de tu hermandad busca grupo y pon tu anuncio. Se quita solo en una hora."] })
+	crece:Fila({ titulo = L["Mentor"], control = interruptor("mentor"),
+		texto = L["Adopta a un lobo nuevo o deja que uno con más nivel te adopte. Lo que comparten queda entre los dos."] })
+	crece:Fila({ titulo = L["Botín para la manada"], control = interruptor("botin"),
+		texto = L["Si levantas algo que se puede regalar y le sirve a un lobo conectado, Alfa te lo dice con «Regalárselo»."] })
+	crece:Fila({ titulo = L["Compartir mi clase y nivel"], control = interruptor("botinCompartir"),
+		texto = L["Tu hermandad sabe tu clase y tu nivel, para que te avisen si les sale algo que te sirve."] })
+	crece:Fila({ titulo = L["Guaridas en el mapa"], control = interruptor("guaridasMapa"), activa = function() return on("compartir") end,
+		texto = L["En el mapa del mundo, cada zona con lobos dice cuántos hay en cada guarida."] })
+	crece:Fila({ titulo = L["El calendario de la manada"], control = interruptor("calendario"), activa = function() return N.Get(ID, "citas") ~= false end,
+		texto = L["Las citas de los próximos siete días, acomodadas por día."] })
+	return { rastro, mapa, invitar, guaridas, caza, junta, juntos, crece }
 end
 
 ---------------------------------------------------------------------------
@@ -1366,6 +1634,9 @@ local function firma(ui, gente)
 	partes[#partes + 1] = floor(U.Reloj() / 60)
 	-- 1.2.9: el plano, ¿quién tiene...? y la semana.
 	partes[#partes + 1] = (M.Plano and M.Plano.version or 0) .. ":" .. (M.QuienTiene and M.QuienTiene.version or 0) .. ":" .. (M.Logros and M.Logros.version or 0)
+	-- 1.3.0: el tablón, el mentor, el botín y los ajustes nuevos.
+	partes[#partes + 1] = (M.Tablon and M.Tablon.version or 0) .. ":" .. (M.Mentor and M.Mentor.version or 0) .. ":" .. (M.Botin and M.Botin.version or 0)
+		.. ":" .. tostring(N.Get(ID, "calendario"))
 	return table.concat(partes, "|")
 end
 
@@ -1389,6 +1660,12 @@ local function llenar(ui)
 	ui.cazados:Llenar()
 	ui.quienTiene:Llenar()
 	ui.semana:Llenar()
+	ui.tablon:Llenar()
+	ui.mentor:Llenar()
+	ui.botin:Llenar()
+	ui.guaridasVivo:Llenar()
+	ui.calendario:Llenar()
+	K.Mostrar(ui.calendario, N.Get(ID, "calendario") ~= false)
 	ui.clan:Llenar()
 	ui.lya:Llenar()
 	ui.filaCompartir.alfaDatos.texto = textoCompartir()
@@ -1421,10 +1698,15 @@ function P.Construir(view)
 	ui.tablero = t
 	ui.guaridas = t:AgregarBloque(bloqueGuaridas(t.Extra))
 	ui.citas = t:AgregarBloque(bloqueCitas(t.Extra), { espacio = ESP.l })
+	ui.calendario = t:AgregarBloque(bloqueCalendario(t.Extra), { espacio = ESP.l }) -- 1.3.0
+	ui.tablon = t:AgregarBloque(bloqueTablon(t.Extra), { espacio = ESP.l })
+	ui.guaridasVivo = t:AgregarBloque(bloqueGuaridasVivo(t.Extra), { espacio = ESP.l })
 	ui.notas = t:AgregarBloque(bloqueNotas(t.Extra), { espacio = ESP.l })
 	ui.cazados = t:AgregarBloque(bloqueCazados(t.Extra), { espacio = ESP.l })
 	ui.quienTiene = t:AgregarBloque(bloqueQuienTiene(t.Extra), { espacio = ESP.l })
 	ui.semana = t:AgregarBloque(bloqueSemana(t.Extra), { espacio = ESP.l })
+	ui.mentor = t:AgregarBloque(bloqueMentor(t.Extra), { espacio = ESP.l }) -- 1.3.0
+	ui.botin = t:AgregarBloque(bloqueBotin(t.Extra), { espacio = ESP.l })
 	ui.clan = t:AgregarBloque(bloqueClan(ui, t.Extra), { espacio = ESP.l })
 	ui.lya = t:AgregarBloque(bloqueLya(t.Extra), { espacio = ESP.l })
 	ui.ajustes = grupos(ui, t.Extra)

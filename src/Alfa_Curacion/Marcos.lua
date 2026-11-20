@@ -20,6 +20,17 @@
 --   * Rol, amenaza y estado (muerto, desconectado) solo si llegan legibles; el
 --     rol secreto usa UnitFrameUtil.UpdateUnitFrameRoleIcon, la vía de Blizzard.
 -- Nada decide a quién curar: eso lo decide tu clic.
+--
+-- 1.3.0:
+--   * El tipo de perjuicio (magia, maldición, veneno, enfermedad) con su ícono
+--     arriba a la derecha, si tu clase lo quita; si ningún clic lo quita, un
+--     aviso en tu chat (una vez por tipo y sesión).
+--   * Un punto azul abajo a la derecha si le falta el buff de tu clase (solo
+--     fuera de combate, que es cuando se reparten).
+--   * El marco del tanque late en rojo bajo el 40 % de vida (con una curva de
+--     color: la vida secreta nunca se compara).
+--   * En banda, un marco por grupo (8 cabeceras con groupFilter), y la de
+--     siempre se oculta con un controlador de estado ([group:raid]).
 
 local ADDON, M = ...
 local N = AlfaNucleo
@@ -47,6 +58,12 @@ M.AJUSTES = {
 	porcentaje = false,      -- porcentaje de vida
 	alcance = true,          -- atenuar a quien está lejos
 	descripcion = true,      -- cuadro del jugador al pasar el ratón (fuera de combate)
+	-- 1.3.0
+	tipoPerjuicio = true,    -- el ícono del tipo de perjuicio que puedes quitar
+	buffs = true,            -- punto si le falta el buff de tu clase
+	tanque = true,           -- el tanque late bajo el 40 %
+	mana = true,             -- el maná de los curanderos del grupo
+	porGrupos = true,        -- en banda, una columna (o fila) por grupo
 }
 
 local function opt(k) return N.Get(ID, k) end
@@ -66,6 +83,10 @@ local FUERA = 0.4                      -- opacidad de quien está fuera de alcan
 local MAX = 40
 local ESPACIO = 3
 local TOPE_ALCANCE = 8                 -- botones revisados por vuelta del temporizador
+local UMBRAL_TANQUE = 0.4              -- el tanque late por debajo de esto
+local ROJO = { 1, 0.22, 0.2 }
+local AZUL_BUFF = { 0.35, 0.75, 1 }
+local GRUPOS = 8
 local CADA_ALCANCE = 0.5
 
 local porUnidad = {}                   -- "raid3" -> botón
@@ -90,6 +111,18 @@ do
 				c:AddPoint(4, CreateColor(0, 0.6, 0, 1))      -- veneno
 			end)
 			if bien then curvaDisipar = c end
+		end
+	end
+	-- 1.3.0: el tanque bajo el 40 %: rojo opaco abajo del umbral, transparente arriba.
+	if CU and CU.CreateColorCurve and CreateColor then
+		local ok, c = pcall(CU.CreateColorCurve)
+		if ok and c then
+			local bien = pcall(function()
+				if c.SetType and Enum and Enum.LuaCurveType and Enum.LuaCurveType.Step then c:SetType(Enum.LuaCurveType.Step) end
+				c:AddPoint(0, CreateColor(ROJO[1], ROJO[2], ROJO[3], 1))
+				c:AddPoint(UMBRAL_TANQUE, CreateColor(ROJO[1], ROJO[2], ROJO[3], 0))
+			end)
+			if bien then M.curvaTanque = c end
 		end
 	end
 	if CU and CU.CreateCurve then
@@ -214,6 +247,34 @@ function M.CrearCuerpo(padre)
 	c.objetivo = borde(capa, 1, "OVERLAY")
 	colorBorde(c.objetivo, 1, 1, 1, 0.9)
 	verBorde(c.objetivo, false)
+	-- 1.3.0: el tipo de perjuicio, el punto del buff y el latido del tanque.
+	c.perjuicio = capa:CreateTexture(nil, "OVERLAY")
+	c.perjuicio:SetSize(12, 12)
+	c.perjuicio:SetPoint("TOPRIGHT", c, "TOPRIGHT", -3, -3)
+	c.perjuicio:Hide()
+	c.punto = textura(capa, "OVERLAY")
+	c.punto:SetSize(6, 6)
+	c.punto:SetPoint("BOTTOMRIGHT", c, "BOTTOMRIGHT", -3, 3)
+	c.punto:SetVertexColor(AZUL_BUFF[1], AZUL_BUFF[2], AZUL_BUFF[3], 1)
+	c.punto:Hide()
+	local pulso = CreateFrame("Frame", nil, c)
+	pulso:SetAllPoints(c)
+	pulso:SetFrameLevel(capa:GetFrameLevel() + 1)
+	c.alerta = borde(pulso, 2, "OVERLAY")
+	colorBorde(c.alerta, ROJO[1], ROJO[2], ROJO[3], 0)
+	if pulso.CreateAnimationGroup then
+		local ag = pulso:CreateAnimationGroup()
+		if ag.SetLooping then ag:SetLooping("BOUNCE") end
+		local an = ag.CreateAnimation and ag:CreateAnimation("Alpha")
+		if an and an.SetFromAlpha then
+			an:SetFromAlpha(1)
+			an:SetToAlpha(0.25)
+			an:SetDuration(0.45)
+		end
+		pulso.anim = ag
+	end
+	pulso:Hide()
+	c.pulso = pulso
 	return c
 end
 
@@ -419,11 +480,47 @@ local function disipable(u)
 	return false
 end
 
+-- El tipo del perjuicio ("Magic"...) si se puede leer, y el aura.
+local function tipoDe(u, id)
+	local U = C_UnitAuras
+	if not (id and U and U.GetAuraDataByAuraInstanceID) then return nil end
+	local ok, a = pcall(U.GetAuraDataByAuraInstanceID, u, id)
+	if not ok or secreto(a) or type(a) ~= "table" then return nil end
+	local t = a.dispelName
+	if secreto(t) or type(t) ~= "string" or not M.TIPOS[t] then return nil, a end
+	return t, a
+end
+M.TipoDe = tipoDe
+
+-- Una vez por tipo y sesión: lo puedes quitar, pero ningún clic lo quita.
+local avisados = {}
+function M.AvisarSinQuitar(tipo)
+	if avisados[tipo] or not M.TIPOS[tipo] then return false end
+	local k = M.TiposQuePuedesQuitar()[tipo]
+	if not k or M.RanuraQueQuita(tipo) then return false end
+	avisados[tipo] = true
+	N.Imprimir(string.format(L["Un compañero tiene %s y tú lo puedes quitar, pero ningún clic lo hace. Elige «%s» en Tus clics, en la página Curación."],
+		M.TIPOS[tipo].nombre:lower(), M.NombreHechizo(M.Conocido(k)) or "?"))
+	return true
+end
+
 local function disipar(b)
 	local c, u = b.cuerpo, b.unidad
-	if not opt("disipar") then return verBorde(c.disipar, false) end
+	b.alfaTipo = nil
+	if not opt("disipar") then c.perjuicio:Hide() return verBorde(c.disipar, false) end
 	local hay, id = disipable(u)
-	if not hay then return verBorde(c.disipar, false) end
+	if not hay then c.perjuicio:Hide() return verBorde(c.disipar, false) end
+	local tipo, aura = tipoDe(u, id)
+	b.alfaTipo = tipo
+	if opt("tipoPerjuicio") and tipo then
+		c.perjuicio:SetTexture(M.TIPOS[tipo].icono)
+		c.perjuicio:Show()
+	elseif opt("tipoPerjuicio") and aura and pcall(c.perjuicio.SetTexture, c.perjuicio, aura.icon) then
+		c.perjuicio:Show()
+	else
+		c.perjuicio:Hide()
+	end
+	if tipo then M.AvisarSinQuitar(tipo) end
 	local pintado = false
 	if id and curvaDisipar and C_UnitAuras.GetAuraDispelTypeColor then
 		pintado = pcall(function()
@@ -432,8 +529,84 @@ local function disipar(b)
 			colorBorde(c.disipar, r, g, bb, 1)
 		end)
 	end
+	if not pintado and tipo then
+		local col = M.TIPOS[tipo].color
+		colorBorde(c.disipar, col[1], col[2], col[3], 1)
+		pintado = true
+	end
 	if not pintado then colorBorde(c.disipar, DISIPAR[1], DISIPAR[2], DISIPAR[3], 1) end
 	verBorde(c.disipar, true)
+end
+
+-- ¿Le falta tu buff de clase? Solo fuera de combate (en combate se queda como
+-- estaba) y solo si el juego lo deja leer.
+local function buffFalta(b)
+	local c, u = b.cuerpo, b.unidad
+	if not opt("buffs") or b.alfaEstado then b.alfaSinBuff = nil return c.punto:Hide() end
+	if M.EnCombate() then return end
+	local info = M.BuffDeClase()
+	local U = C_UnitAuras
+	if not (info and U and U.GetAuraDataBySpellName) then b.alfaSinBuff = nil return c.punto:Hide() end
+	local tiene, sabe = false, false
+	for _, k in ipairs(info.grupo) do
+		local ids = M.H[k]
+		local n = ids and M.NombreHechizo(ids[1])
+		if n then
+			local ok, a = pcall(U.GetAuraDataBySpellName, u, n, "HELPFUL")
+			if ok and not secreto(a) then
+				sabe = true
+				if a ~= nil then tiene = true break end
+			end
+		end
+	end
+	b.alfaSinBuff = (sabe and not tiene) or nil
+	c.punto:SetShown(b.alfaSinBuff and true or false)
+end
+M.BuffFalta = buffFalta
+
+-- El tanque bajo el 40 %: su borde rojo late. Con la curva de color la vida
+-- secreta va directo al color; sin ella, solo si la vida se puede leer.
+local function tanque(b)
+	local c, u = b.cuerpo, b.unidad
+	local p = c.pulso
+	if not (opt("tanque") and b.esTanque) or b.alfaEstado then
+		b.alfaTanqueBajo = nil
+		if p.anim then p.anim:Stop() end
+		return p:Hide()
+	end
+	local pintado = false
+	if M.curvaTanque and UnitHealthPercent then
+		pintado = pcall(function()
+			local col = UnitHealthPercent(u, true, M.curvaTanque)
+			local r, g, bb, a = col:GetRGBA()
+			colorBorde(c.alerta, r, g, bb, a)
+		end)
+	end
+	if not pintado then
+		local v, mx = leer(UnitHealth, u), leer(UnitHealthMax, u)
+		if type(v) ~= "number" or type(mx) ~= "number" or mx <= 0 then
+			b.alfaTanqueBajo = nil
+			if p.anim then p.anim:Stop() end
+			return p:Hide()
+		end
+		b.alfaTanqueBajo = (v / mx) < UMBRAL_TANQUE
+		colorBorde(c.alerta, ROJO[1], ROJO[2], ROJO[3], b.alfaTanqueBajo and 1 or 0)
+	end
+	p:Show()
+	if p.anim and not p.anim:IsPlaying() then p.anim:Play() end
+end
+M.Tanque = tanque
+
+-- ¿Es el tanque? Rol asignado (buscador o líder) o tanque principal de la
+-- banda. (En un grupo sin roles, M.RevisarTanques toma al único guerrero.)
+function M.EsTanque(u)
+	local r = leer(UnitGroupRolesAssigned, u)
+	if r == "TANK" then return true end
+	if GetPartyAssignment then
+		local ok, es = pcall(GetPartyAssignment, "MAINTANK", u)
+		if ok and not secreto(es) and es then return true end
+	end
+	return false
 end
 
 local function alcancePor(b, dentro, revisado)
@@ -448,7 +621,14 @@ local function alcancePor(b, dentro, revisado)
 end
 
 local function alcance(b)
-	if not UnitInRange then return end
+	if not UnitInRange then
+		-- Sin UnitInRange: la distancia de seguir (28 m), solo fuera de combate.
+		if CheckInteractDistance and not M.EnCombate() and not b.esJugador then
+			local ok, dentro = pcall(CheckInteractDistance, b.unidad, 4)
+			if ok and not secreto(dentro) then alcancePor(b, dentro and true or false) end
+		end
+		return
+	end
 	local ok, dentro, revisado = pcall(UnitInRange, b.unidad)
 	if not ok then return b.cuerpo:SetAlpha(1) end
 	if secreto(revisado) then revisado = nil end
@@ -462,9 +642,41 @@ function M.ActualizarTodo(b)
 	vida(b)
 	rol(b)
 	disipar(b)
+	buffFalta(b)
+	tanque(b)
 	amenaza(b)
 	objetivo(b)
 	alcance(b)
+end
+
+-- Quién es el tanque, de todos los marcos (en un rato, no por cada botón).
+local tanquesPendiente = false
+function M.RevisarTanques()
+	local hay, guerreros, ultimo = false, 0, nil
+	local enBanda = IsInRaid and IsInRaid() and true or false
+	for _, b in ipairs(M.botones) do
+		if b.unidad and b.cuerpo then
+			b.esTanque = M.EsTanque(b.unidad)
+			if b.esTanque then hay = true end
+			local okC, _, clase = pcall(UnitClass, b.unidad)
+			if okC and not secreto(clase) and clase == "WARRIOR" and b:IsVisible() then
+				guerreros = guerreros + 1
+				ultimo = b
+			end
+		end
+	end
+	if not hay and not enBanda and guerreros == 1 and ultimo then ultimo.esTanque = true end
+	for _, b in ipairs(M.botones) do
+		if b.unidad and b.cuerpo then tanque(b) end
+	end
+end
+function M.ProgramarTanques()
+	if tanquesPendiente then return end
+	tanquesPendiente = true
+	A.After(0.3, function()
+		tanquesPendiente = false
+		M.RevisarTanques()
+	end)
 end
 
 ---------------------------------------------------------------------------
@@ -494,6 +706,7 @@ local function asignar(b, u)
 	end
 	b.alfaPintado = false
 	M.ActualizarTodo(b)
+	M.ProgramarTanques()
 end
 
 local function alCambiarAtributo(self, nombreAtributo, valor)
@@ -504,6 +717,21 @@ local function alEntrar(self)
 	if M.EnCombate() or not opt("descripcion") or not self.unidad or not GameTooltip then return end
 	GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 	if not pcall(GameTooltip.SetUnit, GameTooltip, self.unidad) then return GameTooltip:Hide() end
+	-- 1.3.0: qué clic quita su perjuicio y qué clic le da tu buff.
+	local tipo = self.alfaTipo
+	if tipo and M.TIPOS[tipo] then
+		local r = M.RanuraQueQuita(tipo)
+		local col = M.TIPOS[tipo].color
+		GameTooltip:AddLine(r and string.format(L["%s: quítalo con %s."], M.TIPOS[tipo].nombre, M.NombreRanura(r):lower())
+			or string.format(L["%s: ningún clic lo quita."], M.TIPOS[tipo].nombre), col[1], col[2], col[3], true)
+	end
+	if self.alfaSinBuff then
+		local info = M.BuffDeClase()
+		local r = M.RanuraDelBuff()
+		local n = info and M.NombreHechizo(info.id) or "?"
+		GameTooltip:AddLine(r and string.format(L["Le falta %s: dáselo con %s."], n, M.NombreRanura(r):lower())
+			or string.format(L["Le falta %s."], n), AZUL_BUFF[1], AZUL_BUFF[2], AZUL_BUFF[3], true)
+	end
 	GameTooltip:Show()
 end
 
@@ -640,20 +868,42 @@ local INICIAL = [[
 	h:CallMethod("alfaNuevoBoton", self:GetName())
 ]]
 
-local function crearCabecera()
-	cabecera = CreateFrame("Frame", "AlfaCuracionGrupo", ancla, "SecureGroupHeaderTemplate")
-	M.cabecera = cabecera
-	cabecera:SetPoint("TOPLEFT", ancla, "TOPLEFT", 0, 0)
-	cabecera.alfaNuevoBoton = function(_, nombreBoton)
+local function nuevaCabecera(nombre, grupo)
+	local h = CreateFrame("Frame", nombre, ancla, "SecureGroupHeaderTemplate")
+	h:SetPoint("TOPLEFT", ancla, "TOPLEFT", 0, 0)
+	h.alfaNuevoBoton = function(_, nombreBoton)
 		local b = type(nombreBoton) == "string" and rawget(_G, nombreBoton) or nil
 		if b then M.PrepararBoton(b) end
 	end
-	cabecera:SetAttribute("template", "SecureUnitButtonTemplate")
-	cabecera:SetAttribute("templateType", "Button")
-	cabecera:SetAttribute("showRaid", true)
-	cabecera:SetAttribute("showParty", true)
-	cabecera:SetAttribute("showPlayer", true)
-	cabecera:SetAttribute("initialConfigFunction", INICIAL)
+	h:SetAttribute("template", "SecureUnitButtonTemplate")
+	h:SetAttribute("templateType", "Button")
+	h:SetAttribute("showRaid", true)
+	h:SetAttribute("showParty", not grupo)
+	h:SetAttribute("showPlayer", true)
+	h:SetAttribute("initialConfigFunction", INICIAL)
+	h.alfaGrupo = grupo
+	h.alfaMax = grupo and 5 or MAX
+	M.cabeceras[#M.cabeceras + 1] = h
+	return h
+end
+
+M.cabeceras = {}
+M.porGrupo = {}
+local function crearCabecera()
+	cabecera = nuevaCabecera("AlfaCuracionGrupo", nil)
+	M.cabecera = cabecera
+	-- 1.3.0: una cabecera por grupo de la banda (solo muestran gente en banda).
+	for g = 1, GRUPOS do
+		local h = nuevaCabecera("AlfaCuracionBanda" .. g, g)
+		h:SetAttribute("groupFilter", tostring(g))
+		M.porGrupo[g] = h
+	end
+end
+
+-- ¿En banda, un marco por grupo? (con el orden por grupo y si el juego lo permite)
+function M.ModoGrupos()
+	return opt("porGrupos") and (opt("orden") or "grupo") == "grupo"
+		and type(RegisterStateDriver) == "function" and type(UnregisterStateDriver) == "function" or false
 end
 
 local ORDENES = {
@@ -662,6 +912,32 @@ local ORDENES = {
 	clase = { groupBy = "CLASS", groupingOrder = "WARRIOR,PALADIN,PRIEST,DRUID,SHAMAN,HUNTER,ROGUE,MAGE,WARLOCK", sortMethod = "NAME" },
 	nombre = { sortMethod = "NAME" },
 }
+
+-- Los atributos de una cabecera de grupo de banda. Solo fuera de combate.
+local function configurarGrupo(hd, g)
+	local w, h, esp, _, crecer = M.Medidas()
+	hd:SetAttribute("_ignore", "alfa")
+	hd:SetAttribute("alfa-ancho", w)
+	hd:SetAttribute("alfa-alto", h)
+	hd:SetAttribute("showSolo", false)
+	hd:ClearAllPoints()
+	if crecer == "derecha" then
+		hd:SetPoint("TOPLEFT", ancla, "TOPLEFT", 0, -(g - 1) * (h + esp))
+		hd:SetAttribute("point", "LEFT")
+		hd:SetAttribute("xOffset", esp)
+		hd:SetAttribute("yOffset", 0)
+	else
+		hd:SetPoint("TOPLEFT", ancla, "TOPLEFT", (g - 1) * (w + esp), 0)
+		hd:SetAttribute("point", "TOP")
+		hd:SetAttribute("xOffset", 0)
+		hd:SetAttribute("yOffset", -esp)
+	end
+	hd:SetAttribute("unitsPerColumn", 5)
+	hd:SetAttribute("maxColumns", 1)
+	hd:SetAttribute("sortMethod", "INDEX")
+	hd:SetAttribute("_ignore", nil)
+	hd:SetAttribute("alfa-revision", (hd:GetAttribute("alfa-revision") or 0) + 1)
+end
 
 -- Los atributos de la cabecera desde tus ajustes. Solo fuera de combate.
 local revision = 0
@@ -698,17 +974,48 @@ local function configurarCabecera()
 	cabecera:SetAttribute("alfa-revision", revision)
 end
 
--- Los 40 botones de una vez, fuera de combate (con la cabecera a la vista).
-local creados = false
-local function crearBotones()
-	if creados or not cabecera:IsVisible() then return end
-	creados = true
-	cabecera:SetAttribute("startingIndex", 1 - MAX)
-	cabecera:SetAttribute("startingIndex", 1)
-	for i = 1, MAX do
-		local ok, b = pcall(cabecera.GetAttribute, cabecera, "child" .. i)
+-- Los botones de una vez, fuera de combate (con la cabecera a la vista):
+-- 40 en la de siempre y 5 en cada una de grupo.
+local function crearBotones(h)
+	h = h or cabecera
+	if h.alfaCreados or not h:IsVisible() then return end
+	h.alfaCreados = true
+	local n = h.alfaMax or MAX
+	h:SetAttribute("startingIndex", 1 - n)
+	h:SetAttribute("startingIndex", 1)
+	for i = 1, n do
+		local ok, b = pcall(h.GetAttribute, h, "child" .. i)
 		if ok and b then M.PrepararBoton(b) end
 	end
+end
+
+-- Quién se ve: la cabecera de siempre (fuera de banda, o en banda sin el modo
+-- por grupos) y las de grupo (en banda). El controlador de estado sigue
+-- funcionando en combate: entrar o salir de una banda en pelea no rompe nada.
+local conDriver = false
+local function visibilidad()
+	local activo = opt("activo") and true or false
+	local grupos = activo and M.ModoGrupos()
+	if conDriver then
+		UnregisterStateDriver(cabecera, "visibility")
+		conDriver = false
+	end
+	if activo then cabecera:Show() else cabecera:Hide() end
+	if activo then crearBotones(cabecera) end
+	for g, hd in ipairs(M.porGrupo) do
+		if grupos then
+			configurarGrupo(hd, g)
+			hd:Show()
+			crearBotones(hd)
+		else
+			hd:Hide()
+		end
+	end
+	if grupos then
+		RegisterStateDriver(cabecera, "visibility", "[group:raid] hide; show")
+		conDriver = true
+	end
+	M.conDriver = conDriver
 end
 
 local iniciado = false
@@ -738,14 +1045,9 @@ function M.Disponer()
 	N.FueraDeCombate(function()
 		disponerPendiente = false
 		if not cabecera then return end
-		M.AplicarACabecera(cabecera)
+		for _, h in ipairs(M.cabeceras) do M.AplicarACabecera(h) end
 		configurarCabecera()
-		if opt("activo") then
-			cabecera:Show()
-			crearBotones()
-		else
-			cabecera:Hide()
-		end
+		visibilidad()
 		M.Blizzard()
 		if enPrueba then M.Prueba(enPrueba) end
 		for _, b in ipairs(M.botones) do
@@ -785,14 +1087,14 @@ end
 
 local EJEMPLOS = {
 	{ "Toxic", "PRIEST", 1.0, "HEALER" }, { "Colmillo", "WARRIOR", 0.62, "TANK", amenaza = true },
-	{ "Luna", "DRUID", 0.35, nil, disipar = { 0.2, 0.6, 1 } }, { "Aullido", "MAGE", 0.9, "DAMAGER", lejos = true },
-	{ "Sombra", "ROGUE", 0, "DAMAGER", muerto = true }, { "Garra", "HUNTER", 0.78 },
-	{ "Brasa", "WARLOCK", 0.55, nil, disipar = { 0.6, 0, 1 } }, { "Trueno", "SHAMAN", 0.84, "HEALER" },
+	{ "Luna", "DRUID", 0.35, nil, disipar = { 0.2, 0.6, 1 }, tipo = "Magic" }, { "Aullido", "MAGE", 0.9, "DAMAGER", lejos = true },
+	{ "Sombra", "ROGUE", 0, "DAMAGER", muerto = true }, { "Garra", "HUNTER", 0.78, sinBuff = true },
+	{ "Brasa", "WARLOCK", 0.55, nil, disipar = { 0.6, 0, 1 }, tipo = "Curse" }, { "Trueno", "SHAMAN", 0.84, "HEALER" },
 	{ "Escudo", "PALADIN", 0.97, "TANK" }, { "Niebla", "MAGE", 0.4, nil, entrantes = 0.3 },
 	{ "Hoja", "ROGUE", 1.0 }, { "Ceniza", "WARLOCK", 0.7, nil, desconectado = true },
 	{ "Rocío", "DRUID", 0.88, "HEALER" }, { "Acero", "WARRIOR", 0.5, "DAMAGER", entrantes = 0.25 },
 	{ "Ámbar", "PALADIN", 0.66 }, { "Rayo", "SHAMAN", 0.92 },
-	{ "Eco", "HUNTER", 0.25, nil, disipar = { 0, 0.6, 0 } }, { "Lince", "DRUID", 1.0, "TANK" },
+	{ "Eco", "HUNTER", 0.25, nil, disipar = { 0, 0.6, 0 }, tipo = "Poison" }, { "Lince", "DRUID", 0.32, "TANK", tanqueBajo = true },
 	{ "Nube", "PRIEST", 0.81, "HEALER" }, { "Vela", "MAGE", 0.58, nil, lejos = true },
 }
 
@@ -872,6 +1174,22 @@ local function pintarFalso(f, e)
 		c.entrantes:Hide()
 	end
 	verBorde(c.objetivo, e[1] == "Colmillo")
+	-- 1.3.0: el tipo de perjuicio, el punto del buff y el tanque que late.
+	if e.tipo and opt("disipar") and opt("tipoPerjuicio") then
+		c.perjuicio:SetTexture(M.TIPOS[e.tipo].icono)
+		c.perjuicio:Show()
+	else
+		c.perjuicio:Hide()
+	end
+	c.punto:SetShown(e.sinBuff and opt("buffs") and true or false)
+	if e.tanqueBajo and opt("tanque") then
+		colorBorde(c.alerta, ROJO[1], ROJO[2], ROJO[3], 1)
+		c.pulso:Show()
+		if c.pulso.anim then c.pulso.anim:Play() end
+	else
+		if c.pulso.anim then c.pulso.anim:Stop() end
+		c.pulso:Hide()
+	end
 	c:SetAlpha((e.lejos and opt("alcance")) and FUERA or 1)
 end
 
@@ -996,7 +1314,10 @@ local function limpiarAuras()
 	flushPendiente = false
 	for b in pairs(sucias) do
 		sucias[b] = nil
-		if b.unidad then disipar(b) end
+		if b.unidad then
+			disipar(b)
+			buffFalta(b)
+		end
 	end
 end
 
@@ -1008,7 +1329,7 @@ local function boton(u)
 end
 
 local POR_UNIDAD = {
-	UNIT_HEALTH = function(b) aspecto(b) vida(b) end,
+	UNIT_HEALTH = function(b) aspecto(b) vida(b) if b.esTanque then tanque(b) end end,
 	UNIT_MAXHEALTH = function(b) vida(b) end,
 	UNIT_HEAL_PREDICTION = function(b) vida(b) end,
 	UNIT_CONNECTION = function(b) aspecto(b, true) vida(b) end,
@@ -1039,9 +1360,10 @@ local function todos(fn)
 end
 
 A.RegisterEvent("PLAYER_TARGET_CHANGED", function() todos(objetivo) end)
-A.RegisterEvent("PLAYER_ROLES_ASSIGNED", function() todos(rol) end)
+A.RegisterEvent("PLAYER_ROLES_ASSIGNED", function() todos(rol) M.ProgramarTanques() end)
 A.RegisterEvent("GROUP_ROSTER_UPDATE", function()
 	todos(rol)
+	M.ProgramarTanques()
 	M.Blizzard()
 	M.Avisar()
 end)
@@ -1060,7 +1382,12 @@ A.RegisterEvent("PLAYER_REGEN_DISABLED", function()
 	end
 	M.Avisar()
 end)
-A.RegisterEvent("PLAYER_REGEN_ENABLED", function() M.Avisar() end)
+A.RegisterEvent("PLAYER_REGEN_ENABLED", function()
+	todos(buffFalta) -- al salir de la pelea, a quién le falta tu buff
+	M.Avisar()
+end)
+-- Aprendiste tu buff de clase (o cambió tu libro): el punto se revisa.
+A.RegisterEvent("SPELLS_CHANGED", function() if not M.EnCombate() then todos(buffFalta) end end)
 A.RegisterEvent("ADDON_LOADED", function(_, nombreAddon)
 	if nombreAddon == "Blizzard_CompactRaidFrames" then M.Blizzard() end
 end)
@@ -1071,7 +1398,7 @@ local turno = 0
 N.Cada("curacion.alcance", CADA_ALCANCE, function() -- un solo reloj (1.2.9)
 	local lista = M.botones
 	local n = #lista
-	if n == 0 or not opt("alcance") or not (cabecera and cabecera:IsVisible()) then return end
+	if n == 0 or not opt("alcance") or not (ancla and ancla:IsVisible()) then return end
 	local hechos, vistos = 0, 0
 	while hechos < TOPE_ALCANCE and vistos < n do
 		turno = turno % n + 1

@@ -17,6 +17,7 @@ Tooltip.lua
 Buzon.lua
 OficiosDatos.lua
 Oficios.lua
+Fabricar.lua
 Lista.lua
 Vender.lua
 VentanaOficios.lua

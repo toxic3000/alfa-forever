@@ -87,6 +87,21 @@ local function opciones()
 		out[#out + 1] = { icono = "ic-cerca", titulo = L["Buscar cerca"], texto = L["El maestro de vuelo, la posada, reparar, el banco y más, con la flecha."],
 			alClic = function(tarjeta) M.Cerca.Menu(tarjeta) end }
 	end
+	-- 1.3.0: el circuito de la zona, «Llévame a…» y las grises que puedes soltar.
+	if M.Circuito and A.Get(M.ID .. ".circuito") ~= false then
+		out[#out + 1] = { icono = "ic-ruta", titulo = L["Circuito de la zona"], texto = L["Todas las misiones de aquí en el mejor orden, con la flecha."],
+			alClic = function() M.Circuito.Ahora() end }
+	end
+	if M.Viaje and A.Get(M.ID .. ".llevame") ~= false then
+		out[#out + 1] = { icono = "ic-huella", titulo = L["Llévame a..."], texto = L["A cualquier lugar: vuelos, barcos, zepelines, portales y a pie."],
+			alClic = function() M.Viaje.Abrir() end }
+	end
+	local grises = M.Grises and M.Grises.Cuantas() or 0
+	if grises > 0 then
+		out[#out + 1] = { icono = "ic-misiones", tono = "aviso", titulo = L["Misiones grises"],
+			texto = format(grises == 1 and L["%d no vale la pena: suéltala para hacer espacio."] or L["%d no valen la pena: suéltalas para hacer espacio."], grises),
+			alClic = function() M.Grises.Abrir() end }
+	end
 	local r = M.RutaActiva() or M.RutaEditada()
 	if r and #r.tramos > 0 then
 		out[#out + 1] = { icono = "ic-ruta", titulo = r.nombre, texto = format(L["Tu ruta de %d tramos."], #r.tramos),
@@ -259,6 +274,36 @@ do
 	if not ok and geterrorhandler then geterrorhandler()(err) end
 end
 
+-- 1.3.0: tus misiones y tus viajes, en Ajustes > Misiones > Misiones.
+do
+	local LM = A.L or {}
+	local ok, err = A.RegisterOptions({ page = "questing", key = "questing", tab = LM["Quests"] or "Quests",
+		section = L["Tus misiones y tus viajes"], controls = {
+			{ kind = "toggle", key = M.ID .. ".circuito", label = L["Circuito de la zona"],
+				help = L["Todas las misiones de tu zona (las que llevas y las que puedes tomar) en el mejor orden, como una guía."],
+				search = "zone route, optimal order, all quests, circuit" },
+			{ kind = "toggle", key = M.ID .. ".grises", label = L["Avisar de misiones grises"],
+				help = L["Una lista de las grises que ya no valen la pena, con «Abandonar» en cada una (tú lo confirmas)."],
+				search = "grey quests, gray, abandon, trivial" },
+			{ kind = "toggle", key = M.ID .. ".objetoBoton", label = L["Botón del objeto de misión más claro"],
+				help = L["Junto al botón, el nombre del objeto y cuánto llevas; una huella late cuando ya lo puedes usar."],
+				search = "quest item button, use item, keybind" },
+			{ kind = "toggle", key = M.ID .. ".cadenaCompleta", label = L["Ver la cadena completa"],
+				help = L["En el menú de una misión: toda su cadena, lo que ya hiciste y el premio del final."],
+				search = "quest chain, follow up, final reward" },
+			{ kind = "toggle", key = M.ID .. ".mapaGrupo", label = L["Misiones de tu grupo en el mapa"],
+				help = L["En grupo, dónde está lo que pide cada misión y quién la lleva."],
+				search = "party quests, group map, members objectives" },
+			{ kind = "toggle", key = M.ID .. ".llevame", label = L["Llévame a..."],
+				help = L["De donde estés a cualquier lugar, con vuelos, barcos, zepelines, portales y a pie, y la lista de tramos."],
+				search = "travel, take me to, route, boat, zeppelin, portal" },
+			{ kind = "toggle", key = M.ID .. ".horarios", label = L["Horarios de barcos y zepelines en el mapa"],
+				help = L["Cada muelle con cuánto falta para que llegue su barco o zepelín."],
+				search = "boat schedule, zeppelin timer, countdown, transport" },
+		} })
+	if not ok and geterrorhandler then geterrorhandler()(err) end
+end
+
 -- 1.2.9: Lya sabe contar lo nuevo de la ruta (Pregúntale a Lya).
 A.RegisterEvent("PLAYER_LOGIN", function()
 	local Lya = rawget(_G, "AlfaLya")
@@ -272,6 +317,17 @@ A.RegisterEvent("PLAYER_LOGIN", function()
 			respuesta = L["Al terminarla, te propongo la siguiente para tu nivel. Un clic en «Seguir con…» y seguimos de caza."] },
 		{ id = "rutas.vuelo", icono = "ic-huella", pregunta = L["¿A dónde vuelo?"],
 			respuesta = L["Con el mapa de vuelos abierto, marco con una huella el destino más cerca de tu paso de ahora."] },
+		-- 1.3.0
+		{ id = "rutas.circuito", icono = "ic-ruta", pregunta = L["¿En qué orden hago las misiones de mi zona?"],
+			respuesta = L["Pídeme el «Circuito de la zona» (página Ruta o el menú del rastreador): junto las que llevas y las que puedes tomar aquí y te llevo por el camino más corto."] },
+		{ id = "rutas.grises", icono = "ic-misiones", pregunta = L["¿Qué misiones grises puedo abandonar?"],
+			respuesta = L["Las que ya no te dan casi nada y no abren otra que valga la pena. En la página Ruta, «Misiones grises»: cada una con su «Abandonar»."] },
+		{ id = "rutas.cadena", icono = "ic-ruta", pregunta = L["¿Cómo veo toda la cadena de una misión?"],
+			respuesta = L["Clic derecho en la misión, en tu registro o en el rastreador: «Ver la cadena completa». Te digo cuáles hiciste y el premio del final."] },
+		{ id = "rutas.llevame", icono = "ic-huella", pregunta = L["¿Cómo llego a otro lugar?"],
+			respuesta = L["«Llévame a…» (página Ruta, tu tecla o /alfa llevame): eliges el lugar y te llevo con vuelos, barcos, zepelines y portales, tramo por tramo."] },
+		{ id = "rutas.barcos", icono = "ic-reloj", pregunta = L["¿Cuándo sale el barco?"],
+			respuesta = L["Abre el mapa: cada muelle dice cuánto falta para que llegue su barco o zepelín."] },
 	}) do
 		p.modulo = M.ID
 		pcall(Lya.Ensenar, p)

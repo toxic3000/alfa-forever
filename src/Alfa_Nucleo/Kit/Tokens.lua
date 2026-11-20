@@ -55,6 +55,9 @@ local DEL_TEMA = {
 	oro = "gold", mision = "quest", pnj = "npc", objeto = "item", lugar = "place",
 	mazmorra = "dungeon", raro = "rare", clase = "class", claseTexto = "classText", velo = "scrim",
 	titulo = "title", -- los títulos: el texto en Alfa y Cristal, el oro del juego en Clásico WoW
+	-- 1.3.0: los perjuicios por su tipo (K.ColorPerjuicio), con su paleta para daltonismo
+	debuffMagia = "debuffMagic", debuffMaldicion = "debuffCurse", debuffEnfermedad = "debuffDisease",
+	debuffVeneno = "debuffPoison", debuffFisico = "debuffNone",
 }
 K.DEL_TEMA = DEL_TEMA
 
@@ -67,6 +70,8 @@ local DISENO_A = {
 	oro = hex("f2d06b"), mision = hex("f2d06b"), pnj = { 0.58, 0.79, 1, 1 }, objeto = { 0.78, 0.68, 1, 1 },
 	lugar = { 0.96, 0.68, 0.52, 1 }, mazmorra = { 0.64, 0.52, 1, 1 }, raro = { 1, 0.5, 0.32, 1 },
 	clase = hex("8be04e"), claseTexto = hex("8be04e"), velo = hex("0b0e0c"), titulo = hex("e6efe4"),
+	debuffMagia = { 0.2, 0.6, 1, 1 }, debuffMaldicion = { 0.6, 0, 1, 1 }, debuffEnfermedad = { 0.6, 0.4, 0, 1 },
+	debuffVeneno = { 0, 0.6, 0, 1 }, debuffFisico = { 0.8, 0, 0, 1 },
 }
 K.DISENO_A = DISENO_A
 
@@ -92,6 +97,36 @@ function K.Hex(token)
 	local r, g, b = K.Color(token)
 	return ("ff%02x%02x%02x"):format(floor(r * 255 + 0.5), floor(g * 255 + 0.5), floor(b * 255 + 0.5))
 end
+
+---------------------------------------------------------------------------
+-- 1.3.0: accesibilidad (Ajustes > Estilo y sonido). Los ajustes viven en
+-- "nucleo.*" y el tema los lee (motor/Alfa/Theme/Theme.lua):
+--   nucleo.daltonico    bien, aviso, peligro y perjuicios en una paleta que
+--                       no depende del rojo contra el verde (Okabe e Ito)
+--   nucleo.letraGrande  todo el texto de Alfa un escalón más grande (Theme.Escalon)
+-- Los módulos leen los colores con los tokens de siempre (exito, aviso,
+-- peligro, peligroRelleno) y los de los perjuicios con K.ColorPerjuicio.
+---------------------------------------------------------------------------
+if A and A.RegisterDefaults then
+	A.RegisterDefaults("nucleo", { daltonico = false, letraGrande = false })
+end
+
+function K.Daltonico() return A and A.Get and A.Get("nucleo.daltonico") and true or false end
+function K.LetraGrande() return A and A.Get and A.Get("nucleo.letraGrande") and true or false end
+
+-- Los tipos de perjuicio del juego ("Magic", "Curse", "Disease", "Poison", "" o
+-- nil) y sus nombres en español, a su token del Kit.
+local PERJUICIO = {
+	Magic = "debuffMagia", Curse = "debuffMaldicion", Disease = "debuffEnfermedad", Poison = "debuffVeneno",
+	magia = "debuffMagia", maldicion = "debuffMaldicion", enfermedad = "debuffEnfermedad", veneno = "debuffVeneno",
+}
+K.PERJUICIO = PERJUICIO
+function K.TokenPerjuicio(tipo)
+	if issecretvalue and issecretvalue(tipo) then return "debuffFisico" end
+	return PERJUICIO[tipo or ""] or "debuffFisico"
+end
+-- -> r, g, b, a del color de un tipo de perjuicio (sigue el modo para daltonismo)
+function K.ColorPerjuicio(tipo) return K.Color(K.TokenPerjuicio(tipo)) end
 
 -- Texto en un color: K.Tenir("acento", "Seguir").
 function K.Tenir(token, texto) return "|c" .. K.Hex(token) .. tostring(texto) .. "|r" end
@@ -174,11 +209,16 @@ K.ESTILOS = {
 		texto = "Los marcos, fondos, botones y letras del propio juego, con títulos en oro." },
 	{ id = "cristal", piel = "cristal", nombre = "Cristal", icono = "ic-apariencia",
 		texto = "Fondos transparentes para ver el mundo detrás y el color de acento que elijas." },
+	-- 1.3.0: la casa con su propio esquema y acento (Theme.ESTILOS_CASA)
+	{ id = "nocturno", piel = "nocturno", nombre = "La Jauría nocturno", icono = "ic-lobo", acento = "plata",
+		texto = "Azul de medianoche casi negro con detalles en plata de luna. Para cazar de noche." },
+	{ id = "fogata", piel = "fogata", nombre = "Fogata", icono = "ic-lobo", acento = "brasa",
+		texto = "Carbón cálido y el naranja de las brasas, como la manada junto al fuego." },
 }
 local ESTILO = {}
 for _, e in ipairs(K.ESTILOS) do ESTILO[e.id] = e end
 
--- -> "alfa" | "clasico" | "cristal"
+-- -> "alfa" | "clasico" | "cristal" | "nocturno" | "fogata"
 function K.Estilo()
 	if T and T.EstiloKey then
 		local ok, v = pcall(T.EstiloKey)
@@ -188,6 +228,8 @@ function K.Estilo()
 end
 function K.Clasico() return K.Estilo() == "clasico" end
 function K.Cristal() return K.Estilo() == "cristal" end
+-- 1.3.0: si en este estilo se elige el acento (Cristal, nocturno, Fogata).
+function K.EligeAcento() local e = K.Estilo() return e ~= "alfa" and e ~= "clasico" end
 
 function K.DatosEstilo(id) return ESTILO[id or K.Estilo()] end
 function K.NombreEstilo(id)
@@ -235,7 +277,38 @@ K.ACENTOS = {
 	{ id = "coral", nombre = "Coral", color = hex("ff7a68") },
 	{ id = "rosa", nombre = "Rosa", color = hex("f590c8") },
 	{ id = "luna", nombre = "Luna", color = hex("e6efe4") },
+	-- 1.3.0: los acentos de fábrica de La Jauría nocturno y de Fogata
+	{ id = "plata", nombre = "Plata de luna", color = hex("c8d3e6") },
+	{ id = "brasa", nombre = "Brasa", color = hex("ff9a4d") },
 }
+
+-- El acento con el que viene un estilo: el de su tema (nocturno, fogata) o
+-- el verde de La Jauría. -> { r, g, b }
+function K.AcentoDeFabrica(id)
+	id = id or K.Estilo()
+	local casa = T and T.ESTILOS_CASA and T.ESTILOS_CASA[id]
+	if casa and casa.accent then return casa.accent end
+	return K.ACENTOS[1].color
+end
+
+-- Un color del Kit en un estilo que no es el de ahora (para quien viste
+-- algo con otro estilo, como el chat): el de ahora sale del tema; los
+-- estilos de la casa, de su esquema; los demás, del diseño A.
+function K.ColorEstilo(id, token)
+	if id == nil or id == K.Estilo() then return K.Color(token) end
+	local casa = T and T.ESTILOS_CASA and T.ESTILOS_CASA[id]
+	local esquema = casa and T.SCHEMES and T.SCHEMES[casa.scheme]
+	if esquema then
+		if token == "acento" then
+			local c = casa.accent
+			return c[1], c[2], c[3], 1
+		end
+		local c = esquema[DEL_TEMA[token] or token]
+		if type(c) == "table" then return c[1], c[2], c[3], c[4] or 1 end
+	end
+	local c = DISENO_A[token] or DISENO_A.texto
+	return c[1], c[2], c[3], c[4] or 1
+end
 
 local function igual(a, b)
 	if not (esColor(a) and esColor(b)) then return false end
@@ -254,8 +327,9 @@ function K.SetAcento(c)
 		for _, a in ipairs(K.ACENTOS) do if a.id == c then c = a.color end end
 	end
 	if not esColor(c) then A.Set("ui.accent", nil) return end
-	-- El verde de La Jauría ya es el de Alfa y Cristal: no se guarda como propio.
-	if not K.Clasico() and igual(c, K.ACENTOS[1].color) then A.Set("ui.accent", nil) return end
+	-- El acento de fábrica del estilo (el verde de La Jauría en Alfa y Cristal,
+	-- la plata en nocturno, la brasa en Fogata) no se guarda como propio.
+	if not K.Clasico() and igual(c, K.AcentoDeFabrica()) then A.Set("ui.accent", nil) return end
 	A.Set("ui.accent", { c[1], c[2], c[3] })
 end
 
@@ -328,7 +402,9 @@ end
 -- El tamaño en pantalla de un rol (con la escala de texto del jugador).
 function K.Tamano(rol)
 	local spec = K.TIPO[rol] or K.TIPO.cuerpo
-	return floor(spec[2] * escalaTexto() * 2 + 0.5) / 2
+	-- 1.3.0: con «Letra más grande», un escalón más de la escala (Theme.Escalon).
+	local base = (T and T.Escalon) and T.Escalon(spec[2]) or spec[2]
+	return floor(base * escalaTexto() * 2 + 0.5) / 2
 end
 
 function K.Fuente(fs, rol)

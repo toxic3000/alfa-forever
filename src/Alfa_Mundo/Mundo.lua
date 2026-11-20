@@ -187,6 +187,8 @@ local function ajustesMapa(padre)
 				{ valor = "off", texto = L["Ocultas"] }, { valor = "on", texto = L["Reveladas"] }, { valor = "tint", texto = L["Reveladas con otro tono"] },
 			} })
 		end })
+	g:Fila({ titulo = L["Modo explorador"], control = interruptor("mundo.explorador"),
+		texto = L["En esta página, cuánto llevas descubierto de cada zona de tu continente y lo que te falta."] })
 	g.detalle = g:Fila({ titulo = L["Más detalle al acercar el mapa"], control = interruptor("mundo.detalle"),
 		activa = function() return Lz.HayTexturas() end,
 		texto = L["Dibuja el arte completo de cada zona recortado a su forma, con las texturas de detalle incluidas. Sin ellas el mapa sigue completo, solo más suave entre zona y zona."] })
@@ -257,6 +259,43 @@ local function bloqueCapas(ui, padre)
 end
 
 ---------------------------------------------------------------------------
+-- 1.3.0: el modo explorador (Descubrir.lua): cuánto llevas de cada zona
+---------------------------------------------------------------------------
+local EXPLORAR = 6
+
+local function bloqueExplorador(padre)
+	local b = K.Pila(padre, { espacio = ESP.m })
+	b.Seccion = b:Agregar(K.Seccion(b, L["Modo explorador"]))
+	b.Rejilla = b:Agregar(K.Rejilla(b, { min = 200, variante = "normal" }))
+	function b:Llenar()
+		local on = A.Get("mundo.explorador") ~= false
+		K.Mostrar(self, on)
+		if not on then return end
+		local Ds = M.Descubrir
+		local lista, r = {}, { completas = 0, zonas = 0 }
+		if Ds and Ds.Explorador then lista, r = Ds.Explorador() end
+		local datos = {}
+		for i = 1, math.min(EXPLORAR, #lista) do
+			local e = lista[i]
+			local falta = e.total - e.hechos
+			datos[i] = {
+				icono = falta == 0 and "ic-exito" or "ic-descubrir", tono = falta == 0 and "exito" or "acento",
+				sobre = e.mia and L["Tu zona"] or nil, titulo = e.nombre,
+				texto = falta == 0 and L["¡Explorada completa!"] or (falta == 1 and L["Te falta 1 rincón."] or format(L["Te faltan %d rincones."], falta)),
+				progreso = { actual = e.hechos, total = e.total, texto = format(L["%d de %d rincones"], e.hechos, e.total) },
+			}
+		end
+		if #datos == 0 then
+			datos[1] = { icono = "ic-descubrir", tono = "neutro", titulo = L["Sal a explorar"],
+				texto = L["Aquí verás cuánto llevas descubierto de cada zona de tu continente."] }
+		end
+		self.Rejilla:Llenar(datos)
+		self.Seccion:Set(L["Modo explorador"], { cuenta = r.zonas > 0 and format(L["%d de %d zonas completas"], r.completas, r.zonas) or nil })
+	end
+	return b
+end
+
+---------------------------------------------------------------------------
 -- 6. Cómo se usa
 ---------------------------------------------------------------------------
 local AYUDA = {
@@ -303,6 +342,7 @@ local function construir(view)
 	local ui = { view = view }
 	local t = K.Tablero(view, { margen = N.MargenPagina(), accion = "accion", tituloOpciones = L["El mapa a tu gusto"], min = 300 })
 	ui.marcadores = t:AgregarBloque(bloqueMarcadores(ui, t.Extra))
+	ui.explorador = t:AgregarBloque(bloqueExplorador(t.Extra))
 	ui.ajustes = t:AgregarBloque(ajustesMapa(t.Extra))
 	ui.sinTexturas = t:AgregarBloque(K.Texto(t.Extra, "pequeno", "textoTenue"), { espacio = ESP.s })
 	function ui.sinTexturas:Acomodar(ancho) return K.Parrafo(self, ancho) end
@@ -312,6 +352,7 @@ local function construir(view)
 		t:SetAccion(accion())
 		t:SetOpciones(tarjetas(), L["El mapa a tu gusto"])
 		ui.marcadores:Llenar()
+		ui.explorador:Llenar()
 		ui.ajustes:Refrescar()
 		local faltan, roto = not Lz.HayTexturas(), Lz.TerrenoRoto()
 		K.Mostrar(ui.sinTexturas, faltan or roto)
@@ -346,6 +387,8 @@ N.Modulo({
 		vueloEnMapa = true, -- la línea de tu vuelo en grifo en el mapa de Alfa (Trayecto.lua, 1.2.1)
 		porDescubrir = true, -- los rincones de tu zona que no exploras (Descubrir.lua, 1.2.9)
 		vuelosFaltan = true, -- los vuelos de tu zona que no conoces (Descubrir.lua, 1.2.9)
+		peligros = true,    -- los élites y raros peligrosos de tu zona (Peligros.lua, 1.3.0)
+		explorador = true,  -- el modo explorador en la página (Descubrir.lua, 1.3.0)
 		botonMapa = true,   -- botones de Alfa junto a la lupa del mapa del juego
 		menuMapa = true,    -- las capas en el menú de la lupa
 		teclaM = true,      -- la tecla del mapa abre el de Alfa
@@ -366,12 +409,22 @@ N.Modulo({
 		{ kind = "toggle", key = "mundo.vueloEnMapa", label = L["Tu vuelo en el mapa"], search = "flight path, gryphon, taxi, flight line, vuelo, grifo, línea" },
 		{ kind = "toggle", key = "mundo.porDescubrir", label = L["Por descubrir"], search = "explore, unexplored, discover, exploration xp, explorar" },
 		{ kind = "toggle", key = "mundo.vuelosFaltan", label = L["Vuelos que te faltan"], search = "flight paths, missing, taxi, flight master, vuelos" },
+		{ kind = "toggle", key = "mundo.peligros", label = L["Peligros"], search = "danger, elites, dangerous rares, elite mobs, peligro" },
+		{ kind = "toggle", key = "mundo.explorador", label = L["Modo explorador"], search = "explorer, exploration progress, subzones, discovered, explorar" },
 		{ kind = "dropdown", key = "mundo.estiloMapa", label = L["Estilo del mapa"],
 			choices = { { value = "terreno", label = L["Terreno, como el minimapa"] }, { value = "clasico", label = L["Clásico, el arte pintado del juego"] } },
 			search = "map style, terrain, minimap, classic, estilo, terreno, minimapa" },
 	},
 	construir = construir,
 })
+
+-- 1.3.0: el modo explorador se rehace al prenderlo o al descubrir algo.
+local function rehacerVista()
+	local v = M.vista
+	if v and v.IsVisible and v:IsVisible() then N.RehacerPagina(v) end
+end
+A.On("SETTING_CHANGED", function(path) if path == "mundo.explorador" then rehacerVista() end end)
+A.RegisterEvent("MAP_EXPLORATION_UPDATED", rehacerVista)
 
 A.RegisterCommand("mapa", function() V.Alternar() end, L["Abre o cierra el mapa de Alfa"])
 A.RegisterCommand("limpio", function()

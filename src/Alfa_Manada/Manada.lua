@@ -23,6 +23,13 @@
 --       si no se puede (y ofrece preguntar a la manada). -> ok, motivo
 --   AlfaManada.Plano()           (1.2.9) { capa, nombre, nivel, puntos, texto }
 --       o nil: tu plano ahora y cómo está de lleno
+--   AlfaManada.Red               (1.3.0) los mensajes ocultos de la manada
+--       para otros módulos: .EnviarHermandad(clave, tipo, texto),
+--       .EnviarLibre(clave, tipo, texto, destino) (susurro) y
+--       .Escuchar(tipo, fn(clave, remitente, campos, canal), libre). `tipo` es
+--       una letra que nadie use (Red.lua: la lista); 1Y es de Alfa_Lya.
+--   AlfaManada.Tablon(), .Mentor(), .Botin()  (1.3.0) lo que hay: anuncios del
+--       tablón, tu mentor y tus aprendices, las sugerencias de regalo
 --
 -- Sin asistente de primer arranque (Alfa_Bienvenida), la pregunta sale sola
 -- una vez, al poco de entrar, fuera de combate y de instancias.
@@ -69,6 +76,14 @@ N.Modulo({
 		logros = true, -- festejar los logros de la manada (1.2.9)
 		logrosCompartir = false, -- tu hermandad se entera de tus logros (1.2.9)
 		semanaCompartir = false, -- tu semana suma en la de la manada (1.2.9)
+		spots = true, -- los spots de farmeo en su capa del mapa (1.3.0)
+		spotsCompartir = false, -- tus spots también para tu hermandad, y los suyos (1.3.0)
+		tablon = true, -- el tablón de la manada: quién busca grupo (1.3.0)
+		mentor = true, -- adoptar aprendices y recibir propuestas de mentor (1.3.0)
+		botin = true, -- sugerir regalar lo que le sirve a otro lobo (1.3.0)
+		botinCompartir = false, -- tu clase y nivel a tu hermandad, para el botín (1.3.0)
+		guaridasMapa = true, -- las guaridas de la manada en el mapa (1.3.0)
+		calendario = true, -- el calendario de la semana con las citas (1.3.0)
 	},
 	construir = P.Construir,
 })
@@ -121,6 +136,39 @@ function AlfaManada.Plano()
 end
 function AlfaManada.EstiloInsignia(tipo) return M.Insignias.Estilo(tipo) end
 
+-- 1.3.0: la red de la manada para otros módulos (Lya se saluda con 1Y).
+local externos = {}
+local function tipoValido(tipo)
+	return type(tipo) == "string" and #tipo == 1 and tipo:match("^%a$") ~= nil
+end
+AlfaManada.Red = {
+	EnviarHermandad = function(clave, tipo, texto)
+		if not tipoValido(tipo) or type(texto) ~= "string" then return false end
+		return R.EnviarHermandad("ext:" .. tostring(clave), "1" .. tipo .. "|" .. texto)
+	end,
+	EnviarLibre = function(clave, tipo, texto, destino)
+		if not tipoValido(tipo) or type(texto) ~= "string" then return false end
+		return R.EnviarLibre("ext:" .. tostring(clave), "1" .. tipo .. "|" .. texto, destino)
+	end,
+	-- fn(clave, remitente, campos, canal). `libre`: llega por la hermandad
+	-- aunque no compartas tu ubicación (cada quien revisa su propio ajuste).
+	Escuchar = function(tipo, fn, libre)
+		if not tipoValido(tipo) or type(fn) ~= "function" then return false end
+		-- Un tipo de La Jauría no se pisa; uno de fuera, sí (su dueño lo renueva).
+		if R.Oyentes[tipo] and not externos[tipo] then return false end
+		externos[tipo] = true
+		R.Oyentes[tipo] = function(clave, remitente, _, campos, canal) pcall(fn, clave, remitente, campos, canal) end
+		if libre then R.Libres[tipo] = true end
+		return true
+	end,
+}
+function AlfaManada.Tablon() return M.Tablon and M.Tablon.Lista() or {} end
+function AlfaManada.Mentor()
+	if not M.Mentor then return nil end
+	return { mentor = M.Mentor.Mentor(), aprendices = M.Mentor.Aprendices() }
+end
+function AlfaManada.Botin() return M.Botin and M.Botin.Sugerencias() or {} end
+
 ---------------------------------------------------------------------------
 -- Comando: /alfa manada [seguir <nombre> | parar | compartir sí/no | estado]
 ---------------------------------------------------------------------------
@@ -139,6 +187,8 @@ local function ayuda()
 		{ "/alfa manada tiene <objeto>", L["pregunta a tu hermandad quién lo tiene"] },
 		{ "/alfa cita mañana 21:30 <qué>", L["propón una salida a la manada"] },
 		{ "/alfa nota <texto>", L["deja una nota en tu mapa donde estás"] },
+		{ "/alfa spot <texto>", L["marca un spot de farmeo donde estás"] },
+		{ "/alfa manada tablon <texto>", L["pon tu anuncio en el tablón de la manada"] },
 	}) do
 		DEFAULT_CHAT_FRAME:AddMessage("  " .. hex .. l[1] .. "|r  " .. l[2])
 	end
@@ -209,6 +259,10 @@ A.RegisterCommand("manada", function(rest)
 			local que, cuando = M.Cita.Leer(arg)
 			if que then M.Cita.ProponerYDecir(que, cuando) else U.Decir(L["Así: /alfa cita mañana 21:30 Minas de la Muerte"]) end
 		end
+	elseif (cmd == "tablon" or cmd == "tablón" or cmd == "board") and M.Tablon then
+		if arg == "" then P.Abrir() else M.Tablon.PonerYDecir("m", arg) end
+	elseif cmd == "spot" and M.Notas then
+		if arg == "" then U.Decir(L[M.Notas.MOTIVOS.textoSpot]) else M.Notas.AgregarYDecir(arg, "spot") end
 	elseif cmd == "nota" and M.Notas then
 		if arg == "" then U.Decir(L[M.Notas.MOTIVOS.texto]) else M.Notas.AgregarYDecir(arg) end
 	else
@@ -381,6 +435,19 @@ A.OnLogin(function()
 				respuesta = L["En La Jauría, en «¿Quién tiene...?», escribe el objeto y pulsa «Buscar». Te contestan los lobos de tu hermandad que lo permiten, con «Susurrar» para pedírselo."] },
 			{ id = "manada.semana", icono = "ic-reloj", pregunta = L["¿Qué hizo la manada esta semana?"],
 				respuesta = L["En La Jauría está «La semana de la manada»: misiones, raros, mazmorras y niveles de los lobos que la comparten. Nadie compite: todo suma."] },
+			-- 1.3.0
+			{ id = "manada.spots", icono = "ic-recoleccion", pregunta = L["¿Dónde farmea la manada?"],
+				respuesta = L["Marca un spot con «Spot aquí» en La Jauría o /alfa spot. Sale dorado en tu mapa y, si lo compartes, también en el de tu hermandad."] },
+			{ id = "manada.tablon", icono = "ic-lista", pregunta = L["¿Cómo encuentro grupo en la manada?"],
+				respuesta = L["En La Jauría está «El tablón de la manada»: pon qué buscas y a tu hermandad le llega. Se quita solo en una hora."] },
+			{ id = "manada.mentor", icono = "ic-manada", pregunta = L["¿Puedo cuidar a un lobo nuevo?"],
+				respuesta = L["Sí: en «Mentor», pulsa «Adoptar» junto a un lobo 10 niveles menor. Si acepta, ves cómo va y te aviso si se atora."] },
+			{ id = "manada.botin", icono = "ic-bolsas", pregunta = L["¿Y si me sale algo que le sirve a otro lobo?"],
+				respuesta = L["Te aviso con «Regalárselo»: abre el comercio si está a tu lado o te deja su nombre en el correo. Necesitan compartir su clase y nivel."] },
+			{ id = "manada.guaridasvivo", icono = "ic-huella", pregunta = L["¿En qué guarida anda la manada?"],
+				respuesta = L["En La Jauría, «Las guaridas de la manada» dice cuántos lobos hay en cada guarida de cada zona. En el mapa también sale."] },
+			{ id = "manada.calendario", icono = "ic-reloj", pregunta = L["¿Qué citas tiene la manada esta semana?"],
+				respuesta = L["En La Jauría, «El calendario de la manada» acomoda las citas de los próximos siete días."] },
 		}) do
 			p.modulo = ID
 			pcall(Lya.Ensenar, p)

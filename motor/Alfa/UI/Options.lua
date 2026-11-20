@@ -493,7 +493,7 @@ local BUILTIN = {
 	} },
 	{ page = LOOK, tab = L["Windows"], section = L["Frame"], controls = {
 		{ kind = "dropdown", key = "ui.skin", label = L["Skin"], search = "theme, look, style, frame",
-			help = T("Alfa (el estilo propio, por omisión), Clásico WoW (marcos y letras del juego) o Cristal (transparente, con el acento que elijas). El modo compacto y tus colores funcionan en los tres."),
+			help = T("Alfa (el de siempre), Clásico WoW (marcos y letras del juego), Cristal (transparente), La Jauría nocturno (azul de noche y plata de luna) o Fogata (carbón y brasas). El modo compacto y tus colores funcionan en todos."),
 			choices = function()
 				local list = {}
 				for i, c in ipairs(Theme.SkinChoices()) do list[i] = { value = c.value, label = c.text } end

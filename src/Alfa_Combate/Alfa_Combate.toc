@@ -1,6 +1,6 @@
 ## Interface: 16001
 ## Title: |cff8be04eAlfa|r - Combate
-## Notes: Qué habilidad presionar ahora y cuáles siguen, avisos de reacción y el medidor de daño de tu grupo.
+## Notes: Qué habilidad presionar ahora y cuáles siguen, avisos para cortar, tu amenaza, tus recargas largas, el resumen de cada pelea y el medidor de daño de tu grupo.
 ## Author: toxic3000 - La Jauria
 ## Version: dev
 ## X-License: GPL-3.0-only
@@ -16,6 +16,10 @@ Rotacion.lua
 Reacciones.lua
 MarcaMision.lua
 Golpe.lua
+Recargas.lua
+Corte.lua
+Amenaza.lua
+Resumen.lua
 Panel.lua
 Medidor.lua
 Ventana.lua

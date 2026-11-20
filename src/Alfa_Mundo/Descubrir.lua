@@ -92,6 +92,59 @@ function Ds.Rincones(zona)
 	return out
 end
 
+-- 1.3.0: el modo explorador. -> descubiertos, total (nil si el juego no da
+-- el arte completo de esa zona). Cada pieza del mapa que el juego te tapa es
+-- un rincón: los mismos de «Por descubrir».
+function Ds.Progreso(zona)
+	local ZA = A.UI and A.UI.ZoneArt
+	local Maps = A.Maps
+	if not (zona and ZA and type(ZA.FullOverlays) == "function" and Maps and type(Maps.UnexploredOverlays) == "function") then return nil end
+	local info = Geo.Capa(zona)
+	if not info then return nil end
+	local ok, arte = pcall(ZA.FullOverlays, zona, info.tileWidth, info.tileHeight)
+	if not (ok and type(arte) == "table") then return nil end
+	local total = #arte - 2
+	if total <= 0 then return nil end
+	local bien, faltan = pcall(Maps.UnexploredOverlays, arte, explorado(zona))
+	if not (bien and type(faltan) == "table") then return nil end
+	return total - #faltan, total
+end
+
+-- Las zonas de tu continente (o de `cont`) con su avance:
+-- { { zona, nombre, hechos, total }, ... } y el resumen { completas, zonas, hechos, total }.
+-- Primero tu zona, luego las empezadas (las que menos faltan) y al final las completas.
+function Ds.Explorador(cont)
+	local lista, resumen = {}, { completas = 0, zonas = 0, hechos = 0, total = 0 }
+	local mia = Ds.Zona()
+	if not cont and mia then
+		local u, v = Geo.Jugador()
+		if u then cont = Geo.Cadena(u, v) end
+	end
+	if not cont then return lista, resumen end
+	local ok, zonas = pcall(Geo.Zonas, cont)
+	if not (ok and type(zonas) == "table") then return lista, resumen end
+	for _, z in ipairs(zonas) do
+		local id = type(z) == "table" and (z.mapID or z.id) or z
+		local hechos, total = Ds.Progreso(id)
+		if hechos then
+			lista[#lista + 1] = { zona = id, nombre = Geo.Nombre(id) or "?", hechos = hechos, total = total, mia = id == mia }
+			resumen.zonas = resumen.zonas + 1
+			resumen.hechos, resumen.total = resumen.hechos + hechos, resumen.total + total
+			if hechos >= total then resumen.completas = resumen.completas + 1 end
+		end
+	end
+	table.sort(lista, function(a, b)
+		if a.mia ~= b.mia then return a.mia end
+		local fa, fb = a.hechos >= a.total, b.hechos >= b.total
+		if fa ~= fb then return fb end
+		local ea, eb = a.hechos > 0, b.hechos > 0
+		if ea ~= eb then return ea end
+		if (a.total - a.hechos) ~= (b.total - b.hechos) then return (a.total - a.hechos) < (b.total - b.hechos) end
+		return a.nombre < b.nombre
+	end)
+	return lista, resumen
+end
+
 local function nivel()
 	local n = Geo.NivelJugador()
 	if n then return n end

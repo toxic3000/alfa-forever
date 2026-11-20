@@ -40,7 +40,7 @@ local PAD, GAP, CAB_CAT = ESP.m, 4, 26
 local MIN_W = 400
 local TOPE_PINTAR, TOPE_CREAR = 48, 40
 
-local CC = C_Container
+local CC = M.CC
 local ventanas = {}  -- "bolsas" | "banco" -> marco
 local recientes = {} -- bolsa * 1000 + casilla -> id: lo nuevo desde que abriste las bolsas
 
@@ -138,6 +138,8 @@ local function escanearVivo(f, bolsa)
 	end
 	for s = n + 1, tonumber(t.n) or 0 do t[s] = nil end
 	t.n = n
+	local fam = n > 0 and D.Familia(bolsa) or 0
+	t.f = fam ~= 0 and fam or nil
 	for s = 1, n do t[s] = leerCasilla(f, bolsa, s) end
 end
 
@@ -149,7 +151,7 @@ local function porta(f, bolsa)
 	local h = f.portas[bolsa]
 	if h then return h end
 	h = CreateFrame("Frame", nil, f.Contenido)
-	h:SetID(bolsa)
+	if h.SetID then h:SetID(bolsa) end -- (siempre en el juego; el banco de pruebas no lo trae)
 	h:SetAllPoints(f.Contenido)
 	h:SetFrameLevel(f.Contenido:GetFrameLevel() + 1)
 	f.portas[bolsa] = h
@@ -172,7 +174,7 @@ local function crearLote(f)
 				if hechos >= TOPE_CREAR then return false end
 				local b = B.Vivo(porta(f, bolsa))
 				if b then
-					b:SetID(s)
+					if b.SetID then b:SetID(s) end
 					b:Hide()
 					fila[s] = b
 				else
@@ -309,6 +311,13 @@ local function franja(f)
 		f.Depositar:SetActivo(not combate)
 		textoDepositar(f)
 	end
+	if f.Acomodar then
+		local Ac = M.Acomodar
+		local hay = vivo and Ac and (Ac.Activo() or Ac.Que() ~= nil)
+		f.Acomodar:SetShown(hay and true or false)
+		f.Acomodar:SetActivo(not combate)
+	end
+	if f.Conjuntos then f.Conjuntos:SetShown(propia(f) and M.Get("conjuntos") ~= false) end
 	f.Volver:SetShown(not propia(f))
 	if not vivo then
 		local r = D.Personaje(f.clave or D.Clave())
@@ -318,7 +327,7 @@ local function franja(f)
 		f.Foto:Hide()
 	end
 	local x = -PAD
-	for _, w in ipairs({ f.Depositar or false, f.Ordenar, f.Volver, f.Foto }) do
+	for _, w in ipairs({ f.Depositar or false, f.Ordenar, f.Acomodar or false, f.Volver, f.Foto }) do
 		if w and w:IsShown() then
 			w:ClearAllPoints()
 			w:SetPoint("RIGHT", fr, "RIGHT", x, 0)
@@ -494,6 +503,7 @@ local function acomodar(f)
 	local nFoto, nCab = 0, 0
 	local coinciden = 0
 	local libres, total, libresR, totalR = 0, 0, 0, 0
+	local libresE, totalE = 0, 0 -- 1.3.0: bolsas especiales (carcaj, almas, hierbas...)
 	local y = ESP.s
 
 	local function boton(bolsa, s)
@@ -591,10 +601,20 @@ local function acomodar(f)
 		return cerrada
 	end
 
-	-- Cuenta libres y totales de una casilla.
+	-- Una bolsa especial: su espacio solo sirve para lo suyo (1.3.0).
+	local function especial(bolsa)
+		local t = datos and datos[bolsa]
+		return type(t) == "table" and (tonumber(t.f) or 0) ~= 0
+	end
+
+	-- Cuenta libres y totales de una casilla. 1.3.0: el espacio de un carcaj
+	-- o una bolsa de almas ya no cuenta como libre para cualquier objeto.
 	local function contar(bolsa, rec)
 		if bolsa == D.LLAVERO then return end
-		if bolsa == D.REAGENTES then
+		if especial(bolsa) then
+			totalE = totalE + 1
+			if not rec then libresE = libresE + 1 end
+		elseif bolsa == D.REAGENTES then
 			totalR = totalR + 1
 			if not rec then libresR = libresR + 1 end
 		else
@@ -686,7 +706,7 @@ local function acomodar(f)
 					contar(bolsa, rec)
 					if not rec then
 						if bolsa == D.REAGENTES then primeroR = primeroR or s
-						elseif bolsa ~= D.LLAVERO then primero = primero or { bolsa, s } end
+						elseif bolsa ~= D.LLAVERO and not especial(bolsa) then primero = primero or { bolsa, s } end
 					end
 				end
 			end
@@ -764,6 +784,7 @@ local function acomodar(f)
 
 	-- Pie y búsqueda.
 	f.libres, f.total, f.libresR, f.totalR = libres, total, libresR, totalR
+	f.libresE, f.totalE = libresE, totalE
 	V.Pie(f)
 	if filtro then
 		K.Escribir(f.Coinciden, coinciden > 0 and (L["%d coinciden"]):format(coinciden) or L["Ninguno coincide"])
@@ -947,6 +968,9 @@ local function infoPie(self)
 	if (f.totalR or 0) > 0 then
 		lineas[#lineas + 1] = (L["Bolsa de componentes: %d de %d libres"]):format(f.libresR or 0, f.totalR or 0)
 	end
+	if (f.totalE or 0) > 0 then
+		lineas[#lineas + 1] = (L["Bolsas especiales: %d de %d libres"]):format(f.libresE or 0, f.totalE or 0)
+	end
 	lineas[#lineas + 1] = " "
 	lineas[#lineas + 1] = K.Tenir("texto", L["Dinero de tus personajes"])
 	local actual = D.Clave()
@@ -1056,6 +1080,11 @@ local function crear(tipo)
 	f.Personajes:SetPoint("RIGHT", f.Ajustes, "LEFT", -2, 0)
 	local ultimo = f.Personajes
 	if tipo == "bolsas" then
+		-- 1.3.0: tus conjuntos de equipo (Conjuntos.lua).
+		f.Conjuntos = K.BotonIcono(cab, "ic-personaje", function(self) if M.Conjuntos then M.Conjuntos.Menu(self) end end,
+			{ tam = 28, ayuda = L["Conjuntos de equipo"], ayudaTexto = L["Ponte un conjunto guardado o guarda lo que llevas puesto."] })
+		f.Conjuntos:SetPoint("RIGHT", ultimo, "LEFT", -2, 0)
+		ultimo = f.Conjuntos
 		f.BotonBanco = K.Boton(cab, L["Banco"], function() V.MostrarBanco(f.clave) end, { tipo = "fantasma", tam = "chico" })
 		K.ConInfo(f.BotonBanco, L["Tu banco"], L["En vivo si estás con un banquero; si no, la última foto."])
 		f.BotonBanco:SetPoint("RIGHT", ultimo, "LEFT", -ESP.xs, 0)
@@ -1098,6 +1127,11 @@ local function crear(tipo)
 	if tipo == "banco" then
 		f.Depositar = K.Boton(fr, L["Depositar"], function(self) menuDepositar(f, self) end, { tipo = "primario", icono = "chevron-down" })
 		K.ConInfo(f.Depositar, L["Depositar rápido"], L["Elige qué guardar: lo que ya tienes en el banco, los materiales, una categoría o todo lo que no sea equipo. Se mueve de una vez, fuera de combate."])
+	end
+	if tipo == "bolsas" then
+		-- 1.3.0: «Acomodar»: vende la chatarra o guarda los materiales (Acomodar.lua).
+		f.Acomodar = K.Boton(fr, L["Acomodar"], function() M.Acomodar.Hacer() end, { tipo = "secundario" })
+		K.ConInfo(f.Acomodar, function() return L["Acomodar"], M.Acomodar.Ayuda() end)
 	end
 	f.Volver = K.Boton(fr, L["Volver"], function() V.Ver(f, nil) end, { tipo = "fantasma" })
 	K.ConInfo(f.Volver, nil, L["Volver a tus propias cosas"])
@@ -1316,13 +1350,12 @@ A.RegisterEvent("QUEST_ACCEPTED", porMisiones)
 A.RegisterEvent("QUEST_REMOVED", porMisiones)
 A.RegisterEvent("QUEST_TURNED_IN", porMisiones)
 A.RegisterEvent("UNIT_QUEST_LOG_CHANGED", function(_, u) if not (issecretvalue and issecretvalue(u)) and u == "player" then porMisiones() end end)
-A.RegisterEvent("PLAYERBANKSLOTS_CHANGED", function(_, pestana)
+A.RegisterEvent("PLAYERBANKSLOTS_CHANGED", function(_, slot)
 	local f = ventanas.banco
 	if not (f and f:IsShown() and f.esVivo) then return end
-	pestana = M.Num(pestana)
-	local bolsa = pestana and D.BANCO[pestana]
-	if bolsa then
-		f.porEscanear[bolsa] = true
+	local lista = D.CambioBanco(slot)
+	if lista then
+		for _, bolsa in ipairs(lista) do f.porEscanear[bolsa] = true end
 		despertar(f)
 	else
 		todo(f)
@@ -1374,6 +1407,13 @@ end)
 A.RegisterEvent("BANKFRAME_CLOSED", function()
 	local f = ventanas.banco
 	if f and f:IsShown() and f.esVivo then f:Hide() end
+	-- 1.3.0: «Acomodar» de la ventana de bolsas depende del banco.
+	local b = ventanas.bolsas
+	if b and b:IsShown() then franja(b) end
+end)
+A.RegisterEvent("BANKFRAME_OPENED", function()
+	local b = ventanas.bolsas
+	if b and b:IsShown() then franja(b) end
 end)
 A.RegisterEvent("BANK_TABS_CHANGED", function()
 	local f = ventanas.banco

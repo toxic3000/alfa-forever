@@ -31,6 +31,12 @@ M.NOVEDADES = {
 --   { version, titulo, puntos = { { icono (ic-*), texto } } }
 ---------------------------------------------------------------------------
 M.NOTAS = {
+	{ version = "1.3.0", titulo = "La manada sana", puntos = {
+		{ "ic-curacion", "Cura con un clic y ese compañero queda seleccionado; limpia maldiciones y venenos con otro clic." },
+		{ "ic-flecha", "La llegada de la flecha, nueva; circuito de la zona y «Llévame a…» con vuelos y barcos." },
+		{ "ic-bolsas", "Bolsas sin errores, conjuntos de equipo, comparar y buscar en todos tus personajes." },
+		{ "ic-manada", "Cortar hechizos, amenaza, el tablón de la manada, mentor y dos estilos nuevos." },
+	} },
 	{ version = "1.2.9", titulo = "La gran cacería", puntos = {
 		{ "ic-flecha", "La flecha con el estilo de La Jauría, y «¿Cuánto tiempo tienes?» arma tu plan paso a paso." },
 		{ "ic-manada", "Cambia de plano cuando está lleno, «¿Quién tiene...?» y los festejos de la manada." },

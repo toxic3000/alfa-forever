@@ -29,3 +29,8 @@ Muerte.lua
 Ahora.lua
 Clase.lua
 Foco.lua
+EnGrupo.lua
+SuVoz.lua
+Mascota.lua
+Retos.lua
+Cumple.lua

@@ -62,6 +62,8 @@ A mano: descarga `Alfa-<versión>.zip` de [Releases](https://github.com/toxic300
 | `/alfa plano` | Cambiar de plano | Te pasa al plano de un lobo de la manada con su guarida abierta cuando el tuyo está lleno |
 | `/alfa camino` · `/alfa listo` | Hoy | El camino al 60 a tu ritmo y la revisión antes de la mazmorra |
 | `/alfa diagnostico` | Diagnóstico | Revisa choques con otros addons, partes apagadas y ajustes raros, con arreglo de un clic |
+| `/alfa llevame` | Llévame a… | El viaje completo a cualquier lugar con vuelos, barcos, zepelines y a pie |
+| `/alfa limpia` · `/alfa teclas` | Interfaz | Pantalla limpia con una tecla y todos tus atajos de Alfa en una pantalla |
 | `/alfa recorrido` | Recorrido | Lya te enseña la ventana de Alfa en 5 pasos |
 | `/alfa rendimiento` | Rendimiento | Cuánta memoria usa cada parte de Alfa, y suelta la que ya no ocupa |
 | `/alfa reportar` | Reportes | Errores, mejoras y comentarios para el buzón privado del Discord, revisados por el desarrollador |

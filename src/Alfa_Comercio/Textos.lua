@@ -388,5 +388,14 @@ M.EN = {
 	["Alfa solo te sugiere: el precio lo pones tú."] = "Alfa only suggests: you set the price.",
 	["¿A cuánto vendo en la subasta?"] = "How much should I sell for at the auction house?",
 	["Pon tu objeto en la pestaña de vender: a un lado te digo su precio sugerido, cómo le fue estos días y te aviso si lo das muy barato. El precio lo pones tú."] = "Put your item in the sell tab: on the side I tell you its suggested price, how it did these days and warn you if you sell it too cheap. You set the price.",
+	-- 1.3.0: qué fabricar (Fabricar.lua)
+	["Hazlo ya"] = "Make it now",
+	["Con lo que tienes haces %d: +%s en total"] = "With what you have you make %d: +%s in total",
+	["Qué fabricar con lo que tienes"] = "What to craft with what you have",
+	["En tus recetas que dejan ganancia, primero las que ya puedes hacer con lo que llevas, y cuánto ganarías haciéndolas todas."] = "In your profitable recipes, first the ones you can already make with what you carry, and how much you'd earn making them all.",
+	["¿Qué fabrico para ganar oro?"] = "What should I craft to make gold?",
+	["En Comercio, «Tus recetas que dejan ganancia» te dice cuánto deja cada receta con los precios de tu reino, y primero las que ya puedes hacer con lo que llevas."] = "In Trade, \"Your recipes that make a profit\" tells you how much each recipe earns with your realm's prices, with the ones you can already make first.",
+	-- 1.3.0: el buzón espera a que lleguen las cartas
+	["Cargando tus cartas..."] = "Loading your mail...",
 }
 M.L = AlfaNucleo.Textos(M.EN)

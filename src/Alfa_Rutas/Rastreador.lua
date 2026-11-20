@@ -342,6 +342,13 @@ local function menuGuia(dueno)
 	op[#op + 1] = { valor = function() if M.Biblioteca then M.Biblioteca.Abrir({ pestanaNueva = true }) end end, texto = L["Abrir otra guía..."], icono = "ic-mas" }
 	op[#op + 1] = { valor = function() if M.Asistente then M.Asistente.Abrir() end end, texto = L["¿Qué quieres hacer?"], icono = "ic-lobo" }
 	op[#op + 1] = { valor = function() M.Cerrar.Ahora() end, texto = L["Cerrar mis misiones"], icono = "ic-misiones" }
+	-- 1.3.0: el circuito de la zona y «Llévame a…» (Circuito.lua, Viaje.lua).
+	if M.Circuito and A.Get(M.ID .. ".circuito") ~= false then
+		op[#op + 1] = { valor = function() M.Circuito.Ahora() end, texto = L["Circuito de la zona"], icono = "ic-ruta" }
+	end
+	if M.Viaje and A.Get(M.ID .. ".llevame") ~= false then
+		op[#op + 1] = { valor = function() M.Viaje.Abrir() end, texto = L["Llévame a..."], icono = "ic-huella" }
+	end
 	-- Buscar cerca: en el menú solo si su lupa no está en la cabecera.
 	if M.Cerca and A.Get(M.ID .. ".cercaBoton") == false then
 		op[#op + 1] = { valor = function() M.Cerca.Menu(dueno) end, texto = L["Buscar cerca..."], icono = "ic-cerca" }
@@ -373,6 +380,10 @@ local function menuMeta(fila)
 		end
 		if AlfaEnciclopedia and AlfaEnciclopedia.Abrir then
 			op[#op + 1] = { valor = function() AlfaEnciclopedia.Abrir("quest", q) end, texto = L["Ver en la Enciclopedia"], icono = "ic-enciclopedia" }
+		end
+		-- 1.3.0: la cadena completa (Cadena.lua).
+		if M.Cadena and A.Get(M.ID .. ".cadenaCompleta") ~= false then
+			op[#op + 1] = { valor = function() M.Cadena.Abrir(q) end, texto = L["Ver la cadena completa"], icono = "ic-ruta" }
 		end
 	end
 	if #op == 0 then return end
@@ -643,8 +654,12 @@ local function pintarObjeto(cx, x, y, ancho)
 		o:SetHeight(42)
 	end
 	o.Icono:SetObjeto(item)
-	K.Escribir(o.Nombre, M.NombreObjeto(item))
-	K.Escribir(o.Ayuda, L["Objeto de misión: úsalo con su botón o con tu tecla de paso."])
+	-- 1.3.0: con su avance y la tecla que tiene (ObjetoMision.lua).
+	local Ob = M.Objeto
+	K.Escribir(o.Nombre, Ob and Ob.Texto(item) or M.NombreObjeto(item))
+	local tecla = Ob and Ob.Tecla()
+	K.Escribir(o.Ayuda, tecla and format(L["Objeto de misión: úsalo con su botón o con %s."], tecla)
+		or L["Objeto de misión: úsalo con su botón o con tu tecla de paso."])
 	o:ClearAllPoints()
 	o:SetPoint("TOPLEFT", cx.padre, "TOPLEFT", x, -y)
 	o:SetWidth(ancho)

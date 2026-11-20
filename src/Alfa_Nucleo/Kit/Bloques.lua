@@ -818,6 +818,10 @@ function K.FilaAjuste(padre, opts)
 	elseif opts.control then
 		f.Control = K.Adoptar(opts.control, f)
 	end
+	-- 1.3.0: «¿Qué es esto?»: el control dice lo que dice su fila.
+	if f.Control and K.Ayuda and not rawget(f.Control, "alfaAyuda") then
+		K.Ayuda(f.Control, function() local d = f.alfaDatos return d.titulo, d.texto end)
+	end
 	if opts.hija then
 		f.Guia = K.Linea(f, "lineaFuerte", true)
 		f.Guia:SetPoint("TOPLEFT", f, "TOPLEFT", ESP.base + 8, -10)

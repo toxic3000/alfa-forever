@@ -199,6 +199,15 @@ A.OnLogin(function()
 			respuesta = L["Si te llega equipo mejor que lo que llevas, te aviso con «Ponte esto» y un botón para ponértelo. Solo con tu clic, y nunca en combate."] },
 		{ id = "bolsas.guardar", icono = "ic-bolsas", pregunta = L["¿Qué guardo en el banco?"],
 			respuesta = L["En Bolsas, «Qué guardar» te dice lo que sirve más en el banco: materiales de las recetas de tus otros personajes, lo que piden sus misiones y equipo que tu clase no usa. Con un banquero, «Al banco» y listo."] },
+		-- 1.3.0
+		{ id = "bolsas.conjuntos", icono = "ic-personaje", pregunta = L["¿Cómo cambio de equipo rápido?"],
+			respuesta = L["Guarda lo que llevas como un conjunto (curar, daño, pesca...) desde el botón de tus bolsas o en Bolsas, y póntelo con un clic. En combate te lo pongo al terminar."] },
+		{ id = "bolsas.comparar", icono = "ic-nivel", pregunta = L["¿Qué gano con esta pieza?"],
+			respuesta = L["Pásale el ratón: en su cuadro te digo lo que ganas y lo que pierdes contra lo que llevas puesto, con números. Lo primero es lo que más le sirve a tu clase."] },
+		{ id = "bolsas.buscarTodos", icono = "ic-buscar", pregunta = L["¿Quién de mis personajes tiene esto?"],
+			respuesta = L["En Bolsas, «Buscar en todos tus personajes» revisa bolsas, bancos y equipo de todos, con filtros de tipo, calidad y personaje."] },
+		{ id = "bolsas.acomodar", icono = "ic-bolsas", pregunta = L["¿Cómo limpio mis bolsas rápido?"],
+			respuesta = L["Con un comerciante o un banquero abierto, «Acomodar» en tus bolsas vende tu chatarra o guarda tus materiales en el banco. Un clic, y otro para detenerlo."] },
 	}) do
 		p.modulo = M.ID
 		pcall(Lya.Ensenar, p)

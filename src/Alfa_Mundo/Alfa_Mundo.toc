@@ -15,6 +15,7 @@ TerrenoDatos.lua
 Capas.lua
 Entradas.lua
 Descubrir.lua
+Peligros.lua
 Lienzo.lua
 Marcas.lua
 Trayecto.lua

@@ -38,7 +38,7 @@ local FLECHA = "Interface\\Minimap\\MinimapArrow"
 local CAPAS_MOTOR = {
 	{ "maps.services", 7 }, { "quests.available", 4 }, { "quests.objectives", 3.5 }, { "quests.turnin", 3.5 },
 	{ "mundo.salidas", 6 }, { "mundo.portales", 3 }, { "mundo.porDescubrir", 2.5 },
-	{ "rares.treasure", 4 }, { "rares.rare", 3.5 }, { "maps.inns", 3.5 }, { "maps.docks", 2.2 }, { "maps.taxi", 1.5 }, { "mundo.vuelosFaltan", 1.5 },
+	{ "rares.treasure", 4 }, { "rares.rare", 3.5 }, { "mundo.peligros", 3 }, { "maps.inns", 3.5 }, { "maps.docks", 2.2 }, { "maps.taxi", 1.5 }, { "mundo.vuelosFaltan", 1.5 },
 	{ "maps.dungeons", 1.6 }, { "nav.upcoming", 1.6 }, { "nav.goals", 2.5 }, { "nav.spots", 3 }, { "nav.route", 1.4 },
 	{ "qol.death", 0 }, { "nav.target", 0 },
 }
@@ -806,8 +806,13 @@ end
 function Mc.PrepararDatos()
 	local X = A.Codex
 	if not (X and type(X.IsLoaded) == "function" and type(X.Load) == "function") then return end
-	if X.IsLoaded() then return end
-	if A.Get("maps.dungeonPins") or A.Get("maps.servicePins") or A.Get("rares.worldRares") or A.Get("rares.worldTreasures") then
+	-- 1.3.0: los peligros de tu zona se arman con el Codex ya cargado (Peligros.lua).
+	local Pe = M.Peligros
+	if X.IsLoaded() then
+		if Pe and A.Get("mundo.peligros") ~= false and not Pe.Listo() then Pe.Pronto(0) end
+		return
+	end
+	if A.Get("maps.dungeonPins") or A.Get("maps.servicePins") or A.Get("rares.worldRares") or A.Get("rares.worldTreasures") or A.Get("mundo.peligros") then
 		pcall(X.Load)
 	end
 end

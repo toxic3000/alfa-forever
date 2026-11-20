@@ -33,6 +33,17 @@
 --       por el camino más corto (vecino más cercano), la flecha de una en una (Vuelta.lua)
 --   AlfaRuta.CancelarVuelta()        la deja
 --   AlfaRuta.Vuelta() -> { i, total, parada } | nil   la vuelta en curso («Entrega 2 de 4»)
+--   1.3.0:
+--   AlfaRuta.Circuito()              el circuito de la zona: tus misiones y las de aquí en el mejor orden (Circuito.lua)
+--   AlfaRuta.Grises() -> { { qid, titulo, nivel } } | nil   grises que no valen la pena (Grises.lua)
+--   AlfaRuta.AbrirGrises()           su ventana, con «Abandonar» en cada una
+--   AlfaRuta.Cadena(questID) -> { lista, final, premio, xp } | nil   la cadena completa (Cadena.lua);
+--       la Enciclopedia la puede mostrar en la ficha de la misión
+--   AlfaRuta.VerCadena(questID)      la ventana de la cadena
+--   AlfaRuta.Llevame(destino) -> ok  destino = { map, x, y, f, nombre }: la flecha y el viaje (Viaje.lua)
+--   AlfaRuta.AbrirLlevame()          «Llévame a…»
+--   AlfaRuta.Pasos() -> { { texto, segundos, tipo } } | nil   los tramos del viaje en curso
+--   AlfaRuta.Horarios() -> { { id, tipo, desde, hasta, texto, segundos } }   barcos y zepelines (Barcos.lua)
 -- Buscar cerca (AlfaCerca, Cerca.lua) y Mis planes (AlfaPlanes, Planes.lua)
 -- tienen su propio global.
 -- Las misiones también se agregan y se quitan del plan desde el menú del
@@ -113,6 +124,16 @@ function R.GrisValiosa(qid) return M.GrisValiosa(qid) end
 function R.VueltaEntregar() return M.Vuelta.Empezar() end
 function R.CancelarVuelta() return M.Vuelta.Cancelar() end
 function R.Vuelta() return M.Vuelta.Estado() end
+-- 1.3.0
+function R.Circuito() return M.Circuito.Ahora() end
+function R.Grises() return M.Grises.Lista() end
+function R.AbrirGrises() return M.Grises.Abrir() end
+function R.Cadena(qid) return M.Cadena.De(qid) end
+function R.VerCadena(qid) return M.Cadena.Abrir(qid) end
+function R.Llevame(destino) return M.Viaje.Ir(destino) end
+function R.AbrirLlevame() return M.Viaje.Abrir() end
+function R.Pasos() return M.Viaje.Pasos() end
+function R.Horarios() return M.Barcos.Lista() end
 
 ---------------------------------------------------------------------------
 -- El menú del registro de misiones y del seguimiento de objetivos
@@ -156,6 +177,10 @@ local function agregarAlMenu(root, qid)
 		root:CreateButton(L["Alfa: agregar a Cerrar mis misiones"], function() R.AgregarMision(qid) end)
 	end
 	root:CreateButton(L["Alfa: cerrar mis misiones"], function() Cr.Ahora() end)
+	-- 1.3.0: la cadena completa (Cadena.lua).
+	if M.Cadena and A.Get(M.ID .. ".cadenaCompleta") ~= false then
+		root:CreateButton(L["Alfa: ver la cadena completa"], function() M.Cadena.Abrir(qid) end)
+	end
 end
 
 A.OnLogin(function()

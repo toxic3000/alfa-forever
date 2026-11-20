@@ -18,7 +18,7 @@
 local ADDON, M = ...
 local N, A, L = M.N, M.A, M.L
 
-local type, ipairs = type, ipairs
+local type, ipairs, pairs = type, ipairs, pairs
 
 local Lotes = {}
 M.Lotes = Lotes
@@ -45,7 +45,11 @@ local function paso(t)
 	end
 	local C = C_Container
 	local hechos = 0
-	while t.i <= #t.lista and hechos < POR_VEZ do
+	-- 1.3.0: lo bloqueado espera a la siguiente vuelta (antes se reintentaba en
+	-- la misma y gastaba sus intentos antes de que el juego lo soltara).
+	local luego = {}
+	local fin = #t.lista
+	while t.i <= fin and hechos < POR_VEZ do
 		local e = t.lista[t.i]
 		t.i = t.i + 1
 		local info = C and M.Llamar(C.GetContainerItemInfo, e[1], e[2])
@@ -53,7 +57,7 @@ local function paso(t)
 		if id and id == e[3] then
 			if M.Leer(info.isLocked) then
 				e[4] = (e[4] or 0) + 1
-				if e[4] <= REINTENTOS then t.lista[#t.lista + 1] = e end
+				if e[4] <= REINTENTOS then luego[#luego + 1] = e end
 			else
 				M.Seguro(t.mover, e[1], e[2], info)
 				t.hechos = t.hechos + 1
@@ -61,6 +65,7 @@ local function paso(t)
 			end
 		end
 	end
+	for _, e in ipairs(luego) do t.lista[#t.lista + 1] = e end
 	if t.alAvanzar then M.Seguro(t.alAvanzar, t.hechos, t.total) end
 	M.Avisar("LOTE", t.nombre)
 	if t.i > #t.lista then terminar(t, nil) end

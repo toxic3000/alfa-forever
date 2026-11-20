@@ -59,6 +59,8 @@ local function sumar(campo, n)
 	h[campo] = (tonumber(h[campo]) or 0) + (n or 1)
 	return h[campo]
 end
+-- 1.3.0: los retos de la semana (Retos.lua) suman aquí lo suyo (mazmorras).
+Di.Sumar = sumar
 
 local function oro(cobre)
 	if N.Dinero then

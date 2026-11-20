@@ -61,3 +61,7 @@ EN["Escribe %s y cuéntanos en el Discord de La Jauría."] = "Type %s and tell u
 EN["Alfa (el estilo propio, por omisión), Clásico WoW (marcos y letras del juego) o Cristal (transparente, con el acento que elijas). El modo compacto y tus colores funcionan en los tres."] = "Alfa (its own look, the default), Classic WoW (the game's frames and fonts) or Glass (see-through, with the accent you pick). Compact mode and your colours work in all three."
 EN["Lobo"] = "Wolf"
 EN["El medallón bajo cada marca del mapa y del minimapa: el de Alfa o solo el símbolo, sin medallón."] = "The medallion under every mark on the map and minimap: Alfa's, or the glyph alone with no medallion."
+-- 1.3.0: los estilos nuevos (Theme.SkinChoices, Ajustes > Apariencia)
+EN["Alfa (el de siempre), Clásico WoW (marcos y letras del juego), Cristal (transparente), La Jauría nocturno (azul de noche y plata de luna) o Fogata (carbón y brasas). El modo compacto y tus colores funcionan en todos."] = "Alfa (the one you know), Classic WoW (the game's frames and fonts), Glass (see-through), La Jauría Night (night blue and moon silver) or Campfire (charcoal and embers). Compact mode and your colours work in all of them."
+EN["La Jauría nocturno"] = "La Jauría Night"
+EN["Fogata"] = "Campfire"

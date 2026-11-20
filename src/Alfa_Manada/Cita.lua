@@ -128,6 +128,32 @@ function Ci.OpcionesHora()
 	return out
 end
 
+-- 1.3.0: el calendario de la semana. Siete días desde hoy, cada uno con sus
+-- citas por hora: { { dia, titulo, fecha, citas = { { hora, cita } } } }.
+local DIAS_SEMANA = { "Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado" }
+function Ci.Semana()
+	local out = {}
+	local hoy = fecha(ahora())
+	if not hoy then return out end
+	local base = time({ year = hoy.year, month = hoy.month, day = hoy.day, hour = 12 }) or ahora()
+	local porDia = {}
+	for i = 0, 6 do
+		local t = fecha(base + i * 86400)
+		local nombre = t and L[DIAS_SEMANA[(t.wday or 1)]] or tostring(i)
+		local titulo = i == 0 and L["Hoy"] or (i == 1 and L["Mañana"]) or nombre
+		local d = { dia = i, titulo = titulo, fecha = t and format("%02d/%02d", t.day, t.month) or "", citas = {} }
+		out[#out + 1] = d
+		if t then porDia[format("%d-%d-%d", t.year, t.month, t.day)] = d end
+	end
+	for _, c in ipairs(Ci.Lista()) do
+		local t = fecha(c.cuando)
+		local d = t and porDia[format("%d-%d-%d", t.year, t.month, t.day)]
+		if d then d.citas[#d.citas + 1] = { hora = format("%02d:%02d", t.hour, t.min), cita = c } end
+	end
+	for _, d in ipairs(out) do sort(d.citas, function(a, b) return a.cita.cuando < b.cita.cuando end) end
+	return out
+end
+
 ---------------------------------------------------------------------------
 -- Las citas
 ---------------------------------------------------------------------------

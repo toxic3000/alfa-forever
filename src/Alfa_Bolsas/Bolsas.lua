@@ -57,6 +57,10 @@ M.AJUSTES = {
 	avisoCasiLleno = true,    -- 1.2.8: aviso con 2 casillas libres o menos (Sugerencias.lua)
 	ponteEsto = true,         -- 1.2.9: «Ponte esto» con el equipo nuevo que es mejor (Mejora.lua)
 	queGuardar = true,        -- 1.2.9: qué guardar en el banco o para otro personaje (Guardar.lua)
+	conjuntos = true,         -- 1.3.0: conjuntos de equipo con nombre (Conjuntos.lua)
+	comparar = true,          -- 1.3.0: +/- contra lo que llevas, en el cuadro del equipo (Comparar.lua)
+	buscarTodos = true,       -- 1.3.0: buscar en todos tus personajes, en la página (Todos.lua)
+	acomodar = true,          -- 1.3.0: el botón «Acomodar» (Acomodar.lua)
 	deposito = "banco",       -- lo último que elegiste en "Depositar"
 }
 
@@ -112,6 +116,18 @@ local CONTROLES = {
 	{ kind = "toggle", key = clave("queGuardar"), label = L["Sugerir qué guardar"],
 		help = L["En esta página, lo que te sirve más en el banco o con otro personaje: materiales de sus recetas, lo que piden sus misiones y equipo que tu clase no usa."],
 		search = "bank, store, alts, boe, what to keep" },
+	{ kind = "toggle", key = clave("conjuntos"), label = L["Conjuntos de equipo"],
+		help = L["Guarda lo que llevas puesto con un nombre (curar, daño, pesca...) y póntelo con un clic, fuera de combate."],
+		search = "gear sets, equipment sets, outfits, swap gear" },
+	{ kind = "toggle", key = clave("comparar"), label = L["Comparar con lo que llevas"],
+		help = L["En el cuadro de cada pieza de equipo: lo que ganas y lo que pierdes contra lo que llevas puesto, con números."],
+		search = "compare gear, stats, tooltip, upgrade" },
+	{ kind = "toggle", key = clave("buscarTodos"), label = L["Buscar en todos tus personajes"],
+		help = L["En esta página, un buscador por las bolsas, bancos y equipo de todos tus personajes, con filtros de tipo, calidad y personaje."],
+		search = "search alts, find item, all characters" },
+	{ kind = "toggle", key = clave("acomodar"), label = L["Botón «Acomodar»"],
+		help = L["En tus bolsas: con un comerciante vende tu chatarra; con un banquero guarda tus materiales. Con tu clic."],
+		search = "tidy, clean bags, sell junk, deposit materials" },
 	{ kind = "toggle", key = clave("marcaNivel"), label = L["Nivel de objeto"], help = L["El número abajo a la izquierda de cada pieza de equipo."], search = "item level, ilvl" },
 	{ kind = "toggle", key = clave("marcaCalidad"), label = L["Borde de calidad"], help = L["Un borde del color de la calidad: verde, azul, morado..."], search = "quality border, rarity" },
 	{ kind = "toggle", key = clave("marcaChatarra"), label = L["Chatarra"], help = L["Una moneda sobre lo gris y lo que marcaste como chatarra."], search = "junk, grey items" },
@@ -205,6 +221,13 @@ function M.Llamar(fn, ...)
 	return resultados(pcall(fn, ...))
 end
 
+-- C_Container leído al usarlo (1.3.0): si el juego lo crea tarde o lo
+-- cambia, Datos.lua y Ventana.lua no se quedan con una tabla vieja o vacía.
+M.CC = setmetatable({}, { __index = function(_, k)
+	local t = rawget(_G, "C_Container")
+	return type(t) == "table" and t[k] or nil
+end })
+
 function M.ItemID(link)
 	if type(link) == "number" then return link end
 	if type(link) ~= "string" then return nil end
@@ -258,10 +281,24 @@ A.RegisterCommand("bolsas", function(resto)
 		if M.Ventana then M.Ventana.AlternarBolsas() end
 	elseif arg == "banco" or arg == "bank" then
 		if M.Ventana then M.Ventana.MostrarBanco() end
+	elseif arg == "conjunto" or arg == "set" or arg == "guardar" or arg == "save" then
+		-- 1.3.0: /alfa bolsas conjunto <nombre> (ponértelo) o guardar <nombre>.
+		local nombre = resto:match("^%s*%S+%s+(.-)%s*$")
+		local Cj = M.Conjuntos
+		if not Cj then return end
+		if not nombre or nombre == "" then
+			local lista = {}
+			for _, c in ipairs(Cj.Lista()) do lista[#lista + 1] = c.n end
+			N.Imprimir(#lista > 0 and (L["Tus conjuntos:"] .. " " .. table.concat(lista, ", ")) or L["Aún no guardas ningún conjunto."])
+		elseif arg == "guardar" or arg == "save" then
+			Cj.Guardar(nombre)
+		else
+			Cj.Poner(nombre)
+		end
 	else
 		N.Abrir(M.ID)
 	end
-end, L["La página de Bolsas; «abrir» abre tus bolsas y «banco» tu banco"])
+end, L["La página de Bolsas; «abrir», «banco», «conjunto <nombre>» y «guardar <nombre>»"])
 
 -- Un texto de color: "|cffrrggbb...|r".
 function M.Pintado(texto, r, g, b)

@@ -4,7 +4,7 @@
 
 **The all-in-one for World of Warcraft: Forever.** Guides, route, map, bags, talents, encyclopedia, dungeons, healing, fishing, trading and your guild, in one addon with one look — and **Lya**, a black she-wolf companion who chats with you about lore, your zone and your adventures. Made by **toxic3000** for **La Jauría**. Free, open source, 10 languages.
 
-> 🐺 **New in 1.2.9, the great hunt:** the arrow in La Jauría's style, "How much time do you have?" builds your play plan, Road to 60, ready-for-the-dungeon checks, change layer when it's crowded, "Put this on", a shopping list, professions 1–300, easy auctions, Lya teaches your class, the dungeon live, backups, diagnostics and a lighter Alfa — 32 improvements to close the 1.2 series. Since 1.2.8: pack outings, rare timers, wolf notes, turn-in runs and "Take all" at the mailbox. PDF manual in 10 languages ([download it](https://github.com/toxic3000/alfa-forever/releases/latest)).
+> 🐺 **New in 1.3.0, the pack heals:** heal with a click and that teammate stays targeted for your buffs and cleanses, "Your clicks" set up in a minute, curses and poisons shown and removed in one click, a brand-new arrow arrival, bags reviewed in depth (8 bugs fixed), gear sets, interrupts and threat, a zone circuit, "Take me to..." with flights and boats, the pack board and mentoring, Lya's weekly challenges, two new styles, a clean screen and colour-blind mode — 40+ improvements. PDF manual in 10 languages ([download it](https://github.com/toxic3000/alfa-forever/releases/latest)).
 > If something breaks, tell us with `/alfa reportar`, on [Discord](https://discord.gg/hUNjA6BJwh), in the comments or on [GitHub](https://github.com/toxic3000/alfa-forever/issues).
 
 ## A quick look / Un vistazo
@@ -54,7 +54,7 @@ It doesn't switch your brain off: Alfa backs you up and you decide. The first ti
 - **Dungeons** — the one for your level, with "Get me ready": bosses, loot, quests to bring, tips and the way to the entrance.
 - **Talents** — which talent to take now and why, applied in one click. Pick a goal (solo leveling, dungeons, tank, PvP) and a style (safe, balanced, risky).
 - **Combat** — a rotation helper for all 27 specializations, your quest mobs highlighted, reaction alerts and a group damage meter.
-- **Healing** — click-to-heal party frames and a 3-step setup assistant.
+- **Healing** — click-to-heal party and raid frames: your heal also targets the teammate, every click set up in a minute, curses/poisons/magic/disease shown and cleansed in one click, missing buffs marked, the tank in trouble and healers' mana.
 - **Bags** — three views (all, categories, per bag), a bag bar, your bank from anywhere with quick deposit and slot purchase, every character's inventory, and what to sell when they fill up. **Take all** at the mailbox and your gold per hour.
 - **World** — all of Azeroth on one zoomable map with real terrain, flight points, entrances and exits (dungeons, boats, zeppelins, portals), your own markers and one layer control.
 - **Gathering** — ore, herbs, fishing pools and treasures on map and minimap, with farming routes.
@@ -70,7 +70,7 @@ It doesn't switch your brain off: Alfa backs you up and you decide. The first ti
 
 **El todo en uno para World of Warcraft: Forever.** Guías, ruta, mapa, bolsas, talentos, enciclopedia, mazmorras, curación, pesca, comercio y tu clan, en un solo addon y con un solo estilo. Hecho por **toxic3000** para **La Jauría**.
 
-> **Novedades de la 1.2.9, la gran cacería:** la flecha con el estilo de La Jauría, «¿Cuánto tiempo tienes?» arma tu plan de juego, el camino al 60, listo para la mazmorra, cambia de plano cuando está lleno, «Ponte esto», lista de compras, oficios del 1 al 300, subastar fácil, Lya te enseña tu clase, la mazmorra en vivo, respaldos, diagnóstico y Alfa más ligero: 32 mejoras para cerrar la serie 1.2. Desde la 1.2.8: citas de la manada, raros con reloj, notas del lobo, vuelta a entregar y «Tomar todo» en el buzón. Manual en PDF en 10 idiomas ([descárgalo](https://github.com/toxic3000/alfa-forever/releases/latest)).
+> **Novedades de la 1.3.0, la manada sana:** cura con un clic y ese compañero queda seleccionado para tus buffos y limpiezas, «Tus clics» listos en un minuto, maldiciones y venenos a la vista y fuera con un clic, la llegada de la flecha nueva, bolsas revisadas a fondo (8 errores arreglados), conjuntos de equipo, cortar hechizos y amenaza, el circuito de la zona, «Llévame a…» con vuelos y barcos, el tablón de la manada y mentor, retos semanales de Lya, dos estilos nuevos, pantalla limpia y colores para daltonismo: más de 40 mejoras. Manual en PDF en 10 idiomas ([descárgalo](https://github.com/toxic3000/alfa-forever/releases/latest)).
 > Si algo falla, avísanos con `/alfa reportar`, en el [Discord de La Jauría](https://discord.gg/hUNjA6BJwh), en los comentarios o en [GitHub](https://github.com/toxic3000/alfa-forever/issues).
 
 ¿Cansado de tener un montón de addons que se enciman y te llenan el mapa de marcas? Alfa los junta en uno solo, ordenado y guiado, que se adapta a tu clase. **No necesita ningún otro addon.**
@@ -90,7 +90,7 @@ No busca apagarte el cerebro: Alfa te apoya, y tú decides. La primera vez te pr
 | **Mazmorras** `/alfa mazmorras` | La que te toca por nivel, con "Prepárame": jefes, botín, misiones que conviene llevar, consejos y cómo llegar a la entrada. |
 | **Talentos** `/alfa builds` | Qué talento poner ahora y por qué, aplicado con un clic. Eliges objetivo (subir solo, mazmorras, tanque, JcJ) y estilo (tranquilo, equilibrado, arriesgado). |
 | **Combate** `/alfa combate` · `/alfa dps` | Ayuda de rotación para las 27 especializaciones, los enemigos de tus misiones resaltados, avisos de reacción y un medidor de daño de tu grupo. |
-| **Curación** `/alfa curacion` | Marcos de grupo para curar con un clic y un asistente de 3 pasos para configurarlos. |
+| **Curación** `/alfa curacion` | Marcos de grupo y banda para curar con un clic: al curar también seleccionas al compañero, tus clics listos en un minuto, maldiciones, venenos, magia y enfermedades a la vista y fuera con un clic, buffos que faltan, el tanque en apuros y el maná de los sanadores. |
 | **Bolsas** `/alfa bolsas` | Tres vistas (todo junto, por categorías o por bolsa), barra de bolsas, banco desde cualquier lugar con depósito rápido y compra de espacios, el inventario de tus personajes y qué vender cuando se llenan. **Tomar todo** en el buzón y tu oro por hora. |
 | **Mundo** `/alfa mapa` (o la tecla M) | Todo Azeroth en un solo mapa con zoom y el terreno real, puntos de vuelo, entradas y salidas (mazmorras, barcos, zepelines y portales), tus marcadores y un solo control de capas. |
 | **Recolección** `/alfa recoleccion` | Minerales, hierbas, bancos de peces y tesoros en el mapa y el minimapa, con ruta de farmeo. |

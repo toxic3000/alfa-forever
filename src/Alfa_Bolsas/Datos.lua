@@ -94,7 +94,7 @@ end
 -- Lectura del cliente
 ---------------------------------------------------------------------------
 
-local C = C_Container
+local C = M.CC
 
 ---------------------------------------------------------------------------
 -- La bolsa misma (no lo que lleva): su nombre, su ícono y el objeto.
@@ -169,7 +169,38 @@ function D.InfoGuardada(bolsa, t)
 		casilla = esBanco[bolsa] and D.CasillaBanco(bolsa) or nil }
 end
 
--- Casillas de una bolsa en vivo: -> { n = casillas, b, nb, [casilla] = { i, c, l, q } }
+-- La familia de una bolsa en vivo (0: acepta cualquier objeto). La mochila,
+-- el llavero y la de componentes no la tienen.
+--   C_Container.GetContainerNumFreeSlots(bolsa) -> libres, familia
+function D.Familia(bolsa)
+	if bolsa == 0 or bolsa == D.LLAVERO or bolsa == D.REAGENTES then return 0 end
+	local _, fam = M.Llamar(C and C.GetContainerNumFreeSlots, bolsa)
+	return M.Num(fam) or 0
+end
+
+-- Munición y almas (flechas 1, balas 2, fragmentos de alma 4): lo que lleva
+-- una bolsa así no se deposita ni se cuenta como espacio libre.
+function D.EsMunicion(fam)
+	fam = tonumber(fam) or 0
+	return fam > 0 and fam % 8 ~= 0
+end
+
+-- PLAYERBANKSLOTS_CHANGED(slot): en el juego clásico, `slot` es la casilla del
+-- banco base que cambió (o, pasado su tamaño, una casilla de bolsa del banco).
+-- Se marca el banco base y, por si es el número de una pestaña, esa pestaña.
+-- -> { bolsas a releer } | nil (todo el banco)
+function D.CambioBanco(slot)
+	slot = M.Num(slot)
+	if not slot then return nil end
+	local base = D.BANCO[1]
+	local n = M.Num(M.Llamar(C and C.GetContainerNumSlots, base)) or 0
+	local out = { base }
+	if D.BANCO[slot] and D.BANCO[slot] ~= base then out[#out + 1] = D.BANCO[slot] end
+	if n > 0 and slot > n and not D.BANCO[slot] then return nil end
+	return out
+end
+
+-- Casillas de una bolsa en vivo: -> { n = casillas, b, nb, f, [casilla] = { i, c, l, q } }
 function D.Escanear(bolsa)
 	local n = C and M.Num(M.Llamar(C.GetContainerNumSlots, bolsa)) or 0
 	n = n or 0
@@ -178,6 +209,10 @@ function D.Escanear(bolsa)
 		local info = D.InfoBolsa(bolsa)
 		if info.id then t.b = { i = info.id, l = info.link, ic = info.icono } end
 		if info.nombre and not info.base and bolsa ~= 0 then t.nb = info.nombre end
+		-- 1.3.0: una bolsa especial (carcaj, bolsa de munición, de almas, de
+		-- hierbas...) guarda su familia: su espacio no sirve para cualquier objeto.
+		local fam = D.Familia(bolsa)
+		if fam ~= 0 then t.f = fam end
 	end
 	for s = 1, n do
 		local info = M.Llamar(C.GetContainerItemInfo, bolsa, s)
@@ -364,12 +399,12 @@ A.RegisterEvent("BANKFRAME_CLOSED", function()
 	bancoAbierto = false
 	for b in pairs(sucias) do if esBanco[b] then sucias[b] = nil end end
 end)
--- slot: el número de la pestaña del banco que cambió (1 = la primera).
-A.RegisterEvent("PLAYERBANKSLOTS_CHANGED", function(_, pestana)
+-- slot: la casilla del banco base que cambió (D.CambioBanco). 1.3.0: antes se
+-- leía como el número de la pestaña y el banco base no se releía.
+A.RegisterEvent("PLAYERBANKSLOTS_CHANGED", function(_, slot)
 	if not bancoAbierto then return end
-	pestana = M.Num(pestana)
-	local bolsa = pestana and D.BANCO[pestana]
-	if bolsa then sucias[bolsa] = true else for _, b in ipairs(D.BANCO) do sucias[b] = true end end
+	local lista = D.CambioBanco(slot)
+	if lista then for _, b in ipairs(lista) do sucias[b] = true end else for _, b in ipairs(D.BANCO) do sucias[b] = true end end
 	programar()
 end)
 A.RegisterEvent("BANK_TABS_CHANGED", function()

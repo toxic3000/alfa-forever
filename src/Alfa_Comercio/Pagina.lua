@@ -536,25 +536,23 @@ local function bloqueRecetas(padre)
 	b.Nota = b:Agregar(K.Vacio(b, { lobo = "dormido" }), { espacio = ESP.base })
 	function b:Llenar()
 		local todas = M.TodasLasRecetas()
-		local buenas, incompletas = {}, 0
-		for _, e in ipairs(todas) do
-			local valor, costo, completo = M.CuentaReceta(e.rec)
-			if completo then
-				if valor > costo then buenas[#buenas + 1] = { e = e, valor = valor, costo = costo, gana = valor - costo } end
-			else
-				incompletas = incompletas + 1
-			end
-		end
-		table.sort(buenas, function(x, y) return x.gana > y.gana end)
+		-- 1.3.0: M.Fabricar (Fabricar.lua) dice además cuántas puedes hacer ya
+		-- con lo que llevas; con comercio.fabricar, esas van primero.
+		local buenas, incompletas = M.Fabricar()
 		local filas = {}
 		for i = 1, min(#buenas, MAX_RECETAS) do
 			local x = buenas[i]
 			local rec, e = x.e.rec, x.e
 			local quien = e.propio and "" or (DOT .. L["con %s"]:format(e.quien or "?"))
+			local detalle = L["Reactivos %s  ·  el producto vale %s"]:format(M.Dinero(x.costo), M.Dinero(x.valor))
+			if x.veces > 0 and M.Ajuste("fabricar") ~= false then
+				detalle = L["Con lo que tienes haces %d: +%s en total"]:format(x.veces, M.Dinero(x.total))
+			end
 			filas[i] = {
-				id = rec.o, cantidad = rec.q and floor(rec.q) or 1, chip = L["Transformar"], tono = "mazmorra",
+				id = rec.o, cantidad = rec.q and floor(rec.q) or 1, chip = x.veces > 0 and L["Hazlo ya"] or L["Transformar"],
+				tono = x.veces > 0 and "exito" or "mazmorra",
 				nombre = tostring(rec.n) .. K.Tenir("textoTenue", DOT .. tostring(rec.p or "") .. quien),
-				detalle = L["Reactivos %s  ·  el producto vale %s"]:format(M.Dinero(x.costo), M.Dinero(x.valor)),
+				detalle = detalle,
 				valor = "+" .. M.Dinero(x.gana), extra = x.costo > 0 and M.Porcentaje(x.gana / x.costo) or nil,
 			}
 		end
@@ -795,6 +793,9 @@ local function grupos(padre)
 		texto = L["Un aviso cuando juntas todo lo de un material o la lista entera."] })
 	compras:Fila({ titulo = L["Oficios de 1 a 300 en esta página"], control = function(f) return K.Interruptor(f, { clave = ruta("oficios") }) end,
 		texto = L["Tus oficios con su paso de ahora y la guía de cada uno. La guía también se abre con /alfa comercio oficios."] })
+	-- 1.3.0 (Fabricar.lua)
+	compras:Fila({ titulo = L["Qué fabricar con lo que tienes"], control = function(f) return K.Interruptor(f, { clave = ruta("fabricar") }) end,
+		texto = L["En tus recetas que dejan ganancia, primero las que ya puedes hacer con lo que llevas, y cuánto ganarías haciéndolas todas."] })
 
 	local cuentas = K.GrupoAjustes(padre, { titulo = L["Las cuentas"] })
 	cuentas:Fila({ titulo = L["Comisión de la subasta"],
@@ -899,6 +900,9 @@ local CONTROLES = {
 		help = L["Cuánto por debajo de lo que vale tiene que estar tu precio para avisarte."], search = "low price warning, cheap" },
 	{ kind = "toggle", key = ruta("listaAviso"), label = L["Avisar al juntar lo de tu lista"],
 		help = L["Un aviso cuando juntas todo lo de un material o la lista entera."], search = "shopping list, materials, reagents" },
+	{ kind = "toggle", key = ruta("fabricar"), label = L["Qué fabricar con lo que tienes"],
+		help = L["En tus recetas que dejan ganancia, primero las que ya puedes hacer con lo que llevas, y cuánto ganarías haciéndolas todas."],
+		search = "crafting profit, what to craft, profession gold" },
 	{ kind = "toggle", key = ruta("oficios"), label = L["Oficios de 1 a 300 en esta página"],
 		help = L["Tus oficios con su paso de ahora y la guía de cada uno. La guía también se abre con /alfa comercio oficios."],
 		search = "professions, leveling guide, 1-300, crafting" },
@@ -927,6 +931,7 @@ N.Modulo({
 		tooltip = true, boton = true, busquedas = true, buzon = true, buzonVence = true,
 		comision = 5, desencantar = "auto", diasViejo = 3,
 		vender = true, precioBajo = 30, listaAviso = true, oficios = true,
+		fabricar = true, -- 1.3.0: Fabricar.lua
 	},
 	controles = CONTROLES,
 	construir = construir,
@@ -974,6 +979,8 @@ A.OnLogin(function()
 			respuesta = L["En Comercio, en «Tu lista de compras», agrega una receta o un oficio: te digo cuánto tienes, cuánto te falta y de dónde sale. Se va llenando sola mientras juntas."] },
 		{ id = "comercio.oficios", icono = "ic-oficios", pregunta = L["¿Cómo subo mi oficio de 1 a 300?"],
 			respuesta = L["En Comercio, en «Oficios», cada uno tiene su guía de 1 a 300: qué hacer en cada tramo, lo que te falta y dónde aprender el siguiente rango."] },
+		{ id = "comercio.fabricar", icono = "ic-oficios", pregunta = L["¿Qué fabrico para ganar oro?"],
+			respuesta = L["En Comercio, «Tus recetas que dejan ganancia» te dice cuánto deja cada receta con los precios de tu reino, y primero las que ya puedes hacer con lo que llevas."] },
 		{ id = "comercio.vender", icono = "ic-oro", pregunta = L["¿A cuánto vendo en la subasta?"],
 			respuesta = L["Pon tu objeto en la pestaña de vender: a un lado te digo su precio sugerido, cómo le fue estos días y te aviso si lo das muy barato. El precio lo pones tú."] },
 	}) do

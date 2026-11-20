@@ -1,0 +1,9 @@
+<Bindings>
+	<!-- 1.3.0: la pantalla limpia (Limpia.lua) y «¿Qué es esto?» (Kit/Ayuda.lua). -->
+	<Binding name="ALFA_PANTALLA_LIMPIA" category="Alfa" searchTags="BINDING_TAG_ALFA">
+		if AlfaNucleo and AlfaNucleo.PantallaLimpia then AlfaNucleo.PantallaLimpia.Alternar() end
+	</Binding>
+	<Binding name="ALFA_AYUDA" category="Alfa" searchTags="BINDING_TAG_ALFA">
+		if AlfaNucleo and AlfaNucleo.Kit and AlfaNucleo.Kit.AlternarAyuda then AlfaNucleo.Kit.AlternarAyuda() end
+	</Binding>
+</Bindings>

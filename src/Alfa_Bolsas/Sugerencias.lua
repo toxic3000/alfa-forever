@@ -143,7 +143,8 @@ local function analizar()
 	for _, g in ipairs(orden) do
 		local e = O.Info(g.id, g.link)
 		g.nombre = e.nombre or (g.link and g.link:match("%[(.-)%]")) or ("#" .. g.id)
-		local guardar = (Mk and (Mk.Get(g.id) == "keep" or M.Leer(M.Llamar(Mk.Protected, g.id)))) or g.mision
+		-- 1.3.0: Mk.Get por M.Llamar (sin él, un motor sin Get dejaba vacía la sugerencia).
+		local guardar = (Mk and (M.Llamar(Mk.Get, g.id) == "keep" or M.Leer(M.Llamar(Mk.Protected, g.id)))) or g.mision
 			or e.clase == 12 or g.id == PIEDRA_HOGAR or guardaLaGuia(g.id)
 		if not guardar then
 			local basura = Mk and M.Leer(M.Llamar(Mk.Junk, g.id)) and true or false

@@ -251,6 +251,159 @@ local function bloqueGuardar(padre)
 end
 
 ---------------------------------------------------------------------------
+-- 1.3.0: tus conjuntos de equipo (Conjuntos.lua)
+---------------------------------------------------------------------------
+
+local function bloqueConjuntos(padre)
+	local b = K.Pila(padre, { espacio = ESP.m })
+	b.Seccion = b:Agregar(K.Seccion(b, L["Tus conjuntos de equipo"]))
+	local nota = CreateFrame("Frame", nil, b)
+	nota.Texto = K.Texto(nota, "nota", "textoSuave")
+	nota.Texto:SetPoint("TOPLEFT")
+	function nota:Acomodar(ancho) local h = K.Parrafo(self.Texto, ancho, 3) self:SetSize(ancho, h) return h end
+	b.Nota = b:Agregar(nota)
+	b.Rejilla = b:Agregar(K.Rejilla(b, { min = 260, gap = ESP.s, variante = "compacta" }), { espacio = ESP.s })
+	function b:Llenar()
+		local Cj = M.Conjuntos
+		local on = M.Get("conjuntos") ~= false
+		local lista = on and Cj.Lista() or {}
+		self.Seccion:Set(L["Tus conjuntos de equipo"], { cuenta = #lista > 0 and #lista or nil,
+			enlace = on and { texto = L["Guardar lo que llevas"], alClic = function(boton) Cj.MenuGuardar(boton or self.Seccion) end } or nil })
+		K.Escribir(self.Nota.Texto, #lista > 0 and L["Un clic te pone el conjunto (fuera de combate; en combate, al terminar). Lo que esté en el banco no se puede poner."]
+			or L["Guarda lo que llevas puesto con un nombre (curar, daño, pesca...) y vuelve a ponértelo con un clic. También desde el botón de tus bolsas."])
+		local actual = Cj.Puesto()
+		local tarjetas = {}
+		for i, c in ipairs(lista) do
+			local _, enBolsas, faltan, total = Cj.Estado(c)
+			local texto
+			if c.n == actual then
+				texto = format(L["Lo llevas puesto: %d piezas."], total)
+			elseif faltan > 0 then
+				texto = format(L["%d piezas; faltan %d que no están en tus bolsas."], total, faltan)
+			else
+				texto = format(L["%d piezas; %d por cambiar."], total, enBolsas)
+			end
+			tarjetas[i] = {
+				icono = "ic-personaje", titulo = c.n, texto = texto,
+				estado = c.n == actual and { texto = L["Puesto"], tono = "exito" } or nil,
+				alClic = function() Cj.Poner(c.n) P.Rehacer() end,
+				ayuda = L["Clic: ponértelo."],
+				secundaria = { texto = L["Olvidar"], alClic = function() Cj.Olvidar(c.n) P.Rehacer() end },
+			}
+		end
+		self.Rejilla:Llenar(tarjetas)
+		K.Mostrar(self.Rejilla, #tarjetas > 0)
+		K.Mostrar(self, on)
+	end
+	return b
+end
+
+---------------------------------------------------------------------------
+-- 1.3.0: buscar en todos tus personajes (Todos.lua)
+---------------------------------------------------------------------------
+
+local MAX_TODOS = 12
+
+local function bloqueTodos(padre)
+	local b = K.Pila(padre, { espacio = ESP.m })
+	b.filtros = {}
+	b.Seccion = b:Agregar(K.Seccion(b, L["Buscar en todos tus personajes"]))
+	local fila = CreateFrame("Frame", nil, b)
+	fila:SetHeight(K.ALTO.control)
+	fila.Busca = K.Buscador(fila, { ayuda = L["Nombre, tipo, calidad o nivel"], alCambiar = function(texto)
+		b.texto = texto
+		P.Rehacer()
+	end })
+	local function menu(boton, ops, campo)
+		local actual = b.filtros[campo]
+		if actual == nil then actual = "" end
+		K.Menu(boton, ops, actual, function(v)
+			if v == "" then v = nil end
+			b.filtros[campo] = v
+			P.Rehacer()
+		end, 200)
+	end
+	fila.Tipo = K.Boton(fila, L["Tipo"], function(self)
+		local ops = { { valor = "", texto = L["Todos los tipos"] } }
+		for _, c in ipairs(M.Todos.Tipos()) do ops[#ops + 1] = { valor = c.clave, texto = c.nombre } end
+		menu(self, ops, "tipo")
+	end, { tipo = "fantasma", tam = "chico", icono = "chevron-down" })
+	fila.Calidad = K.Boton(fila, L["Calidad"], function(self)
+		local ops = { { valor = "", texto = L["Todas las calidades"] } }
+		for q = 0, 5 do
+			local nombre = _G["ITEM_QUALITY" .. q .. "_DESC"]
+			ops[#ops + 1] = { valor = q, texto = type(nombre) == "string" and nombre or tostring(q) }
+		end
+		menu(self, ops, "calidad")
+	end, { tipo = "fantasma", tam = "chico", icono = "chevron-down" })
+	fila.Quien = K.Boton(fila, L["Personaje"], function(self)
+		local ops = { { valor = "", texto = L["Todos tus personajes"] } }
+		for _, p in ipairs(D.Lista()) do ops[#ops + 1] = { valor = p.clave, texto = tostring(p.r.nombre or p.clave) } end
+		menu(self, ops, "clave")
+	end, { tipo = "fantasma", tam = "chico", icono = "chevron-down" })
+	function fila:Acomodar(ancho)
+		local x = 0
+		for _, w in ipairs({ self.Quien, self.Calidad, self.Tipo }) do
+			w:ClearAllPoints()
+			w:SetPoint("RIGHT", self, "RIGHT", -x, 0)
+			x = x + K.num(w:GetWidth(), 80) + ESP.s
+		end
+		self.Busca:ClearAllPoints()
+		self.Busca:SetPoint("LEFT", self, "LEFT", 0, 0)
+		self.Busca:SetPoint("RIGHT", self, "RIGHT", -x, 0)
+		self:SetSize(ancho, K.ALTO.control)
+		return K.ALTO.control
+	end
+	b.Fila = b:Agregar(fila)
+	local nota = CreateFrame("Frame", nil, b)
+	nota.Texto = K.Texto(nota, "nota", "textoSuave")
+	nota.Texto:SetPoint("TOPLEFT")
+	function nota:Acomodar(ancho) local h = K.Parrafo(self.Texto, ancho, 3) self:SetSize(ancho, h) return h end
+	b.Nota = b:Agregar(nota)
+	b.Rejilla = b:Agregar(K.Rejilla(b, { min = 300, gap = ESP.s, variante = "compacta" }), { espacio = ESP.s })
+	function b:Llenar()
+		local on = M.Get("buscarTodos") ~= false
+		K.Mostrar(self, on)
+		if not on then return end
+		local Bt = M.Todos
+		local f = self.filtros
+		-- Los botones dicen el filtro elegido.
+		local tipoNombre = f.tipo and M.Objetos.NOMBRE[f.tipo]
+		self.Fila.Tipo:SetTexto(tipoNombre or L["Tipo"])
+		local qn = f.calidad ~= nil and _G["ITEM_QUALITY" .. f.calidad .. "_DESC"]
+		self.Fila.Calidad:SetTexto(type(qn) == "string" and qn or L["Calidad"])
+		local pr = f.clave and D.Personaje(f.clave)
+		self.Fila.Quien:SetTexto(pr and tostring(pr.nombre or f.clave) or L["Personaje"])
+		local res, cuantos = Bt.Buscar(self.texto, { tipo = f.tipo, calidad = f.calidad, clave = f.clave })
+		self.Seccion:Set(L["Buscar en todos tus personajes"], { cuenta = cuantos > 0 and cuantos or nil })
+		local texto
+		local hayBusqueda = (self.texto and self.texto ~= "") or f.tipo or f.calidad ~= nil or f.clave
+		if not hayBusqueda then
+			texto = L["Busca un objeto en las bolsas, bancos y equipo de todos tus personajes. Los demás, con lo último que guardó Alfa."]
+		elseif cuantos == 0 then
+			texto = L["Ninguno de tus personajes lleva algo así."]
+		elseif cuantos > MAX_TODOS then
+			texto = format(L["%d objetos: estos son los primeros %d. Afina la búsqueda para ver los demás."], cuantos, MAX_TODOS)
+		end
+		K.Escribir(self.Nota.Texto, texto or "")
+		K.Mostrar(self.Nota, texto ~= nil)
+		local tarjetas = {}
+		for i = 1, math.min(#res, MAX_TODOS) do
+			local x = res[i]
+			local icono = C_Item and C_Item.GetItemIconByID and M.Llamar(C_Item.GetItemIconByID, x.id)
+			tarjetas[i] = {
+				icono = icono or "ic-bolsas", tenir = icono and false or nil,
+				titulo = x.link or Bt.Nombre(x), texto = Bt.Texto(x),
+				valor = x.total > 1 and format(L["×%d"], x.total) or nil,
+			}
+		end
+		self.Rejilla:Llenar(tarjetas)
+		K.Mostrar(self.Rejilla, #tarjetas > 0)
+	end
+	return b
+end
+
+---------------------------------------------------------------------------
 -- 3. Tus personajes
 ---------------------------------------------------------------------------
 
@@ -464,6 +617,15 @@ local function grupos(padre)
 		texto = L["Cuando te llega equipo mejor que lo que llevas puesto, un aviso con un botón para ponértelo (solo con tu clic y fuera de combate)."] })
 	equipo:Fila({ titulo = L["Sugerir qué guardar"], control = interruptor("queGuardar"),
 		texto = L["En esta página, lo que te sirve más en el banco o con otro personaje: materiales de sus recetas, lo que piden sus misiones y equipo que tu clase no usa."] })
+	-- 1.3.0
+	equipo:Fila({ titulo = L["Conjuntos de equipo"], control = interruptor("conjuntos"),
+		texto = L["Guarda lo que llevas puesto con un nombre (curar, daño, pesca...) y póntelo con un clic, fuera de combate."] })
+	equipo:Fila({ titulo = L["Comparar con lo que llevas"], control = interruptor("comparar"),
+		texto = L["En el cuadro de cada pieza de equipo: lo que ganas y lo que pierdes contra lo que llevas puesto, con números."] })
+	equipo:Fila({ titulo = L["Buscar en todos tus personajes"], control = interruptor("buscarTodos"),
+		texto = L["En esta página, un buscador por las bolsas, bancos y equipo de todos tus personajes, con filtros de tipo, calidad y personaje."] })
+	equipo:Fila({ titulo = L["Botón «Acomodar»"], control = interruptor("acomodar"),
+		texto = L["En tus bolsas: con un comerciante vende tu chatarra; con un banquero guarda tus materiales. Con tu clic."] })
 
 	local marcas = K.GrupoAjustes(padre, { titulo = L["Marcas sobre cada objeto"] })
 	marcas:Fila({ titulo = L["Nivel de objeto"], control = interruptor("marcaNivel"), texto = L["El número abajo a la izquierda de cada pieza de equipo."] })
@@ -508,6 +670,8 @@ end
 function M.ConstruirPagina(view)
 	local ui = {}
 	local t = K.Tablero(view, { margen = N.MargenPagina(), accion = "estado", tituloOpciones = L["Tu banco y lo que llevas"], min = 240 })
+	ui.conjuntos = t:AgregarBloque(bloqueConjuntos(t.Extra))
+	ui.todos = t:AgregarBloque(bloqueTodos(t.Extra))
 	ui.guardar = t:AgregarBloque(bloqueGuardar(t.Extra))
 	ui.personajes = t:AgregarBloque(bloquePersonajes(t.Extra))
 	ui.ajustes = grupos(t.Extra)
@@ -515,6 +679,8 @@ function M.ConstruirPagina(view)
 	K.EnPagina(view, t, function()
 		t:SetAccion(estado())
 		t:SetOpciones(opciones(), L["Tu banco y lo que llevas"])
+		ui.conjuntos:Llenar()
+		ui.todos:Llenar()
 		ui.guardar:Llenar()
 		ui.personajes:Llenar()
 		for _, g in ipairs(ui.ajustes) do g:Refrescar() end
@@ -537,6 +703,7 @@ M.Escuchar("DATOS", P.Rehacer)
 M.Escuchar("COMPRA", P.Rehacer)
 M.Escuchar("SUGERENCIAS", P.Rehacer)
 M.Escuchar("SESION", P.Rehacer)
+M.Escuchar("CONJUNTOS", P.Rehacer)
 M.Escuchar("LOTE", function(nombre) if nombre == "depositar" and not M.Lotes.Activo("depositar") then P.Rehacer() end end)
 A.RegisterEvent("BANKFRAME_OPENED", P.Rehacer)
 A.RegisterEvent("BANKFRAME_CLOSED", P.Rehacer)

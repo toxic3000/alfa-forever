@@ -26,6 +26,10 @@
 -- Guaridas.lua, 1A/1B en Llamado.lua, 1M en Juntos.lua, 1C/1D en Cita.lua,
 -- 1T en Reloj.lua, 1N en Notas.lua, 1W/1U en QuienTiene.lua y 1E/1S/1F en
 -- Logros.lua (1.2.9).
+-- 1.3.0, en minúscula (un Alfa viejo los descarta): 1b en Tablon.lua (el
+-- tablón), 1a en Mentor.lua, 1i en Botin.lua; los spots van en 1N (5.º campo
+-- "s"). 1Y queda para los saludos entre Lyas (Alfa_Lya). Libres: I, Z y casi
+-- todas las minúsculas.
 --
 -- La posición sale cada ENVIO segundos como mínimo y solo si te moviste más
 -- de MOVER yardas; quieto, una vez cada REFRESCO para que tu pin no caduque.
@@ -429,7 +433,9 @@ local function alMensaje(_, prefijo, texto, canal, remitente, _, _, localID, nom
 	if okYo and yo then return end
 	local clave = U.Clave(remitente)
 	if not clave or clave == U.MiClave() then return end
-	local tipo, resto = texto:match("^" .. V .. "(%u)|?(.*)$")
+	-- (1.3.0) También minúsculas: las letras mayúsculas ya casi se acabaron y
+	-- un Alfa viejo descarta solo lo que no entiende.
+	local tipo, resto = texto:match("^" .. V .. "(%a)|?(.*)$")
 	if not tipo then return end
 	R.diag.recibidos = R.diag.recibidos + 1
 

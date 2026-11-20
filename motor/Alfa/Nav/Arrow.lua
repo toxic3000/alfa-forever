@@ -390,21 +390,29 @@ local function showSkinArrival(on)
 end
 
 ---------------------------------------------------------------------------
--- Alfa 1.2.9: la llegada con la cara de La Jauría. Al llegar (o al buscar en
--- un área) ya no sale el bloque de texto suelto del motor: arriba, en
--- mayúsculas y en el color de llegada, «Llegaste» o «Busca por aquí»; debajo
--- lo que hay que hacer, en palabras llanas (el texto de la meta del motor; el
--- de nivel, «Sube al nivel 30: te falta 20%»), luego el avance («4 de 6») con
--- una barrita, y en un área con varios lugares un botón chico «Siguiente
--- lugar» (fuera de combate; en combate no toma el ratón: el clic en la flecha
--- sigue sirviendo). La letra y los colores son los del Kit de Alfa
--- (AlfaNucleo.Kit, se lee al llegar: el núcleo carga después del motor), con
--- contorno para leerse sobre el mundo en los tres estilos. Sin el Kit, el
--- texto de antes. La huella del lobo late suave (OnUpdate de la flecha).
+-- Alfa 1.2.9/1.2.10: la llegada con la cara de La Jauría. Al llegar (o al
+-- buscar en un área) el aro y la huella de antes se van: en su lugar sale una
+-- placa de Alfa entera. A la izquierda un medallón con el lobo (atento y
+-- olfateando cuando hay que buscar; aullando cuando llegaste) con su halo que
+-- respira; a la derecha, en mayúsculas y en el color de llegada, «Busca por
+-- aquí» o «Llegaste», lo que hay que hacer en palabras llanas (el texto de la
+-- meta; el de nivel, «Sube al nivel 30: te falta 20%»), el avance como un
+-- rastro de huellas («4 de 6») o una barra con su porcentaje (experiencia), y
+-- en un área con varios lugares el botón «Siguiente lugar» (fuera de combate;
+-- en combate no toma el ratón: el clic en la flecha sigue sirviendo). Entra
+-- subiendo. La letra, el panel y los colores son los del Kit de Alfa
+-- (AlfaNucleo.Kit, se lee al llegar: el núcleo carga después del motor). Sin
+-- el Kit, la llegada de antes.
 ---------------------------------------------------------------------------
-local llegada        -- el bloque (se arma la primera vez)
+local llegada        -- la placa (se arma la primera vez)
 local llegadaVista = false
-local LLEGADA_ANCHO = 260
+local PLACA_ANCHO = 264   -- la placa entera
+local PLACA_PAD = 10      -- su margen
+local MEDALLA = 46        -- el círculo del lobo, a la izquierda
+local COLUMNA = PLACA_ANCHO - PLACA_PAD * 3 - MEDALLA -- lo que queda para el texto
+local HUELLAS_MAX = 8
+
+local ENTRA_PLACA = 0.3
 
 local function kit()
 	local N = rawget(_G, "AlfaNucleo")
@@ -414,37 +422,91 @@ end
 
 local function enCombate() return InCombatLockdown and InCombatLockdown() or false end
 
--- La letra de Alfa para un rol del Kit, con contorno y la sombra del tema.
+-- La letra de Alfa para un rol del Kit, con la sombra del tema (la placa ya
+-- da el fondo: sin contorno grueso).
 local function letra(K, fs, rol)
 	local spec = K.TIPO and K.TIPO[rol] or { "medium", 12 }
-	local ok = pcall(fs.SetFont, fs, K.Cara(spec[1]), K.Tamano(rol), "OUTLINE")
-	if not ok then fs:SetFont(STANDARD_TEXT_FONT, K.Tamano(rol), "OUTLINE") end
+	local ok = pcall(fs.SetFont, fs, K.Cara(spec[1]), K.Tamano(rol), "")
+	if not ok then fs:SetFont(STANDARD_TEXT_FONT, K.Tamano(rol), "") end
 	local r, g, b = Nav.RGB("shade")
-	fs:SetShadowColor(r, g, b, 0.8)
+	fs:SetShadowColor(r, g, b, 0.9)
 	fs:SetShadowOffset(1, -1)
 	fs.alfaRol = rol
 end
 
+-- La placa anima sola mientras se ve: entra subiendo, el halo respira y el
+-- lobo olfatea (busca) o levanta el hocico (llegaste). Nada se crea aquí.
+local function animarPlaca(self, dt)
+	local t = (self.alfaT or 0) + (tonumber(dt) or 0)
+	self.alfaT = t
+	local e = t < ENTRA_PLACA and t / ENTRA_PLACA or 1
+	e = e * e * (3 - 2 * e)
+	self:SetAlpha(e * (self.alfaVisible or 1))
+	self:ClearAllPoints()
+	self:SetPoint("TOP", dial, "TOP", 0, -(1 - e) * 10)
+	self.Halo:SetAlpha(0.3 + 0.2 * (0.5 + 0.5 * sin(t * 2.4)))
+	if self.Lobo.SetRotation then
+		if self.alfaBusca then
+			self.Lobo:SetRotation(0.12 * sin(t * 3.1))
+		else
+			self.Lobo:SetRotation(0)
+		end
+	end
+	local s = 1 + 0.04 * (0.5 + 0.5 * sin(t * (self.alfaBusca and 3.1 or 1.8)))
+	self.Lobo:SetSize(MEDALLA * 0.62 * s, MEDALLA * 0.62 * s)
+end
+
 local function armarLlegada(K)
 	if llegada then return llegada end
-	local f = CreateFrame("Frame", nil, frame)
-	f:SetSize(LLEGADA_ANCHO, 60)
-	f:SetPoint("TOP", dial, "BOTTOM", 0, -10)
+	local f = CreateFrame("Frame", "AlfaNavLlegada", frame)
+	f:SetSize(PLACA_ANCHO, 72)
+	f:SetPoint("TOP", dial, "TOP", 0, 0)
+	f:EnableMouse(false)
 	f:Hide()
+	-- La placa: el panel de Alfa con su corte, la franja de color a la
+	-- izquierda y la marca arriba, como una tarjeta de acción del Kit.
+	f.caja = K.Caja(f, { corte = K.CORTE.tarjeta, rol = "panel", alfaFondo = 0.9 })
+	f.Franja = f:CreateTexture(nil, "ARTWORK", nil, 1)
+	f.Franja:SetColorTexture(1, 1, 1, 1)
+	f.Franja:SetWidth(3)
+	f.Franja:SetPoint("TOPLEFT", f, "TOPLEFT", 0, -K.CORTE.tarjeta - 4)
+	f.Franja:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 0, K.CORTE.tarjeta + 4)
+	-- El medallón: un círculo oscuro con su aro, el halo y el lobo.
+	f.Medalla = CreateFrame("Frame", nil, f)
+	f.Medalla:SetSize(MEDALLA, MEDALLA)
+	f.Medalla:SetPoint("TOPLEFT", f, "TOPLEFT", PLACA_PAD + 2, -PLACA_PAD)
+	f.Halo = f.Medalla:CreateTexture(nil, "BACKGROUND", nil, 1)
+	f.Halo:SetTexture(MEDIA .. "glow")
+	f.Halo:SetBlendMode("ADD")
+	f.Halo:SetSize(MEDALLA * 1.7, MEDALLA * 1.7)
+	f.Halo:SetPoint("CENTER")
+	f.Fondo = f.Medalla:CreateTexture(nil, "BACKGROUND", nil, 2)
+	f.Fondo:SetTexture(UI_DIR .. "circle")
+	f.Fondo:SetAllPoints()
+	f.Aro = f.Medalla:CreateTexture(nil, "ARTWORK")
+	f.Aro:SetTexture(MEDIA .. "ring")
+	f.Aro:SetAllPoints()
+	f.Lobo = f.Medalla:CreateTexture(nil, "ARTWORK", nil, 2)
+	f.Lobo:SetPoint("CENTER", f.Medalla, "CENTER", 0, 0)
+	f.Lobo:SetSize(MEDALLA * 0.62, MEDALLA * 0.62)
+	-- La columna de texto.
+	local x = PLACA_PAD * 2 + 2 + MEDALLA
 	f.Sobre = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	f.Sobre:SetPoint("TOP", f, "TOP", 0, 0)
-	f.Sobre:SetJustifyH("CENTER")
+	f.Sobre:SetPoint("TOPLEFT", f, "TOPLEFT", x, -PLACA_PAD - 1)
+	f.Sobre:SetWidth(COLUMNA)
+	f.Sobre:SetJustifyH("LEFT")
 	f.Accion = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	f.Accion:SetPoint("TOP", f.Sobre, "BOTTOM", 0, -4)
-	f.Accion:SetWidth(LLEGADA_ANCHO)
-	f.Accion:SetJustifyH("CENTER")
+	f.Accion:SetWidth(COLUMNA)
+	f.Accion:SetJustifyH("LEFT")
 	f.Accion:SetWordWrap(true)
-	f.Accion:SetMaxLines(2)
+	f.Accion:SetMaxLines(3)
 	f.Avance = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	f.Avance:SetJustifyH("CENTER")
-	-- La barrita del avance: la pista oscura y el relleno en el color de llegada.
+	f.Avance:SetJustifyH("RIGHT")
+	-- El avance: un rastro de huellas (hasta 8 lugares) o, para la
+	-- experiencia y lo largo, una barra con su porcentaje.
+	if K.Huellas then f.Huellas = K.Huellas(f, { tam = 13, max = HUELLAS_MAX, gap = 3 }) f.Huellas:Hide() end
 	f.Pista = f:CreateTexture(nil, "ARTWORK")
-	f.Pista:SetSize(120, 4)
+	f.Pista:SetHeight(5)
 	f.Relleno = f:CreateTexture(nil, "ARTWORK", nil, 1)
 	f.Relleno:SetPoint("TOPLEFT", f.Pista, "TOPLEFT", 0, 0)
 	f.Relleno:SetPoint("BOTTOMLEFT", f.Pista, "BOTTOMLEFT", 0, 0)
@@ -454,12 +516,13 @@ local function armarLlegada(K)
 		end, { tam = "chico", icono = "ic-huella" })
 		f.Siguiente:Hide()
 	end
+	f:SetScript("OnUpdate", animarPlaca)
 	llegada = f
 	Arrow.llegada = f
 	return f
 end
 
--- Lo que dice la meta a la que llegaste: { accion, cur, max, avance } o nil.
+-- Lo que dice la meta a la que llegaste: { accion, cur, max, avance, xp } o nil.
 local function metaDeLlegada(target)
 	local E = ns.Engine
 	if not (target and E and E.GetStepView and target.stepIndex and target.goalIndex) then return nil end
@@ -468,18 +531,17 @@ local function metaDeLlegada(target)
 	if type(gv) ~= "table" then return nil end
 	local d = {}
 	if gv.t == "level" then
-		local lvl
 		local p = ns.Levels and ns.Levels.Player and ns.Levels.Player() or {}
 		local xpMax = tonumber(p.xpMax) or 0
 		local falta = tonumber(gv.xpLeft)
 		local goal = E.GetGuide and E.GetGuide()
 		local step = goal and goal.steps and goal.steps[target.stepIndex]
 		local g = step and step.goals and step.goals[target.goalIndex]
-		lvl = lvl or (g and tonumber(g.level))
+		local lvl = g and tonumber(g.level)
 		if lvl and falta and xpMax > 0 then
 			if falta <= xpMax then
 				d.accion = ns.T("Sube al nivel %d: te falta %d%%"):format(lvl, math.max(1, math.ceil(falta / xpMax * 100)))
-				d.cur, d.max = xpMax - falta, xpMax
+				d.cur, d.max, d.xp = xpMax - falta, xpMax, true
 			else
 				d.accion = ns.T("Sube al nivel %d: te faltan %s de experiencia"):format(lvl, BreakUpLargeNumbers and BreakUpLargeNumbers(falta) or tostring(falta))
 			end
@@ -496,14 +558,41 @@ local function metaDeLlegada(target)
 	return d
 end
 
+local function altoTexto(K, fs, base)
+	return K.num and K.num(fs:GetStringHeight(), base) or base
+end
+
+-- Esconde lo de la llegada de antes (el aro, la huella, el halo, la palomita
+-- de las otras apariencias): la placa ocupa su lugar.
+local function sinLlegadaVieja()
+	ring:Hide()
+	halo:Hide()
+	wolfPaw:Hide()
+	skinRing:Hide()
+	skinDisc:Hide()
+	skinCheck:Hide()
+end
+
 local function pintarLlegada(m)
 	local K = kit()
 	if not K then return false end
 	local f = armarLlegada(K)
+	local nueva = not f:IsShown() or f.alfaModo ~= m
+	f.alfaModo = m
+	f.alfaBusca = m == "search"
 	local target = Nav.GetTarget()
-	local nr, ng, nb = Nav.RGB("arrowNearText")
+	local nr, ng, nb = Nav.RGB("arrowNear")
+	local tr, tg, tb = Nav.RGB("arrowNearText")
+	-- Los colores: la llegada del jugador (verde de fábrica) en la franja, el
+	-- lobo, su aro y su halo; el fondo del medallón, el panel hundido.
+	f.Franja:SetVertexColor(nr, ng, nb, 1)
+	f.Aro:SetVertexColor(nr, ng, nb, 0.9)
+	f.Halo:SetVertexColor(nr, ng, nb, 1)
+	f.Lobo:SetVertexColor(nr, ng, nb, 1)
+	f.Fondo:SetVertexColor(K.ConAlfa("hundido", 0.95))
+	f.Lobo:SetTexture(K.Lobo(f.alfaBusca and "atento" or "aullando"))
 	letra(K, f.Sobre, "mayus")
-	f.Sobre:SetTextColor(nr, ng, nb, 1)
+	f.Sobre:SetTextColor(tr, tg, tb, 1)
 	f.Sobre:SetText(K.Mayus(m == "search" and ns.T("Busca por aquí") or ns.T("Llegaste")))
 	letra(K, f.Accion, "cuerpo")
 	f.Accion:SetTextColor(K.Color("texto"))
@@ -511,35 +600,51 @@ local function pintarLlegada(m)
 	local accion = d.accion or (target and target.label) or ""
 	if issecretvalue and issecretvalue(accion) then accion = "" end
 	f.Accion:SetText(accion)
-	local y = 0
-	local hs = K.num and K.num(f.Sobre:GetStringHeight(), 10) or 10
-	local ha = accion ~= "" and (K.num and K.num(f.Accion:GetStringHeight(), 14) or 14) or 0
-	y = hs + 4 + ha
+	local x = PLACA_PAD * 2 + 2 + MEDALLA
+	local y = PLACA_PAD + 1 + altoTexto(K, f.Sobre, 10)
+	f.Accion:ClearAllPoints()
+	f.Accion:SetPoint("TOPLEFT", f, "TOPLEFT", x, -(y + 3))
 	f.Accion:SetShown(accion ~= "")
-	-- El avance: «4 de 6» y la barrita.
+	if accion ~= "" then y = y + 3 + altoTexto(K, f.Accion, 14) end
+	-- El avance: huellas para «4 de 6», barra con su porcentaje para la
+	-- experiencia o para muchos lugares.
 	f.Avance:ClearAllPoints()
 	f.Pista:ClearAllPoints()
-	if d.max and d.max > 0 then
-		local frac = math.max(0, math.min(1, (d.cur or 0) / d.max))
-		f.Pista:SetPoint("TOP", f, "TOP", 0, -(y + 6))
-		f.Pista:SetColorTexture(K.ConAlfa("hundido", 0.85))
-		f.Relleno:SetColorTexture(Nav.RGB("arrowNear"))
-		f.Relleno:SetWidth(math.max(1, 120 * frac))
-		f.Relleno:SetShown(frac > 0)
-		f.Pista:Show()
-		y = y + 10
-	else
+	local hay = d.max and d.max > 0
+	local conHuellas = hay and f.Huellas and not d.xp and d.max <= HUELLAS_MAX
+	local frac = hay and math.max(0, math.min(1, (d.cur or 0) / d.max)) or 0
+	letra(K, f.Avance, "pequeno")
+	f.Avance:SetTextColor(K.Color("textoSuave"))
+	local texto = d.avance or (d.xp and ("%d%%"):format(math.floor(frac * 100)) or nil)
+	f.Avance:SetText(texto or "")
+	f.Avance:SetShown(texto ~= nil)
+	local anchoAvance = texto and math.ceil(f.Avance:GetStringWidth() or 0) + 6 or 0
+	if conHuellas then
+		f.Huellas:Set(d.cur or 0, d.max)
+		f.Huellas:ClearAllPoints()
+		f.Huellas:SetPoint("TOPLEFT", f, "TOPLEFT", x, -(y + 6))
+		f.Huellas:Show()
 		f.Pista:Hide()
 		f.Relleno:Hide()
-	end
-	if d.avance then
-		letra(K, f.Avance, "pequeno")
-		f.Avance:SetTextColor(K.Color("textoSuave"))
-		f.Avance:SetPoint("TOP", f, "TOP", 0, -(y + 4))
-		f.Avance:SetText(d.avance)
-		f.Avance:Show()
-		y = y + 4 + (K.num and K.num(f.Avance:GetStringHeight(), 11) or 11)
+		local alto = K.num and K.num(f.Huellas:GetHeight(), 18) or 18
+		f.Avance:SetPoint("RIGHT", f, "TOPRIGHT", -PLACA_PAD - 2, -(y + 6 + alto / 2))
+		y = y + 6 + alto
+	elseif hay then
+		if f.Huellas then f.Huellas:Hide() end
+		local ancho = COLUMNA - anchoAvance
+		f.Pista:SetPoint("TOPLEFT", f, "TOPLEFT", x, -(y + 8))
+		f.Pista:SetWidth(ancho)
+		f.Pista:SetColorTexture(K.ConAlfa("hundido", 0.95))
+		f.Relleno:SetColorTexture(nr, ng, nb, 1)
+		f.Relleno:SetWidth(math.max(1, ancho * frac))
+		f.Relleno:SetShown(frac > 0)
+		f.Pista:Show()
+		f.Avance:SetPoint("RIGHT", f, "TOPRIGHT", -PLACA_PAD - 2, -(y + 10))
+		y = y + 13
 	else
+		if f.Huellas then f.Huellas:Hide() end
+		f.Pista:Hide()
+		f.Relleno:Hide()
 		f.Avance:Hide()
 	end
 	-- «Siguiente lugar»: un área con varios lugares (el clic en la flecha
@@ -549,18 +654,24 @@ local function pintarLlegada(m)
 		local otro = m == "search" and target and target.spots ~= nil
 		if otro then
 			b:ClearAllPoints()
-			b:SetPoint("TOP", f, "TOP", 0, -(y + 6))
+			b:SetPoint("TOPLEFT", f, "TOPLEFT", x, -(y + 8))
 			local pelea = enCombate()
 			b:EnableMouse(not pelea)
 			b:SetAlpha(pelea and 0.5 or 1)
 			b:Show()
-			y = y + 6 + (K.ALTO and K.ALTO.botonChico or 24)
+			y = y + 8 + (K.ALTO and K.ALTO.botonChico or 24)
 		else
 			b:Hide()
 		end
 	end
-	f:SetHeight(math.max(1, y))
+	y = math.max(y, PLACA_PAD + MEDALLA) + PLACA_PAD
+	f:SetHeight(y)
+	if nueva then f.alfaT = 0 end
 	f:Show()
+	sinLlegadaVieja()
+	-- La placa es más ancha que la flecha: que no se salga de la pantalla.
+	local sobra = math.max(0, (PLACA_ANCHO - WIDTH) / 2)
+	if frame.SetClampRectInsets then frame:SetClampRectInsets(-sobra, sobra, 0, 0) end
 	distText:Hide()
 	labelText:Hide()
 	etaText:Hide()
@@ -572,6 +683,7 @@ end
 
 local function quitarLlegada()
 	if llegada then llegada:Hide() end
+	if frame.SetClampRectInsets then frame:SetClampRectInsets(0, 0, 0, 0) end
 	if not llegadaVista then return end
 	llegadaVista = false
 	distText:Show()
@@ -587,7 +699,9 @@ function Arrow.Llegada()
 	return {
 		sobre = llegada.Sobre:GetText(), accion = llegada.Accion:IsShown() and llegada.Accion:GetText() or nil,
 		avance = llegada.Avance:IsShown() and llegada.Avance:GetText() or nil,
-		barra = llegada.Pista:IsShown() or nil,
+		barra = llegada.Pista:IsShown() or (llegada.Huellas ~= nil and llegada.Huellas:IsShown()) or nil,
+		huellas = llegada.Huellas ~= nil and llegada.Huellas:IsShown() or nil,
+		lobo = llegada.Lobo:GetTexture(), aroViejo = ring:IsShown() or wolfPaw:IsShown() or skinRing:IsShown() or nil,
 		siguiente = b ~= nil and b:IsShown() or nil, clicable = b ~= nil and b:IsShown() and b:IsMouseEnabled() or nil,
 	}
 end
@@ -876,7 +990,7 @@ frame:SetScript("OnUpdate", ns.Safe(function(_, elapsed)
 		end
 	elseif (mode == "arrived" or mode == "search") and skinStyle() then
 		pulse = pulse + elapsed
-		if pulse >= SKIN_CHECK_AFTER and not skinCheck:IsShown() then skinCheck:Show() end
+		if pulse >= SKIN_CHECK_AFTER and not llegadaVista and not skinCheck:IsShown() then skinCheck:Show() end
 	elseif mode == "arrived" or mode == "search" then
 		pulse = pulse + elapsed
 		local s = 1 + 0.06 * sin(pulse * 4)
@@ -1076,7 +1190,7 @@ function Arrow.SetBusy(on)
 	dial:SetAlpha(a)
 	distText:SetAlpha(a)
 	labelText:SetAlpha(a)
-	if llegada then llegada:SetAlpha(a) end
+	if llegada then llegada.alfaVisible = a llegada:SetAlpha(a) end
 	etaText:SetAlpha(a)
 	timerText:SetAlpha(a)
 end

@@ -14,8 +14,16 @@
 -- Se guardan en N.Datos("manada").notas: hasta MIAS tuyas y SUYAS de otros
 -- (las de otros se van a los DURAN días). Ajuste manada.notas.
 --
---   No.Agregar(texto) -> nota | nil, por qué    en tu lugar de ahora
---   No.Lista() -> { nota }  ; No.Borrar(id) ; No.Ir(id) ; No.Pintar(forzar)
+--   No.Agregar(texto, tipo) -> nota | nil, por qué    en tu lugar de ahora
+--   No.Lista(tipo) -> { nota }  ; No.Borrar(id) ; No.Ir(id) ; No.Pintar(forzar)
+--
+-- 1.3.0: los spots de farmeo. Una nota con tipo = "spot" («Spot aquí» en la
+-- página o /alfa spot <texto>) sale en su propia capa del mapa (manada.spots,
+-- con su ajuste manada.spots). Con «Compartir mis spots»
+-- (manada.spotsCompartir, apagado de fábrica) tus spots nuevos van a tu
+-- hermandad, sin pedir que compartas tu ubicación, y ves los suyos:
+--   1N|<mapa>|<x>|<y>|<texto>|s   (un Alfa viejo que comparte notas lo ve
+--                                  como una nota más)
 
 local ADDON, M = ...
 local N = AlfaNucleo
@@ -30,6 +38,7 @@ local sort = table.sort
 
 local V = "1"
 local CAPA = "manada.notas"
+local CAPA_SPOTS = "manada.spots"
 local MIAS, SUYAS = 60, 30
 local DURAN = 14 * 86400
 local CADA = 20 -- segundos entre dos notas de la misma persona
@@ -37,6 +46,11 @@ local CADA = 20 -- segundos entre dos notas de la misma persona
 local function on(clave) return N.Get(ID, clave) and true or false end
 local function activo() return N.Get(ID, "notas") ~= false end
 local function compartir() return on("notasCompartir") and on("compartir") end
+-- 1.3.0: los spots tienen su capa y su permiso (solo la hermandad).
+local function spotsOn() return activo() and N.Get(ID, "spots") ~= false end
+local function spotsCompartir() return spotsOn() and on("spotsCompartir") end
+local function esSpot(x) return x.tipo == "spot" end
+No.EsSpot = esSpot
 
 No.version = 0
 local function cambio()
@@ -64,7 +78,8 @@ local function limpiar(s)
 	return s ~= "" and s or nil
 end
 
-function No.Lista()
+-- `tipo`: "spot" solo los spots, "nota" solo las notas, nil todo.
+function No.Lista(tipo)
 	local out, t = {}, U.Reloj()
 	local d = datos()
 	for i = #d.notas, 1, -1 do
@@ -72,7 +87,10 @@ function No.Lista()
 		if type(x) ~= "table" or not (x.map and x.x and x.y) or (x.de and t - (x.at or 0) > DURAN) then table.remove(d.notas, i) end
 	end
 	for _, x in ipairs(d.notas) do
-		if not x.de or compartir() then out[#out + 1] = x end
+		local spot = esSpot(x)
+		local vale = (tipo == nil or (tipo == "spot") == spot)
+			and (not x.de or (spot and spotsCompartir()) or (not spot and compartir()))
+		if vale then out[#out + 1] = x end
 	end
 	sort(out, function(a, b)
 		if (a.de == nil) ~= (b.de == nil) then return a.de == nil end
@@ -93,9 +111,11 @@ local function contar(deOtro)
 end
 
 -- Una nota nueva en tu lugar de ahora: la nota, o nil y por qué
--- ("apagado", "texto", "lugar", "muchas").
-function No.Agregar(texto)
+-- ("apagado", "texto", "lugar", "muchas"). `tipo`: "spot" (1.3.0) o nil.
+function No.Agregar(texto, tipo)
 	if not activo() then return nil, "apagado" end
+	local spot = tipo == "spot"
+	if spot and not spotsOn() then return nil, "spots" end
 	texto = limpiar(texto)
 	if not texto then return nil, "texto" end
 	local map, x, y = U.MiPosicion()
@@ -103,9 +123,11 @@ function No.Agregar(texto)
 	if contar(false) >= MIAS then return nil, "muchas" end
 	local d = datos()
 	d.notaN = (tonumber(d.notaN) or 0) + 1
-	local nota = { id = "n" .. d.notaN, map = map, x = x, y = y, texto = texto, at = U.Reloj() }
+	local nota = { id = "n" .. d.notaN, map = map, x = x, y = y, texto = texto, at = U.Reloj(), tipo = spot and "spot" or nil }
 	d.notas[#d.notas + 1] = nota
-	if compartir() and U.EnHermandad() then
+	if spot then
+		if spotsCompartir() and M.Red.EnviarHermandad("N:" .. nota.id, format("%sN|%d|%.2f|%.2f|%s|s", V, map, x, y, texto)) then nota.compartida = true end
+	elseif compartir() and U.EnHermandad() then
 		if M.Red.Enviar("N:" .. nota.id, format("%sN|%d|%.2f|%.2f|%s", V, map, x, y, texto), "GUILD") then nota.compartida = true end
 	end
 	cambio()
@@ -117,16 +139,18 @@ local MOTIVOS = {
 	texto = "Escribe qué dice la nota: /alfa nota Aquí sale el mineral",
 	lugar = "Alfa no sabe dónde estás (en una instancia no hay notas).",
 	muchas = "Ya tienes 60 notas. Borra alguna en La Jauría para dejar otra.",
+	spots = "Los spots de farmeo están apagados (Ajustes de La Jauría).",
+	textoSpot = "Escribe qué se farmea ahí: /alfa spot Lobos para pieles",
 }
 No.MOTIVOS = MOTIVOS
 
-function No.AgregarYDecir(texto)
-	local nota, por = No.Agregar(texto)
+function No.AgregarYDecir(texto, tipo)
+	local nota, por = No.Agregar(texto, tipo)
 	if nota then
-		U.Decir(format(L["Dejaste una nota en tu mapa: «%s»."], nota.texto)
+		U.Decir(format(esSpot(nota) and L["Marcaste un spot de farmeo: «%s»."] or L["Dejaste una nota en tu mapa: «%s»."], nota.texto)
 			.. (nota.compartida and (" " .. L["La manada también la ve."]) or ""))
 	elseif MOTIVOS[por] then
-		U.Decir(L[MOTIVOS[por]])
+		U.Decir(L[MOTIVOS[(por == "texto" and tipo == "spot") and "textoSpot" or por]])
 	end
 	return nota, por
 end
@@ -161,7 +185,10 @@ end
 
 local oidas = {} -- clave -> cuándo
 M.Red.Oyentes.N = function(clave, remitente, _, f, canal)
-	if canal ~= "GUILD" or not (activo() and compartir()) then return end
+	local spot = f[5] == "s"
+	if canal ~= "GUILD" or not activo() then return end
+	if spot and not spotsCompartir() then return end
+	if not spot and not compartir() then return end
 	local map, x, y = numero(f[1], 100000), numero(f[2], 100), numero(f[3], 100)
 	local texto = limpiar(f[4])
 	if not (map and x and y and texto) then return end
@@ -171,18 +198,20 @@ M.Red.Oyentes.N = function(clave, remitente, _, f, canal)
 	local d = datos()
 	-- La misma nota otra vez: nada.
 	for _, n in ipairs(d.notas) do
-		if n.de and n.texto == texto and n.map == map and math.abs(n.x - x) < 0.5 and math.abs(n.y - y) < 0.5 then return end
+		if n.de and n.texto == texto and esSpot(n) == spot and n.map == map and math.abs(n.x - x) < 0.5 and math.abs(n.y - y) < 0.5 then return end
 	end
 	-- Demasiadas de otros: se va la más vieja.
-	if contar(true) >= SUYAS then
+	if contar(true) >= SUYAS * (spot and 2 or 1) then
 		local vieja, cuando
 		for i, n in ipairs(d.notas) do if n.de and (not cuando or (n.at or 0) < cuando) then vieja, cuando = i, n.at or 0 end end
 		if vieja then table.remove(d.notas, vieja) end
 	end
 	d.notaN = (tonumber(d.notaN) or 0) + 1
-	d.notas[#d.notas + 1] = { id = "n" .. d.notaN, map = math.floor(map), x = x, y = y, texto = texto, at = U.Reloj(), de = U.Mostrar(remitente) }
+	d.notas[#d.notas + 1] = { id = "n" .. d.notaN, map = math.floor(map), x = x, y = y, texto = texto, at = U.Reloj(), de = U.Mostrar(remitente), tipo = spot and "spot" or nil }
 	cambio()
 end
+-- (1.3.0) Los spots llegan aunque no compartas tu ubicación (su propio permiso).
+M.Red.Libres.N = true
 
 ---------------------------------------------------------------------------
 -- En el mapa
@@ -204,25 +233,27 @@ local function cuadro(x)
 	return function(tip)
 		local r, g, b = acento()
 		tip:SetText(x.texto or "?", 1, 1, 1)
-		tip:AddLine(x.de and format(L["Nota de %s"], x.de) or L["Tu nota"], r, g, b)
+		if esSpot(x) then
+			tip:AddLine(x.de and format(L["Spot de farmeo de %s"], x.de) or L["Tu spot de farmeo"], 1, 0.82, 0.3)
+		else
+			tip:AddLine(x.de and format(L["Nota de %s"], x.de) or L["Tu nota"], r, g, b)
+		end
 		local hace = U.Hace(U.Reloj() - (x.at or U.Reloj()))
 		if hace then tip:AddLine(hace, 0.6, 0.6, 0.6) end
 		tip:AddLine(L["Clic: la flecha te lleva aquí."], 0.4, 0.9, 0.4)
 	end
 end
 
-local firma
-function No.Pintar(forzar)
+local firmas = {}
+local function capa(nombre, lista, color, icono, visible, forzar)
 	local P = A.Pins
-	if not (P and P.SetLayer) then return end
 	local pins, partes = {}, {}
 	local mini = on("minimapa")
-	if activo() then
-		local r, g, b = acento()
-		for _, x in ipairs(No.Lista()) do
+	if visible then
+		for _, x in ipairs(lista) do
 			pins[#pins + 1] = {
 				map = x.map, x = x.x, y = x.y,
-				icon = media("icon-note"), color = x.de and { 0.75, 0.75, 0.75, 1 } or { r, g, b, 1 }, backdrop = true,
+				icon = media(icono), color = x.de and { 0.75, 0.75, 0.75, 1 } or color, backdrop = true,
 				size = 14, minimapSize = 11, priority = 3,
 				tooltip = cuadro(x),
 				onClick = function(button)
@@ -233,11 +264,20 @@ function No.Pintar(forzar)
 		end
 	end
 	local f = (mini and "m" or "-") .. table.concat(partes, "|")
-	if forzar or f ~= firma then
-		firma = f
-		pcall(P.SetLayer, CAPA, pins, { world = true, minimap = mini, edge = false })
+	if forzar or f ~= firmas[nombre] then
+		firmas[nombre] = f
+		pcall(P.SetLayer, nombre, pins, { world = true, minimap = mini, edge = false })
 	end
-	pcall(P.SetLayerVisible, CAPA, activo())
+	pcall(P.SetLayerVisible, nombre, visible)
+end
+
+function No.Pintar(forzar)
+	local P = A.Pins
+	if not (P and P.SetLayer) then return end
+	local r, g, b = acento()
+	capa(CAPA, activo() and No.Lista("nota") or {}, { r, g, b, 1 }, "icon-note", activo(), forzar)
+	-- 1.3.0: los spots de farmeo, en su propia capa (dorados).
+	capa(CAPA_SPOTS, spotsOn() and No.Lista("spot") or {}, { 1, 0.78, 0.25, 1 }, "ic-recoleccion", spotsOn(), forzar)
 end
 
 A.On("SETTING_CHANGED", function(path)
@@ -252,5 +292,15 @@ A.RegisterCommand("nota", function(rest)
 	end
 	No.AgregarYDecir(rest)
 end, L["Deja una nota en tu mapa donde estás (/alfa nota <texto>)"])
+
+-- 1.3.0: /alfa spot <texto>, un spot de farmeo donde estás.
+A.RegisterCommand("spot", function(rest)
+	rest = tostring(rest or "")
+	if rest:match("^%s*$") then
+		U.Decir(L[MOTIVOS.textoSpot])
+		return
+	end
+	No.AgregarYDecir(rest, "spot")
+end, L["Marca un spot de farmeo donde estás (/alfa spot <texto>)"])
 
 A.OnLogin(function() A.After(2, function() No.Pintar(true) end) end)

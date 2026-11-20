@@ -30,6 +30,7 @@ M.Rotacion = R
 local type, ipairs, pairs, pcall, floor, max, min, tonumber, format = type, ipairs, pairs, pcall, math.floor, math.max, math.min, tonumber, string.format
 local ESP = K.ESP
 local MAX_DESPUES = 3
+R.TAM_MAX = 96 -- 1.3.0: el ícono puede ser mucho más grande (combate.tam)
 local GCD = 1.6 -- una recarga más corta que esto es la global
 
 ---------------------------------------------------------------------------
@@ -148,6 +149,8 @@ local function teclaDe(spell)
 	end
 	return nil
 end
+-- Para Corte.lua y Recargas.lua (1.3.0): la tecla de tu barra con esa habilidad.
+R.Tecla = teclaDe
 
 ---------------------------------------------------------------------------
 -- Resaltar el botón de tu barra
@@ -253,18 +256,7 @@ local ultimo, ticker, cada
 local DUR_LINEA = 2.6 -- segundos que se queda el porqué
 
 -- El barrido de la recarga (un marco Cooldown del cliente, sin números).
-local function barrido(b)
-	local ok, cd = pcall(CreateFrame, "Cooldown", nil, b, "CooldownFrameTemplate")
-	if not ok or type(cd) ~= "table" then ok, cd = pcall(CreateFrame, "Cooldown", nil, b) end
-	if not ok or type(cd) ~= "table" then return nil end
-	cd:SetAllPoints(b.Icono)
-	pcall(cd.SetDrawEdge, cd, false)
-	pcall(cd.SetDrawBling, cd, false)
-	pcall(cd.SetHideCountdownNumbers, cd, true)
-	pcall(cd.SetSwipeColor, cd, 0, 0, 0, 0.55)
-	if cd.EnableMouse then cd:EnableMouse(false) end
-	return cd
-end
+local function barrido(b) return M.CrearBarrido(b, b.Icono) end
 
 local function cuadro(padre, principal)
 	local b = CreateFrame("Frame", nil, padre)
@@ -303,10 +295,17 @@ local function placa(padre, rol, color)
 	p.caja = K.Caja(p, { fondo = "fondo", alfaFondo = 0.85, borde = false, corte = K.CORTE.casilla })
 	p.Texto = K.Texto(p, rol, color)
 	p.Texto:SetPoint("CENTER", p, "CENTER", 0, 0)
+	p.alfaRol = rol
+	-- 1.3.0: la tecla crece con el ícono (otro tamaño de la escala del Kit).
+	function p:SetRol(r)
+		if r == self.alfaRol then return end
+		self.alfaRol = r
+		K.Fuente(self.Texto, r)
+	end
 	function p:Set(t)
 		if not t or t == "" then self:Hide() return end
 		K.Escribir(self.Texto, t)
-		self:SetSize(K.Ajustar(self.Texto, 160) + 8, K.Tamano(rol) + 6)
+		self:SetSize(K.Ajustar(self.Texto, 160) + 8, K.Tamano(self.alfaRol) + 6)
 		self:Show()
 	end
 	p:Hide()
@@ -374,14 +373,44 @@ local function crear()
 	f.Varios:SetFrameLevel(f.Principal:GetFrameLevel() + 6)
 	f.Varios:SetPoint("BOTTOMLEFT", f.Principal, "BOTTOMLEFT", -3, -3)
 	f.Siguientes = {}
-	for i = 1, MAX_DESPUES do f.Siguientes[i] = cuadro(f, false) end
+	for i = 1, MAX_DESPUES do
+		local s = cuadro(f, false)
+		s.Tecla = placa(s, "insignia", "texto")
+		s.Tecla:SetFrameLevel(s:GetFrameLevel() + 6)
+		f.Siguientes[i] = s
+	end
 	f:Hide()
 	return f
 end
 
+-- 1.3.0: la tecla grande va abajo y al centro del ícono, con letra que
+-- crece con él; la de antes (chica, en la esquina) sigue con teclaGrande apagado.
+local function rolTecla(tam)
+	if tam >= 76 then return "cifra" end
+	if tam >= 56 then return "subtitulo" end
+	return "numero"
+end
+
 local function acomodar()
-	local tam = max(28, min(72, floor(tonumber(M.Opt("tam")) or 44)))
-	local chico = floor(tam * 0.6 + 0.5)
+	local tam = max(28, min(R.TAM_MAX, floor(tonumber(M.Opt("tam")) or 52)))
+	local prop = max(0.5, min(1, tonumber(M.Opt("tamDespues")) or 0.7))
+	local chico = floor(tam * prop + 0.5)
+	local grande = M.Opt("teclaGrande") and true or false
+	f.Tecla:ClearAllPoints()
+	if grande then
+		f.Tecla:SetRol(rolTecla(tam))
+		f.Tecla:SetPoint("BOTTOM", f.Principal, "BOTTOM", 0, 3)
+	else
+		f.Tecla:SetRol("insignia")
+		f.Tecla:SetPoint("TOPRIGHT", f.Principal, "TOPRIGHT", 3, 3)
+	end
+	f.alfaGrande = grande
+	f.Varios:ClearAllPoints()
+	if grande then
+		f.Varios:SetPoint("TOPLEFT", f.Principal, "TOPLEFT", -3, 3)
+	else
+		f.Varios:SetPoint("BOTTOMLEFT", f.Principal, "BOTTOMLEFT", -3, -3)
+	end
 	local n = max(0, min(MAX_DESPUES, floor(tonumber(M.Opt("despues")) or 0)))
 	f.Principal:SetSize(tam, tam)
 	local x = tam + ESP.s
@@ -390,6 +419,15 @@ local function acomodar()
 		s:ClearAllPoints()
 		s:SetPoint("BOTTOMLEFT", f, "TOPLEFT", x, -tam)
 		s.alfaUsar = i <= n
+		s.Tecla:ClearAllPoints()
+		if grande then
+			s.Tecla:SetRol(chico >= 48 and "numero" or "insignia")
+			s.Tecla:SetPoint("BOTTOM", s, "BOTTOM", 0, 2)
+		else
+			s.Tecla:SetRol("insignia")
+			s.Tecla:SetPoint("TOPRIGHT", s, "TOPRIGHT", 2, 2)
+		end
+		s.Tecla.alfaTexto = nil
 		if not s.alfaUsar then s:Hide() end
 		x = x + chico + ESP.xs
 	end
@@ -588,6 +626,7 @@ function R.Actualizar()
 				s.alfaId = c.id
 				s.Icono:SetTexture(M.IconoHechizo(c.id) or K.Lobo("normal"))
 				s.Icono:SetVertexColor(1, 1, 1, 1)
+				s.Tecla:Set(M.Opt("tecla") and teclaDe(c.id) or nil)
 			end
 			s.Icono:SetDesaturated(c.grupo == 2)
 			s:SetAlpha(c.grupo <= 1 and 0.9 or 0.65)
@@ -595,6 +634,7 @@ function R.Actualizar()
 			s:Show()
 		else
 			s.alfaId = nil
+			s.Tecla:Hide()
 			s:Hide()
 		end
 	end

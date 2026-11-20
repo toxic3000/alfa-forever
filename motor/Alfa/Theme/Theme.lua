@@ -129,8 +129,53 @@ local SCHEMES = {
 		scrim = hex("0e1011"), onAccent = hex("0d1a08"), shadow = { 0, 0, 0, 0.55 },
 	},
 }
+-- 1.3.0: los esquemas de los estilos nuevos de la casa (ESTILOS_CASA, abajo).
+-- No salen en el desplegable de esquemas: los trae su estilo.
+-- La Jauría nocturno: azul de medianoche casi negro, con plata de luna.
+SCHEMES.nocturno = {
+	bg = hex("0b0f1a", 0.97), panel = hex("121829", 0.98), panelAlt = hex("1a2236"),
+	sidebar = hex("080b14"), footer = hex("0e1322"), sky = hex("141b2e"),
+	text = hex("e8edf7"), textDim = hex("aab5ca"), textMuted = hex("8f9ab0"),
+	line = hex("222b40"), lineStrong = hex("323d57"),
+	ink = { 1, 1, 1, 1 }, star = hex("222b40"), shade = { 0, 0, 0, 1 },
+	scrim = hex("070a12"), onAccent = hex("0b1020"), shadow = { 0, 0, 0, 0.6 },
+}
+-- Fogata: carbón cálido y el naranja de las brasas.
+SCHEMES.fogata = {
+	bg = hex("15110e", 0.97), panel = hex("1e1814", 0.98), panelAlt = hex("28201a"),
+	sidebar = hex("100c0a"), footer = hex("191410"), sky = hex("221b16"),
+	text = hex("f3eae0"), textDim = hex("c2b4a5"), textMuted = hex("a09283"),
+	line = hex("302620"), lineStrong = hex("43362c"),
+	ink = { 1, 1, 1, 1 }, star = hex("302620"), shade = { 0, 0, 0, 1 },
+	scrim = hex("0d0a08"), onAccent = hex("1f0e04"), shadow = { 0, 0, 0, 0.6 },
+}
 Theme.SCHEMES = SCHEMES
 Theme.SCHEME_ORDER = { "dusk", "night", "graphite" }
+
+-- 1.3.0: estilos de la casa con su propio esquema y su acento de fábrica
+-- (ui.skin = su id). Son la casa ("alfa" en SkinKey: sus formas y piezas);
+-- el acento propio del jugador sigue ganando.
+local ESTILOS_CASA = {
+	nocturno = { scheme = "nocturno", accent = hex("c8d3e6") },
+	fogata = { scheme = "fogata", accent = hex("ff9a4d") },
+}
+Theme.ESTILOS_CASA = ESTILOS_CASA
+
+-- 1.3.0: los colores de los perjuicios (como DebuffTypeColor del juego) y,
+-- con el modo para daltonismo (nucleo.daltonico), la paleta de Okabe e Ito:
+-- bien en azul cielo, aviso en amarillo y peligro en bermellón, que se
+-- distinguen sin depender del rojo contra el verde.
+local DEBUFF = {
+	debuffMagic = { 0.2, 0.6, 1, 1 }, debuffCurse = { 0.6, 0, 1, 1 }, debuffDisease = { 0.6, 0.4, 0, 1 },
+	debuffPoison = { 0, 0.6, 0, 1 }, debuffNone = { 0.8, 0, 0, 1 },
+}
+local DALTONICO = {
+	success = hex("56b4e9"), arrive = hex("56b4e9"), warning = hex("f0e442"), later = hex("f0e442"),
+	danger = hex("f08a4b"), dangerFill = hex("d55e00"),
+	debuffMagic = hex("56b4e9"), debuffCurse = hex("cc79a7"), debuffDisease = hex("e69f00"),
+	debuffPoison = hex("009e73"), debuffNone = hex("d55e00"),
+}
+Theme.DALTONICO = DALTONICO
 
 -- Skins (ui.skin): "polestar", the house style above (the default), the
 -- two directions of the design handoff, and the game's own looks
@@ -258,6 +303,8 @@ local SCHEME_WASH = {
 	graphite = { border = 0.1, divider = 0.1, selected = 0.12, hover = 0.07 },
 	ellesmere = { border = 0.1, divider = 0.1, selected = 0.12, hover = 0.07 },
 	cristal = { border = 0.16, divider = 0.14, selected = 0.14, hover = 0.08 },
+	nocturno = { border = 0.1, divider = 0.1, selected = 0.12, hover = 0.07 },
+	fogata = { border = 0.1, divider = 0.1, selected = 0.12, hover = 0.07 },
 }
 
 -- Cristal (ui.skin "cristal"): la opacidad de cada fondo del esquema y de
@@ -530,7 +577,9 @@ end
 -- "cristal". Cristal es la casa ("alfa" en SkinKey: sus formas y piezas)
 -- con fondos de cristal; Clasico, la piel "classic".
 function Theme.EstiloKey()
-	if get("ui.skin") == "cristal" then return "cristal" end
+	local raw = get("ui.skin")
+	if raw == "cristal" then return "cristal" end
+	if ESTILOS_CASA[raw] then return raw end
 	if Theme.SkinKey() == "classic" then return "clasico" end
 	return "alfa"
 end
@@ -539,16 +588,28 @@ function Theme.EsCristal() return get("ui.skin") == "cristal" end
 
 -- Los nombres de los estilos salen del Kit (AlfaNucleo.Kit.ESTILOS, con su
 -- ingles en src/Alfa_Nucleo/Textos.lua); sin el nucleo, los de aqui.
-local ESTILO_DE_PIEL = { alfa = "alfa", classic = "clasico", cristal = "cristal" }
+local ESTILO_DE_PIEL = { alfa = "alfa", classic = "clasico", cristal = "cristal", nocturno = "nocturno", fogata = "fogata" }
+local NOMBRE_PIEL = { alfa = "Alfa", classic = "Clásico WoW", cristal = "Cristal", nocturno = "La Jauría nocturno", fogata = "Fogata" }
 function Theme.SkinChoices()
 	local K = AlfaNucleo and AlfaNucleo.Kit
 	local list = {}
-	for _, value in ipairs({ "alfa", "classic", "cristal" }) do
+	for _, value in ipairs({ "alfa", "classic", "cristal", "nocturno", "fogata" }) do
 		local text
 		if K and K.NombreEstilo then text = K.NombreEstilo(ESTILO_DE_PIEL[value]) end
-		list[#list + 1] = { value = value, text = text or ns.T(value == "alfa" and "Alfa" or value == "classic" and "Clásico WoW" or "Cristal") }
+		list[#list + 1] = { value = value, text = text or ns.T(NOMBRE_PIEL[value]) }
 	end
 	return list
+end
+
+-- 1.3.0: el modo para daltonismo (Ajustes > Estilo y sonido).
+function Theme.Daltonico() return get("nucleo.daltonico") and true or false end
+
+-- Los colores de bien, aviso, peligro y perjuicios, en la paleta que toca.
+local function colores130(out)
+	for name, c in pairs(DEBUFF) do out[name] = copy(c) end
+	if Theme.Daltonico() then
+		for name, c in pairs(DALTONICO) do out[name] = copy(c) end
+	end
 end
 
 -- The tokens the skins added, in the house style: what each one stands for
@@ -608,6 +669,9 @@ local function resolveSkin(skin)
 	-- The house's own tokens, in this skin's terms.
 	if not out.line then out.line = copy(out.border) end
 	if not out.lineStrong then out.lineStrong = copy(out.border) end
+	colores130(out)
+	out.arrowNear = isColor(near) and { near[1], near[2], near[3], 1 } or copy(out.arrive)
+	out.arrowNearText = copy(out.arrowNear)
 	classTokens(out)
 	return out
 end
@@ -616,12 +680,16 @@ local function resolve()
 	local skin = Theme.SkinKey()
 	if skin ~= "alfa" then return resolveSkin(skin) end
 	local key = Theme.SchemeKey()
+	-- 1.3.0: un estilo de la casa con esquema propio manda sobre ui.scheme.
+	local casa = ESTILOS_CASA[get("ui.skin")]
+	if casa then key = casa.scheme end
 	local src = SCHEMES[key == "ellesmere" and "graphite" or key]
 	local out = {}
 	for name, c in pairs(SHARED) do out[name] = copy(c) end
 	for name, c in pairs(ART) do out[name] = copy(c) end
 	for name, c in pairs(BRAND) do out[name] = copy(c) end
 	for name, c in pairs(src) do out[name] = copy(c) end
+	colores130(out)
 	if key == "ellesmere" then
 		local panel = euiPanel()
 		if panel then
@@ -665,7 +733,10 @@ local function resolve()
 	elseif Theme.FollowsEllesmereAccent() then
 		r, g, b = euiAccent()
 	end
-	if not r then r, g, b = DEFAULT_ACCENT[1], DEFAULT_ACCENT[2], DEFAULT_ACCENT[3] end
+	if not r then
+		local def = casa and casa.accent or DEFAULT_ACCENT
+		r, g, b = def[1], def[2], def[3]
+	end
 	out.accent = { r, g, b, 1 }
 	-- Text on an accent fill: the scheme's dark ink, or the light text when
 	-- the accent is too dark to carry dark text.
@@ -999,10 +1070,23 @@ function Theme.TextScale()
 	return math.max(0.8, math.min(1.4, v))
 end
 
+-- 1.3.0: «Letra más grande» (nucleo.letraGrande), en todo Alfa: cada texto
+-- sube un escalón de la escala del Kit (13 -> 15, 15 -> 18...), así la letra
+-- sigue en la escala; los títulos de 26 o más ya son grandes y quedan igual.
+local ESCALA_GRANDE = { 10, 11, 12, 13, 15, 18, 22, 26 }
+function Theme.LetraGrande() return get("nucleo.letraGrande") and true or false end
+function Theme.Escalon(size)
+	if type(size) ~= "number" or size >= 26 or not Theme.LetraGrande() then return size end
+	for _, s in ipairs(ESCALA_GRANDE) do
+		if s > size then return s end
+	end
+	return size
+end
+
 function Theme.FontSpec(role)
 	local own = SKIN_ROLES[Theme.SkinKey()]
 	local spec = (own and own[role]) or ROLES[role] or ROLES.body
-	local size = math.floor(spec[2] * Theme.TextScale() * 2 + 0.5) / 2
+	local size = math.floor(Theme.Escalon(spec[2]) * Theme.TextScale() * 2 + 0.5) / 2
 	if Theme.FollowsEllesmereFont() and S.GetFont then
 		local ok, path, flag = pcall(S.GetFont)
 		if ok and type(path) == "string" then return path, size, flag or "" end
@@ -2156,6 +2240,8 @@ local LOOKS = {
 	["ui.border"] = true, ["ui.borderColor"] = true, ["ui.borderAccent"] = true, ["ui.borderSize"] = true,
 	["ui.band"] = true, ["ui.shadow"] = true, ["nav.arrowColor"] = true, ["nav.arrowNearColor"] = true, ["nav.mapIcons"] = true,
 	["ui"] = true, ["nav"] = true, [""] = true,
+	-- 1.3.0: accesibilidad (Alfa_Nucleo)
+	["nucleo.daltonico"] = true, ["nucleo.letraGrande"] = true, ["nucleo"] = true,
 }
 
 -- Settings that hold a colour ({ r, g, b }, or false for none of your own).
@@ -2204,7 +2290,11 @@ local function migrate()
 	local ui = db and db.settings and db.settings.ui
 	if type(ui) ~= "table" then return end
 	local c = ui.accent
-	if isColor(c) then
+	-- 1.3.0: en un estilo de la casa con acento propio (nocturno, fogata), el
+	-- verde de La Jauría sí es una elección del jugador.
+	if isColor(c) and ESTILOS_CASA[ui.skin] then
+		-- se queda
+	elseif isColor(c) then
 		for _, old in ipairs(OLD_ACCENTS) do
 			local same = true
 			for i = 1, 3 do

@@ -29,7 +29,8 @@ local type, pairs, ipairs, pcall, unpack = type, pairs, ipairs, pcall, unpack
 ---------------------------------------------------------------------------
 -- El estilo de cada parte
 ---------------------------------------------------------------------------
-local ESTILOS = { alfa = true, clasico = true, cristal = true }
+-- 1.3.0: también los estilos de la casa nuevos (La Jauría nocturno y Fogata).
+local ESTILOS = { alfa = true, clasico = true, cristal = true, nocturno = true, fogata = true }
 
 function M.EstiloDe(clave)
 	local v = N.Get(ID, clave)
@@ -71,6 +72,7 @@ end
 function M.ColorDe(estilo, token)
 	if estilo == K.Estilo() then return K.Color(token) end
 	if estilo == "clasico" then return desde(CLASICO[token] or CLASICO.texto) end
+	if (estilo == "nocturno" or estilo == "fogata") and K.ColorEstilo then return K.ColorEstilo(estilo, token) end
 	if token == "acento" then
 		-- El acento del jugador, salvo que el de ahora sea el oro de Clásico WoW.
 		if not K.Clasico() then return K.Color("acento") end

@@ -135,8 +135,76 @@ local H = {
 	detectarInvisibilidadSuperior = { 11743 },
 	detectarInvisibilidad = { 2970 },
 	detectarInvisibilidadMenor = { 132 },
+	-- 1.3.0: las versiones de grupo de los buffs (cuentan como "ya lo tiene")
+	rezoEntereza = { 21562, 21564 },
+	donSalvaje = { 21849, 21850 },
+	brillanteArcano = { 23028 },
+	bendicionSuperiorPoderio = { 25782, 25916 },
+	bendicionSuperiorSabiduria = { 25894, 25918 },
+	bendicionSuperiorReyes = { 25898 },
+	bendicionSuperiorSalvacion = { 25895 },
 }
 M.H = H
+
+---------------------------------------------------------------------------
+-- 1.3.0: para qué sirve cada hechizo (la lista «Tus clics»), qué perjuicios
+-- quita y cuál es el buff de tu clase (el punto en los marcos).
+---------------------------------------------------------------------------
+
+M.CATEGORIAS = {
+	{ id = "cura", nombre = L["Curas"] },
+	{ id = "quitar", nombre = L["Quitar perjuicios"] },
+	{ id = "buff", nombre = L["Buffs"] },
+	{ id = "revivir", nombre = L["Revivir"] },
+}
+
+local CATEGORIA = {
+	sanarInferior = "cura", sanar = "cura", sanacionSuperior = "cura", curacionRelampago = "cura", renovar = "cura",
+	escudo = "cura", rezoSanacion = "cura", toqueSanacion = "cura", rejuvenecimiento = "cura", recrecimiento = "cura",
+	luzSagrada = "cura", destelloLuz = "cura", choqueSagrado = "cura", imposicionManos = "cura",
+	olaSanacion = "cura", olaInferior = "cura", sanacionCadena = "cura",
+	disiparMagia = "quitar", curarEnfermedadS = "quitar", suprimirEnfermedad = "quitar", eliminarMaldicion = "quitar",
+	curarVenenoD = "quitar", suprimirVeneno = "quitar", purificar = "quitar", limpiar = "quitar",
+	curarVenenoC = "quitar", curarEnfermedadC = "quitar", eliminarMaldicionMenor = "quitar",
+	resurreccion = "revivir", renacer = "revivir", redencion = "revivir", espirituAncestral = "revivir",
+	entereza = "buff", espirituDivino = "buff", proteccionSombras = "buff", estimular = "buff", marcaSalvaje = "buff",
+	espinas = "buff", bendicionProteccion = "buff", bendicionPoderio = "buff", bendicionSabiduria = "buff",
+	bendicionReyes = "buff", bendicionSalvacion = "buff", respiracionAcuatica = "buff", caminarAgua = "buff",
+	intelectoArcano = "buff", amplificarMagia = "buff", atenuarMagia = "buff", respiracionInagotable = "buff",
+	detectarInvisibilidadSuperior = "buff", detectarInvisibilidad = "buff", detectarInvisibilidadMenor = "buff",
+}
+M.CATEGORIA = CATEGORIA
+
+-- Qué tipo de perjuicio quita cada hechizo (los nombres del juego: dispelName).
+M.QUITA = {
+	disiparMagia = { Magic = true },
+	curarEnfermedadS = { Disease = true }, suprimirEnfermedad = { Disease = true },
+	eliminarMaldicion = { Curse = true }, eliminarMaldicionMenor = { Curse = true },
+	curarVenenoD = { Poison = true }, suprimirVeneno = { Poison = true },
+	purificar = { Poison = true, Disease = true },
+	limpiar = { Poison = true, Disease = true, Magic = true },
+	curarVenenoC = { Poison = true }, curarEnfermedadC = { Disease = true },
+}
+M.TIPOS = {
+	Magic = { nombre = L["Magia"], color = { 0.2, 0.6, 1 }, icono = "Interface\\RaidFrame\\Raid-Icon-DebuffMagic" },
+	Curse = { nombre = L["Maldición"], color = { 0.6, 0, 1 }, icono = "Interface\\RaidFrame\\Raid-Icon-DebuffCurse" },
+	Disease = { nombre = L["Enfermedad"], color = { 0.6, 0.4, 0 }, icono = "Interface\\RaidFrame\\Raid-Icon-DebuffDisease" },
+	Poison = { nombre = L["Veneno"], color = { 0, 0.6, 0 }, icono = "Interface\\RaidFrame\\Raid-Icon-DebuffPoison" },
+}
+M.ORDEN_TIPOS = { "Magic", "Curse", "Poison", "Disease" }
+
+-- El buff de tu clase: grupos de claves; tenerlo de cualquiera de su grupo
+-- cuenta. El primero de cada grupo que conoces es el que lanzas tú.
+M.BUFF_CLASE = {
+	PRIEST = { { "entereza", "rezoEntereza" } },
+	DRUID = { { "marcaSalvaje", "donSalvaje" } },
+	MAGE = { { "intelectoArcano", "brillanteArcano" } },
+	PALADIN = { { "bendicionPoderio", "bendicionSabiduria", "bendicionReyes", "bendicionSalvacion",
+		"bendicionSuperiorPoderio", "bendicionSuperiorSabiduria", "bendicionSuperiorReyes", "bendicionSuperiorSalvacion" } },
+}
+
+-- Las vendas, de la mejor a la peor (itemID).
+M.VENDAS = { 14530, 14529, 8545, 8544, 6451, 6450, 3531, 3530, 2581, 1251 }
 
 local CURANDEROS = { PRIEST = true, DRUID = true, PALADIN = true, SHAMAN = true }
 
@@ -337,6 +405,12 @@ function M.Candidatos(pre, izqSel, clase)
 	end
 	if pre ~= "curar" then
 		fuente["1"], fuente["2"] = "target", "menu"
+		-- 1.3.0: una venda en el primer clic libre (cualquier clase la usa).
+		if pre == "buffs" then
+			for _, r in ipairs({ "shift-1", "ctrl-1", "alt-1", "ctrl-2", "alt-2" }) do
+				if fuente[r] == nil then fuente[r] = "venda" break end
+			end
+		end
 	elseif izqSel then
 		fuente["3"] = fuente["1"]
 		fuente["1"] = "target"
@@ -363,6 +437,8 @@ function M.Resolver(pre, izqSel, clase)
 			mapa[r] = { t = "target", p = true }
 		elseif lista == "menu" then
 			mapa[r] = { t = "menu", p = true }
+		elseif lista == "venda" then
+			mapa[r] = { t = "venda", p = true }
 		elseif type(lista) == "table" then
 			for i = 1, #lista do
 				local k = lista[i]
@@ -388,6 +464,8 @@ function M.ResumenDe(mapa, max)
 		if e and e.t == "spell" then
 			local n = M.NombreHechizo(e.id)
 			if n then partes[#partes + 1] = M.NombreRanura(r) .. ": " .. n end
+		elseif e and e.t == "venda" then
+			partes[#partes + 1] = M.NombreRanura(r) .. ": " .. L["Usar una venda"]
 		end
 		if max and #partes >= max then break end
 	end
@@ -433,4 +511,138 @@ function M.HechizosDelLibro()
 	table.sort(lista, function(a, b) return a.nombre < b.nombre end)
 	while #lista > MAX_LIBRO do table.remove(lista) end
 	return lista
+end
+
+---------------------------------------------------------------------------
+-- 1.3.0: los hechizos de tu clase que conoces, por categoría (para «Tus
+-- clics»), lo que tus clics pueden quitar, tu buff de clase y tu venda.
+---------------------------------------------------------------------------
+
+-- La clave de H de un spellID (cualquier rango), o nil.
+local claveDe
+function M.ClaveDe(id)
+	if type(id) ~= "number" then return nil end
+	if not claveDe then
+		claveDe = {}
+		for k, ids in pairs(H) do for _, x in ipairs(ids) do claveDe[x] = k end end
+	end
+	return claveDe[id]
+end
+
+-- -> { { categoria, nombre, lista = { { id, k, nombre } } }, ... } solo con lo que conoces.
+function M.HechizosPorCategoria()
+	local por, vistos, claves = {}, {}, {}
+	for k in pairs(CATEGORIA) do claves[#claves + 1] = k end
+	table.sort(claves)
+	for _, k in ipairs(claves) do
+		local id = M.Conocido(k)
+		local nombre = id and M.NombreHechizo(id)
+		if nombre and not vistos[nombre] then
+			vistos[nombre] = true
+			local c = CATEGORIA[k]
+			por[c] = por[c] or {}
+			por[c][#por[c] + 1] = { id = id, k = k, nombre = nombre }
+		end
+	end
+	-- Lo demás de tu libro que sirve sobre aliados, en "Otros".
+	for _, h in ipairs(M.HechizosDelLibro()) do
+		if not vistos[h.nombre] then
+			vistos[h.nombre] = true
+			por.otro = por.otro or {}
+			por.otro[#por.otro + 1] = { id = h.id, k = M.ClaveDe(h.id), nombre = h.nombre }
+		end
+	end
+	local t = {}
+	for _, c in ipairs(M.CATEGORIAS) do
+		if por[c.id] then
+			table.sort(por[c.id], function(a, b) return a.nombre < b.nombre end)
+			t[#t + 1] = { categoria = c.id, nombre = c.nombre, lista = por[c.id] }
+		end
+	end
+	if por.otro then t[#t + 1] = { categoria = "otro", nombre = L["Otros"], lista = por.otro } end
+	return t
+end
+
+-- ¿Qué perjuicios puedes quitar con lo que conoces? -> { Magic = clave, ... }
+function M.TiposQuePuedesQuitar()
+	local t = {}
+	for k, tipos in pairs(M.QUITA) do
+		if M.Conocido(k) then
+			for tipo in pairs(tipos) do t[tipo] = t[tipo] or k end
+		end
+	end
+	return t
+end
+
+-- La ranura que quita un tipo de perjuicio (la primera de M.RANURAS), o nil.
+function M.RanuraQueQuita(tipo, mapa)
+	mapa = mapa or (M.Mapa and M.Mapa()) or {}
+	for _, r in ipairs(M.RANURAS) do
+		local e = mapa[r]
+		if type(e) == "table" and e.t == "spell" then
+			local k = e.k or M.ClaveDe(e.id)
+			local q = k and M.QUITA[k]
+			if q and q[tipo] then return r end
+		end
+	end
+	return nil
+end
+
+-- Los tipos que tu clase puede quitar pero ningún clic quita. -> lista ordenada
+function M.QuitarSinClic(mapa)
+	local puedes = M.TiposQuePuedesQuitar()
+	local t = {}
+	for _, tipo in ipairs(M.ORDEN_TIPOS) do
+		if puedes[tipo] and not M.RanuraQueQuita(tipo, mapa) then t[#t + 1] = tipo end
+	end
+	return t
+end
+
+-- Tu buff de clase, si lo conoces -> { grupo, k, id } o nil.
+function M.BuffDeClase(clase)
+	local grupos = M.BUFF_CLASE[clase or M.Clase() or ""]
+	if not grupos then return nil end
+	for _, g in ipairs(grupos) do
+		for _, k in ipairs(g) do
+			local id = M.Conocido(k)
+			if id then return { grupo = g, k = k, id = id } end
+		end
+	end
+	return nil
+end
+
+-- La ranura que da tu buff de clase (cualquiera de su grupo), o nil.
+function M.RanuraDelBuff(mapa)
+	local b = M.BuffDeClase()
+	if not b then return nil end
+	local en = {}
+	for _, k in ipairs(b.grupo) do en[k] = true end
+	mapa = mapa or M.Mapa()
+	for _, r in ipairs(M.RANURAS) do
+		local e = mapa[r]
+		if type(e) == "table" and e.t == "spell" then
+			local k = e.k or M.ClaveDe(e.id)
+			if k and en[k] then return r end
+		end
+	end
+	return nil
+end
+
+-- Tu mejor venda en las bolsas -> itemID o nil.
+function M.MejorVenda()
+	local C = C_Container
+	if not (C and C.GetContainerNumSlots and C.GetContainerItemID) then return nil end
+	local tienes = {}
+	for bolsa = 0, 4 do
+		local ok, n = pcall(C.GetContainerNumSlots, bolsa)
+		n = ok and tonumber(n) or 0
+		for i = 1, n do
+			local okI, id = pcall(C.GetContainerItemID, bolsa, i)
+			if okI and not secreto(id) and type(id) == "number" then tienes[id] = true end
+		end
+	end
+	for _, id in ipairs(M.VENDAS) do
+		if tienes[id] then return id end
+	end
+	return nil
 end

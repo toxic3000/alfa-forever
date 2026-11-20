@@ -12,6 +12,11 @@
 --     como macro "/target <unidad>"; la unidad la pone el propio marco seguro
 --     al cambiar de jugador (atributo refreshUnitChange), también en combate.
 --   * Menú: "togglemenu", solo en el izquierdo o el derecho sin tecla.
+--   * 1.3.0, «Curar y seleccionar» (por personaje, prendido de fábrica): un
+--     hechizo va como macro "/target <unidad>\n/cast [@<unidad>] <Hechizo>"
+--     (cura Y lo deja seleccionado para tus otros poderes). La venda igual,
+--     con "/use [@<unidad>] item:<id>". El texto se rehace en el entorno
+--     seguro con la unidad nueva (REFRESCO), con "alfa-cmd-" y "alfa-arg-".
 -- La cabecera copia los mismos atributos a cualquier botón nuevo
 -- (_initialAttributeNames), aunque se cree en combate.
 --
@@ -61,7 +66,11 @@ local REFRESCO = [[
 	if lista then
 		for p, s in gmatch(lista, "(%S-):(%d)") do
 			if u then
-				self:SetAttribute(p .. "macrotext" .. s, "/target " .. u)
+				local m = "/target " .. u
+				local cmd = self:GetAttribute("alfa-cmd-" .. p .. s)
+				local arg = self:GetAttribute("alfa-arg-" .. p .. s)
+				if cmd and arg then m = m .. "\n" .. cmd .. " [@" .. u .. "] " .. arg end
+				self:SetAttribute(p .. "macrotext" .. s, m)
 			else
 				self:SetAttribute(p .. "macrotext" .. s, nil)
 			end
@@ -70,6 +79,24 @@ local REFRESCO = [[
 ]]
 M.REFRESCO = REFRESCO
 
+-- El mismo texto que arma REFRESCO, desde Lua (para los botones fuera de combate).
+function M.Macro(unidad, cmd, arg)
+	local m = "/target " .. unidad
+	if cmd and arg then m = m .. "\n" .. cmd .. " [@" .. unidad .. "] " .. arg end
+	return m
+end
+
+-- «Curar y seleccionar»: por personaje, prendido si nunca lo tocaste.
+function M.CurarSelecciona() return M.Datos().curarSel ~= false end
+function M.FijarCurarSelecciona(si)
+	M.Datos().curarSel = si and true or false
+	M.AplicarMapa()
+end
+
+-- Tu venda para los clics (se busca fuera de combate, al cambiar tus bolsas).
+M.venda = nil
+local TOPE_ARG = 200 -- la macro entera no pasa de 255 letras
+
 -- -> lista { { nombre, valor }, ... } de los atributos de clic, para una unidad.
 local function atributos(unidad)
 	local mapa = M.Mapa()
@@ -77,11 +104,19 @@ local function atributos(unidad)
 	for _, r in ipairs(M.RANURAS) do
 		local p, s = M.Partes(r)
 		local e = mapa[r]
-		local tipo, hechizo, macro
+		local tipo, hechizo, macro, cmd, arg
+		local sel = M.CurarSelecciona()
 		if type(e) == "table" then
 			if e.t == "spell" then
 				local n = M.NombreHechizo(e.id)
-				if n then tipo, hechizo = "spell", n end
+				if n and sel and #n <= TOPE_ARG then
+					tipo, cmd, arg = "macro", "/cast", n
+				elseif n then
+					tipo, hechizo = "spell", n
+				end
+			elseif e.t == "venda" then
+				tipo, cmd = "macro", "/use"
+				if M.venda then arg = "item:" .. M.venda end
 			elseif e.t == "target" then
 				if p == "" and (s == "1" or s == "2") then
 					tipo = "target"
@@ -94,9 +129,15 @@ local function atributos(unidad)
 				tipo = "togglemenu"
 			end
 		end
+		if cmd then
+			objetivos[#objetivos + 1] = p .. ":" .. s
+			if type(unidad) == "string" then macro = M.Macro(unidad, cmd, arg) end
+		end
 		t[#t + 1] = { p .. "type" .. s, tipo }
 		t[#t + 1] = { p .. "spell" .. s, hechizo }
 		t[#t + 1] = { p .. "macrotext" .. s, macro }
+		t[#t + 1] = { "alfa-cmd-" .. p .. s, arg and cmd or nil }
+		t[#t + 1] = { "alfa-arg-" .. p .. s, arg }
 	end
 	t[#t + 1] = { "alfa-objetivos", #objetivos > 0 and table.concat(objetivos, " ") or nil }
 	t[#t + 1] = { "refreshUnitChange", REFRESCO }
@@ -141,7 +182,7 @@ function M.AplicarMapa()
 	N.FueraDeCombate(function()
 		avisoCombate = false
 		for _, b in ipairs(M.botones) do M.AplicarABoton(b) end
-		if M.cabecera then M.AplicarACabecera(M.cabecera) end
+		for _, h in ipairs(M.cabeceras or {}) do M.AplicarACabecera(h) end
 		M.Avisar()
 	end)
 end
@@ -154,7 +195,8 @@ end
 function M.FijarRanura(ranura, entrada)
 	local mapa = M.Mapa()
 	if type(entrada) ~= "table" then return end
-	local e = { t = entrada.t, id = entrada.id }
+	if entrada.t == "venda" and not M.EnCombate() then M.venda = M.MejorVenda() end
+	local e = { t = entrada.t, id = entrada.id, k = entrada.id and M.ClaveDe(entrada.id) or nil }
 	mapa[ranura] = e
 	M.AplicarMapa()
 end
@@ -186,6 +228,7 @@ end
 local intentos = 0
 function M.Inicial()
 	local d = M.Datos()
+	if not M.EnCombate() then M.venda = M.MejorVenda() end
 	if type(d.mapa) == "table" and d.preajuste then
 		M.listo = true
 		return true
@@ -444,6 +487,26 @@ end
 ---------------------------------------------------------------------------
 
 A.RegisterEvent("LEARNED_SPELL_IN_SKILL_LINE", function() M.ProgramarRevision() end)
+
+-- Tu venda: si cambia la mejor que llevas, los clics se rehacen (fuera de combate).
+function M.RevisarVenda()
+	local v = M.MejorVenda()
+	if v == M.venda then return false end
+	M.venda = v
+	local usa = false
+	for _, e in pairs(M.Mapa()) do if type(e) == "table" and e.t == "venda" then usa = true break end end
+	if usa then M.AplicarMapa() end
+	return true
+end
+local vendaPendiente = false
+A.RegisterEvent("BAG_UPDATE_DELAYED", function()
+	if vendaPendiente then return end
+	vendaPendiente = true
+	N.FueraDeCombate("curacion.venda", function()
+		vendaPendiente = false
+		M.RevisarVenda()
+	end)
+end)
 A.RegisterEvent("PLAYER_LEVEL_UP", function() M.ProgramarRevision() end)
 A.RegisterEvent("SPELLS_CHANGED", function()
 	if M.listo then M.ProgramarRevision() else M.Inicial() end

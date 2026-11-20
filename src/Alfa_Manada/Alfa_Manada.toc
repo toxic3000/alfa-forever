@@ -29,6 +29,9 @@ QuienVa.lua
 Reloj.lua
 Notas.lua
 QuienTiene.lua
+Tablon.lua
+Botin.lua
+Mentor.lua
 Logros.lua
 Mapa.lua
 Pagina.lua

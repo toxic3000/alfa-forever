@@ -26,6 +26,8 @@ local Banco = {}
 M.Banco = Banco
 
 local PIEDRA_HOGAR = 6948
+local FRAGMENTO_ALMA = 6265
+local CLASE_PROYECTIL = 6 -- flechas y balas
 local ORIGEN = { 0, 1, 2, 3, 4, 5 } -- de dónde se deposita (sin el llavero)
 
 ---------------------------------------------------------------------------
@@ -66,6 +68,8 @@ local function lo_que_llevas()
 	local out = {}
 	if not C then return out end
 	for _, bolsa in ipairs(ORIGEN) do
+		-- 1.3.0: lo de un carcaj, una bolsa de munición o de almas no se deposita.
+		local municion = D.EsMunicion(D.Familia(bolsa))
 		for s = 1, M.Num(M.Llamar(C.GetContainerNumSlots, bolsa)) or 0 do
 			local info = M.Llamar(C.GetContainerItemInfo, bolsa, s)
 			local id = type(info) == "table" and M.Num(info.itemID)
@@ -76,7 +80,8 @@ local function lo_que_llevas()
 				if type(q) == "table" then rec.mision = (M.Leer(q.isQuestItem) or M.Num(q.questID)) and true or false end
 				local e = O.Info(id, rec.l)
 				out[#out + 1] = { bolsa = bolsa, casilla = s, id = id, cantidad = rec.c, e = e, rec = rec,
-					cat = O.CategoriaFija(rec, e, bolsa) }
+					cat = O.CategoriaFija(rec, e, bolsa),
+					municion = municion or e.clase == CLASE_PROYECTIL or id == FRAGMENTO_ALMA }
 			end
 		end
 	end
@@ -85,7 +90,7 @@ end
 
 -- ¿Entra esta casilla en la opción?
 local function entra(clave, x, ids, cat)
-	if x.id == PIEDRA_HOGAR or guardaLaGuia(x.id) then return false end
+	if x.id == PIEDRA_HOGAR or x.municion or guardaLaGuia(x.id) then return false end
 	if clave == "banco" then return ids[x.id] == true end
 	if clave == "categoria" then return cat ~= nil and x.cat == cat end
 	if x.rec.mision or x.cat == "misiones" then return false end
@@ -181,7 +186,7 @@ function Banco.Cuentas()
 		for _, o in ipairs({ "banco", "materiales", "noEquipo" }) do
 			if entra(o, x, ids) then cuentas[o] = cuentas[o] + 1 end
 		end
-		if x.id ~= PIEDRA_HOGAR and not guardaLaGuia(x.id) then porCat[x.cat] = (porCat[x.cat] or 0) + 1 end
+		if x.id ~= PIEDRA_HOGAR and not x.municion and not guardaLaGuia(x.id) then porCat[x.cat] = (porCat[x.cat] or 0) + 1 end
 	end
 	local cats = {}
 	for _, c in ipairs(O.CATEGORIAS) do

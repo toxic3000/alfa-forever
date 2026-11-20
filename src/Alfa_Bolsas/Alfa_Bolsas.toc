@@ -20,6 +20,10 @@ Banco.lua
 Sugerencias.lua
 Mejora.lua
 Guardar.lua
+Conjuntos.lua
+Comparar.lua
+Todos.lua
+Acomodar.lua
 Barra.lua
 Ventana.lua
 Reemplazo.lua

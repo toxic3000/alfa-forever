@@ -84,9 +84,15 @@ local info, pedidos = {}, {}
 local cuantos = 0
 local TOPE = 3000
 
+-- 1.3.0: un pedido que el juego nunca contestó se repite pasado REPEDIR
+-- segundos (antes quedaba pedido para siempre y el objeto, sin nombre).
+local REPEDIR = 10
+local function ahora() return GetTime and GetTime() or 0 end
+
 local function pedir(id)
-	if pedidos[id] then return end
-	pedidos[id] = true
+	local cuando = pedidos[id]
+	if cuando and ahora() - cuando < REPEDIR then return end
+	pedidos[id] = ahora()
 	if CI and CI.RequestLoadItemDataByID then pcall(CI.RequestLoadItemDataByID, id) end
 end
 
@@ -203,6 +209,9 @@ function O.Antes(a, b)
 	local la, lb = a.nivel or 0, b.nivel or 0
 	if la ~= lb then return la > lb end
 	local na, nb = a.e.doblado or "", b.e.doblado or ""
+	if a.rec.i == b.rec.i and a.rec.l ~= b.rec.l then
+		na, nb = O.Doblar(O.NombreEnlace(a.rec.l) or na), O.Doblar(O.NombreEnlace(b.rec.l) or nb)
+	end
 	if na ~= nb then return na < nb end
 	if a.rec.i ~= b.rec.i then return a.rec.i < b.rec.i end
 	local ca, cb = a.rec.c or 1, b.rec.c or 1
@@ -252,10 +261,19 @@ function O.Compilar(texto)
 	return f
 end
 
+-- El nombre que trae el enlace: con su sufijo ("del oso"), que el de la caché
+-- por id (el primero que se vio) no tiene.
+function O.NombreEnlace(link)
+	return type(link) == "string" and link:match("|h%[(.-)%]|h") or (type(link) == "string" and link:match("%[(.-)%]")) or nil
+end
+
 local function pajar(ent)
 	if ent.pajar and ent.pajarListo == (ent.e.listo and true or false) then return ent.pajar end
 	local e, rec = ent.e, ent.rec
 	local partes = { e.doblado or "", O.Doblar(e.tipo), O.Doblar(e.subtipo), O.Doblar(O.NOMBRE[ent.cat] or "") }
+	-- 1.3.0: el nombre del enlace, con su sufijo («Espada del mono»).
+	local propio = O.NombreEnlace(rec.l)
+	if propio then partes[#partes + 1] = O.Doblar(propio) end
 	local q = rec.q
 	if type(q) == "number" then
 		partes[#partes + 1] = O.Doblar(_G["ITEM_QUALITY" .. q .. "_DESC"])

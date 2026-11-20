@@ -150,6 +150,15 @@ local function premio(qid)
 	return mejor
 end
 
+-- 1.3.0: ¿es gris para ti? (Grises.lua) y su nivel.
+function Ch.EsGris(qid)
+	qid = tonumber(qid)
+	if not qid then return false end
+	local n = nivelDe(qid)
+	return gris(n, jugadorNivel()), n
+end
+Ch.Nivel = nivelDe
+
 local cacheGris = {} -- qid -> { nivel, motivo | false }
 
 local function calcularGris(qid, nivel)

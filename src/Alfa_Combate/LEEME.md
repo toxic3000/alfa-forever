@@ -15,6 +15,11 @@ Ayudas de combate que **solo muestran**: nada aquí aprieta, lanza, elige objeti
 - **Barra de golpe** (`combate.golpe`), sin números por omisión (`combate.golpeNumero`).
 - **Marca de misión** en las placas de nombre (`combate.marcaMision`, `combate.marcaMisionBrillo`).
 - **Medidor de daño** con `C_DamageMeter` y el panel de estadísticas.
+- **Aviso para cortar** (1.3.0, `Corte.lua`, `combate.corte`, `corteFoco`, `corteSonido`): tu objetivo o tu foco lanza algo que se puede cortar (`UnitCastingInfo`/`UnitChannelInfo`, `notInterruptible`; los oficios no) → tu corte de clase (`Co.HABILIDADES`), su tecla de tu barra (`R.Tecla`) y si está listo o cuánto le falta. Con datos secretos no se compara: título «¡Está lanzando!» y `SetAlphaFromBoolean(notInterruptible, 0, 1)` si existe. `/alfa combate corte` lo prueba.
+- **Barra de amenaza** (1.3.0, `Amenaza.lua`, `combate.amenaza`, `amenazaPapel`, `amenazaAviso`, `amenazaSonido`): en combate, en grupo o con mascota. `UnitDetailedThreatSituation("player", "target")`; no tanque: amarilla desde `amenazaAviso` %, roja si ya te ataca; tanque: aviso con status 2, peligro con 0-1. Papel automático: rol del grupo, actitud defensiva (forma 18), oso (5/8) o Furia justa.
+- **Tecla grande** (1.3.0): `combate.tam` hasta 96 (de fábrica 52), `tamDespues` (proporción de las que siguen) y `teclaGrande` (abajo al centro, letra `numero`/`subtitulo`/`cifra` según el tamaño; también en las que siguen).
+- **Resumen de la pelea** (1.3.0, `Resumen.lua`, `combate.resumen`, `resumenMin`): al salir de combate, con `C_DamageMeter` (solo tu fila: daño, curación, por segundo; `DamageTaken` con tu GUID para lo que más te pegó). El registro de combate (`COMBAT_LOG_EVENT*`) es restringido en Forever: no se usa. La última queda en `AlfaNucleoCharDB.combate.ultimaPelea`; `/alfa combate pelea` la muestra otra vez.
+- **Recargas largas** (1.3.0, `Recargas.lua`, `combate.recargas`, `recargasMin`): lo que lanzas (`UNIT_SPELLCAST_SUCCEEDED`) con recarga de 30 s o más entra a una barra discreta; con tiempos secretos se estima con la duración vista (`combate.recargas`). Las conocidas en `combate.largas`; las que ocultas en la página, en `combate.recargasOcultas` (por nombre).
 
 ## De dónde sale la sugerencia
 
@@ -124,10 +129,15 @@ Para que no se llene la pantalla de texto al lanzar habilidades:
 | `rama` | `"auto"` | Tu especialización para la prioridad |
 | `prioridadAlfa` | `false` | Siempre la de Alfa, aunque el juego ofrezca la de Blizzard |
 | `fuera`, `alfaFuera` | `true`, `0.45` | También fuera de combate, transparente |
-| `tam`, `tecla`, `nombre`, `resaltar` | `44`, `true`, `false`, `true` | Tamaño, tecla, nombre, botón resaltado |
+| `tam`, `tecla`, `nombre`, `resaltar` | `52`, `true`, `false`, `true` | Tamaño, tecla, nombre, botón resaltado |
 | `avisos`, `avisosSonido`, `avisosPorque`, `avisosOtros` | `true`, `true`, `true`, `false` | Avisos de reacción |
 | `golpe`, `golpeNumero` | `true`, `false` | Barra de golpe y sus segundos |
 | `marcaMision`, `marcaMisionBrillo` | `true`, `true` | Marca de misión en las placas |
+| `tamDespues`, `teclaGrande` | `0.7`, `true` | Tamaño de las que siguen y la tecla grande (1.3.0) |
+| `corte`, `corteFoco`, `corteSonido` | `true` | Aviso para cortar |
+| `amenaza`, `amenazaPapel`, `amenazaAviso`, `amenazaSonido` | `true`, `"auto"`, `80`, `true` | Barra de amenaza |
+| `resumen`, `resumenMin` | `true`, `10` | Resumen de la pelea |
+| `recargas`, `recargasMin` | `true`, `30` | Recargas largas |
 
 ## Para verificar en el juego
 

@@ -20,4 +20,5 @@ Perfiles.lua
 Respaldos.lua
 Diagnostico.lua
 Recorrido.lua
+Teclas.lua
 Pagina.lua

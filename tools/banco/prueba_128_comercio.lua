@@ -349,5 +349,38 @@ step("La página de Bolsas y la ventana con la sesión", function()
 end)
 
 K.Aviso = avisoReal
+-- 1.3.0, error del juego real: «Tomar todo» pulsado antes de que lleguen las
+-- cartas decía «No había nada que tomar» y ese texto se quedaba en la barra
+-- aunque después se tomara todo.
+step("El buzón: Tomar todo antes de que carguen las cartas", function()
+  K.Aviso = function(o) avisos[#avisos + 1] = o return {} end
+  FIRE_EVENT("MAIL_CLOSED")
+  avisos = {}
+  tomasObjeto = 0
+  llenar(4)
+  cartas = {
+    { remitente = "Alt", dinero = 21669, objetos = { { 2589, 20 }, { 2592, 6 } } },
+  }
+  local cargadas = false
+  local real = GetInboxNumItems
+  GetInboxNumItems = function() if not cargadas then return 0, 0 end return #cartas, #cartas end
+  FIRE_EVENT("MAIL_SHOW")
+  local antes = dinero
+  check(Bz.Tomar(), "Tomar todo no aceptó el clic mientras cargaba")
+  RUN_TIMERS(5)
+  for _, x in ipairs(avisos) do
+    check(not (x.texto or ""):find("No había nada", 1, true), "dijo «No había nada que tomar» antes de que llegaran las cartas")
+  end
+  cargadas = true
+  FIRE_EVENT("MAIL_INBOX_UPDATE")
+  RUN_TIMERS(40)
+  GetInboxNumItems = real
+  check(dinero - antes == 21669, "no tomó el dinero al llegar las cartas (" .. (dinero - antes) .. ")")
+  check(tomasObjeto == 2, "no tomó los objetos al llegar las cartas (" .. tomasObjeto .. ")")
+  local u = ultimo()
+  check(u and (u.texto or ""):find("Recibiste 26 objetos", 1, true), "el resumen no dice lo que llegó: " .. tostring(u and u.texto))
+  K.Aviso = avisoReal
+end)
+
 print(string.format("PRUEBA: 1.2.8 buzón, sesión y bolsas llenas, %d pasos, %d errores", pasos, #ERRORS))
 for i = 1, #ERRORS do print("   " .. tostring(ERRORS[i]):sub(1, 700)) end

@@ -39,6 +39,8 @@
 --   Gu.DeGuid(guid) -> capa | nil              (para las pruebas)
 --   Gu.CambiarPlano(antes) -> ok, motivo       (1.2.9) a cualquier otro plano
 --   Gu.PreguntarManada() -> ok, motivo         (1.2.9) 1O: ¿quién me abre?
+--   Gu.PorZona() -> { zona }                    (1.3.0) las guaridas de cada zona
+--   Gu.PintarMapa(forzar)                       (1.3.0) su marca en el mapa
 
 local ADDON, M = ...
 local N = AlfaNucleo
@@ -649,6 +651,135 @@ function Gu.PedirA(nombre)
 end
 
 ---------------------------------------------------------------------------
+-- 1.3.0: el mapa de guaridas en vivo. Cada zona con lobos de la manada:
+-- sus guaridas y cuántos lobos hay en cada una (lo que dicen con 1G). En la
+-- página de La Jauría y en el mapa del mundo (una marca por zona, donde
+-- andan; capa manada.guaridasMapa, ajuste manada.guaridasMapa).
+---------------------------------------------------------------------------
+
+-- { { map (zona), nombre, total, mia, guaridas = { { capa, nombre, lobos, mia } } } }
+-- La zona tuya primero, luego las que más lobos tienen.
+function Gu.PorZona()
+	local zonas, lista = {}, {}
+	local ahora = U.Ahora()
+	local mia = Gu.Actual()
+	local miZona = mia and U.ZonaDe(mia.map)
+	local function zona(map)
+		local z = U.ZonaDe(map) or map
+		local e = zonas[z]
+		if not e then
+			e = { map = z, nombre = U.NombreMapa(z) or L["Zona desconocida"], total = 0, mia = z == miZona, guaridas = {}, por = {} }
+			zonas[z] = e
+			lista[#lista + 1] = e
+		end
+		return e
+	end
+	local function guarida(e, capa)
+		local g = e.por[capa]
+		if not g then
+			g = { capa = capa, nombre = Gu.Nombre(capa), lobos = 0, mia = mia ~= nil and mia.capa == capa and e.mia }
+			e.por[capa] = g
+			e.guaridas[#e.guaridas + 1] = g
+		end
+		return g
+	end
+	if mia then guarida(zona(mia.map), mia.capa) end
+	for clave, v in pairs(vistas) do
+		if ahora - v.at > CADUCA then
+			vistas[clave] = nil
+		else
+			local e = zona(v.map)
+			local g = guarida(e, v.capa)
+			g.lobos = g.lobos + 1
+			e.total = e.total + 1
+		end
+	end
+	for _, e in ipairs(lista) do
+		e.por = nil
+		sort(e.guaridas, function(a, b)
+			if a.mia ~= b.mia then return a.mia end
+			if a.lobos ~= b.lobos then return a.lobos > b.lobos end
+			return a.capa < b.capa
+		end)
+	end
+	sort(lista, function(a, b)
+		if a.mia ~= b.mia then return a.mia end
+		if a.total ~= b.total then return a.total > b.total end
+		return a.nombre < b.nombre
+	end)
+	return lista
+end
+
+-- "Guarida Colmillo: 3 lobos  ·  Guarida Luna: 1 lobo"
+function Gu.TextoZona(e)
+	local partes = {}
+	for _, g in ipairs(e.guaridas) do
+		local n = g.lobos == 1 and L["1 lobo"] or format(L["%d lobos"], g.lobos)
+		partes[#partes + 1] = format("%s: %s", g.nombre, n) .. (g.mia and (" (" .. L["la tuya"] .. ")") or "")
+	end
+	return table.concat(partes, "  \194\183  ")
+end
+
+local CAPA_MAPA = "manada.guaridasMapa"
+local firmaMapa
+
+-- Dónde poner la marca de una zona: el promedio de sus lobos a la vista
+-- (en el mismo mapa), o nil.
+local function lugarDe(z)
+	local G = M.Gente
+	if not (G and G.Alfa) then return nil end
+	local por = {}
+	for clave, v in pairs(vistas) do
+		local e = G.Alfa(clave)
+		if e and e.map and e.x and e.y and U.ZonaDe(v.map) == z and U.ZonaDe(e.map) == z then
+			local s = por[e.map]
+			if not s then s = { n = 0, x = 0, y = 0 } por[e.map] = s end
+			s.n, s.x, s.y = s.n + 1, s.x + e.x, s.y + e.y
+		end
+	end
+	local mejor, cual
+	for map, s in pairs(por) do if not mejor or s.n > mejor.n then mejor, cual = s, map end end
+	if not mejor then return nil end
+	return cual, mejor.x / mejor.n, mejor.y / mejor.n
+end
+
+function Gu.PintarMapa(forzar)
+	local P = A.Pins
+	if not (P and P.SetLayer) then return end
+	local visible = N.Get(ID, "guaridasMapa") ~= false and on("compartir")
+	local pins, partes = {}, {}
+	if visible then
+		local ok, ar, ag, ab = pcall(A.Theme.Accent)
+		if not (ok and type(ar) == "number") then ar, ag, ab = 0.545, 0.878, 0.306 end
+		local okM, icono = pcall(A.Theme.Media, "ic-huella")
+		icono = okM and type(icono) == "string" and icono or "Interface\\AddOns\\Alfa\\Media\\UI\\ic-huella"
+		for _, e in ipairs(Gu.PorZona()) do
+			local map, x, y = lugarDe(e.map)
+			if map and e.total > 0 then
+				pins[#pins + 1] = {
+					map = map, x = x, y = y,
+					icon = icono, color = { ar, ag, ab, 1 }, backdrop = true,
+					size = 18, minimapSize = 0, priority = 2, badge = tostring(e.total),
+					tooltip = function(tip)
+						tip:SetText(format(L["Guaridas de la manada en %s"], e.nombre), ar, ag, ab)
+						for _, g in ipairs(e.guaridas) do
+							tip:AddLine(format("%s: %s", g.nombre, g.lobos == 1 and L["1 lobo"] or format(L["%d lobos"], g.lobos)), 1, 1, 1)
+						end
+					end,
+				}
+				partes[#partes + 1] = format("%d:%.0f:%.0f:%s", map, x, y, Gu.TextoZona(e))
+			end
+		end
+	end
+	local f = table.concat(partes, "|")
+	if forzar or f ~= firmaMapa then
+		firmaMapa = f
+		pcall(P.SetLayer, CAPA_MAPA, pins, { world = true, minimap = false, edge = false })
+	end
+	pcall(P.SetLayerVisible, CAPA_MAPA, visible)
+end
+
+---------------------------------------------------------------------------
 -- Eventos
 ---------------------------------------------------------------------------
 
@@ -677,5 +808,6 @@ end)
 N.Cada("manada.guaridas", 10, function() -- un solo reloj (1.2.9)
 	revisarPlacas()
 	Gu.Anunciar(false)
+	pcall(Gu.PintarMapa, false) -- 1.3.0
 	if pedido and U.Ahora() > pedido.hasta then pedido = nil cambio() end
 end)

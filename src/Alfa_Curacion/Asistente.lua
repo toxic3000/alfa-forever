@@ -3,7 +3,8 @@
 -- Una ventana propia del Kit (K.Ventana con K.Asistente), chica, para que se
 -- vean tus marcos mientras la usas:
 --   1. Elige un preajuste: los de tu clase en tarjetas, con lo que pone en
---      tus clics; y "el clic izquierdo solo selecciona" si curas.
+--      tus clics; «Curar y seleccionar» (1.3.0) y "el clic izquierdo solo
+--      selecciona" si curas; abajo, lo que hacen tus clics principales.
 --   2. Acomoda tus marcos: el modo prueba con 5 o 20 marcos de ejemplo, que
 --      arrastras a donde los quieras, con su ancho, su alto y sus columnas.
 --   3. Prueba tus clics: haz clic en un marco de ejemplo (con o sin Mayús,
@@ -62,6 +63,16 @@ local function llenarPreajustes()
 		K.Mostrar(p.izq, actual == "curar")
 		p.izq:Refrescar()
 	end
+	if p.sel then p.sel:Refrescar() end
+	if p.Resumen then
+		local mapa = M.Mapa()
+		local lineas = {}
+		for _, r in ipairs({ "1", "2", "3", "shift-1", "ctrl-1" }) do
+			local e = mapa[r]
+			if type(e) == "table" and e.t ~= "nada" then lineas[#lineas + 1] = M.NombreRanura(r) .. ": " .. M.NombreAccion(e) end
+		end
+		K.Escribir(p.Resumen.Texto, #lineas > 0 and (L["Tus clics:"] .. " " .. table.concat(lineas, "  \194\183  ")) or "")
+	end
 end
 
 local function paso1()
@@ -82,7 +93,29 @@ local function paso1()
 				end,
 			})
 			pila.izq.caja = K.Caja(pila.izq, { fondo = "panel", borde = "linea", corte = K.CORTE.panel })
-			pila:Agregar(pila.izq, { espacio = ESP.base })
+			-- 1.3.0: curar y seleccionar con el mismo clic.
+			pila.sel = K.FilaAjuste(pila, {
+				titulo = L["Curar y seleccionar"],
+				texto = L["Al curar con un clic, ese compañero queda seleccionado para tus otros poderes."],
+				control = function(fila)
+					local s = K.Interruptor(fila, { valor = M.CurarSelecciona(), alCambiar = function(on) M.FijarCurarSelecciona(on == true) end })
+					function s:Leer() self:SetValor(M.CurarSelecciona()) end
+					return s
+				end,
+			})
+			pila.sel.caja = K.Caja(pila.sel, { fondo = "panel", borde = "linea", corte = K.CORTE.panel })
+			pila:Agregar(pila.sel, { espacio = ESP.base })
+			pila:Agregar(pila.izq, { espacio = ESP.s })
+			pila.Resumen = CreateFrame("Frame", nil, pila)
+			pila.Resumen.Texto = K.Texto(pila.Resumen, "nota", "textoSuave")
+			function pila.Resumen:Acomodar(ancho)
+				self.Texto:ClearAllPoints()
+				self.Texto:SetPoint("TOPLEFT", self, "TOPLEFT", 0, 0)
+				local h = K.Parrafo(self.Texto, ancho, 3)
+				self:SetSize(ancho, h)
+				return h
+			end
+			pila:Agregar(pila.Resumen, { espacio = ESP.s })
 			llenarPreajustes()
 		end,
 		alMostrar = llenarPreajustes,

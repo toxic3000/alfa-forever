@@ -14,6 +14,7 @@
 local ADDON, M = ...
 local N, A, K, L = M.N, M.A, M.K, M.L
 local R, D, P, Rc = M.Rotacion, M.Medidor, M.Prioridad, M.Reacciones
+local Co, Am, Rs, Rg = M.Corte, M.Amenaza, M.Resumen, M.Recargas
 local ID = M.ID
 
 local floor, max, min, format, ipairs, tonumber, type = math.floor, math.max, math.min, string.format, ipairs, tonumber, type
@@ -111,6 +112,35 @@ local function herramientas()
 	if not M.Opt("avisos") then a.insignias = { { L["Apagados"], "neutro" } } end
 	a.accion = { texto = L["Probar un aviso"], alClic = function() Rc.Probar() end }
 	out[#out + 1] = a
+	-- 1.3.0: tu última pelea (el resumen) y el aviso para cortar.
+	local u = Rs.Ultima()
+	local p = { icono = "ic-lista", titulo = L["Tu última pelea"], lineas = 5 }
+	if u then
+		local partes = {}
+		if u.dano and u.dano > 0 then partes[#partes + 1] = format(L["%s de daño"], D.Numero(u.dano)) end
+		if u.cura and u.cura > 0 then partes[#partes + 1] = format(L["%s de curación"], D.Numero(u.cura)) end
+		local t = #partes > 0 and (M.Juntar(partes) .. ".") or ""
+		local g = Rs.TextoGolpe(u.golpe)
+		if g then t = (t ~= "" and (t .. " ") or "") .. g end
+		p.texto = t ~= "" and t or L["El medidor del juego no tiene números de esta pelea."]
+		local dur = D.Tiempo(u.dur)
+		if dur then p.insignias = { { dur, "neutro" } } end
+		p.accion = { texto = L["Ver de nuevo"], alClic = function() Rs.VerDeNuevo() end }
+	else
+		p.texto = L["Al terminar una pelea, aquí queda su resumen: tu daño, tu curación y lo que más te pegó."]
+	end
+	if not M.Opt("resumen") then p.insignias = { { L["Apagado"], "neutro" } } end
+	out[#out + 1] = p
+	local corte = Co.Habilidad()
+	local c = { icono = "ic-alerta", titulo = L["Aviso para cortar"], lineas = 5 }
+	if corte then
+		c.texto = format(L["Cuando tu objetivo lance algo que se puede cortar, te avisa con %s y su tecla."], M.NombreHechizo(corte) or "?")
+	else
+		c.texto = L["Cuando aprendas una habilidad para cortar hechizos, te avisa en cuanto tu objetivo empiece a lanzar."]
+	end
+	c.insignias = { M.Opt("corte") and { L["Encendido"], "exito" } or { L["Apagado"], "neutro" } }
+	c.accion = { texto = L["Probar el aviso"], alClic = function() Co.Probar() end }
+	out[#out + 1] = c
 	-- El resaltado del botón no va aquí: es una fila de "Ícono de rotación".
 	return out
 end
@@ -328,6 +358,73 @@ local function bloquePrioridad(padre)
 end
 
 ---------------------------------------------------------------------------
+-- 4b. Tus recargas largas (1.3.0): cuáles salen en la barra
+---------------------------------------------------------------------------
+local function celdaRecarga(padre)
+	local c = CreateFrame("Frame", nil, padre)
+	c.caja = K.Caja(c, { fondo = "panel", borde = "linea", corte = K.CORTE.control })
+	c.Icono = c:CreateTexture(nil, "ARTWORK")
+	c.Icono:SetSize(24, 24)
+	c.Icono:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+	c.Icono:SetPoint("LEFT", c, "LEFT", ESP.m, 0)
+	c.Nombre = K.Texto(c, "cuerpo", "texto")
+	c.Dura = K.Texto(c, "nota", "textoSuave")
+	c.Interruptor = K.Interruptor(c, {
+		get = function() return c.alfaNombre and not Rg.Oculta(c.alfaNombre) or false end,
+		set = function(v) if c.alfaNombre then Rg.Ocultar(c.alfaNombre, not v) end end,
+	})
+	function c:Set(x)
+		self.alfaNombre = x.nombre
+		self.Icono:SetTexture(M.IconoHechizo(x.id) or K.Lobo("normal"))
+		K.Escribir(self.Nombre, x.nombre)
+		K.Escribir(self.Dura, format(L["Vuelve en %s"], Rg.Tiempo(x.dur)))
+		self.Interruptor:Leer()
+	end
+	function c:Acomodar(ancho)
+		local x = ESP.m + 24 + ESP.m
+		local tw = max(60, ancho - x - ESP.m - 36 - ESP.m)
+		self.Interruptor:ClearAllPoints()
+		self.Interruptor:SetPoint("RIGHT", self, "RIGHT", -ESP.m, 0)
+		self.Nombre:ClearAllPoints()
+		self.Nombre:SetPoint("TOPLEFT", self, "TOPLEFT", x, -ESP.s - 1)
+		self.Nombre:SetWidth(tw)
+		self.Dura:ClearAllPoints()
+		self.Dura:SetPoint("TOPLEFT", self.Nombre, "BOTTOMLEFT", 0, -1)
+		self.Dura:SetWidth(tw)
+		local alto = max(24 + 2 * ESP.s, 2 * ESP.s + 2 + K.AltoTexto(self.Nombre) + 1 + K.AltoTexto(self.Dura))
+		self:SetSize(ancho, alto)
+		return alto
+	end
+	return c
+end
+
+local function bloqueRecargas(padre)
+	local b = K.Pila(padre, { espacio = ESP.m })
+	b.Seccion = b:Agregar(K.Seccion(b, L["Tus recargas largas"]))
+	b.Nota = b:Agregar(K.Texto(b, "nota", "textoSuave"), { espacio = ESP.s })
+	b.Nota.Acomodar = function(self, ancho) return K.Parrafo(self, ancho, 3) end
+	b.Rejilla = b:Agregar(K.Rejilla(b, { min = 240, gap = ESP.s }), { espacio = ESP.m })
+	b.celdas = {}
+	function b:Llenar()
+		local lista = Rg.Conocidas()
+		self.Seccion:Set(L["Tus recargas largas"], { cuenta = #lista })
+		self.Nota:SetText(L["Las que ya usaste y tardan en volver. Apaga las que no quieras ver en la barra."])
+		local elems = {}
+		for i, x in ipairs(lista) do
+			local c = self.celdas[i] or celdaRecarga(self.Rejilla)
+			self.celdas[i] = c
+			c:Set(x)
+			c:Show()
+			elems[i] = c
+		end
+		for i = #lista + 1, #self.celdas do self.celdas[i]:Hide() end
+		self.Rejilla:SetElementos(elems)
+		return #lista > 0
+	end
+	return b
+end
+
+---------------------------------------------------------------------------
 -- 5. Ajustes
 ---------------------------------------------------------------------------
 local function interruptor(clave)
@@ -355,6 +452,8 @@ end
 local function pct(v) return floor((tonumber(v) or 0) * 100 + 0.5) .. " %" end
 local function px(v) return floor(tonumber(v) or 0) .. " px" end
 local function entero(v) return tostring(floor(tonumber(v) or 0)) end
+local function porciento(v) return floor(tonumber(v) or 0) .. " %" end
+local function segundos(v) return floor(tonumber(v) or 0) .. " s" end
 
 local function si(clave) return function() return M.Opt(clave) and true or false end end
 local function ambas(a, b) return function() return M.Opt(a) and M.Opt(b) and true or false end end
@@ -400,9 +499,13 @@ local function grupos(padre)
 		texto = L["Con un enemigo elegido, antes de empezar la pelea, y transparente para que no estorbe."] })
 	plegada({ titulo = L["Opacidad fuera de combate"], control = deslizador("alfaFuera", 0.15, 1, 0.05, pct), hija = true, activa = ambas("rotacion", "fuera"),
 		texto = L["Qué tanto se ve el ícono mientras no peleas."] })
-	plegada({ titulo = L["Tamaño del ícono"], control = deslizador("tam", 32, 64, 4, px), hija = true, activa = si("rotacion") })
+	plegada({ titulo = L["Tamaño del ícono"], control = deslizador("tam", 32, 96, 4, px), hija = true, activa = si("rotacion") })
+	plegada({ titulo = L["Tamaño de las que siguen"], control = deslizador("tamDespues", 0.5, 1, 0.05, pct), hija = true, activa = si("rotacion"),
+		texto = L["Qué tan grandes salen las que vienen después, comparadas con el ícono principal."] })
 	plegada({ titulo = L["Mostrar la tecla"], control = interruptor("tecla"), hija = true, activa = si("rotacion"),
 		texto = L["La tecla del botón de tu barra con esa habilidad, sobre el ícono."] })
+	plegada({ titulo = L["Tecla grande"], control = interruptor("teclaGrande"), hija = true, activa = ambas("rotacion", "tecla"),
+		texto = L["Abajo y al centro del ícono, con letra que crece con él. Apagada, chiquita en la esquina."] })
 	plegada({ titulo = L["Nombre de la habilidad"], control = interruptor("nombre"), hija = true, activa = si("rotacion"),
 		texto = L["Debajo del ícono: útil mientras aprendes."] })
 	plegada({ titulo = L["Explicar por qué, unas pocas veces"], control = interruptor("porque"), hija = true, activa = si("rotacion"),
@@ -444,6 +547,31 @@ local function grupos(padre)
 	g2:Fila({ titulo = L["Panel de estadísticas"], control = interruptor("panel"),
 		texto = L["Un cuadro pequeño y movible con tu vida y las estadísticas que más pesan para tu clase. En combate el juego oculta algunos números: se queda el último que se pudo leer."] })
 
+	-- 1.3.0: ayudas de pelea
+	local g5 = K.GrupoAjustes(padre, { titulo = L["Cortar, amenaza y recargas"] })
+	g5:Fila({ titulo = L["Aviso para cortar"], control = interruptor("corte"),
+		texto = L["Cuando tu objetivo lanza algo que se puede cortar: tu habilidad para cortar, su tecla y si está lista."] })
+	g5:Fila({ titulo = L["También tu foco"], control = interruptor("corteFoco"), hija = true, activa = si("corte") })
+	g5:Fila({ titulo = L["Con sonido"], control = interruptor("corteSonido"), hija = true, activa = si("corte") })
+	g5:Fila({ titulo = L["Barra de amenaza"], control = interruptor("amenaza"),
+		texto = L["En grupo o con tu mascota: tu amenaza sobre tu objetivo. Te avisa antes de quitárselo al tanque, o si eres tanque, antes de perderlo."] })
+	g5:Fila({ titulo = L["Tu papel"], hija = true, activa = si("amenaza"),
+		texto = L["Automático: el que marcaste en tu grupo, o tu actitud o forma."],
+		control = function(fila)
+			local o = {}
+			for _, x in ipairs(Am.PAPELES) do o[#o + 1] = { valor = x.clave, texto = x.texto } end
+			return K.Desplegable(fila, { opciones = o, clave = ID .. ".amenazaPapel", ancho = 150 })
+		end })
+	g5:Fila({ titulo = L["Avisar desde"], control = deslizador("amenazaAviso", 60, 95, 5, porciento), hija = true, activa = si("amenaza"),
+		texto = L["Si no eres tanque: con cuánta amenaza se pone amarilla."] })
+	g5:Fila({ titulo = L["Con sonido"], control = interruptor("amenazaSonido"), hija = true, activa = si("amenaza") })
+	g5:Fila({ titulo = L["Resumen de cada pelea"], control = interruptor("resumen"),
+		texto = L["Al terminar: cuánto duró, tu daño y tu curación por segundo y lo que más te pegó."] })
+	g5:Fila({ titulo = L["Solo peleas de al menos"], control = deslizador("resumenMin", 0, 30, 5, segundos), hija = true, activa = si("resumen") })
+	g5:Fila({ titulo = L["Recargas largas"], control = interruptor("recargas"),
+		texto = L["Tus habilidades que tardan en volver, en una barra discreta con lo que les falta."] })
+	g5:Fila({ titulo = L["Desde cuántos segundos"], control = segmentos("recargasMin", { 30, 60, 120 }), hija = true, activa = si("recargas") })
+
 	local g4 = K.GrupoAjustes(padre, { titulo = L["Misiones"] })
 	g4:Fila({ titulo = L["Marcar a quien te falta para una misión"], control = interruptor("marcaMision"),
 		texto = L["Un ícono de misión en la placa de nombre de los enemigos y personajes que todavía necesitas para una misión de tu registro. En mazmorras el juego oculta esos datos y no se marcan."] })
@@ -472,7 +600,7 @@ local function grupos(padre)
 		K.Mostrar(rama, R.Fuente() == "alfa" and #P.Ramas() > 0)
 		if type(expl.alfaDatos) == "table" then expl.alfaDatos.texto = textoExplicaciones() end
 	end
-	return { g1, g2, g4, g3 }, filtrar
+	return { g1, g2, g5, g4, g3 }, filtrar
 end
 
 ---------------------------------------------------------------------------
@@ -483,6 +611,7 @@ local function construir(view)
 	local t = K.Tablero(view, { margen = N.MargenPagina(), accion = "estado", tituloOpciones = L["Tus herramientas de combate"], min = 256 })
 	ui.medidor = t:AgregarBloque(bloqueMedidor(t.Extra))
 	ui.prioridad = t:AgregarBloque(bloquePrioridad(t.Extra), { espacio = ESP.xl })
+	ui.recargas = t:AgregarBloque(bloqueRecargas(t.Extra), { espacio = ESP.xl })
 	ui.ajustes, ui.filtrar = grupos(t.Extra)
 	for i, g in ipairs(ui.ajustes) do t:AgregarBloque(g, { espacio = i == 1 and ESP.xl or ESP.l }) end
 	K.EnPagina(view, t, function()
@@ -490,6 +619,7 @@ local function construir(view)
 		t:SetOpciones(herramientas(), L["Tus herramientas de combate"])
 		ui.medidor:Llenar()
 		K.Mostrar(ui.prioridad, ui.prioridad:Llenar() and M.Opt("rotacion") and true or false)
+		K.Mostrar(ui.recargas, ui.recargas:Llenar() and M.Opt("recargas") and true or false)
 		ui.filtrar()
 		for _, g in ipairs(ui.ajustes) do g:Refrescar() end
 	end)
@@ -558,9 +688,13 @@ local CONTROLES = {
 	toggle("fuera", L["También fuera de combate"], L["Con un enemigo elegido, antes de empezar la pelea, y transparente para que no estorbe."], "rotacion", "out of combat"),
 	{ kind = "slider", key = clave("alfaFuera"), label = L["Opacidad fuera de combate"], help = L["Qué tanto se ve el ícono mientras no peleas."],
 		min = 0.15, max = 1, step = 0.05, format = pct, child = true, disabled = no(ambas("rotacion", "fuera")), search = "opacity, alpha, out of combat" },
-	{ kind = "slider", key = clave("tam"), label = L["Tamaño del ícono"], min = 32, max = 64, step = 4, format = px,
-		child = true, disabled = no(si("rotacion")), search = "icon size, scale" },
+	{ kind = "slider", key = clave("tam"), label = L["Tamaño del ícono"], min = 32, max = 96, step = 4, format = px,
+		child = true, disabled = no(si("rotacion")), search = "icon size, scale, bigger" },
+	{ kind = "slider", key = clave("tamDespues"), label = L["Tamaño de las que siguen"], min = 0.5, max = 1, step = 0.05, format = pct,
+		help = L["Qué tan grandes salen las que vienen después, comparadas con el ícono principal."],
+		child = true, disabled = no(si("rotacion")), search = "next icons size" },
 	toggle("tecla", L["Mostrar la tecla"], L["La tecla del botón de tu barra con esa habilidad, sobre el ícono."], "rotacion", "keybind, hotkey"),
+	toggle("teclaGrande", L["Tecla grande"], L["Abajo y al centro del ícono, con letra que crece con él. Apagada, chiquita en la esquina."], "rotacion", "big keybind, hotkey size"),
 	toggle("nombre", L["Nombre de la habilidad"], L["Debajo del ícono: útil mientras aprendes."], "rotacion", "ability name, spell name"),
 	toggle("porque", L["Explicar por qué, unas pocas veces"], L["Una línea corta debajo del ícono, como «Golpe mortal: recarga lista». Cada una sale hasta 4 veces y luego se calla; su × la calla antes."], "rotacion", "explain why, reason"),
 	toggle("barrido", L["Barrido de recarga"], L["Un barrido oscuro y suave sobre los íconos mientras su recarga corre."], "rotacion", "cooldown swipe"),
@@ -592,6 +726,26 @@ local CONTROLES = {
 	end)(),
 	toggle("panel", L["Panel de estadísticas"], L["Un cuadro pequeño y movible con tu vida y las estadísticas que más pesan para tu clase. En combate el juego oculta algunos números: se queda el último que se pudo leer."], nil,
 		"stats panel, character stats"),
+	toggle("corte", L["Aviso para cortar"], L["Cuando tu objetivo lanza algo que se puede cortar: tu habilidad para cortar, su tecla y si está lista."], nil,
+		"interrupt, kick, counterspell, cast alert"),
+	toggle("corteFoco", L["También tu foco"], nil, "corte", "focus interrupt"),
+	toggle("corteSonido", L["Con sonido"], nil, "corte", "interrupt sound"),
+	toggle("amenaza", L["Barra de amenaza"], L["En grupo o con tu mascota: tu amenaza sobre tu objetivo. Te avisa antes de quitárselo al tanque, o si eres tanque, antes de perderlo."], nil,
+		"threat, aggro, tank"),
+	{ kind = "dropdown", key = clave("amenazaPapel"), label = L["Tu papel"], help = L["Automático: el que marcaste en tu grupo, o tu actitud o forma."],
+		choices = (function() local o = {} for _, x in ipairs(Am.PAPELES) do o[#o + 1] = { value = x.clave, label = x.texto } end return o end)(),
+		child = true, disabled = no(si("amenaza")), search = "role, tank, threat" },
+	{ kind = "slider", key = clave("amenazaAviso"), label = L["Avisar desde"], help = L["Si no eres tanque: con cuánta amenaza se pone amarilla."],
+		min = 60, max = 95, step = 5, format = porciento, child = true, disabled = no(si("amenaza")), search = "threat warning percent" },
+	toggle("amenazaSonido", L["Con sonido"], nil, "amenaza", "threat sound"),
+	toggle("resumen", L["Resumen de cada pelea"], L["Al terminar: cuánto duró, tu daño y tu curación por segundo y lo que más te pegó."], nil,
+		"fight summary, combat recap, dps, hps"),
+	{ kind = "slider", key = clave("resumenMin"), label = L["Solo peleas de al menos"], min = 0, max = 30, step = 5,
+		format = segundos, child = true, disabled = no(si("resumen")), search = "fight summary minimum" },
+	toggle("recargas", L["Recargas largas"], L["Tus habilidades que tardan en volver, en una barra discreta con lo que les falta."], nil,
+		"cooldowns, long cooldown bar, timers"),
+	{ kind = "dropdown", key = clave("recargasMin"), label = L["Desde cuántos segundos"], choices = numeros({ 30, 60, 120 }),
+		child = true, disabled = no(si("recargas")), search = "cooldown minimum" },
 	toggle("marcaMision", L["Marcar a quien te falta para una misión"], L["Un ícono de misión en la placa de nombre de los enemigos y personajes que todavía necesitas para una misión de tu registro. En mazmorras el juego oculta esos datos y no se marcan."], nil,
 		"quest mobs, nameplate quest icon"),
 	toggle("marcaMisionBrillo", L["Con un brillo suave"], L["Además del ícono, un brillo dorado que late alrededor de su barra."], "marcaMision", "quest glow"),
@@ -608,7 +762,7 @@ local CONTROLES = {
 
 N.Modulo({
 	id = ID, nombre = L["Combate"], icono = M.ICONO, orden = 15, seccion = "personaje",
-	subtitulo = L["Qué habilidad presionar ahora y cuáles siguen, avisos de reacción y el top de daño de tu grupo."],
+	subtitulo = L["Qué habilidad presionar ahora, cuándo cortar, tu amenaza, tus recargas y el resumen de cada pelea."],
 	ajustes = M.AJUSTES,
 	controles = CONTROLES,
 	construir = construir,

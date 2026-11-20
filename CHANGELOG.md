@@ -1,5 +1,95 @@
 # Cambios de Alfa
 
+## 1.3.0 — La manada sana: curar con un clic, la llegada de La Jauría y 40 mejoras (19/11/2026)
+
+La primera de la serie 1.3: la más grande hasta ahora.
+
+**Español**
+- La llegada de la flecha, nueva de arriba a abajo: el aro y la huella de antes se van y sale una placa de Alfa entera. El lobo en su medallón (atento y olfateando cuando hay que buscar, aullando cuando llegaste), «BUSCA POR AQUÍ» o «LLEGASTE», lo que toca hacer, el avance como un rastro de huellas («4 de 6») o una barra con su porcentaje para la experiencia, y «Siguiente lugar» dentro de la misma placa.
+- Curar y seleccionar: al curar con clic izquierdo o derecho, ese compañero queda seleccionado para tus buffos, otras curas o limpiezas. Se apaga en Curación si no lo quieres.
+- «Tus clics»: arma qué hace cada clic (izquierdo, derecho, central, con Mayús o Ctrl) con una lista de tus curas, limpiezas, buffos y revivir, con sugerencias por clase. También una venda en un clic.
+- Limpiar con un clic: el marco muestra la maldición, el veneno, la magia o la enfermedad con su color y te dice qué clic la quita; te avisa si tu clase puede quitarla y ningún clic lo hace.
+- Buffo que falta: un puntito azul cuando a alguien le falta tu buffo, con el clic que se lo da.
+- El tanque en apuros late en rojo bajo 40%, el maná de los sanadores en una lista y los marcos de banda por grupo.
+- Bolsas revisadas a fondo: 8 errores arreglados (bolsas especiales que contaban como espacio, munición y fragmentos que se iban al banco, objetos bloqueados que no se movían, nombres con sufijo que no se encontraban, el banco que no se volvía a leer y más).
+- Conjuntos de equipo: guarda lo que llevas con un nombre y póntelo con un clic.
+- Comparar: al pasar el ratón, lo que ganas o pierdes contra lo que llevas, en números claros.
+- Qué fabricar para ganar más con lo que ya tienes.
+- Buscar en las bolsas, bancos y equipo de todos tus personajes, con filtros.
+- «Acomodar»: con un clic, la basura al vendedor o los materiales al banco.
+- Cortar hechizos: te avisa cuando tu objetivo lanza algo que puedes cortar, con tu habilidad y su tecla.
+- Amenaza: una barrita que te avisa antes de quitarle el enemigo al tanque (o de perderlo, si eres tanque).
+- Tu siguiente golpe más claro: ícono más grande con la tecla encima.
+- Resumen de cada pelea: duración, tu daño y curación por segundo y lo que más te pegó (con el medidor oficial del juego).
+- Tus recargas largas en una barra discreta.
+- Circuito de la zona: todas tus misiones de la zona en el mejor orden, con la flecha.
+- Misiones grises que conviene abandonar, con su botón.
+- El botón del objeto de misión dice qué objeto es y tu avance.
+- La cadena completa de una misión y su premio final.
+- Las misiones de tu grupo en el mapa.
+- «Llévame a…»: elige un destino y Alfa arma el viaje con vuelos, barcos, zepelines y a pie (/alfa llevame).
+- Barcos y zepelines con cuenta regresiva en el mapa.
+- Peligros en el mapa: élites y raros peligrosos de tu zona.
+- Modo explorador: cuánto llevas explorado de cada zona.
+- Lya en grupo: si tus compañeros traen Alfa, sus Lyas se saludan y platican de vez en cuando.
+- Cada misión que aceptas, resumida en dos líneas con la voz de Lya.
+- Lya y tu mascota: la saluda y te avisa si tiene hambre.
+- Retos semanales de Lya con salchicha de premio.
+- Cumpleaños: el de tu personaje y el de Alfa.
+- Spots de farmeo que puedes compartir con la manada.
+- El tablón de la manada: quién busca grupo, para qué y a qué nivel.
+- Mentor: un lobo alto adopta a uno nuevo y ve su avance para ayudarlo.
+- Botín para la manada: si algo que sacaste le sirve a otro lobo, «Regalárselo».
+- Las guaridas de la manada en vivo en el mapa y el calendario semanal de citas.
+- Dos estilos nuevos: «La Jauría nocturno» y «Fogata».
+- Pantalla limpia con una tecla (/alfa limpia).
+- Letra más grande y colores para daltonismo.
+- Tus atajos: cambia todas las teclas de Alfa desde una pantalla (/alfa teclas).
+- «¿Qué es esto?»: mantén Alt y pasa el ratón por cualquier parte de Alfa para saber qué hace.
+
+**English**
+- The arrow's arrival, redone top to bottom: the old ring and paw are gone, replaced by a full Alfa card. The wolf in its medallion (alert and sniffing when you need to search, howling when you've arrived), "SEARCH AROUND HERE" or "ARRIVED", what to do, progress as a trail of paw prints ("4 of 6") or a bar with its percentage for experience, and "Next spot" inside the same card.
+- Heal and target: when you heal with left or right click, that teammate stays targeted for your buffs, other heals or cleanses. Turn it off in Healing if you don't want it.
+- "Your clicks": set what each click does (left, right, middle, with Shift or Ctrl) from a list of your heals, cleanses, buffs and resurrection, with suggestions per class. Also a bandage in one click.
+- Cleanse in one click: the frame shows the curse, poison, magic or disease with its color and tells you which click removes it; it warns you if your class can remove it and no click does.
+- Missing buff: a small blue dot when someone lacks your buff, with the click that gives it.
+- The tank in trouble pulses red under 40%, healers' mana in a list and raid frames by group.
+- Bags reviewed in depth: 8 bugs fixed (special bags counted as space, ammo and shards sent to the bank, locked items never moved, suffix names not found, the bank not re-read and more).
+- Gear sets: save what you wear under a name and put it on in one click.
+- Compare: on mouse-over, what you gain or lose against what you wear, in clear numbers.
+- What to craft for the most gold with what you already have.
+- Search the bags, banks and gear of all your characters, with filters.
+- "Tidy": in one click, junk to the vendor or materials to the bank.
+- Interrupts: warns you when your target casts something you can interrupt, with your ability and its key.
+- Threat: a small bar that warns you before you pull the enemy off the tank (or before losing it, if you tank).
+- Your next hit, clearer: a bigger icon with the key on it.
+- A summary of each fight: length, your damage and healing per second and what hit you hardest (with the game's official meter).
+- Your long cooldowns in a discreet bar.
+- Zone circuit: all your quests in the zone in the best order, with the arrow.
+- Grey quests worth abandoning, with their button.
+- The quest item button shows which item it is and your progress.
+- A quest's whole chain and its final reward.
+- Your group's quests on the map.
+- "Take me to...": pick a destination and Alfa plans the trip with flights, boats, zeppelins and walking (/alfa llevame).
+- Boats and zeppelins with a countdown on the map.
+- Dangers on the map: elites and dangerous rares in your zone.
+- Explorer mode: how much of each zone you've explored.
+- Lya in a group: if your teammates have Alfa, their Lyas greet each other and chat now and then.
+- Every quest you accept, summarized in two lines in Lya's voice.
+- Lya and your pet: she greets it and tells you when it's hungry.
+- Lya's weekly challenges with a sausage prize.
+- Birthdays: your character's and Alfa's.
+- Farming spots you can share with the pack.
+- The pack board: who's looking for a group, for what and at what level.
+- Mentor: a high-level wolf adopts a new one and follows their progress to help.
+- Loot for the pack: if something you looted suits another wolf, "Give it to them".
+- The pack's dens live on the map and the weekly outings calendar.
+- Two new styles: "La Jauría Night" and "Campfire".
+- Clean screen with one key (/alfa limpia).
+- Bigger text and colour-blind friendly colours.
+- Your shortcuts: change every Alfa key from one screen (/alfa teclas).
+- "What's this?": hold Alt and hover any part of Alfa to learn what it does.
+
 ## 1.2.9 — La gran cacería: tu plan, la flecha de La Jauría y Alfa más ligero (19/11/2026)
 
 La última de la serie 1.2: 32 mejoras y Alfa más ligero antes de la 1.3.

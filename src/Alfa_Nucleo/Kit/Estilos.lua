@@ -115,7 +115,47 @@ local function muestraCristal(m)
 	m.partes = { cielo, pasto, panel, l1, l2, marca, boton }
 end
 
-local MUESTRAS = { alfa = muestraAlfa, clasico = muestraClasico, cristal = muestraCristal }
+-- 1.3.0: La Jauría nocturno y Fogata: la casa con su esquema y su acento,
+-- más una luna (nocturno) o unas brasas (fogata) en la esquina.
+local function muestraCasa(fondoC, panelC, t1, t2, acento, adorno)
+	return function(m)
+		local fondo = rect(m, "BACKGROUND", 0, fondoC[1], fondoC[2], fondoC[3])
+		fondo:SetAllPoints(m)
+		local panel = rect(m, "BORDER", 0, panelC[1], panelC[2], panelC[3])
+		panel:SetPoint("TOPLEFT", m, "TOPLEFT", 12, -12)
+		panel:SetPoint("BOTTOMRIGHT", m, "BOTTOMRIGHT", -12, 12)
+		local corte = m:CreateTexture(nil, "BORDER", nil, 1)
+		corte:SetTexture(K.Ruta("cut"))
+		corte:SetVertexColor(fondoC[1], fondoC[2], fondoC[3], 1)
+		corte:SetSize(8, 8)
+		corte:SetPoint("TOPLEFT", panel, "TOPLEFT", 0, 0)
+		local marca = rect(m, "ARTWORK", 1, acento[1], acento[2], acento[3])
+		marca:SetSize(24, 2)
+		marca:SetPoint("TOPLEFT", panel, "TOPLEFT", 14, 0)
+		local l1 = rect(m, "ARTWORK", 0, t1[1], t1[2], t1[3])
+		l1:SetSize(70, 5)
+		l1:SetPoint("TOPLEFT", panel, "TOPLEFT", 14, -14)
+		local l2 = rect(m, "ARTWORK", 0, t2[1], t2[2], t2[3])
+		l2:SetSize(110, 4)
+		l2:SetPoint("TOPLEFT", l1, "BOTTOMLEFT", 0, -7)
+		local boton = rect(m, "ARTWORK", 0, acento[1], acento[2], acento[3])
+		boton:SetSize(36, 12)
+		boton:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -10, 8)
+		local deco = m:CreateTexture(nil, "ARTWORK", nil, 2)
+		deco:SetTexture(K.Ruta(adorno))
+		deco:SetVertexColor(acento[1], acento[2], acento[3], 0.9)
+		deco:SetSize(18, 18)
+		deco:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -8, -8)
+		m.partes = { fondo, panel, corte, marca, l1, l2, boton, deco }
+	end
+end
+
+local MUESTRAS = { alfa = muestraAlfa, clasico = muestraClasico, cristal = muestraCristal,
+	nocturno = muestraCasa({ 0.043, 0.059, 0.102 }, { 0.071, 0.094, 0.161 }, { 0.91, 0.93, 0.97 }, { 0.56, 0.6, 0.69 },
+		{ 0.784, 0.827, 0.902 }, "lobo-aullando"),
+	fogata = muestraCasa({ 0.082, 0.067, 0.055 }, { 0.118, 0.094, 0.078 }, { 0.95, 0.92, 0.88 }, { 0.63, 0.57, 0.51 },
+		{ 1, 0.604, 0.302 }, "lobo-dormido"),
+}
 
 -- El acento que Cristal tendrá: el propio guardado para Cristal, el de ahora
 -- si ya es Cristal, o el verde de La Jauría.

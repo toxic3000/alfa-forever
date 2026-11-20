@@ -108,6 +108,9 @@ step("La llegada de un área: «Busca por aquí», la acción, «4 de 6» y «Si
     check(d.barra, "falta la barrita del avance")
     check(d.siguiente and d.clicable, "falta «Siguiente lugar» o no se puede clicar")
     check(not Arrow.distText:IsShown() and not Arrow.etaText:IsShown(), "el texto viejo del motor sigue a la vista")
+    -- 1.3.0: la llegada es una sola placa de Alfa; el aro viejo no se ve y el lobo olfatea al buscar.
+    check(not d.aroViejo, "el aro viejo de la llegada sigue a la vista")
+    check(d.lobo == K.Lobo("atento"), "al buscar, el lobo no es el «atento»: " .. tostring(d.lobo))
     check(not (Arrow.etaText:GetText() or ""):find("flecha", 1, true), "sigue «Haz clic en la flecha para el siguiente lugar»")
     FIRE(Arrow.llegada.Siguiente, "OnClick", "LeftButton")
     check(veces() == 1, "«Siguiente lugar» no pasó al siguiente lugar")

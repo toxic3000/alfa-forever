@@ -115,12 +115,18 @@ function K.ConInfo(marco, titulo, texto)
 	if marco.alfaConInfo then return marco end
 	marco.alfaConInfo = true
 	marco:HookScript("OnEnter", function(self)
+		-- 1.3.0: «¿Qué es esto?» (Kit/Ayuda.lua) manda cuando está activa.
+		if K.SobreAyuda then K.SobreAyuda(self) end
+		if K.AyudaActiva and K.AyudaActiva() and K.MostrarAyuda and K.MostrarAyuda(self) then return end
 		local i = self.alfaInfo
 		local t, x = i[1], i[2]
 		if type(t) == "function" then t, x = t(self) end
 		if (t and t ~= "") or (x and x ~= "") then K.MostrarInfo(self, t, x) end
 	end)
-	marco:HookScript("OnLeave", function(self) K.OcultarInfo(self) end)
+	marco:HookScript("OnLeave", function(self)
+		if K.FueraAyuda then K.FueraAyuda(self) end
+		K.OcultarInfo(self)
+	end)
 	return marco
 end
 

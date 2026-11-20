@@ -40,6 +40,11 @@ local VENCE = 3        -- días: avisar de las cartas que vencen antes
 local MAX_ADJUNTOS = 16
 
 local abierto = false
+-- 1.3.0: el buzón llega un instante después de abrirlo (MAIL_INBOX_UPDATE).
+-- Antes, «Tomar todo» pulsado en ese instante veía 0 cartas y decía «No había
+-- nada que tomar», y ese texto se quedaba aunque luego llegara todo.
+local cargado = false
+local pendiente = false
 local tomando     -- la tanda en curso
 local avisoVisto  -- ya se revisó el vencimiento en esta visita
 
@@ -149,7 +154,8 @@ local function terminar(corte)
 			or format(L["Dejé %d cartas que se abren a mano (pago contra entrega o de un MJ)."], t.saltadas)
 	end
 	local texto = table.concat(partes, " ")
-	Bz.ultimo = { objetos = t.objetos, dinero = dinero, saltadas = t.saltadas, corte = corte, texto = texto }
+	Bz.ultimo = { objetos = t.objetos, dinero = dinero, saltadas = t.saltadas, corte = corte, texto = texto,
+		cartas = cuantas(), t = GetTime and GetTime() or 0 }
 	if K and K.Aviso then
 		K.Aviso({ titulo = L["El buzón"], texto = texto, icono = "ic-oro", tono = corte and "aviso" or "exito", duracion = 8 })
 	end
@@ -209,6 +215,13 @@ function Bz.Tomando() return tomando ~= nil end
 
 function Bz.Tomar()
 	if tomando then return terminar("cancelado") end
+	if abierto and not cargado and not enCombate() then
+		-- Aún no llegan las cartas: se toma en cuanto lleguen.
+		pendiente = true
+		if CheckInbox then llamar(CheckInbox) end
+		if refrescarBarra then refrescarBarra() end
+		return true
+	end
 	if enCombate() then
 		N.Imprimir(L["No se puede en combate."])
 		return false
@@ -233,6 +246,11 @@ function Bz.Tomar()
 end
 
 A.RegisterEvent("MAIL_INBOX_UPDATE", function()
+	cargado = true
+	if pendiente and abierto and not tomando then
+		pendiente = false
+		Bz.Tomar()
+	end
 	if tomando and tomando.esperando == "evento" then tomando.esperando = "pausa" end
 	if abierto and not avisoVisto then Bz.RevisarVence() end
 end)
@@ -290,13 +308,18 @@ end
 ---------------------------------------------------------------------------
 
 local barra
-local BARRA_W, BARRA_H = 340, 40
+local BARRA_W, BARRA_H = 384, 40 -- 1.3.0: más ancha, para que quepa el resumen
 
 local function marcoBuzon() return rawget(_G, "MailFrame") end
 
 local function textoEstado()
 	if tomando then return L["Tomando tus cartas..."], "textoSuave" end
-	if Bz.ultimo then return Bz.TextoResumen(Bz.ultimo.objetos, Bz.ultimo.dinero), "textoSuave" end
+	if pendiente or (abierto and not cargado) then return L["Cargando tus cartas..."], "textoSuave" end
+	-- El resumen se ve un rato y solo mientras el buzón siga igual.
+	local u = Bz.ultimo
+	if u and u.cartas == cuantas() and ((GetTime and GetTime() or 0) - (u.t or 0)) < 20 then
+		return Bz.TextoResumen(u.objetos, u.dinero), "textoSuave"
+	end
 	local n = cuantas()
 	if n == 0 then return L["No tienes cartas."], "textoSuave" end
 	return n == 1 and L["1 carta"] or format(L["%d cartas"], n), "textoSuave"
@@ -337,6 +360,13 @@ local function crearBarra()
 	barra.Estado = K.Texto(barra, "pequeno", "textoSuave")
 	barra.Estado:SetPoint("LEFT", barra.Titulo, "RIGHT", K.ESP.s, 0)
 	barra.Estado:SetPoint("RIGHT", barra.Boton, "LEFT", -K.ESP.s, 0)
+	-- 1.3.0: si el texto no cabe, completo con el ratón encima.
+	barra:EnableMouse(true)
+	barra:SetScript("OnEnter", function(self)
+		local fs = self.Estado
+		if fs and fs.IsTruncated and fs:IsTruncated() then K.MostrarInfo(self, L["El buzón"], fs:GetText() or "") end
+	end)
+	barra:SetScript("OnLeave", function(self) K.OcultarInfo(self) end)
 	return barra
 end
 
@@ -344,6 +374,8 @@ local function alAbrir()
 	abierto = true
 	avisoVisto = false
 	Bz.ultimo = nil
+	pendiente = false
+	cargado = (num(llamar(GetInboxNumItems)) or 0) > 0
 	if M.Ajuste("buzon") and not enCombate() then
 		if crearBarra() then refrescarBarra() end
 	end
@@ -356,6 +388,7 @@ end
 A.RegisterEvent("MAIL_SHOW", alAbrir)
 A.RegisterEvent("MAIL_CLOSED", function()
 	abierto = false
+	cargado, pendiente = false, false
 	if tomando then terminar("cerrado") end
 	if barra then barra:Hide() end
 end)

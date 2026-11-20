@@ -381,6 +381,11 @@ motor(G_RAROS, "raros.minimapa", "rares.minimapRares", L["Raros en el minimapa"]
 motor(G_RAROS, "raros.tesorosMinimapa", "rares.minimapTreasures", L["Tesoros en el minimapa"],
 	L["Los tesoros también en el minimapa."], MAPA .. "treasure", "textDim", { requiere = conRaros })
 
+-- 1.3.0: los élites y raros peligrosos de tu zona (Peligros.lua).
+motor(G_RAROS, "raros.peligros", ID .. ".peligros", L["Peligros"],
+	L["Los élites y los raros de tu zona que te pueden ganar: en rojo los que te pasan por mucho. Se arman al abrir el mapa de Alfa."],
+	MAPA .. "kill", "danger", { propia = true })
+
 -- Entradas y salidas: mazmorras y barcos (capas del motor, con sus ids de
 -- siempre), las salidas de cada zona y los portales (Entradas.lua).
 motor(G_ENTRADAS, "viaje.mazmorras", "maps.dungeonPins", L["Entradas de mazmorras"],

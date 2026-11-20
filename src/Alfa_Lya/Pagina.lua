@@ -191,6 +191,19 @@ local function grupos(padre)
 	contigo:Fila({ titulo = L["Modo foco"], control = interruptor("foco"), activa = visible,
 		texto = L["En mazmorras y en combate Lya se hace chiquita, se calla y no estorba tus clics. Al terminar vuelve."] })
 
+	-- 1.3.0: su manada, tus misiones en su voz, tu mascota, los retos y los cumpleaños.
+	local mundo = K.GrupoAjustes(padre, { titulo = L["Lya y su manada"] })
+	mundo:Fila({ titulo = L["Las Lyas de tu grupo"], control = interruptor("manada"), activa = visible,
+		texto = L["Si alguien de tu grupo también trae Alfa, sus Lyas se saludan y a veces platican. Poquito y nunca en combate."] })
+	mundo:Fila({ titulo = L["Tus misiones en su voz"], control = interruptor("misionVoz"), activa = visible,
+		texto = L["Al tomar una misión, Lya te la resume en dos líneas: qué hay que hacer y un consejito suyo."] })
+	mundo:Fila({ titulo = L["Lya y tu mascota"], control = interruptor("mascota"), activa = visible,
+		texto = L["Lya saluda a tu mascota y, si eres cazador, te avisa cuando tiene hambre o está triste."] })
+	mundo:Fila({ titulo = L["Retos de la semana"], control = interruptor("retos"),
+		texto = L["Cada lunes, tres retos chiquitos con su salchicha de premio. Tu avance sale arriba, en esta página."] })
+	mundo:Fila({ titulo = L["Cumpleaños"], control = interruptor("cumple"),
+		texto = L["Cada año, el día que empezaron a cazar juntos, Lya lo festeja. Y también el cumpleaños de Alfa."] })
+
 	local Ap = M.Aprende
 	local callados = K.GrupoAjustes(padre, { titulo = L["Consejos que callaste"] })
 	callados.vacia = callados:Fila({ titulo = L["Ninguno por ahora"],
@@ -222,7 +235,7 @@ local function grupos(padre)
 		K.Mostrar(self.vacia, #lista == 0)
 		K.Mostrar(self.todos, #lista > 1)
 	end
-	return { ella, consejos, historias, nota, contigo, callados }
+	return { ella, consejos, historias, nota, contigo, mundo, callados }
 end
 
 ---------------------------------------------------------------------------
@@ -255,6 +268,34 @@ local function tuHistoria(padre)
 	return p
 end
 
+---------------------------------------------------------------------------
+-- 1.3.0: los retos de la semana (Retos.lua)
+---------------------------------------------------------------------------
+local function retos(padre)
+	local p = K.Pila(padre, { espacio = K.ESP.m })
+	p.Seccion = p:Agregar(K.Seccion(p, L["Retos de la semana"]))
+	p.Rejilla = p:Agregar(K.Rejilla(p, { min = 220, variante = "normal" }))
+	function p:Llenar()
+		local Re = M.Retos
+		local datos = {}
+		local on = Re and N.Get(ID, "retos") ~= false
+		if on then
+			for i, e in ipairs(Re.Lista()) do
+				datos[i] = { icono = e.icono, tono = e.hecho and "exito" or "acento", titulo = e.titulo,
+					texto = e.hecho and L["¡Cumplido! Salchicha ganada."] or L["Un reto de Lya para esta semana."],
+					progreso = { actual = e.actual, total = e.total, texto = format(L["%d de %d"], e.actual, e.total) } }
+			end
+		else
+			datos[1] = { icono = "ic-exito", tono = "neutro", titulo = L["Retos apagados"],
+				texto = L["Préndelos abajo, en «Lya y su manada»."] }
+		end
+		self.Rejilla:Llenar(datos)
+		local n = on and Re.Premios() or 0
+		self.Seccion:Set(L["Retos de la semana"], { cuenta = n > 0 and format(L["%d salchichas de premio"], n) or nil })
+	end
+	return p
+end
+
 local function recuerdo(padre)
 	local t = K.Tarjeta(padre, { variante = "normal" })
 	t:Set({
@@ -271,6 +312,7 @@ local function construir(view)
 	local ui = {}
 	local t = K.Tablero(view, { margen = N.MargenPagina(), accion = "estado", tituloOpciones = L["Sus consejos"], min = 240 })
 	ui.historia = t:AgregarBloque(tuHistoria(t.Extra))
+	ui.retos = t:AgregarBloque(retos(t.Extra))
 	ui.recuerdo = t:AgregarBloque(recuerdo(t.Extra))
 	ui.ajustes = grupos(t.Extra)
 	for i, g in ipairs(ui.ajustes) do t:AgregarBloque(g, { espacio = i == 1 and K.ESP.xl or K.ESP.l }) end
@@ -278,6 +320,7 @@ local function construir(view)
 		t:SetAccion(estado())
 		t:SetOpciones(numeros(), L["Lo que te ha contado"])
 		ui.historia:Llenar()
+		ui.retos:Llenar()
 		for _, g in ipairs(ui.ajustes) do
 			if g.Llenar then g:Llenar() end
 			g:Refrescar()
@@ -358,6 +401,17 @@ local CONTROLES = {
 		help = L["Cuando aprendes un hechizo importante de tu clase, Lya te dice para qué sirve y cuándo usarlo."], search = "class spells, new spell, trainer, abilities" },
 	{ kind = "toggle", key = clave("foco"), label = L["Modo foco"], disabled = no(visible),
 		help = L["En mazmorras y en combate Lya se hace chiquita, se calla y no estorba tus clics. Al terminar vuelve."], search = "focus mode, quiet, small, combat, dungeon" },
+	-- 1.3.0
+	{ kind = "toggle", key = clave("manada"), label = L["Las Lyas de tu grupo"], disabled = no(visible),
+		help = L["Si alguien de tu grupo también trae Alfa, sus Lyas se saludan y a veces platican. Poquito y nunca en combate."], search = "group, party, greet, other lya, wolves" },
+	{ kind = "toggle", key = clave("misionVoz"), label = L["Tus misiones en su voz"], disabled = no(visible),
+		help = L["Al tomar una misión, Lya te la resume en dos líneas: qué hay que hacer y un consejito suyo."], search = "quest summary, objectives, two lines" },
+	{ kind = "toggle", key = clave("mascota"), label = L["Lya y tu mascota"], disabled = no(visible),
+		help = L["Lya saluda a tu mascota y, si eres cazador, te avisa cuando tiene hambre o está triste."], search = "pet, hunter, warlock, happiness, feed" },
+	{ kind = "toggle", key = clave("retos"), label = L["Retos de la semana"],
+		help = L["Cada lunes, tres retos chiquitos con su salchicha de premio. Tu avance sale arriba, en esta página."], search = "weekly challenges, goals, sausage, reward" },
+	{ kind = "toggle", key = clave("cumple"), label = L["Cumpleaños"],
+		help = L["Cada año, el día que empezaron a cazar juntos, Lya lo festeja. Y también el cumpleaños de Alfa."], search = "birthday, anniversary, celebration" },
 	{ kind = "button", label = L["Consejos que callaste"], button = L["Devolverlos todos"], icon = "reset",
 		help = L["Lya vuelve a decirte todos esos consejos."],
 		onClick = function() if M.Aprende then M.Aprende.DevolverTodos() end end, search = "muted tips, restore" },

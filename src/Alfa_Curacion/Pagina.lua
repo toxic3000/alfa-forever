@@ -11,6 +11,11 @@
 --   4. Los ajustes, en grupos de filas: tus clics, los marcos, qué muestran.
 -- Los marcos (Marcos.lua) y el mapa (Mapa.lua) no cambian: esta página solo
 -- los muestra y los ajusta.
+-- 1.3.0: «Tus clics» va primero: «Curar y seleccionar» y una fila por cada
+-- clic principal (izquierdo, derecho, central, Mayús y Ctrl) con la lista de
+-- tus hechizos por tipo (curas, quitar perjuicios, buffs, revivir, otros), la
+-- venda, seleccionar y el menú. Arriba avisa si tu clase quita algo que
+-- ningún clic quita.
 
 local ADDON, M = ...
 local N = AlfaNucleo
@@ -34,13 +39,19 @@ local function queHace(e)
 	if e.t == "spell" then return M.NombreHechizo(e.id) or L["un hechizo"] end
 	if e.t == "target" then return L["selecciona"] end
 	if e.t == "menu" then return L["abre su menú"] end
+	if e.t == "venda" then return L["le pone una venda"] end
 	return L["no hace nada"]
 end
 M.QueHace = queHace
 
 -- Lo que hace, para una frase: "lanza Sanar", "selecciona", "abre su menú".
 local function frase(e)
-	if type(e) == "table" and e.t == "spell" then return format(L["lanza %s"], M.NombreHechizo(e.id) or L["un hechizo"]) end
+	if type(e) == "table" and e.t == "spell" then
+		local n = M.NombreHechizo(e.id) or L["un hechizo"]
+		if M.CurarSelecciona() then return format(L["lanza %s y lo selecciona"], n) end
+		return format(L["lanza %s"], n)
+	end
+	if type(e) == "table" and e.t == "venda" and M.CurarSelecciona() then return L["le pone una venda y lo selecciona"] end
 	return queHace(e)
 end
 M.Frase = frase
@@ -51,6 +62,7 @@ function M.NombreAccion(e)
 	if t == "spell" then return M.NombreHechizo(e.id) or L["Hechizo desconocido"] end
 	if t == "target" then return L["Seleccionar objetivo"] end
 	if t == "menu" then return L["Menú del jugador"] end
+	if t == "venda" then return L["Usar una venda"] end
 	return L["Sin acción"]
 end
 
@@ -116,6 +128,13 @@ local function estado()
 	d.tono = "exito"
 	d.titulo = M.EsCurandero(clase) and L["Listo para curar"] or L["Listo para ayudar a tu grupo"]
 	d.texto = format(L["Pasa el ratón sobre un compañero y haz clic: el izquierdo %s y el derecho %s."], frase(mapa["1"]), frase(mapa["2"]))
+	local sinClic = M.QuitarSinClic()
+	if #sinClic > 0 then
+		local nombres = {}
+		for _, tipo in ipairs(sinClic) do nombres[#nombres + 1] = M.TIPOS[tipo].nombre:lower() end
+		d.tono = "aviso"
+		d.texto = d.texto .. " " .. format(L["Ojo: puedes quitar %s, pero ningún clic lo hace. Elígelo en Tus clics."], table.concat(nombres, ", "))
+	end
 	if M.EnCombate() then d.texto = d.texto .. " " .. L["Estás en combate: lo que cambies se aplica al salir."] end
 	local insignias = {}
 	if nombreClase then insignias[#insignias + 1] = { nombreClase, "clase" } end
@@ -232,6 +251,11 @@ function M.PintarRanura(icono, nombre, tipo, e)
 		K.Escribir(nombre, L["Menú del jugador"])
 		K.ColorTexto(nombre, "texto")
 		if tipo then K.Escribir(tipo, L["Invitar, comerciar, susurrar…"]) end
+	elseif t == "venda" then
+		K.SetIcono(icono, "ic-curacion", "acento")
+		K.Escribir(nombre, L["Usar una venda"])
+		K.ColorTexto(nombre, "texto")
+		if tipo then K.Escribir(tipo, M.venda and L["La mejor de tus bolsas"] or L["No llevas vendas"]) end
 	else
 		K.SetIcono(icono, "ic-mas", "textoTenue")
 		K.Escribir(nombre, L["Sin acción"])
@@ -240,23 +264,43 @@ function M.PintarRanura(icono, nombre, tipo, e)
 	end
 end
 
+local function valorDe(e)
+	if type(e) ~= "table" then return "nada" end
+	if e.t == "spell" then return "spell:" .. tostring(e.id) end
+	return e.t or "nada"
+end
+
+local ICONO_CAT = { cura = "ic-curacion", quitar = "ic-exito", buff = "ic-huella", revivir = "ic-seguir", otro = "ic-curacion" }
+
+-- 1.3.0: tus hechizos por tipo (curas, quitar perjuicios, buffs, revivir y
+-- otros de tu libro), con un separador entre tipos. El de ahora siempre está.
 local function opcionesDe(r)
 	local lista = {
 		{ valor = "nada", texto = L["Sin acción"], icono = "ic-cerrar" },
 		{ valor = "target", texto = L["Seleccionar objetivo"], icono = "ic-raros" },
 	}
 	if M.PermiteMenu(r) then lista[#lista + 1] = { valor = "menu", texto = L["Menú del jugador"], icono = "ic-lista" } end
-	for _, h in ipairs(M.HechizosDelLibro()) do
-		lista[#lista + 1] = { valor = "spell:" .. h.id, texto = h.nombre, icono = "ic-curacion" }
+	lista[#lista + 1] = { valor = "venda", texto = L["Usar una venda"], icono = "ic-curacion" }
+	local hay = {}
+	for _, o in ipairs(lista) do hay[o.valor] = true end
+	for _, cat in ipairs(M.HechizosPorCategoria()) do
+		lista[#lista + 1] = { separador = true }
+		for _, h in ipairs(cat.lista) do
+			local v = "spell:" .. h.id
+			if not hay[v] then
+				hay[v] = true
+				lista[#lista + 1] = { valor = v, texto = format(L["%s (%s)"], h.nombre, cat.nombre:lower()), icono = ICONO_CAT[cat.categoria] or "ic-curacion" }
+			end
+		end
+	end
+	local actual = valorDe(M.Mapa()[r])
+	if not hay[actual] then
+		local e = M.Mapa()[r]
+		lista[#lista + 1] = { valor = actual, texto = M.NombreAccion(e), icono = "ic-curacion" }
 	end
 	return lista
 end
-
-local function valorDe(e)
-	if type(e) ~= "table" then return "nada" end
-	if e.t == "spell" then return "spell:" .. tostring(e.id) end
-	return e.t or "nada"
-end
+M.OpcionesDe = opcionesDe
 
 local function elegir(r, v)
 	if type(v) ~= "string" then return end
@@ -398,6 +442,24 @@ local function px(v) return format(L["%d px"], floor((tonumber(v) or 0) + 0.5)) 
 local function entero(v) return tostring(floor((tonumber(v) or 0) + 0.5)) end
 M.Px, M.Entero = px, entero
 
+-- 1.3.0: los clics que más se usan, cada uno con su lista.
+M.PRINCIPALES = { "1", "2", "3", "shift-1", "shift-2", "ctrl-1", "ctrl-2" }
+
+local function filaClic(grupo, r)
+	return grupo:Fila({ titulo = M.NombreRanura(r), control = function(fila)
+		local d = K.Desplegable(fila, { ancho = 210, opciones = opcionesDe(r),
+			get = function() return valorDe(M.Mapa()[r]) end,
+			set = function(v) elegir(r, v) end })
+		local leer = d.Leer
+		function d:Leer()
+			self.opciones = opcionesDe(r)
+			leer(self)
+		end
+		d.alfaRanura = r
+		return d
+	end })
+end
+
 local BASE_BLIZZARD = L["Abre la ventana de clic para lanzar de Blizzard para que armes ahí los mismos clics y cures igual en sus marcos de grupo (el juego no deja que un addon los copie)."]
 
 -- "El clic izquierdo solo selecciona" no es un ajuste (va por personaje, en
@@ -421,6 +483,15 @@ end
 local function grupos(ui, padre)
 	local clics = K.GrupoAjustes(padre, { titulo = L["Tus clics"] })
 	ui.clics = clics
+	clics:Fila({ titulo = L["Curar y seleccionar"],
+		texto = L["Cada clic que cura también selecciona a ese compañero, para seguir con otro poder, un buff o quitarle una maldición o un veneno."],
+		control = function(fila)
+			local s = K.Interruptor(fila, { valor = M.CurarSelecciona(), alCambiar = function(v) M.FijarCurarSelecciona(v == true) end })
+			function s:Leer() self:SetValor(M.CurarSelecciona()) end
+			return s
+		end })
+	ui.filasClic = {}
+	for _, r in ipairs(M.PRINCIPALES) do ui.filasClic[#ui.filasClic + 1] = filaClic(clics, r) end
 	ui.filaBlizzard = clics:Fila({ titulo = L["Usar también en los marcos de Blizzard"], texto = BASE_BLIZZARD,
 		control = function(fila)
 			local b = K.Boton(fila, L["Abrir clic para lanzar"], function() M.UsarEnBlizzard() end, { tipo = "secundario", tam = "chico" })
@@ -450,6 +521,9 @@ local function grupos(ui, padre)
 			{ valor = "grupo", texto = L["Por grupo"] }, { valor = "rol", texto = L["Por rol"] },
 			{ valor = "clase", texto = L["Por clase"] }, { valor = "nombre", texto = L["Por nombre"] } } })
 	end })
+	marcos:Fila({ titulo = L["En banda, un grupo por columna"], control = interruptor("porGrupos"), hija = true,
+		activa = function() return activo() and (N.Get(ID, "orden") or "grupo") == "grupo" end,
+		texto = L["Cada grupo de la banda en su propia columna (o fila), como en la ventana de banda. Con el orden por grupo."] })
 	marcos:Fila({ titulo = L["Volver a su lugar"], texto = L["Pone los marcos donde estaban al instalar Alfa."], activa = activo,
 		control = function(fila) return K.Boton(fila, L["Reiniciar"], function() M.ReiniciarPosicion() end, { tipo = "secundario", tam = "chico" }) end })
 
@@ -461,6 +535,12 @@ local function grupos(ui, padre)
 	fila(L["Curas que van llegando"], "entrantes", L["Una franja verde clara muestra las curas que ya vienen en camino."])
 	fila(L["Amenaza"], "amenaza", L["Una línea roja arriba avisa cuando un enemigo va por ese compañero."])
 	fila(L["Perjuicios que puedes quitar"], "disipar", L["El borde toma el color del perjuicio (magia, maldición, enfermedad o veneno) cuando tú lo puedes quitar."])
+	muestran:Fila({ titulo = L["Ícono del tipo de perjuicio"], control = interruptor("tipoPerjuicio"), hija = true,
+		activa = function() return activo() and N.Get(ID, "disipar") and true or false end,
+		texto = L["Arriba a la derecha, el ícono de magia, maldición, veneno o enfermedad. Al pasar el ratón te dice qué clic lo quita."] })
+	fila(L["Le falta tu buff"], "buffs", L["Un punto azul abajo a la derecha si a ese compañero le falta el buff de tu clase. Se revisa fuera de combate."])
+	fila(L["Tanque en apuros"], "tanque", L["El marco del tanque late en rojo cuando le queda menos del 40 % de vida."])
+	fila(L["Maná de los curanderos"], "mana", L["Arriba de tus marcos, el maná de quienes curan en tu grupo. Se destaca al terminar cada pelea."])
 	fila(L["Porcentaje de vida"], "porcentaje", L["Muestra la vida en número, debajo del nombre."])
 	fila(L["Atenuar a quien está lejos"], "alcance", L["Si está fuera de tu alcance, su marco se ve más tenue."])
 	fila(L["Detalle al pasar el ratón"], "descripcion", L["El cuadro del jugador al pasar el ratón. En combate no sale, para no estorbar."])
@@ -474,9 +554,11 @@ end
 local function construir(view)
 	local ui = {}
 	local t = K.Tablero(view, { margen = N.MargenPagina(), accion = "estado", tituloOpciones = L["Preajustes"], min = 240 })
-	ui.raton = t:AgregarBloque(nuevoRaton(t.Extra))
 	ui.grupos = grupos(ui, t.Extra)
-	for _, g in ipairs(ui.grupos) do t:AgregarBloque(g) end
+	-- 1.3.0: primero «Tus clics» (lo más claro), luego todos los clics y lo demás.
+	t:AgregarBloque(ui.grupos[1])
+	ui.raton = t:AgregarBloque(nuevoRaton(t.Extra))
+	for i = 2, #ui.grupos do t:AgregarBloque(ui.grupos[i]) end
 	K.EnPagina(view, t, function()
 		filaIzquierdo(ui)
 		t:SetAccion(estado())
@@ -524,6 +606,13 @@ local CONTROLES = {
 			if (v == true) ~= M.IzquierdoSelecciona() then M.FijarIzquierdoSelecciona(v == true) end
 		end,
 		search = "left click select, click casting, middle button" },
+	{ kind = "toggle", label = L["Curar y seleccionar"],
+		help = L["Cada clic que cura también selecciona a ese compañero, para seguir con otro poder, un buff o quitarle una maldición o un veneno."],
+		get = function() return M.CurarSelecciona() end,
+		set = function(v)
+			if (v == true) ~= M.CurarSelecciona() then M.FijarCurarSelecciona(v == true) end
+		end,
+		search = "heal and target, select on click, click casting" },
 	{ kind = "toggle", key = clave("activo"), label = L["Usar los marcos de Alfa"],
 		help = L["Tu grupo y tu banda con su vida, para curar con un clic. Se cambia fuera de combate."],
 		search = "raid frames, party frames, healing frames, click to heal" },
@@ -538,12 +627,17 @@ local CONTROLES = {
 	{ kind = "dropdown", key = clave("orden"), label = L["Orden"], child = true, disabled = apagado,
 		choices = { { value = "grupo", label = L["Por grupo"] }, { value = "rol", label = L["Por rol"] },
 			{ value = "clase", label = L["Por clase"] }, { value = "nombre", label = L["Por nombre"] } }, search = "sort, order, role, class" },
+	toggle("porGrupos", L["En banda, un grupo por columna"], L["Cada grupo de la banda en su propia columna (o fila), como en la ventana de banda. Con el orden por grupo."], "raid groups, layout", true),
 	{ kind = "button", label = L["Volver a su lugar"], button = L["Reiniciar"], icon = "window", disabled = apagado,
 		help = L["Pone los marcos donde estaban al instalar Alfa."], onClick = function() M.ReiniciarPosicion() end, search = "reset position" },
 	toggle("colorClase", L["Color de clase"], L["La barra de vida con el color de la clase de cada uno. Apagado: barra verde y el nombre con su color."], "class colours"),
 	toggle("entrantes", L["Curas que van llegando"], L["Una franja verde clara muestra las curas que ya vienen en camino."], "incoming heals, heal prediction"),
 	toggle("amenaza", L["Amenaza"], L["Una línea roja arriba avisa cuando un enemigo va por ese compañero."], "threat, aggro"),
 	toggle("disipar", L["Perjuicios que puedes quitar"], L["El borde toma el color del perjuicio (magia, maldición, enfermedad o veneno) cuando tú lo puedes quitar."], "dispel, debuffs, decurse"),
+	toggle("tipoPerjuicio", L["Ícono del tipo de perjuicio"], L["Arriba a la derecha, el ícono de magia, maldición, veneno o enfermedad. Al pasar el ratón te dice qué clic lo quita."], "debuff type icon, dispel", true),
+	toggle("buffs", L["Le falta tu buff"], L["Un punto azul abajo a la derecha si a ese compañero le falta el buff de tu clase. Se revisa fuera de combate."], "missing buffs, fortitude, mark of the wild, arcane intellect, blessing"),
+	toggle("tanque", L["Tanque en apuros"], L["El marco del tanque late en rojo cuando le queda menos del 40 % de vida."], "tank alert, low health"),
+	toggle("mana", L["Maná de los curanderos"], L["Arriba de tus marcos, el maná de quienes curan en tu grupo. Se destaca al terminar cada pelea."], "healer mana, group mana"),
 	toggle("porcentaje", L["Porcentaje de vida"], L["Muestra la vida en número, debajo del nombre."], "health percent"),
 	toggle("alcance", L["Atenuar a quien está lejos"], L["Si está fuera de tu alcance, su marco se ve más tenue."], "range, out of range fade"),
 	toggle("descripcion", L["Detalle al pasar el ratón"], L["El cuadro del jugador al pasar el ratón. En combate no sale, para no estorbar."], "tooltip, mouseover"),
@@ -563,7 +657,27 @@ AlfaCuracion = {
 	Asistente = abrirAsistente,
 	AsistentePendiente = function() return M.AsistentePendiente() end,
 	Omitir = function() M.OmitirAsistente() end,
+	-- 1.3.0
+	CurarSelecciona = function() return M.CurarSelecciona() end,
+	QuitarSinClic = function() return M.QuitarSinClic() end,
 }
+
+-- 1.3.0: Lya sabe contar lo nuevo de Curación (Pregúntale a Lya).
+A.OnLogin(function()
+	local Lya = rawget(_G, "AlfaLya")
+	if type(Lya) ~= "table" or type(Lya.Ensenar) ~= "function" then return end
+	for _, p in ipairs({
+		{ id = "curacion.seleccionar", icono = "ic-curacion", pregunta = L["¿Cómo curo y selecciono a la vez?"],
+			respuesta = L["En Curación, «Curar y seleccionar» viene prendido: cada clic que cura en tus marcos también deja a ese compañero como tu objetivo, para seguir con un buff o quitarle una maldición. En «Tus clics» eliges qué hace cada clic."] },
+		{ id = "curacion.perjuicios", icono = "ic-curacion", pregunta = L["¿Cómo le quito un veneno o una maldición a alguien?"],
+			respuesta = L["Si tu clase lo puede quitar, su marco se pinta del color del perjuicio y sale su ícono arriba a la derecha. Pasa el ratón y te digo con qué clic se quita; si ningún clic lo hace, elígelo en «Tus clics»."] },
+		{ id = "curacion.buffs", icono = "ic-curacion", pregunta = L["¿Qué es el punto azul en mis marcos?"],
+			respuesta = L["Que a ese compañero le falta el buff de tu clase. Pasa el ratón sobre su marco: te digo con qué clic se lo das."] },
+	}) do
+		p.modulo = ID
+		pcall(Lya.Ensenar, p)
+	end
+end)
 
 ---------------------------------------------------------------------------
 -- /alfa curacion [prueba | prueba20 | mover | blizzard | on | off | reiniciar | asistente]

@@ -3,9 +3,12 @@
 --
 -- Un Tablero del Kit:
 --   1. tu estilo de ahora, con "Mi configuración" (el asistente, en su resumen);
---   2. los tres estilos para cambiar en un clic (y, en Cristal, el acento);
+--   2. los estilos para cambiar en un clic (y, salvo en Alfa y Clásico WoW,
+--      el acento);
 --   3. el sonido: el aullido al abrir Alfa y un botón para escucharlo;
---   4. la configuración, lo nuevo de la versión y "Reportar".
+--   4. (1.3.0) para leer mejor (letra grande, colores para daltonismo,
+--      «¿Qué es esto?»), la pantalla limpia y tus atajos (Teclas.lua);
+--   5. la configuración, lo nuevo de la versión y "Reportar".
 
 local ADDON, M = ...
 local N = AlfaNucleo
@@ -36,9 +39,10 @@ local function bloqueEstilos(ui, padre)
 	b.SecAcento = b:Agregar(K.Seccion(b, L["Tu color de acento"]), { espacio = ESP.l })
 	b.Acento = b:Agregar(K.SelectorAcento(b, {}), { espacio = ESP.s })
 	function b:Refrescar()
-		local cristal = K.Cristal()
-		K.Mostrar(self.SecAcento, cristal)
-		K.Mostrar(self.Acento, cristal)
+		-- El acento se elige en Cristal y en los estilos de la casa con el suyo (1.3.0).
+		local conAcento = K.EligeAcento()
+		K.Mostrar(self.SecAcento, conAcento)
+		K.Mostrar(self.Acento, conAcento)
 		self.Selector:Leer()
 		self.Acento:Leer()
 	end
@@ -58,6 +62,41 @@ local function grupos(ui, padre)
 		control = function(fila) return K.Interruptor(fila, { clave = ID .. ".anuncios" }) end })
 	sonido:Fila({ titulo = L["Escuchar el aullido"], texto = L["Suena ahora, aunque el aullido esté apagado."],
 		control = function(fila) return K.Boton(fila, L["Escuchar"], function() M.Aullar(true) end, { tipo = "secundario", icono = "ic-lobo" }) end })
+
+	-- 1.3.0: para leer mejor (Kit/Tokens.lua, Kit/Ayuda.lua).
+	local leer = K.GrupoAjustes(padre, { titulo = L["Para leer mejor"] })
+	leer:Fila({ titulo = L["Letra más grande"],
+		texto = L["Todo el texto de Alfa un poco más grande, en cada ventana. Se suma al tamaño de Ajustes > Apariencia."],
+		control = function(fila) return K.Interruptor(fila, { clave = "nucleo.letraGrande" }) end })
+	leer:Fila({ titulo = L["Colores para daltonismo"],
+		texto = L["Lo bueno en azul, los avisos en amarillo y el peligro en naranja, y los perjuicios con colores que se distinguen sin el rojo y el verde."],
+		control = function(fila) return K.Interruptor(fila, { clave = "nucleo.daltonico" }) end })
+	leer:Fila({ titulo = L["«¿Qué es esto?»"],
+		texto = L["Deja esta tecla abajo y pasa el ratón por cualquier cosa de Alfa: te digo para qué sirve."],
+		control = function(fila) return K.Desplegable(fila, { opciones = M.OPCIONES_AYUDA(), clave = "nucleo.ayudaTecla", ancho = 150 }) end })
+	leer:Fila({ titulo = L["Modo ayuda"], hija = true,
+		texto = L["Sin tener una tecla abajo: lo prendes o lo apagas con su atajo, o aquí."],
+		control = function(fila) return K.Boton(fila, L["Prender o apagar"], function() K.AlternarAyuda() end, { tipo = "secundario", icono = "ic-info" }) end })
+
+	-- 1.3.0: la pantalla limpia (Alfa_Nucleo/Limpia.lua).
+	local Pl = N.PantallaLimpia
+	local limpia = K.GrupoAjustes(padre, { titulo = L["Pantalla limpia"] })
+	limpia:Fila({ titulo = L["Tu tecla de pantalla limpia"],
+		texto = L["Con una tecla escondes lo del juego que no necesitas y quedan Alfa, tu rastreador y Lya. Otra pulsación lo devuelve todo."],
+		control = function(fila) return K.Atajo(fila, { accion = "ALFA_PANTALLA_LIMPIA", titulo = L["Pantalla limpia"], ancho = 150 }) end })
+	limpia:Fila({ titulo = L["Probar la pantalla limpia"], texto = L["También con /alfa limpia."],
+		control = function(fila) return K.Boton(fila, L["Probar"], function() if Pl then Pl.Alternar() end end, { tipo = "secundario", icono = "ic-lobo" }) end })
+	for _, g in ipairs(Pl and Pl.GRUPOS or {}) do
+		limpia:Fila({ titulo = K.L[g.nombre], hija = true,
+			texto = (g.id == "Barras" or g.id == "Retratos") and L["Si estás en combate, espera a que termine."] or nil,
+			control = function(fila) return K.Interruptor(fila, { clave = "nucleo.limpia" .. g.id }) end })
+	end
+
+	-- 1.3.0: tus atajos (Teclas.lua).
+	local atajos = K.GrupoAjustes(padre, { titulo = L["Tus atajos"] })
+	atajos:Fila({ titulo = L["Tus atajos de Alfa"],
+		texto = L["Todas las teclas de Alfa en un lugar, para cambiarlas ahí mismo. También con /alfa teclas."],
+		control = function(fila) return K.Boton(fila, L["Abrir"], function() M.Teclas.Abrir() end, { tipo = "secundario", icono = "ic-ajustes" }) end })
 
 	local bienvenida = K.GrupoAjustes(padre, { titulo = L["Configuración y ayuda"] })
 	-- 1.2.9: Alfa sencillo o completo (Alfa_Nucleo/Modo.lua).
@@ -165,7 +204,7 @@ local function grupos(ui, padre)
 		filaErrores.alfaDatos.texto = Rs.ResumenErrores() .. " " .. L["«Reportar» ya los lleva."]
 		refrescarErrores(self)
 	end
-	return { sonido, bienvenida, perfiles, respaldos, errores }
+	return { sonido, leer, limpia, atajos, bienvenida, perfiles, respaldos, errores }
 end
 
 local function construir(view)
@@ -188,6 +227,14 @@ function M.alCambiar()
 	if view then N.RehacerPagina(view) end
 end
 K.AlRepintar(function() M.alCambiar() end)
+
+-- «¿Qué es esto?»: la tecla que se deja abajo (nucleo.ayudaTecla).
+function M.OPCIONES_AYUDA()
+	return {
+		{ valor = "ALT", texto = L["Alt"] }, { valor = "CTRL", texto = L["Ctrl"] }, { valor = "SHIFT", texto = L["Mayús"] },
+		{ valor = "NO", texto = L["Solo su atajo"] },
+	}
+end
 
 -- Para la búsqueda de ajustes de la ventana de Alfa (la página es propia):
 -- el aullido y los botones de arriba. El estilo y el acento no van: son
@@ -214,6 +261,27 @@ local CONTROLES = {
 			for i, o in ipairs(M.OPCIONES_MODO()) do out[i] = { value = o.valor, label = o.texto } end
 			return out
 		end, search = "simple mode, full mode, basic, advanced, beginner, sidebar, sencillo, completo" },
+	-- 1.3.0
+	{ kind = "toggle", key = "nucleo.letraGrande", label = L["Letra más grande"],
+		help = L["Todo el texto de Alfa un poco más grande, en cada ventana. Se suma al tamaño de Ajustes > Apariencia."],
+		search = "bigger text, large font, accessibility, readability, letra grande, accesibilidad" },
+	{ kind = "toggle", key = "nucleo.daltonico", label = L["Colores para daltonismo"],
+		help = L["Lo bueno en azul, los avisos en amarillo y el peligro en naranja, y los perjuicios con colores que se distinguen sin el rojo y el verde."],
+		search = "colorblind, color blind, colour blind, deuteranopia, protanopia, accessibility, daltonismo, debuff colors" },
+	{ kind = "dropdown", key = "nucleo.ayudaTecla", label = L["«¿Qué es esto?»"],
+		help = L["Deja esta tecla abajo y pasa el ratón por cualquier cosa de Alfa: te digo para qué sirve."],
+		choices = function()
+			local out = {}
+			for i, o in ipairs(M.OPCIONES_AYUDA()) do out[i] = { value = o.valor, label = o.texto } end
+			return out
+		end, search = "help, what is this, tooltip, hover help, context help, ayuda" },
+	{ kind = "button", label = L["Pantalla limpia"], button = L["Probar"], icon = "info",
+		help = L["Con una tecla escondes lo del juego que no necesitas y quedan Alfa, tu rastreador y Lya. Otra pulsación lo devuelve todo."],
+		onClick = function() if N.PantallaLimpia then N.PantallaLimpia.Alternar() end end,
+		search = "clean screen, hide ui, minimal ui, screenshot mode, immersion, pantalla limpia" },
+	{ kind = "button", label = L["Tus atajos de Alfa"], button = L["Abrir"], icon = "info",
+		help = L["Todas las teclas de Alfa en un lugar, para cambiarlas ahí mismo. También con /alfa teclas."],
+		onClick = function() M.Teclas.Abrir() end, search = "keybindings, key bindings, hotkeys, shortcuts, keys, teclas, atajos" },
 	{ kind = "button", label = L["Revisar Alfa"], button = L["Revisar"], icon = "info",
 		help = L["Busca addons que chocan con Alfa, partes apagadas y ajustes raros, con el arreglo a un clic. También con /alfa diagnostico."],
 		onClick = function() M.Diagnostico.Abrir() end, search = "diagnostics, conflicts, addon conflict, troubleshoot, compatibility" },
@@ -232,7 +300,7 @@ local CONTROLES = {
 
 N.Modulo({
 	id = ID, nombre = L["Estilo y sonido"], icono = "ic-apariencia", orden = 90, seccion = "ajustes",
-	subtitulo = L["Tu estilo (Alfa, Clásico WoW o Cristal), el color de acento y el aullido."],
+	subtitulo = L["Tu estilo, el color de acento, el aullido, leer mejor y tus atajos."],
 	comando = "estilo",
 	ajustes = { aullido = true, idioma = "", introSiempre = true,
 		-- 1.2.7: los avisos de viaje y de raros como un anuncio animado (Kit/Anuncio.lua)
@@ -243,3 +311,22 @@ N.Modulo({
 	controles = CONTROLES,
 	construir = construir,
 })
+
+-- 1.3.0: Lya sabe contar lo de leer mejor, la pantalla limpia y los atajos.
+A.OnLogin(function()
+	local Lya = rawget(_G, "AlfaLya")
+	if not (type(Lya) == "table" and type(Lya.Ensenar) == "function") then return end
+	for _, p in ipairs({
+		{ id = "bienvenida.leer", icono = "ic-info", pregunta = L["Me cuesta leer Alfa, ¿qué hago?"],
+			respuesta = L["En Ajustes > Estilo y sonido prende «Letra más grande» y, si confundes el rojo con el verde, «Colores para daltonismo»."] },
+		{ id = "bienvenida.quees", icono = "ic-info", pregunta = L["¿Para qué sirve cada botón?"],
+			respuesta = L["Deja Alt abajo y pasa el ratón por cualquier cosa de Alfa: te digo para qué sirve. La tecla se cambia en Estilo y sonido."] },
+		{ id = "bienvenida.limpia", icono = "ic-lobo", pregunta = L["¿Puedo ver el mundo sin tanta cosa en pantalla?"],
+			respuesta = L["Sí: con /alfa limpia, o con tu tecla de pantalla limpia, escondo el chat, el minimapa y lo demás que elijas. Otra vez y vuelve todo."] },
+		{ id = "bienvenida.teclas", icono = "ic-ajustes", pregunta = L["¿Cómo cambio las teclas de Alfa?"],
+			respuesta = L["Escribe /alfa teclas: ahí están todas, y con un clic pulsas la que quieras."] },
+	}) do
+		p.modulo = M.ID
+		pcall(Lya.Ensenar, p)
+	end
+end)

@@ -17,7 +17,7 @@
     "novedad_viene": "Kommt mit Version {v}",
     "novedad_ya": "Neu seit Version {v}",
     "pie": "Alfa · Benutzerhandbuch",
-    "nota_capturas": "Die Bilder in diesem Handbuch zeigen Alfa auf Spanisch. In deinem Spiel siehst du dieselben Buttons, mit ihren deutschen Namen."
+    "nota_capturas": ""
   },
   "carta": {
     "titulo": "Willkommen im Rudel",
@@ -91,7 +91,7 @@
             {"t": "etapas", "titulo": "Die sieben Schritte", "items": [
               {"titulo": "Sprache", "texto": "Alfa in 10 Sprachen, auch wenn dein Spiel eine andere hat."},
               {"titulo": "Lya begrüßt dich", "texto": "Deine Wölfin stellt sich vor."},
-              {"titulo": "Stil", "texto": "Alfa, Klassisches WoW oder Glas, und Alfa einfach oder vollständig."},
+              {"titulo": "Stil", "texto": "Einer der fünf Stile, und Alfa einfach oder vollständig."},
               {"titulo": "Wie viel Alfa macht", "texto": "„Alfa macht es für dich“, „Ausgewogen“ oder „Ich entscheide“."},
               {"titulo": "Deine Extras", "texto": "Ein Mosaik: Schalte jedes mit einem Klick ein."},
               {"titulo": "La Jauría", "texto": "Ob das Rudel dich auf der Karte sieht."},
@@ -149,13 +149,14 @@
               {"icono": "buscar", "titulo": "Einstellungen durchsuchen", "texto": "Finde jede Option, indem du ihren Namen eintippst."}
             ]},
             {"t": "nota", "texto": "Mit **Alfa einfach** siehst du nur Heute, Route, Karte, Taschen und Lya, dazu die Einstellungen. Alles andere läuft weiter: Öffne es mit seinem Befehl oder über „Einstellungen durchsuchen“."},
-            {"t": "h", "texto": "Drei Stile"},
-            {"t": "img", "img": "estilo", "pie": "Einstellungen > Stil und Klang: dein Stil und die drei zur Auswahl."},
-            {"t": "p", "texto": "Alfa kleidet sich, wie du willst. **Alfa** ist Graphit mit abgeschrägten Ecken und dem Grün von La Jauría; **Klassisches WoW** nutzt die Rahmen, Buttons und Schriften des Spiels selbst, mit goldenen Titeln; **Glas** lässt die Welt durch transparente Hintergründe scheinen, in der Akzentfarbe deiner Wahl. Der Stil kann auch den Chat, die Minikarte und deine Aktionsleisten einkleiden (unter Komfort). Ändere ihn unter **Einstellungen > Stil und Klang** oder mit `/alfa estilo`."},
+            {"t": "h", "texto": "Fünf Stile"},
+            {"t": "img", "img": "estilo", "pie": "Einstellungen > Stil und Klang: dein Stil und die anderen zur Auswahl."},
+            {"t": "p", "texto": "Alfa kleidet sich, wie du willst. **Alfa** ist Graphit mit abgeschrägten Ecken und dem Grün von La Jauría; **La Jauría Nacht** Mitternachtsblau mit Mondsilber; **Lagerfeuer** warme Kohle mit dem Orange der Glut; **Klassisches WoW** nutzt die Rahmen, Buttons und Schriften des Spiels selbst, mit goldenen Titeln; **Glas** lässt die Welt durch transparente Hintergründe scheinen, in der Akzentfarbe deiner Wahl. Der Stil kann auch den Chat, die Minikarte und deine Aktionsleisten einkleiden (unter Komfort). Ändere ihn unter **Einstellungen > Stil und Klang** oder mit `/alfa estilo`."},
             {"t": "consejo", "texto": "Jede Seite hat ihren Befehl: `/alfa bolsas` öffnet die Taschen und `/alfa mapa` die Karte. Die ganze Liste steht im Kapitel „Tasten und Befehle“."},
-            {"t": "lista", "titulo": "Zwei Hilfen auf jeder Seite", "items": [
+            {"t": "lista", "titulo": "Drei Hilfen auf jeder Seite", "items": [
               "**Das „?“ neben dem Titel.** Tipp darauf, und Lya erklärt dir die Seite, angefangen mit ihren Fragen.",
-              "**Einstellungen durchsuchen sucht in ganz Alfa.** Außer Optionen findet es Quests, Rares und NPCs: Ein Klick öffnet ihren Eintrag oder setzt den Pfeil."
+              "**Einstellungen durchsuchen sucht in ganz Alfa.** Außer Optionen findet es Quests, Rares und NPCs: Ein Klick öffnet ihren Eintrag oder setzt den Pfeil.",
+              "**„Was ist das?“** Halte [[Alt]] gedrückt und fahr mit der Maus über einen Button oder eine Option von Alfa: Es sagt dir, wofür sie da ist."
             ]},
             {"t": "lya", "pose": "aullar2", "texto": "Wusstest du, dass der Wolf heult, wenn du das Alfa-Fenster in einer Sitzung zum ersten Mal öffnest? Das Heulen kommt aus dem Spiel selbst und hält sich an deine Lautstärke. Magst du es lieber still, schaltest du es unter „Stil und Klang“ aus."}
           ]
@@ -236,10 +237,10 @@
             ]},
             {"t": "h", "texto": "Beim Ankommen"},
             {"t": "lista", "items": [
-              "Der Pfeil wechselt zu **DU BIST DA** (oder **SUCH HIER IN DER NÄHE**, wenn das Gesuchte irgendwo im Gebiet ist), mit pulsierender Pfote.",
-              "Darunter steht, was dort zu tun ist, und dein Fortschritt („4 von 6“) mit Balken.",
-              "**Nächster Ort** bringt dich mit einem Klick zum nächsten Punkt.",
-              "Stufenschritte sind klar zu lesen: „Erreiche Stufe 30: noch 20 %“."
+              "Der Pfeil wird zu einer Alfa-Plakette: links der Wolf in seinem Medaillon, wachsam und schnüffelnd, wenn gesucht werden muss, oder heulend, wenn du angekommen bist.",
+              "Oben steht **DU BIST DA** (oder **SUCH HIER IN DER NÄHE**, wenn das Gesuchte irgendwo im Gebiet ist) und darunter in einfachen Worten, was dort zu tun ist.",
+              "Dein Fortschritt erscheint als Spur aus Pfotenabdrücken („4 von 6“), die Erfahrung als Leiste mit Prozentangabe: „Erreiche Stufe 30: dir fehlen 20 %“.",
+              "**Nächster Ort**, in derselben Plakette, bringt dich mit einem Klick zum nächsten Punkt."
             ]},
             {"t": "h", "texto": "Nur Quests, die du wirklich machen kannst"},
             {"t": "p", "texto": "Bevor Alfa dich zu einer Quest schickt, prüft es deine Stufe, deine Klasse, dein Volk, deine Fraktion, deine Berufe und deinen Ruf. Fehlt eine Vorquest, fügt es sie von selbst davor ein, in der richtigen Reihenfolge. Was du nicht erfüllen kannst, wird mit Begründung ausgeblendet, damit du nie umsonst läufst. Dungeonquests führen dich zum Eingang."},
@@ -256,6 +257,14 @@
               {"icono": "guia", "titulo": "Der nächste Guide, von selbst", "texto": "Hast du einen Guide beendet, schlägt Alfa den nächsten für deine Stufe vor."},
               {"icono": "seguir", "titulo": "Der beste Flug", "texto": "Beim Flugmeister markiert eine Pfote das Ziel, das dich deinem nächsten Schritt am nächsten bringt. Fliegen ist dein Klick."},
               {"icono": "ventana", "titulo": "Fokusmodus", "texto": "In Dungeons und im Kampf wird dein Guide kompakt; danach ist er wieder wie vorher."}
+            ]},
+            {"t": "tarjetas", "cols": 2, "titulo": "Neu auf deinem Weg", "items": [
+              {"icono": "ruta", "titulo": "Rundgang durch die Zone", "texto": "Alle deine Quests hier, die du hast und die du annehmen kannst, in der besten Reihenfolge und mit dem Pfeil. Auf der Seite Route oder im Menü deines Guides."},
+              {"icono": "huella", "titulo": "Bring mich zu …", "texto": "Wähle ein Ziel, und Alfa plant die Reise mit Flügen, Schiffen, Zeppelinen, Portalen und zu Fuß, Etappe für Etappe (`/alfa llevame`)."},
+              {"icono": "misiones", "titulo": "Graue Quests zum Abgeben", "texto": "Graue Quests, die sich nicht mehr lohnen, jede mit „Abbrechen“. Du bestätigst es."},
+              {"icono": "exito", "titulo": "Der Questgegenstand", "texto": "Sein Button zeigt, welcher Gegenstand es ist, und deinen Fortschritt („Fackel · 2 von 5“) und pulsiert, sobald du ihn benutzen kannst."},
+              {"icono": "lista", "titulo": "Die ganze Kette", "texto": "Die Quests davor und danach, welche du schon gemacht hast, und die Belohnung am Ende. Über das Menü einer Quest."},
+              {"icono": "manada", "titulo": "Die Quests deiner Gruppe", "texto": "In der Gruppe markiert die Karte, was jede Quest verlangt und wer sie hat: „Ana, Beto“."}
             ]},
             {"t": "h", "texto": "Guide-Bibliothek"},
             {"t": "img", "img": "biblioteca", "pie": "Der empfohlene Guide für deine Stufe und dein Gebiet, groß, und alle anderen nach Kategorie."},
@@ -380,13 +389,19 @@
               "Der Rand pulsiert, wenn das Spiel diese Fähigkeit aufleuchten lässt. „Fläche“ erscheint ab drei Gegnern.",
               "Darunter sagt dir eine kurze Zeile, warum."
             ]},
-            {"t": "p", "texto": "Die Rotationshilfe kennt alle **27 Spezialisierungen** der 9 Klassen und wächst mit dir: Sie schlägt nur vor, was du schon gelernt hast, mit deinem höchsten Rang. Beim ersten Mal erklärt dir ein Hinweis, wie du sie liest. Das Symbol verschiebst du, wohin du willst, und es kann die Taste aus deiner Leiste zeigen."},
+            {"t": "p", "texto": "Die Rotationshilfe kennt alle **27 Spezialisierungen** der 9 Klassen und wächst mit dir: Sie schlägt nur vor, was du schon gelernt hast, in deinem höchsten Rang. Beim ersten Mal erklärt dir ein Hinweis, wie man sie liest. Das Symbol lässt sich hinschieben, wohin du willst, kann jetzt viel größer sein und zeigt gut lesbar die Taste deiner Leiste."},
             {"t": "tarjetas", "cols": 3, "items": [
               {"icono": "aviso", "titulo": "Reaktionshinweise", "texto": "Überwältigen, Rache, Hinrichten, Gegenangriff … genau dann, wenn sie nutzbar sind."},
               {"icono": "misiones", "titulo": "Questsachen hervorgehoben", "texto": "Die Gegner, die du brauchst, markiert auf ihrer Namensplakette."},
               {"icono": "reloj", "titulo": "Schadensmesser", "texto": "Der Schaden deiner Gruppe, wenn dein Spiel den Messer hat (`/alfa dps`)."}
             ]},
-            {"t": "nota", "texto": "Heiler starten mit ausgeschalteter Rotationshilfe (die Begrüßung entscheidet das nach deiner Rolle). Unter „Kampf“ schaltest du sie ein oder aus, wann du willst."}
+            {"t": "tarjetas", "cols": 2, "titulo": "Kampfhilfen", "items": [
+              {"icono": "alerta", "titulo": "Zauber unterbrechen", "texto": "Wenn dein Ziel etwas wirkt, das du unterbrechen kannst, sagt es dir das mit deiner Fähigkeit, ihrer Taste und ob sie bereit ist (`/alfa combate corte` testet es)."},
+              {"icono": "aviso", "titulo": "Deine Bedrohung", "texto": "Eine kleine Leiste, die dich warnt, bevor du dem Tank den Gegner abnimmst, oder, wenn du tankst, bevor du ihn verlierst."},
+              {"icono": "nivel", "titulo": "Kampfübersicht", "texto": "Am Ende: wie lange er gedauert hat, dein Schaden und deine Heilung pro Sekunde und was dich am härtesten getroffen hat. Die letzte mit `/alfa combate pelea`."},
+              {"icono": "reloj", "titulo": "Deine langen Abklingzeiten", "texto": "Eine unauffällige Leiste mit allem, was 30 Sekunden oder länger braucht; jede verschwindet von selbst, sobald sie bereit ist."}
+            ]},
+            {"t": "nota", "texto": "All das zeigt nur an: Im Kampf nimmt nichts die Maus an, und nichts wirkt für dich. Heiler beginnen mit ausgeschalteter Rotationshilfe (die Begrüßung entscheidet das nach deiner Rolle); jede Hilfe schaltest du unter Kampf ein oder aus."}
           ]
         },
         {
@@ -395,10 +410,12 @@
           "lema": "Maus drüber, klicken, heilen.",
           "icono": "curacion",
           "bloques": [
-            {"t": "intro", "texto": "„Heilung“ bringt Gruppen- und Schlachtzugsrahmen, gemacht zum Heilen mit einem Klick: Du fährst mit der Maus über einen Gefährten, klickst und wirkst den Zauber, den du gewählt hast. Jeder Priester, Druide, Paladin oder Schamane nutzt es ohne Einrichtung; die anderen Klassen für ihre Buffs und zum Anvisieren."},
-            {"t": "img", "img": "curacion", "pie": "Die Seite „Heilung“: deine Rahmen, die Voreinstellungen und was jeder Klick macht."},
+            {"t": "intro", "texto": "„Heilung“ bringt Gruppen- und Schlachtzugsrahmen, gemacht zum Heilen mit einem Klick: Du fährst mit der Maus über einen Gefährten, klickst und wirkst den Zauber, den du gewählt hast. Mit demselben Klick ist er anvisiert, seine Schwächungen und der fehlende Buff sind auf einen Blick zu sehen, und es sagt dir, welcher Klick sie behebt. Jeder Priester, Druide, Paladin oder Schamane nutzt es ohne Einrichtung; die anderen Klassen für ihre Buffs, einen Verband und zum Anvisieren."},
+            {"t": "img", "img": "curacion", "pie": "Die Seite „Heilung“: „Deine Klicks“ oben, deine Rahmen und die Voreinstellungen."},
+            {"t": "h", "texto": "Deine Klicks"},
+            {"t": "p", "texto": "Ganz oben auf der Seite stehen **Deine Klicks**: eine Zeile für jeden der meistgenutzten Klicks (links, rechts, Mitte und die mit Umschalt und Strg). Öffne ihre Liste und wähle: deine Heilungen, **Schwächungszauber entfernen**, deine Buffs, **Wiederbeleben**, andere Zauber aus deinem Zauberbuch, **Einen Verband benutzen**, **Anvisieren** oder das **Spielermenü**. Du weißt nicht, was du nehmen sollst? Die **Voreinstellungen** schlagen dir Klicks für deine Klasse vor; danach änderst du, was du willst."},
             {"t": "pasos", "titulo": "Der Assistent in 3 Schritten (`/alfa curacion asistente`)", "items": [
-              "**Wähle deine Klicks.** Eine Voreinstellung für deine Klasse; wenn du heilst, kann der Linksklick nur zum Anvisieren bleiben.",
+              "**Wähle deine Klicks.** Eine Voreinstellung für deine Klasse und „Heilen und ins Ziel nehmen“; wenn du heilst, kann der Linksklick nur zum Anvisieren bleiben.",
               "**Platziere deine Rahmen.** Mit Beispielrahmen, die du ziehst: Breite, Höhe, Spalten und Wachstumsrichtung.",
               "**Teste deine Klicks.** Klick auf einen Beispielrahmen (mit oder ohne Umschalt, Strg oder Alt), und Alfa sagt dir, was es wirken würde, ohne etwas zu wirken."
             ]},
@@ -406,18 +423,38 @@
               "botones": ["Links", "Mitte", "Rechts"],
               "mods": ["Keine Taste", "Umschalt", "Strg", "Alt"],
               "acciones": [
-                ["Anvisieren", "Die Bilder in diesem Handbuch zeigen Alfa auf Spanisch. In deinem Spiel siehst du dieselben Buttons, mit ihren deutschen Namen.", "Spielermenü"],
-                ["Schnelle Heilung", "Die Bilder in diesem Handbuch zeigen Alfa auf Spanisch. In deinem Spiel siehst du dieselben Buttons, mit ihren deutschen Namen.", "Große Heilung"],
-                ["Schwächung entfernen", "Die Bilder in diesem Handbuch zeigen Alfa auf Spanisch. In deinem Spiel siehst du dieselben Buttons, mit ihren deutschen Namen.", "Dein Buff"],
-                ["Heilung über Zeit", "Die Bilder in diesem Handbuch zeigen Alfa auf Spanisch. In deinem Spiel siehst du dieselben Buttons, mit ihren deutschen Namen.", "Die Bilder in diesem Handbuch zeigen Alfa auf Spanisch. In deinem Spiel siehst du dieselben Buttons, mit ihren deutschen Namen."]
+                ["Anvisieren", "", "Spielermenü"],
+                ["Schnelle Heilung", "", "Große Heilung"],
+                ["Schwächung entfernen", "", "Dein Buff"],
+                ["Heilung über Zeit", "", ""]
               ]
             }, "pie": "Zwölf Klicks für zwölf Aktionen: drei Maustasten, mit oder ohne Umschalt, Strg oder Alt. (Beispiel)"},
+            {"t": "h", "texto": "Heilen und ins Ziel nehmen"},
+            {"t": "p", "texto": "Ist ab Werk an: Jeder Klick, der auf deinen Rahmen heilt, macht diesen Gefährten auch zu deinem Ziel. So machst du mit ihm weiter, ohne ihn erneut zu suchen: ein Buff, noch eine Heilung oder einen Fluch über deine Leiste entfernen. Der Verband funktioniert genauso. Soll dein Ziel lieber gleich bleiben, schalte **Heilen und ins Ziel nehmen** auf der Seite Heilung aus."},
+            {"t": "pasos", "titulo": "Mit einem Klick reinigen, Schritt für Schritt", "items": [
+              "Wähle unter **Deine Klicks** einen für **Schwächungszauber entfernen** (zum Beispiel Umschalt + Linksklick). Wenn deine Klasse etwas entfernen kann und kein Klick das tut, sagen es dir die Seite und dein Chat.",
+              "Im Kampf färbt sich der Rahmen von jemandem, der etwas hat, das **du** entfernen kannst, in der Farbe der Schwächung: Magie, Fluch, Gift oder Krankheit, mit ihrem Symbol oben rechts.",
+              "Fahr mit der Maus über diesen Rahmen: Der Tooltip sagt dir, was er hat und mit welchem Klick es weggeht, etwa „Gift: entferne es mit Umschalt + Linksklick“.",
+              "Mach diesen Klick, fertig: Farbe und Symbol verschwinden von selbst."
+            ]},
+            {"t": "pasos", "titulo": "Der kleine blaue Punkt: Ihm fehlt dein Buff", "items": [
+              "Außerhalb des Kampfes, wenn Buffs verteilt werden, bedeutet ein **blauer Punkt** unten rechts in einem Rahmen, dass diesem Gefährten der Buff deiner Klasse fehlt.",
+              "Fahr mit der Maus darüber: Es sagt dir, welcher fehlt und mit welchem Klick du ihn gibst.",
+              "Mach den Klick. Sobald er ihn hat, geht der Punkt aus; Gruppenbuffs zählen auch."
+            ]},
             {"t": "lista", "titulo": "Was dir die Rahmen zeigen", "items": [
               "Die Gesundheit in der Klassenfarbe und die Heilungen, die schon unterwegs sind, als hellgrüner Streifen.",
               "Eine rote Linie, wenn jemand die Bedrohung des Gegners hat.",
-              "Ein Rand in der Farbe des Schwächungszaubers, den **du** entfernen kannst.",
+              "Farbe und Symbol der Schwächung, die **du** entfernen kannst, und der blaue Punkt für den fehlenden Buff.",
               "Abgedunkelt, wenn außer Reichweite; grau, wenn tot, als Geist oder offline."
             ]},
+            {"t": "tarjetas", "cols": 2, "titulo": "Mehr Hilfe für Heiler", "items": [
+              {"icono": "alerta", "titulo": "Tank in Not", "texto": "Der Rahmen des Tanks pulsiert rot, wenn er weniger als 40 % Gesundheit hat."},
+              {"icono": "curacion", "titulo": "Mana der Heiler", "texto": "Über deinen Rahmen das Mana der Heiler deiner Gruppe. Nach jedem Kampf wird es hervorgehoben, damit du weißt, ob sich Warten lohnt."},
+              {"icono": "rejilla", "titulo": "Der Schlachtzug nach Gruppen", "texto": "Mit „Im Schlachtzug eine Gruppe pro Spalte“ steht jede Gruppe in ihrer eigenen Spalte, wie im Schlachtzugsfenster."},
+              {"icono": "bolsas", "titulo": "Ein Verband mit einem Klick", "texto": "Jede Klasse kann „Einen Verband benutzen“ auf einen Klick legen: Alfa nimmt den besten aus deinen Taschen."}
+            ]},
+            {"t": "lya", "pose": "atenta1", "texto": "Vergessen, was der blaue Punkt bedeutet oder wie man ein Gift entfernt? Frag mich mit `/alfa ayuda`: Ich erkläre es dir und bringe dich zu „Deine Klicks“."},
             {"t": "nota", "texto": "Die Rahmen ordnen sich auch im Kampf von selbst, aber was deine Klicks tun, änderst du außerhalb des Kampfes: So will es das Spiel. Mit **Rahmen verschieben** setzt du sie, wohin du willst."}
           ]
         },
@@ -450,6 +487,13 @@
               {"icono": "exito", "titulo": "Zieh das an", "texto": "Bekommst du etwas Besseres als das, was du trägst, legt **Anziehen** es mit einem Klick an (außerhalb des Kampfes)."},
               {"icono": "personajes", "titulo": "Was einlagern", "texto": "Was in der Bank oder bei einem anderen deiner Charaktere nützlicher ist, mit **Zur Bank**, wenn ein Bankier in der Nähe ist."}
             ]},
+            {"t": "tarjetas", "cols": 2, "titulo": "Neu in deinen Taschen", "items": [
+              {"icono": "personaje", "titulo": "Ausrüstungssets", "texto": "Speichere, was du trägst, unter einem Namen (Heilen, Schaden, Angeln …) und zieh es mit einem Klick an, außerhalb des Kampfes. Auf der Seite Taschen oder mit `/alfa bolsas conjunto`."},
+              {"icono": "nivel", "titulo": "Vergleichen", "texto": "Im Tooltip jedes Teils, was du gewinnst und was du verlierst gegenüber dem, was du trägst: „+5 Stärke · −3 Ausdauer“."},
+              {"icono": "personajes", "titulo": "Alle deine Charaktere", "texto": "Durchsuche Taschen, Banken und Ausrüstung all deiner Charaktere, mit Filtern nach Typ, Qualität und Charakter."},
+              {"icono": "rejilla", "titulo": "Aufräumen", "texto": "Ein Button in deinen Taschen: Beim Händler verkauft er deinen Plunder, beim Bankier lagert er deine Materialien ein. Ein weiterer Klick hält ihn an."}
+            ]},
+            {"t": "nota", "texto": "Die Taschen wurden gründlich überholt: Spezialtaschen (Köcher, Munition, Seelen, Kräuter) zählen nicht mehr als freier Platz, Munition und Splitter bleiben bei dir, die Bank wird bei Änderungen neu gelesen, und Gegenstände mit Namenszusatz („des Bären“) werden bei der Suche gefunden."},
             {"t": "consejo", "texto": "Sind deine Taschen voll, sagt dir Alfa, was du verkaufen und was du behalten solltest, mit den Preisen aus „Handel“: **Als Plunder markieren**, **Bring mich zu einem Händler** und, bei offenem Händlerfenster, **Plunder verkaufen**."}
           ]
         },
@@ -508,6 +552,14 @@
               {"icono": "reloj", "titulo": "Je nach Moment", "texto": "Sprüche passend zur Uhrzeit, zu den Festen im Spiel und zu deinem Gebiet."},
               {"icono": "talentos", "titulo": "Sie bringt dir deine Klasse bei", "texto": "Lernst du einen Zauber: wofür er gut ist und wann du ihn einsetzt."},
               {"icono": "ventana", "titulo": "Fokusmodus", "texto": "In Dungeons und im Kampf wird sie winzig, schweigt und stört nicht; danach ist sie wieder da."}
+            ]},
+            {"t": "tarjetas", "cols": 2, "titulo": "Lya im Rudel", "items": [
+              {"icono": "manada", "titulo": "Lya in der Gruppe", "texto": "Wenn deine Gefährten Alfa haben, begrüßen sich ihre Lyas und deine, sobald ihr euch zusammentut, und plaudern ab und zu."},
+              {"icono": "misiones", "titulo": "Deine Quests mit ihrer Stimme", "texto": "Jede Quest, die du annimmst, in zwei Zeilen zusammengefasst: was zu tun ist und ein Kommentar von ihr."},
+              {"icono": "huella", "titulo": "Dein Begleiter", "texto": "Sie begrüßt deinen Begleiter beim Namen und sagt dir als Jäger, wenn er hungrig oder traurig ist."},
+              {"icono": "exito", "titulo": "Herausforderungen der Woche", "texto": "Drei kleine Herausforderungen jede Woche, mit ihrem Fortschritt auf ihrer Seite. Jede erfüllte bringt ihr ein Würstchen."},
+              {"icono": "hoy", "titulo": "Geburtstage", "texto": "Jedes Jahr feiert sie den Tag, an dem sie deinen Charakter kennengelernt hat, und den von Alfa am 16. November."},
+              {"icono": "info", "titulo": "Sie zeigt dir das Neue", "texto": "In „Frag Lya“ erklärt sie „Heilen und ins Ziel nehmen“, wie man ein Gift entfernt, und den blauen Punkt."}
             ]},
             {"t": "h", "texto": "Deine Geschichte und was Lya lernt"},
             {"t": "p", "texto": "Auf ihrer Seite (**Charakter > Lya** oder `/alfa lya historia`) ist **Deine Geschichte** das Tagebuch deiner großen Schritte: deine Stufen, dein erster Dungeon, dein Reittier, dein erster Rare und dein bester Tag."},
@@ -574,11 +626,16 @@
               "Die Weglinie bis zu deinem Ziel, die pulsiert, damit du sie siehst, mit Entfernung und Restweg.",
               "Auf dem Greifen die Linie deines Flugs: wo du bist, wo du landest und die restliche Zeit.",
               "Eine Karte aus einem Stück: Beim Zoomen sieht man keine zusammengeklebten Teile.",
-              "Wolfsnotizen und die Markierung eines Rudelrufs erscheinen auch hier (Kapitel „La Jauría“)."
+              "Wolfsnotizen, Farmspots, die Baue des Rudels und die Markierung eines Rudelrufs erscheinen auch hier (Kapitel „La Jauría“)."
             ]},
-            {"t": "tarjetas", "cols": 2, "titulo": "Was dir in deinem Gebiet fehlt", "items": [
+            {"t": "tarjetas", "cols": 2, "titulo": "Neu auf der Karte", "items": [
+              {"icono": "reloj", "titulo": "Schiffe und Zeppeline", "texto": "Jeder Anleger mit seinem Countdown („1:20“); mit der Maus darüber, wohin es geht und wann es ablegt."},
+              {"icono": "alerta", "titulo": "Gefahren", "texto": "Die Elites und gefährlichen Rares deines Gebiets: rot, wenn sie dir 3 oder mehr Stufen voraus sind, sonst bernsteinfarben."}
+            ]},
+            {"t": "tarjetas", "cols": 3, "titulo": "Was dir in deinem Gebiet fehlt", "items": [
               {"icono": "descubrir", "titulo": "Unentdeckt", "texto": "Die Ecken deines Gebiets, die du noch nicht erkundet hast, mit der Erfahrung, die sie bringen."},
-              {"icono": "seguir", "titulo": "Fehlende Flugrouten", "texto": "Die Flugmeister deines Gebiets, die du noch nicht hast. Ein Klick, und der Pfeil bringt dich hin."}
+              {"icono": "seguir", "titulo": "Fehlende Flugrouten", "texto": "Die Flugmeister deines Gebiets, die du noch nicht hast. Ein Klick, und der Pfeil bringt dich hin."},
+              {"icono": "mundo", "titulo": "Entdeckermodus", "texto": "Auf der Seite Welt, wie viel du von jedem Gebiet schon erkundet hast."}
             ]},
             {"t": "nota", "texto": "In Dungeons öffnet [[M]] die Spielkarte. Auf Alfas Karte öffnet „Zur Spielkarte“ die des Spiels im selben Gebiet, und auf der Spielkarte bringt dich der Button „Alfas Karte“ zurück."}
           ]
@@ -698,6 +755,7 @@
             {"t": "consejo", "texto": "„Taschen“ nutzt diese Tipps: Sind sie voll, sagt es dir, was du verkaufen sollst und was es bringt."},
             {"t": "h", "texto": "Deine Berufe, von 1 bis 300"},
             {"t": "p", "texto": "Auf der Handel-Seite stehen deine Berufe mit ihrer Fertigkeit. Ein Klick (oder `/alfa comercio oficios`) öffnet den Guide jedes Berufs: dein nächster Schritt, jeder Abschnitt mit Rezept und Materialien, was dir bis 300 fehlt und, wenn es so weit ist, **Bring mich zum Lehrer**."},
+            {"t": "p", "texto": "**Was sich am meisten lohnt herzustellen.** Unter „Deine Rezepte mit Gewinn“ jedes Rezept mit dem Wert dessen, was du herstellst, abzüglich der Materialkosten, wie oft du es mit dem, was in Taschen und Bank liegt, schon herstellen kannst, und wie viel du verdienen würdest. Was du schon herstellen kannst, steht zuerst. Es informiert nur: Herstellen und Verkaufen sind dein Klick."},
             {"t": "tarjetas", "cols": 2, "items": [
               {"icono": "lista", "titulo": "Deine Einkaufsliste", "texto": "Für ein Rezept oder ein Ziel: was dir fehlt, wie viel du in Taschen und Bank hast und wo du es bekommst. Hakt sich beim Sammeln selbst ab."},
               {"icono": "oro", "titulo": "Einfach versteigern", "texto": "Stellst du etwas ins Auktionshaus, der empfohlene Preis und sein Preisverlauf. Einstellen bleibt dein Klick."}
@@ -769,6 +827,14 @@
               {"icono": "exito", "titulo": "Feiern des Rudels", "texto": "Lya feiert, wenn ein Wolf Stufe 60 erreicht, sein erstes Reittier bekommt oder einen Rare erlegt. Deine eigenen zu teilen ist freiwillig."},
               {"icono": "reloj", "titulo": "Die Woche des Rudels", "texto": "Was der Clan diese Woche geschafft hat, ohne Ranglisten: alles zählt."}
             ]},
+            {"t": "tarjetas", "cols": 2, "titulo": "Das Rudel, Hand in Hand", "items": [
+              {"icono": "lista", "titulo": "Das Brett des Rudels", "texto": "Gib an, wer eine Gruppe sucht, wofür (Dungeon, Quest oder Farmen) und auf welcher Stufe. Es erreicht die Wölfe deiner Gilde, mit „Flüstern“ und „Einladen“; nach einer Stunde verschwindet es von selbst."},
+              {"icono": "nivel", "titulo": "Mentor", "texto": "Nimm einen Wolf auf, der 10 Stufen unter dir ist. Nimmt er an, siehst du seine Stufe, sein Gebiet und seine Quest (nur du), und du erfährst, wenn er feststeckt."},
+              {"icono": "oro", "titulo": "Beute für das Rudel", "texto": "Wenn etwas, das du aufgehoben hast, einem anderen Wolf online nützt, öffnet „Ihm schenken“ den Handel oder legt seinen Namen im Briefkasten bereit."},
+              {"icono": "recoleccion", "titulo": "Farmspots", "texto": "„Spot hier“ markiert einen guten Ort zum Farmen in Gold. Mit „Meine Spots teilen“ sieht ihn auch deine Gilde."},
+              {"icono": "conexiones", "titulo": "Baue auf der Karte", "texto": "Live: in welchen Bauen das Rudel in jedem Gebiet ist und wie viele Wölfe in jedem sind."},
+              {"icono": "hoy", "titulo": "Der Kalender des Rudels", "texto": "Die nächsten sieben Tage, jeder mit seinen Terminen nach Uhrzeit."}
+            ]},
             {"t": "nota", "texto": "Fast alles beim Rudel setzt voraus, dass du deine Spur teilst. Jedes hat seinen eigenen Schalter in den Einstellungen am Ende dieser Seite."},
             {"t": "h", "texto": "Der Clan"},
             {"t": "p", "texto": "Am Ende der Seite steht La Jauría, der Clan: sein Motto, was er bietet, der Discord-Link zum Kopieren und **Ich will beitreten**, um deinen Platz im Rudel zu erbitten."},
@@ -780,7 +846,9 @@
               {"cmd": "/alfa plano", "texto": "Wechsle zur Ebene eines Wolfs mit offenem Bau."},
               {"cmd": "/alfa manada estado", "texto": "Was gerade gesendet und empfangen wird."},
               {"cmd": "/alfa cita mañana 21:30 Minas", "texto": "Schlag dem Rudel einen Ausflug vor (was, Tag und Uhrzeit)."},
-              {"cmd": "/alfa nota <texto>", "texto": "Hinterlass eine Notiz auf deiner Karte, wo du bist."}
+              {"cmd": "/alfa nota <texto>", "texto": "Hinterlass eine Notiz auf deiner Karte, wo du bist."},
+              {"cmd": "/alfa spot <texto>", "texto": "Markiert einen Farmspot, wo du gerade bist."},
+              {"cmd": "/alfa manada tablon <texto>", "texto": "Gibt deine Anzeige am Brett des Rudels auf."}
             ]}
           ]
         }
@@ -800,7 +868,7 @@
           "bloques": [
             {"t": "intro", "texto": "Unter **Einstellungen** (oben rechts im Fenster) liegt alles, was sich ändern lässt: der Stil, Komfort, Quests, die Karte und mehr. Am schnellsten geht es mit der Suche: Tippe in „Einstellungen durchsuchen“ ein, was du ändern willst, und Alfa bringt dich zur Option."},
             {"t": "tarjetas", "cols": 2, "items": [
-              {"icono": "apariencia", "titulo": "Stil und Klang", "texto": "Die drei Stile, Alfa einfach oder vollständig, das Heulen, der Wolf beim Einloggen, die Ankündigungen, deine Profile, deine Sicherungen, „Alfa prüfen“, „Melden“ und das Neue."},
+              {"icono": "apariencia", "titulo": "Stil und Klang", "texto": "Die fünf Stile, Alfa einfach oder vollständig, das Heulen, der Wolf beim Einloggen, die Ankündigungen, besser lesen, die freie Sicht, deine Tastenkürzel, deine Profile, deine Sicherungen, „Alfa prüfen“, „Melden“ und das Neue."},
               {"icono": "comodidades", "titulo": "Komfort", "texto": "Kleine Verbesserungen fürs Spiel, an einem Ort (nächstes Kapitel)."},
               {"icono": "misiones", "titulo": "Quests", "texto": "Quests selbst annehmen und abgeben: alle oder nur die deiner Route."},
               {"icono": "mapa", "titulo": "Karte und Entdecken", "texto": "Die Karte, die Dungeons und der Storymodus."},
@@ -809,6 +877,14 @@
             ]},
             {"t": "img", "img": "misiones", "pie": "Einstellungen > Questen: jede Option in einer Zeile erklärt."},
             {"t": "consejo", "texto": "Unten links setzt **Seite zurücksetzen** die Einstellungen der gerade offenen Seite auf den Werkszustand zurück."},
+            {"t": "h", "texto": "Besser lesen, freie Sicht und deine Tastenkürzel"},
+            {"t": "lista", "items": [
+              "**Größere Schrift.** Der ganze Text von Alfa etwas größer, in jedem Fenster.",
+              "**Farben für Farbenblinde.** Gutes in Blau, Hinweise in Gelb und Gefahr in Orange; Schwächungen in Farben, die man ohne Rot und Grün unterscheidet.",
+              "**„Was ist das?“.** Halte [[Alt]] gedrückt (oder die Taste deiner Wahl) und fahr mit der Maus über irgendetwas von Alfa: Es sagt dir, wofür es da ist. Der **Hilfemodus** lässt es an, ohne dass du die Taste hältst.",
+              "**Freie Sicht.** Eine Taste lässt nur Alfa, deinen Guide und Lya sichtbar; du wählst, was verschwindet (Chat, Minikarte, Leisten, Porträts …). Noch ein Druck holt alles zurück (`/alfa limpia`).",
+              "**Deine Tastenkürzel.** Alle Tasten von Alfa in einem einzigen Fenster: anklicken und die neue Taste drücken (`/alfa teclas`)."
+            ]},
             {"t": "h", "texto": "Deine Profile"},
             {"t": "lista", "items": [
               "In **Einstellungen > Stil und Klang > Deine Profile** speicherst du deine Einrichtung unter einem Namen und kehrst mit einem Klick zu ihr zurück.",
@@ -872,9 +948,10 @@
               {"teclas": ["Strg", "Leertaste"], "texto": "Im Angelmodus: neu auswerfen."},
               {"teclas": ["Rechtsklick"], "texto": "Auf Alfas Karte: setzt eine Markierung."},
               {"teclas": ["Umschalt", "Rechtsklick"], "texto": "Auf der Spielkarte: setzt eine Markierung."},
-              {"teclas": ["Strg", "Klick"], "texto": "Auf Alfas Karte: Pfeil und Route zu diesem Punkt."}
+              {"teclas": ["Strg", "Klick"], "texto": "Auf Alfas Karte: Pfeil und Route zu diesem Punkt."},
+              {"teclas": ["Alt"], "texto": "Halte sie gedrückt und fahr über Alfa: „Was ist das?“."}
             ]},
-            {"t": "nota", "texto": "In den Tastaturbelegungen des Spiels gibt es eine Kategorie **Alfa** für deine eigenen Tasten: Karte öffnen, Angelmodus, „In der Nähe suchen“, **Frag Lya** und **Was Lya anbietet** (macht, was ihr erster Button tut)."},
+            {"t": "nota", "texto": "Mit `/alfa teclas` änderst du alle Tasten von Alfa in einem einzigen Fenster (sie stehen auch in der Kategorie **Alfa** der Tastenbelegung des Spiels): Karte öffnen, Angelmodus, In der Nähe suchen, **Bring mich zu …**, die **freie Sicht**, den **Hilfemodus**, **Frag Lya** und **Was Lya anbietet** (macht, was ihr erster Button macht)."},
             {"t": "comandos", "titulo": "Befehle (in den Chat tippen)", "items": [
               {"cmd": "/alfa", "texto": "Öffnet das Alfa-Fenster."},
               {"cmd": "/alfa inicio", "texto": "Heute."},
@@ -884,13 +961,16 @@
               {"cmd": "/alfa rutas", "texto": "Route und Guides."},
               {"cmd": "/alfa guia", "texto": "Zeigt oder versteckt deinen Guide auf dem Bildschirm."},
               {"cmd": "/alfa cerca", "texto": "In der Nähe suchen: Flug, Gasthaus, Reparatur und mehr."},
+              {"cmd": "/alfa llevame [lugar]", "texto": "Bring mich zu …: die Reise zu diesem Ort, mit Flügen, Schiffen und zu Fuß."},
               {"cmd": "/alfa enciclopedia", "texto": "Die Enzyklopädie (auch `/alfa monturas`, `/alfa mascotas` und `/alfa legado`)."},
               {"cmd": "/alfa mazmorras", "texto": "Dungeons (`progreso`: dein Fortschritt)."},
               {"cmd": "/alfa listo", "texto": "Prüft, ob du alles Nötige für den Dungeon dabeihast."},
               {"cmd": "/alfa talentos", "texto": "Talente."},
               {"cmd": "/alfa combate · /alfa dps", "texto": "Kampf und der Schadensmesser."},
+              {"cmd": "/alfa combate corte · pelea", "texto": "Testet den Hinweis zum Unterbrechen; zeigt die Übersicht deines letzten Kampfes noch einmal."},
               {"cmd": "/alfa curacion", "texto": "Heilung (`asistente`: der Assistent)."},
               {"cmd": "/alfa bolsas", "texto": "Taschen."},
+              {"cmd": "/alfa bolsas conjunto · guardar <nombre>", "texto": "Zieht ein Ausrüstungsset an oder speichert, was du trägst, unter diesem Namen."},
               {"cmd": "/alfa lya · /alfa historias", "texto": "Zeigt oder versteckt Lya; ihre Geschichten."},
               {"cmd": "/alfa lya dia · semana", "texto": "Dein Jagdtag und deine Jagdwoche."},
               {"cmd": "/alfa lya historia", "texto": "Deine Geschichte, auf Lyas Seite."},
@@ -904,9 +984,13 @@
               {"cmd": "/alfa comercio oficios", "texto": "Der Guide für deine Berufe, von 1 bis 300."},
               {"cmd": "/alfa manada", "texto": "La Jauría (`llamar`: bitte dein Gebiet um Hilfe)."},
               {"cmd": "/alfa plano", "texto": "Wechsle zur Ebene eines Wolfs aus dem Rudel."},
+              {"cmd": "/alfa manada tablon", "texto": "Das Brett des Rudels (mit Text: gibt deine Anzeige auf)."},
               {"cmd": "/alfa cita · /alfa nota", "texto": "Schlag einen Ausflug vor oder hinterlass eine Notiz auf deiner Karte."},
+              {"cmd": "/alfa spot <texto>", "texto": "Markiert einen Farmspot, wo du gerade bist."},
               {"cmd": "/alfa comodidades", "texto": "Komfort."},
               {"cmd": "/alfa estilo", "texto": "Einstellungen > Stil und Klang."},
+              {"cmd": "/alfa limpia", "texto": "Freie Sicht: nur das Wichtigste sichtbar (noch einmal: alles)."},
+              {"cmd": "/alfa teclas", "texto": "Deine Tastenkürzel von Alfa, um sie zu ändern."},
               {"cmd": "/alfa bienvenida", "texto": "Die Einrichtung (`novedades`: die Neuerungen der Version)."},
               {"cmd": "/alfa sesion", "texto": "Deine heutige Sitzung, im Chat."},
               {"cmd": "/alfa rendimiento", "texto": "Wie viel Speicher und Prozessor jeder Teil von Alfa braucht (und gibt nicht mehr benötigten Speicher frei)."},
@@ -933,6 +1017,7 @@
               {"q": "Gehen meine Einstellungen beim Update verloren?", "a": "Nein. Alfa behält alles, und verschiebt eine Version etwas, zieht Alfa es selbst um, ein einziges Mal. Außerdem sichert es deine Einstellungen jede Woche (**Einstellungen > Stil und Klang > Sicherungen**)."},
               {"q": "Wo sind die anderen Seiten von Alfa?", "a": "Hast du **Alfa einfach** gewählt, siehst du nur das Wesentliche. Wechsle zu vollständig unter **Einstellungen > Stil und Klang** („So siehst du Alfa“) oder öffne jede Seite mit ihrem Befehl oder über die Suche."},
               {"q": "Warum wartet Alfa bei manchen Dingen, bis der Kampf vorbei ist?", "a": "Weil das Spiel einem Addon nicht erlaubt, bestimmte Dinge im Kampf zu ändern. Alfa bereitet sie vor und erledigt sie, sobald der Kampf endet."},
+              {"q": "Wenn ich mit einem Klick heile, ändert sich mein Ziel.", "a": "Das ist **Heilen und ins Ziel nehmen**: Der Gefährte, den du heilst, bleibt anvisiert, damit du mit einem Buff oder einer Reinigung weitermachen kannst. Wenn du das nicht willst, schalte es auf der Seite **Heilung** aus."},
               {"q": "Meine Leiste ist beim Wechsel von Gestalt oder Haltung leer.", "a": "Das ist die Leiste dieser Gestalt, die das Spiel getrennt führt. Alfa warnt dich und füllt sie mit einem Klick (**Meine Leiste füllen**) mit deinen Fähigkeiten, nur auf freien Plätzen."},
               {"q": "Ist Alfa kostenlos?", "a": "Ja, und das bleibt so. Es ist freie Software, ohne Werbung, und nichts schreibt von selbst in den Chat anderer Spieler."}
             ]}
@@ -1001,13 +1086,14 @@
   ],
   "novedades": {
     "mapa": {
-      "titulo": "Bis 1.2.9: die große Jagd",
+      "titulo": "Die 1.3.0: Das Rudel heilt",
       "items": [
-        "**Neu in 1.2.9:** der Pfeil im Stil von La Jauría, „Wie viel Zeit hast du?“, Weg zur 60 und „Bereit für den Dungeon“.",
-        "Klare Stufenschritte, die Elite-Warnung, Quests teilen, der nächste Guide von selbst und der beste Flug markiert.",
-        "Lya sagt dir, was beim Sterben zu tun ist, bringt dir deine Klasse bei und wird im Fokusmodus winzig; das Rudel wechselt die Ebene und feiert gemeinsam.",
-        "„Zieh das an“, Berufe von 1 bis 300, Einkaufsliste, einfach versteigern, Alfa einfach oder vollständig, Sicherungen und `/alfa diagnostico`.",
-        "**Und seit 1.2.1:** Frag Lya, die Einrichtung in 7 Schritten, die Baue, das Rudel rufen, animierte Ankündigungen, Rudeltreffen und deine Geschichte."
+        "**Heilen wird leichter:** Heile mit einem Klick, und dieser Gefährte ist anvisiert; stell „Deine Klicks“ zusammen, entferne Flüche und Gifte mit einem weiteren Klick und sieh an einem kleinen blauen Punkt, wem dein Buff fehlt.",
+        "**Die Ankunft, neu:** eine Alfa-Plakette mit dem Wolf in seinem Medaillon; dazu der Rundgang durch deine Zone, „Bring mich zu …“ und Schiffe mit Countdown auf der Karte.",
+        "**Taschen von Grund auf:** acht Fehler weniger, Ausrüstungssets, Vergleich mit dem, was du trägst, Suche in all deinen Charakteren und „Aufräumen“.",
+        "**Im Kampf:** Hinweis zum Unterbrechen von Zaubern, deine Bedrohung, die Übersicht jedes Kampfes und deine langen Abklingzeiten.",
+        "**Das Rudel und Lya:** das Brett, der Mentor, Beute für einen anderen Wolf, Farmspots, Lyas, die sich begrüßen, Herausforderungen der Woche und Geburtstage.",
+        "**Und mehr:** zwei neue Stile, freie Sicht, größere Schrift, Farben für Farbenblinde, deine Tastenkürzel und „Was ist das?“ mit [[Alt]]."
       ]
     }
   },

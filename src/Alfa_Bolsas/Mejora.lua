@@ -138,6 +138,15 @@ function Mj.Poner(o)
 		N.FueraDeCombate("bolsas.ponteEsto", function() Mj.Poner(o) end)
 		return "espera"
 	end
+	-- 1.3.0: lo que se pidió en combate se pone al terminar, pero si ya lo
+	-- llevas en esa ranura (te lo pusiste tú, o el motor) no se toca: ponerlo
+	-- otra vez movía anillos y abalorios de una ranura a la otra.
+	if o.slot and o.id and GetInventoryItemID and M.Num(M.Llamar(GetInventoryItemID, "player", o.slot)) == o.id then
+		for i, x in ipairs(propias) do
+			if x.id == o.id then table.remove(propias, i) break end
+		end
+		return false
+	end
 	-- Del vigía del motor: él lo pone (y sabe cuándo quedó puesto).
 	if o.motor then
 		local W = vigia()

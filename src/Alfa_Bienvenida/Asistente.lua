@@ -232,7 +232,8 @@ end
 -- 2. El estilo y el aullido
 ---------------------------------------------------------------------------
 local function refrescarEstilo()
-	local cristal = K.Cristal()
+	-- 1.3.0: también en La Jauría nocturno y Fogata.
+	local cristal = K.EligeAcento and K.EligeAcento() or K.Cristal()
 	if ui.secAcento then K.Mostrar(ui.secAcento, cristal) end
 	if ui.selAcento then
 		K.Mostrar(ui.selAcento, cristal)

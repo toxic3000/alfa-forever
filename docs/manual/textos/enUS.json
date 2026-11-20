@@ -17,7 +17,7 @@
     "novedad_viene": "Coming in version {v}",
     "novedad_ya": "New since version {v}",
     "pie": "Alfa · User manual",
-    "nota_capturas": "The screenshots in this manual show Alfa in Spanish. In your game you’ll see the same buttons, with their names in English."
+    "nota_capturas": ""
   },
   "carta": {
     "titulo": "Welcome to the pack",
@@ -91,7 +91,7 @@
             {"t": "etapas", "titulo": "The seven steps", "items": [
               {"titulo": "Language", "texto": "Alfa in 10 languages, even if your game is in another."},
               {"titulo": "Lya says hi", "texto": "Your she-wolf companion introduces herself."},
-              {"titulo": "Style", "texto": "Alfa, Classic WoW or Glass, and Simple or Full Alfa."},
+              {"titulo": "Style", "texto": "One of the five styles, and Simple or Full Alfa."},
               {"titulo": "How much Alfa does", "texto": "“Alfa does it for you”, “Balanced” or “I decide”."},
               {"titulo": "Your extras", "texto": "A mosaic: turn each one on with a click."},
               {"titulo": "La Jauría", "texto": "Whether the pack sees you on the map."},
@@ -149,13 +149,14 @@
               {"icono": "buscar", "titulo": "Search settings", "texto": "Find any option by typing its name."}
             ]},
             {"t": "nota", "texto": "With **Simple Alfa** you only see Today, Route, Map, Bags and Lya, plus Settings. Everything else keeps working: open it with its command or with “Search settings”."},
-            {"t": "h", "texto": "Three styles"},
-            {"t": "img", "img": "estilo", "pie": "Settings > Style and sound: your style and the three to choose from."},
-            {"t": "p", "texto": "Alfa dresses however you like. **Alfa** is graphite with cut corners and La Jauría’s green; **Classic WoW** uses the game’s own frames, buttons and fonts, with gold titles; **Glass** lets you see the world through see-through backgrounds, in the accent color you pick. The style can also dress the chat, the minimap and your action bars (in Conveniences). Change it in **Settings > Style and sound** or with `/alfa estilo`."},
+            {"t": "h", "texto": "Five styles"},
+            {"t": "img", "img": "estilo", "pie": "Settings > Style and sound: your style and the others to choose from."},
+            {"t": "p", "texto": "Alfa dresses the way you like. **Alfa** is graphite with cut corners and La Jauría’s green; **La Jauría Night**, midnight blue with moonlit silver; **Campfire**, warm charcoal with the orange of embers; **Classic WoW** uses the game’s own frames, buttons and fonts, with gold titles; **Glass** lets the world show through transparent backgrounds, in the accent color you choose. The style can also dress the chat, the minimap and your action bars (in Conveniences). Change it in **Settings > Style and sound** or with `/alfa estilo`."},
             {"t": "consejo", "texto": "Every page has its own command: `/alfa bolsas` opens Bags and `/alfa mapa` opens the map. The full list is in the “Shortcuts and commands” chapter."},
-            {"t": "lista", "titulo": "Two helpers on every page", "items": [
+            {"t": "lista", "titulo": "Three helpers on every page", "items": [
               "**The “?” next to the title.** Tap it and Lya explains that page, starting with its questions.",
-              "**Search settings searches all of Alfa.** Besides options, it finds quests, rares and NPCs: one click opens their page or sets the arrow."
+              "**Search settings searches all of Alfa.** Besides options, it finds quests, rares and NPCs: one click opens their page or sets the arrow.",
+              "**“What’s this?”** Hold [[Alt]] and hover over any Alfa button or option: it tells you what it’s for."
             ]},
             {"t": "lya", "pose": "aullar2", "texto": "Did you know the wolf howls the first time you open the Alfa window each session? It’s a howl from the game itself, so it follows your volume. If you’d rather have silence, turn it off in Style and sound."}
           ]
@@ -236,10 +237,10 @@
             ]},
             {"t": "h", "texto": "On arrival"},
             {"t": "lista", "items": [
-              "The arrow switches to **YOU MADE IT** (or **SEARCH AROUND HERE**, if what you want is somewhere in the area) with the paw print pulsing.",
-              "Below, it tells you what to do there and your progress (“4 of 6”) with its bar.",
-              "**Next spot** takes you to the next point with one click.",
-              "Level steps read clearly: “Reach level 30: 20% to go”."
+              "The arrow becomes an Alfa plate: on the left, the wolf in its medallion, alert and sniffing when it’s time to search, or howling when you’ve arrived.",
+              "At the top it says **YOU MADE IT** (or **SEARCH AROUND HERE**, if what you want is somewhere in the area) and, below, what to do there in plain words.",
+              "Your progress shows as a trail of paw prints (“4 of 6”); experience, as a bar with its percentage: “Reach level 30: 20% to go”.",
+              "**Next spot**, inside the same plate, takes you to the next point with one click."
             ]},
             {"t": "h", "texto": "Only quests you can actually do"},
             {"t": "p", "texto": "Before sending you on a quest, Alfa checks your level, class, race, faction, professions and reputation. If a prerequisite quest is missing, it adds it first, in order. Whatever you can’t complete is hidden along with the reason, so you never walk there for nothing. Dungeon quests take you to the entrance."},
@@ -256,6 +257,14 @@
               {"icono": "guia", "titulo": "The next guide, on its own", "texto": "When you finish a guide, Alfa suggests the next one for your level."},
               {"icono": "seguir", "titulo": "The best flight", "texto": "At the flight master, a paw print marks the destination that brings you closest to your next step. Flying is your click."},
               {"icono": "ventana", "titulo": "Focus mode", "texto": "In dungeons and in combat your guide goes compact; when you leave, it’s back the way you had it."}
+            ]},
+            {"t": "tarjetas", "cols": 2, "titulo": "New on your way", "items": [
+              {"icono": "ruta", "titulo": "Zone circuit", "texto": "All your quests here, the ones you have and the ones you can pick up, in the best order and with the arrow. On the Route page or your guide’s menu."},
+              {"icono": "huella", "titulo": "Take me to…", "texto": "Pick a destination and Alfa plans the trip with flights, boats, zeppelins, portals and on foot, leg by leg (`/alfa llevame`)."},
+              {"icono": "misiones", "titulo": "Grey quests to drop", "texto": "Grey quests that are no longer worth it, each with “Abandon”. You confirm it."},
+              {"icono": "exito", "titulo": "The quest item", "texto": "Its button says which item it is and your progress (“Torch · 2 of 5”) and pulses when you can use it."},
+              {"icono": "lista", "titulo": "The whole chain", "texto": "The quests before and after, which ones you’ve done and the final reward. From a quest’s menu."},
+              {"icono": "manada", "titulo": "Your group’s quests", "texto": "In a group, the map marks what each quest asks for and who has it: “Ana, Beto”."}
             ]},
             {"t": "h", "texto": "Guide library"},
             {"t": "img", "img": "biblioteca", "pie": "The recommended guide for your level and zone, front and center, and all the others by category."},
@@ -380,13 +389,19 @@
               "The border pulses when the game makes that ability glow. “Area” shows up with three or more enemies.",
               "Below, a short line tells you why."
             ]},
-            {"t": "p", "texto": "The rotation helper knows all **27 specializations** of the 9 classes and grows with you: it only suggests what you’ve already learned, at your highest rank. The first time, a prompt explains how to read it. You can move the icon wherever you like, and it can show the key from your bar."},
+            {"t": "p", "texto": "The rotation helper knows all **27 specializations** of the 9 classes and grows with you: it only suggests what you’ve already learned, at your highest rank. The first time, a note explains how to read it. The icon moves wherever you want, can now be much bigger and shows your bar’s key on top, nice and clear."},
             {"t": "tarjetas", "cols": 3, "items": [
               {"icono": "aviso", "titulo": "Reaction alerts", "texto": "Overpower, Revenge, Execute, Counterattack… right when they can be used."},
               {"icono": "misiones", "titulo": "Quest things, highlighted", "texto": "The enemies you need, marked on their nameplate."},
               {"icono": "reloj", "titulo": "Damage meter", "texto": "Your group’s damage, when your game includes the meter (`/alfa dps`)."}
             ]},
-            {"t": "nota", "texto": "Healers start with the rotation helper turned off (the welcome decides based on your role). Turn it on or off in Combat whenever you like."}
+            {"t": "tarjetas", "cols": 2, "titulo": "Fight helpers", "items": [
+              {"icono": "alerta", "titulo": "Interrupt spells", "texto": "When your target casts something you can interrupt, it tells you with your ability, its key and whether it’s ready (`/alfa combate corte` tests it)."},
+              {"icono": "aviso", "titulo": "Your threat", "texto": "A small bar that warns you before you pull the enemy off the tank or, if you tank, before you lose it."},
+              {"icono": "nivel", "titulo": "Fight summary", "texto": "When it ends: how long it lasted, your damage and healing per second and what hit you hardest. The last one, with `/alfa combate pelea`."},
+              {"icono": "reloj", "titulo": "Your long cooldowns", "texto": "A discreet bar with whatever takes 30 seconds or more to come back; each one leaves on its own when it’s ready."}
+            ]},
+            {"t": "nota", "texto": "All of this only shows: nothing takes the mouse in combat and nothing casts for you. Healers start with the rotation helper off (the welcome decides based on your role); each helper is turned on or off in Combat."}
           ]
         },
         {
@@ -395,10 +410,12 @@
           "lema": "Hover, click, heal.",
           "icono": "curacion",
           "bloques": [
-            {"t": "intro", "texto": "Healing adds party and raid frames built for click-to-heal: hover over a teammate, click and cast the spell you chose. Any priest, druid, paladin or shaman can use it without setting anything up; other classes use it for their buffs and for targeting."},
-            {"t": "img", "img": "curacion", "pie": "The Healing page: your frames, the presets and what each click does."},
+            {"t": "intro", "texto": "Healing adds party and raid frames made for click healing: hover over a teammate, click and cast the spell you chose. The same click targets them, their debuffs and missing buff show at a glance, and it tells you which click fixes them. Any priest, druid, paladin or shaman uses it with no setup; other classes use it for their buffs, a bandage and targeting."},
+            {"t": "img", "img": "curacion", "pie": "The Healing page: “Your clicks” at the top, your frames and the presets."},
+            {"t": "h", "texto": "Your clicks"},
+            {"t": "p", "texto": "The first thing on the page is **Your clicks**: a row for each of the most used clicks (left, right, middle and the Shift and Ctrl ones). Open its list and choose: your heals, **Remove debuffs**, your buffs, **Revive**, other spells from your spellbook, **Use a bandage**, **Target** or the **Player menu**. Not sure what to pick? The **Presets** suggest some clicks for your class; then change whatever you like."},
             {"t": "pasos", "titulo": "The 3-step wizard (`/alfa curacion asistente`)", "items": [
-              "**Choose your clicks.** A preset for your class; if you heal, left click can stay just for targeting.",
+              "**Choose your clicks.** A preset for your class and “Heal and target”; if you heal, the left click can stay just for targeting.",
               "**Place your frames.** With sample frames you drag around: width, height, columns and which way they grow.",
               "**Test your clicks.** Click a sample frame (with or without Shift, Ctrl or Alt) and Alfa tells you what it would cast, without casting anything."
             ]},
@@ -406,18 +423,38 @@
               "botones": ["Left", "Middle", "Right"],
               "mods": ["No key", "Shift", "Ctrl", "Alt"],
               "acciones": [
-                ["Target", "The screenshots in this manual show Alfa in Spanish. In your game you’ll see the same buttons, with their names in English.", "Player menu"],
-                ["Your quick heal", "The screenshots in this manual show Alfa in Spanish. In your game you’ll see the same buttons, with their names in English.", "Your big heal"],
-                ["Remove debuff", "The screenshots in this manual show Alfa in Spanish. In your game you’ll see the same buttons, with their names in English.", "Your buff"],
-                ["Heal over time", "The screenshots in this manual show Alfa in Spanish. In your game you’ll see the same buttons, with their names in English.", "The screenshots in this manual show Alfa in Spanish. In your game you’ll see the same buttons, with their names in English."]
+                ["Target", "", "Player menu"],
+                ["Your quick heal", "", "Your big heal"],
+                ["Remove debuff", "", "Your buff"],
+                ["Heal over time", "", ""]
               ]
             }, "pie": "Twelve clicks for twelve actions: three mouse buttons, with or without Shift, Ctrl or Alt. (Example)"},
+            {"t": "h", "texto": "Heal and target"},
+            {"t": "p", "texto": "It comes on: every click that heals on your frames also makes that teammate your target. That way you keep going with them without looking for them again: a buff, another heal or removing a curse from your bar. The bandage works the same. If you’d rather your target didn’t change, turn off **Heal and target** on the Healing page."},
+            {"t": "pasos", "titulo": "Cleanse with one click, step by step", "items": [
+              "In **Your clicks**, pick one for **Remove debuffs** (for example, Shift + left click). If your class removes something and no click does it, the page and your chat let you know.",
+              "In a fight, the frame of anyone with something **you** can remove turns the color of the debuff: magic, curse, poison or disease, with its icon at the top right.",
+              "Hover over that frame: the tooltip tells you what they have and which click removes it, such as “Poison: remove it with Shift + left click”.",
+              "Make that click and you’re done: the color and the icon go away on their own."
+            ]},
+            {"t": "pasos", "titulo": "The little blue dot: they’re missing your buff", "items": [
+              "Out of combat, which is when buffs get handed out, a **blue dot** at the bottom right of a frame means that teammate is missing your class’s buff.",
+              "Hover over it: it tells you which one is missing and which click gives it.",
+              "Make the click. Once they have it, the dot goes out; group buffs count too."
+            ]},
             {"t": "lista", "titulo": "What the frames show you", "items": [
               "Health in the class color, and incoming heals in a light green band.",
               "A red line if someone has the enemy’s aggro.",
-              "A border in the color of a debuff **you** can remove.",
+              "The color and icon of the debuff **you** can remove, and the blue dot for the missing buff.",
               "Faded if out of range; gray if dead, a ghost or disconnected."
             ]},
+            {"t": "tarjetas", "cols": 2, "titulo": "More help for healers", "items": [
+              {"icono": "alerta", "titulo": "Tank in trouble", "texto": "The tank’s frame pulses red when they have less than 40% health left."},
+              {"icono": "curacion", "titulo": "Healers’ mana", "texto": "Above your frames, the mana of your group’s healers. It stands out after each fight, so you know whether it’s worth waiting."},
+              {"icono": "rejilla", "titulo": "The raid by groups", "texto": "With “In a raid, one group per column”, each group goes in its own column, like in the raid window."},
+              {"icono": "bolsas", "titulo": "A bandage in one click", "texto": "Any class can put “Use a bandage” on a click: Alfa uses the best one in your bags."}
+            ]},
+            {"t": "lya", "pose": "atenta1", "texto": "Forgot what the blue dot was or how to remove a poison? Ask me with `/alfa ayuda`: I’ll explain it and take you to “Your clicks”."},
             {"t": "nota", "texto": "The frames rearrange themselves even in combat, but changing what your clicks do has to happen out of combat: the game requires it. With **Move frames** you can put them wherever you like."}
           ]
         },
@@ -450,6 +487,13 @@
               {"icono": "exito", "titulo": "Put this on", "texto": "If you get something better than what you’re wearing, **Put it on** equips it with one click (out of combat)."},
               {"icono": "personajes", "titulo": "What to store", "texto": "What’s more useful in the bank or on another of your characters, with **To the bank** if a banker is nearby."}
             ]},
+            {"t": "tarjetas", "cols": 2, "titulo": "New in your bags", "items": [
+              {"icono": "personaje", "titulo": "Gear sets", "texto": "Save what you’re wearing under a name (healing, damage, fishing…) and put it on with one click, out of combat. On the Bags page or with `/alfa bolsas conjunto`."},
+              {"icono": "nivel", "titulo": "Compare", "texto": "In each piece’s tooltip, what you gain and what you lose against what you’re wearing: “+5 Strength · −3 Stamina”."},
+              {"icono": "personajes", "titulo": "All your characters", "texto": "Search the bags, banks and gear of all your characters, with filters for type, quality and character."},
+              {"icono": "rejilla", "titulo": "Tidy up", "texto": "A button in your bags: at the vendor, it sells your junk; at the banker, it stores your materials. Another click stops it."}
+            ]},
+            {"t": "nota", "texto": "The bags got a thorough check-up: special bags (quivers, ammo, soul and herb bags) no longer count as free space, ammo and shards stay with you, the bank is read again when it changes, and items with a suffix (“of the Bear”) show up when you search."},
             {"t": "consejo", "texto": "When your bags fill up, Alfa tells you what to sell and what to keep, using Trade’s prices: **Mark as junk**, **Take me to a vendor** and, with the vendor open, **Sell the junk**."}
           ]
         },
@@ -508,6 +552,14 @@
               {"icono": "reloj", "titulo": "For the moment", "texto": "Lines for the time of day, the game’s holidays and the zone you’re in."},
               {"icono": "talentos", "titulo": "She teaches you your class", "texto": "When you learn a spell: what it’s for and when to use it."},
               {"icono": "ventana", "titulo": "Focus mode", "texto": "In dungeons and in combat she gets tiny, goes quiet and stays out of the way; when you leave, she’s back."}
+            ]},
+            {"t": "tarjetas", "cols": 2, "titulo": "Lya, with the pack", "items": [
+              {"icono": "manada", "titulo": "Lya in a group", "texto": "If your teammates have Alfa, their Lyas and yours greet each other when you group up and chat now and then."},
+              {"icono": "misiones", "titulo": "Your quests in her voice", "texto": "Every quest you accept, summed up in two lines: what to do and a comment of hers."},
+              {"icono": "huella", "titulo": "Your pet", "texto": "She greets your pet by name and, if you’re a hunter, tells you when it’s hungry or sad."},
+              {"icono": "exito", "titulo": "Weekly challenges", "texto": "Three little challenges every week, with their progress on her page. Each one completed earns her a sausage."},
+              {"icono": "hoy", "titulo": "Birthdays", "texto": "Every year she celebrates the day she met your character, and Alfa’s too, on November 16."},
+              {"icono": "info", "titulo": "She teaches you what’s new", "texto": "In “Ask Lya” she explains Heal and target, how to remove a poison and the blue dot."}
             ]},
             {"t": "h", "texto": "Your story and what Lya learns"},
             {"t": "p", "texto": "On her page (**Character > Lya** or `/alfa lya historia`), **Your story** is the diary of your big steps: your levels, your first dungeon, your mount, your first rare and your best day."},
@@ -574,11 +626,16 @@
               "The route line to your destination, pulsing so you see it, with the distance and how much is left.",
               "On a gryphon, the line of your flight: where you are, where you land and the time left.",
               "A one-piece map: zooming in shows no stitched-together tiles.",
-              "Wolf notes and the mark of a pack call show up here too (chapter “La Jauría”)."
+              "Wolf notes, farming spots, the pack’s dens and the mark of a call also show up here (chapter “La Jauría”)."
             ]},
-            {"t": "tarjetas", "cols": 2, "titulo": "What’s left in your zone", "items": [
-              {"icono": "descubrir", "titulo": "Undiscovered", "texto": "The corners of your zone you haven’t explored yet, with the experience they give."},
-              {"icono": "seguir", "titulo": "Missing flight paths", "texto": "The flight masters in your zone you don’t have yet. One click and the arrow takes you."}
+            {"t": "tarjetas", "cols": 2, "titulo": "New on the map", "items": [
+              {"icono": "reloj", "titulo": "Boats and zeppelins", "texto": "Each dock with its countdown (“1:20”); hover over it to see where it goes and when it leaves."},
+              {"icono": "alerta", "titulo": "Dangers", "texto": "Elites and dangerous rares in your zone: red if 3+ levels above you, amber if not."}
+            ]},
+            {"t": "tarjetas", "cols": 3, "titulo": "What’s left in your zone", "items": [
+              {"icono": "descubrir", "titulo": "Undiscovered", "texto": "Corners of your zone you haven’t explored yet, and their experience."},
+              {"icono": "seguir", "titulo": "Missing flight paths", "texto": "Flight masters in your zone you don’t have yet; one click sets the arrow."},
+              {"icono": "mundo", "titulo": "Explorer mode", "texto": "On the World page, how much of each zone you’ve explored."}
             ]},
             {"t": "nota", "texto": "Inside a dungeon, [[M]] opens the game’s map. From Alfa’s map, “Go to the game’s map” opens the game’s map on the same zone, and on the game’s map the “Alfa’s map” button takes you back."}
           ]
@@ -698,6 +755,7 @@
             {"t": "consejo", "texto": "Bags uses this advice: when your bags fill up, it tells you what to sell and how much you’ll get."},
             {"t": "h", "texto": "Your professions, 1 to 300"},
             {"t": "p", "texto": "The Trade page lists your professions with their skill. A click (or `/alfa comercio oficios`) opens each one’s guide: your next step, each stretch with its recipe and materials, what’s left from here to 300 and, when it’s time, **Take me to the trainer**."},
+            {"t": "p", "texto": "**What to craft for the most profit.** In “Your recipes that make a profit”, each recipe with what its result is worth minus what its materials cost, how many times you can already make it with what’s in your bags and bank, and how much you’d earn. The ones you can make now come first. It only informs: crafting and selling are your click."},
             {"t": "tarjetas", "cols": 2, "items": [
               {"icono": "lista", "titulo": "Your shopping list", "texto": "For a recipe or a goal: what you’re missing, how much you have in bags and bank and where to get it. It checks itself off as you gather."},
               {"icono": "oro", "titulo": "Easy auctions", "texto": "When you list something at the auction house, the suggested price and its price history. Posting is still your click."}
@@ -769,6 +827,14 @@
               {"icono": "exito", "titulo": "Pack celebrations", "texto": "Lya celebrates when a wolf hits 60, gets their first mount or hunts down a rare. Sharing yours is optional."},
               {"icono": "reloj", "titulo": "The pack’s week", "texto": "What the clan did this week, no rankings: everything counts."}
             ]},
+            {"t": "tarjetas", "cols": 2, "titulo": "The pack, hand in hand", "items": [
+              {"icono": "lista", "titulo": "The pack board", "texto": "Post who’s looking for a group, for what (dungeon, quest or farming) and at what level. It reaches the wolves in your guild, with “Whisper” and “Invite”; it clears itself after an hour."},
+              {"icono": "nivel", "titulo": "Mentor", "texto": "Adopt a wolf 10 levels below you. If they accept, you see their level, zone and quest (only you) and it tells you if they get stuck."},
+              {"icono": "oro", "titulo": "Loot for the pack", "texto": "If something you picked up is useful to another online wolf, “Give it to them” opens the trade or gets their name ready in the mailbox."},
+              {"icono": "recoleccion", "titulo": "Farming spots", "texto": "“Spot here” marks a good farming place in gold. With “Share my spots”, your guild sees them too."},
+              {"icono": "conexiones", "titulo": "Dens on the map", "texto": "Live: which dens the pack is in for each zone and how many wolves are in each one."},
+              {"icono": "hoy", "titulo": "The pack calendar", "texto": "The next seven days, each with its events by the hour."}
+            ]},
             {"t": "nota", "texto": "Almost everything in the pack needs you to share your trail. Each thing has its own switch in the settings, at the end of this page."},
             {"t": "h", "texto": "The clan"},
             {"t": "p", "texto": "At the bottom of the page is La Jauría, the clan: its motto, what it offers, the Discord link to copy and **I want to join**, to ask for your place in the pack."},
@@ -780,7 +846,9 @@
               {"cmd": "/alfa plano", "texto": "Move to the layer of a wolf with an open den."},
               {"cmd": "/alfa manada estado", "texto": "What’s being sent and received right now."},
               {"cmd": "/alfa cita mañana 21:30 Minas", "texto": "Suggest an outing to the pack (what, day and time)."},
-              {"cmd": "/alfa nota <texto>", "texto": "Leave a note on your map where you are."}
+              {"cmd": "/alfa nota <texto>", "texto": "Leave a note on your map where you are."},
+              {"cmd": "/alfa spot <texto>", "texto": "Mark a farming spot where you are."},
+              {"cmd": "/alfa manada tablon <texto>", "texto": "Post your note on the pack board."}
             ]}
           ]
         }
@@ -800,7 +868,7 @@
           "bloques": [
             {"t": "intro", "texto": "**Settings** (at the top right of the window) is home to everything you can change: the style, conveniences, quests, the map and more. The quickest way in is the search box: type what you want to change in “Search settings” and Alfa takes you to the option."},
             {"t": "tarjetas", "cols": 2, "items": [
-              {"icono": "apariencia", "titulo": "Style and sound", "texto": "The three styles, Simple or Full Alfa, the howl, the wolf on login, announcements, your profiles, your backups, “Check Alfa”, “Report” and what’s new."},
+              {"icono": "apariencia", "titulo": "Style and sound", "texto": "The five styles, Simple or Full Alfa, the howl, the wolf at login, the announcements, easier reading, the clean screen, your shortcuts, your profiles, your backups, “Check Alfa”, “Report” and what’s new."},
               {"icono": "comodidades", "titulo": "Conveniences", "texto": "Small improvements to the game, all in one place (next chapter)."},
               {"icono": "misiones", "titulo": "Quests", "texto": "Accept and turn in on its own, all quests or only your route’s."},
               {"icono": "mapa", "titulo": "Map and Discovery", "texto": "The map, dungeons and story mode."},
@@ -809,6 +877,14 @@
             ]},
             {"t": "img", "img": "misiones", "pie": "Settings > Questing: each option explained in one line."},
             {"t": "consejo", "texto": "At the bottom left, **Reset page** puts the settings of the page you’re viewing back the way they came."},
+            {"t": "h", "texto": "Easier reading, clean screen and your shortcuts"},
+            {"t": "lista", "items": [
+              "**Bigger text.** All of Alfa’s text a bit larger, in every window.",
+              "**Colour-blind friendly colours.** Good things in blue, warnings in yellow and danger in orange; debuffs, in colors you can tell apart without red and green.",
+              "**“What’s this?”.** With [[Alt]] held down (or the key you choose), hover over anything in Alfa and it tells you what it’s for. **Help mode** keeps it on without holding the key.",
+              "**Clean screen.** One key leaves only Alfa, your guide and Lya in view; you choose what hides (chat, minimap, bars, portraits…). Press it again to bring everything back (`/alfa limpia`).",
+              "**Your shortcuts.** All of Alfa’s keys in a single window: click and press the new key (`/alfa teclas`)."
+            ]},
             {"t": "h", "texto": "Your profiles"},
             {"t": "lista", "items": [
               "In **Settings > Style and sound > Your profiles**, save your setup under a name and go back to it with a click.",
@@ -872,9 +948,10 @@
               {"teclas": ["Ctrl", "Space"], "texto": "In fishing mode: cast again."},
               {"teclas": ["Right-click"], "texto": "On Alfa’s map: places a marker."},
               {"teclas": ["Shift", "Right-click"], "texto": "On the game’s map: places a marker."},
-              {"teclas": ["Ctrl", "Click"], "texto": "On Alfa’s map: the arrow and the route to that point."}
+              {"teclas": ["Ctrl", "Click"], "texto": "On Alfa’s map: the arrow and the route to that point."},
+              {"teclas": ["Alt"], "texto": "Hold it and hover over Alfa: “What’s this?”."}
             ]},
-            {"t": "nota", "texto": "In the game’s key binding options there’s an **Alfa** category where you can choose your own keys: open the map, fishing mode, Find nearby, **Ask Lya** and **What Lya offers** (does what her first button does)."},
+            {"t": "nota", "texto": "With `/alfa teclas` you change all of Alfa’s keys from a single window (they’re also in the **Alfa** category of the game’s key bindings): open the map, fishing mode, Find nearby, **Take me to…**, the **clean screen**, **help mode**, **Ask Lya** and **What Lya offers** (does what her first button does)."},
             {"t": "comandos", "titulo": "Commands (typed in chat)", "items": [
               {"cmd": "/alfa", "texto": "Opens the Alfa window."},
               {"cmd": "/alfa inicio", "texto": "Today."},
@@ -884,13 +961,16 @@
               {"cmd": "/alfa rutas", "texto": "Route and guides."},
               {"cmd": "/alfa guia", "texto": "Shows or hides your on-screen guide."},
               {"cmd": "/alfa cerca", "texto": "Find nearby: flight, inn, repair and more."},
+              {"cmd": "/alfa llevame [lugar]", "texto": "Take me to…: the trip to that place, with flights, boats and on foot."},
               {"cmd": "/alfa enciclopedia", "texto": "The Encyclopedia (also `/alfa monturas`, `/alfa mascotas` and `/alfa legado`)."},
               {"cmd": "/alfa mazmorras", "texto": "Dungeons (`progreso`: your progress)."},
               {"cmd": "/alfa listo", "texto": "Checks whether you carry what you need for the dungeon."},
               {"cmd": "/alfa talentos", "texto": "Talents."},
               {"cmd": "/alfa combate · /alfa dps", "texto": "Combat and the damage meter."},
+              {"cmd": "/alfa combate corte · pelea", "texto": "Test the interrupt alert; see your last fight’s summary again."},
               {"cmd": "/alfa curacion", "texto": "Healing (`asistente`: the wizard)."},
               {"cmd": "/alfa bolsas", "texto": "Bags."},
+              {"cmd": "/alfa bolsas conjunto · guardar <nombre>", "texto": "Put on a gear set, or save what you’re wearing under that name."},
               {"cmd": "/alfa lya · /alfa historias", "texto": "Shows or hides Lya; her stories."},
               {"cmd": "/alfa lya dia · semana", "texto": "Your hunting day and week."},
               {"cmd": "/alfa lya historia", "texto": "Your story, on Lya’s page."},
@@ -904,9 +984,13 @@
               {"cmd": "/alfa comercio oficios", "texto": "Your professions guide, 1 to 300."},
               {"cmd": "/alfa manada", "texto": "La Jauría (`llamar`: ask your zone for help)."},
               {"cmd": "/alfa plano", "texto": "Move to the layer of a pack wolf."},
+              {"cmd": "/alfa manada tablon", "texto": "The pack board (with text: post your note)."},
               {"cmd": "/alfa cita · /alfa nota", "texto": "Suggest an outing or leave a note on your map."},
+              {"cmd": "/alfa spot <texto>", "texto": "Mark a farming spot where you are."},
               {"cmd": "/alfa comodidades", "texto": "Conveniences."},
               {"cmd": "/alfa estilo", "texto": "Settings > Style and sound."},
+              {"cmd": "/alfa limpia", "texto": "Clean screen: only the essentials in view (again: everything)."},
+              {"cmd": "/alfa teclas", "texto": "Your Alfa shortcuts, to change them."},
               {"cmd": "/alfa bienvenida", "texto": "Your setup (`novedades`: what’s new in this version)."},
               {"cmd": "/alfa sesion", "texto": "Today’s session, in chat."},
               {"cmd": "/alfa rendimiento", "texto": "How much memory and CPU each part of Alfa uses (and frees the memory it no longer needs)."},
@@ -933,6 +1017,7 @@
               {"q": "Do I lose my settings when I update?", "a": "No. Alfa keeps everything, and if a version moves something, it migrates it by itself, just once. It also backs up your settings every week (**Settings > Style and sound > Backups**)."},
               {"q": "Where are Alfa’s other pages?", "a": "If you chose **Simple Alfa**, you only see the essentials. Switch to Full in **Settings > Style and sound** (“How you see Alfa”), or open any page with its command or the search box."},
               {"q": "Why does Alfa wait for the fight to end for some things?", "a": "Because the game doesn’t let an addon change certain things in combat. Alfa gets them ready and does them as soon as the fight is over."},
+              {"q": "When I heal with a click, my target changes.", "a": "That’s **Heal and target**: the teammate you heal stays targeted so you can follow up with a buff or a cleanse. If you don’t want it, turn it off on the **Healing** page."},
               {"q": "My bar looks empty when I change form or stance.", "a": "It’s that form’s own bar, which the game keeps separate. Alfa lets you know and fills it with your abilities in one click (**Fill my bar**), only in empty slots."},
               {"q": "Is Alfa free?", "a": "Yes, and it always will be. It’s free software, with no ads, and nothing it does posts on its own in other players’ chat."}
             ]}
@@ -1001,13 +1086,14 @@
   ],
   "novedades": {
     "mapa": {
-      "titulo": "Up to 1.2.9: the great hunt",
+      "titulo": "1.3.0: the pack heals",
       "items": [
-        "**New in 1.2.9:** the arrow arrives in La Jauría’s style, “How much time do you have?”, Road to 60 and “Ready for the dungeon”.",
-        "Clear level steps, the elite warning, sharing quests, the next guide on its own and the best flight marked.",
-        "Lya tells you what to do when you die, teaches you your class and gets tiny in focus mode; the pack changes layers and celebrates together.",
-        "“Put this on”, professions 1 to 300, a shopping list, easy auctions, Simple or Full Alfa, backups and `/alfa diagnostico`.",
-        "**And since 1.2.1:** Ask Lya, the 7-step setup, dens, calling the pack, animated announcements, pack outings and your story."
+        "**Healing is easier:** heal with a click and that teammate gets targeted; set up “Your clicks”, cleanse curses and poisons with another click and see with a little blue dot who’s missing your buff.",
+        "**A new arrival:** an Alfa plate with the wolf in its medallion; plus your zone’s circuit, “Take me to…” and boats with a countdown on the map.",
+        "**Bags, thoroughly:** eight fewer bugs, gear sets, comparing with what you wear, searching all your characters and “Tidy up”.",
+        "**In the fight:** interrupt alert, your threat, a summary of each fight and your long cooldowns.",
+        "**The pack and Lya:** the board, the mentor, loot for another wolf, farming spots, Lyas that greet each other, weekly challenges and birthdays.",
+        "**And more:** two new styles, clean screen, bigger text, colour-blind friendly colours, your shortcuts and “What’s this?” with [[Alt]]."
       ]
     }
   },
