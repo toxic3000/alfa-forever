@@ -16,6 +16,7 @@ Retrato.lua
 Canal.lua
 Red.lua
 Gente.lua
+Cerca.lua
 Seguir.lua
 Invitar.lua
 Guaridas.lua

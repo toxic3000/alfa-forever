@@ -71,6 +71,7 @@ N.Modulo({
 		marcarRaro = true, -- en grupo, ofrecer la calavera para el raro que seleccionas (1.2.7)
 		cazarJuntos = true, -- compartir tus misiones con la manada y ver con quién cazar (1.2.7)
 		saludo = true, -- al entrar, quién de tu hermandad anda conectado (1.2.7)
+		lobosCerca = true, -- un lobo que usa Alfa entra a la vista (1.3.2, Cerca.lua)
 		citas = true, -- proponer y recibir citas de la manada (1.2.8)
 		quienVa = true, -- al llegar a una zona con mazmorra, quién de la manada podría ir (1.2.8)
 		rarosReloj = true, -- cuándo cazaron un raro y si pudo volver (1.2.8)

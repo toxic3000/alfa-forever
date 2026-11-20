@@ -1532,6 +1532,8 @@ local function grupos(ui, padre)
 		texto = L["La manada sabe qué misiones llevas (solo cuáles son) y tú las suyas. Si un lobo de tu zona hace una contigo, su tarjeta lo dice y Lya te propone invitarlo."] })
 	caza:Fila({ titulo = L["El saludo de la manada"], control = interruptor("saludo"),
 		texto = L["Al entrar al juego, Lya te dice quién de tu hermandad anda conectado y dónde."] })
+	caza:Fila({ titulo = L["Un lobo de La Jauría anda cerca"], control = interruptor("lobosCerca"),
+		texto = L["Cuando ves a alguien que también usa Alfa (y comparte con la manada), un anuncio corto te lo dice para que lo saludes."] })
 	-- 1.2.8: la manada se organiza.
 	local junta = K.GrupoAjustes(padre, { titulo = L["La manada se organiza"] })
 	junta:Fila({ titulo = L["Citas de la manada"], control = interruptor("citas"),

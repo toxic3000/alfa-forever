@@ -245,7 +245,7 @@ end)
 -- 4. «Tomar todo» mientras cargan las cartas
 ---------------------------------------------------------------------------
 
-step("Buzón: mientras cargan, «Parar», y otro clic lo cancela", function()
+step("Buzón: sin barra; mientras cargan, otro clic lo cancela", function()
   local Bz = C.Buzon
   local cartas = {}
   local cargadas = false
@@ -267,15 +267,13 @@ step("Buzón: mientras cargan, «Parar», y otro clic lo cancela", function()
   }, function()
     cartas = { { dinero = 900 } }
     FIRE_EVENT("MAIL_SHOW")
-    local barra = Bz.Barra()
-    check(barra and barra.Boton, "no salió la barra del buzón")
+    -- 1.3.2 (Toxic): ya no sale ninguna barra bajo el buzón.
+    check(Bz.Barra() == nil, "salió la barra bajo el buzón")
     check(Bz.Tomar(), "no aceptó «Tomar todo» mientras cargaba")
     check(Bz.Pendiente(), "no quedó pedido")
-    check(barra and barra.Boton.Texto:GetText() == "Parar", "mientras carga el botón no dice «Parar»: " .. tostring(barra and barra.Boton.Texto:GetText()))
     -- Otro clic: cancelado.
     Bz.Tomar()
     check(not Bz.Pendiente(), "el segundo clic no lo canceló")
-    check(barra and barra.Boton.Texto:GetText() == "Tomar todo", "cancelado, el botón no volvió a «Tomar todo»")
     cargadas = true
     FIRE_EVENT("MAIL_INBOX_UPDATE")
     RUN_TIMERS(3)

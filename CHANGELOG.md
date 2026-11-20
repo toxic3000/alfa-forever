@@ -1,6 +1,6 @@
 # Cambios de Alfa
 
-## 1.3.2 — La manada en orden: un solo menú de Alfa y 39 mejoras (19/11/2026)
+## 1.3.2 — La manada en orden: un solo menú de Alfa y 40 mejoras (19/11/2026)
 
 La tercera de la serie 1.3: más calidad, menos estorbo y un Alfa más ligero. Cada mejora trae su prueba en el banco.
 
@@ -12,7 +12,8 @@ La tercera de la serie 1.3: más calidad, menos estorbo y un Alfa más ligero. C
 - La piedra de hogar a tiempo, «Sube al nivel N» y «Misiones grises» funcionan desde que entras, sin esperar a que abras el mapa.
 - Lya: «Pregúntale a Lya» encuentra «mision» sin acento (también en ruso y aunque escribas otras palabras), sus tarjetas muestran el texto completo, «Cuéntame algo de aquí» funciona con Lya oculta y su menú dice lo que hará («Letra más grande», «Menos consejos»).
 - La Jauría: citas y notas ya no piden mostrar tu ubicación en el mapa; los bloques apagados se esconden y la página queda más corta; «Botín» explica por qué está vacío.
-- Bolsas y buzón: el oro del correo ya no cuenta como ganado en «Esta sesión»; «Acomodar» dice «Detener (3/10)» mientras trabaja; «Tomar todo» se puede parar mientras cargan tus cartas. El plan de una hora nombra la zona de cada paso.
+- Bolsas y buzón: el oro del correo ya no cuenta como ganado en «Esta sesión»; «Acomodar» dice «Detener (3/10)» mientras trabaja. Ya no sale la barra de Alfa bajo el buzón (se quedaba a la vista): el juego trae su propio «Abrir todo», y «Tomar todo» sigue en el aviso de cartas que vencen. El plan de una hora nombra la zona de cada paso.
+- Nuevo: «Un lobo de La Jauría anda cerca». Cuando ves a alguien que también usa Alfa (y comparte con la manada), un anuncio corto te lo dice para que lo saludes. El del fundador ahora sale con ese mismo anuncio de Alfa y dura unos segundos, no se queda.
 - Ajustes: el buscador pone primero lo principal; en «Sencillo» ya no salen las páginas para autores de guías; «Restablecer página» de Estilo y sonido ya no te pasa a «Sencillo» y dice qué cambia; y en la configuración ya no se corta ningún texto.
 - Más ligero: el reloj de Alfa duerme cuando no hace falta (minimapa, Curación, Recolección y las tareas de La Jauría juntas en una), la página de Bolsas rehace solo lo que cambió, «Qué vender» solo se analiza cuando te quedas sin espacio, el aviso para cortar calcula una vez por lanzamiento y el mapa ya no se redibuja cada segundo por la hora del barco.
 
@@ -24,7 +25,8 @@ La tercera de la serie 1.3: más calidad, menos estorbo y un Alfa más ligero. C
 - Hearthstone in time, "Reach level N" and "Grey quests" work from the moment you log in, without waiting for you to open the map.
 - Lya: "Ask Lya" finds words without their accents (also in Russian, and with your words in any order), her cards show their full text, "Tell me something about here" works with Lya hidden, and her menu says what it will do ("Bigger text", "Fewer tips").
 - La Jauría: meetups and notes no longer ask to show your location on the map; switched-off blocks hide and the page gets shorter; "Loot" explains why it's empty.
-- Bags and mailbox: gold from the mail no longer counts as earned in "This session"; "Arrange" says "Stop (3/10)" while it works; "Take all" can be stopped while your letters load. The one-hour plan names the zone of each step.
+- Bags and mailbox: gold from the mail no longer counts as earned in "This session"; "Arrange" says "Stop (3/10)" while it works. Alfa's bar under the mailbox is gone (it stayed on screen): the game has its own "Open all", and "Take all" stays in the expiring-mail alert. The one-hour plan names the zone of each step.
+- New: "A wolf from La Jauría is nearby". When you see someone who also uses Alfa (and shares with the pack), a short announcement tells you so you can say hi. The founder's now shows with that same Alfa announcement and lasts a few seconds instead of staying.
 - Settings: the search puts the main match first; "Simple" no longer shows the pages for guide authors; "Reset page" in Style and sound no longer switches you to "Simple" and says what changes; and no text gets cut in the setup.
 - Lighter: Alfa's clock sleeps when it's not needed (minimap, Healing, Gathering and La Jauría's tasks joined into one), the Bags page only redoes what changed, "What to sell" is only analysed when you're running out of room, the interrupt alert works things out once per cast and the map no longer redraws every second for the boat's time.
 

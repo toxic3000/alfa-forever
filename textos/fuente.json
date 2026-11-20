@@ -7615,6 +7615,10 @@
   "en": "Once you defeat your first boss, your progress shows up here.",
   "origen": "Alfa_Mazmorras"
  },
+ "Cuando ves a alguien que también usa Alfa (y comparte con la manada), un anuncio corto te lo dice para que lo saludes.": {
+  "en": "When you see someone who also uses Alfa (and shares with the pack), a short announcement tells you so you can say hi.",
+  "origen": "Alfa_Manada"
+ },
  "Cuando ves caer a un raro, me acuerdo: en su cuadro y en La Jauría te digo hace cuánto lo cazaron y si pudo volver ya (a la media hora, más o menos).": {
   "en": "When you see a rare die, I remember: in its tooltip and in La Jauría I tell you how long ago it was killed and whether it may be back (after about half an hour).",
   "origen": "Alfa_Manada"
@@ -26947,6 +26951,10 @@
   "en": "Your focus too",
   "origen": "Alfa_Combate"
  },
+ "También usa Alfa: salúdalo.": {
+  "en": "They use Alfa too: say hi.",
+  "origen": "Alfa_Manada"
+ },
  "También yendo solo": {
   "en": "Also when solo",
   "origen": "Alfa_Combate"
@@ -30174,6 +30182,10 @@
  "Un hechizo de tus barras tiene un rango viejo": {
   "en": "A spell on your bars is an old rank",
   "origen": "Alfa_Builds"
+ },
+ "Un lobo de La Jauría anda cerca": {
+  "en": "A wolf from La Jauría is nearby",
+  "origen": "Alfa_Manada"
  },
  "Un lobo de nivel %d te quiere echar la mano: ve tu nivel, tu zona y tu misión, solo él. Acepta aquí o en La Jauría.": {
   "en": "A level %d wolf wants to lend you a hand: only they see your level, zone and quest. Accept here or in La Jauría.",

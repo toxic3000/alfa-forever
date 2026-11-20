@@ -366,7 +366,12 @@ local function anuncio(a)
 	local N = rawget(_G, "AlfaNucleo")
 	local K = N and N.Kit
 	if not (K and K.Anuncio) or (N.Get and N.Get("bienvenida", "anuncios") == false) then return false end
-	if a.kind == "founder" then return false end
+	-- 1.3.2 (Toxic): el fundador también sale con el anuncio de Alfa, y corto.
+	if a.kind == "founder" then
+		current = a
+		return K.Anuncio({ sobre = ns.T("El alfa de La Jauría anda cerca"), titulo = a.name or "",
+			texto = T.Distance(a) or "", lobo = "aullando", segundos = 8 })
+	end
 	local dist = T.Distance(a)
 	local texto = T.Facts(a) .. (dist and ("  \194\183  " .. dist) or "")
 	local puede = a.map ~= nil and a.x ~= nil

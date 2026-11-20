@@ -290,6 +290,10 @@ M.EN = {
 	["En grupo, al seleccionar un raro sin marca, Alfa te ofrece ponerle la calavera con un clic: todo tu grupo la ve. En banda, si eres líder o ayudante."] = "In a group, when you target an unmarked rare, Alfa offers to put the skull on it with one click: your whole group sees it. In a raid, if you're leader or assistant.",
 	["La manada sabe qué misiones llevas (solo cuáles son) y tú las suyas. Si un lobo de tu zona hace una contigo, su tarjeta lo dice y Lya te propone invitarlo."] = "The pack knows which quests you have (just which ones) and you know theirs. If a wolf in your zone is doing one with you, their card says so and Lya suggests inviting them.",
 	["El saludo de la manada"] = "The pack's greeting",
+	-- 1.3.2: un lobo de la manada anda cerca (Cerca.lua)
+	["Un lobo de La Jauría anda cerca"] = "A wolf from La Jauría is nearby",
+	["También usa Alfa: salúdalo."] = "They use Alfa too: say hi.",
+	["Cuando ves a alguien que también usa Alfa (y comparte con la manada), un anuncio corto te lo dice para que lo saludes."] = "When you see someone who also uses Alfa (and shares with the pack), a short announcement tells you so you can say hi.",
 	["Al entrar al juego, Lya te dice quién de tu hermandad anda conectado y dónde."] = "When you log in, Lya tells you who in your guild is online and where.",
 	-- 1.2.8: citas de la manada
 	["hoy a las %s"] = "today at %s",

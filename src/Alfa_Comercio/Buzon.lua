@@ -1,7 +1,8 @@
 -- Alfa - Comercio: el buzón (toxic3000 / La Jauría). GPL-3.0. 1.2.8.
 --
--- Con el buzón abierto, una barra de Alfa bajo su ventana con el botón
--- «Tomar todo»: tras ese clic, Alfa toma el dinero y los objetos de tus
+-- 1.3.2 (Toxic): ya no hay barra bajo el buzón (se quedaba a la vista y el
+-- juego trae su propio «Abrir todo»). «Tomar todo» sigue en el aviso de las
+-- cartas que vencen: tras ese clic, Alfa toma el dinero y los objetos de tus
 -- cartas una por una, con una pausa corta entre cada una (como el «Abrir
 -- todo» del juego), y al final te dice qué recibiste. Se salta las cartas
 -- con pago contra entrega y las de un MJ (esas se abren a mano), y se
@@ -360,48 +361,13 @@ function refrescarBarra()
 end
 Bz.RefrescarBarra = function() refrescarBarra() end
 
-local function crearBarra()
-	if barra then return barra end
-	local padre = marcoBuzon()
-	if type(padre) ~= "table" then return nil end
-	-- Como la barra de la subasta: cuelga de la capa de Alfa y solo se ancla
-	-- al buzón (crear marcos dentro de una ventana del juego la contamina).
-	barra = CreateFrame("Frame", nil, K.Raiz())
-	if padre.GetFrameStrata then barra:SetFrameStrata(padre:GetFrameStrata()) end
-	barra:SetSize(BARRA_W, BARRA_H)
-	barra:SetPoint("TOPLEFT", padre, "BOTTOMLEFT", 0, -2)
-	barra.caja = K.Caja(barra, { fondo = "fondo", borde = "linea", corte = K.CORTE.panel })
-	barra.Marca = K.Marca(barra, K.CORTE.panel, "acento")
-	barra.Icono = K.Icono(barra, "ic-oro", 18, "acento")
-	barra.Icono:SetPoint("LEFT", barra, "LEFT", K.ESP.m, 0)
-	barra.Titulo = K.Texto(barra, "encabezado", "texto")
-	K.Escribir(barra.Titulo, "Alfa")
-	barra.Titulo:SetPoint("LEFT", barra.Icono, "RIGHT", K.ESP.s, 0)
-	barra.Boton = K.Boton(barra, L["Tomar todo"], function() Bz.Tomar() end, { tipo = "primario", tam = "chico", icono = "ic-oro" })
-	barra.Boton:SetPoint("RIGHT", barra, "RIGHT", -K.ESP.m, 0)
-	K.ConInfo(barra.Boton, L["Tomar todo"], L["Toma el dinero y los objetos de tus cartas, una por una. Las de pago contra entrega y las de un MJ se quedan para que las abras tú."])
-	barra.Estado = K.Texto(barra, "pequeno", "textoSuave")
-	barra.Estado:SetPoint("LEFT", barra.Titulo, "RIGHT", K.ESP.s, 0)
-	barra.Estado:SetPoint("RIGHT", barra.Boton, "LEFT", -K.ESP.s, 0)
-	-- 1.3.0: si el texto no cabe, completo con el ratón encima.
-	barra:EnableMouse(true)
-	barra:SetScript("OnEnter", function(self)
-		local fs = self.Estado
-		if fs and fs.IsTruncated and fs:IsTruncated() then K.MostrarInfo(self, L["El buzón"], fs:GetText() or "") end
-	end)
-	barra:SetScript("OnLeave", function(self) K.OcultarInfo(self) end)
-	return barra
-end
-
 local function alAbrir()
 	abierto = true
 	avisoVisto = false
 	Bz.ultimo = nil
 	pendiente = false
 	cargado = (num(llamar(GetInboxNumItems)) or 0) > 0
-	if M.Ajuste("buzon") and not enCombate() then
-		if crearBarra() then refrescarBarra() end
-	end
+	-- 1.3.2: sin barra bajo el buzón.
 	-- Las cartas llegan con MAIL_INBOX_UPDATE; si ya estaban, se revisa aquí.
 	if C_Timer and C_Timer.After then
 		C_Timer.After(1, function() if abierto and not avisoVisto then Bz.RevisarVence() end end)
@@ -419,7 +385,6 @@ A.RegisterEvent("MAIL_INBOX_UPDATE", function() if barra and barra:IsShown() and
 
 A.On("SETTING_CHANGED", function(path)
 	if type(path) == "string" and path:sub(1, #M.ID + 1) == M.ID .. "." then
-		if abierto and not barra and M.Ajuste("buzon") and not enCombate() then crearBarra() end
 		refrescarBarra()
 	end
 end)

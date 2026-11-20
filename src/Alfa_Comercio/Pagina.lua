@@ -774,8 +774,6 @@ local function grupos(padre)
 		texto = L["El botón «Escanear con Alfa» bajo la ventana de la subasta."] })
 	juego:Fila({ titulo = L["Aprender de tus búsquedas"], control = function(f) return K.Interruptor(f, { clave = ruta("busquedas") }) end,
 		texto = L["Cuando buscas algo en la subasta, Alfa guarda el precio más bajo que ves."] })
-	juego:Fila({ titulo = L["«Tomar todo» en el buzón"], control = function(f) return K.Interruptor(f, { clave = ruta("buzon") }) end,
-		texto = L["Una barra bajo el buzón para tomar el dinero y los objetos de tus cartas con un clic, y lo que recibiste al final."] })
 	juego:Fila({ titulo = L["Avisar de cartas que vencen"], control = function(f) return K.Interruptor(f, { clave = ruta("buzonVence") }) end,
 		texto = L["Al abrir el buzón, un aviso si una carta con objetos vence en menos de 3 días."] })
 	juego:Fila({ titulo = L["Ayuda al subastar"], control = function(f) return K.Interruptor(f, { clave = ruta("vender") }) end,
@@ -887,9 +885,6 @@ local CONTROLES = {
 		help = L["El botón «Escanear con Alfa» bajo la ventana de la subasta."], search = "auction house, scan button, ah" },
 	{ kind = "toggle", key = ruta("busquedas"), label = L["Aprender de tus búsquedas"],
 		help = L["Cuando buscas algo en la subasta, Alfa guarda el precio más bajo que ves."], search = "auction search, learn prices" },
-	{ kind = "toggle", key = ruta("buzon"), label = L["«Tomar todo» en el buzón"],
-		help = L["Una barra bajo el buzón para tomar el dinero y los objetos de tus cartas con un clic, y lo que recibiste al final."],
-		search = "mail, mailbox, open all, take all, inbox" },
 	{ kind = "toggle", key = ruta("buzonVence"), label = L["Avisar de cartas que vencen"],
 		help = L["Al abrir el buzón, un aviso si una carta con objetos vence en menos de 3 días."], search = "mail expires, expiring mail" },
 	{ kind = "toggle", key = ruta("vender"), label = L["Ayuda al subastar"],
