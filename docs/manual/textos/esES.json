@@ -119,7 +119,7 @@
             ]},
             {"t": "consejo", "texto": "Un marco verde te señala cada parte, sin tapar nada. **Siguiente** avanza y **Saltar** lo termina. ¿Lo quieres ver otra vez? Escribe `/alfa recorrido` o búscalo en **Ajustes > Estilo y sonido**."},
             {"t": "h", "texto": "Anuncios animados"},
-            {"t": "p", "texto": "Cuando llegas en barco o Lya olfatea un raro o un tesoro, sale un anuncio grande, como la intro: el lobo con su halo, el nombre de a dónde llegas o de lo que apareció y, abajo, lo demás («¡Tierra a la vista! La manada desembarca en 0:20», o el nivel y la distancia del raro). Entra con animación y se va solo; el del raro te lleva de caza con un clic. Si prefieres las tarjetas de antes, desactívalo en **Ajustes > Estilo y sonido**."},
+            {"t": "p", "texto": "Cuando llegas en barco o en el tranvía, o Lya olfatea un raro o un tesoro, sale un anuncio grande, como la intro: el lobo con su halo, el nombre de a dónde llegas o de lo que apareció y, abajo, lo demás («¡Tierra a la vista! La manada desembarca en 0:20», o el nivel y la distancia del raro). Entra con animación y se va solo, y nunca se solapa con el nombre de la zona ni con los avisos del juego: sale antes o después. El del raro te lleva de caza con un clic. Si prefieres las tarjetas de antes, desactívalo en **Ajustes > Estilo y sonido**."},
             {"t": "novedad", "ref": "mapa"}
           ]
         },
@@ -240,7 +240,7 @@
               "La flecha se vuelve una placa de Alfa: a la izquierda, el lobo en su medallón, atento y olfateando si toca buscar, o aullando cuando has llegado.",
               "Arriba dice **LLEGASTE** (o **BUSCA POR AQUÍ**, si lo que buscas está por la zona) y, abajo, qué toca hacer ahí en palabras llanas.",
               "Tu avance va como un rastro de huellas («4 de 6»); la experiencia, como una barra con su porcentaje: «Sube al nivel 30: te falta 20%».",
-              "**Siguiente lugar**, dentro de la misma placa, te lleva al próximo punto con un clic."
+              "**Siguiente lugar**, dentro de la misma placa, te lleva al próximo punto con un clic.", "Si la placa trae tu avance («1 de 10»), se queda mientras dure; si no, se va sola a los pocos segundos."
             ]},
             {"t": "h", "texto": "Solo misiones que de verdad puedes hacer"},
             {"t": "p", "texto": "Antes de mandarte a una misión, Alfa comprueba tu nivel, tu clase, tu raza, tu facción, tus profesiones y tu reputación. Si te falta una misión previa, la añade sola antes, en orden. Lo que no puedes cumplir se oculta con su motivo, para que nunca camines en balde. Las misiones de mazmorra te llevan a la entrada."},
@@ -260,7 +260,7 @@
             ]},
             {"t": "tarjetas", "cols": 2, "titulo": "Nuevo en tu camino", "items": [
               {"icono": "ruta", "titulo": "Circuito de la zona", "texto": "Todas tus misiones de aquí, las que llevas y las que puedes tomar, en el mejor orden y con la flecha. En la página Ruta o el menú de tu guía."},
-              {"icono": "huella", "titulo": "Llévame a…", "texto": "Elige un destino y Alfa arma el viaje con vuelos, barcos, zepelines, portales y a pie, tramo por tramo (`/alfa llevame`)."},
+              {"icono": "huella", "titulo": "Llévame a…", "texto": "Elige un destino y Alfa arma el viaje con vuelos, barcos, zepelines, el tranvía, portales y a pie, tramo por tramo (`/alfa llevame`)."},
               {"icono": "misiones", "titulo": "Grises para soltar", "texto": "Las misiones grises que ya no valen la pena, cada una con «Abandonar». Tú lo confirmas."},
               {"icono": "exito", "titulo": "El objeto de misión", "texto": "Su botón dice qué objeto es y tu avance («Antorcha · 2 de 5») y late cuando ya lo puedes usar."},
               {"icono": "lista", "titulo": "La cadena completa", "texto": "Las misiones que van antes y después, cuáles ya has hecho y el premio del final. Desde el menú de una misión."},
@@ -868,7 +868,7 @@
           "bloques": [
             {"t": "intro", "texto": "En **Ajustes** (arriba a la derecha de la ventana) está todo lo que se puede cambiar: el estilo, las comodidades, las misiones, el mapa y más. Lo más rápido es el buscador: escribe lo que quieres cambiar en «Buscar ajustes» y Alfa te lleva a la opción."},
             {"t": "tarjetas", "cols": 2, "items": [
-              {"icono": "apariencia", "titulo": "Estilo y sonido", "texto": "Los cinco estilos, Alfa sencillo o completo, el aullido, el lobo al entrar, los anuncios, para leer mejor, la pantalla limpia, tus atajos, tus perfiles, tus respaldos, «Revisar Alfa», «Reportar» y lo nuevo."},
+              {"icono": "apariencia", "titulo": "Estilo y sonido", "texto": "Los cinco estilos, Alfa sencillo o completo, el aullido, el lobo al entrar, los anuncios, para leer mejor, la pantalla limpia, acomodar la pantalla, tus atajos, tus perfiles, tus respaldos, «Revisar Alfa», «Reportar» y lo nuevo."},
               {"icono": "comodidades", "titulo": "Comodidades", "texto": "Pequeñas mejoras del juego, en un solo lugar (capítulo siguiente)."},
               {"icono": "misiones", "titulo": "Misiones", "texto": "Aceptar y entregar solo, todas las misiones o solo las de tu ruta."},
               {"icono": "mapa", "titulo": "Mapa y Descubrimiento", "texto": "El mapa, las mazmorras y el modo historia."},
@@ -885,7 +885,7 @@
               "**Pantalla limpia.** Una tecla deja a la vista solo Alfa, tu guía y Lya; tú eliges qué se esconde (chat, minimapa, barras, retratos…). Otra pulsación lo vuelve a mostrar todo (`/alfa limpia`).",
               "**Tus atajos.** Todas las teclas de Alfa en una sola ventana: haz clic y pulsa la tecla nueva (`/alfa teclas`)."
             ]},
-            {"t": "h", "texto": "Tus perfiles"},
+            {"t": "h", "texto": "Acomodar la pantalla"}, {"t": "pasos", "items": ["En **Ajustes > Estilo y sonido**, en «Acomodar la pantalla», pulsa **Acomodar** (o escribe `/alfa acomodar`).", "El juego se oscurece un poco y lo de Alfa que está a la vista sale con un marco verde y su nombre: Lya, tu guía, la flecha, los avisos, la pesca y los marcos de Combate y Curación. Una cruz fina marca el centro de la pantalla.", "Arrastra cada cosa adonde quieras. Haz clic derecho en una y vuelve a su sitio de siempre.", "Pulsa **Listo** o [[Esc]] para terminar. Si empieza una pelea, se termina solo."]}, {"t": "consejo", "texto": "Solo sale lo que está a la vista: si quieres mover tu guía o la barra de pesca, ábrelas antes de acomodar."}, {"t": "h", "texto": "Tus perfiles"},
             {"t": "lista", "items": [
               "En **Ajustes > Estilo y sonido > Tus perfiles**, guarda tu configuración con un nombre y vuelve a ella con un clic.",
               "**Exportar** te da tus ajustes como un texto para respaldarlos o pasárselos a un amigo; **Importar** pega uno y lo aplica.",
@@ -912,7 +912,7 @@
             {"t": "consejo", "texto": "¿No sabes por dónde empezar? Pulsa **Encender las recomendadas**: colores de clase, cuadro de información mejorado, probador, la siguiente parada del vuelo y sin voces de error."},
             {"t": "tarjetas", "cols": 2, "items": [
               {"icono": "seguir", "titulo": "Viajes", "texto": "La siguiente parada en vuelos con escalas, y cuánto falta."},
-              {"icono": "mapa", "titulo": "Minimapa", "texto": "Cuadrado, con los botones de addons ocultos hasta que pasas el ratón."},
+              {"icono": "mapa", "titulo": "Minimapa", "texto": "Cuadrado, con los botones de addons ocultos hasta que pasas el ratón. El botón de Alfa siempre queda a la vista."},
               {"icono": "apariencia", "titulo": "Estilo del chat, el minimapa y las barras", "texto": "Viste esas partes del juego con tu estilo; al apagarlo, todo vuelve a estar como antes."},
               {"icono": "personaje", "titulo": "Marcos y barra", "texto": "Colores de clase en tu marco y en el de tu objetivo, y aviso si la barra de una forma está vacía."},
               {"icono": "info", "titulo": "Cuadro de información", "texto": "A quién apunta alguien, su rango de hermandad y verlo solo con Mayús."},
@@ -961,7 +961,7 @@
               {"cmd": "/alfa rutas", "texto": "Ruta y guías."},
               {"cmd": "/alfa guia", "texto": "Muestra u oculta tu guía en pantalla."},
               {"cmd": "/alfa cerca", "texto": "Buscar cerca: vuelo, posada, reparar y más."},
-              {"cmd": "/alfa llevame [lugar]", "texto": "Llévame a…: el viaje hasta ese lugar, con vuelos, barcos y a pie."},
+              {"cmd": "/alfa llevame [lugar]", "texto": "Llévame a…: el viaje hasta ese lugar, con vuelos, barcos, el tranvía, portales y a pie."},
               {"cmd": "/alfa enciclopedia", "texto": "La Enciclopedia (también `/alfa monturas`, `/alfa mascotas` y `/alfa legado`)."},
               {"cmd": "/alfa mazmorras", "texto": "Mazmorras (`progreso`: tu progreso)."},
               {"cmd": "/alfa listo", "texto": "Revisa si llevas lo necesario para la mazmorra."},
@@ -989,7 +989,7 @@
               {"cmd": "/alfa spot <texto>", "texto": "Marca un spot de farmeo donde estás."},
               {"cmd": "/alfa comodidades", "texto": "Comodidades."},
               {"cmd": "/alfa estilo", "texto": "Ajustes > Estilo y sonido."},
-              {"cmd": "/alfa limpia", "texto": "Pantalla limpia: solo lo esencial a la vista (otra vez: todo)."},
+              {"cmd": "/alfa limpia", "texto": "Pantalla limpia: solo lo esencial a la vista (otra vez: todo)."}, {"cmd": "/alfa acomodar", "texto": "Acomodar la pantalla: mueve con el ratón lo de Alfa que está a la vista."},
               {"cmd": "/alfa teclas", "texto": "Tus atajos de Alfa, para cambiarlos."},
               {"cmd": "/alfa bienvenida", "texto": "La configuración (`novedades`: lo nuevo de la versión)."},
               {"cmd": "/alfa sesion", "texto": "Tu sesión de hoy, en el chat."},
@@ -1085,17 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {
-      "titulo": "La 1.3.0: la manada sana",
-      "items": [
-        "**Curar es más fácil:** cura con un clic y ese compañero queda seleccionado; arma «Tus clics», limpia maldiciones y venenos con otro clic y ve con un puntito azul a quién le falta tu buff.",
-        "**La llegada, nueva:** una placa de Alfa con el lobo en su medallón; además, el circuito de tu zona, «Llévame a…» y barcos con cuenta regresiva en el mapa.",
-        "**Bolsas a fondo:** ocho errores menos, conjuntos de equipo, comparar con lo que llevas, buscar en todos tus personajes y «Acomodar».",
-        "**En la pelea:** aviso para cortar hechizos, tu amenaza, el resumen de cada pelea y tus recargas largas.",
-        "**La manada y Lya:** el tablón, el mentor, el botín para otro lobo, spots de farmeo, Lyas que se saludan, retos de la semana y cumpleaños.",
-        "**Y más:** dos estilos nuevos, pantalla limpia, letra más grande, colores para daltonismo, tus atajos y «¿Qué es esto?» con [[Alt]]."
-      ]
-    }
+    "mapa": {"titulo": "La 1.3.1: la manada afinada", "items": ["**Acomodar la pantalla:** mueve con el ratón a Lya, tu guía, la flecha, los avisos, la pesca y los marcos de Combate y Curación, todo de una vez (`/alfa acomodar`).", "**El botón de Alfa en el minimapa,** siempre a la vista, aunque ocultes los de otros addons.", "**La placa de llegada:** con avance («1 de 10») se queda mientras dure; sin avance, se va sola a los pocos segundos.", "**Los anuncios** de barco, tranvía y raros ya no se solapan con el nombre de la zona ni con los avisos del juego.", "**«Llévame a…»** también usa el tranvía y los portales.", "**Y más de 40 arreglos** en Combate, Curación, La Jauría, Ruta, Bolsas y Lya."]}
   },
   "contraportada": {
     "titulo": "Únete a la manada",

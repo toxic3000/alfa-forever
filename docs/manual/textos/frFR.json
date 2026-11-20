@@ -119,7 +119,7 @@
             ]},
             {"t": "consejo", "texto": "Un cadre vert vous montre chaque partie, sans rien cacher. **Suivant** avance et **Passer** la termine. Envie de la revoir ? Tapez `/alfa recorrido` ou cherchez-la dans **Réglages > Style et son**."},
             {"t": "h", "texto": "Annonces animées"},
-            {"t": "p", "texto": "Quand vous arrivez en bateau ou que Lya flaire un rare ou un trésor, une grande annonce apparaît, comme l'intro : le loup avec son halo, le nom de l'endroit où vous arrivez ou de ce qui est apparu et, en dessous, le reste (« Terre en vue ! La meute débarque dans 0:20 », ou le niveau et la distance du rare). Elle entre avec une animation et s'en va toute seule ; celle du rare vous emmène à la chasse d'un clic. Si vous préférez les anciennes cartes, désactivez-la dans **Réglages > Style et son**."},
+            {"t": "p", "texto": "Quand vous arrivez en bateau ou en tram, ou que Lya flaire un rare ou un trésor, une grande annonce apparaît, comme l'intro : le loup avec son halo, le nom de l'endroit où vous arrivez ou de ce qui est apparu et, en dessous, le reste (« Terre en vue ! La meute débarque dans 0:20 », ou le niveau et la distance du rare). Elle entre avec une animation et s'en va toute seule, sans jamais chevaucher le nom de la zone ni les annonces du jeu : elle passe avant ou après. Celle du rare vous emmène à la chasse d'un clic. Si vous préférez les anciennes cartes, désactivez-la dans **Réglages > Style et son**."},
             {"t": "novedad", "ref": "mapa"}
           ]
         },
@@ -240,7 +240,7 @@
               "La flèche devient une plaque d'Alfa : à gauche, le loup dans son médaillon, attentif et flairant s'il faut chercher, ou hurlant quand vous êtes arrivé.",
               "En haut, elle indique **VOUS Y ÊTES** (ou **CHERCHEZ PAR ICI**, si ce que vous cherchez se trouve dans le coin) et, en dessous, ce qu'il faut faire sur place, en mots simples.",
               "Votre avancée s'affiche comme une piste d'empreintes (« 4 sur 6 ») ; l'expérience, comme une barre avec son pourcentage : « Monte au niveau 30 : il te manque 20 % ».",
-              "**Lieu suivant**, dans la même plaque, vous emmène au prochain point d'un clic."
+              "**Lieu suivant**, dans la même plaque, vous emmène au prochain point d'un clic.", "Si la plaque montre votre avancée (« 1 sur 10 »), elle reste tant qu'elle dure ; sinon, elle s'en va toute seule au bout de quelques secondes."
             ]},
             {"t": "h", "texto": "Seulement des quêtes que vous pouvez vraiment faire"},
             {"t": "p", "texto": "Avant de vous envoyer sur une quête, Alfa vérifie votre niveau, votre classe, votre race, votre faction, vos métiers et votre réputation. S'il manque une quête préalable, il l'ajoute tout seul avant, dans l'ordre. Ce que vous ne pouvez pas faire est masqué avec sa raison, pour que vous ne marchiez jamais pour rien. Les quêtes de donjon vous mènent à l'entrée."},
@@ -260,7 +260,7 @@
             ]},
             {"t": "tarjetas", "cols": 2, "titulo": "Nouveau sur votre chemin", "items": [
               {"icono": "ruta", "titulo": "Circuit de la zone", "texto": "Toutes vos quêtes d'ici, celles que vous avez et celles que vous pouvez prendre, dans le meilleur ordre et avec la flèche. Sur la page Itinéraire ou dans le menu de votre guide."},
-              {"icono": "huella", "titulo": "Emmène-moi à…", "texto": "Choisissez une destination et Alfa prépare le voyage avec vols, bateaux, zeppelins, portails et à pied, étape par étape (`/alfa llevame`)."},
+              {"icono": "huella", "titulo": "Emmène-moi à…", "texto": "Choisissez une destination et Alfa prépare le voyage avec vols, bateaux, zeppelins, le tram, portails et à pied, étape par étape (`/alfa llevame`)."},
               {"icono": "misiones", "titulo": "Grises à lâcher", "texto": "Les quêtes grises qui n'en valent plus la peine, chacune avec « Abandonner ». C'est vous qui confirmez."},
               {"icono": "exito", "titulo": "L'objet de quête", "texto": "Son bouton indique de quel objet il s'agit et votre avancée (« Torche · 2 sur 5 »), et il bat quand vous pouvez l'utiliser."},
               {"icono": "lista", "titulo": "Toute la suite", "texto": "Les quêtes d'avant et d'après, celles que vous avez déjà faites et la récompense finale. Depuis le menu d'une quête."},
@@ -868,7 +868,7 @@
           "bloques": [
             {"t": "intro", "texto": "Dans **Réglages** (en haut à droite de la fenêtre) se trouve tout ce qui peut se changer : le style, le confort de jeu, les quêtes, la carte et plus. Le plus rapide, c'est la recherche : tapez ce que vous voulez changer dans « Chercher un réglage » et Alfa vous emmène à l'option."},
             {"t": "tarjetas", "cols": 2, "items": [
-              {"icono": "apariencia", "titulo": "Style et son", "texto": "Les cinq styles, Alfa simple ou complet, le hurlement, le loup à la connexion, les annonces, mieux lire, l'écran épuré, vos raccourcis, vos profils, vos sauvegardes, « Vérifier Alfa », « Signaler » et les nouveautés."},
+              {"icono": "apariencia", "titulo": "Style et son", "texto": "Les cinq styles, Alfa simple ou complet, le hurlement, le loup à la connexion, les annonces, mieux lire, l'écran épuré, arranger l'écran, vos raccourcis, vos profils, vos sauvegardes, « Vérifier Alfa », « Signaler » et les nouveautés."},
               {"icono": "comodidades", "titulo": "Confort de jeu", "texto": "De petites améliorations du jeu, au même endroit (chapitre suivant)."},
               {"icono": "misiones", "titulo": "Quêtes", "texto": "Accepter et rendre tout seul, toutes les quêtes ou seulement celles de votre itinéraire."},
               {"icono": "mapa", "titulo": "Carte et Découverte", "texto": "La carte, les donjons et le mode histoire."},
@@ -885,7 +885,7 @@
               "**Écran épuré.** Une touche ne laisse en vue qu'Alfa, votre guide et Lya ; vous choisissez ce qui se cache (discussion, minicarte, barres, portraits…). Un autre appui remet tout (`/alfa limpia`).",
               "**Vos raccourcis.** Toutes les touches d'Alfa dans une seule fenêtre : cliquez et appuyez sur la nouvelle touche (`/alfa teclas`)."
             ]},
-            {"t": "h", "texto": "Vos profils"},
+            {"t": "h", "texto": "Arranger l'écran"}, {"t": "pasos", "items": ["Dans **Réglages > Style et son**, à « Arranger l'écran », appuyez sur **Arranger** (ou tapez `/alfa acomodar`).", "Le jeu s'assombrit un peu et chaque élément d'Alfa à l'écran prend un cadre vert avec son nom : Lya, votre guide, la flèche, les alertes, la pêche et les cadres de Combat et de Soins. Une fine croix marque le centre de l'écran.", "Faites glisser chaque élément où vous voulez. Un clic droit le remet à sa place habituelle.", "Appuyez sur **Terminé** ou [[Échap]] pour finir. Si un combat commence, le mode se ferme tout seul."]}, {"t": "consejo", "texto": "Seul ce qui est à l'écran apparaît : pour déplacer votre guide ou la barre de pêche, ouvrez-les avant."}, {"t": "h", "texto": "Vos profils"},
             {"t": "lista", "items": [
               "Dans **Réglages > Style et son > Tes profils**, enregistrez votre configuration sous un nom et revenez-y d'un clic.",
               "**Exporter** vous donne vos réglages sous forme de texte pour les sauvegarder ou les passer à un ami ; **Importer** en colle un et l'applique.",
@@ -912,7 +912,7 @@
             {"t": "consejo", "texto": "Vous ne savez pas par où commencer ? Appuyez sur **Activer celles recommandées** : couleurs de classe, infobulle améliorée, cabine d'essayage, prochaine étape des vols et plus de voix d'erreur."},
             {"t": "tarjetas", "cols": 2, "items": [
               {"icono": "seguir", "titulo": "Voyages", "texto": "La prochaine étape des vols avec escales, et le temps restant."},
-              {"icono": "mapa", "titulo": "Minicarte", "texto": "Carrée, avec les boutons des addons cachés jusqu'au survol."},
+              {"icono": "mapa", "titulo": "Minicarte", "texto": "Carrée, avec les boutons des addons cachés jusqu'au survol. Le bouton d'Alfa reste toujours visible."},
               {"icono": "apariencia", "titulo": "Style de la discussion, de la minicarte et des barres", "texto": "Habillez ces parties du jeu à votre style ; désactivé, tout redevient comme avant."},
               {"icono": "personaje", "titulo": "Cadres et barre d'action", "texto": "Couleurs de classe sur votre cadre et celui de votre cible, et alerte si la barre d'une forme est vide."},
               {"icono": "info", "titulo": "Infobulle", "texto": "Qui quelqu'un cible, son rang de guilde et ne l'afficher qu'avec Maj."},
@@ -961,7 +961,7 @@
               {"cmd": "/alfa rutas", "texto": "Itinéraire et guides."},
               {"cmd": "/alfa guia", "texto": "Affiche ou masque votre guide à l'écran."},
               {"cmd": "/alfa cerca", "texto": "Chercher à proximité : vol, auberge, réparation et plus."},
-              {"cmd": "/alfa llevame [lugar]", "texto": "Emmène-moi à… : le voyage jusqu'à cet endroit, avec vols, bateaux et à pied."},
+              {"cmd": "/alfa llevame [lugar]", "texto": "Emmène-moi à… : le voyage jusqu'à cet endroit, avec vols, bateaux, le tram, portails et à pied."},
               {"cmd": "/alfa enciclopedia", "texto": "L'Encyclopédie (aussi `/alfa monturas`, `/alfa mascotas` et `/alfa legado`)."},
               {"cmd": "/alfa mazmorras", "texto": "Donjons (`progreso` : votre progression)."},
               {"cmd": "/alfa listo", "texto": "Vérifie que vous avez le nécessaire pour le donjon."},
@@ -989,7 +989,7 @@
               {"cmd": "/alfa spot <texto>", "texto": "Marque un spot de farm là où vous êtes."},
               {"cmd": "/alfa comodidades", "texto": "Confort de jeu."},
               {"cmd": "/alfa estilo", "texto": "Réglages > Style et son."},
-              {"cmd": "/alfa limpia", "texto": "Écran épuré : seulement l'essentiel en vue (encore une fois : tout)."},
+              {"cmd": "/alfa limpia", "texto": "Écran épuré : seulement l'essentiel en vue (encore une fois : tout)."}, {"cmd": "/alfa acomodar", "texto": "Arranger l'écran : déplacez à la souris ce qu'Alfa affiche à l'écran."},
               {"cmd": "/alfa teclas", "texto": "Vos raccourcis d'Alfa, pour les changer."},
               {"cmd": "/alfa bienvenida", "texto": "La configuration (`novedades` : les nouveautés de la version)."},
               {"cmd": "/alfa sesion", "texto": "Votre session du jour, dans la discussion."},
@@ -1085,17 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {
-      "titulo": "La 1.3.0 : la meute en bonne santé",
-      "items": [
-        "**Soigner, c'est plus simple :** soignez d'un clic et ce membre du groupe devient votre cible ; composez « Vos clics », dissipez malédictions et poisons d'un autre clic et voyez grâce à un petit point bleu à qui il manque votre buff.",
-        "**Une nouvelle arrivée :** une plaque d'Alfa avec le loup dans son médaillon ; en plus, le circuit de votre zone, « Emmène-moi à… » et les bateaux avec compte à rebours sur la carte.",
-        "**Des sacs revus à fond :** huit erreurs en moins, ensembles d'équipement, comparaison avec ce que vous portez, recherche sur tous vos personnages et « Ranger ».",
-        "**En combat :** alerte pour interrompre les sorts, votre menace, le résumé de chaque combat et vos longs temps de recharge.",
-        "**La meute et Lya :** le tableau, le mentor, le butin pour un autre loup, les spots de farm, des Lya qui se saluent, les défis de la semaine et les anniversaires.",
-        "**Et plus encore :** deux nouveaux styles, écran épuré, texte plus grand, couleurs pour daltoniens, vos raccourcis et « C'est quoi ? » avec [[Alt]]."
-      ]
-    }
+    "mapa": {"titulo": "La 1.3.1 : la meute peaufinée", "items": ["**Arranger l'écran :** déplacez à la souris Lya, votre guide, la flèche, les alertes, la pêche et les cadres de Combat et de Soins, tout d'un coup (`/alfa acomodar`).", "**Le bouton d'Alfa sur la minicarte** reste toujours visible, même si vous cachez ceux des autres addons.", "**La plaque d'arrivée :** avec une avancée (« 1 sur 10 »), elle reste tant qu'elle dure ; sans, elle s'en va toute seule au bout de quelques secondes.", "**Les annonces** de bateau, de tram et de rares ne chevauchent plus le nom de la zone ni les annonces du jeu.", "**« Emmène-moi à… »** utilise aussi le tram et les portails.", "**Et plus de 40 corrections** en Combat, Soins, La Jauría, Itinéraire, Sacs et Lya."]}
   },
   "contraportada": {
     "titulo": "Rejoignez la meute",

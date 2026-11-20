@@ -119,7 +119,7 @@
             ]},
             {"t": "consejo", "texto": "Ein grüner Rahmen zeigt dir jeden Teil, ohne etwas zu verdecken. **Weiter** geht vor und **Überspringen** beendet sie. Willst du sie noch einmal sehen? Tippe `/alfa recorrido` oder such sie in **Einstellungen > Stil und Klang**."},
             {"t": "h", "texto": "Animierte Ankündigungen"},
-            {"t": "p", "texto": "Wenn du per Schiff ankommst oder Lya einen Rare oder einen Schatz wittert, erscheint eine große Ankündigung wie im Intro: der Wolf mit seinem Schein, der Name deines Ziels oder dessen, was aufgetaucht ist, und darunter der Rest („Land in Sicht! Das Rudel geht in 0:20 an Land“ oder Stufe und Entfernung des Rares). Sie kommt animiert und verschwindet von selbst; die des Rares bringt dich mit einem Klick auf die Jagd. Lieber die alten Karten? Schalte sie in **Einstellungen > Stil und Klang** aus."},
+            {"t": "p", "texto": "Wenn du per Schiff oder mit der Tiefenbahn ankommst oder Lya einen Rare oder einen Schatz wittert, erscheint eine große Ankündigung wie im Intro: der Wolf mit seinem Schein, der Name deines Ziels oder dessen, was aufgetaucht ist, und darunter der Rest („Land in Sicht! Das Rudel geht in 0:20 an Land“ oder Stufe und Entfernung des Rares). Sie kommt animiert und verschwindet von selbst und überdeckt nie den Zonennamen oder die Hinweise des Spiels: Sie erscheint davor oder danach. Die des Rares bringt dich mit einem Klick auf die Jagd. Lieber die alten Karten? Schalte sie in **Einstellungen > Stil und Klang** aus."},
             {"t": "novedad", "ref": "mapa"}
           ]
         },
@@ -240,7 +240,7 @@
               "Der Pfeil wird zu einer Alfa-Plakette: links der Wolf in seinem Medaillon, wachsam und schnüffelnd, wenn gesucht werden muss, oder heulend, wenn du angekommen bist.",
               "Oben steht **DU BIST DA** (oder **SUCH HIER IN DER NÄHE**, wenn das Gesuchte irgendwo im Gebiet ist) und darunter in einfachen Worten, was dort zu tun ist.",
               "Dein Fortschritt erscheint als Spur aus Pfotenabdrücken („4 von 6“), die Erfahrung als Leiste mit Prozentangabe: „Erreiche Stufe 30: dir fehlen 20 %“.",
-              "**Nächster Ort**, in derselben Plakette, bringt dich mit einem Klick zum nächsten Punkt."
+              "**Nächster Ort**, in derselben Plakette, bringt dich mit einem Klick zum nächsten Punkt.", "Zeigt die Plakette deinen Fortschritt („1 von 10“), bleibt sie, solange er läuft; sonst verschwindet sie nach ein paar Sekunden von selbst."
             ]},
             {"t": "h", "texto": "Nur Quests, die du wirklich machen kannst"},
             {"t": "p", "texto": "Bevor Alfa dich zu einer Quest schickt, prüft es deine Stufe, deine Klasse, dein Volk, deine Fraktion, deine Berufe und deinen Ruf. Fehlt eine Vorquest, fügt es sie von selbst davor ein, in der richtigen Reihenfolge. Was du nicht erfüllen kannst, wird mit Begründung ausgeblendet, damit du nie umsonst läufst. Dungeonquests führen dich zum Eingang."},
@@ -260,7 +260,7 @@
             ]},
             {"t": "tarjetas", "cols": 2, "titulo": "Neu auf deinem Weg", "items": [
               {"icono": "ruta", "titulo": "Rundgang durch die Zone", "texto": "Alle deine Quests hier, die du hast und die du annehmen kannst, in der besten Reihenfolge und mit dem Pfeil. Auf der Seite Route oder im Menü deines Guides."},
-              {"icono": "huella", "titulo": "Bring mich zu …", "texto": "Wähle ein Ziel, und Alfa plant die Reise mit Flügen, Schiffen, Zeppelinen, Portalen und zu Fuß, Etappe für Etappe (`/alfa llevame`)."},
+              {"icono": "huella", "titulo": "Bring mich zu …", "texto": "Wähle ein Ziel, und Alfa plant die Reise mit Flügen, Schiffen, Zeppelinen, der Tiefenbahn, Portalen und zu Fuß, Etappe für Etappe (`/alfa llevame`)."},
               {"icono": "misiones", "titulo": "Graue Quests zum Abgeben", "texto": "Graue Quests, die sich nicht mehr lohnen, jede mit „Abbrechen“. Du bestätigst es."},
               {"icono": "exito", "titulo": "Der Questgegenstand", "texto": "Sein Button zeigt, welcher Gegenstand es ist, und deinen Fortschritt („Fackel · 2 von 5“) und pulsiert, sobald du ihn benutzen kannst."},
               {"icono": "lista", "titulo": "Die ganze Kette", "texto": "Die Quests davor und danach, welche du schon gemacht hast, und die Belohnung am Ende. Über das Menü einer Quest."},
@@ -868,7 +868,7 @@
           "bloques": [
             {"t": "intro", "texto": "Unter **Einstellungen** (oben rechts im Fenster) liegt alles, was sich ändern lässt: der Stil, Komfort, Quests, die Karte und mehr. Am schnellsten geht es mit der Suche: Tippe in „Einstellungen durchsuchen“ ein, was du ändern willst, und Alfa bringt dich zur Option."},
             {"t": "tarjetas", "cols": 2, "items": [
-              {"icono": "apariencia", "titulo": "Stil und Klang", "texto": "Die fünf Stile, Alfa einfach oder vollständig, das Heulen, der Wolf beim Einloggen, die Ankündigungen, besser lesen, die freie Sicht, deine Tastenkürzel, deine Profile, deine Sicherungen, „Alfa prüfen“, „Melden“ und das Neue."},
+              {"icono": "apariencia", "titulo": "Stil und Klang", "texto": "Die fünf Stile, Alfa einfach oder vollständig, das Heulen, der Wolf beim Einloggen, die Ankündigungen, besser lesen, die freie Sicht, „Bildschirm einrichten“, deine Tastenkürzel, deine Profile, deine Sicherungen, „Alfa prüfen“, „Melden“ und das Neue."},
               {"icono": "comodidades", "titulo": "Komfort", "texto": "Kleine Verbesserungen fürs Spiel, an einem Ort (nächstes Kapitel)."},
               {"icono": "misiones", "titulo": "Quests", "texto": "Quests selbst annehmen und abgeben: alle oder nur die deiner Route."},
               {"icono": "mapa", "titulo": "Karte und Entdecken", "texto": "Die Karte, die Dungeons und der Storymodus."},
@@ -885,7 +885,7 @@
               "**Freie Sicht.** Eine Taste lässt nur Alfa, deinen Guide und Lya sichtbar; du wählst, was verschwindet (Chat, Minikarte, Leisten, Porträts …). Noch ein Druck holt alles zurück (`/alfa limpia`).",
               "**Deine Tastenkürzel.** Alle Tasten von Alfa in einem einzigen Fenster: anklicken und die neue Taste drücken (`/alfa teclas`)."
             ]},
-            {"t": "h", "texto": "Deine Profile"},
+            {"t": "h", "texto": "Bildschirm einrichten"}, {"t": "pasos", "items": ["Drück in **Einstellungen > Stil und Klang** bei „Bildschirm einrichten“ auf **Einrichten** (oder tippe `/alfa acomodar`).", "Das Spiel wird etwas dunkler, und alles von Alfa, was gerade sichtbar ist, bekommt einen grünen Rahmen mit seinem Namen: Lya, dein Guide, der Pfeil, die Hinweise, das Angeln und die Rahmen von Kampf und Heilung. Ein feines Kreuz markiert die Bildschirmmitte.", "Zieh alles dorthin, wo du es haben willst. Ein Rechtsklick bringt ein Element an seinen gewohnten Platz zurück.", "Mit **Fertig** oder [[Esc]] bist du fertig. Beginnt ein Kampf, endet der Modus von selbst."]}, {"t": "consejo", "texto": "Es erscheint nur, was gerade sichtbar ist: Willst du deinen Guide oder die Angelleiste verschieben, öffne sie vorher."}, {"t": "h", "texto": "Deine Profile"},
             {"t": "lista", "items": [
               "In **Einstellungen > Stil und Klang > Deine Profile** speicherst du deine Einrichtung unter einem Namen und kehrst mit einem Klick zu ihr zurück.",
               "**Exportieren** gibt dir deine Einstellungen als Text, um sie zu sichern oder einem Freund zu geben; **Importieren** fügt einen ein und wendet ihn an.",
@@ -912,7 +912,7 @@
             {"t": "consejo", "texto": "Weißt du nicht, wo du anfangen sollst? Drück **Die empfohlenen einschalten**: Klassenfarben, besserer Tooltip, Anprobe, der nächste Halt beim Fliegen und keine Fehlerstimmen."},
             {"t": "tarjetas", "cols": 2, "items": [
               {"icono": "seguir", "titulo": "Reisen", "texto": "Der nächste Halt bei Flügen mit Zwischenstopps und wie lange es noch dauert."},
-              {"icono": "mapa", "titulo": "Minikarte", "texto": "Eckig, mit Addon-Buttons, die erst erscheinen, wenn du mit der Maus darüberfährst."},
+              {"icono": "mapa", "titulo": "Minikarte", "texto": "Eckig, mit Addon-Buttons, die erst erscheinen, wenn du mit der Maus darüberfährst. Der Alfa-Button bleibt immer sichtbar."},
               {"icono": "apariencia", "titulo": "Stil für Chat, Minikarte und Leisten", "texto": "Kleide diese Teile des Spiels in deinen Stil; ausgeschaltet ist alles wieder wie vorher."},
               {"icono": "personaje", "titulo": "Rahmen und Aktionsleiste", "texto": "Klassenfarben in deinem Rahmen und dem deines Ziels, dazu ein Hinweis, wenn die Leiste einer Gestalt leer ist."},
               {"icono": "info", "titulo": "Tooltip", "texto": "Wen jemand anvisiert, sein Gildenrang und den Tooltip nur mit Umschalt zeigen."},
@@ -961,7 +961,7 @@
               {"cmd": "/alfa rutas", "texto": "Route und Guides."},
               {"cmd": "/alfa guia", "texto": "Zeigt oder versteckt deinen Guide auf dem Bildschirm."},
               {"cmd": "/alfa cerca", "texto": "In der Nähe suchen: Flug, Gasthaus, Reparatur und mehr."},
-              {"cmd": "/alfa llevame [lugar]", "texto": "Bring mich zu …: die Reise zu diesem Ort, mit Flügen, Schiffen und zu Fuß."},
+              {"cmd": "/alfa llevame [lugar]", "texto": "Bring mich zu …: die Reise zu diesem Ort, mit Flügen, Schiffen, der Tiefenbahn, Portalen und zu Fuß."},
               {"cmd": "/alfa enciclopedia", "texto": "Die Enzyklopädie (auch `/alfa monturas`, `/alfa mascotas` und `/alfa legado`)."},
               {"cmd": "/alfa mazmorras", "texto": "Dungeons (`progreso`: dein Fortschritt)."},
               {"cmd": "/alfa listo", "texto": "Prüft, ob du alles Nötige für den Dungeon dabeihast."},
@@ -989,7 +989,7 @@
               {"cmd": "/alfa spot <texto>", "texto": "Markiert einen Farmspot, wo du gerade bist."},
               {"cmd": "/alfa comodidades", "texto": "Komfort."},
               {"cmd": "/alfa estilo", "texto": "Einstellungen > Stil und Klang."},
-              {"cmd": "/alfa limpia", "texto": "Freie Sicht: nur das Wichtigste sichtbar (noch einmal: alles)."},
+              {"cmd": "/alfa limpia", "texto": "Freie Sicht: nur das Wichtigste sichtbar (noch einmal: alles)."}, {"cmd": "/alfa acomodar", "texto": "Bildschirm einrichten: Alfas sichtbare Elemente mit der Maus verschieben."},
               {"cmd": "/alfa teclas", "texto": "Deine Tastenkürzel von Alfa, um sie zu ändern."},
               {"cmd": "/alfa bienvenida", "texto": "Die Einrichtung (`novedades`: die Neuerungen der Version)."},
               {"cmd": "/alfa sesion", "texto": "Deine heutige Sitzung, im Chat."},
@@ -1085,17 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {
-      "titulo": "Die 1.3.0: Das Rudel heilt",
-      "items": [
-        "**Heilen wird leichter:** Heile mit einem Klick, und dieser Gefährte ist anvisiert; stell „Deine Klicks“ zusammen, entferne Flüche und Gifte mit einem weiteren Klick und sieh an einem kleinen blauen Punkt, wem dein Buff fehlt.",
-        "**Die Ankunft, neu:** eine Alfa-Plakette mit dem Wolf in seinem Medaillon; dazu der Rundgang durch deine Zone, „Bring mich zu …“ und Schiffe mit Countdown auf der Karte.",
-        "**Taschen von Grund auf:** acht Fehler weniger, Ausrüstungssets, Vergleich mit dem, was du trägst, Suche in all deinen Charakteren und „Aufräumen“.",
-        "**Im Kampf:** Hinweis zum Unterbrechen von Zaubern, deine Bedrohung, die Übersicht jedes Kampfes und deine langen Abklingzeiten.",
-        "**Das Rudel und Lya:** das Brett, der Mentor, Beute für einen anderen Wolf, Farmspots, Lyas, die sich begrüßen, Herausforderungen der Woche und Geburtstage.",
-        "**Und mehr:** zwei neue Stile, freie Sicht, größere Schrift, Farben für Farbenblinde, deine Tastenkürzel und „Was ist das?“ mit [[Alt]]."
-      ]
-    }
+    "mapa": {"titulo": "Die 1.3.1: Das Rudel, fein abgestimmt", "items": ["**Bildschirm einrichten:** Verschiebe Lya, deinen Guide, den Pfeil, die Hinweise, das Angeln und die Rahmen von Kampf und Heilung mit der Maus, alles auf einmal (`/alfa acomodar`).", "**Der Alfa-Button an der Minikarte** bleibt immer sichtbar, auch wenn du die anderer Addons ausblendest.", "**Die Ankunftsplakette:** Mit Fortschritt („1 von 10“) bleibt sie, solange er läuft; ohne verschwindet sie nach ein paar Sekunden von selbst.", "**Die Ankündigungen** für Schiff, Tiefenbahn und Rares überdecken nicht mehr den Zonennamen oder die Hinweise des Spiels.", "**„Bring mich zu …“** nutzt auch die Tiefenbahn und Portale.", "**Und über 40 Korrekturen** bei Kampf, Heilung, La Jauría, Route, Taschen und Lya."]}
   },
   "contraportada": {
     "titulo": "Komm ins Rudel",

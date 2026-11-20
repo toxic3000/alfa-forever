@@ -119,7 +119,7 @@
             ]},
             {"t": "consejo", "texto": "A green frame points out each part without covering anything. **Next** moves on and **Skip** ends it. Want to see it again? Type `/alfa recorrido` or find it in **Settings > Style and sound**."},
             {"t": "h", "texto": "Animated announcements"},
-            {"t": "p", "texto": "When you arrive by boat or Lya sniffs out a rare or a treasure, a big announcement appears, like the intro: the wolf with its halo, the name of where you’re arriving or of what showed up and, below, the rest (“Land ho! The pack goes ashore in 0:20”, or the rare’s level and distance). It slides in and leaves on its own; the rare one takes you hunting with a click. If you prefer the old cards, turn it off in **Settings > Style and sound**."},
+            {"t": "p", "texto": "When you arrive by boat or tram, or Lya sniffs out a rare or a treasure, a big announcement appears, like the intro: the wolf with its halo, the name of where you’re arriving or of what showed up and, below, the rest (“Land ho! The pack goes ashore in 0:20”, or the rare’s level and distance). It slides in and leaves on its own, and it never overlaps the zone name or the game’s own banners: it shows before or after. The rare one takes you hunting with a click. If you prefer the old cards, turn it off in **Settings > Style and sound**."},
             {"t": "novedad", "ref": "mapa"}
           ]
         },
@@ -240,7 +240,7 @@
               "The arrow becomes an Alfa plate: on the left, the wolf in its medallion, alert and sniffing when it’s time to search, or howling when you’ve arrived.",
               "At the top it says **YOU MADE IT** (or **SEARCH AROUND HERE**, if what you want is somewhere in the area) and, below, what to do there in plain words.",
               "Your progress shows as a trail of paw prints (“4 of 6”); experience, as a bar with its percentage: “Reach level 30: 20% to go”.",
-              "**Next spot**, inside the same plate, takes you to the next point with one click."
+              "**Next spot**, inside the same plate, takes you to the next point with one click.", "If the plate shows your progress (“1 of 10”), it stays while it lasts; if not, it goes away on its own after a few seconds."
             ]},
             {"t": "h", "texto": "Only quests you can actually do"},
             {"t": "p", "texto": "Before sending you on a quest, Alfa checks your level, class, race, faction, professions and reputation. If a prerequisite quest is missing, it adds it first, in order. Whatever you can’t complete is hidden along with the reason, so you never walk there for nothing. Dungeon quests take you to the entrance."},
@@ -260,7 +260,7 @@
             ]},
             {"t": "tarjetas", "cols": 2, "titulo": "New on your way", "items": [
               {"icono": "ruta", "titulo": "Zone circuit", "texto": "All your quests here, the ones you have and the ones you can pick up, in the best order and with the arrow. On the Route page or your guide’s menu."},
-              {"icono": "huella", "titulo": "Take me to…", "texto": "Pick a destination and Alfa plans the trip with flights, boats, zeppelins, portals and on foot, leg by leg (`/alfa llevame`)."},
+              {"icono": "huella", "titulo": "Take me to…", "texto": "Pick a destination and Alfa plans the trip with flights, boats, zeppelins, the tram, portals and on foot, leg by leg (`/alfa llevame`)."},
               {"icono": "misiones", "titulo": "Grey quests to drop", "texto": "Grey quests that are no longer worth it, each with “Abandon”. You confirm it."},
               {"icono": "exito", "titulo": "The quest item", "texto": "Its button says which item it is and your progress (“Torch · 2 of 5”) and pulses when you can use it."},
               {"icono": "lista", "titulo": "The whole chain", "texto": "The quests before and after, which ones you’ve done and the final reward. From a quest’s menu."},
@@ -868,7 +868,7 @@
           "bloques": [
             {"t": "intro", "texto": "**Settings** (at the top right of the window) is home to everything you can change: the style, conveniences, quests, the map and more. The quickest way in is the search box: type what you want to change in “Search settings” and Alfa takes you to the option."},
             {"t": "tarjetas", "cols": 2, "items": [
-              {"icono": "apariencia", "titulo": "Style and sound", "texto": "The five styles, Simple or Full Alfa, the howl, the wolf at login, the announcements, easier reading, the clean screen, your shortcuts, your profiles, your backups, “Check Alfa”, “Report” and what’s new."},
+              {"icono": "apariencia", "titulo": "Style and sound", "texto": "The five styles, Simple or Full Alfa, the howl, the wolf at login, the announcements, easier reading, the clean screen, arranging your screen, your shortcuts, your profiles, your backups, “Check Alfa”, “Report” and what’s new."},
               {"icono": "comodidades", "titulo": "Conveniences", "texto": "Small improvements to the game, all in one place (next chapter)."},
               {"icono": "misiones", "titulo": "Quests", "texto": "Accept and turn in on its own, all quests or only your route’s."},
               {"icono": "mapa", "titulo": "Map and Discovery", "texto": "The map, dungeons and story mode."},
@@ -885,7 +885,7 @@
               "**Clean screen.** One key leaves only Alfa, your guide and Lya in view; you choose what hides (chat, minimap, bars, portraits…). Press it again to bring everything back (`/alfa limpia`).",
               "**Your shortcuts.** All of Alfa’s keys in a single window: click and press the new key (`/alfa teclas`)."
             ]},
-            {"t": "h", "texto": "Your profiles"},
+            {"t": "h", "texto": "Arrange your screen"}, {"t": "pasos", "items": ["In **Settings > Style and sound**, under “Arrange your screen”, press **Arrange** (or type `/alfa acomodar`).", "The game dims a little and every Alfa thing in view gets a green frame with its name: Lya, your guide, the arrow, the alerts, fishing and the Combat and Healing frames. A thin cross marks the center of the screen.", "Drag each one wherever you like. Right-click one to put it back in its usual place.", "Press **Done** or [[Esc]] to finish. If a fight starts, it ends on its own."]}, {"t": "consejo", "texto": "Only what’s in view shows up: to move your guide or the fishing bar, open them before you start."}, {"t": "h", "texto": "Your profiles"},
             {"t": "lista", "items": [
               "In **Settings > Style and sound > Your profiles**, save your setup under a name and go back to it with a click.",
               "**Export** gives you your settings as text to back them up or pass to a friend; **Import** pastes one and applies it.",
@@ -912,7 +912,7 @@
             {"t": "consejo", "texto": "Not sure where to start? Press **Turn on the recommended ones**: class colors, a better tooltip, the dressing room, the flight’s next stop and no error speech."},
             {"t": "tarjetas", "cols": 2, "items": [
               {"icono": "seguir", "titulo": "Travel", "texto": "The next stop on flights with layovers, and how long is left."},
-              {"icono": "mapa", "titulo": "Minimap", "texto": "Square, with addon buttons hidden until you hover."},
+              {"icono": "mapa", "titulo": "Minimap", "texto": "Square, with addon buttons hidden until you hover. Alfa’s own button always stays in view."},
               {"icono": "apariencia", "titulo": "Chat, minimap and bars style", "texto": "Dresses those parts of the game in your style; turn it off and everything goes back to how it was."},
               {"icono": "personaje", "titulo": "Frames and action bar", "texto": "Class colors on your frame and your target’s, and a warning if a form’s bar is empty."},
               {"icono": "info", "titulo": "Tooltip", "texto": "Who someone is targeting, their guild rank and showing it only with Shift."},
@@ -961,7 +961,7 @@
               {"cmd": "/alfa rutas", "texto": "Route and guides."},
               {"cmd": "/alfa guia", "texto": "Shows or hides your on-screen guide."},
               {"cmd": "/alfa cerca", "texto": "Find nearby: flight, inn, repair and more."},
-              {"cmd": "/alfa llevame [lugar]", "texto": "Take me to…: the trip to that place, with flights, boats and on foot."},
+              {"cmd": "/alfa llevame [lugar]", "texto": "Take me to…: the trip to that place, with flights, boats, the tram, portals and on foot."},
               {"cmd": "/alfa enciclopedia", "texto": "The Encyclopedia (also `/alfa monturas`, `/alfa mascotas` and `/alfa legado`)."},
               {"cmd": "/alfa mazmorras", "texto": "Dungeons (`progreso`: your progress)."},
               {"cmd": "/alfa listo", "texto": "Checks whether you carry what you need for the dungeon."},
@@ -989,7 +989,7 @@
               {"cmd": "/alfa spot <texto>", "texto": "Mark a farming spot where you are."},
               {"cmd": "/alfa comodidades", "texto": "Conveniences."},
               {"cmd": "/alfa estilo", "texto": "Settings > Style and sound."},
-              {"cmd": "/alfa limpia", "texto": "Clean screen: only the essentials in view (again: everything)."},
+              {"cmd": "/alfa limpia", "texto": "Clean screen: only the essentials in view (again: everything)."}, {"cmd": "/alfa acomodar", "texto": "Arrange your screen: move Alfa’s things in view with the mouse."},
               {"cmd": "/alfa teclas", "texto": "Your Alfa shortcuts, to change them."},
               {"cmd": "/alfa bienvenida", "texto": "Your setup (`novedades`: what’s new in this version)."},
               {"cmd": "/alfa sesion", "texto": "Today’s session, in chat."},
@@ -1085,17 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {
-      "titulo": "1.3.0: the pack heals",
-      "items": [
-        "**Healing is easier:** heal with a click and that teammate gets targeted; set up “Your clicks”, cleanse curses and poisons with another click and see with a little blue dot who’s missing your buff.",
-        "**A new arrival:** an Alfa plate with the wolf in its medallion; plus your zone’s circuit, “Take me to…” and boats with a countdown on the map.",
-        "**Bags, thoroughly:** eight fewer bugs, gear sets, comparing with what you wear, searching all your characters and “Tidy up”.",
-        "**In the fight:** interrupt alert, your threat, a summary of each fight and your long cooldowns.",
-        "**The pack and Lya:** the board, the mentor, loot for another wolf, farming spots, Lyas that greet each other, weekly challenges and birthdays.",
-        "**And more:** two new styles, clean screen, bigger text, colour-blind friendly colours, your shortcuts and “What’s this?” with [[Alt]]."
-      ]
-    }
+    "mapa": {"titulo": "1.3.1: the pack, fine-tuned", "items": ["**Arrange your screen:** move Lya, your guide, the arrow, the alerts, fishing and the Combat and Healing frames with the mouse, all at once (`/alfa acomodar`).", "**Alfa’s minimap button,** always in view, even when you hide other addons’ buttons.", "**The arrival plate:** with progress (“1 of 10”) it stays while it lasts; without it, it goes away on its own after a few seconds.", "**Announcements** for boats, the tram and rares no longer overlap the zone name or the game’s banners.", "**“Take me to…”** also uses the tram and portals.", "**And over 40 fixes** in Combat, Healing, La Jauría, Route, Bags and Lya."]}
   },
   "contraportada": {
     "titulo": "Join the pack",
