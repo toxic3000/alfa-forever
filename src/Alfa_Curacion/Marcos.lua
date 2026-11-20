@@ -64,6 +64,8 @@ M.AJUSTES = {
 	tanque = true,           -- el tanque late bajo el 40 %
 	mana = true,             -- el maná de los curanderos del grupo
 	porGrupos = true,        -- en banda, una columna (o fila) por grupo
+	-- 1.3.3
+	descripcionCombate = true, -- en combate, un cuadro corto solo con lo que dice Alfa
 }
 
 local function opt(k) return N.Get(ID, k) end
@@ -499,6 +501,14 @@ function M.AvisarSinQuitar(tipo)
 	local k = M.TiposQuePuedesQuitar()[tipo]
 	if not k or M.RanuraQueQuita(tipo) then return false end
 	avisados[tipo] = true
+	-- 1.3.3: al entrar, espera (y se vuelve a revisar: quizá ya le pusiste clic).
+	if M.Entrando() then
+		M.TrasEntrar("sinQuitar." .. tipo, function()
+			avisados[tipo] = nil
+			M.AvisarSinQuitar(tipo)
+		end)
+		return false
+	end
 	N.Imprimir(string.format(L["Un compañero tiene %s y tú lo puedes quitar, pero ningún clic lo hace. Elige «%s» en Tus clics, en la página Curación."],
 		M.TIPOS[tipo].nombre:lower(), M.NombreHechizo(M.Conocido(k)) or "?"))
 	return true
@@ -506,10 +516,11 @@ end
 
 local function disipar(b)
 	local c, u = b.cuerpo, b.unidad
-	b.alfaTipo = nil
+	b.alfaTipo, b.alfaHay = nil, nil
 	if not opt("disipar") then c.perjuicio:Hide() return verBorde(c.disipar, false) end
 	local hay, id = disipable(u)
 	if not hay then c.perjuicio:Hide() return verBorde(c.disipar, false) end
+	b.alfaHay = true
 	local tipo, aura = tipoDe(u, id)
 	b.alfaTipo = tipo
 	if opt("tipoPerjuicio") and tipo then
@@ -713,8 +724,41 @@ local function alCambiarAtributo(self, nombreAtributo, valor)
 	if nombreAtributo == "unit" then asignar(self, valor) end
 end
 
+-- 1.3.3: en combate, un cuadro corto solo con las líneas de Alfa (sin SetUnit,
+-- para no estorbar): con qué clic quitas su perjuicio. Si el juego oculta de
+-- qué tipo es (mazmorras), los clics con los que quitas cada tipo.
+local function cuadroCombate(self)
+	if not opt("descripcionCombate") then return end
+	local lineas = 0
+	local tipo = self.alfaTipo
+	if tipo and M.TIPOS[tipo] then
+		local r = M.RanuraQueQuita(tipo)
+		local col = M.TIPOS[tipo].color
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		GameTooltip:AddLine(r and string.format(L["%s: quítalo con %s."], M.TIPOS[tipo].nombre, M.NombreRanura(r):lower())
+			or string.format(L["%s: ningún clic lo quita."], M.TIPOS[tipo].nombre), col[1], col[2], col[3], true)
+		lineas = 1
+	elseif self.alfaHay then
+		for _, t in ipairs(M.ORDEN_TIPOS) do
+			local r = M.RanuraQueQuita(t)
+			if r then
+				if lineas == 0 then
+					GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+					GameTooltip:AddLine(L["Tiene un perjuicio que puedes quitar:"], 1, 1, 1, true)
+				end
+				local col = M.TIPOS[t].color
+				GameTooltip:AddLine(string.format(L["%s: %s"], M.TIPOS[t].nombre, M.NombreRanura(r)), col[1], col[2], col[3], true)
+				lineas = lineas + 1
+			end
+		end
+	end
+	if lineas > 0 then GameTooltip:Show() end
+end
+
 local function alEntrar(self)
-	if M.EnCombate() or not opt("descripcion") or not self.unidad or not GameTooltip then return end
+	if not self.unidad or not GameTooltip then return end
+	if M.EnCombate() then return cuadroCombate(self) end
+	if not opt("descripcion") then return end
 	GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 	if not pcall(GameTooltip.SetUnit, GameTooltip, self.unidad) then return GameTooltip:Hide() end
 	-- 1.3.0: qué clic quita su perjuicio y qué clic le da tu buff.

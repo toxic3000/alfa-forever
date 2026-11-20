@@ -83,6 +83,14 @@ La lista `I.LISTA` la lleva Toxic a mano, con permiso de cada persona: `["Nombre
 - **Un solo reloj** (`Util.lua`, `M.Cada(clave, seg, fn)`, `M.Tareas()`): las 13 tareas de 10 s a 10 min corren dentro de `manada.reloj` (cada 10 s), una vez por su período y las de igual período en vueltas distintas.
 - Prueba: `tools/banco/prueba_132_manada.lua`.
 
+## 1.3.3
+
+- **La guarida, ya llegaste** (`Guaridas.lua`, `Gu.RecordarSalir`): mientras sigas en el grupo de quien te invitó, cada 2 min y hasta 10 min, «Ya estás en la Guarida X: ¿salimos del grupo?» con «Salir del grupo» (`manada.salirGrupo` en el reloj de La Jauría).
+- **La cita** (`Cita.lua`, `Ci.Accion`/`Ci.ArmarGrupo`): la tuya trae «Armar el grupo» (invita a quienes dijeron «Voy»; 1D guarda su nombre), la de otro «Susurrar a X»; en el aviso de 15 min y en su fila de la página.
+- **Raros con reloj**: lo avisado («pudo volver ya») vive en `N.DatosPersonaje("manada").rarosAvisados` y se olvida con su raro: no se repite tras un /reload.
+- Al entrar, sus avisos los guarda `K.Aviso` (la entrada en silencio del núcleo) y los cuenta Lya.
+- Prueba: `tools/banco/prueba_133_manada.lua`.
+
 ## Para el clan: `Clan.lua`
 
 Nombre exacto de la hermandad (`hermandad`), lema, descripción, lo que ofrecen y **`oficiales`** (nombres completos de personaje, con apellido). `discord = nil` usa el enlace de Alfa. `donar = ""` es el enlace para donar de "Apoya a Alfa" (vacío: "Muy pronto").

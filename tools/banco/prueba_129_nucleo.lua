@@ -509,11 +509,11 @@ step("Sencillo: solo lo esencial en la barra, lo demás sigue abriendo", functio
   s = seccionesVistas()
   check(s.hoy and s.aventura and s.personaje and s.mundo and s.ajustes, "en sencillo falta una sección esencial")
   check(not s.oficios and not s.manada, "en sencillo siguen Oficios o Manada en la barra")
-  -- Personaje: Bolsas y Lya, sin Talentos ni Combate.
+  -- Personaje: Bolsas, Talentos (1.3.3) y Lya, sin Combate.
   A.UI.Options.SelectSection("personaje")
   T(1)
   local p, n = pildorasVistas()
-  check(p.bolsas and p.lya and not p.builds and not p.combate and n == 2, "Personaje en sencillo no muestra solo Bolsas y Lya")
+  check(p.bolsas and p.lya and p.builds and not p.combate and n == 3, "Personaje en sencillo no muestra solo Bolsas, Talentos y Lya")
   check(not N.PaginaVisible("pesca") and N.PaginaVisible("bolsas") and N.PaginaVisible("comodidades"), "N.PaginaVisible no sigue la lista")
   -- Una página escondida sigue abriendo (su comando, la búsqueda, un enlace).
   N.Abrir("pesca")

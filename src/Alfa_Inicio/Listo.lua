@@ -257,6 +257,12 @@ end
 
 local dentro = false  -- ya avisó en esta entrada a la mazmorra
 local enGrupo = false -- ya avisó con este grupo
+-- 1.3.3: al entrar al juego y tras /reload, lo de ahora es la base: si ya
+-- estabas en la mazmorra o en el grupo, no se avisa. Solo al entrar a ella
+-- desde fuera o al juntarse el grupo mientras juegas.
+local BASE_SEG = 5
+local baseHasta = (GetTime and GetTime() or 0) + 30 -- desde que carga Alfa hasta poco después de entrar
+local function enBase() return (GetTime and GetTime() or 0) < baseHasta end
 
 local function enMazmorra()
 	if not IsInInstance then return false end
@@ -274,6 +280,11 @@ local function alEntrar()
 		dentro = false
 		return
 	end
+	-- Ya estabas dentro al entrar al juego o al recargar: no es «entrar a ella».
+	if enBase() then
+		dentro = true
+		return
+	end
 	if dentro or not on("listoAuto") then return end
 	dentro = true
 	A.After(3, function() Li.Revisar("entrar", nombreZona()) end)
@@ -287,6 +298,10 @@ local function alGrupo()
 		enGrupo = false
 		return
 	end
+	if enBase() then
+		enGrupo = true -- el grupo de antes de entrar al juego: no es nuevo
+		return
+	end
 	if enGrupo or raid or n < 4 or nivel() < 10 or not on("listoAuto") then return end
 	enGrupo = true
 	A.After(2, function() Li.Revisar("grupo") end)
@@ -294,9 +309,17 @@ end
 Li.AlGrupo = alGrupo
 
 -- Para el banco: vuelve a empezar.
-function Li.Reiniciar() dentro, enGrupo = false, false end
+function Li.Reiniciar() dentro, enGrupo, baseHasta = false, false, 0 end
 
-A.RegisterEvent("PLAYER_ENTERING_WORLD", alEntrar)
+-- PLAYER_ENTERING_WORLD(inicial, recarga): al entrar al juego o al recargar,
+-- la base; tras una pantalla de carga (entrar a la mazmorra), lo de siempre.
+A.RegisterEvent("PLAYER_ENTERING_WORLD", function(_, inicial, recarga)
+	if inicial == true or recarga == true then
+		baseHasta = (GetTime and GetTime() or 0) + BASE_SEG
+	end
+	alEntrar()
+	if inicial == true or recarga == true then alGrupo() end
+end)
 A.RegisterEvent("ZONE_CHANGED_NEW_AREA", alEntrar)
 A.RegisterEvent("GROUP_ROSTER_UPDATE", alGrupo)
 

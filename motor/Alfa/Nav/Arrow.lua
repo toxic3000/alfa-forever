@@ -420,6 +420,7 @@ end
 ---------------------------------------------------------------------------
 local llegada        -- la placa (se arma la primera vez)
 local llegadaVista = false -- en modo llegada (la placa a la vista o ya ida)
+local piedraVista = false  -- 1.3.3: la placa dice «usa tu piedra de hogar» (pintarPiedra)
 local PLACA_ANCHO = 264   -- la placa entera
 local PLACA_PAD = 10      -- su margen
 local MEDALLA = 46        -- el círculo del lobo, a la izquierda
@@ -556,6 +557,12 @@ local function armarLlegada(K)
 	f.Accion:SetMaxLines(3)
 	f.Avance = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 	f.Avance:SetJustifyH("RIGHT")
+	-- 1.3.3: las líneas chicas de «usa tu piedra» (después, la piedra, cuánto falta).
+	f.Nota = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	f.Nota:SetWidth(COLUMNA)
+	f.Nota:SetJustifyH("LEFT")
+	f.Nota:SetWordWrap(true)
+	f.Nota:Hide()
 	-- El avance: un rastro de huellas (hasta 8 lugares) o, para la
 	-- experiencia y lo largo, una barra con su porcentaje.
 	if K.Huellas then f.Huellas = K.Huellas(f, { tam = 13, max = HUELLAS_MAX, gap = 3 }) f.Huellas:Hide() end
@@ -660,6 +667,7 @@ local function pintarLlegada(m)
 	end
 	f.alfaModo = m
 	f.alfaBusca = m == "search"
+	if f.Nota then f.Nota:Hide() end
 	local nr, ng, nb = Nav.RGB("arrowNear")
 	local tr, tg, tb = Nav.RGB("arrowNearText")
 	-- Los colores: la llegada del jugador (verde de fábrica) en la franja, el
@@ -782,7 +790,9 @@ local function quitarLlegada()
 		llegada:Hide()
 		-- 1.3.1: te fuiste: la próxima llegada sale entera.
 		llegada.alfaFirma, llegada.alfaOculta = nil, false
+		if llegada.Nota then llegada.Nota:Hide() end
 	end
+	piedraVista = false
 	frame:EnableMouse(true)
 	if frame.SetClampRectInsets then frame:SetClampRectInsets(0, 0, 0, 0) end
 	if not llegadaVista then return end
@@ -792,6 +802,140 @@ local function quitarLlegada()
 	timerText:ClearAllPoints()
 	timerText:SetPoint("TOP", distText, "BOTTOM", 0, -4)
 end
+
+---------------------------------------------------------------------------
+-- 1.3.3: «Usa tu piedra de hogar». Cuando la ruta del motor va por un tramo
+-- `hearth` (Nav/Travel.lua), en lugar de «Piedra de hogar a X: ahorra 9 min»
+-- y «2:16 en total», la placa de la llegada lo dice claro: a dónde vuelves,
+-- cuántas misiones entregas ahí (AlfaRuta.EntregasPiedra, Hogar.lua), cuánto
+-- te ahorras (leg.saved y leg.place, parches de Nav/Travel.lua), lo que sigue
+-- después, si tu piedra está lista y en cuánto llegas. El botón seguro es el
+-- del motor (AlfaHearthButton: Buttons.WantsHearth también dice sí con este
+-- tramo, parche de QoL/Buttons.lua). Se queda mientras dure el tramo: se va
+-- al usar la piedra (la ruta pasa al tramo siguiente).
+---------------------------------------------------------------------------
+local PIEDRA = 6948
+
+local function estadoPiedra()
+	local C = C_Item
+	if C and type(C.GetItemCount) == "function" then
+		local ok, cuenta = pcall(C.GetItemCount, PIEDRA)
+		if ok and type(cuenta) == "number" and cuenta < 1 then return ns.T("No traes tu piedra de hogar.") end
+	end
+	local fn = (C_Container and C_Container.GetItemCooldown) or (C and C.GetItemCooldown)
+	if type(fn) == "function" then
+		local ok, inicio, dura = pcall(fn, PIEDRA)
+		if ok and not (issecretvalue and (issecretvalue(inicio) or issecretvalue(dura))) then
+			inicio, dura = tonumber(inicio) or 0, tonumber(dura) or 0
+			local falta = inicio > 0 and dura > 1.5 and (inicio + dura - GetTime()) or 0
+			if falta > 0 then return ns.T("Tu piedra está lista en %d min."):format(math.max(1, math.ceil(falta / 60))) end
+		end
+	end
+	return ns.T("Tu piedra está lista.")
+end
+
+local function textoPiedra(leg)
+	local lugar = leg.place
+	if type(lugar) ~= "string" or lugar == "" or (issecretvalue and issecretvalue(lugar)) then lugar = nil end
+	local min = tonumber(leg.saved) and math.floor(leg.saved / 60) or nil
+	if min and min < 1 then min = nil end
+	local R = rawget(_G, "AlfaRuta")
+	local n = 0
+	if type(R) == "table" and type(R.EntregasPiedra) == "function" then
+		local ok, k = pcall(R.EntregasPiedra)
+		n = ok and tonumber(k) or 0
+	end
+	if not lugar then return ns.T("Usa tu piedra de hogar: te lleva a tu posada.") end
+	if n > 0 and min then
+		if n == 1 then return ns.T("Vuelves a %s: entregas 1 misión y te ahorras %d min caminando."):format(lugar, min) end
+		return ns.T("Vuelves a %s: entregas %d misiones y te ahorras %d min caminando."):format(lugar, n, min)
+	end
+	if min then return ns.T("Vuelves a %s y te ahorras %d min caminando."):format(lugar, min) end
+	return ns.T("Vuelves a %s."):format(lugar)
+end
+
+local function pintarPiedra(leg)
+	local K = kit()
+	if not (K and leg) then return false end
+	local f = armarLlegada(K)
+	local target = Nav.GetTarget()
+	local accion = textoPiedra(leg)
+	local lineas = {}
+	local meta = target and target.label
+	if type(meta) == "string" and meta ~= "" and not (issecretvalue and issecretvalue(meta)) then
+		lineas[#lineas + 1] = ns.T("Después: %s"):format(meta)
+	end
+	lineas[#lineas + 1] = estadoPiedra()
+	local T = Nav.travel
+	local okR, secs = false, nil
+	if T and T.Remaining then okR, secs = pcall(T.Remaining, nil) end
+	if okR and tonumber(secs) then lineas[#lineas + 1] = ns.T("Llegas en unos %d min"):format(math.max(1, math.ceil(secs / 60))) end
+	local nota = table.concat(lineas, "\n")
+	local firma = "piedra|" .. accion .. "|" .. nota
+	local cambio = firma ~= f.alfaFirma
+	f.alfaModo, f.alfaBusca = "piedra", false
+	local nr, ng, nb = Nav.RGB("arrowNear")
+	local tr, tg, tb = Nav.RGB("arrowNearText")
+	f.Franja:SetVertexColor(nr, ng, nb, 1)
+	f.Aro:SetVertexColor(nr, ng, nb, 0.9)
+	f.Halo:SetVertexColor(nr, ng, nb, 1)
+	f.Lobo:SetVertexColor(nr, ng, nb, 1)
+	f.Fondo:SetVertexColor(K.ConAlfa("hundido", 0.95))
+	f.Lobo:SetTexture(K.Lobo("atento"))
+	letra(K, f.Sobre, "mayus")
+	f.Sobre:SetTextColor(tr, tg, tb, 1)
+	f.Sobre:SetText(K.Mayus(ns.T("Usa tu piedra de hogar")))
+	letra(K, f.Accion, "cuerpo")
+	f.Accion:SetTextColor(K.Color("texto"))
+	f.Accion:SetText(accion)
+	local x = PLACA_PAD * 2 + 2 + MEDALLA
+	local y = PLACA_PAD + 1 + altoTexto(K, f.Sobre, 10)
+	f.Accion:ClearAllPoints()
+	f.Accion:SetPoint("TOPLEFT", f, "TOPLEFT", x, -(y + 3))
+	f.Accion:Show()
+	y = y + 3 + altoTexto(K, f.Accion, 14)
+	letra(K, f.Nota, "pequeno")
+	f.Nota:SetTextColor(K.Color("textoSuave"))
+	f.Nota:SetText(nota)
+	f.Nota:ClearAllPoints()
+	f.Nota:SetPoint("TOPLEFT", f, "TOPLEFT", x, -(y + 4))
+	f.Nota:Show()
+	y = y + 4 + altoTexto(K, f.Nota, 12)
+	f.Avance:Hide()
+	if f.Huellas then f.Huellas:Hide() end
+	f.Pista:Hide()
+	f.Relleno:Hide()
+	if f.Siguiente then f.Siguiente:Hide() end
+	y = math.max(y, PLACA_PAD + MEDALLA) + PLACA_PAD
+	f:SetHeight(y)
+	f.alfaQuieta = ns.Get("ui.reduceMotion") and true or false
+	f.alfaCuenta = true
+	if cambio then
+		f.alfaFirma = firma
+		if f.alfaOculta or not f:IsShown() then f.alfaT, f.alfaAnclada = 0, false end
+		f.alfaQueda = math.huge -- se queda mientras dure el tramo
+		f.alfaOculta = false
+	end
+	if f.alfaQuieta then
+		f.Halo:SetAlpha(0.4)
+		if f.Lobo.SetRotation then f.Lobo:SetRotation(0) end
+		f.Lobo:SetSize(LOBO_TAM, LOBO_TAM)
+	end
+	frame:EnableMouse(true)
+	f:Show()
+	sinLlegadaVieja()
+	legIcon:Hide()
+	local sobra = math.max(0, (PLACA_ANCHO - WIDTH) / 2)
+	if frame.SetClampRectInsets then frame:SetClampRectInsets(-sobra, sobra, 0, 0) end
+	distText:Hide()
+	labelText:Hide()
+	etaText:Hide()
+	timerText:ClearAllPoints()
+	timerText:SetPoint("TOP", f, "BOTTOM", 0, -4)
+	llegadaVista, piedraVista = true, true
+	return true
+end
+Arrow.PintarPiedra = pintarPiedra
 
 -- Para el banco y para quien quiera saber qué dice la llegada.
 function Arrow.Llegada()
@@ -804,14 +948,16 @@ function Arrow.Llegada()
 		huellas = llegada.Huellas ~= nil and llegada.Huellas:IsShown() or nil,
 		lobo = llegada.Lobo:GetTexture(), aroViejo = ring:IsShown() or wolfPaw:IsShown() or skinRing:IsShown() or nil,
 		siguiente = b ~= nil and b:IsShown() or nil, clicable = b ~= nil and b:IsShown() and b:IsMouseEnabled() or nil,
-		seVa = llegada.alfaQueda ~= math.huge or nil, -- 1.3.1: se desvanece sola (sin avance que contar)
+		seVa = llegada.alfaQueda ~= math.huge or nil,
+		nota = llegada.Nota ~= nil and llegada.Nota:IsShown() and llegada.Nota:GetText() or nil, -- 1.3.3
+		piedra = piedraVista or nil, -- 1.3.1: se desvanece sola (sin avance que contar)
 	}
 end
 
 local function setMode(m)
 	if m == mode then return end
 	mode = m
-	if not (m == "arrived" or m == "search") then quitarLlegada() end
+	if not (m == "arrived" or m == "search" or m == "instruction") then quitarLlegada() end
 	local travel, done, act = m == "travel", m == "arrived" or m == "search", m == "instruction"
 	dial:SetShown(travel or done or act)
 	grabArea(travel or done or act)
@@ -862,6 +1008,9 @@ local function setMode(m)
 		-- Act here: "Fly to Lakeshire", "Take the zeppelin to Undercity", "Hearth to Goldshire".
 		local T = Nav.travel
 		local leg = T and T.CurrentLeg and T.CurrentLeg()
+		-- Alfa 1.3.3: el tramo de la piedra, en la placa de La Jauría.
+		if leg and leg.kind == "hearth" and pintarPiedra(leg) then return end
+		quitarLlegada()
 		legIcon:SetTexture(UI_MEDIA .. (leg and LEG_ICON[leg.kind] or "icon-goto"))
 		local r, g, b = Nav.RGB("arrow")
 		legIcon:SetVertexColor(r, g, b, 1)
@@ -1010,7 +1159,13 @@ local function sample(elapsed)
 		return true
 	end
 	if state == "instruction" then
+		-- Alfa 1.3.3: otro tramo con el mismo modo (la piedra y luego un vuelo):
+		-- se vuelve a mirar, para que la placa de la piedra no se quede.
+		local leg = T and T.CurrentLeg and T.CurrentLeg()
+		local esPiedra = leg ~= nil and leg.kind == "hearth"
+		if mode == "instruction" and esPiedra ~= piedraVista then mode = nil end
 		setMode("instruction")
+		if piedraVista then etaText:Hide() return true end
 		local secs = showEta and T.Remaining(nil)
 		if secs then showSeconds(secs) else etaText:Hide() end
 		return true
@@ -1311,9 +1466,16 @@ ns.On("CATCH_UP", function(on) Arrow.SetBusy(on) end)
 -- 1.3.1: si la placa ya se fue, solo vuelve cuando lo que dice cambió.
 local function llegadaAlDia()
 	if llegadaVista and (mode == "arrived" or mode == "search") and frame:IsShown() then pintarLlegada(mode) end
+	-- 1.3.3: la placa de la piedra, al día (la recarga, lo que falta, otra ruta).
+	if piedraVista and mode == "instruction" and frame:IsShown() then
+		local T = Nav.travel
+		local leg = T and T.CurrentLeg and T.CurrentLeg()
+		if leg and leg.kind == "hearth" then pintarPiedra(leg) end
+	end
 end
 Arrow.LlegadaAlDia = llegadaAlDia
 ns.On("STEP_UPDATED", llegadaAlDia)
+ns.On("ROUTE_CHANGED", function() llegadaAlDia() end) -- 1.3.3: la placa de la piedra
 -- 1.3.1: la bandera de la pelea (ver `pelea`, arriba de la placa).
 ns.RegisterEvent("PLAYER_REGEN_DISABLED", function() pelea = true llegadaAlDia() end)
 ns.RegisterEvent("PLAYER_REGEN_ENABLED", function() pelea = false llegadaAlDia() end)

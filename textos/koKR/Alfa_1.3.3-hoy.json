@@ -1,0 +1,10 @@
+{
+ "(con lo del banco: %d más)": "(은행에 있는 것까지: %d개 더)",
+ "Elige tu tiempo otra vez y arma uno nuevo cuando quieras.": "시간을 다시 고르고 원할 때 새로 짜세요.",
+ "Escribe un nombre para este conjunto.": "이 세트의 이름을 입력하세요.",
+ "Mientras entrabas": "접속하는 동안",
+ "Nombre del conjunto": "세트 이름",
+ "Otro nombre…": "다른 이름…",
+ "Tu plan de %s quedó sin terminar: llevabas %d de %d pasos.": "%s 계획을 끝내지 못했습니다: %d/%d단계까지 했습니다.",
+ "Un solo aviso: el de tus bolsas, que también te dice qué vender.": "알림은 하나만: 무엇을 팔지도 알려 주는 가방 알림입니다."
+}

@@ -1027,11 +1027,16 @@ local function bloqueCitas(padre)
 					if #no > 0 then partes[#partes + 1] = format(L["No pueden: %s"], table.concat(no, ", ")) end
 					dato = table.concat(partes, DOT)
 					botones = { { texto = L["Quitar"], alClic = function() Ci.Quitar(c.llave) end } }
+					-- 1.3.3: con quienes van, «Armar el grupo».
+					local armar = Ci.Accion(c)
+					if armar then table.insert(botones, 1, armar) end
 				else
 					local estado = c.mi == true and L["vas"] or (c.mi == false and L["no puedes"]) or nil
 					dato = format(L["De %s, %s"], c.de or "?", cuando) .. (estado and (DOT .. estado) or "")
+					-- 1.3.3: si ya vas, «Susurrar a X» en lugar de «Voy».
+					local susurrar = c.mi == true and Ci.Accion(c)
 					botones = {
-						{ texto = L["Voy"], activo = c.mi ~= true, alClic = function() Ci.Responder(c.llave, true) end },
+						susurrar or { texto = L["Voy"], activo = c.mi ~= true, alClic = function() Ci.Responder(c.llave, true) end },
 						{ texto = L["No puedo"], activo = c.mi ~= false, alClic = function() Ci.Responder(c.llave, false) end },
 					}
 				end

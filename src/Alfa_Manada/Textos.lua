@@ -604,4 +604,10 @@ M.EN = {
 	-- 1.3.2
 	["Tu hermandad ya sabe tu clase y tu nivel: te avisarán si les sale algo que te sirve."] = "Your guild now knows your class and level: they'll let you know if they find something for you.",
 	["Aún no conozco a ningún lobo conectado que comparta su clase y su nivel. Pídeles que prendan «Compartir mi clase y nivel» en La Jauría."] = "I don't know any online wolf who shares their class and level yet. Ask them to turn on \"Share my class and level\" in La Jauría.",
+	-- 1.3.3
+	["Ya estás en la %s: ¿salimos del grupo?"] = "You're in %s now: shall we leave the group?",
+	["La guarida se queda contigo aunque salgas."] = "The den stays with you even if you leave.",
+	["Nadie de los que van está conectado ahora."] = "None of the ones going is online right now.",
+	["Armar el grupo"] = "Build the group",
+	["Susurrar a %s"] = "Whisper %s",
 }

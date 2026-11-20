@@ -96,3 +96,12 @@ Todos opcionales: sin ellos, la pieza se cambia por otra o no sale.
 ## 1.3.2
 
 - El paso de tu zona dice «Cierra misiones de <zona>»; desde otra zona, «Llévame» avisa «Vuelve a <zona>» en lugar de armar las misiones de donde estás. Prueba: `tools/banco/prueba_132_hoy.lua`.
+
+## 1.3.3 (la entrada en silencio)
+
+- **«Mientras entrabas»** (`Inicio.lua`, `P.alEntrar`, `P.TarjetasAlEntrar`): pinta `N.AlEntrar()` del Núcleo, cada cosa con su acción y su «Listo» (`N.OlvidarAlEntrar`); se repinta con `ALFA_ALENTRAR`. Vacía, no sale.
+- `Aviso.Mostrar` (`Avisos.lua`): mientras `N.Entrando()`, guarda con `N.GuardarAlEntrar` (id `inicio.<clave>`, el primer botón como acción) en lugar de salir; `spec.alEntrar = true` sale igual. Sin el Núcleo de la 1.3.3, sale como antes (`M.Entrando`, `M.GuardarAlEntrar`).
+- **La base al entrar:** `Recordatorios.lua` (equipo, bolsas, buff), `Listo.lua` (la mazmorra y el grupo de antes: «Antes de…» solo al entrar a ella desde fuera) y `Sugerencias.lua` de Bolsas toman lo de ahora como base al entrar y tras `/reload`, y solo avisan lo que empeora jugando. `inicio.resumen` de fábrica es `"aviso"` (sin chat).
+- **Una sola voz para las bolsas:** con Bolsas, el aviso de bolsas llenas es el suyo (id `bolsasLlenas`); Hoy lo muestra solo en su página, con el umbral y el interruptor de Bolsas (`R.BolsasHablan`, `R.UmbralBolsas`, `R.AvisoBolsas`).
+- **El plan que vence** (`Tiempo.lua`: `T.Vencido`, `T.TextoVencido`, `T.OlvidarVencido`): deja su nota en «¿Cuánto tiempo tienes?» con «Listo».
+- Prueba: `tools/banco/prueba_133_hoy.lua`.

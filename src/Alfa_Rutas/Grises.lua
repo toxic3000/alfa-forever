@@ -63,6 +63,7 @@ local ventana
 local function refrescar()
 	if not (ventana and ventana:IsShown()) then return end
 	local lista = Gr.Lista() or {}
+	ventana:Boton(#lista >= 2 and format(L["Soltar las %d"], #lista) or nil)
 	ventana:Llenar(lista, nil, nil, #lista > 0 and L["Ya no te dan casi experiencia y no abren nada que valga la pena. Abandónalas para tener espacio en tu registro."] or "")
 end
 
@@ -86,8 +87,37 @@ function Gr.Abandonar(qid, sinPreguntar)
 	return true
 end
 
+-- 1.3.3: soltar todas de una vez, con una sola confirmación que dice cuáles.
+local MAX_NOMBRES = 8
+function Gr.SoltarTodas(sinPreguntar)
+	local lista = Gr.Lista()
+	if not (lista and #lista > 0) then return false end
+	local ids, nombres = {}, {}
+	for i, d in ipairs(lista) do
+		ids[i] = d.qid
+		if i <= MAX_NOMBRES then nombres[#nombres + 1] = "- " .. d.titulo end
+	end
+	if #lista > MAX_NOMBRES then nombres[#nombres + 1] = format(L["y %d más"], #lista - MAX_NOMBRES) end
+	local function hacer()
+		local n = M.Plan.Abandonar(ids)
+		if n > 0 then
+			M.Aviso(L["Misiones grises"], format(n == 1 and L["Soltaste 1 misión gris."] or L["Soltaste %d misiones grises."], n), { icono = "ic-exito" })
+		end
+		A.After(0.3, function() if Gr.Refrescar then Gr.Refrescar() end end)
+		return n > 0
+	end
+	if sinPreguntar then return hacer() end
+	K.Dialogo({
+		titulo = format(L["¿Soltar estas %d misiones?"], #ids),
+		texto = table.concat(nombres, "\n") .. "\n\n" .. L["Salen de tu registro. Para hacerlas otra vez tendrías que volver a pedirlas."],
+		aceptar = format(L["Soltar las %d"], #ids), peligro = true, alAceptar = hacer,
+	})
+	return true
+end
+
 local function armar()
 	ventana = M.VentanaSimple({
+		boton = { texto = "", peligro = true, alClic = function() Gr.SoltarTodas() end },
 		nombre = "AlfaRutasGrises", titulo = L["Misiones grises"], icono = "ic-misiones", ancho = 440, alto = 460,
 		vacio = { lobo = "contento", titulo = L["Nada que soltar"], texto = L["Tus misiones grises valen la pena o no tienes ninguna."] },
 		crear = function(fila)
@@ -123,10 +153,13 @@ function Gr.Abrir()
 		return false
 	end
 	if not ventana then armar() end
+	ventana:Boton(#lista >= 2 and format(L["Soltar las %d"], #lista) or nil) -- 1.3.3
 	ventana:Llenar(lista, L["Misiones grises"], format(L["%d que no valen la pena"], #lista),
 		#lista > 0 and L["Ya no te dan casi experiencia y no abren nada que valga la pena. Abandónalas para tener espacio en tu registro."] or "")
 	return true
 end
+
+Gr.Refrescar = function() refrescar() end
 
 -- Cuántas hay, para la tarjeta de la página (0 con el ajuste apagado y,
 -- 1.3.1, sin el Codex: la página no lo carga).

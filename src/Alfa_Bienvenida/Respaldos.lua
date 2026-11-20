@@ -93,7 +93,8 @@ local function ofrecer(r)
 	local i
 	for j, x in ipairs(lista) do if x == r then i = j end end
 	if not i then return end
-	K.Aviso({ titulo = L["Tus ajustes de Alfa llegaron vacíos"], icono = "ic-alerta", tono = "aviso", duracion = 30, lya = false,
+	-- 1.3.3: importante = "siempre": sale aunque se esté entrando en silencio.
+	K.Aviso({ titulo = L["Tus ajustes de Alfa llegaron vacíos"], icono = "ic-alerta", tono = "aviso", duracion = 30, lya = false, importante = "siempre",
 		texto = format(L["Puede que el archivo se dañara. Tienes un respaldo del %s."], tostring(r.cuando or "?")),
 		accion = { texto = L["Restaurar"], alClic = function() Rs.Restaurar(i) end } })
 end

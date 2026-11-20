@@ -571,6 +571,9 @@ local function grupos(padre)
 	g5:Fila({ titulo = L["También yendo solo"], control = interruptor("corteSonidoSolo"), hija = true,
 		activa = ambas("corte", "corteSonido"),
 		texto = L["Que suene también cuando vas solo por el mundo."] })
+	g5:Fila({ titulo = L["Más suave si el juego oculta el hechizo"], control = interruptor("corteSonidoOculto"), hija = true,
+		activa = ambas("corte", "corteSonido"),
+		texto = L["En mazmorras y bandas el juego a veces no dice qué lanza el enemigo: suena más suave, y a veces también con lo que no se puede cortar."] })
 	g5:Fila({ titulo = L["Barra de amenaza"], control = interruptor("amenaza"),
 		texto = L["En grupo o con tu mascota: tu amenaza sobre tu objetivo. Te avisa antes de quitárselo al tanque, o si eres tanque, antes de perderlo."] })
 	g5:Fila({ titulo = L["Tu papel"], hija = true, activa = si("amenaza"),
@@ -636,6 +639,8 @@ local function construir(view)
 	ui.ajustes, ui.filtrar = grupos(t.Extra)
 	for i, g in ipairs(ui.ajustes) do t:AgregarBloque(g, { espacio = i == 1 and ESP.xl or ESP.l }) end
 	K.EnPagina(view, t, function()
+		-- 1.3.3: la primera vez que abres Combate, cómo se lee tu ayuda de rotación.
+		if R.Presentar then R.Presentar(true) end
 		t:SetAccion(estado())
 		t:SetOpciones(herramientas(), L["Tus herramientas de combate"])
 		ui.medidor:Llenar()
@@ -752,6 +757,7 @@ local CONTROLES = {
 	toggle("corteFoco", L["También tu foco"], nil, "corte", "focus interrupt"),
 	toggle("corteSonido", L["Con sonido"], L["En grupo o en una instancia."], "corte", "interrupt sound"),
 	toggle("corteSonidoSolo", L["También yendo solo"], L["Que suene también cuando vas solo por el mundo."], "corte", "interrupt sound solo"),
+	toggle("corteSonidoOculto", L["Más suave si el juego oculta el hechizo"], L["En mazmorras y bandas el juego a veces no dice qué lanza el enemigo: suena más suave, y a veces también con lo que no se puede cortar."], "corte", "interrupt sound dungeon hidden"),
 	toggle("amenaza", L["Barra de amenaza"], L["En grupo o con tu mascota: tu amenaza sobre tu objetivo. Te avisa antes de quitárselo al tanque, o si eres tanque, antes de perderlo."], nil,
 		"threat, aggro, tank"),
 	{ kind = "dropdown", key = clave("amenazaPapel"), label = L["Tu papel"], help = L["Automático: el que marcaste en tu grupo, o tu actitud o forma."],

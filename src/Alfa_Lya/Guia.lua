@@ -294,6 +294,8 @@ local function globo(padre)
 		K.Escribir(self.Nombre, K.Mayus and K.Mayus("Lya") or "LYA")
 		K.Escribir(self.Texto, t)
 		K.Mostrar(self.Ir, p ~= nil and (p.abrir ~= nil or p.modulo ~= nil or p.fn ~= nil))
+		-- (1.3.3) p.boton: el texto del botón (lo que te perdiste trae el suyo).
+		self.Ir:SetTexto(p and p.boton or L["Llévame"])
 		if p and p.fn then self.Ir.alClic = function() K.Llamar(p.fn) end
 		else self.Ir.alClic = function() if self.alfaP then llevar(self.alfaP) end end end
 		if v and v.alAcomodar then v.alAcomodar() end
@@ -347,6 +349,22 @@ local function llenar()
 	K.Mostrar(ui.secDijo, #dijo > 0)
 	K.Mostrar(ui.rejDijo, #dijo > 0)
 	ui.rejDijo:Llenar(dijo)
+	-- 1.3.3: Te perdiste esto (los avisos con botón que se fueron sin tocarlos).
+	local perd = {}
+	if filtro == "" and Ce and Ce.perdidos then
+		for _, x in ipairs(Ce.perdidos) do
+			perd[#perd + 1] = { icono = x.icono or "ic-aviso", titulo = x.titulo ~= "" and x.titulo or x.texto, texto = x.hora,
+				ayuda = x.texto ~= "" and x.texto or nil, tono = "aviso",
+				alClic = function()
+					Ce.OlvidarPerdido(x)
+					decir(x.texto ~= "" and x.texto or x.titulo, { fn = x.accion.fn, boton = x.accion.texto })
+					llenar()
+				end }
+		end
+	end
+	K.Mostrar(ui.secPerd, #perd > 0)
+	K.Mostrar(ui.rejPerd, #perd > 0)
+	ui.rejPerd:Llenar(perd)
 	-- Ahora mismo
 	local ya = {}
 	if filtro == "" then
@@ -418,6 +436,9 @@ local function armar()
 	-- 1.2.6: lo último que dijo Lya, con sus botones.
 	ui.secDijo = p:Agregar(K.Seccion(p, L["Lo último que te dije"]), { espacio = ESP.l })
 	ui.rejDijo = p:Agregar(K.Rejilla(p, { min = 300, variante = "compacta" }), { espacio = ESP.s })
+	-- 1.3.3: lo que se fue sin que lo vieras.
+	ui.secPerd = p:Agregar(K.Seccion(p, L["Te perdiste esto"]), { espacio = ESP.l })
+	ui.rejPerd = p:Agregar(K.Rejilla(p, { min = 300, variante = "compacta" }), { espacio = ESP.s })
 	ui.secAhora = p:Agregar(K.Seccion(p, L["Ahora mismo te ayudaría con"]), { espacio = ESP.l })
 	ui.rejAhora = p:Agregar(K.Rejilla(p, { min = 220, variante = "compacta" }), { espacio = ESP.s })
 	ui.secPreg = p:Agregar(K.Seccion(p, L["Preguntas"]), { espacio = ESP.l })

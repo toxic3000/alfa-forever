@@ -616,6 +616,37 @@ PARCHES += [
      lambda cfg: 'closing:SetText(ns.T("Gracias por hacer posible el motor de Alfa."))'),
 ]
 
+# 1.3.3: «Usa tu piedra de hogar». El tramo de la piedra guarda a dónde te
+# lleva (leg.place) y cuánto te ahorras (leg.saved, en segundos) para la placa
+# de la flecha (motor/Alfa/Nav/Arrow.lua, pintarPiedra); y el botón seguro de
+# la piedra (AlfaHearthButton) también sale con ese tramo de la ruta, no solo
+# con una meta `hearth` de la guía. Sus atributos los pone QoL.Secure, que
+# espera a salir de combate. Se pone al día al cambiar la ruta.
+PARCHES += [
+    ("Alfa/Nav/Travel.lua",
+     'leg.label = format(L["Hearth to %s"], p.hearthName or Travel.PlaceName(vref[to]))',
+     lambda cfg: 'leg.place = p.hearthName or Travel.PlaceName(vref[to]) -- Alfa 1.3.3: la placa de la piedra\n'
+                 '\t\t\tleg.label = format(L["Hearth to %s"], leg.place)'),
+    ("Alfa/Nav/Travel.lua",
+     'first.label = format(L["%s: saves %d min"], first.label, floor(saved / 60))',
+     lambda cfg: 'first.label = format(L["%s: saves %d min"], first.label, floor(saved / 60))\n'
+                 '\t\t\tfirst.saved = saved -- Alfa 1.3.3: la placa de la piedra'),
+    ("Alfa/QoL/Buttons.lua",
+     'function Buttons.WantsHearth(view)\n\tif not view then view = QoL.CurrentStep() end\n',
+     lambda cfg: 'function Buttons.WantsHearth(view)\n'
+                 '\t-- Alfa 1.3.3: la ruta va por la piedra (un tramo `hearth`): el boton tambien sale.\n'
+                 '\tlocal T = ns.Nav and ns.Nav.travel\n'
+                 '\tlocal okL, leg = false, nil\n'
+                 '\tif T and T.CurrentLeg then okL, leg = pcall(T.CurrentLeg) end\n'
+                 '\tif okL and type(leg) == "table" and leg.kind == "hearth" then return canHearth() end\n'
+                 '\tif not view then view = QoL.CurrentStep() end\n'),
+    ("Alfa/QoL/Buttons.lua",
+     'applyItem(hearthButton, QoL.On("hearthButton") and guideShown and view and Buttons.WantsHearth(view) and Client.HEARTHSTONE or nil)',
+     lambda cfg: 'applyItem(hearthButton, QoL.On("hearthButton") and guideShown and Buttons.WantsHearth(view) and Client.HEARTHSTONE or nil) -- Alfa 1.3.3'),
+    ("Alfa/QoL/Buttons.lua", 'ns.On("WAYPOINT_CHANGED", refreshSoon)\n',
+     lambda cfg: 'ns.On("WAYPOINT_CHANGED", refreshSoon)\nns.On("ROUTE_CHANGED", refreshSoon) -- Alfa 1.3.3: el tramo de la piedra\n'),
+]
+
 # Textos que se agregan al final de un archivo: las traducciones de lo nuevo.
 # Textos del motor que el paquete de idioma de Polestar deja en inglés.
 SIN_TRADUCIR_ES = {"Recorder": "Grabadora"}

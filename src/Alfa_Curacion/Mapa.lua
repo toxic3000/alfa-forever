@@ -336,6 +336,11 @@ function M.RevisarMejoras()
 	if esperando then return end
 	local lista = ofertas()
 	if #lista == 0 then return end
+	-- 1.3.3: al entrar no se ofrece: espera a que termine la entrada o la primera pelea.
+	if M.Entrando() then
+		M.TrasEntrar("mejoras", M.ProgramarRevision)
+		return
+	end
 	if enCombate() or dialogoAbierto() then
 		esperando = true
 		local function luego()

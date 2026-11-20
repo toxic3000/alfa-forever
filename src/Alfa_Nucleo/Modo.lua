@@ -1,8 +1,8 @@
 -- Alfa - Núcleo: Alfa sencillo o completo (1.2.9). toxic3000 / La Jauría.
 -- GPL-3.0.
 --
--- «Sencillo» deja a la vista lo esencial: Hoy, Ruta, Mapa (Mundo), Bolsas y
--- Lya, más Ajustes. Lo demás sigue funcionando: solo no sale en las
+-- «Sencillo» deja a la vista lo esencial: Hoy, Ruta, Mapa (Mundo), Bolsas,
+-- Talentos y Lya, más Ajustes. Lo demás sigue funcionando: solo no sale en las
 -- secciones de la ventana de Alfa (se abre con su comando, la búsqueda o un
 -- enlace). Y salen menos avisos: los marcados K.Aviso({ detalle = true }).
 -- «Completo» es todo Alfa. El ajuste es bienvenida.modo (Alfa_Bienvenida lo
@@ -17,7 +17,8 @@
 local _, N = ...
 local A = N.A
 
-N.ESENCIALES = { inicio = true, rutas = true, mundo = true, bolsas = true, lya = true }
+-- 1.3.3: también Talentos (builds).
+N.ESENCIALES = { inicio = true, rutas = true, mundo = true, bolsas = true, builds = true, lya = true }
 
 function N.Modo()
 	local m = A and A.Get and A.Get("bienvenida.modo")

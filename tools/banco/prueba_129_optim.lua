@@ -189,7 +189,7 @@ step("Sencillo: la barra pregunta AlfaNucleo.PaginaVisible", function()
   A.Set("bienvenida.modo", "sencillo")
   T(1)
   local p = claves("personaje")
-  check(p.bolsas and p.lya and not p.builds and not p.combate, "en sencillo la barra del motor no esconde lo que no es esencial")
+  check(p.bolsas and p.lya and p.builds and not p.combate, "en sencillo la barra del motor no esconde lo que no es esencial (Talentos sí va, 1.3.3)")
   check(not next(claves("manada")), "en sencillo Manada sigue con páginas")
   -- La que está abierta siempre sale (abrir una escondida no la pierde).
   N.Abrir("pesca")

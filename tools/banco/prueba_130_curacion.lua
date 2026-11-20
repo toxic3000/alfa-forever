@@ -329,12 +329,17 @@ end)
 
 step("El maná de los curanderos", function()
   local Mn = Cu.Mana
+  -- 1.3.3: sin roles, solo salen quienes Alfa vio lanzar una cura.
+  FIRE_EVENT("UNIT_SPELLCAST_SUCCEEDED", "player", "Cast-1", 2054)
+  FIRE_EVENT("UNIT_SPELLCAST_SUCCEEDED", "party2", "Cast-2", 5185)
   local lista = Mn.Lista()
   check(#lista == 2, "la lista de curanderos no tiene 2 (sacerdote y druida): " .. #lista)
   Mn.Refrescar()
   check(Mn.filas == 2 and AlfaCuracionMana and AlfaCuracionMana:IsShown(), "no se ve el maná del grupo")
   FIRE_EVENT("PLAYER_REGEN_ENABLED")
-  check(Mn.destacado == true and AlfaCuracionMana.titulo:GetText() == "Maná tras la pelea", "tras la pelea no se destaca")
+  -- (1.3.3: sin roles, el título dice que son quienes curaron)
+  local titulo = AlfaCuracionMana.titulo:GetText()
+  check(Mn.destacado == true and (titulo == "Maná tras la pelea" or titulo == "Tras la pelea: quienes curaron"), "tras la pelea no se destaca")
   local fila = AlfaCuracionMana.filas[2]
   check(fila.valor:GetText() == "20%", "el maná del druida dice " .. tostring(fila.valor:GetText()))
   local r = fila.valor:GetTextColor()

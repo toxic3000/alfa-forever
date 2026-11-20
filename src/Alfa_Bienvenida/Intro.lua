@@ -6,10 +6,12 @@
 -- largo respire):
 --   0,0  la pantalla se oscurece y van saliendo las estrellas, que titilan
 --   0,2  la luna sube con su halo, que respira despacio
---   0,6  el lobo sube sobre su peña, una silueta recortada contra la luna;
---        la luz de la luna le enciende el contorno (el color del estilo)
+--   0,6  el lobo sube sobre su peña. 1.3.3: una línea de luz (el color del
+--        estilo) recorre su contorno y lo va dibujando; detrás se rellena la
+--        silueta, recortada contra la luna
 --   0,75 una estrella fugaz cruza el cielo
 --   0,9  chispas de luz suben despacio de la peña; la neblina se mueve abajo
+--   1,1  sus ojos se encienden con un destello verde (el acento), antes del aullido
 --   1,25 el lobo toma aire (el pecho se hincha un poco)
 --   1,55 aúlla (el aullido largo: Bienvenida.lua) y de su hocico salen cinco
 --        ondas; mientras aúlla, la luna le contesta con su halo
@@ -17,7 +19,9 @@
 --        y un brillo recorre las letras hasta un destello; luego el lema y,
 --        con versión nueva, "Alfa X.Y.Z ya está aquí"
 --   3,45 al terminar de aullar, un destello en el ojo del lobo
---   5,2  todo se funde y deja ver lo que sigue (que ya se abrió debajo)
+--   5,2  todo se funde y deja ver lo que sigue (que ya se abrió debajo);
+--        1.3.3: el lobo se deshace en chispas de luz que vuelan al botón de
+--        Alfa del minimapa (AlfaMinimapButton) o, sin él, al centro de arriba
 -- Toda la escena se acerca despacio (la cámara avanza un poco) y las
 -- estrellas se quedan quietas: da profundidad.
 -- Un clic, Esc, espacio o Enter la saltan. Si entras en combate se corta al
@@ -49,6 +53,12 @@ local CHISPAS = 14
 -- El lobo elegido en tools/intro.py: la punta de su hocico y su ojo, en la
 -- textura de 512 (esta línea la escribe tools/intro.py).
 local LOBO = { hocico = { 395, 75 }, ojo = { 344, 113 } } -- tools/intro.py (de-pie)
+-- 1.3.3: su contorno en puntos parejos (x1, y1, x2, y2...), para la línea de luz
+-- que lo dibuja (esta línea la escribe tools/intro.py).
+local CONTORNO = { 92, 342, 89, 311, 98, 281, 118, 257, 146, 241, 176, 233, 208, 230, 239, 229, 270, 222, 294, 202, 305, 179, 315, 156, 323, 126, 311, 101, 339, 108, 365, 91, 388, 70, 386, 94, 368, 120, 385, 116, 366, 142, 367, 163, 362, 187, 358, 218, 352, 249, 347, 281, 345, 312, 344, 344, 346, 375, 362, 396, 331, 396, 326, 365, 324, 334, 318, 303, 287, 305, 256, 302, 233, 298, 235, 328, 222, 357, 223, 387, 216, 396, 199, 381, 193, 350, 186, 319, 173, 290, 151, 269, 129, 291, 109, 315 } -- tools/intro.py (de-pie)
+local TRAZO = 12      -- la línea de luz: su punta y su estela
+local POLVO = 18      -- las chispas en que se deshace al final
+local DIBUJO = { 0.6, 1.4 } -- cuándo la línea recorre el contorno
 
 local sin, cos, max, min, floor, pi = math.sin, math.cos, math.max, math.min, math.floor, math.pi
 
@@ -193,6 +203,18 @@ local function construir()
 	f.Ondas = {}
 	for i = 1, ONDAS do f.Ondas[i] = textura("ARTWORK", 4, "intro-onda", true) end
 	f.Ojo = textura("ARTWORK", 6, "intro-destello", true)
+	-- 1.3.3: la línea de luz que dibuja al lobo, sus ojos verdes y el polvo final
+	f.Trazo = {}
+	for i = 1, TRAZO do f.Trazo[i] = textura("ARTWORK", 7, i == 1 and "intro-destello" or "intro-estrella", true) end
+	f.OjoHalo = textura("ARTWORK", 6, "intro-halo", true)
+	f.OjoVerde = textura("ARTWORK", 7, "intro-destello", true)
+	f.Polvo = {}
+	local azar = azarDe(4242)
+	for i = 1, POLVO do
+		f.Polvo[i] = { tex = textura("OVERLAY", 5, "intro-estrella", true), d = azar() * 0.22, curva = 0.5 + azar(),
+			tam = 5 + floor(azar() * 6), punto = 0 }
+	end
+	f.Llega = textura("OVERLAY", 6, "intro-destello", true)
 	f.Resplandor = textura("ARTWORK", 5, "intro-halo", true)
 	f.Marca = textura("OVERLAY", 0, "intro-marca")
 	-- El brillo que recorre las letras: tres franjas de la misma marca (sus
@@ -233,6 +255,11 @@ local function preparar(o)
 	for _, x in ipairs(f.Brillo) do x:SetVertexColor(pal.luna[1], pal.luna[2], pal.luna[3], 1) end
 	f.Raya:SetVertexColor(K.Color(luz))
 	f.Destello:SetVertexColor(pal.luna[1], pal.luna[2], pal.luna[3], 1)
+	for _, x in ipairs(f.Trazo) do x:SetVertexColor(K.Color(luz)) end
+	f.OjoHalo:SetVertexColor(K.Color(luz))
+	f.OjoVerde:SetVertexColor(K.Color(luz))
+	for _, x in ipairs(f.Polvo) do x.tex:SetVertexColor(K.Color(luz)) end
+	f.Llega:SetVertexColor(K.Color(luz))
 
 	-- La escena mide lo mismo en cualquier pantalla: crece o se achica con su alto.
 	local W = K.num(UIParent:GetWidth(), 1366)
@@ -247,6 +274,26 @@ local function preparar(o)
 	-- la cresta de la peña (tools/intro.py: el suelo del lobo, y = 395 de 512)
 	f.pena = f.lobo.y + (0.5 - 395 / 512) * f.lobo.tam
 	f.marca = { y = -168 * E, ancho = 360 * E, alto = 45 * E }
+	-- 1.3.3: el contorno en la escena, y a dónde vuela el lobo al final
+	f.contorno = {}
+	for i = 1, #CONTORNO - 1, 2 do
+		f.contorno[#f.contorno + 1] = { x = f.lobo.x + (CONTORNO[i] / 512 - 0.5) * f.lobo.tam,
+			y = f.lobo.y + (0.5 - CONTORNO[i + 1] / 512) * f.lobo.tam }
+	end
+	for i, x in ipairs(f.Polvo) do
+		x.punto = #f.contorno > 0 and (floor((i - 1) * #f.contorno / POLVO) + 1) or 0
+	end
+	f.destino = { x = 0, y = H / 2 - 48 * E }
+	local boton = rawget(_G, "AlfaMinimapButton")
+	if type(boton) == "table" and boton.IsVisible and boton:IsVisible() and boton.GetCenter then
+		local bx, by = boton:GetCenter()
+		local ux, uy = UIParent:GetCenter()
+		local eb = K.num(boton.GetEffectiveScale and boton:GetEffectiveScale(), 1)
+		local eu = K.num(UIParent.GetEffectiveScale and UIParent:GetEffectiveScale(), 1)
+		if type(bx) == "number" and type(by) == "number" and type(ux) == "number" and type(uy) == "number" and eu > 0 then
+			f.destino = { x = bx * eb / eu - ux, y = by * eb / eu - uy }
+		end
+	end
 	f.Marca:SetSize(f.marca.ancho, f.marca.alto)
 	f.Destello:SetSize(1, 1)
 	for _, s in ipairs(f.Estrellas) do
@@ -332,8 +379,71 @@ local function cuadro(self, t)
 	local tl = lo.tam * (1 + 0.014 * aire)
 	poner(self.Lobo, lo.x, lo.y + dy, tl, nil, z)
 	poner(self.Borde, lo.x, lo.y + dy, tl, nil, z)
-	self.Lobo:SetAlpha(tramo(t, 0.55, 1.2) * fin)
-	self.Borde:SetAlpha(tramo(t, 1.15, 1.8) * (0.88 + 0.12 * sin(t * 3.1) + 0.1 * contesta) * fin)
+	-- 1.3.3: al final se deshace en luz (las chispas del polvo salen de él)
+	local deshace = tramo(t, DURACION - FUNDIDO - 0.25, DURACION - FUNDIDO + 0.15)
+	local hay = #self.contorno > 1
+	-- la línea de luz lo va dibujando (el contorno se enciende detrás de ella)
+	-- y luego se rellena la silueta; sin contorno, como antes
+	self.Lobo:SetAlpha((hay and tramo(t, 1.2, 1.7) or tramo(t, 0.55, 1.2)) * (1 - deshace) * fin)
+	self.Borde:SetAlpha((hay and tramo(t, DIBUJO[1], DIBUJO[2] + 0.1) or tramo(t, 1.15, 1.8))
+		* (0.88 + 0.12 * sin(t * 3.1) + 0.1 * contesta) * (1 - deshace) * fin)
+	local tr = avance(t, DIBUJO[1], DIBUJO[2])
+	for i, x in ipairs(self.Trazo) do
+		local u = tr - (i - 1) * 0.014
+		if not hay or tr <= 0 or tr >= 1.08 or u <= 0 or u >= 1 then
+			x:SetAlpha(0)
+		else
+			local n = #self.contorno
+			local pos = u * n
+			local a = floor(pos) % n + 1
+			local c = (a % n) + 1
+			local k = pos - floor(pos)
+			local pa, pc = self.contorno[a], self.contorno[c]
+			local px, py = pa.x + (pc.x - pa.x) * k, pa.y + (pc.y - pa.y) * k
+			local cabeza = i == 1
+			poner(x, px, py + dy, (cabeza and 22 or (9 - i * 0.5)) * E, nil, z)
+			if cabeza then girar(x, t * 3) end
+			x:SetAlpha((cabeza and 1 or 0.85 * (1 - (i - 1) / TRAZO)) * fin)
+		end
+	end
+	-- los ojos se encienden en verde antes del aullido
+	local ov = avance(t, 1.05, AULLIDO + 0.1)
+	if ov <= 0 or ov >= 1 then
+		self.OjoVerde:SetAlpha(0)
+		self.OjoHalo:SetAlpha(0)
+	else
+		local c = sin(ov * pi)
+		poner(self.OjoVerde, self.ojo.x, self.ojo.y + dy, (8 + 26 * c) * E, nil, z)
+		girar(self.OjoVerde, ov * 2)
+		self.OjoVerde:SetAlpha(c * fin)
+		poner(self.OjoHalo, self.ojo.x, self.ojo.y + dy, 64 * E * (0.6 + 0.4 * c), nil, z)
+		self.OjoHalo:SetAlpha(0.55 * c * fin)
+	end
+	-- el polvo: chispas que salen del contorno y vuelan hacia el botón de Alfa
+	local de = self.destino
+	for _, x in ipairs(self.Polvo) do
+		local u = avance(t, DURACION - FUNDIDO - 0.25 + x.d, DURACION - 0.05)
+		local p0 = hay and self.contorno[x.punto]
+		if not p0 or u <= 0 or u >= 1 then
+			x.tex:SetAlpha(0)
+		else
+			local v = u * u * (3 - 2 * u)
+			local ox, oy = p0.x * z, (p0.y + dy) * z
+			local px = ox + (de.x - ox) * v
+			local py = oy + (de.y - oy) * v + sin(u * pi) * 90 * E * x.curva
+			poner(x.tex, px, py, x.tam * E * (1.2 - 0.6 * u))
+			x.tex:SetAlpha(sin(u * pi) ^ 0.7 * 0.95)
+		end
+	end
+	local ll = avance(t, DURACION - 0.32, DURACION)
+	if not hay or ll <= 0 or ll >= 1 then
+		self.Llega:SetAlpha(0)
+	else
+		local c = sin(ll * pi)
+		poner(self.Llega, de.x, de.y, (10 + 34 * c) * E)
+		girar(self.Llega, ll * 1.8)
+		self.Llega:SetAlpha(c)
+	end
 
 	-- las chispas suben de la peña, se mecen y se apagan
 	for _, c in ipairs(self.Chispas) do

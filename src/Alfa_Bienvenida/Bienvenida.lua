@@ -324,6 +324,16 @@ function M.RevisarNotas(espera)
 		if actual and (not vista or M.CompararVersion(vista, actual) < 0) then M.MarcarNotasVistas(actual) end
 		return false
 	end
+	-- 1.3.3: entrando en silencio (Alfa_Nucleo/Entrada.lua), las novedades no se
+	-- abren solas: esperan en «Lo nuevo» (con un punto) y en Hoy y con Lya.
+	if N.Entrando and N.Entrando() and N.GuardarAlEntrar then
+		local nota = M.NotasPorVer()
+		N.GuardarAlEntrar({ id = "bienvenida.novedades", origen = "bienvenida", icono = "ic-lobo",
+			titulo = string.format(L["Lo nuevo en Alfa %s"], M.VERSION_ALFA),
+			texto = L["Lo que trae esta versión, contado corto. Míralo cuando quieras."],
+			accion = { texto = L["Ver"], alClic = function() if M.AbrirNotas then M.AbrirNotas(nota) end end } })
+		return false
+	end
 	notasPendientes = true
 	if espera and espera > 0 and C_Timer and C_Timer.After then C_Timer.After(espera, intentarNotas) else intentarNotas() end
 	return true

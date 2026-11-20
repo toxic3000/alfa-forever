@@ -36,6 +36,8 @@ local GEMELA = { [11] = 12, [12] = 11, [13] = 14, [14] = 13, [16] = 17, [17] = 1
 Cj.GEMELA = GEMELA
 local SEGUNDA = 5 -- segundos: lo que queda de la segunda pasada después de esto ya no se pone
 
+local OTRO = "\1otro" -- el valor del menú para «Otro nombre…»
+
 -- Nombres listos para elegir (el menú de la ventana y la página).
 Cj.NOMBRES = { L["Curación"], L["Daño"], L["Tanque"], L["Pesca"], L["Recolectar"], L["Ciudad"] }
 
@@ -77,12 +79,27 @@ local function puesto(ranura)
 	return id, link
 end
 
+-- 1.3.3: el nombre se corta por letras completas (UTF-8), no por bytes: antes
+-- un nombre largo con acentos podía quedar con media letra («Curación de la
+-- manada élit\195»).
+Cj.MAX_LETRAS = 32
+function Cj.Cortar(s, n)
+	n = n or Cj.MAX_LETRAS
+	local out, i = {}, 0
+	for letra in s:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
+		i = i + 1
+		if i > n then break end
+		out[i] = letra
+	end
+	return table.concat(out)
+end
+
 -- -> el conjunto guardado | nil, por qué
 function Cj.Guardar(nombre)
 	if type(nombre) ~= "string" then return nil end
 	nombre = nombre:gsub("^%s+", ""):gsub("%s+$", "")
 	if nombre == "" then return nil end
-	if #nombre > 40 then nombre = nombre:sub(1, 40) end
+	nombre = Cj.Cortar(nombre)
 	local p, n = {}, 0
 	for _, r in ipairs(RANURAS) do
 		local id, link = puesto(r)
@@ -335,5 +352,54 @@ function Cj.MenuGuardar(ancla)
 	for _, n in ipairs(Cj.NOMBRES) do
 		if not vistos[n] then ops[#ops + 1] = { valor = n, texto = n } end
 	end
-	K.Menu(ancla, ops, nil, function(v) Cj.Guardar(v) end, 240)
+	-- 1.3.3: tu propio nombre, en una caja de texto del Kit.
+	ops[#ops + 1] = { separador = true }
+	ops[#ops + 1] = { valor = OTRO, texto = L["Otro nombre…"], icono = "ic-mas" }
+	K.Menu(ancla, ops, nil, function(v)
+		if v == OTRO then
+			M.Luego(0, function() Cj.PedirNombre() end)
+			return
+		end
+		Cj.Guardar(v)
+	end, 240)
+end
+
+-- 1.3.3: la ventanita para escribir el nombre (Enter o «Guardar»).
+local pedir
+function Cj.PedirNombre()
+	local K = N.Kit
+	if not (K and K.Ventana and K.Buscador and K.Boton) then return nil end
+	if not pedir then
+		local v = K.Ventana({ nombre = "AlfaBolsasNombreConjunto", titulo = L["Guardar lo que llevas"], icono = "ic-personaje", ancho = 380, alto = 176 })
+		v:SetTitulo(L["Guardar lo que llevas"], L["Escribe un nombre para este conjunto."], "ic-personaje")
+		local function guardar()
+			local t = v.Campo:Texto()
+			if t == "" then return end
+			if Cj.Guardar(t) then v:Cerrar() end
+		end
+		local campo = K.Buscador(v.Cuerpo, { ayuda = L["Nombre del conjunto"], retraso = 0, alEnter = guardar })
+		-- Es una caja para escribir, no un buscador: sin la lupa.
+		if campo.Lupa then campo.Lupa:Hide() end
+		if campo.Campo then
+			campo.Campo:ClearAllPoints()
+			campo.Campo:SetPoint("LEFT", campo, "LEFT", 12, 0)
+			campo.Campo:SetPoint("RIGHT", campo, "RIGHT", -30, 0)
+			if campo.Campo.SetMaxLetters then campo.Campo:SetMaxLetters(Cj.MAX_LETRAS) end
+		end
+		if campo.Ayuda then
+			campo.Ayuda:ClearAllPoints()
+			campo.Ayuda:SetPoint("LEFT", campo, "LEFT", 12, 0)
+		end
+		campo:SetPoint("TOPLEFT", v.Cuerpo, "TOPLEFT", v.margen or 16, -(v.margen or 16))
+		campo:SetPoint("TOPRIGHT", v.Cuerpo, "TOPRIGHT", -(v.margen or 16), -(v.margen or 16))
+		v.Campo = campo
+		v.Guardar = K.Boton(v, L["Guardar"], guardar, { tipo = "primario", icono = "ic-exito" })
+		v.Cancelar = K.Boton(v, L["Cancelar"], function() v:Cerrar() end, { tipo = "secundario" })
+		v:SetPie({ v.Cancelar, v.Guardar })
+		pedir = v
+	end
+	pedir.Campo:SetTexto("", true)
+	pedir:Abrir()
+	if pedir.Campo.Campo and pedir.Campo.Campo.SetFocus then pedir.Campo.Campo:SetFocus() end
+	return pedir
 end

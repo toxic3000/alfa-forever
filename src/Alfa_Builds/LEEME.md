@@ -73,3 +73,7 @@ Ajustes en `AlfaDB.settings.builds` (`aviso`, `escalaAuto`). La elección de bui
 
 - El cuadro del ratón de cada talento (el plan y el árbol) termina con «Mayús + clic: ponerlo en el chat», lo único que hace un clic; las filas del plan ya no se iluminan como botón al pasar el ratón. Prueba: `tools/banco/prueba_132_personaje.lua`.
 
+## 1.3.3
+
+- **La entrada en silencio:** «Tienes N puntos de talento» ya no sale al entrar (queda en Hoy y en Talentos; sigue al subir de nivel). La tarjeta de rangos viejos que el motor revisa al entrar espera a que termine `N.Entrando()` o tu primera pelea (`Avisos.lua`, reloj `builds.trasEntrar` solo mientras espera). Si `K.Aviso` no devuelve ventanita (Alfa entrando), la tarjeta se da por cerrada.
+- Prueba: `tools/banco/prueba_133_personaje.lua`.

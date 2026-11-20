@@ -31,6 +31,12 @@ M.NOVEDADES = {
 --   { version, titulo, puntos = { { icono (ic-*), texto } } }
 ---------------------------------------------------------------------------
 M.NOTAS = {
+	{ version = "1.3.3", titulo = "La manada en calma", puntos = {
+		{ "ic-lobo", "Al entrar solo sale la animación; lo demás te espera en Hoy y con Lya." },
+		{ "ic-manada", "Sigue la ruta de tu grupo y pide las misiones que lleva tu compañero." },
+		{ "ic-flecha", "La piedra de hogar, clara: a dónde vuelves, qué entregas y un botón para usarla." },
+		{ "ic-alerta", "Una sola voz: Hoy, las bolsas y Lya ya no repiten lo mismo." },
+	} },
 	{ version = "1.3.2", titulo = "La manada en orden", puntos = {
 		{ "ic-ventana", "Un solo menú de Alfa: el ícono del minimapa, la lista de addons y el botón Alfa del menú Esc abren lo mismo." },
 		{ "ic-alerta", "Menos estorbo: Combate se calla yendo solo y los avisos de grupo esperan a que acabe la pelea." },

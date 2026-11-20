@@ -397,5 +397,7 @@ M.EN = {
 	["En Comercio, «Tus recetas que dejan ganancia» te dice cuánto deja cada receta con los precios de tu reino, y primero las que ya puedes hacer con lo que llevas."] = "In Trade, \"Your recipes that make a profit\" tells you how much each recipe earns with your realm's prices, with the ones you can already make first.",
 	-- 1.3.0: el buzón espera a que lleguen las cartas
 	["Cargando tus cartas..."] = "Loading your mail...",
+	-- 1.3.3: «Hazlo ya» cuenta solo lo de tus bolsas
+	["(con lo del banco: %d más)"] = "(with what's in the bank: %d more)",
 }
 M.L = AlfaNucleo.Textos(M.EN)

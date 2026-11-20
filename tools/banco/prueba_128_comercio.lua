@@ -271,6 +271,9 @@ local function avisosCasi()
 end
 
 step("Bolsas casi llenas: aviso con lo primero que puedes soltar", function()
+  -- 1.3.3: una sola voz. Si Lya (o Hoy) ya dijo «bolsasLlenas» en la sesión,
+  -- Bolsas no lo repite: esta prueba parte sin nada dicho.
+  rawset(AlfaNucleo, "dichosSesion", {})
   check(A.Get("bolsas.avisoCasiLleno") == true, "el ajuste avisoCasiLleno no viene prendido")
   avisos = {}
   llenar(10)
@@ -301,6 +304,7 @@ step("Bolsas casi llenas: aviso con lo primero que puedes soltar", function()
 end)
 
 step("Bolsas casi llenas: «Vender» con el comerciante", function()
+  rawset(AlfaNucleo, "dichosSesion", {})
   avisos = {}
   usados = {}
   NOW = NOW + 700
@@ -319,6 +323,7 @@ step("Bolsas casi llenas: «Vender» con el comerciante", function()
 end)
 
 step("Bolsas casi llenas: el ajuste lo apaga", function()
+  rawset(AlfaNucleo, "dichosSesion", {})
   A.Set("bolsas.avisoCasiLleno", false)
   avisos = {}
   NOW = NOW + 700

@@ -157,6 +157,120 @@ local function reintentar()
 	Ce.Decir(c)
 end
 
+---------------------------------------------------------------------------
+-- (1.3.3) La entrada en silencio: mientras entras (N.Entrando, del núcleo)
+-- Lya no habla sola; lo que diría lo guarda (N.GuardarAlEntrar, origen
+-- "lya") y te lo cuenta cuando le das clic o, pasada la entrada, uno por
+-- latido. Sin N.Entrando (un núcleo viejo), Lya habla como siempre; sin
+-- N.GuardarAlEntrar/N.AlEntrar, una lista igual aquí mismo (la reserva).
+---------------------------------------------------------------------------
+local entrada = { lista = {}, porId = {} } -- la reserva
+local guardadas = {} -- id -> lo que iba a decir (con sus botones y su alDecir)
+
+local function nucleo(nombre)
+	local fn = rawget(N, nombre)
+	return type(fn) == "function" and fn or nil
+end
+
+function Ce.Entrando()
+	local fn = nucleo("Entrando")
+	if fn then
+		local ok, v = pcall(fn)
+		return ok and v == true
+	end
+	return false
+end
+
+function Ce.AlEntrar()
+	local fn = nucleo("AlEntrar")
+	if fn then
+		local ok, l = pcall(fn)
+		return ok and type(l) == "table" and l or {}
+	end
+	return entrada.lista
+end
+
+local function guardarAlEntrar(o)
+	local fn = nucleo("GuardarAlEntrar")
+	if fn then pcall(fn, o) return end
+	local ya = entrada.porId[o.id]
+	if ya then
+		for i, x in ipairs(entrada.lista) do if x == ya then entrada.lista[i] = o end end
+	else
+		entrada.lista[#entrada.lista + 1] = o
+	end
+	entrada.porId[o.id] = o
+	if A.Fire then A.Fire("ALFA_ALENTRAR") end
+end
+
+function Ce.OlvidarAlEntrar(id)
+	guardadas[id] = nil
+	local fn = nucleo("OlvidarAlEntrar")
+	if fn then pcall(fn, id) return end
+	local ya = entrada.porId[id]
+	if not ya then return end
+	entrada.porId[id] = nil
+	for i = #entrada.lista, 1, -1 do if entrada.lista[i] == ya then table.remove(entrada.lista, i) end end
+	if A.Fire then A.Fire("ALFA_ALENTRAR") end
+end
+
+-- Guarda lo que Lya diría ahora. -> true
+local function guardarDicho(c)
+	local id = "lya:" .. tostring(c.id or c.clase or c.texto)
+	local a = type(c.acciones) == "table" and c.acciones[1] or nil
+	local accion = a and not a.seguro and type(a.fn) == "function" and { texto = a.texto, alClic = a.fn } or nil
+	guardadas[id] = c
+	guardarAlEntrar({ id = id, titulo = L["Lya"], texto = c.texto, icono = "ic-lobo", accion = accion, origen = "lya" })
+	-- Ya está guardado: para quien lo pidió, como dicho (no lo reintenta).
+	if type(c.alDecir) == "function" then K.Llamar(c.alDecir) end
+	return true
+end
+
+-- Lo que puede esperar a la entrada: no lo que pediste, ni su presentación.
+local GUARDABLE = { oculta = true, esperar = true, ocupada = true, pronto = true, foco = true }
+local function guardable(c, por)
+	if c.pedido or c.alEntrar or c.importante == "siempre" or c.id == "presentacion1" then return false end
+	if por ~= nil and not GUARDABLE[por] then return false end
+	return Ce.Entrando()
+end
+
+-- (1.3.3) Una sola voz con Hoy: lo que uno ya dijo en la sesión (bolsas
+-- llenas, reparar, entregar) el otro no lo repite. La tabla vive en el
+-- núcleo (AlfaNucleo.dichosSesion): Hoy la mira y la anota igual.
+local function dichosSesion()
+	local t = rawget(N, "dichosSesion")
+	if type(t) ~= "table" then t = {} N.dichosSesion = t end
+	return t
+end
+function Ce.YaSeDijo(voz) return voz ~= nil and dichosSesion()[voz] ~= nil end
+function Ce.Anotar(voz) if voz then dichosSesion()[voz] = ahora() end end
+
+-- (1.3.3) «Te perdiste esto»: un aviso con botón que se fue sin que lo
+-- tocaras (otro tomó su lugar o se le acabó el tiempo) queda aquí, con su
+-- botón, para «Pregúntale a Lya». El Kit avisa con ALFA_AVISO_PERDIDO.
+local MAX_PERDIDOS = 10
+Ce.perdidos = {}
+function Ce.Perdido(o)
+	if type(o) ~= "table" then return false end
+	local ac = o.accion
+	if not (type(ac) == "table" and type(ac.alClic) == "function" and not ac.seguro) then return false end
+	local titulo, texto = o.titulo or "", o.texto or ""
+	if titulo == "" and texto == "" then return false end
+	for i = #Ce.perdidos, 1, -1 do
+		local x = Ce.perdidos[i]
+		if x.titulo == titulo and x.texto == texto then table.remove(Ce.perdidos, i) end
+	end
+	table.insert(Ce.perdidos, 1, { titulo = titulo, texto = texto, icono = o.icono, hora = date and date("%H:%M") or "",
+		accion = { texto = ac.texto, fn = ac.alClic } })
+	while #Ce.perdidos > MAX_PERDIDOS do table.remove(Ce.perdidos) end
+	if M.Avisar then M.Avisar() end
+	return true
+end
+function Ce.OlvidarPerdido(x)
+	for i = #Ce.perdidos, 1, -1 do if Ce.perdidos[i] == x then table.remove(Ce.perdidos, i) end end
+end
+if A.On then A.On("ALFA_AVISO_PERDIDO", function(o) pcall(Ce.Perdido, o) end) end
+
 -- Lo último que dijo, lo más nuevo primero (esta sesión).
 Ce.historial = {}
 local HISTORIAL = 20
@@ -175,6 +289,11 @@ end
 function Ce.Decir(c)
 	if type(c) ~= "table" or type(c.texto) ~= "string" or c.texto == "" then return false end
 	local por = motivo(c)
+	-- 1.3.3: mientras entras, lo que diría sola se guarda para después.
+	if guardable(c, por) then
+		if c.voz then Ce.Anotar(c.voz) end
+		return guardarDicho(c)
+	end
 	if por == "esperar" and c.importante then
 		espera = { c = c, hasta = ahora() + ESPERA_IMPORTANTE }
 		reintentar()
@@ -193,6 +312,7 @@ function Ce.Decir(c)
 	table.insert(Ce.historial, 1, { texto = c.texto, acciones = c.acciones, hora = date and date("%H:%M") or "" })
 	while #Ce.historial > HISTORIAL do table.remove(Ce.historial) end
 	UI.Hablar(c)
+	if c.voz then Ce.Anotar(c.voz) end
 	if type(c.alDecir) == "function" then K.Llamar(c.alDecir) end
 	return true
 end
@@ -395,6 +515,9 @@ local CONTEXTO = {
 	function(c)
 		local pct = peorDurabilidad()
 		if not pct or pct > 30 then return false end
+		-- 1.3.3: una sola voz con Hoy (si ya lo dijo en la sesión, no se repite).
+		c.voz = "reparar"
+		if not c.pedido and Ce.YaSeDijo(c.voz) then return false end
 		c.cara = "atenta"
 		c.acciones = { { texto = L["Llévame a reparar"], fn = function() irA("repair") end } }
 		return decirDe("reparar", c, floor(pct + 0.5))
@@ -402,6 +525,8 @@ local CONTEXTO = {
 	function(c)
 		local fr, t = bolsasLibres()
 		if not fr or not t or t <= 0 or fr > 2 then return false end
+		c.voz = "bolsasLlenas"
+		if not c.pedido and Ce.YaSeDijo(c.voz) then return false end
 		c.cara = "atenta"
 		c.acciones = { { texto = L["Abrir bolsas"], fn = abrirBolsas, seguro = seguroBolsas },
 			{ texto = L["Llévame a un vendedor"], fn = function() irA("vendor") end } }
@@ -426,6 +551,8 @@ local CONTEXTO = {
 		-- y no volvía a avisar hasta pasar ese número).
 		if n < listasDichas then listasDichas = n end
 		if n < 3 or (n <= listasDichas and not c.pedido) then return false end
+		c.voz = "entregar"
+		if not c.pedido and Ce.YaSeDijo(c.voz) then return false end
 		local R = rawget(_G, "AlfaRuta")
 		if type(R) == "table" and type(R.Entregar) == "function" then
 			c.acciones = { { texto = L["Entregar todas"], fn = entregarTodas } }
@@ -518,9 +645,44 @@ local function saludar(nombre)
 end
 
 -- Clic en Lya o /alfa lya consejo.
+-- (1.3.3) «¿Qué hay de nuevo?»: lo que guardó mientras entrabas, una cosa a
+-- la vez, con su botón. `solo`: sin el botón de la siguiente (el latido).
+function Ce.QueHayDeNuevo(solo)
+	local x = Ce.AlEntrar()[1]
+	if not x then return false end
+	local c = guardadas[x.id]
+	Ce.OlvidarAlEntrar(x.id)
+	local texto = x.texto or ""
+	if x.origen ~= "lya" and type(x.titulo) == "string" and x.titulo ~= "" then
+		texto = texto ~= "" and (x.titulo .. ". " .. texto) or x.titulo
+	end
+	if texto == "" then return Ce.QueHayDeNuevo(solo) end
+	local acciones = {}
+	local a = c and type(c.acciones) == "table" and c.acciones[1]
+	if a then acciones[1] = a
+	elseif type(x.accion) == "table" and type(x.accion.alClic) == "function" then
+		acciones[1] = { texto = x.accion.texto, fn = x.accion.alClic }
+	end
+	local resto = #Ce.AlEntrar()
+	if resto > 0 and not solo then
+		acciones[#acciones + 1] = { texto = format(L["¿Qué hay de nuevo? (%d)"], resto), fn = function() Ce.QueHayDeNuevo() end }
+	end
+	return Ce.Decir({ texto = texto, pedido = true, lineas = 5, ancho = 360, cara = "atenta",
+		acciones = #acciones > 0 and acciones or nil, voz = c and c.voz }) == true
+end
+
 function Ce.Pedir()
 	if not Ce.Activa() then return end
 	if enCombate() then return end
+	-- 1.3.3: lo que guardó al entrar va primero.
+	local n = #Ce.AlEntrar()
+	if n > 0 then
+		Ce.Decir({ texto = n == 1 and L["Mientras entrabas te guardé una cosa."] or format(L["Mientras entrabas te guardé %d cosas."], n),
+			pedido = true, cara = "feliz", salto = true,
+			acciones = { { texto = format(L["¿Qué hay de nuevo? (%d)"], n), fn = function() Ce.QueHayDeNuevo() end },
+				{ texto = L["Luego"], fn = function() UI.Callar() end } } })
+		return
+	end
 	if revisarContexto(true) then return end
 	-- A veces, en vez de un consejo, algo de la plática (lore, tu gente, un consejo de amiga).
 	local Ch = M.Charla
@@ -603,6 +765,11 @@ end
 
 local function latido()
 	if not UI.Visible() then N.Quitar("lya.latido") return end
+	-- 1.3.3: pasada la entrada, lo que guardó lo dice una vez, uno por latido.
+	if not Ce.Entrando() and Ce.AlEntrar()[1] and not enCombate() and not UI.Hablando() and not Ce.Silenciada()
+		and not (UI.Dormida and UI.Dormida()) then
+		if Ce.QueHayDeNuevo(true) then return end
+	end
 	revisarSueno()
 	if not UI.Dormida() and not enCombate() then
 		if not revisarSesion() and not revisarContexto(false) then
@@ -636,6 +803,7 @@ local function latido()
 end
 
 -- 1.3.1: en el reloj del núcleo («lya.latido»), solo con Lya a la vista.
+Ce.Latido = latido -- (para el banco)
 local function arrancarLatido() N.Cada("lya.latido", 60, latido) end
 
 ---------------------------------------------------------------------------

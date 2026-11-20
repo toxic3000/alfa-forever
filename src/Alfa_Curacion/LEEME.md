@@ -79,3 +79,9 @@ Se guardan en `AlfaDB.settings.curacion`. El mapa del ratón, el preajuste, "el 
 - **Relojes:** `curacion.alcance` solo corre con marcos a la vista (en grupo, o solo con «Verte a ti estando solo») y `curacion.mana` solo en grupo; si no, se quitan con `N.Quitar` (`M.RelojAlcance`, `M.Mana.Reloj`, al entrar, al cambiar el grupo y tus ajustes).
 - Prueba: `tools/banco/prueba_132_personaje.lua`.
 
+## 1.3.3
+
+- **Cuadro corto en combate** (`descripcionCombate`, prendido): al pasar el ratón en combate, solo las líneas de Alfa (con qué clic quitas su perjuicio; si el juego oculta el tipo, tus clics para cada tipo), sin `SetUnit`. Sin nada que decir, no sale.
+- **Maná sin roles:** solo quienes Alfa vio lanzar una cura (`UNIT_SPELLCAST_SUCCEEDED` del grupo, curas de `Hechizos.lua`, por nombre en la sesión; lo secreto no cuenta) y el título lo dice («Maná: quienes curaron»). Con roles, como siempre.
+- **La entrada en silencio:** la línea del perjuicio sin clic y el hechizo nuevo esperan a que termine `N.Entrando()` (del Núcleo, con `rawget`) o tu primera pelea (`M.TrasEntrar`, reloj `curacion.trasEntrar` solo mientras espera algo).
+- Prueba: `tools/banco/prueba_133_personaje.lua`.

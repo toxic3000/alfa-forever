@@ -291,6 +291,9 @@ end)
 step("Maná: el porcentaje secreto no se compara y el reloj sigue vivo", function()
   sinPatron("src/Alfa_Curacion/Mana.lua", { "p ~= nil", "p == nil" })
   local Mn = Cu.Mana
+  -- 1.3.3: sin roles, solo salen quienes Alfa vio lanzar una cura.
+  FIRE_EVENT("UNIT_SPELLCAST_SUCCEEDED", "party1", "Cast-1", 2054)
+  FIRE_EVENT("UNIT_SPELLCAST_SUCCEEDED", "party2", "Cast-2", 5185)
   Mn.Refrescar()
   check(AlfaCuracionMana and AlfaCuracionMana:IsShown() and Mn.filas == 2, "no se ve el maná del sacerdote y la druida")
   combate = true
@@ -331,6 +334,7 @@ step("Maná: la lista se arma solo cuando cambia el grupo; el reloj solo repinta
   check(armadas == 1, "UNIT_NAME_UPDATE de una placa armó la lista")
   -- Entra un chamán (GROUP_ROSTER_UPDATE) y cambian los roles (PLAYER_ROLES_ASSIGNED).
   CLASES.party3 = "SHAMAN"
+  FIRE_EVENT("UNIT_SPELLCAST_SUCCEEDED", "party3", "Cast-3", 331) -- (1.3.3: un chamán que cura)
   FIRE_EVENT("GROUP_ROSTER_UPDATE")
   check(Mn.filas == 3, "el chamán nuevo no entró a la lista: " .. tostring(Mn.filas))
   local n = armadas

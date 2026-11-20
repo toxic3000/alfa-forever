@@ -288,7 +288,8 @@ function Gr.EnPelea() return pelea or (InCombatLockdown and InCombatLockdown()) 
 
 function Gr.Aviso(v, live)
 	if Gr.EnPelea() then return nil end
-	return avisoElite(v, live) or avisoCompartir()
+	-- 1.3.3: y lo que lleva tu grupo que tú no (RutaGrupo.lua: «Pedírselas», «Seguir su ruta»).
+	return avisoElite(v, live) or avisoCompartir() or (M.RutaGrupo and M.RutaGrupo.Aviso() or nil)
 end
 
 -- Para el banco.

@@ -1,5 +1,37 @@
 # Cambios de Alfa
 
+## 1.3.3 — La manada en calma: entrar en silencio, seguir la ruta de tu grupo y 20 mejoras (20/11/2026)
+
+La cuarta de la serie 1.3: lo que pidió Toxic al jugarla. Al entrar, solo la animación; lo demás te espera. Cada mejora trae su prueba en el banco.
+
+**Español**
+- Entrar en silencio: al entrar solo sale la animación de Alfa y Lya llega corriendo, sin hablar. Lo demás (tu sesión anterior, bolsas, equipo, talentos, lo nuevo, la manada conectada) te espera en Hoy, en la fila «Mientras entrabas», y con Lya: dale clic y te cuenta «¿Qué hay de nuevo?». Con /reload no sale nada. Las Novedades ya no se abren solas: queda un punto en «Lo nuevo». Si prefieres como antes: Ajustes > Estilo y sonido > «Al entrar al juego».
+- La intro, más viva: el lobo se dibuja con una línea de luz, se le encienden los ojos antes del aullido y al final se deshace en chispas que vuelan al ícono de Alfa del minimapa.
+- Seguir la ruta de tu grupo: si tu compañero lleva misiones y tú no, «Seguir su ruta» pone tu flecha y tu mapa a donde va él. Alfa te dice qué misiones lleva que a ti te sirven y con «Pedírselas» a él le sale «Compartir» (su clic, como pide el juego). «Dejar de seguir» cuando quieras; en banda no se activa.
+- La piedra de hogar, clara: cuando tu ruta te pide usarla, la placa dice «USA TU PIEDRA DE HOGAR», a dónde vuelves, cuántas misiones entregas allá, cuánto te ahorras, si tu piedra está lista y cuánto tardas, con el botón «Usar la piedra».
+- Talentos ya sale en «Sencillo», y el «?» de Lya ya no tapa el subtítulo de la página.
+- Una sola voz: Hoy, las bolsas y Lya ya no te dicen lo mismo a la vez, y lo que ya sabías no se repite al hacer /reload. El aviso de bolsas llenas sale cuando se llenan mientras juegas, no al entrar.
+- Hoy: «Hazlo ya» cuenta solo lo que llevas en las bolsas (y dice cuántas más con lo del banco); si tu plan de una hora vence, Hoy te dice cómo ibas; y el resumen de tu sesión anterior ya no escribe en el chat.
+- Bolsas: guarda conjuntos con tu propio nombre («Otro nombre…»).
+- Ruta: «Llévame a…» con lo más cerca primero y su tiempo; en las cadenas, «Llévame» a la siguiente que falta; «Soltar las N» misiones grises de una vez; y la «Zona peligrosa» trae «Llévame a una zona de tu nivel».
+- Combate y Curación: el aviso para cortar suena también en mazmorras (más suave cuando el juego esconde el hechizo); la barra de amenaza avisa contra jefes; el cuadro de tus marcos sale corto en combate; y el maná de curanderos muestra solo a quienes curan. «Tienes N puntos de talento» y la ayuda de rotación esperan un momento útil.
+- Lya y La Jauría: lo que Lya no alcanzó a decir queda en «Te perdiste esto»; al llegar a una guarida te recuerda salir del grupo; las citas traen «Armar el grupo»; y los raros con reloj no se repiten tras un /reload.
+- En francés y ruso, Alfa te habla de tú en la configuración, Lya, Hoy y los avisos.
+
+**English**
+- Quiet login: when you log in only Alfa's animation plays and Lya runs in without a word. Everything else (your last session, bags, gear, talents, what's new, who's online) waits for you on Today, in the "While you were logging in" row, and with Lya: click her and she tells you "What's new?". /reload shows nothing. What's New no longer opens on its own: a dot marks "What's new". To get the old way back: Settings > Style and sound > "When you log in".
+- A livelier intro: the wolf draws itself with a line of light, its eyes light up before the howl, and at the end it breaks into sparks that fly to Alfa's minimap icon.
+- Follow your group's route: if your partner has quests and you don't, "Follow their route" points your arrow and map where they go. Alfa tells you which of their quests suit you, and "Ask for them" gives them a "Share" button (their click, as the game requires). "Stop following" any time; it never turns on in a raid.
+- A clear hearthstone: when your route asks you to use it, the plate says "USE YOUR HEARTHSTONE", where you go back to, how many quests you turn in there, how much you save, whether your stone is ready and how long it takes, with a "Use the stone" button.
+- Talents now shows in "Simple", and Lya's "?" no longer covers the page subtitle.
+- One voice: Today, your bags and Lya no longer tell you the same thing at once, and what you already knew isn't repeated after /reload. The full-bags alert comes when they fill up while you play, not at login.
+- Today: "Make it now" counts only what's in your bags (and says how many more with your bank); if your one-hour plan expires, Today tells you how far you got; and your last-session summary no longer writes to chat.
+- Bags: save gear sets with your own name ("Other name...").
+- Route: "Take me to..." nearest first with its time; in quest chains, "Take me" to the next missing one; "Drop the N" grey quests at once; and "Dangerous zone" brings "Take me to a zone for my level".
+- Combat and Healing: the interrupt alert also sounds in dungeons (softer when the game hides the spell); the threat bar warns against bosses; your frames' tooltip shows a short version in combat; and healer mana shows only those who heal. "You have N talent points" and the rotation help wait for a useful moment.
+- Lya and La Jauría: what Lya didn't get to say stays in "You missed this"; arriving at a den, she reminds you to leave the group; meetups bring "Build the group"; and timed rares don't repeat after /reload.
+- In French and Russian, Alfa speaks to you informally in the setup, Lya, Today and the alerts.
+
 ## 1.3.2 — La manada en orden: un solo menú de Alfa y 40 mejoras (19/11/2026)
 
 La tercera de la serie 1.3: más calidad, menos estorbo y un Alfa más ligero. Cada mejora trae su prueba en el banco.

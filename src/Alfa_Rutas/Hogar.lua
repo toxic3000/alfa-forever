@@ -160,7 +160,13 @@ function Hg.Revisar()
 	if A.Get(M.ID .. ".piedraHogar") == false then return false, "apagado" end
 	if enCombate() then return false, "combate" end
 	if enInstancia() or enVuelo() then return false, "lugar" end
+	-- 1.3.3: al entrar, en silencio (N.Entrando): su aviso trae un botón
+	-- seguro, que K.Aviso sí mostraría; se vuelve a mirar después.
+	local Nu = M.N
+	if type(Nu) == "table" and type(rawget(Nu, "Entrando")) == "function" and Nu.Entrando() then return false, "entrando" end
 	if ultima and GetTime() - ultima < CADA then return false, "pronto" end
+	-- 1.3.3: la ruta ya va por la piedra: lo dice la placa de la flecha.
+	if Hg.RutaConPiedra() then return false, "ruta" end
 	if (M.Cerrar and M.Cerrar.ListasAhora() or 0) < MIN_LISTAS then return false, "pocas" end
 	if not lugar() then return false, "sinLugar" end
 	local V = M.Vuelta
@@ -180,6 +186,25 @@ function Hg.Revisar()
 	o.accion = { texto = L["Usar la piedra"], seguro = { type = "item", item = "item:" .. PIEDRA } }
 	M.Aviso(o.titulo, o.texto, o)
 	return true, "aviso"
+end
+
+-- 1.3.3: ¿la ruta del motor va ahora por la piedra (un tramo `hearth`)?
+function Hg.RutaConPiedra()
+	local T = A.Nav and A.Nav.travel
+	if not (T and type(T.CurrentLeg) == "function") then return false end
+	local ok, leg = pcall(T.CurrentLeg)
+	return ok and type(leg) == "table" and leg.kind == "hearth" or false
+end
+
+-- 1.3.3: cuántas de tus misiones listas se entregan en el pueblo de tu piedra
+-- (sin cargar el Codex: Vuelta.Listas(true) usa la base de misiones). -> n, lugar
+function Hg.Entregas()
+	if enCombate() then return 0 end
+	local V = M.Vuelta
+	local lista = V and V.Listas(true)
+	if not lista then return 0 end
+	local n, _, sitio = Hg.Cuenta(lista)
+	return n, sitio
 end
 
 -- Para el banco.

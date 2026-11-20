@@ -297,6 +297,45 @@ for _, ev in ipairs({ "SPELLS_CHANGED", "LEARNED_SPELL_IN_SKILL_LINE", "PLAYER_L
 end
 
 ---------------------------------------------------------------------------
+-- 1.3.3: la entrada en silencio. Lo que Curación diría sola al entrar (la
+-- línea del perjuicio sin clic, el hechizo nuevo) espera a que termine la
+-- entrada de Alfa (N.Entrando, del Núcleo: se lee con rawget porque puede no
+-- existir) o a que termine tu primera pelea.
+---------------------------------------------------------------------------
+local esperando = {}
+local peleaste = false -- tras tu primera pelea ya no se espera
+function M.Entrando()
+	if peleaste then return false end
+	local f = rawget(N, "Entrando")
+	if type(f) ~= "function" then return false end
+	local ok, si = pcall(f)
+	return ok and si == true
+end
+local function soltarEspera()
+	N.Quitar("curacion.trasEntrar")
+	for clave, fn in pairs(esperando) do
+		esperando[clave] = nil
+		local ok, err = pcall(fn)
+		if not ok and geterrorhandler then geterrorhandler()(err) end
+	end
+end
+-- fn corre ya si Alfa no está entrando; si no, cuando termine (una por clave).
+function M.TrasEntrar(clave, fn)
+	if not M.Entrando() then return fn() end
+	esperando[clave] = fn
+	if not N.HayTarea("curacion.trasEntrar") then
+		N.Cada("curacion.trasEntrar", 5, function() if not M.Entrando() then soltarEspera() end end, { fueraDeCombate = true })
+	end
+end
+function M.Esperando(clave) return esperando[clave] ~= nil end
+-- Para el banco: como recién entrado (todavía sin pelear).
+function M.ComoAlEntrar() peleaste = false end
+A.RegisterEvent("PLAYER_REGEN_ENABLED", function()
+	peleaste = true
+	if next(esperando) then soltarEspera() end
+end)
+
+---------------------------------------------------------------------------
 -- Preajustes: ranura -> lista de claves (de mejor a peor), o "target"/"menu".
 ---------------------------------------------------------------------------
 

@@ -259,4 +259,10 @@ M.EN = {
 	["Tus marcos aparecen al entrar a un grupo"] = "Your frames show up when you join a group",
 	["Mientras vas solo no hay a quién mostrar. Míralos ahora con marcos de ejemplo, o prende «Verte a ti estando solo», abajo en Marcos."] = "While you're solo there's no one to show. See them now with sample frames, or turn on \"Show yourself when solo\" below, in Frames.",
 	["Ver cómo se ven"] = "See how they look",
+	-- 1.3.3
+	["Cuadro corto en combate"] = "Short box in combat",
+	["En combate, solo lo que dice Alfa: con qué clic quitas el perjuicio de ese compañero. Sin el detalle del juego, para no estorbar."] = "In combat, only what Alfa says: which click removes that teammate's debuff. Without the game's details, so it doesn't get in the way.",
+	["Tiene un perjuicio que puedes quitar:"] = "They have a debuff you can remove:",
+	["Maná: quienes curaron"] = "Mana: who has healed",
+	["Tras la pelea: quienes curaron"] = "After the fight: who has healed",
 }

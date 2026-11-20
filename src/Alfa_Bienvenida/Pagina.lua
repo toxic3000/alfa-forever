@@ -109,7 +109,7 @@ local function grupos(ui, padre)
 
 	local bienvenida = K.GrupoAjustes(padre, { titulo = L["Configuración y ayuda"] })
 	-- 1.2.9: Alfa sencillo o completo (Alfa_Nucleo/Modo.lua).
-	bienvenida:Fila({ titulo = L["Cómo ves Alfa"], texto = L["Sencillo: solo Hoy, Ruta, Mapa, Bolsas y Lya a la vista, y menos avisos. Completo: todo Alfa. Lo demás sigue funcionando."],
+	bienvenida:Fila({ titulo = L["Cómo ves Alfa"], texto = L["Sencillo: solo Hoy, Ruta, Mapa, Bolsas, Talentos y Lya a la vista, y menos avisos. Completo: todo Alfa. Lo demás sigue funcionando."],
 		control = function(fila) return K.Desplegable(fila, { opciones = M.OPCIONES_MODO(), clave = ID .. ".modo", ancho = 150 }) end })
 	bienvenida:Fila({ titulo = L["Tu configuración de Alfa"],
 		texto = L["El idioma, el estilo, lo que Alfa hace sola por ti y La Jauría, con «Cambiar» en cada cosa. También con /alfa bienvenida."],
@@ -255,6 +255,12 @@ local CONTROLES = {
 	{ kind = "toggle", key = ID .. ".introSiempre", label = L["El lobo te recibe al entrar"],
 		help = L["Cada vez que entras al juego, la intro del lobo y la luna te da la bienvenida. Un clic o Esc la saltan."],
 		search = "intro, wolf, moon, login animation, welcome animation" },
+	-- 1.3.3: la entrada en silencio (Alfa_Nucleo/Entrada.lua).
+	{ kind = "dropdown", key = ID .. ".alEntrar", label = L["Al entrar al juego"],
+		help = L["Solo la animación: lo demás (tu sesión anterior, avisos, lo nuevo) te espera en Hoy y con Lya. Animación y avisos: como antes."],
+		choices = function()
+			return { { value = "silencio", label = L["Solo la animación"] }, { value = "avisos", label = L["Animación y avisos"] } }
+		end, search = "login, startup, silent, quiet, notifications, popups, entrada, silencio, avisos al entrar" },
 	{ kind = "button", label = L["Escuchar el aullido"], button = L["Escuchar"], icon = "info",
 		help = L["Suena ahora, aunque el aullido esté apagado."], onClick = function() M.Aullar(true) end, search = "howl, play sound, test sound" },
 	{ kind = "button", label = L["Tu configuración de Alfa"], button = L["Abrir"], icon = "info",
@@ -265,7 +271,7 @@ local CONTROLES = {
 		onClick = function() M.AbrirReporte() end, search = "bug report, feedback, suggestion, discord" },
 	-- 1.3.2: noReset: «Restablecer página» no lo toca (lo de fábrica, sencillo, es para quien empieza).
 	{ kind = "dropdown", key = ID .. ".modo", label = L["Cómo ves Alfa"], noReset = true,
-		help = L["Sencillo: solo Hoy, Ruta, Mapa, Bolsas y Lya a la vista, y menos avisos. Completo: todo Alfa. Lo demás sigue funcionando."],
+		help = L["Sencillo: solo Hoy, Ruta, Mapa, Bolsas, Talentos y Lya a la vista, y menos avisos. Completo: todo Alfa. Lo demás sigue funcionando."],
 		choices = function()
 			local out = {}
 			for i, o in ipairs(M.OPCIONES_MODO()) do out[i] = { value = o.valor, label = o.texto } end
@@ -300,7 +306,12 @@ local CONTROLES = {
 		onClick = function() M.Respaldos.Ahora() end, search = "backup, restore, settings backup, respaldo" },
 	{ kind = "button", label = L["Errores atrapados"], button = L["Copiar"], icon = "info",
 		help = L["Los errores de Alfa que se atraparon, para copiarlos en tu reporte."], onClick = function() M.Respaldos.CopiarErrores() end, search = "errors, lua errors, bugs, copy errors" },
-	{ kind = "button", label = function() return format(L["Lo nuevo en Alfa %s"], M.VERSION_ALFA) end, button = L["Ver"], icon = "info",
+	{ kind = "button", label = function()
+			-- 1.3.3: con las novedades sin ver, un punto (no se abren solas al entrar).
+			local t = format(L["Lo nuevo en Alfa %s"], M.VERSION_ALFA)
+			if M.NotasPorVer and M.NotasPorVer() then t = t .. "  " .. K.Tenir("acento", "\226\151\143") end
+			return t
+		end, button = L["Ver"], icon = "info",
 		help = L["La bienvenida con las novedades de esta versión."],
 		onClick = function()
 			if M.AbrirNotas and M.AbrirNotas() then return end
@@ -313,6 +324,8 @@ N.Modulo({
 	subtitulo = L["Tu estilo, el color de acento, el aullido, leer mejor y tus atajos."],
 	comando = "estilo",
 	ajustes = { aullido = true, idioma = "", introSiempre = true,
+		-- 1.3.3: "silencio" (al entrar, solo la animación) | "avisos" (como antes)
+		alEntrar = "silencio",
 		-- 1.2.7: los avisos de viaje y de raros como un anuncio animado (Kit/Anuncio.lua)
 		anuncios = true,
 		-- 1.2.9: "sencillo" (lo esencial a la vista) | "completo" (todo Alfa).
@@ -320,6 +333,8 @@ N.Modulo({
 		modo = "sencillo" },
 	controles = CONTROLES,
 	construir = construir,
+	-- 1.3.3: un punto en la página (y en Ajustes) con las novedades sin ver.
+	dot = function() return M.NotasPorVer ~= nil and M.NotasPorVer() ~= nil end,
 	-- 1.3.2: «Restablecer página» devuelve también el estilo y su color de
 	-- acento (los que se eligen arriba, en las tarjetas) y dice exactamente qué
 	-- vuelve; «Cómo ves Alfa» no cambia (noReset).

@@ -1,6 +1,7 @@
 """Dibuja las texturas de la intro del lobo y la luna (Alfa_Bienvenida).
 
 Uso:  .venv/Scripts/python -I tools/intro.py [carpeta_vista_previa]
+      .venv/Scripts/python -I tools/intro.py --solo-lua   (solo las líneas de Intro.lua)
 
 Escribe en src/Alfa_Bienvenida/Media, como TGA de 32 bits sin comprimir:
   intro-luna.tga         la luna llena (256): disco con sus mares y cráteres
@@ -20,7 +21,8 @@ Escribe en src/Alfa_Bienvenida/Media, como TGA de 32 bits sin comprimir:
   intro-fugaz.tga        una estrella fugaz (256 x 32): la estela y su cabeza
 
 El lobo: hay tres (LOBOS) y ELEGIDO dice cuál se dibuja; la punta de su hocico
-y su ojo se escriben solos en Intro.lua.
+y su ojo se escriben solos en Intro.lua. 1.3.3: también su contorno, en
+CONTORNO_PUNTOS puntos a la misma distancia (la línea de luz que lo dibuja).
 
 Todas son blancas (o grises) para que el juego las tiña con los colores de
 cada estilo (alfa, clásico, cristal). Con una carpeta, deja ahí una hoja PNG
@@ -545,16 +547,53 @@ INTRO_LUA = RAIZ / "src" / "Alfa_Bienvenida" / "Intro.lua"
 
 def anotar_lobo():
     """Escribe en Intro.lua la punta del hocico y el ojo del lobo elegido."""
-    texto = INTRO_LUA.read_text(encoding="utf-8")
+    texto = INTRO_LUA.read_bytes().decode("utf-8")
     linea = "local LOBO = { hocico = { %d, %d }, ojo = { %d, %d } } -- tools/intro.py (%s)" % (
         HOCICO[0], HOCICO[1], OJO[0], OJO[1], ELEGIDO)
-    nuevo, n = re.subn(r"^local LOBO = \{.*$", linea, texto, count=1, flags=re.M)
+    nuevo, n = re.subn(r"^local LOBO = \{[^\r\n]*", linea, texto, count=1, flags=re.M)
     if n != 1:
         print("AVISO: no encontré la línea 'local LOBO = ...' en Intro.lua")
         return
     if nuevo != texto:
-        INTRO_LUA.write_text(nuevo, encoding="utf-8")
+        INTRO_LUA.write_bytes(nuevo.encode("utf-8"))
     print("Intro.lua:", linea)
+
+
+CONTORNO_PUNTOS = 48
+
+
+def contorno_parejo(n=CONTORNO_PUNTOS):
+    """El contorno del lobo elegido en n puntos a la misma distancia (en la textura de 512)."""
+    pts = _curva(LOBOS[ELEGIDO]["contorno"])
+    largos = [0.0]
+    for i in range(1, len(pts) + 1):
+        (x0, y0), (x1, y1) = pts[i - 1], pts[i % len(pts)]
+        largos.append(largos[-1] + math.hypot(x1 - x0, y1 - y0))
+    total = largos[-1]
+    out, j = [], 0
+    for k in range(n):
+        meta = total * k / n
+        while largos[j + 1] < meta:
+            j += 1
+        (x0, y0), (x1, y1) = pts[j], pts[(j + 1) % len(pts)]
+        tramo = largos[j + 1] - largos[j]
+        u = 0 if tramo == 0 else (meta - largos[j]) / tramo
+        out.append((round(x0 + (x1 - x0) * u), round(y0 + (y1 - y0) * u)))
+    return out
+
+
+def anotar_contorno():
+    """Escribe en Intro.lua el contorno del lobo (x1, y1, x2, y2, ...)."""
+    texto = INTRO_LUA.read_bytes().decode("utf-8")
+    nums = ", ".join("%d, %d" % p for p in contorno_parejo())
+    linea = "local CONTORNO = { %s } -- tools/intro.py (%s)" % (nums, ELEGIDO)
+    nuevo, n = re.subn(r"^local CONTORNO = \{[^\r\n]*", linea, texto, count=1, flags=re.M)
+    if n != 1:
+        print("AVISO: no encontré la línea 'local CONTORNO = ...' en Intro.lua")
+        return
+    if nuevo != texto:
+        INTRO_LUA.write_bytes(nuevo.encode("utf-8"))
+    print("Intro.lua: CONTORNO con %d puntos" % CONTORNO_PUNTOS)
 
 
 def hoja(imagenes: dict, destino: pathlib.Path):
@@ -592,6 +631,10 @@ def hoja(imagenes: dict, destino: pathlib.Path):
 
 
 def main() -> int:
+    if "--solo-lua" in sys.argv:
+        anotar_lobo()
+        anotar_contorno()
+        return 0
     SALIDA.mkdir(parents=True, exist_ok=True)
     hechas = {}
     for nombre, fn in TEXTURAS.items():
@@ -600,6 +643,7 @@ def main() -> int:
         hechas[nombre] = t
         print(f"{nombre}.tga {t.size[0]}x{t.size[1]}")
     anotar_lobo()
+    anotar_contorno()
     if len(sys.argv) > 1:
         carpeta = pathlib.Path(sys.argv[1])
         carpeta.mkdir(parents=True, exist_ok=True)

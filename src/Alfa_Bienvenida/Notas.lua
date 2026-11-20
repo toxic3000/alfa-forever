@@ -233,6 +233,10 @@ function M.AbrirNotas(n)
 	if not v then armar() end
 	local otras = intermedias(n)
 	if M.MarcarNotasVistas then M.MarcarNotasVistas() end
+	-- 1.3.3: vistas: fuera de lo guardado al entrar y sin su punto en «Lo nuevo».
+	if N.OlvidarAlEntrar then N.OlvidarAlEntrar("bienvenida.novedades") end
+	local O = A.UI and A.UI.Options
+	if O and O.RefreshNav then pcall(O.RefreshNav) end
 	ui.nota = n
 	v:SetTitulo(format(L["Lo nuevo en Alfa %s"], n.version), nil, "ic-lobo")
 	ui.cabeza:Set(format(L["Versión %s"], n.version), L[n.titulo],

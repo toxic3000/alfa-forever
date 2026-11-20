@@ -66,7 +66,24 @@ function Am.Leer()
 	local tanque = Am.Papel() == "tanque"
 	local atacando, status, pct = M.Llamar(UnitDetailedThreatSituation, "player", "target")
 	local r = { pct = pct, tanque = tanque }
-	if M.Secreto(atacando) or M.Secreto(status) or M.Secreto(pct) then return r end
+	if M.Secreto(atacando) or M.Secreto(status) or M.Secreto(pct) then
+		-- 1.3.3: contra un jefe el detalle llega secreto, pero tu estado (0 a 3)
+		-- con UnitThreatSituation("player", "target") en general no: con él se
+		-- pinta y se avisa, aunque no haya porcentaje (r.sinPct).
+		local st = M.Legible(M.Llamar(UnitThreatSituation, "player", "target"))
+		if type(st) ~= "number" then return r end
+		r.sinPct = true
+		if tanque then
+			if st >= 3 then r.estado = "bien"
+			elseif st == 2 then r.estado = "riesgo"
+			else r.estado = "perdida" end
+		else
+			if st >= 2 then r.estado = "tuya"
+			elseif st == 1 then r.estado = "cerca"
+			else r.estado = "bien" end
+		end
+		return r
+	end
 	if status == nil and pct == nil then r.vacia = true return r end
 	status = tonumber(status) or 0
 	pct = tonumber(pct) or 0
@@ -154,7 +171,7 @@ function Am.Ver()
 	pcall(f.Barra.SetValue, f.Barra, valor)
 	if r.estado then
 		color(TONO[r.estado])
-		f.Valor:SetText(format("%d %%", floor((r.pct or 0) + 0.5)))
+		if r.sinPct then f.Valor:SetText("") else f.Valor:SetText(format("%d %%", floor((r.pct or 0) + 0.5))) end
 		local t = TEXTO[r.estado]
 		f.Aviso:SetText(t or "")
 		if t then K.ColorTexto(f.Aviso, TONO[r.estado]) end

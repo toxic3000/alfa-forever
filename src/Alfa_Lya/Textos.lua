@@ -1816,6 +1816,12 @@ M.EN = {
 	["Letra normal"] = "Normal text",
 	["Letra más grande"] = "Larger text",
 	["Letra muy grande"] = "Extra large text",
+	-- 1.3.3
+	["¿Qué hay de nuevo? (%d)"] = "What's new? (%d)",
+	["Mientras entrabas te guardé una cosa."] = "While you were coming in, I saved one thing for you.",
+	["Mientras entrabas te guardé %d cosas."] = "While you were coming in, I saved %d things for you.",
+	["Luego"] = "Later",
+	["Te perdiste esto"] = "You missed this",
 }
 
 M.L = AlfaNucleo.Textos(M.EN)

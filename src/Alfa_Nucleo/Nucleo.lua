@@ -97,6 +97,7 @@ function N.Modulo(spec)
 		seccion = spec.seccion, -- hoy, aventura, personaje, mundo, oficios, manada o ajustes (docs/INTERFAZ.md)
 		-- 1.3.2: { texto = fn(etiquetas) -> el aviso de «Restablecer página», fn = lo que además vuelve }
 		restablecer = spec.restablecer,
+		dot = spec.dot, -- 1.3.3: fn() -> true: un punto en la página (algo nuevo sin ver)
 	})
 	if not ok and geterrorhandler then geterrorhandler()(err) end
 	if spec.comando then
@@ -300,7 +301,18 @@ end
 ---------------------------------------------------------------------------
 -- Utilidades comunes
 ---------------------------------------------------------------------------
-function N.Imprimir(...) A.Print(...) end
+-- 1.3.3: mientras se entra al juego (Entrada.lua) no escribe en el chat: lo
+-- guarda para Hoy y Lya. Los errores no pasan por aquí (geterrorhandler).
+function N.Imprimir(...)
+	if N.Entrando and N.Entrando() and N.GuardarAlEntrar then
+		local partes = {}
+		for i = 1, select("#", ...) do partes[i] = tostring((select(i, ...))) end
+		local t = table.concat(partes, " ")
+		N.GuardarAlEntrar({ id = "chat:" .. t, texto = t, icono = "ic-info", origen = "chat" })
+		return
+	end
+	A.Print(...)
+end
 
 -- 123456 cobre -> "12 34 56" con el ícono de cada moneda y los colores del
 -- juego. Las monedas siguen el estilo de Alfa: en Alfa y Cristal, las propias

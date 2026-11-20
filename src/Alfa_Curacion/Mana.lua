@@ -63,7 +63,14 @@ local function unidades()
 	return t
 end
 
--- Los curanderos del grupo -> { { unidad, nombre, clase } }
+-- 1.3.3: sin roles en el grupo, solo quienes Alfa vio lanzar una cura (por
+-- nombre, esta sesión): un druida feral o un paladín de reprensión no salen.
+local curaron = {}
+Mn.curaron = curaron
+local nombreDe = {} -- unidad -> su nombre la última vez (un nombre que llega tarde conserva su cura)
+
+-- Los curanderos del grupo -> { { unidad, nombre, clase } }, y si salió de
+-- quienes curaron (sin roles).
 function Mn.Lista()
 	local lista, porRol, porClase = {}, {}, {}
 	local hayRoles = false
@@ -76,14 +83,26 @@ function Mn.Lista()
 			local okC, _n, c = pcall(UnitClass, u)
 			if okC and not secreto(c) then clase = c end
 			local nombre = leer(UnitName, u)
+			if type(nombre) == "string" then nombreDe[u] = nombre end
 			local d = { unidad = u, nombre = type(nombre) == "string" and nombre or u, clase = clase }
 			if rol == "HEALER" then porRol[#porRol + 1] = d end
-			if clase and CURAN[clase] then porClase[#porClase + 1] = d end
+			if clase and CURAN[clase] and type(nombre) == "string" and curaron[nombre] then porClase[#porClase + 1] = d end
 		end
 	end
 	local fuente = hayRoles and porRol or porClase
 	for i = 1, math.min(MAX_FILAS, #fuente) do lista[i] = fuente[i] end
-	return lista
+	return lista, not hayRoles
+end
+
+-- ¿Una cura? (las de Hechizos.lua: categoría «cura»)
+local function esCura(id)
+	if secreto(id) or type(id) ~= "number" then return false end
+	local k = M.ClaveDe and M.ClaveDe(id)
+	return k ~= nil and M.CATEGORIA and M.CATEGORIA[k] == "cura"
+end
+
+local function delGrupo(u)
+	return type(u) == "string" and (u == "player" or u:find("^party%d") ~= nil or u:find("^raid%d") ~= nil)
 end
 
 ---------------------------------------------------------------------------
@@ -162,9 +181,10 @@ local lista, otros, sucia = {}, 0, true
 
 function Mn.Sucia() sucia = true end
 
+local porCura = false
 local function armar()
 	sucia = false
-	lista = Mn.Lista()
+	lista, porCura = Mn.Lista()
 	-- Contigo solo, no hace falta: la lista sirve cuando hay otro curandero.
 	otros = 0
 	for _, d in ipairs(lista) do
@@ -207,7 +227,12 @@ function Mn.Refrescar()
 	Mn.filas = n
 	local destacado = (GetTime and GetTime() or 0) < destacarHasta and not M.EnCombate()
 	Mn.destacado = destacado
-	marco.titulo:SetText(destacado and L["Maná tras la pelea"] or L["Maná"])
+	-- 1.3.3: sin roles, el título dice que son quienes curaron.
+	if porCura then
+		marco.titulo:SetText(destacado and L["Tras la pelea: quienes curaron"] or L["Maná: quienes curaron"])
+	else
+		marco.titulo:SetText(destacado and L["Maná tras la pelea"] or L["Maná"])
+	end
 	if destacado then marco.titulo:SetTextColor(0.545, 0.878, 0.306, 1) else marco.titulo:SetTextColor(0.75, 0.77, 0.8, 1) end
 	marco:SetHeight(6 + (n + 1) * FILA_H)
 	marco:SetAlpha(destacado and 1 or (M.EnCombate() and 0.6 or 0.8))
@@ -240,8 +265,20 @@ local function cambioGrupo() sucia = true Mn.Reloj() Mn.Refrescar() end
 A.RegisterEvent("GROUP_ROSTER_UPDATE", cambioGrupo)
 A.RegisterEvent("PLAYER_ROLES_ASSIGNED", cambioGrupo)
 A.RegisterEvent("PLAYER_ENTERING_WORLD", cambioGrupo)
+-- 1.3.3: alguien del grupo lanzó una cura: entra a la lista (si no estaba).
+A.RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", function(_, u, _, id)
+	if not delGrupo(u) or not esCura(id) then return end
+	local nombre = leer(UnitName, u)
+	if type(nombre) ~= "string" or curaron[nombre] then return end
+	curaron[nombre] = true
+	cambioGrupo()
+end)
 A.RegisterEvent("UNIT_NAME_UPDATE", function(_, u)
-	if type(u) == "string" and (u == "player" or u:find("^party%d") or u:find("^raid%d")) then cambioGrupo() end
+	if not delGrupo(u) then return end
+	-- 1.3.3: si quien curó cambió de nombre (llegó tarde), sigue contando.
+	local antes, ahora = nombreDe[u], leer(UnitName, u)
+	if antes and curaron[antes] and type(ahora) == "string" then curaron[ahora] = true end
+	cambioGrupo()
 end)
 A.On("SETTING_CHANGED", function(path)
 	if type(path) == "string" and path:sub(1, #ID + 1) == ID .. "." then Mn.Reloj() Mn.Refrescar() end

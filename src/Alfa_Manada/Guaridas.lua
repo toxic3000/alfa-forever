@@ -445,10 +445,34 @@ function Gu.SalirDelGrupo()
 	return false
 end
 
+-- (1.3.3) Llegaste y sigues en el grupo de quien te invitó: cada RECORDAR
+-- segundos, hasta QUEDARSE, Lya (o un aviso) te lo recuerda con «Salir del
+-- grupo». Se acaba al salir del grupo.
+local RECORDAR, QUEDARSE = 120, 600
+local recordar -- { nombre, hasta }
+local function recordarSalir()
+	local r = recordar
+	if not r or not enGrupo() or U.Ahora() > r.hasta then
+		recordar = nil
+		M.Quitar("manada.salirGrupo")
+		return
+	end
+	aviso({ titulo = format(L["Ya estás en la %s: ¿salimos del grupo?"], r.nombre),
+		texto = L["La guarida se queda contigo aunque salgas."], icono = "ic-manada", duracion = 15,
+		accion = { texto = L["Salir del grupo"], alClic = function() Gu.SalirDelGrupo() end } })
+end
+Gu.RecordarSalir = recordarSalir -- (para el banco)
+function Gu.Recordando() return recordar end
+local function empezarARecordar(nombre)
+	recordar = { nombre = nombre, hasta = U.Ahora() + QUEDARSE }
+	M.Cada("manada.salirGrupo", RECORDAR, recordarSalir)
+end
+
 -- Llegaste a la guarida que pediste.
 llegar = function()
 	local p = pedido
 	pedido = nil
+	empezarARecordar(actual and Gu.Nombre(actual.capa) or p.nombre)
 	if p.cualquiera then
 		aviso({ titulo = L["¡Ya estás en otro plano!"],
 			texto = format(L["Ahora estás en la %s. Ya puedes salir del grupo: el plano se queda contigo."], actual and Gu.Nombre(actual.capa) or ""),

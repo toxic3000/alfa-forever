@@ -507,11 +507,32 @@ function K.PorLya(o)
 	return ok and dijo == true
 end
 
+-- 1.3.3: un aviso con una acción (no segura) que se fue sin que lo tocaras
+-- (se acabó su tiempo o cedió su lugar): A.Fire("ALFA_AVISO_PERDIDO", o), y
+-- Lya lo guarda en «Te perdiste esto» (Ce.Perdido).
+local function perdido(a)
+	local o = a and a.alfaO
+	a.alfaO = nil
+	if type(o) ~= "table" or type(o.accion) ~= "table" or o.accion.seguro then return end
+	if A and A.Fire then pcall(A.Fire, "ALFA_AVISO_PERDIDO", o) end
+end
+
 function K.Aviso(o)
 	o = o or {}
 	-- 1.2.9: con Alfa sencillo (Modo.lua) no salen los avisos de detalle
 	-- (o.detalle = true: lo que es bueno saber, pero no hace falta). -> false
 	if o.detalle and N.Sencillo and N.Sencillo() then return false end
+	-- 1.3.3: la entrada en silencio (Entrada.lua): al entrar al juego no sale
+	-- nada; queda guardado para Hoy y Lya. Salvo lo que no puede esperar
+	-- (o.alEntrar, o.importante = "siempre") y un botón seguro (abre algo del juego).
+	if N.Entrando and N.Entrando() and not (o.alEntrar == true or o.importante == "siempre"
+		or (type(o.accion) == "table" and o.accion.seguro) or (type(o.boton) == "table" and o.boton.seguro)) then
+		if N.GuardarAlEntrar then
+			N.GuardarAlEntrar({ id = o.id or o.clave, titulo = o.titulo, texto = o.texto, icono = o.icono,
+				accion = o.accion, origen = o.origen or "aviso" })
+		end
+		return nil
+	end
 	-- 1.2.5: con Lya a la vista, ella lo dice en su globo (K.AvisoPorLya, de
 	-- Alfa_Lya) y no salen avisos por todos lados. Siempre el aviso: o.lya =
 	-- false (quien usa la ventanita que se devuelve) o un botón seguro (abre
@@ -523,6 +544,7 @@ function K.Aviso(o)
 		if #avisos >= MAX_AVISOS then
 			a = avisos[#avisos] -- el más viejo cede su lugar
 			table.remove(avisos, #avisos)
+			perdido(a)
 			local fn = a.alfaAlCerrar
 			a.alfaAlCerrar, a.alfaVivo = nil, nil
 			if fn then K.Llamar(fn, a) end
@@ -571,6 +593,7 @@ function K.Aviso(o)
 	a:SetHeight(max(y, ESP.m + 30) + ESP.m + 2)
 	a.alfaVivo = true
 	a.alfaAlCerrar = o.alCerrar
+	a.alfaO = o -- 1.3.3: para «Te perdiste esto» de Lya (ALFA_AVISO_PERDIDO)
 	a.alfaTurno = (a.alfaTurno or 0) + 1
 	a.turno = a.alfaTurno
 	local turno = a.alfaTurno
@@ -584,6 +607,7 @@ function K.Aviso(o)
 			if C_Timer and C_Timer.After then C_Timer.After(2, vencer) end
 			return
 		end
+		perdido(a) -- se acabó su tiempo sin que lo tocaras
 		quitar(a)
 	end
 	if C_Timer and C_Timer.After then C_Timer.After(o.duracion or 6, vencer) end

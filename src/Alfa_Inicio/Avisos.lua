@@ -33,6 +33,24 @@ local floor, max, min, ipairs, type, tonumber = math.floor, math.max, math.min, 
 local Aviso = {}
 M.Aviso = Aviso
 
+-- 1.3.3: la entrada en silencio (el contrato de Núcleo: N.Entrando,
+-- N.GuardarAlEntrar). Mientras entras, un aviso no sale: se guarda para la
+-- fila «Mientras entrabas» de Hoy. Sin ese Núcleo, todo sale como antes.
+function M.Entrando()
+	local f = rawget(N, "Entrando")
+	if type(f) ~= "function" then return false end
+	local ok, si = pcall(f)
+	return ok and si == true
+end
+
+-- -> true si se guardó
+function M.GuardarAlEntrar(o)
+	local f = rawget(N, "GuardarAlEntrar")
+	if type(f) ~= "function" or type(o) ~= "table" then return false end
+	o.origen = o.origen or "inicio"
+	return (pcall(f, o))
+end
+
 local ANCHO, ANCHO_MAX = 360, 440
 local PAD, BALDOSA = 16, 36
 local COLA_MAX = 5
@@ -240,6 +258,22 @@ function Aviso.Mostrar(spec)
 	if A.Hidden and A.Hidden() then
 		avisarCierre(spec)
 		return
+	end
+	-- 1.3.3: mientras entras, a la fila «Mientras entrabas» (el primer botón
+	-- va con él). spec.alEntrar = true: sale igual (el que la pide lo sabe).
+	if spec.clave ~= "prueba" and not spec.alEntrar and M.Entrando() then
+		local b1 = type(spec.botones) == "table" and spec.botones[1] or nil
+		local linea = spec.linea and spec.linea ~= "" and spec.linea or nil
+		local guardado = M.GuardarAlEntrar({
+			id = "inicio." .. tostring(spec.clave or spec.titulo or "aviso"),
+			titulo = spec.titulo, icono = spec.icono or (spec.lobo and "ic-lobo") or "ic-hoy",
+			texto = linea and spec.texto and (linea .. "\n" .. spec.texto) or linea or spec.texto,
+			accion = b1 and type(b1.fn) == "function" and { texto = b1.texto, alClic = b1.fn } or nil,
+		})
+		if guardado then
+			avisarCierre(spec)
+			return
+		end
 	end
 	-- 1.2.6: con Lya a la vista lo dice ella (también los de al entrar), con
 	-- sus botones; «Probar» sigue mostrando este aviso.

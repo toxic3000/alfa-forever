@@ -135,13 +135,55 @@ local function avisoRangos(p)
 		m.spells and m.spells[1] and A.Compat.SpellIcon(m.spells[1].bestId or m.spells[1].id) or nil
 end
 
+---------------------------------------------------------------------------
+-- 1.3.3: la entrada en silencio. La tarjeta de rangos viejos (el motor la
+-- revisa al entrar) espera a que termine la entrada de Alfa (N.Entrando, del
+-- Núcleo: con rawget, puede no existir) o a que termine tu primera pelea.
+---------------------------------------------------------------------------
+local espera -- la tarjeta que espera: function() ... end
+local peleaste = false -- tras tu primera pelea ya no se espera
+local function entrando()
+	if peleaste then return false end
+	local f = rawget(N, "Entrando")
+	if type(f) ~= "function" then return false end
+	local ok, si = pcall(f)
+	return ok and si == true
+end
+local function soltarEspera()
+	N.Quitar("builds.trasEntrar")
+	local fn = espera
+	espera = nil
+	if fn then K.Llamar(fn) end
+end
+local function trasEntrar(fn)
+	if not entrando() then return fn() end
+	espera = fn
+	if not N.HayTarea("builds.trasEntrar") then
+		N.Cada("builds.trasEntrar", 5, function() if not entrando() then soltarEspera() end end, { fueraDeCombate = true })
+	end
+end
+A.RegisterEvent("PLAYER_REGEN_ENABLED", function()
+	peleaste = true
+	if espera then soltarEspera() end
+end)
+M.TarjetaEsperando = function() return espera ~= nil end
+M.ComoAlEntrar = function() peleaste = false end -- (para el banco: todavía sin pelear)
+
+local mostrarTarjeta
 N.Reemplazar("SPELL_CARDS", function(p)
 	if p.accion == "ocultar" then
+		espera = nil
 		local t = tarjeta
 		tarjeta = nil
 		quitarAviso(t)
 		return
 	end
+	local m = p.modelo or {}
+	if m.kind == "oldRanks" then return trasEntrar(function() mostrarTarjeta(p) end) end
+	mostrarTarjeta(p)
+end)
+
+mostrarTarjeta = function(p)
 	-- Uno nuevo reemplaza al de antes (el motor ya lo dio por cerrado).
 	if tarjeta then
 		local t = tarjeta
@@ -155,10 +197,15 @@ N.Reemplazar("SPELL_CARDS", function(p)
 	if K.PorLya(datos) then return end
 	datos.lya = false -- (se le pone el ícono y se vigila: la ventanita hace falta)
 	local a = K.Aviso(datos)
+	-- 1.3.3: mientras Alfa entra, K.Aviso lo guarda y no devuelve ventanita.
+	if not a then
+		if p.Cerrar then pcall(p.Cerrar) end
+		return
+	end
 	M.IconoEnAviso(a, tex)
 	tarjeta = { aviso = a, turno = a.alfaTurno, cerrar = p.Cerrar }
 	vigilar(a, datos.duracion)
-end)
+end
 
 ---------------------------------------------------------------------------
 -- CLASS_CARD

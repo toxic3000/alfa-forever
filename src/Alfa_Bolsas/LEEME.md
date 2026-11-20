@@ -84,3 +84,8 @@ Forever (tipo de juego "Camelot" en el código de Blizzard) vende **casillas de 
 - **«Acomodar»** dice «Detener (x/y)» con el ícono de parar mientras trabaja (`Ac.Avance()`), como Depositar.
 - **Qué vender**: `revisar` mira primero `S.Espacio()`; lejos del umbral no hace el análisis completo (lo piden la ventana y la página al dibujarse).
 - Prueba: `tools/banco/prueba_132_hoy.lua`.
+
+## 1.3.3
+
+- El aviso de bolsas llenas es el único (id `bolsasLlenas`: si Lya está a la vista, lo dice ella) y no sale al entrar con las bolsas ya llenas: la base se toma al entrar y tras `/reload` (`S.TomarBase`).
+- Conjuntos: «Otro nombre…» abre una caja de texto del Kit (`Cj.PedirNombre`); el nombre se corta por letras completas (`Cj.Cortar`, `Cj.MAX_LETRAS = 32`). Prueba: `tools/banco/prueba_133_hoy.lua`.

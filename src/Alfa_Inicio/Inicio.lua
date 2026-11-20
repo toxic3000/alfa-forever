@@ -67,7 +67,8 @@ local AJUSTES = {
 	recEntrenar = true, entrenarMin = 1,
 	recBuff = true, buffCada = 3, buffQueda = 0,
 	recDescanso = true, descansoBajo = 5,
-	resumen = "ambos", segAviso = 10, sonido = true, diarioMax = 30,
+	-- 1.3.3: el resumen de la sesión anterior, sin chat al entrar (era "ambos").
+	resumen = "aviso", segAviso = 10, sonido = true, diarioMax = 30,
 	-- Lo plegable de abajo: el diario completo y los ajustes de los avisos.
 	verDiario = false, verAjustes = false,
 	-- 1.2.9: tu tiempo de juego, el camino al 60, listo para la mazmorra y la comida.
@@ -81,6 +82,20 @@ local function porc(v) return format("%d%%", v) end
 
 -- Los controles del motor (la búsqueda de la ventana de Alfa los encuentra);
 -- en la página se dibujan con el Kit (grupos, abajo).
+-- 1.3.3: con el módulo Bolsas, el aviso de bolsas llenas es el suyo (una sola
+-- voz) y sus ajustes mandan también en Hoy.
+local function conBolsas() return N.ModuloPorId ~= nil and N.ModuloPorId("bolsas") ~= nil end
+-- Al cargar, Bolsas puede venir después: también cuenta si está prendido.
+local function bolsasPrendido()
+	if conBolsas() then return true end
+	local CA = rawget(_G, "C_AddOns")
+	local f = type(CA) == "table" and CA.GetAddOnEnableState
+	if type(f) ~= "function" then return false end
+	local ok, e = pcall(f, "Alfa_Bolsas", UnitName and UnitName("player"))
+	return ok and (tonumber(e) or 0) > 0
+end
+local CON_BOLSAS = bolsasPrendido()
+
 local C = {
 	recDurabilidad = { kind = "toggle", key = "inicio.recDurabilidad", label = L["Avisarme cuando mi equipo se gaste"],
 		help = L["Te dice qué pieza está por romperse, para que la repares a tiempo."],
@@ -91,10 +106,11 @@ local C = {
 	durUrgente = { kind = "slider", key = "inicio.durUrgente", label = L["Aviso urgente, con sonido"], min = 0, max = 25, step = 5, format = porc,
 		help = L["Cuando ya casi se rompe."], child = true, disabled = apagado("recDurabilidad"),
 		search = "durabilidad, reparar, urgente, durability, repair" },
-	recBolsas = { kind = "toggle", key = "inicio.recBolsas", label = L["Avisarme cuando mis bolsas se llenen"],
+	recBolsas = { kind = "toggle", key = CON_BOLSAS and "bolsas.avisoLleno" or "inicio.recBolsas", label = L["Avisarme cuando mis bolsas se llenen"],
 		help = L["Para que no dejes botín tirado por falta de espacio."],
 		search = "bolsas, llenas, espacio, inventario, bags, full, space" },
-	bolsasLibres = { kind = "slider", key = "inicio.bolsasLibres", label = L["Avisar con estos espacios libres o menos"], min = 0, max = 12, step = 1,
+	bolsasLibres = { kind = "slider", key = CON_BOLSAS and "bolsas.avisoLibres" or "inicio.bolsasLibres", label = L["Avisar con estos espacios libres o menos"],
+		min = CON_BOLSAS and 1 or 0, max = CON_BOLSAS and 10 or 12, step = 1,
 		format = function(v) return v == 1 and L["1 espacio"] or format(L["%d espacios"], v) end,
 		child = true, disabled = apagado("recBolsas"), search = "bolsas, espacio, bags, slots" },
 	recEntrenar = { kind = "toggle", key = "inicio.recEntrenar", label = L["Avisarme en la ciudad si tengo habilidades por aprender"],
@@ -180,6 +196,12 @@ local CONTROLES = {
 	C.horaPlan, C.horaMin, C.horaAuto, C.camino, C.listoAuto, C.listoDur, C.listoBolsas, C.listoComida,
 	C.comidaAviso, C.comidaMin,
 }
+-- 1.3.3: con Bolsas, sus ajustes de bolsas ya salen en la búsqueda: no se repiten aquí.
+if CON_BOLSAS then
+	for i = #CONTROLES, 1, -1 do
+		if CONTROLES[i] == C.recBolsas or CONTROLES[i] == C.bolsasLibres then table.remove(CONTROLES, i) end
+	end
+end
 
 ---------------------------------------------------------------------------
 -- Ayudas
@@ -661,7 +683,7 @@ local function alertas()
 			accion = { texto = L["Llévame a reparar"], icono = "ic-flecha", alClic = function() R.IrA("repair") end } }
 	end
 	local libres, total = st.bolsas.libres, st.bolsas.total
-	local umbral = tonumber(N.Get("inicio", "bolsasLibres")) or 4
+	local umbral = R.UmbralBolsas() -- 1.3.3: el mismo umbral que el aviso de Bolsas
 	if libres and libres <= umbral then
 		lista[#lista + 1] = { clave = "bolsas", tono = libres == 0 and "peligro" or "aviso", icono = "ic-bolsas",
 			titulo = libres == 0 and L["Tus bolsas están llenas"] or L["Tus bolsas están casi llenas"],
@@ -711,6 +733,63 @@ local function firmaAlertas(lista)
 	local t = {}
 	for i, a in ipairs(lista) do t[i] = a.clave .. ":" .. (a.titulo or "") .. ":" .. (a.texto or "") end
 	return table.concat(t, ",")
+end
+
+---------------------------------------------------------------------------
+-- 3c. 1.3.3: «Mientras entrabas» (N.AlEntrar del Núcleo): lo que no salió al
+-- entrar al juego para dejar la animación sola. Cada cosa con su acción y su
+-- «Listo» (N.OlvidarAlEntrar); se repinta con ALFA_ALENTRAR. Vacía, no sale.
+---------------------------------------------------------------------------
+
+local function deNucleo(nombre)
+	local f = rawget(N, nombre)
+	return type(f) == "function" and f or nil
+end
+
+function P.AlEntrar()
+	local f = deNucleo("AlEntrar")
+	if not f then return {} end
+	local ok, lista = pcall(f)
+	return ok and type(lista) == "table" and lista or {}
+end
+
+local function olvidarAlEntrar(id)
+	local f = deNucleo("OlvidarAlEntrar")
+	if f and id ~= nil then pcall(f, id) end
+end
+
+local function tarjetasAlEntrar()
+	local out = {}
+	for _, o in ipairs(P.AlEntrar()) do
+		if type(o) == "table" and (o.titulo or o.texto) then
+			local id = o.id
+			local d = { icono = o.icono or "ic-hoy", tono = "acento", titulo = o.titulo or "", texto = o.texto, lineas = 3,
+				secundaria = { texto = L["Listo"], alClic = function() olvidarAlEntrar(id) end } }
+			local a = type(o.accion) == "table" and o.accion or nil
+			if a and type(a.alClic) == "function" then
+				d.accion = { texto = a.texto or L["Ver"], icono = "ic-seguir", alClic = function()
+					olvidarAlEntrar(id)
+					K.Llamar(a.alClic)
+				end }
+			end
+			out[#out + 1] = d
+		end
+	end
+	return out
+end
+P.TarjetasAlEntrar = tarjetasAlEntrar
+
+local function nuevoAlEntrar(padre)
+	local b = K.Pila(padre, { espacio = ESP.m })
+	b.Seccion = b:Agregar(K.Seccion(b, L["Mientras entrabas"]))
+	b.Rejilla = b:Agregar(K.Rejilla(b, { min = 340, gap = ESP.m }), { espacio = ESP.s })
+	function b:Llenar()
+		local lista = tarjetasAlEntrar()
+		self.Seccion:Set(L["Mientras entrabas"], { cuenta = #lista > 0 and #lista or nil })
+		self.Rejilla:Llenar(lista)
+		K.Mostrar(self, #lista > 0)
+	end
+	return b
 end
 
 local function nuevoAlertas(padre)
@@ -1065,7 +1144,7 @@ local function revision(enAlertas)
 	end
 	local libres, total = st.bolsas.libres, st.bolsas.total
 	if libres and not enAlertas.bolsas then
-		local umbral = tonumber(N.Get("inicio", "bolsasLibres")) or 4
+		local umbral = R.UmbralBolsas()
 		t[#t + 1] = { libres == 1 and L["1 espacio libre"] or format(L["%d espacios libres"], libres),
 			(libres == 0 and "peligro") or (libres <= umbral and "aviso") or "exito", "ic-bolsas",
 			L["Bolsas"], format(L["%d de %d espacios libres."], libres, total or 0) }
@@ -1219,8 +1298,15 @@ local function gruposAvisos(padre)
 	dur:Fila({ titulo = C.durUrgente.label, texto = C.durUrgente.help, hija = true, activa = encendido("recDurabilidad"), control = deslizador(C.durUrgente) })
 	g[#g + 1] = dur
 	local bol = K.GrupoAjustes(padre, { titulo = L["Bolsas"] })
-	bol:Fila({ titulo = C.recBolsas.label, texto = C.recBolsas.help, control = interruptor("recBolsas") })
-	bol:Fila({ titulo = C.bolsasLibres.label, hija = true, activa = encendido("recBolsas"), control = deslizador(C.bolsasLibres) })
+	-- 1.3.3: con Bolsas, estas dos filas son sus ajustes (un solo aviso, el suyo).
+	local deBolsas = conBolsas()
+	local claveAviso = deBolsas and "bolsas.avisoLleno" or "inicio.recBolsas"
+	local libres = deBolsas and { min = 1, max = 10, step = 1, key = "bolsas.avisoLibres", format = C.bolsasLibres.format }
+		or { min = 0, max = 12, step = 1, key = "inicio.bolsasLibres", format = C.bolsasLibres.format }
+	bol:Fila({ titulo = C.recBolsas.label, texto = deBolsas and L["Un solo aviso: el de tus bolsas, que también te dice qué vender."] or C.recBolsas.help,
+		control = function(fila) return K.Interruptor(fila, { clave = claveAviso }) end })
+	bol:Fila({ titulo = C.bolsasLibres.label, hija = true, activa = function() return N.Get(claveAviso:match("^(%w+)"), claveAviso:match("%.(.+)$")) ~= false end,
+		control = deslizador(libres) })
 	g[#g + 1] = bol
 	local ent = K.GrupoAjustes(padre, { titulo = L["Habilidades por entrenar"] })
 	ent:Fila({ titulo = C.recEntrenar.label, texto = C.recEntrenar.help, control = interruptor("recEntrenar") })
@@ -1346,6 +1432,8 @@ end
 local function nuevaHora(padre)
 	local b = K.Pila(padre, { espacio = ESP.m })
 	b.Seccion = b:Agregar(K.Seccion(b, L["¿Cuánto tiempo tienes?"]))
+	-- 1.3.3: el plan que venció sin terminar deja su nota (con «Listo»).
+	b.Vencido = b:Agregar(K.Tarjeta(b, { variante = "normal" }), { espacio = ESP.s })
 	b.Elegir = b:Agregar(K.Segmentos(b, { estilo = "segmentos", opciones = opcionesHora(), valor = 60, alCambiar = function(v)
 		if v == OTRO then
 			P.horaOtro = true
@@ -1387,6 +1475,13 @@ local function nuevaHora(padre)
 		end
 		K.Mostrar(self, true)
 		local h = TM.Actual()
+		local vencido = not h and TM.Vencido()
+		if vencido then
+			self.Vencido:Set({ icono = "ic-reloj", tono = "aviso", titulo = TM.TextoVencido(vencido),
+				texto = L["Elige tu tiempo otra vez y arma uno nuevo cuando quieras."],
+				accion = { texto = L["Listo"], icono = "ic-exito", alClic = function() TM.OlvidarVencido() end } })
+		end
+		K.Mostrar(self.Vencido, vencido and true or false)
 		self.alfaFirma = h and (h.i .. ":" .. TM.Llevas(h)) or nil
 		if h then
 			local n = #h.pasos
@@ -1656,6 +1751,7 @@ local function llenarTodo()
 	P.tablero:SetOpciones(misiones(), (plan and not P.enGuia) and L["Tus misiones"] or false)
 	local lista = alertas()
 	P.firmaAlertas = firmaAlertas(lista)
+	P.alEntrar:Llenar()
 	P.alertas:Llenar(lista)
 	P.cerca:Llenar()
 	P.clase:Llenar()
@@ -1686,6 +1782,7 @@ local function construir(view)
 	end
 	P.entradas = E
 	ordenar(false, false, false)
+	P.alEntrar = t:AgregarBloque(nuevoAlEntrar(t.Extra))
 	P.alertas = t:AgregarBloque(nuevoAlertas(t.Extra))
 	P.cerca = t:AgregarBloque(nuevoCerca(t.Extra))
 	P.clase = t:AgregarBloque(nuevaClase(t.Extra))
@@ -1763,7 +1860,8 @@ end
 A.On("ALFA_MODULO", function(spec)
 	if type(spec) == "table" and type(spec.id) == "string" and spec.id ~= "inicio" then relayoutPronto() end
 end)
-for _, msg in ipairs({ "STEP_CHANGED", "GUIDE_CHANGED", "GUIDE_COMPLETED", "TABS_CHANGED", "INICIO_DIARIO", "ALFA_REEMPLAZO", "ALFA_CURACION_ASISTENTE", "ALFA_PLAN", "INICIO_HORA" }) do
+for _, msg in ipairs({ "STEP_CHANGED", "GUIDE_CHANGED", "GUIDE_COMPLETED", "TABS_CHANGED", "INICIO_DIARIO", "ALFA_REEMPLAZO", "ALFA_CURACION_ASISTENTE", "ALFA_PLAN", "INICIO_HORA",
+	"ALFA_ALENTRAR" }) do
 	A.On(msg, relayoutPronto)
 end
 -- Otra rama (o nivel) cambia el rol y las tarjetas de la clase.

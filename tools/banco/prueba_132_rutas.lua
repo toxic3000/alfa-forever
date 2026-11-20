@@ -108,7 +108,8 @@ step("La piedra de hogar a tiempo sale sin el Codex (con la base de misiones) y 
             local l = Ru.Vuelta.Listas(true)
             check(l and #l == 4 and l[1].p and l[1].p.name == "Thrall", "sin el Codex no supo a quién se entrega cada misión")
             local dijo, por
-            local avisos = conAvisos(function() dijo, por = Hg.Revisar() end)
+            -- (1.3.3: fuera de la entrada en silencio)
+            local avisos = conAvisos(function() con(N, { Entrando = function() return false end }, function() dijo, por = Hg.Revisar() end) end)
             check(dijo and por == "aviso", "sin el Codex la piedra de hogar no avisó: " .. tostring(por))
             check(avisos[1] and avisos[1].texto:find("3 de tus 4", 1, true), "el aviso no dice «3 de tus 4»")
           end)

@@ -358,7 +358,7 @@ end)
 -- { valor, texto, icono, titulo, explica }: el desplegable de Ajustes y las tarjetas del asistente.
 M.MODOS = {
 	{ valor = "sencillo", icono = "ic-huella", titulo = "Alfa sencillo", sobre = "Para empezar",
-		texto = "Solo lo esencial a la vista: Hoy, Ruta, Mapa, Bolsas y Lya, y menos avisos. Lo demás sigue ahí cuando lo busques." },
+		texto = "Solo lo esencial a la vista: Hoy, Ruta, Mapa, Bolsas, Talentos y Lya, y menos avisos. Lo demás sigue ahí cuando lo busques." },
 	{ valor = "completo", icono = "ic-lobo", titulo = "Alfa completo",
 		texto = "Todas las páginas de Alfa a la vista: mazmorras, talentos, combate, oficios, la manada y más." },
 }

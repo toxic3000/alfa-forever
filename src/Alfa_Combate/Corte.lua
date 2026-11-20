@@ -251,6 +251,12 @@ function Co.Revisar(empieza)
 	if nuevo and M.Opt("corteSonido") and (M.Opt("corteSonidoSolo") or M.EnGrupo()) and x.seguro and sonoPara ~= x.desde then
 		sonoPara = x.desde
 		M.Sonar("RAID_WARNING", 8959)
+	-- 1.3.3: en una instancia el juego oculta el hechizo (x.seguro = false): un
+	-- sonido más suave aparte (corteSonidoOculto), que a veces también suena
+	-- con lo que no se puede cortar (el juego no deja saberlo).
+	elseif nuevo and not x.seguro and M.Opt("corteSonido") and M.Opt("corteSonidoOculto") and M.EnInstancia() and sonoPara ~= x.desde then
+		sonoPara = x.desde
+		M.Sonar("MAP_PING", 3175)
 	end
 	if not reloj then
 		reloj = N.Ticker("combate.corte", 0.2, function()

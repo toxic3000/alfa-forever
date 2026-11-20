@@ -100,6 +100,13 @@ Datos por personaje (`N.DatosPersonaje("lya")`): `vistos`, `presentada`, `silenc
 - `dichosAviso` (Cerebro.lua) olvida lo de más de 90 s; `TuHistoria.lua` escucha `UNIT_HEALTH` solo de `target` y solo con presa (`Di.VigilaPresa`).
 - Prueba: `tools/banco/prueba_132_manada.lua`.
 
+## 1.3.3: la entrada en silencio
+
+- Mientras `N.Entrando()` (núcleo, `Entrada.lua`), lo que Lya diría sola no sale: `Ce.Decir` lo guarda con `N.GuardarAlEntrar` (`origen = "lya"`, `id = "lya:<id>"`). Su presentación, lo que pides y `importante = "siempre"` salen igual. La llegada corre sin palabras.
+- Clic en Lya con algo guardado: «Mientras entrabas te guardé N cosas» y «¿Qué hay de nuevo? (N)», una cosa a la vez con su botón (`Ce.QueHayDeNuevo`). Pasada la entrada, lo que quede lo dice una vez, uno por latido. Con Lya oculta queda en la fila de Hoy.
+- «Te perdiste esto» (`Ce.Perdido`, mensaje `ALFA_AVISO_PERDIDO` del Kit): el aviso con botón que se fue sin tocarlo, en «Pregúntale a Lya».
+- Una sola voz con Hoy: `AlfaNucleo.dichosSesion[id]` (`reparar`, `bolsasLlenas`, `entregar`); quien lo dice lo anota y el otro no lo repite en la sesión (`Ce.YaSeDijo`, `Ce.Anotar`).
+
 ## Para verificar en el juego
 
 1. Personaje nuevo: Lya no aparece hasta terminar la bienvenida de Alfa; al terminarla sale y se presenta una sola vez.

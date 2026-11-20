@@ -300,6 +300,8 @@ function T.Actual()
 	-- Un plan muy viejo (otro día, o el doble de su tiempo) ya no sigue.
 	local t0 = tonumber(h.t0) or 0
 	if ahora() - t0 > max(h.total * 2, h.total + 60) * 60 then
+		-- 1.3.3: deja una nota en Hoy (antes se iba sin decir nada).
+		db().horaVencida = { total = tonumber(h.total) or 60, hechos = max(0, (tonumber(h.i) or 1) - 1), pasos = #h.pasos, t = ahora() }
 		db().hora = nil
 		return nil
 	end
@@ -354,9 +356,28 @@ function T.Ir(p)
 	end
 end
 
+-- 1.3.3: el plan que venció sin terminar: -> { total, hechos, pasos, t } | nil
+function T.Vencido()
+	local v = db().horaVencida
+	return type(v) == "table" and tonumber(v.pasos) and v or nil
+end
+
+-- «Tu plan de 1 h quedó sin terminar: llevabas 3 de 6 pasos.»
+function T.TextoVencido(v)
+	v = v or T.Vencido()
+	if not v then return nil end
+	return format(L["Tu plan de %s quedó sin terminar: llevabas %d de %d pasos."], T.Minutos(v.total), tonumber(v.hechos) or 0, tonumber(v.pasos) or 0)
+end
+
+function T.OlvidarVencido()
+	db().horaVencida = nil
+	avisarCambio()
+end
+
 function T.Empezar(plan)
 	plan = plan or T.Armar()
 	if type(plan) ~= "table" or #plan.pasos == 0 then return false end
+	db().horaVencida = nil
 	local S = M.Sesion
 	local copia = { total = plan.total, t0 = ahora(), i = 1, pasos = {},
 		misiones0 = S and (num(S.Actual().misiones) or 0) or 0, xp0 = S and (num(S.Actual().xp) or 0) or 0 }

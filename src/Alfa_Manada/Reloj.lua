@@ -286,10 +286,21 @@ if type(H) == "table" and type(H.UnitLines) == "function" then
 	H.UnitLines(ADDON .. ":reloj", function(tooltip, unit) pcall(Rl.AlCuadro, tooltip, unit) end)
 end
 
-local avisados = {} -- llave -> muerto: ya se dijo que pudo volver
+-- Lo que ya se dijo que pudo volver: llave -> muerto. (1.3.3) Por personaje
+-- (sobrevive a un /reload); se olvida a las OLVIDA horas, con su raro.
+local function avisados()
+	local d = N.DatosPersonaje(ID)
+	if type(d.rarosAvisados) ~= "table" then d.rarosAvisados = {} end
+	local a, t = d.rarosAvisados, U.Reloj()
+	for k, muerto in pairs(a) do
+		if type(muerto) ~= "number" or t - muerto > OLVIDA then a[k] = nil end
+	end
+	return a
+end
 function Rl.Revisar()
 	if not activo() or U.EnInstancia() or (InCombatLockdown and InCombatLockdown()) then return 0 end
 	local t, n = U.Reloj(), 0
+	local avisados = avisados()
 	for _, x in ipairs(Rl.Lista()) do
 		local k = llave(x.nombre)
 		if x.aqui and t - x.muerto >= VUELVE_MIN and t - x.muerto < VUELVE_MAX + 1800 and avisados[k] ~= x.muerto then
@@ -311,7 +322,7 @@ function Rl.Revisar()
 end
 
 -- Para el banco.
-function Rl.Olvidar() wipe(datos()) avisados = {} enviados = {} deLobo = {} cambio() end
+function Rl.Olvidar() wipe(datos()) wipe(avisados()) enviados = {} deLobo = {} cambio() end
 
 A.OnLogin(function()
 	caducar()

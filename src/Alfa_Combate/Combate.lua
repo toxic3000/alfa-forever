@@ -73,6 +73,7 @@ M.AJUSTES = {
 	corteFoco = true,     -- también tu foco
 	corteSonido = true,
 	corteSonidoSolo = false, -- 1.3.2: también yendo solo (de fábrica, solo en grupo o instancia)
+	corteSonidoOculto = true, -- 1.3.3: en instancias, un sonido suave cuando el juego oculta el hechizo
 	amenaza = true,       -- la barra de amenaza en grupo o con mascota (Amenaza.lua)
 	amenazaPapel = "auto", -- auto | tanque | dano
 	amenazaAviso = 80,    -- desde qué % avisa (si no eres tanque)
@@ -134,6 +135,11 @@ function M.EnGrupo()
 	if M.Legible(IsInGroup and M.Llamar(IsInGroup)) == true then return true end
 	local dentro = M.Legible(M.Llamar(rawget(_G, "IsInInstance")))
 	return dentro == true
+end
+
+-- 1.3.3: ¿dentro de una instancia (mazmorra, banda)?
+function M.EnInstancia()
+	return M.Legible(M.Llamar(rawget(_G, "IsInInstance"))) == true
 end
 
 -- Hay un enemigo elegido y vivo.
@@ -403,6 +409,7 @@ A.RegisterEvent("PLAYER_REGEN_ENABLED", cada(function()
 	if M.Rotacion then M.Rotacion.PrepararBarras() end
 	if M.Panel then M.Panel.Pedir() end
 	if M.Resumen then M.Resumen.Termina() end
+	if M.Rotacion and M.Rotacion.Presentar then M.Rotacion.Presentar() end
 	M.Refrescar()
 end))
 A.RegisterEvent("PLAYER_TARGET_CHANGED", cada(function()
@@ -500,7 +507,8 @@ end
 
 A.OnLogin(function()
 	K.Llamar(migrar)
-	if M.Rotacion and M.Rotacion.Presentar then A.After(6, function() K.Llamar(M.Rotacion.Presentar) end) end
+	-- 1.3.3: «Así se lee tu ayuda de rotación» ya no sale al entrar: la primera
+	-- vez que abres Combate o al terminar tu primera pelea (Rotacion.lua).
 	if M.Reacciones then M.Reacciones.Preparar() end
 	if M.Rotacion then M.Rotacion.PrepararBarras() end
 	M.Refrescar()

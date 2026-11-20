@@ -87,7 +87,34 @@ function Ca.De(qid)
 	for _, l in ipairs({ rf and rf.rewards or {}, rf and rf.choices or {} }) do
 		for _, it in ipairs(l) do premio[#premio + 1] = it end
 	end
+	-- 1.3.3: la primera que falta (a ella lleva «Llévame») y la de ahora.
+	for i, x in ipairs(lista) do
+		if x.estado == "falta" then lista[i].siguiente = true break end
+	end
+	for i, x in ipairs(lista) do
+		if x.estado == "llevas" then lista[i].ahora = true break end
+	end
 	return { lista = lista, final = final, premio = premio, xp = rf and tonumber(rf.xp), mirada = qid }
+end
+
+-- 1.3.3: la flecha a quien da esa misión (el punto del Codex más cerca).
+function Ca.Llevar(qid)
+	local C = CX()
+	local q = C and C.Quest and C.Quest(qid)
+	local I = M.Indice
+	local p = q and I.FinDe and I.FinDe(q.start, A.PlayerPoint and A.PlayerPoint() or nil, I.Jugador())
+	local Nav = A.Nav
+	if not (p and Nav and type(Nav.SetTarget) == "function") then
+		M.Aviso(L["La cadena completa"], L["No sé dónde se toma esa misión."], { icono = "ic-aviso", tono = "aviso" })
+		return false
+	end
+	local nombre = (type(p.name) == "string" and p.name ~= "") and p.name or M.TituloMision(qid)
+	local ok, t = pcall(Nav.SetTarget, p.map, p.x, p.y, nombre, p.f, nil, p.z)
+	if not (ok and t) then return false end
+	if type(Nav.StartTrip) == "function" then pcall(Nav.StartTrip, t, nombre, L["La cadena completa"]) end
+	M.Empezar()
+	M.Aviso(L["La cadena completa"], format(L["Vamos con %s: ahí empieza “%s”."], nombre, M.TituloMision(qid)), { icono = "ic-huella" })
+	return true
 end
 
 -- "Premio final: Espada de X o Escudo de Y"
@@ -119,14 +146,31 @@ local function armar()
 			fila.Icono:SetPoint("LEFT", fila, "LEFT", 10, 0)
 			fila.Texto = K.Texto(fila, "cuerpo", "texto")
 			fila.Texto:SetPoint("LEFT", fila, "LEFT", 32, 0)
-			fila.Texto:SetPoint("RIGHT", fila, "RIGHT", -10, 0)
+			-- 1.3.3: «Llévame», solo en la primera que falta.
+			fila.Boton = K.Boton(fila, L["Llévame"], function(b)
+				local d = b:GetParent().alfaDato
+				if d then Ca.Llevar(d.qid) end
+			end, { tipo = "secundario", tam = "chico", icono = "ic-huella" })
+			fila.Boton:SetPoint("RIGHT", fila, "RIGHT", -8, 0)
+			fila.Boton:Hide()
 		end,
 		pintar = function(fila, d, i)
 			K.SetIcono(fila.Icono, ICONO[d.estado] or "ic-ruta", d.estado == "llevas" and "acento" or "textoTenue")
+			fila.alfaDato = d
 			local t = format(L["%d. %s"], i, d.titulo)
 			if d.nivel then t = t .. " (" .. d.nivel .. ")" end
+			-- 1.3.3: la de ahora, marcada.
+			if d.ahora then t = format(L["%s · ahora"], t) end
 			K.Escribir(fila.Texto, t)
-			K.ColorTexto(fila.Texto, TONO[d.estado] or "texto")
+			K.ColorTexto(fila.Texto, d.ahora and "acento" or (TONO[d.estado] or "texto"))
+			fila.Boton:SetShown(d.siguiente == true)
+			fila.Texto:ClearAllPoints()
+			fila.Texto:SetPoint("LEFT", fila, "LEFT", 32, 0)
+			if d.siguiente then
+				fila.Texto:SetPoint("RIGHT", fila.Boton, "LEFT", -8, 0)
+			else
+				fila.Texto:SetPoint("RIGHT", fila, "RIGHT", -10, 0)
+			end
 		end,
 		alClic = function(d)
 			local E = rawget(_G, "AlfaEnciclopedia")

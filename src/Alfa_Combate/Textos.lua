@@ -549,4 +549,7 @@ M.EN = {
 	["Que suene también cuando vas solo por el mundo."] = "Play it too when you're out in the world on your own.",
 	["Yendo solo, peleas de al menos"] = "Solo, fights of at least",
 	["Cuando vas solo por el mundo, así no sale tras cada enemigo."] = "When you're out in the world on your own, so it doesn't pop up after every enemy.",
+	-- 1.3.3
+	["Más suave si el juego oculta el hechizo"] = "Softer when the game hides the spell",
+	["En mazmorras y bandas el juego a veces no dice qué lanza el enemigo: suena más suave, y a veces también con lo que no se puede cortar."] = "In dungeons and raids the game sometimes won't say what the enemy is casting: it plays a softer sound, and sometimes also for things that can't be interrupted.",
 }

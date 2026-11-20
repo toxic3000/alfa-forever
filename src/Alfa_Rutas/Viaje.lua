@@ -97,13 +97,50 @@ function Vj.Destinos()
 	return lista
 end
 
+-- 1.3.3: lo más cerca primero. La distancia es en línea recta
+-- (A.DirectTravelCost, barata: nunca el planificador), con «≈ 4 min» o
+-- «otro continente» en la fila; lo de otro continente va al final.
+local function medir(lista)
+	local desde = A.PlayerPoint and A.PlayerPoint() or nil
+	local f = A.DirectTravelCost
+	local lejos = A.TRAVEL_CROSS_CONTINENT or 3600
+	for _, d in ipairs(lista) do
+		local s = nil
+		if desde and type(f) == "function" then
+			local ok, v = pcall(f, desde, d)
+			s = ok and tonumber(v) or nil
+		end
+		d.segundos = s and s < lejos and s or nil
+		d.otroContinente = s ~= nil and s >= lejos or nil
+	end
+	table.sort(lista, function(a, b)
+		local ca = a.segundos and 0 or (a.otroContinente and 1 or 2)
+		local cb = b.segundos and 0 or (b.otroContinente and 1 or 2)
+		if ca ~= cb then return ca < cb end
+		if a.segundos and b.segundos and a.segundos ~= b.segundos then return a.segundos < b.segundos end
+		return a.plegado < b.plegado
+	end)
+	return lista
+end
+Vj.Medir = medir
+
+-- Para el banco: los lugares se vuelven a leer.
+function Vj.Olvidar() cache = nil end
+
 function Vj.Buscar(texto)
 	local q = M.Plegar(texto or "")
 	local out = {}
 	for _, d in ipairs(Vj.Destinos()) do
 		if q == "" or d.plegado:find(q, 1, true) then out[#out + 1] = d end
 	end
-	return out
+	return medir(out)
+end
+
+-- «≈ 4 min» / «otro continente» / la zona, si no se sabe.
+function Vj.Distancia(d)
+	if d.segundos then return "\226\137\136 " .. M.Minutos(d.segundos) end
+	if d.otroContinente then return L["otro continente"] end
+	return d.zona or ""
 end
 
 local viaje -- { destino, objetivo }
@@ -199,7 +236,7 @@ local function armar()
 			else
 				K.SetIcono(fila.Icono, ICONO[d.tipo] or "ic-ruta", "acento")
 				K.Escribir(fila.Texto, d.nombre)
-				K.Escribir(fila.Extra, d.zona or "")
+				K.Escribir(fila.Extra, Vj.Distancia(d)) -- 1.3.3: cuánto queda
 				K.ColorTexto(fila.Texto, "texto")
 			end
 		end,

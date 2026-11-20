@@ -156,3 +156,10 @@ Para que no se llene la pantalla de texto al lanzar habilidades:
 - **Mismos nombres:** «Mover marcos» / «Fijar marcos», como en Curación; «Probar un aviso» solo en la tarjeta de los avisos.
 - **Migración 4** (`M.Migracion132`, Combate.lua): quien ya había prendido a mano el sonido del corte sigue oyéndolo yendo solo, y quien había cambiado `resumenMin` usa el mismo mínimo yendo solo.
 - Prueba: `tools/banco/prueba_132_personaje.lua`.
+
+## 1.3.3
+
+- **El corte en mazmorras:** con el hechizo oculto (datos secretos) y dentro de una instancia, suena un sonido más suave aparte (`corteSonidoOculto`, prendido de fábrica). Su texto avisa que a veces suena con lo que no se puede cortar.
+- **Amenaza contra jefes:** si `UnitDetailedThreatSituation` llega secreto, la barra usa tu estado con `UnitThreatSituation("player", "target")` (en general legible) para su color y sus avisos («¡Te está atacando a ti!»), sin porcentaje.
+- **La entrada en silencio:** «Así se lee tu ayuda de rotación» ya no sale a los 6 s de entrar: la primera vez que abres Combate (`R.Presentar(true)`, con `alEntrar`) o al terminar tu primera pelea.
+- Prueba: `tools/banco/prueba_133_personaje.lua`.

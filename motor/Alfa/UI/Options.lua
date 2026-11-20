@@ -2282,6 +2282,22 @@ local function lyaHelp(p)
 	b:ClearAllPoints()
 	b:SetPoint("LEFT", win.Title, "LEFT", math.ceil(win.Title:GetStringWidth() or 0) + 8, 0)
 	b:SetShown(p ~= nil and type(Lya) == "table" and type(Lya.Guia) == "function")
+	-- Alfa 1.3.3: el subtítulo, que va junto al título, se recorre después del
+	-- «?» (antes quedaba debajo: «Hoy ⓘu día con la manada…»); si ya no cabe
+	-- entero en la fila, no sale (como cuando la fila no tiene lugar).
+	local sub = win.Subtitle
+	if sub and b:IsShown() and win.Title:IsShown() and sub.GetNumPoints then
+		for i = 1, sub:GetNumPoints() do
+			local pt, rel, _, _, y = sub:GetPoint(i)
+			if pt == "LEFT" and rel == win.Title then
+				sub:SetPoint("LEFT", b, "RIGHT", 10, y or -1)
+				local derecha, desde = sub:GetRight(), b:GetRight()
+				local mide = sub.GetUnboundedStringWidth and sub:GetUnboundedStringWidth() or 0
+				if type(derecha) == "number" and type(desde) == "number" and mide > derecha - desde - 10 then sub:Hide() end
+				break
+			end
+		end
+	end
 end
 O.LyaHelp = lyaHelp
 

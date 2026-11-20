@@ -629,12 +629,18 @@ M.EN = {
 	["Con /alfa reportar: yo ya junté los errores que atrapé, con su versión y cuántas veces salieron. Tú solo lo pegas en el Discord."] = "With /alfa reportar: I've already gathered the errors I caught, with their version and how many times they showed up. You just paste it on Discord.",
 	-- 1.2.9: Alfa sencillo o completo
 	["Cómo ves Alfa"] = "How you see Alfa",
-	["Sencillo: solo Hoy, Ruta, Mapa, Bolsas y Lya a la vista, y menos avisos. Completo: todo Alfa. Lo demás sigue funcionando."] = "Simple: only Today, Route, Map, Bags and Lya in sight, and fewer notices. Full: all of Alfa. Everything else keeps working.",
+	["Sencillo: solo Hoy, Ruta, Mapa, Bolsas, Talentos y Lya a la vista, y menos avisos. Completo: todo Alfa. Lo demás sigue funcionando."] = "Simple: only Today, Route, Map, Bags, Talents and Lya in sight, and fewer notices. Full: all of Alfa. Everything else keeps working.",
+	-- 1.3.3: la entrada en silencio
+	["Al entrar al juego"] = "When you log in",
+	["Solo la animación: lo demás (tu sesión anterior, avisos, lo nuevo) te espera en Hoy y con Lya. Animación y avisos: como antes."] = "Only the animation: everything else (your last session, notices, what's new) waits for you in Today and with Lya. Animation and notices: as before.",
+	["Solo la animación"] = "Only the animation",
+	["Animación y avisos"] = "Animation and notices",
+	["Lo que trae esta versión, contado corto. Míralo cuando quieras."] = "What this version brings, told short. Look at it whenever you like.",
 	["Sencillo"] = "Simple",
 	["Completo"] = "Full",
 	["Alfa sencillo"] = "Simple Alfa",
 	["Para empezar"] = "To get started",
-	["Solo lo esencial a la vista: Hoy, Ruta, Mapa, Bolsas y Lya, y menos avisos. Lo demás sigue ahí cuando lo busques."] = "Only the essentials in sight: Today, Route, Map, Bags and Lya, and fewer notices. The rest is still there when you look for it.",
+	["Solo lo esencial a la vista: Hoy, Ruta, Mapa, Bolsas, Talentos y Lya, y menos avisos. Lo demás sigue ahí cuando lo busques."] = "Only the essentials in sight: Today, Route, Map, Bags, Talents and Lya, and fewer notices. The rest is still there when you look for it.",
 	["Alfa completo"] = "Full Alfa",
 	["Todas las páginas de Alfa a la vista: mazmorras, talentos, combate, oficios, la manada y más."] = "Every Alfa page in sight: dungeons, talents, combat, trades, the pack and more.",
 	["¿Cuánto de Alfa quieres ver?"] = "How much of Alfa do you want to see?",
@@ -712,6 +718,12 @@ M.EN = {
 	["acomoda con el ratón lo de Alfa en tu pantalla"] = "arrange Alfa's things on your screen with the mouse",
 	["Los marcos se mueven fuera de combate."] = "Frames can be moved out of combat.",
 	-- 1.3.1: las notas de la versión
+	-- 1.3.3: las notas de la versión
+	["La manada en calma"] = "A calm pack",
+	["Al entrar solo sale la animación; lo demás te espera en Hoy y con Lya."] = "At login only the animation plays; the rest waits for you on Today and with Lya.",
+	["Sigue la ruta de tu grupo y pide las misiones que lleva tu compañero."] = "Follow your group's route and ask for the quests your partner has.",
+	["La piedra de hogar, clara: a dónde vuelves, qué entregas y un botón para usarla."] = "A clear hearthstone: where you go back to, what you turn in and a button to use it.",
+	["Una sola voz: Hoy, las bolsas y Lya ya no repiten lo mismo."] = "One voice: Today, your bags and Lya no longer repeat the same thing.",
 	-- 1.3.2: las notas de la versión
 	["La manada en orden"] = "A pack in order",
 	["Un solo menú de Alfa: el ícono del minimapa, la lista de addons y el botón Alfa del menú Esc abren lo mismo."] = "One Alfa menu: the minimap icon, the addon list and the Alfa button in the Esc menu open the same thing.",

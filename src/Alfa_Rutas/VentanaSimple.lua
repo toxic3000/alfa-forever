@@ -21,6 +21,19 @@ function M.VentanaSimple(opts)
 	if opts.buscador then
 		v.Buscador = K.Buscador(cuerpo, { ayuda = opts.buscador.ayuda, alCambiar = opts.buscador.alCambiar })
 	end
+	-- 1.3.3: un botón arriba de la lista (opts.boton = { texto, alClic, peligro }),
+	-- que sale con v:Boton(texto) y se va con v:Boton(nil).
+	if opts.boton then
+		v.BotonArriba = K.Boton(cuerpo, opts.boton.texto or "", function() if opts.boton.alClic then opts.boton.alClic() end end,
+			{ tipo = opts.boton.peligro and "peligro" or "secundario", tam = "chico" })
+		v.BotonArriba:Hide()
+	end
+	function v:Boton(texto)
+		local b = self.BotonArriba
+		if not b then return end
+		if texto then b:SetTexto(texto) b:Show() else b:Hide() end
+		if self:IsShown() then self:Acomodar() end
+	end
 	v.Lista = K.Lista(cuerpo, {
 		alto = opts.altoFila or K.ALTO.fila, crear = opts.crear, pintar = opts.pintar,
 		alClic = opts.alClic, elegir = false, vacio = opts.vacio,
@@ -43,6 +56,11 @@ function M.VentanaSimple(opts)
 			self.Linea:Show()
 		else
 			self.Linea:Hide()
+		end
+		if self.BotonArriba and self.BotonArriba:IsShown() then
+			self.BotonArriba:ClearAllPoints()
+			self.BotonArriba:SetPoint("TOPLEFT", self.Cuerpo, "TOPLEFT", m, -y)
+			y = y + (K.ALTO.botonChico or 24) + K.ESP.s
 		end
 		self.Lista:ClearAllPoints()
 		self.Lista:SetPoint("TOPLEFT", self.Cuerpo, "TOPLEFT", m - 4, -y)

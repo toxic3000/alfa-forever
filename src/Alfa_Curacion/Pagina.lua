@@ -565,6 +565,7 @@ local function grupos(ui, padre)
 	fila(L["Porcentaje de vida"], "porcentaje", L["Muestra la vida en número, debajo del nombre."])
 	fila(L["Atenuar a quien está lejos"], "alcance", L["Si está fuera de tu alcance, su marco se ve más tenue."])
 	fila(L["Detalle al pasar el ratón"], "descripcion", L["El cuadro del jugador al pasar el ratón. En combate no sale, para no estorbar."])
+	fila(L["Cuadro corto en combate"], "descripcionCombate", L["En combate, solo lo que dice Alfa: con qué clic quitas el perjuicio de ese compañero. Sin el detalle del juego, para no estorbar."])
 	return { clics, marcos, muestran }
 end
 
@@ -669,6 +670,7 @@ local CONTROLES = {
 	toggle("porcentaje", L["Porcentaje de vida"], L["Muestra la vida en número, debajo del nombre."], "health percent"),
 	toggle("alcance", L["Atenuar a quien está lejos"], L["Si está fuera de tu alcance, su marco se ve más tenue."], "range, out of range fade"),
 	toggle("descripcion", L["Detalle al pasar el ratón"], L["El cuadro del jugador al pasar el ratón. En combate no sale, para no estorbar."], "tooltip, mouseover"),
+	toggle("descripcionCombate", L["Cuadro corto en combate"], L["En combate, solo lo que dice Alfa: con qué clic quitas el perjuicio de ese compañero. Sin el detalle del juego, para no estorbar."], "combat tooltip, dispel click"),
 }
 
 N.Modulo({

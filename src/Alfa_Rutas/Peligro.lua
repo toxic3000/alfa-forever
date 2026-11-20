@@ -105,9 +105,29 @@ function Pg.Revisar()
 	if lo < nivel + ARRIBA then return false, "segura" end
 	dichas[zona] = true
 	local rango = lo == hi and tostring(lo) or (lo .. "–" .. hi)
-	M.Aviso(nombreZona(zona), format(L["Cuidado: aquí los enemigos son nivel %s."], rango),
-		{ icono = "ic-aviso", tono = "aviso", duracion = 8 })
+	-- 1.3.3: con salida: la guía que mejor te queda (Siguiente.lua) te lleva.
+	local o = { icono = "ic-aviso", tono = "aviso", duracion = 12 }
+	if M.Siguiente and M.Siguiente.Buscar then
+		o.accion = { texto = L["Llévame a una zona de tu nivel"], alClic = function() Pg.Salida() end }
+	end
+	M.Aviso(nombreZona(zona), format(L["Cuidado: aquí los enemigos son nivel %s."], rango), o)
 	return true, "aviso"
+end
+
+-- 1.3.3: la guía para tu nivel que sugiere el motor (la de tu zona no:
+-- es la peligrosa), abierta como cualquier guía: la flecha te lleva.
+function Pg.Salida()
+	local Sg = M.Siguiente
+	local E = A.Engine
+	local actual = E and E.GetGuide and E.GetGuide()
+	local p = Sg and Sg.Buscar(type(actual) == "table" and actual.id or nil)
+	if not p then
+		M.Aviso(L["Zona peligrosa"], L["No encontré una guía para tu nivel: abre la biblioteca de guías."], { icono = "ic-aviso", tono = "aviso" })
+		return false
+	end
+	Sg.Seguir(p)
+	M.Aviso(L["Zona peligrosa"], format(L["Vamos a una zona de tu nivel: %s."], p.nombre), { icono = "ic-huella" })
+	return true
 end
 
 -- Para el banco.

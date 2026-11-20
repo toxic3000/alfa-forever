@@ -35,6 +35,7 @@ ObjetoMision.lua
 Viaje.lua
 Barcos.lua
 MapaGrupo.lua
+RutaGrupo.lua
 Rutas.lua
 Cerca.lua
 Planes.lua

@@ -314,7 +314,7 @@ M.Red.Oyentes.D = function(clave, remitente, _, f, canal)
 	local si = f[2] == "s"
 	c.resp = type(c.resp) == "table" and c.resp or {}
 	local antes = c.resp[clave]
-	c.resp[clave] = { nombre = U.Mostrar(remitente), si = si }
+	c.resp[clave] = { nombre = U.Mostrar(remitente), si = si, envio = remitente }
 	if not antes or antes.si ~= si then
 		aviso({ titulo = format(si and L["%s va a tu cita"] or L["%s no puede ir a tu cita"], U.Mostrar(remitente)),
 			texto = c.que, icono = "ic-reloj", duracion = 8 })
@@ -327,6 +327,32 @@ M.Red.Libres.C = true
 ---------------------------------------------------------------------------
 -- El recordatorio y la repetición
 ---------------------------------------------------------------------------
+
+-- (1.3.3) Lo que se hace con una cita: la tuya, «Armar el grupo» (invita a
+-- quienes dijeron «Voy»); la de otro, «Susurrar a X». -> { texto, alClic } | nil
+function Ci.ArmarGrupo(c)
+	local ok = {}
+	for _, r in pairs(type(c) == "table" and type(c.resp) == "table" and c.resp or {}) do
+		if r.si and U.Invitar(r.envio or r.nombre) then ok[#ok + 1] = r.nombre or "?" end
+	end
+	sort(ok)
+	if #ok > 0 then U.Decir(format(L["Invitaste a %s a tu grupo."], table.concat(ok, ", ")))
+	else U.Decir(L["Nadie de los que van está conectado ahora."]) end
+	return #ok
+end
+
+function Ci.Accion(c)
+	if type(c) ~= "table" then return nil end
+	if c.mia then
+		local si = Ci.Quienes(c)
+		if #si == 0 then return nil end
+		return { texto = L["Armar el grupo"], alClic = function() Ci.ArmarGrupo(c) end }
+	end
+	if c.envio then
+		return { texto = format(L["Susurrar a %s"], c.de or U.Mostrar(c.envio)), alClic = function() U.Susurrar(c.envio, "") end }
+	end
+	return nil
+end
 
 function Ci.Recordar()
 	if not activo() then return 0 end
@@ -342,7 +368,7 @@ function Ci.Recordar()
 				local si = Ci.Quienes(c)
 				if #si > 0 then texto = texto .. " " .. format(L["Van: %s."], table.concat(si, ", ")) end
 			end
-			aviso({ titulo = L["Tu cita con la manada"], texto = texto, icono = "ic-reloj", duracion = 15 })
+			aviso({ titulo = L["Tu cita con la manada"], texto = texto, icono = "ic-reloj", duracion = 15, accion = Ci.Accion(c) })
 		end
 	end
 	if n > 0 then cambio() end

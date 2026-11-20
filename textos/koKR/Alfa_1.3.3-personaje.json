@@ -1,0 +1,9 @@
+{
+ "Más suave si el juego oculta el hechizo": "게임이 주문을 숨기면 더 작게",
+ "En mazmorras y bandas el juego a veces no dice qué lanza el enemigo: suena más suave, y a veces también con lo que no se puede cortar.": "던전과 공격대에서는 게임이 적이 무엇을 시전하는지 알려 주지 않을 때가 있어요. 그럴 땐 더 작은 소리가 나고, 끊을 수 없는 주문에도 날 수 있어요.",
+ "Cuadro corto en combate": "전투 중 짧은 툴팁",
+ "En combate, solo lo que dice Alfa: con qué clic quitas el perjuicio de ese compañero. Sin el detalle del juego, para no estorbar.": "전투 중에는 Alfa가 하는 말만: 그 동료의 약화 효과를 어떤 클릭으로 해제하는지. 방해되지 않도록 게임의 자세한 정보는 빼요.",
+ "Tiene un perjuicio que puedes quitar:": "해제할 수 있는 약화 효과가 있어요:",
+ "Maná: quienes curaron": "마나: 치유한 사람",
+ "Tras la pelea: quienes curaron": "전투 후: 치유한 사람"
+}

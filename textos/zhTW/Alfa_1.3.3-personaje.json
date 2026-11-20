@@ -1,0 +1,9 @@
+{
+ "Más suave si el juego oculta el hechizo": "遊戲隱藏法術時聲音更輕",
+ "En mazmorras y bandas el juego a veces no dice qué lanza el enemigo: suena más suave, y a veces también con lo que no se puede cortar.": "在地城和團隊副本中，遊戲有時不會告訴你敵人在施放什麼：這時提示音更輕，有時也會對無法打斷的法術響起。",
+ "Cuadro corto en combate": "戰鬥中的簡短提示",
+ "En combate, solo lo que dice Alfa: con qué clic quitas el perjuicio de ese compañero. Sin el detalle del juego, para no estorbar.": "戰鬥中只顯示 Alfa 的提示：用哪個點擊驅散這名隊友的減益效果。不顯示遊戲的詳細資訊，免得礙事。",
+ "Tiene un perjuicio que puedes quitar:": "有一個你能驅散的減益效果：",
+ "Maná: quienes curaron": "法力：施放過治療的人",
+ "Tras la pelea: quienes curaron": "戰鬥後：施放過治療的人"
+}

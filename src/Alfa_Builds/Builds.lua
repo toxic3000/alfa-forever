@@ -427,11 +427,12 @@ A.RegisterEvent("PLAYER_LEVEL_UP", function()
 		refrescar()
 	end)
 end)
--- Una vez por sesión, al entrar con puntos sin gastar.
+-- 1.3.3: al entrar ya no se avisa de tus puntos sin gastar (la entrada es en
+-- silencio): quedan en Hoy y en Talentos, y el aviso sale al subir de nivel.
 A.RegisterEvent("PLAYER_ENTERING_WORLD", function()
 	if avisadoAlEntrar then return end
 	avisadoAlEntrar = true
-	A.After(8, function() T.Invalidar() avisarTalento(true) end)
+	A.After(8, function() T.Invalidar() end)
 end)
 -- Aplicar se puede o no según el combate: la página lo dice.
 A.RegisterEvent("PLAYER_REGEN_DISABLED", function() if M.Pagina then M.Pagina.Rehacer() end end)

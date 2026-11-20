@@ -349,8 +349,30 @@ local function textoAviso(est)
 end
 S.TextoAviso = textoAviso
 
+
+-- 1.3.3: una sola voz. Lo que se dice (por Lya o por aquí) queda en
+-- AlfaNucleo.dichosSesion[id] = GetTime(). Si ya se dijo hace menos de
+-- DICHO_SEG, no se repite (lo que empeora, como llegar a 0 o lo urgente, sí).
+local DICHO_SEG = 600
+local function dicho(id)
+	local t = rawget(N, "dichosSesion")
+	local cuando = type(t) == "table" and tonumber(t[id]) or nil
+	return cuando ~= nil and ((GetTime and GetTime() or 0) - cuando) < DICHO_SEG
+end
+local function anotarDicho(id)
+	local t = rawget(N, "dichosSesion")
+	if type(t) ~= "table" then
+		t = {}
+		rawset(N, "dichosSesion", t)
+	end
+	t[id] = GetTime and GetTime() or 0
+end
+S.Dicho = dicho
+
 local function avisar(est)
 	if not (K and K.Aviso) then return end
+	if dicho("bolsasLlenas") then return end
+	anotarDicho("bolsasLlenas")
 	local accion
 	if #est.vender > 0 then
 		accion = comercianteAbierto and { texto = L["Vender la chatarra"], alClic = S.VenderChatarra }
@@ -358,7 +380,8 @@ local function avisar(est)
 	else
 		accion = { texto = L["Llévame al banco"], alClic = S.LlevarBanco }
 	end
-	K.Aviso({ titulo = L["Tus bolsas se están llenando"], texto = textoAviso(est), icono = "ic-bolsas", tono = "aviso",
+	-- 1.3.3: id «bolsasLlenas»: el único aviso de bolsas (si Lya está a la vista, lo dice ella).
+	K.Aviso({ id = "bolsasLlenas", titulo = L["Tus bolsas se están llenando"], texto = textoAviso(est), icono = "ic-bolsas", tono = "aviso",
 		duracion = 9, accion = accion })
 end
 
@@ -397,13 +420,15 @@ end
 
 local function avisarCasi(est)
 	if not (K and K.Aviso) then return end
+	if dicho("bolsasLlenas") and est.libres > 0 then return end
+	anotarDicho("bolsasLlenas")
 	local accion
 	if comercianteAbierto and #chatarraAhora() > 0 then
 		accion = { texto = L["Vender [botón]"], alClic = S.VenderChatarra }
 	else
 		accion = { texto = L["Ver bolsas"], alClic = S.VerBolsas }
 	end
-	K.Aviso({ titulo = est.libres == 0 and L["Tus bolsas están llenas"] or L["Tus bolsas están casi llenas"],
+	K.Aviso({ id = "bolsasLlenas", titulo = est.libres == 0 and L["Tus bolsas están llenas"] or L["Tus bolsas están casi llenas"],
 		texto = S.TextoCasi(est), icono = "ic-bolsas", tono = "aviso", duracion = 10, accion = accion })
 end
 
@@ -428,8 +453,27 @@ local function revisarCasi(est, ahora)
 end
 S.RevisarCasi = revisarCasi
 
+-- 1.3.3: al entrar al juego y tras /reload, lo de ahora es la base: bolsas
+-- que ya venían llenas no se avisan al entrar, solo cuando se llenan jugando.
+local BASE_SEG = 8
+local baseHasta = (GetTime and GetTime() or 0) + 30
+local function enBase() return (GetTime and GetTime() or 0) < baseHasta end
+
+-- Anota cómo están sin avisar (la base).
+local function tomarBase()
+	local libres, total = S.Espacio()
+	if not (total and total > 0) then return end
+	estabaLleno = libres <= M.Numero("avisoLibres", 0, 20)
+	avisoCero = libres == 0
+	casiPendiente = false
+	if libres <= S.CASI then ultimoCasi, ultimoAviso = GetTime and GetTime() or 0, GetTime and GetTime() or 0 end
+	S.bases = (S.bases or 0) + 1
+end
+S.TomarBase = tomarBase
+
 local function revisar()
 	pendiente = false
+	if enBase() then return tomarBase() end
 	if not M.Get("avisoLleno") and not M.Get("avisoCasiLleno") then estabaLleno = false return end
 	-- 1.3.2: primero lo barato (cuántas casillas libres). Lejos del umbral no
 	-- hay nada que avisar y el análisis completo (el consejo de Comercio de cada
@@ -464,6 +508,12 @@ local function programar(seg)
 end
 
 A.RegisterEvent("BAG_UPDATE_DELAYED", function() programar(1) end)
+A.RegisterEvent("PLAYER_ENTERING_WORLD", function(_, inicial, recarga)
+	if inicial == true or recarga == true then
+		baseHasta = (GetTime and GetTime() or 0) + BASE_SEG
+		M.Luego(2, tomarBase)
+	end
+end)
 A.RegisterEvent("PLAYER_REGEN_ENABLED", function() if not estabaLleno or casiPendiente then programar(2) end end)
 A.RegisterEvent("MERCHANT_SHOW", function() comercianteAbierto = true programar(1.5) end)
 A.RegisterEvent("MERCHANT_CLOSED", function()

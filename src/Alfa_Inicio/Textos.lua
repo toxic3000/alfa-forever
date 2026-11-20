@@ -710,4 +710,11 @@ M.EN = {
 	["Cierra misiones de %s"] = "Finish quests in %s",
 	["Vuelve a %s"] = "Go back to %s",
 	["Este paso es para cerrar tus misiones de %s. Cuando estés allá, «Llévame» te lleva a cada una."] = "This step is for finishing your quests in %s. Once you're there, \"Take me\" leads you to each one.",
+	-- 1.3.3: «Mientras entrabas», una sola voz para las bolsas y el plan que venció
+	["Mientras entrabas"] = "While you were logging in",
+	["Listo"] = "Done",
+	["Ver"] = "Show me",
+	["Un solo aviso: el de tus bolsas, que también te dice qué vender."] = "One warning only: the one from your bags, which also tells you what to sell.",
+	["Tu plan de %s quedó sin terminar: llevabas %d de %d pasos."] = "Your %s plan was left unfinished: you had done %d of %d steps.",
+	["Elige tu tiempo otra vez y arma uno nuevo cuando quieras."] = "Pick your time again and make a new one whenever you like.",
 }

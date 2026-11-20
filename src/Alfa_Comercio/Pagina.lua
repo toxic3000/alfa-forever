@@ -547,6 +547,10 @@ local function bloqueRecetas(padre)
 			local detalle = L["Reactivos %s  ·  el producto vale %s"]:format(M.Dinero(x.costo), M.Dinero(x.valor))
 			if x.veces > 0 and M.Ajuste("fabricar") ~= false then
 				detalle = L["Con lo que tienes haces %d: +%s en total"]:format(x.veces, M.Dinero(x.total))
+				-- 1.3.3: «Hazlo ya» es con lo de tus bolsas; lo del banco, aparte.
+				if (x.conBanco or 0) > 0 then detalle = detalle .. " " .. L["(con lo del banco: %d más)"]:format(x.conBanco) end
+			elseif (x.conBanco or 0) > 0 and M.Ajuste("fabricar") ~= false then
+				detalle = detalle .. DOT .. L["(con lo del banco: %d más)"]:format(x.conBanco)
 			end
 			filas[i] = {
 				id = rec.o, cantidad = rec.q and floor(rec.q) or 1, chip = x.veces > 0 and L["Hazlo ya"] or L["Transformar"],

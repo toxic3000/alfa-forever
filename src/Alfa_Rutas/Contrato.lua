@@ -134,6 +134,9 @@ function R.Llevame(destino) return M.Viaje.Ir(destino) end
 function R.AbrirLlevame() return M.Viaje.Abrir() end
 function R.Pasos() return M.Viaje.Pasos() end
 function R.Horarios() return M.Barcos.Lista() end
+-- 1.3.3: cuántas misiones listas se entregan en el pueblo de tu piedra (la
+-- placa «Usa tu piedra de hogar» de la flecha). -> n, lugar
+function R.EntregasPiedra() return M.Hogar.Entregas() end
 
 ---------------------------------------------------------------------------
 -- El menú del registro de misiones y del seguimiento de objetivos

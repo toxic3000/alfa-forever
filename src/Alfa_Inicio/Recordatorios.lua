@@ -145,8 +145,33 @@ end
 
 local nivelDur = {} -- slot -> 0 bien, 1 primer aviso, 2 urgente (lo último que se dijo)
 
+-- 1.3.3: una sola voz. Lo que se dice (por Lya o por aquí) queda en
+-- AlfaNucleo.dichosSesion[id] = GetTime(). Si ya se dijo hace menos de
+-- DICHO_SEG, no se repite (lo que empeora, como llegar a 0 o lo urgente, sí).
+local DICHO_SEG = 600
+local function dicho(id)
+	local t = rawget(N, "dichosSesion")
+	local cuando = type(t) == "table" and tonumber(t[id]) or nil
+	return cuando ~= nil and ((GetTime and GetTime() or 0) - cuando) < DICHO_SEG
+end
+local function anotarDicho(id)
+	local t = rawget(N, "dichosSesion")
+	if type(t) ~= "table" then
+		t = {}
+		rawset(N, "dichosSesion", t)
+	end
+	t[id] = GetTime and GetTime() or 0
+end
+R.Dicho, R.AnotarDicho = dicho, anotarDicho
+
+-- 1.3.3: al entrar (y tras /reload) lo de ahora es la base: se anota sin
+-- avisar. Solo avisa lo que empeora mientras juegas.
+local base = false
+
 local function avisarDurabilidad(peor, otras)
 	local urgente = peor.nivel == 2
+	if dicho("reparar") and not urgente then return end
+	anotarDicho("reparar")
 	local pieza = R.NombrePieza(peor.slot) or R.NombreRanura(peor.slot)
 	local pct = floor(peor.pct + 0.5)
 	local linea = pct <= 0 and format(L["%s está rota"], pieza) or format(L["%s: %d%%"], pieza, pct)
@@ -183,7 +208,7 @@ local function revisarDurabilidad()
 	for slot in pairs(nivelDur) do
 		if not vistas[slot] then nivelDur[slot] = nil end
 	end
-	if peor then avisarDurabilidad(peor, otras - 1) end
+	if peor and not base then avisarDurabilidad(peor, otras - 1) end
 end
 local revisarDurabilidadPronto = juntar(1, revisarDurabilidad)
 
@@ -224,17 +249,41 @@ end
 local nivelBolsas = 0 -- 0 bien, 1 casi llenas, 2 llenas (lo último que se dijo)
 local bolsasEn = -1000
 
+-- 1.3.3: una sola voz para las bolsas. Con el módulo Bolsas, el aviso es el
+-- suyo (dice qué vender; id «bolsasLlenas», por Lya si está a la vista) y lo
+-- mandan sus ajustes; Hoy solo lo muestra en su página. Sin Bolsas, Hoy avisa
+-- con los suyos (inicio.recBolsas, inicio.bolsasLibres).
+local function bolsas()
+	local B = rawget(_G, "AlfaBolsas")
+	if not (N.ModuloPorId and N.ModuloPorId("bolsas") and type(B) == "table") then return nil end
+	return B
+end
+function R.BolsasHablan() return bolsas() ~= nil end
+
+-- El umbral y el ajuste que mandan (los de Bolsas si está).
+function R.UmbralBolsas()
+	if bolsas() then return tonumber(N.Get("bolsas", "avisoLibres")) or 4 end
+	return valor("bolsasLibres", 4)
+end
+function R.AvisoBolsas()
+	if bolsas() then return N.Get("bolsas", "avisoLleno") ~= false or N.Get("bolsas", "avisoCasiLleno") ~= false end
+	return on("recBolsas")
+end
+
 local function revisarBolsas()
 	local libres, total = R.Bolsas()
 	cambio()
 	if not libres then return end
-	local umbral = valor("bolsasLibres", 4)
+	local umbral = R.UmbralBolsas()
 	local n = (libres == 0 and 2) or (libres <= umbral and 1) or 0
 	local antes = nivelBolsas
 	nivelBolsas = n
+	if base or bolsas() then return end
 	if not on("recBolsas") or n <= antes or n == 0 then return end
 	-- Vender y saquear sube y baja el número: no más de un aviso cada 2 minutos, salvo al llenarse.
 	if n == 1 and ahora() - bolsasEn < 120 then return end
+	if dicho("bolsasLlenas") and n ~= 2 then return end
+	anotarDicho("bolsasLlenas")
 	bolsasEn = ahora()
 	local txt = L["Vende lo gris con cualquier vendedor o tira algo que ya no uses."]
 	local Q = A.QoL
@@ -521,6 +570,8 @@ revisarBuffs = function()
 			local puede = not g.furia or furia() >= g.furia
 			if falta and puede and on("recBuff") and not impedido() and ahora() - (buffEn[gi] or -1e9) >= cada then
 				buffEn[gi] = ahora()
+			end
+			if falta and puede and buffEn[gi] == ahora() and not base then
 				local icono = A.Compat and type(A.Compat.SpellIcon) == "function" and A.Compat.SpellIcon(conocidos[1]) or nil
 				Aviso.Mostrar({
 					clave = "buff" .. gi, tipo = "aviso", textura = icono, icono = "ic-aviso",
@@ -681,9 +732,15 @@ A.RegisterEvent("PLAYER_ENTERING_WORLD", function()
 	A.After(10, function()
 		listoTodo = true
 		contarEntrenar()
-		revisarDurabilidad()
-		revisarBolsas()
-		revisarBuffs()
+		-- 1.3.3: la base, sin avisar (lo de antes de entrar no es nuevo).
+		base = true
+		local ok, err = pcall(function()
+			revisarDurabilidad()
+			revisarBolsas()
+			revisarBuffs()
+		end)
+		base = false
+		if not ok and geterrorhandler then geterrorhandler()(err) end
 	end)
 end)
 

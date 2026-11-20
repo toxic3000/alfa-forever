@@ -657,17 +657,18 @@ function R.Ver()
 	f:Show()
 	R.Actualizar()
 	conTicker(combate and 0.15 or 0.3)
-	if not combate then R.Presentar() end
 end
 
 -- La primera vez (por personaje, fuera de combate): un aviso que explica
--- cómo leer el ícono. Sale una sola vez.
-function R.Presentar()
+-- cómo leer el ícono. Sale una sola vez. 1.3.3: nunca al entrar; la primera
+-- vez que abres Combate (abriste = true: lo pediste tú, sale aunque Alfa
+-- todavía esté entrando) o al terminar tu primera pelea (Combate.lua).
+function R.Presentar(abriste)
 	if not M.Opt("rotacion") or M.EnCombate() or R.Fuente() == nil then return end
 	local d = N.DatosPersonaje(M.ID)
 	if d.presentado then return end
 	d.presentado = true
-	K.Aviso({
+	K.Aviso({ alEntrar = abriste and true or nil,
 		titulo = L["Así se lee tu ayuda de rotación"],
 		texto = L["El ícono grande es lo que conviene presionar ahora y los pequeños, lo que sigue. Si late, el juego activó esa habilidad; el barrido oscuro es su recarga. Tú decides: Alfa nunca aprieta nada."],
 		icono = M.ICONO, tono = "acento", duracion = 16,

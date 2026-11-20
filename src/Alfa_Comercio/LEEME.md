@@ -69,3 +69,7 @@ Datos: `N.Datos("comercio")` (`AlfaNucleoDB.comercio`): `reinos["Reino-Facción"
 ## 1.3.2
 
 - «Tomar todo» pedido mientras cargan las cartas: el botón dice «Parar» y otro clic lo cancela (`Bz.Pendiente()`, `Bz.Barra()` para las pruebas). Prueba: `tools/banco/prueba_132_hoy.lua`.
+
+## 1.3.3
+
+- «Hazlo ya» (`Fabricar.lua`): `veces` cuenta solo lo de tus bolsas (`M.EnBolsas`); `conBanco`, cuántas más con lo del banco, que la página dice aparte: «(con lo del banco: N más)». Prueba: `tools/banco/prueba_133_hoy.lua`.
