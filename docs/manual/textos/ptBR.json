@@ -99,15 +99,15 @@
             ]},
             {"t": "consejo", "texto": "Quer mudar algo depois? Digite `/alfa bienvenida` e o resumo se abre: cada passo tem seu botão «Mudar». Se você gosta de decidir cada detalhe, as listas de sempre continuam lá, atrás de **Ajustar um por um**."},
             {"t": "tarjetas", "cols": 2, "titulo": "Simples ou completo?", "items": [
-              {"icono": "huella", "titulo": "Alfa simples", "texto": "Para começar: só Hoje, Rota, Mapa, Bolsas e Lya à vista, e menos avisos. O resto continua lá quando você procurar."},
+              {"icono": "huella", "titulo": "Alfa simples", "texto": "Para começar: só Hoje, Rota, Mapa, Bolsas, Talentos e Lya à vista, e menos avisos. O resto continua lá quando você procurar."},
               {"icono": "lobo", "titulo": "Alfa completo", "texto": "Todas as páginas à vista: masmorras, talentos, combate, profissões, a matilha e mais."}
             ]},
             {"t": "nota", "texto": "Se você já usava o Alfa, continua no completo. Mude quando quiser em **Opções > Estilo e som**, em «Como você vê o Alfa»."},
             {"t": "h", "texto": "Toda vez que você entra"},
-            {"t": "dos", "img": "notas", "pie": "Depois de atualizar, uma janela conta o que mudou.", "lado": "der", "prop": "40", "bloques": [
-              {"t": "p", "texto": "O lobo recebe você com «De volta à matilha!» toda vez que você entra no jogo (não ao recarregar a interface). Você pula com um clique, [[Esc]], a barra de espaço ou [[Enter]], e se uma luta começar, ele sai sozinho."},
-              {"t": "p", "texto": "Quando o Alfa se atualiza, depois da intro aparece uma janelinha com as novidades: **Continuar jogando** fecha e **Ver todas as novidades** conta o resto."},
-              {"t": "p", "texto": "Prefere entrar sem a intro? Desative em **Opções > Estilo e som**."}
+            {"t": "dos", "img": "notas", "pie": "As novidades de cada versão, quando você quiser ver.", "lado": "der", "prop": "40", "bloques": [
+              {"t": "p", "texto": "Ao entrar no jogo (não ao recarregar a interface), a intro recebe você: o lobo é desenhado por uma linha de luz, os olhos dele acendem, ele uiva e no fim se desfaz em faíscas que voam até o ícone do Alfa no minimapa. A Lya chega correndo, sem falar. Pule com um clique, [[Esc]], a barra de espaço ou [[Enter]]; se começar uma luta, ela some sozinha."},
+              {"t": "p", "texto": "O resto espera sem atrapalhar: em Hoje, na linha **Enquanto você entrava**, e com a Lya: clique nela e escolha **O que há de novo?**. Quando o Alfa é atualizado, a janela de novidades não abre mais sozinha: fica um ponto em **Novidades do Alfa** (Opções > Estilo e som)."},
+              {"t": "p", "texto": "Prefere como antes? Em **Opções > Estilo e som > Ao entrar no jogo** você escolhe **Só a animação** ou **Animação e avisos**."}
             ]},
             {"t": "h", "texto": "O tour: o Alfa em cinco passos"},
             {"t": "etapas", "titulo": "Na primeira vez que você abre o Alfa, a Lya mostra a janela", "items": [
@@ -148,7 +148,7 @@
               {"icono": "ajustes", "titulo": "Opções", "texto": "Estilo e som, Comodidades, Missões e mais."},
               {"icono": "buscar", "titulo": "Buscar opções", "texto": "Encontre qualquer opção digitando o nome dela."}
             ]},
-            {"t": "nota", "texto": "Com o **Alfa simples** você só vê Hoje, Rota, Mapa, Bolsas e Lya, mais as Opções, sem as páginas avançadas (como as dos autores de guias). O resto continua funcionando: abra com o comando ou com «Buscar opções»."},
+            {"t": "nota", "texto": "Com o **Alfa simples** você só vê Hoje, Rota, Mapa, Bolsas, Talentos e Lya, mais as Opções, sem as páginas avançadas (como as dos autores de guias). O resto continua funcionando: abra com o comando ou com «Buscar opções»."},
             {"t": "h", "texto": "Cinco estilos"},
             {"t": "img", "img": "estilo", "pie": "Opções > Estilo e som: seu estilo e os outros para escolher."},
             {"t": "p", "texto": "O Alfa se veste do jeito que você quiser. **Alfa** é grafite com cantos cortados e o verde de La Jauría; **La Jauría noturno**, azul da meia-noite com prata de lua; **Fogueira**, carvão quente com o laranja das brasas; **WoW Clássico** usa as molduras, os botões e as letras do próprio jogo, com títulos em ouro; **Cristal** deixa ver o mundo através de fundos transparentes, com a cor de destaque que você escolher. O estilo também pode vestir o chat, o minimapa e suas barras de ação (em Comodidades). Mude em **Opções > Estilo e som** ou com `/alfa estilo`."},
@@ -176,7 +176,7 @@
             ]},
             {"t": "h", "texto": "O que você encontra, de cima para baixo"},
             {"t": "lista", "items": [
-              "**Seu próximo passo.** O passo do seu guia com as metas, a distância, quanto você já fez e, no seu ritmo, quanto tempo falta para terminá-lo. **Seguir** mostra o guia e a seta e fecha a janela; **Ver passos** abre a lista completa.",
+              "**Enquanto você entrava.** O que o Alfa guardou para não interromper sua entrada (sua sessão anterior, bolsas, equipamento, talentos, novidades, a matilha conectada), cada coisa com seu botão e seu «Pronto».", "**Seu próximo passo.** O passo do seu guia com as metas, a distância, quanto você já fez e, no seu ritmo, quanto tempo falta para terminá-lo. **Seguir** mostra o guia e a seta e fecha a janela; **Ver passos** abre a lista completa.",
               "**Fechar minhas missões e Pegar missões.** Um clique monta a rota para entregar o que você tem pronto ou para pegar as melhores missões da zona.",
               "**Uma hora de caçada.** Não sabe o que fazer? O Alfa escolhe para você o que mais rende por perto: entregar o que está pronto, fechar as missões da sua zona ou pegar novas.",
               "**Seu plano.** Se você segue um dos *Meus planos*, aqui está sua meta atual.",
@@ -194,7 +194,7 @@
             ]},
             {"t": "h", "texto": "Seu tempo de jogo"},
             {"t": "tarjetas", "cols": 2, "items": [
-              {"icono": "reloj", "titulo": "Quanto tempo você tem?", "texto": "Escolha 30 min, 1 h, 2 h ou outro: o Alfa monta o plano (entregar, fechar as missões da sua zona, uma masmorra se couber, coleta e seu guia) e leva você passo a passo."},
+              {"icono": "reloj", "titulo": "Quanto tempo você tem?", "texto": "Escolha 30 min, 1 h, 2 h ou outro: o Alfa monta o plano (entregar, fechar as missões da sua zona, uma masmorra se couber, coleta e seu guia) e leva você passo a passo. Se o seu tempo acabar, Hoje diz como você estava indo."},
               {"icono": "nivel", "titulo": "Caminho até o 60", "texto": "Quantas horas faltam no seu ritmo, quanto você avançou hoje e que guias e masmorras vêm depois (`/alfa camino`)."},
               {"icono": "mazmorra", "titulo": "Pronto para a masmorra", "texto": "Antes de entrar, confere seu equipamento, bolsas, comida, água, flechas e componentes, com a seta para o que falta (`/alfa listo`)."},
               {"icono": "alerta", "titulo": "Comida e água", "texto": "Avisa quando estão acabando e o que vale comprar no seu nível, com a seta até o vendedor."}
@@ -240,14 +240,14 @@
               "A seta vira uma placa do Alfa: à esquerda, o lobo no seu medalhão, atento e farejando se for preciso procurar, ou uivando quando você chegou.",
               "Em cima diz **VOCÊ CHEGOU** (ou **PROCURE POR AQUI**, se o que você busca anda pela área) e, embaixo, o que fazer ali em palavras simples.",
               "Seu avanço aparece como um rastro de pegadas («4 de 6»); a experiência, como uma barra com a porcentagem: «Suba ao nível 30: faltam 20%».",
-              "**Próximo lugar**, dentro da mesma placa, leva você ao próximo ponto com um clique.", "Se a placa mostra seu avanço («1 de 10»), ela fica enquanto durar; se não, some sozinha depois de alguns segundos."
+              "**Próximo lugar**, dentro da mesma placa, leva você ao próximo ponto com um clique.", "Se a placa mostra seu avanço («1 de 10»), ela fica enquanto durar; se não, some sozinha depois de alguns segundos.", "Quando sua rota pede para usar a pedra de regresso, a placa diz **USE SUA PEDRA DE REGRESSO**: para onde você volta, quantas missões entrega lá, quanto tempo economiza e se a pedra está pronta, com o botão **Usar a pedra**."
             ]},
             {"t": "h", "texto": "Só missões que você pode mesmo fazer"},
             {"t": "p", "texto": "Antes de mandar você para uma missão, o Alfa confere seu nível, sua classe, sua raça, sua facção, suas profissões e sua reputação. Se faltar uma missão anterior, ele a adiciona sozinho antes, na ordem. O que você não pode cumprir fica oculto com o motivo, para você nunca andar à toa. As missões de masmorra levam você até a entrada."},
             {"t": "lista", "titulo": "Avisa você no caminho", "items": [
               "**Cinzas que valem a pena.** Se uma missão cinza dá algo bom ou abre outra, seu guia avisa.",
               "**Aviso de cadeia.** Antes de abandonar uma missão que abre outras, ele diz qual você perde.",
-              "**Zona perigosa.** Ao entrar numa zona com inimigos muito acima do seu nível, um aviso curto com os níveis deles.",
+              "**Zona perigosa.** Ao entrar numa zona com inimigos muito acima do seu nível, um aviso curto com os níveis deles. Traz **Leve-me a uma zona do meu nível**.",
               "**Quando seu guia acaba.** Ele diz se você terminou ou quantos passos ficaram, com «Ver o que ficou». Se seu plano fica sem passo, ele o refaz com um clique, e ao terminar um guia «Desbloquear», o Alfa leva você de volta ao que seguia."
             ]},
             {"t": "tarjetas", "cols": 2, "titulo": "Mais ajudas no caminho", "items": [
@@ -260,13 +260,13 @@
             ]},
             {"t": "tarjetas", "cols": 2, "titulo": "Novo no seu caminho", "items": [
               {"icono": "ruta", "titulo": "Circuito da zona", "texto": "Todas as suas missões daqui, as que você tem e as que pode pegar, na melhor ordem e com a seta. Na página Rota ou no menu do seu guia."},
-              {"icono": "huella", "titulo": "Me leve até…", "texto": "Escolha um destino e o Alfa monta a viagem com voos, barcos, zepelins, o bonde, portais e a pé, trecho por trecho (`/alfa llevame`)."},
-              {"icono": "misiones", "titulo": "Cinzas para largar", "texto": "As missões cinzas que já não valem a pena, cada uma com «Abandonar». Você confirma."},
+              {"icono": "huella", "titulo": "Me leve até…", "texto": "Escolha um destino e o Alfa monta a viagem com voos, barcos, zepelins, o bonde, portais e a pé, trecho por trecho (`/alfa llevame`). O mais perto aparece primeiro, com o tempo de viagem."},
+              {"icono": "misiones", "titulo": "Cinzas para largar", "texto": "As missões cinzas que já não valem a pena, cada uma com «Abandonar». Você confirma. Ou **Abandonar as N** de uma vez."},
               {"icono": "exito", "titulo": "O item de missão", "texto": "O botão diz que item é e seu avanço («Tocha · 2 de 5») e pulsa quando você já pode usá-lo."},
-              {"icono": "lista", "titulo": "A cadeia completa", "texto": "As missões que vêm antes e depois, quais você já fez e o prêmio do final. Pelo menu de uma missão."},
+              {"icono": "lista", "titulo": "A cadeia completa", "texto": "As missões que vêm antes e depois, quais você já fez e o prêmio do final. Pelo menu de uma missão. **Me leve** leva você à próxima que falta."},
               {"icono": "manada", "titulo": "As missões do seu grupo", "texto": "Em grupo, o mapa marca o que cada missão pede e quem a tem: «Ana, Beto»."}
             ]},
-            {"t": "h", "texto": "Biblioteca de guias"},
+            {"t": "h", "texto": "Seguir a rota do seu grupo"}, {"t": "lista", "items": ["Se seu companheiro tem missões e você não, **Seguir a rota** aponta sua seta e seu mapa para onde ele vai.", "O Alfa diz quais missões dele servem para você; com **Pedir a ela**, seu companheiro vê **Compartilhar** (o clique é dele, como o jogo pede).", "**Parar de seguir** encerra quando você quiser. Em raide não liga."]}, {"t": "h", "texto": "Biblioteca de guias"},
             {"t": "img", "img": "biblioteca", "pie": "O guia recomendado para seu nível e sua zona, em destaque, e todos os outros por categoria."},
             {"t": "h", "texto": "Fechar minhas missões e Pegar missões"},
             {"t": "p", "texto": "**Fechar minhas missões** monta a melhor ordem para entregar o que você já tem pronto (e terminar o que falta), contando voos, barcos e sua Pedra de Regresso. **Pegar missões** junta as melhores que você pode pegar por perto, sem passar do limite do seu registro. As duas estão em Hoje, em Rota e no seu guia."},
@@ -488,7 +488,7 @@
               {"icono": "personajes", "titulo": "O que guardar", "texto": "O que é mais útil no banco ou com outro dos seus personagens, com **Para o banco** se o banqueiro estiver perto."}
             ]},
             {"t": "tarjetas", "cols": 2, "titulo": "Novo nas suas bolsas", "items": [
-              {"icono": "personaje", "titulo": "Conjuntos de equipamento", "texto": "Salve o que você está usando com um nome (cura, dano, pesca…) e vista com um clique, fora de combate. Na página Bolsas ou com `/alfa bolsas conjunto`."},
+              {"icono": "personaje", "titulo": "Conjuntos de equipamento", "texto": "Salve o que você está usando com um nome (cura, dano, pesca…) e vista com um clique, fora de combate. Na página Bolsas ou com `/alfa bolsas conjunto`. Com **Outro nome…** você dá o seu."},
               {"icono": "nivel", "titulo": "Comparar", "texto": "Na dica de cada peça, o que você ganha e o que perde em relação ao que está usando: «+5 Força · −3 Vigor»."},
               {"icono": "personajes", "titulo": "Todos os seus personagens", "texto": "Busque nas bolsas, bancos e equipamento de todos os seus personagens, com filtros de tipo, qualidade e personagem."},
               {"icono": "rejilla", "titulo": "Arrumar", "texto": "Um botão nas suas bolsas: no comerciante, vende sua tralha; no banqueiro, guarda seus materiais. Outro clique interrompe."}
@@ -526,7 +526,7 @@
             ]},
             {"t": "img", "img": "lya-historias", "pie": "A janela Histórias reúne o que contaram a você em cada missão, por zona e com busca (`/alfa historias`)."},
             {"t": "h", "texto": "Pergunte à Lya"},
-            {"t": "p", "texto": "Clique com o botão direito na Lya e escolha **Em que te ajudo?**, digite `/alfa ayuda` ou use a tecla dela. A Lya explica cada parte do Alfa com as palavras dela e leva você até lá com **Me leve**."},
+            {"t": "p", "texto": "Clique com o botão direito na Lya e escolha **Em que te ajudo?**, digite `/alfa ayuda` ou use a tecla dela. A Lya explica cada parte do Alfa com as palavras dela e leva você até lá com **Me leve**. O que a Lya não conseguiu dizer fica ali, em **Você perdeu isto**."},
             {"t": "lista", "items": [
               "Perguntas comuns, o que serviria agora mesmo (bolsas cheias, equipamento quebrado, missões para entregar) e todas as páginas do Alfa, com busca.",
               "No alto, a última coisa que ela disse, com os botões, caso o balão tenha sumido antes de você ler (`/alfa lya historial`: as 20 mais recentes).",
@@ -817,7 +817,7 @@
               {"icono": "reloj", "titulo": "Timers de raros", "texto": "O Alfa lembra quando cada raro caiu: a dica dele diz há quanto tempo foi caçado e se já pode ter voltado."}
             ]},
             {"t": "tarjetas", "cols": 3, "titulo": "A matilha se organiza", "items": [
-              {"icono": "hoy", "titulo": "Encontros da matilha", "texto": "Proponha o quê, o dia e a hora. Sua guilda recebe com «Estou indo!» ou «Não posso»; a Lya lembra você 15 minutos antes."},
+              {"icono": "hoy", "titulo": "Encontros da matilha", "texto": "Proponha o quê, o dia e a hora. Sua guilda recebe com «Estou indo!» ou «Não posso»; a Lya lembra você 15 minutos antes. Nos seus, **Montar o grupo** convida com um clique quem vai."},
               {"icono": "mazmorra", "titulo": "Quem vai?", "texto": "Perto de uma masmorra para o seu nível, a Lya diz quem da matilha está no seu nível, com um botão para convidar."},
               {"icono": "mapa", "titulo": "Notas do lobo", "texto": "Escreva e aperte «Nota aqui»: ela fica no seu mapa onde você está. Um clique e a seta leva você. Você pode compartilhá-las com sua guilda."}
             ]},
@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "A 1.3.2: a matilha em ordem", "items": ["**Um só menu do Alfa:** o ícone do minimapa, a lista de addons, o botão flutuante e o botão **Alfa** do menu do [[Esc]] fazem o mesmo. Clique abre a última página que você viu; clique direito, o menu com todas as seções.", "**O Combate não atrapalha sozinho:** o som do aviso para interromper e o resumo da luta aparecem em grupo, em instâncias ou em lutas longas.", "**Cura sem grupo:** «Ver como ficam» mostra seus quadros antes de você entrar em um.", "**O mapa:** as camadas têm o mesmo nome em todo lugar, «Camadas do Alfa», e «Ir para o mapa do jogo» abre onde você está.", "**La Jauría:** um anúncio curto avisa quando um lobo da matilha que usa o Alfa está por perto, e os encontros e as notas não pedem mais para compartilhar sua localização.", "**E 39 melhorias** para um Alfa mais claro e mais leve."]}
+    "mapa": {"titulo": "A 1.3.3: a matilha em calma", "items": ["**Entrar em silêncio:** só a animação, e a Lya chega sem falar. O resto espera em Hoje («Enquanto você entrava») e com a Lya («O que há de novo?»). Escolha em **Ao entrar no jogo**.", "**Uma intro mais viva:** o lobo é desenhado com luz, os olhos acendem e ele voa em faíscas até o ícone do minimapa.", "**Seguir a rota do seu grupo:** «Seguir a rota», «Pedir a ela» e «Parar de seguir».", "**A pedra de regresso, clara:** a placa «USE SUA PEDRA DE REGRESSO» com o botão «Usar a pedra».", "**Uma só voz:** Hoje, as bolsas e a Lya não dizem mais a mesma coisa ao mesmo tempo, e Talentos aparece também no Alfa simples.", "**E mais:** «Outro nome…» para seus conjuntos, «Abandonar as N» missões cinzas, «Leve-me a uma zona do meu nível», o som de interrupção em masmorras, «Você perdeu isto» com a Lya e «Montar o grupo» nos encontros."]}
   },
   "contraportada": {
     "titulo": "Entre para a matilha",

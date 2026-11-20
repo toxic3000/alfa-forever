@@ -73,7 +73,7 @@ IDIOMAS = {
 # Si la versión de tools/alfa.json ya llegó a esa versión, la caja dice "Lo nuevo
 # desde la X" en lugar de "Lo que llega con la X". Para quitarla, borra su bloque
 # {"t": "novedad", ...} de los JSON (o la entrada de aquí: entonces no sale).
-NOVEDADES = {"mapa": "1.3.2"}
+NOVEDADES = {"mapa": "1.3.3"}
 
 # Capturas: id -> (archivo de origen, recorte (x0, y0, x1, y1) o None).
 # Con --capturas se copian a docs/manual/imagenes/<id>.png.
@@ -917,6 +917,8 @@ body.cjk .apretar2 .faq-a,body.cjk .apretar3 .faq-a{ line-height:1.6 }
 /* tarjetas */
 .tarjetas-caja{ margin:3mm 0 5mm; break-inside:avoid }
 .lista{ break-inside:avoid }
+/* en el apretado más fuerte una lista larga sí puede partirse entre dos páginas, nunca a media viñeta */
+.apretar3 .lista{ break-inside:auto } .lista li{ break-inside:avoid }
 .tarjetas{ display:grid; gap:2.8mm }
 .tarjetas.c2{ grid-template-columns:1fr 1fr } .tarjetas.c3{ grid-template-columns:1fr 1fr 1fr } .tarjetas.c1{ grid-template-columns:1fr }
 .tarjeta{ display:flex; gap:3mm; align-items:flex-start; background:var(--crema); border:.3mm solid var(--linea);

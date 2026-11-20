@@ -99,15 +99,15 @@
             ]},
             {"t": "consejo", "texto": "Willst du später etwas ändern? Tippe `/alfa bienvenida`, und die Übersicht öffnet sich: Jeder Schritt hat seinen Button „Ändern“. Wenn du gern jedes Detail selbst entscheidest, sind die gewohnten Listen noch da, hinter **Einzeln feinjustieren**."},
             {"t": "tarjetas", "cols": 2, "titulo": "Einfach oder vollständig?", "items": [
-              {"icono": "huella", "titulo": "Alfa einfach", "texto": "Zum Einstieg: nur Heute, Route, Karte, Taschen und Lya sichtbar, und weniger Hinweise. Der Rest ist noch da, wenn du ihn suchst."},
+              {"icono": "huella", "titulo": "Alfa einfach", "texto": "Zum Einstieg: nur Heute, Route, Karte, Taschen, Talente und Lya sichtbar, und weniger Hinweise. Der Rest ist noch da, wenn du ihn suchst."},
               {"icono": "lobo", "titulo": "Alfa vollständig", "texto": "Alle Seiten sichtbar: Dungeons, Talente, Kampf, Berufe, das Rudel und mehr."}
             ]},
             {"t": "nota", "texto": "Hast du Alfa schon benutzt, bleibst du bei vollständig. Ändern kannst du es jederzeit unter **Einstellungen > Stil und Klang**, bei „So siehst du Alfa“."},
             {"t": "h", "texto": "Bei jedem Einloggen"},
-            {"t": "dos", "img": "notas", "pie": "Nach einem Update erzählt dir ein Fenster, was sich geändert hat.", "lado": "der", "prop": "40", "bloques": [
-              {"t": "p", "texto": "Der Wolf empfängt dich mit „Zurück im Rudel!“, jedes Mal wenn du ins Spiel kommst (nicht beim Neuladen des Interface). Du überspringst das mit einem Klick, [[Esc]], der Leertaste oder [[Enter]], und beginnt ein Kampf, verschwindet es von selbst."},
-              {"t": "p", "texto": "Wurde Alfa aktualisiert, erscheint nach dem Intro ein kleines Fenster mit den Neuerungen: **Weiterspielen** schließt es, und **Alle Neuerungen ansehen** zeigt dir den Rest."},
-              {"t": "p", "texto": "Lieber ohne Intro einloggen? Schalte es unter **Einstellungen > Stil und Klang** aus."}
+            {"t": "dos", "img": "notas", "pie": "Die Neuerungen jeder Version, wann immer du sie sehen willst.", "lado": "der", "prop": "40", "bloques": [
+              {"t": "p", "texto": "Beim Einloggen (nicht beim Neuladen der Oberfläche) empfängt dich das Intro: Der Wolf wird mit einer Lichtlinie gezeichnet, seine Augen leuchten auf, er heult und zerfällt am Ende in Funken, die zu Alfas Symbol an der Minikarte fliegen. Lya kommt angerannt, ohne ein Wort. Du überspringst es mit einem Klick, [[Esc]], der Leertaste oder [[Eingabe]], und beginnt ein Kampf, verschwindet es von selbst."},
+              {"t": "p", "texto": "Alles andere wartet, ohne zu stören: unter Heute in der Zeile **Während du dich eingeloggt hast** und bei Lya: Klick sie an und wähle **Was gibt's Neues?**. Wird Alfa aktualisiert, öffnet sich das Fenster mit den Neuerungen nicht mehr von selbst: Ein Punkt erscheint bei **Neu in Alfa** (Einstellungen > Stil und Klang)."},
+              {"t": "p", "texto": "Lieber wie früher? Unter **Einstellungen > Stil und Klang > Beim Einloggen** wählst du **Nur die Animation** oder **Animation und Hinweise**."}
             ]},
             {"t": "h", "texto": "Die Tour: Alfa in fünf Schritten"},
             {"t": "etapas", "titulo": "Wenn du Alfa zum ersten Mal öffnest, zeigt dir Lya das Fenster", "items": [
@@ -148,7 +148,7 @@
               {"icono": "ajustes", "titulo": "Einstellungen", "texto": "Stil und Klang, Komfort, Questen und mehr."},
               {"icono": "buscar", "titulo": "Einstellungen durchsuchen", "texto": "Finde jede Option, indem du ihren Namen eintippst."}
             ]},
-            {"t": "nota", "texto": "Mit **Alfa einfach** siehst du nur Heute, Route, Karte, Taschen und Lya, dazu die Einstellungen, ohne ihre fortgeschrittenen Seiten (etwa die für Guide-Autoren). Alles andere läuft weiter: Öffne es mit seinem Befehl oder über „Einstellungen durchsuchen“."},
+            {"t": "nota", "texto": "Mit **Alfa einfach** siehst du nur Heute, Route, Karte, Taschen, Talente und Lya, dazu die Einstellungen, ohne ihre fortgeschrittenen Seiten (etwa die für Guide-Autoren). Alles andere läuft weiter: Öffne es mit seinem Befehl oder über „Einstellungen durchsuchen“."},
             {"t": "h", "texto": "Fünf Stile"},
             {"t": "img", "img": "estilo", "pie": "Einstellungen > Stil und Klang: dein Stil und die anderen zur Auswahl."},
             {"t": "p", "texto": "Alfa kleidet sich, wie du willst. **Alfa** ist Graphit mit abgeschrägten Ecken und dem Grün von La Jauría; **La Jauría Nacht** Mitternachtsblau mit Mondsilber; **Lagerfeuer** warme Kohle mit dem Orange der Glut; **Klassisches WoW** nutzt die Rahmen, Buttons und Schriften des Spiels selbst, mit goldenen Titeln; **Glas** lässt die Welt durch transparente Hintergründe scheinen, in der Akzentfarbe deiner Wahl. Der Stil kann auch den Chat, die Minikarte und deine Aktionsleisten einkleiden (unter Komfort). Ändere ihn unter **Einstellungen > Stil und Klang** oder mit `/alfa estilo`."},
@@ -176,7 +176,7 @@
             ]},
             {"t": "h", "texto": "Was du findest, von oben nach unten"},
             {"t": "lista", "items": [
-              "**Dein nächster Schritt.** Der Schritt deines Guides mit seinen Zielen, wie weit es ist, wie viel du hast und, nach deinem Tempo, wie lange du noch bis zum Ende brauchst. **Folgen** zeigt Guide und Pfeil und schließt das Fenster; **Schritte ansehen** öffnet die ganze Liste.",
+              "**Während du dich eingeloggt hast.** Was Alfa aufgehoben hat, um dein Einloggen nicht zu stören (deine letzte Sitzung, Taschen, Ausrüstung, Talente, Neues, das Rudel online), jeweils mit Button und „Fertig“.", "**Dein nächster Schritt.** Der Schritt deines Guides mit seinen Zielen, wie weit es ist, wie viel du hast und, nach deinem Tempo, wie lange du noch bis zum Ende brauchst. **Folgen** zeigt Guide und Pfeil und schließt das Fenster; **Schritte ansehen** öffnet die ganze Liste.",
               "**Meine Quests abschließen und Quests annehmen.** Ein Klick baut die Route, um abzugeben, was fertig ist, oder um die besten Quests des Gebiets anzunehmen.",
               "**Eine Stunde Jagd.** Du weißt nicht, was tun? Alfa wählt für dich, was in der Nähe am meisten bringt: Fertiges abgeben, die Quests deines Gebiets abschließen oder neue holen.",
               "**Dein Plan.** Folgst du einem von *Meine Pläne*, steht hier dein aktuelles Ziel.",
@@ -194,7 +194,7 @@
             ]},
             {"t": "h", "texto": "Deine Spielzeit"},
             {"t": "tarjetas", "cols": 2, "items": [
-              {"icono": "reloj", "titulo": "Wie viel Zeit hast du?", "texto": "Wähle 30 Min., 1 Std., 2 Std. oder anders: Alfa stellt den Plan zusammen (Abgaben, die Quests deines Gebiets abschließen, ein Dungeon, wenn es passt, Sammeln und dein Guide) und führt dich Schritt für Schritt."},
+              {"icono": "reloj", "titulo": "Wie viel Zeit hast du?", "texto": "Wähle 30 Min., 1 Std., 2 Std. oder anders: Alfa stellt den Plan zusammen (Abgaben, die Quests deines Gebiets abschließen, ein Dungeon, wenn es passt, Sammeln und dein Guide) und führt dich Schritt für Schritt. Läuft deine Zeit ab, sagt dir Heute, wie weit du gekommen bist."},
               {"icono": "nivel", "titulo": "Weg zur 60", "texto": "Wie viele Stunden dir in deinem Tempo noch fehlen, wie weit du heute gekommen bist und welche Guides und Dungeons folgen (`/alfa camino`)."},
               {"icono": "mazmorra", "titulo": "Bereit für den Dungeon", "texto": "Vor dem Betreten prüft es Ausrüstung, Taschen, Essen, Wasser, Pfeile und Reagenzien, mit dem Pfeil zu dem, was fehlt (`/alfa listo`)."},
               {"icono": "alerta", "titulo": "Essen und Wasser", "texto": "Warnt dich, wenn es zur Neige geht, und sagt, was sich auf deiner Stufe zu kaufen lohnt, mit dem Pfeil zum Händler."}
@@ -240,14 +240,14 @@
               "Der Pfeil wird zu einer Alfa-Plakette: links der Wolf in seinem Medaillon, wachsam und schnüffelnd, wenn gesucht werden muss, oder heulend, wenn du angekommen bist.",
               "Oben steht **DU BIST DA** (oder **SUCH HIER IN DER NÄHE**, wenn das Gesuchte irgendwo im Gebiet ist) und darunter in einfachen Worten, was dort zu tun ist.",
               "Dein Fortschritt erscheint als Spur aus Pfotenabdrücken („4 von 6“), die Erfahrung als Leiste mit Prozentangabe: „Erreiche Stufe 30: dir fehlen 20 %“.",
-              "**Nächster Ort**, in derselben Plakette, bringt dich mit einem Klick zum nächsten Punkt.", "Zeigt die Plakette deinen Fortschritt („1 von 10“), bleibt sie, solange er läuft; sonst verschwindet sie nach ein paar Sekunden von selbst."
+              "**Nächster Ort**, in derselben Plakette, bringt dich mit einem Klick zum nächsten Punkt.", "Zeigt die Plakette deinen Fortschritt („1 von 10“), bleibt sie, solange er läuft; sonst verschwindet sie nach ein paar Sekunden von selbst.", "Will deine Route, dass du den Ruhestein benutzt, steht auf der Plakette **BENUTZE DEINEN RUHESTEIN**: wohin du zurückkehrst, wie viele Quests du dort abgibst, wie viel Zeit du sparst und ob dein Stein bereit ist, mit dem Button **Stein benutzen**."
             ]},
             {"t": "h", "texto": "Nur Quests, die du wirklich machen kannst"},
             {"t": "p", "texto": "Bevor Alfa dich zu einer Quest schickt, prüft es deine Stufe, deine Klasse, dein Volk, deine Fraktion, deine Berufe und deinen Ruf. Fehlt eine Vorquest, fügt es sie von selbst davor ein, in der richtigen Reihenfolge. Was du nicht erfüllen kannst, wird mit Begründung ausgeblendet, damit du nie umsonst läufst. Dungeonquests führen dich zum Eingang."},
             {"t": "lista", "titulo": "Hinweise unterwegs", "items": [
               "**Graue Quests, die sich lohnen.** Wenn eine graue Quest etwas Gutes bringt oder eine andere öffnet, sagt es dir dein Guide.",
               "**Kettenwarnung.** Bevor du eine Quest abbrichst, die andere öffnet, sagt es dir, welche du verlierst.",
-              "**Gefährliches Gebiet.** Betrittst du ein Gebiet mit Gegnern weit über deiner Stufe, kommt ein kurzer Hinweis mit ihren Stufen.",
+              "**Gefährliches Gebiet.** Betrittst du ein Gebiet mit Gegnern weit über deiner Stufe, kommt ein kurzer Hinweis mit ihren Stufen. Dazu gibt es **Bring mich in ein Gebiet für meine Stufe**.",
               "**Wenn dein Guide endet.** Es sagt dir, ob du ihn geschafft hast oder wie viele Schritte übrig sind, mit „Rest ansehen“. Hat dein Plan keinen Schritt mehr, baut es ihn mit einem Klick neu, und nach einem „Freischalten“-Guide bringt dich Alfa zu dem zurück, dem du gefolgt bist."
             ]},
             {"t": "tarjetas", "cols": 2, "titulo": "Mehr Hilfe unterwegs", "items": [
@@ -260,13 +260,13 @@
             ]},
             {"t": "tarjetas", "cols": 2, "titulo": "Neu auf deinem Weg", "items": [
               {"icono": "ruta", "titulo": "Rundgang durch die Zone", "texto": "Alle deine Quests hier, die du hast und die du annehmen kannst, in der besten Reihenfolge und mit dem Pfeil. Auf der Seite Route oder im Menü deines Guides."},
-              {"icono": "huella", "titulo": "Bring mich zu …", "texto": "Wähle ein Ziel, und Alfa plant die Reise mit Flügen, Schiffen, Zeppelinen, der Tiefenbahn, Portalen und zu Fuß, Etappe für Etappe (`/alfa llevame`)."},
-              {"icono": "misiones", "titulo": "Graue Quests zum Abgeben", "texto": "Graue Quests, die sich nicht mehr lohnen, jede mit „Abbrechen“. Du bestätigst es."},
+              {"icono": "huella", "titulo": "Bring mich zu …", "texto": "Wähle ein Ziel, und Alfa plant die Reise mit Flügen, Schiffen, Zeppelinen, der Tiefenbahn, Portalen und zu Fuß, Etappe für Etappe (`/alfa llevame`). Das Nächste kommt zuerst, mit seiner Reisezeit."},
+              {"icono": "misiones", "titulo": "Graue Quests zum Abgeben", "texto": "Graue Quests, die sich nicht mehr lohnen, jede mit „Abbrechen“. Du bestätigst es. Oder **Alle N abbrechen** auf einmal."},
               {"icono": "exito", "titulo": "Der Questgegenstand", "texto": "Sein Button zeigt, welcher Gegenstand es ist, und deinen Fortschritt („Fackel · 2 von 5“) und pulsiert, sobald du ihn benutzen kannst."},
-              {"icono": "lista", "titulo": "Die ganze Kette", "texto": "Die Quests davor und danach, welche du schon gemacht hast, und die Belohnung am Ende. Über das Menü einer Quest."},
+              {"icono": "lista", "titulo": "Die ganze Kette", "texto": "Die Quests davor und danach, welche du schon gemacht hast, und die Belohnung am Ende. Über das Menü einer Quest. **Bring mich hin** führt dich zur nächsten, die dir fehlt."},
               {"icono": "manada", "titulo": "Die Quests deiner Gruppe", "texto": "In der Gruppe markiert die Karte, was jede Quest verlangt und wer sie hat: „Ana, Beto“."}
             ]},
-            {"t": "h", "texto": "Guide-Bibliothek"},
+            {"t": "h", "texto": "Der Route deiner Gruppe folgen"}, {"t": "lista", "items": ["Hat dein Gefährte Quests und du nicht, richtet **Ihrer Route folgen** deinen Pfeil und deine Karte auf sein Ziel aus.", "Alfa sagt dir, welche seiner Quests dir nützen; mit **Darum bitten** bekommt dein Gefährte **Teilen** (der Klick ist seiner, wie das Spiel es verlangt).", "**Nicht mehr folgen** beendet es, wann du willst. Im Schlachtzug schaltet es sich nicht ein."]}, {"t": "h", "texto": "Guide-Bibliothek"},
             {"t": "img", "img": "biblioteca", "pie": "Der empfohlene Guide für deine Stufe und dein Gebiet, groß, und alle anderen nach Kategorie."},
             {"t": "h", "texto": "Meine Quests abschließen und Quests annehmen"},
             {"t": "p", "texto": "**Meine Quests abschließen** baut die beste Reihenfolge, um abzugeben, was schon fertig ist (und zu erledigen, was noch fehlt), mit Flügen, Schiffen und deinem Ruhestein. **Quests annehmen** sammelt die besten, die du in der Nähe annehmen kannst, ohne die Grenze deines Questlogs zu überschreiten. Beide findest du unter „Heute“, in „Route“ und in deinem Guide."},
@@ -488,7 +488,7 @@
               {"icono": "personajes", "titulo": "Was einlagern", "texto": "Was in der Bank oder bei einem anderen deiner Charaktere nützlicher ist, mit **Zur Bank**, wenn ein Bankier in der Nähe ist."}
             ]},
             {"t": "tarjetas", "cols": 2, "titulo": "Neu in deinen Taschen", "items": [
-              {"icono": "personaje", "titulo": "Ausrüstungssets", "texto": "Speichere, was du trägst, unter einem Namen (Heilen, Schaden, Angeln …) und zieh es mit einem Klick an, außerhalb des Kampfes. Auf der Seite Taschen oder mit `/alfa bolsas conjunto`."},
+              {"icono": "personaje", "titulo": "Ausrüstungssets", "texto": "Speichere, was du trägst, unter einem Namen (Heilen, Schaden, Angeln …) und zieh es mit einem Klick an, außerhalb des Kampfes. Auf der Seite Taschen oder mit `/alfa bolsas conjunto`. Mit **Anderer Name…** gibst du ihm deinen eigenen."},
               {"icono": "nivel", "titulo": "Vergleichen", "texto": "Im Tooltip jedes Teils, was du gewinnst und was du verlierst gegenüber dem, was du trägst: „+5 Stärke · −3 Ausdauer“."},
               {"icono": "personajes", "titulo": "Alle deine Charaktere", "texto": "Durchsuche Taschen, Banken und Ausrüstung all deiner Charaktere, mit Filtern nach Typ, Qualität und Charakter."},
               {"icono": "rejilla", "titulo": "Aufräumen", "texto": "Ein Button in deinen Taschen: Beim Händler verkauft er deinen Plunder, beim Bankier lagert er deine Materialien ein. Ein weiterer Klick hält ihn an."}
@@ -526,7 +526,7 @@
             ]},
             {"t": "img", "img": "lya-historias", "pie": "Das Fenster Geschichten sammelt, was dir in jeder Quest erzählt wurde, nach Gebiet und mit Suche (`/alfa historias`)."},
             {"t": "h", "texto": "Frag Lya"},
-            {"t": "p", "texto": "Rechtsklick auf Lya und wähle **Wobei helfe ich dir?**, tippe `/alfa ayuda` oder nutze ihre Taste. Lya erklärt dir jeden Teil von Alfa mit ihren Worten und bringt dich mit **Bring mich hin** dorthin."},
+            {"t": "p", "texto": "Rechtsklick auf Lya und wähle **Wobei helfe ich dir?**, tippe `/alfa ayuda` oder nutze ihre Taste. Lya erklärt dir jeden Teil von Alfa mit ihren Worten und bringt dich mit **Bring mich hin** dorthin. Was Lya dir nicht mehr sagen konnte, bleibt dort unter **Das hast du verpasst**."},
             {"t": "lista", "items": [
               "Häufige Fragen, was dir gerade jetzt helfen würde (volle Taschen, kaputte Ausrüstung, Quests zum Abgeben) und alle Seiten von Alfa, mit Suchfeld.",
               "Oben das Letzte, was sie dir gesagt hat, mit seinen Buttons, falls ihre Sprechblase weg war, bevor du sie lesen konntest (`/alfa lya historial`: die 20 neuesten).",
@@ -817,7 +817,7 @@
               {"icono": "reloj", "titulo": "Rare-Timer", "texto": "Alfa merkt sich, wann jeder Rare gefallen ist: Sein Tooltip sagt, wie lange das her ist und ob er schon zurück sein kann."}
             ]},
             {"t": "tarjetas", "cols": 3, "titulo": "Das Rudel organisiert sich", "items": [
-              {"icono": "hoy", "titulo": "Rudeltreffen", "texto": "Schlag vor, was, Tag und Uhrzeit. Deine Gilde bekommt es mit „Bin dabei“ oder „Kann nicht“; Lya erinnert dich 15 Minuten vorher."},
+              {"icono": "hoy", "titulo": "Rudeltreffen", "texto": "Schlag vor, was, Tag und Uhrzeit. Deine Gilde bekommt es mit „Bin dabei“ oder „Kann nicht“; Lya erinnert dich 15 Minuten vorher. Bei deinen eigenen lädt **Gruppe bilden** alle, die kommen, mit einem Klick ein."},
               {"icono": "mazmorra", "titulo": "Wer kommt?", "texto": "In der Nähe eines Dungeons für deine Stufe sagt dir Lya, wer vom Rudel auf deiner Stufe ist, mit einem Button zum Einladen."},
               {"icono": "mapa", "titulo": "Wolfsnotizen", "texto": "Schreib und drück „Notiz hier“: Sie bleibt dort auf deiner Karte, wo du bist. Ein Klick, und der Pfeil bringt dich hin. Du kannst sie mit deiner Gilde teilen."}
             ]},
@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "Die 1.3.2: Das Rudel in Ordnung", "items": ["**Ein einziges Alfa-Menü:** Das Symbol an der Minikarte, die Addon-Liste, der schwebende Button und der Button **Alfa** im [[Esc]]-Menü machen dasselbe. Klick öffnet die zuletzt gesehene Seite; Rechtsklick das Menü mit allen Bereichen.", "**Der Kampf stört allein nicht:** Der Unterbrechen-Ton und die Kampfübersicht kommen in der Gruppe, in Instanzen oder bei langen Kämpfen.", "**Heilung ohne Gruppe:** „Ansehen, wie sie aussehen“ zeigt dir deine Rahmen, bevor du einer Gruppe beitrittst.", "**Die Karte:** Die Ebenen heißen überall gleich, „Alfa-Ebenen“, und „Zur Spielkarte“ öffnet dort, wo du bist.", "**La Jauría:** Eine kurze Ankündigung sagt dir, wenn ein Wolf des Rudels mit Alfa in der Nähe ist, und Treffen und Notizen verlangen nicht mehr, dass du deinen Standort teilst.", "**Und 39 Verbesserungen** für ein klareres, leichteres Alfa."]}
+    "mapa": {"titulo": "Die 1.3.3: Das Rudel in Ruhe", "items": ["**Leise einloggen:** nur die Animation, und Lya kommt ohne ein Wort. Alles andere wartet unter Heute („Während du dich eingeloggt hast“) und bei Lya („Was gibt's Neues?“). Einstellbar unter **Beim Einloggen**.", "**Ein lebendigeres Intro:** Der Wolf wird mit Licht gezeichnet, seine Augen leuchten auf, und er fliegt in Funken zum Symbol an der Minikarte.", "**Der Route deiner Gruppe folgen:** „Ihrer Route folgen“, „Darum bitten“ und „Nicht mehr folgen“.", "**Der Ruhestein, klar und deutlich:** die Plakette „BENUTZE DEINEN RUHESTEIN“ mit dem Button „Stein benutzen“.", "**Eine einzige Stimme:** Heute, die Taschen und Lya sagen dir nicht mehr gleichzeitig dasselbe, und Talente gibt es jetzt auch in Alfa einfach.", "**Und mehr:** „Anderer Name…“ für deine Ausrüstungssets, „Alle N abbrechen“ für graue Quests, „Bring mich in ein Gebiet für meine Stufe“, der Unterbrechen-Ton in Dungeons, „Das hast du verpasst“ bei Lya und „Gruppe bilden“ bei Rudeltreffen."]}
   },
   "contraportada": {
     "titulo": "Komm ins Rudel",
