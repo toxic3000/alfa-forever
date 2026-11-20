@@ -136,4 +136,19 @@ function Gr.Cuantas()
 	return l and #l or 0
 end
 
+-- 1.3.2: sin el Codex no se juzga, pero sí se sabe si tienes grises (por su
+-- nivel, del registro): la tarjeta sale sin número y su clic carga el Codex.
+-- -> cuántas grises hay sin juzgar (0 con el Codex cargado, en combate o apagado)
+function Gr.SinJuzgar()
+	if not encendido() or enCombate() or codexListo() then return 0 end
+	local Cp, Ch = CP(), M.Cadenas
+	if not (Cp and Cp.GetLogQuests and Ch and Ch.EsGris) then return 0 end
+	local n = 0
+	for _, qid in ipairs(Cp.GetLogQuests() or {}) do
+		qid = tonumber(qid)
+		if qid and Ch.EsGris(qid) and not (Cp.IsQuestReadyForTurnIn and Cp.IsQuestReadyForTurnIn(qid)) then n = n + 1 end
+	end
+	return n
+end
+
 A.RegisterEvent("QUEST_REMOVED", function() if ventana and ventana:IsShown() then A.After(0.3, refrescar) end end)

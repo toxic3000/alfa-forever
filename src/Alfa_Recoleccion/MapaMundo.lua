@@ -26,7 +26,6 @@ local CELDAS = 28        -- celdas por lado de cada zona para agrupar
 local CADA = 0.75        -- segundos entre miradas al mapa abierto
 local ZOOM = 4.5         -- desde qué zoom del mapa continuo se ven
 
-local ticker
 local firmaHecha = {}    -- tipo -> la firma de lo publicado
 local vacias = {}        -- tipo -> ya se publicó vacía
 
@@ -134,9 +133,30 @@ function MM.Refrescar(forzar)
 	end
 end
 
+-- 1.3.2: la mirada al mapa corre solo con el mapa de Alfa abierto
+-- (ALFA_VENTANA del Kit); al cerrarlo, la capa queda vacía y el reloj se quita.
+local MAPA = "AlfaMundoMapa"
+local RELOJ = "recoleccion.mapaMundo"
+local instalado = false
+local function mapaAbierto()
+	local f = rawget(_G, MAPA)
+	return type(f) == "table" and f.IsShown and f:IsShown() and true or false
+end
+function MM.Vigilar()
+	if not instalado then return end
+	if mapaAbierto() then
+		if not N.HayTarea(RELOJ) then N.Cada(RELOJ, CADA, function() MM.Refrescar(false) end) end
+	else
+		N.Quitar(RELOJ)
+	end
+	MM.Refrescar(false)
+end
+
 function MM.Instalar()
-	if ticker or not (R.mundo and type(AlfaMundo) == "table" and type(AlfaMundo.ZonasALaVista) == "function") then return end
-	ticker = N.Ticker("recoleccion.mapaMundo", CADA, function() MM.Refrescar(false) end)
+	if instalado or not (R.mundo and type(AlfaMundo) == "table" and type(AlfaMundo.ZonasALaVista) == "function") then return end
+	instalado = true
+	A.On("ALFA_VENTANA", function(nombre) if nombre == MAPA then MM.Vigilar() end end)
+	MM.Vigilar()
 	MM.Refrescar(true)
 end
 

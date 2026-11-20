@@ -462,3 +462,80 @@ end
 function U.Decir(...)
 	N.Imprimir(...)
 end
+
+---------------------------------------------------------------------------
+-- (1.3.2) Un solo reloj para La Jauría
+---------------------------------------------------------------------------
+-- Las tareas de La Jauría que se repiten cada 10 s o más (guaridas, plano,
+-- citas, mentor, tablón, botín...) eran 13 tareas del reloj de Alfa. Ahora
+-- son una (N.Cada "manada.reloj", cada BASE segundos) que corre cada una a
+-- su hora. Las de igual período se reparten entre vueltas distintas (las de
+-- un minuto no corren todas en el mismo segundo): la primera vez de una
+-- tarea llega a lo más su período después de anotarla, como con N.Cada.
+--   M.Cada(clave, seg, fn)   fn(dt) cada seg segundos (otra con la misma clave la reemplaza)
+--   M.Quitar(clave) ; M.Tareas() -> { { clave, cada, veces, fallos } }
+local BASE = 10
+local MAX_FALLOS = 5
+local tareas, ordenTareas = {}, {}
+
+-- La vuelta de una tarea: el tramo de su período en que cae `ahora`, corrido
+-- por su desfase. Corre una vez por tramo, en la primera vuelta del reloj que
+-- cae en él: cada `cada` segundos, aunque el juego se trabe un rato.
+local function tramo(t, ahora) return floor((ahora + t.desfase) / t.cada) end
+
+local function latir(dt)
+	local ahora = U.Ahora()
+	-- (El banco corre el reloj de una vez, sin esperar: entonces corren todas,
+	-- como corrían las tareas sueltas con N.Reloj.Adelantar.)
+	local adelantado = (tonumber(dt) or BASE) < BASE / 2
+	for _, t in ipairs(ordenTareas) do
+		local n = tramo(t, ahora)
+		if tareas[t.clave] == t and (adelantado or n ~= t.tramo) then
+			if not adelantado then t.tramo = n end
+			local ok, err = pcall(t.fn, ahora - (t.ultima or ahora))
+			t.ultima, t.veces = ahora, t.veces + 1
+			if ok then
+				t.fallos = 0
+			else
+				t.fallos = t.fallos + 1
+				if geterrorhandler then pcall(geterrorhandler(), err) end
+				if t.fallos >= MAX_FALLOS then M.Quitar(t.clave) end
+			end
+		end
+	end
+end
+
+function M.Cada(clave, seg, fn)
+	seg = math.max(BASE, BASE * floor((tonumber(seg) or BASE) / BASE + 0.5))
+	local t = tareas[clave]
+	if not t then
+		t = { clave = clave, veces = 0, fallos = 0 }
+		tareas[clave] = t
+		ordenTareas[#ordenTareas + 1] = t
+	end
+	-- Su lugar entre las de igual período: cada una en otra vuelta.
+	local iguales = 0
+	for _, x in ipairs(ordenTareas) do
+		if x ~= t and tareas[x.clave] == x and x.cada == seg then iguales = iguales + 1 end
+	end
+	t.fn, t.cada, t.desfase = fn, seg, (iguales * BASE) % seg
+	t.tramo, t.ultima = tramo(t, U.Ahora()), U.Ahora()
+	if not N.HayTarea("manada.reloj") then N.Cada("manada.reloj", BASE, latir) end
+	return clave
+end
+
+function M.Quitar(clave)
+	local t = tareas[clave]
+	if not t then return false end
+	tareas[clave] = nil
+	for i = #ordenTareas, 1, -1 do if ordenTareas[i] == t then table.remove(ordenTareas, i) end end
+	return true
+end
+
+function M.Tareas()
+	local out = {}
+	for _, t in ipairs(ordenTareas) do
+		out[#out + 1] = { clave = t.clave, cada = t.cada, veces = t.veces, fallos = t.fallos }
+	end
+	return out
+end

@@ -76,3 +76,11 @@ Forever (tipo de juego "Camelot" en el código de Blizzard) vende **casillas de 
 - **Olvidar un personaje** (`D.Olvidar`) también le pide a Comercio que olvide sus recetas y su Encantamiento (`AlfaComercio.OlvidarPersonaje(r.nombre, r.reino)`); el diálogo lo dice.
 - **`AlfaBolsas.Cuantos(id)` en una sola pasada.** Lo que llevas se cuenta una vez (id → cantidad) y se guarda hasta que cambian tus bolsas o el banco (`BAG_UPDATE`, `BAG_UPDATE_DELAYED`, `BAG_CONTAINER_UPDATE`, `PLAYERBANKSLOTS_CHANGED`, `BANKFRAME_*`) o pasa el cuadro; lo de tus otros personajes se suma sin ordenarlos (`D.Sumas`). Antes la lista de compras y «Fabricar» recorrían tus bolsas una vez por material.
 - **Lotes con el reloj de Alfa** (`N.Ticker("bolsas.lote.<nombre>")`) y lo que no se movió: al vender la chatarra se suma solo lo vendido de verdad, y vender y depositar dicen «N no se movieron» (ya no estaban ahí, por ejemplo porque el motor las vendió al abrir, o siguieron bloqueadas). `mover(bolsa, casilla, info, entrada)` y `alTerminar(hechos, total, corte, saltados)`.
+
+## 1.3.2
+
+- **«Esta sesión»** (`Sesion.lua`): el oro que sale del buzón (con el buzón abierto y 3 s después) va en `correo`, fuera de lo ganado y del oro por hora; el cuadro del pie dice «Del buzón: …».
+- **La página rehace solo lo que cambió** (`P.Rehacer(que)`, `P.BLOQUES`): con el oro, solo la tarjeta de la sesión; con los conjuntos, solo su bloque; con la búsqueda, solo la búsqueda. Sin nombre (un clic, un ajuste, al abrirla), toda. Los conjuntos de un mismo cuadro comparten una lectura de tus bolsas (`Cj.LeerBolsas`, `Cj.Estado(c, lista)`, `Cj.Puesto(lista)`).
+- **«Acomodar»** dice «Detener (x/y)» con el ícono de parar mientras trabaja (`Ac.Avance()`), como Depositar.
+- **Qué vender**: `revisar` mira primero `S.Espacio()`; lejos del umbral no hace el análisis completo (lo piden la ventana y la página al dibujarse).
+- Prueba: `tools/banco/prueba_132_hoy.lua`.

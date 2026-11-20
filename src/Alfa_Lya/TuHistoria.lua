@@ -215,17 +215,37 @@ local function revisarPresa()
 			l = "Lo olimos, lo seguimos y cayó. ¡Así caza la manada!" })
 	end
 end
+-- (1.3.2) La vida del blanco se escucha solo mientras hay presa, y solo la de
+-- "target": UNIT_HEALTH de todas las unidades son cientos por segundo en banda.
+local vida
+local function vigilar(prender)
+	if prender then
+		if not vida then
+			vida = CreateFrame("Frame")
+			vida:SetScript("OnEvent", A.Safe(function(_, _, unit)
+				if presa and not secreto(unit) and unit == "target" then revisarPresa() end
+				if not presa then vigilar(false) end
+			end))
+		end
+		if not vida.alfaOyendo then
+			vida:RegisterUnitEvent("UNIT_HEALTH", "target")
+			vida.alfaOyendo = true
+		end
+	elseif vida and vida.alfaOyendo then
+		vida:UnregisterEvent("UNIT_HEALTH")
+		vida.alfaOyendo = nil
+	end
+end
+function Di.VigilaPresa() return vida ~= nil and vida.alfaOyendo == true end -- (para el banco)
+
 A.RegisterEvent("PLAYER_TARGET_CHANGED", function()
-	if Di.Tiene("raro") or not Di.Activo() then presa = nil return end
+	if Di.Tiene("raro") or not Di.Activo() then presa = nil vigilar(false) return end
 	local guid = texto(UnitGUID and UnitGUID("target"))
 	if guid and esRaro("target") and not (UnitIsDead and si(UnitIsDead("target"))) then
 		local puede = not UnitCanAttack or si(UnitCanAttack("player", "target"))
 		if puede then presa = { guid = guid, nombre = texto(UnitName and UnitName("target")) } end
 	end
-end)
-A.RegisterEvent("UNIT_HEALTH", function(_, unit)
-	if not presa or secreto(unit) or unit ~= "target" then return end
-	revisarPresa()
+	vigilar(presa ~= nil)
 end)
 
 -- Tu mejor día (Dia.lua lo festeja; aquí se apunta) y tu primera semana de caza.

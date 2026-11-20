@@ -218,19 +218,31 @@ A.RegisterEvent("PLAYER_REGEN_ENABLED", function()
 	destacarHasta = (GetTime and GetTime() or 0) + DESTACAR
 	Mn.Refrescar()
 end)
+-- Un reloj chico: el maná cambia muy seguido para ir por eventos de cada uno.
+-- Solo repinta los porcentajes: la lista ya está armada. 1.3.2: solo corre en
+-- grupo, con los marcos y el maná prendidos; si no, se quita (N.Quitar).
+local function reloj()
+	if marco and marco:IsShown() or (IsInGroup and IsInGroup() and opt("mana")) then Mn.Refrescar() end
+end
+function Mn.Reloj()
+	local quiere = opt("activo") and opt("mana") and IsInGroup and IsInGroup() and true or false
+	if quiere and not N.HayTarea("curacion.mana") then
+		N.Cada("curacion.mana", 1, reloj)
+	elseif not quiere and N.HayTarea("curacion.mana") then
+		N.Quitar("curacion.mana")
+	end
+	return quiere
+end
+-- (Se decide al entrar al mundo: al cargar todavía no están tus ajustes.)
+
 -- Cambió el grupo (quién está, sus roles o un nombre): la lista se vuelve a armar.
-local function cambioGrupo() sucia = true Mn.Refrescar() end
+local function cambioGrupo() sucia = true Mn.Reloj() Mn.Refrescar() end
 A.RegisterEvent("GROUP_ROSTER_UPDATE", cambioGrupo)
 A.RegisterEvent("PLAYER_ROLES_ASSIGNED", cambioGrupo)
 A.RegisterEvent("PLAYER_ENTERING_WORLD", cambioGrupo)
 A.RegisterEvent("UNIT_NAME_UPDATE", function(_, u)
 	if type(u) == "string" and (u == "player" or u:find("^party%d") or u:find("^raid%d")) then cambioGrupo() end
 end)
--- Un reloj chico: el maná cambia muy seguido para ir por eventos de cada uno.
--- Solo repinta los porcentajes: la lista ya está armada.
-N.Cada("curacion.mana", 1, function()
-	if marco and marco:IsShown() or (IsInGroup and IsInGroup() and opt("mana")) then Mn.Refrescar() end
-end)
 A.On("SETTING_CHANGED", function(path)
-	if type(path) == "string" and path:sub(1, #ID + 1) == ID .. "." then Mn.Refrescar() end
+	if type(path) == "string" and path:sub(1, #ID + 1) == ID .. "." then Mn.Reloj() Mn.Refrescar() end
 end)

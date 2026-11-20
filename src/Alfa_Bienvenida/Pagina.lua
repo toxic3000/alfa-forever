@@ -263,7 +263,8 @@ local CONTROLES = {
 	{ kind = "button", label = L["Reportar un error, una mejora o un comentario"], button = L["Reportar"], icon = "info",
 		help = L["Alfa arma el reporte y tú lo pegas en el buzón privado del Discord de La Jauría. También con /alfa reportar."],
 		onClick = function() M.AbrirReporte() end, search = "bug report, feedback, suggestion, discord" },
-	{ kind = "dropdown", key = ID .. ".modo", label = L["Cómo ves Alfa"],
+	-- 1.3.2: noReset: «Restablecer página» no lo toca (lo de fábrica, sencillo, es para quien empieza).
+	{ kind = "dropdown", key = ID .. ".modo", label = L["Cómo ves Alfa"], noReset = true,
 		help = L["Sencillo: solo Hoy, Ruta, Mapa, Bolsas y Lya a la vista, y menos avisos. Completo: todo Alfa. Lo demás sigue funcionando."],
 		choices = function()
 			local out = {}
@@ -319,6 +320,27 @@ N.Modulo({
 		modo = "sencillo" },
 	controles = CONTROLES,
 	construir = construir,
+	-- 1.3.2: «Restablecer página» devuelve también el estilo y su color de
+	-- acento (los que se eligen arriba, en las tarjetas) y dice exactamente qué
+	-- vuelve; «Cómo ves Alfa» no cambia (noReset).
+	restablecer = {
+		texto = function(etiquetas)
+			local lista = {}
+			for i, e in ipairs(etiquetas or {}) do lista[i] = "«" .. e .. "»" end
+			local unidas = #lista > 1 and (table.concat(lista, ", ", 1, #lista - 1) .. L[" y "] .. lista[#lista]) or (lista[1] or "")
+			return format(L["Vuelven a como venían el estilo Alfa con su color, %s. «%s» y tus perfiles no cambian."], unidas, L["Cómo ves Alfa"])
+		end,
+		fn = function()
+			-- El acento propio que recordaba cada estilo (Kit/Tokens.lua) se olvida
+			-- primero: si no, al cambiar de estilo volvería el suyo.
+			local d = N.Datos("kit")
+			d.acentos = {}
+			A.Set("ui.skin", nil)
+			A.Set("ui.classAccent", nil)
+			A.Set("ui.accent", nil)
+			if K.Repintar then pcall(K.Repintar) end
+		end,
+	},
 })
 
 -- 1.3.0: Lya sabe contar lo de leer mejor, la pantalla limpia y los atajos.

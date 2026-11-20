@@ -31,6 +31,12 @@ M.NOVEDADES = {
 --   { version, titulo, puntos = { { icono (ic-*), texto } } }
 ---------------------------------------------------------------------------
 M.NOTAS = {
+	{ version = "1.3.2", titulo = "La manada en orden", puntos = {
+		{ "ic-ventana", "Un solo menú de Alfa: el ícono del minimapa, la lista de addons y el botón Alfa del menú Esc abren lo mismo." },
+		{ "ic-alerta", "Menos estorbo: Combate se calla yendo solo y los avisos de grupo esperan a que acabe la pelea." },
+		{ "ic-lobo", "Lya te entiende sin acentos, te cuenta datos aunque esté oculta y su menú dice lo que hará." },
+		{ "ic-manada", "Citas y notas sin compartir tu ubicación, el oro del buzón aparte y Alfa más ligero." },
+	} },
 	{ version = "1.3.1", titulo = "La manada afinada", puntos = {
 		{ "ic-ventana", "Acomoda con el ratón a Lya, tu guía, la flecha y tus marcos: Ajustes > Estilo y sonido o /alfa acomodar." },
 		{ "ic-alerta", "Más de 40 arreglos: combate y curación en mazmorras, el buzón cuenta bien tu dinero y la placa de llegada se va sola." },

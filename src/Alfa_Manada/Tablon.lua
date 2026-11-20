@@ -233,7 +233,7 @@ function Tb.Repetir()
 end
 
 A.OnLogin(function()
-	N.Cada("manada.tablon", 60, function()
+	M.Cada("manada.tablon", 60, function()
 		Tb.Repetir()
 		-- Los que caducan se van de la página.
 		local antes = 0

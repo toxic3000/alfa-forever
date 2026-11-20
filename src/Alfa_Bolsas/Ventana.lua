@@ -299,6 +299,27 @@ local function textoDepositar(f)
 	end
 end
 
+-- 1.3.2: «Acomodar» mientras trabaja: «Detener (x/y)» con el ícono de parar,
+-- como Depositar. -> true si cambió de forma (la franja se vuelve a acomodar)
+local function textoAcomodar(f)
+	if not f.Acomodar then return false end
+	local Ac = M.Acomodar
+	local nombre, hechos, total = nil, nil, nil
+	if Ac and Ac.Avance then nombre, hechos, total = Ac.Avance() end
+	local trabajando = nombre ~= nil and hechos ~= nil
+	if trabajando then
+		f.Acomodar:SetTexto(format(L["Detener (%d/%d)"], hechos, total))
+	else
+		f.Acomodar:SetTexto(L["Acomodar"])
+	end
+	if trabajando ~= (f.acomodando or false) then
+		f.acomodando = trabajando
+		f.Acomodar:SetIcono(trabajando and "ic-cerrar" or nil)
+		return true
+	end
+	return false
+end
+
 -- La franja: búsqueda, y Ordenar / Depositar (en vivo) o la fecha de la foto y Volver.
 local function franja(f)
 	local vivo = f.esVivo
@@ -316,6 +337,7 @@ local function franja(f)
 		local hay = vivo and Ac and (Ac.Activo() or Ac.Que() ~= nil)
 		f.Acomodar:SetShown(hay and true or false)
 		f.Acomodar:SetActivo(not combate)
+		textoAcomodar(f)
 	end
 	if f.Conjuntos then f.Conjuntos:SetShown(propia(f) and M.Get("conjuntos") ~= false) end
 	f.Volver:SetShown(not propia(f))
@@ -1458,7 +1480,12 @@ end)
 local function arriba(f) f.reacomodar = true despertar(f) end
 M.Escuchar("SUGERENCIAS", function() enCada(arriba) end)
 M.Escuchar("COMPRA", function() enCada(arriba) end)
-M.Escuchar("LOTE", function() enCada(function(f) textoDepositar(f) if f.Consejo:IsShown() then arriba(f) end end) end)
+M.Escuchar("LOTE", function() enCada(function(f)
+	textoDepositar(f)
+	-- 1.3.2: «Acomodar» dice su avance; al empezar o terminar, la franja se acomoda.
+	if textoAcomodar(f) then franja(f) end
+	if f.Consejo:IsShown() then arriba(f) end
+end) end)
 A.RegisterEvent("MERCHANT_SHOW", function() enCada(arriba) end)
 A.RegisterEvent("MERCHANT_CLOSED", function() enCada(arriba) end)
 

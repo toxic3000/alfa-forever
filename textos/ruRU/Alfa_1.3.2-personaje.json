@@ -1,0 +1,13 @@
+{
+ "Arrastra tus marcos de combate adonde te acomoden. Para fijarlos, vuelve a Combate o escribe /alfa combate mover.": "Перетащите боевые рамки туда, где вам удобно. Чтобы закрепить их, вернитесь в «Бой» или введите /alfa combate mover.",
+ "Así se ve en pantalla. Vuelve a Combate con /alfa combate.": "Вот так это выглядит на экране. Вернуться в «Бой»: /alfa combate.",
+ "En grupo o en una instancia.": "В группе или в подземелье.",
+ "También yendo solo": "И когда вы одни",
+ "Que suene también cuando vas solo por el mundo.": "Звучать и тогда, когда вы путешествуете по миру в одиночку.",
+ "Yendo solo, peleas de al menos": "В одиночку: бои не короче",
+ "Cuando vas solo por el mundo, así no sale tras cada enemigo.": "Когда вы путешествуете в одиночку, чтобы сводка не появлялась после каждого врага.",
+ "Tus marcos aparecen al entrar a un grupo": "Ваши рамки появятся, когда вы вступите в группу",
+ "Mientras vas solo no hay a quién mostrar. Míralos ahora con marcos de ejemplo, o prende «Verte a ti estando solo», abajo en Marcos.": "Пока вы одни, показывать некого. Посмотрите на них сейчас с рамками-примерами или включите «Показывать себя, когда вы одни» ниже, в разделе «Рамки».",
+ "Ver cómo se ven": "Посмотреть, как они выглядят",
+ "Mayús + clic: ponerlo en el chat": "Shift + щелчок: вставить в чат"
+}

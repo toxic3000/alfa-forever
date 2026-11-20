@@ -280,7 +280,14 @@ local function avisoCompartir()
 	return nil
 end
 
+-- 1.3.2: en la pelea, nada de avisos de grupo (empujan las metas y ponen
+-- botones en medio del combate): se guardan y salen al terminar. La bandera
+-- va entre PLAYER_REGEN_DISABLED y _ENABLED (el primero llega antes del bloqueo).
+local pelea = false
+function Gr.EnPelea() return pelea or (InCombatLockdown and InCombatLockdown()) or false end
+
 function Gr.Aviso(v, live)
+	if Gr.EnPelea() then return nil end
 	return avisoElite(v, live) or avisoCompartir()
 end
 
@@ -294,3 +301,6 @@ end
 A.RegisterEvent("GROUP_ROSTER_UPDATE", cambio)
 A.RegisterEvent("UNIT_QUEST_LOG_CHANGED", function(_, unit) if type(unit) == "string" and unit:find("^party") then cambio() end end)
 A.RegisterEvent("QUEST_ACCEPTED", cambio)
+A.RegisterEvent("PLAYER_REGEN_DISABLED", function() pelea = true end)
+-- Al terminar la pelea, lo que esperó (el rastreador también repinta con este evento).
+A.RegisterEvent("PLAYER_REGEN_ENABLED", function() pelea = false cambio() end)

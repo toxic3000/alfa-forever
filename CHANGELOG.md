@@ -1,5 +1,33 @@
 # Cambios de Alfa
 
+## 1.3.2 — La manada en orden: un solo menú de Alfa y 39 mejoras (19/11/2026)
+
+La tercera de la serie 1.3: más calidad, menos estorbo y un Alfa más ligero. Cada mejora trae su prueba en el banco.
+
+**Español**
+- Un solo menú de Alfa: el ícono del minimapa, la lista de addons, el botón flotante y el botón «Alfa» del menú Esc hacen lo mismo. Clic abre la ventana de Alfa en la última página que viste; clic derecho, el mismo menú con las secciones de la ventana (Hoy, Aventura, Personaje, Mundo, Oficios, Manada, Ajustes), todo en español, más Pregúntale a Lya, Acomodar la pantalla, la flecha y Reportar.
+- Combate deja de estorbar yendo solo: el sonido del aviso para cortar y el resumen de la pelea salen en grupo, en instancias o en peleas largas (si los habías cambiado, se quedan como los tenías). Probar y «Mover marcos» ya no salen detrás de la ventana.
+- Curación sin grupo te dice que tus marcos aparecen al entrar a uno y te deja verlos con «Ver cómo se ven»; su asa ya no se corta en alemán ni en ruso. Los talentos dicen «Mayús + clic: ponerlo en el chat».
+- Los avisos de tu grupo («Ana no tiene…») esperan a que termine la pelea; en el mapa del grupo una misión lista sale con el ícono de entregar; «Ir al mapa del juego» abre donde estás; y las capas se llaman igual en todas partes: «Capas de Alfa».
+- La piedra de hogar a tiempo, «Sube al nivel N» y «Misiones grises» funcionan desde que entras, sin esperar a que abras el mapa.
+- Lya: «Pregúntale a Lya» encuentra «mision» sin acento (también en ruso y aunque escribas otras palabras), sus tarjetas muestran el texto completo, «Cuéntame algo de aquí» funciona con Lya oculta y su menú dice lo que hará («Letra más grande», «Menos consejos»).
+- La Jauría: citas y notas ya no piden mostrar tu ubicación en el mapa; los bloques apagados se esconden y la página queda más corta; «Botín» explica por qué está vacío.
+- Bolsas y buzón: el oro del correo ya no cuenta como ganado en «Esta sesión»; «Acomodar» dice «Detener (3/10)» mientras trabaja; «Tomar todo» se puede parar mientras cargan tus cartas. El plan de una hora nombra la zona de cada paso.
+- Ajustes: el buscador pone primero lo principal; en «Sencillo» ya no salen las páginas para autores de guías; «Restablecer página» de Estilo y sonido ya no te pasa a «Sencillo» y dice qué cambia; y en la configuración ya no se corta ningún texto.
+- Más ligero: el reloj de Alfa duerme cuando no hace falta (minimapa, Curación, Recolección y las tareas de La Jauría juntas en una), la página de Bolsas rehace solo lo que cambió, «Qué vender» solo se analiza cuando te quedas sin espacio, el aviso para cortar calcula una vez por lanzamiento y el mapa ya no se redibuja cada segundo por la hora del barco.
+
+**English**
+- One Alfa menu: the minimap icon, the addon list, the floating button and the "Alfa" button in the Esc menu all do the same. Click opens the Alfa window on the last page you saw; right-click, the same menu with the window's sections (Today, Adventure, Character, World, Trades, Pack, Settings), plus Ask Lya, Arrange your screen, the arrow and Report.
+- Combat stops getting in the way when you're solo: the interrupt alert's sound and the fight summary show in a group, in instances or in long fights (if you had changed them, they stay as you had them). Test and "Move frames" no longer show behind the window.
+- Healing without a group tells you your frames appear when you join one and lets you see them with "See how they look"; its handle no longer gets cut in German or Russian. Talents say "Shift + click: put it in chat".
+- Your group's alerts ("Ana doesn't have…") wait until the fight ends; on the group map a finished quest shows the turn-in icon; "Go to the game map" opens where you are; and the layers have one name everywhere: "Alfa layers".
+- Hearthstone in time, "Reach level N" and "Grey quests" work from the moment you log in, without waiting for you to open the map.
+- Lya: "Ask Lya" finds words without their accents (also in Russian, and with your words in any order), her cards show their full text, "Tell me something about here" works with Lya hidden, and her menu says what it will do ("Bigger text", "Fewer tips").
+- La Jauría: meetups and notes no longer ask to show your location on the map; switched-off blocks hide and the page gets shorter; "Loot" explains why it's empty.
+- Bags and mailbox: gold from the mail no longer counts as earned in "This session"; "Arrange" says "Stop (3/10)" while it works; "Take all" can be stopped while your letters load. The one-hour plan names the zone of each step.
+- Settings: the search puts the main match first; "Simple" no longer shows the pages for guide authors; "Reset page" in Style and sound no longer switches you to "Simple" and says what changes; and no text gets cut in the setup.
+- Lighter: Alfa's clock sleeps when it's not needed (minimap, Healing, Gathering and La Jauría's tasks joined into one), the Bags page only redoes what changed, "What to sell" is only analysed when you're running out of room, the interrupt alert works things out once per cast and the map no longer redraws every second for the boat's time.
+
 ## 1.3.1 — La manada afinada: acomodar la pantalla y más de 40 arreglos (19/11/2026)
 
 La segunda de la serie 1.3: revisamos a fondo todo lo que llegó de la 1.2.4 a la 1.3.0 y lo dejamos fino. Cada arreglo trae su prueba nueva en el banco.

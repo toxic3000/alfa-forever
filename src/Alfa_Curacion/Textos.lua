@@ -255,4 +255,8 @@ M.EN = {
 	["Que a ese compañero le falta el buff de tu clase. Pasa el ratón sobre su marco: te digo con qué clic se lo das."] = "That teammate is missing your class buff. Hover over their frame: I'll tell you which click gives it.",
 	["Tus clics:"] = "Your clicks:",
 	["Al curar con un clic, ese compañero queda seleccionado para tus otros poderes."] = "When you heal with a click, that teammate stays targeted for your other powers.",
+	-- 1.3.2
+	["Tus marcos aparecen al entrar a un grupo"] = "Your frames show up when you join a group",
+	["Mientras vas solo no hay a quién mostrar. Míralos ahora con marcos de ejemplo, o prende «Verte a ti estando solo», abajo en Marcos."] = "While you're solo there's no one to show. See them now with sample frames, or turn on \"Show yourself when solo\" below, in Frames.",
+	["Ver cómo se ven"] = "See how they look",
 }

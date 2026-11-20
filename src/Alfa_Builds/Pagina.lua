@@ -65,7 +65,8 @@ local function iconoJuego(t, tex)
 end
 
 -- El cuadro del juego de un hechizo, con líneas de Alfa debajo.
-local function infoHechizo(dueno, spell, lineas)
+-- enlaza: 1.3.2, el clic con Mayús lo pone en el chat; se dice al final.
+local function infoHechizo(dueno, spell, lineas, enlaza)
 	if not (spell and GameTooltip) then return end
 	GameTooltip:SetOwner(dueno, "ANCHOR_RIGHT")
 	pcall(GameTooltip.SetSpellByID, GameTooltip, spell)
@@ -75,6 +76,10 @@ local function infoHechizo(dueno, spell, lineas)
 			local r, g, b = K.Color(l[2] or "textoSuave")
 			GameTooltip:AddLine(l[1], r, g, b, true)
 		end
+	end
+	if enlaza then
+		local r, g, b = K.Color("textoTenue")
+		GameTooltip:AddLine(L["Mayús + clic: ponerlo en el chat"], r, g, b, true)
 	end
 	GameTooltip:Show()
 end
@@ -413,7 +418,8 @@ end
 local function filaPlan(padre)
 	local f = CreateFrame("Button", nil, padre)
 	f:RegisterForClicks("LeftButtonUp")
-	f.velo = K.Velo(f, 0, 0.03)
+	-- 1.3.2: sin velo al pasar el ratón: con un clic normal no hace nada, así
+	-- que no parece botón (Mayús + clic lo pone en el chat, lo dice su cuadro).
 	f.Nivel = K.Texto(f, "numero", "textoTenue")
 	f.Icono = f:CreateTexture(nil, "ARTWORK")
 	f.Icono:SetSize(28, 28)
@@ -424,11 +430,8 @@ local function filaPlan(padre)
 	f.Rango = K.Texto(f, "pequeno", "textoTenue")
 	f.Por = K.Texto(f, "nota", "textoSuave")
 	f.Estado = K.Insignia(f, "", "neutro")
-	f:SetScript("OnEnter", function(self)
-		self.velo:Show()
-		infoHechizo(self, self.spell, self.lineas)
-	end)
-	f:SetScript("OnLeave", function(self) self.velo:Hide() sinInfo(self) end)
+	f:SetScript("OnEnter", function(self) infoHechizo(self, self.spell, self.lineas, true) end)
+	f:SetScript("OnLeave", function(self) sinInfo(self) end)
 	f:SetScript("OnClick", function(self) enlazarHechizo(self.spell) end)
 	function f:Set(x, foto)
 		self.spell = x.spell

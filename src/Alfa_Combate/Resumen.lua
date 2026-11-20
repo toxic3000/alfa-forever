@@ -197,7 +197,9 @@ function Rs.Termina()
 	local dur = GetTime() - inicio
 	inicio = nil
 	if not M.Opt("resumen") then return end
-	local minimo = max(0, tonumber(M.Opt("resumenMin")) or 10)
+	-- 1.3.2: yendo solo en el mundo, solo las peleas largas (resumenMinSolo).
+	local enGrupo = M.EnGrupo()
+	local minimo = max(0, tonumber(M.Opt(enGrupo and "resumenMin" or "resumenMinSolo")) or (enGrupo and 10 or 30))
 	if dur < minimo then return end
 	A.After(1, function()
 		if M.EnCombate() then return end -- ya empezó otra: no se lee (llegaría secreto)

@@ -498,6 +498,9 @@ M.EN = {
 	["Revisar"] = "Check",
 	["Saltar"] = "Skip",
 	["Se pusieron %d ajustes. Algunas cosas se ven completas al recargar."] = "%d settings were put on. Some things show fully after reloading.",
+	-- 1.3.2: «Restablecer página» de Estilo y sonido (Pagina.lua)
+	["Vuelven a como venían el estilo Alfa con su color, %s. «%s» y tus perfiles no cambian."] = "The Alfa style with its colour, %s go back to how they came. «%s» and your profiles stay as they are.",
+	[" y "] = " and ",
 	-- 1.3.1: importar deja fuera las líneas que no sirven (Perfiles.lua)
 	["Se pusieron %d ajustes. Las líneas que no eran válidas (%d) se dejaron fuera."] = "%d settings were put on. The lines that weren't valid (%d) were left out.",
 	["Siguiente"] = "Next",
@@ -709,6 +712,12 @@ M.EN = {
 	["acomoda con el ratón lo de Alfa en tu pantalla"] = "arrange Alfa's things on your screen with the mouse",
 	["Los marcos se mueven fuera de combate."] = "Frames can be moved out of combat.",
 	-- 1.3.1: las notas de la versión
+	-- 1.3.2: las notas de la versión
+	["La manada en orden"] = "A pack in order",
+	["Un solo menú de Alfa: el ícono del minimapa, la lista de addons y el botón Alfa del menú Esc abren lo mismo."] = "One Alfa menu: the minimap icon, the addon list and the Alfa button in the Esc menu open the same thing.",
+	["Menos estorbo: Combate se calla yendo solo y los avisos de grupo esperan a que acabe la pelea."] = "Less in the way: Combat stays quiet when you're solo and group alerts wait for the fight to end.",
+	["Lya te entiende sin acentos, te cuenta datos aunque esté oculta y su menú dice lo que hará."] = "Lya understands you without accents, tells you things even while hidden and her menu says what it will do.",
+	["Citas y notas sin compartir tu ubicación, el oro del buzón aparte y Alfa más ligero."] = "Meetups and notes without sharing your location, mailbox gold kept apart and a lighter Alfa.",
 	["La manada afinada"] = "A finely tuned pack",
 	["Acomoda con el ratón a Lya, tu guía, la flecha y tus marcos: Ajustes > Estilo y sonido o /alfa acomodar."] = "Arrange Lya, your guide, the arrow and your frames with the mouse: Settings > Style and sound or /alfa acomodar.",
 	["Más de 40 arreglos: combate y curación en mazmorras, el buzón cuenta bien tu dinero y la placa de llegada se va sola."] = "Over 40 fixes: combat and healing in dungeons, the mailbox counts your money right and the arrival plate goes away on its own.",

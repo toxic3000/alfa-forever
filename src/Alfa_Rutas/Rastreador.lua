@@ -758,7 +758,7 @@ local function textoFlecha()
 		local ok3, r = pcall(A.FormatDistance, d)
 		if ok3 and type(r) == "string" then txt = r end
 	end
-	return (txt or format("%d yd", floor(d + 0.5))) .. " " .. rumbo(dn, dw)
+	return (txt or format(L["%d yardas"], floor(d + 0.5))) .. " " .. rumbo(dn, dw) -- 1.3.2: traducido
 end
 
 -- Cada segundo, mientras el rastreador compacto se ve: solo el texto; si la

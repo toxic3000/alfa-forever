@@ -562,8 +562,11 @@ step("Migraciones: se anotan una por una; la de un módulo que se prende despué
   local db = A.DB()
   local antesSet, antesN = db.alfaMigraciones, db.alfaSchema
   -- Una cuenta de antes del conjunto: se siembra con todo lo que ya estaba hecho.
+  -- (con el número más alto de las que hay hoy: otras versiones agregan las suyas)
+  N.CorrerMigraciones()
+  local hoy = math.max(3, N.Esquema())
   db.alfaMigraciones = nil
-  db.alfaSchema = 3
+  db.alfaSchema = hoy
   local n0 = N.CorrerMigraciones()
   local h = db.alfaMigraciones
   check(n0 == 0, "una cuenta ya mudada volvió a correr migraciones (" .. tostring(n0) .. ")")

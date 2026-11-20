@@ -15,10 +15,10 @@ Ayudas de combate que **solo muestran**: nada aquí aprieta, lanza, elige objeti
 - **Barra de golpe** (`combate.golpe`), sin números por omisión (`combate.golpeNumero`).
 - **Marca de misión** en las placas de nombre (`combate.marcaMision`, `combate.marcaMisionBrillo`).
 - **Medidor de daño** con `C_DamageMeter` y el panel de estadísticas.
-- **Aviso para cortar** (1.3.0, `Corte.lua`, `combate.corte`, `corteFoco`, `corteSonido`): tu objetivo o tu foco lanza algo que se puede cortar (`UnitCastingInfo`/`UnitChannelInfo`, `notInterruptible`; los oficios no) → tu corte de clase (`Co.HABILIDADES`; el que puedes usar ya y, si no, aquel al que solo le falta recurso: 1.3.1, en actitud defensiva con poca ira sale Golpe con escudo, no Patada), su tecla de tu barra (`R.Tecla`) y si está listo o cuánto le falta, con el barrido de su recarga (1.3.1: antes no salía). Con datos secretos no se compara ni se prueba con `or` (1.3.1): la textura secreta va tal cual a `SetTexture`, título «¡Está lanzando!» y `SetAlphaFromBoolean(notInterruptible, 0, 1)` si existe. `/alfa combate corte` lo prueba.
+- **Aviso para cortar** (1.3.0, `Corte.lua`, `combate.corte`, `corteFoco`, `corteSonido`): tu objetivo o tu foco lanza algo que se puede cortar (`UnitCastingInfo`/`UnitChannelInfo`, `notInterruptible`; los oficios no) → tu corte de clase (`Co.HABILIDADES`; el que puedes usar ya y, si no, aquel al que solo le falta recurso: 1.3.1, en actitud defensiva con poca ira sale Golpe con escudo, no Patada), su tecla de tu barra (`R.Tecla`) y si está listo o cuánto le falta, con el barrido de su recarga (1.3.1: antes no salía). Con datos secretos no se compara ni se prueba con `or` (1.3.1): la textura secreta va tal cual a `SetTexture`, título «¡Está lanzando!» y `SetAlphaFromBoolean(notInterruptible, 0, 1)` si existe. `/alfa combate corte` lo prueba. 1.3.2: tu corte (habilidad, nombre, ícono y tecla) se elige al empezar el lanzamiento o al cambiar de objetivo (`Co.Elegido`, `Co.Revisar(true)`), y se olvida con tus barras (`R.OlvidarBarras` → `Co.Olvidar`); cada vuelta del reloj pide la recarga una sola vez. Yendo solo en el mundo no suena: solo en grupo o en una instancia (`M.EnGrupo`), salvo `corteSonidoSolo`.
 - **Barra de amenaza** (1.3.0, `Amenaza.lua`, `combate.amenaza`, `amenazaPapel`, `amenazaAviso`, `amenazaSonido`): en combate, en grupo o con mascota. `UnitDetailedThreatSituation("player", "target")`; no tanque: amarilla desde `amenazaAviso` %, roja si ya te ataca; tanque: aviso con status 2, peligro con 0-1. Papel automático: rol del grupo, actitud defensiva (forma 18), oso (5/8) o Furia justa. Contra un jefe los valores llegan secretos: la barra los muestra tal cual (1.3.1: sin `or`, que daba error) y no avisa.
 - **Tecla grande** (1.3.0): `combate.tam` hasta 96 (de fábrica 52), `tamDespues` (proporción de las que siguen) y `teclaGrande` (abajo al centro, letra `numero`/`subtitulo`/`cifra` según el tamaño; también en las que siguen).
-- **Resumen de la pelea** (1.3.0, `Resumen.lua`, `combate.resumen`, `resumenMin`): al salir de combate, con `C_DamageMeter` (solo tu fila: daño, curación, por segundo; `DamageTaken` con tu GUID para lo que más te pegó). El registro de combate (`COMBAT_LOG_EVENT*`) es restringido en Forever: no se usa. La última queda en `AlfaNucleoCharDB.combate.ultimaPelea`; `/alfa combate pelea` la muestra otra vez.
+- **Resumen de la pelea** (1.3.0, `Resumen.lua`, `combate.resumen`, `resumenMin`): al salir de combate, con `C_DamageMeter` (solo tu fila: daño, curación, por segundo; `DamageTaken` con tu GUID para lo que más te pegó). El registro de combate (`COMBAT_LOG_EVENT*`) es restringido en Forever: no se usa. La última queda en `AlfaNucleoCharDB.combate.ultimaPelea`; `/alfa combate pelea` la muestra otra vez. 1.3.2: yendo solo en el mundo, solo las peleas de `resumenMinSolo` s o más (30 de fábrica); en grupo o instancia, `resumenMin`.
 - **Recargas largas** (1.3.0, `Recargas.lua`, `combate.recargas`, `recargasMin`): lo que lanzas (`UNIT_SPELLCAST_SUCCEEDED`) con recarga de 30 s o más entra a una barra discreta; con tiempos secretos se estima con la duración vista (`combate.recargas`). Las conocidas en `combate.largas`; las que ocultas en la página, en `combate.recargasOcultas` (por nombre).
 
 ## De dónde sale la sugerencia
@@ -134,9 +134,9 @@ Para que no se llene la pantalla de texto al lanzar habilidades:
 | `golpe`, `golpeNumero` | `true`, `false` | Barra de golpe y sus segundos |
 | `marcaMision`, `marcaMisionBrillo` | `true`, `true` | Marca de misión en las placas |
 | `tamDespues`, `teclaGrande` | `0.7`, `true` | Tamaño de las que siguen y la tecla grande (1.3.0) |
-| `corte`, `corteFoco`, `corteSonido` | `true` | Aviso para cortar |
+| `corte`, `corteFoco`, `corteSonido`, `corteSonidoSolo` | `true`, `true`, `true`, `false` | Aviso para cortar (el sonido yendo solo, 1.3.2) |
 | `amenaza`, `amenazaPapel`, `amenazaAviso`, `amenazaSonido` | `true`, `"auto"`, `80`, `true` | Barra de amenaza |
-| `resumen`, `resumenMin` | `true`, `10` | Resumen de la pelea |
+| `resumen`, `resumenMin`, `resumenMinSolo` | `true`, `10`, `30` | Resumen de la pelea (el mínimo yendo solo, 1.3.2) |
 | `recargas`, `recargasMin` | `true`, `30` | Recargas largas |
 
 ## Para verificar en el juego
@@ -149,3 +149,10 @@ Para que no se llene la pantalla de texto al lanzar habilidades:
 6. Marca de misión: un enemigo de una misión de matar o de botín lleva el ícono y el brillo; al completar el objetivo se quita; en una mazmorra no sale nada y no hay errores. Comprobar que `C_TooltipInfo.GetUnit` traiga las líneas de objetivo en Forever y que el ícono no choque con la calavera del motor.
 7. Apagar/encender `marcaMision`, `porque`, `barrido` y `rama` desde la página se aplica sin recargar.
 8. 1.3.1: en una mazmorra, con tu objetivo lanzando, sale «¡Está lanzando!» sin errores (BugSack limpio); con tu corte en recarga, su ícono muestra el barrido. Contra un jefe, en grupo, la barra de amenaza no da errores.
+
+## 1.3.2
+
+- **A la vista:** «Probar el aviso», «Probar un aviso», «Ver de nuevo» y «Mover marcos» de la página cierran la ventana de Alfa (`N.CerrarVentana`: los marcos de combate salían debajo) y una línea en tu chat dice cómo volver. En combate «Mover marcos» no cierra nada (no se pueden mover).
+- **Mismos nombres:** «Mover marcos» / «Fijar marcos», como en Curación; «Probar un aviso» solo en la tarjeta de los avisos.
+- **Migración 4** (`M.Migracion132`, Combate.lua): quien ya había prendido a mano el sonido del corte sigue oyéndolo yendo solo, y quien había cambiado `resumenMin` usa el mismo mínimo yendo solo.
+- Prueba: `tools/banco/prueba_132_personaje.lua`.

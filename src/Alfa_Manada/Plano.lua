@@ -237,5 +237,5 @@ A.RegisterEvent("PLAYER_TARGET_CHANGED", function() pcall(Pl.Ver, "target") end)
 A.RegisterEvent("ZONE_CHANGED_NEW_AREA", function() Pl.Reiniciar() end)
 
 A.OnLogin(function()
-	N.Cada("manada.plano", CADA, function() pcall(Pl.Revisar) end)
+	M.Cada("manada.plano", CADA, function() pcall(Pl.Revisar) end)
 end)

@@ -98,22 +98,43 @@ local function rgb(nombre)
 	return { r, g, b, 1 }
 end
 
+-- 1.3.2: la insignia en minutos («4 min») mientras falte más de un minuto y
+-- «m:ss» solo en el último: así el mapa no se redibuja cada segundo. El
+-- texto exacto sale en el cuadro del ratón, leído al pasarlo.
+local function insignia(seg)
+	if not seg then return nil end
+	if seg <= 0 then return L["¡Ya!"] end
+	if seg <= 60 then return cuenta(seg) end
+	return format(L["%d min"], ceil(seg / 60))
+end
+Bc.Insignia = insignia
+
+-- El texto de ahora de un muelle (para el cuadro del ratón).
+function Bc.TextoDe(id, lado)
+	for _, h in ipairs(Bc.Lista()) do
+		if h.id == id and h.lado == lado then return h.texto end
+	end
+	return nil
+end
+
 function Bc.Pines()
 	local out = {}
 	for _, h in ipairs(Bc.Lista()) do
 		local titulo = format(h.tipo == "zeppelin" and L["Zepelín de %s"] or L["Barco de %s"], h.desde)
 		local tono = h.segundos and h.segundos <= 60 and "exito" or "acento"
-		local badge = h.segundos and (h.segundos <= 0 and L["¡Ya!"] or cuenta(h.segundos)) or nil
+		local badge = insignia(h.segundos)
 		out[#out + 1] = {
 			map = h.map, x = h.x, y = h.y, f = h.f,
 			icon = h.tipo == "zeppelin" and "map:zeppelin" or "map:boat", size = 15, priority = 2,
 			color = rgb(tono),
 			badge = badge,
 			-- 1.3.1: lo que dice este pin (Bc.Pintar solo publica si cambia).
-			alfaFirma = concat({ tostring(h.id), h.lado, tono, badge or "", h.texto or "", tostring(h.map), tostring(h.x), tostring(h.y) }, "|"),
+			-- (1.3.2: con cuenta atrás el texto cambia cada segundo: no entra en la firma)
+			alfaFirma = concat({ tostring(h.id), h.lado, tono, badge or "", h.segundos and "" or (h.texto or ""),
+				tostring(h.map), tostring(h.x), tostring(h.y) }, "|"),
 			tooltip = function(tip)
 				tip:SetText(titulo, K.Color("texto"))
-				tip:AddLine(h.texto, K.Color("acento"))
+				tip:AddLine(Bc.TextoDe(h.id, h.lado) or h.texto, K.Color("acento"))
 				tip:AddLine(L["Clic: la flecha te lleva al muelle."], K.Color("textoTenue"))
 			end,
 			onClick = function(boton)

@@ -115,6 +115,8 @@ local function lugar(qid, desde)
 	local ok, pm = pcall(I.PasosMision, q, desde)
 	local p = ok and pm and ((not lista and pm.objetivo) or pm.fin) or nil
 	local out = p and p.map and p.x and p.y and { map = p.map, x = p.x, y = p.y, f = p.f } or nil
+	-- 1.3.2: ¿el pin va a la entrega? (lista, o sin lugar para lo que falta)
+	if out then out.entrega = p == pm.fin end
 	lugares[qid] = { lista = lista, p = out or false }
 	return out
 end
@@ -178,7 +180,7 @@ function Mg.Pines(datos)
 		local quienes = concat(d.quienes, ", ")
 		out[#out + 1] = {
 			map = d.p.map, x = d.p.x, y = d.p.y, f = d.p.f,
-			icon = "map:kill", size = 14, priority = 2, ring = rgb(d.tuya and "acento" or "aviso"),
+			icon = d.p.entrega and "map:quest-turnin" or "map:kill", size = 14, -- 1.3.2: la entrega, con su ícono priority = 2, ring = rgb(d.tuya and "acento" or "aviso"),
 			color = rgb(d.tuya and "acento" or "aviso"), badge = tostring(#d.quienes),
 			tooltip = function(tip)
 				tip:SetText(d.titulo, K.Color("texto"))

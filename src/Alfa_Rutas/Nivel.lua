@@ -116,12 +116,65 @@ local cache, cacheEn = nil, -1e9
 
 function Nv.Olvidar() cache, cacheEn = nil, -1e9 end
 
+-- 1.3.2: sin el Codex, con la base de misiones (Ligero.lua): los enemigos
+-- que pide cada misión de tu registro y dónde andan. La base no trae su
+-- nivel: se toma el de la misión (casi siempre el de sus enemigos).
+local function sinCodex(Cp, desde, yc, ywx, ywy)
+	local Lg = M.Ligero
+	if not (Lg and Lg.Listo()) then return nil end
+	local nivel = jugador()
+	local Lv = A.Levels
+	local mejor, puntos = nil, -1
+	local n = 0
+	for _, qid in ipairs(Cp.GetLogQuests and Cp.GetLogQuests() or {}) do
+		n = n + 1
+		if n > MAX_MISIONES then break end
+		local lista = Cp.IsQuestReadyForTurnIn and Cp.IsQuestReadyForTurnIn(qid)
+		local lvl = not lista and (M.num(Cp.GetQuestLevel and Cp.GetQuestLevel(qid), nil) or Lg.Nivel(qid)) or nil
+		if lvl and lvl >= nivel - ABAJO and lvl <= nivel + ARRIBA then
+			local xp = Lv and Lv.MobXP and select(2, pcall(Lv.MobXP, nivel, lvl, false))
+			xp = M.num(xp, 0)
+			if xp > 0 then
+				for _, e in ipairs(Lg.Enemigos(qid)) do
+					local cerca, lugar = nil, nil
+					for i = 1, min(#e.spawns, MAX_LUGARES) do
+						local s = e.spawns[i]
+						local c, wx, wy = mundo(s)
+						if c == yc then
+							local d = sqrt((wx - ywx) ^ 2 + (wy - ywy) ^ 2)
+							if not cerca or d < cerca then cerca, lugar = d, s end
+						end
+					end
+					if cerca and cerca <= LEJOS then
+						local pts = xp / (1 + cerca / 400)
+						if pts > puntos then
+							puntos = pts
+							mejor = { npc = e.npc, nombre = e.nombre or M.TituloMision(qid), nivel = lvl, xp = xp, mision = qid,
+								titulo = M.TituloMision(qid), p = { map = lugar.map, x = lugar.x, y = lugar.y, f = lugar.f },
+								yardas = floor(cerca + 0.5) }
+						end
+					end
+				end
+			end
+		end
+	end
+	return mejor
+end
+
 function Nv.DondeRinde(forzar)
 	local ahora = GetTime and GetTime() or 0
 	if not forzar and ahora - cacheEn < VIGENCIA then return cache or nil end
 	if enCombate() then return cache or nil end
 	local C, Cp = CX(), CP()
-	if not (C and Cp and C.IsLoaded and C.IsLoaded() and C.Npc and C.Quest) then return nil end
+	if not Cp then return nil end
+	if not (C and C.IsLoaded and C.IsLoaded() and C.Npc and C.Quest) then
+		local desde = A.PlayerPoint and A.PlayerPoint() or nil
+		local yc, ywx, ywy = mundo(desde)
+		if not yc then return nil end
+		local mejor = sinCodex(Cp, desde, yc, ywx, ywy)
+		cache, cacheEn = mejor or false, ahora
+		return mejor
+	end
 	local desde = A.PlayerPoint and A.PlayerPoint() or nil
 	local yc, ywx, ywy = mundo(desde)
 	if not yc then return nil end
@@ -203,3 +256,4 @@ A.RegisterEvent("QUEST_ACCEPTED", function() cacheEn = -1e9 end)
 A.RegisterEvent("QUEST_REMOVED", function() cacheEn = -1e9 end)
 A.RegisterEvent("ZONE_CHANGED_NEW_AREA", function() cacheEn = -1e9 end)
 A.RegisterEvent("PLAYER_LEVEL_UP", function() cacheEn = -1e9 end)
+A.On("CODEX_LOADED", function() cacheEn = -1e9 end) -- 1.3.2: ya con el Codex, lo de verdad

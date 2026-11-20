@@ -435,9 +435,9 @@ step("Cazar juntos olvida lo caducado y mira tu zona una vez", function()
   if J.Olvidar then J.Olvidar() end
   conRed(function()
     for i = 1, 30 do llega(("1M|%d"):format(700 + i), ("Lobo%02d Paz"):format(i)) end
-    local tarea = N.Reloj.lista["manada.juntosOfrecer"]
-    check(tarea and tarea.fn, "falta la tarea manada.juntosOfrecer")
-    if not (tarea and tarea.fn) then return end
+    -- (1.3.2: la tarea de 20 s vive en el reloj de La Jauría, MN.Cada; es J.OfrecerATodos)
+    local tarea = { fn = function() if J.OfrecerATodos then J.OfrecerATodos() end end }
+    check(J.OfrecerATodos, "falta J.OfrecerATodos")
     local mp, veces = U.MiPosicion, 0
     U.MiPosicion = function(...) veces = veces + 1 return mp(...) end
     local ok, e = pcall(tarea.fn, 0)

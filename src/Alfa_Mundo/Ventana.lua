@@ -618,7 +618,7 @@ end
 
 local function construir()
 	local w, h = tamanoInicial()
-	F = K.Ventana({ nombre = NOMBRE, titulo = L["Mapa del mundo"], subtitulo = " ", icono = "ic-mundo",
+	F = K.Ventana({ nombre = NOMBRE, titulo = L["Mapa de Alfa"], subtitulo = " ", icono = "ic-mundo",
 		ancho = w, alto = h,
 		alAbrir = function(self)
 			mostrado.zona, mostrado.coords = -1, nil
@@ -647,7 +647,7 @@ local function construir()
 	F.BLimpio = botonCab("ic-descubrir", L["Modo limpio"], function() Capas.AlternarLimpio() end,
 		L["Deja solo lo esencial: tú, tu grupo, tus marcadores y el siguiente paso de la guía."])
 	F.BLimpio:SetPoint("RIGHT", F.Sep, "LEFT", -ESP.s, 0)
-	F.BCapas = botonCab("ic-comunidad", L["Capas del mapa"], function(self)
+	F.BCapas = botonCab("ic-comunidad", L["Capas de Alfa"], function(self)
 		Panel.Alternar(self, { punto = "TOPRIGHT", relativo = "BOTTOMRIGHT", x = 0, y = -6, sinMapa = true })
 		pintarBotones()
 	end, L["Elige qué se ve en el mapa: guía, misiones, raros, viajes, zonas y lo que agregan otros módulos."])
@@ -863,8 +863,18 @@ function V.AlMapaDelJuego()
 		N.Imprimir(L["Con la interfaz de mando el mapa del juego se abre con su tecla."])
 		return
 	end
-	local _, zona = Geo.Cadena(cu, cv)
-	if C.OpenWorldMap(zona or (z >= 1.5 and Geo.Cadena(cu, cv)) or nil) then
+	local zona
+	if V.Visible() then
+		-- Desde el mapa de Alfa: la zona que miras.
+		local _, enVista = Geo.Cadena(cu, cv)
+		zona = enVista or (z >= 1.5 and Geo.Cadena(cu, cv)) or nil
+	elseif type(C.GetPlayerMapPosition) == "function" then
+		-- 1.3.2: desde la página (el mapa de Alfa cerrado): donde estás, no la
+		-- última vista del mapa de Alfa.
+		local ok, mapa = pcall(C.GetPlayerMapPosition)
+		zona = ok and type(mapa) == "number" and mapa or nil
+	end
+	if C.OpenWorldMap(zona) then
 		V.Cerrar()
 	else
 		N.Imprimir(L["En combate el mapa del juego no se abre desde Alfa: usa el de Alfa."])

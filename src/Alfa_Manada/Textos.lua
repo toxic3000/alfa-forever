@@ -597,4 +597,7 @@ M.EN = {
 	["Mazmorra"] = "Dungeon",
 	["Misión"] = "Quest",
 	["Farmear"] = "Farming",
+	-- 1.3.2
+	["Tu hermandad ya sabe tu clase y tu nivel: te avisarán si les sale algo que te sirve."] = "Your guild now knows your class and level: they'll let you know if they find something for you.",
+	["Aún no conozco a ningún lobo conectado que comparta su clase y su nivel. Pídeles que prendan «Compartir mi clase y nivel» en La Jauría."] = "I don't know any online wolf who shares their class and level yet. Ask them to turn on \"Share my class and level\" in La Jauría.",
 }

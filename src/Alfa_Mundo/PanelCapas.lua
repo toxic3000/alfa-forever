@@ -138,7 +138,7 @@ function Panel.Refrescar()
 end
 
 local function construir()
-	F = M.Emergente({ nombre = "AlfaMundoCapas", titulo = L["Capas del mapa"], icono = "ic-comunidad", ancho = ANCHO })
+	F = M.Emergente({ nombre = "AlfaMundoCapas", titulo = L["Capas de Alfa"], icono = "ic-comunidad", ancho = ANCHO })
 
 	-- El modo limpio, arriba y destacado.
 	local lim = CreateFrame("Button", nil, F)
@@ -178,7 +178,7 @@ local function construir()
 		N.Abrir("mundo")
 	end, { tipo = "fantasma", tam = "chico", icono = "ic-ajustes" })
 	F.Mas:SetPoint("LEFT", pie, "LEFT", ESP.m, 0)
-	F.Mapa = K.Boton(pie, L["Abrir el mapa de Alfa"], function()
+	F.Mapa = K.Boton(pie, L["Mapa de Alfa"], function()
 		F:Hide()
 		if AlfaMundo and AlfaMundo.Abrir then AlfaMundo.Abrir(F.alfaMapa) end
 	end, { tipo = "acento", tam = "chico", icono = "ic-mundo" })

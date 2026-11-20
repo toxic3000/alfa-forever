@@ -13,6 +13,7 @@ VentanaSimple.lua
 Tareas.lua
 Disponible.lua
 Indice.lua
+Ligero.lua
 Plan.lua
 Guias.lua
 Cerrar.lua

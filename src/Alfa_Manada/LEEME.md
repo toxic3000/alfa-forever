@@ -75,6 +75,14 @@ La lista `I.LISTA` la lleva Toxic a mano, con permiso de cada persona: `["Nombre
 - **Cortar por letras** (`U.Cortar(s, n)`): los nombres de raros, llamados, logros, misiones del aprendiz y «¿Quién tiene...?» se cortan por letras, no por bytes (en ruso o chino quedaba una letra partida). Citas, notas y el tablón usan el mismo.
 - Prueba: `tools/banco/prueba_131_manada.lua`.
 
+## 1.3.2
+
+- **Citas y notas sin tu ubicación**: `1C`/`1D` (`Cita.lua`) y `1N` (`Notas.lua`) van por la hermandad (`R.EnviarHermandad` / `EnviarLibre`, `R.Libres.C`) con su propio permiso: `manada.citas` y `manada.notasCompartir`. Ya no hace falta `manada.compartir`; quien compartía sigue igual.
+- **La página, más corta** (`Pagina.lua`, `BLOQUE_AJUSTE`): el bloque de una función apagada (citas y calendario, tablón, notas, raros con reloj, mentor, botín) no sale.
+- **Botín vacío** explica que hacen falta lobos que compartan su clase y nivel, y trae «Compartir mi clase y nivel».
+- **Un solo reloj** (`Util.lua`, `M.Cada(clave, seg, fn)`, `M.Tareas()`): las 13 tareas de 10 s a 10 min corren dentro de `manada.reloj` (cada 10 s), una vez por su período y las de igual período en vueltas distintas.
+- Prueba: `tools/banco/prueba_132_manada.lua`.
+
 ## Para el clan: `Clan.lua`
 
 Nombre exacto de la hermandad (`hermandad`), lema, descripción, lo que ofrecen y **`oficiales`** (nombres completos de personaje, con apellido). `discord = nil` usa el enlace de Alfa. `donar = ""` es el enlace para donar de "Apoya a Alfa" (vacío: "Muy pronto").

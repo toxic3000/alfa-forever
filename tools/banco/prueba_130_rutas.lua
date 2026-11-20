@@ -408,8 +408,9 @@ step("Barcos y zepelines en el mapa, con su cuenta atrás", function()
       local pines = Bc.Pines()
       check(pines[1] and pines[1].icon == "map:zeppelin", "el pin no es de zepelín")
       local conCuenta
-      for _, p in ipairs(pines) do if p.badge == "1:20" then conCuenta = p end end
-      check(conCuenta, "ningún pin lleva la cuenta atrás")
+      -- 1.3.2: con más de un minuto, en minutos («2 min»); el texto exacto va en el cuadro del ratón.
+      for _, p in ipairs(pines) do if p.badge == "2 min" then conCuenta = p end end
+      check(conCuenta, "ningún pin lleva la cuenta atrás en minutos")
       WorldMapFrame:Show()
       Bc.Pintar()
       check(type(capas["rutas.barcos"]) == "table", "con el mapa abierto no puso la capa")

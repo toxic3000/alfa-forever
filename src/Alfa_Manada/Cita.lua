@@ -3,8 +3,9 @@
 --
 -- Propones una salida (qué: lo que sea o una mazmorra; día y hora) desde la
 -- página de La Jauría o con /alfa cita. Les llega a los lobos de tu
--- hermandad que usan Alfa y comparten: un aviso con «Voy» (y «Voy» / «No
--- puedo» en la página). Su respuesta te llega por susurro oculto y en la
+-- hermandad que usan Alfa: un aviso con «Voy» (y «Voy» / «No puedo» en la
+-- página). (1.3.2) Ya no pide compartir tu ubicación: su permiso es
+-- manada.citas (como el tablón, 1b). Su respuesta te llega por susurro oculto y en la
 -- página ves quién va. Unos RECUERDA segundos antes, Lya (o un aviso) te
 -- recuerda la cita, a ti y a quien dijo «Voy». Nada sale al chat.
 --
@@ -187,14 +188,14 @@ end
 
 local function enviarCita(c)
 	if not U.EnHermandad() then return false end
-	return M.Red.Enviar("C:" .. c.id, format("%sC|%d|%d|%s", V, c.id, c.cancelada and 0 or c.cuando, c.cancelada and "" or c.que), "GUILD")
+	-- (1.3.2) Por la hermandad con su propio permiso, sin pedir compartir.
+	return M.Red.EnviarHermandad("C:" .. c.id, format("%sC|%d|%d|%s", V, c.id, c.cancelada and 0 or c.cuando, c.cancelada and "" or c.que))
 end
 
 -- Propones una cita: ok, o false y por qué ("apagado", "compartir",
 -- "hermandad", "que", "pasada", "muchas", "via").
 function Ci.Proponer(que, cuando)
 	if not activo() then return false, "apagado" end
-	if not on("compartir") then return false, "compartir" end
 	if not U.EnHermandad() then return false, "hermandad" end
 	que = limpiar(que)
 	if not que then return false, "que" end
@@ -238,7 +239,7 @@ function Ci.Responder(k, si)
 	local c = datos().citas[k]
 	if not c or c.mia then return false end
 	c.mi = si and true or false
-	if c.envio then M.Red.Enviar("D:" .. k, format("%sD|%d|%s", V, c.id, si and "s" or "n"), "WHISPER", U.Destino(c.envio)) end
+	if c.envio then M.Red.EnviarLibre("D:" .. k, format("%sD|%d|%s", V, c.id, si and "s" or "n"), U.Destino(c.envio)) end
 	U.Decir(si and format(L["Le dijiste a %s que vas: %s."], c.de or "?", c.que or "")
 		or format(L["Le dijiste a %s que esta vez no puedes."], c.de or "?"))
 	cambio()
@@ -320,6 +321,8 @@ M.Red.Oyentes.D = function(clave, remitente, _, f, canal)
 	end
 	cambio()
 end
+-- (1.3.2) Las citas llegan aunque no compartas tu ubicación (su permiso: manada.citas).
+M.Red.Libres.C = true
 
 ---------------------------------------------------------------------------
 -- El recordatorio y la repetición
@@ -347,7 +350,7 @@ function Ci.Recordar()
 end
 
 local function repetir()
-	if not (activo() and on("compartir")) then return end
+	if not activo() then return end
 	local t = ahora()
 	for _, c in ipairs(Ci.Lista()) do
 		if c.mia and c.cuando > t then enviarCita(c) end
@@ -396,6 +399,6 @@ end, L["Propón una salida a la manada (/alfa cita mañana 21:30 Minas)"])
 
 A.OnLogin(function()
 	caducar()
-	N.Cada("manada.citaRecordar", 30, Ci.Recordar)
-	N.Cada("manada.citaRepetir", REPITE, repetir)
+	M.Cada("manada.citaRecordar", 30, Ci.Recordar)
+	M.Cada("manada.citaRepetir", REPITE, repetir)
 end)

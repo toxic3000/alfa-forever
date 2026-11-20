@@ -150,11 +150,34 @@ local function ocultar()
 	if f and not M.Desbloqueado() then f:Hide() end
 end
 
+-- 1.3.2: tu corte para este lanzamiento (habilidad, nombre, ícono y tecla) se
+-- elige al empezar el lanzamiento, no en cada vuelta del reloj, y se olvida
+-- cuando cambian tus barras o tus hechizos (Rotacion.OlvidarBarras -> Co.Olvidar).
+local elegido
+function Co.Olvidar() elegido = nil end
+
+local function datosDe(id)
+	return { id = id, nombre = M.NombreHechizo(id) or "?", icono = M.IconoHechizo(id) or K.Lobo("atento"),
+		tecla = M.Rotacion and M.Rotacion.Tecla and M.Rotacion.Tecla(id) or nil }
+end
+
+-- -> el corte elegido, o nil si no conoces ninguno.
+function Co.Elegido()
+	if elegido then return elegido end
+	local id = Co.Habilidad()
+	if not id then return nil end
+	elegido = datosDe(id)
+	return elegido
+end
+
 -- La línea de abajo: lista (con tecla), cuánto le falta o que te acerques.
-function Co.Estado(id, unidad)
-	local nombre = M.NombreHechizo(id) or "?"
-	local falta = M.Recargas and M.Recargas.Falta(id)
-	local tecla = M.Rotacion and M.Rotacion.Tecla and M.Rotacion.Tecla(id) or nil
+-- e: el corte elegido (nombre y tecla ya buscados); conFalta: `falta` ya se
+-- pidió a Recargas en esta vuelta (puede ser nil: en recarga, sin saber cuánto).
+function Co.Estado(id, unidad, e, falta, conFalta)
+	local nombre = e and e.nombre or M.NombreHechizo(id) or "?"
+	if not conFalta then falta = M.Recargas and M.Recargas.Falta(id) end
+	local tecla
+	if e then tecla = e.tecla else tecla = M.Rotacion and M.Rotacion.Tecla and M.Rotacion.Tecla(id) or nil end
 	if falta == nil then return format(L["%s está en recarga"], nombre), "aviso", tecla end
 	if falta > 0.3 then return format(L["%s vuelve en %d s"], nombre, floor(falta + 0.5)), "aviso", tecla end
 	local alcance = unidad and C_Spell and C_Spell.IsSpellInRange and M.Legible(M.Llamar(C_Spell.IsSpellInRange, id, unidad))
@@ -163,32 +186,38 @@ function Co.Estado(id, unidad)
 	return format(L["%s está lista"], nombre), "exito", tecla
 end
 
-local function pintar(x, id)
+local function pintar(x, e)
 	crear()
 	-- 1.3.1: un secreto va tal cual a SetTexture (sin `or`, que lo probaría).
 	local tex = x.textura
 	if not M.Secreto(tex) and tex == nil then tex = K.Lobo("atento") end
 	pcall(f.Lanza.SetTexture, f.Lanza, tex)
-	f.Tuyo.Icono:SetTexture(M.IconoHechizo(id) or K.Lobo("atento"))
+	if f.alfaIcono ~= e.icono then
+		f.alfaIcono = e.icono
+		f.Tuyo.Icono:SetTexture(e.icono)
+	end
 	local titulo
 	if not x.seguro then titulo = L["¡Está lanzando!"]
 	elseif x.unidad == "focus" then titulo = L["¡Córtale a tu foco!"]
 	else titulo = L["¡Córtalo!"] end
 	K.Escribir(f.Titulo, titulo)
-	local linea, tono, tecla = Co.Estado(id, x.unidad)
+	-- 1.3.1: las dos respuestas de Falta; 1.3.2: una sola vez por vuelta.
+	local falta, dur
+	if M.Recargas then falta, dur = M.Recargas.Falta(e.id) end
+	local linea, tono, tecla = Co.Estado(e.id, x.unidad, e, falta, true)
 	K.Escribir(f.Linea, linea)
 	K.ColorTexto(f.Linea, tono == "exito" and "exito" or "textoSuave")
 	if tecla then
-		K.Escribir(f.Tecla.Texto, tecla)
-		f.Tecla:SetSize(K.Ajustar(f.Tecla.Texto, ICONO) + 6, K.Tamano("numero") + 4)
+		if f.alfaTecla ~= tecla then
+			f.alfaTecla = tecla
+			K.Escribir(f.Tecla.Texto, tecla)
+			f.Tecla:SetSize(K.Ajustar(f.Tecla.Texto, ICONO) + 6, K.Tamano("numero") + 4)
+		end
 		f.Tecla:Show()
 	else
 		f.Tecla:Hide()
 	end
 	if f.Tuyo.Recarga then
-		-- 1.3.1: las dos respuestas de Falta (con `and` solo llegaba la primera).
-		local falta, dur
-		if M.Recargas then falta, dur = M.Recargas.Falta(id) end
 		if falta and falta > 0 and dur then pcall(f.Tuyo.Recarga.SetCooldown, f.Tuyo.Recarga, GetTime() + falta - dur, dur)
 		else pcall(f.Tuyo.Recarga.Clear, f.Tuyo.Recarga) end
 	end
@@ -201,22 +230,25 @@ local function pintar(x, id)
 	f:Show()
 end
 
--- Repasa tu objetivo y tu foco; lo pinta o lo esconde.
-function Co.Revisar()
+-- Repasa tu objetivo y tu foco; lo pinta o lo esconde. empieza: un
+-- lanzamiento nuevo (o cambiaste de objetivo): se vuelve a elegir tu corte.
+function Co.Revisar(empieza)
 	if not M.Opt("corte") then ocultar() return end
 	if M.Desbloqueado() then Co.Ver() return end
-	local id = Co.Habilidad()
-	if not id then ocultar() return end
 	local x = Co.Lanza("target")
 	if not x and M.Opt("corteFoco") and M.Legible(M.Llamar(UnitIsUnit, "focus", "target")) ~= true then
 		x = Co.Lanza("focus")
 	end
 	if not x then ocultar() return end
 	local nuevo = not actual or actual.unidad ~= x.unidad
+	if nuevo or empieza == true then elegido = nil end
+	local e = Co.Elegido()
+	if not e then ocultar() return end
 	x.desde = nuevo and GetTime() or actual.desde
 	actual = x
-	pintar(x, id)
-	if nuevo and M.Opt("corteSonido") and x.seguro and sonoPara ~= x.desde then
+	pintar(x, e)
+	-- 1.3.2: yendo solo en el mundo no suena, salvo que lo pidas (corteSonidoSolo).
+	if nuevo and M.Opt("corteSonido") and (M.Opt("corteSonidoSolo") or M.EnGrupo()) and x.seguro and sonoPara ~= x.desde then
 		sonoPara = x.desde
 		M.Sonar("RAID_WARNING", 8959)
 	end
@@ -233,13 +265,14 @@ end
 
 -- Para la página y "/alfa combate corte": así se ve (aunque esté apagado).
 function Co.Probar()
-	local id = Co.Habilidad()
+	elegido = nil
+	local e = Co.Elegido()
 	local x = { unidad = "target", seguro = true, textura = 136197 }
 	crear()
-	if id then
-		pintar(x, id)
+	if e then
+		pintar(x, e)
 	else
-		pintar(x, 6552)
+		pintar(x, datosDe(6552))
 		K.Escribir(f.Linea, L["Cuando aprendas a cortar, aquí sale tu habilidad y su tecla."])
 	end
 	A.After(4, function() if not actual then ocultar() end end)
@@ -248,7 +281,8 @@ end
 -- Mientras mueves los marcos, se queda a la vista.
 function Co.Ver()
 	if M.Desbloqueado() and M.Opt("corte") then
-		pintar({ unidad = "target", seguro = true }, Co.Habilidad() or 6552)
+		elegido = nil
+		pintar({ unidad = "target", seguro = true }, Co.Elegido() or datosDe(6552))
 	elseif not actual and f then
 		f:Hide()
 	end
@@ -265,9 +299,10 @@ local ev = CreateFrame("Frame")
 for _, e in ipairs(EVENTOS) do
 	if not pcall(ev.RegisterUnitEvent, ev, e, "target", "focus") then pcall(ev.RegisterEvent, ev, e) end
 end
-ev:SetScript("OnEvent", function(_, _, unidad)
+local EMPIEZA = { UNIT_SPELLCAST_START = true, UNIT_SPELLCAST_CHANNEL_START = true }
+ev:SetScript("OnEvent", function(_, evento, unidad)
 	if unidad ~= "target" and unidad ~= "focus" then return end
-	K.Llamar(Co.Revisar)
+	K.Llamar(Co.Revisar, EMPIEZA[evento] == true)
 end)
 
 A.OnLogin(function()

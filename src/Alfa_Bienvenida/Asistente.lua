@@ -582,7 +582,9 @@ local function pasoExtras()
 				for i, x in ipairs(lista) do
 					local ok, on = pcall(x.f.leer)
 					on = ok and on and true or false
-					datosR[i] = { icono = x.icono, tono = on and "acento" or "neutro", titulo = L[x.f.titulo], texto = L[x.f.texto],
+					-- 1.3.2: sin tope de renglones (la fila toma el alto de su tarjeta más alta):
+					-- en alemán, ruso o francés el texto no se corta.
+					datosR[i] = { icono = x.icono, tono = on and "acento" or "neutro", titulo = L[x.f.titulo], texto = L[x.f.texto], lineas = 20,
 						elegida = on, insignias = { on and { L["Encendido"], "acento", "ic-exito" } or { L["Apagado"], "neutro" } },
 						alClic = function()
 							pcall(x.f.escribir, not on)

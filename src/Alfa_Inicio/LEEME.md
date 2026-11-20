@@ -92,3 +92,7 @@ Todos opcionales: sin ellos, la pieza se cambia por otra o no sale.
 8. Los avisos: probar uno desde *Tus avisos*, moverlo y devolverlo. La misión de clase al subir de nivel (`/alfa classtoast`), la versión nueva, "Mientras estás aquí" con la guía oculta y la ficha de niveles en el selector de guías y en una mazmorra.
 9. Buscar cerca en Hoy: los seis botones en una fila (o dos, en angosto), cada uno pone la flecha; *Más lugares* abre el menú arriba o abajo según haya lugar. Apagar `rutas.cercaHoy` en la página Ruta la quita sin dejar hueco.
 10. Tu plan: con un plan seguido sale arriba de Alertas con la meta de ahora; *Ya la hice* y cumplir la meta la cambian; sin plan no sale.
+
+## 1.3.2
+
+- El paso de tu zona dice «Cierra misiones de <zona>»; desde otra zona, «Llévame» avisa «Vuelve a <zona>» en lugar de armar las misiones de donde estás. Prueba: `tools/banco/prueba_132_hoy.lua`.

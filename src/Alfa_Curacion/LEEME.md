@@ -71,3 +71,11 @@ Se guardan en `AlfaDB.settings.curacion`. El mapa del ratón, el preajuste, "el 
 - **La venda sin «Curar y seleccionar»**: apagado, la venda va como `type` = `"item"` e `item` = `"item:<id>"` (el juego la usa sobre la unidad del botón) y no te cambia el objetivo. Prendido sigue siendo la macro `/target` + `/use [@<unidad>]`.
 - **Maná de los curanderos**: el porcentaje secreto de `UnitPowerPercent` ya no se compara con nil (daba error en combate dentro de mazmorras y, a los 5, el reloj `curacion.mana` se quitaba). Quiénes curan (nombre, color, si eres tú) se arma solo cuando cambia el grupo (`GROUP_ROSTER_UPDATE`, `PLAYER_ROLES_ASSIGNED`, `UNIT_NAME_UPDATE`, al entrar; `M.Mana.Sucia()`); el reloj de cada segundo solo repinta los porcentajes, sin tablas nuevas.
 - **Más ligero**: `M.Conocido` recuerda lo que conoces (clave -> id o `false`) y se vacía en `SPELLS_CHANGED`, `LEARNED_SPELL_IN_SKILL_LINE`, `PLAYER_LEVEL_UP` y `PLAYER_ENTERING_WORLD` (`M.OlvidarConocidos`). La página calcula tus hechizos por tipo una vez por repintado: las 7 filas de «Tus clics» comparten la lista. Prueba: `tools/banco/prueba_131_combate.lua`.
+
+## 1.3.2
+
+- **Sin grupo:** si no estás en grupo ni tienes «Verte a ti estando solo», la tarjeta de arriba dice «Tus marcos aparecen al entrar a un grupo» y ofrece «Ver cómo se ven» (`M.Prueba(5)`).
+- **El asa** (mover y modo prueba) está hecha con el Kit (`K.Caja`, `K.Texto`, `K.Boton`) y crece con su texto (`M.TextoAsa`): nada se corta en alemán ni en ruso.
+- **Relojes:** `curacion.alcance` solo corre con marcos a la vista (en grupo, o solo con «Verte a ti estando solo») y `curacion.mana` solo en grupo; si no, se quitan con `N.Quitar` (`M.RelojAlcance`, `M.Mana.Reloj`, al entrar, al cambiar el grupo y tus ajustes).
+- Prueba: `tools/banco/prueba_132_personaje.lua`.
+

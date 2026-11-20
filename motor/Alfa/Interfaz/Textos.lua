@@ -24,11 +24,28 @@ M.EN = {
 	["%d %% descansada"] = "%d %% rested",
 	["abrir o cerrar esta ventana"] = "open or close this window",
 	["mostrar u ocultar la ventana de guía"] = "show or hide the guide window",
+	-- 1.3.2: Ajustes (UI/Options.lua)
+	["Minimapa y coordenadas"] = "Minimap and coordinates",
+	["%d más"] = "%d more",
+	["Ver todos"] = "Show all",
 	["Mostrar u ocultar la ventana de guía"] = "Show or hide the guide window",
 
 	-- Botón del minimapa
 	["Clic: abrir o cerrar la ventana de Alfa"] = "Click: open or close the Alfa window",
 	["Alfa está oculto: clic para mostrarlo y abrir su ventana"] = "Alfa is hidden: click to show it and open its window",
+
+	-- El menú de Alfa (1.3.2): el mismo en el ícono, la lista de addons y el menú Esc
+	["Volver"] = "Back",
+	["Abrir la ventana de Alfa"] = "Open the Alfa window",
+	["Cerrar la ventana de Alfa"] = "Close the Alfa window",
+	["Acomodar la pantalla"] = "Arrange your screen",
+	["Ventana de guía"] = "Guide window",
+	["Ocultar la flecha"] = "Hide the arrow",
+	["Mostrar la flecha"] = "Show the arrow",
+	["Mostrar Alfa"] = "Show Alfa",
+	["Ocultar Alfa"] = "Hide Alfa",
+	["Reportar un problema"] = "Report a problem",
+	["Un botón «Alfa» en el menú Esc, como el ícono del minimapa: clic, abre la ventana de Alfa; clic derecho, el menú de Alfa."] = "An «Alfa» button in the Esc menu, like the minimap icon: click opens the Alfa window; right-click, Alfa's menu.",
 
 	-- Aventura > Tu guía
 	["Tu guía"] = "Your guide",

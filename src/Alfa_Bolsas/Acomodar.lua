@@ -21,8 +21,21 @@ M.Acomodar = Ac
 
 local function encendido() return M.Get("acomodar") ~= false end
 
+local suyo -- 1.3.2: la tanda que empezó «Acomodar» ("vender" | "depositar")
+
 function Ac.Activo()
 	return M.Lotes.Activo("vender") or M.Lotes.Activo("depositar")
+end
+
+-- 1.3.2: la tanda de «Acomodar» en curso: -> nombre, hechos, total | nil
+-- (Depositar, desde su propio botón, no cuenta aquí: ese ya dice su avance).
+function Ac.Avance()
+	if not (suyo and M.Lotes.Activo(suyo)) then
+		suyo = nil
+		return nil
+	end
+	local hechos, total = M.Lotes.Avance(suyo)
+	return suyo, hechos, total
 end
 
 function Ac.Que()
@@ -60,9 +73,13 @@ function Ac.Hacer()
 	local que = Ac.Que()
 	if que == "vender" then
 		M.Sugerencias.VenderChatarra()
+		suyo = M.Lotes.Activo("vender") and "vender" or nil
+		M.Avisar("LOTE", "vender")
 		return true
 	elseif que == "banco" then
 		M.Banco.Depositar("materiales")
+		suyo = M.Lotes.Activo("depositar") and "depositar" or nil
+		M.Avisar("LOTE", "depositar")
 		return true
 	end
 	N.Imprimir(L["Nada que acomodar aquí: abre un comerciante para vender tu chatarra o habla con un banquero para guardar tus materiales."])

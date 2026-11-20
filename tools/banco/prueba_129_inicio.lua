@@ -352,7 +352,7 @@ step("Empezar, Siguiente y el paso que se cumple solo", function()
     end)
     check(TM.Actual().i == 2, "al acabarse las listas no pasó a tu zona")
     check(#llamadas == 0, "el avance solo puso la flecha sin tu clic")
-    check(a[1] and tostring(a[1].titulo):find("Cierra misiones de esta zona", 1, true), "el aviso no dice qué sigue: " .. tostring(a[1] and a[1].titulo))
+    check(a[1] and tostring(a[1].titulo):find("Cierra misiones de Durotar", 1, true), "el aviso no dice qué sigue: " .. tostring(a[1] and a[1].titulo))
     if a[1] and a[1].accion then a[1].accion.alClic() end
     check(llamadas[1] == "liberar:zona", "«Llévame» no armó las de tu zona: " .. tostring(llamadas[1]))
     -- Siguiente: la mazmorra.

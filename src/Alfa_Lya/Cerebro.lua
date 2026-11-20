@@ -927,8 +927,22 @@ K.AvisoPorLya = function(o)
 	end
 	local dijo = Ce.Decir({ texto = t, pedido = true, acciones = acciones, lineas = 5, ancho = 360,
 		cara = acciones and "atenta" or nil, segundos = tonumber(o.duracion) }) == true
-	if dijo then dichosAviso[t] = ahora() end
+	if dijo then
+		-- (1.3.2) Lo de hace más de 90 s ya no frena: se olvida (cada aviso con
+		-- un nombre o un número es un texto nuevo y la tabla crecía sin fin).
+		local t0 = ahora()
+		for k, cuando in pairs(dichosAviso) do
+			if t0 - cuando >= 90 then dichosAviso[k] = nil end
+		end
+		dichosAviso[t] = t0
+	end
 	return dijo
+end
+-- Para el banco: cuántos avisos recuerda (1.3.2).
+function Ce.AvisosRecordados()
+	local n = 0
+	for _ in pairs(dichosAviso) do n = n + 1 end
+	return n
 end
 
 -- Para la guía (Guia.lua, 1.2.4): lo que Lya mira del juego.

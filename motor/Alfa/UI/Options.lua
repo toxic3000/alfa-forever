@@ -149,6 +149,21 @@ local function add(spec, builtin)
 	if QOL_UNIDA and (spec.page == QOL_UNIDA or spec.key == "qualityoflife") then
 		if spec.tab == L["Quests"] then return end -- ya están en Misiones
 		spec.page, spec.key, spec.icon, spec.order, spec.subtitle = "Comodidades", "comodidades", "ic-comodidades", 70, nil
+		-- Alfa (1.3.2): la pestaña «Mapa» de Comodidades es la del minimapa y las
+		-- coordenadas (el mapa tiene su propia página en Ajustes).
+		if spec.tab == L["Map"] then spec.tab = T("Minimapa y coordenadas") end
+	end
+	-- Alfa (1.3.2): el botón del minimapa sale en un solo lugar: Comodidades ›
+	-- Minimapa y coordenadas (antes también en Guía › Ventana y en Mapa).
+	if QOL_UNIDA and spec.key ~= "comodidades" and type(spec.controls) == "table" then
+		local quedan, habia = {}, false
+		for _, c in ipairs(spec.controls) do
+			if type(c) == "table" and c.key == "maps.minimapButton" then habia = true else quedan[#quedan + 1] = c end
+		end
+		if habia then
+			if #quedan == 0 then return end
+			spec.controls = quedan
+		end
 	end
 	local p = pageOf(spec.page, spec.icon, spec.order, builtin, spec.key)
 	-- Un módulo que llega a una página ya creada por su clave (Comodidades):
@@ -160,6 +175,9 @@ local function add(spec, builtin)
 	if type(spec.seccion) == "string" and spec.seccion ~= "" then p.seccion = spec.seccion end
 	if type(spec.label) == "string" and spec.label ~= "" then p.label = spec.label end
 	if spec.custom then p.custom = spec.custom end
+	-- Alfa (1.3.2): «Restablecer página» a la medida de la página:
+	-- { texto = fn(etiquetas) -> lo que dice el aviso, fn = lo que además vuelve }.
+	if type(spec.restablecer) == "table" then p.restablecer = spec.restablecer end
 	if spec.dot then p.dot = spec.dot end
 	if spec.empty then p.empty = spec.empty end
 	local tab = tabOf(p, spec.tab)
@@ -529,7 +547,7 @@ local BUILTIN = {
 		{ kind = "slider", key = "ui.menuScale", label = L["Menu scale"], min = 0.7, max = 1.4, step = 0.05, format = percent, release = true,
 			help = L["The guide menu and this window; applies when you let go. Right-click to reset."] },
 		{ kind = "toggle", key = "ui.gameMenuButton", label = L["Button in the game menu"],
-			help = L["A Alfa button in the game menu (Esc) that opens the guide menu."],
+			help = T("Un botón «Alfa» en el menú Esc, como el ícono del minimapa: clic, abre la ventana de Alfa; clic derecho, el menú de Alfa."),
 			search = "game menu, escape, esc, main menu, button, open alfa" },
 	} },
 	{ page = LOOK, tab = L["Arrow"], section = L["Arrow"], controls = {
@@ -1527,7 +1545,9 @@ for w in ("a an the of to in on at and or for my me i is it how do can turn off 
 
 local LABEL, KEY, TERMS, PLACE, HELP = 1, 2, 3, 4, 5
 -- By field, the score of a match inside a word, a typo off, the word's start, the whole word.
-local SCORE = { { 12, 30, 80, 100 }, { 10, 25, 65, 75 }, { 10, 25, 60, 70 }, { 8, 20, 45, 50 }, { 5, 0, 35, 40 } }
+-- Alfa (1.3.2): el nombre de la página, la pestaña o la sección (PLACE) pesa
+-- más que las palabras escondidas (TERMS), y la descripción (HELP) lo menos.
+local SCORE = { { 12, 30, 80, 100 }, { 10, 25, 65, 75 }, { 10, 25, 60, 70 }, { 10, 25, 70, 85 }, { 3, 0, 20, 25 } }
 -- Two query words that are one of the control's joined pairs ("minimap
 -- icon" for a "minimap icon" term) add this, by kind of match.
 local PHRASE = { 0, 10, 20, 40 }
@@ -1681,6 +1701,28 @@ local function scoreOf(c, nw)
 	return total
 end
 
+-- Alfa (1.3.2): cuánto suma a un grupo que su página o su pestaña se llamen
+-- como lo buscado (cada palabra que importa, entera o su comienzo).
+local function placeBonus(nw, ...)
+	local words = {}
+	for i = 1, select("#", ...) do
+		local text = select(i, ...)
+		if type(text) == "string" then
+			for w in fold(text):gmatch("[%w\128-\255]+") do words[#words + 1] = SPELLING[w] or w end
+		end
+	end
+	local any = false
+	for i = 1, nw do
+		if not qfiller[i] then
+			local hit = false
+			for j = 1, #words do if kindOf(qwords[i], words[j]) >= 3 then hit = true break end end
+			if not hit then return 0 end
+			any = true
+		end
+	end
+	return any and 40 or 0
+end
+
 local function byScore(a, b)
 	if a.psScore ~= b.psScore then return a.psScore > b.psScore end
 	return a.psOrder < b.psOrder
@@ -1774,6 +1816,8 @@ function O.Search(q)
 			if list then
 				table.sort(list, byScore)
 				local pname = O.PageLabel(p)
+				-- Alfa (1.3.2): el grupo que se llama como lo que buscas va primero.
+				best = best + placeBonus(nw, pname, T(t.name))
 				groups[#groups + 1] = { title = t.name ~= "" and (pname .. "  \194\183  " .. T(t.name)) or pname, controls = list, best = best, order = #groups + 1 }
 				count = count + #list
 			end
@@ -1853,6 +1897,7 @@ function O.AbrirTodo(r)
 end
 
 local renderSearch
+local SEARCH_PER_GROUP, moreControl
 
 -- Los grupos de lo escrito: ya buscados, o nil mientras espera la búsqueda
 -- (que se agenda una sola vez y busca lo que haya escrito al llegar).
@@ -1932,6 +1977,24 @@ local function layoutTodo(grupos, y)
 	return y
 end
 
+-- Alfa (1.3.2): cuántos de cada grupo antes de «N más», y la fila de «N más»
+-- (una por grupo y cuenta: su etiqueta no cambia después de armada).
+SEARCH_PER_GROUP = 4
+local moreRows = {}
+moreControl = function(title, rest)
+	local k = title .. " #" .. rest
+	local c = moreRows[k]
+	if not c then
+		c = { kind = "button", icon = "search", psMore = true, label = string.format(T("%d más"), rest), button = T("Ver todos"),
+			onClick = function()
+				if searchView then searchView.psOpen[title] = true end
+				renderSearch()
+			end }
+		moreRows[k] = c
+	end
+	return c
+end
+
 renderSearch = function()
 	if not searchView then
 		searchView = CreateFrame("Frame", nil, win.Body)
@@ -1951,8 +2014,18 @@ renderSearch = function()
 		searchView.Enciclopedia.psTip = nil
 	end
 	local groups, count, suggestions = O.Search(query)
+	-- Alfa (1.3.2): unos pocos por grupo (los que más coinciden) y «N más».
+	if searchView.psQuery ~= query then searchView.psQuery, searchView.psOpen = query, {} end
 	local sections = {}
-	for i, g in ipairs(groups) do sections[i] = { name = g.title, controls = g.controls } end
+	for i, g in ipairs(groups) do
+		local list = g.controls
+		if #list > SEARCH_PER_GROUP + 1 and not searchView.psOpen[g.title] then
+			list = {}
+			for j = 1, SEARCH_PER_GROUP do list[j] = g.controls[j] end
+			list[#list + 1] = moreControl(g.title, #g.controls - SEARCH_PER_GROUP)
+		end
+		sections[i] = { name = g.title, controls = list }
+	end
 	local y = layoutSections(searchView, sections, 16)
 	searchView.Empty:SetShown(count == 0)
 	local links = searchView.Links
@@ -2251,24 +2324,42 @@ local function hideViews()
 	if searchView then searchView:Hide() end
 end
 
+-- Alfa (1.3.2): un control con noReset = true no vuelve con «Restablecer
+-- página» (Cómo ves Alfa: lo de fábrica es para quien empieza).
 local function pageKeys(p)
-	local keys = {}
+	local keys, labels = {}, {}
 	for _, t in ipairs(p.tabs) do
 		for _, s in ipairs(t.sections) do
 			for _, c in ipairs(s.controls) do
-				if c.key and available(c) then keys[#keys + 1] = c.key end
+				if c.key and not c.noReset and available(c) then
+					keys[#keys + 1] = c.key
+					labels[#labels + 1] = labelOf(c)
+				end
 			end
 		end
 	end
-	return keys
+	return keys, labels
 end
+O.PageKeys = function(key) local p = pageByKey(key) if p then return pageKeys(p) end return {}, {} end
+
+-- Lo que dice el aviso de «Restablecer página»: el de la página, o el de siempre.
+local function resetText(p)
+	local _, labels = pageKeys(p)
+	local r = p.restablecer
+	if r and type(r.texto) == "function" then
+		local ok, t = pcall(r.texto, labels)
+		if ok and type(t) == "string" and t ~= "" then return t end
+	end
+	return string.format(L["Every setting on %s goes back to its default."], p.name)
+end
+O.ResetText = function(key) local p = pageByKey(key) return p and resetText(p) or nil end
 
 local function renderFooter(p)
 	local left = {}
-	if p and #pageKeys(p) > 0 then
+	if p and (#pageKeys(p) > 0 or p.restablecer) then
 		left[#left + 1] = { label = L["Reset page"], opts = { icon = "reset", ghost = true }, onClick = function()
 			W.Modal({ title = L["Reset this page?"], icon = "reset", danger = true, action = L["Reset page"],
-				text = string.format(L["Every setting on %s goes back to its default."], p.name),
+				text = resetText(p),
 				onAccept = function() O.ResetPage(p) end })
 		end }
 	end
@@ -2277,14 +2368,21 @@ local function renderFooter(p)
 end
 
 function O.ResetPage(p)
-	for _, key in ipairs(pageKeys(p)) do ns.Set(key, nil) end
+	if type(p) == "string" then p = pageByKey(p) end -- Alfa (1.3.2): también por su clave
+	if not p then return end
+	for _, key in ipairs((pageKeys(p))) do ns.Set(key, nil) end
 	-- Toggles and sliders of state that is no setting go back to their default too.
 	for _, t in ipairs(p.tabs) do
 		for _, s in ipairs(t.sections) do
 			for _, c in ipairs(s.controls) do
-				if (c.kind == "toggle" or c.kind == "slider") and not c.key and c.set and available(c) then c.set(nil) end
+				if (c.kind == "toggle" or c.kind == "slider") and not c.key and not c.noReset and c.set and available(c) then c.set(nil) end
 			end
 		end
+	end
+	-- Alfa (1.3.2): lo que la página pone a mano (el estilo y el acento).
+	if p.restablecer and type(p.restablecer.fn) == "function" then
+		local ok, err = pcall(p.restablecer.fn)
+		if not ok and geterrorhandler then geterrorhandler()(err) end
 	end
 	for _, v in pairs(p.views or {}) do
 		for _, w in pairs(v.cache or {}) do
@@ -2301,6 +2399,7 @@ function O.Select(key, tabName)
 	tabName = tabName or aliasTab
 	current = p
 	ultima[sectionOf(p)] = p.key
+	O.ultimaVista = p.key
 	W.HideMenu()
 	hideViews()
 	if query ~= "" then
@@ -2403,7 +2502,117 @@ function UI.ShowOptions(section)
 		hub:Hide()
 	end
 	win:Show()
-	O.Select(section or defaultPage().key)
+	-- 1.3.2: sin página pedida, la última que viste en esta sesión.
+	local last = not section and O.ultimaVista and pageByKey(O.ultimaVista)
+	if last and not listed(last) then last = nil end
+	O.Select(section or (last and last.key) or defaultPage().key)
+end
+
+---------------------------------------------------------------------------
+-- 1.3.2: el menú de Alfa, uno solo para el clic derecho del ícono del
+-- minimapa, la lista de addons y el botón Alfa del menú Esc. Trae las mismas
+-- secciones de la ventana (nombre, ícono y orden) y respeta Sencillo/Completo
+-- (listed). Una sección de varias páginas abre su lista en el mismo menú,
+-- con «‹ Volver» arriba; abajo, unas acciones rápidas.
+---------------------------------------------------------------------------
+
+-- Por el mismo mensaje que el clic del ícono: la puerta de Alfa_Nucleo manda
+-- a la configuración a quien todavía no la termina.
+local function abrirPagina(key)
+	return function()
+		if ns.Hidden and ns.Hidden() then ns.SetHidden(false) end
+		ns.Fire("SHOW_OPTIONS", key)
+	end
+end
+
+-- Una fila que abre algo cierra antes el menú Esc del juego (si el menú se
+-- abrió desde su botón Alfa); las que solo cambian de lista, no.
+function O.SalirDelEsc(items)
+	for _, it in ipairs(items) do
+		local fn = it.onClick
+		if fn and not it.sub then
+			it.onClick = function(...)
+				local esc = _G.GameMenuFrame
+				if esc and esc:IsShown() then
+					if HideUIPanel then HideUIPanel(esc) else esc:Hide() end
+				end
+				return fn(...)
+			end
+		end
+	end
+	return items
+end
+
+local MENU_OPTS = { point = "TOPRIGHT", relPoint = "BOTTOMLEFT", x = 4, y = 4 }
+
+local function menuSeccion(anchor, s, opts)
+	local items = { { text = "‹ " .. T("Volver"), sub = true, onClick = function() O.MenuAlfa(anchor, opts, true) end }, { separator = true } }
+	for _, p in ipairs(pagesOf(s.key)) do
+		items[#items + 1] = { text = O.PageLabel(p), icon = p.icon or s.icon, onClick = abrirPagina(p.key) }
+	end
+	W.ShowMenu(anchor, O.SalirDelEsc(items), opts)
+end
+
+-- Lo que trae el menú, en orden (también para las pruebas): una tabla de
+-- filas como las de W.ShowMenu.
+function O.MenuItems(anchor, opts)
+	opts = opts or MENU_OPTS
+	local items = {}
+	local shown = win and win:IsShown()
+	items[#items + 1] = { text = shown and T("Cerrar la ventana de Alfa") or T("Abrir la ventana de Alfa"), icon = "emblem",
+		onClick = function()
+			if shown then win:Hide() else abrirPagina(nil)() end
+		end }
+	items[#items + 1] = { separator = true }
+	local todas = {}
+	for _, s in ipairs(SECCIONES) do todas[#todas + 1] = s end
+	todas[#todas + 1] = AJUSTES
+	for _, s in ipairs(todas) do
+		local pages = pagesOf(s.key)
+		if #pages == 1 then
+			items[#items + 1] = { text = T(s.label), icon = s.icon, seccion = s.key, onClick = abrirPagina(pages[1].key) }
+		elseif #pages > 1 then
+			items[#items + 1] = { text = T(s.label) .. "  ›", icon = s.icon, seccion = s.key, sub = true,
+				onClick = function() menuSeccion(anchor, s, opts) end }
+		end
+	end
+	items[#items + 1] = { separator = true }
+	local Lya = rawget(_G, "AlfaLya")
+	if type(Lya) == "table" and type(Lya.Guia) == "function" then
+		items[#items + 1] = { text = T("Pregúntale a Lya"), icon = "ic-info", onClick = function()
+			if ns.Hidden and ns.Hidden() then ns.SetHidden(false) end
+			Lya.Guia()
+		end }
+	end
+	local Acomodar = rawget(_G, "AlfaAcomodar")
+	if type(Acomodar) == "table" and type(Acomodar.Abrir) == "function" then
+		items[#items + 1] = { text = T("Acomodar la pantalla"), icon = "compact", onClick = function()
+			if ns.Hidden and ns.Hidden() then ns.SetHidden(false) end
+			Acomodar.Abrir()
+		end }
+	end
+	items[#items + 1] = { text = T("Ventana de guía"), icon = "window", checked = ns.GuideShown and ns.GuideShown() or nil,
+		onClick = function() ns.Fire("TOGGLE_FRAME") end }
+	local Nav = ns.Nav
+	if Nav and Nav.ToggleArrow then
+		items[#items + 1] = { text = ns.Get("nav.arrow") and T("Ocultar la flecha") or T("Mostrar la flecha"), icon = "dart", onClick = Nav.ToggleArrow }
+	end
+	items[#items + 1] = { text = (ns.Hidden and ns.Hidden()) and T("Mostrar Alfa") or T("Ocultar Alfa"), icon = "emblem",
+		onClick = ns.ToggleHidden }
+	items[#items + 1] = { text = T("Reportar un problema"), icon = "bug", onClick = function()
+		if ns.Hidden and ns.Hidden() then ns.SetHidden(false) end
+		ns.Fire("SHOW_REPORT")
+	end }
+	return items
+end
+
+-- Abre el menú junto a `anchor` (o lo cierra si ya está abierto ahí).
+-- volver: viene de «‹ Volver» y se abre aunque el menú esté a la vista.
+function O.MenuAlfa(anchor, opts, volver)
+	if not (W and W.ShowMenu and anchor) then return end
+	if not volver and W.MenuShown(anchor) then return W.HideMenu() end
+	opts = opts or MENU_OPTS
+	return W.ShowMenu(anchor, O.SalirDelEsc(O.MenuItems(anchor, opts)), opts)
 end
 
 -- A new font measures every label, value and description anew: the

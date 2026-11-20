@@ -321,7 +321,7 @@ end)
 A.RegisterEvent("CHAT_MSG_LOOT", function(_, msg) Bo.AlBotin(msg) end)
 
 A.OnLogin(function()
-	N.Cada("manada.botin", 60, function() Bo.Compartir(false) end)
+	M.Cada("manada.botin", 60, function() Bo.Compartir(false) end)
 	A.RegisterEvent("PLAYER_LEVEL_UP", function() A.After(3, function() Bo.Compartir(true) end) end)
 	A.After(30, function()
 		if not U.EnHermandad() then return end

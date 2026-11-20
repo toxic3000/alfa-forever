@@ -95,6 +95,8 @@ function N.Modulo(spec)
 		page = spec.nombre, key = spec.id, icon = spec.icono, order = spec.orden,
 		subtitle = spec.subtitulo, custom = spec.construir, controls = spec.controles or {},
 		seccion = spec.seccion, -- hoy, aventura, personaje, mundo, oficios, manada o ajustes (docs/INTERFAZ.md)
+		-- 1.3.2: { texto = fn(etiquetas) -> el aviso de «Restablecer página», fn = lo que además vuelve }
+		restablecer = spec.restablecer,
 	})
 	if not ok and geterrorhandler then geterrorhandler()(err) end
 	if spec.comando then

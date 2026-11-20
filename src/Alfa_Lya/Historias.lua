@@ -501,8 +501,20 @@ function H.NotasDeZona(mapa) return mapa and M.DATOS_ZONA and M.DATOS_ZONA[mapa]
 -- Lo de este personaje (hist): Charla.lua comparte hist.datos y hist.ultimaDato.
 H.Personaje = personaje
 
+-- (1.3.2) Con Lya oculta, lo que pediste sale en un aviso (nunca en su globo).
+local function enAviso(texto, accion)
+	if not (K and K.Aviso) then return false end
+	K.Aviso({ titulo = L["Lya te cuenta"], texto = texto, lobo = "atento", lya = false,
+		duracion = 9 + floor(#texto / 28), accion = accion })
+	return true
+end
+
 local function decirNota(id, es, pedido)
 	local t = L[es]
+	if pedido and not Ce.Activa() then
+		personaje().datos[id] = true
+		return enAviso(t, { texto = L["Otro dato"], alClic = function() K.Despues(0.4, function() H.Contar() end) end })
+	end
 	local c = {
 		texto = t, pedido = pedido, lineas = 5, ancho = 360, clase = "dato",
 		segundos = 9 + floor(#t / 28),
@@ -521,7 +533,7 @@ end
 
 -- "Cuéntame algo de aquí": un dato de la zona (o del mundo, si de aquí no sabe nada).
 function H.Contar()
-	if not Ce.Activa() then return end
+	-- (1.3.2) Con Lya oculta también: el dato sale en un aviso (decirNota).
 	local z = zonaActual()
 	local id, es = notaDeZona(z, false)
 	if not id then id, es = notaDelMundo(false) end
@@ -531,7 +543,12 @@ function H.Contar()
 		decirNota(id, es, true)
 		return
 	end
-	Ce.Decir({ texto = L["De este lugar todavía no sé mucho. ¿Vemos tus historias?"], pedido = true,
+	local t = L["De este lugar todavía no sé mucho. ¿Vemos tus historias?"]
+	if not Ce.Activa() then
+		enAviso(t, { texto = L["Historias"], alClic = function() H.Abrir() end })
+		return
+	end
+	Ce.Decir({ texto = t, pedido = true,
 		acciones = { { texto = L["Historias"], fn = function() H.Abrir() end } } })
 end
 

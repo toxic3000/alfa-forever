@@ -224,9 +224,17 @@ end
 Bz.Paso = paso
 
 function Bz.Tomando() return tomando ~= nil end
+function Bz.Pendiente() return pendiente end
 
 function Bz.Tomar()
 	if tomando then return terminar("cancelado") end
+	-- 1.3.2: pedido mientras cargan las cartas: el botón dice «Parar» y otro
+	-- clic lo cancela (antes seguía «Tomar todo» y empezaba solo al llegar).
+	if pendiente then
+		pendiente = false
+		if refrescarBarra then refrescarBarra() end
+		return false
+	end
 	if abierto and not cargado and not enCombate() then
 		-- Aún no llegan las cartas: se toma en cuanto lleguen.
 		pendiente = true
@@ -348,7 +356,7 @@ function refrescarBarra()
 	local texto, color = textoEstado()
 	K.Escribir(barra.Estado, texto)
 	K.ColorTexto(barra.Estado, color)
-	barra.Boton:SetTexto(tomando and L["Parar"] or L["Tomar todo"])
+	barra.Boton:SetTexto((tomando or pendiente) and L["Parar"] or L["Tomar todo"])
 end
 Bz.RefrescarBarra = function() refrescarBarra() end
 
@@ -418,3 +426,4 @@ end)
 
 -- Para las pruebas y otros módulos.
 function Bz.Abierto() return abierto end
+function Bz.Barra() return barra end

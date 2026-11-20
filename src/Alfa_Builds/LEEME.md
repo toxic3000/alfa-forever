@@ -68,3 +68,8 @@ Ajustes en `AlfaDB.settings.builds` (`aviso`, `escalaAuto`). La elección de bui
 7. Equipo: los pesos se activan con un clic; "Buscar equipo para mi nivel" no traba el juego y muestra piezas con "Cómo conseguirlo".
 8. Compartir: "Seleccionar para copiar" selecciona la cadena (Ctrl + C); pegar una cadena y "Importar" la agrega a "Tus builds importados" y "Seguir este build" la usa.
 9. En inglés: la página sale traducida.
+
+## 1.3.2
+
+- El cuadro del ratón de cada talento (el plan y el árbol) termina con «Mayús + clic: ponerlo en el chat», lo único que hace un clic; las filas del plan ya no se iluminan como botón al pasar el ratón. Prueba: `tools/banco/prueba_132_personaje.lua`.
+

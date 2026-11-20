@@ -4,7 +4,8 @@
 --   Vuelta.Listas(sinCargar) -> { { qid, titulo, p }, ... } | nil, motivo
 --       tus misiones listas para entregar, con el PNJ que las recibe (el
 --       punto del Codex: { map, x, y, f, z, kind, id, name }, coordenadas
---       0-100). sinCargar: si el Codex no está cargado, nil (no lo carga).
+--       0-100). sinCargar: si el Codex no está cargado, no lo carga: usa la
+--       base de misiones (1.3.2, Ligero.lua) o da nil si tampoco está.
 --   Vuelta.Paradas(lista) -> { { clave, p, nombre, misiones = { qid... } } }
 --       las mismas, juntas por PNJ (dos misiones del mismo PNJ: una parada)
 --   Vuelta.Ordenar(desde, paradas) -> paradas en orden
@@ -56,7 +57,20 @@ function Vt.Listas(sinCargar)
 	local C, Cp = CX(), CP()
 	if not (C and Cp and Cp.GetLogQuests) then return nil, "missing" end
 	if sinCargar then
-		if not (C.IsLoaded and C.IsLoaded()) then return nil, "missing" end
+		-- 1.3.2: sin el Codex, la base de misiones dice a quién se entrega
+		-- (Ligero.lua); sin ninguna de las dos, no se sabe.
+		if not (C.IsLoaded and C.IsLoaded()) then
+			local Lg = M.Ligero
+			if not (Lg and Lg.Listo()) then return nil, "missing" end
+			local desde = A.PlayerPoint and A.PlayerPoint() or nil
+			local out = {}
+			for _, qid in ipairs(Cp.GetLogQuests() or {}) do
+				if Cp.IsQuestReadyForTurnIn(qid) then
+					out[#out + 1] = { qid = qid, titulo = M.TituloMision(qid), p = Lg.Entrega(qid, desde) }
+				end
+			end
+			return out
+		end
 	else
 		local ok, motivo = I.CodexListo()
 		if not ok then return nil, motivo end

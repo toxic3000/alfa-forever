@@ -57,7 +57,7 @@ local function accion()
 	return {
 		icono = "ic-mundo", sobre = L["Tu mapa"], titulo = L["El mundo entero en un mapa"],
 		texto = table.concat(partes, " "), insignias = insignias,
-		accion = { texto = L["Abrir el mapa"], icono = "ic-mundo", alClic = function() V.Abrir() end },
+		accion = { texto = L["Mapa de Alfa"], icono = "ic-mundo", alClic = function() V.Abrir() end },
 		secundaria = { texto = L["Ir al mapa del juego"], alClic = function() V.AlMapaDelJuego() end },
 	}
 end
@@ -85,7 +85,7 @@ local function tarjetas()
 			alClic = function() Capas.AlternarLimpio() end,
 			secundaria = { texto = limpio and L["Salir del modo limpio"] or L["Activar el modo limpio"],
 				alClic = function() Capas.AlternarLimpio() end } },
-		{ icono = "ic-comunidad", titulo = L["Capas del mapa"],
+		{ icono = "ic-comunidad", titulo = L["Capas de Alfa"],
 			texto = L["Todo lo que se pinta en tus mapas, en un solo lugar. Lo de otros módulos de Alfa también llega aquí."],
 			insignias = { { format(L["%d de %d encendidas"], si, total), "neutro" } },
 			secundaria = { texto = L["Elegir capas"],
@@ -119,7 +119,7 @@ local function bloqueMarcadores(ui, padre)
 	b.Vacio = b:Agregar(K.Vacio(b, {
 		lobo = "dormido", titulo = L["Todavía no tienes marcadores"],
 		texto = L["Abre el mapa y haz clic derecho (o Mayús+clic) donde quieras uno: le pones nombre, ícono y color, y la flecha te lleva cuando quieras. En el mapa del juego, Mayús+clic derecho."],
-		accion = { texto = L["Abrir el mapa"], icono = "ic-mundo", alClic = function() V.Abrir() end },
+		accion = { texto = L["Mapa de Alfa"], icono = "ic-mundo", alClic = function() V.Abrir() end },
 	}), { espacio = ESP.base })
 	b.Pista = b:Agregar(K.Texto(b, "pequeno", "textoTenue"), { espacio = ESP.s })
 	function b.Pista:Acomodar(ancho) return K.Parrafo(self, ancho) end

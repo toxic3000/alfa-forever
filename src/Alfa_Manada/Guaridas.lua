@@ -816,7 +816,7 @@ A.RegisterEvent("GROUP_ROSTER_UPDATE", function()
 	A.After(3, revisarPlacas)
 end)
 
-N.Cada("manada.guaridas", 10, function() -- un solo reloj (1.2.9)
+M.Cada("manada.guaridas", 10, function() -- un solo reloj (1.2.9)
 	revisarPlacas()
 	Gu.Anunciar(false)
 	pcall(Gu.PintarMapa, false) -- 1.3.0

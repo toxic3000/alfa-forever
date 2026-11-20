@@ -65,11 +65,14 @@ end
 ---------------------------------------------------------------------------
 -- (1.3.1: «lya.finMazmorra» solo corre dentro de una mazmorra y «lya.latido»
 -- solo con Lya a la vista: los prueba prueba_131_nucleo.lua.)
+-- (1.3.2: «curacion.alcance» solo corre con marcos o en grupo: lo prueba
+-- prueba_132_personaje.lua.)
 local FIJAS = {
   "lya.minutos", "lya.momentos",
-  "manada.citaRecordar", "manada.citaRepetir", "manada.guaridas", "manada.juntos", "manada.juntosOfrecer",
-  "manada.logros", "manada.pulso", "manada.limpieza", "manada.plano", "manada.quienVa", "manada.relojRaros",
-  "curacion.alcance", "inicio.camino", "inicio.sesion",
+  -- (1.3.2: las de La Jauría de 10 s a 10 min son una sola, «manada.reloj»; las
+  -- suyas las prueba prueba_132_manada.lua.)
+  "manada.reloj", "manada.pulso",
+  "inicio.camino", "inicio.sesion",
 }
 
 step("Reloj: las tareas de los módulos están tras entrar, sin temporizadores sueltos", function()

@@ -375,7 +375,7 @@ A.OnLogin(function()
 		d.montura = t
 	end
 	Lo.Semana()
-	N.Cada("manada.logros", 60, function()
+	M.Cada("manada.logros", 60, function()
 		if sucia then pcall(Lo.CompartirSemana, false) end
 		pcall(Lo.MandarPendientes) -- (1.3.1) por si salir de la instancia no lo mandó
 	end)

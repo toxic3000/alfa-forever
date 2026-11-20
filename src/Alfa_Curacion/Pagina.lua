@@ -100,6 +100,20 @@ end
 
 local function abrirAsistente() if M.AbrirAsistente then M.AbrirAsistente() end end
 
+-- Tu clase, tu preajuste y tu grupo, en insignias.
+local function insignias(nombreClase)
+	local t = {}
+	if nombreClase then t[#t + 1] = { nombreClase, "clase" } end
+	local pre = M.Datos().preajuste
+	if M.PREAJUSTES[pre or ""] then
+		local nombre = M.NombrePreajuste(pre)
+		t[#t + 1] = { aMano() and format(L["%s, a tu gusto"], nombre) or nombre, "acento" }
+	end
+	local g, tono = grupo()
+	t[#t + 1] = { g, tono }
+	return t
+end
+
 local function estado()
 	local clase, nombreClase = M.Clase()
 	local d = { icono = "ic-curacion" }
@@ -125,6 +139,17 @@ local function estado()
 		return d
 	end
 	local mapa = M.Mapa()
+	-- 1.3.2: sin grupo (y sin «Verte a ti estando solo») no hay marcos que ver:
+	-- se dice y se ofrecen los de ejemplo.
+	local enGrupo = IsInGroup and IsInGroup() and true or false
+	if not enGrupo and not N.Get(ID, "solo") then
+		d.tono, d.titulo = "acento", L["Tus marcos aparecen al entrar a un grupo"]
+		d.texto = L["Mientras vas solo no hay a quién mostrar. Míralos ahora con marcos de ejemplo, o prende «Verte a ti estando solo», abajo en Marcos."]
+		d.insignias = insignias(nombreClase)
+		d.accion = { texto = L["Ver cómo se ven"], icono = "ic-seguir", alClic = function() M.Prueba(5) end }
+		d.secundaria = { texto = L["Configurar con el asistente"], alClic = abrirAsistente }
+		return d
+	end
 	d.tono = "exito"
 	d.titulo = M.EsCurandero(clase) and L["Listo para curar"] or L["Listo para ayudar a tu grupo"]
 	d.texto = format(L["Pasa el ratón sobre un compañero y haz clic: el izquierdo %s y el derecho %s."], frase(mapa["1"]), frase(mapa["2"]))
@@ -136,16 +161,7 @@ local function estado()
 		d.texto = d.texto .. " " .. format(L["Ojo: puedes quitar %s, pero ningún clic lo hace. Elígelo en Tus clics."], table.concat(nombres, ", "))
 	end
 	if M.EnCombate() then d.texto = d.texto .. " " .. L["Estás en combate: lo que cambies se aplica al salir."] end
-	local insignias = {}
-	if nombreClase then insignias[#insignias + 1] = { nombreClase, "clase" } end
-	local pre = M.Datos().preajuste
-	if M.PREAJUSTES[pre or ""] then
-		local nombre = M.NombrePreajuste(pre)
-		insignias[#insignias + 1] = { aMano() and format(L["%s, a tu gusto"], nombre) or nombre, "acento" }
-	end
-	local g, tono = grupo()
-	insignias[#insignias + 1] = { g, tono }
-	d.insignias = insignias
+	d.insignias = insignias(nombreClase)
 	d.accion = { texto = L["Configurar con el asistente"], icono = "ic-seguir", alClic = abrirAsistente }
 	d.secundaria = { texto = M.Moviendo() and L["Fijar marcos"] or L["Mover marcos"], alClic = function() M.Mover(not M.Moviendo()) end }
 	return d

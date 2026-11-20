@@ -95,6 +95,7 @@ end
 --            icono = "ic-ruta", ancho = 760, alto = 560, cerrar = true,
 --            desplazar = false (un área desplazable como cuerpo),
 --            alAbrir = fn(v), alCerrar = fn(v) }
+--   Al abrirse o cerrarse una con nombre: A.Fire("ALFA_VENTANA", nombre, abierta) (1.3.2)
 --   v.Cuerpo (marco del contenido; con desplazar, v.Cuerpo es el Contenido)
 --   v:Abrir() v:Cerrar() v:Alternar() v:SetTitulo(t, sub, icono) v:SetTamano(w, h)
 --   v:AnchoCuerpo() v:AltoCuerpo() v:SetAltoContenido(h) v:SetPie(botones)
@@ -263,11 +264,17 @@ function K.Ventana(opts)
 	end
 	function v:Cerrar() self:Hide() end
 	function v:Alternar() if self:IsShown() then self:Cerrar() else self:Abrir() end end
-	v:SetScript("OnShow", function(self) if opts.alAbrir then K.Llamar(opts.alAbrir, self) end end)
+	-- 1.3.2: ALFA_VENTANA (nombre, abierta): quien depende de una ventana
+	-- (los nodos de Recolección en el mapa de Alfa) trabaja solo con ella abierta.
+	v:SetScript("OnShow", function(self)
+		if opts.alAbrir then K.Llamar(opts.alAbrir, self) end
+		if opts.nombre and A and A.Fire then A.Fire("ALFA_VENTANA", opts.nombre, true) end
+	end)
 	v:SetScript("OnHide", function(self)
 		K.CerrarMenu()
 		K.OcultarInfo()
 		if opts.alCerrar then K.Llamar(opts.alCerrar, self) end
+		if opts.nombre and A and A.Fire then A.Fire("ALFA_VENTANA", opts.nombre, false) end
 	end)
 	v:SetTitulo(opts.titulo, opts.subtitulo, opts.icono)
 	v:Hide()

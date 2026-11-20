@@ -30,6 +30,7 @@ local Gi = {}
 M.Guia = Gi
 
 local type, ipairs, pairs, format, lower = type, ipairs, pairs, string.format, string.lower
+local floor = math.floor
 
 ---------------------------------------------------------------------------
 -- Lo que Lya sabe responder
@@ -220,14 +221,62 @@ end
 local v
 local ui = {}
 
+-- (1.3.2) Para buscar: sin mayúsculas ni acentos, también en cirílico
+-- («misión» = «mision», «Карта» = «карта», «Ёж» = «еж»). string.lower solo
+-- cambia las letras de ASCII.
+local PLIEGUE = {}
+do
+	local function de(cp)
+		if cp < 0x80 then return string.char(cp) end
+		return string.char(0xC0 + floor(cp / 64), 0x80 + cp % 64)
+	end
+	local LATIN = {
+		[0xC0] = "a", [0xC1] = "a", [0xC2] = "a", [0xC3] = "a", [0xC4] = "a", [0xC5] = "a", [0xC6] = "ae", [0xC7] = "c",
+		[0xC8] = "e", [0xC9] = "e", [0xCA] = "e", [0xCB] = "e", [0xCC] = "i", [0xCD] = "i", [0xCE] = "i", [0xCF] = "i",
+		[0xD0] = "d", [0xD1] = "n", [0xD2] = "o", [0xD3] = "o", [0xD4] = "o", [0xD5] = "o", [0xD6] = "o", [0xD8] = "o",
+		[0xD9] = "u", [0xDA] = "u", [0xDB] = "u", [0xDC] = "u", [0xDD] = "y", [0xDF] = "ss",
+	}
+	for cp, base in pairs(LATIN) do
+		PLIEGUE[de(cp)] = base
+		if cp ~= 0xDF then PLIEGUE[de(cp + 0x20)] = base end -- la minúscula
+	end
+	PLIEGUE[de(0xFF)] = "y"
+	-- Cirílico: А-Я -> а-я, Ё/ё -> е.
+	for cp = 0x410, 0x42F do PLIEGUE[de(cp)] = de(cp + 0x20) end
+	PLIEGUE[de(0x401)], PLIEGUE[de(0x451)] = de(0x435), de(0x435)
+end
+
+-- Los textos de las preguntas no cambian: se pliegan una vez (con tope, por
+-- si acaso). Lo que escribes no se guarda.
+local plegados, nPlegados = {}, 0
+local function plegar(s, guardar)
+	if type(s) ~= "string" then return "" end
+	local ya = plegados[s]
+	if ya then return ya end
+	local r = s:gsub("[A-Z]", lower):gsub("[\192-\223][\128-\191]", PLIEGUE)
+	if guardar then
+		if nPlegados >= 2000 then plegados, nPlegados = {}, 0 end
+		plegados[s], nPlegados = r, nPlegados + 1
+	end
+	return r
+end
+Gi.Plegar = plegar
+
+-- Cada palabra de lo que buscas debe estar en alguno de los textos.
 local function coincide(filtro, ...)
 	if filtro == "" then return true end
+	local partes = {}
 	for i = 1, select("#", ...) do
 		local s = select(i, ...)
-		if type(s) == "string" and lower(s):find(filtro, 1, true) then return true end
+		if type(s) == "string" then partes[#partes + 1] = plegar(s, true) end
 	end
-	return false
+	local todo = table.concat(partes, " ")
+	for palabra in filtro:gmatch("%S+") do
+		if not todo:find(palabra, 1, true) then return false end
+	end
+	return true
 end
+Gi.Coincide = coincide -- (para el banco)
 
 -- El globo de Lya: lo que dice y a dónde lleva.
 local function globo(padre)
@@ -283,7 +332,7 @@ local function decir(t, p)
 end
 
 local function llenar()
-	local filtro = lower(ui.buscador and ui.buscador:Texto() or "")
+	local filtro = plegar(ui.buscador and ui.buscador:Texto() or "")
 	-- Lo último que dijo (sin buscar; con «historial», los 20; si no, 3).
 	local dijo = {}
 	local Ce = M.Cerebro
@@ -291,7 +340,7 @@ local function llenar()
 		for i, h in ipairs(Ce.historial) do
 			if i > (ui.todoDijo and 20 or 3) then break end
 			local a = h.acciones and h.acciones[1]
-			dijo[#dijo + 1] = { icono = "ic-lobo", titulo = h.texto, texto = h.hora,
+			dijo[#dijo + 1] = { icono = "ic-lobo", titulo = h.texto, texto = h.hora, ayuda = h.texto, -- (1.3.2) completo al pasar el ratón
 				alClic = function() decir(h.texto, a and not a.seguro and { fn = a.fn } or nil) end }
 		end
 	end
@@ -302,7 +351,8 @@ local function llenar()
 	local ya = {}
 	if filtro == "" then
 		for _, x in ipairs(ahora()) do
-			ya[#ya + 1] = { icono = x.icono, titulo = x.titulo, texto = x.texto, tono = "aviso", alClic = function() decir(x.texto, x) end }
+			ya[#ya + 1] = { icono = x.icono, titulo = x.titulo, texto = x.texto, tono = "aviso", ayuda = x.texto, -- (1.3.2) completo al pasar el ratón
+				alClic = function() decir(x.texto, x) end }
 		end
 	end
 	ui.secAhora:SetShown(#ya > 0)

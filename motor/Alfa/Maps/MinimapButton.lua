@@ -100,7 +100,7 @@ end
 
 local function showTip(self)
 	local own = self == button
-	Maps.ButtonTip(self, own and L["Drag: move it around the minimap"] or nil, own)
+	Maps.ButtonTip(self, own and L["Drag: move it around the minimap"] or nil, true)
 end
 
 -- The look of a way back (this button, the floating one) while Polestar is
@@ -118,42 +118,21 @@ end
 -- (nav.arrow), hiding Polestar and whether that keeps the arrow, then the
 -- windows, which bring a hidden Polestar back first.
 function Maps.ShowMenu(anchor)
-	local W = ns.Widgets
-	if not (W and W.ShowMenu and anchor) then return end
-	if W.MenuShown(anchor) then return W.HideMenu() end
-	local function open(msg)
-		return function()
-			ns.SetHidden(false)
-			ns.Fire(msg)
-		end
+	-- Alfa 1.3.2: el mismo menú de Alfa en todas partes (UI/Options.lua).
+	local O = ns.UI and ns.UI.Options
+	if O and O.MenuAlfa then return O.MenuAlfa(anchor) end
+end
+
+-- Alfa 1.3.2: el clic de cualquier entrada (este botón, la lista de addons,
+-- el botón del menú Esc) hace lo mismo: abre o cierra la ventana de Alfa,
+-- trayendo de vuelta un Alfa oculto.
+function Maps.OpenAlfa()
+	if ns.Hidden() then
+		ns.SetHidden(false)
+		ns.Fire("SHOW_OPTIONS")
+	else
+		ns.Fire("TOGGLE_OPTIONS")
 	end
-	local items = { { text = L["Guide window"], icon = "window", checked = ns.GuideShown(), onClick = function() ns.Fire("TOGGLE_FRAME") end } }
-	local Nav = ns.Nav
-	if Nav and Nav.ToggleArrow then
-		items[#items + 1] = { text = ns.Get("nav.arrow") and L["Hide arrow"] or L["Show arrow"], icon = "dart", onClick = Nav.ToggleArrow }
-	end
-	items[#items + 1] = { text = ns.Hidden() and L["Show Alfa"] or L["Hide Alfa"], icon = "emblem", onClick = ns.ToggleHidden }
-	items[#items + 1] = { text = L["Keep the arrow when hidden"], checked = ns.HideKeepsArrow(),
-		onClick = function() ns.SetHideKeepsArrow(not ns.HideKeepsArrow()) end }
-	items[#items + 1] = { separator = true }
-	items[#items + 1] = { text = L["Guides"], icon = "guides", onClick = open("SHOW_PICKER") }
-	items[#items + 1] = { text = L["Lookup"], icon = "search", onClick = open("SHOW_LOOKUP") }
-	items[#items + 1] = { text = L["Options"], icon = "sliders", onClick = open("SHOW_OPTIONS") }
-	local mods = AlfaNucleo and AlfaNucleo.modulos
-	if mods and #mods > 0 then
-		local lista = {}
-		for i = 1, #mods do lista[i] = mods[i] end
-		table.sort(lista, function(a, b) return (a.orden or 99) < (b.orden or 99) end)
-		items[#items + 1] = { separator = true }
-		for _, m in ipairs(lista) do
-			local id = m.id
-			items[#items + 1] = { text = m.nombre, icon = m.icono,
-				onClick = function() ns.SetHidden(false) ns.Fire("SHOW_OPTIONS", id) end }
-		end
-	end
-	items[#items + 1] = { separator = true }
-	items[#items + 1] = { text = L["Report a problem"], icon = "bug", onClick = open("SHOW_REPORT") }
-	W.ShowMenu(anchor, items, { point = "TOPRIGHT", relPoint = "BOTTOMLEFT", x = 4, y = 4 })
 end
 
 -- The addon compartment's entry (Polestar.toc). The client passes the
@@ -162,7 +141,7 @@ function Alfa_OnAddonCompartmentClick(_, which, row)
 	if which == "RightButton" then
 		Maps.ShowMenu(row or UIParent)
 	else
-		ns.ToggleHidden()
+		Maps.OpenAlfa()
 	end
 end
 
@@ -210,12 +189,7 @@ local function build()
 		else
 			-- Alfa: the left click opens or closes the main window, bringing a
 			-- hidden Alfa back first (hiding it is in the menu).
-			if ns.Hidden() then
-				ns.SetHidden(false)
-				ns.Fire("SHOW_OPTIONS")
-			else
-				ns.Fire("TOGGLE_OPTIONS")
-			end
+			Maps.OpenAlfa()
 			-- The tooltip under the cursor says what the next click does.
 			if GameTooltip and GameTooltip:GetOwner() == self then showTip(self) end
 		end

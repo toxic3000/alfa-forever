@@ -539,4 +539,14 @@ M.EN = {
 	["¿Cómo sé cuándo cortar un hechizo?"] = "How do I know when to interrupt a spell?",
 	["¿Cómo sé cuándo vuelven mis habilidades grandes?"] = "How do I know when my big abilities come back?",
 	["¿Cómo sé si le voy a quitar el enemigo al tanque?"] = "How do I know if I'm about to pull the enemy off the tank?",
+	-- 1.3.2
+	["Mover marcos"] = "Move frames",
+	["Fijar marcos"] = "Lock frames",
+	["Arrastra tus marcos de combate adonde te acomoden. Para fijarlos, vuelve a Combate o escribe /alfa combate mover."] = "Drag your combat frames wherever suits you. To lock them, go back to Combat or type /alfa combate mover.",
+	["Así se ve en pantalla. Vuelve a Combate con /alfa combate."] = "This is how it looks on screen. Go back to Combat with /alfa combate.",
+	["En grupo o en una instancia."] = "In a group or in an instance.",
+	["También yendo solo"] = "Also when solo",
+	["Que suene también cuando vas solo por el mundo."] = "Play it too when you're out in the world on your own.",
+	["Yendo solo, peleas de al menos"] = "Solo, fights of at least",
+	["Cuando vas solo por el mundo, así no sale tras cada enemigo."] = "When you're out in the world on your own, so it doesn't pop up after every enemy.",
 }

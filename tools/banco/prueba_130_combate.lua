@@ -212,6 +212,8 @@ step("Cortar: tu objetivo lanza algo que se puede cortar", function()
   check(M.Rotacion.Tecla(6552) == "F", "la tecla de Patada no es F: " .. tostring(M.Rotacion.Tecla(6552)))
   unidades.target = true
   lanza.target = { nombre = "Descarga de las Sombras", inmune = false }
+  -- 1.3.2: yendo solo no suena de fábrica (corteSonidoSolo): aquí se pide.
+  A.Set("combate.corteSonidoSolo", true)
   local antes = sonidos
   FIRE_EVENT("UNIT_SPELLCAST_START", "target")
   local f = _G.AlfaCombateCorte
@@ -239,6 +241,7 @@ step("Cortar: tu objetivo lanza algo que se puede cortar", function()
   lanza.target = nil
   FIRE_EVENT("UNIT_SPELLCAST_STOP", "target")
   check(not visible(f), "el aviso no se fue al terminar el lanzamiento")
+  A.Set("combate.corteSonidoSolo", false)
 end)
 
 step("Cortar: lo que no se puede cortar y los oficios no avisan; el foco sí", function()

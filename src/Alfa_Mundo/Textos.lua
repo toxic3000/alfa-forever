@@ -193,6 +193,7 @@ M.EN = {
 	["Capas de Alfa: elige qué se ve en el mapa"] = "Alfa's layers: choose what the map shows",
 	["Modo limpio: solo tú, tu grupo, tus marcadores y la guía"] = "Clean mode: only you, your group, your markers and the guide",
 	["Mapa de Alfa"] = "Alfa's map",
+	["Capas de Alfa"] = "Alfa layers", -- 1.3.2: el mismo nombre en la lupa, el botón y el panel
 	["Cambia al mapa de Alfa en esta zona: todo el mundo en un solo mapa, con zoom y tus marcadores."] = "Switches to Alfa's map on this zone: the whole world on one map, with zoom and your markers.",
 
 	-- Marcadores

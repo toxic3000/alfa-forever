@@ -739,4 +739,6 @@ M.EN = {
 	-- 1.2.0
 	["Cierra la ventana de talentos y hechizos del juego y vuelve a aplicar"] = "Close the game's talents and spells window and apply again",
 	["Tienes cambios sin guardar en la ventana de talentos del juego: guárdalos o deshazlos ahí primero"] = "You have unsaved changes in the game's talent window: save or undo them there first",
+	-- 1.3.2
+	["Mayús + clic: ponerlo en el chat"] = "Shift-click: link it in chat",
 }

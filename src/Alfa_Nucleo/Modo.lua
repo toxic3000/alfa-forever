@@ -27,9 +27,15 @@ function N.Sencillo() return N.Modo() == "sencillo" end
 
 local function opciones() return A and A.UI and A.UI.Options end
 
+-- 1.3.2: las páginas avanzadas del motor (para autores de guías y quien usa
+-- mando u otros addons) no salen en Ajustes con Alfa sencillo; siguen ahí con
+-- su comando, la búsqueda o «Completo».
+N.AVANZADAS = { recorder = true, guidepacks = true, integrations = true, gamepad = true, thanks = true }
+
 function N.PaginaVisible(clave)
 	if not N.Sencillo() or type(clave) ~= "string" then return true end
 	if N.ESENCIALES[clave] then return true end
+	if N.AVANZADAS[clave] then return false end
 	local O = opciones()
 	local sec = O and O.SectionOf and O.SectionOf(clave)
 	-- Ajustes (y lo que no tiene sección) siempre a la vista.

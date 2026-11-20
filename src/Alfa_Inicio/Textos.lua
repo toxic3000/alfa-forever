@@ -706,4 +706,8 @@ M.EN = {
 	["Al entrar o al juntarse tu grupo reviso tu equipo, tus bolsas, tu comida y lo de tu clase. Si falta algo te digo qué y te llevo a conseguirlo. También con /alfa listo."] = "When you go in or your group fills up I check your gear, bags, food and class supplies. If something's missing I tell you what and take you to get it. Also with /alfa listo.",
 	["¿Qué comida y agua compro?"] = "What food and water should I buy?",
 	["Cuando se te acaban te digo qué te conviene a tu nivel y te llevo al vendedor más cercano. El agua solo si usas maná."] = "When you run low I tell you what suits your level and take you to the nearest vendor. Water only if you use mana.",
+	-- 1.3.2: el paso de tu zona, con su nombre (Tiempo.lua)
+	["Cierra misiones de %s"] = "Finish quests in %s",
+	["Vuelve a %s"] = "Go back to %s",
+	["Este paso es para cerrar tus misiones de %s. Cuando estés allá, «Llévame» te lleva a cada una."] = "This step is for finishing your quests in %s. Once you're there, \"Take me\" leads you to each one.",
 }

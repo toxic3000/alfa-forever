@@ -423,7 +423,7 @@ M.Red.Oyentes.a = function(clave, remitente, _, f, canal)
 end
 
 A.OnLogin(function()
-	N.Cada("manada.mentor", 30, function()
+	M.Cada("manada.mentor", 30, function()
 		enviarEstado(false)
 		Me.Revisar()
 	end)

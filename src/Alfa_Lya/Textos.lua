@@ -1808,6 +1808,14 @@ M.EN = {
 	["Cada lunes, tres retos chiquitos con su salchicha de premio. Tu avance sale arriba, en esta página."] = "Every Monday, three little challenges with a prize sausage. Your progress shows above, on this page.",
 	["Cumpleaños"] = "Birthdays",
 	["Cada año, el día que empezaron a cazar juntos, Lya lo festeja. Y también el cumpleaños de Alfa."] = "Every year, on the day you started hunting together, Lya celebrates. And Alfa's birthday too.",
+	-- 1.3.2
+	["Lya te cuenta"] = "Lya tells you",
+	["Más consejos"] = "More tips",
+	["Menos consejos"] = "Fewer tips",
+	["Solo los consejos importantes"] = "Important tips only",
+	["Letra normal"] = "Normal text",
+	["Letra más grande"] = "Larger text",
+	["Letra muy grande"] = "Extra large text",
 }
 
 M.L = AlfaNucleo.Textos(M.EN)

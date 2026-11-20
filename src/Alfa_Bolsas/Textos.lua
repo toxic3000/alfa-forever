@@ -424,4 +424,6 @@ M.EN = {
 	-- 1.3.1: vender y depositar dicen lo que no se movió (Lotes.lua)
 	["1 no se movió: ya no estaba ahí o el juego no lo soltó."] = "1 wasn't moved: it was no longer there or the game didn't let it go.",
 	["%d no se movieron: ya no estaban ahí o el juego no los soltó."] = "%d weren't moved: they were no longer there or the game didn't let them go.",
+	-- 1.3.2: el oro del buzón, aparte (Sesion.lua)
+	["Del buzón: %s (no cuenta por hora)"] = "From the mailbox: %s (not counted per hour)",
 }

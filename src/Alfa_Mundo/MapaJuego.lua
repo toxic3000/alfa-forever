@@ -55,8 +55,8 @@ local function refrescar() return MenuResponse and MenuResponse.Refresh end
 local function menu(_, raiz)
 	if oculto() or mando() or A.Get("mundo.menuMapa") == false then return end
 	if type(raiz) ~= "table" or type(raiz.CreateButton) ~= "function" then return end
-	local sub = raiz:CreateButton(L["Alfa: capas del mapa"])
-	sub:CreateButton(L["Abrir el mapa de Alfa"], function() V.Abrir(mapaDelJuego()) end)
+	local sub = raiz:CreateButton(L["Capas de Alfa"])
+	sub:CreateButton(L["Mapa de Alfa"], function() V.Abrir(mapaDelJuego()) end)
 	sub:CreateCheckbox(L["Modo limpio"], Capas.Limpio, function()
 		Capas.AlternarLimpio()
 		return refrescar()
@@ -74,6 +74,7 @@ local function menu(_, raiz)
 		end
 	end
 end
+MJ.Menu = menu -- (1.3.2: para el banco)
 
 ---------------------------------------------------------------------------
 -- Los botones junto a la lupa del mapa del juego

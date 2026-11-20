@@ -271,10 +271,11 @@ local function bloqueConjuntos(padre)
 			enlace = on and { texto = L["Guardar lo que llevas"], alClic = function(boton) Cj.MenuGuardar(boton or self.Seccion) end } or nil })
 		K.Escribir(self.Nota.Texto, #lista > 0 and L["Un clic te pone el conjunto (fuera de combate; en combate, al terminar). Lo que esté en el banco no se puede poner."]
 			or L["Guarda lo que llevas puesto con un nombre (curar, daño, pesca...) y vuelve a ponértelo con un clic. También desde el botón de tus bolsas."])
-		local actual = Cj.Puesto()
+		local bolsas = Cj.LeerBolsas() -- 1.3.2: una sola lectura para todos
+		local actual = Cj.Puesto(bolsas)
 		local tarjetas = {}
 		for i, c in ipairs(lista) do
-			local _, enBolsas, faltan, total = Cj.Estado(c)
+			local _, enBolsas, faltan, total = Cj.Estado(c, bolsas)
 			local texto
 			if c.n == actual then
 				texto = format(L["Lo llevas puesto: %d piezas."], total)
@@ -312,7 +313,7 @@ local function bloqueTodos(padre)
 	fila:SetHeight(K.ALTO.control)
 	fila.Busca = K.Buscador(fila, { ayuda = L["Nombre, tipo, calidad o nivel"], alCambiar = function(texto)
 		b.texto = texto
-		P.Rehacer()
+		P.Rehacer("todos")
 	end })
 	local function menu(boton, ops, campo)
 		local actual = b.filtros[campo]
@@ -320,7 +321,7 @@ local function bloqueTodos(padre)
 		K.Menu(boton, ops, actual, function(v)
 			if v == "" then v = nil end
 			b.filtros[campo] = v
-			P.Rehacer()
+			P.Rehacer("todos")
 		end, 200)
 	end
 	fila.Tipo = K.Boton(fila, L["Tipo"], function(self)
@@ -677,37 +678,75 @@ function M.ConstruirPagina(view)
 	ui.personajes = t:AgregarBloque(bloquePersonajes(t.Extra))
 	ui.ajustes = grupos(t.Extra)
 	for i, g in ipairs(ui.ajustes) do t:AgregarBloque(g, { espacio = i == 1 and ESP.xl or ESP.l }) end
+	local cartas -- las tarjetas de arriba (1.3.2: con el oro, solo cambia la de la sesión)
 	K.EnPagina(view, t, function()
-		t:SetAccion(estado())
-		t:SetOpciones(opciones(), L["Tu banco y lo que llevas"])
-		ui.conjuntos:Llenar()
-		ui.todos:Llenar()
-		ui.guardar:Llenar()
-		ui.personajes:Llenar()
-		for _, g in ipairs(ui.ajustes) do g:Refrescar() end
+		-- 1.3.2: P.parcial dice qué bloques cambiaron (P.Rehacer("sesion"), ...);
+		-- sin él (al abrir la página, un ajuste, un clic) se llena todo.
+		local s = P.parcial
+		P.parcial = nil
+		local todo = s == nil
+		if todo or s.estado then t:SetAccion(estado()) end
+		if todo or s.opciones or not cartas then
+			cartas = opciones()
+		elseif s.sesion then
+			cartas[#cartas] = tarjetaSesion()
+		end
+		if todo or s.opciones or s.sesion then t:SetOpciones(cartas, L["Tu banco y lo que llevas"]) end
+		-- Una sola lectura de tus bolsas para todos los conjuntos de este cuadro.
+		if todo or s.conjuntos then ui.conjuntos:Llenar() end
+		if todo or s.todos then ui.todos:Llenar() end
+		if todo or s.guardar then ui.guardar:Llenar() end
+		if todo or s.personajes then ui.personajes:Llenar() end
+		if todo then for _, g in ipairs(ui.ajustes) do g:Refrescar() end end
 	end)
 	P.view = view
 end
 
+-- 1.3.2: qué bloques toca cada cambio (sin nombre: toda la página).
+P.BLOQUES = {
+	sesion = { sesion = true },
+	datos = { estado = true, opciones = true, conjuntos = true, todos = true, guardar = true, personajes = true },
+	sugerencias = { estado = true, opciones = true, guardar = true },
+	compra = { estado = true, opciones = true },
+	conjuntos = { conjuntos = true },
+	todos = { todos = true },
+	banco = { estado = true, opciones = true, guardar = true, personajes = true },
+}
+
 -- La página otra vez, si está a la vista (datos nuevos, un ajuste...).
+-- que: un nombre de P.BLOQUES (solo esos bloques) o nil (todo).
 local pendiente = false
-function P.Rehacer()
+local sucios         -- { bloque = true } | false (todo) | nil (nada pedido)
+function P.Rehacer(que)
+	local b = type(que) == "string" and P.BLOQUES[que]
+	if not b then
+		sucios = false
+	elseif sucios ~= false then
+		sucios = sucios or {}
+		for k in pairs(b) do sucios[k] = true end
+	end
 	if pendiente then return end
 	pendiente = true
 	M.Luego(0.3, function()
 		pendiente = false
-		if P.view then N.RehacerPagina(P.view) end
+		local s = sucios
+		sucios = nil
+		if not P.view then return end
+		P.parcial = s or nil
+		N.RehacerPagina(P.view)
+		P.parcial = nil
 	end)
 end
 
-M.Escuchar("DATOS", P.Rehacer)
-M.Escuchar("COMPRA", P.Rehacer)
-M.Escuchar("SUGERENCIAS", P.Rehacer)
-M.Escuchar("SESION", P.Rehacer)
-M.Escuchar("CONJUNTOS", P.Rehacer)
-M.Escuchar("LOTE", function(nombre) if nombre == "depositar" and not M.Lotes.Activo("depositar") then P.Rehacer() end end)
-A.RegisterEvent("BANKFRAME_OPENED", P.Rehacer)
-A.RegisterEvent("BANKFRAME_CLOSED", P.Rehacer)
+local function por(que) return function() P.Rehacer(que) end end
+M.Escuchar("DATOS", por("datos"))
+M.Escuchar("COMPRA", por("compra"))
+M.Escuchar("SUGERENCIAS", por("sugerencias"))
+M.Escuchar("SESION", por("sesion"))
+M.Escuchar("CONJUNTOS", por("conjuntos"))
+M.Escuchar("LOTE", function(nombre) if nombre == "depositar" and not M.Lotes.Activo("depositar") then P.Rehacer("banco") end end)
+A.RegisterEvent("BANKFRAME_OPENED", por("banco"))
+A.RegisterEvent("BANKFRAME_CLOSED", por("banco"))
 A.On("SETTING_CHANGED", function(r)
 	if type(r) == "string" and (r == "" or r == M.ID or r:sub(1, #M.ID + 1) == M.ID .. ".") then P.Rehacer() end
 end)

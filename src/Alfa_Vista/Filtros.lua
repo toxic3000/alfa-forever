@@ -7,8 +7,9 @@
 -- toman el ratón y también se ven con la interfaz oculta (Alt+Z), para las
 -- capturas.
 --   * Nada se crea hasta que enciendes un filtro.
---   * El grano se mueve con un OnUpdate que solo corre mientras el grano está
---     a la vista (y cambia unas 14 veces por segundo, no en cada cuadro).
+--   * El grano se mueve con el reloj de Alfa (1.3.2: N.Cada("vista.grano",
+--     0.07), unas 14 veces por segundo; antes, un OnUpdate en cada cuadro), solo
+--     mientras está encendido y a la vista; al apagarlo, la tarea se quita.
 --   * Las barras de cine solo cambian cómo se ve: no dan más FPS.
 -- Ajustes: vista.vineta, vinetaFuerza, grano, granoFuerza, granoMover,
 -- barras, barrasAlto, tinte, tinteFuerza.
@@ -94,12 +95,20 @@ local function coordenadasGrano(dx, dy)
 	grano:SetTexCoord(dx, dx + w / TAM_GRANO, dy, dy + h / TAM_GRANO)
 end
 
-local acumulado = 0
-local function moverGrano(_, dt)
-	acumulado = acumulado + (dt or 0)
-	if acumulado < 0.07 then return end
-	acumulado = 0
+local GRANO_CADA = 0.07
+local function moverGrano()
+	if not (raiz and raiz:IsVisible() and grano:IsShown()) then return end
 	coordenadasGrano(math.random(), math.random())
+end
+F.MoverGrano = moverGrano
+
+-- Mover el grano (o dejar de moverlo) con el reloj de Alfa.
+local function relojGrano(si)
+	if si then
+		if not N.HayTarea("vista.grano") then N.Cada("vista.grano", GRANO_CADA, moverGrano) end
+	else
+		N.Quitar("vista.grano")
+	end
 end
 
 function F.Activos()
@@ -109,10 +118,8 @@ end
 
 function F.Aplicar()
 	if not F.Activos() then
-		if raiz then
-			raiz:SetScript("OnUpdate", nil)
-			raiz:Hide()
-		end
+		relojGrano(false)
+		if raiz then raiz:Hide() end
 		return
 	end
 	crear()
@@ -138,7 +145,7 @@ function F.Aplicar()
 		grano:SetAlpha(math.max(0, math.min(1, num("granoFuerza", 0.4))) * 0.35)
 		coordenadasGrano(0, 0)
 	end
-	raiz:SetScript("OnUpdate", (hayGrano and get("granoMover") ~= false) and moverGrano or nil)
+	relojGrano(hayGrano and get("granoMover") ~= false)
 	-- Barras de cine
 	local hayBarras = get("barras") == true
 	arriba:SetShown(hayBarras)

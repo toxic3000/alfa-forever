@@ -94,6 +94,14 @@ PARCHES = [
          '\t\t\t\tonClick = function() ns.SetHidden(false) ns.Fire("SHOW_OPTIONS", id) end }\n'
          '\t\tend\n'
          '\tend\n')),
+    # 1.3.2: el boton flotante hace lo mismo que el del minimapa: clic abre
+    # la ventana de Alfa (Maps.OpenAlfa) y su cuadro dice eso.
+    ("Alfa/UI/Launcher.lua",
+     '\t\t\tns.ToggleHidden()\n\t\t\tif GameTooltip and GameTooltip:GetOwner() == self then showTip(self) end',
+     lambda c: '\t\t\tns.Maps.OpenAlfa()\n\t\t\tif GameTooltip and GameTooltip:GetOwner() == self then showTip(self) end'),
+    ("Alfa/UI/Launcher.lua",
+     'L["Shift-drag: move it"] or L["Drag: move it"]) end',
+     lambda c: 'L["Shift-drag: move it"] or L["Drag: move it"], true) end'),
     # 1.1.6: Alfa es independiente: sin el comando corto de Polestar ni su
     # sitio como pagina del modulo de navegacion.
     ("Alfa/Core/Init.lua",

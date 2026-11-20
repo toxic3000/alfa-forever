@@ -138,7 +138,6 @@ local BLIZZARD = {
 local botones = {}    -- marco -> true: los que se atenúan
 local visibles = true -- su estado ahora
 local alfa = 1
-local reloj
 
 local function esBotonDeAddon(f)
 	if type(f) ~= "table" or not f.GetName or not f.SetAlpha then return false end
@@ -152,12 +151,29 @@ local function esBotonDeAddon(f)
 	return bajo:find("button", 1, true) or bajo:find("icon", 1, true) or false
 end
 
+-- 1.3.2: sin vigilar cada 0.15 s. El ratón avisa al entrar y al salir del
+-- minimapa o de un botón (OnEnter/OnLeave); el reloj solo corre durante el
+-- fundido («comodidades.minimapa») y se quita al terminar.
+local FUNDIDO = "comodidades.minimapa"
+local enganchados = {} -- marco -> true: ya avisa al entrar y salir
+local revisar
+
+local function enganchar(f)
+	if not (f and f.HookScript) or enganchados[f] then return end
+	enganchados[f] = true
+	f:HookScript("OnEnter", function() revisar() end)
+	-- Al pasar del minimapa a un botón suyo, el juego dice «salió» antes de «entró»:
+	-- se mira un momento después.
+	f:HookScript("OnLeave", function() N.Una("comodidades.minimapaSalio", 0.05, function() revisar() end) end)
+end
+
 local function buscarEn(padre)
 	if not (padre and padre.GetChildren) then return end
 	for _, f in ipairs({ padre:GetChildren() }) do
 		if not botones[f] and esBotonDeAddon(f) then
 			botones[f] = true
 			if not visibles then f:SetAlpha(alfa) end
+			enganchar(f)
 		end
 	end
 end
@@ -182,26 +198,32 @@ local function encima()
 	return false
 end
 
-local busquedas = 0
-local function vigilar()
-	busquedas = busquedas + 1
-	if busquedas % 20 == 1 then buscar() end -- botones nuevos, cada ~3 s
-	local objetivo = encima() and 1 or 0
-	if objetivo == alfa then return end
-	-- Un fundido corto: un paso por vuelta del reloj.
+-- Un paso del fundido; al llegar, el reloj se quita.
+local function fundir()
+	local objetivo = (not visibles and encima()) and 1 or (visibles and 1 or 0)
+	if objetivo == alfa then N.Quitar(FUNDIDO) return end
 	local paso = 0.5
 	ponerAlfa(objetivo > alfa and math.min(1, alfa + paso) or math.max(0, alfa - paso))
+	if alfa == objetivo then N.Quitar(FUNDIDO) end
+end
+
+revisar = function()
+	if visibles then return end
+	-- Al entrar al minimapa, de paso, los botones nuevos de otros addons.
+	buscar()
+	local objetivo = encima() and 1 or 0
+	if objetivo ~= alfa and not N.HayTarea(FUNDIDO) then N.Cada(FUNDIDO, 0.15, fundir) end
 end
 
 local function ponerBotones(si)
 	if si then
+		enganchar(Minimap)
+		enganchar(MinimapCluster)
 		buscar()
 		visibles = false
-		if not reloj then reloj = N.Ticker("comodidades.minimapa", 0.15, vigilar) end
 		ponerAlfa(encima() and 1 or 0)
 	else
-		if reloj then reloj:Cancel() end
-		reloj = nil
+		N.Quitar(FUNDIDO)
 		visibles = true
 		ponerAlfa(1)
 	end
@@ -255,5 +277,6 @@ A.RegisterEvent("PLAYER_ENTERING_WORLD", function()
 end)
 
 -- Para pruebas.
-M.Minimapa = { EsBotonDeAddon = esBotonDeAddon, Botones = botones, Aplicar = aplicar,
+M.Minimapa = { EsBotonDeAddon = esBotonDeAddon, Botones = botones, Aplicar = aplicar, Revisar = function() revisar() end,
+	Alfa = function() return alfa end,
 	EsCuadrado = function() return cuadrado end, RefrescarBorde = refrescarBorde }

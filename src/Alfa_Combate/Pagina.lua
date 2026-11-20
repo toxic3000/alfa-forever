@@ -24,6 +24,20 @@ local FILA, GAP = 26, 2
 local LANZADORES = { MAGE = true, PRIEST = true, WARLOCK = true }
 local situacion -- más abajo
 
+-- 1.3.2: lo que se prueba o se mueve sale en pantalla, debajo de la ventana
+-- de Alfa: se cierra la ventana y una línea en tu chat dice cómo volver.
+local function aLaVista(fn, aviso)
+	return function()
+		if fn() == false then return end
+		N.CerrarVentana()
+		N.Imprimir(aviso)
+	end
+end
+local function moverMarcos()
+	M.Desbloquear(true)
+	if not M.Desbloqueado() then return false end -- en combate no se mueven (ya lo dijo)
+end
+
 local function nombreClase()
 	local n = M.Legible(M.Llamar(UnitClass, "player"))
 	return type(n) == "string" and n or L["tu clase"]
@@ -40,7 +54,7 @@ local function estado()
 		d.titulo, d.tono = L["Mueve tus marcos"], "acento"
 		d.texto = L["Arrastra cada marco de combate adonde te acomode. Cuando termines, fíjalos para que no estorben."]
 		d.estado = { texto = L["Moviendo"], tono = "acento" }
-		d.accion = { texto = L["Listo, fijarlos"], icono = "ic-exito", alClic = function() M.Desbloquear(false) end }
+		d.accion = { texto = L["Fijar marcos"], icono = "ic-exito", alClic = function() M.Desbloquear(false) end }
 	elseif not M.Opt("rotacion") then
 		d.titulo, d.tono = L["La ayuda de rotación está apagada"], "neutro"
 		d.texto = L["Enciéndela para ver en combate qué habilidad conviene ahora y cuáles siguen, en un ícono pequeño que puedes mover."]
@@ -62,8 +76,8 @@ local function estado()
 			d.texto = format(L["Alfa sugiere con su prioridad para %s, leyendo solo tu personaje: tu recurso, tus recargas, los efectos que el juego activa y la vida del enemigo cuando se puede leer. Con varios enemigos cambia a las de área. Tú decides qué presionar."], quien)
 		end
 		d.estado = { texto = L["Lista"], tono = "exito" }
-		d.accion = { texto = L["Mover el ícono"], icono = "ic-seguir", alClic = function() M.Desbloquear(true) end }
-		d.secundaria = { texto = L["Probar un aviso"], alClic = function() Rc.Probar() end }
+		d.accion = { texto = L["Mover marcos"], icono = "ic-seguir",
+			alClic = aLaVista(moverMarcos, L["Arrastra tus marcos de combate adonde te acomoden. Para fijarlos, vuelve a Combate o escribe /alfa combate mover."]) }
 	end
 	return d
 end
@@ -110,7 +124,7 @@ local function herramientas()
 		a.insignias = { { format(L["%d de %d"], #si, #lista), #si > 0 and "exito" or "neutro" } }
 	end
 	if not M.Opt("avisos") then a.insignias = { { L["Apagados"], "neutro" } } end
-	a.accion = { texto = L["Probar un aviso"], alClic = function() Rc.Probar() end }
+	a.accion = { texto = L["Probar un aviso"], alClic = aLaVista(function() Rc.Probar() end, L["Así se ve en pantalla. Vuelve a Combate con /alfa combate."]) }
 	out[#out + 1] = a
 	-- 1.3.0: tu última pelea (el resumen) y el aviso para cortar.
 	local u = Rs.Ultima()
@@ -125,7 +139,7 @@ local function herramientas()
 		p.texto = t ~= "" and t or L["El medidor del juego no tiene números de esta pelea."]
 		local dur = D.Tiempo(u.dur)
 		if dur then p.insignias = { { dur, "neutro" } } end
-		p.accion = { texto = L["Ver de nuevo"], alClic = function() Rs.VerDeNuevo() end }
+		p.accion = { texto = L["Ver de nuevo"], alClic = aLaVista(function() return Rs.VerDeNuevo() end, L["Así se ve en pantalla. Vuelve a Combate con /alfa combate."]) }
 	else
 		p.texto = L["Al terminar una pelea, aquí queda su resumen: tu daño, tu curación y lo que más te pegó."]
 	end
@@ -139,7 +153,7 @@ local function herramientas()
 		c.texto = L["Cuando aprendas una habilidad para cortar hechizos, te avisa en cuanto tu objetivo empiece a lanzar."]
 	end
 	c.insignias = { M.Opt("corte") and { L["Encendido"], "exito" } or { L["Apagado"], "neutro" } }
-	c.accion = { texto = L["Probar el aviso"], alClic = function() Co.Probar() end }
+	c.accion = { texto = L["Probar el aviso"], alClic = aLaVista(function() Co.Probar() end, L["Así se ve en pantalla. Vuelve a Combate con /alfa combate."]) }
 	out[#out + 1] = c
 	-- El resaltado del botón no va aquí: es una fila de "Ícono de rotación".
 	return out
@@ -552,7 +566,11 @@ local function grupos(padre)
 	g5:Fila({ titulo = L["Aviso para cortar"], control = interruptor("corte"),
 		texto = L["Cuando tu objetivo lanza algo que se puede cortar: tu habilidad para cortar, su tecla y si está lista."] })
 	g5:Fila({ titulo = L["También tu foco"], control = interruptor("corteFoco"), hija = true, activa = si("corte") })
-	g5:Fila({ titulo = L["Con sonido"], control = interruptor("corteSonido"), hija = true, activa = si("corte") })
+	g5:Fila({ titulo = L["Con sonido"], control = interruptor("corteSonido"), hija = true, activa = si("corte"),
+		texto = L["En grupo o en una instancia."] })
+	g5:Fila({ titulo = L["También yendo solo"], control = interruptor("corteSonidoSolo"), hija = true,
+		activa = ambas("corte", "corteSonido"),
+		texto = L["Que suene también cuando vas solo por el mundo."] })
 	g5:Fila({ titulo = L["Barra de amenaza"], control = interruptor("amenaza"),
 		texto = L["En grupo o con tu mascota: tu amenaza sobre tu objetivo. Te avisa antes de quitárselo al tanque, o si eres tanque, antes de perderlo."] })
 	g5:Fila({ titulo = L["Tu papel"], hija = true, activa = si("amenaza"),
@@ -567,7 +585,10 @@ local function grupos(padre)
 	g5:Fila({ titulo = L["Con sonido"], control = interruptor("amenazaSonido"), hija = true, activa = si("amenaza") })
 	g5:Fila({ titulo = L["Resumen de cada pelea"], control = interruptor("resumen"),
 		texto = L["Al terminar: cuánto duró, tu daño y tu curación por segundo y lo que más te pegó."] })
-	g5:Fila({ titulo = L["Solo peleas de al menos"], control = deslizador("resumenMin", 0, 30, 5, segundos), hija = true, activa = si("resumen") })
+	g5:Fila({ titulo = L["Solo peleas de al menos"], control = deslizador("resumenMin", 0, 30, 5, segundos), hija = true, activa = si("resumen"),
+		texto = L["En grupo o en una instancia."] })
+	g5:Fila({ titulo = L["Yendo solo, peleas de al menos"], control = deslizador("resumenMinSolo", 0, 60, 5, segundos), hija = true, activa = si("resumen"),
+		texto = L["Cuando vas solo por el mundo, así no sale tras cada enemigo."] })
 	g5:Fila({ titulo = L["Recargas largas"], control = interruptor("recargas"),
 		texto = L["Tus habilidades que tardan en volver, en una barra discreta con lo que les falta."] })
 	g5:Fila({ titulo = L["Desde cuántos segundos"], control = segmentos("recargasMin", { 30, 60, 120 }), hija = true, activa = si("recargas") })
@@ -729,7 +750,8 @@ local CONTROLES = {
 	toggle("corte", L["Aviso para cortar"], L["Cuando tu objetivo lanza algo que se puede cortar: tu habilidad para cortar, su tecla y si está lista."], nil,
 		"interrupt, kick, counterspell, cast alert"),
 	toggle("corteFoco", L["También tu foco"], nil, "corte", "focus interrupt"),
-	toggle("corteSonido", L["Con sonido"], nil, "corte", "interrupt sound"),
+	toggle("corteSonido", L["Con sonido"], L["En grupo o en una instancia."], "corte", "interrupt sound"),
+	toggle("corteSonidoSolo", L["También yendo solo"], L["Que suene también cuando vas solo por el mundo."], "corte", "interrupt sound solo"),
 	toggle("amenaza", L["Barra de amenaza"], L["En grupo o con tu mascota: tu amenaza sobre tu objetivo. Te avisa antes de quitárselo al tanque, o si eres tanque, antes de perderlo."], nil,
 		"threat, aggro, tank"),
 	{ kind = "dropdown", key = clave("amenazaPapel"), label = L["Tu papel"], help = L["Automático: el que marcaste en tu grupo, o tu actitud o forma."],
@@ -742,6 +764,9 @@ local CONTROLES = {
 		"fight summary, combat recap, dps, hps"),
 	{ kind = "slider", key = clave("resumenMin"), label = L["Solo peleas de al menos"], min = 0, max = 30, step = 5,
 		format = segundos, child = true, disabled = no(si("resumen")), search = "fight summary minimum" },
+	{ kind = "slider", key = clave("resumenMinSolo"), label = L["Yendo solo, peleas de al menos"], min = 0, max = 60, step = 5,
+		help = L["Cuando vas solo por el mundo, así no sale tras cada enemigo."],
+		format = segundos, child = true, disabled = no(si("resumen")), search = "fight summary solo minimum" },
 	toggle("recargas", L["Recargas largas"], L["Tus habilidades que tardan en volver, en una barra discreta con lo que les falta."], nil,
 		"cooldowns, long cooldown bar, timers"),
 	{ kind = "dropdown", key = clave("recargasMin"), label = L["Desde cuántos segundos"], choices = numeros({ 30, 60, 120 }),

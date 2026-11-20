@@ -69,9 +69,9 @@ end)
 step("La cita de la manada", function()
   local Ci = MN.Cita
   check(Ci and Ci.Proponer and Ci.Responder and Ci.Lista, "falta Cita.lua")
-  -- Sin compartir, no sale.
+  -- Sin hermandad, no sale (1.3.2: ya no pide compartir tu ubicación).
   local ok, por = Ci.Proponer("Minas de la Muerte", RELOJ + 3600)
-  check(not ok and por == "compartir", "propuso sin compartir: " .. tostring(por))
+  check(not ok and (por == "hermandad" or por == "compartir"), "propuso sin hermandad: " .. tostring(por))
   conRed(function()
     salidos, avisos = {}, {}
     check(select(2, Ci.Proponer("", RELOJ + 3600)) == "que", "propuso una cita sin qué")

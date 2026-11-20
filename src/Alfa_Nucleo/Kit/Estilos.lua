@@ -222,7 +222,9 @@ local function opcionEstilo(padre, e, sel)
 		y = y + K.AltoTexto(self.Nombre) + ESP.xs
 		self.Texto:ClearAllPoints()
 		self.Texto:SetPoint("TOPLEFT", self, "TOPLEFT", pad, -y)
-		y = y + K.Parrafo(self.Texto, ancho - 2 * pad, 3) + pad
+		-- 1.3.2: hasta 6 renglones (en ruso o francés 3 no alcanzan); la fila
+		-- toma el alto de la más alta.
+		y = y + K.Parrafo(self.Texto, ancho - 2 * pad, 6) + pad
 		local h = max(y, altoMin or 0)
 		self:SetHeight(h)
 		return h

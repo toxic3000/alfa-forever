@@ -11,7 +11,7 @@
 -- («Circuito de <zona>», Guias.IdEspecial("circuito")): el rastreador la
 -- muestra y la flecha la lleva, paso por paso. Ajuste rutas.circuito.
 --
---   Circuito.Ordenar(paradas, desde) -> orden   (paradas de Plan.PasosDe)
+--   Circuito.Ordenar(paradas, desde, ceder?) -> orden   (paradas de Plan.PasosDe)
 --   Circuito.Costo(orden, paradas, desde) -> yardas
 --   Circuito.Armar(alTerminar(def | nil, motivo, n))
 --   Circuito.Ahora()                arma, instala y abre la guía
@@ -76,7 +76,10 @@ local function valido(orden, paradas)
 end
 Ci.Valido = valido
 
-function Ci.Ordenar(paradas, desde)
+-- ceder (1.3.2, opcional): el de la tarea (Tareas.lua). El 2-opt hace
+-- muchas cuentas con el registro lleno: sin ceder, un tirón al armarlo.
+function Ci.Ordenar(paradas, desde, ceder)
+	ceder = ceder or function() end
 	if #paradas == 0 then return {} end
 	for _, s in ipairs(paradas) do
 		s.wIn = s.wIn or mundo(s.inP)
@@ -87,6 +90,7 @@ function Ci.Ordenar(paradas, desde)
 	local orden, hechas, aqui = {}, {}, w0
 	for _ = 1, #paradas do
 		local bi, bc
+		ceder()
 		for i, s in ipairs(paradas) do
 			if not hechas[i] then
 				local lista = true
@@ -110,6 +114,7 @@ function Ci.Ordenar(paradas, desde)
 	for _ = 1, MAX_PASADAS do
 		local cambio = false
 		for i = 1, n - 1 do
+			ceder()
 			for j = i + 1, n do
 				local prueba = {}
 				for k = 1, i - 1 do prueba[k] = orden[k] end
@@ -194,7 +199,7 @@ function Ci.Armar(alTerminar)
 		M.Tareas.Lanzar("circuito:armar", function(ceder)
 			local lista = partes(idx, desde, ceder)
 			if #lista == 0 then return { n = 0 } end
-			local pasos = M.Plan.PasosDe(lista, desde, nil, function(paradas, d) return Ci.Ordenar(paradas, d) end)
+			local pasos = M.Plan.PasosDe(lista, desde, nil, function(paradas, d) return Ci.Ordenar(paradas, d, ceder) end)
 			return { pasos = pasos, n = #lista }
 		end, function(res)
 			if not (res and res.pasos and #res.pasos > 0) then return alTerminar(nil, "vacio", 0) end

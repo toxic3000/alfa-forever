@@ -287,12 +287,12 @@ end
 
 A.OnLogin(function()
 	A.After(25, alDiario)
-	N.Cada("manada.juntos", REFRESCO, function()
+	M.Cada("manada.juntos", REFRESCO, function()
 		if activo() and #ordenMias > 0 then J.Enviar(true) end
 	end)
 	-- Su lista pudo llegar antes que su posición: se vuelve a mirar.
 	-- (1.3.1) Y lo que caducó se olvida aquí.
-	N.Cada("manada.juntosOfrecer", 20, function()
+	M.Cada("manada.juntosOfrecer", 20, function()
 		if InCombatLockdown and InCombatLockdown() then return end
 		ofrecerATodos()
 	end)

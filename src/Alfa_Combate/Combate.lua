@@ -72,12 +72,14 @@ M.AJUSTES = {
 	corte = true,         -- aviso cuando tu objetivo lanza algo que puedes cortar (Corte.lua)
 	corteFoco = true,     -- también tu foco
 	corteSonido = true,
+	corteSonidoSolo = false, -- 1.3.2: también yendo solo (de fábrica, solo en grupo o instancia)
 	amenaza = true,       -- la barra de amenaza en grupo o con mascota (Amenaza.lua)
 	amenazaPapel = "auto", -- auto | tanque | dano
 	amenazaAviso = 80,    -- desde qué % avisa (si no eres tanque)
 	amenazaSonido = true,
 	resumen = true,       -- la tarjeta de tu pelea al terminar (Resumen.lua)
-	resumenMin = 10,      -- segundos mínimos de pelea para mostrarla
+	resumenMin = 10,      -- segundos mínimos de pelea para mostrarla (en grupo o instancia)
+	resumenMinSolo = 30,  -- 1.3.2: yendo solo, en el mundo
 	recargas = true,      -- tus recargas largas en una barra discreta (Recargas.lua)
 	recargasMin = 30,     -- desde cuántos segundos cuenta como larga (30, 60, 120)
 	-- Medidor
@@ -124,6 +126,14 @@ end
 function M.EnCombate()
 	if InCombatLockdown and InCombatLockdown() then return true end
 	return M.Legible(UnitAffectingCombat and M.Llamar(UnitAffectingCombat, "player")) == true
+end
+
+-- 1.3.2: ¿en grupo o dentro de una instancia? (solo, en el mundo, las ayudas
+-- de pelea suenan y salen menos).
+function M.EnGrupo()
+	if M.Legible(IsInGroup and M.Llamar(IsInGroup)) == true then return true end
+	local dentro = M.Legible(M.Llamar(rawget(_G, "IsInInstance")))
+	return dentro == true
 end
 
 -- Hay un enemigo elegido y vivo.
@@ -398,10 +408,10 @@ end))
 A.RegisterEvent("PLAYER_TARGET_CHANGED", cada(function()
 	if M.Prioridad then M.Prioridad.NuevoObjetivo() end
 	if M.Rotacion then M.Rotacion.Ver() end
-	if M.Corte then M.Corte.Revisar() end
+	if M.Corte then M.Corte.Revisar(true) end
 	if M.Amenaza then M.Amenaza.Ver() end
 end))
-A.RegisterEvent("PLAYER_FOCUS_CHANGED", cada(function() if M.Corte then M.Corte.Revisar() end end))
+A.RegisterEvent("PLAYER_FOCUS_CHANGED", cada(function() if M.Corte then M.Corte.Revisar(true) end end))
 for _, ev in ipairs({ "UNIT_THREAT_LIST_UPDATE", "UNIT_THREAT_SITUATION_UPDATE" }) do
 	A.RegisterEvent(ev, cada(function() if M.Amenaza then M.Amenaza.Pedir() end end))
 end
@@ -450,6 +460,17 @@ local DE_BUILDS = {
 	{ "alertasSonido", "avisosSonido" }, { "alertasPorque", "avisosPorque" }, { "golpe", "golpe" }, { "panel", "panel" },
 }
 local LUGARES_BUILDS = { Sugerencia = "Rotacion", Alerta = "Aviso", Golpe = "Golpe", Panel = "Panel" }
+
+-- 1.3.2 (migración 4): el sonido del corte y el resumen cambian de fábrica
+-- yendo solo. Quien ya los había tocado conserva lo suyo: con el sonido
+-- prendido a mano, también suena solo; con su mínimo de pelea, el mismo solo.
+function M.Migracion132(db)
+	local s = type(db) == "table" and type(db.settings) == "table" and db.settings[ID]
+	if type(s) ~= "table" then return end
+	if s.corteSonido == true and s.corteSonidoSolo == nil then s.corteSonidoSolo = true end
+	if type(s.resumenMin) == "number" and s.resumenMinSolo == nil then s.resumenMinSolo = s.resumenMin end
+end
+if N.Migracion then N.Migracion(4, M.Migracion132) end
 
 local function migrar()
 	local d = N.Datos(ID)

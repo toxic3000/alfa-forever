@@ -79,6 +79,7 @@
  "Alfa/Theme/Theme.lua": "a51d81a80627fbc38580a90721f67c02aa75dfc5eb077fb32d6d67af127567c1",
  "Alfa/Theme/Widgets.lua": "0493f942b1e1c24ebbda5d8c24370203e9ef6fecc8a84b86364e914cd2f66ad1",
  "Alfa/UI/Dungeons.lua": "c2728df408940d4bc56bb3aaac04fe322b6adfc0bc385ae42906e780dba9b07e",
+ "Alfa/UI/GameMenu.lua": "2985c3083e10a4d44827724ef10b2c9b51d4f1a339b5439f65e131d616c54040",
  "Alfa/UI/GuideFrame.lua": "7f4885bf52da60af584c70fe78fa3916a0a4bb69ec075a83fd5b6d3856c52658",
  "Alfa/UI/Lookup.lua": "5a0b6994ca21b87097b62963b4d08a2e1ad4d59e043bc52b7766ae5a38fe42bb",
  "Alfa/UI/Options.lua": "6ecac5e645420fe4cc470afca04ea04bb13422899532a064436f8b78161b33b9",

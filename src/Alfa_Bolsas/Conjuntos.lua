@@ -167,11 +167,18 @@ local function dondeLaLlevas(c)
 end
 Cj.DondeLaLlevas = dondeLaLlevas
 
+-- 1.3.2: tus bolsas leídas una vez, para varias llamadas de un mismo cuadro
+-- (la página y el menú piden el estado de cada conjunto y cuál llevas).
+Cj.LeerBolsas = enBolsas
+
 -- Lo que falta de un conjunto: -> puestas, enBolsas, faltan, total
-function Cj.Estado(c)
+-- lista: tus bolsas ya leídas (Cj.LeerBolsas), o nil para leerlas.
+function Cj.Estado(c, lista)
 	local puestas, bolsas, faltan, total = 0, 0, 0, 0
 	if type(c) ~= "table" or type(c.p) ~= "table" then return 0, 0, 0, 0 end
-	local lista, usadas = enBolsas(), {}
+	-- (Cj.Estado(Cj.Buscar(n)) pasa también el índice: solo una tabla cuenta)
+	if type(lista) ~= "table" then lista = enBolsas() end
+	local usadas = {}
 	local donde = dondeLaLlevas(c)
 	for _, r in ipairs(RANURAS) do
 		local pieza = c.p[r]
@@ -194,9 +201,10 @@ function Cj.Estado(c)
 end
 
 -- El conjunto que llevas puesto entero (el primero), o nil.
-function Cj.Puesto()
+function Cj.Puesto(lista)
+	if type(lista) ~= "table" then lista = enBolsas() end
 	for _, c in ipairs(Cj.Lista()) do
-		local puestas, _, _, total = Cj.Estado(c)
+		local puestas, _, _, total = Cj.Estado(c, lista)
 		if total > 0 and puestas == total then return c.n end
 	end
 	return nil
@@ -293,9 +301,10 @@ function Cj.Menu(ancla)
 	local K = N.Kit
 	if not (K and K.Menu) then return end
 	local ops = {}
-	local actual = Cj.Puesto()
+	local bolsas = enBolsas()
+	local actual = Cj.Puesto(bolsas)
 	for _, c in ipairs(Cj.Lista()) do
-		local _, _, faltan = Cj.Estado(c)
+		local _, _, faltan = Cj.Estado(c, bolsas)
 		local texto = c.n
 		if c.n == actual then texto = texto .. "  " .. L["(puesto)"] end
 		if faltan > 0 then texto = texto .. "  " .. format(L["(faltan %d)"], faltan) end

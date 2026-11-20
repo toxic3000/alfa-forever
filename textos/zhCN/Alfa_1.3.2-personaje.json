@@ -1,0 +1,13 @@
+{
+ "Arrastra tus marcos de combate adonde te acomoden. Para fijarlos, vuelve a Combate o escribe /alfa combate mover.": "把战斗框体拖到你顺手的位置。要锁定它们，回到“战斗”或输入 /alfa combate mover。",
+ "Así se ve en pantalla. Vuelve a Combate con /alfa combate.": "在屏幕上就是这样。用 /alfa combate 回到“战斗”。",
+ "En grupo o en una instancia.": "在队伍中或副本内。",
+ "También yendo solo": "单人时也播放",
+ "Que suene también cuando vas solo por el mundo.": "你独自在世界中冒险时也播放提示音。",
+ "Yendo solo, peleas de al menos": "单人时，战斗至少持续",
+ "Cuando vas solo por el mundo, así no sale tras cada enemigo.": "你独自在世界中冒险时，这样不会每打一个敌人就弹出。",
+ "Tus marcos aparecen al entrar a un grupo": "加入队伍后会出现你的框体",
+ "Mientras vas solo no hay a quién mostrar. Míralos ahora con marcos de ejemplo, o prende «Verte a ti estando solo», abajo en Marcos.": "单人时没有可显示的队友。现在用示例框体看看效果，或在下方“框体”中打开“单人时显示自己”。",
+ "Ver cómo se ven": "看看效果",
+ "Mayús + clic: ponerlo en el chat": "Shift + 点击：发到聊天"
+}

@@ -1011,10 +1011,11 @@ local function bloqueCitas(padre)
 			return y + max(K.ALTO.control, K.num(b.Proponer:GetHeight(), K.ALTO.boton))
 		end,
 		llenar = function(b)
-			local comparte = on("compartir")
+			-- (1.3.2) Sin pedir compartir tu ubicación: basta tu hermandad.
+			local hermandad = U.EnHermandad()
 			local activo = N.Get(ID, "citas") ~= false
 			b.Dia:SetOpciones(Ci.OpcionesDia())
-			for _, x in ipairs({ b.Que, b.Dia, b.Hora, b.Proponer }) do x:SetActivo(comparte and activo) end
+			for _, x in ipairs({ b.Que, b.Dia, b.Hora, b.Proponer }) do x:SetActivo(hermandad and activo) end
 			local filas = {}
 			for _, c in ipairs(activo and Ci.Lista() or {}) do
 				local cuando = Ci.CuandoTexto(c.cuando)
@@ -1038,7 +1039,7 @@ local function bloqueCitas(padre)
 			end
 			local vacio
 			if not activo then vacio = L[Ci.MOTIVOS.apagado]
-			elseif not comparte then vacio = L[Ci.MOTIVOS.compartir]
+			elseif not hermandad then vacio = L[Ci.MOTIVOS.hermandad]
 			else vacio = L["No hay citas por ahora. ¡Propón la primera!"] end
 			return {
 				titulo = L["Junta a la manada para salir de caza"],
@@ -1336,8 +1337,22 @@ local function bloqueBotin(padre)
 	local Bo = M.Botin
 	return bloqueLista(padre, {
 		icono = "ic-bolsas", sobre = L["Botín para la manada"],
-		llenar = function()
+		-- (1.3.2) Sin lobos que compartan su clase y nivel no hay a quién
+		-- regalar: el bloque lo dice y deja prender el tuyo aquí mismo.
+		controles = function(b)
+			b.Compartir = K.Boton(b, L["Compartir mi clase y nivel"], function()
+				N.Set(ID, "botinCompartir", true)
+				U.Decir(L["Tu hermandad ya sabe tu clase y tu nivel: te avisarán si les sale algo que te sirve."])
+			end, { tipo = "secundario", icono = "ic-manada" })
+		end,
+		acomodar = function(b, xt, y)
+			if not b.Compartir:IsShown() then return y - ESP.m end
+			b.En(b.Compartir, xt, y)
+			return y + K.num(b.Compartir:GetHeight(), K.ALTO.boton)
+		end,
+		llenar = function(b)
 			local activo = N.Get(ID, "botin") ~= false
+			K.Mostrar(b.Compartir, activo and not on("botinCompartir"))
 			local filas = {}
 			for _, s in ipairs(activo and Bo.Sugerencias() or {}) do
 				filas[#filas + 1] = { nombre = s.nombre or "?", dato = format(L["Le sirve a %s"], s.para.nombre or "?"),
@@ -1349,7 +1364,9 @@ local function bloqueBotin(padre)
 				texto = n > 0 and format(L["Conozco la clase y el nivel de %d lobos conectados. Si levantas algo que les sirve, te lo digo."], n)
 					or L["Cuando levantes algo que le sirve a un lobo conectado, te lo digo aquí. Ellos comparten su clase y nivel en los ajustes."],
 				filas = filas,
-				vacio = activo and L["Nada por regalar por ahora."] or L["Apagado en los ajustes de abajo."],
+				vacio = not activo and L["Apagado en los ajustes de abajo."]
+					or (n == 0 and L["Aún no conozco a ningún lobo conectado que comparta su clase y su nivel. Pídeles que prendan «Compartir mi clase y nivel» en La Jauría."])
+					or L["Nada por regalar por ahora."],
 			}
 		end,
 	})
@@ -1517,7 +1534,7 @@ local function grupos(ui, padre)
 		texto = L["Al entrar al juego, Lya te dice quién de tu hermandad anda conectado y dónde."] })
 	-- 1.2.8: la manada se organiza.
 	local junta = K.GrupoAjustes(padre, { titulo = L["La manada se organiza"] })
-	junta:Fila({ titulo = L["Citas de la manada"], control = interruptor("citas"), activa = function() return on("compartir") end,
+	junta:Fila({ titulo = L["Citas de la manada"], control = interruptor("citas"),
 		texto = L["Propón una salida con día y hora y recibe las de tu hermandad con «Voy». Lya te la recuerda 15 minutos antes."] })
 	junta:Fila({ titulo = L["¿Quién va?"], control = interruptor("quienVa"), activa = function() return on("compartir") end,
 		texto = L["Al llegar a una zona con una mazmorra para tu nivel, Lya te dice quién de la manada anda cerca y va a tu nivel, con «Invitar»."] })
@@ -1526,7 +1543,7 @@ local function grupos(ui, padre)
 	junta:Fila({ titulo = L["Notas del lobo"], control = interruptor("notas"),
 		texto = L["Tus notas en el mapa, donde las dejas. Un clic en la marca y la flecha te lleva."] })
 	junta:Fila({ titulo = L["Compartir con la manada"], control = interruptor("notasCompartir"),
-		activa = function() return on("compartir") and N.Get(ID, "notas") ~= false end,
+		activa = function() return N.Get(ID, "notas") ~= false end,
 		texto = L["Tus notas nuevas también salen en el mapa de los lobos de tu hermandad, y ves las suyas."] })
 	-- 1.2.9: planos, ¿quién tiene...?, logros y la semana.
 	local juntos = K.GrupoAjustes(padre, { titulo = L["La manada unida"] })
@@ -1649,6 +1666,12 @@ local function firma(ui, gente)
 	return table.concat(partes, "|")
 end
 
+-- (1.3.2) El bloque de cada función y su ajuste: apagada, su bloque no sale.
+local BLOQUE_AJUSTE = {
+	citas = "citas", tablon = "tablon", notas = "notas", cazados = "rarosReloj",
+	mentor = "mentor", botin = "botin",
+}
+
 local function llenar(ui)
 	local t = ui.tablero
 	local gente = M.Gente.Manada()
@@ -1674,7 +1697,12 @@ local function llenar(ui)
 	ui.botin:Llenar()
 	ui.guaridasVivo:Llenar()
 	ui.calendario:Llenar()
-	K.Mostrar(ui.calendario, N.Get(ID, "calendario") ~= false)
+	-- 1.3.2: lo que apagaste no ocupa la página (se prende en los ajustes de abajo).
+	local citas = N.Get(ID, "citas") ~= false
+	K.Mostrar(ui.calendario, citas and N.Get(ID, "calendario") ~= false)
+	for bloque, clave in pairs(BLOQUE_AJUSTE) do
+		if ui[bloque] then K.Mostrar(ui[bloque], N.Get(ID, clave) ~= false) end
+	end
 	ui.clan:Llenar()
 	ui.lya:Llenar()
 	ui.filaCompartir.alfaDatos.texto = textoCompartir()

@@ -821,44 +821,43 @@ local function terminarArrastre()
 	M.Avisar()
 end
 
+-- 1.3.2: el asa, hecha con el Kit: su texto y su botón «Listo» se miden, y el
+-- asa crece con lo que dice (en alemán o ruso el texto es más largo).
 local function crearAsa()
+	local K = N.Kit
 	asa = CreateFrame("Button", nil, ancla)
-	asa:SetHeight(22)
+	asa:SetHeight(30)
 	asa:SetPoint("BOTTOMLEFT", ancla, "TOPLEFT", 0, 4)
 	asa:SetWidth(240)
 	asa:EnableMouse(true)
 	asa:RegisterForDrag("LeftButton")
 	asa:SetScript("OnDragStart", empezarArrastre)
 	asa:SetScript("OnDragStop", terminarArrastre)
-	asa.fondo = textura(asa, "BACKGROUND")
-	asa.fondo:SetAllPoints(asa)
-	asa.fondo:SetVertexColor(0.04, 0.05, 0.08, 0.92)
-	asa.raya = textura(asa, "ARTWORK")
-	asa.raya:SetPoint("TOPLEFT", asa, "TOPLEFT", 0, 0)
-	asa.raya:SetPoint("BOTTOMLEFT", asa, "BOTTOMLEFT", 0, 0)
+	asa.caja = K.Caja(asa, { fondo = "fondo", alfaFondo = 0.92, borde = "linea", corte = K.CORTE.chico })
+	asa.raya = K.Plano(asa, "acento", "ARTWORK", 1)
+	asa.raya:SetPoint("TOPLEFT", asa, "TOPLEFT", 0, -K.CORTE.chico)
+	asa.raya:SetPoint("BOTTOMLEFT", asa, "BOTTOMLEFT", 0, K.CORTE.chico)
 	asa.raya:SetWidth(3)
-	asa.raya:SetVertexColor(VERDE[1], VERDE[2], VERDE[3], 1)
-	asa.texto = texto(asa, "small")
-	asa.texto:SetJustifyH("LEFT")
+	asa.texto = K.Texto(asa, "pequeno", "texto")
 	asa.texto:SetPoint("LEFT", asa, "LEFT", 10, 0)
-	asa.texto:SetPoint("RIGHT", asa, "RIGHT", -60, 0)
-	asa.listo = CreateFrame("Button", nil, asa)
-	asa.listo:SetSize(50, 18)
-	asa.listo:SetPoint("RIGHT", asa, "RIGHT", -2, 0)
-	asa.listo.fondo = textura(asa.listo, "BACKGROUND")
-	asa.listo.fondo:SetAllPoints(asa.listo)
-	asa.listo.fondo:SetVertexColor(VERDE[1], VERDE[2], VERDE[3], 1)
-	asa.listo.texto = texto(asa.listo, "caption")
-	asa.listo.texto:SetPoint("CENTER", asa.listo, "CENTER", 0, 0)
-	asa.listo.texto:SetTextColor(0.04, 0.05, 0.08, 1)
-	asa.listo.texto:SetShadowOffset(0, 0)
-	asa.listo.texto:SetText(L["Listo"])
-	asa.listo:SetScript("OnClick", function()
+	asa.listo = K.Boton(asa, L["Listo"], function()
 		M.Prueba(nil)
 		M.Mover(false)
-	end)
+	end, { tipo = "primario", tam = "chico" })
+	asa.listo:SetPoint("RIGHT", asa, "RIGHT", -3, 0)
 	asa:Hide()
+	M.asa = asa
 end
+
+-- Lo que dice el asa; el asa toma el ancho del texto más el de «Listo».
+local function textoAsa(t)
+	if not asa then return end
+	local K = N.Kit
+	K.Escribir(asa.texto, t)
+	local w = K.Ajustar(asa.texto)
+	asa:SetWidth(max(160, 10 + w + 12 + K.num(asa.listo:GetWidth(), 50) + 3))
+end
+M.TextoAsa = textoAsa
 
 -- Se ejecuta en el entorno seguro al crear un botón nuevo (aunque sea en combate).
 local INICIAL = [[
@@ -1067,7 +1066,7 @@ function M.Mover(si)
 	end
 	moviendo = si and true or false
 	if asa then
-		asa.texto:SetText(L["Curación: arrastra para mover"])
+		textoAsa(L["Curación: arrastra para mover"])
 		if moviendo or enPrueba then asa:Show() else asa:Hide() end
 	end
 	M.Avisar()
@@ -1265,7 +1264,7 @@ function M.Prueba(n)
 	end
 	prueba:Show()
 	if asa then
-		asa.texto:SetText(string.format(L["Prueba con %d: arrastra para mover"], n))
+		textoAsa(string.format(L["Prueba con %d: arrastra para mover"], n))
 		asa:Show()
 	end
 	M.Avisar()
@@ -1362,6 +1361,7 @@ end
 A.RegisterEvent("PLAYER_TARGET_CHANGED", function() todos(objetivo) end)
 A.RegisterEvent("PLAYER_ROLES_ASSIGNED", function() todos(rol) M.ProgramarTanques() end)
 A.RegisterEvent("GROUP_ROSTER_UPDATE", function()
+	M.RelojAlcance()
 	todos(rol)
 	M.ProgramarTanques()
 	M.Blizzard()
@@ -1395,7 +1395,7 @@ end)
 -- El alcance cambia sin evento si el cliente no trae UNIT_IN_RANGE_UPDATE:
 -- cada medio segundo se revisan unos pocos botones (TOPE_ALCANCE) por turno.
 local turno = 0
-N.Cada("curacion.alcance", CADA_ALCANCE, function() -- un solo reloj (1.2.9)
+local function revisarAlcance() -- un solo reloj (1.2.9)
 	local lista = M.botones
 	local n = #lista
 	if n == 0 or not opt("alcance") or not (ancla and ancla:IsVisible()) then return end
@@ -1409,9 +1409,24 @@ N.Cada("curacion.alcance", CADA_ALCANCE, function() -- un solo reloj (1.2.9)
 			hechos = hechos + 1
 		end
 	end
-end)
+end
+
+-- 1.3.2: el reloj del alcance solo corre con marcos a la vista (en grupo, o
+-- solo con «Verte a ti estando solo»); sin marcos ni grupo se quita.
+function M.RelojAlcance()
+	local enGrupo = IsInGroup and IsInGroup() and true or false
+	local quiere = opt("activo") and opt("alcance") and (enGrupo or opt("solo")) and true or false
+	if quiere and not N.HayTarea("curacion.alcance") then
+		N.Cada("curacion.alcance", CADA_ALCANCE, revisarAlcance)
+	elseif not quiere and N.HayTarea("curacion.alcance") then
+		N.Quitar("curacion.alcance")
+	end
+	return quiere
+end
+-- (Se decide al entrar al mundo: al cargar todavía no están tus ajustes.)
 
 A.RegisterEvent("PLAYER_ENTERING_WORLD", function()
+	M.RelojAlcance()
 	M.Iniciar()
 	A.After(3, function() M.Inicial() end)
 end)
@@ -1420,5 +1435,6 @@ end)
 A.On("SETTING_CHANGED", function(path)
 	path = type(path) == "string" and path or ""
 	if path ~= "" and path ~= ID and path:sub(1, #ID + 1) ~= ID .. "." then return end
+	M.RelojAlcance()
 	M.Disponer()
 end)

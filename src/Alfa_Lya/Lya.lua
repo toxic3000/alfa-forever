@@ -467,6 +467,16 @@ end
 ---------------------------------------------------------------------------
 local LETRAS = { normal = "Letra: normal", grande = "Letra: grande", enorme = "Letra: muy grande" }
 local SIGUE_LETRA = { normal = "grande", grande = "enorme", enorme = "normal" }
+-- (1.3.2) La fila dice lo que hace el clic (no cómo está ahora).
+local A_LETRA = { normal = "Letra normal", grande = "Letra más grande", enorme = "Letra muy grande" }
+local A_FREC = { muchos = "Más consejos", pocos = "Menos consejos", importantes = "Solo los consejos importantes" }
+
+-- (1.3.2) Lo que cambiaste lo dice Lya en su globo (y, si no puede, el chat).
+local function confirmar(texto)
+	local Ce = M.Cerebro
+	if Ce and Ce.Decir and Ce.Decir({ texto = texto, pedido = true, segundos = 4 }) == true then return end
+	N.Imprimir(texto)
+end
 
 local function menu()
 	local Ce = M.Cerebro
@@ -484,10 +494,10 @@ local function menu()
 		{ { valor = "guia", texto = L["¿En qué te ayudo?"], icono = "ic-info" },
 		  { valor = "silencio", texto = silencio and L["Quitar el silencio"] or L["Silenciar 1 hora"], icono = "ic-reloj" } },
 		{},
-		{ { valor = "frec", texto = L[FREC[frec]], icono = "ic-filtro" },
+		{ { valor = "frec", texto = L[A_FREC[SIGUE[frec] or "muchos"]], icono = "ic-filtro" },
 		  -- 1.2.6: el tamaño de su letra, una fila que pasa al siguiente con cada clic
 		  -- («Háblame de mi gente» sigue en el botón de «Cuéntame algo»).
-		  { valor = "letra", texto = L[LETRAS[N.Get(ID, "letra")] or LETRAS.grande], icono = "ic-apariencia" } },
+		  { valor = "letra", texto = L[A_LETRA[SIGUE_LETRA[N.Get(ID, "letra")] or "enorme"]], icono = "ic-apariencia" } },
 		{ { valor = "bloquear", texto = bloqueado and L["Desbloquear posición"] or L["Bloquear posición"], icono = "ic-seguir" },
 		  { valor = "ajustes", texto = L["Ajustes de Lya"], icono = "ic-ajustes" },
 		  { valor = "ocultar", texto = L["Ocultar a Lya"], icono = "ic-cerrar" } },
@@ -533,11 +543,11 @@ local function menu()
 			local nueva = SIGUE_LETRA[N.Get(ID, "letra")] or "enorme"
 			N.Set(ID, "letra", nueva)
 			if UI.Hablando() and actual then UI.Hablar(actual) end
-			N.Imprimir(L[LETRAS[nueva]])
+			confirmar(L[LETRAS[nueva]])
 		elseif v == "frec" then
 			local nueva = SIGUE[frec] or "muchos"
 			N.Set(ID, "frecuencia", nueva)
-			N.Imprimir(L[FREC[nueva]])
+			confirmar(L[FREC[nueva]])
 		elseif v == "historias" then Hi.Abrir()
 		elseif v == "bloquear" then N.Set(ID, "bloqueado", not bloqueado)
 		elseif v == "vistos" then Ce.OlvidarVistos()

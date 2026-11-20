@@ -431,6 +431,15 @@ S.RevisarCasi = revisarCasi
 local function revisar()
 	pendiente = false
 	if not M.Get("avisoLleno") and not M.Get("avisoCasiLleno") then estabaLleno = false return end
+	-- 1.3.2: primero lo barato (cuántas casillas libres). Lejos del umbral no
+	-- hay nada que avisar y el análisis completo (el consejo de Comercio de cada
+	-- objeto) no se hace aquí: la ventana y la página lo piden al dibujarse.
+	local libres, total = S.Espacio()
+	if total > 0 and libres > math.max(M.Numero("avisoLibres", 0, 20), S.CASI) then
+		S.analisisSaltados = (S.analisisSaltados or 0) + 1
+		estabaLleno, avisoCero, casiPendiente = false, false, false
+		return
+	end
 	local est = S.Estado()
 	local ahora = GetTime and GetTime() or 0
 	if revisarCasi(est, ahora) then estabaLleno = est.lleno return end

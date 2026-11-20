@@ -315,5 +315,5 @@ function Rl.Olvidar() wipe(datos()) avisados = {} enviados = {} deLobo = {} camb
 
 A.OnLogin(function()
 	caducar()
-	N.Cada("manada.relojRaros", 60, function() pcall(Rl.Revisar) end)
+	M.Cada("manada.relojRaros", 60, function() pcall(Rl.Revisar) end)
 end)

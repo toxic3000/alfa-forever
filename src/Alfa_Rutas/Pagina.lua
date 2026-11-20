@@ -101,6 +101,11 @@ local function opciones()
 		out[#out + 1] = { icono = "ic-misiones", tono = "aviso", titulo = L["Misiones grises"],
 			texto = format(grises == 1 and L["%d no vale la pena: suéltala para hacer espacio."] or L["%d no valen la pena: suéltalas para hacer espacio."], grises),
 			alClic = function() M.Grises.Abrir() end }
+	elseif M.Grises and M.Grises.SinJuzgar and M.Grises.SinJuzgar() > 0 then
+		-- 1.3.2: sin el Codex no se sabe cuáles valen la pena: sin número; el clic lo carga.
+		out[#out + 1] = { icono = "ic-misiones", tono = "aviso", titulo = L["Misiones grises"],
+			texto = L["Tienes misiones grises: mira cuáles ya no valen la pena y suéltalas para hacer espacio."],
+			alClic = function() M.Grises.Abrir() end }
 	end
 	local r = M.RutaActiva() or M.RutaEditada()
 	if r and #r.tramos > 0 then
@@ -109,6 +114,7 @@ local function opciones()
 	end
 	return out
 end
+M.OpcionesPagina = opciones -- (1.3.2: para el banco)
 
 -- 5. Los ajustes.
 local function ajustes(padre)

@@ -684,5 +684,7 @@ end
 -- Cambiaron tus barras o tus teclas: se vuelve a buscar el botón y la tecla.
 function R.OlvidarBarras()
 	ultimo, resaltado = nil, false
+	-- 1.3.2: el aviso para cortar guarda su tecla: también la vuelve a buscar.
+	if M.Corte and M.Corte.Olvidar then M.Corte.Olvidar() end
 	if not InCombatLockdown() then R.PrepararBarras() end
 end

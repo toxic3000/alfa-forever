@@ -1,0 +1,13 @@
+{
+ "Arrastra tus marcos de combate adonde te acomoden. Para fijarlos, vuelve a Combate o escribe /alfa combate mover.": "전투 프레임을 편한 곳으로 끌어다 놓으세요. 고정하려면 전투로 돌아가거나 /alfa combate mover 를 입력하세요.",
+ "Así se ve en pantalla. Vuelve a Combate con /alfa combate.": "화면에서는 이렇게 보여요. /alfa combate 로 전투로 돌아가세요.",
+ "En grupo o en una instancia.": "파티 중이거나 인스턴스 안에서.",
+ "También yendo solo": "혼자일 때도",
+ "Que suene también cuando vas solo por el mundo.": "혼자 세상을 다닐 때도 소리를 내요.",
+ "Yendo solo, peleas de al menos": "혼자일 때 최소 전투 시간",
+ "Cuando vas solo por el mundo, así no sale tras cada enemigo.": "혼자 세상을 다닐 때, 적을 하나 잡을 때마다 뜨지 않도록.",
+ "Tus marcos aparecen al entrar a un grupo": "파티에 들어가면 프레임이 나타나요",
+ "Mientras vas solo no hay a quién mostrar. Míralos ahora con marcos de ejemplo, o prende «Verte a ti estando solo», abajo en Marcos.": "혼자일 때는 보여줄 사람이 없어요. 지금 예시 프레임으로 보거나, 아래 프레임에서 「혼자일 때 내 프레임 표시」를 켜세요.",
+ "Ver cómo se ven": "어떻게 보이는지 보기",
+ "Mayús + clic: ponerlo en el chat": "Shift + 클릭: 채팅에 넣기"
+}

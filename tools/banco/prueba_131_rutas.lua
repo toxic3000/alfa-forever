@@ -410,10 +410,10 @@ local DATOS = {
 step("Barcos: N.Cada con el mapa abierto, nada con el mapa cerrado y la capa solo si cambia", function()
   local Bc = Ru.Barcos
   check(Bc and Bc.Pintar, "falta Barcos.lua")
-  local sets, medido = 0, false
+  local sets, medido, t0 = 0, false, GetTime()
   local X = {
     Now = function() return GetTime() end,
-    NextArrival = function(kind, id, now, lado) if medido and lado == "a" then return 2000 - now, 2030 - now, true end return nil end,
+    NextArrival = function(kind, id, now, lado) if medido and lado == "a" then return t0 + 50 - now, t0 + 80 - now, true end return nil end, -- (1.3.2: el último minuto va al segundo)
     NextDeparture = function() return 175, 100, false end,
   }
   WorldMapFrame:Hide()

@@ -42,6 +42,9 @@ local function info(self)
 			GameTooltip:AddLine(l[1], r, g, b, true)
 		end
 	end
+	-- 1.3.2: lo único que hace un clic (con Mayús), dicho.
+	local r, g, b = K.Color("textoTenue")
+	GameTooltip:AddLine(L["Mayús + clic: ponerlo en el chat"], r, g, b, true)
 	GameTooltip:Show()
 end
 

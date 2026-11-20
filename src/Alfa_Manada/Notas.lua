@@ -8,8 +8,8 @@
 -- tocar el mapa del juego lo puede dejar bloqueado.)
 --
 -- Con «Compartir con la manada» (manada.notasCompartir, apagado de fábrica)
--- tus notas nuevas van a los lobos de tu hermandad que comparten, y ves las
--- suyas. Mensaje (Red.lua, prefijo AlfaManada, por la hermandad):
+-- tus notas nuevas van a los lobos de tu hermandad, y ves las suyas (1.3.2:
+-- sin pedir que compartas tu ubicación). Mensaje (Red.lua, prefijo AlfaManada, por la hermandad):
 --   1N|<mapa>|<x>|<y>|<texto>   (x, y en 0-100, como la flecha)
 -- Se guardan en N.Datos("manada").notas: hasta MIAS tuyas y SUYAS de otros
 -- (las de otros se van a los DURAN días). Ajuste manada.notas.
@@ -45,7 +45,8 @@ local CADA = 20 -- segundos entre dos notas de la misma persona
 
 local function on(clave) return N.Get(ID, clave) and true or false end
 local function activo() return N.Get(ID, "notas") ~= false end
-local function compartir() return on("notasCompartir") and on("compartir") end
+-- (1.3.2) Su propio permiso: ya no pide compartir tu ubicación (como los spots).
+local function compartir() return on("notasCompartir") end
 -- 1.3.0: los spots tienen su capa y su permiso (solo la hermandad).
 local function spotsOn() return activo() and N.Get(ID, "spots") ~= false end
 local function spotsCompartir() return spotsOn() and on("spotsCompartir") end
@@ -121,8 +122,8 @@ function No.Agregar(texto, tipo)
 	d.notas[#d.notas + 1] = nota
 	if spot then
 		if spotsCompartir() and M.Red.EnviarHermandad("N:" .. nota.id, format("%sN|%d|%.2f|%.2f|%s|s", V, map, x, y, texto)) then nota.compartida = true end
-	elseif compartir() and U.EnHermandad() then
-		if M.Red.Enviar("N:" .. nota.id, format("%sN|%d|%.2f|%.2f|%s", V, map, x, y, texto), "GUILD") then nota.compartida = true end
+	elseif compartir() then
+		if M.Red.EnviarHermandad("N:" .. nota.id, format("%sN|%d|%.2f|%.2f|%s", V, map, x, y, texto)) then nota.compartida = true end
 	end
 	cambio()
 	return nota

@@ -65,3 +65,7 @@ Datos: `N.Datos("comercio")` (`AlfaNucleoDB.comercio`): `reinos["Reino-Facción"
 9. Pasar el ratón por objetos de las bolsas, del comerciante y de la subasta: las dos líneas de Alfa aparecen una sola vez y sin errores.
 10. En la página: la tarjeta de arriba (qué hacer y su acción: escanear con la subasta abierta, o la flecha a la subasta o al comerciante), los filtros, "Ver todo", el orden por ganancia, la tarjeta de precios y los ajustes (cada uno se guarda tras `/reload`).
 11. Con otro addon de subastas instalado, Alfa no toma sus precios ni reacciona a sus escaneos: solo lee los que pide su botón.
+
+## 1.3.2
+
+- «Tomar todo» pedido mientras cargan las cartas: el botón dice «Parar» y otro clic lo cancela (`Bz.Pendiente()`, `Bz.Barra()` para las pruebas). Prueba: `tools/banco/prueba_132_hoy.lua`.

@@ -92,6 +92,14 @@ Datos por personaje (`N.DatosPersonaje("lya")`): `vistos`, `presentada`, `silenc
 .venv/Scripts/python -I tools/lya_marco.py [hoja-de-muestra.png]
 ```
 
+## 1.3.2
+
+- «Cuéntame algo de aquí» con Lya oculta: el dato sale en un aviso (`K.Aviso` con `lya = false`, `Historias.lua`).
+- Su menú del clic derecho dice la acción («Menos consejos», «Letra muy grande») y lo que cambió lo dice ella en su globo, no el chat.
+- «Pregúntale a Lya» (`Guia.lua`) busca sin acentos ni mayúsculas, también en cirílico (`Gi.Plegar`), y pide cada palabra (`Gi.Coincide`); las tarjetas compactas muestran el texto completo al pasar el ratón.
+- `dichosAviso` (Cerebro.lua) olvida lo de más de 90 s; `TuHistoria.lua` escucha `UNIT_HEALTH` solo de `target` y solo con presa (`Di.VigilaPresa`).
+- Prueba: `tools/banco/prueba_132_manada.lua`.
+
 ## Para verificar en el juego
 
 1. Personaje nuevo: Lya no aparece hasta terminar la bienvenida de Alfa; al terminarla sale y se presenta una sola vez.

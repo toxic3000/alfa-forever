@@ -152,5 +152,5 @@ function Qv.Olvidar() dichas = {} end
 A.RegisterEvent("ZONE_CHANGED_NEW_AREA", function() A.After(10, function() pcall(Qv.Revisar) end) end)
 A.OnLogin(function()
 	-- La manada pudo llegar después que tú: se vuelve a mirar (una vez por zona).
-	N.Cada("manada.quienVa", 60, function() pcall(Qv.Revisar) end)
+	M.Cada("manada.quienVa", 60, function() pcall(Qv.Revisar) end)
 end)

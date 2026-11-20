@@ -178,8 +178,22 @@ end
 
 -- El vigía (cada medio segundo mira si hay que despertar) solo corre con el
 -- minimapa de Recolección encendido: apagado, no gasta nada. 1.1.8.
+-- 1.3.2: y solo con el minimapa a la vista (y Alfa sin ocultar): sin él,
+-- se quita (N.Quitar) y vuelve al mostrarse.
+local enganchado = false
+local function minimapaALaVista()
+	local m = rawget(_G, "Minimap")
+	if type(m) == "table" and m.IsVisible and not m:IsVisible() then return false end
+	return not (A.Hidden and A.Hidden())
+end
 function Mini.Vigia()
-	local on = N.Get(ID, "minimapa") ~= false
+	local m = rawget(_G, "Minimap")
+	if not enganchado and type(m) == "table" and m.HookScript then
+		enganchado = true
+		m:HookScript("OnShow", function() Mini.Vigia() end)
+		m:HookScript("OnHide", function() Mini.Vigia() end)
+	end
+	local on = N.Get(ID, "minimapa") ~= false and minimapaALaVista()
 	if on and not vigia then
 		vigia = N.Ticker("recoleccion.minimapa", 0.5, function()
 			if dibujar(false) then despertar() end
@@ -211,5 +225,6 @@ A.On("SETTING_CHANGED", function(path)
 end)
 
 A.On("ALFA_HIDDEN", function(oculto)
+	if motor then Mini.Vigia() end
 	if oculto then ocultarTodo() else Mini.Refrescar() end
 end)

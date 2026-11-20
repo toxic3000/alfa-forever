@@ -221,7 +221,9 @@ function T.Textos(p)
 	if t == "entregar" then
 		return L["Entrega tus misiones listas"], n == 1 and L["1 lista: la flecha te lleva"] or format(L["%d listas: la flecha te lleva por el camino más corto"], n)
 	elseif t == "zona" then
-		return L["Cierra misiones de esta zona"], n == 1 and L["1 de tu registro aquí cerca"] or format(L["%d de tu registro aquí cerca"], n)
+		-- 1.3.2: con el nombre de su zona (el paso lo guarda desde la 1.3.1).
+		local titulo = p.zona and format(L["Cierra misiones de %s"], p.zona) or L["Cierra misiones de esta zona"]
+		return titulo, n == 1 and L["1 de tu registro aquí cerca"] or format(L["%d de tu registro aquí cerca"], n)
 	elseif t == "mazmorra" then
 		return format(L["Mazmorra: %s"], p.nombre or "?"), L["La de tu nivel. Antes, revisa que lleves todo."]
 	elseif t == "recolectar" then
@@ -328,6 +330,13 @@ function T.Ir(p)
 		local f = deRuta("Entregar") or deRuta("Liberar")
 		if f then llamar(f, "listas") end
 	elseif t == "zona" then
+		-- 1.3.2: en otra zona, «Llévame» armaría las misiones de esa: primero hay que volver.
+		local aqui = zonaActual()
+		if p.zona and aqui and aqui ~= p.zona then
+			K.Aviso({ titulo = format(L["Vuelve a %s"], p.zona), icono = "ic-misiones", tono = "aviso", duracion = 8,
+				texto = format(L["Este paso es para cerrar tus misiones de %s. Cuando estés allá, «Llévame» te lleva a cada una."], p.zona) })
+			return
+		end
 		local f = deRuta("Liberar")
 		if f then llamar(f, "zona") end
 	elseif t == "mazmorra" then
