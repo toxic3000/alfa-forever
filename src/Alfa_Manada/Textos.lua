@@ -624,5 +624,11 @@ M.EN = {
 	["Marcaste un buen lugar para juntar: «%s»."] = "You marked a farming spot: \"%s\".",
 	["Lugar para juntar de %s"] = "Farming spot from %s",
 	["Tu lugar para juntar"] = "Your farming spot",
+	-- 1.3.7: las misiones en común en la tarjeta de un lobo, y los plurales
+	["“%s”"] = "\"%s\"",
+	["%s y %s"] = "%s and %s",
+	["%d más"] = "%d more",
+	["%s: %s"] = "%s: %s",
+	["Conozco la clase y el nivel de %d lobo conectado. Si levantas algo que le sirve, te lo digo."] = "I know the class and level of %d connected wolf. If you pick up something useful to them, I'll tell you.",
 	["Marca un buen lugar para juntar donde estás (/alfa spot <texto>)"] = "Mark a farming spot where you stand (/alfa spot <text>)",
 }

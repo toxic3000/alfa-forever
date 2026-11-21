@@ -2,70 +2,149 @@
 
 ![Alfa — lead your pack](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/00-banner.png)
 
-**The all-in-one for World of Warcraft: Forever.** Guides, route, map, bags, talents, encyclopedia, dungeons, healing, fishing, trading and your guild, in one addon with one look — and **Lya**, a black she-wolf companion who chats with you about lore, your zone and your adventures. Made by **toxic3000** for **La Jauría**. Free, open source, 10 languages.
+### 🐺 The all-in-one for World of Warcraft: Forever · El todo en uno para WoW: Forever
 
-> 🐺 **New in 1.3.6, the pack guides you:** 50 improvements so moving around Alfa is fast and anyone new understands it at first sight — a search box that searches all of Alfa and finds pages by name, pages that open lighter and remember where you were, every page saying what it's for, a simpler Simple mode, a fuller tour, buttons instead of commands, clearer words, **Light mode** for modest computers and **combat and dungeon modes** that keep Alfa quiet when it matters. Also new: your fight summary never covers your action bars and you can drag it anywhere. PDF manual in 10 languages ([download it](https://github.com/toxic3000/alfa-forever/releases/latest)).
-> If something breaks, tell us with `/alfa reportar`, on [Discord](https://discord.gg/hUNjA6BJwh), in the comments or on [GitHub](https://github.com/toxic3000/alfa-forever/issues).
+**One addon instead of twenty.** Guides, route, map, bags, talents, encyclopedia, dungeons, healing, fishing, trading and your guild — tidy, guided and with one look. And **Lya**, a black she-wolf companion who chats with you along the way. **Free · open source · 10 languages · needs no other addon.**
 
-## A quick look / Un vistazo
+**Un solo addon en vez de veinte.** Guías, ruta, mapa, bolsas, talentos, enciclopedia, mazmorras, curación, pesca, comercio y tu clan, ordenado, guiado y con un solo estilo. Y **Lya**, una loba negra que te acompaña y platica contigo. **Gratis · código abierto · 10 idiomas · no necesita ningún otro addon.**
 
-![Lya, the Alfa companion](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/16-lya-poses.png)
+![Every login, a welcome](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/18-intro.png)
 
-**Lya, your companion she-wolf / tu loba compañera** — runs, chases her tail, sleeps, howls, begs for sausages and tells you stories.
-
-![Lya chats with you](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/17-lya-globo.png)
-
-![Your route](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/03-rutas.png)
-
-**Your route / Tu ruta** — the guide that fits you, quests you can actually do, and the arrow that takes you there.
-
-![Fishing](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/11-pesca-diario.png)
-
-**Fishing / Pesca** — one key for everything, a catch journal, achievements and a 1–300 guide.
-
-![Encyclopedia](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/05-enciclopedia.png)
-
-**Encyclopedia / Enciclopedia** — every item, NPC, quest, mount and pet in the game, with "Guide me".
-
-![Scenery and graphics](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/13-vista.png)
-
-**Scenery / Paisaje** — the game's graphics settings explained, with presets and one-click undo.
-
-![Search all of Alfa](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/20-136-buscador.png)
-
-**Search all of Alfa / Busca en todo Alfa** — type a word: Alfa finds the page and the setting, and if not, offers you Lya.
-
-![Ask Lya](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/21-136-lya-guia.png)
-
-**Ask Lya / Pregúntale a Lya** — all of Alfa explained by Lya, with a click that takes you there.
-
-![Today](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/01-inicio.png)
-
-**Today / Hoy** — "What do we do today?": your next step, your ready quests and your class on one page.
-
-![Healing](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/24-manual-curacion.png)
-
-**Healing / Curación** — party and raid frames to heal, target and cleanse with your clicks.
-
-![Talents](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/23-builds.png)
-
-**Talents / Talentos** — which talent to take now, your talent plan and your gear.
-
-![World](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/25-mundo.png)
-
-**World / Mundo** — Alfa's map: the whole world, your markers and one layer control.
-
-![Your fight](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/22-136-resumen.png)
-
-**Your fight / Tu pelea** — after a fight, your damage and what hit you hardest, next to your bars, never on top.
-
-![What's new](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/19-notas.png)
-
-**Every login, a welcome / Cada entrada, una bienvenida** — the wolf and moon intro greets you every time you log in.
+*Every login starts with the wolf and the moon. · Cada entrada empieza con el lobo y la luna.*
 
 ---
 
-## English
+## 🆕 New in 1.3.7 — a pack at your pace / Lo nuevo: la manada a tu ritmo
+
+**200 fixes and improvements** so everything arrives at the right time. · **200 correcciones y mejoras** para que todo llegue a su tiempo.
+
+![Arriving in a zone](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/31-137-zona.png)
+
+**🗺️ Every zone, announced / Cada zona se anuncia** — arrive anywhere and Alfa says where you are, who holds it and its levels, each with its own animation: boats sway, zeppelins float, rares jump, dungeons rise in purple. · Al llegar a cualquier lugar, Alfa te dice dónde estás, de quién es y sus niveles, cada uno con su animación.
+
+![Discovering a place](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/32-137-descubrir.png)
+
+![Level up](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/34-137-nivel.png)
+
+**⭐ Level up without clutter / Sube de nivel sin ventanas encimadas** — Alfa waits for the game's own animation, then gives you one summary with two buttons. Nothing blocks your clicks. · Alfa espera la animación del juego y luego te da un solo resumen con dos botones. Nada te bloquea los clics.
+
+![Damage meter](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/22-137-medidor.png)
+
+**⚔️ Your group's damage / El daño de tu grupo** — a compact bar graph that shows up by itself in a group, never covers your action bars and never catches clicks in combat. · Una gráfica compacta que sale sola en grupo, nunca tapa tus barras y en combate no atrapa clics.
+
+![Your gold](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/30-137-oro.png)
+
+**💰 Your gold, just once / Tu oro, una sola vez** — click the coins to see every character, by realm and faction, plus your gold per hour and your best farming zone. · Un clic en las monedas y ves a cada personaje, por reino y facción, tu oro por hora y tu mejor zona.
+
+![Fishing to fighting](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/35-137-pesca.png)
+
+**🎣 From fishing to fighting / De la pesca a la pelea** — attacked while fishing? One click on the sword puts your weapons back, even mid-fight; the rest returns when it's over. · ¿Te atacan pescando? Un clic en la espada y tienes tus armas, incluso en plena pelea; lo demás vuelve al terminar.
+
+![What I missed](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/36-137-perdi.png)
+
+**🔔 Notices that wait their turn / Avisos que esperan su turno** — one at a time, never over the game's banners, never mid-fight. `/alfa calma` for do not disturb, and "What I missed" keeps the rest. · Uno a la vez, nunca encima de lo del juego ni en plena pelea. `/alfa calma` para no molestar, y «Lo que me perdí» guarda lo demás.
+
+![Info bar and cooldowns](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/37-137-info.png)
+
+**✨ And much more / Y mucho más** — info bar, big cooldown numbers, chat timestamps and spam filter, item level on your gear, gear sets in one click, dungeon timer and boss map, bargains at the auction house, send to your alt, and a hundred fixes. · Barra de información, números en tus recargas, hora y filtro de spam en el chat, nivel de objeto en tu equipo, conjuntos en un clic, cronómetro y mapa de jefes, gangas en la subasta, mandar a tu alt y un centenar de arreglos. [Full notes / Notas completas](https://github.com/toxic3000/alfa-forever/blob/main/CHANGELOG.md)
+
+> If something breaks, tell us with `/alfa reportar`, on [Discord](https://discord.gg/hUNjA6BJwh), in the comments or on [GitHub](https://github.com/toxic3000/alfa-forever/issues). · Si algo falla, avísanos con `/alfa reportar`, en el [Discord de La Jauría](https://discord.gg/hUNjA6BJwh), en los comentarios o en [GitHub](https://github.com/toxic3000/alfa-forever/issues).
+
+---
+
+## 🚀 Start in 3 steps / Empieza en 3 pasos
+
+1. **Install / Instala** — with CurseForge, or the easy [Instalar-Alfa.exe](https://github.com/toxic3000/alfa-forever/releases/latest/download/Instalar-Alfa.exe). · Con CurseForge o con el instalador.
+2. **Say hi / Saluda** — the welcome asks your language and, one by one, what Alfa may do for you. Nothing happens without your OK. · La bienvenida te pregunta el idioma y, una por una, qué puede hacer Alfa por ti. Nada pasa sin tu permiso.
+3. **Play / Juega** — open everything with `/alfa`, the wolf on the minimap or the **Alfa** button in the Esc menu. Lost? Type a word in the search box or ask Lya (`/alfa ayuda`). · Abre todo con `/alfa`, el lobo del minimapa o el botón **Alfa** del menú Esc. ¿Perdido? Escribe una palabra en el buscador o pregúntale a Lya.
+
+---
+
+## 🐾 A quick look / Un vistazo
+
+### Lya, your companion / Lya, tu compañera
+
+![Lya, the Alfa companion](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/16-lya-poses.png)
+
+**Lya** runs, chases her tail, sleeps, howls and begs for sausages — and she talks: lore of your zone, your quests, your race and professions, and friendly tips. In memory of a great little dog. · Corre, se busca la cola, duerme, aúlla y pide salchichas, y platica: lore de tu zona, tus misiones, tu raza y tus oficios. En memoria de una gran perrita.
+
+![Lya chats with you](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/17-lya-globo.png)
+
+### Your adventure / Tu aventura
+
+![Today](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/01-inicio.png)
+
+**Today / Hoy** — "What do we do today?": your next step, your ready quests and your class, on one page. · Tu siguiente paso, tus misiones listas y tu clase en una sola página.
+
+![Your route](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/03-rutas.png)
+
+**Route / Ruta** — the guide that fits you, only quests you can really do, and one run that turns in everything ready. · La guía que te toca, solo misiones que sí puedes hacer y una vuelta que entrega todo lo listo.
+
+![Your tracker](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/26-rastreador.png)
+
+**Tracker / Rastreador** — your step, the arrow and what's next, always in sight and compact. · Tu paso, la flecha y lo que sigue, siempre a la vista y compacto.
+
+![Guide library](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/04-biblioteca.png)
+
+### The world / El mundo
+
+![World](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/25-mundo.png)
+
+**World / Mundo** — all of Azeroth on one map with real terrain, flight points, boats and portals, your markers and one layer control. · Todo Azeroth en un mapa con el terreno real, vuelos, barcos y portales, tus marcadores y un solo control de capas.
+
+![Entering a dungeon](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/33-137-mazmorra.png)
+
+![Dungeons](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/06-mazmorras.png)
+
+**Dungeons / Mazmorras** — the one for your level with "Get me ready": bosses, loot, quests to bring and the way in. · La de tu nivel con «Prepárame»: jefes, botín, misiones que llevar y cómo llegar.
+
+![Encyclopedia](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/05-enciclopedia.png)
+
+**Encyclopedia / Enciclopedia** — every item, NPC, quest, mount and pet in the game, with "Guide me". · Todo el juego, aunque no lo tengas, con «Guíame».
+
+### Your character / Tu personaje
+
+![Talents](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/23-builds.png)
+
+**Talents / Talentos** — which talent to take now and why, applied with one click. · Qué talento poner ahora y por qué, con un clic.
+
+![Healing](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/24-manual-curacion.png)
+
+**Healing / Curación** — party and raid frames: heal, target and cleanse with your clicks. · Marcos de grupo y banda: cura, selecciona y quita perjuicios con tus clics.
+
+![Bags](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/07-bolsas.png)
+
+**Bags / Bolsas** — three views, your bank from anywhere and what to sell when they fill up. · Tres vistas, tu banco desde cualquier lugar y qué vender cuando se llenan.
+
+### Professions / Oficios
+
+![Fishing](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/11-pesca-diario.png)
+
+**Fishing / Pesca** — one key for everything, a catch journal, achievements and a 1–300 guide. · Una tecla para todo, diario de capturas, logros y guía de 1 a 300.
+
+![Trade](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/27-manual-comercio.png)
+
+**Trade / Comercio** — vendor, auction or craft? What leaves you the most gold for each item. · ¿Vender, subastar o transformar? Lo que más oro te deja.
+
+![Gathering](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/28-manual-recoleccion.png)
+
+**Gathering / Recolección** — ore, herbs, fishing pools and treasures, with gathering routes. · Minas, hierbas, pesca y tesoros, con rutas para juntar.
+
+### Always at hand / Siempre a la mano
+
+![Search all of Alfa](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/20-136-buscador.png)
+
+**Search all of Alfa / Busca en todo Alfa** — type a word and Alfa finds the page and the setting; if not, Lya answers. · Escribe una palabra: Alfa encuentra la página y el ajuste; si no, Lya te responde.
+
+![Ask Lya](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/21-136-lya-guia.png)
+
+![Scenery and graphics](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/13-vista.png)
+
+**Scenery / Paisaje** — the game's graphics in plain words, with presets and one-click undo. · Los gráficos del juego en palabras simples, con preajustes y deshacer de un clic.
+
+---
+
+## 📖 English
 
 Tired of a pile of addons stepping on each other and filling your map with icons? Alfa puts it all in one, tidy and guided, and it adapts to your class. **It needs no other addon.**
 
@@ -81,25 +160,23 @@ It doesn't switch your brain off: Alfa backs you up and you decide. The first ti
 - **Encyclopedia** — every item, NPC, quest, zone, rare, mount and pet in the game, even if you don't own it: who drops it, who sells it, which quest gives it, and a "Guide me" button. A Legacy points guide.
 - **Dungeons** — the one for your level, with "Get me ready": bosses, loot, quests to bring, tips and the way to the entrance.
 - **Talents** — which talent to take now and why, applied in one click. Pick a goal (solo leveling, dungeons, tank, PvP) and a style (safe, balanced, risky).
-- **Combat** — a rotation helper for all 27 specializations, your quest mobs highlighted, reaction alerts and a group damage meter.
+- **Combat** — a rotation helper for all 27 specializations, your quest mobs highlighted, reaction alerts, a group damage meter that shows up by itself in a group, "Get out!" when you stand in fire, the pull countdown and boss timers learned fight by fight.
 - **Healing** — click-to-heal party and raid frames: your heal also targets the teammate, every click set up in a minute, curses/poisons/magic/disease shown and cleansed in one click, missing buffs marked, the tank in trouble and healers' mana.
-- **Bags** — three views (all, categories, per bag), a bag bar, your bank from anywhere with quick deposit and slot purchase, every character's inventory, and what to sell when they fill up. Your gold per hour (mailbox gold kept apart) and an alert for expiring mail with **Take all**.
+- **Bags** — three views (all, categories, per bag), a bag bar, your bank from anywhere with quick deposit and slot purchase, every character's inventory, and what to sell when they fill up. Your gold once, with every character's at a click; gold and loot per hour and your best zone; item level on your gear and gear sets in one click; and an alert for expiring mail with **Take all**.
 - **World** — all of Azeroth on one zoomable map with real terrain, flight points, entrances and exits (dungeons, boats, zeppelins, portals), your own markers and one layer control.
 - **Gathering** — ore, herbs, fishing pools and treasures on map and minimap, with gathering routes.
 - **Trade** — auction prices and what to do with each item: vendor, auction or craft.
 - **Fishing** — fully re-engineered: a one-key fishing mode (gear, lure, cast and loot), a fishing bar, catch journal, achievements, goals, a 1–300 guide and cooking by the water.
 - **Scenery** — the game's graphics settings in plain words, presets, one-click undo and screen filters.
 - **La Jauría** — your group and Alfa users who opt in to be seen, on the map; a **Follow** button with the arrow; call the pack; dens to play together; rares shared by the pack with their timers; **outings** with a day and time; "Who's going?"; notes on your map; a short announcement when a wolf who uses Alfa is nearby, so you can say hi; the La Jauría badge and the guild page.
-- **Comforts** (Settings) — minimap, class colors, info box, dressing room, flight bar, quest automation and sounds.
+- **Comforts** (Settings) — minimap, class colors, info box, an info bar (fps, gold, durability, bags, XP per hour), big cooldown numbers, chat timestamps, copy and spam filter, IDs in tooltips, dressing room, flight bar, quest automation and sounds.
+- **Announcements and notices** — every zone announced with its own animation; notices that wait their turn and never block your clicks; `/alfa calma` for do not disturb and "What I missed" (`/alfa perdi`).
 
 **Plays by Forever's and Blizzard's rules:** nothing decides for you in combat. Healing, fishing, applying talents and using items always need your key or click, and out of combat when the game requires it. Free, open source, no ads, and nothing posts to other players' chat on its own.
 
-## Español
+## 📖 Español
 
 **El todo en uno para World of Warcraft: Forever.** Guías, ruta, mapa, bolsas, talentos, enciclopedia, mazmorras, curación, pesca, comercio y tu clan, en un solo addon y con un solo estilo. Hecho por **toxic3000** para **La Jauría**.
-
-> **Novedades de la 1.3.6, la manada te guía:** 50 mejoras para que moverte por Alfa sea rápido y quien empieza lo entienda a la primera: un buscador que busca en todo Alfa y encuentra las páginas por su nombre, páginas que abren más ligeras y recuerdan dónde ibas, cada página dice para qué sirve, Alfa sencillo más sencillo, un recorrido más completo, botones en vez de comandos, palabras más claras, **Modo ligero** para computadoras modestas y **modo combate y modo mazmorra** para que Alfa no estorbe cuando importa. Y el resumen de tu pelea ya nunca tapa tus barras y lo arrastras a donde quieras. Manual en PDF en 10 idiomas ([descárgalo](https://github.com/toxic3000/alfa-forever/releases/latest)).
-> Si algo falla, avísanos con `/alfa reportar`, en el [Discord de La Jauría](https://discord.gg/hUNjA6BJwh), en los comentarios o en [GitHub](https://github.com/toxic3000/alfa-forever/issues).
 
 ¿Cansado de tener un montón de addons que se enciman y te llenan el mapa de marcas? Alfa los junta en uno solo, ordenado y guiado, que se adapta a tu clase. **No necesita ningún otro addon.**
 
@@ -117,16 +194,17 @@ No busca apagarte el cerebro: Alfa te apoya, y tú decides. La primera vez te pr
 | **Enciclopedia** `/alfa enciclopedia` | Todos los objetos, PNJ, misiones, zonas, raros, monturas y mascotas del juego, aunque no los tengas: quién lo suelta, quién lo vende, qué misión lo da, y un botón "Guíame". Guía de los puntos del Legado. |
 | **Mazmorras** `/alfa mazmorras` | La que te toca por nivel, con "Prepárame": jefes, botín, misiones que conviene llevar, consejos y cómo llegar a la entrada. |
 | **Talentos** `/alfa builds` | Qué talento poner ahora y por qué, aplicado con un clic. Eliges objetivo (subir solo, mazmorras, tanque, JcJ) y estilo (tranquilo, equilibrado, arriesgado). |
-| **Combate** `/alfa combate` · `/alfa dps` | Ayuda de rotación para las 27 especializaciones, los enemigos de tus misiones resaltados, avisos de reacción y un medidor de daño de tu grupo. |
+| **Combate** `/alfa combate` · `/alfa dps` | Ayuda de rotación para las 27 especializaciones, los enemigos de tus misiones resaltados, avisos de reacción, un medidor de daño de tu grupo que sale solo en grupo, «¡Sal de ahí!» si pisas fuego, la cuenta para jalar y los tiempos del jefe aprendidos pelea a pelea. |
 | **Curación** `/alfa curacion` | Marcos de grupo y banda para curar con un clic: al curar también seleccionas al compañero, tus clics listos en un minuto, maldiciones, venenos, magia y enfermedades a la vista y fuera con un clic, hechizos de apoyo que faltan, el tanque en apuros y el maná de los sanadores. |
-| **Bolsas** `/alfa bolsas` | Tres vistas (todo junto, por categorías o por bolsa), barra de bolsas, banco desde cualquier lugar con depósito rápido y compra de espacios, el inventario de tus personajes y qué vender cuando se llenan. Tu oro por hora (el del buzón aparte) y un aviso de cartas por vencer con **Tomar todo**. |
+| **Bolsas** `/alfa bolsas` | Tres vistas (todo junto, por categorías o por bolsa), barra de bolsas, banco desde cualquier lugar con depósito rápido y compra de espacios, el inventario de tus personajes y qué vender cuando se llenan. Tu oro una sola vez y el de cada personaje a un clic; oro y botín por hora y tu mejor zona; nivel de objeto en tu equipo y conjuntos en un clic; y un aviso de cartas por vencer con **Tomar todo**. |
 | **Mundo** `/alfa mapa` (o la tecla M) | Todo Azeroth en un solo mapa con zoom y el terreno real, puntos de vuelo, entradas y salidas (mazmorras, barcos, zepelines y portales), tus marcadores y un solo control de capas. |
 | **Recolección** `/alfa recoleccion` | Minerales, hierbas, bancos de peces y tesoros en el mapa y el minimapa, con rutas para juntar. |
 | **Comercio** `/alfa comercio` | Precios de la subasta y qué hacer con cada objeto: venderlo, subastarlo o transformarlo. |
 | **Pesca** `/alfa pesca` | Reingeniería completa: modo pesca de una tecla (equipo, cebo, lanzar y recoger), barra, diario de capturas, logros, metas, guía de 1 a 300 y cocina junto al agua. |
 | **Paisaje** `/alfa paisaje` | Los ajustes gráficos del juego explicados en palabras simples, preajustes, deshacer de un clic y filtros de pantalla. |
 | **La Jauría** `/alfa manada` · `/alfa cita` · `/alfa nota` | Tu grupo y quienes usan Alfa y aceptan que la manada los vea, en el mapa; botón **Seguir** con la flecha; llamar a la manada; guaridas para jugar juntos; raros compartidos por la manada con su reloj; **citas** con día y hora; «¿Quién va?»; notas en tu mapa; un anuncio corto cuando anda cerca un lobo que usa Alfa, para que lo saludes; la insignia de La Jauría y la página del clan. |
-| **Comodidades** (Ajustes) | Minimapa, colores de clase, cuadro de información, probador, barra de vuelo, misiones automáticas y sonidos. |
+| **Comodidades** (Ajustes) | Minimapa, colores de clase, cuadro de información, barra de información (fps, oro, durabilidad, bolsas, experiencia por hora), números grandes en tus recargas, hora, copiar y filtro de spam en el chat, IDs en el cuadro, probador, barra de vuelo, misiones automáticas y sonidos. |
+| **Anuncios y avisos** `/alfa calma` · `/alfa perdi` | Cada zona se anuncia con su propia animación; los avisos esperan su turno y nunca te bloquean los clics; No molestar y «Lo que me perdí». |
 
 **Respeta las reglas de Forever y de Blizzard:** nada decide por ti en combate. Curar, pescar, aplicar talentos y usar objetos siempre es con tu tecla o tu clic, y fuera de combate cuando el juego lo pide. Gratis, código abierto, sin anuncios y nada escribe solo en el chat de otros.
 

@@ -53,7 +53,7 @@ Dg.CHOQUES = {
 		claves = { ["nav.useTomTomArrow"] = true }, boton = "Usar solo una flecha" },
 	{ id = "medidor", addons = { "Details", "Recount", "Skada" },
 		texto = "%s ya mide tu daño: el medidor de Alfa sobra.",
-		claves = { ["combate.medidor"] = false } },
+		claves = { ["combate.medidorModo"] = "apagado" } },
 	{ id = "curacion", addons = { "Grid2", "VuhDo", "HealBot", "Cell" },
 		texto = "%s ya pone marcos de grupo para curar: los de Alfa se pondrían encima.",
 		claves = { ["curacion.activo"] = false } },

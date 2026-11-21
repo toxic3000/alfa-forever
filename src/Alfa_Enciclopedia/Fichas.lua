@@ -534,7 +534,7 @@ local function ultimaVez(kind, id)
 	local cuando
 	if hace < 3600 then cuando = format(L["hace %d min"], max(1, floor(hace / 60)))
 	elseif hace < 86400 then cuando = format(L["hace %d h"], floor(hace / 3600))
-	else cuando = format(L["hace %d días"], floor(hace / 86400)) end
+	else cuando = N.Plural(floor(hace / 86400), L["hace %d día"], L["hace %d días"]) end
 	return cuando, e
 end
 
@@ -725,6 +725,33 @@ local OBJETIVO_TEXTO = {
 	kill = L["Derrota a %s"], item = L["Consigue %s"], object = L["Usa %s"], talk = L["Habla con %s"],
 }
 
+-- 1.3.7: la experiencia de una misión a tu nivel, como la da el juego: toda
+-- hasta 5 niveles arriba de la misión, luego 80/60/40/20 % y 10 % desde 10
+-- arriba (Levels.Share del motor), redondeada como el juego (a 5, o a 50
+-- arriba de 1000). -> xp | nil, gris
+function F.XPTuya(q, nivel)
+	if type(q) ~= "table" or type(q.xp) ~= "number" or q.xp <= 0 then return nil end
+	nivel = nivel or M.MiNivel()
+	local Lv = A.Levels
+	local maximo = (Lv and Lv.MAX_LEVEL) or 60
+	local gris = false
+	local C = A.Compat
+	if type(q.level) == "number" and C and C.IsQuestTrivial then
+		local ok, g = pcall(C.IsQuestTrivial, q.level, nivel)
+		gris = ok and g == true
+	end
+	if nivel >= maximo then return 0, gris end
+	local parte = 1
+	if Lv and Lv.Share and type(q.level) == "number" then
+		local ok, s = pcall(Lv.Share, nivel, q.level)
+		if ok and type(s) == "number" then parte = s end
+	end
+	local xp = q.xp * parte
+	local paso = xp >= 1000 and 50 or 5
+	xp = floor(xp / paso + 0.5) * paso
+	return max(paso, xp), gris
+end
+
 function F.Mision(id)
 	local C = Codex()
 	local q = C and C.Quest(id)
@@ -775,7 +802,22 @@ function F.Mision(id)
 	if para then f.insignias[#f.insignias + 1] = { para, "neutro" } end
 
 	local datos = {}
-	if q.xp and q.xp > 0 then datos[#datos + 1] = { L["Experiencia"], M.Miles(q.xp) } end
+	if q.xp and q.xp > 0 then
+		datos[#datos + 1] = { L["Experiencia"], M.Miles(q.xp) }
+		-- 1.3.7: lo que te da a ti, a tu nivel (más de 5 niveles arriba de la
+		-- misión da menos), y si ya está gris.
+		local tuya, gris = F.XPTuya(q)
+		if tuya and not hecha then
+			if tuya == 0 then
+				datos[#datos + 1] = { L["A tu nivel"], L["Ya no da experiencia (estás en el nivel máximo)"] }
+			elseif tuya < q.xp then
+				datos[#datos + 1] = { L["A tu nivel"], format(L["%s (menos, porque ya la pasaste)"], M.Miles(tuya)) }
+			else
+				datos[#datos + 1] = { L["A tu nivel"], format(L["%s, completa"], M.Miles(tuya)) }
+			end
+		end
+		if gris and not hecha then f.insignias[#f.insignias + 1] = { L["Gris para ti"], "neutro" } end
+	end
 	if q.repFaction and q.repStanding then
 		datos[#datos + 1] = { L["Reputación necesaria"], unir(M.Nombre("faction", q.repFaction), M.NombreReputacion(q.repStanding)) }
 	end
@@ -963,8 +1005,77 @@ function F.Zona(id)
 	if #pendiente > 0 then f.nota = format(L["Preparando %s… la ficha se completa sola."], concat(pendiente, ", ")) end
 	f.acciones.mapa = puntosDe(f.secciones, 40)
 	f.acciones.mapaZona = id
+	-- 1.3.7: a un clic, la guía de esta zona y (si estás aquí) su circuito.
+	local gid = F.GuiaDeZona(id)
+	if gid then f.acciones.guiaZona = function() return F.AbrirGuia(gid) end end
+	local R = type(AlfaRuta) == "table" and AlfaRuta or nil
+	if R and type(R.Circuito) == "function" and F.EstasEn(id) then
+		f.acciones.circuito = function()
+			local ok, e = pcall(R.Circuito)
+			if not ok then return false, tostring(e) end
+			return true, L["Armé el circuito de la zona: sigue la flecha."]
+		end
+	end
 	return f
 end
+
+-- 1.3.7: la guía de subir de nivel de una zona (la que te queda mejor por
+-- nivel, de tu bando, raza y clase). -> id | nil
+function F.GuiaDeZona(mapa)
+	local G = A.Guides
+	if not (G and type(G.List) == "function" and type(mapa) == "number") then return nil end
+	local C = A.Compat
+	local p = C and C.GetPlayerInfo and C.GetPlayerInfo() or {}
+	local nivel = M.MiNivel()
+	local mejor, dist
+	local ok, lista = pcall(G.List)
+	for _, g in ipairs(ok and lista or {}) do
+		if g.zone == mapa and (g.category == nil or g.category == "" or g.category == "Leveling")
+			and (not G.GuideMatches or G.GuideMatches(g, p)) then
+			local lo, hi = g.minLevel or 1, g.maxLevel or g.minLevel or 60
+			local d = nivel < lo and (lo - nivel) or (nivel > hi and (nivel - hi) or 0)
+			if not mejor or d < dist then mejor, dist = g.id, d end
+		end
+	end
+	return mejor
+end
+
+-- Abre una guía: su pestaña si ya está, una nueva, o la de ahora.
+function F.AbrirGuia(gid)
+	local E = A.Engine
+	if not (E and gid) then return false, L["El motor no puede armar guías ahora."] end
+	if InCombatLockdown() then return false, L["Se puede al salir de combate."] end
+	local tabs = E.GetTabs and E.GetTabs() or {}
+	for i, t in ipairs(tabs) do
+		if t.guideId == gid then
+			if E.SelectTab then E.SelectTab(i) end
+			F.Empezar()
+			return true, L["Guía abierta: sigue la flecha."]
+		end
+	end
+	if E.OpenTab then
+		if not E.OpenTab(gid, true) then return false, L["Ya tienes seis guías abiertas: cierra una y vuelve a intentar."] end
+	elseif E.SetGuide then
+		E.SetGuide(gid)
+	else
+		return false, L["El motor no puede armar guías ahora."]
+	end
+	F.Empezar()
+	return true, L["Guía abierta en una pestaña nueva: sigue la flecha."]
+end
+
+-- ¿Estás en esa zona (o en una parte de ella)?
+function F.EstasEn(mapa)
+	local C = A.Compat
+	local ok, aqui = pcall(function() return C and C.GetPlayerMapPosition and C.GetPlayerMapPosition() end)
+	aqui = ok and aqui or nil
+	if type(aqui) ~= "number" then return false end
+	if aqui == mapa then return true end
+	local Cm = rawget(_G, "C_Map")
+	local info = Cm and Cm.GetMapInfo and Cm.GetMapInfo(aqui)
+	return type(info) == "table" and info.parentMapID == mapa
+end
+
 
 ---------------------------------------------------------------------------
 -- Lo que se abre desde una fila o desde fuera

@@ -197,7 +197,7 @@ end
 
 -- Al subir de nivel cambian las misiones abiertas: el índice se queda (sus
 -- límites se miran al momento), pero la vista se entera.
-A.RegisterEvent("PLAYER_LEVEL_UP", function() M.Avisar("NIVEL") end)
+A.RegisterEvent("PLAYER_LEVEL_UP", (AlfaNucleo.TrasNivel or function(_, f) return f end)("rutas.indice", function() M.Avisar("NIVEL") end)) -- 1.3.7: tras la animación del juego
 
 ---------------------------------------------------------------------------
 -- Medidas de una misión

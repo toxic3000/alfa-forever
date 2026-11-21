@@ -310,5 +310,15 @@ A.RegisterEvent("PLAYER_ENTERING_WORLD", function()
 	if activo() then A.After(1, enCalma) end
 end)
 
+-- 1.3.7: los botones de acción de todas las barras (los números de las
+-- recargas, Recargas.lua, los usan).
+function M.BotonesDeAccion()
+	local lista = {}
+	for _, nombre in ipairs(BARRAS) do
+		for _, b in ipairs(botonesDe(nombre)) do lista[#lista + 1] = b end
+	end
+	return lista
+end
+
 -- Para pruebas.
 M.Barras = { Aplicar = aplicar, Botones = botones, Fondos = fondos }

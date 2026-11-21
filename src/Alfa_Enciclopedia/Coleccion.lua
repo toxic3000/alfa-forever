@@ -622,7 +622,8 @@ function Col.Enriquecer(f, rec, kind, id)
 	-- Una recompensa del Legado: a la guía de los puntos.
 	if Col.LEGADO[id] then
 		local fl = { icono = { ic = "ic-nivel", tono = "oro" }, titulo = L["Recompensa del registro del Legado"],
-			texto = format(L["Llega con %d puntos del legado ganados en tu cuenta."], Col.LEGADO[id]), ir = { kind = "guia", id = "legado" } }
+			texto = N.Plural(Col.LEGADO[id], L["Llega con %d punto del legado ganado en tu cuenta."], L["Llega con %d puntos del legado ganados en tu cuenta."]),
+ ir = { kind = "guia", id = "legado" } }
 		F.Seccion(f, "legado", L["Del Legado"], { fl })
 		f.mejor = f.mejor or { sobre = L["Cómo se consigue"], titulo = L["Puntos del legado"], texto = fl.texto, ir = fl.ir, icono = "ic-nivel" }
 	end

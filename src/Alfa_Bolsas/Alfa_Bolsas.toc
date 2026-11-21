@@ -21,10 +21,13 @@ Sugerencias.lua
 Mejora.lua
 Guardar.lua
 Conjuntos.lua
+Cambio.lua
 Comparar.lua
+Ranuras.lua
 Todos.lua
 Acomodar.lua
 Barra.lua
+Oro.lua
 Ventana.lua
 Reemplazo.lua
 Pagina.lua

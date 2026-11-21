@@ -202,12 +202,12 @@ local function llenar()
 		for _, p in ipairs(pasos) do total = total + p.segundos end
 		ventana.modo = "pasos"
 		ventana:Llenar(pasos, L["Llévame a..."], viaje.destino.nombre,
-			format(L["Tu camino: %d tramos, %s. Escribe arriba para ir a otro lugar."], #pasos, M.Minutos(total)))
+			format(L["Tu camino: %s, %s. Escribe arriba para ir a otro lugar."], M.Plural(#pasos, L["%d tramo"], L["%d tramos"]), M.Minutos(total)))
 		return
 	end
 	ventana.modo = "destinos"
 	local lista = Vj.Buscar(buscado)
-	ventana:Llenar(lista, L["Llévame a..."], format(L["%d lugares"], #lista),
+	ventana:Llenar(lista, L["Llévame a..."], M.Plural(#lista, L["%d lugar"], L["%d lugares"]),
 		L["Elige a dónde ir: Alfa arma el camino con vuelos, barcos, zepelines, portales y a pie."])
 end
 Vj.Refrescar = llenar

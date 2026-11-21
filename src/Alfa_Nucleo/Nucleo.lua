@@ -376,12 +376,31 @@ end
 function N.Dinero(cobre, corto) return dinero(cobre, corto, true) end
 function N.DineroTexto(cobre, corto) return dinero(cobre, corto, false) end
 
+-- Un número con su palabra en singular o plural (1.3.7): N.Plural(1, L["%d misión"], L["%d misiones"])
+-- -> "1 misión"; con 0 o 2+ -> "3 misiones". Las dos formas son claves de texto completas
+-- (con su %d), así cada idioma las traduce enteras. Sin %d, el número va delante.
+function N.Plural(n, uno, varios)
+	n = tonumber(n) or 0
+	local f = (n == 1) and uno or (varios or uno)
+	if type(f) ~= "string" then return tostring(n) end
+	if f:find("%%[ds]") then return (f:gsub("%%d", tostring(n), 1):gsub("%%s", tostring(n), 1)) end
+	return n .. " " .. f
+end
+
 -- Segundos -> "1 h 05 min" / "4 min 10 s".
-function N.Duracion(seg)
+-- 1.3.7: N.Duracion(seg, true) redondea al minuto (un estimado): "25 min",
+-- "1 h 05 min"; menos de un minuto, "1 min".
+function N.Duracion(seg, redondo)
+	if redondo then
+		local m = math.max(1, math.floor((tonumber(seg) or 0) / 60 + 0.5))
+		seg = m * 60
+		if m < 60 then return ("%d min"):format(m) end
+	end
 	seg = math.max(0, math.floor(tonumber(seg) or 0))
 	local h, m, s = math.floor(seg / 3600), math.floor(seg / 60) % 60, seg % 60
-	if h > 0 then return ("%d h %02d min"):format(h, m) end
-	if m > 0 then return ("%d min %02d s"):format(m, s) end
+	-- 1.3.7: sin la parte en cero: «2 h», «15 min» (no «2 h 00 min»).
+	if h > 0 then return m > 0 and ("%d h %02d min"):format(h, m) or ("%d h"):format(h) end
+	if m > 0 then return s > 0 and ("%d min %02d s"):format(m, s) or ("%d min"):format(m) end
 	return ("%d s"):format(s)
 end
 

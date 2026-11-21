@@ -359,13 +359,16 @@ local function llenar()
 	ui.rejDijo:Llenar(dijo)
 	-- 1.3.3: Te perdiste esto (los avisos con botón que se fueron sin tocarlos).
 	local perd = {}
-	if filtro == "" and Ce and Ce.perdidos then
-		for _, x in ipairs(Ce.perdidos) do
+	-- 1.3.7: todos los que se fueron sin verlos (con o sin botón), guardados por personaje.
+	if filtro == "" and Ce and (Ce.Perdidos or Ce.perdidos) then
+		for i, x in ipairs(Ce.Perdidos and Ce.Perdidos() or Ce.perdidos) do
+			if i > (ui.todoDijo and 30 or 5) then break end
+			local ac = Ce.AccionPerdido and Ce.AccionPerdido(x) or x.accion
 			perd[#perd + 1] = { icono = x.icono or "ic-aviso", titulo = x.titulo ~= "" and x.titulo or x.texto, texto = x.hora,
 				ayuda = x.texto ~= "" and x.texto or nil, tono = "aviso",
 				alClic = function()
 					Ce.OlvidarPerdido(x)
-					decir(x.texto ~= "" and x.texto or x.titulo, { fn = x.accion.fn, boton = x.accion.texto })
+					decir(x.texto ~= "" and x.texto or x.titulo, ac and { fn = ac.fn, boton = ac.texto } or nil)
 					llenar()
 				end }
 		end

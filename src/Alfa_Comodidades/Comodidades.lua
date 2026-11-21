@@ -54,6 +54,16 @@ M.AJUSTES = {
 	barrasExperiencia = true, barrasMenu = true,
 	-- La barra de una forma vacía (Formas.lua): avisar una vez y ofrecer llenarla
 	barraForma = true,
+	-- 1.3.7. La barra de información (Info.lua): apagada, la página la ofrece.
+	info = false,
+	-- Números en las recargas de tus barras (Recargas.lua)
+	recargas = false, recargasColor = true, recargasDestello = true,
+	-- Tu chat (Charla.lua): la hora, colores de clase, copiar, susurros y spam
+	chatHora = false, chatClase = false, chatCopiar = true,
+	susurros = false, susurrosSonido = true,
+	spam = false, spamRepetidos = true,
+	-- El ID en el cuadro (Ids.lua): con Mayús, o siempre (avanzado)
+	cuadroID = true, cuadroIDSiempre = false,
 }
 
 -- Los valores por omisión, desde el principio (las partes los leen al

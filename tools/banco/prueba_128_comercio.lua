@@ -182,7 +182,7 @@ step("El buzón: Tomar todo, sin las de contra entrega ni las del MJ", function(
   for _, c in ipairs(cartas) do check((c.cod or 0) > 0 or c.mj, "tomó de una carta que se abre a mano") end
   local a = ultimo()
   check(a and a.titulo == "El buzón", "no dijo qué recibiste")
-  check(a and a.texto:find("Recibiste 35 objetos", 1, true), "el resumen no cuenta los objetos: " .. tostring(a and a.texto))
+  check(a and a.texto:find("Recibiste 35 piezas", 1, true), "el resumen no cuenta los objetos: " .. tostring(a and a.texto))
   check(a and a.texto:find("Dejé 2 cartas", 1, true), "el resumen no dice las cartas que dejó")
 end)
 
@@ -384,7 +384,7 @@ step("El buzón: Tomar todo antes de que carguen las cartas", function()
   check(dinero - antes == 21669, "no tomó el dinero al llegar las cartas (" .. (dinero - antes) .. ")")
   check(tomasObjeto == 2, "no tomó los objetos al llegar las cartas (" .. tomasObjeto .. ")")
   local u = ultimo()
-  check(u and (u.texto or ""):find("Recibiste 26 objetos", 1, true), "el resumen no dice lo que llegó: " .. tostring(u and u.texto))
+  check(u and (u.texto or ""):find("Recibiste 26 piezas", 1, true), "el resumen no dice lo que llegó: " .. tostring(u and u.texto))
   K.Aviso = avisoReal
 end)
 

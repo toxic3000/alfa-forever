@@ -47,11 +47,12 @@ end
 local function resumen(t, pt)
 	if not pt then return est.ocupado and L["Alfa está eligiendo..."] or "" end
 	local extra = (pt.antes and #pt.antes > 0) and ("  \194\183  " .. format(L["+%d de XP antes (nivel %d)"], #pt.antes, pt.nivel or 0)) or ""
-	if t.rama == "xp" then return format(L["+%s XP  \194\183  %d misiones"], M.Miles(pt.xp), #pt.quests) .. extra end
-	if t.rama == "oro" then return format(L["%s estimado  \194\183  %d misiones"], N.Dinero(pt.oro, true), #pt.quests) .. extra end
+	local mis = M.Plural(#pt.quests, L["%d misión"], L["%d misiones"])
+	if t.rama == "xp" then return format(L["+%s XP"], M.Miles(pt.xp)) .. "  \194\183  " .. mis .. extra end
+	if t.rama == "oro" then return format(L["%s estimado"], N.Dinero(pt.oro, true)) .. "  \194\183  " .. mis .. extra end
 	if t.rama == "clase" then
 		if pt.premios and pt.premios[1] then return format(L["Premio: %s"], M.NombreObjeto(pt.premios[1])) .. extra end
-		return format(L["%d misiones de tu clase"], #pt.quests) .. extra
+		return M.Plural(#pt.quests, L["%d misión de tu clase"], L["%d misiones de tu clase"]) .. extra
 	end
 	if t.rama == "prof" then
 		local zona = pt.zona and M.Zona(pt.zona)
@@ -592,7 +593,7 @@ function M.BloqueRutas(padre, alCambiar)
 			d.texto = L["Revisa miles de misiones para elegir las que sí puedes tomar: tarda unos segundos."]
 			d.estado = { texto = L["Armando"], tono = "acento" }
 		elseif plan then
-			d.titulo, d.tono = format(L["%d misiones  \194\183  +%s XP"], plan.misiones or 0, M.Miles(plan.xp)), "exito"
+			d.titulo, d.tono = M.Plural(plan.misiones or 0, L["%d misión"], L["%d misiones"]) .. "  \194\183  " .. format(L["+%s XP"], M.Miles(plan.xp)), "exito"
 			d.texto = format(L["De nivel %.1f a %.1f, con unos %s de oro. Solo misiones que ya puedes tomar; lo que pide más nivel va después de un paso que lo espera."],
 				plan.desde or 1, plan.hasta or 1, N.Dinero(plan.oro or 0, true))
 			d.estado = activa and { texto = L["En marcha"], tono = "exito" } or nil

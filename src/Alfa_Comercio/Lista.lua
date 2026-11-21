@@ -280,13 +280,33 @@ function Li.Guiar(id)
 		N.Imprimir(L["El motor no puede armar guías ahora."])
 		return false
 	end
-	local ok, gid = pcall(Lk.Guide, "item", id)
+	-- 1.3.7: la base de datos del motor se carga antes (sin ella siempre salía
+	-- «falta»), y el motivo que da el motor se dice tal cual (antes, siempre el mismo).
+	Li.Codex(true)
+	local ok, gid, motivo = pcall(Lk.Guide, "item", id)
 	if ok and gid then
 		if N.EmpezarRuta then pcall(N.EmpezarRuta) end
 		return true
 	end
-	N.Imprimir(L["No hay un camino que Alfa pueda guiar para esto."])
+	N.Imprimir(Li.TextoMotivo(ok and motivo or nil))
 	return false
+end
+
+-- El motivo del motor (Lookup/Guide.lua) en palabras del jugador.
+local MOTIVOS = {
+	tabs = "Ya tienes 6 guías abiertas: cierra una para abrir otra.",
+	nolocation = "Se sabe de dónde sale, pero no en qué lugar del mapa.",
+	unknown = "Alfa no tiene datos de dónde sale.",
+	noguide = "Sale de algo que no se puede guiar paso a paso (fabricarlo, un contenedor...).",
+	login = "Espera a terminar de entrar al juego.",
+	disabled = "Las guías del motor están apagadas en Ajustes.",
+	missing = "La base de datos de Alfa no está cargada. Intenta de nuevo en un momento.",
+	mount = "Las monturas se consiguen fuera de las guías: revísala en la Enciclopedia.",
+}
+function Li.TextoMotivo(motivo)
+	local t = motivo and MOTIVOS[motivo]
+	if t then return L["No pude guiarte:"] .. " " .. L[t] end
+	return L["No hay un camino que Alfa pueda guiar para esto."]
 end
 
 ---------------------------------------------------------------------------
@@ -332,7 +352,7 @@ local function revisar()
 		else
 			local x = nuevos[1]
 			K.Aviso({ titulo = L["Lista de compras"], icono = "ic-exito", tono = "exito",
-				texto = format(L["Ya tienes %d de %s. Te faltan %d de %d materiales."], x.necesita, nombreObjeto(x.id), total - listos, total) })
+				texto = format(total - listos == 1 and L["Ya tienes %d de %s. Te falta %d de %d materiales."] or L["Ya tienes %d de %s. Te faltan %d de %d materiales."], x.necesita, nombreObjeto(x.id), total - listos, total) })
 		end
 	end
 	if InCombatLockdown and InCombatLockdown() then N.FueraDeCombate("comercio.lista", avisar) else avisar() end
@@ -347,7 +367,7 @@ local function revisarLuego()
 		pendiente = false
 		revisar()
 	end
-	if C_Timer and C_Timer.After then C_Timer.After(0.5, ir) else ir() end
+	N.Una("comercio.listaRevisar", 0.5, ir)
 end
 
 A.RegisterEvent("BAG_UPDATE_DELAYED", function()

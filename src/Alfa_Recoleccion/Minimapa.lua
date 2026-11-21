@@ -57,12 +57,23 @@ local function pin(k)
 	f = A.CreateFrameUnder("Frame", nil, Minimap)
 	P.Construir(f)
 	f:SetFrameLevel((Minimap:GetFrameLevel() or 1) + 4)
-	f:EnableMouse(true)
+	-- 1.3.7: en combate los puntos no toman el ratón (atrapaban los clics del minimapa).
+	f:EnableMouse(not (InCombatLockdown and InCombatLockdown()))
 	f:SetScript("OnEnter", alEntrar)
 	f:SetScript("OnLeave", alSalir)
 	pool[k] = f
 	return f
 end
+
+local function raton(si)
+	for _, f in pairs(pool) do
+		f:EnableMouse(si)
+		if not si and GameTooltip and GameTooltip:GetOwner() == f then GameTooltip:Hide() end
+	end
+end
+A.RegisterEvent("PLAYER_REGEN_DISABLED", function() raton(false) end)
+A.RegisterEvent("PLAYER_REGEN_ENABLED", function() raton(true) end)
+M.MinimapaPines = function() return pool end -- para las pruebas
 
 local function ocultarDesde(k)
 	for j = k, usados do

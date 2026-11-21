@@ -94,7 +94,7 @@ A.RegisterCommand("rutas", function(resto)
 	elseif sub == "liberar" or sub == "cerrar" then
 		M.Cerrar.Ahora()
 	elseif sub == "entregar" then
-		M.Cerrar.Ahora("listas")
+		M.EntregarListas()
 	elseif sub == "recoger" then
 		M.Recoger.Ahora()
 	elseif sub == "asistente" then

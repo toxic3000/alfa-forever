@@ -20,7 +20,7 @@ local function insignias(o, tono)
 	local u = A.UI
 	local lv = u and u.LevelRange and u.LevelRange(o.minLevel, o.maxLevel)
 	if lv then out[#out + 1] = { format(L["Nivel %s"], lv), tono or "neutro" } end
-	if o.quests and o.quests > 0 then out[#out + 1] = { format(L["%d misiones"], o.quests), "neutro" } end
+	if o.quests and o.quests > 0 then out[#out + 1] = { M.Plural(o.quests, L["%d misión"], L["%d misiones"]), "neutro" } end
 	if o.seconds and o.seconds > 0 then out[#out + 1] = { format(L["≈ %s"], M.Minutos(o.seconds)), "neutro", "ic-reloj" } end
 	if o.chosen then out[#out + 1] = { L["Tu elección"], "acento" } end
 	if o.outleveled then out[#out + 1] = { L["Ya la superaste"], "aviso" } end

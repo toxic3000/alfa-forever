@@ -161,7 +161,7 @@ A.OnLogin(function() A.After(1, R.Refrescar) end)
 A.RegisterEvent("PLAYER_TARGET_CHANGED", function() pcall(R.Pintar, "target") end)
 A.RegisterEvent("PLAYER_FOCUS_CHANGED", function() pcall(R.Pintar, "focus") end)
 -- 1.2.7: al subir de nivel, la estrella; con un raro nuevo, la cuenta.
-A.RegisterEvent("PLAYER_LEVEL_UP", function() A.After(1, function() pcall(R.Pintar, "player") end) end)
+A.RegisterEvent("PLAYER_LEVEL_UP", (N.TrasNivel or function(_, f) return f end)("manada.retrato", function() A.After(1, function() pcall(R.Pintar, "player") end) end)) -- 1.3.7
 A.On("RARES_HISTORY", function()
 	cuentaRaros = nil
 	pcall(R.Pintar, "player")

@@ -175,7 +175,7 @@ function P.InfoGrupo(dueno, idx, miembros, pista, ancla)
 		if gr.niveles then r, gg, b = R.ColorNivel(g) end
 		tip:AddDoubleLine(icono(g, 14) .. " " .. R.Nombre(g), "×" .. porGrupo[g], r, gg, b, 0.8, 0.8, 0.8)
 	end
-	if veces > 0 then tip:AddLine(L["Los recolectaste %d veces en total"]:format(veces), 0.55, 0.85, 1) end
+	if veces > 0 then tip:AddLine(N.Plural(veces, L["Los recolectaste %d vez en total"], L["Los recolectaste %d veces en total"]), 0.55, 0.85, 1) end
 	if pista then tip:AddLine(pista, 0.55, 0.55, 0.55, true) end
 	tip:Show()
 end

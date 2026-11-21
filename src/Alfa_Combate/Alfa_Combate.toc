@@ -17,6 +17,10 @@ Reacciones.lua
 MarcaMision.lua
 Golpe.lua
 Recargas.lua
+SalDeAhi.lua
+Cuenta.lua
+Jefes.lua
+Efectos.lua
 Corte.lua
 Amenaza.lua
 Resumen.lua

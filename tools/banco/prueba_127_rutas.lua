@@ -71,6 +71,8 @@ step("Una hora de caza elige lo que más rinde", function()
   local pedido
   Cr.Ahora = function(f) pedido = f end
   Rc.Ahora = function() pedido = "recoger" end
+  local entregar = Ru.EntregarListas
+  Ru.EntregarListas = function() pedido = "listas" end -- 1.3.7: la misma manera de entregar en todos lados
   -- 2 listas: a entregar.
   Cr.ListasAhora = function() return 2 end
   check(R.UnaHora() == "entregar" and pedido == "listas", "con 2 listas no fue a entregar")
@@ -91,6 +93,7 @@ step("Una hora de caza elige lo que más rinde", function()
   check(R.UnaHora() == "recoger" and pedido == "recoger", "sin nada cerca no fue a recoger")
   QL.GetNumQuestLogEntries, QL.GetInfo, QL.IsOnQuest, QL.ReadyForTurnIn = num, info, en, lista
   Cr.ListasAhora, Cr.Ahora, Rc.Ahora = listas, ahora, recoger
+  Ru.EntregarListas = entregar
 end)
 
 step("Abandonar una misión que abre otra avisa de la cadena", function()

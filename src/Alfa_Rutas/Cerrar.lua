@@ -504,7 +504,8 @@ local function armar(lista, filtro, idx, ceder, alAvanzar)
 	if listas == total then
 		P.Anotar(pasos[1], format(total == 1 and L["%d misión por entregar, en el orden más corto."] or L["%d misiones por entregar, en el orden más corto."], total))
 	else
-		P.Anotar(pasos[1], format(L["%d misiones por cerrar (%d listas para entregar), en el orden más corto."], total, listas))
+		P.Anotar(pasos[1], format(listas == 1 and L["%d misiones por cerrar (1 lista para entregar), en el orden más corto."]
+			or L["%d misiones por cerrar (%d listas para entregar), en el orden más corto."], total, listas))
 	end
 	P.Anotar(pasos[1], L["La flecha usa vuelos y tu piedra de hogar cuando conviene."])
 	local dentro = {}
@@ -630,7 +631,7 @@ function Cr.AbandonarMarcadas()
 		aceptar = L["Abandonar"], peligro = true,
 		alAceptar = function()
 			local n = P.Abandonar(ids)
-			M.Aviso(format(L["Abandonaste %d misiones"], n), nil, { icono = "ic-exito" })
+			M.Aviso(M.Plural(n, L["Abandonaste %d misión"], L["Abandonaste %d misiones"]), nil, { icono = "ic-exito" })
 			revision = nil
 			M.Avisar("CERRAR")
 		end,

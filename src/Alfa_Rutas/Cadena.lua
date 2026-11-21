@@ -197,7 +197,7 @@ function Ca.Abrir(qid)
 	local hechas = 0
 	for _, x in ipairs(d.lista) do if x.estado == "hecha" then hechas = hechas + 1 end end
 	ventana:Llenar(lista, M.TituloMision(qid),
-		#lista > 0 and format(L["%d misiones, %d hechas"], #lista, hechas) or nil,
+		#lista > 0 and (M.Plural(#lista, L["%d misión"], L["%d misiones"]) .. ", " .. M.Plural(hechas, L["%d hecha"], L["%d hechas"])) or nil,
 		#lista > 0 and Ca.TextoPremio(d) or "")
 	return true
 end

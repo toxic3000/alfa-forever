@@ -16,5 +16,9 @@ Comida.lua
 Listo.lua
 Tiempo.lua
 Camino.lua
+Subir.lua
+Reputacion.lua
+Jugado.lua
+Barras.lua
 Clase.lua
 Inicio.lua

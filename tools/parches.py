@@ -1059,6 +1059,17 @@ function Guides.Release(id)
 	if Own.aheadOfTabs()[id] then return false end'''),
 ]
 
+# 1.3.7: con la bitácora llena, aceptar sola una misión de la guía daba el
+# error rojo del juego. Alfa_Comodidades/Misiones.lua (ns.LogFullHold) la deja
+# y avisa una vez; las que el juego ya aceptó solo (QuestGetAutoAccept) siguen.
+PARCHES += [
+    ("Alfa/Core/Automation.lua",
+     '\tnoteActed()\n\tif QuestGetAutoAccept and QuestGetAutoAccept() then',
+     lambda c: '\tif ns.LogFullHold and ns.LogFullHold(q) then return false end -- Alfa 1.3.7: bitacora llena\n'
+               '\tnoteActed()\n'
+               '\tif QuestGetAutoAccept and QuestGetAutoAccept() then'),
+]
+
 
 def aplicar(dist: pathlib.Path, cfg: dict) -> list:
     errores = []

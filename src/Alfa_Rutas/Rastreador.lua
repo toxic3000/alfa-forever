@@ -41,7 +41,7 @@ M.Rastreador = Rs
 
 
 -- rutas.seguimientoCompleto: la vista amplia del rastreador (de fábrica, la compacta).
-A.RegisterDefaults(M.ID, { seguimientoCompleto = false })
+A.RegisterDefaults(M.ID, { seguimientoCompleto = false, xpEntrega = true }) -- 1.3.7: xpEntrega, «+1,250 XP» en cada entrega
 
 local type, ipairs, pairs, tonumber, tostring = type, ipairs, pairs, tonumber, tostring
 local floor, max, min, format = math.floor, math.max, math.min, string.format
@@ -72,6 +72,43 @@ local function engine(fn, ...)
 end
 
 local function datos() return N.Datos(M.ID) end
+
+-- 1.3.7: el nombre de una guía (o de su id), nunca vacío: «Seguir con »
+-- salía sin nombre cuando la guía que sigue no traía etiqueta (84).
+local function nombreGuia(g)
+	if type(g) == "string" then
+		local G = A.Guides
+		local h
+		if G and type(G.Get) == "function" then
+			local ok, r = pcall(G.Get, g)
+			if ok and type(r) == "table" then h = r end
+		end
+		g = h
+	end
+	if type(g) ~= "table" then return nil end
+	local u = U()
+	local s
+	if u and type(u.GuideLabel) == "function" then
+		local ok, r = pcall(u.GuideLabel, g)
+		if ok then s = r end
+	end
+	if type(s) ~= "string" or s == "" then s = g.title end
+	return type(s) == "string" and s ~= "" and s or nil
+end
+M.NombreGuia = nombreGuia
+
+-- «Seguir con X», o «Seguir con la que sigue» sin nombre.
+local function seguirCon(nombre)
+	if type(nombre) == "string" and nombre ~= "" then return format(L["Seguir con %s"], nombre) end
+	return L["Seguir con la que sigue"]
+end
+M.SeguirCon = seguirCon
+
+-- 1.3.7: «quedaron 3 pasos» / «quedó 1 paso» (78).
+local function quedaron(n)
+	return M.Plural(tonumber(n) or 0, L["Llegaste al final; quedó %d paso sin hacer."], L["Llegaste al final; quedaron %d pasos sin hacer."])
+end
+M.Quedaron = quedaron
 
 ---------------------------------------------------------------------------
 -- 1.2.7: Omitir, con «Deshacer» un rato
@@ -107,6 +144,38 @@ function Rs.Omitir()
 	if type(paso) == "number" then Rs.OfrecerDeshacer(g.id, paso) end
 end
 
+-- 1.3.7: «Omitir esta misión» con su «Deshacer» (82), igual que un paso.
+function Rs.OmitirMision(q, titulo)
+	if type(q) ~= "number" then return end
+	if not engine("SkipQuest", q, true) then return end
+	local cuando = GetTime()
+	if type(titulo) ~= "string" or titulo == "" then titulo = M.TituloMision(q) end
+	M.Aviso(L["Omitiste una misión"], titulo and M.Citar(titulo) or nil, {
+		icono = "ic-cerrar",
+		accion = { texto = L["Deshacer"], alClic = function()
+			if GetTime() - cuando > DESHACER_SEG then
+				M.Aviso(L["Ya no se puede deshacer"], L["Puedes volver a ese paso desde «Ver detalle»."], { icono = "ic-info" })
+				return
+			end
+			engine("SkipQuest", q, false)
+		end },
+	})
+end
+
+-- 1.3.7: el mapa de Alfa encuadrado en el lugar de la flecha (105).
+function Rs.VerEnMapa()
+	local Mu = rawget(_G, "AlfaMundo")
+	if type(Mu) ~= "table" or type(Mu.Abrir) ~= "function" then
+		if ToggleWorldMap then pcall(ToggleWorldMap) end
+		return false
+	end
+	local Nav = A.Nav
+	local t = Nav and Nav.GetTarget and select(2, pcall(Nav.GetTarget))
+	local mapa = type(t) == "table" and tonumber(t.map) or nil
+	pcall(Mu.Abrir, mapa)
+	return true
+end
+
 -- La vista compacta (de fábrica) o la amplia.
 -- 1.2.9: con el modo foco de Lya, compacta en mazmorras y en combate (Foco.lua).
 local function compacto()
@@ -138,29 +207,61 @@ end
 -- "de", "en", "a"... no cuentan para el inglés aunque se escriban igual.
 INGLES["in"] = nil
 
-local espanol
-local function enEspanol()
-	if espanol == nil then
+-- 1.3.7: también en los otros idiomas (83): antes solo se escondían en
+-- español y en alemán, francés, portugués, ruso, coreano y chino salían
+-- mezcladas. Las palabras comunes de cada idioma de letras latinas; en ruso,
+-- coreano y chino, las palabras con letras de su idioma.
+local PROPIAS = {
+	deDE = "der die das den dem des und mit von zu zum zur im am auf nach bei durch ein eine einen ist sind hier dort oben unten links rechts nord norden sud westen osten hinter vor neben turm brucke hohle",
+	frFR = "le la les des du de et avec dans sur vers au aux un une est sont ici pres haut bas nord sud est ouest derriere devant entre tour pont grotte porte chemin",
+	ptBR = "o a os as do da dos das de em no na nos nas com para por um uma e sao aqui perto cima baixo norte sul leste oeste atras entre torre ponte caverna porta caminho",
+}
+local LATINAS = { esMX = ESPANOL, esES = ESPANOL }
+for loc, palabras in pairs(PROPIAS) do
+	local t = {}
+	for w in palabras:gmatch("%a+") do t[w] = true end
+	LATINAS[loc] = t
+end
+local SIN_LATINAS = { ruRU = true, koKR = true, zhCN = true, zhTW = true }
+
+local idioma
+local function idiomaDeAlfa()
+	if idioma == nil then
 		local f = rawget(_G, "AlfaIdioma")
 		local ok, loc = false, nil
 		if type(f) == "function" then ok, loc = pcall(f) end
 		if not (ok and type(loc) == "string") then loc = GetLocale and GetLocale() or "" end
-		espanol = (loc == "esMX" or loc == "esES")
+		idioma = loc
 	end
-	return espanol
+	return idioma
 end
+local function enEspanol()
+	local loc = idiomaDeAlfa()
+	return loc == "esMX" or loc == "esES"
+end
+Rs.EnEspanol = enEspanol
+function Rs.OlvidarIdioma() idioma = nil end -- (para el banco)
 
 -- -> true si el texto parece una nota en inglés que no se tradujo.
 function Rs.SinTraducir(s)
-	if type(s) ~= "string" or s == "" or not enEspanol() then return false end
+	if type(s) ~= "string" or s == "" then return false end
+	local loc = idiomaDeAlfa()
+	local propias = LATINAS[loc]
+	local sinLatinas = SIN_LATINAS[loc]
+	if not (propias or sinLatinas) then return false end
 	local limpio = s:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub("|T.-|t", ""):gsub("|H.-|h(.-)|h", "%1")
 	local en, es, primera, posesivo = 0, 0, nil, false
+	if sinLatinas then
+		-- Las palabras con letras de su idioma (bytes de más de 127) son suyas.
+		for w in limpio:gmatch("[\128-\255]+") do es = es + 1 end
+	end
 	for w in limpio:lower():gmatch("[%a']+") do
 		if primera == nil then primera = w end
-		if INGLES[w] then en = en + 1 elseif ESPANOL[w] then es = es + 1 end
+		if INGLES[w] then en = en + 1 elseif propias and propias[w] then es = es + 1 end
 		-- "X's hunt targets": el posesivo del inglés (el español no lo usa).
 		if w:find("%a's$") then posesivo = true end
 	end
+	if sinLatinas and es > 0 then return en >= 2 and en > es end
 	if es > 0 then return en >= 2 and en > es end
 	-- Sin ninguna palabra del español: dos del inglés, su posesivo o que
 	-- empiece con una del inglés ("Into Vallefresno", "The road north").
@@ -370,9 +471,34 @@ local function menuMeta(fila)
 	if g.optional and g.status ~= "done" then
 		op[#op + 1] = { valor = function() engine("SkipGoal", s, g.index) end, texto = L["Omitir esta meta"], icono = "ic-cerrar" }
 	end
+	-- 1.3.7: toda meta, con misión o sin ella (ir a un lugar, matar), tiene
+	-- «Llévame» y «Ver en el mapa» (105, 106).
+	if g.status ~= "done" then
+		op[#op + 1] = { valor = function()
+			local ok, por, titulo = engine("AimGoal", s, g.index)
+			if not ok and por == "accept" and titulo then
+				M.Aviso(format(L["Primero toma %s"], M.Citar(titulo)), nil, { icono = "ic-flecha" })
+			end
+		end, texto = L["Llévame"], icono = "ic-flecha" }
+	end
+	if Rs.VerEnMapa then
+		op[#op + 1] = { valor = function() Rs.VerEnMapa() end, texto = L["Ver el camino en el mapa"], icono = "ic-mapa" }
+	end
+	if not g.quest and not g.optional and g.status ~= "done" and g.t ~= "note" then
+		-- Sin misión, «Omitir» deja el paso (con su «Deshacer»).
+		op[#op + 1] = { valor = function() Rs.Omitir() end, texto = L["Omitir este paso"], icono = "ic-cerrar" }
+	end
 	if g.quest then
 		local q = g.quest
-		op[#op + 1] = { valor = function() engine("SkipQuest", q, true) end, texto = L["Omitir esta misión"], icono = "ic-cerrar" }
+		-- 1.3.7: con «Deshacer», igual que omitir un paso (82).
+		op[#op + 1] = { valor = function() Rs.OmitirMision(q, g.title or g.text) end, texto = L["Omitir esta misión"], icono = "ic-cerrar" }
+		-- 1.3.7: en grupo, compartirla con un clic tuyo (107).
+		local Gr = M.Grupo
+		if Gr and Gr.Compartir and IsInGroup and IsInGroup() then
+			op[#op + 1] = { valor = function()
+				if not Gr.Compartir(q) then M.Aviso(L["No la pude compartir"], L["Solo se comparten las misiones de tu registro que se pueden compartir."], { icono = "ic-info" }) end
+			end, texto = L["Compartir con mi grupo"], icono = "ic-manada" }
+		end
 		if M.Cerrar.EnPlan(q) then
 			op[#op + 1] = { valor = function() M.Cerrar.Quitar(q) end, texto = L["Quitar de Cerrar mis misiones"], icono = "ic-misiones" }
 		else
@@ -389,6 +515,7 @@ local function menuMeta(fila)
 	if #op == 0 then return end
 	K.Menu(fila, op, nil, function(fn) if type(fn) == "function" then fn() end end, 240)
 end
+Rs.MenuMeta = menuMeta -- (para el banco)
 
 ---------------------------------------------------------------------------
 -- Piezas que comparten el rastreador y la ventana de detalle: cada una vive
@@ -483,6 +610,17 @@ local function pintarFila(cx, n, v, g, x, y, ancho, mapa, lineas, conSub, conBar
 	f.Marca.Ok:SetShown(hecha)
 	f.Barra:SetShown(actual)
 	local linea = u and u.GoalLine and u.GoalLine(g) or (g.text or "")
+	-- 1.3.7: lo que da una entrega («+1,250 XP») y si con ella subes (97).
+	local xpTexto
+	if g.t == "turnin" and g.quest and not hecha and A.Get(M.ID .. ".xpEntrega") ~= false then
+		local xp = M.XPMision(g.quest)
+		if xp then
+			xpTexto = format(L["+%s XP"], M.Miles(xp))
+			local x, mx = UnitXP and tonumber(UnitXP("player")) or 0, UnitXPMax and tonumber(UnitXPMax("player")) or 0
+			if mx > 0 and xp >= mx - x then xpTexto = xpTexto .. "  \194\183  " .. L["¡Con esta subes de nivel!"] end
+		end
+	end
+	if xpTexto and not conSub then linea = linea .. "  \194\183  " .. xpTexto end
 	local tw = ancho - 20
 	K.Escribir(f.Texto, linea)
 	K.ColorTexto(f.Texto, (hecha or fuera or cx.previa or sinTerminar(g)) and "textoTenue" or "texto")
@@ -509,12 +647,16 @@ local function pintarFila(cx, n, v, g, x, y, ancho, mapa, lineas, conSub, conBar
 			local vale = M.GrisValiosa(g.quest)
 			if vale then sub = sub and (sub .. "\n" .. vale) or vale end
 		end
+		if xpTexto then sub = sub and (sub .. "\n" .. xpTexto) or xpTexto end
 	end
 	if sub and sub ~= "" then
 		K.Escribir(f.Sub, sub)
 		f.Sub:ClearAllPoints()
 		f.Sub:SetPoint("TOPLEFT", f, "TOPLEFT", 20, -(h + 2))
-		h = h + 2 + K.Parrafo(f.Sub, tw, 3)
+		-- 1.3.7: con «Antes», el lugar y «Vale la pena» juntos ya no se corta
+		-- (79): una línea por parte y una de holgura por si alguna se dobla.
+		local _, partes = sub:gsub("\n", "")
+		h = h + 2 + K.Parrafo(f.Sub, tw, max(3, partes + 2))
 		f.Sub:Show()
 	else
 		f.Sub:Hide()
@@ -646,7 +788,7 @@ local function pintarObjeto(cx, x, y, ancho)
 		o.Icono = K.IconoObjeto(o, 26)
 		o.Icono:SetPoint("LEFT", o, "LEFT", 8, 0)
 		o.Nombre = K.Texto(o, "etiqueta", "objeto")
-		o.Nombre:SetPoint("TOPLEFT", o.Icono, "TOPRIGHT", 10, -1)
+		o.Nombre:SetPoint("TOPLEFT", o, "TOPLEFT", 8 + 26 + 10, -7) -- 1.3.7: desde arriba de la caja (81)
 		o.Nombre:SetPoint("RIGHT", o, "RIGHT", -8, 0)
 		o.Ayuda = K.Texto(o, "pequeno", "textoTenue")
 		o.Ayuda:SetPoint("TOPLEFT", o.Nombre, "BOTTOMLEFT", 0, -2)
@@ -663,8 +805,14 @@ local function pintarObjeto(cx, x, y, ancho)
 	o:ClearAllPoints()
 	o:SetPoint("TOPLEFT", cx.padre, "TOPLEFT", x, -y)
 	o:SetWidth(ancho)
+	-- 1.3.7: la caja crece con su texto: en alemán y francés se salía (81).
+	local tw = ancho - 8 - 26 - 10 - 8
+	local hn = K.Parrafo(o.Nombre, tw, 2)
+	local ha = K.Parrafo(o.Ayuda, tw, 3)
+	local alto = max(42, 7 + hn + 2 + ha + 7)
+	o:SetHeight(alto)
 	o:Show()
-	return y + 42 + K.ESP.s
+	return y + alto + K.ESP.s
 end
 
 -- "Mientras estás aquí": hasta `tope` cosas. conTitulo: con su encabezado;
@@ -694,7 +842,8 @@ local function pintarCerca(cx, x, y, ancho, tope, conTitulo)
 			local texto = u and u.HereText and u.HereText(v) or (v.hereText or v.text or "")
 			if not conTitulo then texto = format(L["Mientras estás aquí: %s"], texto) end
 			K.Escribir(f.Texto, texto)
-			local h = K.Parrafo(f.Texto, ancho - 18, conTitulo and 2 or 1)
+			-- 1.3.7: en el compacto, dos líneas: con un nombre largo ya no se corta (80).
+			local h = K.Parrafo(f.Texto, ancho - 18, 2)
 			f:ClearAllPoints()
 			f:SetPoint("TOPLEFT", cx.padre, "TOPLEFT", x, -y)
 			f:SetSize(ancho, h)
@@ -730,15 +879,20 @@ local function rumbo(dn, dw)
 end
 
 -- -> el texto de la línea de la flecha, o nil sin flecha.
-local function textoFlecha()
+-- 1.3.7: la distancia y el rumbo hasta la flecha, en un solo lugar (104):
+-- el rastreador y Hoy (AlfaRuta.Distancia) dicen lo mismo. «Ya llegaste»
+-- cuando la flecha lo dice (su modo de llegada, 103); sin flecha a la vista,
+-- por el radio del destino. -> texto, tono, a qué (label) | nil sin flecha
+function Rs.Distancia()
 	local Nav = A.Nav
 	if type(Nav) ~= "table" or type(Nav.GetTarget) ~= "function" then return nil end
 	local ok, t = pcall(Nav.GetTarget)
 	if not ok or type(t) ~= "table" then return nil end
+	local label = type(t.label) == "string" and t.label ~= "" and t.label or nil
 	local Cp = A.Compat
 	if type(Cp) == "table" then
-		if type(Cp.IsInInstance) == "function" and Cp.IsInInstance() then return L["En una instancia: la flecha vuelve al salir"] end
-		if type(Cp.IsOnTaxi) == "function" and Cp.IsOnTaxi() then return L["En vuelo: la flecha sigue al bajar"] end
+		if type(Cp.IsInInstance) == "function" and Cp.IsInInstance() then return L["En una instancia: la flecha vuelve al salir"], "neutro", nil end
+		if type(Cp.IsOnTaxi) == "function" and Cp.IsOnTaxi() then return L["En vuelo: la flecha sigue al bajar"], "neutro", label end
 	end
 	local dn, dw
 	if type(Nav.TargetOffset) == "function" then
@@ -747,19 +901,26 @@ local function textoFlecha()
 	end
 	if not (dn and dw) then
 		local zona = type(Nav.GetTargetZoneName) == "function" and Nav.GetTargetZoneName() or nil
-		return type(zona) == "string" and zona ~= "" and format(L["Lejos de aquí: %s"], zona) or L["Lejos de aquí"]
+		return type(zona) == "string" and zona ~= "" and format(L["Lejos de aquí: %s"], zona) or L["Lejos de aquí"], "neutro", label
 	end
 	local d = math.sqrt(dn * dn + dw * dw)
 	local area = tonumber(t.area)
 	if area and area > 0 then d = d > area and d - area or 0 end
-	if d <= (tonumber(t.r) or 8) then return L["Ya llegaste"] end
+	local flecha = Nav.arrow
+	local modo = type(flecha) == "table" and type(flecha.GetMode) == "function" and select(2, pcall(flecha.GetMode)) or nil
+	if type(modo) ~= "string" then modo = nil end
+	local llego
+	if modo then llego = (modo == "arrived" or modo == "search") else llego = d <= (tonumber(t.r) or 8) end
+	if llego then return L["Ya llegaste"], "exito", label end
 	local txt
 	if type(A.FormatDistance) == "function" then
 		local ok3, r = pcall(A.FormatDistance, d)
 		if ok3 and type(r) == "string" then txt = r end
 	end
-	return (txt or format(L["%d yardas"], floor(d + 0.5))) .. " " .. rumbo(dn, dw) -- 1.3.2: traducido
+	return (txt or format(L["%d yardas"], floor(d + 0.5))) .. " " .. rumbo(dn, dw), "neutro", label -- 1.3.2: traducido
 end
+
+local function textoFlecha() return (Rs.Distancia()) end
 
 -- Cada segundo, mientras el rastreador compacto se ve: solo el texto; si la
 -- línea aparece o se va, se acomoda todo.
@@ -975,12 +1136,15 @@ local function aviso(v, live)
 	local fin = est.fin
 	if fin and fin.modelo then
 		local m = fin.modelo
-		local texto = m.complete and L["Terminaste esta guía."] or format(L["Llegaste al final; quedaron %d pasos sin hacer."], m.undone or 0)
-		if m.carried and #m.carried > 0 then texto = texto .. " " .. format(L["Guarda %d misiones: las entregas en una guía que sigue."], #m.carried) end
+		local texto = m.complete and L["Terminaste esta guía."] or quedaron(m.undone)
+		if m.carried and #m.carried > 0 then
+			texto = texto .. " " .. M.Plural(#m.carried, L["Guarda %d misión: la entregas en una guía que sigue."], L["Guarda %d misiones: las entregas en una guía que sigue."])
+		end
 		-- 1.2.9: sin una que siga en el motor, Alfa propone la siguiente para tu nivel (Siguiente.lua).
-		local sig = m.complete and not m.choose and not m.next and M.Siguiente and M.Siguiente.Proponer() or nil
-		local uno = (m.choose and L["Elegir mi camino"]) or (m.next and format(L["Seguir con %s"], m.nextLabel or ""))
-			or (sig and format(L["Seguir con %s"], sig.nombre)) or L["Elegir otra guía"]
+		-- 1.3.7: también con pasos sin hacer (la siguiente o «Elegir mi camino», 90).
+		local sig = not m.choose and not m.next and M.Siguiente and M.Siguiente.Proponer() or nil
+		local uno = (m.choose and L["Elegir mi camino"]) or (m.next and seguirCon(m.nextLabel or nombreGuia(m.next)))
+			or (sig and seguirCon(sig.nombre)) or L["Elegir otra guía"]
 		return { tono = m.complete and "exito" or "acento", icono = m.complete and "ic-exito" or "ic-huella",
 			titulo = format(m.complete and L["¡Bien hecho! %s"] or L["Final de %s"], m.label or ""), texto = texto,
 			uno = { uno, function()
@@ -1070,7 +1234,33 @@ local function aviso(v, live)
 	local d = Vt and Vt.Aviso() or nil
 	if d then return d end
 	-- 1.2.9: un paso de nivel, claro: lo que falta y dónde rinde más (Nivel.lua).
-	return M.Nivel and M.Nivel.Aviso(v, live) or nil
+	d = M.Nivel and M.Nivel.Aviso(v, live) or nil
+	if d then return d end
+	-- 1.3.7: dentro de una mazmorra, su siguiente jefe y lo que te falta ahí (111).
+	return Rs.AvisoMazmorra()
+end
+
+-- 1.3.7: AlfaMazmorras.Dentro() (área Mundo), protegido y guardado unos
+-- segundos (el rastreador se repinta seguido); nada en combate.
+local dentroCache, dentroEn = nil, -1e9
+function Rs.AvisoMazmorra()
+	local Mz = rawget(_G, "AlfaMazmorras")
+	if type(Mz) ~= "table" or type(Mz.Dentro) ~= "function" then return nil end
+	local t = GetTime and GetTime() or 0
+	if t - dentroEn >= 5 and not (InCombatLockdown and InCombatLockdown()) then
+		local ok, r = pcall(Mz.Dentro)
+		dentroCache, dentroEn = ok and type(r) == "table" and r or nil, t
+	end
+	local m = dentroCache
+	if not m then return nil end
+	local partes = {}
+	if m.jefe and m.jefe.nombre then
+		partes[#partes + 1] = format(L["Siguiente jefe: %s (%d de %d)"], m.jefe.nombre, (m.jefe.vencidos or 0) + 1, m.jefe.total or 0)
+	end
+	if (m.faltan or 0) > 0 then partes[#partes + 1] = M.Plural(m.faltan, L["Te falta %d misión aquí"], L["Te faltan %d misiones aquí"]) end
+	if #partes == 0 then return nil end
+	return { tono = "mazmorra", icono = "ic-mazmorra", titulo = m.nombre or L["Tu mazmorra"], texto = table.concat(partes, "\n"),
+		uno = type(m.abrir) == "function" and { L["Ver la mazmorra"], function() pcall(m.abrir) end } or nil }
 end
 
 -- El aviso que el rastreador mostraría ahora (para el banco y Hoy, 1.2.9).
@@ -1283,25 +1473,106 @@ local function terminada()
 end
 M.GuiaTerminada = terminada
 
+-- 1.3.7: cómo quedó tu guía cuando ya no tiene un paso para ti, lo mismo en
+-- Hoy, la página Ruta y el rastreador (73, 74, 89-91). nil con un paso vivo
+-- o sin guía; si no:
+--   { id, nombre, terminada, omitidos = n, recuperar = { step, title } | nil,
+--     elegir = true (un camino para elegir) | nil, sig = { id, nombre, motor } | nil }
+-- `sig` es la que sigue en la ruta del motor (motor = true) o, sin ella, la
+-- que propone Alfa para tu nivel (Siguiente.lua).
+function Rs.Cierre()
+	if engine("GetLiveStep") then return nil end
+	local g = engine("GetGuide")
+	local pasos = type(g) == "table" and type(g.steps) == "table" and g.steps or nil
+	if not pasos or #pasos == 0 then return nil end
+	local c = { id = g.id, nombre = nombreGuia(g), terminada = terminada(), omitidos = 0 }
+	local primera
+	for i = 1, #pasos do
+		local v = engine("GetStepView", i)
+		if type(v) == "table" and v.status ~= "na" and (v.skipped or v.status ~= "done") then
+			c.omitidos = c.omitidos + 1
+			if v.skipped and not primera then primera = { step = i, title = v.title } end
+		end
+	end
+	local fuera = engine("SkippedOut")
+	c.recuperar = (type(fuera) == "table" and fuera.step and fuera) or primera
+	local esp = M.Guias and M.Guias.Especial(g.id)
+	if not esp then
+		local ch = engine("GetRouteChoice", g.id)
+		if type(ch) == "table" and type(ch.options) == "table" and #ch.options >= 2 then
+			c.elegir = true
+		else
+			local nid = engine("NextGuide", g.id)
+			if type(nid) == "string" then c.sig = { id = nid, nombre = nombreGuia(nid), motor = true } end
+		end
+	end
+	if not c.sig and not c.elegir and esp ~= "desbloquear" and M.Siguiente then c.sig = M.Siguiente.Proponer(g.id) end
+	return c
+end
+
+-- Las acciones del cierre: seguir con la que sigue, elegir el camino o
+-- recuperar lo omitido (el paso vuelve a abrirse y la guía sigue).
+function Rs.SeguirCierre(c)
+	if not c then return false end
+	if c.elegir then engine("OfferRouteChoice") return true end
+	local s = c.sig
+	if not s then A.Fire("SHOW_PICKER") return true end
+	if s.motor and engine("StartNext", c.id) then M.Empezar() return true end
+	return M.Siguiente and M.Siguiente.Seguir(s)
+end
+
+function Rs.Recuperar(c)
+	local r = c and c.recuperar
+	if not (r and r.step) then return false end
+	local ok = engine("Unskip", r.step)
+	if ok then
+		M.Empezar()
+		if M.Aviso then M.Aviso(L["Recuperaste lo omitido"], r.title and M.Citar(r.title) or nil, { icono = "ic-huella" }) end
+	end
+	return ok and true or false
+end
+
+-- El texto del botón grande del cierre.
+function Rs.TextoCierre(c)
+	if c and c.elegir then return L["Elegir mi camino"] end
+	if c and c.sig then return seguirCon(c.sig.nombre) end
+	return L["Elegir otra guía"]
+end
+
 local vacioSig -- el cuadro de «terminaste» con la siguiente guía (1.2.9)
+local vacioFalta -- 1.3.7: el cuadro de «no tiene un paso» con su porqué
 local function cuadroVacio(g)
 	if not g then return VACIO_SIN_GUIA end
 	local esp = M.Guias and M.Guias.Especial(g.id)
 	if terminada() then
 		if esp == "desbloquear" then return VACIO_DESBLOQUEADA end
 		-- 1.2.9: con la siguiente para tu nivel a un clic (Siguiente.lua).
-		local sig = M.Siguiente and M.Siguiente.Proponer(g.id)
-		if sig then
-			if not (vacioSig and vacioSig.alfaId == sig.id) then
-				vacioSig = { lobo = "aullando", titulo = VACIO_HECHA.titulo, alfaId = sig.id,
-					texto = format(L["Lo que sigue para tu nivel: %s."], sig.nombre),
-					accion = { texto = format(L["Seguir con %s"], sig.nombre), icono = "ic-ruta", alClic = function() M.Siguiente.Seguir(sig) end } }
+		-- 1.3.7: primero la que sigue en tu ruta, o el camino para elegir.
+		local c = Rs.Cierre()
+		if c and (c.sig or c.elegir) then
+			local clave = c.elegir and "elegir" or c.sig.id
+			if not (vacioSig and vacioSig.alfaId == clave) then
+				vacioSig = { lobo = "aullando", titulo = VACIO_HECHA.titulo, alfaId = clave,
+					texto = c.elegir and L["Tu ruta se abre en dos: elige por dónde sigues."] or format(L["Lo que sigue para tu nivel: %s."], c.sig.nombre or "?"),
+					accion = { texto = Rs.TextoCierre(c), icono = "ic-ruta", alClic = function() Rs.SeguirCierre(c) end } }
 			end
 			return vacioSig
 		end
 		return VACIO_HECHA
 	end
 	if esp == "liberar" then return VACIO_PLAN end
+	-- 1.3.7: por qué no hay paso, y «Recuperar lo omitido» si lo hay (91).
+	local c = Rs.Cierre()
+	if c and c.recuperar then
+		local clave = tostring(c.recuperar.step)
+		if not (vacioFalta and vacioFalta.alfaId == clave) then
+			vacioFalta = { lobo = "atento", titulo = VACIO_GUIA.titulo, alfaId = clave,
+				texto = c.recuperar.title and format(L["Omitiste «%s» y lo que sigue depende de eso. Recupéralo y la guía sigue."], c.recuperar.title)
+					or L["Omitiste pasos y lo que queda depende de ellos. Recupéralos y la guía sigue."],
+				accion = { texto = L["Recuperar lo omitido"], icono = "ic-huella", alClic = function() Rs.Recuperar(c) end } }
+		end
+		return vacioFalta
+	end
 	return VACIO_GUIA
 end
 
@@ -1723,7 +1994,7 @@ local function pedidoFin(p)
 		local m = p.modelo or {}
 		if m.complete then
 			local sig = not m.next and not m.choose and M.Siguiente and M.Siguiente.Proponer() or nil
-			local uno = (m.next and format(L["Seguir con %s"], m.nextLabel or "")) or (sig and format(L["Seguir con %s"], sig.nombre)) or L["¿Qué sigue?"]
+			local uno = (m.next and seguirCon(m.nextLabel or nombreGuia(m.next))) or (sig and seguirCon(sig.nombre)) or L["¿Qué sigue?"]
 			K.Aviso({ lobo = "aullando", titulo = format(L["¡Bien hecho! %s"], m.label or ""), texto = L["Terminaste esta guía."],
 				duracion = 12, accion = { texto = uno, alClic = function()
 					est.fin = nil
@@ -1731,7 +2002,7 @@ local function pedidoFin(p)
 				end } })
 		else
 			K.Aviso({ lobo = "atento", titulo = format(L["Final de %s"], m.label or ""),
-				texto = format(L["Llegaste al final; quedaron %d pasos sin hacer."], m.undone or 0),
+				texto = quedaron(m.undone),
 				duracion = 12, accion = { texto = L["Ver lo que quedó"], alClic = function() est.fin = nil AlfaNucleo.EmpezarRuta() end } })
 		end
 	end

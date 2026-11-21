@@ -299,9 +299,22 @@ function R.Captura(objetos, info)
 			s.nTiempo = s.nTiempo + 1
 		end
 	end
+	-- 1.3.7: un banco de peces cuenta una vez, aunque le saques varias capturas.
+	-- Cada banco tiene su GUID (cambia al reaparecer); se recuerdan los últimos.
 	if info.banco then
-		s.bancos = s.bancos + 1
-		v.bancos = v.bancos + 1
+		local g = type(info.bancoGuid) == "string" and info.bancoGuid or nil
+		local vistos = type(s.bancosVistos) == "table" and s.bancosVistos or {}
+		s.bancosVistos = vistos
+		local ya = false
+		if g then for _, x in ipairs(vistos) do if x == g then ya = true break end end end
+		if not ya then
+			s.bancos = s.bancos + 1
+			v.bancos = v.bancos + 1
+			if g then
+				table.insert(vistos, 1, g)
+				for i = #vistos, 9, -1 do vistos[i] = nil end
+			end
+		end
 	end
 	s.zonas[zona] = num(s.zonas[zona]) + 1
 	M.SumarMeta("capturas", nil, 1)

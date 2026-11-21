@@ -567,6 +567,9 @@ local function grupos(ui, padre)
 	fila(L["Atenuar a quien está lejos"], "alcance", L["Si está fuera de tu alcance, su marco se ve más tenue."])
 	fila(L["Detalle al pasar el ratón"], "descripcion", L["El cuadro del jugador al pasar el ratón. En combate no sale, para no estorbar."])
 	fila(L["Cuadro corto en combate"], "descripcionCombate", L["En combate, solo lo que dice Alfa: con qué clic quitas el perjuicio de ese compañero. Sin el detalle del juego, para no estorbar."])
+	-- 1.3.7 (Listos.lua): no depende de los marcos.
+	muestran:Fila({ titulo = L["Lo que falta en «¿Listos?»"], control = interruptor("listos"),
+		texto = L["Cuando alguien pregunta «¿Listos?»: tu comida, munición, equipo y espacio, y a quién le falta un hechizo de apoyo, con un botón para dar el tuyo. También con /alfa curacion listos."] })
 	return { clics, marcos, muestran }
 end
 
@@ -673,6 +676,9 @@ local CONTROLES = {
 	toggle("alcance", L["Atenuar a quien está lejos"], L["Si está fuera de tu alcance, su marco se ve más tenue."], "range, out of range fade"),
 	toggle("descripcion", L["Detalle al pasar el ratón"], L["El cuadro del jugador al pasar el ratón. En combate no sale, para no estorbar."], "tooltip, mouseover"),
 	toggle("descripcionCombate", L["Cuadro corto en combate"], L["En combate, solo lo que dice Alfa: con qué clic quitas el perjuicio de ese compañero. Sin el detalle del juego, para no estorbar."], "combat tooltip, dispel click"),
+	{ kind = "toggle", key = clave("listos"), label = L["Lo que falta en «¿Listos?»"],
+		help = L["Cuando alguien pregunta «¿Listos?»: tu comida, munición, equipo y espacio, y a quién le falta un hechizo de apoyo, con un botón para dar el tuyo. También con /alfa curacion listos."],
+		search = "ready check, missing buffs, food, ammo, repair, bag space, fortitude, mark of the wild, intellect" },
 }
 
 N.Modulo({
@@ -733,6 +739,9 @@ local ACCIONES = {
 	off = function() N.Set(ID, "activo", false) N.Imprimir(L["Marcos de Curación apagados."]) end,
 	reiniciar = function() M.ReiniciarPosicion() end,
 	asistente = abrirAsistente,
+	-- 1.3.7: lo que te falta y los apoyos del grupo antes de jalar (Listos.lua).
+	listos = function() if not M.Listos.Mostrar("manual") then N.Imprimir(L["Se puede al salir de combate."]) end end,
+	bufos = function() if not M.Listos.Mostrar("manual") then N.Imprimir(L["Se puede al salir de combate."]) end end,
 }
 
 function M.Comando(resto)
@@ -741,4 +750,4 @@ function M.Comando(resto)
 	if fn then fn() else N.Abrir(ID) end
 end
 
-A.RegisterCommand("curacion", M.Comando, L["abre Curación (también: asistente, prueba, prueba20, mover, listo, blizzard, on, off, reiniciar)"])
+A.RegisterCommand("curacion", M.Comando, L["abre Curación (también: asistente, prueba, prueba20, mover, listo, listos, blizzard, on, off, reiniciar)"])

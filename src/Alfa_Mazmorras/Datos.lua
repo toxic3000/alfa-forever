@@ -672,7 +672,13 @@ local function alVencer(encId, nombre)
 	if j.final then
 		local h = D.Hecha(key)
 		local veces = h and h.veces or 1
-		anunciar("hecha", key, (primeraVez or veces <= 1) and 1 or veces, nil,
+		-- 1.3.7: cuánto tardaste en esta vuelta (Cronometro.lua): { seg, record, antes }
+		local crono
+		if M.Crono and M.Crono.Fin then
+			local ok, r = pcall(M.Crono.Fin, key)
+			if ok then crono = r end
+		end
+		anunciar("hecha", key, (primeraVez or veces <= 1) and 1 or veces, crono,
 			format(L["¡Completaste %s!"], nombreM))
 	elseif nuevo and D.Historia() and N.Get(ID, "avisoDescubrir") then
 		anunciar("jefe", key, j, nil, format(L["Descubriste a %s (%s)."], j.nombre or "?", nombreM))
@@ -711,9 +717,25 @@ end)
 local function patron(fmt)
 	if type(fmt) ~= "string" or fmt == "" then return nil end
 	local s = fmt:gsub("%%%d*%$?s", "\1"):gsub("%%%d*%$?d", "\2")
+	-- 1.3.7: los códigos de gramática del coreano («|1이;가;») valen cualquier cosa.
+	s = s:gsub("|1[^;]*;[^;]*;", "\3")
 	s = s:gsub("([%^%$%(%)%%%.%[%]%*%+%-%?])", "%%%1")
-	s = s:gsub("\1", "(.+)"):gsub("\2", "(%%d+)")
+	s = s:gsub("\1", "(.+)"):gsub("\2", "(%%d+)"):gsub("\3", ".-")
 	return "^" .. s
+end
+D.Patron = patron
+
+-- 1.3.7: como patron(), y además en qué orden llegan los huecos: un texto
+-- del juego puede traerlos cambiados de lugar ("%2$s ... %1$s"). Devuelve el
+-- patrón y { [captura] = número del hueco } (1, 2, 3... en el orden del inglés).
+function D.PatronOrden(fmt)
+	if type(fmt) ~= "string" or fmt == "" then return nil end
+	local orden, n = {}, 0
+	for pos in fmt:gmatch("%%(%d*)%$?[sd]") do
+		n = n + 1
+		orden[n] = tonumber(pos) or n
+	end
+	return patron(fmt), orden
 end
 
 local patrones

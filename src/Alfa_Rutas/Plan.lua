@@ -169,7 +169,7 @@ local function elegirMisiones(ctx, tramo, pt, modo, idx, ceder)
 		ceder()
 	end
 	if #pt.quests < tramo.cantidad then
-		pt.notas[#pt.notas + 1] = format(L["Solo encontré %d misiones que te sirvan ahora."], #pt.quests)
+		pt.notas[#pt.notas + 1] = M.Plural(#pt.quests, L["Solo encontré %d misión que te sirva ahora."], L["Solo encontré %d misiones que te sirvan ahora."])
 	end
 end
 

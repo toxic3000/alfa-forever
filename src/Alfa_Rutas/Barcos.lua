@@ -49,7 +49,7 @@ end
 
 local function cuenta(seg)
 	seg = max(0, ceil(seg))
-	return format("%d:%02d", floor(seg / 60), seg % 60)
+	return N.Duracion(seg) -- 1.3.7: como en todo Alfa («4 min 10 s», 101)
 end
 Bc.Cuenta = cuenta
 
@@ -77,7 +77,7 @@ local function agregar(out, t, lado, e, otro, X, ahora)
 			local okD, v = pcall(X.NextDeparture, t.kind, t.id, ahora, lado)
 			espera = okD and v or nil
 		end
-		texto = espera and format(L["Espera de unos %d min; va a %s"], max(1, floor(espera / 60 + 0.5)), hasta)
+		texto = espera and format(L["Espera de unos %s; va a %s"], N.Duracion(espera, true), hasta)
 			or format(L["Va a %s"], hasta)
 	end
 	out[#out + 1] = { id = t.id, tipo = t.kind, lado = lado, desde = nombre(e), hasta = hasta, texto = texto,
@@ -112,7 +112,7 @@ local function insignia(seg)
 	if not seg then return nil end
 	if seg <= 0 then return L["¡Ya!"] end
 	if seg <= 60 then return cuenta(seg) end
-	return format(L["%d min"], ceil(seg / 60))
+	return N.Duracion(ceil(seg / 60) * 60, true)
 end
 Bc.Insignia = insignia
 

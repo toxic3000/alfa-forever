@@ -164,6 +164,7 @@ local function cerrar(a)
 		ganado = num(a.ganado) or 0, gastado = num(a.gastado) or 0,
 		misiones = mis, niveles = nv, muertes = num(a.muertes) or 0,
 		nivel0 = num(a.nivel0), nivel = num(a.nivel),
+		pausa = min(dur, num(a.pausa) or 0), -- 1.3.7
 	}
 	local list = S.Sesiones()
 	list[#list + 1] = s
@@ -238,7 +239,12 @@ local function empezar(inicial, recarga)
 	leerPropio()
 	if not ticker then
 		ticker = N.Ticker("inicio.sesion", S.VISTO_CADA, function()
-			if empezado then S.Actual().visto = ahora() end
+			if not empezado then return end
+			local a2 = S.Actual()
+			a2.visto = ahora()
+			-- 1.3.7: el rato en la subasta, en una mazmorra, ausente o en
+			-- vuelo no es de misiones (119): se aparta para el ritmo.
+			if S.Pausado() then a2.pausa = (num(a2.pausa) or 0) + S.VISTO_CADA end
 		end)
 	end
 	if previa then
@@ -287,6 +293,25 @@ A.RegisterEvent("PLAYER_LEVEL_UP", function(_, lv)
 	a.nivel = num(lv) or nivel() or a.nivel
 end)
 
+-- 1.3.7: ¿el rato de ahora no es de misiones? En la subasta, en una
+-- instancia, ausente o en vuelo (119).
+local enSubasta = false
+A.RegisterEvent("AUCTION_HOUSE_SHOW", function() enSubasta = true end)
+A.RegisterEvent("AUCTION_HOUSE_CLOSED", function() enSubasta = false end)
+function S.Pausado()
+	if enSubasta then return true end
+	local afk = rawget(_G, "UnitIsAFK")
+	if type(afk) == "function" and afk("player") == true then return true end
+	local taxi = rawget(_G, "UnitOnTaxi")
+	if type(taxi) == "function" and taxi("player") == true then return true end
+	local inst = rawget(_G, "IsInInstance")
+	if type(inst) == "function" then
+		local si, tipo = inst()
+		if si == true and (tipo == "party" or tipo == "raid") then return true end
+	end
+	return false
+end
+
 A.RegisterEvent("PLAYER_DEAD", function()
 	if not empezado then return end
 	local a = S.Actual()
@@ -314,6 +339,7 @@ function S.Estado()
 	local e = estado
 	e.inicio = num(a.inicio) or t
 	e.dur = max(0, t - e.inicio)
+	e.pausa = min(e.dur, num(a.pausa) or 0) -- 1.3.7
 	e.xp = num(a.xp) or 0
 	e.prom = e.dur >= 60 and e.xp / e.dur * 3600 or 0
 	local m = dinero() or num(a.oro) or 0

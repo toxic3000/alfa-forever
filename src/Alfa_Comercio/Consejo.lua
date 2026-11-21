@@ -268,6 +268,40 @@ function M.ChipDe(c)
 end
 
 ---------------------------------------------------------------------------
+-- 1.3.7: un objeto por su nombre (para /alfa comercio precio <nombre>):
+-- primero el juego (C_Item.GetItemInfoInstant entiende nombres que conoce),
+-- luego tus bolsas (igual o que empiece así, sin importar mayúsculas).
+-- -> itemID | nil
+---------------------------------------------------------------------------
+function M.BuscarPorNombre(texto)
+	if type(texto) ~= "string" then return nil end
+	texto = texto:gsub("^%s+", ""):gsub("%s+$", "")
+	if texto == "" then return nil end
+	local instant = (C_Item and C_Item.GetItemInfoInstant) or GetItemInfoInstant
+	if type(instant) == "function" then
+		local ok, id = pcall(instant, texto)
+		if ok and type(id) == "number" then return id end
+	end
+	local buscado = texto:lower()
+	local C = C_Container
+	if not (C and C.GetContainerNumSlots and C.GetContainerItemID) then return nil end
+	local parecido
+	for bolsa = 0, 4 do
+		local n = C.GetContainerNumSlots(bolsa) or 0
+		for ranura = 1, n do
+			local id = C.GetContainerItemID(bolsa, ranura)
+			local info = type(id) == "number" and M.InfoObjeto(id) or nil
+			local nombre = info and type(info.nombre) == "string" and info.nombre:lower() or nil
+			if nombre then
+				if nombre == buscado then return id end
+				if not parecido and nombre:find(buscado, 1, true) == 1 then parecido = id end
+			end
+		end
+	end
+	return parecido
+end
+
+---------------------------------------------------------------------------
 -- Para los demás módulos de Alfa (Bolsas sugiere qué vender con esto):
 --   AlfaComercio.Consejo(id, opts) -> c | nil ; AlfaComercio.TextoMejor(c) -> texto
 --   AlfaComercio.ValorVenta(id) -> cobre, conPrecio ; AlfaComercio.PrecioSubasta(id) -> bruto, fecha

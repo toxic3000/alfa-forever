@@ -26,9 +26,22 @@ local function guardados()
 	return d.importados
 end
 
+-- 1.3.7: hasta `n` letras sin partir una letra de varios bytes (á, ñ, cirílico,
+-- chino...): cortar por bytes dejaba la última letra rota en el título.
+function M.Cortar(s, n)
+	if type(s) ~= "string" or #s <= n then return s end
+	local out, k = {}, 0
+	for c in s:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
+		k = k + 1
+		if k > n then break end
+		out[k] = c
+	end
+	return table.concat(out)
+end
+
 local function limpio(s, largo)
 	s = tostring(s or ""):gsub("[;|%c]", " "):gsub("%s+", " "):gsub("^%s+", ""):gsub("%s+$", "")
-	if largo and #s > largo then s = s:sub(1, largo) end
+	if largo then s = M.Cortar(s, largo) end
 	return s
 end
 
@@ -131,6 +144,18 @@ function S.Importar(texto)
 	end
 	if #talentos == 0 then return nil, "talentos" end
 	local g = guardados()
+	-- 1.3.7: el mismo plan (misma rama y mismos talentos) importado otra vez no
+	-- se duplica: se devuelve el que ya tienes.
+	local firma = {}
+	for _, t in ipairs(talentos) do firma[#firma + 1] = t[1] .. "-" .. t[2] end
+	firma = table.concat(firma, ",")
+	for id, viejo in pairs(g) do
+		if type(viejo) == "table" and viejo.clase == clase and type(viejo.talentos) == "table" then
+			local otra = {}
+			for _, t in ipairs(viejo.talentos) do otra[#otra + 1] = tostring(t[1]) .. "-" .. tostring(t[2]) end
+			if table.concat(otra, ",") == firma then return M.Importado(id), "repetido" end
+		end
+	end
 	local n = 0
 	for _ in pairs(g) do n = n + 1 end
 	if n >= MAX_IMPORTADOS then return nil, "lleno" end

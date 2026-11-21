@@ -311,5 +311,14 @@ M.EN = {
 	["Sal a explorar"] = "Go explore",
 	["Aquí verás cuánto llevas descubierto de cada zona de tu continente."] = "Here you'll see how much of each zone on your continent you've discovered.",
 	["%d de %d zonas completas"] = "%d of %d zones complete",
+	-- 1.3.7: los atajos del mapa la primera vez, y los plurales
+	["Así se usa el mapa de Alfa"] = "How to use Alfa's map",
+	["Clic derecho: pon un marcador ahí."] = "Right-click: put a marker there.",
+	["Ctrl+clic: la flecha te lleva ahí."] = "Ctrl+click: the arrow takes you there.",
+	["Rueda: acerca y aleja. Arrastra para moverte."] = "Wheel: zoom in and out. Drag to move around.",
+	["Entendido"] = "Got it",
+	["%d capa oculta. Al salir vuelve como estaba."] = "%d layer hidden. It comes back as it was when you leave.",
+	["%d capa oculta. Apágalo para volver a verla."] = "%d layer hidden. Turn it off to see it again.",
+	["Se borra tu marcador, el de todos tus personajes. No se puede deshacer."] = "Your marker is deleted, for all your characters. This can't be undone.",
 	["En esta página, cuánto llevas descubierto de cada zona de tu continente y lo que te falta."] = "On this page, how much of each zone on your continent you've discovered and what's left.",
 }

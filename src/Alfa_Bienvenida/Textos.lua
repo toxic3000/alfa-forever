@@ -522,7 +522,7 @@ M.EN = {
 	["Dame clic derecho y elige «¿En qué te ayudo?» cuando quieras. ¡Buena caza, lobo!"] = "Right-click me and choose \"How can I help?\" whenever you like. Good hunting, wolf!",
 	-- 1.2.7: anuncios
 	["Anuncios animados"] = "Animated announcements",
-	["Al llegar en barco o cuando Lya encuentra un raro, un anuncio grande con animación, como la intro, en vez de una tarjeta."] = "When you arrive by boat or Lya finds a rare, a big animated announcement, like the intro, instead of a card.",
+	["Zonas, barcos, raros y mazmorras con un anuncio grande y animado, como la intro, en vez de una tarjeta. Cada tipo se elige abajo, en Anuncios."] = "Zones, boats, rares and dungeons with a big animated announcement, like the intro, instead of a card. Pick each type below, under Announcements.",
 	-- Notas 1.2.7
 	["Anuncios animados y la manada a la vista"] = "Animated announcements and the pack in sight",
 	["Al llegar en barco o al encontrar un raro, un anuncio grande con animación, como la intro."] = "When you arrive by boat or find a rare, a big animated announcement, like the intro.",
@@ -718,6 +718,14 @@ M.EN = {
 	["acomoda con el ratón lo de Alfa en tu pantalla"] = "arrange Alfa's things on your screen with the mouse",
 	["Los marcos se mueven fuera de combate."] = "Frames can be moved out of combat.",
 	-- 1.3.1: las notas de la versión
+	-- 1.3.7: las notas de la versión
+	["La manada a tu ritmo"] = "A pack at your pace",
+	["Tu oro, una sola vez: un clic en las monedas y ves cuánto tiene cada personaje."] = "Your gold, just once: click the coins to see what each character has.",
+	["Cada zona se anuncia al llegar, con su propia animación para barcos, raros, mazmorras y más."] = "Every zone is announced when you arrive, with its own animation for boats, rares, dungeons and more.",
+	["Al subir de nivel, Alfa espera a la animación del juego y te da un solo resumen."] = "When you level up, Alfa waits for the game's animation and gives you one summary.",
+	["El medidor de daño sale solo en grupo, compacto y sin tapar tus barras."] = "The damage meter shows up by itself in a group, compact and without covering your bars.",
+	["Pescando, la espada te devuelve tus armas en un clic, incluso en plena pelea."] = "While fishing, the sword gives you back your weapons in one click, even mid-fight.",
+	["Los avisos hacen fila y no se enciman; lo que te perdiste queda en «Lo que me perdí»."] = "Notices wait their turn and never overlap; what you missed stays in \"What I missed\".",
 	-- 1.3.3: las notas de la versión
 	["La manada en calma"] = "A calm pack",
 	["Al entrar solo sale la animación; lo demás te espera en Hoy y con Lya."] = "At login only the animation plays; the rest waits for you on Today and with Lya.",

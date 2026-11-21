@@ -183,14 +183,26 @@ step("Los avisos con acción que se van sin tocarlos: ALFA_AVISO_PERDIDO (para L
   A.On("ALFA_AVISO_PERDIDO", function(o) perdidos[#perdidos + 1] = o end)
   RUN_TIMERS(2) -- que venzan los de antes
   local function con(titulo) return { titulo = titulo, lya = false, accion = { texto = "Ir", alClic = function() end } } end
-  -- Cuatro con acción (caben 3): el más viejo cede su lugar.
+  -- Cuatro con acción (caben 3). 1.3.7 (42): el cuarto espera su turno (antes,
+  -- el más viejo cedía su lugar sin leerse) y sale cuando uno se va.
   local a1 = K.Aviso(con("Perdido uno"))
   check(type(a1) == "table" and a1.alfaO and a1.alfaO.titulo == "Perdido uno", "el aviso no guarda su o (a.alfaO)")
   K.Aviso(con("Perdido dos")) K.Aviso(con("Perdido tres"))
   local n0 = #perdidos
-  K.Aviso(con("Perdido cuatro"))
-  check(#perdidos == n0 + 1 and perdidos[#perdidos].titulo == "Perdido uno", "el aviso que cedió su lugar no avisó ALFA_AVISO_PERDIDO")
-  -- Uno que tocas no se pierde; los demás ceden su lugar o vencen sin tocarlos.
+  local a4 = K.Aviso(con("Perdido cuatro"))
+  check(a4 == nil and #perdidos == n0, "con tres avisos a la vista, el cuarto no esperó su turno")
+  local salio4 = false
+  local avisoReal = K.Aviso
+  for _ = 1, 8 do
+    RUN_TIMERS(1)
+    if K.AvisosVivos and K.AvisosVivos() > 0 then
+      for _, x in ipairs(perdidos) do if x.titulo == "Perdido uno" then salio4 = true end end
+    end
+  end
+  check(salio4, "el más viejo no se fue a «Te perdiste esto» al vencer")
+  check(not (N.Esperando and N.Esperando("aviso:Perdido cuatro|")), "el cuarto aviso se quedó esperando")
+  RUN_TIMERS(4)
+  -- Uno que tocas no se pierde; los demás vencen sin tocarlos.
   local antes = #perdidos
   local tocado = K.Aviso(con("Tocado"))
   if tocado and tocado.Boton and tocado.Boton.alClic then tocado.Boton.alClic() end
@@ -199,7 +211,9 @@ step("Los avisos con acción que se van sin tocarlos: ALFA_AVISO_PERDIDO (para L
   RUN_TIMERS(2)
   local vistos = {}
   for i = antes + 1, #perdidos do vistos[perdidos[i].titulo] = true end
-  check(vistos["Perdido dos"] and vistos["Perdido tres"] and vistos["Perdido cuatro"], "un aviso con acción que cedió su lugar o venció no avisó ALFA_AVISO_PERDIDO")
+  local todos = {}
+  for i = n0 + 1, #perdidos do todos[perdidos[i].titulo] = true end
+  check(todos["Perdido dos"] and todos["Perdido tres"] and todos["Perdido cuatro"], "un aviso con acción que venció no avisó ALFA_AVISO_PERDIDO")
   check(not vistos["Tocado"], "un aviso que tocaste avisó como perdido")
   check(not vistos["Sin acción"] and not vistos["Seguro"], "un aviso sin acción o con acción segura avisó como perdido")
 end)

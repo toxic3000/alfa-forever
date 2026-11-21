@@ -79,9 +79,49 @@ end
 ---------------------------------------------------------------------------
 local cache = {}
 function P.Olvidar() cache = {} end
-for _, ev in ipairs({ "QUEST_ACCEPTED", "QUEST_TURNED_IN", "QUEST_REMOVED", "PLAYER_LEVEL_UP", "QUEST_LOG_UPDATE" }) do
+for _, ev in ipairs({ "QUEST_ACCEPTED", "QUEST_TURNED_IN", "QUEST_REMOVED", "PLAYER_LEVEL_UP" }) do
 	A.RegisterEvent(ev, function() P.Olvidar() end)
 end
+
+-- 1.3.7: QUEST_LOG_UPDATE llega con cada botín y cada enemigo que cuenta.
+-- Antes borraba todo y el plan se rehacía cada vez; ahora solo se apunta, y
+-- al pedir un estado se mira la firma del registro (qué misiones llevas y
+-- cuáles están listas): si no cambió, se queda lo calculado. El avance de un
+-- objetivo («3/8») se lee aparte, al momento (P.Texto).
+local firma, revisar = nil, false
+P.recalculos = 0 -- cuántas veces se rehízo un estado (para el banco)
+
+function P.Firma()
+	local Q = C_QuestLog
+	if type(Q) ~= "table" or type(Q.GetNumQuestLogEntries) ~= "function" or type(Q.GetInfo) ~= "function" then return nil end
+	local ok, n = pcall(Q.GetNumQuestLogEntries)
+	n = ok and D.Legible(n) or nil
+	if type(n) ~= "number" then return nil end
+	local t = {}
+	for i = 1, math.min(n, 60) do
+		local ok2, info = pcall(Q.GetInfo, i)
+		if ok2 and type(info) == "table" and not info.isHeader and type(info.questID) == "number" then
+			local lista = type(Q.IsComplete) == "function" and llamar(Q.IsComplete, info.questID) == true
+			t[#t + 1] = info.questID .. (lista and "+" or "")
+		end
+	end
+	return concat(t, ",")
+end
+
+-- -> true si el registro cambió desde la última vez (y la caché se olvidó).
+function P.Revisar()
+	if not revisar then return false end
+	revisar = false
+	local f = P.Firma()
+	if f == nil or f ~= firma then
+		firma = f
+		cache = {}
+		return true
+	end
+	return false
+end
+
+A.RegisterEvent("QUEST_LOG_UPDATE", function() revisar = true end)
 A.On("CODEX_LOADED", function() P.Olvidar() end)
 A.On("NAMES_LOADED", function() P.Olvidar() end)
 
@@ -136,8 +176,10 @@ end
 ---------------------------------------------------------------------------
 function P.Estado(key)
 	if type(key) ~= "string" then return nil end
+	P.Revisar()
 	local e = cache[key]
 	if e then return e end
+	P.recalculos = P.recalculos + 1
 	local Dgx = Dg()
 	e = { key = key, recoger = {}, esperan = {}, listas = 0, llevas = 0, lista = {}, camino = {} }
 	if not (Dgx and Dgx.Quests) then
@@ -205,6 +247,7 @@ function P.Estado(key)
 			else
 				f.estado, f.tono, f.orden = L["En curso"], "acento", 3
 				f.texto = Dgx.ObjectiveText and llamar(Dgx.ObjectiveText, q) or nil
+				f.vivo = true -- su texto se lee al momento (P.Texto)
 			end
 		elseif p and p.toma then
 			local t = p.toma
@@ -261,6 +304,18 @@ function P.Estado(key)
 	end
 	cache[key] = e
 	return e
+end
+
+-- El texto de una fila, al momento: el de una misión en curso cambia con
+-- cada objetivo (sin rehacer el estado entero).
+function P.Texto(f)
+	if type(f) ~= "table" then return nil end
+	if f.vivo and f.q then
+		local Dgx = Dg()
+		local t = Dgx and Dgx.ObjectiveText and llamar(Dgx.ObjectiveText, f.q)
+		if type(t) == "string" then return t end
+	end
+	return f.texto
 end
 
 ---------------------------------------------------------------------------

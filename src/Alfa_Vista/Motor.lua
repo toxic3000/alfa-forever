@@ -139,7 +139,8 @@ function M.Avisar()
 			if not ok and geterrorhandler then geterrorhandler()(err) end
 		end
 	end
-	if C_Timer and C_Timer.After then C_Timer.After(0, correr) else correr() end
+	-- 1.3.7: con el reloj de Alfa (N.Una), no un C_Timer suelto.
+	if N.Una then N.Una("vista.avisar", 0, correr) else correr() end
 end
 
 ---------------------------------------------------------------------------
@@ -149,9 +150,19 @@ local escribiendo = false
 local pendientes, programado = {}, false
 M.limites = {} -- [cvar] = { pedido, quedo } cuando el juego no dejó el valor pedido
 
+-- 1.3.7: los valores con los que arrancaron los gráficos en esta sesión (de
+-- los ajustes que piden reiniciarlos). Hace falta reiniciar solo si alguno
+-- quedó distinto de ese valor; volver al de antes ya no lo pide. Antes se
+-- guardaba un «hace falta» en los datos y salía aunque no hiciera falta (o
+-- después de salir y entrar, que ya reinicia los gráficos).
+local base = {}
+local soltar = {} -- [cvar] = true: al escribirse, Alfa deja de mantenerla (Deshacer)
+
 local function escribir(cvar, valor)
 	local set = (C_CVar and C_CVar.SetCVar) or SetCVar
 	if type(set) ~= "function" then return M.Leer(cvar) end
+	local fr = M.FILA[cvar]
+	if fr and fr.reinicio and base[cvar] == nil then base[cvar] = M.Leer(cvar) end
 	escribiendo = true
 	pcall(set, cvar, valor)
 	escribiendo = false
@@ -160,10 +171,6 @@ local function escribir(cvar, valor)
 		M.limites[cvar] = { valor, quedo }
 	else
 		M.limites[cvar] = nil
-	end
-	local f = M.FILA[cvar]
-	if f and f.reinicio and not igual(quedo, datos().reinicioDe and datos().reinicioDe[cvar]) then
-		datos().reinicio = true
 	end
 	return quedo
 end
@@ -179,6 +186,10 @@ local function vaciar()
 			d.valores[cvar] = nil
 		else
 			d.valores[cvar] = escribir(cvar, v)
+		end
+		if soltar[cvar] then
+			if soltar[cvar] == true then d.valores[cvar] = nil else d.valores[cvar] = soltar[cvar] end
+			soltar[cvar] = nil
 		end
 	end
 	M.Avisar()
@@ -279,11 +290,17 @@ function M.AplicarPreset(nombre)
 	local p = buscarPreset(nombre)
 	if not p then return false, L["No conozco ese preajuste."] end
 	local antes = {}
-	for cvar in pairs(p.valores) do
-		if M.Existe(cvar) then antes[cvar] = pendientes[cvar] or M.Leer(cvar) end
-	end
 	local d = datos()
-	d.deshacer = { preset = p.id, valores = antes }
+	-- 1.3.7: también lo que Alfa ya mantenía (elegidas): al deshacer, lo que no
+	-- habías elegido tú vuelve a ser del juego (antes se quedaba como elegido).
+	local elegidas = {}
+	for cvar in pairs(p.valores) do
+		if M.Existe(cvar) then
+			antes[cvar] = pendientes[cvar] or M.Leer(cvar)
+			elegidas[cvar] = d.valores[cvar] ~= nil and d.valores[cvar] or false
+		end
+	end
+	d.deshacer = { preset = p.id, valores = antes, elegidas = elegidas }
 	d.ultimoPreset = p.id
 	local espera = false
 	for cvar, v in pairs(p.valores) do
@@ -301,7 +318,18 @@ function M.Deshacer()
 	local d = datos()
 	local u = d.deshacer
 	if type(u) ~= "table" or type(u.valores) ~= "table" then return false end
-	for cvar, v in pairs(u.valores) do M.Pedir(cvar, v, true, true) end
+	local elegidas = type(u.elegidas) == "table" and u.elegidas or nil
+	for cvar, v in pairs(u.valores) do
+		local r = M.Pedir(cvar, v, true, true)
+		if elegidas and elegidas[cvar] ~= nil then
+			local antes = elegidas[cvar]
+			if r == "espera" then
+				soltar[cvar] = antes == false and true or antes
+			elseif r ~= "falta" then
+				d.valores[cvar] = antes ~= false and antes or nil
+			end
+		end
+	end
 	d.deshacer = nil
 	d.ultimoPreset = nil
 	M.Avisar()
@@ -349,7 +377,15 @@ end
 ---------------------------------------------------------------------------
 -- Reiniciar los gráficos (lo piden algunos ajustes, como el HDR)
 ---------------------------------------------------------------------------
-function M.NecesitaReinicio() return datos().reinicio == true end
+function M.NecesitaReinicio()
+	for cvar, v in pairs(base) do
+		local f = M.FILA[cvar]
+		if f and f.reinicio and not igual(M.Leer(cvar), v) then return true end
+	end
+	return false
+end
+-- Lo guardado por versiones viejas ya no sirve (el reinicio se calcula).
+A.OnLogin(function() local d = datos() d.reinicio, d.reinicioDe = nil, nil end)
 
 function M.PedirReinicio()
 	local K = N.Kit
@@ -359,12 +395,8 @@ function M.PedirReinicio()
 		aceptar = L["Reiniciar gráficos"],
 		alAceptar = function()
 			N.FueraDeCombate(function()
-				datos().reinicio = nil
-				local d = datos()
-				d.reinicioDe = {}
-				for cvar, f in pairs(M.FILA) do
-					if f.reinicio then d.reinicioDe[cvar] = M.Leer(cvar) end
-				end
+				-- Los gráficos arrancan con lo de ahora: esa es la nueva base.
+				for cvar in pairs(base) do base[cvar] = nil end
 				if type(RestartGx) == "function" then pcall(RestartGx) end
 				M.Avisar()
 			end)
@@ -414,7 +446,7 @@ local sincronizando = false
 A.RegisterEvent("CVAR_UPDATE", function()
 	if escribiendo or not listo or sincronizando then return end
 	sincronizando = true
-	C_Timer.After(0.3, function()
+	N.Una("vista.sincronizar", 0.3, function()
 		sincronizando = false
 		M.Sincronizar()
 	end)
@@ -425,7 +457,7 @@ A.RegisterEvent("PLAYER_ENTERING_WORLD", function()
 	if entro then return end
 	entro = true
 	-- El juego termina de aplicar sus opciones al cargar: se espera un poco.
-	C_Timer.After(3, function()
+	N.Una("vista.reaplicar", 3, function()
 		if N.Get(ID, "reaplicar") == false or next(datos().valores) == nil then
 			listo = true
 			return

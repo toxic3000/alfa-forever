@@ -59,7 +59,7 @@ local function grupos(ui, padre)
 		texto = L["Cada vez que entras al juego, la intro del lobo y la luna te da la bienvenida. Un clic o Esc la saltan."],
 		control = function(fila) return K.Interruptor(fila, { clave = ID .. ".introSiempre" }) end })
 	sonido:Fila({ titulo = L["Anuncios animados"],
-		texto = L["Al llegar en barco o cuando Lya encuentra un raro, un anuncio grande con animación, como la intro, en vez de una tarjeta."],
+		texto = L["Zonas, barcos, raros y mazmorras con un anuncio grande y animado, como la intro, en vez de una tarjeta. Cada tipo se elige abajo, en Anuncios."],
 		control = function(fila) return K.Interruptor(fila, { clave = ID .. ".anuncios" }) end })
 	-- 1.3.5: para equipos modestos (Alfa_Nucleo/Reloj.lua, N.Ligero).
 	sonido:Fila({ titulo = L["Modo ligero"],
@@ -67,6 +67,8 @@ local function grupos(ui, padre)
 		control = function(fila) return K.Interruptor(fila, { clave = "nucleo.ligero" }) end })
 	sonido:Fila({ titulo = L["Escuchar el aullido"], texto = L["Suena ahora, aunque el aullido esté apagado."],
 		control = function(fila) return K.Boton(fila, L["Escuchar"], function() M.Aullar(true) end, { tipo = "secundario", icono = "ic-lobo" }) end })
+	-- 1.3.7: «Sonidos de Alfa» y No molestar (Alfa_Nucleo/Momentos.lua).
+	if N.FilasMomentos then N.FilasMomentos(sonido) end
 
 	-- 1.3.0: para leer mejor (Kit/Tokens.lua, Kit/Ayuda.lua).
 	local leer = K.GrupoAjustes(padre, { titulo = L["Para leer mejor"] })
@@ -225,7 +227,11 @@ local function grupos(ui, padre)
 		refrescarErrores(self)
 	end
 	-- 1.3.6: «Configuración y ayuda» primero.
-	return { bienvenida, sonido, leer, limpia, atajos, perfiles, respaldos, errores }
+	-- 1.3.7 anuncios: un interruptor y «Probar» por tipo (Alfa_Nucleo/Zonas.lua), después del sonido.
+	local lista = { bienvenida, sonido }
+	if N.GrupoAnuncios then lista[#lista + 1] = N.GrupoAnuncios(padre) end
+	for _, g in ipairs({ leer, limpia, atajos, perfiles, respaldos, errores }) do lista[#lista + 1] = g end
+	return lista
 end
 
 local function construir(view)
@@ -344,6 +350,9 @@ local CONTROLES = {
 			M.Abrir("pedido", "portada")
 		end, search = "whats new, changelog, patch notes, release notes, version" },
 }
+
+-- 1.3.7: los de los momentos (Alfa_Nucleo/Momentos.lua), para la búsqueda.
+for _, c in ipairs(N.ControlesMomentos and N.ControlesMomentos() or {}) do CONTROLES[#CONTROLES + 1] = c end
 
 N.Modulo({
 	id = ID, nombre = L["Estilo y sonido"], icono = "ic-apariencia", orden = 90, seccion = "ajustes",

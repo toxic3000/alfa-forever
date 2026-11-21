@@ -174,10 +174,11 @@ local function barrasALaVista()
 	return out
 end
 
-local function tapa(rects)
-	local ok, l, bo, w, h = pcall(f.GetRect, f)
+local function tapa(rects, fr)
+	fr = fr or f
+	local ok, l, bo, w, h = pcall(fr.GetRect, fr)
 	if not (ok and type(l) == "number" and type(w) == "number") then return false end
-	local e = f.GetEffectiveScale and f:GetEffectiveScale() or 1
+	local e = fr.GetEffectiveScale and fr:GetEffectiveScale() or 1
 	local x1, y1, x2, y2 = l * e, bo * e, (l + w) * e, (bo + h) * e
 	for _, r in ipairs(rects) do
 		if x1 < r[3] and x2 > r[1] and y1 < r[4] and y2 > r[2] then return r end
@@ -188,17 +189,30 @@ end
 -- Prueba lugares hasta uno libre (o deja el de fábrica si todos tapan algo).
 local LUGARES = { { "RIGHT", "RIGHT", -60, 150 }, { "RIGHT", "RIGHT", -150, 150 }, { "RIGHT", "RIGHT", -240, 150 },
 	{ "RIGHT", "RIGHT", -330, 150 }, { "RIGHT", "RIGHT", -150, 330 }, { "CENTER", "CENTER", 320, 160 } }
-function Rs.Colocar()
-	if not f or (M.Posicion and M.Posicion("Resumen")) then return end
+-- 1.3.7: lo usa también el medidor de daño (Ventana.lua). fr: el marco de
+-- M.Marco; clave: la de su lugar guardado (si lo moviste, no se toca);
+-- lugares: los que se prueban en orden (el primero es el de siempre).
+function M.SinTapar(fr, clave, lugares)
+	if not fr or (M.Posicion and M.Posicion(clave)) then return end
 	local rects = barrasALaVista()
 	if #rects == 0 then return end
-	for _, p in ipairs(LUGARES) do
-		f:ClearAllPoints()
-		f:SetPoint(p[1], UIParent, p[2], p[3], p[4])
-		if not tapa(rects) then return p end
+	for _, p in ipairs(lugares) do
+		fr:ClearAllPoints()
+		fr:SetPoint(p[1], UIParent, p[2], p[3], p[4])
+		if not tapa(rects, fr) then return p end
 	end
-	f:ClearAllPoints()
-	f:SetPoint(LUGARES[1][1], UIParent, LUGARES[1][2], LUGARES[1][3], LUGARES[1][4])
+	fr:ClearAllPoints()
+	fr:SetPoint(lugares[1][1], UIParent, lugares[1][2], lugares[1][3], lugares[1][4])
+end
+
+-- ¿Tapa `fr` alguna barra de acción a la vista? (para el banco)
+function M.TapaBarras(fr)
+	return tapa(barrasALaVista(), fr) and true or false
+end
+
+function Rs.Colocar()
+	if not f then return end
+	return M.SinTapar(f, "Resumen", LUGARES)
 end
 
 local function ponerFila(x, nombre, valor, y)

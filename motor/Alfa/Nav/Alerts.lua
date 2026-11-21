@@ -262,18 +262,42 @@ end
 -- title: what is coming; whenFormat: "Arrives in %s" or the like.
 -- Alfa 1.2.7: the animated announcement (AlfaNucleo.Kit.Anuncio, like the
 -- intro) in place of the card, unless turned off (bienvenida.anuncios).
-local function anuncio(title, whenFormat, seconds, kind)
+-- Alfa 1.3.7: each transport its own style (the boat glides and sways, the
+-- zeppelin floats down, the tram slides in and brakes), its sound when it
+-- really shows (`sound`), gone stale once the ride has come and gone, and
+-- with under 10 s left it shows at once, compact.
+local ESTILO = { boat = "barco", zeppelin = "zepelin", tram = "tranvia" }
+Alerts.ESTILO = ESTILO
+local function anuncio(title, whenFormat, seconds, kind, sound)
 	local N = rawget(_G, "AlfaNucleo")
 	local K = N and N.Kit
-	if not (K and K.Anuncio) or (N.Get and N.Get("bienvenida", "anuncios") == false) or (N.Ligero and N.Ligero()) then return false end
-	return K.Anuncio({ sobre = ns.T(KICKER), titulo = title, lobo = "aullando", segundos = math.min(8, math.max(4, seconds or 6)),
-		cuenta = { hasta = GetTime() + (seconds or 0), formato = whenFormat, final = ns.T("¡Ya llegó! Vamos, manada") } })
+	local estilo = ESTILO[kind] or "barco"
+	if not (K and K.Anuncio) then return false end
+	-- 1.3.7: este tipo apagado o No molestar: nada (ni tarjeta ni sonido);
+	-- solo con los anuncios grandes apagados sale la tarjeta de antes.
+	local A = N.A
+	local get = A and A.Get
+	if get and get("bienvenida.anuncios") == false then return false end
+	if get and get("anuncios." .. estilo) == false then return "nada" end
+	if N.EnCalma and N.EnCalma() then return "nada" end
+	if K.AnuncioPrendido then
+		if not K.AnuncioPrendido(estilo) then return false end
+	elseif N.Get and N.Get("bienvenida", "anuncios") == false then
+		return false
+	end
+	local hasta = GetTime() + (seconds or 0)
+	local pronto = (seconds or 0) < 10
+	return K.Anuncio({ sobre = ns.T(KICKER), titulo = title, estilo = estilo, prioridad = 1, clave = "viaje",
+		segundos = math.min(8, math.max(4, seconds or 6)), chico = pronto or nil, ya = pronto or nil,
+		caduca = hasta, sonido = sound or false,
+		cuenta = { hasta = hasta, formato = whenFormat, final = ns.T("¡Ya llegó! Vamos, manada") } })
 end
 Alerts.Anuncio = anuncio
 
-local function showBanner(title, whenFormat, seconds, kind)
-	if anuncio(title, whenFormat, seconds, kind) then return end
-	if not (ns.Theme and ns.Widgets and ns.Anim) then return end
+-- -> true when it went out as Alfa's announcement (which then plays `sound`).
+local function showBanner(title, whenFormat, seconds, kind, sound)
+	if anuncio(title, whenFormat, seconds, kind, sound) then return true end
+	if not (ns.Theme and ns.Widgets and ns.Anim) then return false end
 	if not banner then build() end
 	banner.psKind = kind
 	banner.Title:SetText(title)
@@ -281,6 +305,7 @@ local function showBanner(title, whenFormat, seconds, kind)
 	banner.linger = LINGER
 	banner.When:SetText(format(whenFormat, Alerts.Countdown(seconds)))
 	present(false, seconds)
+	return false
 end
 Alerts.ShowBanner = showBanner
 
@@ -317,8 +342,10 @@ local function alert(key, kind, title, whenFormat, seconds)
 	local last = alerted[key]
 	if last and now - last < REPEAT then return false end
 	alerted[key] = now
-	if ns.Get("nav.alertBanner") then showBanner(title, whenFormat, seconds, kind) end
-	if ns.Get("nav.alertSound") then ns.PlaySoundFile(SOUND[kind], "Master") end
+	-- 1.3.7: the sound plays when the announcement really shows.
+	local sound = ns.Get("nav.alertSound") and function() ns.PlaySoundFile(SOUND[kind], "Master") end or nil
+	local shown = ns.Get("nav.alertBanner") and showBanner(title, whenFormat, seconds, kind, sound)
+	if sound and not shown then sound() end
 	if ns.Get("nav.alertFlash") and FlashClientIcon then FlashClientIcon() end
 	ns.Fire("NAV_TRANSIT_ALERT", kind, title, seconds)
 	return true
@@ -379,9 +406,12 @@ Nav.RegisterModule(Alerts)
 ns.On("NAV_TRANSIT", function() Alerts.Check() end)
 
 -- A sample, from the options page.
-function Alerts.ShowSample()
-	showBanner(format(ns.T(ARRIVES.boat), L["Menethil Harbor"]), ns.T("Prepárate: llega en %s"), AT_DOCK, "boat")
-	if ns.Get("nav.alertSound") then ns.PlaySoundFile(SOUND.boat, "Master") end
+-- Alfa 1.3.7: any of the three (Settings > the announcements' «Probar»).
+function Alerts.ShowSample(kind, place)
+	kind = ARRIVES[kind] and kind or "boat"
+	local sound = ns.Get("nav.alertSound") and function() ns.PlaySoundFile(SOUND[kind], "Master") end or nil
+	local shown = showBanner(format(ns.T(ARRIVES[kind]), place or L["Menethil Harbor"]), ns.T("Prepárate: llega en %s"), AT_DOCK, kind, sound)
+	if sound and not shown then sound() end
 end
 
 ---------------------------------------------------------------------------

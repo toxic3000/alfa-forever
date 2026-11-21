@@ -26,6 +26,9 @@ M.AJUSTES = { mostrar = true, frecuencia = "muchos", minutos = 3, tamano = 64, s
 M.Avisar = function() end -- Pagina.lua la cambia: rehace la página si está a la vista
 
 M.EN = {
+	["Aquí caben 16. Devuelve alguno de arriba para ver los demás, o devuélvelos todos."] = "Up to 16 fit here. Bring one back above to see the rest, or bring them all back.",
+	["Y %d más"] = "And %d more",
+	["Todos los que callaste (%d)"] = "All the ones you muted (%d)",
 	-- Lya y su menú
 	["Lya"] = "Lya",
 	["Lya, la loba de confianza del Alfa"] = "Lya, the Alpha's trusted she-wolf",

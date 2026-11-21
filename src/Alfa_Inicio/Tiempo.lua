@@ -69,12 +69,10 @@ local function mazmorras()
 end
 
 -- "45 min", "1 h", "1 h 30 min"
+-- 1.3.7: el mismo formato que todo Alfa (N.Duracion, 101).
 function T.Minutos(m)
 	m = floor((tonumber(m) or 0) + 0.5)
-	if m < 60 then return format(L["%d min"], m) end
-	local h, r = floor(m / 60), m % 60
-	if r == 0 then return format(L["%d h"], h) end
-	return format(L["%d h %d min"], h, r)
+	return N.Duracion(m * 60, true)
 end
 
 ---------------------------------------------------------------------------
@@ -90,11 +88,12 @@ function T.MinPorMision()
 			local s = lista[k]
 			local m = tonumber(s.misiones) or 0
 			if m > 0 then
-				dur, mis = dur + (tonumber(s.dur) or 0), mis + m
+				-- 1.3.7: sin el rato en la subasta, en mazmorras, ausente o en vuelo (119).
+				dur, mis = dur + max(0, (tonumber(s.dur) or 0) - (tonumber(s.pausa) or 0)), mis + m
 			end
 		end
 		local e = S.Estado()
-		if (e.misiones or 0) > 0 then dur, mis = dur + (e.dur or 0), mis + e.misiones end
+		if (e.misiones or 0) > 0 then dur, mis = dur + max(0, (e.dur or 0) - (e.pausa or 0)), mis + e.misiones end
 	end
 	if mis >= 5 and dur > 0 then
 		return max(2, min(20, dur / 60 / mis)), "diario"
@@ -325,10 +324,7 @@ function T.Ir(p)
 	end
 	local t = p.tipo
 	if t == "entregar" or t == "final" then
-		local vuelta = deRuta("VueltaEntregar")
-		if vuelta and listas() >= 2 then
-			if llamar(vuelta) then return end
-		end
+		-- 1.3.7: la misma manera de entregar que en todo Alfa (AlfaRuta.Entregar, 86).
 		local f = deRuta("Entregar") or deRuta("Liberar")
 		if f then llamar(f, "listas") end
 	elseif t == "zona" then

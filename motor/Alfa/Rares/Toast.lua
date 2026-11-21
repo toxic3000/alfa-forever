@@ -362,28 +362,88 @@ end
 -- Alfa 1.2.7: the animated announcement (AlfaNucleo.Kit.Anuncio) in place
 -- of the card, unless turned off (bienvenida.anuncios). A click hunts it
 -- (the waypoint); targeting stays on the rare button and its key.
-local function anuncio(a)
+-- Alfa 1.3.7: a rare jumps in with a bounce, a treasure's glow turns, the
+-- founder comes with the pack's paw prints; the sighting's sound plays when
+-- the announcement really shows (Rares.PlaySound waits for it, below). In a
+-- fight or a dungeon: a small icon now, and the big one after the fight if
+-- the rare is still around (Rares.Nearby). A stale one is never shown late.
+local sonar = Rares.PlaySound
+local sonidoPendiente = false
+if type(sonar) == "function" then
+	Rares.PlaySound = function() sonidoPendiente = true end
+end
+local function sonido()
+	if type(sonar) == "function" then pcall(sonar) end
+end
+
+local function sigueCerca(a)
+	local desde = GetTime()
+	return function()
+		-- Recién visto cuenta como cerca (la lista se llena un poco después).
+		if GetTime() - desde < 5 or not (Rares.Nearby and a.name) then return true end
+		local ok, lista = pcall(Rares.Nearby)
+		if not ok or type(lista) ~= "table" then return true end
+		for _, n in ipairs(lista) do if n == a.name then return true end end
+		return false
+	end
+end
+
+local function enInstancia()
+	local C = ns.Compat
+	return C and C.IsInInstance and C.IsInInstance() and true or false
+end
+
+local function anuncio(a, conSonido)
 	local N = rawget(_G, "AlfaNucleo")
 	local K = N and N.Kit
-	if not (K and K.Anuncio) or (N.Get and N.Get("bienvenida", "anuncios") == false) or (N.Ligero and N.Ligero()) then return false end
+	if not (K and K.Anuncio) then return false end
+	local estilo = a.kind == "founder" and "manada" or a.kind == "treasure" and "tesoro" or "raro"
+	-- 1.3.7: este tipo apagado o No molestar: nada (ni tarjeta ni sonido);
+	-- solo con los anuncios grandes apagados sale la tarjeta de antes.
+	local A = N.A
+	local get = A and A.Get
+	if get and get("bienvenida.anuncios") == false then return false end
+	if get and get("anuncios." .. estilo) == false then return "nada" end
+	if N.EnCalma and N.EnCalma() then return "nada" end
+	if K.AnuncioPrendido then
+		if not K.AnuncioPrendido(estilo) then return false end
+	elseif N.Get and N.Get("bienvenida", "anuncios") == false then
+		return false
+	end
+	local snd = conSonido and sonido or false
 	-- 1.3.2 (Toxic): el fundador también sale con el anuncio de Alfa, y corto.
 	if a.kind == "founder" then
 		current = a
-		return K.Anuncio({ sobre = ns.T("El alfa de La Jauría anda cerca"), titulo = a.name or "",
-			texto = T.Distance(a) or "", lobo = "aullando", segundos = 8 })
+		return K.Anuncio({ sobre = ns.T("El alfa de La Jauría anda cerca"), titulo = a.name or "", estilo = estilo,
+			clave = "raro", texto = T.Distance(a) or "", lobo = "aullando", segundos = 8, sonido = snd, caduca = GetTime() + 60 })
 	end
 	local dist = T.Distance(a)
-	local texto = T.Facts(a) .. (dist and ("  \194\183  " .. dist) or "")
+	local texto = T.Facts(a) .. (dist and (DOT .. dist) or "")
 	local puede = a.map ~= nil and a.x ~= nil
+	local o = { sobre = a.kind == "treasure" and ns.T("Lya encontró un tesoro") or ns.T("Lya olfateó un raro"),
+		titulo = a.name or "", texto = texto, lobo = "atento", segundos = 7, estilo = estilo, clave = "raro",
+		caduca = GetTime() + 60, vigente = sigueCerca(a), sonido = snd,
+		alClic = puede and function() current = a waypoint() end or nil, pista = puede and ns.T("Clic: ir de caza") or nil }
+	-- 1.3.7: en plena pelea o en una mazmorra, un ícono chico ya; el grande
+	-- después (al terminar la pelea), si el raro sigue ahí.
+	if lockdown() or enInstancia() then
+		if K.AnuncioChico then
+			K.AnuncioChico({ titulo = a.name or "", lobo = "atento", color = estilo == "tesoro" and "oro" or "raro", segundos = 6 })
+		end
+		if snd then sonido() end
+		o.sonido = false
+		if enInstancia() then current = a return true end
+	end
 	current = a
-	return K.Anuncio({ sobre = a.kind == "treasure" and ns.T("Lya encontró un tesoro") or ns.T("Lya olfateó un raro"),
-		titulo = a.name or "", texto = texto, lobo = "atento", segundos = 7,
-		alClic = puede and waypoint or nil, pista = puede and ns.T("Clic: ir de caza") or nil })
+	return K.Anuncio(o)
 end
 
 function T.Show(a)
 	if type(a) ~= "table" then return end
-	if anuncio(a) then return end
+	local conSonido = sonidoPendiente
+	sonidoPendiente = false
+	if anuncio(a, conSonido) then return end
+	if conSonido then sonido() end
 	if not f then build() end
 	current = a
 	local founder = a.kind == "founder"

@@ -62,7 +62,20 @@ AlfaMazmorras.Abrir(key | nil[, pestana])   -- "resumen" | "jefes" | "botin" | "
 AlfaMazmorras.Recomendada()  -- { key, nombre, zona, min, max, modo, recoger, esperan, hecha } | nil
 AlfaMazmorras.Preparar(key)  -- recoge lo que puedes tomar y te lleva a la entrada
 AlfaMazmorras.Frase(key)     -- qué hará Prepárame, en palabras
+-- 1.3.7
+AlfaMazmorras.Tarjeta()      -- la tarjeta de Hoy: { key, nombre, modo, titulo, texto, recoger, listas, accion, abrir } | nil (dentro: nil)
+AlfaMazmorras.Dentro()       -- dentro de una mazmorra: { key, nombre, jefe = { nombre, n, vencidos, total }, misiones, faltan, seg, record, abrir } | nil
+AlfaMazmorras.Crono()        -- { hora, limite, libreEn, dentro }: el límite de instancias por hora
+AlfaMazmorras.Historial(n)   -- el botín de tu grupo: { { t, k, id, link, quien, tirada, tipo }, ... }
 ```
+
+1.3.7: la recomendada resta la distancia a la entrada (otro continente pesa como
+dos niveles y medio); la siguiente que se abre pronto ofrece «Recoger sus misiones
+ya»; el plan ya no se rehace con cada QUEST_LOG_UPDATE (firma del registro,
+`P.Revisar`); el mapa de los jefes (`Pz.MapaJefes`, el camino numerado, sin
+coordenadas: los datos no las traen); `Cronometro.lua` (récord por mazmorra y el
+límite de 5 instancias por hora), `Consumibles.lua` (ajuste `consumibles`) y
+`BotinGrupo.lua` (ajuste `historial`, en Tu progreso).
 
 ## Archivos
 

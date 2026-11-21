@@ -78,8 +78,10 @@ VISTAS = [
      "Type a word: Alfa finds the page and the setting, or offers you Lya."),
     ("shot-136-lya-guia.png", "Pregúntale a Lya", "Todo Alfa explicado por Lya, con un clic que te lleva a donde se hace.",
      "All of Alfa explained by Lya, with a click that takes you where it's done."),
-    ("shot-136-resumen.png", "Tu pelea, sin estorbar", "Al terminar una pelea, tu daño y lo que más te pegó, junto a tus barras y nunca encima.",
-     "After a fight, your damage and what hit you hardest, next to your bars, never on top."),
+    # 1.3.7: el medidor de daño (tools/banco/galeria137.lua) toma el lugar de «Tu pelea»
+    # (su fondo verde liso se veía mal).
+    ("shot-137-medidor.png", "Tu daño y el de tu grupo", "El medidor sale solo en grupo, compacto y sin tapar tus barras.",
+     "The damage meter shows up only in a group, compact and never covering your bars."),
     ("shot-g-builds.png", "Talentos", "Qué talento poner ahora, tu plan de talentos y tu equipo.",
      "Which talent to take now, your talent plan and your gear."),
     ("shot-manual-curacion.png", "Curación con un clic", "Marcos de grupo y banda: cura, selecciona y quita perjuicios con tus clics.",
@@ -94,6 +96,23 @@ VISTAS = [
      "Mining, herbs, fishing and treasures, with gathering routes."),
     ("shot-manual-comodidades.png", "Comodidades", "Detalles que hacen el juego más cómodo, todos en un lugar.",
      "Little touches that make the game more comfortable, all in one place."),
+    # 1.3.7 (tools/banco/galeria137.lua)
+    ("shot-137-oro.png", "Tu oro, en toda la cuenta", "Cuánto tiene cada personaje, por reino y facción, y cuánto ganas por hora.",
+     "How much each character has, by realm and faction, and how much you make per hour."),
+    ("shot-137-zona.png", "Llegar a una zona", "Su nombre, de quién es y para qué niveles, con su propia animación.",
+     "Its name, who holds it and its level range, with its own animation."),
+    ("shot-137-descubrir.png", "Descubrir un lugar", "Un destello dorado, la experiencia que ganaste y algo que Lya sabe de ahí.",
+     "A golden flash, the experience you earned and something Lya knows about the place."),
+    ("shot-137-mazmorra.png", "Entrar a una mazmorra", "En morado, con sus niveles y cuántos jefes te esperan.",
+     "In purple, with its level range and how many bosses await."),
+    ("shot-137-nivel.png", "Subir de nivel, sin ventanas encimadas", "Un solo resumen al terminar la animación: tu talento y qué aprender, a un clic.",
+     "One summary after the game's animation: your talent and what to learn, one click away."),
+    ("shot-137-pesca.png", "De la pesca a la pelea", "Si algo te ataca mientras pescas, un clic te pone tus armas; lo demás vuelve al terminar.",
+     "If something attacks while you fish, one click equips your weapons; the rest comes back after the fight."),
+    ("shot-137-perdi.png", "Lo que me perdí", "Los avisos que no alcanzaste a ver quedan guardados, con su hora.",
+     "Notices you didn't get to see are kept, with their time."),
+    ("shot-137-info.png", "Barra de información y recargas", "Rendimiento, oro, equipo, bolsas y experiencia por hora; y cuánto le falta a cada botón.",
+     "Performance, gold, gear, bags and XP per hour; plus the time left on each button."),
 ]
 
 
@@ -142,11 +161,19 @@ def cabecera(im, titulo, es, en):
     d.text((ANCHO // 2, ALTO - 34), en, font=fuente("Inter-Regular.ttf", 18), fill=TENUE, anchor="mm")
 
 
-def enmarcar(vista, titulo, es, en):
+# 1.3.7: las vistas chicas (un anuncio, un aviso, una barra) se agrandan hasta
+# este tanto para que se lean; las de antes se quedan como estaban.
+AMPLIAR = {a: 1.7 for a, *_ in VISTAS if a.startswith("shot-137-")}
+
+
+def enmarcar(vista, titulo, es, en, ampliar=1.0):
     im = fondo_marca()
     cabecera(im, titulo, es, en)
     caja_w, caja_h = ANCHO - 160, ALTO - 170 - 80
     v = vista.convert("RGB")
+    f = min(ampliar, caja_w / v.width, caja_h / v.height)
+    if f > 1:
+        v = v.resize((round(v.width * f), round(v.height * f)), Image.LANCZOS)
     v.thumbnail((caja_w, caja_h), Image.LANCZOS)
     x = (ANCHO - v.width) // 2
     y = 170 + (caja_h - v.height) // 2
@@ -258,7 +285,7 @@ def main() -> int:
         for prefijo in ("g-", "v-"):
             if nombre.startswith(prefijo):
                 nombre = nombre[len(prefijo):]
-        enmarcar(Image.open(BANCO / archivo), titulo, es, en).save(SALIDA / f"{i:02d}-{nombre}")
+        enmarcar(Image.open(BANCO / archivo), titulo, es, en, AMPLIAR.get(archivo, 1.0)).save(SALIDA / f"{i:02d}-{nombre}")
     # capturas del juego, si las hay: curseforge/capturas/<nombre>.png|jpg -> galeria/juego-<nombre>.png
     if CAPTURAS.is_dir():
         for c in sorted(CAPTURAS.iterdir()):

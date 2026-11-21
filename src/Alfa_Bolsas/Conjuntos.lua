@@ -231,7 +231,10 @@ end
 -- o en la gemela no se toca). -> puestas, faltan, desplazadas (las piezas del
 -- conjunto que estaban en una ranura que ahora ocupa otra: van a tus bolsas y
 -- se ponen en la segunda pasada)
-local function deBolsas(c)
+-- 1.3.7: sinArmas: las armas ya las cambió el botón seguro (Cambio.lua).
+local ARMAS = { [16] = true, [17] = true, [18] = true }
+Cj.ARMAS = ARMAS
+local function deBolsas(c, sinArmas)
 	local CI = C_Item
 	local donde = dondeLaLlevas(c)
 	local prestada = {} -- ranura -> true: lo que lleva cuenta para su gemela
@@ -240,7 +243,7 @@ local function deBolsas(c)
 	local puestas, faltan, desplazadas = 0, 0, 0
 	for _, r in ipairs(RANURAS) do
 		local pieza = c.p[r]
-		if type(pieza) == "table" and pieza.i and not donde[r] then
+		if type(pieza) == "table" and pieza.i and not donde[r] and not (sinArmas and ARMAS[r]) then
 			local k, x = hallar(pieza, lista, usadas)
 			if k then
 				usadas[k] = true
@@ -285,23 +288,37 @@ A.RegisterEvent("PLAYER_EQUIPMENT_CHANGED", function()
 end)
 
 -- -> true (se puso), "espera" (en combate: al terminar), false
-function Cj.Poner(nombre)
+-- 1.3.7: opts = { armasYa = true }: el botón seguro (Cambio.lua) ya cambió
+-- las armas; en combate lo dice así, y fuera de combate no las vuelve a poner.
+Cj.esperando = nil -- el conjunto que espera al fin del combate
+function Cj.Poner(nombre, opts)
 	if not encendido() then return false end
+	opts = type(opts) == "table" and opts or {}
 	local c = buscar(nombre)
 	if not c then
 		N.Imprimir(format(L["No tienes un conjunto llamado «%s»."], tostring(nombre)))
 		return false
 	end
 	if M.EnCombate() then
-		N.Imprimir(format(L["En combate no se puede cambiar el equipo: te pongo «%s» al terminar."], c.n))
-		N.FueraDeCombate("bolsas.conjunto", function() Cj.Poner(c.n) end)
+		if opts.armasYa then
+			N.Imprimir(format(L["Te cambié las armas de «%s»; lo demás, al terminar el combate."], c.n))
+		else
+			N.Imprimir(format(L["En combate no se puede cambiar el equipo: te pongo «%s» al terminar."], c.n))
+		end
+		Cj.esperando = c.n
+		N.FueraDeCombate("bolsas.conjunto", function()
+			Cj.esperando = nil
+			Cj.Poner(c.n)
+		end)
 		return "espera"
 	end
 	local CI = C_Item
 	if not (CI and CI.EquipItemByName) then return false end
-	local puestas, faltan, desplazadas = deBolsas(c)
+	local puestas, faltan, desplazadas = deBolsas(c, opts.armasYa)
 	segunda = desplazadas > 0 and { n = c.n, hasta = ahora() + SEGUNDA } or nil
-	if puestas == 0 and faltan == 0 then
+	if puestas == 0 and faltan == 0 and opts.armasYa then
+		N.Imprimir(format(L["Te pusiste «%s»."], c.n))
+	elseif puestas == 0 and faltan == 0 then
 		N.Imprimir(format(L["Ya llevas puesto «%s»."], c.n))
 	else
 		-- Las que vuelven en la segunda pasada también se cuentan.

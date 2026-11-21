@@ -622,6 +622,11 @@ local function grupos(padre)
 	-- 1.3.0
 	equipo:Fila({ titulo = L["Conjuntos de equipo"], control = interruptor("conjuntos"),
 		texto = L["Guarda lo que llevas puesto con un nombre (curar, daño, pesca...) y póntelo con un clic, fuera de combate."] })
+	-- 1.3.7
+	equipo:Fila({ titulo = L["Botones de tus conjuntos"], control = interruptor("barraConjuntos"), hija = true, activa = siempre("conjuntos"),
+		texto = L["Junto a la ventana de tu personaje, un botón por conjunto. En combate te cambia las armas al momento y lo demás al terminar. Clic derecho: ponértelo al salir de cada combate."] })
+	equipo:Fila({ titulo = L["Nivel y durabilidad en tu personaje"], control = interruptor("nivelPersonaje"),
+		texto = L["En la ventana de tu personaje y al inspeccionar a alguien: el nivel de objeto de cada pieza y, si se está gastando, cuánto le queda."] })
 	equipo:Fila({ titulo = L["Comparar con lo que llevas"], control = interruptor("comparar"),
 		texto = L["En el cuadro de cada pieza de equipo: lo que ganas y lo que pierdes contra lo que llevas puesto, con números."] })
 	equipo:Fila({ titulo = L["Buscar en todos tus personajes"], control = interruptor("buscarTodos"),

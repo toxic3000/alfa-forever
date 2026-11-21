@@ -257,13 +257,20 @@ local desdeOtroModulo = false -- AlfaMundo.SeguirPunto / SeguirMarcador: ese mó
 
 -- A un punto cualquiera: mapa, x, y (0-100), nombre, marco (f = "e" para
 -- las coordenadas de la era, las de algunos pines del motor). -> true | false
+-- 1.3.7: lo que sale mal, en el mapa de Alfa si está abierto (Ventana.lua, V.Decir).
+local function error_(texto)
+	local d = M.Decir
+	if type(d) == "function" then return d(texto) end
+	N.Imprimir(texto)
+end
+
 function Mk.SeguirPunto(mapa, x, y, nombre, marco, id)
 	local Nav = A.Nav
 	if not (Nav and type(Nav.SetTarget) == "function") then return false end
 	nombre = (nombre and nombre ~= "") and nombre or (Geo.Nombre(mapa) or L["Destino"])
 	local t = Nav.SetTarget(mapa, x, y, nombre, marco)
 	if not t then
-		N.Imprimir(L["Ahí no se puede poner la flecha."])
+		error_(L["Ahí no se puede poner la flecha."])
 		return false
 	end
 	if type(Nav.StartTrip) == "function" then Nav.StartTrip(t, nombre, L["Marcador"], "arrive") end
@@ -398,7 +405,7 @@ function Mk.Compartir(id)
 			enEspera[m.id] = true
 			N.Imprimir(format(L["%s se compartirá con tu grupo al salir de la instancia."], m.nombre))
 		else
-			N.Imprimir(Mk.PorQueNo(por))
+			error_(Mk.PorQueNo(por))
 		end
 		return false
 	end
@@ -410,7 +417,7 @@ function Mk.Compartir(id)
 	if type(A.After) == "function" then
 		A.After(2, function()
 			if enviar(m) then N.Imprimir(format(L["Compartiste %s con tu grupo."], m.nombre))
-			else N.Imprimir(L["El juego no dejó compartir el marcador ahora. Prueba en un momento."]) end
+			else error_(L["El juego no dejó compartir el marcador ahora. Prueba en un momento."]) end
 		end)
 	end
 	return false

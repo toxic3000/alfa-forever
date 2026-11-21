@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "1.3.6: the pack guides you", "items": ["**Search all of Alfa:** the search box at the top finds pages and settings, waits until you finish typing and, if it finds nothing, offers you Lya.", "**For newcomers:** every page says what it's for, Simple mode is simpler, the tour shows the minimap wolf and the \"What's this?\" key, and there are buttons instead of commands.", "**Lighter:** pages open faster and remember where you were. **Light mode** for modest computers, in Style and sound.", "**Your fight, out of the way:** the summary no longer covers your action bars, and you can drag it anywhere."]}
+    "mapa": {"titulo": "1.3.7: a pack at your pace", "items": ["**Notices at the right time:** everything waits its turn and for the game; leveling up shows a single summary. `/alfa calma` for do not disturb and \"What I missed\" (`/alfa perdi`) for what slipped by.", "**Every zone is announced:** when you arrive, big and with its own animation (boat, rare, dungeon, discovery…). Choose them in Settings > Style and sound > Announcements.", "**Your gold and your damage:** gold shows once; the coins show each character's. The damage meter shows up by itself in a group, without covering your bars.", "**Fishing, ready to fight:** the sword on the bar gives you back your weapons in one click, even mid-fight."]}
   },
   "contraportada": {
     "titulo": "Join the pack",

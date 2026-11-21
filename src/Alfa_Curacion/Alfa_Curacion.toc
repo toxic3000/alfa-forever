@@ -12,5 +12,6 @@ Hechizos.lua
 Mapa.lua
 Marcos.lua
 Mana.lua
+Listos.lua
 Pagina.lua
 Asistente.lua

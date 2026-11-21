@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "A 1.3.6: a matilha te guia", "items": ["**Busque em todo o Alfa:** a busca no topo encontra páginas e ajustes, espera você terminar de digitar e, se não achar nada, te oferece a Lya.", "**Para quem está começando:** cada página diz para que serve, o modo simples ficou mais simples, o tour mostra o lobo do minimapa e a tecla de \"O que é isto?\", e há botões em vez de comandos.", "**Mais leve:** as páginas abrem mais rápido e lembram onde você estava. **Modo leve** para computadores modestos, em Estilo e som.", "**Sua luta sem atrapalhar:** o resumo não cobre mais suas barras de ação e você o arrasta para onde quiser."]}
+    "mapa": {"titulo": "A 1.3.7: a matilha no seu ritmo", "items": ["**Avisos na hora certa:** tudo faz fila e espera o jogo; ao subir de nível sai um único resumo. `/alfa calma` para não ser incomodado e \"O que eu perdi\" (`/alfa perdi`) para o que passou.", "**Cada zona é anunciada:** ao chegar, em grande e com sua animação (barco, raro, masmorra, descoberta…). Escolha em Ajustes > Estilo e som > Anúncios.", "**Seu ouro e seu dano:** o ouro aparece uma vez; as moedas mostram o de cada personagem. O medidor de dano aparece sozinho em grupo, sem cobrir suas barras.", "**Pesca pronta para lutar:** a espada da barra devolve suas armas com um clique, até no meio da luta."]}
   },
   "contraportada": {
     "titulo": "Entre para a matilha",

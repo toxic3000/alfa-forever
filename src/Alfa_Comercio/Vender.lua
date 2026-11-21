@@ -208,7 +208,7 @@ local function pintar(e)
 	end
 	if #h >= 2 then
 		y = y + ALTO_BARRAS + ESP.s
-		poner(p.Historia, format(L["%d días: más bajo %s · promedio %s · más alto %s"], #h, M.Dinero(e.minimo), M.Dinero(e.promedio), M.Dinero(e.maximo)))
+		poner(p.Historia, format(#h == 1 and L["%d día: más bajo %s · promedio %s · más alto %s"] or L["%d días: más bajo %s · promedio %s · más alto %s"], #h, M.Dinero(e.minimo), M.Dinero(e.promedio), M.Dinero(e.maximo)))
 	elseif #h == 1 then
 		poner(p.Historia, L["Un solo día de precios: el historial crece con cada escaneo o búsqueda."])
 	else
@@ -257,7 +257,7 @@ function M.Seguro(fn, ...)
 	return ok
 end
 
-A.RegisterEvent("AUCTION_HOUSE_SHOW", function() if C_Timer and C_Timer.After then C_Timer.After(0.2, empezar) else empezar() end end)
+A.RegisterEvent("AUCTION_HOUSE_SHOW", function() N.Una("comercio.vender", 0.2, empezar) end) -- 1.3.7: reloj de Alfa
 A.RegisterEvent("AUCTION_HOUSE_CLOSED", parar)
 A.On("SETTING_CHANGED", function(path)
 	if path == M.ID .. ".vender" or path == M.ID .. ".precioBajo" then

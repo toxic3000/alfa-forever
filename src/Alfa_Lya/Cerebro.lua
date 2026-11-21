@@ -107,6 +107,7 @@ local function contar(id) local d = datos() d.vistos[id] = veces(id) + 1 end
 --   -> true (lo dijo), "espera" (importante: lo dirá en cuanto se pueda) o false, motivo
 ---------------------------------------------------------------------------
 local ultimo = -1e9 -- GetTime del último globo
+local ultimoAullido = -1e9 -- 1.3.7: GetTime del último aullido
 local espera        -- { c, hasta }: algo importante que espera su momento
 local reintento
 
@@ -135,6 +136,17 @@ local function motivo(c)
 	-- 1.2.7: c.enMazmorra deja hablar dentro de una instancia (el consejo de la
 	-- mazmorra, la despedida); nunca en combate.
 	if enCombate() or (enInstancia() and not c.enMazmorra) or escribiendo() then return "esperar" end
+	-- 1.3.7: lo que hace el juego (subir de nivel, una carga, una cinemática,
+	-- sus estandartes; Alfa_Nucleo/Momentos.lua): espera. Con No molestar
+	-- (/alfa calma, /dnd) se calla; lo importante queda en «Lo que me perdí».
+	if not c.pedido and N.Ocupado then
+		local oc, m = N.Ocupado("lya", c.importante and 2 or 3)
+		if oc then
+			if m == "calma" then return "calma" end
+			if m == "pnj" then return "ocupada" end
+			return "esperar"
+		end
+	end
 	-- 1.2.9: en el modo foco (Foco.lua) se calla; lo importante y lo que pides, sí.
 	if UI.EnFoco and UI.EnFoco() and not c.importante and not c.pedido and not c.enMazmorra then return "foco" end
 	if not c.importante and not c.pedido then
@@ -144,17 +156,56 @@ local function motivo(c)
 	return nil
 end
 
+-- 1.3.7 (41): lo importante que espera es una lista con prioridad (antes, un
+-- solo lugar: lo segundo borraba lo primero). Sale de uno en uno, lo más
+-- urgente primero; lo que se vence sin decirse queda en «Lo que me perdí».
+local esperas = {}
+local MAX_ESPERAS = 6
+local function vencerEsperas()
+	local t = ahora()
+	for i = #esperas, 1, -1 do
+		local e = esperas[i]
+		if t > e.hasta then
+			table.remove(esperas, i)
+			if N.Perdido then pcall(N.Perdido, { titulo = L["Lya"], texto = e.c.texto, icono = "ic-lobo", origen = "lya" }) end
+		end
+	end
+end
+local function esperar(c)
+	for i = #esperas, 1, -1 do if esperas[i].c.texto == c.texto then table.remove(esperas, i) end end
+	local p = N.Prioridad and N.Prioridad(c.prioridad or 2) or 2
+	local e = { c = c, hasta = ahora() + ESPERA_IMPORTANTE, p = p }
+	local i = #esperas + 1
+	for k, x in ipairs(esperas) do if p < x.p then i = k break end end
+	table.insert(esperas, i, e)
+	while #esperas > MAX_ESPERAS do
+		local viejo = table.remove(esperas)
+		if N.Perdido then pcall(N.Perdido, { titulo = L["Lya"], texto = viejo.c.texto, icono = "ic-lobo", origen = "lya" }) end
+	end
+end
+function Ce.Esperas() return esperas end
+
 local function reintentar()
+	vencerEsperas()
+	espera = esperas[1]
 	if not espera then return end
-	if ahora() > espera.hasta then espera = nil return end
 	if escribiendo() and not enCombate() and (not enInstancia() or espera.c.enMazmorra) and not reintento then -- 1.2.7
 		reintento = K.Despues(4, function() reintento = nil reintentar() end)
 		return
 	end
 	local c = espera.c
-	if motivo(c) == "esperar" then return end
+	if motivo(c) == "esperar" then
+		-- Lo que hace el juego se acaba solo: se vuelve a mirar cuando esté libre.
+		-- (solo si espera por eso: si no, AlLibre correría ya y daría vueltas sin fin)
+		if N.AlLibre and N.Ocupado and N.Ocupado("lya", espera.p) then
+			N.AlLibre("lya.espera", reintentar, espera.p, { tipo = "lya", caduca = math.max(1, (espera.hasta or 0) - ahora()), alCaducar = vencerEsperas })
+		end
+		return
+	end
+	table.remove(esperas, 1)
 	espera = nil
 	Ce.Decir(c)
+	if esperas[1] and N.Una then N.Una("lya.esperas", 4, reintentar) end
 end
 
 ---------------------------------------------------------------------------
@@ -252,6 +303,15 @@ local MAX_PERDIDOS = 10
 Ce.perdidos = {}
 function Ce.Perdido(o)
 	if type(o) ~= "table" then return false end
+	-- 1.3.7: el núcleo los guarda todos (N.Perdido, los últimos 30 por
+	-- personaje). Si el Kit ya lo anotó, N.Perdido no lo repite (mismo título y texto).
+	if rawget(N, "Perdido") then
+		local ac = o.accion
+		if not (type(ac) == "table" and type(ac.alClic) == "function" and not ac.seguro) then return false end
+		local e = N.Perdido(o)
+		if M.Avisar then M.Avisar() end
+		return e ~= nil
+	end
 	local ac = o.accion
 	if not (type(ac) == "table" and type(ac.alClic) == "function" and not ac.seguro) then return false end
 	local titulo, texto = o.titulo or "", o.texto or ""
@@ -267,8 +327,22 @@ function Ce.Perdido(o)
 	return true
 end
 function Ce.OlvidarPerdido(x)
+	if rawget(N, "OlvidarPerdido") then N.OlvidarPerdido(x) end
 	for i = #Ce.perdidos, 1, -1 do if Ce.perdidos[i] == x then table.remove(Ce.perdidos, i) end end
 end
+-- 1.3.7: la lista de «Te perdiste esto» (la del núcleo, o la de aquí sin él).
+function Ce.Perdidos()
+	if rawget(N, "Perdidos") then return N.Perdidos() end
+	return Ce.perdidos
+end
+function Ce.AccionPerdido(x)
+	if rawget(N, "AccionPerdido") then
+		local a = N.AccionPerdido(x)
+		return a and { texto = a.texto, fn = a.alClic } or nil
+	end
+	return x and x.accion
+end
+if A.On then A.On("ALFA_PERDIDOS", function() if M.Avisar then M.Avisar() end end) end
 if A.On then A.On("ALFA_AVISO_PERDIDO", function(o) pcall(Ce.Perdido, o) end) end
 
 -- Lo último que dijo, lo más nuevo primero (esta sesión).
@@ -295,9 +369,15 @@ function Ce.Decir(c)
 		return guardarDicho(c)
 	end
 	if por == "esperar" and c.importante then
-		espera = { c = c, hasta = ahora() + ESPERA_IMPORTANTE }
+		esperar(c)
 		reintentar()
 		return "espera", por -- verdadero: ya lo dirá en cuanto se pueda
+	end
+	-- 1.3.7: con No molestar, lo importante queda en «Lo que me perdí».
+	if por == "calma" and c.importante and N.Perdido then
+		pcall(N.Perdido, { titulo = L["Lya"], texto = c.texto, icono = "ic-lobo", origen = "lya" })
+		if type(c.alDecir) == "function" then K.Llamar(c.alDecir) end
+		return "espera", por
 	end
 	if por then return false, por end
 	-- 1.3.1: lo importante no pisa lo importante: a la cola.
@@ -305,6 +385,15 @@ function Ce.Decir(c)
 		if #cola < MAX_COLA then cola[#cola + 1] = { c = c, hasta = ahora() + ESPERA_IMPORTANTE } end
 		N.Una("lya.cola", 3, sacarCola) -- por si acaso: lo normal es al callarse
 		return "espera", "cola"
+	end
+	-- 1.3.7 (35, 36): un solo aullido a la vez: lo que llega a los pocos segundos
+	-- de otro aullido (un reto cumplido al subir de nivel) salta en vez de aullar.
+	if c.aullar then
+		if ahora() - ultimoAullido < 30 then
+			c = setmetatable({ aullar = false, salto = true }, { __index = c })
+		else
+			ultimoAullido = ahora()
+		end
 	end
 	if c.id then contar(c.id) end
 	ultimo = ahora()
@@ -537,12 +626,14 @@ local CONTEXTO = {
 		local d = datos()
 		local lv = num(UnitLevel and UnitLevel("player"))
 		if not lv or (d.entrenarNivel == lv and not c.pedido) then return false end
+		-- 1.3.7: una sola voz: si Talentos, Hoy o el resumen de nivel ya lo dijeron en este nivel, no.
+		if not c.pedido and Ce.YaSeDijo("entrenador:" .. lv) then return false end
 		local n = porEntrenar()
 		if n <= 0 then return false end
 		c.cara = "atenta"
 		c.acciones = { { texto = L["Llévame con mi entrenador"], fn = function() irA("class") end } }
 		local ok = decirDe("entrenar", c, n)
-		if ok then d.entrenarNivel = lv end
+		if ok then d.entrenarNivel = lv Ce.Anotar("entrenador:" .. lv) end
 		return ok
 	end,
 	function(c)
@@ -953,15 +1044,25 @@ local HITOS = {
 	[50] = function() return nil end,
 	[60] = function() return nil end,
 }
-A.RegisterEvent("PLAYER_LEVEL_UP", function(_, nivel)
-	nivel = num(nivel)
-	if not nivel then return end
+-- 1.3.7 (33, 36): Lya aúlla después de la animación del juego (N.AlLibre,
+-- Alfa_Nucleo/Momentos.lua), y el festejo de racha (dos niveles en 30 min)
+-- reemplaza al aullido de siempre en vez de sumarse.
+local function alSubir(nivel, racha)
+	local Mo = M.Momentos
+	if racha and Mo and Mo.Festejar and Mo.Festejar(nivel) then return end
 	local c = { importante = true, aullar = true, segundos = 10 }
 	if HITOS[nivel] then
 		c.acciones = HITOS[nivel]()
 		if decirDe("hito" .. nivel, c) then return end
 	end
 	decirDe("nivel", { importante = true, aullar = true }, nivel)
+end
+A.RegisterEvent("PLAYER_LEVEL_UP", function(_, nivel)
+	nivel = num(nivel)
+	if not nivel then return end
+	local Mo = M.Momentos
+	local racha = Mo and Mo.AlSubir and Mo.AlSubir(nivel) or false -- la racha se cuenta al momento
+	if N.AlLibre then N.AlLibre("lya.nivel", function() alSubir(nivel, racha) end, 2, { tipo = "lya", caduca = 60 }) else alSubir(nivel, racha) end
 end)
 
 A.RegisterEvent("PLAYER_DEAD", function()
@@ -1067,6 +1168,9 @@ local dichosAviso = {} -- texto -> cuándo lo dijo
 K.AvisoPorLya = function(o)
 	if N.Get(ID, "avisos") == false or Ce.Silenciada() then return false end
 	if not (Ce.Activa() and UI.Visible()) or enCombate() then return false end
+	-- 1.3.7: mientras el juego hace lo suyo (nivel, carga, cinemática) o con No
+	-- molestar, el aviso sigue su camino (K.Aviso lo hace esperar o lo guarda).
+	if N.Ocupado and N.Ocupado("lya", o.importante and 2 or 3) and not o.pedido then return false end
 	-- 1.2.9: en el modo foco los avisos salen como siempre (Lya está chiquita).
 	if UI.EnFoco and UI.EnFoco() then return false end
 	local t = unir(o.titulo, o.texto)

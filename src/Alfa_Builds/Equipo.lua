@@ -68,10 +68,40 @@ local ARMAS = {
 	escudo = { principal = { [13] = true, [21] = true }, secundaria = { [14] = true, [23] = true } },
 }
 
-local function permitido(b, g, inv)
+-- 1.3.7: ¿puedes usar dos armas? CanDualWield del juego; sin ella, por clase
+-- (pícaro siempre; guerrero desde el 10; cazador desde el 20).
+function E.PuedeDosArmas()
+	local f = rawget(_G, "CanDualWield")
+	if type(f) == "function" then
+		local ok, si = pcall(f)
+		if ok and type(si) == "boolean" then return si end
+	end
+	local _, clase = UnitClass("player")
+	local nivel = UnitLevel("player") or 1
+	return clase == "ROGUE" or (clase == "WARRIOR" and nivel >= 10) or (clase == "HUNTER" and nivel >= 20)
+end
+
+-- 1.3.7: ¿llevas un arma de dos manos en la principal?
+function E.LlevasDosManos()
+	local link = A.Compat.Readable(GetInventoryItemLink("player", 16))
+	if not link then return false end
+	local f = (C_Item and C_Item.GetItemInfoInstant) or rawget(_G, "GetItemInfoInstant")
+	if type(f) ~= "function" then return false end
+	local ok, _, _, _, equipLoc = pcall(f, link)
+	return ok and equipLoc == "INVTYPE_2HWEAPON"
+end
+
+-- t (la búsqueda): t.dual (puedes usar dos armas), t.dosManos (llevas una de dos manos).
+local function permitido(b, g, inv, t)
 	local a = b.armas and ARMAS[b.armas]
-	if not a or not a[g.clave] then return true end
-	return a[g.clave][inv] == true
+	if a and a[g.clave] then return a[g.clave][inv] == true end
+	if g.clave == "secundaria" and t then
+		-- Con un arma de dos manos no hay mano secundaria (ni escudo ni otra arma).
+		if t.dosManos then return false end
+		-- Un arma en la secundaria solo si puedes usar dos.
+		if (inv == 13 or inv == 22) and not t.dual then return false end
+	end
+	return true
 end
 
 local grupoDeInv = {}
@@ -200,7 +230,7 @@ trozo = function(t)
 					local ok, usable, _, minLevel = pcall(G.Usability, info)
 					if ok and usable and (minLevel or 0) <= t.nivel + ADELANTE then
 						for _, g in ipairs(grupoDeInv[rec.inv]) do
-							if permitido(t.build, g, rec.inv) then
+							if permitido(t.build, g, rec.inv, t) then
 								local s = puntuar(info, t.w, g.clave == "secundaria")
 								if s and s > 0 then
 									t.mejores[g.clave] = t.mejores[g.clave] or {}
@@ -241,7 +271,7 @@ function E.Buscar(b, alListo, alAvance)
 	end)
 	if #ids == 0 then return false, "codex" end
 	trabajo = { build = b, ids = ids, i = 0, mejores = {}, w = w, alListo = alListo, alAvance = alAvance,
-		nivel = UnitLevel("player") or 1 }
+		nivel = UnitLevel("player") or 1, dual = E.PuedeDosArmas(), dosManos = E.LlevasDosManos() }
 	A.After(0, paso)
 	return true
 end

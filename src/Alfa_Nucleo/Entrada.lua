@@ -77,6 +77,36 @@ end
 
 function N.EntradaTermina() return limite end
 
+-- 1.3.7: ¿esto lo pidió el jugador? Un comando de /alfa corriendo, o un
+-- clic que acaba de dar en una ventana de Alfa abierta. Lo
+-- que pides sale aunque Alfa esté esperando (Momentos.lua).
+local function bajoRaton(f)
+	if not (f and f.IsShown and f:IsShown() and f.IsMouseOver) then return false end
+	local ok, si = pcall(f.IsMouseOver, f)
+	return ok and si == true
+end
+local function enVentanaAlfa()
+	local O = A and A.UI and A.UI.Options
+	if bajoRaton(O and O.frame) then return true end
+	local K = N.Kit
+	for _, v in ipairs(K and K.VENTANAS or {}) do if bajoRaton(v) then return true end end
+	return false
+end
+-- 1.3.7: tener el ratón encima no basta: cuenta lo que llega hasta 0,5 s
+-- después de un clic en una ventana de Alfa.
+local CLIC_VALE = 0.5
+local clicAlfa = -math.huge
+function N.ClicEnAlfa() clicAlfa = ahora() end -- (también para el banco)
+if A and A.RegisterEvent then
+	local function alClic() if enVentanaAlfa() then clicAlfa = ahora() end end
+	A.RegisterEvent("GLOBAL_MOUSE_DOWN", alClic)
+	A.RegisterEvent("GLOBAL_MOUSE_UP", alClic)
+end
+function N.PidioJugador()
+	if pidiendo > 0 then return true end
+	return ahora() - clicAlfa <= CLIC_VALE and enVentanaAlfa()
+end
+
 local function avisar() if A and A.Fire then A.Fire("ALFA_ALENTRAR") end end
 
 function N.GuardarAlEntrar(o)

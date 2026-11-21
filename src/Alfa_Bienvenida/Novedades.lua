@@ -31,6 +31,14 @@ M.NOVEDADES = {
 --   { version, titulo, puntos = { { icono (ic-*), texto } } }
 ---------------------------------------------------------------------------
 M.NOTAS = {
+	{ version = "1.3.7", titulo = "La manada a tu ritmo", puntos = {
+		{ "ic-oro", "Tu oro, una sola vez: un clic en las monedas y ves cuánto tiene cada personaje." },
+		{ "ic-mapa", "Cada zona se anuncia al llegar, con su propia animación para barcos, raros, mazmorras y más." },
+		{ "ic-nivel", "Al subir de nivel, Alfa espera a la animación del juego y te da un solo resumen." },
+		{ "ic-manada", "El medidor de daño sale solo en grupo, compacto y sin tapar tus barras." },
+		{ "ic-pesca", "Pescando, la espada te devuelve tus armas en un clic, incluso en plena pelea." },
+		{ "ic-alerta", "Los avisos hacen fila y no se enciman; lo que te perdiste queda en «Lo que me perdí»." },
+	} },
 	{ version = "1.3.3", titulo = "La manada en calma", puntos = {
 		{ "ic-lobo", "Al entrar solo sale la animación; lo demás te espera en Hoy y con Lya." },
 		{ "ic-manada", "Sigue la ruta de tu grupo y pide las misiones que lleva tu compañero." },

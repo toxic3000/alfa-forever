@@ -13,8 +13,10 @@ Precios.lua
 Subasta.lua
 Recetas.lua
 Consejo.lua
+Gangas.lua
 Tooltip.lua
 Buzon.lua
+Envios.lua
 OficiosDatos.lua
 Oficios.lua
 Fabricar.lua

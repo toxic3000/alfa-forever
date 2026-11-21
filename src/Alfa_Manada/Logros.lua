@@ -331,11 +331,12 @@ Lo.TieneMontura = tieneMontura
 
 A.RegisterEvent("QUEST_TURNED_IN", function() sumar("misiones") end)
 
-A.RegisterEvent("PLAYER_LEVEL_UP", function(_, nivel)
+-- 1.3.7: tras la animación del juego y escalonado con los demás mensajes de La Jauría.
+A.RegisterEvent("PLAYER_LEVEL_UP", (N.TrasNivel or function(_, f) return f end)("manada.logros", function(_, nivel)
 	nivel = U.Numero(nivel)
 	sumar("niveles")
 	if nivel and nivel == nivelMax() then compartirLogro("n", tostring(nivel)) end
-end)
+end))
 
 A.RegisterEvent("NEW_MOUNT_ADDED", function()
 	local d = N.DatosPersonaje(ID)

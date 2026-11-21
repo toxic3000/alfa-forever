@@ -135,20 +135,22 @@ end)
 ---------------------------------------------------------------------------
 
 step("«Te perdiste esto»: el aviso con botón que se fue sin tocarlo", function()
-  check(Ce.Perdido and Ce.perdidos, "falta Ce.Perdido")
+  -- 1.3.7: la lista vive en el núcleo (N.Perdido, los últimos 30 por personaje): Ce.Perdidos().
+  check(Ce.Perdido and Ce.Perdidos, "falta Ce.Perdido")
   if not Ce.Perdido then return end
-  local n0 = #Ce.perdidos
+  local n0 = #Ce.Perdidos()
   local tocado = false
   A.Fire("ALFA_AVISO_PERDIDO", { titulo = "Ana te abre la puerta", texto = "Acepta su invitación.", accion = { texto = "Aceptar", alClic = function() tocado = true end } })
   A.Fire("ALFA_AVISO_PERDIDO", { titulo = "Sin botón", texto = "Nada que hacer." })
-  check(#Ce.perdidos == n0 + 1 and Ce.perdidos[1].titulo == "Ana te abre la puerta", "no guardó el aviso con botón (o guardó el que no tiene)")
-  local x = Ce.perdidos[1]
-  if x and x.accion then x.accion.fn() end
+  check(#Ce.Perdidos() == n0 + 1 and Ce.Perdidos()[1].titulo == "Ana te abre la puerta", "no guardó el aviso con botón (o guardó el que no tiene)")
+  local x = Ce.Perdidos()[1]
+  local ac = x and Ce.AccionPerdido(x)
+  if ac then ac.fn() end
   check(tocado, "su botón no hace lo de antes")
   Ly.Guia.Abrir()
   RUN_TIMERS(2)
   Ce.OlvidarPerdido(x)
-  check(#Ce.perdidos == n0, "no se olvidó al usarlo")
+  check(#Ce.Perdidos() == n0, "no se olvidó al usarlo")
 end)
 
 ---------------------------------------------------------------------------

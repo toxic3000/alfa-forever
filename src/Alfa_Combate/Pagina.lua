@@ -15,6 +15,7 @@ local ADDON, M = ...
 local N, A, K, L = M.N, M.A, M.K, M.L
 local R, D, P, Rc = M.Rotacion, M.Medidor, M.Prioridad, M.Reacciones
 local Co, Am, Rs, Rg = M.Corte, M.Amenaza, M.Resumen, M.Recargas
+local Cu = M.Cuenta
 local ID = M.ID
 
 local floor, max, min, format, ipairs, tonumber, type = math.floor, math.max, math.min, string.format, ipairs, tonumber, type
@@ -90,10 +91,15 @@ end
 local function herramientas()
 	local out = {}
 	-- Medidor
+	-- 1.3.7: dice cuándo sale (127) y, sin el medidor del juego, por qué no sale (26).
 	local disponible, motivo = D.Disponible()
-	local abierta = M.Opt("medidor") and true or false
+	local abierta = M.Ventana.Abierta()
+	local modo = M.ModoMedidor()
 	local m = { icono = "ic-manada", titulo = L["Medidor de daño"], lineas = 5 }
-	if not disponible then
+	if not D.Existe() then
+		m.texto = L["Alfa dibuja el daño de tu grupo con el medidor oficial del juego, y tu cliente no lo trae. Por eso la gráfica no sale sola."]
+		m.insignias = { { L["No disponible"], "aviso" } }
+	elseif not disponible then
 		m.texto = motivo
 		m.insignias = { { L["No disponible"], "aviso" } }
 	elseif D.Encendido() == false and D.Leer("todo", "dano", 1).vacia then
@@ -101,9 +107,14 @@ local function herramientas()
 		m.insignias = { { L["Apagado"], "neutro" } }
 		m.accion = D.AccionEncender()
 	else
-		m.texto = L["El top de DPS de tu grupo o banda en una ventana pequeña, con la pelea actual y la anterior."]
-		m.insignias = { abierta and { L["En pantalla"], "exito" } or { L["Cerrada"], "neutro" } }
-		m.accion = { texto = abierta and L["Cerrar la ventana"] or L["Abrir la ventana"], alClic = function() M.Ventana.Alternar() end }
+		local cuando = (modo == "siempre" and L["Siempre a la vista."]) or (modo == "apagado" and L["Apagado: sale solo si lo abres tú (/alfa dps)."])
+			or L["Sale solo en grupo, en banda y en mazmorras."]
+		local otro = modo == "auto" and M.Ventana.OtroMedidor()
+		if otro then cuando = format(L["Con %s no sale sola, para que no veas dos medidores."], otro) end
+		m.texto = L["Una gráfica pequeña con el daño de tu grupo, abajo a la derecha. Clic derecho sobre ella: qué se mide, anunciar y más."] .. " " .. cuando
+		local insignia = (modo == "siempre" and { L["Siempre"], "exito" }) or (modo == "apagado" and { L["Apagado"], "neutro" }) or { L["Sale en grupo"], "exito" }
+		m.insignias = { insignia }
+		m.accion = { texto = abierta and L["Esconderla"] or L["Verla ahora"], alClic = function() M.Ventana.Alternar() end }
 	end
 	out[#out + 1] = m
 	-- Avisos
@@ -157,6 +168,26 @@ local function herramientas()
 	c.insignias = { M.Opt("corte") and { L["Encendido"], "exito" } or { L["Apagado"], "neutro" } }
 	c.accion = { texto = L["Probar el aviso"], alClic = aLaVista(function() Co.Probar() end, L["Así se ve en pantalla."]) }
 	out[#out + 1] = c
+	-- 1.3.7: para jefes y mazmorras: «Sal de ahí», la cuenta y los temporizadores.
+	local j = { icono = "ic-mazmorra", titulo = L["Jefes y mazmorras"], lineas = 5 }
+	local partes = {}
+	if M.Opt("salDeAhi") then partes[#partes + 1] = L["«¡Sal de ahí!» si pisas algo que daña"] end
+	if M.Opt("cuenta") then partes[#partes + 1] = L["la cuenta para jalar en grande"] end
+	if M.Opt("jefes") then partes[#partes + 1] = L["cuándo viene el próximo ataque del jefe"] end
+	if #partes > 0 then
+		j.texto = format(L["En instancias: %s."], M.Juntar(partes))
+		j.insignias = { { L["Encendido"], "exito" } }
+	else
+		j.texto = L["Ayudas para mazmorras y bandas: «¡Sal de ahí!», la cuenta para jalar y los tiempos del jefe. Enciéndelas abajo, en Ajustes."]
+		j.insignias = { { L["Apagado"], "neutro" } }
+	end
+	local lanzar = Cu.Accion()
+	if lanzar then
+		j.accion = lanzar
+	else
+		j.accion = { texto = L["Probar «¡Sal de ahí!»"], alClic = aLaVista(function() M.SalDeAhi.Probar() end, L["Así se ve en pantalla."]) }
+	end
+	out[#out + 1] = j
 	-- El resaltado del botón no va aquí: es una fila de "Ícono de rotación".
 	return out
 end
@@ -241,7 +272,7 @@ local function bloqueMedidor(padre)
 		end
 		for i = n + 1, #lista.filas do lista.filas[i]:Hide() end
 		K.Mostrar(lista, n > 0)
-		local puede = D.PuedeAnunciar(M.Opt("sesion"), M.Opt("tipo"))
+		local puede = D.PuedeAnunciar(M.Opt("sesion"), M.Opt("tipo"), r) -- 1.3.7: con la misma lectura
 		barra.Anunciar:SetActivo(puede)
 		barra.Anunciar:SetShown(r.ok and n > 0)
 		barra.Cero:SetShown(r.ok and n > 0)
@@ -605,15 +636,36 @@ local function grupos(padre)
 		texto = L["Además del ícono, un brillo dorado que late alrededor de su barra."] })
 
 	local g3 = K.GrupoAjustes(padre, { titulo = L["Medidor de daño"] })
-	g3:Fila({ titulo = L["Mostrar la ventana del medidor"], control = interruptor("medidor"),
-		texto = L["También con /alfa dps. No se cierra con Esc, para que la tengas a la vista al pelear."] })
-	g3:Fila({ titulo = L["Solo cuando estás en grupo"], control = interruptor("medidorGrupo"), hija = true, activa = si("medidor"),
-		texto = L["Si juegas sin grupo, la ventana se esconde."] })
-	g3:Fila({ titulo = L["Opacidad de la ventana"], control = deslizador("opacidad", 0.3, 1, 0.05, pct), hija = true, activa = si("medidor") })
+	-- 1.3.7: cuándo sale la gráfica (automático de fábrica) y cuántas filas en banda.
+	local function encendido() return M.ModoMedidor() ~= "apagado" end
+	g3:Fila({ titulo = L["Cuándo sale la gráfica"], texto = L["Automático: sola en grupo, en banda y en mazmorras; yendo solo, no. También con /alfa dps."],
+		control = function(fila)
+			local s = K.Segmentos(fila, { estilo = "segmentos", opciones = M.OpcionesModo(), valor = M.ModoMedidor(),
+				alCambiar = function(v) M.SetOpt("medidorModo", v) end })
+			s.Leer = function(self) self:SetValor(M.ModoMedidor()) end
+			return s
+		end })
+	g3:Fila({ titulo = L["Filas en banda"], control = deslizador("filasBanda", 5, 20, 1, entero), hija = true, activa = encendido,
+		texto = L["En grupo salen las 5 de tu grupo. Tu fila siempre se ve."] })
+	g3:Fila({ titulo = L["Opacidad de la ventana"], control = deslizador("opacidad", 0.3, 1, 0.05, pct), hija = true, activa = encendido,
+		texto = L["10 segundos después de la pelea se atenúa más; al pasar el ratón vuelve."] })
 	g3:Fila({ titulo = L["Cuántos en el top"], control = deslizador("filas", 3, 10, 1, entero),
 		texto = L["En la ventana y aquí. Si no estás entre ellos, tu fila sale al final."] })
 	g3:Fila({ titulo = L["Cuántos se anuncian"], control = segmentos("anunciar", { 3, 5, 10 }),
-		texto = L["Las líneas que escribe Anunciar en el chat de tu grupo o banda."] })
+		texto = L["Anunciar escribe 3 líneas cortas en el chat de tu grupo o banda, solo cuando tú le das clic."] })
+
+	-- 1.3.7: jefes y mazmorras, y tus efectos.
+	local g6 = K.GrupoAjustes(padre, { titulo = L["Jefes y mazmorras"] })
+	g6:Fila({ titulo = L["«¡Sal de ahí!»"], control = interruptor("salDeAhi"),
+		texto = L["En instancias, si pisas fuego, veneno o algo que deja el jefe en el suelo: un aviso rojo breve. Si el juego oculta esos datos, se apaga solo."] })
+	g6:Fila({ titulo = L["Con sonido"], control = interruptor("salDeAhiSonido"), hija = true, activa = si("salDeAhi") })
+	g6:Fila({ titulo = L["La cuenta para jalar en grande"], control = interruptor("cuenta"),
+		texto = L["Cuando alguien lanza la cuenta del juego, un anuncio con quién la lanzó y cuánto falta."] })
+	g6:Fila({ titulo = L["Tiempos del jefe"], control = interruptor("jefes"),
+		texto = L["Alfa aprende pelea a pelea cada cuánto lanza el jefe sus ataques y te dice «Próximo Aliento en ~15 s». La primera vez no dice nada."] })
+	g6:Fila({ titulo = L["Tus efectos a la vista"], control = interruptor("efectos"),
+		texto = L["Tus venenos, maldiciones, escudos y curas que duran, con lo que les queda, en una fila chica."] })
+	g6:Fila({ titulo = L["Avisar cuando uno se acaba"], control = interruptor("efectosAviso"), hija = true, activa = si("efectos") })
 
 	-- Lo que no aplica a ti no se muestra.
 	local function filtrar()
@@ -626,7 +678,7 @@ local function grupos(padre)
 		K.Mostrar(rama, R.Fuente() == "alfa" and #P.Ramas() > 0)
 		if type(expl.alfaDatos) == "table" then expl.alfaDatos.texto = textoExplicaciones() end
 	end
-	return { g1, g2, g5, g4, g3 }, filtrar
+	return { g1, g2, g5, g6, g4, g3 }, filtrar
 end
 
 ---------------------------------------------------------------------------
@@ -782,15 +834,35 @@ local CONTROLES = {
 	toggle("marcaMision", L["Marcar a quien te falta para una misión"], L["Un ícono de misión en la placa de nombre de los enemigos y personajes que todavía necesitas para una misión de tu registro. En mazmorras el juego oculta esos datos y no se marcan."], nil,
 		"quest mobs, nameplate quest icon"),
 	toggle("marcaMisionBrillo", L["Con un brillo suave"], L["Además del ícono, un brillo dorado que late alrededor de su barra."], "marcaMision", "quest glow"),
-	toggle("medidor", L["Mostrar la ventana del medidor"], L["También con /alfa dps. No se cierra con Esc, para que la tengas a la vista al pelear."], nil,
-		"damage meter, dps meter, recount, details"),
-	toggle("medidorGrupo", L["Solo cuando estás en grupo"], L["Si juegas sin grupo, la ventana se esconde."], "medidor", "group only, party"),
+	{ kind = "dropdown", key = clave("medidorModo"), label = L["Cuándo sale la gráfica"],
+		help = L["Automático: sola en grupo, en banda y en mazmorras; yendo solo, no. También con /alfa dps."],
+		choices = function()
+			local o = {}
+			for _, x in ipairs(M.OpcionesModo()) do o[#o + 1] = { value = x.valor, label = x.texto } end
+			return o
+		end,
+		get = function() return M.ModoMedidor() end,
+		search = "damage meter, dps meter, recount, details, graph, bars" },
+	{ kind = "slider", key = clave("filasBanda"), label = L["Filas en banda"], min = 5, max = 20, step = 1, format = entero,
+		help = L["En grupo salen las 5 de tu grupo. Tu fila siempre se ve."],
+		child = true, disabled = function() return M.ModoMedidor() == "apagado" end, search = "meter rows raid" },
 	{ kind = "slider", key = clave("opacidad"), label = L["Opacidad de la ventana"], min = 0.3, max = 1, step = 0.05, format = pct,
-		child = true, disabled = no(si("medidor")), search = "meter opacity, alpha" },
+		child = true, disabled = function() return M.ModoMedidor() == "apagado" end, search = "meter opacity, alpha" },
 	{ kind = "slider", key = clave("filas"), label = L["Cuántos en el top"], min = 3, max = 10, step = 1, format = entero,
 		help = L["En la ventana y aquí. Si no estás entre ellos, tu fila sale al final."], search = "meter rows, top" },
 	{ kind = "dropdown", key = clave("anunciar"), label = L["Cuántos se anuncian"], choices = numeros({ 3, 5, 10 }),
-		help = L["Las líneas que escribe Anunciar en el chat de tu grupo o banda."], search = "announce, report to chat" },
+		help = L["Anunciar escribe 3 líneas cortas en el chat de tu grupo o banda, solo cuando tú le das clic."], search = "announce, report to chat" },
+	-- 1.3.7
+	toggle("salDeAhi", L["«¡Sal de ahí!»"], L["En instancias, si pisas fuego, veneno o algo que deja el jefe en el suelo: un aviso rojo breve. Si el juego oculta esos datos, se apaga solo."], nil,
+		"get out of fire, standing in bad, ground effect, avoid"),
+	toggle("salDeAhiSonido", L["Con sonido"], nil, "salDeAhi", "get out sound"),
+	toggle("cuenta", L["La cuenta para jalar en grande"], L["Cuando alguien lanza la cuenta del juego, un anuncio con quién la lanzó y cuánto falta."], nil,
+		"pull timer, countdown"),
+	toggle("jefes", L["Tiempos del jefe"], L["Alfa aprende pelea a pelea cada cuánto lanza el jefe sus ataques y te dice «Próximo Aliento en ~15 s». La primera vez no dice nada."], nil,
+		"boss timers, dbm, bigwigs, next ability"),
+	toggle("efectos", L["Tus efectos a la vista"], L["Tus venenos, maldiciones, escudos y curas que duran, con lo que les queda, en una fila chica."], nil,
+		"dots, hots, buffs, debuffs, timers, auras"),
+	toggle("efectosAviso", L["Avisar cuando uno se acaba"], nil, "efectos", "dot expired, aura fell off"),
 }
 
 N.Modulo({

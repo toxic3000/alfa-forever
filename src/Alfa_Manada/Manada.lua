@@ -114,6 +114,8 @@ end
 function AlfaManada.Comparte() return on("compartir") end
 
 function AlfaManada.Abrir() P.Abrir() end
+-- 1.3.7: «Sigues a X» de Hoy deja de seguir con un clic.
+function AlfaManada.DejarDeSeguir() return M.Seguir and M.Seguir.Parar() end
 
 
 function AlfaManada.Resumen()

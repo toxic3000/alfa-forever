@@ -135,7 +135,7 @@ function M.BloqueMisiones(padre, alCambiar)
 				n = n + 1
 			end
 		end
-		M.Aviso(n > 0 and format(L["Marqué %d misiones"], n) or L["No hay misiones que convenga dejar"],
+		M.Aviso(n > 0 and M.Plural(n, L["Marqué %d misión"], L["Marqué %d misiones"]) or L["No hay misiones que convenga dejar"],
 			n > 0 and L["Revisa la lista antes de abandonar."] or nil, { icono = "ic-info" })
 	end, { tipo = "fantasma", tam = "chico" })
 	b.Abandonar = K.Boton(pie, "", function() Cr.AbandonarMarcadas() end, { tipo = "peligro", tam = "chico", icono = "ic-cerrar" })
@@ -175,7 +175,7 @@ function M.BloqueMisiones(padre, alCambiar)
 		K.Mostrar(self.Vacio, not hay)
 		self.Filtro:SetValor(Cr.Filtro())
 		local partes = { format(L["%d en tu plan"], c.entran) }
-		if c.listas > 0 then partes[#partes + 1] = format(L["%d listas para entregar"], c.listas) end
+		if c.listas > 0 then partes[#partes + 1] = M.Plural(c.listas, L["%d lista para entregar"], L["%d listas para entregar"]) end
 		if c.faltan > 0 then partes[#partes + 1] = format(L["%d por terminar"], c.faltan) end
 		if c.otraZona > 0 then partes[#partes + 1] = format(L["%d en otra zona"], c.otraZona) end
 		K.Escribir(self.Resumen, table.concat(partes, "  \194\183  ") .. ". " .. L["Toca el interruptor para poner o quitar una; lo que tocas manda sobre el filtro."])

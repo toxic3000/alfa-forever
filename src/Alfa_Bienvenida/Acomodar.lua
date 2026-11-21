@@ -133,7 +133,7 @@ local function crearMarca(el)
 	m.Etiqueta.caja = K.Caja(m.Etiqueta, { fondo = "fondo", borde = "linea" })
 	m.Nombre = K.Texto(m.Etiqueta, "nota", "texto")
 	m.Nombre:SetPoint("LEFT", m.Etiqueta, "LEFT", 6, 0)
-	K.Escribir(m.Nombre, L[el.nombre])
+	K.Escribir(m.Nombre, el.titulo or L[el.nombre])
 	m.Etiqueta:SetSize(K.AnchoTexto(m.Nombre) + 12, 18)
 
 	m:SetScript("OnMouseDown", function(_, boton) if boton == "LeftButton" then empezar(el) end end)
@@ -147,7 +147,7 @@ local function crearMarca(el)
 	m:SetScript("OnEnter", function(self)
 		self.sobre = true
 		pintarMarca(self)
-		K.MostrarInfo(self, L[el.nombre], el.restablecer and L["Arrástralo para moverlo. Clic derecho: vuelve a su lugar de siempre."]
+		K.MostrarInfo(self, el.titulo or L[el.nombre], el.restablecer and L["Arrástralo para moverlo. Clic derecho: vuelve a su lugar de siempre."]
 			or L["Arrástralo para moverlo."])
 	end)
 	m:SetScript("OnLeave", function(self)
@@ -296,3 +296,11 @@ AlfaAcomodar = type(AlfaAcomodar) == "table" and AlfaAcomodar or {}
 function AlfaAcomodar.Abrir() return Ac.Abrir() end
 function AlfaAcomodar.Cerrar() return Ac.Cerrar() end
 function AlfaAcomodar.Activo() return activo end
+-- 1.3.7: otro módulo suma lo suyo (la barra de información de Comodidades):
+-- { id, titulo (ya traducido), marco (nombre global), restablecer = fn(f) }.
+function AlfaAcomodar.Agregar(el)
+	if type(el) ~= "table" or type(el.id) ~= "string" or type(el.marco) ~= "string" then return false end
+	for _, e in ipairs(ELEMENTOS) do if e.id == el.id then return true end end
+	ELEMENTOS[#ELEMENTOS + 1] = el
+	return true
+end

@@ -49,8 +49,28 @@ function M.LineasCuadro(c)
 		if c.ganancia then dos = dos .. " " .. hex("success") .. "(" .. M.Porcentaje(c.ganancia) .. ")|r" end
 		if c.mejor == "desencantar" or c.mejor == "receta" then dos = dos .. " " .. gris .. L["(estimado)"] .. "|r" end
 	end
-	if (c.info.pila or 1) > 1 then dos = dos .. " " .. gris .. L["c/u"] .. "|r" end
+	if (c.info.pila or 1) > 1 then
+		dos = dos .. " " .. gris .. L["c/u"] .. "|r"
+		-- 1.3.7: lo que vale la pila entera («×20: 3o 40p»).
+		if (c.valor or 0) > 0 then
+			dos = dos .. gris .. " · ×" .. c.info.pila .. ":|r " .. M.Dinero(c.valor * c.info.pila)
+		end
+	end
 	return uno, dos
+end
+
+-- 1.3.7: objetos donde el consejo no dice nada útil y solo llena el cuadro:
+-- la piedra de hogar, los de misión y el equipo que ya es tuyo (ligado) o que
+-- no se puede vender ni transformar.
+M.SIN_CONSEJO = { [6948] = true } -- piedra de hogar
+function M.SinConsejo(c, ligadoReal)
+	if not c then return true end
+	if M.SIN_CONSEJO[c.id] then return true end
+	local clase = c.info and c.info.clase
+	if clase == M.CLASE_MISION then return true end
+	if ligadoReal == true and (clase == 2 or clase == 4) then return true end
+	if c.ligado and (c.venta or 0) <= 0 and not c.desencantar and not c.receta then return true end
+	return false
 end
 
 local function secreto(v) return issecretvalue and issecretvalue(v) or false end
@@ -78,9 +98,16 @@ end
 
 A.Hooks.ItemLines(M.ID, function(tooltip, link, itemID)
 	if not M.Ajuste("tooltip") or type(itemID) ~= "number" then return end
-	local c = M.Consejo(itemID, { link = link, ligado = ligadoDe(tooltip) })
+	local ligado = ligadoDe(tooltip)
+	local c = M.Consejo(itemID, { link = link, ligado = ligado })
+	if M.SinConsejo(c, ligado) then return end
 	local uno, dos = M.LineasCuadro(c)
 	if not uno then return end
 	A.Hooks.AddLine(tooltip, N.HEX .. "Alfa|r " .. uno, nil, 1, 1, 1)
 	A.Hooks.AddLine(tooltip, dos, nil, 1, 1, 1)
+	-- 1.3.7: con la subasta abierta, si es ganga (Gangas.lua).
+	if M.GangaDe and M.SubastaAbierta() and M.GangasActivas() then
+		local g = M.GangaDe(itemID)
+		if g then A.Hooks.AddLine(tooltip, hex("success") .. M.TextoGanga(g) .. "|r", nil, 1, 1, 1) end
+	end
 end)

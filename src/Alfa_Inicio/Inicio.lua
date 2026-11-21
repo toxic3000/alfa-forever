@@ -75,6 +75,9 @@ local AJUSTES = {
 	horaPlan = true, horaMin = 60, horaAuto = true, camino = true,
 	listoAuto = true, listoDur = 50, listoBolsas = 6, listoComida = 10,
 	comidaAviso = true, comidaMin = 5,
+	-- 1.3.7: lo de Alfa en los cuadros de las barras de experiencia y de
+	-- reputación, y tu tiempo jugado en Hoy (sin chat).
+	barraXP = true, barraRep = true, jugado = true,
 }
 
 local function apagado(clave) return function() return not N.Get("inicio", clave) end end
@@ -171,6 +174,16 @@ local C = {
 	camino = { kind = "toggle", key = "inicio.camino", label = L["«Camino al 60» en Hoy"],
 		help = L["Cuánto te falta para el 60 a tu ritmo, qué guías y mazmorras te tocan y cuánto avanzas cada día."],
 		search = "camino, 60, nivel máximo, horas, ritmo, road, level 60, max level, hours, pace" },
+	-- 1.3.7
+	barraXP = { kind = "toggle", key = "inicio.barraXP", label = L["Lo de Alfa en la barra de experiencia"],
+		help = L["Al pasar el ratón: en cuánto subes de nivel a tu ritmo, lo que dan tus misiones listas y tu descanso."],
+		search = "experiencia, barra, nivel, descanso, xp bar, rested" },
+	barraRep = { kind = "toggle", key = "inicio.barraRep", label = L["Lo de Alfa en la barra de reputación"],
+		help = L["Al pasar el ratón: cuánto te falta para el rango que sigue y unas cuántas misiones son eso."],
+		search = "reputación, facción, rango, reputation, faction" },
+	jugado = { kind = "toggle", key = "inicio.jugado", label = L["Tu tiempo jugado en Hoy"],
+		help = L["Alfa lo pregunta al entrar sin escribir en tu chat."],
+		search = "tiempo jugado, played, horas" },
 	listoAuto = { kind = "toggle", key = "inicio.listoAuto", label = L["Revisar sola al entrar a una mazmorra"],
 		help = L["Al entrar o al juntarse tu grupo: equipo, bolsas, comida, agua, munición y lo de tu clase. Nunca en combate."],
 		search = "mazmorra, listo, revisar, reparar, munición, componentes, dungeon, ready, check, ammo, reagents" },
@@ -195,7 +208,7 @@ local CONTROLES = {
 	C.recBuff, C.buffCada, C.buffQueda, C.recDescanso, C.descansoBajo,
 	C.resumen, C.segAviso, C.sonido, C.diarioMax, C.probar, C.lugar, C.borrar,
 	C.horaPlan, C.horaMin, C.horaAuto, C.camino, C.listoAuto, C.listoDur, C.listoBolsas, C.listoComida,
-	C.comidaAviso, C.comidaMin,
+	C.comidaAviso, C.comidaMin, C.barraXP, C.barraRep, C.jugado,
 }
 -- 1.3.3: con Bolsas, sus ajustes de bolsas ya salen en la búsqueda: no se repiten aquí.
 if CON_BOLSAS then
@@ -416,6 +429,14 @@ local function pasoActual()
 	local live = type(E.GetLiveStep) == "function" and E.GetLiveStep() or nil
 	local i = type(live) == "number" and live or (type(E.GetStepIndex) == "function" and E.GetStepIndex()) or nil
 	if type(live) ~= "number" and info.todos and info.todos > 0 and info.hechos >= info.todos then
+		-- 1.3.7: sin paso vivo el motor cuenta los omitidos como hechos: la
+		-- guía terminó solo si cada paso está hecho de verdad, lo mismo que
+		-- dice el rastreador (AlfaRuta.GuiaTerminada, 73).
+		local hecha = deRuta("GuiaTerminada")
+		if hecha and not hecha() then
+			info.sinPaso = true
+			return info
+		end
 		info.fin = true
 		return info
 	end
@@ -473,6 +494,12 @@ end
 
 -- La distancia hasta la flecha: texto, tono y a qué (o nil sin flecha).
 local function distancia()
+	-- 1.3.7: la misma cuenta que el rastreador (AlfaRuta.Distancia, 103-104).
+	local comun = deRuta("Distancia")
+	if comun then
+		local ok, t, tono, label = pcall(comun)
+		if ok then return t, tono, label and texto(label) or nil end
+	end
 	local Nav = A.Nav
 	if type(Nav) ~= "table" or type(Nav.GetTarget) ~= "function" then return nil end
 	local t = Nav.GetTarget()
@@ -530,11 +557,9 @@ local function tiempoQueFalta()
 	if est then ok, m = pcall(est) end
 	m = ok and tonumber(m) or nil
 	if not m or m <= 0 then return nil end
-	if m < 60 then return format(L["unos %d min"], m) end
-	local h, r = floor(m / 60), floor((m % 60) / 5 + 0.5) * 5
-	if r >= 60 then h, r = h + 1, 0 end
-	if r == 0 then return format(L["como %d h"], h) end
-	return format(L["como %d h %d min"], h, r)
+	-- 1.3.7: el mismo formato de tiempo que todo Alfa (N.Duracion, 101).
+	if m >= 60 then m = floor(m / 5 + 0.5) * 5 end
+	return format(L["unos %s"], N.Duracion(m * 60, true))
 end
 
 -- 1.3.6: la última tarjeta de un paso en marcha y su paso, para que el reloj
@@ -568,16 +593,36 @@ local function tarjetaPaso()
 	-- pasos sin hacer (antes Hoy decía «Seguir» como si nada).
 	local fin = deRuta("FinGuia")
 	local mf = fin and fin()
-	if type(mf) == "table" and not mf.complete and not info.fin then
-		return { lobo = "atento", tono = "acento", sobre = L["Fin del camino"], titulo = format(L["Final de %s"], mf.label or info.guia or ""),
-			texto = format(L["Llegaste al final; quedaron %d pasos sin hacer."], mf.undone or 0),
-			accion = { texto = L["Ver lo que quedó"], icono = "ic-seguir", alClic = seguirRuta },
-			secundaria = { texto = L["¿Qué sigue?"], alClic = function() A.Fire("SHOW_PICKER") end } }
+	-- 1.3.7: cómo quedó la guía, lo mismo que el rastreador (AlfaRuta.Cierre):
+	-- la que sigue o el camino para elegir a un clic (89, 90) y, con pasos
+	-- omitidos que tapan lo demás, «Recuperar lo omitido» (91).
+	local cierreFn = deRuta("Cierre")
+	local c = cierreFn and (info.fin or info.sinPaso or type(mf) == "table") and cierreFn() or nil
+	local seguirC, textoC = deRuta("SeguirCierre"), deRuta("TextoCierre")
+	local function accionCierre(icono)
+		if not (c and seguirC and textoC and (c.sig or c.elegir)) then return nil end
+		return { texto = textoC(c), icono = icono or "ic-ruta", alClic = function() seguirC(c) end }
+	end
+	local quedo = (type(mf) == "table" and not mf.complete) or (info.sinPaso and c and c.omitidos > 0)
+	if quedo and not info.fin then
+		local undone = type(mf) == "table" and mf.undone or (c and c.omitidos) or 0
+		local recuperar = deRuta("Recuperar")
+		local otra = accionCierre("ic-ruta")
+		return { lobo = "atento", tono = "acento", sobre = L["Fin del camino"],
+			titulo = format(L["Final de %s"], (type(mf) == "table" and mf.label) or info.guia or ""),
+			texto = N.Plural(undone, L["Llegaste al final; quedó %d paso sin hacer."], L["Llegaste al final; quedaron %d pasos sin hacer."]),
+			accion = otra or { texto = L["Ver lo que quedó"], icono = "ic-seguir", alClic = seguirRuta },
+			secundaria = (c and c.recuperar and recuperar) and { texto = L["Recuperar lo omitido"], alClic = function() recuperar(c) end }
+				or (otra and { texto = L["Ver lo que quedó"], alClic = seguirRuta })
+				or { texto = L["¿Qué sigue?"], alClic = function() A.Fire("SHOW_PICKER") end } }
 	end
 	if info.fin then
-		return { fin = true, lobo = "aullando", tono = "acento", sobre = L["Fin del camino"], titulo = L["¡Terminaste tu guía!"],
-			texto = format(L["%s quedó completa. Elige qué sigue y la manada va contigo."], info.guia ~= "" and info.guia or L["Tu guía"]),
-			accion = { texto = L["Elegir qué sigue"], icono = "ic-ruta", alClic = function() A.Fire("SHOW_PICKER") end } }
+		local otra = accionCierre("ic-ruta")
+		local texto = format(L["%s quedó completa. Elige qué sigue y la manada va contigo."], info.guia ~= "" and info.guia or L["Tu guía"])
+		if otra and c.sig and c.sig.nombre then texto = format(L["%s quedó completa. Lo que sigue para tu nivel: %s."], info.guia ~= "" and info.guia or L["Tu guía"], c.sig.nombre) end
+		return { fin = true, lobo = "aullando", tono = "acento", sobre = L["Fin del camino"], titulo = L["¡Terminaste tu guía!"], texto = texto,
+			accion = otra or { texto = L["Elegir qué sigue"], icono = "ic-ruta", alClic = function() A.Fire("SHOW_PICKER") end },
+			secundaria = otra and { texto = L["Elegir otra"], alClic = function() A.Fire("SHOW_PICKER") end } or nil }
 	end
 	if not info.num then
 		-- «Cerrar mis misiones» abierta pero sin paso (lo que tenía quedó
@@ -594,6 +639,16 @@ local function tarjetaPaso()
 		end
 		-- 1.2.6: sin paso vivo, lo mismo que dice el rastreador (antes decía
 		-- «Tu guía está lista» y Seguir abría un rastreador vacío).
+		-- 1.3.7: con el porqué y «Recuperar lo omitido» (91).
+		local c2 = cierreFn and cierreFn()
+		local recuperar = deRuta("Recuperar")
+		if c2 and c2.recuperar and recuperar then
+			return { lobo = "atento", tono = "acento", sobre = L["Tu siguiente paso"], titulo = info.guia ~= "" and info.guia or L["Tu guía"],
+				texto = c2.recuperar.title and format(L["Omitiste «%s» y lo que sigue depende de eso. Recupéralo y la guía sigue."], c2.recuperar.title)
+					or L["Omitiste pasos y lo que queda depende de ellos. Recupéralos y la guía sigue."],
+				accion = { texto = L["Recuperar lo omitido"], icono = "ic-huella", alClic = function() recuperar(c2) end },
+				secundaria = { texto = L["Elegir otra guía"], alClic = function() A.Fire("SHOW_PICKER") end } }
+		end
 		return { lobo = "atento", tono = "acento", sobre = L["Tu siguiente paso"], titulo = info.guia ~= "" and info.guia or L["Tu guía"],
 			texto = L["Esta guía no tiene un paso para ti ahora: puede que hayas omitido lo que queda o que aún no te toque. Elige otra guía o vuelve a esta más adelante."],
 			accion = { texto = L["Elegir otra guía"], icono = "ic-guia", alClic = function() A.Fire("SHOW_PICKER") end } }
@@ -652,11 +707,33 @@ end
 
 local function misiones()
 	local lista = {}
+	-- 1.3.7 (105): con un paso en marcha, su camino en el mapa de Alfa, ya encuadrado.
+	local verMapa = deRuta("VerEnMapa")
+	if verMapa and pasoVivo then
+		lista[#lista + 1] = { variante = "compacta", icono = "ic-mapa", titulo = L["Ver el camino en el mapa"],
+			texto = L["El mapa de Alfa, en el lugar de tu flecha"],
+			alClic = function() K.Llamar(verMapa) end,
+			ayuda = L["Abre el mapa de Alfa encuadrado donde apunta la flecha, con el camino de tu guía."] }
+	end
 	local liberar, recoger = deRuta("Liberar"), deRuta("Recoger")
 	local n = misionesAbiertas()
 	if liberar and n ~= 0 then
+		-- 1.3.7: «12 · 4 listas», como la página Ruta (123), y lo que dan tus
+		-- listas juntas, y si con ellas subes de nivel (98).
+		local fx = deRuta("XPListas")
+		local xl = fx and select(2, pcall(fx)) or nil
+		if type(xl) ~= "table" then xl = nil end
+		local listas = xl and xl.n or (deRuta("Listas") and num((select(2, pcall(deRuta("Listas")))))) or 0
+		local valor = n and tostring(n) or nil
+		if valor and listas and listas > 0 then valor = valor .. DOT .. N.Plural(listas, L["%d lista"], L["%d listas"]) end
+		local textoC = L["Completa o entrega las que tienes abiertas"]
+		if xl and xl.n > 0 and xl.xp > 0 then
+			textoC = xl.n == 1 and format(L["Tu misión lista da unos %s XP"], miles(xl.xp))
+				or format(L["Tus %d misiones listas dan unos %s XP"], xl.n, miles(xl.xp))
+			if xl.subes then textoC = textoC .. DOT .. L["¡con eso subes de nivel!"] end
+		end
 		lista[#lista + 1] = { variante = "compacta", icono = "ic-exito", titulo = L["Cerrar mis misiones"],
-			texto = L["Completa o entrega las que tienes abiertas"], valor = n and tostring(n) or nil,
+			texto = textoC, valor = valor,
 			alClic = function() K.Llamar(liberar) end,
 			ayuda = L["Arma el plan para cerrar las misiones de tu registro y te lleva a cada una."] }
 	end
@@ -665,6 +742,33 @@ local function misiones()
 			texto = L["Toma las de tu ruta que tienes cerca"],
 			alClic = function() K.Llamar(recoger) end,
 			ayuda = L["Te lleva a las misiones de tu ruta que ya puedes tomar."] }
+	end
+	-- 1.3.7: tu mazmorra (110) y, dentro de una, su siguiente jefe y tus
+	-- misiones de ahí (111). Del área Mundo (AlfaMazmorras), protegido; solo
+	-- se pide con Hoy a la vista (Tarjeta carga el Codex).
+	local Mz = rawget(_G, "AlfaMazmorras")
+	if type(Mz) == "table" and not (InCombatLockdown and InCombatLockdown()) then
+		local dentro = type(Mz.Dentro) == "function" and select(2, pcall(Mz.Dentro)) or nil
+		if type(dentro) == "table" then
+			local partes = {}
+			if type(dentro.jefe) == "table" and dentro.jefe.nombre then
+				partes[#partes + 1] = format(L["Siguiente jefe: %s (%d de %d)"], dentro.jefe.nombre, (dentro.jefe.vencidos or 0) + 1, dentro.jefe.total or 0)
+			end
+			if (dentro.faltan or 0) > 0 then partes[#partes + 1] = N.Plural(dentro.faltan, L["Te falta %d misión aquí"], L["Te faltan %d misiones aquí"]) end
+			lista[#lista + 1] = { variante = "compacta", icono = "ic-mazmorra", titulo = dentro.nombre or L["Tu mazmorra"],
+				texto = #partes > 0 and table.concat(partes, DOT) or L["Ya venciste a todos sus jefes"],
+				alClic = type(dentro.abrir) == "function" and function() pcall(dentro.abrir) end or nil }
+		else
+			local t = type(Mz.Tarjeta) == "function" and select(2, pcall(Mz.Tarjeta)) or nil
+			if type(t) == "table" and t.titulo then
+				local acc = type(t.accion) == "table" and t.accion or nil
+				lista[#lista + 1] = { variante = "compacta", icono = "ic-mazmorra", titulo = t.titulo, texto = t.texto,
+					-- (la acción va en el cuadro del ratón: «Llévame a la entrada» no cabe a la derecha)
+					ayuda = acc and acc.texto or nil,
+					alClic = (acc and type(acc.alClic) == "function" and function() pcall(acc.alClic) end)
+						or (type(t.abrir) == "function" and function() pcall(t.abrir) end) or nil }
+			end
+		end
 	end
 	-- 1.2.7: «Una hora de caza»: Alfa elige lo que más rinde cerca de ti.
 	-- 1.2.9: con «¿Cuánto tiempo tienes?» a la vista, ese plan ya lo incluye.
@@ -1093,8 +1197,20 @@ local function manada()
 	end
 	local enManada, enGrupo = num(r.manada) or 0, num(r.grupo) or 0
 	local texto = format(L["%d de la manada · %d en tu grupo"], enManada, enGrupo)
-	if type(r.siguiendo) == "string" and r.siguiendo ~= "" then texto = format(L["Sigues a %s"], r.siguiendo) end
 	local abrir = type(Ma.Abrir) == "function" and Ma.Abrir or (hay("manada") and function() N.Abrir("manada") end) or nil
+	-- 1.3.7: a quién sigues, a qué distancia, y dejar de seguirlo de un clic (117).
+	if type(r.siguiendo) == "string" and r.siguiendo ~= "" then
+		texto = format(L["Sigues a %s"], r.siguiendo)
+		local dist = distancia()
+		if dist then texto = texto .. DOT .. dist end
+		local dejar = rawget(Ma, "DejarDeSeguir")
+		return { variante = "compacta", icono = "ic-manada", titulo = L["Tu manada"], texto = texto,
+			valor = nil,
+			alClic = function()
+				if type(dejar) == "function" then K.Llamar(dejar) P.Relayout() elseif abrir then K.Llamar(abrir) end
+			end,
+			ayuda = L["Dejar de seguir"] .. ": " .. L["Un clic y dejas de seguirlo: la flecha vuelve a tu guía."] }
+	end
 	return { variante = "compacta", icono = "ic-manada", titulo = L["Tu manada"], texto = texto,
 		valor = tostring(enManada + enGrupo), colorValor = (enManada + enGrupo) > 0 and "acento" or "texto",
 		alClic = abrir and function() K.Llamar(abrir) end or nil,
@@ -1110,9 +1226,46 @@ local function numeros()
 			texto = ritmo and L["Tu ritmo de los últimos 15 minutos"] or L["Gana un poco de XP y Alfa lo calcula"],
 			valor = ritmo and miles(e.ritmo) or "\226\128\148",
 			ayuda = format(L["Promedio de la sesión: %s XP por hora. XP ganada: %s."], miles(e.prom), miles(e.xp)) }
+		-- 1.3.7: con tus misiones listas y tu descanso (Subir.lua, 99 y 169).
+		local Sb = M.Subir
+		local d = Sb and Sb.Datos()
+		local subir = d and d.segundos or e.subir
+		local ayuda = { format(L["Te faltan %s XP para el nivel %d"], miles(e.falta), (e.nivel or 1) + 1) }
+		if d and d.listas > 0 and d.listasXP > 0 then
+			ayuda[#ayuda + 1] = d.listas == 1 and format(L["Tu misión lista da unos %s XP"], miles(d.listasXP))
+				or format(L["Tus %d misiones listas dan unos %s XP"], d.listas, miles(d.listasXP))
+		end
+		local desc = Sb and Sb.Descanso(d)
+		if desc then ayuda[#ayuda + 1] = desc end
 		lista[#lista + 1] = { variante = "compacta", icono = "ic-nivel", titulo = L["Para subir de nivel"],
-			texto = format(L["Te faltan %s XP para el nivel %d"], miles(e.falta), (e.nivel or 1) + 1),
-			valor = e.subir and (e.subir >= 360000 and L["más de 99 h"] or N.Duracion(e.subir)) or "\226\128\148" }
+			texto = (Sb and Sb.Texto(d)) or format(L["Te faltan %s XP para el nivel %d"], miles(e.falta), (e.nivel or 1) + 1),
+			valor = subir and (subir >= 360000 and L["más de 99 h"] or N.Duracion(subir, true)) or "\226\128\148",
+			ayuda = table.concat(ayuda, "\n") }
+		-- 1.3.7: tu descanso a la vista (99).
+		if desc then
+			lista[#lista + 1] = { variante = "compacta", icono = "ic-hoy", titulo = L["Descansado"], texto = desc,
+				valor = format("%d%%", floor((e.descanso or 0) / math.max(1, e.xpMax or 1) * 100 + 0.5)), colorValor = "acento",
+				ayuda = L["Lo que cazas da el doble de experiencia hasta gastar tu descanso. Se llena en una posada o en una ciudad."] }
+		end
+	end
+	-- 1.3.7: tu reputación al día (177).
+	local Rp = M.Reputacion
+	local rep = Rp and Rp.Actual()
+	if rep and not rep.maximo and rep.siguiente then
+		lista[#lista + 1] = { variante = "compacta", icono = "ic-manada", titulo = rep.nombre, texto = Rp.Texto(rep),
+			valor = rep.rangoNombre or "", colorValor = "acento",
+			ayuda = rep.desbloquea and format(L["%s te da %s."], rep.siguiente, rep.desbloquea) or nil }
+	end
+	-- 1.3.7: tu tiempo jugado, sin chat (191).
+	local J = M.Jugado
+	local jd = N.Get("inicio", "jugado") ~= false and J and J.Datos()
+	if jd then
+		local partes = {}
+		if jd.nivel then partes[#partes + 1] = format(L["En este nivel: %s"], N.Duracion(jd.nivel, true)) end
+		partes[#partes + 1] = format(L["Por nivel: %s"], N.Duracion(jd.promedio, true))
+		lista[#lista + 1] = { variante = "compacta", icono = "ic-reloj", titulo = L["Tiempo jugado"], texto = table.concat(partes, DOT),
+			valor = J.Corto(jd.total),
+			ayuda = L["Con este personaje, en total. Alfa lo pregunta al entrar sin escribir en tu chat."] }
 	end
 	local neto, ganado, gastado = oroDeHoy(e)
 	lista[#lista + 1] = { variante = "compacta", icono = "ic-oro", titulo = L["Oro de hoy"],
@@ -1376,6 +1529,9 @@ local function gruposAvisos(padre)
 	tie:Fila({ titulo = C.horaPlan.label, texto = C.horaPlan.help, control = interruptor("horaPlan") })
 	tie:Fila({ titulo = C.horaAuto.label, texto = C.horaAuto.help, hija = true, activa = encendido("horaPlan"), control = interruptor("horaAuto") })
 	tie:Fila({ titulo = C.camino.label, texto = C.camino.help, control = interruptor("camino") })
+	tie:Fila({ titulo = C.barraXP.label, texto = C.barraXP.help, control = interruptor("barraXP") })
+	tie:Fila({ titulo = C.barraRep.label, texto = C.barraRep.help, control = interruptor("barraRep") })
+	tie:Fila({ titulo = C.jugado.label, texto = C.jugado.help, control = interruptor("jugado") })
 	g[#g + 1] = tie
 	local maz = K.GrupoAjustes(padre, { titulo = L["Listo para la mazmorra"] })
 	maz:Fila({ titulo = C.listoAuto.label, texto = C.listoAuto.help, control = interruptor("listoAuto") })
@@ -1887,6 +2043,8 @@ local function pintar(completo)
 	if P.numeros:Repintar() or P.clase:Repintar() or P.diario:Repintar() or P.hora:Repintar() or P.camino:Repintar() then return relayoutPronto() end
 end
 function P.Pintar() return pintar(true) end
+-- 1.3.7: las piezas de Hoy, para el banco.
+P.TarjetaPaso, P.Misiones, P.Numeros = tarjetaPaso, misiones, numeros
 
 -- 1.3.6: el latido de cada segundo; uno de cada CADA_COMPLETO revisa todo.
 local function latido()
@@ -1932,7 +2090,7 @@ A.On("SETTING_CHANGED", function(path)
 end)
 A.RegisterEvent("PLAYER_TALENT_UPDATE", relayoutPronto)
 A.RegisterEvent("TRAIT_CONFIG_UPDATED", relayoutPronto)
-A.RegisterEvent("PLAYER_LEVEL_UP", relayoutPronto)
+A.RegisterEvent("PLAYER_LEVEL_UP", (N.TrasNivel or function(_, f) return f end)("inicio.pagina", relayoutPronto)) -- 1.3.7: tras la animación del juego
 A.RegisterEvent("QUEST_ACCEPTED", relayoutPronto)
 A.RegisterEvent("QUEST_REMOVED", relayoutPronto)
 

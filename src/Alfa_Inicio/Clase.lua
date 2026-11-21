@@ -447,7 +447,8 @@ T.venenos = {
 		local total = dos and 2 or 1
 		local function linea(nom, e)
 			if not e then return nil end
-			local t = e.resto and (e.resto >= 60 and format(L["%d min"], floor(e.resto / 60)) or format(L["%d s"], floor(e.resto))) or L["Activo"]
+			-- 1.3.7: el mismo formato de tiempo que todo Alfa (101).
+			local t = e.resto and (e.resto >= 60 and N.Duracion(e.resto, true) or N.Duracion(e.resto)) or L["Activo"]
 			return nom .. ": " .. (e.tiene and t or RAYA)
 		end
 		local partes = { linea(L["Principal [mano]"], mh) }

@@ -313,5 +313,5 @@ A.RegisterEvent("PLAYER_ENTERING_WORLD", function()
 	A.After(2, Ca.Anotar)
 	if not ticker then ticker = N.Ticker("inicio.camino", Ca.CADA, Ca.Anotar) end
 end)
-A.RegisterEvent("PLAYER_LEVEL_UP", function() A.After(1, Ca.Anotar) end)
+A.RegisterEvent("PLAYER_LEVEL_UP", (N.TrasNivel or function(_, f) return f end)("inicio.camino", function() A.After(1, Ca.Anotar) end)) -- 1.3.7
 A.RegisterEvent("PLAYER_LOGOUT", function() Ca.Anotar() end)

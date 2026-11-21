@@ -57,14 +57,25 @@ function Sg.Buscar(sinId)
 	local Gd, E = A.Guides, A.Engine
 	local ok, lista = pcall(Gd.Suggestions)
 	if not ok or type(lista) ~= "table" then return nil end
+	local nivel = UnitLevel and tonumber(UnitLevel("player")) or 1
 	for _, id in ipairs(lista) do
 		if id ~= sinId and not (M.Guias and M.Guias.Especial and M.Guias.Especial(id)) then
 			local estado = E and E.GetGuideState and select(2, pcall(E.GetGuideState, id))
 			local h = Gd.Get and Gd.Get(id)
-			if h and estado ~= "done" then return { id = id, nombre = etiqueta(h) } end
+			if h and estado ~= "done" and Sg.DeTuNivel(h, nivel) then return { id = id, nombre = etiqueta(h) } end
 		end
 	end
 	return nil
+end
+
+-- 1.3.7: solo una guía de tu nivel (121): las sugerencias del motor, sin
+-- ninguna para tu nivel, traen la más cercana aunque te quede lejos (una de
+-- nivel 30 para alguien de 18). Vale hasta un nivel antes de que empiece.
+function Sg.DeTuNivel(h, nivel)
+	local lo, hi = tonumber(h.minLevel), tonumber(h.maxLevel)
+	if not lo then return true end
+	hi = hi or lo
+	return nivel >= lo - 1 and nivel <= math.max(lo, hi)
 end
 
 function Sg.Seguir(p)

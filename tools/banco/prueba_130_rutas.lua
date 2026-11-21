@@ -403,7 +403,7 @@ step("Barcos y zepelines en el mapa, con su cuenta atrás", function()
       check(#l == 2, "no salieron los dos lados del zepelín de tu facción (y nada de la otra)")
       local a, b
       for _, h in ipairs(l) do if h.lado == "a" then a = h else b = h end end
-      check(a and a.segundos == 80 and a.texto:find("1:20", 1, true), "el lado medido no dice «1:20»: " .. tostring(a and a.texto))
+      check(a and a.segundos == 80 and a.texto:find("1 min 20 s", 1, true), "1.3.7: el lado medido no dice «1 min 20 s»: " .. tostring(a and a.texto))
       check(b and not b.segundos and b.texto:find("unos 3 min", 1, true), "sin medir no dice la espera de siempre: " .. tostring(b and b.texto))
       local pines = Bc.Pines()
       check(pines[1] and pines[1].icon == "map:zeppelin", "el pin no es de zepelín")

@@ -3,7 +3,9 @@
 --   K.Ventana(opts)        ventana flotante que se mueve, recuerda su lugar y se cierra con Esc
 --   K.Desplazable(padre)   un área que se desplaza con la rueda (y su barra fina)
 --   K.Dialogo(opts)        diálogo modal sobre un velo (uno a la vez)
---   K.Aviso(opts)          aviso flotante arriba al centro (hasta 3, se van solos)
+--   K.Aviso(opts)          aviso flotante arriba al centro (hasta 3, se van solos;
+--                          1.3.7: el cuarto espera su turno, y lo que no es
+--                          urgente espera a que el juego termine: Momentos.lua)
 -- Nada de esto es un marco protegido: se puede abrir y cerrar en combate.
 
 local _, N = ...
@@ -355,8 +357,37 @@ local function armarDialogo()
 	return d
 end
 
+-- 1.3.7 (20): ningún velo sale solo. Un diálogo que nadie pidió con un clic
+-- (o.solo = true, o uno que llega mientras el juego sube de nivel, carga o pasa
+-- una cinemática) sale como aviso con sus dos botones: no tapa la pantalla.
+-- K.VelosSinClic: los velos que salieron sin un clic (el banco lo revisa).
+K.VelosSinClic = {}
+local function dialogoComoAviso(o)
+	local resuelto = false
+	local function fin(fn) if resuelto then return end resuelto = true if fn then K.Llamar(fn) end end
+	local acs = { { texto = o.aceptar or L["Aceptar"], alClic = function() fin(o.alAceptar) end } }
+	if o.cancelar ~= false then acs[2] = { texto = o.cancelar or L["Cancelar"], alClic = function() fin(o.alCancelar) end } end
+	K.Aviso({ titulo = o.titulo, texto = o.texto, icono = o.icono or (o.peligro and "ic-alerta" or "ic-info"), lobo = o.lobo,
+		tono = o.peligro and "peligro" or "acento", acciones = acs, duracion = 20, lya = false, prioridad = 2,
+		alCerrar = function() fin(o.alCancelar) end })
+	return nil
+end
+local function sinClic(o)
+	if o.pedido or (N.PidioJugador and N.PidioJugador()) then return false end
+	if o.solo then return true end
+	if not (N.MomentosActivos and N.MomentosActivos() and N.Ocupado) then return false end
+	local oc, motivo = N.Ocupado("aviso", 1)
+	return oc and (motivo == "nivel" or motivo == "cinematica" or motivo == "carga") or false
+end
+
 function K.Dialogo(o)
 	o = o or {}
+	if sinClic(o) then return dialogoComoAviso(o) end
+	if not (o.pedido or (N.PidioJugador and N.PidioJugador())) then
+		local l = K.VelosSinClic
+		l[#l + 1] = { titulo = o.titulo, t = GetTime and GetTime() or 0, nivel = N.SubiendoNivel and N.SubiendoNivel() or false }
+		while #l > 20 do table.remove(l, 1) end
+	end
 	dialogo = dialogo or armarDialogo()
 	local d = dialogo
 	local ancho = o.ancho or K.ANCHO.dialogo
@@ -426,7 +457,14 @@ end
 -- Se van solos (no mientras el ratón está encima) o con su X.
 --   K.Aviso({ titulo, texto, icono, lobo, tono = "acento", duracion = 6,
 --             accion = { texto, alClic }, alCerrar = fn(aviso),
---             detalle = true (1.2.9: no sale con Alfa sencillo) }) -> aviso
+--             detalle = true (1.2.9: no sale con Alfa sencillo),
+--             1.3.7: prioridad = 1..4 | "urgente" | "importante" | "util" | "detalle"
+--             (de fábrica: importante = true -> 2, si no 3), acciones = { { texto,
+--             alClic | fn }, ... } (hasta dos botones), pedido = true (lo pidió el
+--             jugador: sale ya), sonido = tipo | false, donde = true (dice dónde
+--             verlo), alMostrar = fn(aviso) (cuando de verdad sale), caduca = s })
+--   -> aviso | nil (guardado o esperando su turno) | true (lo dijo Lya) | false
+--   duracion: de fábrica según lo largo del texto (5 a 15 s); no se va en combate.
 --   aviso:Cerrar()   lo cierra desde fuera. El marco se reutiliza: Cerrar()
 --   cierra el mensaje que muestra ahora (aviso.turno dice cuál es; con
 --   aviso:Cerrar(turno) solo cierra si sigue mostrando ese).
@@ -455,6 +493,30 @@ local function quitar(a)
 	local fn = a.alfaAlCerrar
 	a.alfaAlCerrar = nil
 	if vivo and fn then K.Llamar(fn, a) end
+end
+
+-- 1.3.7: en plena pelea los avisos no atrapan clics (se quedan hasta que
+-- acaba): el cuerpo, la X y los botones que no son del juego no toman el ratón.
+-- Un botón seguro (abre algo del juego) sí, porque se toca a propósito.
+local function ratonAviso(a, on)
+	a:EnableMouse(on)
+	for _, campo in ipairs({ "BotonCerrar", "Boton", "Boton2" }) do
+		local b = a[campo]
+		if b and b.EnableMouse and not (on == false and b.alfaSeguro) then b:EnableMouse(on) end
+	end
+	a.alfaSinRaton = not on or nil
+end
+local function ratonAvisos(on)
+	for _, a in ipairs(avisos) do
+		if a.alfaVivo or a.alfaSinRaton then ratonAviso(a, on) end
+	end
+end
+K.RatonAvisos = ratonAvisos -- (para el banco)
+do
+	local ev = CreateFrame("Frame")
+	ev:RegisterEvent("PLAYER_REGEN_DISABLED")
+	ev:RegisterEvent("PLAYER_REGEN_ENABLED")
+	ev:SetScript("OnEvent", function(_, evento) ratonAvisos(evento ~= "PLAYER_REGEN_DISABLED") end)
 end
 
 local function armarAviso()
@@ -507,14 +569,95 @@ function K.PorLya(o)
 	return ok and dijo == true
 end
 
--- 1.3.3: un aviso con una acción (no segura) que se fue sin que lo tocaras
--- (se acabó su tiempo o cedió su lugar): A.Fire("ALFA_AVISO_PERDIDO", o), y
--- Lya lo guarda en «Te perdiste esto» (Ce.Perdido).
+-- 1.3.3 / 1.3.7: un aviso que se fue sin que lo tocaras (se acabó su tiempo
+-- o lo quitó otro) queda en «Te perdiste esto» (N.Perdido, Momentos.lua),
+-- salvo lo que pediste tú o lo que leíste con el ratón encima. Uno con una
+-- acción (no segura) también avisa A.Fire("ALFA_AVISO_PERDIDO", o).
+local function accionDe(o)
+	local ac = type(o) == "table" and o.accion
+	if type(ac) == "table" then return ac end
+	local l = type(o) == "table" and o.acciones
+	if type(l) == "table" and type(l[1]) == "table" then
+		local b = l[1]
+		return { texto = b.texto, alClic = b.alClic or b.fn, seguro = b.seguro }
+	end
+	return nil
+end
+
 local function perdido(a)
 	local o = a and a.alfaO
-	a.alfaO = nil
-	if type(o) ~= "table" or type(o.accion) ~= "table" or o.accion.seguro then return end
+	if a then a.alfaO = nil end
+	if type(o) ~= "table" then return end
+	local leido = a.alfaLeido
+	a.alfaLeido = nil
+	if leido then return end
+	local ac = accionDe(o)
+	if not o.alfaPedido and N.Perdido then
+		pcall(N.Perdido, { titulo = o.titulo, texto = o.texto, icono = o.icono or (o.lobo and "ic-lobo") or nil,
+			accion = ac, origen = o.origen or "aviso" })
+	end
+	if type(ac) ~= "table" or ac.seguro or type(ac.alClic) ~= "function" then return end
 	if A and A.Fire then pcall(A.Fire, "ALFA_AVISO_PERDIDO", o) end
+end
+
+-- 1.3.7: cuatro prioridades (N.PRIORIDAD): 1 urgente, 2 importante, 3 útil, 4 detalle.
+local function prioridadDe(o)
+	if o.prioridad ~= nil and N.Prioridad then return N.Prioridad(o.prioridad) end
+	if o.importante == "siempre" then return 1 end
+	if o.importante then return 2 end
+	if o.detalle then return 4 end
+	return 3
+end
+
+local function esSeguro(o)
+	if type(o.accion) == "table" and o.accion.seguro then return true end
+	if type(o.boton) == "table" and o.boton.seguro then return true end
+	if type(o.acciones) == "table" then
+		for _, b in ipairs(o.acciones) do if type(b) == "table" and b.seguro then return true end end
+	end
+	return false
+end
+
+-- Cada aviso dura según lo largo de su texto: de 5 a 15 s.
+local function duracionDe(o)
+	if tonumber(o.duracion) then return tonumber(o.duracion) end
+	local n = #(o.titulo or "") + #(o.texto or "")
+	return max(5, min(15, floor(4 + n / 20 + 0.5)))
+end
+
+function K.AvisosLlenos()
+	for _, x in ipairs(avisos) do if not x.alfaVivo then return false end end
+	return #avisos >= MAX_AVISOS
+end
+function K.AvisosVivos()
+	local n = 0
+	for _, x in ipairs(avisos) do if x.alfaVivo then n = n + 1 end end
+	return n
+end
+
+-- 58: un aviso importante dice qué hacer o dónde verlo. El banco lo revisa:
+-- los que no traen ni botón ni o.donde quedan aquí.
+K.AvisosSinQueHacer = {}
+
+local enTurno = setmetatable({}, { __mode = "k" }) -- o -> true mientras sale de la cola
+
+local function ponerBoton(a, campo, ac, x, y)
+	local b = a[campo] or K.Boton(a, "", nil, { tipo = campo == "Boton" and "acento" or "secundario", tam = "chico" })
+	a[campo] = b
+	b:SetTexto(ac.texto or "")
+	local fn = ac.alClic or ac.fn
+	b.alClic = function() if fn then K.Llamar(fn, a) end quitar(a) end
+	K.SeguroDe(b, ac)
+	if ac.seguro then
+		-- El clic lo hizo el juego (K.Seguro): después, lo de Alfa y se cierra.
+		b.alfaTrasClic = function() if ac.trasClic then K.Llamar(ac.trasClic, a) end quitar(a) end
+	else
+		b.alfaTrasClic = nil
+	end
+	b:ClearAllPoints()
+	b:SetPoint("TOPLEFT", a, "TOPLEFT", x, -y)
+	b:Show()
+	return K.num(b:GetWidth(), 80)
 end
 
 function K.Aviso(o)
@@ -522,27 +665,58 @@ function K.Aviso(o)
 	-- 1.2.9: con Alfa sencillo (Modo.lua) no salen los avisos de detalle
 	-- (o.detalle = true: lo que es bueno saber, pero no hace falta). -> false
 	if o.detalle and N.Sencillo and N.Sencillo() then return false end
+	local seguro = esSeguro(o)
 	-- 1.3.3: la entrada en silencio (Entrada.lua): al entrar al juego no sale
 	-- nada; queda guardado para Hoy y Lya. Salvo lo que no puede esperar
 	-- (o.alEntrar, o.importante = "siempre") y un botón seguro (abre algo del juego).
-	if N.Entrando and N.Entrando() and not (o.alEntrar == true or o.importante == "siempre"
-		or (type(o.accion) == "table" and o.accion.seguro) or (type(o.boton) == "table" and o.boton.seguro)) then
+	if N.Entrando and N.Entrando() and not (o.alEntrar == true or o.importante == "siempre" or seguro) then
 		if N.GuardarAlEntrar then
+			local ac = accionDe(o)
 			N.GuardarAlEntrar({ id = o.id or o.clave, titulo = o.titulo, texto = o.texto, icono = o.icono,
-				accion = o.accion, origen = o.origen or "aviso" })
+				accion = ac and not ac.seguro and ac or nil, origen = o.origen or "aviso" })
 		end
 		return nil
+	end
+	-- 1.3.7: lo que pediste tú sale ya; lo demás espera su momento (Momentos.lua).
+	local pedido = o.pedido == true or (N.PidioJugador and N.PidioJugador()) or false
+	o.alfaPedido = pedido or nil
+	local prio = prioridadDe(o)
+	-- No molestar (/alfa calma, /dnd): lo que no es urgente se guarda.
+	if not pedido and prio >= 2 and not seguro and N.EnCalma and N.EnCalma() then
+		if N.Perdido then pcall(N.Perdido, { titulo = o.titulo, texto = o.texto, icono = o.icono, accion = accionDe(o), origen = "calma" }) end
+		return nil
+	end
+	if not pedido and N.Ocupado and N.AlLibre then
+		local ocupado, motivo
+		if enTurno[o] then
+			ocupado, motivo = K.AvisosLlenos(), "lleno"
+		else
+			ocupado, motivo = N.Ocupado("aviso", prio)
+		end
+		-- Lo urgente no espera a que se haga lugar: el más viejo lo cede.
+		if ocupado and not (motivo == "lleno" and prio == 1) then
+			local clave = "aviso:" .. tostring(o.id or o.clave or ((o.titulo or "") .. "|" .. (o.texto or "")))
+			N.AlLibre(clave, function()
+				enTurno[o] = true
+				local ok, err = pcall(K.Aviso, o)
+				enTurno[o] = nil
+				if not ok and geterrorhandler then geterrorhandler()(err) end
+			end, prio, { tipo = "aviso", caduca = tonumber(o.caduca) or 900, alCaducar = function()
+				if not pedido and N.Perdido then pcall(N.Perdido, { titulo = o.titulo, texto = o.texto, icono = o.icono, accion = accionDe(o) }) end
+			end })
+			return nil
+		end
 	end
 	-- 1.2.5: con Lya a la vista, ella lo dice en su globo (K.AvisoPorLya, de
 	-- Alfa_Lya) y no salen avisos por todos lados. Siempre el aviso: o.lya =
 	-- false (quien usa la ventanita que se devuelve) o un botón seguro (abre
 	-- una ventana del juego; el globo de Lya no puede).
-	if o.lya ~= false and K.PorLya(o) then return true end
+	if o.lya ~= false and not seguro and K.PorLya(o) then return true end
 	local a
 	for _, x in ipairs(avisos) do if not x.alfaVivo then a = x break end end
 	if not a then
 		if #avisos >= MAX_AVISOS then
-			a = avisos[#avisos] -- el más viejo cede su lugar
+			a = avisos[#avisos] -- (lo que pediste tú o lo urgente) el más viejo cede su lugar
 			table.remove(avisos, #avisos)
 			perdido(a)
 			local fn = a.alfaAlCerrar
@@ -573,43 +747,73 @@ function K.Aviso(o)
 		a.Texto:SetPoint("TOPLEFT", a, "TOPLEFT", x, -y)
 		y = y + K.Parrafo(a.Texto, tw, 3)
 	end
-	a.alfaAccion = o.accion
-	if o.accion then
-		a.Boton = a.Boton or K.Boton(a, "", nil, { tipo = "acento", tam = "chico" })
-		a.Boton:SetTexto(o.accion.texto)
-		a.Boton.alClic = function() K.Llamar(o.accion.alClic, a) quitar(a) end
-		K.SeguroDe(a.Boton, o.accion)
-		if o.accion.seguro then
-			-- El clic lo hizo el juego (K.Seguro): después, lo de Alfa y se cierra.
-			a.Boton.alfaTrasClic = function() if o.accion.trasClic then K.Llamar(o.accion.trasClic, a) end quitar(a) end
+	-- Sus botones: o.accion, o.acciones (1.3.7: hasta dos, { texto, alClic | fn }).
+	local botones = {}
+	if type(o.accion) == "table" then botones[1] = o.accion end
+	if type(o.acciones) == "table" then
+		for _, b in ipairs(o.acciones) do
+			if #botones >= 2 then break end
+			if type(b) == "table" and type(b.texto) == "string" then botones[#botones + 1] = b end
 		end
-		a.Boton:ClearAllPoints()
-		a.Boton:SetPoint("TOPLEFT", a, "TOPLEFT", x, -(y + ESP.s))
-		a.Boton:Show()
+	end
+	a.alfaAccion = botones[1] and { texto = botones[1].texto, alClic = botones[1].alClic or botones[1].fn, seguro = botones[1].seguro } or nil
+	if botones[1] then
+		local w1 = ponerBoton(a, "Boton", botones[1], x, y + ESP.s)
+		if botones[2] then
+			local w2 = ponerBoton(a, "Boton2", botones[2], x + w1 + ESP.s, y + ESP.s)
+			-- Si no caben juntos, el segundo abajo.
+			if w1 + ESP.s + w2 > tw then
+				a.Boton2:ClearAllPoints()
+				a.Boton2:SetPoint("TOPLEFT", a, "TOPLEFT", x, -(y + 2 * ESP.s + K.ALTO.botonChico))
+				y = y + ESP.s + K.ALTO.botonChico
+			end
+		elseif a.Boton2 then
+			a.Boton2:Hide()
+		end
 		y = y + ESP.s + K.ALTO.botonChico
-	elseif a.Boton then
-		a.Boton:Hide()
+	else
+		if a.Boton then a.Boton:Hide() end
+		if a.Boton2 then a.Boton2:Hide() end
 	end
 	a:SetHeight(max(y, ESP.m + 30) + ESP.m + 2)
 	a.alfaVivo = true
+	a.alfaLeido = nil
 	a.alfaAlCerrar = o.alCerrar
-	a.alfaO = o -- 1.3.3: para «Te perdiste esto» de Lya (ALFA_AVISO_PERDIDO)
+	a.alfaO = o -- 1.3.3: para «Te perdiste esto» (N.Perdido y ALFA_AVISO_PERDIDO)
+	a.alfaPrioridad = prio
 	a.alfaTurno = (a.alfaTurno or 0) + 1
 	a.turno = a.alfaTurno
 	local turno = a.alfaTurno
+	ratonAviso(a, not (InCombatLockdown and InCombatLockdown()))
 	a:Show()
 	a.entrada:Stop()
 	a.entrada:Play()
 	recolocar()
+	-- 58: lo importante dice qué hacer (un botón) o dónde verlo (o.donde).
+	if prio <= 2 and not botones[1] and not o.donde and not pedido then
+		local l = K.AvisosSinQueHacer
+		l[#l + 1] = o.titulo or o.texto or "?"
+		while #l > 20 do table.remove(l, 1) end
+	end
+	-- 69: un sonido suave según su tipo (lo importante, o el que lo pide).
+	if o.sonido ~= false and (o.sonido or prio <= 2) and N.Sonar then
+		local tipo = type(o.sonido) == "string" and o.sonido or (o.tono == "peligro" and "peligro") or (prio <= 2 and "importante") or "aviso"
+		N.Sonar(tipo, prio)
+	end
+	if A and A.Fire then pcall(A.Fire, "ALFA_AVISO", o) end
 	local function vencer()
 		if not a.alfaVivo or a.alfaTurno ~= turno then return end
-		if a.IsMouseOver and a:IsMouseOver() then
+		-- Con el ratón encima (lo estás leyendo) o en plena pelea, espera.
+		local encima = a.IsMouseOver and a:IsMouseOver()
+		if encima then a.alfaLeido = true end
+		if encima or (InCombatLockdown and InCombatLockdown()) then
 			if C_Timer and C_Timer.After then C_Timer.After(2, vencer) end
 			return
 		end
 		perdido(a) -- se acabó su tiempo sin que lo tocaras
 		quitar(a)
 	end
-	if C_Timer and C_Timer.After then C_Timer.After(o.duracion or 6, vencer) end
+	if C_Timer and C_Timer.After then C_Timer.After(duracionDe(o), vencer) end
+	if o.alMostrar then K.Llamar(o.alMostrar, a) end
 	return a
 end

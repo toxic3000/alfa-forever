@@ -39,6 +39,7 @@ local R = M.R
 local ACCION = "CLICK AlfaPescaBoton:LeftButton"
 local ACCION_RELANZAR = "CLICK AlfaPescaRelanzar:LeftButton"
 M.ACCION, M.ACCION_RELANZAR = ACCION, ACCION_RELANZAR
+local DOT_TEXTO = " \194\183 "
 
 local floor, max, min, format, type, pairs, ipairs, tonumber, tostring = math.floor, math.max, math.min, string.format, type, pairs, ipairs, tonumber, tostring
 
@@ -76,6 +77,10 @@ M.AJUSTES = {
 	inactivoSeg = 25, alertaSonido = "suave",
 	-- Doble clic derecho
 	dobleClic = false, velocidad = 0.2, montado = false, relanzar = true,
+	-- 1.3.7
+	avisoPelear = true,      -- al entrar en combate con la caña, un aviso con cómo volver a tus armas
+	resumenCerrar = true,    -- al cerrar el modo, lo que pescaste mientras estuvo abierto
+	consejos = true,         -- se acabó el cebo, llegaste al tope de tu rango
 }
 
 _G["BINDING_NAME_" .. ACCION] = L["Pescar: lanzar y recoger"]
@@ -321,7 +326,15 @@ end
 
 boton:SetScript("PostClick", function(_, _, abajo)
 	if abajo == false then return end
-	if E.plan and E.plan.fase ~= "lanzar" then M.PrepararBotones() end
+	if E.plan and E.plan.fase ~= "lanzar" then
+		M.PrepararBotones()
+		-- 1.3.7: una pieza que no entra no atora la tecla: un momento después
+		-- se rehace la macro sin ella y la siguiente pulsación lanza.
+		if E.plan.fase == "equipo" then
+			Eq.Intentado(E.plan.equipar)
+			A.After(1.2, M.PrepararBotones)
+		end
+	end
 end)
 
 ---------------------------------------------------------------------------
@@ -471,7 +484,10 @@ local function deseadas()
 		pon("Sound_MusicVolume", musica)
 		if ambiente <= 0 then pon("Sound_EnableAmbience", 0) else pon("Sound_AmbienceVolume", ambiente) end
 		pon("Sound_SFXVolume", v)
-		pon("Sound_MasterVolume", v)
+		-- 1.3.7: el volumen general es el tuyo (antes se subía al 100 %); si lo
+		-- tienes en cero, uno bajo para que se oiga el chapoteo.
+		local general = tonumber((E.respaldo and E.respaldo.Sound_MasterVolume) or leerCVar("Sound_MasterVolume"))
+		if general and general <= 0 then pon("Sound_MasterVolume", 0.3) end
 	end
 	if opt("sonidoFondo") then pon("Sound_EnableSoundWhenGameIsInBG", 1) end
 	if opt("ocultarNombres") then
@@ -730,6 +746,9 @@ function M.AbrirModo(auto)
 	E.fase = nil
 	guardarModo()
 	Eq.Marcar()
+	Eq.OlvidarIntentos()
+	M.MarcarInicioModo()
+	E.avisoCebo = nil
 	prepararBotones()
 	ponerTeclasModo()
 	M.Aplicar()
@@ -761,7 +780,46 @@ function M.CerrarModo(auto, sinCana)
 		end
 	end
 	N.FueraDeCombate(prepararBotones)
+	M.ResumenModo()
 	M.Avisar("modo")
+end
+
+---------------------------------------------------------------------------
+-- 1.3.7: lo que pescaste mientras el modo estuvo abierto, al cerrarlo
+---------------------------------------------------------------------------
+function M.MarcarInicioModo()
+	local s = M.Sesion()
+	local especies = {}
+	for k, o in pairs(s.objetos) do if type(o) == "table" then especies[k] = tonumber(o.cantidad) or 0 end end
+	E.inicioModo = { t = time(), total = s.total, capturas = s.capturas, valor = s.valor, especies = especies, inicio = s.inicio }
+end
+
+-- -> { total, especies, valor, segundos } o nil si no sacaste nada.
+function M.LoDelModo()
+	local i = E.inicioModo
+	if not i then return nil end
+	local s = M.Sesion()
+	-- La sesión cambió a mitad (una nueva a mano o tras una pausa larga): cuenta toda la de ahora.
+	local misma = s.inicio == i.inicio
+	local total = s.total - (misma and i.total or 0)
+	if total <= 0 then return nil end
+	local especies = 0
+	for k, o in pairs(s.objetos) do
+		if type(o) == "table" and (tonumber(o.cantidad) or 0) > ((misma and i.especies[k]) or 0) then especies = especies + 1 end
+	end
+	return { total = total, especies = especies, valor = s.valor - (misma and i.valor or 0), segundos = max(0, time() - i.t) }
+end
+
+function M.ResumenModo()
+	local r = M.LoDelModo()
+	E.inicioModo = nil
+	if not (r and opt("resumenCerrar") and N.Kit and N.Kit.Aviso) then return end
+	local partes = { N.Plural(r.total, L["%d captura"], L["%d capturas"]) }
+	if r.especies > 1 then partes[#partes + 1] = N.Plural(r.especies, L["%d especie"], L["%d especies"]) end
+	if r.valor > 0 and N.DineroTexto then partes[#partes + 1] = N.DineroTexto(r.valor, true) end
+	local texto = format(L["En %s: %s."], (M.DuracionCorta and M.DuracionCorta(r.segundos, true)) or N.Duracion(r.segundos), table.concat(partes, DOT_TEXTO))
+	N.Kit.Aviso({ id = "pesca.resumen", icono = "ic-pesca", titulo = L["Así te fue pescando"], texto = texto, duracion = 7, detalle = true,
+		accion = { texto = L["Ver estadísticas"], alClic = function() if M.V then M.V.Abrir("estadisticas") end end } })
 end
 
 function M.Alternar()
@@ -799,6 +857,9 @@ AlfaNucleo.DeUnidad("UNIT_SPELLCAST_CHANNEL_START", "player", function(_, unidad
 	E.canal = GetTime()
 	local ok, _, _, _, ini, fin = pcall(UnitChannelInfo, "player")
 	E.canalFin = (ok and legible(fin) and tonumber(fin)) and tonumber(fin) / 1000 or (E.canal + 30)
+	-- 1.3.7: lo que dura de verdad este lanzamiento (la barra ya no supone 30 s).
+	local dur = (ok and legible(ini) and legible(fin) and tonumber(ini) and tonumber(fin)) and (tonumber(fin) - tonumber(ini)) / 1000 or nil
+	E.canalDur = (dur and dur > 0.5 and dur < 120) and dur or max(1, E.canalFin - E.canal)
 	E.fase, E.corcho = "lanzado", nil
 	turnoInactivo = turnoInactivo + 1
 	R.Lanzamiento()
@@ -815,9 +876,24 @@ AlfaNucleo.DeUnidad("UNIT_SPELLCAST_CHANNEL_START", "player", function(_, unidad
 	M.Avisar("canal")
 end)
 
+-- 1.3.7: solo el corcho cuenta como «Buen lanzamiento». Antes bastaba con
+-- que la interacción apuntara a cualquier cosa (un PNJ, un buzón, un banco de
+-- peces bajo el ratón). El corcho es un objeto del mundo: el suyo (35591) o,
+-- si Forever usa otro, un objeto que no es banco y aparece al caer la línea.
+M.CORCHOS = { [35591] = true }
+function M.EsCorcho(guid)
+	if type(guid) ~= "string" or not legible(guid) then return false end
+	local tipo, _, _, _, _, objeto = strsplit("-", guid)
+	objeto = tonumber(objeto)
+	if tipo ~= "GameObject" or not objeto then return false end
+	if M.CORCHOS[objeto] then return true end
+	if M.BANCOS[objeto] then return false end
+	return E.canal ~= nil and GetTime() - E.canal <= 4
+end
+
 A.RegisterEvent("PLAYER_SOFT_INTERACT_CHANGED", function(_, _, nuevo)
 	if not E.canal then return end
-	if nuevo ~= nil and (E.fase == "lanzado" or E.fase == "lejos") then
+	if nuevo ~= nil and M.EsCorcho(nuevo) and (E.fase == "lanzado" or E.fase == "lejos") then
 		E.fase, E.corcho = "corcho", true
 		M.Avisar("estado")
 	end
@@ -952,7 +1028,7 @@ local function bancoDe(ranura)
 	if not ok or type(guid) ~= "string" or not legible(guid) then return nil end
 	local tipo, _, _, _, _, objeto = strsplit("-", guid)
 	objeto = tonumber(objeto)
-	if tipo == "GameObject" and objeto and M.BANCOS[objeto] then return objeto end
+	if tipo == "GameObject" and objeto and M.BANCOS[objeto] then return objeto, guid end
 	return nil
 end
 
@@ -971,7 +1047,7 @@ local function leerVentana()
 					cantidad = math.max(1, tonumber(cantidad) or 1),
 				}
 			end
-			E.banco = E.banco or bancoDe(ranura)
+			if not E.banco then E.banco, E.bancoGuid = bancoDe(ranura) end
 		end
 	end
 	return t
@@ -981,7 +1057,7 @@ local function alListoBotin()
 	if not esBotinDePesca() then return end
 	if not E.ventana then
 		E.tomados = {}
-		E.banco = nil
+		E.banco, E.bancoGuid = nil, nil
 	end
 	E.ventana = leerVentana()
 	if not habilitado() then return end
@@ -1008,7 +1084,7 @@ A.RegisterEvent("LOOT_CLOSED", function()
 	local tomados = E.tomados or {}
 	E.tomados = nil
 	if #tomados > 0 then
-		local nuevo = R.Captura(tomados, { banco = E.banco })
+		local nuevo = R.Captura(tomados, { banco = E.banco, bancoGuid = E.bancoGuid })
 		E.ultimo = tomados
 		E.fase = "capturado"
 		local trofeo = false
@@ -1019,7 +1095,7 @@ A.RegisterEvent("LOOT_CLOSED", function()
 		M.Alerta("captura", trofeo and M.SONIDO_TROFEO or nil)
 		if M.MostrarCaptura then M.MostrarCaptura(tomados, nuevo) end
 	end
-	E.banco = nil
+	E.banco, E.bancoGuid = nil, nil
 	if E.modo then vigilarInactivo() end
 	M.Avisar("captura")
 end)
@@ -1030,14 +1106,79 @@ AlfaNucleo.DeUnidad("UNIT_INVENTORY_CHANGED", "player", function(_, unidad)
 	if not legible(unidad) or unidad ~= "player" then return end
 	local ahora = Eq.CeboActivo() ~= nil
 	if habiaCebo == false and ahora then R.Cebo() end
+	if habiaCebo == true and not ahora and E.modo and Eq.CanaPuesta() then N.FueraDeCombate("pesca.cebo", M.CeboAcabado) end
 	habiaCebo = ahora
 	if E.modo then M.PrepararBotones() end
 end)
 
 A.RegisterEvent("SKILL_LINES_CHANGED", function()
 	M.Sesion()
+	M.RevisarTope()
 	M.Avisar("habilidad")
 end)
+
+---------------------------------------------------------------------------
+-- 1.3.7: consejos breves (ajuste consejos): se acabó el cebo y no queda otro;
+-- llegaste al tope de tu rango. Una vez, nunca en combate.
+---------------------------------------------------------------------------
+function M.CeboAcabado()
+	if not (opt("consejos") and E.modo and N.Kit and N.Kit.Aviso) or E.avisoCebo then return end
+	Eq.Marcar()
+	if Eq.MejorCebo() then return end -- te queda otro: tu tecla lo pone
+	E.avisoCebo = true
+	N.Kit.Aviso({ id = "pesca.cebo", icono = M.ICONO and M.ICONO.cebo or "ic-pesca", titulo = L["Se acabó tu cebo"],
+		texto = L["Ya no te quedan cebos que puedas usar. Los venden los vendedores de suministros de pesca."], duracion = 6, detalle = true })
+end
+
+-- -> rango, tope, nombre del rango, siguiente rango (nombre) y desde cuándo se aprende
+function M.Rango()
+	local r, mx = M.Habilidad()
+	if not r then return nil end
+	local nombre = M.NombreRango(mx)
+	local actual, sig
+	for i, x in ipairs(M.RANGOS) do
+		if (mx or 0) <= x.tope then actual, sig = x, M.RANGOS[i + 1] break end
+	end
+	return r, mx, nombre, sig and mx < 300 and sig.nombre or nil, actual and actual.siguiente or nil
+end
+
+-- El cuadro de tu habilidad en la barra: cuánto te falta y qué sigue.
+function M.InfoHabilidad()
+	local r, mx, nombre, sig, desde = M.Rango()
+	if not r then return L["Pesca"], L["Aprende Pesca con un instructor"] end
+	local lineas = {}
+	if r < mx then
+		lineas[#lineas + 1] = format(L["Te faltan %d puntos para el tope de %s (%d)."], mx - r, nombre, mx)
+	elseif sig then
+		lineas[#lineas + 1] = format(L["Llegaste al tope de %s: aprende %s con un instructor para seguir subiendo."], nombre, sig)
+	else
+		lineas[#lineas + 1] = L["Tienes la Pesca al máximo."]
+	end
+	if sig and desde and r < mx then
+		if r >= desde then
+			lineas[#lineas + 1] = format(L["Ya puedes aprender %s con un instructor."], sig)
+		else
+			lineas[#lineas + 1] = format(L["Desde %d puedes aprender %s con un instructor."], desde, sig)
+		end
+	end
+	local _, _, bono = M.Habilidad()
+	if (bono or 0) > 0 then lineas[#lineas + 1] = format(L["Tu equipo y tu cebo suman +%d."], bono) end
+	lineas[#lineas + 1] = L["Clic derecho en la barra: más opciones."]
+	return format(L["%s %d/%d"], nombre, r, mx), table.concat(lineas, "\n")
+end
+
+function M.RevisarTope()
+	local r, mx, nombre, sig = M.Rango()
+	if not (r and sig and r >= mx and opt("consejos") and N.Kit and N.Kit.Aviso) then return end
+	local d = N.DatosPersonaje(ID)
+	if d.avisoTope == mx then return end
+	d.avisoTope = mx
+	N.FueraDeCombate("pesca.tope", function()
+		N.Kit.Aviso({ id = "pesca.tope", icono = "ic-pesca", titulo = format(L["Pesca al tope de %s"], nombre),
+			texto = format(L["Tu Pesca ya no sube hasta que aprendas %s con un instructor de pesca."], sig), duracion = 8, detalle = true,
+			accion = { texto = L["Abrir la guía"], alClic = function() if M.V then M.V.Abrir("guia") end end } })
+	end)
+end
 
 -- Tu equipo cambió: la macro se rehace y, con una caña nueva, se abre el modo.
 -- 1.2.8: y al quitarte la caña (te pusiste tus armas) el modo se cierra solo:
@@ -1089,6 +1230,7 @@ function M.Estado()
 		d.fase, d.tono, d.texto = "aprender", "aviso", L["Aprende Pesca con un instructor"]
 	elseif enCombate() then
 		d.fase, d.tono, d.texto = "combate", "aviso", L["En combate · la pesca espera"]
+		if Eq.CanaPuesta() and #Eq.Armas() > 0 then d.texto = L["En combate · «A pelear» te pone tus armas"] end
 	elseif E.canal then
 		local f = E.fase
 		if f == "corcho" then
@@ -1134,6 +1276,9 @@ function M.TextoHabilidad()
 	local nombre = M.NombreRango(mx)
 	return format(L["%s %d/%d"], nombre, r, mx), r, max(1, mx), bono or 0
 end
+
+-- Lo que dura el lanzamiento de ahora (1.3.7: el del juego, no 30 s fijos).
+function M.DuracionCanal() return E.canalDur or 30 end
 
 -- Segundos que le quedan al canal (o nil).
 function M.Restante()

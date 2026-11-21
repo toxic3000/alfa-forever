@@ -684,3 +684,109 @@ function Pz.BloqueJefe(padre)
 	K.Pintar(b, pintarJefe)
 	return b
 end
+
+---------------------------------------------------------------------------
+-- 1.3.7: el mapa de los jefes. Sus medallas numeradas en el orden en que se
+-- encuentran, unidas por una línea: los vencidos en verde con su palomita,
+-- el siguiente con el color de Alfa y su nombre debajo de cada uno. Los
+-- datos de Alfa no traen dónde está cada jefe dentro de la mazmorra: es el
+-- camino, no un plano.
+--   m:Set({ { n, nombre, vencido, siguiente, oculto, final }, ... })
+---------------------------------------------------------------------------
+local MEDALLA, CELDA = 26, 92
+
+local function pintarMedalla(x)
+	local d = x.alfaDatos or {}
+	local borde = d.vencido and "exito" or (d.siguiente and "acento" or "lineaFuerte")
+	x.caja:Estilo({ fondo = d.vencido and "exito" or (d.siguiente and "acento" or "elevado"),
+		alfaFondo = (d.vencido or d.siguiente) and 0.18 or 1, borde = borde, alfaBorde = 1 })
+end
+
+function Pz.MapaJefes(padre)
+	local f = CreateFrame("Frame", nil, padre)
+	f.celdas, f.lineas, f.lista = {}, {}, {}
+	local function celda(i)
+		local c = f.celdas[i]
+		if c then return c end
+		c = CreateFrame("Frame", nil, f)
+		c:EnableMouse(true)
+		c.Medalla = CreateFrame("Frame", nil, c)
+		c.Medalla:SetSize(MEDALLA, MEDALLA)
+		c.Medalla:SetPoint("TOP", c, "TOP", 0, 0)
+		c.Medalla.caja = K.Caja(c.Medalla, { corte = K.CORTE.chico })
+		c.Medalla.alfaDatos = {}
+		c.Num = K.Texto(c.Medalla, "numero", "texto")
+		c.Num:SetPoint("CENTER", c.Medalla, "CENTER", 0, 0)
+		c.Ic = K.Icono(c.Medalla, "ic-exito", 14, "exito")
+		c.Ic:SetPoint("CENTER")
+		c.Nombre = K.Texto(c, "pequeno", "textoSuave")
+		c.Nombre:SetPoint("TOP", c.Medalla, "BOTTOM", 0, -4)
+		c.Nombre:SetJustifyH("CENTER")
+		K.Pintar(c.Medalla, pintarMedalla)
+		f.celdas[i] = c
+		return c
+	end
+	function f:Set(lista)
+		self.lista = lista or {}
+		for i, d in ipairs(self.lista) do
+			local c = celda(i)
+			c.Medalla.alfaDatos = d
+			c.Ic:SetShown(d.vencido == true)
+			c.Num:SetShown(not d.vencido)
+			c.Num:SetText(d.oculto and "?" or tostring(d.n or i))
+			K.ColorTexto(c.Num, d.siguiente and "acento" or "texto")
+			K.Escribir(c.Nombre, d.nombre or "")
+			K.ColorTexto(c.Nombre, d.vencido and "exito" or (d.siguiente and "texto" or (d.oculto and "textoTenue" or "textoSuave")))
+			local estado = d.vencido and L["Vencido"] or (d.siguiente and L["Sigue"] or nil)
+			K.ConInfo(c, d.nombre, estado)
+			pintarMedalla(c.Medalla)
+		end
+		for i = #self.lista + 1, #self.celdas do self.celdas[i]:Hide() end
+	end
+	function f:Acomodar(ancho)
+		local n = #self.lista
+		if n == 0 then
+			for _, c in ipairs(self.celdas) do c:Hide() end
+			for _, l in ipairs(self.lineas) do l:Hide() end
+			self:SetSize(ancho, 1)
+			return 0
+		end
+		local porFila = max(1, floor(ancho / CELDA))
+		local cw = floor(ancho / min(porFila, n))
+		local altoNombre = 0
+		for i = 1, n do
+			local c = self.celdas[i]
+			K.Parrafo(c.Nombre, cw - 6, 2)
+			altoNombre = max(altoNombre, K.AltoTexto and K.AltoTexto(c.Nombre) or 14)
+		end
+		local altoFila = MEDALLA + 4 + altoNombre + ESP.m
+		for i = 1, n do
+			local c = self.celdas[i]
+			local fila, col = floor((i - 1) / porFila), (i - 1) % porFila
+			c:ClearAllPoints()
+			c:SetSize(cw, altoFila)
+			c:SetPoint("TOPLEFT", self, "TOPLEFT", col * cw, -fila * altoFila)
+			c:Show()
+			-- La línea hasta el siguiente de la misma fila.
+			local l = self.lineas[i]
+			if i < n and col < porFila - 1 then
+				if not l then
+					l = K.Linea(self, "lineaFuerte")
+					self.lineas[i] = l
+				end
+				l:ClearAllPoints()
+				l:SetPoint("LEFT", c.Medalla, "RIGHT", 4, 0)
+				l:SetPoint("RIGHT", self, "TOPLEFT", (col + 1) * cw + floor((cw - MEDALLA) / 2) - 4, -fila * altoFila - MEDALLA / 2)
+				l:Show()
+			elseif l then
+				l:Hide()
+			end
+		end
+		for i = n, #self.lineas do if self.lineas[i] then self.lineas[i]:Hide() end end
+		local filas = floor((n - 1) / porFila) + 1
+		local alto = filas * altoFila - ESP.m
+		self:SetSize(ancho, alto)
+		return alto
+	end
+	return f
+end

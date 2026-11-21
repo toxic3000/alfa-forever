@@ -12,6 +12,25 @@ El todo en uno de **La Jauría** para World of Warcraft: Forever. Junta en un so
 
 Hecho por **toxic3000** y La Jauría — [Discord](https://discord.gg/hUNjA6BJwh). Software libre bajo la GPL-3.0, construido sobre [Polestar](https://github.com/fitzforge/polestar) (GPL-3.0). Los créditos completos están en `NOTICE-ALFA.txt`, en la página «Acerca de» del juego y en el `CREDITOS.md` de cada módulo.
 
+<p align="center"><img src="curseforge/galeria/18-intro.png" alt="Cada entrada, una bienvenida" width="900"></p>
+
+<p align="center"><em>Cada entrada empieza con el lobo y la luna.</em></p>
+
+## Lo nuevo de la 1.3.7: la manada a tu ritmo
+
+200 correcciones y mejoras para que todo llegue a su tiempo. [Todas las notas](CHANGELOG.md).
+
+| | |
+|---|---|
+| ![Llegar a una zona](curseforge/galeria/31-137-zona.png) | ![Descubrir un lugar](curseforge/galeria/32-137-descubrir.png) |
+| **Cada zona se anuncia** — con su nombre, de quién es, sus niveles y su propia animación. | **Descubrir un lugar** — destello dorado, la experiencia que ganaste y un dato de Lya. |
+| ![Subir de nivel](curseforge/galeria/34-137-nivel.png) | ![Medidor de daño](curseforge/galeria/22-137-medidor.png) |
+| **Subir de nivel sin ventanas encimadas** — Alfa espera la animación del juego y te da un solo resumen. | **El daño de tu grupo** — sale solo en grupo, compacto y sin tapar tus barras. |
+| ![Tu oro](curseforge/galeria/30-137-oro.png) | ![De la pesca a la pelea](curseforge/galeria/35-137-pesca.png) |
+| **Tu oro, una sola vez** — y el de cada personaje a un clic, con tu oro por hora. | **De la pesca a la pelea** — un clic en la espada y tienes tus armas, incluso en plena pelea. |
+| ![Lo que me perdí](curseforge/galeria/36-137-perdi.png) | ![Barra de información](curseforge/galeria/37-137-info.png) |
+| **Avisos que esperan su turno** — `/alfa calma` para no molestar y «Lo que me perdí» para lo demás. | **Barra de información y recargas** — rendimiento, oro, equipo, bolsas y cuánto le falta a cada botón. |
+
 ## Un vistazo
 
 <p align="center"><img src="curseforge/galeria/16-lya-poses.png" alt="Lya, la loba compañera de Alfa" width="900"></p>
@@ -20,14 +39,16 @@ Hecho por **toxic3000** y La Jauría — [Discord](https://discord.gg/hUNjA6BJwh
 
 | | |
 |---|---|
-| ![Lya platica contigo](curseforge/galeria/17-lya-globo.png) | ![Tu ruta](curseforge/galeria/03-rutas.png) |
-| **Lya platica contigo** — sin estorbar, cuando hay calma. | **Tu ruta** — la guía que te toca y entregar todo lo listo. |
+| ![Hoy](curseforge/galeria/01-inicio.png) | ![Tu ruta](curseforge/galeria/03-rutas.png) |
+| **Hoy** — tu siguiente paso, tus misiones listas y tu clase. | **Tu ruta** — la guía que te toca y entregar todo lo listo. |
+| ![Mundo](curseforge/galeria/25-mundo.png) | ![Mazmorras](curseforge/galeria/06-mazmorras.png) |
+| **Mundo** — todo Azeroth en un mapa, con tus marcadores y capas. | **Mazmorras** — la de tu nivel, con «Prepárame». |
+| ![Talentos](curseforge/galeria/23-builds.png) | ![Curación](curseforge/galeria/24-manual-curacion.png) |
+| **Talentos** — qué poner ahora y por qué, con un clic. | **Curación** — cura, selecciona y quita perjuicios con tus clics. |
 | ![Reingeniería de la pesca](curseforge/galeria/11-pesca-diario.png) | ![Enciclopedia](curseforge/galeria/05-enciclopedia.png) |
 | **Pesca** — una tecla para todo, diario, logros y guía de 1 a 300. | **Enciclopedia** — todo el juego, aunque no lo tengas, con "Guíame". |
-| ![Paisaje y gráficos](curseforge/galeria/13-vista.png) | ![Mis planes](curseforge/galeria/14-planes.png) |
-| **Paisaje** — los gráficos explicados, con preajustes. | **Mis planes** — tus propias metas, y la flecha te lleva. |
-| ![Cada entrada, una bienvenida](curseforge/galeria/18-intro.png) | ![Lo nuevo, a la vista](curseforge/galeria/19-notas.png) |
-| **Cada entrada, una bienvenida** — la intro del lobo y la luna te recibe al entrar. | **Lo nuevo, a la vista** — qué cambió, en una ventana. |
+| ![Busca en todo Alfa](curseforge/galeria/20-136-buscador.png) | ![Paisaje y gráficos](curseforge/galeria/13-vista.png) |
+| **Busca en todo Alfa** — y si no lo encuentra, te responde Lya. | **Paisaje** — los gráficos explicados, con preajustes. |
 
 Más imágenes en [`curseforge/galeria/`](curseforge/galeria).
 
@@ -53,7 +74,7 @@ A mano: descarga `Alfa-<versión>.zip` de [Releases](https://github.com/toxic300
 | `/alfa curacion` | Curación | Marcos para curar con clic y asistente de 3 pasos |
 | `/alfa bolsas` | Bolsas | Tres vistas, banco con depositar rápido, objetos de misión que brillan, qué vender, tu oro por hora (el del buzón aparte) y el aviso de cartas por vencer |
 | `/alfa mapa` (o M) | Mundo | Mapa de todo el mundo con el terreno real, puntos de vuelo, entradas y salidas, marcadores propios y capas |
-| `/alfa recoleccion` | Recolección | Nodos, pines y ruta de farmeo |
+| `/alfa recoleccion` | Recolección | Nodos, pines y rutas para juntar |
 | `/alfa comercio` | Comercio | Precios de la subasta y qué hacer con cada objeto |
 | `/alfa pesca` | Pesca | Modo pesca de una tecla (equipo, cebo, lanzar y recoger), barra, diario, logros, guía de 1 a 300 y cocina |
 | `/alfa paisaje` | Paisaje y gráficos | Ajustes gráficos explicados, preajustes, deshacer y filtros de pantalla |
@@ -67,7 +88,9 @@ A mano: descarga `Alfa-<versión>.zip` de [Releases](https://github.com/toxic300
 | `/alfa recorrido` | Recorrido | Lya te enseña la ventana de Alfa en 5 pasos |
 | `/alfa rendimiento` | Rendimiento | Cuánta memoria usa cada parte de Alfa, y suelta la que ya no ocupa |
 | `/alfa reportar` | Reportes | Errores, mejoras y comentarios para el buzón privado del Discord, revisados por el desarrollador |
-| (Ajustes) | Comodidades | Minimapa, colores de clase, cuadro de información, probador, vuelo, misiones y sonidos |
+| (Ajustes) | Comodidades | Minimapa, colores de clase, cuadro de información, barra de información, números en las recargas, hora y filtro de spam en el chat, IDs en el cuadro, probador, vuelo, misiones y sonidos |
+| `/alfa calma` · `/alfa perdi` | Avisos | No molestar (30 min, 1 h o la sesión) y «Lo que me perdí»: los últimos 30 avisos con su hora |
+| `/alfa copiar` · `/alfa susurros` · `/alfa filtrado` | Chat | Copiar del chat, tu historial de susurros y lo que filtró el filtro de spam |
 
 Alfa no depende de ningún otro addon. Versiones y notas: [`docs/VERSIONES.md`](docs/VERSIONES.md) y [`CHANGELOG.md`](CHANGELOG.md).
 

@@ -269,7 +269,9 @@ if type(A.OnLogin) == "function" then
 end
 
 for _, ev in ipairs({ "ZONE_CHANGED_NEW_AREA", "PLAYER_LEVEL_UP" }) do
-	A.RegisterEvent(ev, function() if login then pronto(2) end end)
+	-- 1.3.7: al subir de nivel, tras la animación del juego (N.TrasNivel).
+	local fn = function() if login then pronto(2) end end
+	A.RegisterEvent(ev, ev == "PLAYER_LEVEL_UP" and N.TrasNivel and N.TrasNivel("mundo.peligros", fn) or fn)
 end
 if A.On then
 	A.On("CODEX_LOADED", function() if login and activa() then pronto(1) end end)

@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "La 1.3.6: la manada te guía", "items": ["**Busca en todo Alfa:** el buscador de arriba encuentra páginas y ajustes, espera a que termines de escribir y, si no encuentra algo, te ofrece a Lya.", "**Para quien empieza:** cada página dice para qué sirve, Alfa sencillo es más sencillo, el recorrido enseña el lobo del minimapa y la tecla de «¿Qué es esto?», y hay botones en vez de comandos.", "**Más ligero:** las páginas se abren más rápido y recuerdan dónde ibas. **Modo ligero** para ordenadores modestos, en Estilo y sonido.", "**Tu pelea, sin estorbar:** el resumen ya no tapa tus barras de acción y lo arrastras a donde quieras."]}
+    "mapa": {"titulo": "La 1.3.7: la manada a tu ritmo", "items": ["**Avisos a su tiempo:** todo hace cola y espera a lo del juego; al subir de nivel sale un solo resumen. `/alfa calma` para no molestar y «Lo que me perdí» (`/alfa perdi`) para lo que se te pasó.", "**Cada zona se anuncia:** al llegar, en grande y con su animación (barco, raro, mazmorra, descubrir…). Se eligen en Ajustes > Estilo y sonido > Anuncios.", "**Tu oro y tu daño:** el oro sale una vez; las monedas te dan el de cada personaje. El medidor de daño sale solo en grupo, sin tapar tus barras.", "**Pesca lista para pelear:** la espada de la barra te devuelve tus armas en un clic, incluso en plena pelea."]}
   },
   "contraportada": {
     "titulo": "Únete a la manada",

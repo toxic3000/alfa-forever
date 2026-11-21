@@ -15,6 +15,7 @@ Registro.lua
 Equipo.lua
 Pesca.lua
 Barra.lua
+Pelear.lua
 Cocina.lua
 Ventana.lua
 Diario.lua

@@ -43,6 +43,17 @@ local GRUPOS = {
 			activa = function() return A.Get("maps.flightTimer") and true or false end,
 			buscar = "flight bar, next stop, next hop, taxi, flight path" },
 	} },
+	-- 1.3.7: la barra de información (Info.lua).
+	{ titulo = L["Barra de información"], filas = {
+		{ k = "info", titulo = L["Mostrar la barra de información"],
+			texto = L["Una franja chica con tus cuadros por segundo y latencia, el oro de esta sesión, tu durabilidad, el espacio en bolsas, la experiencia por hora y la hora. Un clic en cada dato abre su página. Arrástrala a donde quieras."],
+			boton = { texto = L["Moverla"], alClic = function()
+				if not M.Get("info") then N.Set(ID, "info", true) end
+				local Ac = rawget(_G, "AlfaAcomodar")
+				if type(Ac) == "table" and Ac.Abrir then Ac.Abrir() end
+			end },
+			buscar = "info bar, data bar, fps, latency, ms, durability, bag space, gold per session, xp per hour, clock, titan panel" },
+	} },
 	{ titulo = L["Minimapa"], filas = {
 		{ k = "minimapa", titulo = L["Mejorar el minimapa"],
 			texto = L["Enciende los cambios de abajo; cada uno se puede apagar por separado. Algunos addons acomodan sus botones al cuadrado después de /reload."],
@@ -53,7 +64,7 @@ local GRUPOS = {
 			texto = L["Los botones de otros addons alrededor del minimapa solo aparecen al pasar el ratón por encima. El de Alfa siempre queda a la vista."],
 			buscar = "hide minimap buttons, addon buttons, libdbicon, minimap icons" },
 		{ k = "minimapaMenu", hija = "minimapa", titulo = L["Ocultar el menú de addons"],
-			texto = L["Oculta el botón con el número de addons en la esquina del minimapa. Esos addons se siguen abriendo con su comando, como /alfa."],
+			texto = L["El botón con el número de addons en la esquina del minimapa solo aparece al pasar el ratón por encima, como los demás botones."],
 			buscar = "addon compartment, addon menu, minimap number" },
 		{ k = "minimapaEstilo", titulo = L["Dar al minimapa el estilo de Alfa"],
 			texto = L["El borde del minimapa, redondo o cuadrado («Minimapa cuadrado», arriba), y la barra con la zona y la hora toman el estilo que elijas, como la ventana del mapa. Al apagarlo vuelve el de siempre."],
@@ -80,6 +91,38 @@ local GRUPOS = {
 			texto = L["El chat usa la letra de Alfa (la de Ajustes > Apariencia). El tamaño se sigue cambiando en el menú de la pestaña."], buscar = "chat font" },
 		{ k = "chatBotones", hija = "chat", titulo = L["Ocultar los botones del chat"],
 			texto = L["Quita la columna de botones junto al chat (menú, canales y voz). Los comandos como /s, /g o /canal siguen igual."], buscar = "hide chat buttons, chat menu button" },
+	} },
+	-- 1.3.7: tu chat (Charla.lua). Todo es solo en tu chat: nada se envía.
+	{ titulo = L["Tu chat"], filas = {
+		{ k = "chatHora", titulo = L["La hora en cada línea"],
+			texto = L["Cada mensaje de tu chat empieza con la hora a la que llegó. Solo lo ves tú."], buscar = "chat timestamps, time in chat, clock" },
+		{ k = "chatClase", titulo = L["Nombres con el color de su clase"],
+			texto = L["En tu chat, el nombre de cada jugador sale del color de su clase. Al apagarlo vuelve como lo tenías."], buscar = "class colored names, chat class colors" },
+		{ k = "chatCopiar", titulo = L["Copiar del chat"],
+			texto = L["Las direcciones (http, www, discord.gg) se vuelven un enlace: un clic abre un cuadro para copiarla. Al pasar el ratón por una ventana de chat, un botón copia sus últimas líneas (también /alfa copiar). Nada se envía."],
+			buscar = "copy chat, copy url, links, chat copy, url copy" },
+		{ k = "susurros", titulo = L["Susurros a la vista"],
+			texto = L["Guarda tus susurros por persona para leerlos después (/alfa susurros). Solo en tu computadora; Alfa nunca responde por ti."],
+			boton = { texto = L["Ver"], alClic = function(b) if M.Charla then M.Charla.VerSusurros(b) end end },
+			buscar = "whisper history, whispers, tells, whisper sound" },
+		{ k = "susurrosSonido", hija = "susurros", titulo = L["Sonido al llegarte uno"],
+			texto = L["Un sonido de Alfa, distinto al del juego, cuando alguien te susurra (una vez cada pocos segundos por persona)."], buscar = "whisper sound, tell sound" },
+		{ k = "spam", titulo = L["Filtro de spam"],
+			texto = L["La venta de oro no sale en tu chat. Nunca se filtra a tus amigos, tu hermandad ni tu grupo. Lo escondido se puede ver (/alfa filtrado)."],
+			boton = { texto = L["Ver lo filtrado"], alClic = function() if M.Charla then M.Charla.VerFiltrado() end end },
+			buscar = "spam filter, gold sellers, gold spam, block spam, repeated messages" },
+		{ k = "spamRepetidos", hija = "spam", titulo = L["También los mensajes repetidos"],
+			texto = L["En los canales, la misma persona con el mismo mensaje en menos de un minuto sale una sola vez."], buscar = "repeated messages, duplicate messages, spam channel" },
+	} },
+	-- 1.3.7: los números de las recargas (Recargas.lua).
+	{ titulo = L["Recargas"], filas = {
+		{ k = "recargas", titulo = L["Números en las recargas"],
+			texto = L["Sobre cada botón de tus barras que espera su recarga, cuánto le falta en grande. Usa los números del juego con la letra de Alfa, así siguen en mazmorras."],
+			buscar = "cooldown numbers, cooldown count, omnicc, cooldown text, action bar cooldowns" },
+		{ k = "recargasColor", hija = "recargas", titulo = L["Color según lo que falta"],
+			texto = L["Amarillo los últimos 10 segundos y rojo los últimos 3."], buscar = "cooldown color" },
+		{ k = "recargasDestello", hija = "recargas", titulo = L["Destello al quedar lista"],
+			texto = L["El botón brilla un momento cuando la habilidad vuelve a estar lista (no con la recarga global)."], buscar = "cooldown flash, ready flash, pulse" },
 	} },
 	{ titulo = L["Estilo de las barras"], filas = {
 		{ k = "barras", titulo = L["Dar a las barras el estilo de Alfa"],
@@ -120,6 +163,13 @@ local GRUPOS = {
 			texto = L["En combate no aparece el cuadro de los personajes y criaturas del mundo (el de los marcos sí)."], buscar = "hide tooltip in combat" },
 		{ k = "cuadroShift", hija = "cuadro", titulo = L["Mostrarlo con Mayús"], texto = L["Con el cuadro oculto en combate, mantén presionado Mayús para verlo."],
 			activa = function() return M.On("cuadro", "cuadroCombate") end, buscar = "shift override, show tooltip shift" },
+		-- 1.3.7: el ID (Ids.lua); no depende de «Mejorar el cuadro».
+		{ k = "cuadroID", titulo = L["Ver el ID con Mayús"],
+			texto = L["Con Mayús presionada, el cuadro de un objeto, hechizo, PNJ o misión dice su número (ID), útil para reportar un error."],
+			buscar = "tooltip id, item id, spell id, npc id, quest id, idtip" },
+		{ k = "cuadroIDSiempre", hija = "cuadroID", titulo = L["Verlo siempre"],
+			existe = function() return not (N.Sencillo and N.Sencillo()) end,
+			texto = L["El ID sale siempre, sin presionar Mayús."], buscar = "always show id" },
 	} },
 	{ titulo = L["Probador"], existe = function() return M.HayProbador() end, filas = {
 		{ k = "probador", titulo = L["Mejorar el probador"], texto = L["Enciende los cambios de abajo en el probador (Ctrl + clic en un objeto)."],
@@ -220,6 +270,9 @@ local function estado()
 		titulo = L["Tus comodidades están listas"],
 		texto = format(L["Tienes %d encendidas. Abajo está cada una, con lo que hace, por si quieres cambiar algo."], n),
 		estado = { texto = L["Listo [estado]"], tono = "exito" },
+		-- 1.3.7: la barra de información viene apagada; aquí se ofrece.
+		accion = not M.Get("info") and { texto = L["Probar la barra de información"], icono = "ic-info",
+			alClic = function() N.Set(ID, "info", true) end } or nil,
 		secundaria = masCalidad,
 	}
 end
@@ -359,6 +412,10 @@ local MISIONES = {
 		child = true, disabled = apagadoTodas, search = "weekly quests" },
 	{ kind = "toggle", key = clave("misionesEntregar"), label = L["Entregar las completadas"], help = L["Apagado, solo las acepta y la entrega la haces tú."],
 		child = true, disabled = apagadoTodas, search = "turn in completed quests, hand in" },
+	-- 1.3.7: también vale para las de la guía (las acepta el motor).
+	{ kind = "toggle", key = clave("bitacoraLlena"), label = L["Con la bitácora llena, no aceptar y avisar"],
+		help = L["Con tu bitácora de misiones llena, Alfa no intenta aceptar misiones solas (el juego daría un error rojo): te avisa una vez. Entregar sigue igual."],
+		search = "quest log full, log is full, auto accept error" },
 }
 do
 	local LM = A.L or {}

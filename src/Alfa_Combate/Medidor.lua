@@ -267,35 +267,52 @@ local function canal()
 end
 
 -- -> true | false, por qué (para el botón: activo y su ayuda)
-function D.PuedeAnunciar(sesion, tipo)
+-- 1.3.7: `r` es una lectura que ya se tiene (la de la página): no se lee otra vez.
+function D.PuedeAnunciar(sesion, tipo, r)
 	if InCombatLockdown() or M.EnCombate() then return false, L["Se puede anunciar al salir de combate."] end
 	if not canal() then return false, L["Únete a un grupo o banda para anunciar el top."] end
-	local r = D.Leer(sesion, tipo, 1)
+	r = type(r) == "table" and r or D.Leer(sesion, tipo, 1)
 	if not r.ok then return false, r.motivo end
 	if r.vacia then return false, L["Todavía no hay una pelea que anunciar."] end
 	if r.secreto then return false, L["El juego todavía oculta los números o los nombres (pasa en combate y dentro de mazmorras). Inténtalo al salir."] end
 	return true
 end
 
-function D.Anunciar(sesion, tipo)
-	local puede, porque = D.PuedeAnunciar(sesion, tipo)
-	if not puede then N.Imprimir(porque) return false end
-	local cuantos = math.max(1, math.min(10, tonumber(M.Opt("anunciar")) or 5))
-	local r = D.Leer(sesion, tipo, cuantos)
+-- 1.3.7: el top va en 3 líneas cortas como mucho (el título y las filas
+-- repartidas en dos), no una por persona: el juego frenaba las 11 de antes.
+-- Solo con tu clic y solo al chat de tu grupo o banda (sin grupo, no se puede).
+function D.Lineas(r, quien)
 	local t = r.tipo
-	local quien = (sesion == "anterior" and L["pelea anterior"]) or (sesion == "todo" and L["todas las peleas"]) or L["pelea actual"]
 	local dur = D.Tiempo(r.dur)
-	-- Tu fila aparte (fuera del top) no se anuncia: no cuenta en el título.
-	local top = 0
-	for _, x in ipairs(r.filas) do if not x.aparte then top = top + 1 end end
-	local lineas = { format(L["Alfa · Top %d de %s (%s%s)"], top, t.texto, quien, dur and (", " .. dur) or "") }
+	local filas = {}
 	for _, x in ipairs(r.filas) do
 		if not x.aparte then
 			local principal = t.porSeg and x.porSeg or x.valor
-			local otro = t.porSeg and x.valor or x.porSeg
-			lineas[#lineas + 1] = format("%d. %s  %s (%s)", x.pos, tostring(x.nombre or "?"), propio(principal or 0), propio(otro or 0))
+			local nombre = (tostring(x.nombre or "?"):gsub("%-.*$", ""))
+			filas[#filas + 1] = format("%d. %s %s", x.pos, nombre, propio(principal or 0))
 		end
 	end
+	local lineas = { format(L["Alfa · Top %d de %s (%s%s)"], #filas, t.texto, quien, dur and (", " .. dur) or "") }
+	-- Hasta 2 filas, una por línea; más, la mitad en cada una.
+	local corte = #filas <= 2 and 1 or math.ceil(#filas / 2)
+	local i = 1
+	while i <= #filas and #lineas < 3 do
+		local hasta = (#lineas == 2) and #filas or math.min(#filas, i + corte - 1)
+		lineas[#lineas + 1] = table.concat(filas, "  \194\183  ", i, hasta)
+		i = hasta + 1
+	end
+	return lineas
+end
+
+function D.Anunciar(sesion, tipo)
+	local puede, porque = D.PuedeAnunciar(sesion, tipo, { ok = true })
+	if not puede then N.Imprimir(porque) return false end
+	local cuantos = math.max(1, math.min(10, tonumber(M.Opt("anunciar")) or 5))
+	local r = D.Leer(sesion, tipo, cuantos)
+	puede, porque = D.PuedeAnunciar(sesion, tipo, r)
+	if not puede then N.Imprimir(porque) return false end
+	local quien = (sesion == "anterior" and L["pelea anterior"]) or (sesion == "todo" and L["todas las peleas"]) or L["pelea actual"]
+	local lineas = D.Lineas(r, quien)
 	local enviar = (C_ChatInfo and C_ChatInfo.SendChatMessage) or SendChatMessage
 	local destino = canal()
 	for _, l in ipairs(lineas) do M.Llamar(enviar, l, destino) end
@@ -318,15 +335,32 @@ end
 ---------------------------------------------------------------------------
 -- Eventos: se juntan y se pinta como mucho dos veces por segundo.
 ---------------------------------------------------------------------------
+-- 1.3.7: si no hay nada a la vista (ni la ventana ni la página), no se lee
+-- nada; y cada quien lee una sola vez (la ventana ya no pregunta aparte si se
+-- puede anunciar: eso va en su clic derecho, al abrirlo).
 local pendiente = false
+D.lecturas = 0 -- para el banco: cuántas veces se leyó el medidor
+local leerBase = D.Leer
+function D.Leer(...)
+	D.lecturas = D.lecturas + 1
+	return leerBase(...)
+end
+
+local function alguienMira()
+	if M.Ventana and M.Ventana.Abierta and M.Ventana.Abierta() then return true end
+	local view = M.vista
+	return view and view.IsVisible and view:IsVisible() and true or false
+end
+
 function D.Pedir()
-	if pendiente then return end
+	if pendiente or not alguienMira() then return end
 	pendiente = true
-	A.After(0.5, function()
+	local function pintar()
 		pendiente = false
 		if M.Ventana then K.Llamar(M.Ventana.Pintar) end
 		if M.alMedidor then K.Llamar(M.alMedidor) end
-	end)
+	end
+	if N.Una then N.Una("combate.medidor", 0.5, pintar) else A.After(0.5, pintar) end
 end
 
 function D.Actualizada(_, id)

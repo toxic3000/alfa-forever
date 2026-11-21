@@ -7,7 +7,7 @@
 --   AlfaRuta.Recoger()               toma las mejores misiones de cerca
 --   AlfaRuta.AgregarObjeto(itemID)   un tramo para conseguir ese objeto en tu ruta (la Enciclopedia: "Agregar a mi ruta")
 -- y además:
---   AlfaRuta.Entregar()              solo las listas para entregar (= Liberar("listas"))
+--   AlfaRuta.Entregar()              solo las listas para entregar (1.3.7: la Vuelta a entregar; sin ella, Liberar("listas"))
 --   AlfaRuta.AgregarMision(questID)  a tu plan de misiones (con lo que pide antes) -> ok, por qué
 --   AlfaRuta.QuitarMision(questID)   fuera de tu plan
 --   AlfaRuta.EnPlan(questID) -> bool
@@ -61,7 +61,7 @@ AlfaRuta = R
 
 function R.Asistente(camino) M.Asistente.Abrir(camino) end
 function R.Liberar(filtro) Cr.Ahora(filtro) end
-function R.Entregar() Cr.Ahora("listas") end
+function R.Entregar() return M.EntregarListas() end -- 1.3.7: la misma manera en todos lados
 function R.Recoger() M.Recoger.Ahora() end
 function R.AgregarObjeto(itemID) return M.AgregarObjeto(itemID) end
 
@@ -115,6 +115,23 @@ function R.RastreadorVisible() return M.Rastreador.Visible() and true or false e
 -- 1.2.6: el fin pendiente de tu guía (lo que dice el rastreador), para Hoy:
 -- { complete, undone, label, next, nextLabel } o nil.
 function R.FinGuia() return M.Rastreador.Fin and M.Rastreador.Fin() or nil end
+-- 1.3.7: lo mismo que el rastreador, para Hoy y la página Ruta.
+--   AlfaRuta.GuiaTerminada() -> bool   cada paso hecho de verdad (los omitidos no cuentan)
+--   AlfaRuta.Cierre() -> { id, nombre, terminada, omitidos, recuperar, elegir, sig } | nil
+--   AlfaRuta.SeguirCierre(c), AlfaRuta.Recuperar(c), AlfaRuta.TextoCierre(c)
+--   AlfaRuta.Distancia() -> texto, tono, a qué | nil   la distancia y el rumbo de la flecha
+--   AlfaRuta.VerEnMapa()   el mapa de Alfa encuadrado en la flecha
+function R.GuiaTerminada() return M.GuiaTerminada and M.GuiaTerminada() or false end
+function R.Distancia() return M.Rastreador.Distancia() end
+--   AlfaRuta.XPListas() -> { n, xp, conocidas, subes, faltan }   lo que dan tus misiones listas
+--   AlfaRuta.XPMision(questID) -> xp | nil
+function R.XPListas() return M.XPListas() end
+function R.XPMision(qid) return M.XPMision(qid) end
+function R.VerEnMapa() return M.Rastreador.VerEnMapa() end
+function R.Cierre() return M.Rastreador.Cierre() end
+function R.SeguirCierre(c) return M.Rastreador.SeguirCierre(c) end
+function R.Recuperar(c) return M.Rastreador.Recuperar(c) end
+function R.TextoCierre(c) return M.Rastreador.TextoCierre(c) end
 function R.Pagina() N.Abrir(M.ID) end
 -- 1.2.7
 function R.UnaHora() return M.Hora.UnaHora() end

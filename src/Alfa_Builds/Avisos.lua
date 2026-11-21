@@ -191,10 +191,24 @@ mostrarTarjeta = function(p)
 		quitarAviso(t)
 	end
 	local m = p.modelo or {}
+	-- 1.3.7: al subir de nivel, los hechizos nuevos van en el resumen de nivel
+	-- (Alfa_Nucleo/Momentos.lua): una sola voz, y el entrenador una vez por nivel.
+	if m.kind ~= "oldRanks" then
+		local lv = A.Compat.Readable(UnitLevel("player")) or 0
+		if (N.ResumenNivelCubre and N.ResumenNivelCubre("hechizos")) or (N.YaDicho and N.YaDicho("entrenador:" .. lv)) then
+			if p.Cerrar then pcall(p.Cerrar) end
+			return
+		end
+		if N.Anotar then N.Anotar("entrenador:" .. lv) end
+	end
 	local datos, tex
 	if m.kind == "oldRanks" then datos, tex = avisoRangos(p) else datos, tex = avisoHechizos(p) end
 	-- 1.2.6: Lya lo dice si está a la vista (su botón «Llévame» sigue igual).
-	if K.PorLya(datos) then return end
+	-- 1.3.7 (125): y el motor deja pasar el siguiente; antes se quedaba esperando para siempre.
+	if K.PorLya(datos) then
+		if p.Cerrar then pcall(p.Cerrar) end
+		return
+	end
 	datos.lya = false -- (se le pone el ícono y se vigila: la ventanita hace falta)
 	local a = K.Aviso(datos)
 	-- 1.3.3: mientras Alfa entra, K.Aviso lo guarda y no devuelve ventanita.

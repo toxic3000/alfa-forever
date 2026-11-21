@@ -132,6 +132,9 @@ local BOTONES = {
 	{ id = "metas", icono = M.ICONO.meta, ayuda = L["Metas de pesca"] },
 	{ id = "diario", icono = M.ICONO.diario, ayuda = L["Diario de pesca"] },
 	{ id = "ajustes", icono = "ic-ajustes", ayuda = L["Ajustes de pesca"] },
+	-- 1.3.7: el hueco de «A pelear» / «Volver a mi equipo»: lo ocupa el botón
+	-- seguro de Pelear.lua (no es hijo de la barra: así nada de ella queda protegido).
+	{ id = "pelear", hueco = true },
 	{ id = "cerrar", icono = "ic-cerrar", ayuda = L["Cerrar el modo pesca"] },
 }
 local TAM_BOTON, GAP = 24, 2
@@ -163,11 +166,20 @@ local function arrastrable(f, clave)
 	f:EnableMouse(true)
 	f:RegisterForDrag("LeftButton")
 	f:SetClampedToScreen(true)
-	f:SetScript("OnDragStart", function(self) if not (A.DragLocked and A.DragLocked()) then self:StartMoving() end end)
+	-- 1.3.7: en combate no se mueve (el botón «A pelear» no podría seguirla).
+	f:SetScript("OnDragStart", function(self)
+		if (A.DragLocked and A.DragLocked()) or enCombate() then return end
+		if M.Pelear then M.Pelear.Ocultar() end
+		self.alfaMoviendo = true
+		self:StartMoving()
+	end)
 	f:SetScript("OnDragStop", function(self)
+		if not self.alfaMoviendo then return end
+		self.alfaMoviendo = nil
 		self:StopMovingOrSizing()
 		guardarLugar(self, clave)
 		if menu and menu:IsShown() then B.CerrarMenu() end
+		if M.Pelear then M.Pelear.Sincronizar() end
 	end)
 end
 
@@ -203,14 +215,33 @@ local function crearBarra()
 	f.Avance = K.Progreso(f, { alto = 3 })
 	f.botones = {}
 	for _, d in ipairs(BOTONES) do
-		local b = K.BotonIcono(f, d.icono, function(self) alClicBoton(d.id, self) end, { tam = TAM_BOTON, icono = 14, ayuda = d.ayuda })
+		local b
+		if d.hueco then
+			b = CreateFrame("Frame", nil, f)
+			b:SetSize(TAM_BOTON, TAM_BOTON)
+			f.hueco = b
+		else
+			b = K.BotonIcono(f, d.icono, function(self) alClicBoton(d.id, self) end, { tam = TAM_BOTON, icono = 14, ayuda = d.ayuda })
+			b:HookScript("OnEnter", function() B.Desplegar() end)
+		end
 		b.alfaId = d.id
 		f.botones[#f.botones + 1] = b
-		b:HookScript("OnEnter", function() B.Desplegar() end)
 	end
 	f:SetScript("OnEnter", function() B.Desplegar() end)
 	f:SetScript("OnLeave", function() B.PlegarLuego() end)
 	f:SetScript("OnUpdate", nil)
+	-- 1.3.7: clic derecho en la barra o en su baldosa: lo que menos se usa.
+	f:SetScript("OnMouseUp", function(self, boton) if boton == "RightButton" then B.AlternarMenu("mas", self.Baldosa) end end)
+	f.Baldosa:EnableMouse(true)
+	f.Baldosa:RegisterForDrag("LeftButton")
+	f.Baldosa:SetScript("OnDragStart", function() local fn = f:GetScript("OnDragStart") if fn then fn(f) end end)
+	f.Baldosa:SetScript("OnDragStop", function() local fn = f:GetScript("OnDragStop") if fn then fn(f) end end)
+	f.Baldosa:SetScript("OnMouseUp", function(self, boton) if boton == "RightButton" then B.AlternarMenu("mas", self) end end)
+	f.Baldosa:SetScript("OnLeave", function() B.PlegarLuego() end)
+	f.Baldosa:SetScript("OnEnter", function() B.Desplegar() end)
+	-- Su cuadro: cuánto te falta para el tope de tu rango y qué sigue.
+	K.ConInfo(f.Baldosa, function() if M.InfoHabilidad then return M.InfoHabilidad() end end)
+	f:SetScript("OnHide", function() if M.Pelear then M.Pelear.Sincronizar() end end)
 	f:Hide()
 	M.VISIBLES[#M.VISIBLES + 1] = f
 	return f
@@ -235,6 +266,8 @@ function B.PlegarLuego()
 	A.After(2, function()
 		if mio ~= turnoPlegar or not barra or not barra:IsShown() then return end
 		if barra:IsMouseOver() or (menu and menu:IsShown()) then return end
+		-- 1.3.7: en combate no se pliega (el botón «A pelear» se queda donde está).
+		if E.pelea or enCombate() then return end
 		plegada = true
 		B.Acomodar()
 	end)
@@ -255,13 +288,17 @@ function B.Acomodar()
 	f.Avance:ClearAllPoints()
 	f.Bono:ClearAllPoints()
 	if not vertical then
-		local ancho = 460
+		-- 1.3.7: un poco más ancha para el botón «A pelear» (nueve botones).
+		local ancho = 480
 		local tile = conBotones and 34 or 26
 		f.Baldosa:SetSize(tile, tile)
 		f.Baldosa:SetPoint("TOPLEFT", f, "TOPLEFT", pad, -pad)
 		local x = pad + tile + ESP.m
 		f.Habilidad:SetPoint("TOPLEFT", f, "TOPLEFT", x, -(pad + (conBotones and 4 or 0)))
-		K.Ajustar(f.Habilidad, 200)
+		-- Lo que deja libre la fila de botones (con su insignia de bonificación).
+		local libre = ancho - pad - #f.botones * (TAM_BOTON + GAP) - x - ESP.s
+		local bono = f.Bono:IsShown() and (K.num(f.Bono:GetWidth(), 0) + ESP.s) or 0
+		K.Ajustar(f.Habilidad, conBotones and max(80, libre - bono) or (ancho - x - pad))
 		f.Bono:SetPoint("LEFT", f.Habilidad, "RIGHT", ESP.s, 0)
 		local bx = ancho - pad
 		for i = #f.botones, 1, -1 do
@@ -274,10 +311,10 @@ function B.Acomodar()
 		f.Tiempo:SetPoint("TOPRIGHT", f, "TOPRIGHT", -pad, -yEstado)
 		K.Ajustar(f.Tiempo, 60)
 		f.Estado:SetPoint("TOPLEFT", f, "TOPLEFT", x, -yEstado)
-		f.Estado:SetWidth(max(60, ancho - x - pad - K.AnchoTexto(f.Tiempo) - ESP.s))
-		f.Estado:SetWordWrap(false)
-		local alto = yEstado + 16 + ESP.s + 3 + pad
-		if not conBotones then alto = pad + 15 + 16 + ESP.s + 3 + ESP.s end
+		-- 1.3.7: lo que pasa ya no se corta: con un nombre largo baja a una segunda línea.
+		local hEstado = max(16, K.Parrafo(f.Estado, max(60, ancho - x - pad - K.AnchoTexto(f.Tiempo) - ESP.s), 2))
+		local alto = yEstado + hEstado + ESP.s + 3 + pad
+		if not conBotones then alto = pad + 15 + hEstado + ESP.s + 3 + ESP.s end
 		f.Avance:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", pad, conBotones and pad or ESP.s)
 		f.Avance:Acomodar(ancho - 2 * pad)
 		f:SetSize(ancho, alto)
@@ -302,18 +339,20 @@ function B.Acomodar()
 		y = y + ((f.Tiempo:GetText() or "") ~= "" and 20 or 4)
 		if conBotones then
 			y = y + ESP.s
-			local porFila = 4
+			local porFila = 5
 			local gap = floor((ancho - 2 * pad - porFila * TAM_BOTON) / (porFila - 1))
 			for i, b in ipairs(f.botones) do
 				local fila, col = floor((i - 1) / porFila), (i - 1) % porFila
 				b:ClearAllPoints()
 				b:SetPoint("TOPLEFT", f, "TOPLEFT", pad + col * (TAM_BOTON + gap), -(y + fila * (TAM_BOTON + 6)))
 			end
-			y = y + 2 * TAM_BOTON + 6
+			local filas = math.ceil(#f.botones / porFila)
+			y = y + filas * TAM_BOTON + (filas - 1) * 6
 		end
 		f:SetSize(ancho, y + pad)
 	end
 	f:SetScale(max(0.6, min(1.6, tonumber(opt("barraEscala")) or 1)))
+	if M.Pelear then M.Pelear.Sincronizar() end
 end
 
 -- Los números y textos de la barra.
@@ -353,7 +392,7 @@ local function alActualizar(self, dt)
 	if barra and barra:IsShown() then barra.Tiempo:SetText(reloj(resta)) end
 	if canal and canal:IsShown() then
 		canal.Tiempo:SetText(reloj(resta))
-		canal.Avance:Set(resta / 30)
+		canal.Avance:Set(resta / max(1, M.DuracionCanal()))
 	end
 end
 
@@ -380,8 +419,6 @@ local function crearCanal()
 	f.Avance:SetPoint("TOPLEFT", f, "TOPLEFT", ESP.s, -26)
 	f.Recap = K.Texto(f, "pequeno", "textoTenue")
 	f.Recap:SetPoint("TOPLEFT", f.Avance, "BOTTOMLEFT", 0, -3)
-	f.Recap:SetPoint("RIGHT", f, "RIGHT", -ESP.s, 0)
-	f.Recap:SetWordWrap(false)
 	arrastrable(f, "lugarCanal")
 	f:Hide()
 	M.VISIBLES[#M.VISIBLES + 1] = f
@@ -395,16 +432,25 @@ local function recap()
 	return format(L["Última: %s ×%d · %d en la sesión"], o.nombre or "?", o.cantidad or 1, s.total or 0)
 end
 
+-- 1.3.7: el resumen de la vista mínima ya no se corta: hasta dos líneas y la
+-- vista crece con ellas.
+function B.EscribirRecap()
+	if not canal then return end
+	K.Escribir(canal.Recap, recap())
+	local h = K.Parrafo(canal.Recap, 280 - 2 * ESP.s, 2)
+	canal:SetHeight(max(44, 26 + 4 + 3 + h + ESP.s))
+end
+
 function B.MostrarCanal()
-	if not (E.modo and opt("vistaMinima") and E.canal) then return end
+	if not (E.modo and opt("vistaMinima") and E.canal) or E.pelea then return end
 	canal = canal or crearCanal()
 	local r, mx = M.Habilidad()
 	K.Escribir(canal.Habilidad, r and format(L["Pesca %d/%d"], r, mx or 0) or L["Pesca"])
-	K.Escribir(canal.Recap, recap())
+	B.EscribirRecap()
 	canal.Avance:Acomodar(280 - 2 * ESP.s)
 	local resta = M.Restante() or 0
 	canal.Tiempo:SetText(reloj(resta))
-	canal.Avance:Set(resta / 30)
+	canal.Avance:Set(resta / max(1, M.DuracionCanal()))
 	if barra and barra:IsShown() and not datosBarra().lugarCanal then
 		canal:ClearAllPoints()
 		canal:SetPoint("CENTER", barra, "CENTER", 0, 0)
@@ -426,7 +472,8 @@ end
 -- Mostrar u ocultar la barra según el modo
 ---------------------------------------------------------------------------
 function B.Actualizar()
-	if E.modo and E.canal and opt("vistaMinima") then
+	-- 1.3.7: en una pelea, la barra completa (con «A pelear») y no la vista mínima.
+	if E.modo and E.canal and opt("vistaMinima") and not E.pelea then
 		B.MostrarCanal()
 		return
 	end
@@ -634,6 +681,33 @@ function B.AlternarMenu(id, dueno)
 	if contenido then B.MostrarMenu(id, dueno, contenido) end
 end
 
+-- 1.3.7: lo que dan los bancos de peces de tu zona y aún no está en tu diario.
+-- -> { { id, nombre } } (de lo más raro a lo más común: trofeos primero)
+function M.FaltanAqui()
+	local mapa = M.MapaJugador and M.MapaJugador()
+	local out, visto = {}, {}
+	if not mapa then return out end
+	local diario = M.Diario()
+	for _, b in pairs(M.BANCOS) do
+		local aqui = false
+		for _, m in ipairs(b.mapas) do if m == mapa then aqui = true end end
+		if aqui then
+			for _, id in ipairs(b.da) do
+				local e = diario[id]
+				if not visto[id] and not (type(e) == "table" and (tonumber(e.n) or 0) > 0) then
+					visto[id] = true
+					out[#out + 1] = { id = id, nombre = (M.V and M.V.NombreObjeto(id)) or Eq.Nombre(id) or ("#" .. id), raro = M.CLASE[id] == "trofeo" and 1 or 0 }
+				end
+			end
+		end
+	end
+	table.sort(out, function(a, b)
+		if a.raro ~= b.raro then return a.raro > b.raro end
+		return tostring(a.nombre) < tostring(b.nombre)
+	end)
+	return out
+end
+
 local function minutos(seg)
 	if seg <= 0 then return nil end
 	if seg >= 60 then return format(L["%d min"], floor(seg / 60 + 0.5)) end
@@ -725,6 +799,37 @@ B.MENUS = {
 			filas = filas,
 		}
 	end,
+	-- 1.3.7: el clic derecho en la barra: lo que menos se usa, en un solo lugar.
+	mas = function()
+		local filas = {}
+		local falta = M.FaltanAqui and M.FaltanAqui() or {}
+		if #falta > 0 then
+			local nombres = {}
+			for i, f in ipairs(falta) do if i <= 3 then nombres[#nombres + 1] = f.nombre end end
+			filas[#filas + 1] = { icono = M.ICONO.diario, nombre = L["Te falta en esta zona"], valor = table.concat(nombres, ", ") .. (#falta > 3 and "…" or ""),
+				ayuda = L["Lo que dan los bancos de peces de aquí y aún no está en tu diario. Clic: la guía con los bancos cercanos."],
+				alClic = function() abrirVentana("guia") B.CerrarMenu() end }
+		end
+		filas[#filas + 1] = { icono = "ic-reloj", nombre = L["Estadísticas [pesca]"], valor = L["Tu sesión y las anteriores"],
+			alClic = function() abrirVentana("estadisticas") B.CerrarMenu() end }
+		filas[#filas + 1] = { icono = "ic-guia", nombre = L["Guía de pesca"], valor = L["Dónde pescar, equipo y cebos"],
+			alClic = function() abrirVentana("guia") B.CerrarMenu() end }
+		local hechos = 0
+		for _ in pairs(M.Logros()) do hechos = hechos + 1 end
+		filas[#filas + 1] = { icono = "ic-exito", nombre = L["Logros"], valor = format("%d/%d", min(hechos, #M.LOGROS), #M.LOGROS),
+			alClic = function() abrirVentana("logros") B.CerrarMenu() end }
+		local vertical = opt("barraVertical") and true or false
+		filas[#filas + 1] = { icono = "ic-rejilla", nombre = vertical and L["Barra horizontal"] or L["Barra vertical"], valor = "",
+			alClic = function() B.CerrarMenu() N.Set(ID, "barraVertical", not vertical) end }
+		return {
+			titulo = L["Más de la pesca"], filas = filas,
+			pie = { { texto = L["Empezar otra sesión"], alClic = function()
+				M.NuevaSesion()
+				M.MarcarInicioModo()
+				N.Imprimir(L["Sesión de pesca nueva."])
+			end } },
+		}
+	end,
 }
 
 ---------------------------------------------------------------------------
@@ -805,8 +910,17 @@ function M.MostrarCaptura(tomados, nuevo)
 	K.Escribir(toast.Texto, extra or "")
 	toast.Texto:ClearAllPoints()
 	toast.Texto:SetPoint("TOPLEFT", toast.Titulo, "BOTTOMLEFT", 0, -4)
-	local ancho = max(240, x + max(K.Ajustar(toast.Titulo, 260), K.Ajustar(toast.Texto, 260)) + ESP.m)
-	toast:SetSize(ancho, 54)
+	-- 1.3.7: lo de abajo (otras capturas, la maestría) baja a otra línea en vez de cortarse.
+	local wt = K.Ajustar(toast.Titulo, 260)
+	local wx = K.Ajustar(toast.Texto)
+	local alto = 54
+	if wx > 260 then
+		local h = K.Parrafo(toast.Texto, 260, 2)
+		wx = 260
+		alto = max(54, ESP.m + 1 + K.AltoTexto(toast.Titulo) + 4 + h + ESP.m)
+	end
+	local ancho = max(240, x + max(wt, wx) + ESP.m)
+	toast:SetSize(ancho, alto)
 	toast:ClearAllPoints()
 	local ancla = (barra and barra:IsShown() and barra) or (canal and canal:IsShown() and canal)
 	if ancla then
@@ -861,7 +975,7 @@ end
 M.Escuchar(function(m)
 	if m.modo or m.canal or m.todo or m.ajustes then B.Actualizar() end
 	if barra and barra:IsShown() then B.Refrescar() end
-	if canal and canal:IsShown() then K.Escribir(canal.Recap, recap()) end
+	if canal and canal:IsShown() then B.EscribirRecap() end
 	if m.modo and not E.modo then
 		B.CerrarMenu()
 		if toast then toast:Hide() end

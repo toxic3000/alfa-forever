@@ -25,5 +25,7 @@ Kit\Ventanas.lua
 Kit\Anuncio.lua
 Kit\Plantillas.lua
 Kit\Estilos.lua
+Momentos.lua
+Zonas.lua
 Modo.lua
 Limpia.lua

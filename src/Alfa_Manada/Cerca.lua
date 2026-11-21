@@ -77,11 +77,19 @@ function Ce.Revisar(unit)
 	local ahora = U.Ahora()
 	if ahora - ultimo < HUECO then return false end
 	if vistos[clave] and ahora - vistos[clave] < SESION then return false end
+	-- 1.3.7 (62): la misma persona, una vez al día (también entre sesiones).
+	local hoy = date and date("%Y-%m-%d") or "?"
+	local dd = N.DatosPersonaje(ID)
+	if type(dd.cercaDia) ~= "table" or dd.cercaDia.fecha ~= hoy then dd.cercaDia = { fecha = hoy, vistos = {} } end
+	if dd.cercaDia.vistos[clave] then return false end
 	local K = N.Kit
 	if not (K and K.Anuncio) then return false end
 	vistos[clave], ultimo = ahora, ahora
-	-- 1.3.5: en el modo ligero, una tarjeta sin animación.
-	if N.Ligero and N.Ligero() and K.Aviso then
+	dd.cercaDia.vistos[clave] = true
+	-- 1.3.5: en el modo ligero, una tarjeta sin animación. 1.3.7 (62): en una
+	-- ciudad o posada (donde se cruza mucha gente), también: un aviso chico.
+	local enCiudad = IsResting and U.Leer(IsResting()) == true
+	if ((N.Ligero and N.Ligero()) or enCiudad or (N.AnunciosGrandes and not N.AnunciosGrandes())) and K.Aviso then
 		K.Aviso({ titulo = L["Un lobo de La Jauría anda cerca"],
 			texto = (U.Mostrar(nombre) or nombre) .. ". " .. L["También usa Alfa: salúdalo."], icono = "ic-lobo" })
 		return true
@@ -91,6 +99,7 @@ function Ce.Revisar(unit)
 		titulo = U.Mostrar(nombre) or nombre,
 		texto = L["También usa Alfa: salúdalo."],
 		lobo = "atento",
+		estilo = "manada",
 		segundos = Ce.SEGUNDOS,
 	})
 	return true
@@ -98,6 +107,7 @@ end
 
 function Ce.Olvidar()
 	vistos, ultimo = {}, -math.huge
+	N.DatosPersonaje(ID).cercaDia = nil
 end
 
 -- El juego pasa el nombre del evento primero; la unidad no se lee si es secreta.

@@ -1,5 +1,131 @@
 # Cambios de Alfa
 
+## 1.3.7 — La manada a tu ritmo: 200 mejoras para que todo llegue a su tiempo (21/11/2026)
+
+La versión más grande de Alfa: 200 correcciones y mejoras pensadas en cómo se siente jugar. Los avisos ya no se enciman y esperan a que termine lo del juego, cada zona se anuncia con su propia animación, el medidor de daño sale solo en grupo, tu oro se ve una sola vez y la pesca te devuelve tus armas con un clic. Cada cambio trae su prueba en el banco y pasó una revisión independiente.
+
+**Español**
+
+*Lo que pediste*
+- Tu oro sale una sola vez en tus bolsas. Un clic en las monedas abre «Tu oro»: cada personaje con el color de su clase y cuándo lo viste, el subtotal de cada reino y facción, toda la cuenta y lo de esta sesión (ganado, gastado, del buzón y por hora). Clic en otro personaje y ves sus bolsas.
+- El oro de tu sesión ya no se borra con /reload y el «por hora» sale bien. Alfa también cuenta tu botín de farmeo, cuánto vale y tu mejor zona.
+- Cada vez que llegas a una zona, Alfa la anuncia en grande, con el color de quién es y sus niveles, y esconde el nombre del juego para que no salgan dos. Los rincones (un pueblo, una mina, un lago) salen en chico.
+- Cada anuncio tiene su animación, su color y su sonido: el barco ondea, el zepelín flota, el tranvía frena seco, el raro salta, el tesoro brilla, la mazmorra sube en morado, la ciudad llega en azul, la zona peligrosa late en rojo y al descubrir un lugar hay destello dorado, huellas y un dato de Lya. En Estilo y sonido, un interruptor y un botón «Probar» para cada tipo.
+- Al subir de nivel, Alfa espera a que termine la animación del juego y luego te da un solo resumen («¡Nivel 12! 1 punto de talento · 3 habilidades por aprender») con dos botones. Ya no sale ninguna ventana que oscurezca la pantalla sin un clic tuyo.
+- El medidor de daño ahora es una gráfica pequeña con las barras de tu grupo: sale sola en grupo, en banda y en mazmorras, y yendo solo no estorba. Nace abajo a la derecha sin tapar tus barras, se atenúa después de la pelea y en combate no atrapa clics. Su X lo esconde hasta tu próximo grupo. Si usas Details, Recount o Skada, no sale solo.
+- Pesca: nuevo botón «A pelear» / «Volver a mi equipo» (la espada de la barra, con su tecla). En combate te pone tus armas al instante y lo demás vuelve al terminar la pelea; fuera de combate te devuelve todo tu equipo y cierra el modo pesca. Si te atacan con la caña en la mano, un aviso te dice cómo volver a tus armas.
+
+*Avisos que llegan a su tiempo*
+- Todo lo que Alfa te muestra hace fila: una cosa a la vez, por importancia, y espera a cargas, cinemáticas, PNJ, peleas y estandartes del juego. Después de una pantalla de carga hay 3 segundos de calma.
+- Los recálculos al subir de nivel se escalonan para que no haya tirón, y los mensajes de La Jauría también.
+- Lya aúlla una sola vez y ya no encima de la animación; la racha de niveles reemplaza al aullido. Lo importante que guardaba ya no se pierde.
+- No molestar: `/alfa calma` (30 min, 1 h o la sesión) y también respeta tu /dnd. Lo callado queda guardado.
+- «Lo que me perdí» (`/alfa perdi` y en el menú de Alfa) guarda los últimos 30 avisos con su hora; el botón del minimapa te dice cuántos te faltan.
+- El entrenador y el punto de talento se dicen una sola vez por nivel, y Curación te ofrece el hechizo nuevo una sola vez, con «Usarlo / Ahora no».
+- Cada aviso dura según lo largo de su texto y no se va en combate ni con el ratón encima. La tarjeta de Hoy sale arriba a la derecha.
+- Sonidos suaves según el tipo de aviso, con el ajuste «Sonidos de Alfa» (todos, solo los importantes o ninguno).
+- Los anuncios ya no se enciman: el más urgente va primero, un barco que ya zarpó o un raro que ya se fue no se anuncian tarde, el sonido suena al aparecer, solo el título se toca (clic derecho lo cierra), en una pelea se van y vuelven después, y se adaptan a tu pantalla.
+- Al entrar a una mazmorra, su nombre en morado con sus niveles y jefes; en una zona de más nivel que tú, «ve con cuidado» en rojo.
+- «Un lobo de La Jauría anda cerca» sale una vez al día por persona y, en ciudades, como aviso chico.
+
+*Tu aventura*
+- Hoy ya no dice «Guía completa» si te saltaste pasos; Ruta dice «¡Terminaste!» y ofrece «Seguir con…», que ya nunca sale vacío, o «Recuperar lo omitido».
+- La Biblioteca enseña cómo vas en cada guía y cuánto te toma a tu ritmo, tiene «Ver detalle», Recientes y Favoritas, busca por misión o PNJ, y «Guías con esta misión» por fin filtra.
+- Una sola manera de entregar tus misiones listas: la Vuelta, que cuenta igual en todos lados, dice cuáles quedaron fuera, sigue tras /reload y suma las que terminas en el camino.
+- Cada entrega dice cuánta experiencia da y si con ella subes de nivel. Hoy te dice cuánto dan tus listas, tu descanso, «Nivel 34 en 1 h 20 min a tu ritmo», tu reputación («te faltan 1,200 para Honorable») y tu tiempo jugado sin escribir en el chat. Las barras de experiencia y reputación del juego te dicen cuánto falta.
+- El aviso de nivel va hacia tu meta: «unos 14 jabalíes» y «≈ 25 min a tu ritmo».
+- Los tiempos se escriben igual en todo Alfa, también en la flecha («1 h 13 min»), y «Ya llegaste» dice lo mismo en Hoy, el rastreador y la flecha.
+- Toda meta tiene menú: Llévame, Ver en el mapa y Omitir (con Deshacer); en grupo, compartir la misión.
+- La mazmorra recomendada ya no te manda a otro continente, te ofrece «Recoger sus misiones ya», y Hoy y el rastreador te dicen el siguiente jefe y lo que te falta dentro.
+- Mazmorras: mapa de los jefes con los vencidos en verde, aviso de lo que te falta antes de un jefe (comida, frasco, piedra de salud, munición), el botín de tu grupo con su tirada y un cronómetro con tu récord y el límite de instancias por hora.
+- La Enciclopedia te dice cuánta experiencia te da una misión a tu nivel, sus zonas traen «Guía de esta zona» y «Circuito de la zona», y se agranda y se achica por su esquina.
+- El mapa de Alfa te enseña sus atajos la primera vez y sus errores salen en el mapa, no en el chat. Las tarjetas de los lobos dicen qué misiones tienen en común contigo.
+- Arreglados los textos cortados del rastreador y de la caja del objeto de misión, las notas en inglés mezcladas en otros idiomas, «Una hora de caza» en las capitales, y tu ritmo ya no cuenta el vuelo, la subasta ni el tiempo ausente.
+- Ya no se ven textos como «1 misiones», «hace 1 días» o «1 capas ocultas», en ningún módulo ni idioma.
+
+*Tu personaje y tus oficios*
+- El nivel de objeto y lo gastado de cada pieza, en tu personaje y al inspeccionar. Botones de tus conjuntos junto a tu personaje: en combate te cambia las armas al instante y lo demás al terminar.
+- Ver el equipo de un compañero desde su clic derecho, con su nivel medio, sus piezas flojas y lo que le sirve de tus bolsas.
+- Con el «¿Listos?» del juego, Alfa te dice si te falta comida, munición, reparar o espacio, y a quién le falta un hechizo de apoyo, con un botón para dárselo.
+- Combate: «¡Sal de ahí!» si pisas fuego o veneno en una mazmorra, la cuenta para jalar en grande (y la lanzas desde Combate), los tiempos del jefe aprendidos pelea a pelea y «Tus efectos a la vista» (se prende en Ajustes).
+- Comercio: gangas en la subasta, mandar a tu alt desde el buzón con listas por personaje (el clic en «Enviar» es tuyo), el precio de la pila entera en el cuadro y «Tomar todo» con su avance y «Parar».
+- Pesca: la tecla ya no se atora con una pieza que no entra, el modo ya no sube tu volumen, la barra del lanzamiento usa su duración real, «Buen lanzamiento» solo con el corcho, nada se corta, metas en «2 h», cada banco cuenta una vez, clic derecho en la barra para lo menos usado, cuánto te falta para el tope de tu rango, aviso cuando se acaba tu cebo y un resumen al cerrar el modo.
+- Talentos ya no recomienda mano secundaria a quien no puede usar dos armas ni escudos con un arma de dos manos; sus títulos ya no salen con letras rotas e importar un plan dos veces ya no lo duplica.
+- Curación: la venda usa la mejor que tu Primeros auxilios permite, nombre y vida en una línea en marcos bajos, el modo prueba se acomoda por grupos y el cuadro de maná ya no tapa la barra.
+- Paisaje: «Deshacer» devuelve exactamente lo que tenías y solo pide reiniciar los gráficos cuando de verdad hace falta.
+- El escaneo de la subasta y la lectura de recetas esperan a que termine el combate, y los puntos de recolección del minimapa ya no atrapan clics en combate.
+
+*Comodidades nuevas*
+- Barra de información: fps y latencia, oro de la sesión, durabilidad, espacio, experiencia por hora y la hora; cada dato abre su página y la puedes mover.
+- Números grandes en las recargas de tus barras, con color según lo que falta y un destello al quedar lista.
+- Tu chat: la hora en cada línea, nombres con el color de su clase, copiar del chat (nada se envía), susurros con sonido propio e historial por persona, y un filtro de spam con «ver lo filtrado».
+- El ID de objetos, hechizos, PNJ y misiones en el cuadro con Mayús, para reportar errores.
+- Con tu bitácora llena, Alfa ya no intenta aceptar misiones (adiós al error rojo): te avisa una vez.
+- El botón con el número de addons del minimapa ya no desaparece: se queda tenue y aparece al pasar el ratón.
+- En un vuelo con escalas, la siguiente parada avanza sola en la barra de vuelo.
+- En la página de Lya ves cuántos consejos callaste y puedes devolverlos; Cocina ya no se queda con ingredientes viejos.
+
+**English**
+
+*What you asked for*
+- Your gold shows only once in your bags. A click on the coins opens "Your gold": every character in their class color and when you last saw them, a subtotal per realm and faction, the whole account and this session (earned, spent, from mail and per hour). Click another character to see their bags.
+- Your session gold no longer resets on /reload and "per hour" is right. Alfa also counts your farming loot, what it's worth and your best zone.
+- Every time you arrive in a zone, Alfa announces it big, colored by who owns it and with its levels, and hides the game's zone name so you never see two. Spots inside a zone (a village, a mine, a lake) show small.
+- Every announcement has its own animation, color and sound: the boat sways, the zeppelin floats, the tram brakes hard, the rare jumps, the treasure shines, the dungeon rises in purple, the city arrives in blue, the dangerous zone pulses red, and discovering a place brings a golden flash, paw prints and a fact from Lya. In Style and sound, a switch and a "Try it" button for each type.
+- When you level up, Alfa waits for the game's animation to end and then gives you one summary ("Level 12! 1 talent point · 3 abilities to learn") with two buttons. No window darkens the screen anymore without your click.
+- The damage meter is now a small bar graph of your group: it shows up by itself in a party, raid or dungeon and stays out of the way when you're solo. It starts bottom right without covering your bars, fades after the fight and never catches clicks in combat. Its X hides it until your next group. If you use Details, Recount or Skada, it doesn't show up by itself.
+- Fishing: new "To arms" / "Back to my gear" button (the sword on the bar, with its own key). In combat it equips your weapons instantly and the rest comes back after the fight; out of combat it puts all your gear back and closes fishing mode. If you're attacked with the pole in hand, a notice tells you how to get your weapons back.
+
+*Alerts that arrive at the right time*
+- Everything Alfa shows waits in one line: one thing at a time, by importance, waiting for loading screens, cinematics, NPCs, fights and the game's banners. After a loading screen there are 3 quiet seconds.
+- Level-up recalculations are spread out so there's no stutter, and La Jauría messages too.
+- Lya howls once and no longer over the animation; a level streak replaces the howl. Important things she was holding are no longer lost.
+- Do not disturb: `/alfa calma` (30 min, 1 h or the session), and it also respects your /dnd. What was silenced is kept.
+- "What I missed" (`/alfa perdi` and in Alfa's menu) keeps your last 30 notices with their time; the minimap button shows how many you haven't seen.
+- The trainer and the talent point are mentioned once per level, and Healing offers a new spell once, with "Use it / Not now".
+- Each notice lasts according to its text and doesn't leave during combat or while your mouse is over it. The Today card shows top right.
+- Soft sounds by notice type, with the "Alfa sounds" setting (all, important only or none).
+- Announcements no longer overlap: the most urgent goes first, a boat that already left or a rare that's gone isn't announced late, the sound plays when it appears, only the title is clickable (right-click closes it), they step aside for a fight and come back, and they fit your screen.
+- Entering a dungeon shows its name in purple with levels and bosses; a zone above your level warns "be careful" in red.
+- "A La Jauría wolf is nearby" shows once a day per person and, in cities, as a small notice.
+
+*Your adventure*
+- Today no longer says "Guide complete" if you skipped steps; Route says "You finished!" and offers "Continue with…", never empty again, or "Recover skipped steps".
+- The Library shows your progress in each guide and how long it takes at your pace, has "See details", Recent and Favorites, searches by quest or NPC, and "Guides with this quest" finally filters.
+- One way to turn in your ready quests: the turn-in run, which counts the same everywhere, says which ones were left out, survives /reload and adds the ones you finish on the way.
+- Each turn-in shows its experience and whether it levels you up. Today shows what your ready quests give, your rested bonus, "Level 34 in 1 h 20 min at your pace", your reputation ("1,200 to Honored") and your played time without printing to chat. The game's experience and reputation bars tell you what's left.
+- The level notice points at your goal: "about 14 boars" and "≈ 25 min at your pace".
+- Times are written the same way all over Alfa, the arrow included ("1 h 13 min"), and "You've arrived" agrees in Today, the tracker and the arrow.
+- Every goal has a menu: Take me, See on map and Skip (with Undo); in a group, share the quest.
+- The recommended dungeon no longer sends you to another continent, offers "Pick up its quests now", and Today and the tracker show the next boss and what's left inside.
+- Dungeons: a boss map with the defeated ones in green, a reminder of what you're missing before a boss (food, flask, healthstone, ammo), your group's loot with each roll, and a timer with your record and the instances-per-hour limit.
+- The Encyclopedia shows a quest's experience at your level, zones bring "Guide for this zone" and "Zone circuit", and it resizes from its corner.
+- Alfa's map shows its shortcuts the first time and its errors appear on the map, not in chat. Wolf cards show which quests you share.
+- Fixed cut-off texts in the tracker and the quest item box, English guide notes mixed into other languages, "An hour of hunting" in capitals; your pace no longer counts flying, the auction house or time away.
+- No more texts like "1 quests", "1 days ago" or "1 hidden layers", in any module or language.
+
+*Your character and professions*
+- Item level and wear on every slot, on your character and when inspecting. Buttons for your gear sets next to your character: in combat they swap your weapons instantly and the rest after the fight.
+- See a teammate's gear from their right-click menu, with their average level, weak pieces and what in your bags helps them.
+- On the game's ready check, Alfa tells you if you're missing food, ammo, repairs or space, and who's missing a support spell, with a button to give it.
+- Combat: "Get out!" if you stand in fire or poison in a dungeon, the pull countdown in big letters (and you can start it from Combat), boss timers learned fight by fight, and "Your effects at a glance" (turn it on in Settings).
+- Trade: auction bargains, send to your alt from the mailbox with lists per character (clicking "Send" is yours), the price of the whole stack in the tooltip, and "Take all" with progress and "Stop".
+- Fishing: the key no longer gets stuck on a piece that doesn't fit, the mode no longer raises your volume, the cast bar uses the real duration, "Good cast" only with the bobber, nothing gets cut off, goals in "2 h", each pool counts once, right-click on the bar for the less used things, how far you are from your rank cap, a notice when your lure runs out and a summary when you close the mode.
+- Talents no longer recommend an off-hand to classes that can't dual wield or shields with a two-hander; plan titles no longer show broken letters and importing a plan twice no longer duplicates it.
+- Healing: the bandage uses the best your First Aid allows, name and health on one line in short frames, test mode groups like a real raid and the mana box no longer covers the move bar.
+- Scenery: "Undo" restores exactly what you had and only asks to restart graphics when it's really needed.
+- Auction scanning and recipe reading wait until combat ends, and minimap gathering pins no longer catch clicks in combat.
+
+*New conveniences*
+- Info bar: fps and latency, session gold, durability, bag space, experience per hour and the time; each item opens its page, and you can move it.
+- Big numbers on your action bar cooldowns, colored by time left, with a flash when ready.
+- Your chat: timestamps, names in class colors, copy from chat (nothing is sent), whispers with their own sound and history per person, and a spam filter with "see what was filtered".
+- Item, spell, NPC and quest IDs in the tooltip with Shift, for bug reports.
+- With a full quest log, Alfa no longer tries to accept quests (goodbye red error): it tells you once.
+- The minimap addon button no longer disappears: it stays faint and shows on mouseover.
+- On a flight with stops, the next stop advances by itself on the flight bar.
+- Lya's page shows how many tips you silenced and lets you bring them back; Cooking no longer keeps old ingredients.
+
 ## 1.3.6 — La manada te guía: Alfa más rápido al navegar y fácil para quien empieza (20/11/2026)
 
 50 mejoras con un solo fin: que moverte por Alfa sea rápido y que alguien que nunca lo ha usado entienda todo a la primera. Cada cambio trae su prueba en el banco y pasó una revisión independiente.

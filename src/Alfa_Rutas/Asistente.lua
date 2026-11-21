@@ -80,10 +80,10 @@ local function opciones(camino)
 		local Gd = G()
 		local id = Gd and Gd.Suggest and Gd.Suggest()
 		local g = id and Gd.Get(id)
-		if listas >= 5 then
+		if listas >= M.Vuelta.MIN then
 			out[#out + 1] = { icono = "ic-misiones", tono = "exito", titulo = format(L["Entrega tus %d misiones listas"], listas),
 				texto = L["Primero cobra lo que ya hiciste: una ruta por el camino más corto, junta por PNJ."],
-				accion = { texto = L["Armar la ruta"], icono = "ic-seguir" }, alClic = hacer(function() M.Cerrar.Ahora("listas") end) }
+				accion = { texto = L["Armar la ruta"], icono = "ic-seguir" }, alClic = hacer(function() M.EntregarListas() end) }
 		end
 		if g then
 			local t = tarjetaGuia(g)
@@ -110,8 +110,8 @@ local function opciones(camino)
 		out[#out + 1] = { icono = "ic-oro", tono = "oro", titulo = L["Mi ruta: hacer oro"], texto = L["Misiones que dejan dinero y materiales de tu profesión para vender."],
 			accion = { texto = L["Armar la ruta"], icono = "ic-seguir" }, alClic = hacer(rutaDePlantilla("oro")) }
 		if listas > 0 then
-			out[#out + 1] = { icono = "ic-misiones", tono = "exito", titulo = format(L["Cobra tus %d misiones listas"], listas), texto = L["Su oro y sus recompensas ya son tuyos: solo falta entregarlas."],
-				alClic = hacer(function() M.Cerrar.Ahora("listas") end) }
+			out[#out + 1] = { icono = "ic-misiones", tono = "exito", titulo = listas == 1 and L["Cobra tu misión lista"] or format(L["Cobra tus %d misiones listas"], listas), texto = L["Su oro y sus recompensas ya son tuyos: solo falta entregarlas."],
+				alClic = hacer(function() M.EntregarListas() end) }
 		end
 		out[#out + 1] = { icono = "ic-oficios", tono = "aviso", titulo = L["Juntar materiales para vender"], texto = L["Lo que tu profesión de recolección junta mejor."],
 			alClic = hacer(rutaDePlantilla("prof")) }
@@ -128,7 +128,7 @@ local function opciones(camino)
 			local u = A.UI
 			local lv = u and u.LevelRange and u.LevelRange(reco.min, reco.max)
 			if lv then ins[#ins + 1] = { format(L["Nivel %s"], lv), "mazmorra" } end
-			if (reco.recoger or 0) > 0 then ins[#ins + 1] = { format(L["%d misiones para recoger"], reco.recoger), "acento" } end
+			if (reco.recoger or 0) > 0 then ins[#ins + 1] = { M.Plural(reco.recoger, L["%d misión para recoger"], L["%d misiones para recoger"]), "acento" } end
 			local frase = AM.Frase and AM.Frase(reco.key)
 			out[#out + 1] = { icono = "ic-mazmorra", tono = "mazmorra", titulo = reco.nombre or L["La mazmorra para mi nivel"],
 				texto = frase or reco.zona or L["Sus jefes, su botín, sus misiones y cómo llegar."], insignias = ins,

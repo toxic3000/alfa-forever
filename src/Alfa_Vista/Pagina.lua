@@ -42,7 +42,7 @@ local function estado()
 		d.texto = format(L["Tienes puesto «%s». Abre la ventana para afinar cada detalle: distancia, pasto, niebla, agua, cámara, placas y filtros."], p.nombre)
 	elseif n > 0 then
 		d.tono, d.estado = "acento", { texto = L["A tu gusto"], tono = "acento" }
-		d.texto = format(L["Alfa mantiene %d ajustes que elegiste. Abre la ventana para ver o cambiar cada uno."], n)
+		d.texto = N.Plural(n, L["Alfa mantiene %d ajuste que elegiste. Abre la ventana para verlo o cambiarlo."], L["Alfa mantiene %d ajustes que elegiste. Abre la ventana para ver o cambiar cada uno."])
 	else
 		d.tono, d.estado = "neutro", { texto = L["Como el juego"], tono = "neutro" }
 		d.texto = L["Alfa no ha cambiado nada todavía. Prueba «Paisaje de la manada» o abre la ventana para ver los ajustes que el menú del juego no enseña."]
@@ -129,6 +129,23 @@ local BUSCAR = {
 	{ kind = "toggle", key = ID .. ".barras", label = L["Barras de cine"], search = "letterbox, cinematic" },
 	{ kind = "toggle", key = ID .. ".reaplicar", label = L["Volver a poner mis valores al entrar"], search = "graphics, gráficos, reapply" },
 }
+-- 1.3.7: también el tinte de color y los atajos de variables del juego
+-- (placas de mascotas y tótems, la niebla). Si tu juego no tiene la
+-- variable, M.Pedir no escribe nada.
+do
+	local tintes = {}
+	for _, t in ipairs(M.TINTES or {}) do tintes[#tintes + 1] = { value = t.id, label = t.nombre } end
+	BUSCAR[#BUSCAR + 1] = { kind = "dropdown", key = ID .. ".tinte", label = L["Tinte de color"], choices = tintes,
+		help = L["La fuerza se cambia en la ventana, en Filtros."], search = "tint, color filter, tinte, filtro de color" }
+	local function cvarBuscar(cvar, label, help, search)
+		BUSCAR[#BUSCAR + 1] = { kind = "toggle", label = label, help = help, search = search,
+			get = function() local n = tonumber(M.ValorDe(cvar)) return n ~= nil and n ~= 0 end,
+			set = function(on) M.Pedir(cvar, on and 1 or 0) end }
+	end
+	cvarBuscar("nameplateShowEnemyPets", L["Placas de mascotas enemigas"], L["Fuera de combate; necesita las placas de enemigos encendidas."], "nameplates, enemy pets, placas, mascotas")
+	cvarBuscar("nameplateShowEnemyTotems", L["Placas de tótems enemigos"], L["Fuera de combate; necesita las placas de enemigos encendidas."], "nameplates, enemy totems, placas, totems")
+	cvarBuscar("disableHorizonStart", L["Quitar la niebla del horizonte"], L["El paisaje lejano deja de perderse en la niebla espesa."], "fog, horizon, niebla")
+end
 
 N.Modulo({
 	id = ID, nombre = L["Paisaje y gráficos"], icono = "ic-apariencia", orden = 33, seccion = "mundo",

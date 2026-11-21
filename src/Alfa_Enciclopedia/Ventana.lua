@@ -25,6 +25,9 @@ local floor, max, min, format = math.floor, math.max, math.min, string.format
 local ESP = K.ESP
 
 local ANCHO, ALTO = 1040, 660
+-- 1.3.7: la ventana se agranda y se achica por su esquina; nunca más grande
+-- que la pantalla (con la interfaz grande, en pantallas chicas, no cabía).
+local ANCHO_MIN, ALTO_MIN = 720, 460
 local FILA = 40
 local CAPA = "enciclopedia" -- la capa de Alfa.Pins con lo que pides ver en el mapa
 local VISIBLES, EXPANDIDAS = 5, 50 -- filas de una sección: plegada y abierta
@@ -256,7 +259,12 @@ local function bloqueAcciones(pila)
 	b.Extra = K.Boton(b, "", nil, { tipo = "secundario", icono = "ic-ventana" })
 	b.Compra = K.Boton(b, L["A mi lista de compras"], nil, { tipo = "secundario", icono = "ic-oro",
 		ayuda = L["Lo suma a tu lista de compras de Comercio, con lo que pide su receta."] })
-	b.lista = { b.Guiar, b.Plan, b.Falta, b.Extra, b.Mapa, b.Ruta, b.Compra, b.Vincular }
+	-- 1.3.7: en la ficha de una zona, su guía y su circuito a un clic.
+	b.GuiaZona = K.Boton(b, L["Guía de esta zona"], nil, { tipo = "primario", icono = "ic-guia",
+		ayuda = L["Abre la guía de subir de nivel de esta zona que mejor te queda."] })
+	b.Circuito = K.Boton(b, L["Circuito de la zona"], nil, { tipo = "secundario", icono = "ic-ruta",
+		ayuda = L["Tus misiones y las de aquí en el mejor orden, como una guía."] })
+	b.lista = { b.Guiar, b.GuiaZona, b.Circuito, b.Plan, b.Falta, b.Extra, b.Mapa, b.Ruta, b.Compra, b.Vincular }
 	function b:Set(f)
 		local a = f.acciones or {}
 		local clave = f.kind .. ":" .. tostring(f.id)
@@ -299,6 +307,10 @@ local function bloqueAcciones(pila)
 		end
 		self.Falta:SetShown(a.desbloquear ~= nil)
 		self.Falta.alClic = function() pcall(a.desbloquear) end
+		self.GuiaZona:SetShown(a.guiaZona ~= nil)
+		self.GuiaZona.alClic = function() local ok, msg = a.guiaZona() aviso(ok, msg) end
+		self.Circuito:SetShown(a.circuito ~= nil)
+		self.Circuito.alClic = function() local ok, msg = a.circuito() aviso(ok, msg) end
 		self.Vincular:SetShown(a.vincular ~= nil)
 		self.Vincular.alClic = function() local ok, msg = a.vincular() if not ok then aviso(false, msg) end end
 		-- Mis planes (Alfa_Rutas): un objetivo "conseguir este objeto".
@@ -1234,13 +1246,66 @@ local function ocultarMotivo()
 	est.esperaCombate = nil
 end
 
+-- 1.3.7: el tamaño, guardado por cuenta, y lo que cabe en tu pantalla.
+local function tamPantalla()
+	local W = K.num(UIParent and UIParent:GetWidth(), 1920)
+	local H = K.num(UIParent and UIParent:GetHeight(), 1080)
+	return W - 40, H - 60
+end
+function V.Tamano()
+	local d = N.Datos(M.ID)
+	local t = type(d.tam) == "table" and d.tam or {}
+	local pw, ph = tamPantalla()
+	local w = min(max(ANCHO_MIN, tonumber(t[1]) or ANCHO), max(ANCHO_MIN, pw))
+	local h = min(max(ALTO_MIN, tonumber(t[2]) or ALTO), max(ALTO_MIN, ph))
+	return floor(w), floor(h)
+end
+function V.Redimensionar(w, h, guardar)
+	if not v then return end
+	local pw, ph = tamPantalla()
+	w = floor(min(max(ANCHO_MIN, w or ANCHO), max(ANCHO_MIN, pw)))
+	h = floor(min(max(ALTO_MIN, h or ALTO), max(ALTO_MIN, ph)))
+	v:SetTamano(w, h)
+	if guardar then N.Datos(M.ID).tam = { w, h } end
+end
+function V.ArmarAsa()
+	v:SetResizable(true)
+	if v.SetResizeBounds then v:SetResizeBounds(ANCHO_MIN, ALTO_MIN) elseif v.SetMinResize then v:SetMinResize(ANCHO_MIN, ALTO_MIN) end
+	local asa = CreateFrame("Button", nil, v)
+	asa:SetSize(16, 16)
+	asa:SetFrameLevel(v:GetFrameLevel() + 40)
+	asa:SetPoint("BOTTOMRIGHT", v, "BOTTOMRIGHT", -4, 4)
+	asa.t = K.Icono(asa, "resize", 16, "textoTenue", "OVERLAY")
+	asa.t:SetAllPoints()
+	asa:SetScript("OnEnter", function(self) K.SetIcono(self.t, "resize", "texto") end)
+	asa:SetScript("OnLeave", function(self) K.SetIcono(self.t, "resize", "textoTenue") end)
+	asa:SetScript("OnMouseDown", function() if v.StartSizing then v:StartSizing("BOTTOMRIGHT") end end)
+	asa:SetScript("OnMouseUp", function()
+		v:StopMovingOrSizing()
+		V.Redimensionar(v:GetWidth(), v:GetHeight(), true)
+	end)
+	K.ConInfo(asa, L["Cambiar el tamaño"], L["Arrastra la esquina para agrandar o achicar la enciclopedia."])
+	-- 1.3.7: mientras se arrastra, una sola vez al pararse (no en cada cuadro).
+	v:HookScript("OnSizeChanged", function()
+		if not (v.alAcomodar and v:IsShown()) then return end
+		if N.Una then
+			N.Una("enciclopedia.acomodar", 0.1, function() if v:IsShown() then acomodar() end end)
+		else
+			acomodar()
+		end
+	end)
+	v.Asa = asa
+end
+
 local function crear()
+
 	v = K.Ventana({ nombre = "AlfaEnciclopediaVentana", titulo = L["Enciclopedia"], subtitulo = L["Todo el juego, aunque no lo tengas"],
-		icono = "ic-enciclopedia", ancho = ANCHO, alto = ALTO,
+		icono = "ic-enciclopedia", ancho = V.Tamano(), alto = select(2, V.Tamano()),
 		alCerrar = function()
 			if GameTooltip then GameTooltip:Hide() end
 			if reloj then reloj:Cancel() reloj = nil end
 		end })
+	V.ArmarAsa()
 	local cuerpo = v.Cuerpo
 	ui.buscador = K.Buscador(cuerpo, { ayuda = L["Busca cualquier cosa, en español o en inglés…"], retraso = 0.25,
 		alCambiar = function(t)
@@ -1284,6 +1349,9 @@ function V.Abrir(p)
 	if N.Permitido and not N.Permitido() then return end
 	p = p or {}
 	if not v then crear() end
+	-- 1.3.7: si la pantalla cambió (la escala de la interfaz), que siga cabiendo.
+	local w, h = V.Tamano()
+	if not v:IsShown() and (floor(K.num(v:GetWidth(), 0)) ~= w or floor(K.num(v:GetHeight(), 0)) ~= h) then v:SetTamano(w, h) end
 	v:Abrir()
 	local C, motivo = M.Codex()
 	if not C then return V.MostrarMotivo(motivo) end

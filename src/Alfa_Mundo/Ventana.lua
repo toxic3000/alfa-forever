@@ -373,19 +373,103 @@ local function lugarEn(x, y)
 	return mapa, px, py, Geo.Nombre(mapa)
 end
 
+-- 1.3.7: lo que sale mal en el mapa se dice en el mapa, no en el chat: un
+-- letrero abajo de la vista que se va solo. Con el mapa cerrado, al chat.
+local mensaje
+function V.Decir(texto, tono)
+	if not (F and F:IsShown() and vista) then
+		N.Imprimir(texto)
+		return false
+	end
+	if not mensaje then
+		mensaje = CreateFrame("Frame", nil, vista)
+		mensaje:SetFrameLevel(vista:GetFrameLevel() + (Lz.NIVELES or 30) + 140)
+		mensaje:EnableMouse(false)
+		mensaje.caja = K.Caja(mensaje, { fondo = "panel", borde = "lineaFuerte", corte = K.CORTE.chico })
+		mensaje.Icono = K.Icono(mensaje, "ic-alerta", 14, "aviso")
+		mensaje.Icono:SetPoint("LEFT", mensaje, "LEFT", ESP.m, 0)
+		mensaje.Texto = K.Texto(mensaje, "nota", "texto")
+		mensaje.Texto:SetPoint("LEFT", mensaje.Icono, "RIGHT", ESP.s, 0)
+	end
+	K.SetIcono(mensaje.Icono, tono == "info" and "ic-info" or "ic-alerta", tono == "info" and "acento" or "aviso")
+	K.Escribir(mensaje.Texto, texto or "")
+	local vw = K.num(vista:GetWidth(), 600)
+	local tw = min(K.AnchoTexto(mensaje.Texto) + 4, vw - 120)
+	local h = K.Parrafo(mensaje.Texto, tw, 2)
+	mensaje:SetSize(tw + ESP.m * 2 + 14 + ESP.s, max(28, h + ESP.s * 2))
+	mensaje:ClearAllPoints()
+	mensaje:SetPoint("BOTTOM", vista, "BOTTOM", 0, ESP.m)
+	mensaje:Show()
+	V.mensaje = texto
+	if N.Una then
+		N.Una("mundo.mensaje", 4, function() if mensaje then mensaje:Hide() end V.mensaje = nil end)
+	end
+	return true
+end
+M.Decir = V.Decir
+
+-- 1.3.7: la primera vez que abres el mapa, sus atajos a la vista (una
+-- tarjetita arriba de la vista con «Entendido»). Se guarda por cuenta.
+local atajos
+local function atajosVistos()
+	local d = N.Datos("mundo")
+	return d.atajosVistos == true
+end
+function V.OcultarAtajos(guardar)
+	if guardar then N.Datos("mundo").atajosVistos = true end
+	if atajos then atajos:Hide() end
+end
+function V.AtajosVisibles() return atajos ~= nil and atajos:IsShown() end
+local function mostrarAtajos()
+	if atajosVistos() or sinArte or not vista then return end
+	if not atajos then
+		atajos = CreateFrame("Frame", nil, vista)
+		atajos:SetFrameLevel(vista:GetFrameLevel() + (Lz.NIVELES or 30) + 140)
+		atajos:EnableMouse(true)
+		atajos.caja = K.Caja(atajos, { fondo = "panel", borde = "acento", corte = K.CORTE.panel })
+		atajos.Icono = K.Icono(atajos, "ic-mapa", 16, "acento")
+		atajos.Icono:SetPoint("TOPLEFT", atajos, "TOPLEFT", ESP.base, -ESP.base)
+		atajos.Titulo = K.Texto(atajos, "subtitulo", "texto")
+		atajos.Titulo:SetPoint("LEFT", atajos.Icono, "RIGHT", ESP.s, 0)
+		K.Escribir(atajos.Titulo, L["Así se usa el mapa de Alfa"])
+		atajos.Lineas = K.Texto(atajos, "nota", "textoSuave")
+		atajos.Lineas:SetJustifyH("LEFT")
+		K.Escribir(atajos.Lineas, table.concat({
+			L["Clic derecho: pon un marcador ahí."],
+			L["Ctrl+clic: la flecha te lleva ahí."],
+			L["Rueda: acerca y aleja. Arrastra para moverte."],
+		}, "|n"))
+		atajos.Ok = K.Boton(atajos, L["Entendido"], function() V.OcultarAtajos(true) end, { tipo = "primario", tam = "chico" })
+	end
+	local w = 300
+	atajos.Titulo:SetWidth(w - ESP.base * 2 - 22)
+	local h = K.Parrafo(atajos.Lineas, w - ESP.base * 2, 4)
+	atajos.Lineas:ClearAllPoints()
+	atajos.Lineas:SetPoint("TOPLEFT", atajos, "TOPLEFT", ESP.base, -(ESP.base + 22 + ESP.s))
+	atajos.Ok:ClearAllPoints()
+	atajos.Ok:SetPoint("BOTTOMRIGHT", atajos, "BOTTOMRIGHT", -ESP.base, ESP.base)
+	atajos:SetSize(w, ESP.base + 22 + ESP.s + h + ESP.m + K.num(atajos.Ok:GetHeight(), 24) + ESP.base)
+	atajos:ClearAllPoints()
+	atajos:SetPoint("TOP", vista, "TOP", 0, -ESP.m)
+	atajos:Show()
+end
+V.MostrarAtajos = mostrarAtajos
+
 local function nuevoMarcador(x, y)
+	V.OcultarAtajos(true) -- ya lo usó
 	local mapa, px, py = lugarEn(x, y)
 	if not mapa then
-		N.Imprimir(L["Ahí no hay ninguna zona: pon el marcador sobre tierra."])
+		V.Decir(L["Ahí no hay ninguna zona: pon el marcador sobre tierra."])
 		return
 	end
 	M.Editor.Abrir({ nuevo = { mapa = mapa, x = px, y = py } })
 end
 
 local function llevarme(x, y)
+	V.OcultarAtajos(true)
 	local mapa, px, py, nombre = lugarEn(x, y)
 	if not mapa then
-		N.Imprimir(L["Ahí no se puede poner la flecha."])
+		V.Decir(L["Ahí no se puede poner la flecha."])
 		return
 	end
 	if Mk.SeguirPunto(mapa, px, py, format(L["%s (%s)"], nombre or L["Destino"], textoCoords(px, py))) then Mc.Latido() end
@@ -631,6 +715,7 @@ local function construir()
 			mostrado.zona, mostrado.coords = -1, nil
 			pintarBotones(true)
 			actualizarTitulo()
+			mostrarAtajos()
 		end,
 		alCerrar = function()
 			arrastre, inercia = nil, nil
@@ -712,7 +797,7 @@ local function construir()
 	F.Menos = botonZoom(zoom, "\226\128\147", function() zoomEn(meta.z / 2) end, L["Alejar"])
 	F.Menos:SetPoint("TOP", F.Mas, "BOTTOM", 0, -ESP.xs)
 	F.Centrar = K.BotonIcono(zoom, "ic-raros", function()
-		if not centrarEnMi(true) then N.Imprimir(L["Aquí el juego no da tu posición (por ejemplo, dentro de una mazmorra)."]) end
+		if not centrarEnMi(true) then V.Decir(L["Aquí el juego no da tu posición (por ejemplo, dentro de una mazmorra)."], "info") end
 	end, { tam = 32, icono = 16, tipo = "secundario", ayuda = L["Centrar en mí"] })
 	F.Centrar:SetPoint("TOP", F.Menos, "BOTTOM", 0, -ESP.xs)
 
@@ -867,7 +952,7 @@ end
 function V.AlMapaDelJuego()
 	local C = A.Compat
 	if not (C and type(C.CanOpenWorldMap) == "function" and C.CanOpenWorldMap() and type(C.OpenWorldMap) == "function") then
-		N.Imprimir(L["Con la interfaz de mando el mapa del juego se abre con su tecla."])
+		V.Decir(L["Con la interfaz de mando el mapa del juego se abre con su tecla."], "info")
 		return
 	end
 	local zona
@@ -884,7 +969,7 @@ function V.AlMapaDelJuego()
 	if C.OpenWorldMap(zona) then
 		V.Cerrar()
 	else
-		N.Imprimir(L["En combate el mapa del juego no se abre desde Alfa: usa el de Alfa."])
+		V.Decir(L["En combate el mapa del juego no se abre desde Alfa: usa el de Alfa."])
 	end
 end
 

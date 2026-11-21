@@ -113,7 +113,9 @@ end
 local function miles(n)
 	local s = tostring(floor(tonumber(n) or 0))
 	-- En español de México los miles van con coma (12,345), como en Comercio.
-	local sep = ","
+	-- 1.3.7: en alemán, francés, portugués y ruso, el separador de su idioma.
+	local loc = GetLocale and GetLocale()
+	local sep = ({ deDE = ".", ptBR = ".", esES = ".", frFR = " ", ruRU = " " })[loc] or ","
 	while true do
 		local k
 		s, k = s:gsub("^(-?%d+)(%d%d%d)", "%1" .. sep .. "%2")
@@ -263,7 +265,7 @@ local function tarjetaRuta()
 	d.titulo, d.tono = L["Arma una ruta de %s en %s"]:format(nombre, nombreZona(zona)), "acento"
 	d.texto = V.aviso or L["Une los %d lugares que tu habilidad alcanza en una vuelta corta, la dibuja en el mapa y la flecha te lleva de parada en parada."]:format(hay)
 	if V.aviso then d.tono = "aviso" end
-	d.estado = { texto = L["%d lugares"]:format(hay), tono = V.aviso and "aviso" or "acento" }
+	d.estado = { texto = hay == 1 and L["1 lugar"] or L["%d lugares"]:format(hay), tono = V.aviso and "aviso" or "acento" }
 	d.accion = { texto = L["Crear ruta"], icono = "ic-ruta", alClic = crearRuta }
 	return d
 end
@@ -707,8 +709,15 @@ A.RegisterCommand("recoleccion", function(resto)
 	elseif orden == "parar" then
 		Ruta.Detener()
 	elseif orden == "mapa" or orden == "minimapa" then
+		-- 1.3.7: cada uno prende o apaga lo suyo y lo dice (antes los dos
+		-- decían «Nodos visibles.» y no se sabía cuál cambió).
 		N.Set(ID, orden, N.Get(ID, orden) == false)
-		N.Imprimir(N.Get(ID, orden) ~= false and L["Nodos visibles."] or L["Nodos ocultos."])
+		local ver = N.Get(ID, orden) ~= false
+		if orden == "mapa" then
+			N.Imprimir(ver and L["Nodos en el mapa del mundo: visibles."] or L["Nodos en el mapa del mundo: ocultos."])
+		else
+			N.Imprimir(ver and L["Nodos en el minimapa: visibles."] or L["Nodos en el minimapa: ocultos."])
+		end
 	else
 		N.Imprimir(L["Uso: /alfa recoleccion [ruta [mineria|hierbas|pesca|tesoros] | guiar | parar | mapa | minimapa]"])
 	end

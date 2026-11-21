@@ -177,15 +177,12 @@ function Mo.AlSubir(nivel)
 	podar(niveles, 1800)
 	if #niveles < 2 then return false end
 	niveles = {} -- la próxima racha, con dos niveles nuevos
-	-- Después del aullido de siempre (que espera a que termine el combate).
-	K.Despues(12, function()
-		N.FueraDeCombate("lya.momentos.racha", function() K.Despues(12, function() Mo.Festejar(nivel) end) end)
-	end)
+	-- 1.3.7 (36): el festejo reemplaza al aullido de siempre: lo dice Cerebro.lua
+	-- (su PLAYER_LEVEL_UP llama aquí y, si es racha, festeja en vez de aullar).
 	return true
 end
 
 A.RegisterEvent("PLAYER_DEAD", function() Mo.AlMorir() end)
-A.RegisterEvent("PLAYER_LEVEL_UP", function(_, nivel) Mo.AlSubir(nivel) end)
 
 ---------------------------------------------------------------------------
 -- 8. La salchicha

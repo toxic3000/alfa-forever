@@ -67,8 +67,70 @@ function M.Minutos(seg)
 	seg = M.num(seg, 0)
 	local m = floor(seg / 60 + 0.5)
 	if m < 1 then return L["menos de 1 min"] end
-	if m < 60 then return format(L["%d min"], m) end
-	return format(L["%d h %02d min"], floor(m / 60), m % 60)
+	-- 1.3.7: el mismo formato que todo Alfa (N.Duracion).
+	return N.Duracion(m * 60, true)
+end
+
+-- 1.3.7: la experiencia que te da una misión al entregarla (97, 98): la del
+-- juego (GetQuestLogRewardXP, ya con tu nivel) y, sin ella, la del Codex si
+-- ya está cargado (nunca se carga aquí). -> xp | nil
+function M.XPMision(qid)
+	qid = tonumber(qid)
+	if not qid then return nil end
+	local f = rawget(_G, "GetQuestLogRewardXP")
+	if type(f) == "function" then
+		local ok, xp = pcall(f, qid)
+		if ok and type(xp) == "number" and not (issecretvalue and issecretvalue(xp)) and xp > 0 then return xp end
+	end
+	local C = M.Motor("Codex")
+	if C and C.IsLoaded and C.IsLoaded() and C.Quest then
+		local ok, q = pcall(C.Quest, qid)
+		local xp = ok and type(q) == "table" and tonumber(q.xp) or nil
+		if xp and xp > 0 then
+			local Lv = M.Motor("Levels")
+			local nivel = UnitLevel and tonumber(UnitLevel("player")) or 1
+			local parte = 1
+			if Lv and Lv.Share and tonumber(q.level or q.lvl) then
+				local okS, p = pcall(Lv.Share, nivel, tonumber(q.level or q.lvl))
+				if okS and tonumber(p) then parte = p end
+			end
+			return floor(xp * parte + 0.5)
+		end
+	end
+	return nil
+end
+
+-- 1.3.7: tus misiones listas y la experiencia que dan juntas, y si con
+-- entregarlas subes de nivel (98). -> { n, xp, conocidas, subes, faltan }
+local xpListas, xpListasEn = nil, -1e9
+A.RegisterEvent("QUEST_LOG_UPDATE", function() xpListasEn = -1e9 end)
+A.RegisterEvent("PLAYER_XP_UPDATE", function() xpListasEn = -1e9 end)
+function M.XPListas()
+	-- (Hoy pregunta cada segundo: vale unos segundos, o hasta que cambie el registro)
+	local t = GetTime and GetTime() or 0
+	if xpListas and t - xpListasEn < 5 then return xpListas end
+	local Cp = M.Motor("Compat")
+	local r = { n = 0, xp = 0, conocidas = 0, subes = false }
+	xpListas, xpListasEn = r, t
+	if not (Cp and Cp.GetLogQuests and Cp.IsQuestReadyForTurnIn) then return r end
+	for _, q in ipairs(Cp.GetLogQuests() or {}) do
+		if Cp.IsQuestReadyForTurnIn(q) then
+			r.n = r.n + 1
+			local xp = M.XPMision(q)
+			if xp then r.xp, r.conocidas = r.xp + xp, r.conocidas + 1 end
+		end
+	end
+	local x, mx = UnitXP and tonumber(UnitXP("player")) or 0, UnitXPMax and tonumber(UnitXPMax("player")) or 0
+	r.faltan = mx > 0 and math.max(0, mx - x) or nil
+	r.subes = r.faltan ~= nil and r.xp > 0 and r.xp >= r.faltan
+	return r
+end
+
+-- 1.3.7: un número con su palabra en singular o plural (N.Plural del Núcleo;
+-- sin él, el plural).
+function M.Plural(n, uno, varios)
+	if N.Plural then return N.Plural(n, uno, varios) end
+	return format(n == 1 and uno or varios, n)
 end
 
 -- Texto en minúsculas y sin acentos, para buscar.

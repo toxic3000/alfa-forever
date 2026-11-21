@@ -84,14 +84,52 @@ M.AJUSTES = {
 	recargas = true,      -- tus recargas largas en una barra discreta (Recargas.lua)
 	recargasMin = 30,     -- desde cuántos segundos cuenta como larga (30, 60, 120)
 	-- Medidor
-	medidor = false,      -- la ventana del medidor abierta (se recuerda)
-	medidorGrupo = false, -- la ventana solo cuando estás en grupo
-	filas = 10,           -- cuántos en el top
+	-- 1.3.7: cuándo sale la gráfica: "auto" (en grupo, banda o mazmorra),
+	-- "siempre" o "apagado". Quien tenía la ventana abierta (medidor = true)
+	-- pasa a "siempre" (o a "auto" si la tenía solo en grupo): M.ConvertirMedidor.
+	medidorModo = "auto",
+	medidor = false,      -- (hasta la 1.3.6) la ventana abierta; ya solo se lee para convertir
+	medidorGrupo = false, -- (hasta la 1.3.6) solo en grupo; ídem
+	filasBanda = 8,       -- 1.3.7: cuántas filas en banda (en grupo, siempre 5)
+	filas = 10,           -- cuántos en el top de la página
 	anunciar = 5,         -- cuántos se anuncian en el chat
 	opacidad = 1,         -- opacidad de la ventana del medidor
 	sesion = "actual",    -- actual | anterior | todo
 	tipo = "dps",         -- dps | dano | curacion | cps
+	-- 1.3.7: ayudas de jefe y de grupo
+	salDeAhi = true,      -- «¡Sal de ahí!» si estás parado en algo que daña (SalDeAhi.lua), en instancias
+	salDeAhiSonido = true,
+	cuenta = true,        -- la cuenta para jalar, en grande (Cuenta.lua)
+	jefes = true,         -- «Próximo X en ~15 s», aprendido pelea a pelea (Jefes.lua)
+	efectos = false,      -- tus efectos a la vista: DoT, escudos, curas (Efectos.lua)
+	efectosAviso = true,  -- y un aviso suave cuando uno se cae en combate
 }
+
+-- 1.3.7: el modo del medidor que vale ("auto" si lo guardado no es uno).
+M.MODOS_MEDIDOR = { auto = true, siempre = true, apagado = true }
+function M.ModoMedidor()
+	local m = N.Get(ID, "medidorModo")
+	return M.MODOS_MEDIDOR[m] and m or "auto"
+end
+
+-- Los textos de la fila del asistente (Alfa_Bienvenida/Pasos.lua los pide con AlfaCombate.Texto).
+M.TEXTOS_ASISTENTE = { L["La gráfica de daño de tu grupo"], L["Sale sola en grupo, en banda y en mazmorras, pequeña y abajo a la derecha. Yendo solo, no."] }
+
+function M.OpcionesModo()
+	return { { valor = "auto", texto = L["Automático"] }, { valor = "siempre", texto = L["Siempre"] }, { valor = "apagado", texto = L["Apagado"] } }
+end
+
+-- 1.3.7: a quien tenía la ventana del medidor abierta se le respeta (se lee
+-- lo guardado, sin número de migración): con «solo en grupo», "auto"; si no,
+-- "siempre". Quien nunca la abrió (o la cerró: era lo de fábrica) queda en
+-- "auto". Corre al entrar y solo cambia algo una vez (luego medidorModo ya
+-- está guardado).
+function M.ConvertirMedidor(db)
+	db = db or (A.DB and A.DB())
+	local s = type(db) == "table" and type(db.settings) == "table" and db.settings[ID]
+	if type(s) ~= "table" or s.medidorModo ~= nil then return end
+	if s.medidor == true then s.medidorModo = s.medidorGrupo == true and "auto" or "siempre" end
+end
 
 ---------------------------------------------------------------------------
 -- Utilidades
@@ -382,7 +420,8 @@ end
 ---------------------------------------------------------------------------
 -- Refrescar: cada parte decide si se ve. La página se rehace si está abierta.
 ---------------------------------------------------------------------------
-local PARTES = { "Rotacion", "Reacciones", "Golpe", "Panel", "Ventana", "MarcaMision", "Corte", "Amenaza", "Resumen", "Recargas" }
+local PARTES = { "Rotacion", "Reacciones", "Golpe", "Panel", "Ventana", "MarcaMision", "Corte", "Amenaza", "Resumen", "Recargas",
+	"SalDeAhi", "Cuenta", "Jefes", "Efectos" } -- 1.3.7
 
 function M.Refrescar()
 	for _, p in ipairs(PARTES) do
@@ -402,13 +441,21 @@ end
 ---------------------------------------------------------------------------
 local function cada(fn) return function(...) K.Llamar(fn, ...) end end
 
+-- 1.3.7: M.enPelea se sabe desde el primer momento (InCombatLockdown todavía
+-- puede decir que no mientras corre PLAYER_REGEN_DISABLED): lo que recibe el
+-- ratón (el medidor) lo suelta ya.
+M.enPelea = false
 A.RegisterEvent("PLAYER_REGEN_DISABLED", cada(function()
+	M.enPelea = true
+	if M.Ventana then M.Ventana.Pelea(true) end
 	if desbloqueado then M.Desbloquear(false) end
 	if M.Reacciones then M.Reacciones.EntrarCombate() end
 	if M.Resumen then M.Resumen.Empieza() end
 	M.Refrescar()
 end))
 A.RegisterEvent("PLAYER_REGEN_ENABLED", cada(function()
+	M.enPelea = false
+	if M.Ventana then M.Ventana.Pelea(false) end
 	if M.Rotacion then M.Rotacion.PrepararBarras() end
 	if M.Panel then M.Panel.Pedir() end
 	if M.Resumen then M.Resumen.Termina() end
@@ -426,10 +473,11 @@ for _, ev in ipairs({ "UNIT_THREAT_LIST_UPDATE", "UNIT_THREAT_SITUATION_UPDATE" 
 	A.RegisterEvent(ev, cada(function() if M.Amenaza then M.Amenaza.Pedir() end end))
 end
 A.RegisterEvent("SPELL_UPDATE_COOLDOWN", cada(function() if M.Recargas then M.Recargas.Pedir() end end))
-A.RegisterEvent("PLAYER_LEVEL_UP", cada(function()
+-- 1.3.7: después de la animación de nivel del juego, escalonado (N.TrasNivel, Momentos.lua).
+A.RegisterEvent("PLAYER_LEVEL_UP", (N.TrasNivel or function(_, f) return f end)("combate", cada(function()
 	if M.Prioridad then M.Prioridad.Olvidar() end
 	M.Avisar()
-end))
+end)))
 A.RegisterEvent("SPELLS_CHANGED", cada(function()
 	if M.Prioridad then M.Prioridad.Olvidar() end
 	if M.Rotacion then M.Rotacion.Olvidar() end
@@ -447,7 +495,11 @@ end))
 A.RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", cada(function(_, id) if M.Prioridad then M.Prioridad.Brillo(id, false) end end))
 A.RegisterEvent("PLAYER_SWING", cada(function(_, dur, tipo) if M.Golpe then M.Golpe.Golpe(dur, tipo) end end))
 for _, ev in ipairs({ "GROUP_ROSTER_UPDATE", "GROUP_JOINED", "GROUP_LEFT" }) do
-	A.RegisterEvent(ev, cada(function() if M.Ventana then M.Ventana.Ver() end M.Avisar() end))
+	A.RegisterEvent(ev, cada(function() if M.Ventana then M.Ventana.CambioDeGrupo() end M.Avisar() end))
+end
+-- 1.3.7: entrar o salir de una mazmorra también cambia si sale el medidor.
+for _, ev in ipairs({ "PLAYER_ENTERING_WORLD", "ZONE_CHANGED_NEW_AREA" }) do
+	A.RegisterEvent(ev, cada(function() if M.Ventana then M.Ventana.CambioDeGrupo() end end))
 end
 A.RegisterEvent("DAMAGE_METER_COMBAT_SESSION_UPDATED", cada(function(_, tipo, id) if M.Medidor then M.Medidor.Actualizada(tipo, id) end end))
 A.RegisterEvent("DAMAGE_METER_CURRENT_SESSION_UPDATED", cada(function() if M.Medidor then M.Medidor.Nueva() end end))
@@ -510,6 +562,7 @@ end
 
 A.OnLogin(function()
 	K.Llamar(migrar)
+	K.Llamar(M.ConvertirMedidor)
 	-- 1.3.3: «Así se lee tu ayuda de rotación» ya no sale al entrar: la primera
 	-- vez que abres Combate o al terminar tu primera pelea (Rotacion.lua).
 	if M.Reacciones then M.Reacciones.Preparar() end
@@ -546,6 +599,11 @@ AlfaCombate = {
 	Mover = function() M.Desbloquear(not desbloqueado) end,
 	Abrir = function() N.Abrir(ID) end,
 	VentanaMedidor = function() return M.Ventana and M.Ventana.Marco() end,
+	-- 1.3.7: para el menú de Alfa y el asistente.
+	MedidorAbierto = function() return M.Ventana and M.Ventana.Abierta() or false end,
+	ModoMedidor = function() return M.ModoMedidor() end,
+	SetModoMedidor = function(m) if M.MODOS_MEDIDOR[m] then M.SetOpt("medidorModo", m) end end,
+	Texto = function(k) return L[k] end,
 	-- 1.3.0
 	UltimaPelea = function() return M.Resumen and M.Resumen.Ultima() end,
 	Recargas = function() return M.Recargas and M.Recargas.Activas() end,

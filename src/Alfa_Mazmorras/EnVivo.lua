@@ -158,7 +158,8 @@ function Ev.LeerMisiones(key)
 			if f.grupo == "registro" and type(f.q) == "table" then
 				local lista = f.orden == 1 or f.orden == 2
 				local titulo = P.Citar and P.Citar(f.q.title) or tostring(f.q.title or "")
-				local detalle = not lista and type(f.texto) == "string" and f.texto ~= "" and f.texto or nil
+				local tx = P.Texto and P.Texto(f) or f.texto
+				local detalle = not lista and type(tx) == "string" and tx ~= "" and tx or nil
 				out[#out + 1] = { texto = detalle and format(L["%s: %s"], titulo, detalle) or titulo, lista = lista }
 			end
 		end
@@ -283,6 +284,8 @@ local function alObjetivo()
 	if jefe then
 		if not enCombate() then Ev.LeerMisiones(actual.key) end
 		Ev.Mostrar(actual.key, jefe)
+		-- 1.3.7: lo que te falta tomar antes de la pelea (Consumibles.lua).
+		if not enCombate() and M.Consumibles then pcall(M.Consumibles.AlJefe, actual.key, jefe) end
 	elseif Ev.Visible() and not encuentro then
 		irseEn(4)
 	end

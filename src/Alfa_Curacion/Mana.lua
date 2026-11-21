@@ -206,6 +206,18 @@ function Mn.Refrescar()
 		Mn.filas = 0
 		return marco:Hide()
 	end
+	-- 1.3.7: con el asa para mover a la vista, el cuadro sube encima de ella
+	-- (antes la tapaba y no se podía arrastrar).
+	local conAsa = M.asa and M.asa:IsShown() and true or false
+	if marco.alfaConAsa ~= conAsa then
+		marco.alfaConAsa = conAsa
+		marco:ClearAllPoints()
+		if conAsa then
+			marco:SetPoint("BOTTOMLEFT", M.asa, "TOPLEFT", 0, 4)
+		else
+			marco:SetPoint("BOTTOMLEFT", M.ancla, "TOPLEFT", 0, 30)
+		end
+	end
 	local n = 0
 	for i, f in ipairs(marco.filas) do
 		local d = lista[i]

@@ -315,7 +315,7 @@ local DATOS = {
 
 step("Barcos: «4 min» hasta el último minuto, el texto exacto al pasar el ratón", function()
   local Bc = Ru.Barcos
-  check(Bc.Insignia and Bc.Insignia(230) == "4 min" and Bc.Insignia(80) == "2 min" and Bc.Insignia(45) == "0:45"
+  check(Bc.Insignia and Bc.Insignia(230) == "4 min" and Bc.Insignia(80) == "2 min" and Bc.Insignia(45) == "45 s" -- 1.3.7: como en todo Alfa (N.Duracion)
     and Bc.Insignia(0) == "¡Ya!", "la insignia no va en minutos hasta el último minuto")
   local sets, t0 = 0, GetTime()
   local llega = 300
@@ -340,7 +340,7 @@ step("Barcos: «4 min» hasta el último minuto, el texto exacto al pasar el rat
       check(conCuenta and conCuenta.badge:find("min", 1, true), "la insignia no dice los minutos")
       if conCuenta then conCuenta.tooltip(tip) end
       local exacto = Bc.TextoDe("zeppelin-orgrimmar-undercity", "a") or ""
-      check(lineas[2] == exacto and exacto:find("%d:%d%d"), "el cuadro del ratón no trae el texto exacto: " .. tostring(lineas[2]))
+      check(lineas[2] == exacto and exacto:find("%d min"), "1.3.7: el cuadro del ratón no trae el texto exacto: " .. tostring(lineas[2]))
       -- En el último minuto, al segundo.
       llega = 50 + (GetTime() - t0)
       RUN_TIMERS(1)

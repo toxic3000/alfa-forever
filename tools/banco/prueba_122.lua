@@ -96,6 +96,8 @@ FIRE_EVENT("PLAYER_LOGIN")
 FIRE_EVENT("PLAYER_ENTERING_WORLD", true, false)
 T(10)
 local A = Alfa
+-- 1.3.7: aquí solo se prueba «Invitar al clan»; «Ver su equipo» (Talentos) se apaga.
+A.Set("builds.inspeccion", false)
 print("errores al entrar:", #ERRORS)
 for i = 1, #ERRORS do print("   " .. tostring(ERRORS[i]):sub(1, 400)) end
 if AlfaBienvenida and AlfaBienvenida.Pendiente then AlfaBienvenida.Pendiente = function() return false end end
@@ -121,7 +123,11 @@ local RETRATO = { unit = "target", name = "Nimzy", fromTargetFrame = true }
 
 step("se engancha a los menús de un jugador", function()
   for _, tag in ipairs({ "MENU_UNIT_PLAYER", "MENU_UNIT_PARTY", "MENU_UNIT_RAID_PLAYER", "MENU_UNIT_FRIEND", "MENU_UNIT_COMMUNITIES_WOW_MEMBER" }) do
-    check(REGISTRADOS[tag] and #REGISTRADOS[tag] == 1, "sin gancho (o doble) en " .. tag)
+    -- 1.3.7: Talentos también agrega «Ver su equipo (Alfa)» (Inspeccion.lua) en algunos de estos menús.
+    local B = NS_OF("Alfa_Builds")
+    local extra = 0
+    for _, t in ipairs(B and B.Inspeccion and B.Inspeccion.MENUS or {}) do if t == tag then extra = 1 end end
+    check(REGISTRADOS[tag] and #REGISTRADOS[tag] == 1 + extra, "sin gancho (o doble) en " .. tag)
   end
   check(not REGISTRADOS.MENU_UNIT_SELF, "no debe engancharse a tu propio retrato")
 end)

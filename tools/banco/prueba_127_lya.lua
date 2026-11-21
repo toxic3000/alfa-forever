@@ -116,20 +116,26 @@ step("Tres caídas en 10 minutos: se sienta a consolarte", function()
   end)
 end)
 
-step("Dos niveles en 30 minutos: un aullido de más", function()
+-- 1.3.7: el festejo de racha reemplaza al aullido de siempre (antes se sumaba).
+step("Dos niveles en 30 minutos: el festejo de racha en vez del aullido de siempre", function()
   NOW = NOW + 5000
   local n = #dichos
   conLya(function()
-    check(Mo.AlSubir(24) == false, "festejó la racha con un solo nivel")
+    FIRE_EVENT("PLAYER_LEVEL_UP", 24)
+    RUN_TIMERS(3)
     NOW = NOW + 600
-    check(Mo.AlSubir(25) == true, "no notó dos niveles en 30 minutos")
+    FIRE_EVENT("PLAYER_LEVEL_UP", 25)
     RUN_TIMERS(3)
   end)
-  local racha
+  local racha, del25 = nil, 0
   for i = n + 1, #dichos do
-    if dichos[i].aullar and type(dichos[i].texto) == "string" and dichos[i].texto:find("25", 1, true) then racha = dichos[i] end
+    if type(dichos[i].texto) == "string" and dichos[i].texto:find("25", 1, true) then
+      del25 = del25 + 1
+      if dichos[i].aullar then racha = dichos[i] end
+    end
   end
   check(racha, "Lya no aulló por la racha de niveles")
+  check(del25 == 1, "con la racha salieron " .. del25 .. " frases del nivel 25 (el festejo debe reemplazar al aullido)")
   NOW = NOW + 5000
   check(Mo.AlSubir(26) == false, "la racha siguió sin dos niveles nuevos")
 end)

@@ -272,6 +272,12 @@ local function grupos(ui, padre)
 	equipo:Fila({ titulo = L["Cebo preferido"], control = desplegable("ceboPreferido", opcionesCebo), hija = true, activa = hijaDe("prepararCebo") })
 	equipo:Fila({ titulo = L["Volver a mi equipo al cerrar el modo"], control = interruptor("restaurarEquipo"), activa = activa,
 		texto = L["Alfa recuerda lo que llevabas antes de ponerte lo de pesca y te lo vuelve a poner."] })
+	-- 1.3.7: «A pelear» / «Volver a mi equipo»
+	equipo:Fila({ titulo = L["Tecla para volver a tus armas"], activa = activa,
+		control = function(fila) return K.Atajo(fila, { accion = M.ACCION_PELEAR, titulo = L["Tecla para volver a tus armas"] }) end,
+		texto = L["Como la espada de la barra: en combate te pone tus armas; fuera de combate, todo tu equipo, y cierra el modo pesca."] })
+	equipo:Fila({ titulo = L["Avisar si te atacan con la caña"], control = interruptor("avisoPelear"), activa = activa,
+		texto = L["Al entrar en combate con la caña puesta, un aviso breve con cómo volver a tus armas."] })
 	-- Las cinco "No cambiar: ..." quedan plegadas bajo "Avanzado" (el Kit no
 	-- pliega grupos: su interruptor las muestra; abiertas si ya excluiste alguna).
 	ui.excluir = {}
@@ -302,6 +308,10 @@ local function grupos(ui, padre)
 	barra:Fila({ titulo = L["Vista mínima al lanzar"], control = interruptor("vistaMinima"), activa = activa,
 		texto = L["Mientras el corcho está en el agua, una línea fina con el tiempo, tu habilidad y lo último que sacaste."] })
 	barra:Fila({ titulo = L["Aviso con lo que sacas"], control = interruptor("resumen"), activa = activa })
+	barra:Fila({ titulo = L["Resumen al cerrar el modo"], control = interruptor("resumenCerrar"), activa = activa,
+		texto = L["Al cerrar el modo pesca, cuánto sacaste mientras estuvo abierto."] })
+	barra:Fila({ titulo = L["Consejos mientras pescas"], control = interruptor("consejos"), activa = activa,
+		texto = L["Cuando se acaba tu cebo y no te queda otro, o cuando llegas al tope de tu rango de Pesca."] })
 	barra:Fila({ titulo = L["Ventana de metas"], control = interruptor("metasVentana"), activa = activa,
 		texto = L["Con el modo pesca abierto y alguna meta, la ventanita de metas se ve sola."] })
 	barra:Fila({ titulo = L["Ocultar la interfaz al pescar"], control = interruptor("ocultarUI"), activa = activa,
@@ -459,6 +469,9 @@ for _, c in ipairs({
 	toggle("barraPlegar", L["Plegarla sola"], L["Sin el ratón encima, la barra guarda sus botones y deja solo lo que pasa."], "barra", "collapse bar"),
 	toggle("vistaMinima", L["Vista mínima al lanzar"], L["Mientras el corcho está en el agua, una línea fina con el tiempo, tu habilidad y lo último que sacaste."], nil, "minimal view, bobber"),
 	toggle("resumen", L["Aviso con lo que sacas"], nil, nil, "catch toast, loot"),
+	toggle("resumenCerrar", L["Resumen al cerrar el modo"], L["Al cerrar el modo pesca, cuánto sacaste mientras estuvo abierto."], nil, "summary, session"),
+	toggle("consejos", L["Consejos mientras pescas"], L["Cuando se acaba tu cebo y no te queda otro, o cuando llegas al tope de tu rango de Pesca."], nil, "tips, lure, skill cap"),
+	toggle("avisoPelear", L["Avisar si te atacan con la caña"], L["Al entrar en combate con la caña puesta, un aviso breve con cómo volver a tus armas."], nil, "combat, weapons, pvp"),
 	toggle("metasVentana", L["Ventana de metas"], L["Con el modo pesca abierto y alguna meta, la ventanita de metas se ve sola."], nil, "goals window"),
 	toggle("ocultarUI", L["Ocultar la interfaz al pescar"], L["Mientras pescas se ve solo el mundo y la barra de pesca. Nunca en combate: al empezar uno, todo vuelve."], nil, "hide ui, hide interface"),
 	toggle("uiMinimapa", L["Dejar el minimapa"], nil, "ocultarUI", "minimap"),

@@ -1,0 +1,8 @@
+{
+ "El botón con el número de addons en la esquina del minimapa solo aparece al pasar el ratón por encima, como los demás botones.": "小地图角落里显示插件数量的按钮只在鼠标移上去时出现，和其他按钮一样。",
+ "Aquí caben 16. Devuelve alguno de arriba para ver los demás, o devuélvelos todos.": "这里最多放 16 个。在上面恢复一个就能看到其他的，或者全部恢复。",
+ "Y %d más": "还有 %d 个",
+ "Todos los que callaste (%d)": "你关掉的所有提示（%d）",
+ "El mapa de Alfa, en el lugar de tu flecha": "Alfa 地图，定位在你的箭头处",
+ "Abre el mapa de Alfa encuadrado donde apunta la flecha, con el camino de tu guía.": "打开 Alfa 地图并定位到箭头所指的位置，显示你的指南路线。"
+}

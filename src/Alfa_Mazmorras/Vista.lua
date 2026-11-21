@@ -136,10 +136,39 @@ local function abrirAjustes() if M.Ajustes then M.Ajustes.Abrir() end end
 -- La recomendada
 ---------------------------------------------------------------------------
 
-local function puntaje(d, nivel)
+-- 1.3.7: qué tan lejos queda su entrada de donde estás, en segundos de
+-- camino (la medida directa del motor, sin armar rutas). Otro continente:
+-- una hora. nil: no se puede medir (dentro de una instancia, sin entrada).
+local OTRO_CONTINENTE = 3600
+local function lejania(d, aqui)
+	local en = d.entrance
+	if not (aqui and type(en) == "table" and en.map and en.x and en.y) then return nil end
+	local fn = A.DirectTravelCost
+	if type(fn) ~= "function" then return nil end
+	local s = llamar(fn, aqui, en)
+	return type(s) == "number" and s or nil
+end
+V.Lejania = lejania
+
+-- Lo que resta la distancia: otra isla pesa como dos niveles y medio; en tu
+-- continente, un punto por minuto de camino (hasta 15).
+local function castigoLejos(d, aqui)
+	local s = lejania(d, aqui)
+	if not s then return 0 end
+	if s >= OTRO_CONTINENTE then return 25 end
+	return min(15, s / 60)
+end
+
+local function aquiEstas()
+	local fn = A.PlayerPoint
+	local p = type(fn) == "function" and llamar(fn) or nil
+	return type(p) == "table" and p or nil
+end
+
+local function puntaje(d, nivel, aqui)
 	local lo, hi = d.minLevel or 1, d.maxLevel or d.minLevel or 60
 	local best = mejorNivel(d.key) or floor((lo + hi) / 2)
-	local s = -abs(best - nivel) * 10
+	local s = -abs(best - nivel) * 10 - castigoLejos(d, aqui)
 	if D.Hecha(d.key) then s = s - 30 end
 	local v = D.Cuenta(d.key)
 	if v > 0 and not D.Hecha(d.key) then s = s + 8 end
@@ -154,10 +183,11 @@ local function recomendada(lista, nivel, lado)
 	if aqui then
 		for _, d in ipairs(lista) do if d.key == aqui then return d, "dentro" end end
 	end
+	local cerca = aquiEstas()
 	for _, tipo in ipairs({ "dungeon", "raid" }) do
 		local cand = {}
 		for _, d in ipairs(lista) do
-			if d.kind == tipo and paraTuNivel(d, nivel, lado) then cand[#cand + 1] = { d = d, p = puntaje(d, nivel) } end
+			if d.kind == tipo and paraTuNivel(d, nivel, lado) then cand[#cand + 1] = { d = d, p = puntaje(d, nivel, cerca) } end
 		end
 		if #cand > 0 then
 			-- Las tres mejores por nivel ganan por lo que ya puedes recoger
@@ -172,10 +202,14 @@ local function recomendada(lista, nivel, lado)
 			return mejor.d, "nivel"
 		end
 	end
-	local sig
+	-- La siguiente: la que se abre primero; entre las que se abren con uno o
+	-- dos niveles de diferencia, la más cercana (1.3.7).
+	local sig, sigP
 	for _, d in ipairs(lista) do
-		if d.kind == "dungeon" and (d.minLevel or 0) > nivel and not capitalEnemiga(d.key, lado)
-			and (not sig or d.minLevel < sig.minLevel) then sig = d end
+		if d.kind == "dungeon" and (d.minLevel or 0) > nivel and not capitalEnemiga(d.key, lado) then
+			local p = -(d.minLevel or 0) * 10 - castigoLejos(d, cerca)
+			if not sig or p > sigP then sig, sigP = d, p end
+		end
 	end
 	if sig then return sig, "pronto" end
 	return nil
@@ -268,8 +302,19 @@ local function accionInicio(d, modo, nivel)
 		t.accion = { texto = L["Ver sus jefes"], icono = "ic-seguir", alClic = function() V.AbrirMazmorra(d.key, "jefes") end }
 	elseif modo == "pronto" then
 		t.sobre = Pz.Mayus(L["Tu siguiente mazmorra"])
-		t.texto = meta .. "\n" .. format(L["Se abre a nivel %d: te faltan %d niveles. Mientras, sigue tu ruta."], d.minLevel or 0, max(1, (d.minLevel or 0) - nivel))
+		local faltan = max(1, (d.minLevel or 0) - nivel)
+		-- 1.3.7: con N.Plural («te falta 1 nivel»).
+		t.texto = meta .. "\n" .. format(L["Se abre a nivel %d: %s. Mientras, sigue tu ruta."], d.minLevel or 0,
+			N.Plural(faltan, L["te falta %d nivel"], L["te faltan %d niveles"]))
 		t.accion = { texto = L["Ver la mazmorra"], icono = "ic-seguir", alClic = abrir }
+		-- 1.3.7: si ya hay misiones suyas que puedes tomar, recogerlas desde ya.
+		local e = P.Estado(d.key)
+		if #e.recoger > 0 then
+			t.texto = t.texto .. " " .. L["Algunas de sus misiones ya se pueden tomar: recógelas desde ahora."]
+			t.accion = { texto = L["Recoger sus misiones ya"], icono = "ic-seguir", alClic = function() P.Preparar(d.key) end }
+			t.secundaria = { texto = L["Ver la mazmorra"], alClic = abrir }
+			ins[#ins + 1] = { N.Plural(#e.recoger, L["%d misión para recoger"], L["%d misiones para recoger"]), "acento" }
+		end
 	else
 		local e = P.Estado(d.key)
 		t.sobre = Pz.Mayus(L["Para tu nivel ahora"])
@@ -312,6 +357,8 @@ end
 local function construirInicio(padre)
 	local t = K.Pila(padre, { espacio = ESP.l })
 	t.Accion = t:Agregar(K.Tarjeta(t, { variante = "accion" }))
+	-- 1.3.7: el límite de instancias por hora del juego (Cronometro.lua).
+	t.Hora = t:Agregar(Pz.Nota(t, "nota", "textoSuave"), { espacio = ESP.m })
 	t.Seccion = t:Agregar(K.Seccion(t, L["Todas las mazmorras"]))
 	t.Rangos = t:Agregar(K.Segmentos(t, { estilo = "pildoras", alCambiar = function(v)
 		estado.rango = v
@@ -337,6 +384,12 @@ local function llenarInicio(t)
 		Pz.ArteEnTarjeta(t.Accion, d.key)
 	end
 	K.Mostrar(t.Accion, d ~= nil)
+	local linea, tono
+	if M.Crono then linea, tono = M.Crono.Linea() end
+	if linea then
+		t.Hora:Set(tono == "aviso" and K.Tenir("aviso", linea) or linea)
+	end
+	K.Mostrar(t.Hora, linea ~= nil)
 	-- Los rangos con mazmorras, y sus tarjetas.
 	local cuenta = {}
 	for _, x in ipairs(lista) do
@@ -381,6 +434,20 @@ local function siguienteJefe(key)
 	end
 	return nil
 end
+V.SiguienteJefe = siguienteJefe
+
+-- 1.3.7: los jefes en el orden en que se encuentran, para el mapa de jefes.
+local function datosMapa(key)
+	local _, sig = siguienteJefe(key)
+	local out = {}
+	for i, jf in ipairs(D.Jefes(key)) do
+		local desc = D.Descubierto(key, jf)
+		out[#out + 1] = { n = i, nombre = desc and (jf.nombre or "?") or format(L["Jefe %d"], i), oculto = not desc,
+			vencido = D.Vencido(key, jf.id) ~= nil, siguiente = i == sig, final = jf.final }
+	end
+	return out
+end
+V.DatosMapa = datosMapa
 
 local function accionMazmorra(key, d, e, nivel)
 	local t = { icono = "ic-mazmorra", tono = "acento" }
@@ -393,6 +460,14 @@ local function accionMazmorra(key, d, e, nivel)
 			t.texto = format(L["Sigue: %s. Lee sus consejos antes de la pelea."], nombre or "?")
 		else
 			t.texto = L["Ya vencieron a todos sus jefes. Si tienes misiones listas, entrégalas al salir."]
+		end
+		-- 1.3.7: cuánto llevas en esta vuelta y tu récord.
+		local Cr = M.Crono
+		local c = Cr and Cr.Estado().dentro
+		if c and c.key == key then
+			local rec = Cr.Record(key)
+			t.texto = t.texto .. "\n" .. (rec and format(L["Llevas %s aquí; tu récord es %s."], N.Duracion(c.seg), N.Duracion(rec))
+				or format(L["Llevas %s aquí."], N.Duracion(c.seg)))
 		end
 		t.estado = { texto = L["Dentro"], tono = "mazmorra" }
 		t.accion = { texto = L["Ver los jefes"], icono = "ic-seguir", alClic = function() V.Pestana("jefes") end }
@@ -409,9 +484,14 @@ local function accionMazmorra(key, d, e, nivel)
 		local partes = { format(L["Es para niveles %s y vas en el %d: te faltan %d niveles."], rango(d.minLevel, d.maxLevel) or "?", nivel, (d.minLevel or 1) - nivel) }
 		local w = P.FrasesEspera(e)
 		if w then partes[#partes + 1] = w end
-		t.texto = concat(partes, " ")
 		t.estado = { texto = format(L["Desde nivel %d"], d.minLevel or 1), tono = "aviso" }
 		t.secundaria = { texto = L["Llévame a la entrada"], alClic = function() P.Entrada(key) end }
+		-- 1.3.7: lo que ya se puede tomar se recoge desde ahora.
+		if #e.recoger > 0 then
+			partes[#partes + 1] = format(L["Ya puedes tomar %d de sus misiones."], #e.recoger)
+			t.accion = { texto = L["Recoger sus misiones ya"], icono = "ic-seguir", alClic = function() P.Preparar(key) end }
+		end
+		t.texto = concat(partes, " ")
 	else
 		local n = #e.recoger
 		if n > 0 then
@@ -439,6 +519,8 @@ local NOMBRE_REQ = { attunement = L["Requisito"], key = L["Llave"], item = L["Ob
 local function construirResumen(padre)
 	local r = K.Pila(padre, { espacio = ESP.l })
 	r.Estado = r:Agregar(K.Tarjeta(r, { variante = "estado" }))
+	-- 1.3.7: el camino de sus jefes (dentro, o si ya venciste alguno).
+	r.Mapa = r:Agregar(Pz.MapaJefes(r))
 	r.Datos = r:Agregar(K.Rejilla(r, { min = 260, gap = ESP.m, variante = "compacta" }))
 	r.SecReq = r:Agregar(K.Seccion(r, L["Requisitos y llaves"]))
 	r.Req = r:Agregar(K.Rejilla(r, { min = 300, gap = ESP.m }), { espacio = ESP.m })
@@ -473,6 +555,9 @@ local function llenarResumen(r, key, d, e, nivel, lado)
 	local x = Dg()
 	local v, total = D.Cuenta(key)
 	local h = D.Hecha(key)
+	local verMapa = total > 1 and (D.MazmorraActual() == key or v > 0)
+	if verMapa then r.Mapa:Set(datosMapa(key)) end
+	K.Mostrar(r.Mapa, verMapa)
 	-- Sus datos: solo los que dicen algo y no están ya en la cabecera (rango,
 	-- mejor nivel, jefes vencidos).
 	local datos = {}
@@ -488,6 +573,12 @@ local function llenarResumen(r, key, d, e, nivel, lado)
 	end
 	if h and (h.veces or 0) > 0 then
 		datos[#datos + 1] = { variante = "compacta", icono = "ic-exito", titulo = L["Veces completada"], valor = tostring(h.veces) }
+	end
+	-- 1.3.7: tu récord (Cronometro.lua).
+	local cr = M.Crono and M.Crono.Datos(key)
+	if cr and cr.mejor then
+		datos[#datos + 1] = { variante = "compacta", icono = "ic-reloj", titulo = L["Tu récord"], valor = N.Duracion(cr.mejor),
+			texto = cr.ultima and cr.ultima ~= cr.mejor and format(L["La última: %s"], N.Duracion(cr.ultima)) or nil }
 	end
 	r.Datos:Llenar(datos)
 	K.Mostrar(r.Datos, #datos > 0)
@@ -548,6 +639,7 @@ local function construirJefes(padre)
 	-- 1.3.6: apagar el modo historia ahí mismo (antes decía «en Ajustes»).
 	j.Apagar = j:Agregar(K.Boton(j, L["Apagar el modo historia"], function() N.Set(ID, "historia", false) end,
 		{ tipo = "secundario", tam = "chico", icono = "ic-ajustes" }), { espacio = ESP.s })
+	j.Mapa = j:Agregar(Pz.MapaJefes(j), { espacio = ESP.s })
 	j.Lista = j:Agregar(K.Pila(j, { espacio = ESP.m }))
 	j.jefes = {}
 	return j
@@ -557,6 +649,8 @@ local function llenarJefes(j, key, e)
 	local jefes = D.Jefes(key)
 	local tuyas = {}
 	for _, f in ipairs(e.lista) do tuyas[f.q.id] = f end
+	if #jefes > 1 then j.Mapa:Set(datosMapa(key)) end
+	K.Mostrar(j.Mapa, #jefes > 1)
 	local ocultos = 0
 	for i, jf in ipairs(jefes) do
 		local b = j.jefes[i]
@@ -804,7 +898,7 @@ local function llenarMisiones(m, key, e, nivel)
 			lista[#lista + 1] = { icono = "ic-exito", tono = "exito", titulo = q.title or "?", valor = q.level and tostring(q.level) or nil }
 		else
 			lista[#lista + 1] = {
-				icono = "ic-misiones", tono = f.tono, sobre = Pz.Mayus(f.estado), titulo = q.title or "?", texto = f.texto, lineas = 3,
+				icono = "ic-misiones", tono = f.tono, sobre = Pz.Mayus(f.estado), titulo = q.title or "?", texto = P.Texto(f), lineas = 3,
 				insignias = q.level and { { format(L["Nivel %d"], q.level), tonoNivel(q.level, nivel) } } or nil,
 				secundaria = f.llevame and { texto = L["Llévame"], alClic = function() P.Llevame(f.llevame, f.etiqueta) end } or nil,
 			}
@@ -963,6 +1057,11 @@ local function construirProgreso(padre)
 	g.Maz = g:Agregar(K.Rejilla(g, { min = 300, gap = ESP.m }), { espacio = ESP.m })
 	g.SecBotin = g:Agregar(K.Seccion(g, L["Botín obtenido"]))
 	g.Botin = g:Agregar(K.Rejilla(g, { min = 280, gap = ESP.s }), { espacio = ESP.m })
+	-- 1.3.7: el botín de tu grupo, con quién se lo llevó y su tirada (BotinGrupo.lua).
+	g.SecGrupo = g:Agregar(K.Seccion(g, L["Botín de tu grupo"]))
+	g.NotaGrupo = g:Agregar(Pz.Nota(g, "pequeno", "textoTenue"), { espacio = ESP.s })
+	g.NotaGrupo:Set(L["Quién se llevó qué en tus mazmorras y bandas, y con qué tirada. Solo lo ves tú: Alfa no anuncia nada."])
+	g.Grupo = g:Agregar(K.Rejilla(g, { min = 280, gap = ESP.s }), { espacio = ESP.m })
 	g.Vacio = g:Agregar(K.Vacio(g, { lobo = "dormido", titulo = L["Todavía no hay progreso"],
 		texto = L["Cuando venzas a tu primer jefe, tu progreso aparecerá aquí."],
 		accion = { texto = L["Ver la de tu nivel"], alClic = function() V.Ir("inicio") end } }))
@@ -1027,7 +1126,23 @@ local function llenarProgreso(g)
 	g.SecBotin:Set(L["Botín obtenido"], { cuenta = #botin })
 	llenarCeldas(g.Botin, celdas)
 	K.Mostrar(g.SecBotin, #celdas > 0)
-	K.Mostrar(g.Vacio, not hay)
+	-- El botín de tu grupo, lo último primero (los 24 más recientes).
+	local Hb = M.Historial
+	local hist = Hb and Hb.Lista(24) or {}
+	local cg = {}
+	for _, e in ipairs(hist) do
+		local o = D.Objeto({ id = e.id })
+		cg[#cg + 1] = { id = e.id, nombre = o.nombre, calidad = o.calidad, icono = o.icono,
+			sub = unir({ Hb.Linea(e), e.k and D.Nombre(e.k) or nil, fecha(e.t) }) }
+	end
+	g.SecGrupo:Set(L["Botín de tu grupo"], { cuenta = #cg, enlace = #cg > 0 and { texto = L["Borrar"], alClic = function()
+		K.Dialogo({ titulo = L["¿Borrar el botín de tu grupo?"], peligro = true, texto = L["Se borra la lista de quién se llevó qué. Tu propio botín se queda."],
+			aceptar = L["Borrar"], alAceptar = function() Hb.Borrar() end })
+	end } or nil })
+	llenarCeldas(g.Grupo, cg)
+	K.Mostrar(g.SecGrupo, #cg > 0)
+	K.Mostrar(g.NotaGrupo, #cg > 0)
+	K.Mostrar(g.Vacio, not hay and #cg == 0)
 end
 
 ---------------------------------------------------------------------------
@@ -1149,7 +1264,8 @@ function M.Anunciar(tipo, key, a, b)
 	local nombre = D.Nombre(key)
 	if tipo == "entrada" then
 		K.Aviso({ lobo = "atento", tono = "mazmorra", duracion = 8, titulo = format(L["Entraste a %s"], nombre),
-			texto = (b or 0) > 0 and format(L["%d jefes, %d vencidos. Sus consejos te esperan en Alfa."], b, a or 0) or L["Sus consejos te esperan en Alfa."],
+			texto = (b or 0) > 0 and format(L["%s, %d vencidos. Sus consejos te esperan en Alfa."], N.Plural(b, L["%d jefe"], L["%d jefes"]), a or 0)
+				or L["Sus consejos te esperan en Alfa."],
 			accion = { texto = L["Ver sus jefes"], alClic = function() V.AbrirMazmorra(key, "jefes") end } })
 	elseif tipo == "jefe" then
 		K.Aviso({ icono = "ic-exito", tono = "exito", titulo = format(L["Descubriste a %s"], (type(a) == "table" and a.nombre) or "?"), texto = nombre,
@@ -1158,8 +1274,16 @@ function M.Anunciar(tipo, key, a, b)
 		P.Olvidar()
 		local e = P.Estado(key)
 		local veces = tonumber(a) or 1
+		local texto = veces > 1 and format(L["Ya van %d veces. La manada aúlla contigo."], veces) or L["La manada aúlla contigo."]
+		-- 1.3.7: cuánto tardaste (b = Crono.Fin).
+		if type(b) == "table" and b.seg then
+			local t = b.record and format(L["¡Nuevo récord: %s! (antes %s)"], N.Duracion(b.seg), N.Duracion(b.antes))
+				or (b.antes and format(L["Tardaste %s (tu récord: %s)."], N.Duracion(b.seg), N.Duracion(b.antes)))
+				or format(L["Tardaste %s."], N.Duracion(b.seg))
+			texto = t .. " " .. texto
+		end
 		K.Aviso({ lobo = "aullando", tono = "acento", duracion = 10, titulo = format(L["¡Completaste %s!"], nombre),
-			texto = veces > 1 and format(L["Ya van %d veces. La manada aúlla contigo."], veces) or L["La manada aúlla contigo."],
+			texto = texto,
 			accion = e.llevas > 0 and { texto = L["Entregar misiones"], alClic = function() P.Entregar(key) end }
 				or { texto = L["Ver tu progreso"], alClic = function() V.Ir("progreso") end } })
 	end
@@ -1175,7 +1299,9 @@ N.Modulo({
 	subtitulo = L["La mazmorra para tu nivel: jefes, botín y consejos."],
 	ajustes = { historia = true, avisoDescubrir = true, avisoEntrar = true, meSirve = false, capaEntradas = true,
 		-- 1.2.9: la tarjeta del jefe en vivo (EnVivo.lua) y tu papel ("auto" | "tanque" | "cura" | "dano")
-		enVivo = true, enVivoRol = "auto" },
+		enVivo = true, enVivoRol = "auto",
+		-- 1.3.7: lo que te falta tomar antes de un jefe (Consumibles.lua) y el botín de tu grupo (BotinGrupo.lua)
+		consumibles = true, historial = true },
 	construir = function(view) V.Construir(view) end,
 })
 
@@ -1221,7 +1347,16 @@ A.RegisterCommand("mazmorras", function(rest)
 	V.Ir("inicio")
 end, L["La mazmorra para tu nivel; con un nombre, esa mazmorra (también: progreso, ajustes)"])
 
-D.AlCambiar(function() V.RefrescarPronto() end)
+-- 1.3.7: lo que cambia con el botín (lo que recoges, el historial del grupo)
+-- solo repinta donde se ve; el resto, siempre.
+D.AlCambiar(function(que)
+	if que == "botin" or que == "historial" then
+		if estado.vista == "progreso" or (estado.vista == "mazmorra" and estado.pestana == "botin") then V.RefrescarPronto(0.5) end
+		return
+	end
+	if que == "crono" and estado.vista == "mazmorra" and estado.pestana ~= "resumen" then return end
+	V.RefrescarPronto()
+end)
 
 A.On("SETTING_CHANGED", function(path)
 	if type(path) == "string" and (path == "" or path == ID or path:sub(1, #ID + 1) == ID .. "." or path == "dungeons.enabled") then
@@ -1235,5 +1370,11 @@ end)
 for _, ev in ipairs({ "PLAYER_LEVEL_UP", "QUEST_ACCEPTED", "QUEST_TURNED_IN", "QUEST_REMOVED" }) do
 	A.RegisterEvent(ev, function() V.RefrescarPronto(0.3) end)
 end
-A.RegisterEvent("QUEST_LOG_UPDATE", function() if estado.vista == "mazmorra" then V.RefrescarPronto(1) end end)
+-- 1.3.7: con cada botín llega QUEST_LOG_UPDATE; solo se repinta si cambió
+-- tu registro (Plan.lua, P.Revisar) o si la pestaña Misiones está a la vista.
+A.RegisterEvent("QUEST_LOG_UPDATE", function()
+	if not V.Visible() then return end
+	if estado.vista == "mazmorra" and estado.pestana == "misiones" then V.RefrescarPronto(1) return end
+	if P.Revisar() then V.RefrescarPronto(1) end
+end)
 A.RegisterEvent("ZONE_CHANGED_NEW_AREA", function() V.RefrescarPronto(1) end)

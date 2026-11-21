@@ -15,6 +15,15 @@
 --   AlfaMazmorras.Recomendada() -> { key, nombre, zona, min, max, modo, recoger, esperan, hecha } | nil
 --   AlfaMazmorras.Preparar(key) -> true         recoge lo que puedes tomar y te lleva a la entrada
 --   AlfaMazmorras.Frase(key) -> texto           qué hará Prepárame, en palabras
+--   1.3.7:
+--   AlfaMazmorras.Tarjeta() -> t | nil   la tarjeta de Hoy con tu mazmorra:
+--       { key, nombre, modo, titulo, texto ("Minas de la Muerte · 3 misiones para recoger"),
+--         recoger, listas, accion = { texto, alClic } }   (nil dentro de una mazmorra: ver Dentro)
+--   AlfaMazmorras.Dentro() -> t | nil    dentro de una mazmorra, para Hoy y el rastreador:
+--       { key, nombre, jefe = { nombre, n, vencidos, total } | nil (todos vencidos),
+--         misiones = { { texto, lista }, ... }, faltan (las que no están listas), seg, record }
+--   AlfaMazmorras.Crono() -> { hora, limite, libreEn, dentro }   el límite de instancias por hora
+--   AlfaMazmorras.Historial(n) -> { { t, k, id, link, quien, tirada, tipo }, ... }   el botín de tu grupo
 
 local ADDON, M = ...
 local N = AlfaNucleo
@@ -128,3 +137,63 @@ AlfaMazmorras = {
 	Preparar = function(key) return P.Preparar(key) end,
 	Frase = function(key) return P.Frase(P.Estado(key)) end,
 }
+
+-- 1.3.7: la tarjeta de Hoy («X · 3 misiones para recoger · Prepárame»).
+function AlfaMazmorras.Tarjeta()
+	local d, modo = V.Recomendada()
+	if not d or modo == "dentro" then return nil end
+	local e = P.Estado(d.key)
+	local nombre = d.name or d.key
+	local t = { key = d.key, nombre = nombre, modo = modo, recoger = #e.recoger, listas = e.listas }
+	local partes = { nombre }
+	if e.listas > 0 then
+		partes[2] = N.Plural(e.listas, L["%d lista para entregar"], L["%d listas para entregar"])
+		t.accion = { texto = L["Entregar misiones"], alClic = function() P.Entregar(d.key) end }
+	elseif #e.recoger > 0 then
+		partes[2] = N.Plural(#e.recoger, L["%d misión para recoger"], L["%d misiones para recoger"])
+		t.accion = { texto = modo == "pronto" and L["Recoger sus misiones ya"] or L["Prepárame"], alClic = function() P.Preparar(d.key) end }
+	elseif modo == "pronto" then
+		partes[2] = format(L["desde nivel %d"], d.minLevel or 0)
+		t.accion = { texto = L["Ver la mazmorra"], alClic = function() V.AbrirMazmorra(d.key) end }
+	else
+		t.accion = { texto = L["Llévame a la entrada"], alClic = function() P.Preparar(d.key) end }
+	end
+	t.titulo = modo == "pronto" and L["Tu siguiente mazmorra"] or L["Tu mazmorra"]
+	t.texto = table.concat(partes, " \194\183 ")
+	t.abrir = function() V.AbrirMazmorra(d.key) end
+	return t
+end
+
+-- 1.3.7: dentro de una mazmorra, el siguiente jefe y tus misiones de ahí.
+function AlfaMazmorras.Dentro()
+	-- Fuera de una instancia no hace falta cargar el Codex (~7 MB).
+	if IsInInstance then
+		local ok, dentro = pcall(IsInInstance)
+		if ok and not dentro then return nil end
+	end
+	if not D.Listo() then return nil end
+	local key = D.MazmorraActual()
+	if not key then return nil end
+	local v, total = D.Cuenta(key)
+	local t = { key = key, nombre = D.Nombre(key), vencidos = v, total = total }
+	local j, i = V.SiguienteJefe(key)
+	if j then
+		t.jefe = { nombre = D.Descubierto(key, j) and j.nombre or format(L["el jefe %d"], i), n = i, vencidos = v, total = total, final = j.final }
+	end
+	local Ev = M.EnVivo
+	local ms = Ev and Ev.LeerMisiones and Ev.LeerMisiones(key) or {}
+	t.misiones, t.faltan = {}, 0
+	for _, m in ipairs(ms or {}) do
+		t.misiones[#t.misiones + 1] = { texto = m.texto, lista = m.lista }
+		if not m.lista then t.faltan = t.faltan + 1 end
+	end
+	local Cr = M.Crono
+	local c = Cr and Cr.Estado().dentro
+	if c and c.key == key then t.seg = c.seg end
+	t.record = Cr and Cr.Record(key) or nil
+	t.abrir = function() V.AbrirMazmorra(key, "jefes") end
+	return t
+end
+
+function AlfaMazmorras.Crono() return M.Crono and M.Crono.Estado() or nil end
+function AlfaMazmorras.Historial(n) return M.Historial and M.Historial.Lista(n) or {} end

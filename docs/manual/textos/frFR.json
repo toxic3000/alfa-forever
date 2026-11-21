@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "La 1.3.6 : la meute te guide", "items": ["**Cherche dans tout Alfa :** la recherche en haut trouve pages et réglages, attend que tu aies fini d'écrire et, sinon, te propose Lya.", "**Pour qui débute :** chaque page dit à quoi elle sert, le mode simple est plus simple, la visite montre le loup de la minicarte et la touche « Qu'est-ce que c'est ? », et il y a des boutons au lieu de commandes.", "**Plus léger :** les pages s'ouvrent plus vite et se souviennent d'où tu étais. **Mode léger** pour les ordinateurs modestes, dans Style et son.", "**Ton combat ne gêne plus :** le résumé ne couvre plus tes barres d'action et tu peux le déplacer où tu veux."]}
+    "mapa": {"titulo": "La 1.3.7 : la meute à ton rythme", "items": ["**Des avis au bon moment :** tout fait la queue et attend le jeu ; en montant de niveau, un seul résumé. `/alfa calma` pour ne pas être dérangé et « Ce que j'ai manqué » (`/alfa perdi`) pour ce qui t'a échappé.", "**Chaque zone est annoncée :** à ton arrivée, en grand et avec son animation (bateau, rare, donjon, découverte…). À choisir dans Réglages > Style et son > Annonces.", "**Ton or et tes dégâts :** l'or s'affiche une fois ; les pièces montrent celui de chaque personnage. Le compteur de dégâts apparaît seul en groupe, sans couvrir tes barres.", "**La pêche, prête au combat :** l'épée de la barre te rend tes armes en un clic, même en plein combat."]}
   },
   "contraportada": {
     "titulo": "Rejoignez la meute",

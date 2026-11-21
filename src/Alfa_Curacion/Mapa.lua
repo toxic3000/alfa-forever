@@ -298,8 +298,14 @@ local function dialogoAbierto()
 	return type(velo) == "table" and velo.IsShown and velo:IsShown() and true or false
 end
 
+local ofrecidas = {} -- 1.3.7: lo ya ofrecido en la sesión (un aviso que se fue no vuelve con cada cambio del libro)
 local function ofrecer(lista)
 	local K = N.Kit
+	local nuevas = {}
+	for _, o in ipairs(lista) do if not ofrecidas[o.clave] then nuevas[#nuevas + 1] = o end end
+	if #nuevas == 0 then return end
+	lista = nuevas
+	for _, o in ipairs(lista) do ofrecidas[o.clave] = true end
 	local lineas = {}
 	for _, o in ipairs(lista) do
 		local nombre = M.NombreHechizo(o.nuevo.id) or "?"
@@ -310,10 +316,7 @@ local function ofrecer(lista)
 			lineas[#lineas + 1] = string.format(L["%s: %s"], M.NombreRanura(o.ranura), nombre)
 		end
 	end
-	local texto = L["Aprendiste un hechizo que le queda mejor a tus clics:"] .. "\n" .. table.concat(lineas, "\n")
-	-- 1.3.6: un aviso con su botón, en vez de mandar a escribir un comando.
-	K.Aviso({ titulo = L["Hechizo nuevo para tus clics de Curación"], icono = "ic-curacion", duracion = 10,
-		accion = { texto = L["Abrir Curación"], alClic = function() N.Abrir(ID) end } })
+	local texto = table.concat(lineas, "\n")
 	local function usar()
 		local d = M.Datos()
 		local mapa = M.Mapa()
@@ -326,12 +329,14 @@ local function ofrecer(lista)
 		d.rechazos = type(d.rechazos) == "table" and d.rechazos or {}
 		for _, o in ipairs(lista) do d.rechazos[o.clave] = true end
 	end
-	if not (K and K.Dialogo) then return rechazar() end
-	K.Dialogo({
-		titulo = L["¿Usar tu hechizo nuevo?"], icono = "ic-curacion", texto = texto,
-		aceptar = L["Usarlo"], cancelar = L["Ahora no"],
-		alAceptar = usar, alCancelar = rechazar,
-	})
+	if not (K and K.Aviso) then return rechazar() end
+	-- 1.3.7: un solo aviso con «Usarlo / Ahora no» (antes, un aviso y además un
+	-- diálogo con velo que tapaba la pantalla al subir de nivel). Espera a que
+	-- termine la animación del juego (K.Aviso, Momentos.lua). Si se va sin
+	-- respuesta, se vuelve a ofrecer la próxima vez que cambie tu libro.
+	K.Aviso({ titulo = L["Hechizo nuevo para tus clics de Curación"], icono = "ic-curacion", texto = texto,
+		duracion = 20, lya = false, importante = true, id = "curacion.mejoras",
+		acciones = { { texto = L["Usarlo"], alClic = usar }, { texto = L["Ahora no"], alClic = rechazar } } })
 end
 
 function M.RevisarMejoras()
@@ -514,6 +519,37 @@ function M.RevisarVenda()
 	if usa then M.AplicarMapa() end
 	return true
 end
+-- 1.3.7: subir Primeros auxilios puede abrir una venda mejor.
+A.RegisterEvent("SKILL_LINES_CHANGED", function()
+	N.FueraDeCombate("curacion.vendaNivel", function() M.RevisarVenda() end)
+end)
+
+-- 1.3.7: un clic de venda sin venda que puedas usar te lo dice (una vez cada
+-- 30 s). Va enganchado después del clic (HookScript): no atrapa nada.
+local BOTON = { LeftButton = "1", RightButton = "2", MiddleButton = "3" }
+local ultimoSinVenda = -999
+function M.RanuraDelClic(boton)
+	local s = BOTON[boton or ""]
+	if not s then return nil end
+	local p = ""
+	if IsShiftKeyDown and IsShiftKeyDown() then p = "shift-"
+	elseif IsControlKeyDown and IsControlKeyDown() then p = "ctrl-"
+	elseif IsAltKeyDown and IsAltKeyDown() then p = "alt-" end
+	return p .. s
+end
+function M.AlClic(_, boton)
+	if M.venda then return end
+	local r = M.RanuraDelClic(boton)
+	local e = r and M.Mapa()[r]
+	if not (type(e) == "table" and e.t == "venda") then return end
+	local ahora = GetTime and GetTime() or 0
+	if ahora - ultimoSinVenda < 30 then return end
+	ultimoSinVenda = ahora
+	N.Imprimir(M.LlevasVendas() and L["Tus vendas piden más Primeros auxilios del que tienes: sube tu oficio o lleva vendas más sencillas."]
+		or L["No llevas vendas en las bolsas: el clic de venda no hace nada hasta que tengas una."])
+	return true
+end
+
 local vendaPendiente = false
 A.RegisterEvent("BAG_UPDATE_DELAYED", function()
 	if vendaPendiente then return end
@@ -523,7 +559,7 @@ A.RegisterEvent("BAG_UPDATE_DELAYED", function()
 		M.RevisarVenda()
 	end)
 end)
-A.RegisterEvent("PLAYER_LEVEL_UP", function() M.ProgramarRevision() end)
+A.RegisterEvent("PLAYER_LEVEL_UP", (N.TrasNivel or function(_, f) return f end)("curacion.revision", function() M.ProgramarRevision() end)) -- 1.3.7
 A.RegisterEvent("SPELLS_CHANGED", function()
 	if M.listo then M.ProgramarRevision() else M.Inicial() end
 	M.Avisar()

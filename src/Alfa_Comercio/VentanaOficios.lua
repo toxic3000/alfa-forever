@@ -131,7 +131,7 @@ local function siguientePaso(linea)
 		if x.paso == p then r, veces = x.reactivos, x.veces or 0 end
 	end
 	if p.o then
-		d.titulo = format(L["Haz %s: unas %d veces"], M.NombreObjeto(p.o), veces)
+		d.titulo = veces == 1 and format(L["Haz %s: una vez"], M.NombreObjeto(p.o)) or format(L["Haz %s: unas %d veces"], M.NombreObjeto(p.o), veces)
 		d.texto = format(L["Cada vez: %s."], textoReactivos(r))
 		if p.t then d.texto = d.texto .. " " .. L[p.t] end
 	else
@@ -166,7 +166,7 @@ local function tarjetasPasos(linea)
 			d.icono, d.tenir = iconoDe(p.o) or "ic-oficios", false
 			d.titulo = M.NombreObjeto(p.o)
 			local veces = x.estado == "hecho" and (p.n or 1) or (x.veces or p.n or 1)
-			d.texto = format(L["%s · unas %d veces"], textoReactivos(x.reactivos), veces)
+			d.texto = veces == 1 and format(L["%s · una vez"], textoReactivos(x.reactivos)) or format(L["%s · unas %d veces"], textoReactivos(x.reactivos), veces)
 			if x.estado ~= "hecho" then
 				d.alClic = function()
 					if M.Lista.Agregar(p.o, veces) then

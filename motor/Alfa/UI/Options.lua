@@ -2727,6 +2727,10 @@ function O.MenuItems(anchor, opts)
 			Lya.Guia()
 		end }
 	end
+	-- 1.3.7: «Lo que me perdí» (Alfa_Nucleo/Momentos.lua), con cuántos no viste.
+	local Nu = rawget(_G, "AlfaNucleo")
+	local perdi = type(Nu) == "table" and type(Nu.MenuPerdidos) == "function" and Nu.MenuPerdidos() or nil
+	if type(perdi) == "table" then items[#items + 1] = perdi end
 	local Acomodar = rawget(_G, "AlfaAcomodar")
 	if type(Acomodar) == "table" and type(Acomodar.Abrir) == "function" then
 		items[#items + 1] = { text = T("Acomodar la pantalla"), icon = "compact", onClick = function()
@@ -2736,6 +2740,16 @@ function O.MenuItems(anchor, opts)
 	end
 	items[#items + 1] = { text = T("Ventana de guía"), icon = "window", checked = ns.GuideShown and ns.GuideShown() or nil,
 		onClick = function() ns.Fire("TOGGLE_FRAME") end }
+	-- 1.3.7: el medidor de daño (Alfa_Combate), a la vista o fuera.
+	local Combate = rawget(_G, "AlfaCombate")
+	if type(Combate) == "table" and type(Combate.AlternarMedidor) == "function" then
+		items[#items + 1] = { text = T("Medidor de daño"), icon = "window",
+			checked = (type(Combate.MedidorAbierto) == "function" and Combate.MedidorAbierto()) or nil,
+			onClick = function()
+				if ns.Hidden and ns.Hidden() then ns.SetHidden(false) end
+				Combate.AlternarMedidor()
+			end }
+	end
 	local Nav = ns.Nav
 	if Nav and Nav.ToggleArrow then
 		items[#items + 1] = { text = ns.Get("nav.arrow") and T("Ocultar la flecha") or T("Mostrar la flecha"), icon = "dart", onClick = Nav.ToggleArrow }

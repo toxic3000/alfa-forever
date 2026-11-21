@@ -66,6 +66,8 @@ M.AJUSTES = {
 	porGrupos = true,        -- en banda, una columna (o fila) por grupo
 	-- 1.3.3
 	descripcionCombate = true, -- en combate, un cuadro corto solo con lo que dice Alfa
+	-- 1.3.7
+	listos = true,           -- «¿Listos?» del juego: lo que te falta y los apoyos del grupo (Listos.lua)
 }
 
 local function opt(k) return N.Get(ID, k) end
@@ -233,6 +235,15 @@ function M.CrearCuerpo(padre)
 	c.nombre = texto(capa, "label")
 	c.estado = texto(capa, "caption")
 	c.estado:SetTextColor(0.85, 0.87, 0.9, 1)
+	-- 1.3.7: en un marco bajo, nombre y estado van en una línea (M.LineaBaja):
+	-- cada vez que el estado cambia o se muestra, se reparten el ancho.
+	for _, metodo in ipairs({ "SetText", "SetFormattedText", "Show", "Hide" }) do
+		local original = c.estado[metodo]
+		c.estado[metodo] = function(self, ...)
+			original(self, ...)
+			if c.bajo and M.LineaBaja then M.LineaBaja(c) end
+		end
+	end
 	c.rol = capa:CreateTexture(nil, "OVERLAY")
 	c.rol:SetSize(11, 11)
 	c.rol:SetPoint("TOPLEFT", c, "TOPLEFT", 3, -3)
@@ -288,14 +299,36 @@ local function ajustarCuerpo(c, w, h)
 	c.nombre:ClearAllPoints()
 	c.estado:ClearAllPoints()
 	if h >= 30 then
+		c.bajo = false
+		c.nombre:SetJustifyH("CENTER")
+		c.estado:SetJustifyH("CENTER")
 		c.nombre:SetPoint("CENTER", c, "CENTER", 0, 5)
 		c.estado:SetPoint("CENTER", c, "CENTER", 0, -8)
 	else
-		c.nombre:SetPoint("CENTER", c, "CENTER", 0, 0)
-		c.estado:SetPoint("BOTTOM", c, "BOTTOM", 0, 2)
+		-- 1.3.7: bajo, una sola línea: «Nombre 45 %» (antes se encimaban).
+		c.bajo, c.anchoBajo = true, w
+		c.nombre:SetJustifyH("LEFT")
+		c.estado:SetJustifyH("RIGHT")
+		c.nombre:SetPoint("LEFT", c, "LEFT", 4, 0)
+		c.estado:SetPoint("RIGHT", c, "RIGHT", -4, 0)
+		M.LineaBaja(c)
 	end
 end
 M.AjustarCuerpo = ajustarCuerpo
+
+-- El ancho del estado (lo que mide, sin pasar de la mitad del marco) y el
+-- nombre con lo que queda. Un texto secreto no se mide: se le da un ancho fijo.
+function M.LineaBaja(c)
+	local w = c.anchoBajo or 88
+	local ew = 0
+	if c.estado:IsShown() then
+		local ok, medida = pcall(c.estado.GetUnboundedStringWidth, c.estado)
+		if not ok or secreto(medida) or type(medida) ~= "number" then medida = 30 end
+		ew = min(floor(w * 0.55), ceil(medida) + 2)
+	end
+	c.estado:SetWidth(max(1, ew))
+	c.nombre:SetWidth(max(1, w - 8 - ew - (ew > 0 and 3 or 0)))
+end
 
 ---------------------------------------------------------------------------
 -- Pintar con los datos de la unidad (solo lo que llega o se pasa sin leer)
@@ -801,6 +834,8 @@ function M.PrepararBoton(b)
 	b:HookScript("OnAttributeChanged", alCambiarAtributo)
 	b:HookScript("OnEnter", alEntrar)
 	b:HookScript("OnLeave", alSalir)
+	-- 1.3.7: sin venda que usar, el clic de venda te lo dice (Mapa.lua).
+	b:HookScript("OnClick", function(self, boton) if M.AlClic then M.AlClic(self, boton) end end)
 	M.botones[#M.botones + 1] = b
 	if not M.EnCombate() then M.AplicarABoton(b) end
 	local ok, u = pcall(b.GetAttribute, b, "unit")
@@ -1286,6 +1321,9 @@ function M.Prueba(n)
 		return
 	end
 	local w, h, esp, porCol, crecer = M.Medidas()
+	-- 1.3.7: la prueba de banda (más de 5) con «una columna por grupo» se acomoda
+	-- igual que la banda de verdad: de 5 en 5, un grupo por columna (o fila).
+	if n > 5 and M.ModoGrupos() then porCol = 5 end
 	for i = 1, #EJEMPLOS do
 		local f = falso(i)
 		if i <= n then
@@ -1323,7 +1361,19 @@ function M.EnPrueba() return enPrueba end
 local oculto = CreateFrame("Frame")
 oculto:Hide()
 local padres = {}
-local BLIZZARD = { "PartyFrame", "CompactRaidFrameContainer" }
+local BLIZZARD = { "PartyFrame", "CompactRaidFrameContainer", "CompactRaidFrameManager" }
+-- 1.3.7: la pestaña de banda de Blizzard (CompactRaidFrameManager) se quedaba
+-- sola junto a los marcos de Alfa, pero quien dirige (o ayuda) la necesita:
+-- trae el «¿Listos?», las marcas y la cuenta del juego. Solo se esconde
+-- cuando no diriges ni ayudas.
+local SOLO_SI_NO_DIRIGES = { CompactRaidFrameManager = true }
+local function diriges()
+	local jefe = UnitIsGroupLeader and UnitIsGroupLeader("player")
+	local ayuda = UnitIsGroupAssistant and UnitIsGroupAssistant("player")
+	if (issecretvalue and (issecretvalue(jefe) or issecretvalue(ayuda))) then return true end
+	return jefe == true or ayuda == true
+end
+M.Diriges = diriges
 
 local blizzardPendiente = false
 function M.Blizzard()
@@ -1331,9 +1381,11 @@ function M.Blizzard()
 	blizzardPendiente = true
 	N.FueraDeCombate(function()
 		blizzardPendiente = false
-		local quiere = opt("activo") and opt("ocultarBlizzard") and true or false
+		local ocultar = opt("activo") and opt("ocultarBlizzard") and true or false
+		local manda = diriges()
 		for _, nombreMarco in ipairs(BLIZZARD) do
 			local f = rawget(_G, nombreMarco)
+			local quiere = ocultar and not (SOLO_SI_NO_DIRIGES[nombreMarco] and manda)
 			if type(f) == "table" and f.GetParent and f.SetParent then
 				if quiere and not padres[f] then
 					local okP, p = pcall(f.GetParent, f)
@@ -1435,6 +1487,8 @@ A.RegisterEvent("SPELLS_CHANGED", function() if not M.EnCombate() then todos(buf
 A.RegisterEvent("ADDON_LOADED", function(_, nombreAddon)
 	if nombreAddon == "Blizzard_CompactRaidFrames" then M.Blizzard() end
 end)
+-- Te dieron (o quitaron) el mando: la pestaña de banda del juego vuelve o se va.
+A.RegisterEvent("PARTY_LEADER_CHANGED", function() M.Blizzard() end)
 
 -- El alcance cambia sin evento si el cliente no trae UNIT_IN_RANGE_UPDATE:
 -- cada medio segundo se revisan unos pocos botones (TOPE_ALCANCE) por turno.

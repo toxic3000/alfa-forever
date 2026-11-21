@@ -374,6 +374,9 @@ local function dondeEntrenar(trainer)
 end
 
 local function avisarEntrenar(trainer)
+	-- 1.3.7: una sola voz: el entrenador se dice una vez por nivel (Talentos, Lya y el resumen de nivel lo anotan).
+	if N.YaDicho and N.YaDicho("entrenador:" .. tostring(nivel())) then return end
+	if N.Anotar then N.Anotar("entrenador:" .. tostring(nivel())) end
 	local donde, boton = dondeEntrenar(trainer)
 	local n = entrenar.n
 	local linea
@@ -405,7 +408,7 @@ local revisarEntrenarPronto = juntar(2, revisarEntrenar)
 -- Forever no tiene LEARNED_SPELL_IN_TAB: su evento es este (1.2.0; SPELLS_CHANGED también lo cubre).
 A.RegisterEvent("LEARNED_SPELL_IN_SKILL_LINE", revisarEntrenarPronto)
 A.RegisterEvent("SPELLS_CHANGED", revisarEntrenarPronto)
-A.RegisterEvent("PLAYER_LEVEL_UP", function() A.After(3, revisarEntrenar) end)
+A.RegisterEvent("PLAYER_LEVEL_UP", (N.TrasNivel or function(_, f) return f end)("inicio.entrenar", function() A.After(1, revisarEntrenar) end)) -- 1.3.7
 A.On("CLASS_TRAINED", revisarEntrenarPronto)
 
 -- La nota de entrenar del motor, solo si la ventana de la guía no se ve.

@@ -312,6 +312,16 @@ function M.PantallasDeAjustes()
 					{ id = "avisos", clave = "combate.avisos", titulo = "Avisos de reacción",
 						texto = "Te avisa cuando tu clase tiene algo que aprovechar ahora, como una habilidad que se encendió.",
 						existe = function() return hay("combate") and existe("combate.avisos") end },
+					-- 1.3.7: el medidor de daño (sus textos vienen de Alfa_Combate, ya traducidos).
+					(function()
+						local C = rawget(_G, "AlfaCombate")
+						local t = function(k) return (type(C) == "table" and type(C.Texto) == "function") and C.Texto(k) or k end
+						return { id = "medidor", clave = "combate.medidorModo", titulo = t("La gráfica de daño de tu grupo"),
+							texto = t("Sale sola en grupo, en banda y en mazmorras, pequeña y abajo a la derecha. Yendo solo, no."),
+							existe = function() return hay("combate") and type(C) == "table" and type(C.ModoMedidor) == "function" end,
+							get = function() return C.ModoMedidor() ~= "apagado" end,
+							set = function(v) C.SetModoMedidor(v and "auto" or "apagado") end }
+					end)(),
 				} },
 				{ titulo = "En el mundo", filas = {
 					fila({ id = "recoleccion", titulo = "Minas, hierbas y tesoros en tu mapa",

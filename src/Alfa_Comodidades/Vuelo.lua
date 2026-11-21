@@ -132,6 +132,43 @@ local function dondeVoy(v, yo)
 	return mejor, fraccion
 end
 
+-- Segundos de un tramo, o nil si no se puede saber (sin datos ni posiciones).
+local function segundosTramo(a, b)
+	if not (a and b) then return nil end
+	local Nav = A.Nav
+	local d = Nav and Nav.GetTravelData and Nav.GetTravelData()
+	local lista = d and d.flights and a.id and d.flights[a.id]
+	if type(lista) == "table" then
+		for i = 1, #lista - 1, 2 do
+			if lista[i] == b.id and type(lista[i + 1]) == "number" then return lista[i + 1] / VELOCIDAD + PAUSA end
+		end
+	end
+	if conPosicion(a) and conPosicion(b) and a.c == b.c then return distancia(a, b) * 1.15 / VELOCIDAD + PAUSA end
+	return nil
+end
+
+-- Sin tu posición: el tramo en el que vas según el tiempo desde que despegaste
+-- (nunca hacia atrás). -> tramo, fracción o nil
+local function porTiempo(v)
+	local t0 = tonumber(v.t)
+	local ahora = time and time() or nil
+	if not (t0 and ahora and t0 > 0) then return nil end
+	local pasado = max(0, ahora - t0)
+	local acumulado = 0
+	for k = 1, #v.paradas do
+		local a = k == 1 and v.origen or v.paradas[k - 1]
+		local seg = segundosTramo(a, v.paradas[k])
+		if not seg or seg <= 0 then return nil end
+		if pasado < acumulado + seg or k == #v.paradas then
+			if k < v.tramo then return v.tramo, 0 end
+			return k, max(0, min(1, (pasado - acumulado) / seg))
+		end
+		acumulado = acumulado + seg
+	end
+	return nil
+end
+M.VueloPorTiempo = porTiempo -- (para el banco)
+
 local function miPosicion()
 	local C = A.Compat
 	if not (C and C.GetPlayerWorldPosition) then return nil end
@@ -167,9 +204,15 @@ local function actualizar()
 	local k, fraccion
 	if yo then k, fraccion = dondeVoy(v, yo) end
 	if not k then
-		-- Sin posiciones: las escalas en orden, sin el destino final.
+		-- 1.3.7 (160): sin posiciones, el reloj: con lo que tarda cada tramo
+		-- (los datos de vuelo del motor) se sabe en cuál vas, y las escalas avanzan.
+		k, fraccion = porTiempo(v)
+	end
+	if not k then
+		-- Sin posiciones ni tiempos: las escalas que faltan en orden, sin el destino final.
 		local nombres = {}
-		for i = 1, #v.paradas - 1 do nombres[i] = lugar(v.paradas[i].nombre) end
+		for i = v.tramo, #v.paradas - 1 do nombres[#nombres + 1] = lugar(v.paradas[i].nombre) end
+		if #nombres == 0 then return ocultar() end
 		return mostrar(L["Escalas:"] .. " " .. table.concat(nombres, "  ›  "))
 	end
 	v.tramo = k
@@ -253,4 +296,4 @@ M.AlCambiar({ "vueloParada" }, function()
 end)
 
 -- Para pruebas.
-M.Vuelo = { AlTomar = alTomar, DondeVoy = dondeVoy, Actualizar = actualizar }
+M.Vuelo = { AlTomar = alTomar, DondeVoy = dondeVoy, Actualizar = actualizar, PorTiempo = porTiempo, Viaje = function() return viaje end }

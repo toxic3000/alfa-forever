@@ -54,7 +54,8 @@ end
 local ANCHO, ANCHO_MAX = 360, 440
 local PAD, BALDOSA = 16, 36
 local COLA_MAX = 5
-local DEFAULT = { "TOP", 0, -300 }
+-- 1.3.7: de fábrica arriba a la derecha, bajo tus beneficios (en el centro estorbaba para apuntar).
+local DEFAULT = { "TOPRIGHT", -215, -130 }
 local TONO = { info = "acento", exito = "exito", aviso = "aviso", peligro = "peligro" }
 
 local f, actual
@@ -149,9 +150,18 @@ end
 local function vencer(mio)
 	if mio ~= turno or not (f and f:IsShown()) then return end
 	if f:IsMouseOver() then
+		f.alfaLeida = true
 		K.Despues(2, function() vencer(mio) end)
 		return
 	end
+	-- 1.3.7: una tarjeta que caducó sin que la vieras queda en «Te perdiste esto» (Alfa_Nucleo/Momentos.lua).
+	local s = actual
+	if s and not f.alfaLeida and s.clave ~= "prueba" and N.Perdido then
+		local b1 = type(s.botones) == "table" and s.botones[1] or nil
+		pcall(N.Perdido, { titulo = s.titulo, texto = s.linea or s.texto, icono = s.icono or "ic-hoy", origen = "hoy",
+			accion = b1 and type(b1.fn) == "function" and { texto = b1.texto, alClic = b1.fn } or nil })
+	end
+	f.alfaLeida = nil
 	Aviso.Ocultar()
 end
 
@@ -239,8 +249,9 @@ local function pintar(spec)
 		f.Entrada:Stop()
 		f.Entrada:Play()
 	end
-	if spec.sonido and N.Get("inicio", "sonido") and SOUNDKIT and SOUNDKIT.RAID_WARNING then
-		pcall(A.PlaySound, SOUNDKIT.RAID_WARNING, "Master")
+	-- 1.3.7: un sonido suave según el tipo (antes, la alerta de banda), con «Sonidos de Alfa».
+	if spec.sonido and N.Get("inicio", "sonido") and N.Sonar then
+		N.Sonar(spec.tipo == "peligro" and "peligro" or "importante", spec.tipo == "peligro" and 1 or 2)
 	end
 	local secs = tonumber(spec.segundos) or tonumber(N.Get("inicio", "segAviso")) or 10
 	if w1 > 0 then secs = secs + 4 end
@@ -272,6 +283,25 @@ function Aviso.Mostrar(spec)
 		})
 		if guardado then
 			avisarCierre(spec)
+			return
+		end
+	end
+	-- 1.3.7: espera a que el juego termine (subir de nivel, carga, PNJ, pelea:
+	-- Alfa_Nucleo/Momentos.lua); con No molestar, queda en «Lo que me perdí».
+	if spec.clave ~= "prueba" and not spec.alfaTurno and N.Ocupado and N.AlLibre then
+		local oc, motivo = N.Ocupado("hoy", spec.tipo == "peligro" and 2 or 3)
+		if oc and motivo == "calma" then
+			local b1 = type(spec.botones) == "table" and spec.botones[1] or nil
+			if N.Perdido then N.Perdido({ titulo = spec.titulo, texto = spec.linea or spec.texto, icono = spec.icono or "ic-hoy",
+				accion = b1 and type(b1.fn) == "function" and { texto = b1.texto, alClic = b1.fn } or nil, origen = "hoy" }) end
+			avisarCierre(spec)
+			return
+		elseif oc then
+			N.AlLibre("hoy:" .. tostring(spec.clave or spec.titulo), function()
+				spec.alfaTurno = true
+				Aviso.Mostrar(spec)
+				spec.alfaTurno = nil
+			end, spec.tipo == "peligro" and 2 or 3, { tipo = "hoy", caduca = 900, alCaducar = function() avisarCierre(spec) end })
 			return
 		end
 	end

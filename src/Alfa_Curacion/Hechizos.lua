@@ -702,8 +702,42 @@ function M.MejorVenda()
 			if okI and not secreto(id) and type(id) == "number" then tienes[id] = true end
 		end
 	end
+	-- 1.3.7: solo las que tu Primeros auxilios ya deja usar (con la mejor de
+	-- más nivel el clic fallaba). Sin saber tu nivel, la mejor que llevas.
+	local nivel = M.PrimerosAuxilios()
 	for _, id in ipairs(M.VENDAS) do
-		if tienes[id] then return id end
+		if tienes[id] and (not nivel or nivel >= (M.VENDA_PIDE[id] or 1)) then return id end
 	end
 	return nil
+end
+
+-- Lo que pide cada venda de Primeros auxilios (el juego clásico).
+M.VENDA_PIDE = {
+	[1251] = 1, [2581] = 20, [3530] = 50, [3531] = 75, [6450] = 100, [6451] = 125,
+	[8544] = 150, [8545] = 175, [14529] = 200, [14530] = 225,
+}
+M.LINEA_PRIMEROS_AUXILIOS = 129
+
+-- Tu nivel de Primeros auxilios (0 si no lo tienes), o nil si no se sabe.
+function M.PrimerosAuxilios()
+	local C = A.Compat
+	if not (C and C.GetSkillRank) then return nil end
+	local ok, n = pcall(C.GetSkillRank, M.LINEA_PRIMEROS_AUXILIOS)
+	if ok and not secreto(n) and type(n) == "number" then return n end
+	return nil
+end
+
+-- ¿Llevas alguna venda (aunque no la puedas usar todavía)? -> true/false
+function M.LlevasVendas()
+	local C = C_Container
+	if not (C and C.GetContainerNumSlots and C.GetContainerItemID) then return false end
+	for bolsa = 0, 4 do
+		local ok, n = pcall(C.GetContainerNumSlots, bolsa)
+		n = ok and tonumber(n) or 0
+		for i = 1, n do
+			local okI, id = pcall(C.GetContainerItemID, bolsa, i)
+			if okI and not secreto(id) and type(id) == "number" and M.VENDA_PIDE[id] then return true end
+		end
+	end
+	return false
 end

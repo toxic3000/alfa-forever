@@ -52,12 +52,21 @@ function M.EsperaEscaneo()
 	return max(0, ESPERA - (M.Ahora() - pedido))
 end
 
--- 12345 -> "12,345" (separador de miles de es-MX).
+-- 12345 -> "12,345". 1.3.7: el separador de miles según tu idioma (en alemán,
+-- francés, portugués, ruso y español de España la coma se lee como decimal).
+local SEPARADOR = { deDE = ".", ptBR = ".", esES = ".", frFR = " ", ruRU = " " }
+function M.SeparadorMiles()
+	local loc = GetLocale and GetLocale()
+	return SEPARADOR[loc] or ","
+end
 local function miles(n)
-	local s = tostring(floor(tonumber(n) or 0))
-	local fuera = s:reverse():gsub("(%d%d%d)", "%1,"):reverse()
-	if fuera:sub(1, 1) == "," then fuera = fuera:sub(2) end
-	return fuera
+	n = floor(tonumber(n) or 0)
+	local signo = n < 0 and "-" or ""
+	local s = tostring(math.abs(n))
+	local sep = M.SeparadorMiles()
+	local k
+	repeat s, k = s:gsub("^(%d+)(%d%d%d)", "%1" .. sep .. "%2") until k == 0
+	return signo .. s
 end
 M.Miles = miles
 
@@ -71,7 +80,7 @@ local refrescarBarra
 
 local function terminar(texto)
 	estado, progreso, mensaje = "listo", 0, texto
-	if temporizador and temporizador.Cancel then temporizador:Cancel() end
+	if temporizador then N.Quitar(temporizador) end
 	temporizador = nil
 	if refrescarBarra then refrescarBarra() end
 	M.Cambio()
@@ -81,7 +90,7 @@ end
 local function procesar()
 	local AH = api()
 	if not AH then return terminar(L["Esta subasta no permite el escaneo completo."]) end
-	if temporizador and temporizador.Cancel then temporizador:Cancel() end
+	if temporizador then N.Quitar(temporizador) end
 	temporizador = nil
 	estado, progreso, mensaje = "procesando", 0, nil
 	if refrescarBarra then refrescarBarra() end
@@ -148,13 +157,13 @@ function M.Escanear()
 		return false
 	end
 	M.Reino().pedido = M.Ahora()
-	if C_Timer and C_Timer.NewTimer then
-		temporizador = C_Timer.NewTimer(SIN_RESPUESTA, function()
-			if estado == "esperando" then
-				terminar(L["La subasta no respondió. Puede que aún esté en espera: intenta en unos minutos."])
-			end
-		end)
-	end
+	-- 1.3.7: la espera de la respuesta va en el reloj de Alfa (N.Una).
+	temporizador = N.Una("comercio.sinRespuesta", SIN_RESPUESTA, function()
+		temporizador = nil
+		if estado == "esperando" then
+			terminar(L["La subasta no respondió. Puede que aún esté en espera: intenta en unos minutos."])
+		end
+	end)
 	if refrescarBarra then refrescarBarra() end
 	return true
 end
@@ -212,6 +221,16 @@ function refrescarBarra()
 	local t, activo = M.BotonEscaneo()
 	barra.Boton:SetTexto(t)
 	barra.Boton:SetActivo(activo)
+	-- 1.3.7: el botón de gangas (Gangas.lua) y el estado termina junto a él.
+	if M.PintarGangas then
+		local junto = M.PintarGangas(barra)
+		if junto ~= barra.estadoJunto then
+			barra.estadoJunto = junto
+			barra.Estado:ClearAllPoints()
+			barra.Estado:SetPoint("LEFT", barra.Titulo, "RIGHT", K.ESP.s, 0)
+			barra.Estado:SetPoint("RIGHT", junto, "LEFT", -K.ESP.s, 0)
+		end
+	end
 	local enCurso = estado == "procesando"
 	barra.Progreso:SetShown(enCurso)
 	if enCurso then barra.Progreso:Set(progreso) end
@@ -228,6 +247,10 @@ local function crearBarra()
 	-- de Alfa y deja la ventana contaminada (ns.CreateFrameUnder del motor).
 	barra = CreateFrame("Frame", nil, K.Raiz())
 	if padre.GetFrameStrata then barra:SetFrameStrata(padre:GetFrameStrata()) end
+	-- 1.3.7: tan ancha como la subasta (sin pasar de 720) y el estado en dos
+	-- líneas: «Aún no tienes precios...» ya no se corta.
+	local anchoPadre = padre.GetWidth and tonumber(padre:GetWidth()) or 0
+	BARRA_W = max(440, min(720, floor(anchoPadre)))
 	barra:SetSize(BARRA_W, BARRA_H)
 	barra:SetPoint("TOPRIGHT", padre, "BOTTOMRIGHT", 0, -2)
 	barra.caja = K.Caja(barra, { fondo = "fondo", borde = "linea", corte = K.CORTE.panel })
@@ -245,10 +268,14 @@ local function crearBarra()
 	barra.Estado = K.Texto(barra, "pequeno", "textoSuave")
 	barra.Estado:SetPoint("LEFT", barra.Titulo, "RIGHT", K.ESP.s, 0)
 	barra.Estado:SetPoint("RIGHT", barra.Abrir, "LEFT", -K.ESP.s, 0)
+	barra.Estado:SetWordWrap(true)
+	if barra.Estado.SetMaxLines then barra.Estado:SetMaxLines(2) end
+	barra.Estado:SetJustifyH("LEFT")
 	barra.Progreso = K.Progreso(barra, { alto = 2 })
 	barra.Progreso:SetPoint("BOTTOMLEFT", barra, "BOTTOMLEFT", K.CORTE.panel, 1)
 	barra.Progreso:Acomodar(BARRA_W - 2 * K.CORTE.panel)
 	barra.Progreso:Hide()
+	if M.ArmarGangas then M.ArmarGangas(barra) end
 	barra:SetScript("OnHide", function() if reloj then reloj:Cancel() reloj = nil end end)
 	return barra
 end
@@ -261,9 +288,7 @@ local function alAbrir()
 	if not barra and not M.Ajuste("boton") then return end
 	if not crearBarra() then
 		-- La ventana de la subasta se carga a pedido: puede llegar un cuadro después.
-		if C_Timer and C_Timer.After then
-			C_Timer.After(0.1, function() if abierta and crearBarra() then refrescarBarra() end end)
-		end
+		N.Una("comercio.barra", 0.1, function() if abierta and crearBarra() then refrescarBarra() end end)
 		return
 	end
 	refrescarBarra()

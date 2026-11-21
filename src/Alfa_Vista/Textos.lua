@@ -338,6 +338,11 @@ M.EN = {
 	-- 1.3.6
 	["Para que el mundo se vea mejor, a tu gusto"] = "Make the world look better, your way",
 	["Abre Paisaje y gráficos"] = "Opens Landscape and graphics",
+	-- 1.3.7: plurales
+	["Alfa mantiene %d ajuste que elegiste. Abre la ventana para verlo o cambiarlo."] = "Alfa keeps %d setting you chose. Open the window to see or change it.",
+	["%d cambio espera al combate."] = "%d change is waiting for combat to end.",
+	["Cambiaste %d ajuste aquí. Volver a ponerlo al entrar está apagado (Avanzado)."] = "You changed %d setting here. Reapplying it on login is off (Advanced).",
+	["Alfa mantiene %d ajuste tuyo y lo vuelve a poner al entrar."] = "Alfa keeps %d of your settings and reapplies it on login.",
 }
 
 M.N = AlfaNucleo

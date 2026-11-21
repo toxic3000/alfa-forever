@@ -296,7 +296,8 @@ M.FICHAS_GUIA.legado = function()
 		if pr.item then fl = F.FilaObjeto(pr.item) else fl = { icono = { ic = "ic-nivel", tono = "oro" }, titulo = pr.nombre or "?" } end
 		if pr.nombre and not pr.item then fl.titulo = pr.nombre end
 		local listo = ganados and ganados >= pr.puntos
-		fl.texto = F.Unir(format(L["con %d puntos"], pr.puntos), listo and L["ya lo ganaste"] or (ganados and format(L["te faltan %d"], pr.puntos - ganados) or nil))
+		fl.texto = F.Unir(N.Plural(pr.puntos, L["con %d punto"], L["con %d puntos"]),
+ listo and L["ya lo ganaste"] or (ganados and format(L["te faltan %d"], pr.puntos - ganados) or nil))
 		fl.tenue = listo or nil
 		premios[#premios + 1] = fl
 	end

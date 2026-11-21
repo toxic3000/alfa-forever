@@ -199,7 +199,7 @@ local function ahora(e)
 	if libres == 0 and desviado then
 		local d = { icono = "ic-aviso", tono = "aviso", sobre = L["Tus talentos"], titulo = L["Tus puntos van por otro camino"],
 			texto = format(L["Tienes %d puntos fuera de %s. Alfa nunca quita talentos: para seguir este plan, reinicia tus talentos con tu entrenador de clase y Alfa te los vuelve a poner con un clic. O elige el plan de la rama que ya llevas."], fuera, b.titulo or ""),
-			insignias = { { format(L["%d puntos fuera del plan"], fuera), "aviso" } } }
+			insignias = { { N.Plural(fuera, L["%d punto fuera del plan"], L["%d puntos fuera del plan"]), "aviso" } } }
 		local mia = M.SpecActual()
 		if mia and mia ~= b.spec then
 			local e2 = M.Eleccion()
@@ -215,7 +215,7 @@ local function ahora(e)
 	-- Hay punto libre y se puede tomar.
 	if s.ahora then
 		insignias[#insignias + 1] = { libres == 1 and L["1 punto libre"] or format(L["%d puntos libres"], libres), "acento" }
-		if fuera > 0 then insignias[#insignias + 1] = { format(L["%d puntos fuera del plan"], fuera), "aviso" } end
+		if fuera > 0 then insignias[#insignias + 1] = { N.Plural(fuera, L["%d punto fuera del plan"], L["%d puntos fuera del plan"]), "aviso" } end
 		if InCombatLockdown() then insignias[#insignias + 1] = { L["En combate: espera a terminar"], "aviso" } end
 		return {
 			icono = "ic-talentos", tono = "acento", sobre = L["Pon ahora"], titulo = s.nombre, texto = s.porque, lineas = 4,
@@ -233,7 +233,7 @@ local function ahora(e)
 	end
 	-- Sin punto libre: cuál sigue y cuándo llega.
 	insignias[#insignias + 1] = { format(L["Llega en el nivel %d"], s.nivel), "neutro" }
-	if fuera > 0 then insignias[#insignias + 1] = { format(L["%d puntos fuera del plan"], fuera), "aviso" } end
+	if fuera > 0 then insignias[#insignias + 1] = { N.Plural(fuera, L["%d punto fuera del plan"], L["%d puntos fuera del plan"]), "aviso" } end
 	return {
 		icono = "ic-talentos", tono = "acento",
 		sobre = (st.hechos == 0 and nivel() < 10) and L["Tu primer talento"] or L["Tu siguiente talento"],
@@ -646,7 +646,7 @@ local function construirTalentos()
 				enlace = { texto = format(L["Ver todo el plan (%d)"], #lista), alClic = alternar }
 			end
 			ui.plan:Llenar(mostrar, e.foto)
-			ui.gPlan.Seccion:Set(L["Plan por nivel"], { cuenta = format(L["%d talentos"], #lista), enlace = enlace })
+			ui.gPlan.Seccion:Set(L["Plan por nivel"], { cuenta = N.Plural(#lista, L["%d talento"], L["%d talentos"]), enlace = enlace })
 			local partes = {}
 			if ocultos > 0 and hechos > 0 then
 				partes[#partes + 1] = hechos == 1 and L["Ya tienes 1 talento de este plan."] or format(L["Ya tienes %d talentos de este plan."], hechos)
@@ -1079,7 +1079,11 @@ local function construirCompartir()
 	local pie = CreateFrame("Frame", nil, g)
 	pie.Boton = K.Boton(pie, L["Importar"], function()
 		local b, err = M.Compartir.Importar(ui.entrada.Edit:GetText())
-		if b then
+		if b and err == "repetido" then
+			-- 1.3.7: ya lo tenías; no se duplica.
+			ui.msgImp, ui.tonoImp = format(L["Ya tenías este plan: %s."], b.titulo or ""), "exito"
+			ui.entrada:Set("")
+		elseif b then
 			ui.msgImp, ui.tonoImp = format(L["Importado: %s. Ya puedes seguirlo."], b.titulo or ""), "exito"
 			ui.entrada:Set("")
 		else

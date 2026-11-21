@@ -317,6 +317,33 @@ function Eq.SetExcluido(grupo, si)
 end
 
 ---------------------------------------------------------------------------
+-- 1.3.7: las piezas que no entran (únicas, bolsas llenas para la caña de dos
+-- manos, una que pide más nivel...). EquipItemByName no avisa si falla: una
+-- pieza que tu tecla intentó ponerte y que un momento después sigue en tus
+-- bolsas se salta, para que la siguiente pulsación lance en vez de atorarse.
+---------------------------------------------------------------------------
+local intentos = {} -- "enlace@ranura" -> GetTime() del primer intento
+local ESPERA_INTENTO = 1
+
+local function claveIntento(enlace, ranura) return tostring(enlace) .. "@" .. tostring(ranura) end
+
+function Eq.Intentado(lista)
+	local ahora = GetTime and GetTime() or 0
+	for _, c in ipairs(lista or {}) do
+		local k = claveIntento(c.enlace, c.ranura)
+		if not intentos[k] then intentos[k] = ahora end
+	end
+end
+
+function Eq.NoEntra(enlace, ranura)
+	local t = intentos[claveIntento(enlace, ranura)]
+	return t ~= nil and (GetTime and GetTime() or 0) - t >= ESPERA_INTENTO
+end
+
+-- Al abrir el modo (o al subir de nivel o de habilidad) cada pieza tiene otra oportunidad.
+function Eq.OlvidarIntentos() intentos = {} end
+
+---------------------------------------------------------------------------
 -- Lo mejor que tienes
 ---------------------------------------------------------------------------
 -- -> lista de cambios { { ranura, id, enlace, nombre, bono } } para quedar con lo mejor de pesca
@@ -328,7 +355,8 @@ function Eq.MejorEquipo()
 	local bono16 = tiene and Eq.BonoPuesto(16) or -1
 	local mejor
 	for _, c in ipairs(t.canas) do
-		if c.usable and (not mejor or c.bono > mejor.bono or (c.bono == mejor.bono and Eq.Calidad(c.id) > Eq.Calidad(mejor.id))) then mejor = c end
+		if c.usable and not Eq.NoEntra(c.enlace, 16)
+			and (not mejor or c.bono > mejor.bono or (c.bono == mejor.bono and Eq.Calidad(c.id) > Eq.Calidad(mejor.id))) then mejor = c end
 	end
 	if mejor and (not tiene or mejor.bono > bono16) and mejor.enlace ~= enlace16 then
 		cambios[#cambios + 1] = { ranura = 16, id = mejor.id, enlace = mejor.enlace, bono = mejor.bono }
@@ -338,7 +366,7 @@ function Eq.MejorEquipo()
 	for _, e in ipairs(t.equipo) do
 		if e.usable then
 			for _, r in ipairs(DE_LUGAR[e.lugar] or {}) do
-				if r ~= 16 then
+				if r ~= 16 and not Eq.NoEntra(e.enlace, r) then
 					porRanura[r] = porRanura[r] or {}
 					table.insert(porRanura[r], e)
 				end
@@ -499,6 +527,36 @@ function Eq.HayNormal()
 	return false
 end
 
+-- 1.3.7: tus armas de antes (mano derecha y mano izquierda) para el botón
+-- «A pelear»: en combate el juego deja cambiar las armas, no la armadura.
+-- -> { { ranura, enlace, nombre } } (sin las ranuras que excluyes)
+function Eq.Armas()
+	local n, out = normal(), {}
+	for _, r in ipairs({ 16, 17 }) do
+		local e = n[r]
+		if type(e) == "string" and not Eq.Excluido(r) then
+			local id = idDe(e)
+			local nombre = Eq.Nombre(id, e) or (id and ("item:" .. id))
+			if nombre then out[#out + 1] = { ranura = r, enlace = e, nombre = nombre } end
+		end
+	end
+	return out
+end
+
+-- La macro que te pone esas armas (funciona también en combate). -> texto | nil
+function Eq.MacroArmas()
+	local lineas = {}
+	for _, a in ipairs(Eq.Armas()) do lineas[#lineas + 1] = format("/equipslot %d %s", a.ranura, a.nombre) end
+	if #lineas == 0 then return nil end
+	return table.concat(lineas, "\n")
+end
+
+-- ¿Queda algo que no sea arma por devolver?
+function Eq.HayResto()
+	for r in pairs(normal()) do if r ~= 16 and r ~= 17 then return true end end
+	return false
+end
+
 local function equipar(enlace, ranura)
 	local f = (C_Item and C_Item.EquipItemByName) or EquipItemByName
 	if type(f) ~= "function" or not enlace then return false end
@@ -521,6 +579,10 @@ function Eq.Restaurar()
 	end)
 	if #orden == 0 or Eq.restaurando then return 0 end
 	Eq.restaurando = true
+	-- 1.3.7: si el botón «Volver a mi equipo» (Pelear.lua) ya te puso las armas
+	-- con su macro, esas no se vuelven a pedir (quedan anotadas hasta verlas puestas).
+	local sinArmas = Eq.armasYa and (GetTime and GetTime() or 0) - Eq.armasYa < 3
+	Eq.armasYa = nil
 	local i = 0
 	-- Una pieza se olvida solo cuando de verdad quedó puesta: EquipItemByName no
 	-- avisa si falla (bolsas llenas para la caña de dos manos, la vendiste...).
@@ -553,7 +615,9 @@ function Eq.Restaurar()
 			return
 		end
 		local e = n[r]
-		if e and not Eq.Excluido(r) then
+		if e and sinArmas and (r == 16 or r == 17) then
+			-- Ya va en camino por la macro: solo se espera a que entre.
+		elseif e and not Eq.Excluido(r) then
 			-- Queda anotada hasta que verificar() la ve puesta; si falló, queda para la próxima.
 			equipar(e, r)
 		else
@@ -633,7 +697,7 @@ end
 A.RegisterEvent("BAG_UPDATE_DELAYED", function() sucio = true end)
 A.RegisterEvent("PLAYER_EQUIPMENT_CHANGED", function(_, ranura) sucio = true Eq.AlCambiar(ranura) end)
 -- Lo que pide un objeto (habilidad, nivel) cambia su línea roja: se vuelve a leer.
-local function olvidar() sucio = true cache = {} end
+local function olvidar() sucio = true cache = {} intentos = {} end
 A.RegisterEvent("SKILL_LINES_CHANGED", olvidar)
 A.RegisterEvent("PLAYER_LEVEL_UP", olvidar)
 A.RegisterEvent("GET_ITEM_INFO_RECEIVED", function() sucio = true end)

@@ -508,13 +508,13 @@ local function estadoTexto()
 	if M.EnCombate() then
 		partes[#partes + 1] = K.Tenir("aviso", L["Estás en combate: lo que cambies se aplica en cuanto termine."])
 	elseif M.Pendientes() > 0 then
-		partes[#partes + 1] = K.Tenir("aviso", format(L["%d cambios esperan al combate."], M.Pendientes()))
+		partes[#partes + 1] = K.Tenir("aviso", N.Plural(M.Pendientes(), L["%d cambio espera al combate."], L["%d cambios esperan al combate."]))
 	elseif n == 0 then
 		partes[#partes + 1] = L["Alfa solo leyó tus valores: nada cambia hasta que toques un control."]
 	elseif N.Get(ID, "reaplicar") == false then
-		partes[#partes + 1] = format(L["Cambiaste %d ajustes aquí. Volver a ponerlos al entrar está apagado (Avanzado)."], n)
+		partes[#partes + 1] = N.Plural(n, L["Cambiaste %d ajuste aquí. Volver a ponerlo al entrar está apagado (Avanzado)."], L["Cambiaste %d ajustes aquí. Volver a ponerlos al entrar está apagado (Avanzado)."])
 	else
-		partes[#partes + 1] = format(L["Alfa mantiene %d ajustes tuyos y los vuelve a poner al entrar."], n)
+		partes[#partes + 1] = N.Plural(n, L["Alfa mantiene %d ajuste tuyo y lo vuelve a poner al entrar."], L["Alfa mantiene %d ajustes tuyos y los vuelve a poner al entrar."])
 	end
 	partes[#partes + 1] = format(L["La %s también está en el menú del juego."], estrella())
 	local _, faltan = M.Conteo()

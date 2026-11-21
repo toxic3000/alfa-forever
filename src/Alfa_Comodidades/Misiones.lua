@@ -155,6 +155,51 @@ local function avisar(q, texto)
 end
 
 ---------------------------------------------------------------------------
+-- 1.3.7: la bitácora llena. Aceptar una misión así daba el error rojo del
+-- juego (y lo repetía en cada PNJ). Ahora Alfa no la pide y avisa una vez,
+-- hasta que vuelva a haber espacio. También lo usa el motor para las de la
+-- guía (ns.LogFullHold, parche en tools/parches.py). Las que el juego acepta
+-- solo (QuestGetAutoAccept) ya están en tu bitácora: esas siguen igual.
+-- Entregar sigue igual (deja espacio). Ajuste comodidades.bitacoraLlena.
+---------------------------------------------------------------------------
+A.RegisterDefaults(M.ID, { bitacoraLlena = true })
+
+local function bitacoraLlena()
+	local C = A.Compat
+	if not (C and C.GetLogQuests and C.GetLogCap) then return false end
+	local ok, lista = pcall(C.GetLogQuests)
+	local okT, tope = pcall(C.GetLogCap)
+	tope = okT and tonumber(tope) or nil
+	if not (ok and type(lista) == "table" and tope and tope > 0) then return false end
+	return #lista >= tope
+end
+
+local avisoLlena = false
+local function avisarLlena()
+	if avisoLlena then return end
+	avisoLlena = true
+	N.Imprimir(L["Tu bitácora de misiones está llena: no tomé misiones nuevas. Entrega o abandona alguna y tómalas tú."])
+end
+
+-- -> true si hay que dejar la misión (la bitácora está llena; ya avisó)
+local function llenaYAvisa()
+	if not M.Get("bitacoraLlena") or not bitacoraLlena() then return false end
+	avisarLlena()
+	return true
+end
+
+-- Para el motor (Automation.onDetail): true = no la aceptes.
+function A.LogFullHold()
+	if QuestGetAutoAccept and legible(QuestGetAutoAccept()) then return false end
+	return llenaYAvisa()
+end
+
+-- Con espacio otra vez, el aviso puede volver a salir la próxima vez.
+A.RegisterEvent("QUEST_LOG_UPDATE", function()
+	if avisoLlena and not bitacoraLlena() then avisoLlena = false end
+end)
+
+---------------------------------------------------------------------------
 -- Lo que piden para entregarla
 ---------------------------------------------------------------------------
 
@@ -203,6 +248,7 @@ local function alDetalle()
 	if QuestGetAutoAccept and legible(QuestGetAutoAccept()) then
 		if AcknowledgeAutoAcceptQuest then AcknowledgeAutoAcceptQuest() end
 	elseif AcceptQuest then
+		if llenaYAvisa() then return end -- 1.3.7: sin marcarla; con espacio, vale
 		AcceptQuest()
 	end
 end
@@ -264,6 +310,7 @@ local function alSaludo()
 		local esTrivial, frecuencia, _, _, q = GetAvailableQuestInfo(i)
 		q = legible(q)
 		if not legible(esTrivial) and not (q and dejadas[q]) and quiereFrecuencia(frecuencia) and puedeAceptar(q) then
+			if llenaYAvisa() then return end -- 1.3.7
 			pedir()
 			SelectAvailableQuest(i)
 			return
@@ -298,6 +345,7 @@ local function alDialogo()
 		local q = legible(info.questID)
 		if q and not dejadas[q] and not legible(info.isTrivial) and not legible(info.isIgnored)
 			and quiereFrecuencia(info.frequency) and puedeAceptar(q) then
+			if llenaYAvisa() then return end -- 1.3.7
 			pedir()
 			G.SelectAvailableQuest(q)
 			return

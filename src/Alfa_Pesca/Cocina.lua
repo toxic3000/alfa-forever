@@ -102,9 +102,10 @@ local function leerIngredientes(r)
 			if #out == 0 then out = nil end
 		end
 	end
-	out = out or { { id = r.crudo, n = 1 } }
-	ingredientes[r.hechizo] = out
-	return out
+	-- 1.3.7 (137): solo se guarda lo que dijo el juego. El pescado solo es un
+	-- respaldo de ahora (la receta aún no responde): guardarlo lo dejaba para siempre.
+	if out then ingredientes[r.hechizo] = out return out end
+	return { { id = r.crudo, n = 1 } }
 end
 
 local function nombreObjeto(id)

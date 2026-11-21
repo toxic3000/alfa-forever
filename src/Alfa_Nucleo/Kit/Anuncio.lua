@@ -1,43 +1,155 @@
--- Alfa - Kit: el anuncio animado (1.2.7). toxic3000 / La Jauría. GPL-3.0.
+-- Alfa - Kit: el anuncio animado (1.2.7; estilos y turnos, 1.3.7). toxic3000 / La Jauría. GPL-3.0.
 --
 -- Un anuncio grande y limpio arriba del centro, con el estilo de la intro de
--- Alfa: el lobo con su halo, una línea pequeña arriba («LA MANADA VIAJA»), el
--- nombre en grande (a dónde llegas, lo que apareció) con dos rayas de luz
--- que se abren a los lados, y una línea abajo con lo demás. Entra con una
--- animación (sube y aparece), se queda unos segundos y se desvanece solo.
--- Sin cuadros ni botones: si trae una acción, un clic sobre él la hace (y lo
--- dice la pista). En combate no toma clics.
+-- Alfa: el lobo (o el ícono del tipo) con su halo, una línea pequeña arriba
+-- («LA MANADA VIAJA»), el nombre en grande con dos rayas de luz que se abren
+-- a los lados, y una línea abajo con lo demás. Entra con su animación, se
+-- queda unos segundos y se desvanece solo.
 --
---   K.Anuncio({ sobre, titulo, texto, lobo = "aullando", segundos = 6,
---               cuenta = { hasta = GetTime() + s, formato = "Llega en %s" },
---               alClic = fn, pista = "Clic: ir de caza" })
---   K.QuitarAnuncio()
+--   K.Anuncio({ sobre, titulo, texto, estilo = "zona", lobo = "aullando" | icono = "ic-mapa",
+--               color = "exito", chico = true, segundos = 6, prioridad = 1..4,
+--               caduca = GetTime() + s, vigente = fn() -> bool, clave = "zona",
+--               sonido = fileID | "NOMBRE_DE_SOUNDKIT" | fn | false, espaciar = 8,
+--               cuenta = { hasta = GetTime() + s, formato = "Llega en %s", final = "" },
+--               alClic = fn, pista = "Clic: ir de caza", ya = true, enCombate = true })
+--   K.QuitarAnuncio()            quita el que se ve y los que esperan
+--   K.CerrarAnuncio()            quita solo el que se ve (clic derecho)
+--   K.AnuncioEsperando() -> bool    K.AnuncioActual() -> { estilo, titulo, ... } | nil
+--   K.AnuncioCola() -> { { estilo, titulo, prioridad }, ... }
+--   K.AnuncioChico({ titulo, icono | lobo, color, segundos })   el ícono chico (1.3.7)
+--   K.AnuncioPrendido(estilo) -> bool   si ese tipo sale como anuncio (ajustes)
+--   K.ESTILOS_ANUNCIO            los estilos: color, ícono, sonido, duración y animación
+--
+-- Los estilos (1.3.7, pedido de Toxic: una animación distinta para cada tipo):
+--   general   sube un poco y aparece (el de siempre)
+--   zona      baja con fundido y rayas largas, con el color de quién es la zona
+--   subzona   fundido corto y pequeño
+--   descubrir destello dorado y huellas que se dibujan
+--   barco     se desliza y ondea          zepelin  baja flotando con balanceo
+--   tranvia   entra de lado y frena seco  raro     salta con rebote
+--   tesoro    brillo que gira             mazmorra sube desde abajo, morado
+--   ciudad    fundido lento y azul        peligro  el borde late en rojo
+--   llegada   el lobo aúlla               manada   huellas que cruzan
+-- Todo con un OnUpdate ligero que solo corre mientras se ve (al terminar el
+-- marco se oculta y deja de correr). En modo ligero, solo el fundido.
+--
+-- Los turnos (1.3.7):
+--   * Una cola por prioridad (1 urgente: el barco que llega; 2: un raro, un
+--     descubrimiento; 3: una zona; 4: una subzona). Uno no pisa a otro: el
+--     más urgente sale primero y un anuncio menos urgente espera su turno; si
+--     llega uno más urgente mientras se ve otro, el que se veía se va y vuelve
+--     después con el tiempo que le quedaba.
+--   * Lo vencido caduca (`caduca`, `vigente`): un barco que ya zarpó o un raro
+--     que ya no está no se anuncian tarde.
+--   * El sonido suena cuando el anuncio de verdad aparece (y no otra vez al volver).
+--   * Solo el título toma el ratón (clic: su acción; clic derecho: lo cierra);
+--     nunca en combate. El resto de la franja deja pasar los clics.
+--   * Si empieza una pelea, se desvanece rápido y vuelve al terminar si aún vale.
+--   * Lo que Alfa pide aguantar (N.Ocupado, Momentos.lua) detiene lo que no es urgente.
+--   * La placa de llegada de la flecha: una zona o subzona espera a que se
+--     vaya (unos segundos) y, si se queda, sale debajo de ella, nunca encima.
+--   * Mide lo que la pantalla deja (hasta 720 px): con la interfaz grande o en
+--     4:3 se angosta, y un nombre largo baja de tamaño antes de cortarse.
 --
 -- El turno con el juego (1.3.1): arriba del centro el juego escribe el nombre
--- de la zona al llegar (ZoneTextFrame / SubZoneTextFrame, que se desvanecen
--- solos en unos segundos) y saca sus estandartes (jefes, subir de nivel,
--- avisos de evento). Un anuncio de Alfa nunca se cruza con ellos: si están a
--- la vista, espera a que se vayan (como mucho ESPERA_MAX s) y sale después; y
--- si el juego saca uno mientras el de Alfa se ve, el de Alfa se va rápido y
--- vuelve en cuanto el juego termina, con el tiempo que le quedaba.
+-- de la zona al llegar (ZoneTextFrame / SubZoneTextFrame) y saca sus
+-- estandartes (jefes, subir de nivel, avisos de evento). Un anuncio de Alfa
+-- nunca se cruza con ellos: si están a la vista, espera a que se vayan (como
+-- mucho ESPERA_MAX s) y sale después; y si el juego saca uno mientras el de
+-- Alfa se ve, el de Alfa se va rápido y vuelve en cuanto el juego termina.
 
 local _, N = ...
 local K = N.Kit
 
-local floor, max, min, format = math.floor, math.max, math.min, string.format
+local floor, max, min, format, sin, cos, abs, exp = math.floor, math.max, math.min, string.format, math.sin, math.cos, math.abs, math.exp
+local type, pairs, ipairs, pcall, tonumber, tostring, rawget = type, pairs, ipairs, pcall, tonumber, tostring, rawget
+local tremove, tsort = table.remove, table.sort
 
 local HALO = "Interface\\AddOns\\Alfa_Bienvenida\\Media\\intro-halo"
-local ENTRA, SALE, SALE_RAPIDO = 0.55, 1.0, 0.35
+local SALE_RAPIDO = 0.35
 local ESPERA_MAX = 10   -- s: si el juego no suelta la pantalla, sale igual
-local MIRAR = 0.4       -- s entre una mirada y otra mientras espera
-local f
+local ESPERA_PLACA = 4  -- s: una zona espera a la placa de llegada; después, debajo de ella
+local MIRAR = 0.4       -- s entre una mirada y otra mientras hay cola
+local TOPE_COLA = 6
+local ANCHO_MAX, ANCHO_MIN = 720, 380
+local f, fc
 
+---------------------------------------------------------------------------
+-- Los estilos
+---------------------------------------------------------------------------
+-- color: token del Kit (nil: el acento, oro en Clásico); tituloColor: el
+-- nombre también va de ese color; caduca: s que puede esperar en la cola.
+local ESTILOS = {
+	general = { prioridad = 2, lobo = "aullando", segundos = 6, entra = 0.55, sale = 1.0, anim = "sube", raya = 170 },
+	zona = { prioridad = 3, icono = "ic-mapa", segundos = 5, entra = 0.7, sale = 1.2, anim = "baja", raya = 280,
+		caduca = 12, espaciar = 8, tituloColor = true, sonido = "MAP_PING" },
+	subzona = { prioridad = 4, chico = true, segundos = 3.5, entra = 0.25, sale = 0.6, anim = "corto", raya = 70,
+		caduca = 6, espaciar = 8, tituloColor = true },
+	descubrir = { prioridad = 2, color = "oro", icono = "ic-descubrir", segundos = 6.5, entra = 0.5, sale = 1.0,
+		anim = "destello", raya = 220, caduca = 15, huellas = true, tituloColor = true, sonido = "UI_QUEST_ROLLING_FORWARD_01" },
+	barco = { prioridad = 1, lobo = "aullando", segundos = 6, entra = 0.6, sale = 1.0, anim = "desliza", raya = 170 },
+	zepelin = { prioridad = 1, lobo = "aullando", segundos = 6, entra = 0.9, sale = 1.0, anim = "flota", raya = 170 },
+	tranvia = { prioridad = 1, lobo = "aullando", segundos = 6, entra = 0.35, sale = 0.8, anim = "frena", raya = 170 },
+	raro = { prioridad = 2, color = "raro", lobo = "atento", segundos = 7, entra = 0.5, sale = 1.0, anim = "rebote", raya = 170 },
+	tesoro = { prioridad = 2, color = "oro", lobo = "atento", segundos = 7, entra = 0.5, sale = 1.0, anim = "gira", raya = 170 },
+	mazmorra = { prioridad = 2, color = "mazmorra", icono = "ic-mazmorra", segundos = 6, entra = 0.7, sale = 1.0,
+		anim = "subeAbajo", raya = 220, caduca = 25, tituloColor = true, sonido = "IG_SPELLBOOK_OPEN" },
+	ciudad = { prioridad = 3, color = "pnj", icono = "ic-hoy", segundos = 5.5, entra = 1.3, sale = 1.6, anim = "lento",
+		raya = 200, caduca = 12, espaciar = 8, tituloColor = true, sonido = "IG_MAINMENU_OPEN" },
+	peligro = { prioridad = 2, color = "peligro", icono = "ic-alerta", segundos = 6.5, entra = 0.5, sale = 1.0,
+		anim = "late", raya = 220, caduca = 15, tituloColor = true, sonido = "UI_RAID_BOSS_WHISPER_WARNING" },
+	llegada = { prioridad = 2, lobo = "aullando", segundos = 5, entra = 0.5, sale = 1.0, anim = "aulla", raya = 170 },
+	manada = { prioridad = 2, color = "acento", lobo = "aullando", segundos = 7, entra = 0.5, sale = 1.0,
+		anim = "cruzan", raya = 170, huellas = true, sonido = "IG_PLAYER_INVITE" },
+}
+K.ESTILOS_ANUNCIO = ESTILOS
+-- El orden en que se enseñan (Ajustes).
+K.ORDEN_ANUNCIOS = { "zona", "subzona", "descubrir", "ciudad", "mazmorra", "peligro", "barco", "zepelin", "tranvia", "raro", "tesoro", "manada" }
+
+-- Cada tipo se puede apagar (anuncios.<tipo>); la subzona sale chica de fábrica.
+do
+	local A = N.A
+	if A and A.RegisterDefaults then
+		local d = { sonido = true, subzonaChica = true }
+		for _, e in ipairs(K.ORDEN_ANUNCIOS) do d[e] = true end
+		A.RegisterDefaults("anuncios", d)
+	end
+end
+
+local function ahora() return GetTime and GetTime() or 0 end
+
+function K.AnuncioPrendido(estilo)
+	local A = N.A
+	if not (A and A.Get) then return true end
+	-- Momentos.lua: un solo ajuste manda sobre los anuncios grandes (y la calma).
+	local G = rawget(N, "AnunciosGrandes")
+	if type(G) == "function" then
+		local ok, si = pcall(G)
+		if ok and not si then return false end
+	else
+		if A.Get("bienvenida.anuncios") == false then return false end
+	end
+	if estilo and ESTILOS[estilo] and A.Get("anuncios." .. estilo) == false then return false end
+	return true
+end
+
+local function estiloDe(o) return ESTILOS[o and o.estilo or "general"] or ESTILOS.general end
+local function prioridad(o) return tonumber(o.prioridad) or estiloDe(o).prioridad or 2 end
+local function tono(o, est) return (o and o.color) or est.color or (K.Clasico() and "oro" or "acento") end
+
+---------------------------------------------------------------------------
+-- Lo que no se debe tapar
+---------------------------------------------------------------------------
 -- Lo que el juego pinta arriba del centro y que un anuncio no debe tapar.
 local DEL_JUEGO = { "ZoneTextFrame", "SubZoneTextFrame", "BossBanner", "EventToastManagerFrame", "LevelUpDisplay" }
-local function juegoOcupado()
+-- tapa: los del juego que ese anuncio esconde al salir (o.tapaJuego, 1.3.7:
+-- el nombre de la zona de Alfa sale en lugar del del juego; no lo espera).
+local function juegoOcupado(tapa)
 	for _, nombre in ipairs(DEL_JUEGO) do
 		local g = rawget(_G, nombre)
-		if type(g) == "table" and g.IsShown and g:IsShown() then
+		local suyo = false
+		if type(tapa) == "table" then for _, t in ipairs(tapa) do if t == nombre then suyo = true end end end
+		if not suyo and type(g) == "table" and g.IsShown and g:IsShown() then
 			local a = g.GetAlpha and g:GetAlpha()
 			if type(a) ~= "number" or a > 0.05 then return true end
 		end
@@ -46,28 +158,171 @@ local function juegoOcupado()
 end
 K.JuegoOcupaArriba = juegoOcupado
 
-local espera       -- { o, desde }: el anuncio que espera su turno
-local mostrar      -- abajo
-local function despues(s, fn)
-	if N.Una then N.Una("kit.anuncio", s, fn)
-	elseif C_Timer and C_Timer.After then C_Timer.After(s, fn) end
+-- PLAYER_REGEN_DISABLED llega antes del bloqueo de combate: entre ese y
+-- REGEN_ENABLED cuenta como pelea.
+local pelea = false
+local function enCombate() return pelea or ((InCombatLockdown and InCombatLockdown()) and true) or false end
+
+-- La placa de llegada de la flecha (Nav/Arrow.lua, Arrow.PlacaMarco).
+local function placa()
+	local A = N.A
+	local Nv = A and rawget(A, "Nav")
+	local Ar = type(Nv) == "table" and rawget(Nv, "arrow")
+	local fn = type(Ar) == "table" and rawget(Ar, "PlacaMarco")
+	if type(fn) ~= "function" then return nil end
+	local ok, p = pcall(fn)
+	if ok and type(p) == "table" and p.IsShown and p:IsShown() then return p end
+	return nil
 end
-local function revisarEspera()
-	local e = espera
-	if not e then return end
-	local ahora = GetTime and GetTime() or 0
-	if juegoOcupado() and ahora - e.desde < ESPERA_MAX then
-		despues(MIRAR, revisarEspera)
+
+-- Lo que Alfa pide aguantar (Momentos.lua: pantalla de carga, cinemática,
+-- hablando con un PNJ, /alfa calma...).
+-- (La pelea la cuida este archivo: un anuncio con enCombate sí sale.)
+local function ocupado(p)
+	local Oc = rawget(N, "Ocupado")
+	if type(Oc) ~= "function" then return false end
+	local ok, v, motivo = pcall(Oc, "anuncio", p)
+	return ok and v and motivo ~= "combate" and true or false
+end
+
+-- mostrando: el que ya se ve no caduca por la hora (termina su rato), solo si deja de valer.
+local function vigente(o, mostrando)
+	if not mostrando and o.caduca and ahora() > o.caduca then return false end
+	if type(o.vigente) == "function" then
+		local ok, v = pcall(o.vigente)
+		if ok and not v then return false end
+	end
+	return true
+end
+
+---------------------------------------------------------------------------
+-- La cola
+---------------------------------------------------------------------------
+local cola, seq = {}, 0
+local actual           -- el `o` del que se ve
+local ultimoInicio = -math.huge
+local mostrar, revisar -- abajo
+
+local function bloqueo(e)
+	local o = e.o
+	local A = N.A
+	if A and A.Hidden and A.Hidden() then return "oculto" end
+	if enCombate() and not o.enCombate then return "combate" end
+	local p = prioridad(o)
+	if ocupado(p) then return "ocupado" end
+	local t = ahora()
+	if not o.ya and juegoOcupado(o.tapaJuego) and t - e.desde < ESPERA_MAX then return "juego" end
+	if p >= 3 and placa() and t - e.desde < ESPERA_PLACA then return "placa" end
+	if o.espaciar and t - ultimoInicio < o.espaciar then return "espaciar" end
+	return nil
+end
+K.AnuncioBloqueo = function(o) return bloqueo({ o = o, desde = ahora() }) end
+
+local function programar(s)
+	if N.Una then N.Una("kit.anuncio", s or MIRAR, function() revisar() end)
+	elseif C_Timer and C_Timer.After then C_Timer.After(s or MIRAR, function() revisar() end) end
+end
+
+local function ordenar()
+	tsort(cola, function(a, b)
+		local pa, pb = prioridad(a.o), prioridad(b.o)
+		if pa ~= pb then return pa < pb end
+		return a.n < b.n
+	end)
+end
+
+-- 1.3.7 (51): un barco o un raro que se fue sin verse (caducó en la fila,
+-- no cupo o se quitó) queda en «Lo que me perdí» (N.Perdido, Momentos.lua).
+local PERDIBLES = { barco = true, zepelin = true, tranvia = true, raro = true, tesoro = true }
+local function perdidoAnuncio(o)
+	if type(o) ~= "table" or o.perdido == false or o.alfaPerdido then return end
+	if not PERDIBLES[o.estilo or ""] then return end
+	local Pe = rawget(N, "Perdido")
+	if type(Pe) ~= "function" then return end
+	o.alfaPerdido = true
+	local est = ESTILOS[o.estilo]
+	local ac
+	if type(o.alClic) == "function" and type(o.pista) == "string" and o.pista ~= "" then
+		ac = { texto = (o.pista:gsub("^[^:]+:%s*", "")), alClic = o.alClic }
+	end
+	pcall(Pe, { titulo = o.titulo, texto = o.texto or o.sobre, icono = o.icono or (est and est.icono) or "ic-lobo",
+		accion = ac, origen = "anuncio" })
+end
+K.AnuncioPerdido = perdidoAnuncio -- (para el banco)
+
+local function encolar(o, desde)
+	if o.clave then
+		for i = #cola, 1, -1 do if cola[i].o.clave == o.clave then tremove(cola, i) end end
+	end
+	seq = seq + 1
+	cola[#cola + 1] = { o = o, desde = desde or ahora(), n = seq }
+	ordenar()
+	while #cola > TOPE_COLA do perdidoAnuncio(tremove(cola).o) end
+	programar()
+end
+
+revisar = function()
+	for i = #cola, 1, -1 do
+		if not vigente(cola[i].o) then perdidoAnuncio(tremove(cola, i).o) end
+	end
+	if f and f:IsShown() then
+		if #cola > 0 then programar() end
 		return
 	end
-	espera = nil
-	mostrar(e.o)
+	ordenar()
+	for i, e in ipairs(cola) do
+		if not bloqueo(e) then
+			tremove(cola, i)
+			mostrar(e.o)
+			break
+		end
+	end
+	if #cola > 0 then programar() end
 end
--- Guarda el anuncio para después (si ya había otro esperando, manda el nuevo).
-local function esperar(o)
-	local ahora = GetTime and GetTime() or 0
-	espera = { o = o, desde = espera and espera.desde or ahora }
-	despues(MIRAR, revisarEspera)
+
+-- El que se ve se va antes de tiempo: vuelve después con lo que le quedaba.
+local function reencolar(self, t)
+	local o = self.alfaO
+	if not o then return end
+	local queda = (self.alfaDura or 6) - (t or 0)
+	if queda <= 1.5 then return end
+	local c = {}
+	for k, v in pairs(o) do c[k] = v end
+	c.segundos = max(3, queda)
+	c.vuelve = true
+	encolar(c)
+end
+
+---------------------------------------------------------------------------
+-- Medidas
+---------------------------------------------------------------------------
+local function anchoPantalla()
+	local w = UIParent and UIParent.GetWidth and tonumber(UIParent:GetWidth()) or 0
+	if not w or w <= 0 then w = 1024 end
+	return floor(max(ANCHO_MIN, min(ANCHO_MAX, w * 0.62)))
+end
+K.AnchoAnuncio = anchoPantalla
+
+-- El nombre grande: baja de tamaño antes de cortarse (y si ni así cabe, dos líneas).
+local ROLES_TITULO = { "anuncio", "portada", "titulo" }
+local function ajustarTitulo(fs, texto, maxW, chico)
+	fs:SetWordWrap(false)
+	fs:SetWidth(maxW)
+	for i = chico and 3 or 1, #ROLES_TITULO do
+		fs.alfaRol = ROLES_TITULO[i]
+		K.Fuente(fs)
+		fs:SetText(texto)
+		if K.AnchoTexto(fs) <= maxW then break end
+	end
+	local w = K.AnchoTexto(fs)
+	if w > maxW then
+		fs:SetWordWrap(true)
+		if fs.SetMaxLines then fs:SetMaxLines(2) end
+		fs:SetWidth(maxW)
+	else
+		fs:SetWidth(max(1, w + 6))
+	end
+	return min(w, maxW)
 end
 
 local function mmss(s)
@@ -75,103 +330,253 @@ local function mmss(s)
 	return format("%d:%02d", floor(s / 60), s % 60)
 end
 
-local function color(fs, token, a)
+---------------------------------------------------------------------------
+-- Las animaciones: (marco, t, e de entrada 0..1, dt) -> dx, dy del contenido
+---------------------------------------------------------------------------
+local function suave(x) x = max(0, min(1, x)) return x * x * (3 - 2 * x) end
+local function halo(self, t, base, vaiven)
+	self.Halo:SetAlpha((base or 0.35) + (vaiven or 0.15) * sin(t * 2.2))
+end
+
+local ANIM = {}
+ANIM.sube = function(self, t, e) halo(self, t) return 0, -(1 - e) * 14 end
+ANIM.baja = function(self, t, e) halo(self, t) return 0, (1 - e) * 24 end
+ANIM.corto = function() return 0, 0 end
+ANIM.lento = function(self, t) halo(self, t * 0.5, 0.3, 0.12) return 0, 0 end
+ANIM.destello = function(self, t, e)
+	-- El destello: el halo crece y brilla al entrar, y luego respira.
+	local d = max(0, 1 - t / 0.7)
+	self.Halo:SetSize(150 * (1 + 0.9 * d), 150 * (1 + 0.9 * d))
+	self.Halo:SetAlpha(0.35 + 0.6 * d + 0.12 * sin(t * 2.2) * (1 - d))
+	-- Las huellas se dibujan una a una.
+	if self.Huellas and self.Huellas:IsShown() then
+		local n = min(6, floor(max(0, t - 0.3) / 0.28))
+		if n ~= self.alfaPasos then self.alfaPasos = n self.Huellas:Set(n, 6) end
+	end
+	return 0, -(1 - e) * 10
+end
+ANIM.desliza = function(self, t, e)
+	halo(self, t)
+	return -(1 - suave(e)) * 70, (e >= 1) and sin(t * 2.4) * 3 or 0
+end
+ANIM.flota = function(self, t, e)
+	halo(self, t)
+	if self.Lobo.SetRotation then self.Lobo:SetRotation(0.12 * sin(t * 1.6)) end
+	return sin(t * 1.1) * 6, (1 - suave(e)) * 40 + sin(t * 1.6) * 4
+end
+ANIM.frena = function(self, t, e, entra)
+	halo(self, t)
+	if t < entra then
+		local p = t / entra
+		return (1 - p) * (1 - p) * (1 - p) * 160, 0
+	end
+	local s = t - entra
+	return -5 * exp(-s * 10) * cos(s * 38), 0
+end
+ANIM.rebote = function(self, t)
+	halo(self, t)
+	return 0, 26 * abs(sin(t * 7)) * max(0, 1 - t / 1.0)
+end
+ANIM.gira = function(self, t)
+	if self.Halo.SetRotation then self.Halo:SetRotation(t * 1.4) end
+	self.Halo:SetAlpha(0.45 + 0.2 * sin(t * 3))
+	return 0, 0
+end
+ANIM.subeAbajo = function(self, t, e) halo(self, t) return 0, -(1 - suave(e)) * 44 end
+ANIM.late = function(self, t)
+	local a = 0.3 + 0.7 * abs(sin(t * 3.5))
+	for _, b in ipairs(self.Borde) do b:SetAlpha(a) end
+	self.RayaI:SetAlpha(a)
+	self.RayaD:SetAlpha(a)
+	halo(self, t, 0.3, 0.2)
+	return 0, 0
+end
+ANIM.aulla = function(self, t)
+	local p = min(1, t / 0.9)
+	local s = 1 + 0.3 * sin(p * math.pi)
+	self.Lobo:SetSize(self.alfaLoboTam * s, self.alfaLoboTam * s)
+	self.Halo:SetSize(150 * (1 + 0.4 * sin(p * math.pi)), 150 * (1 + 0.4 * sin(p * math.pi)))
+	halo(self, t)
+	return 0, 0
+end
+ANIM.cruzan = function(self, t)
+	halo(self, t)
+	local h = self.Huellas
+	if h and h:IsShown() then
+		local ancho = self:GetWidth()
+		local w = h:GetWidth()
+		local x = -ancho / 2 - w + ((t * 150) % (ancho + w * 2))
+		h:ClearAllPoints()
+		h:SetPoint("LEFT", self.C, "TOP", x, -64)
+	end
+	return 0, 0
+end
+K.ANIMACIONES_ANUNCIO = ANIM
+
+---------------------------------------------------------------------------
+-- El marco
+---------------------------------------------------------------------------
+local function pintar(x)
+	local o = x.alfaO
+	local est = estiloDe(o)
+	local token = tono(o, est)
 	local r, g, b = K.Color(token)
-	fs:SetTextColor(r, g, b, a or 1)
+	x.Lobo:SetVertexColor(r, g, b, 1)
+	x.Halo:SetVertexColor(r, g, b, 1)
+	x.RayaI:SetGradient("HORIZONTAL", CreateColor(r, g, b, 0), CreateColor(r, g, b, 0.9))
+	x.RayaD:SetGradient("HORIZONTAL", CreateColor(r, g, b, 0.9), CreateColor(r, g, b, 0))
+	K.ColorTexto(x.Sobre, token)
+	K.ColorTexto(x.Titulo, est.tituloColor and token or "texto")
+	for _, t in ipairs(x.Borde) do t:SetColorTexture(r, g, b, 0.9) end
+end
+
+local function cerrar(self)
+	if not (f and f:IsShown()) then return end
+	f.alfaO = nil
+	f:Hide()
+end
+
+local function tocar(boton)
+	if not (f and f:IsShown()) then return end
+	if boton == "RightButton" then cerrar() return end
+	local fn = f.alfaClic
+	if fn and not enCombate() then
+		K.Llamar(fn)
+		cerrar()
+	end
 end
 
 local function armar()
 	f = CreateFrame("Frame", "AlfaAnuncio", K.Raiz())
-	f:SetSize(720, 170)
+	f:SetSize(ANCHO_MAX, 170)
 	f:SetPoint("TOP", UIParent, "TOP", 0, -130)
 	f:SetFrameStrata("HIGH")
+	-- 1.3.7: la franja nunca toma el ratón; solo el título (f.Toque).
 	f:EnableMouse(false)
 	f:Hide()
+	-- El contenido se mueve entero con la animación.
+	f.C = CreateFrame("Frame", nil, f)
+	f.C:SetAllPoints(f)
+	local C = f.C
 
-	f.Halo = f:CreateTexture(nil, "BACKGROUND")
+	f.Halo = C:CreateTexture(nil, "BACKGROUND")
 	f.Halo:SetTexture(HALO)
 	f.Halo:SetSize(150, 150)
-	f.Halo:SetPoint("CENTER", f, "TOP", 0, -42)
 	f.Halo:SetBlendMode("ADD")
-	f.Lobo = f:CreateTexture(nil, "ARTWORK")
+	f.Lobo = C:CreateTexture(nil, "ARTWORK")
 	f.Lobo:SetSize(58, 58)
 	f.Lobo:SetPoint("CENTER", f.Halo, "CENTER", 0, 0)
 
-	f.Sobre = K.Texto(f, "mayus", "acento")
+	f.Sobre = K.Texto(C, "mayus", "acento")
 	f.Sobre:SetJustifyH("CENTER")
-	f.Titulo = K.Texto(f, "anuncio", "texto")
+	f.Titulo = K.Texto(C, "anuncio", "texto")
 	f.Titulo:SetJustifyH("CENTER")
-	f.Texto = K.Texto(f, "globoGrande", "textoSuave")
+	f.Texto = K.Texto(C, "globoGrande", "textoSuave")
 	f.Texto:SetJustifyH("CENTER")
-	f.Pista = K.Texto(f, "nota", "textoTenue")
+	f.Pista = K.Texto(C, "nota", "textoTenue")
 	f.Pista:SetJustifyH("CENTER")
 	for _, fs in ipairs({ f.Sobre, f.Titulo, f.Texto, f.Pista }) do
 		fs:SetShadowOffset(1, -1)
 		fs:SetShadowColor(0, 0, 0, 0.9)
-		fs:SetWidth(700)
 	end
 
 	-- Las dos rayas de luz a los lados del nombre.
-	f.RayaI = f:CreateTexture(nil, "ARTWORK")
-	f.RayaD = f:CreateTexture(nil, "ARTWORK")
+	f.RayaI = C:CreateTexture(nil, "ARTWORK")
+	f.RayaD = C:CreateTexture(nil, "ARTWORK")
 	for _, t in ipairs({ f.RayaI, f.RayaD }) do
 		t:SetColorTexture(1, 1, 1, 1)
 		t:SetHeight(2)
 	end
 
-	f:SetScript("OnMouseUp", function(self)
-		local fn = self.alfaClic
-		if fn and not (InCombatLockdown and InCombatLockdown()) then
-			K.Llamar(fn)
-			self:Hide()
-		end
+	-- El borde que late (peligro): cuatro líneas alrededor del nombre y su línea.
+	f.Borde = {}
+	for i = 1, 4 do
+		local t = C:CreateTexture(nil, "ARTWORK")
+		t:SetColorTexture(1, 1, 1, 1)
+		t:Hide()
+		f.Borde[i] = t
+	end
+
+	-- Solo el nombre se toca (clic: su acción; clic derecho: cerrar).
+	f.Toque = CreateFrame("Button", nil, C)
+	f.Toque:SetPoint("TOPLEFT", f.Titulo, "TOPLEFT", -10, 6)
+	f.Toque:SetPoint("BOTTOMRIGHT", f.Titulo, "BOTTOMRIGHT", 10, -6)
+	if f.Toque.RegisterForClicks then f.Toque:RegisterForClicks("LeftButtonUp", "RightButtonUp") end
+	f.Toque:SetScript("OnClick", function(_, boton) tocar(boton) end)
+	f.Toque:EnableMouse(false)
+	-- (Lo de antes: quien llame OnMouseUp en el marco hace lo mismo.)
+	f:SetScript("OnMouseUp", function(_, boton) tocar(boton) end)
+
+	f:SetScript("OnHide", function(self)
+		if self.Huellas then self.Huellas:Hide() end
+		actual = nil
+		programar(0.05)
 	end)
 
 	f:SetScript("OnUpdate", function(self, dt)
-		local t = (self.alfaT or 0) + (tonumber(dt) or 0)
+		dt = tonumber(dt) or 0
+		local t = (self.alfaT or 0) + dt
 		self.alfaT = t
+		local o = self.alfaO
+		if not o then self:Hide() return end
+		local est = estiloDe(o)
 		local dura = self.alfaDura or 6
-		-- El juego sacó lo suyo (llegaste a una zona, un jefe…): este se va rápido
-		-- y vuelve después con el tiempo que le quedaba.
-		if not self.alfaSaliendo and t < dura and juegoOcupado() then
-			self.alfaSaliendo = true
-			local queda = dura - t
-			if self.alfaO and queda > 1.5 then
-				local o = {}
-				for k, v in pairs(self.alfaO) do o[k] = v end
-				o.segundos = max(3, queda)
-				esperar(o)
+		local entra, sale = self.alfaEntra, self.alfaSaleNormal
+		-- Algo pide la pantalla (el juego, una pelea, la placa de llegada) o
+		-- ya no vale: se va rápido y, si aún vale, vuelve después.
+		if not self.alfaSaliendo and t < dura then
+			local razon
+			if not o.ya and juegoOcupado(o.tapaJuego) then razon = "juego"
+			elseif enCombate() and not o.enCombate then razon = "combate"
+			elseif prioridad(o) >= 3 and not self.alfaBajoPlaca and placa() then razon = "placa"
+			else
+				self.alfaMirar = (self.alfaMirar or 0) - dt
+				if self.alfaMirar <= 0 then
+					self.alfaMirar = 0.5
+					if not vigente(o, true) then razon = "vencido" end
+				end
 			end
-			self.alfaSale = SALE_RAPIDO
-			self.alfaFin = t
+			if razon then
+				self.alfaSaliendo = true
+				if razon ~= "vencido" then reencolar(self, t) end
+				self.alfaSale = SALE_RAPIDO
+				self.alfaFin = t
+				self.Toque:EnableMouse(false)
+			end
 		end
-		local sale = self.alfaSale or SALE
+		local salida = self.alfaSale or sale
 		local fin = self.alfaFin or dura
 		local a
-		if t < ENTRA and not self.alfaSaliendo then a = t / ENTRA
+		if t < entra and not self.alfaSaliendo then a = t / entra
 		elseif t < fin then a = 1
-		elseif t < fin + sale then a = (self.alfaDesde or 1) * (1 - (t - fin) / sale)
+		elseif t < fin + salida then a = (self.alfaDesde or 1) * (1 - (t - fin) / salida)
 		else self:Hide() return end
 		if not self.alfaSaliendo or t <= fin then self.alfaDesde = a end
 		self:SetAlpha(a)
-		-- Entra subiendo un poco; el halo respira; las rayas se abren.
-		local sube = t < ENTRA and (1 - t / ENTRA) * 14 or 0
-		self.Titulo:ClearAllPoints()
-		self.Titulo:SetPoint("TOP", self, "TOP", 0, -98 - sube)
-		local r = min(1, max(0, (t - 0.2) / 0.7))
-		local ancho = floor(r * 170 + 0.5)
-		local tw = min(560, K.AnchoTexto(self.Titulo))
-		self.RayaI:ClearAllPoints()
-		self.RayaI:SetPoint("RIGHT", self.Titulo, "CENTER", -(tw / 2 + 14), 0)
-		self.RayaD:ClearAllPoints()
-		self.RayaD:SetPoint("LEFT", self.Titulo, "CENTER", tw / 2 + 14, 0)
-		self.RayaI:SetWidth(max(1, ancho))
-		self.RayaD:SetWidth(max(1, ancho))
-		self.Halo:SetAlpha(0.35 + 0.15 * math.sin(t * 2.2))
+		-- Su animación (en modo ligero, solo el fundido).
+		local e = min(1, t / entra)
+		local dx, dy = 0, 0
+		local fn = not self.alfaLigero and ANIM[est.anim] or nil
+		if fn then dx, dy = fn(self, t, e, entra) end
+		dx, dy = floor((dx or 0) + 0.5), floor((dy or 0) + 0.5)
+		if dx ~= self.alfaDX or dy ~= self.alfaDY then
+			self.alfaDX, self.alfaDY = dx, dy
+			self.C:ClearAllPoints()
+			self.C:SetPoint("TOPLEFT", self, "TOPLEFT", dx, dy)
+			self.C:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", dx, dy)
+		end
+		-- Las rayas se abren.
+		local r = min(1, max(0, (t - 0.2) / (est.anim == "baja" and 1.1 or 0.7)))
+		local ancho = max(1, floor(r * (self.alfaRaya or 170) + 0.5))
+		if ancho ~= self.alfaRayaW then
+			self.alfaRayaW = ancho
+			self.RayaI:SetWidth(ancho)
+			self.RayaD:SetWidth(ancho)
+		end
 		-- La cuenta, al segundo.
 		local c = self.alfaCuenta
 		if c then
-			local queda = (c.hasta or 0) - (GetTime and GetTime() or 0)
+			local queda = (c.hasta or 0) - ahora()
 			local s = max(0, floor(queda + 0.5))
 			if s ~= self.alfaSeg then
 				self.alfaSeg = s
@@ -180,63 +585,300 @@ local function armar()
 		end
 	end)
 
-	K.Pintar(f, function(x)
-		local r, g, b = K.Color(K.Clasico() and "oro" or "acento")
-		x.Lobo:SetVertexColor(r, g, b, 1)
-		x.Halo:SetVertexColor(r, g, b, 1)
-		x.RayaI:SetGradient("HORIZONTAL", CreateColor(r, g, b, 0), CreateColor(r, g, b, 0.9))
-		x.RayaD:SetGradient("HORIZONTAL", CreateColor(r, g, b, 0.9), CreateColor(r, g, b, 0))
-	end)
+	K.Pintar(f, pintar)
 end
 
-function K.Anuncio(o)
-	if type(o) ~= "table" or type(o.titulo) ~= "string" then return false end
-	local A = N.A
-	if A and A.Hidden and A.Hidden() then return false end
-	-- El juego está escribiendo arriba (el nombre de la zona, un estandarte):
-	-- este sale cuando termine.
-	if juegoOcupado() then
-		esperar(o)
-		return true
+-- Dónde sale: arriba del centro; con la placa de llegada a la vista, debajo de ella.
+local function colocar(chico)
+	f:ClearAllPoints()
+	local p = placa()
+	-- 1.3.7: bajo la placa solo si cabe en la mitad de arriba (con la flecha
+	-- abajo se saldría de la pantalla); si no, en su lugar de siempre.
+	if p then
+		local ok, cabe = pcall(function()
+			local pb, es, ue = p:GetBottom(), f:GetEffectiveScale(), UIParent:GetEffectiveScale()
+			if not (pb and es and es > 0) then return false end
+			local abajo = pb * p:GetEffectiveScale() / es + (chico and -6 or 30) - f:GetHeight()
+			return abajo >= UIParent:GetHeight() * ue / es / 2
+		end)
+		if not (ok and cabe) then p = nil end
 	end
-	return mostrar(o)
+	f.alfaBajoPlaca = p ~= nil
+	if p then
+		f:SetPoint("TOP", p, "BOTTOM", 0, chico and -6 or 30)
+	else
+		f:SetPoint("TOP", UIParent, "TOP", 0, chico and -120 or -130)
+	end
+end
+
+local function sonar(o, est)
+	if o.vuelve then return end
+	local s = o.sonido
+	if s == nil then s = est.sonido end
+	if not s then return end
+	local Sp = rawget(N, "SonidoPermitido")
+	if type(Sp) == "function" then
+		local ok, si = pcall(Sp, prioridad(o))
+		if ok and not si then return end
+	end
+	if type(s) == "function" then K.Llamar(s) return end
+	local A = N.A
+	if A and A.Get and A.Get("anuncios.sonido") == false then return end
+	if A and A.Hidden and A.Hidden() then return end
+	if type(s) == "string" then
+		local id = type(SOUNDKIT) == "table" and rawget(SOUNDKIT, s)
+		if type(id) == "number" and PlaySound then pcall(PlaySound, id, "SFX") end
+	elseif type(s) == "number" and PlaySoundFile then
+		pcall(PlaySoundFile, s, "Master")
+	end
 end
 
 mostrar = function(o)
 	local A = N.A
 	if A and A.Hidden and A.Hidden() then return false end
 	if not f then armar() end
+	local est = estiloDe(o)
+	local chico = o.chico
+	if chico == nil then
+		chico = est.chico or false
+		if o.estilo == "subzona" and A and A.Get and A.Get("anuncios.subzonaChica") == false then chico = false end
+	end
 	f.alfaO = o
-	f.alfaSaliendo, f.alfaSale, f.alfaFin, f.alfaDesde = nil, nil, nil, nil
-	f.Lobo:SetTexture(K.Lobo(o.lobo or "aullando"))
+	actual = o
+	ultimoInicio = ahora()
+	f.alfaSaliendo, f.alfaSale, f.alfaFin, f.alfaDesde, f.alfaMirar = nil, nil, nil, nil, nil
+	f.alfaDX, f.alfaDY, f.alfaRayaW, f.alfaPasos = nil, nil, nil, nil
+	f.alfaChico = chico
+	f.alfaLigero = N.Ligero and N.Ligero() or false
+	f.alfaEntra = tonumber(o.entra) or est.entra or 0.55
+	f.alfaSaleNormal = est.sale or 1.0
+	f.alfaRaya = chico and min(90, est.raya or 170) or (est.raya or 170)
+
+	local ancho = anchoPantalla()
+	f:SetWidth(ancho)
+	local util = ancho - 20
+	for _, fs in ipairs({ f.Sobre, f.Texto, f.Pista }) do fs:SetWidth(util) end
+
+	-- El lobo o el ícono del tipo.
+	local icono = not o.lobo and (o.icono or est.icono) or nil
+	if icono then
+		f.Lobo:SetTexture(K.Ruta(icono))
+		f.alfaLoboTam = 40
+	else
+		f.Lobo:SetTexture(K.Lobo(o.lobo or est.lobo or "aullando"))
+		f.alfaLoboTam = 58
+	end
+	f.Lobo:SetSize(f.alfaLoboTam, f.alfaLoboTam)
+	if f.Lobo.SetRotation then f.Lobo:SetRotation(0) end
+	if f.Halo.SetRotation then f.Halo:SetRotation(0) end
+	f.Halo:SetSize(150, 150)
+	f.Halo:SetAlpha(0.35)
+	f.Lobo:SetShown(not chico)
+	f.Halo:SetShown(not chico)
+
 	K.Escribir(f.Sobre, o.sobre and K.Mayus(o.sobre) or "")
-	K.Escribir(f.Titulo, o.titulo)
+	f.Texto.alfaRol = chico and "cuerpo" or "globoGrande"
+	K.Fuente(f.Texto)
+	f.Texto:SetWordWrap(true)
+	if f.Texto.SetMaxLines then f.Texto:SetMaxLines(3) end
 	K.Escribir(f.Texto, o.texto or "")
 	K.Escribir(f.Pista, o.alClic and o.pista or "")
+	local tw = ajustarTitulo(f.Titulo, o.titulo, util - 40, chico)
+
+	-- Acomodo: el grande (lobo, sobre, nombre, línea) o el chico (sobre y nombre).
+	f.Halo:ClearAllPoints()
+	f.Halo:SetPoint("CENTER", f.C, "TOP", 0, -42)
 	f.Sobre:ClearAllPoints()
-	f.Sobre:SetPoint("TOP", f, "TOP", 0, -80)
+	f.Titulo:ClearAllPoints()
+	if chico then
+		f.Sobre:SetPoint("TOP", f.C, "TOP", 0, -6)
+		f.Titulo:SetPoint("TOP", f.C, "TOP", 0, -20)
+	else
+		f.Sobre:SetPoint("TOP", f.C, "TOP", 0, -80)
+		f.Titulo:SetPoint("TOP", f.C, "TOP", 0, -98)
+	end
 	f.Texto:ClearAllPoints()
-	f.Texto:SetPoint("TOP", f, "TOP", 0, -136)
+	f.Texto:SetPoint("TOP", f.Titulo, "BOTTOM", 0, chico and -4 or -8)
 	f.Pista:ClearAllPoints()
 	f.Pista:SetPoint("TOP", f.Texto, "BOTTOM", 0, -6)
+	f.RayaI:ClearAllPoints()
+	f.RayaI:SetPoint("RIGHT", f.Titulo, "CENTER", -(tw / 2 + 14), 0)
+	f.RayaD:ClearAllPoints()
+	f.RayaD:SetPoint("LEFT", f.Titulo, "CENTER", tw / 2 + 14, 0)
+	f.RayaI:SetAlpha(1)
+	f.RayaD:SetAlpha(1)
+	f.RayaI:SetWidth(1)
+	f.RayaD:SetWidth(1)
+
+	-- El borde (peligro): alrededor del nombre y su línea.
+	local conBorde = est.anim == "late" and not f.alfaLigero
+	for _, b in ipairs(f.Borde) do b:ClearAllPoints() b:SetShown(conBorde) end
+	if conBorde then
+		local bw = min(util, tw + 80)
+		local arriba, abajo = f.Titulo, (o.texto and o.texto ~= "") and f.Texto or f.Titulo
+		local B = f.Borde
+		B[1]:SetPoint("BOTTOM", arriba, "TOP", 0, 8) B[1]:SetSize(bw, 2)
+		B[2]:SetPoint("TOP", abajo, "BOTTOM", 0, -8) B[2]:SetSize(bw, 2)
+		B[3]:SetPoint("TOPRIGHT", B[1], "TOPLEFT", 0, 0) B[3]:SetPoint("BOTTOMRIGHT", B[2], "BOTTOMLEFT", 0, 0) B[3]:SetWidth(2)
+		B[4]:SetPoint("TOPLEFT", B[1], "TOPRIGHT", 0, 0) B[4]:SetPoint("BOTTOMLEFT", B[2], "BOTTOMRIGHT", 0, 0) B[4]:SetWidth(2)
+	end
+
+	-- Las huellas (descubrir: se dibujan bajo la línea; manada: cruzan).
+	if est.huellas and not chico and not f.alfaLigero then
+		if not f.Huellas then f.Huellas = K.Huellas(f.C, { tam = 14, max = 8, total = 6, actual = 0 }) end
+		f.Huellas:ClearAllPoints()
+		if est.anim == "destello" then
+			f.Huellas:Set(0, 6)
+			f.Huellas:SetPoint("TOP", (o.alClic and o.pista) and f.Pista or f.Texto, "BOTTOM", 0, -6)
+		else
+			f.Huellas:Set(5, 5)
+			f.Huellas:SetPoint("LEFT", f.C, "TOP", -ancho / 2, -64)
+		end
+		f.Huellas:Show()
+	elseif f.Huellas then
+		f.Huellas:Hide()
+	end
+
+	f:SetHeight(chico and 80 or 170)
+	f.C:ClearAllPoints()
+	f.C:SetAllPoints(f)
+	colocar(chico)
 	f.alfaClic = o.alClic
 	f.alfaCuenta = o.cuenta
 	f.alfaSeg = nil
-	f.alfaDura = tonumber(o.segundos) or 6
+	f.alfaDura = tonumber(o.segundos) or est.segundos or 6
 	f.alfaT = 0
-	f:EnableMouse(o.alClic ~= nil and not (InCombatLockdown and InCombatLockdown()))
+	-- Solo el nombre toma el ratón, y nunca en combate.
+	f.Toque:EnableMouse(not enCombate())
+	pintar(f)
 	f:SetAlpha(0)
 	f:Show()
+	sonar(o, est)
+	-- Quien lo pidió se entera de que salió de verdad (Zonas.lua esconde ahí el nombre del juego).
+	if type(o.alMostrar) == "function" then K.Llamar(o.alMostrar, o) end
 	return true
 end
 
-function K.QuitarAnuncio()
-	espera = nil
-	if f then f:Hide() end
+function K.Anuncio(o)
+	if type(o) ~= "table" or type(o.titulo) ~= "string" then return false end
+	local A = N.A
+	if A and A.Hidden and A.Hidden() then return false end
+	local est = estiloDe(o)
+	if o.caduca == nil and est.caduca then o.caduca = ahora() + est.caduca end
+	if o.espaciar == nil and est.espaciar then o.espaciar = est.espaciar end
+	if not vigente(o) then return false end
+	local e = { o = o, desde = ahora(), n = 0 }
+	if f and f:IsShown() and actual then
+		-- Lo mismo que ya se ve no se repite.
+		if o.clave and actual.clave == o.clave and actual.titulo == o.titulo then return true end
+		-- Uno más urgente: el que se ve vuelve después.
+		if prioridad(o) < prioridad(actual) and not bloqueo(e) then
+			reencolar(f, f.alfaT)
+			return mostrar(o)
+		end
+		encolar(o)
+		return true
+	end
+	if bloqueo(e) or #cola > 0 then
+		encolar(o)
+		if #cola > 0 and not (f and f:IsShown()) then revisar() end
+		return true
+	end
+	return mostrar(o)
 end
-function K.AnuncioEsperando() return espera ~= nil end
 
--- En combate deja pasar los clics (no atrapa nada).
+function K.QuitarAnuncio()
+	for _, e in ipairs(cola) do perdidoAnuncio(e.o) end
+	cola = {}
+	if f then f.alfaO = nil f:Hide() end
+	if fc then fc:Hide() end
+end
+function K.CerrarAnuncio() cerrar() end
+-- 1.3.7: quita solo ese anuncio (el que se ve o el que espera), no los demás.
+function K.QuitarEsteAnuncio(o)
+	if type(o) ~= "table" then return false end
+	local hubo = false
+	for i = #cola, 1, -1 do if cola[i].o == o then table.remove(cola, i) hubo = true end end
+	if f and f:IsShown() and f.alfaO == o then cerrar() hubo = true end
+	return hubo
+end
+function K.AnuncioEsperando() return #cola > 0 end
+function K.AnuncioCola()
+	local out = {}
+	for i, e in ipairs(cola) do out[i] = { estilo = e.o.estilo or "general", titulo = e.o.titulo, prioridad = prioridad(e.o) } end
+	return out
+end
+function K.AnuncioActual()
+	if not (f and f:IsShown() and f.alfaO) then return nil end
+	local o = f.alfaO
+	local est = estiloDe(o)
+	return {
+		estilo = o.estilo or "general", titulo = o.titulo, sobre = o.sobre, texto = o.texto, chico = f.alfaChico,
+		prioridad = prioridad(o), color = tono(o, est), anim = est.anim, bajoPlaca = f.alfaBajoPlaca or nil,
+		ancho = f:GetWidth(), toca = f.Toque:IsMouseEnabled() or nil, marcoToca = f:IsMouseEnabled() or nil,
+		huellas = f.Huellas ~= nil and f.Huellas:IsShown() or nil, borde = f.Borde[1]:IsShown() or nil,
+		rolTitulo = f.Titulo.alfaRol, vuelve = o.vuelve or nil,
+	}
+end
+
+---------------------------------------------------------------------------
+-- El ícono chico (1.3.7): un raro en plena pelea o en una mazmorra. Nunca
+-- toma el ratón; se va solo.
+---------------------------------------------------------------------------
+local function armarChico()
+	fc = CreateFrame("Frame", "AlfaAnuncioChico", K.Raiz())
+	fc:SetSize(220, 30)
+	fc:SetPoint("TOP", UIParent, "TOP", 0, -96)
+	fc:SetFrameStrata("HIGH")
+	fc:EnableMouse(false)
+	fc:Hide()
+	fc.Icono = fc:CreateTexture(nil, "ARTWORK")
+	fc.Icono:SetSize(26, 26)
+	fc.Icono:SetPoint("LEFT", fc, "LEFT", 0, 0)
+	fc.Texto = K.Texto(fc, "pequeno", "texto")
+	fc.Texto:SetPoint("LEFT", fc.Icono, "RIGHT", 6, 0)
+	fc.Texto:SetShadowOffset(1, -1)
+	fc.Texto:SetShadowColor(0, 0, 0, 0.9)
+	fc:SetScript("OnUpdate", function(self, dt)
+		local t = (self.alfaT or 0) + (tonumber(dt) or 0)
+		self.alfaT = t
+		local dura = self.alfaDura or 6
+		local a
+		if t < 0.3 then a = t / 0.3 elseif t < dura then a = 1 elseif t < dura + 0.6 then a = 1 - (t - dura) / 0.6 else self:Hide() return end
+		self:SetAlpha(a)
+	end)
+end
+
+function K.AnuncioChico(o)
+	if type(o) ~= "table" or type(o.titulo) ~= "string" then return false end
+	local A = N.A
+	if A and A.Hidden and A.Hidden() then return false end
+	if not fc then armarChico() end
+	local token = o.color or (K.Clasico() and "oro" or "acento")
+	if o.icono then fc.Icono:SetTexture(K.Ruta(o.icono)) else fc.Icono:SetTexture(K.Lobo(o.lobo or "atento")) end
+	fc.Icono:SetVertexColor(K.Color(token))
+	K.Escribir(fc.Texto, o.titulo)
+	local w = min(anchoPantalla() - 40, K.AnchoTexto(fc.Texto))
+	fc.Texto:SetWidth(max(1, w + 2))
+	fc:SetWidth(26 + 6 + w + 2)
+	fc.alfaDura = tonumber(o.segundos) or 6
+	fc.alfaT = 0
+	fc:SetAlpha(0)
+	fc:Show()
+	return true
+end
+function K.AnuncioChicoVisible() return fc ~= nil and fc:IsShown() or false end
+
+-- En combate deja pasar los clics (no atrapa nada), y al terminar vuelve lo que esperaba.
 local ev = CreateFrame("Frame")
 ev:RegisterEvent("PLAYER_REGEN_DISABLED")
-ev:SetScript("OnEvent", function() if f then f:EnableMouse(false) end end)
+ev:RegisterEvent("PLAYER_REGEN_ENABLED")
+ev:SetScript("OnEvent", function(_, evento)
+	if evento == "PLAYER_REGEN_DISABLED" then
+		pelea = true
+		if f then f:EnableMouse(false) f.Toque:EnableMouse(false) end
+	else
+		pelea = false
+		if #cola > 0 then programar(1) end
+	end
+end)

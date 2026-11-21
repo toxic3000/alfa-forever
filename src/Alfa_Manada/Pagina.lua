@@ -231,8 +231,12 @@ local function datoPersona(f)
 	local ins = M.Insignias.DeFila(f)
 	-- 1.2.7: las misiones que hace contigo (Juntos.lua), si anda en tu zona.
 	local J = M.Juntos
-	local comunes = J and f.tipo ~= "grupo" and J.Comunes(f.clave) or 0
+	local comunes, ids = 0, nil
+	if J and f.tipo ~= "grupo" then comunes, ids = J.Comunes(f.clave) end
 	local juntos = comunes == 1 and L["Hacen 1 misión contigo"] or (comunes > 1 and format(L["Hacen %d misiones contigo"], comunes)) or nil
+	-- 1.3.7: cuáles («En común: “A”, “B” y 1 más»), con «Invitar» abajo.
+	local titulos = comunes > 0 and J.Titulos and J.Titulos(ids, 2) or nil
+	if juntos and titulos then juntos = format(L["%s: %s"], juntos, titulos) end
 	return {
 		variante = "normal", icono = "ic-huella",
 		sobre = U.Mayus(siguiendo and L["Siguiendo"] or (f.tipo == "grupo" and L["Tu grupo"] or L["La Jauría"])),
@@ -1367,7 +1371,8 @@ local function bloqueBotin(padre)
 			local n = #Bo.Conocidos()
 			return {
 				titulo = L["Lo que le sirve a otro lobo"],
-				texto = n > 0 and format(L["Conozco la clase y el nivel de %d lobos conectados. Si levantas algo que les sirve, te lo digo."], n)
+				texto = n > 0 and N.Plural(n, L["Conozco la clase y el nivel de %d lobo conectado. Si levantas algo que le sirve, te lo digo."], L["Conozco la clase y el nivel de %d lobos conectados. Si levantas algo que les sirve, te lo digo."])
+
 					or L["Cuando levantes algo que le sirve a un lobo conectado, te lo digo aquí. Ellos comparten su clase y nivel en los ajustes."],
 				filas = filas,
 				vacio = not activo and L["Apagado en los ajustes de abajo."]

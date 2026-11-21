@@ -244,7 +244,7 @@ A.RegisterEvent("UPDATE_BINDINGS", function() aplicarTecla() end)
 A.RegisterEvent("PLAYER_ENTERING_WORLD", function() aplicarTecla() end)
 
 A.RegisterEvent("MAP_EXPLORATION_UPDATED", function() V.RehacerArte() end)
-A.RegisterEvent("PLAYER_LEVEL_UP", function() Mc.Reestilar() end)
+A.RegisterEvent("PLAYER_LEVEL_UP", (N.TrasNivel or function(_, f) return f end)("mundo.mapa", function() Mc.Reestilar() end)) -- 1.3.7: tras la animación del juego
 
 A.On("ALFA_HIDDEN", function()
 	mostrarBarra()

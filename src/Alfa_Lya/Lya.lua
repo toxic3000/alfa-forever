@@ -915,8 +915,14 @@ function UI.Hablar(c)
 	elseif c.salto then
 		UI.Saltar()
 	end
-	if N.Get(ID, "sonido") and SOUNDKIT and SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON then
-		pcall(A.PlaySound, SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON, "SFX")
+	-- 1.3.7 (70): suena solo en lo importante (y lo que pides); sus comentarios
+	-- sueltos van callados. «Sonidos de Alfa» (nucleo.sonidos) manda.
+	if N.Get(ID, "sonido") and (c.importante or c.pedido) then
+		if N.Sonar then
+			N.Sonar("lya", c.importante and 2 or 3)
+		elseif SOUNDKIT and SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON then
+			pcall(A.PlaySound, SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON, "SFX")
+		end
 	end
 	local secs = tonumber(c.segundos) or 8
 	if w1 > 0 then secs = secs + 4 end

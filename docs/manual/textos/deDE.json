@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "Die 1.3.6: Das Rudel führt dich", "items": ["**Ganz Alfa durchsuchen:** Die Suche oben findet Seiten und Einstellungen, wartet, bis du fertig getippt hast, und bietet dir sonst Lya an.", "**Für Einsteiger:** Jede Seite sagt, wofür sie da ist, der einfache Modus ist einfacher, die Tour zeigt den Wolf an der Minikarte und die Taste für „Was ist das?“, und es gibt Knöpfe statt Befehlen.", "**Leichter:** Seiten öffnen schneller und merken sich, wo du warst. **Leichter Modus** für einfache Computer, unter Stil und Klang.", "**Dein Kampf stört nicht:** Die Zusammenfassung verdeckt deine Aktionsleisten nicht mehr, und du kannst sie überallhin ziehen."]}
+    "mapa": {"titulo": "Die 1.3.7: Das Rudel in deinem Tempo", "items": ["**Hinweise zur rechten Zeit:** Alles stellt sich an und wartet auf das Spiel; beim Stufenaufstieg kommt eine einzige Zusammenfassung. `/alfa calma` für Nicht stören und „Was ich verpasst habe“ (`/alfa perdi`) für Verpasstes.", "**Jede Zone wird angekündigt:** bei der Ankunft groß und mit eigener Animation (Schiff, Seltener, Dungeon, Entdeckung …). Auswahl unter Einstellungen > Stil und Klang > Ankündigungen.", "**Dein Gold und dein Schaden:** Gold erscheint einmal; die Münzen zeigen das jedes Charakters. Der Schadensmesser erscheint in der Gruppe von selbst, ohne deine Leisten zu verdecken.", "**Angeln, bereit zum Kampf:** Das Schwert auf der Leiste gibt dir mit einem Klick deine Waffen zurück, sogar mitten im Kampf."]}
   },
   "contraportada": {
     "titulo": "Komm ins Rudel",

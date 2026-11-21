@@ -284,7 +284,7 @@ local function numeros(tot)
 	local extra = tot.consejo - tot.comerciante
 	local lista = {
 		{ variante = "compacta", icono = "ic-oro", titulo = L["Si sigues los consejos"], valor = M.Dinero(tot.consejo), tono = "acento",
-			texto = format(L["%d objetos distintos"], tot.cuenta.todos) },
+			texto = N.Plural(tot.cuenta.todos, L["%d objeto distinto"], L["%d objetos distintos"]) },
 		{ variante = "compacta", icono = "ic-comercio", titulo = L["Si vendes todo al comerciante"], valor = M.Dinero(tot.comerciante),
 			texto = L["lo más fácil"] },
 	}
@@ -569,7 +569,7 @@ local function bloqueRecetas(padre)
 			nota = { titulo = L["Ninguna receta deja ganancia"], texto = L["Ninguna de tus recetas deja ganancia con los precios que tienes."] }
 		end
 		if incompletas > 0 then
-			local t = L["%d recetas no se pueden calcular porque faltan precios de sus reactivos o su producto."]:format(incompletas)
+			local t = N.Plural(incompletas, L["%d receta no se puede calcular porque faltan precios de sus reactivos o su producto."], L["%d recetas no se pueden calcular porque faltan precios de sus reactivos o su producto."])
 			if nota then nota.texto = nota.texto .. " " .. t else nota = { titulo = L["Faltan precios"], texto = t } end
 		end
 		if nota then
@@ -650,7 +650,7 @@ local function bloqueCompras(padre)
 				d.titulo, d.tono = L["¡Tienes todo!"], "exito"
 				d.estado = { texto = L["Completa"], tono = "exito" }
 			else
-				d.titulo, d.tono = format(L["Te faltan %d de %d materiales"], total - listos, total), "acento"
+				d.titulo, d.tono = format(total - listos == 1 and L["Te falta %d de %d materiales"] or L["Te faltan %d de %d materiales"], total - listos, total), "acento"
 			end
 			d.texto = format(L["Para: %s."], table.concat(nombres, ", "))
 			if costo > 0 then
@@ -778,8 +778,12 @@ local function grupos(padre)
 		texto = L["El botón «Escanear con Alfa» bajo la ventana de la subasta."] })
 	juego:Fila({ titulo = L["Aprender de tus búsquedas"], control = function(f) return K.Interruptor(f, { clave = ruta("busquedas") }) end,
 		texto = L["Cuando buscas algo en la subasta, Alfa guarda el precio más bajo que ves."] })
+	juego:Fila({ titulo = L["Gangas en la subasta"], control = function(f) return K.Interruptor(f, { clave = ruta("gangas") }) end,
+		texto = L["Te señala lo que cuesta menos de lo que suele valer o lo que deja ganancia al desencantarlo. La compra siempre es tuya."] })
 	juego:Fila({ titulo = L["Avisar de cartas que vencen"], control = function(f) return K.Interruptor(f, { clave = ruta("buzonVence") }) end,
 		texto = L["Al abrir el buzón, un aviso si una carta con objetos vence en menos de 3 días."] })
+	juego:Fila({ titulo = L["Mandar a tu alt desde el buzón"], control = function(f) return K.Interruptor(f, { clave = ruta("buzonAlt") }) end,
+		texto = L["En la pestaña de enviar, un botón por cada lista: pone el nombre y adjunta lo de esa lista. El clic en «Enviar» es tuyo. Las listas: /alfa comercio alt."] })
 	juego:Fila({ titulo = L["Ayuda al subastar"], control = function(f) return K.Interruptor(f, { clave = ruta("vender") }) end,
 		texto = L["Al poner algo a la venta en la subasta: su precio sugerido, su historial de 14 días y un aviso si lo das muy barato."] })
 	juego:Fila({ titulo = L["Avisar si lo das más barato de"], hija = true, activa = function() return M.Ajuste("vender") ~= false end,
@@ -817,7 +821,7 @@ local function grupos(padre)
 		end })
 	cuentas:Fila({ titulo = L["Avisar cuando los precios tengan más de"], texto = L["Los precios cambian: después de estos días Alfa te recuerda escanear otra vez."],
 		control = function(f)
-			local d = K.Deslizador(f, { min = 1, max = 14, paso = 1, clave = ruta("diasViejo"), formato = function(v) return L["%d días"]:format(floor((v or 0) + 0.5)) end })
+			local d = K.Deslizador(f, { min = 1, max = 14, paso = 1, clave = ruta("diasViejo"), formato = function(v) local n = floor((v or 0) + 0.5) return N.Plural(n, L["%d día"], L["%d días"]) end })
 			d.alfaAnchoFila = 220
 			return d
 		end })
@@ -874,7 +878,7 @@ local function rehacerLuego()
 		pendienteRehacer = false
 		if pagina then N.RehacerPagina(pagina) end
 	end
-	if C_Timer and C_Timer.After then C_Timer.After(0.4, ir) else ir() end
+	N.Una("comercio.pagina", 0.4, ir)
 end
 
 ---------------------------------------------------------------------------
@@ -889,8 +893,14 @@ local CONTROLES = {
 		help = L["El botón «Escanear con Alfa» bajo la ventana de la subasta."], search = "auction house, scan button, ah" },
 	{ kind = "toggle", key = ruta("busquedas"), label = L["Aprender de tus búsquedas"],
 		help = L["Cuando buscas algo en la subasta, Alfa guarda el precio más bajo que ves."], search = "auction search, learn prices" },
+	{ kind = "toggle", key = ruta("gangas"), label = L["Gangas en la subasta"],
+		help = L["Te señala lo que cuesta menos de lo que suele valer o lo que deja ganancia al desencantarlo. La compra siempre es tuya."],
+		search = "auction deals, bargains, cheap, flip, disenchant profit" },
 	{ kind = "toggle", key = ruta("buzonVence"), label = L["Avisar de cartas que vencen"],
 		help = L["Al abrir el buzón, un aviso si una carta con objetos vence en menos de 3 días."], search = "mail expires, expiring mail" },
+	{ kind = "toggle", key = ruta("buzonAlt"), label = L["Mandar a tu alt desde el buzón"],
+		help = L["En la pestaña de enviar, un botón por cada lista: pone el nombre y adjunta lo de esa lista. El clic en «Enviar» es tuyo. Las listas: /alfa comercio alt."],
+		search = "mail alt, send to alt, mail lists, herbs to alchemist" },
 	{ kind = "toggle", key = ruta("vender"), label = L["Ayuda al subastar"],
 		help = L["Al poner algo a la venta en la subasta: su precio sugerido, su historial de 14 días y un aviso si lo das muy barato."],
 		search = "auction sell, suggested price, price history, undercut" },
@@ -915,7 +925,7 @@ local CONTROLES = {
 			{ value = "nunca", label = L["Nunca"] } },
 		search = "disenchant, enchanting" },
 	{ kind = "slider", key = ruta("diasViejo"), label = L["Avisar cuando los precios tengan más de"], min = 1, max = 14, step = 1,
-		format = function(v) return L["%d días"]:format(floor((v or 0) + 0.5)) end,
+		format = function(v) local n = floor((v or 0) + 0.5) return N.Plural(n, L["%d día"], L["%d días"]) end,
 		help = L["Los precios cambian: después de estos días Alfa te recuerda escanear otra vez."], search = "old prices, stale, days, scan reminder" },
 }
 
@@ -931,6 +941,8 @@ N.Modulo({
 		comision = 5, desencantar = "auto", diasViejo = 3,
 		vender = true, precioBajo = 30, listaAviso = true, oficios = true,
 		fabricar = true, -- 1.3.0: Fabricar.lua
+		gangas = true, -- 1.3.7: Gangas.lua
+		buzonAlt = true, -- 1.3.7: Envios.lua
 	},
 	controles = CONTROLES,
 	construir = construir,
@@ -949,10 +961,21 @@ local function comando(resto)
 		M.VentanaOficios.Abrir()
 		return
 	end
+	-- 1.3.7: listas para mandar a tus personajes (Envios.lua) y las gangas (Gangas.lua).
+	if verbo == "alt" then
+		M.Envios.Comando(arg)
+		return
+	end
+	if verbo == "gangas" or verbo == "deals" then
+		M.ImprimirGangas()
+		return
+	end
 	if verbo == "precio" or verbo == "price" then
 		local id = tonumber((arg or ""):match("item:(%d+)") or arg)
+		-- 1.3.7: también con el nombre del objeto («/alfa comercio precio lino»).
+		if not id and arg and arg ~= "" then id = M.BuscarPorNombre(arg) end
 		if not id then
-			N.Imprimir(L["Uso: /alfa comercio precio <enlace del objeto>"])
+			N.Imprimir(L["Uso: /alfa comercio precio <objeto o su nombre>"])
 			return
 		end
 		local c = M.Consejo(id)
@@ -967,7 +990,7 @@ local function comando(resto)
 	end
 	N.Abrir(M.ID)
 end
-A.RegisterCommand(M.ID, comando, L["¿Vender, subastar o transformar? (escanear, precio <objeto>, oficios)"])
+A.RegisterCommand(M.ID, comando, L["¿Vender, subastar o transformar? (escanear, precio <objeto>, oficios, gangas, alt)"])
 
 -- 1.2.9: Lya sabe contar lo nuevo de Comercio (Pregúntale a Lya).
 A.OnLogin(function()

@@ -27,12 +27,23 @@ local ANCHO, FILA = 264, 40
 
 local function opt(k) return N.Get(ID, k) end
 
+-- 1.3.7: «2 h» y «15 min», no «120:00» ni «2 h 00 min». sinSeg: lo que
+-- llevas, sin los segundos (cabe en la cifra de la fila).
+local function corto(seg, sinSeg)
+	seg = floor(max(0, tonumber(seg) or 0))
+	if sinSeg and seg >= 60 then seg = seg - seg % 60 end
+	local t = N.Duracion(seg)
+	t = t:gsub(" 00 min$", ""):gsub(" 00 s$", "")
+	return t
+end
+M.DuracionCorta = corto
+
 function M.TextoMeta(m)
 	local o, h = tonumber(m.objetivo) or 0, tonumber(m.hecho) or 0
 	if m.tipo == "pez" then return format(L["%s: %d de %d"], m.nombre or (M.V and M.V.NombreObjeto(m.item)) or "?", min(h, o), o) end
 	if m.tipo == "capturas" then return format(L["Capturas: %d de %d"], min(h, o), o) end
 	if m.tipo == "lanzamientos" then return format(L["Lanzamientos: %d de %d"], min(h, o), o) end
-	if m.tipo == "tiempo" then return format(L["Pescar %s: llevas %s"], N.Duracion(o), N.Duracion(min(h, o))) end
+	if m.tipo == "tiempo" then return format(L["Pescar %s: llevas %s"], corto(o), corto(min(h, o), true)) end
 	if m.tipo == "valor" then return format(L["Valor de %s: llevas %s"], N.DineroTexto(o, true), N.DineroTexto(min(h, o), true)) end
 	return "?"
 end
@@ -48,7 +59,7 @@ end
 
 local function cifra(m)
 	local o, h = tonumber(m.objetivo) or 0, tonumber(m.hecho) or 0
-	if m.tipo == "tiempo" then return format("%s/%s", M.Reloj(min(h, o)), M.Reloj(o)) end
+	if m.tipo == "tiempo" then return format("%s/%s", corto(min(h, o), true), corto(o)) end
 	if m.tipo == "valor" then return format("%s/%s", N.DineroTexto(min(h, o), true), N.DineroTexto(o, true)) end
 	return format("%d/%d", min(h, o), o)
 end
@@ -65,7 +76,7 @@ local CUANTO = {
 }
 
 local function textoCuanto(tipo, n)
-	if tipo == "tiempo" then return N.Duracion(n) end
+	if tipo == "tiempo" then return corto(n) end
 	if tipo == "valor" then return N.DineroTexto(n, true) end
 	return tostring(n)
 end

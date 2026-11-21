@@ -48,6 +48,11 @@ local DIARIO = {
 		help = L["Marca en el minimapa la entrada de cada mazmorra (en verde las que ya hiciste). El mapa del mundo ya las marca solo."],
 		get = function() return M.Capa ~= nil and M.Capa.Activa() end,
 		set = function(on) if M.Capa then M.Capa.Poner(on ~= false) end cambio() end },
+	-- 1.3.7
+	{ kind = "toggle", key = ID .. ".consumibles", label = L["Recordarme lo que me falta antes de un jefe"],
+		help = L["Al apuntar a un jefe (y al entrar a una banda): comida de bufo, frasco o elixir en banda, piedra de salud si hay brujo y tu munición. Un aviso chico, nunca en combate."] },
+	{ kind = "toggle", key = ID .. ".historial", label = L["Anotar el botín de mi grupo"],
+		help = L["Quién se llevó qué y con qué tirada, de lo que el juego ya pone en tu chat. Lo ves en Tu progreso; no se anuncia nada."] },
 	{ kind = "button", label = L["Borrar todo mi progreso"], button = L["Borrar"], icon = "reset", danger = true,
 		help = L["Jefes vencidos, mazmorras hechas y botín anotado de este personaje. No toca tus ajustes."],
 		confirm = true, confirmTitle = L["¿Borrar todo tu progreso?"], confirmAction = L["Borrar"],

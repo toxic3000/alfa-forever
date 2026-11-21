@@ -61,6 +61,8 @@ M.AJUSTES = {
 	comparar = true,          -- 1.3.0: +/- contra lo que llevas, en el cuadro del equipo (Comparar.lua)
 	buscarTodos = true,       -- 1.3.0: buscar en todos tus personajes, en la página (Todos.lua)
 	acomodar = true,          -- 1.3.0: el botón «Acomodar» (Acomodar.lua)
+	barraConjuntos = true,    -- 1.3.7: un botón por conjunto junto a tu personaje (Cambio.lua)
+	nivelPersonaje = true,    -- 1.3.7: nivel de objeto y durabilidad en tu personaje y la inspección (Ranuras.lua)
 	deposito = "banco",       -- lo último que elegiste en "Depositar"
 }
 
@@ -119,6 +121,12 @@ local CONTROLES = {
 	{ kind = "toggle", key = clave("conjuntos"), label = L["Conjuntos de equipo"],
 		help = L["Guarda lo que llevas puesto con un nombre (curar, daño, pesca...) y póntelo con un clic, fuera de combate."],
 		search = "gear sets, equipment sets, outfits, swap gear" },
+	{ kind = "toggle", key = clave("barraConjuntos"), label = L["Botones de tus conjuntos"], child = true, disabled = apagado("conjuntos"),
+		help = L["Junto a la ventana de tu personaje, un botón por conjunto. En combate te cambia las armas al momento y lo demás al terminar. Clic derecho: ponértelo al salir de cada combate."],
+		search = "gear set buttons, quick swap, weapon swap, combat" },
+	{ kind = "toggle", key = clave("nivelPersonaje"), label = L["Nivel y durabilidad en tu personaje"],
+		help = L["En la ventana de tu personaje y al inspeccionar a alguien: el nivel de objeto de cada pieza y, si se está gastando, cuánto le queda."],
+		search = "item level, ilvl, durability, character sheet, paper doll, inspect" },
 	{ kind = "toggle", key = clave("comparar"), label = L["Comparar con lo que llevas"],
 		help = L["En el cuadro de cada pieza de equipo: lo que ganas y lo que pierdes contra lo que llevas puesto, con números."],
 		search = "compare gear, stats, tooltip, upgrade" },

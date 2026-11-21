@@ -29,3 +29,6 @@ Vista.lua
 Reemplazos.lua
 Capa.lua
 EnVivo.lua
+Cronometro.lua
+Consumibles.lua
+BotinGrupo.lua

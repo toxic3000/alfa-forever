@@ -5,8 +5,8 @@
 -- y sus botones; una franja con la búsqueda, Ordenar y, en el banco,
 -- Depositar; la barra de las bolsas equipadas (Barra.lua); cuando las bolsas
 -- se llenan, la sugerencia de qué vender (Sugerencias.lua); el cuerpo con
--- las casillas (se desplaza si no cabe) y un pie con tu dinero, el de toda la
--- cuenta y el espacio libre. Vive en UIParent (no en la capa de Alfa): tus
+-- las casillas (se desplaza si no cabe) y un pie con tu dinero, las monedas
+-- de «Tu oro» (Oro.lua) y el espacio libre. Vive en UIParent (no en la capa de Alfa): tus
 -- bolsas se abren aunque ocultes Alfa.
 --
 -- Tres vistas (ajuste "vista"): todo junto ("una": cada casilla en su
@@ -968,22 +968,37 @@ local function sonido(abrir)
 	if id and PlaySound then pcall(PlaySound, id) end
 end
 
+-- 1.3.7: el pie enseña solo el oro del personaje que miras (antes salía
+-- también «Cuenta: …», el oro dos veces); el de todos va en «Tu oro», el
+-- botón de monedas (Oro.lua). De otro personaje, también de cuándo es.
 function V.Pie(f)
 	if not f.Dinero then return end
-	local dinero
+	local dinero, cuando
 	if propia(f) then
 		dinero = M.Num(GetMoney and GetMoney())
 	else
 		local r = D.Personaje(f.clave)
 		dinero = r and tonumber(r.dinero)
+		cuando = r and M.Hace(r.visto)
 	end
-	K.Escribir(f.Dinero, N.Dinero(dinero or 0, true))
-	K.Escribir(f.Cuenta, L["Cuenta:"] .. " " .. N.Dinero(D.DineroCuenta(), true))
 	K.Escribir(f.Libre, (L["Libre: %d de %d"]):format(f.libres or 0, f.total or 0))
 	local poco = (f.total or 0) > 0 and (f.libres or 0) <= 2
 	K.ColorTexto(f.Libre, poco and "aviso" or "textoSuave")
+	-- Lo de la izquierda no pisa el espacio libre de la derecha.
+	local ancho = K.num(f.ancho or f:GetWidth(), MIN_W)
+	local libreW = K.Ajustar(f.Libre)
+	local monW = f.Monedas and (f.Monedas:IsShown() and K.num(f.Monedas:GetWidth(), 24) + ESP.xs) or 0
+	local tope = max(40, ancho - 2 * (PAD + 2) - libreW - ESP.m - monW)
+	K.Escribir(f.Dinero, N.Dinero(dinero or 0, true))
+	local dw = K.Ajustar(f.Dinero, tope)
+	if f.Cuando then
+		K.Escribir(f.Cuando, cuando or "")
+		f.Cuando:SetShown(cuando ~= nil)
+		if cuando then K.Ajustar(f.Cuando, max(0, tope - dw - ESP.s)) end
+	end
 end
 
+-- 1.3.7: el cuadro del pie solo habla del espacio (el oro va en «Tu oro»).
 local function infoPie(self)
 	local f = self:GetParent()
 	local lineas = { (L["Bolsas: %d de %d libres"]):format(f.libres or 0, f.total or 0) }
@@ -993,24 +1008,7 @@ local function infoPie(self)
 	if (f.totalE or 0) > 0 then
 		lineas[#lineas + 1] = (L["Bolsas especiales: %d de %d libres"]):format(f.libresE or 0, f.totalE or 0)
 	end
-	lineas[#lineas + 1] = " "
-	lineas[#lineas + 1] = K.Tenir("texto", L["Dinero de tus personajes"])
-	local actual = D.Clave()
-	for _, p in ipairs(D.Lista()) do
-		local r, g, b = M.ColorClase(p.r.clase)
-		local d = (p.clave == actual and M.Num(GetMoney and GetMoney())) or tonumber(p.r.dinero) or 0
-		lineas[#lineas + 1] = M.Pintado(p.r.nombre or p.clave, r, g, b) .. "  ·  " .. N.Dinero(d, true)
-	end
-	lineas[#lineas + 1] = " "
-	lineas[#lineas + 1] = K.Tenir("acento", L["Toda la cuenta"]) .. "  ·  " .. N.Dinero(D.DineroCuenta(), true)
-	-- 1.2.8: el oro de esta sesión (Sesion.lua).
-	local Se = M.Sesion
-	if Se and propia(f) then
-		lineas[#lineas + 1] = " "
-		lineas[#lineas + 1] = K.Tenir("texto", L["Esta sesión"])
-		for _, l in ipairs(Se.Lineas()) do lineas[#lineas + 1] = l end
-	end
-	return L["Espacio y dinero"], lineas
+	return L["Espacio"], lineas
 end
 
 local function menuPersonajes(f, ancla)
@@ -1171,7 +1169,7 @@ local function crear(tipo)
 	f.Vacio = K.Vacio(f.Contenido, { lobo = "dormido" })
 	f.Vacio:Hide()
 
-	-- El pie: dinero (con el de la cuenta al pasar el ratón) y espacio libre.
+	-- El pie: tu dinero, las monedas de «Tu oro» y el espacio libre.
 	local pie = CreateFrame("Frame", nil, f)
 	pie:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 0, 0)
 	pie:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", 0, 0)
@@ -1184,8 +1182,15 @@ local function crear(tipo)
 	pie.Linea:SetPoint("TOPRIGHT", pie, "TOPRIGHT", 0, 0)
 	f.Dinero = K.Texto(pie, "numero", "texto")
 	f.Dinero:SetPoint("LEFT", pie, "LEFT", PAD + 2, 0)
-	f.Cuenta = K.Texto(pie, "pequeno", "textoTenue")
-	f.Cuenta:SetPoint("LEFT", f.Dinero, "RIGHT", ESP.m, 0)
+	-- 1.3.7: las monedas abren «Tu oro» (Oro.lua); de otro personaje, de cuándo es su oro.
+	if tipo == "bolsas" then
+		f.Monedas = K.BotonIcono(pie, "ic-oro", function() if M.Oro then M.Oro.Alternar(f) end end,
+			{ tam = 24, icono = 14, ayuda = L["Tu oro"], ayudaTexto = L["Lo que tiene cada uno de tus personajes y lo de esta sesión."] })
+		f.Monedas:SetPoint("LEFT", f.Dinero, "RIGHT", ESP.xs, 0)
+	end
+	f.Cuando = K.Texto(pie, "pequeno", "textoTenue")
+	f.Cuando:SetPoint("LEFT", f.Monedas or f.Dinero, "RIGHT", ESP.s, 0)
+	f.Cuando:Hide()
 	f.Libre = K.Texto(pie, "pequeno", "textoSuave")
 	f.Libre:SetPoint("RIGHT", pie, "RIGHT", -(PAD + 2), 0)
 	f.Libre:SetJustifyH("RIGHT")
@@ -1220,6 +1225,7 @@ local function crear(tipo)
 			pcall(C_Bank.CloseBankFrame)
 		end
 		self.clave = nil
+		if self.tipo == "bolsas" and M.Oro then M.Oro.Cerrar() end
 		sonido(false)
 		M.Avisar("VENTANA_CERRADA", self.tipo)
 	end)
@@ -1251,6 +1257,9 @@ function V.Ver(f, clave)
 	else
 		f:Show()
 	end
+	-- 1.3.7: «Tu oro» marca a quién miras.
+	local Or = M.Oro
+	if Or and Or.Visible() and Or.Panel().win == f then Or.Pintar() end
 end
 
 function V.BolsasVisibles()

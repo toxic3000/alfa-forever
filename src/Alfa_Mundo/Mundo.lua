@@ -79,7 +79,7 @@ local function tarjetas()
 	local si, total = encendidas()
 	return {
 		{ icono = "ic-descubrir", titulo = L["Modo limpio"],
-			texto = limpio and (n > 0 and format(L["%d capas ocultas. Al salir vuelven como estaban."], n) or L["Solo tú, tu grupo, tus marcadores y el siguiente paso de la guía."])
+			texto = limpio and (n > 0 and N.Plural(n, L["%d capa oculta. Al salir vuelve como estaba."], L["%d capas ocultas. Al salir vuelven como estaban."]) or L["Solo tú, tu grupo, tus marcadores y el siguiente paso de la guía."])
 				or L["Un clic y queda solo lo esencial: tú, tu grupo, tus marcadores y el siguiente paso de la guía."],
 			insignias = { { limpio and L["Encendido"] or L["Apagado"], limpio and "acento" or "neutro" } },
 			alClic = function() Capas.AlternarLimpio() end,
@@ -128,7 +128,9 @@ local function bloqueMarcadores(ui, padre)
 		self.Seccion:Set(L["Tus marcadores"], {
 			cuenta = n > 0 and n or nil,
 			enlace = n > 0 and { texto = L["Borrar todos"], alClic = function()
-				K.Dialogo({ titulo = L["¿Borrar todos tus marcadores?"], texto = format(L["Se borran los %d marcadores de todos tus personajes. No se puede deshacer."], n),
+				K.Dialogo({ titulo = L["¿Borrar todos tus marcadores?"], texto = n == 1 and L["Se borra tu marcador, el de todos tus personajes. No se puede deshacer."] or format(L["Se borran los %d marcadores de todos tus personajes. No se puede deshacer."], n),
+
+
 					aceptar = L["Borrar todos"], peligro = true, alAceptar = function() Mk.BorrarTodos() end })
 			end } or nil,
 		})

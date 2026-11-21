@@ -322,7 +322,8 @@ A.RegisterEvent("CHAT_MSG_LOOT", function(_, msg) Bo.AlBotin(msg) end)
 
 A.OnLogin(function()
 	M.Cada("manada.botin", 60, function() Bo.Compartir(false) end)
-	A.RegisterEvent("PLAYER_LEVEL_UP", function() A.After(3, function() Bo.Compartir(true) end) end)
+	-- 1.3.7: tras la animación del juego y escalonado con los demás mensajes de La Jauría.
+	A.RegisterEvent("PLAYER_LEVEL_UP", (N.TrasNivel or function(_, f) return f end)("manada.botin", function() A.After(3, function() Bo.Compartir(true) end) end))
 	A.After(30, function()
 		if not U.EnHermandad() then return end
 		Bo.Compartir(true)

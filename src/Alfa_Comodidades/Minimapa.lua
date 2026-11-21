@@ -17,7 +17,8 @@
 --     tocan marcos protegidos. El de Alfa (AlfaMinimapButton) siempre queda
 --     a la vista (1.3.1): es por donde un jugador nuevo encuentra Alfa.
 --   Menú de addons: el botón con el número de addons (AddonCompartmentFrame)
---     se oculta, y su UpdateDisplay (enganchado) no lo vuelve a mostrar.
+--     se atenúa como los botones (1.3.7) y aparece al pasar el ratón; su
+--     UpdateDisplay (enganchado) conserva la transparencia.
 --
 -- La rueda del ratón ya acerca y aleja el minimapa en Forever
 -- (MinimapMixin:OnMouseWheel de Blizzard): no hace falta nada aquí.
@@ -184,17 +185,33 @@ local function buscar()
 	buscarEn(MinimapCluster)
 end
 
+-- 1.3.7 (154): el menú de addons (AddonCompartmentFrame) ya no se esconde:
+-- se atenúa como los botones y aparece al pasar el ratón (sigue a la mano).
+local botonesOn, sinMenu = false, false
+local function menuAtenuado()
+	local f = rawget(_G, "AddonCompartmentFrame")
+	return sinMenu and type(f) == "table" and f.SetAlpha and f or nil
+end
+
 local function ponerAlfa(a)
 	alfa = a
-	for f in pairs(botones) do pcall(f.SetAlpha, f, a) end
+	if botonesOn then
+		for f in pairs(botones) do pcall(f.SetAlpha, f, a) end
+	end
+	local m = menuAtenuado()
+	if m then pcall(m.SetAlpha, m, a) end
 end
 
 local function encima()
 	if MinimapCluster and MinimapCluster:IsMouseOver() then return true end
 	if Minimap and Minimap:IsMouseOver() then return true end
-	for f in pairs(botones) do
-		if f:IsShown() and f:IsMouseOver() then return true end
+	if botonesOn then
+		for f in pairs(botones) do
+			if f:IsShown() and f:IsMouseOver() then return true end
+		end
 	end
+	local m = menuAtenuado()
+	if m and m.IsMouseOver and m:IsShown() and m:IsMouseOver() then return true end
 	return false
 end
 
@@ -210,16 +227,18 @@ end
 revisar = function()
 	if visibles then return end
 	-- Al entrar al minimapa, de paso, los botones nuevos de otros addons.
-	buscar()
+	if botonesOn then buscar() end
 	local objetivo = encima() and 1 or 0
 	if objetivo ~= alfa and not N.HayTarea(FUNDIDO) then N.Cada(FUNDIDO, 0.15, fundir) end
 end
 
-local function ponerBotones(si)
-	if si then
+-- Atenúa lo que toca (los botones, el menú o los dos) o lo deja todo a la vista.
+local function atenuar()
+	if botonesOn or sinMenu then
 		enganchar(Minimap)
 		enganchar(MinimapCluster)
-		buscar()
+		local m = menuAtenuado()
+		if m then enganchar(m) end
 		visibles = false
 		ponerAlfa(encima() and 1 or 0)
 	else
@@ -229,32 +248,37 @@ local function ponerBotones(si)
 	end
 end
 
+local function ponerBotones(si)
+	si = si and true or false
+	if si then
+		botonesOn = true
+		buscar()
+	elseif botonesOn then
+		botonesOn = false
+		for f in pairs(botones) do pcall(f.SetAlpha, f, 1) end
+	end
+end
+
 ---------------------------------------------------------------------------
 -- Menú de addons (el número en la esquina del minimapa)
 ---------------------------------------------------------------------------
 
-local sinMenu = false
 local enganchadoMenu = false
 
 local function ponerMenu(si)
-	local f = AddonCompartmentFrame
-	if not f then return end
+	si = si and true or false
+	local f = rawget(_G, "AddonCompartmentFrame")
+	if not f then sinMenu = si return end
 	if not enganchadoMenu and f.UpdateDisplay and hooksecurefunc then
-		hooksecurefunc(f, "UpdateDisplay", function(self) if sinMenu then self:Hide() end end)
+		-- (el juego lo repinta: conserva lo atenuado)
+		hooksecurefunc(f, "UpdateDisplay", function(self) if sinMenu and self.SetAlpha then self:SetAlpha(alfa) end end)
 		enganchadoMenu = true
 	end
-	if si == sinMenu then
-		if si then f:Hide() end
-		return
-	end
+	if si == sinMenu then return end
+	if not si and f.SetAlpha then f:SetAlpha(1) end
 	sinMenu = si
-	if si then
-		f:Hide()
-	elseif f.UpdateDisplay then
-		pcall(f.UpdateDisplay, f)
-	else
-		f:Show()
-	end
+	-- Se muestra como el juego quiera (con addons en su lista); solo cambia su transparencia.
+	if f.UpdateDisplay then pcall(f.UpdateDisplay, f) elseif f.Show then f:Show() end
 end
 
 ---------------------------------------------------------------------------
@@ -265,6 +289,7 @@ local function aplicar()
 	ponerCuadrado(opcion("minimapaCuadrado"))
 	ponerBotones(opcion("minimapaBotones"))
 	ponerMenu(opcion("minimapaMenu"))
+	atenuar()
 end
 
 M.AlCambiar({ "minimapa", "minimapaCuadrado", "minimapaBotones", "minimapaMenu" }, aplicar)

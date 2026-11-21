@@ -233,21 +233,57 @@ end
 -- El aviso del rastreador
 ---------------------------------------------------------------------------
 
+-- 1.3.7: la barra del aviso va hacia la meta de la ruta, no hasta tu
+-- siguiente nivel (77): lo que llevas desde el principio de tu nivel entre
+-- lo que pide llegar a la meta.
+function Nv.Barra(falta, xp, xpMax, nivel, meta)
+	falta, xp, xpMax = M.num(falta, 0), M.num(xp, 0), M.num(xpMax, 0)
+	if xpMax <= 0 then return nil end
+	local total = xpMax
+	local Lv = A.Levels
+	local tabla = Lv and type(Lv.LEVEL_XP) == "table" and Lv.LEVEL_XP or nil
+	for l = nivel + 1, (meta or nivel + 1) - 1 do total = total + M.num(tabla and tabla[l], 0) end
+	-- Sin la tabla, lo que dice el motor: lo hecho más lo que falta.
+	if total <= xpMax and (meta or 0) > nivel + 1 then total = xp + falta end
+	if total <= 0 then return nil end
+	return min(1, max(0, (total - falta) / total))
+end
+
+-- 1.3.7: tu ritmo de experiencia por hora (el del motor), o nil.
+local function xpPorHora()
+	local Q = A.QoL
+	local X = type(Q) == "table" and Q.XP
+	if type(X) ~= "table" or type(X.GetStats) ~= "function" then return nil end
+	local ok, st = pcall(X.GetStats)
+	local r = ok and type(st) == "table" and M.num(st.rate, 0) or 0
+	return r > 0 and r or nil
+end
+Nv.XPPorHora = xpPorHora
+
 function Nv.Aviso(v, live)
 	if not encendido() or not (v and live and v.index == live) then return nil end
 	local falta, xp, xpMax, meta = Nv.Falta(v)
 	if not falta then return nil end
+	local nivel = jugador()
 	local d = {
 		tono = "exito", icono = "ic-nivel",
 		titulo = format(L["Te faltan %s de experiencia para el nivel %d"], M.Miles(falta), meta),
-		barra = xpMax > 0 and min(1, max(0, xp / xpMax)) or nil,
+		barra = Nv.Barra(falta, xp, xpMax, nivel, meta),
 	}
 	local r = Nv.DondeRinde()
+	-- 1.3.7: en algo que se entiende (100): «unos 14 Jabalíes» y «≈ 25 min a tu ritmo».
+	local partes = {}
+	if r and M.num(r.xp, 0) > 0 and r.nombre then
+		partes[#partes + 1] = format(L["unos %d %s"], math.ceil(falta / r.xp), r.nombre)
+	end
+	local rph = xpPorHora()
+	if rph then partes[#partes + 1] = format(L["≈ %s a tu ritmo"], M.Minutos(falta / rph * 3600)) end
+	local cuanto = #partes > 0 and (table.concat(partes, "  \194\183  ") .. "\n") or ""
 	if r then
-		d.texto = format(L["Donde más rinde: %s (nivel %d), y cuenta para %s."], r.nombre or "", r.nivel, M.Citar(r.titulo or ""))
+		d.texto = cuanto .. format(L["Donde más rinde: %s (nivel %d), y cuenta para %s."], r.nombre or "", r.nivel, M.Citar(r.titulo or ""))
 		d.uno = { L["Llévame"], function() Nv.Ir(r) end }
 	else
-		d.texto = L["Haz misiones de tu registro o caza enemigos de tu nivel (los grises no dan nada)."]
+		d.texto = cuanto .. L["Haz misiones de tu registro o caza enemigos de tu nivel (los grises no dan nada)."]
 	end
 	return d
 end

@@ -98,7 +98,8 @@ function M.Cambio()
 		avisoPendiente = false
 		A.Fire("ALFA_COMERCIO")
 	end
-	if C_Timer and C_Timer.After then C_Timer.After(0.2, avisar) else avisar() end
+	-- 1.3.7: con el reloj de Alfa (N.Una), no un C_Timer suelto.
+	if N.Una then N.Una("comercio.cambio", 0.2, avisar) else avisar() end
 end
 
 ---------------------------------------------------------------------------
@@ -131,6 +132,9 @@ local function correr()
 		motor:Hide()
 		return
 	end
+	-- 1.3.7: el escaneo de la subasta y la lectura de recetas esperan a que
+	-- termine el combate (siguen donde iban).
+	if InCombatLockdown and InCombatLockdown() then return end
 	inicio, pasos = reloj and reloj() or 0, 0
 	local ok, err = coroutine.resume(t.co)
 	if not ok then
@@ -143,6 +147,7 @@ local function correr()
 	if #tareas == 0 then motor:Hide() end
 end
 motor:SetScript("OnUpdate", correr)
+M.motorTareas = motor -- para las pruebas
 
 -- nombre: una sola tarea con ese nombre a la vez (la nueva reemplaza a la que
 -- aún no empieza). -> true si quedó en cola.
@@ -455,5 +460,5 @@ local function leerComerciante()
 end
 
 A.RegisterEvent("MERCHANT_SHOW", function()
-	if C_Timer and C_Timer.After then C_Timer.After(0.3, leerComerciante) else leerComerciante() end
+	if N.Una then N.Una("comercio.comerciante", 0.3, leerComerciante) else leerComerciante() end
 end)

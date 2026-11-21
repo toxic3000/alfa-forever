@@ -141,7 +141,8 @@ local function limpiar(s)
 	s = tostring(s or ""):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub("[\r\n]+", " "):gsub("%s+", " ")
 	s = s:gsub("^%s+", ""):gsub("%s+$", "")
 	if #s > 220 then
-		local corte = s:sub(1, 220):match("^(.*)[%s,;]") or s:sub(1, 220)
+		-- 1.3.7: el corte de respaldo no parte una letra de varios bytes.
+		local corte = s:sub(1, 220):match("^(.*)[%s,;]") or M.Cortar(s, 200)
 		s = corte .. "…"
 	end
 	return s
@@ -379,7 +380,7 @@ N.Modulo({
 	id = M.ID, nombre = L["Talentos"], icono = "ic-talentos", orden = 14,
 	-- 1.3.6: subtítulo corto (la ventana esconde los de más de 60 letras).
 	subtitulo = L["Qué talento poner ahora, tu plan de talentos y tu equipo."],
-	ajustes = { aviso = true, escalaAuto = true },
+	ajustes = { aviso = true, escalaAuto = true, inspeccion = true }, -- 1.3.7: Inspeccion.lua
 	construir = function(view) M.Pagina.Construir(view) end,
 })
 
@@ -421,14 +422,17 @@ A.RegisterEvent("CONFIG_COMMIT_FAILED", function(ev, id) T.OnConfirmacionFallida
 for _, ev in ipairs({ "TRAIT_NODE_CHANGED", "TRAIT_TREE_CURRENCY_INFO_UPDATED", "PLAYER_TALENT_UPDATE", "ACTIVE_TALENT_GROUP_CHANGED", "TRAIT_CONFIG_LIST_UPDATED" }) do
 	A.RegisterEvent(ev, refrescar)
 end
-A.RegisterEvent("PLAYER_LEVEL_UP", function()
-	A.After(1.5, function()
-		T.Invalidar()
-		if not InCombatLockdown() then M.Pesos.Renovar() end
+-- 1.3.7: tras la animación de nivel del juego (N.TrasNivel); el punto de
+-- talento va en el resumen de nivel (Momentos.lua), no en un aviso aparte.
+A.RegisterEvent("PLAYER_LEVEL_UP", (N.TrasNivel or function(_, f) return f end)("builds", function()
+	T.Invalidar()
+	if not InCombatLockdown() then M.Pesos.Renovar() end
+	local lv = A.Compat.Readable(UnitLevel("player")) or 0
+	if not ((N.ResumenNivelCubre and N.ResumenNivelCubre("talento")) or (N.YaDicho and N.YaDicho("talento:" .. lv))) then
 		avisarTalento(false)
-		refrescar()
-	end)
-end)
+	end
+	refrescar()
+end))
 -- 1.3.3: al entrar ya no se avisa de tus puntos sin gastar (la entrada es en
 -- silencio): quedan en Hoy y en Talentos, y el aviso sale al subir de nivel.
 A.RegisterEvent("PLAYER_ENTERING_WORLD", function()

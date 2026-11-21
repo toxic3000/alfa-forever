@@ -427,5 +427,6 @@ A.OnLogin(function()
 		enviarEstado(false)
 		Me.Revisar()
 	end)
-	A.RegisterEvent("PLAYER_LEVEL_UP", function() A.After(2, function() enviarEstado(true) end) end)
+	-- 1.3.7: tras la animación del juego y escalonado con los demás mensajes de La Jauría.
+	A.RegisterEvent("PLAYER_LEVEL_UP", (N.TrasNivel or function(_, f) return f end)("manada.mentor", function() A.After(1, function() enviarEstado(true) end) end))
 end)

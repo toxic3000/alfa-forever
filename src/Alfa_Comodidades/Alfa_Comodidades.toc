@@ -21,4 +21,8 @@ Formas.lua
 Cuadro.lua
 Probador.lua
 Sonidos.lua
+Info.lua
+Recargas.lua
+Charla.lua
+Ids.lua
 Pagina.lua

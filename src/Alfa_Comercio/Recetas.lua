@@ -267,10 +267,16 @@ local function leerReceta(TS, id, profesion)
 end
 
 local ventanaAbierta = false
+-- 1.3.7: la última lectura (profesión, cuántas recetas, habilidad). Al fabricar,
+-- el juego manda TRADE_SKILL_LIST_UPDATE con cada pieza; si la lista no cambió
+-- no se relee toda la profesión.
+local ultimaFirma
+local forzar = false
 
 local function leerVentana()
 	local TS = api()
 	if not TS or not ventanaAbierta then return end
+	if InCombatLockdown and InCombatLockdown() then return end
 	if type(TS.IsTradeSkillReady) == "function" and not si(TS.IsTradeSkillReady) then return end
 	if si(TS.IsTradeSkillLinked) or si(TS.IsTradeSkillGuild) or si(TS.IsTradeSkillGuildMember) or si(TS.IsNPCCrafting) then return end
 	local base
@@ -284,6 +290,8 @@ local function leerVentana()
 	end
 	local ids, completa = listaRecetas(TS)
 	if not ids then return end
+	local firma = profesion .. ":" .. #ids .. ":" .. tostring(base and base.skillLevel or "?") .. ":" .. tostring(completa)
+	if firma == ultimaFirma and not forzar then return end
 	local puesta = M.Tarea("recetas", function()
 		local ficha = miFicha()
 		local nuevas = {}
@@ -306,28 +314,29 @@ local function leerVentana()
 		if base and type(base.skillLevel) == "number" then ficha.profs[profesion] = base.skillLevel end
 		M.RecetasCambiaron()
 	end)
-	-- Ya había una lectura corriendo: esta no se pierde, se lee al terminar aquella.
-	if not puesta and ventanaAbierta and C_Timer and C_Timer.After then C_Timer.After(1, leerVentana) end
-end
-
-local pendiente = false
-local function pedirLectura()
-	if pendiente then return end
-	pendiente = true
-	local function ir()
-		pendiente = false
-		leerVentana()
+	if puesta then
+		ultimaFirma, forzar = firma, false
+	elseif ventanaAbierta then
+		-- Ya había una lectura corriendo: esta no se pierde, se lee al terminar aquella.
+		N.Una("comercio.recetasOtra", 1, leerVentana, { fueraDeCombate = true })
 	end
-	if C_Timer and C_Timer.After then C_Timer.After(0.5, ir) else ir() end
 end
+M.LeerRecetas = leerVentana
+
+-- 1.3.7: con el reloj de Alfa y nunca en combate (fueraDeCombate).
+local function pedirLectura(siempre)
+	if siempre == true then forzar = true end
+	N.Una("comercio.recetas", 0.5, leerVentana, { fueraDeCombate = true })
+end
+local function pedirSiempre() pedirLectura(true) end
 
 A.RegisterEvent("TRADE_SKILL_SHOW", function()
 	ventanaAbierta = true
-	pedirLectura()
+	pedirSiempre()
 end)
 A.RegisterEvent("TRADE_SKILL_CLOSE", function() ventanaAbierta = false end)
-A.RegisterEvent("TRADE_SKILL_LIST_UPDATE", pedirLectura)
-A.RegisterEvent("TRADE_SKILL_DATA_SOURCE_CHANGED", pedirLectura)
-A.RegisterEvent("NEW_RECIPE_LEARNED", pedirLectura)
+A.RegisterEvent("TRADE_SKILL_LIST_UPDATE", function() pedirLectura() end)
+A.RegisterEvent("TRADE_SKILL_DATA_SOURCE_CHANGED", pedirSiempre)
+A.RegisterEvent("NEW_RECIPE_LEARNED", pedirSiempre)
 A.RegisterEvent("SKILL_LINES_CHANGED", function() leerEncantamiento() end)
 A.OnLogin(leerEncantamiento)

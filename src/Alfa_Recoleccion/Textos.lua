@@ -143,4 +143,10 @@ M.EN = {
 	["Pregúntale a un guardia de la ciudad por el instructor de la profesión."] = "Ask a city guard for the profession trainer.",
 	-- Mapa continuo (1.1.8)
 	["Varios puntos juntos: acércate en el mapa para verlos."] = "Several spots together: zoom in on the map to see them.",
+	-- 1.3.7
+	["Los recolectaste %d vez en total"] = "You gathered them %d time in total",
+	["Nodos en el mapa del mundo: visibles."] = "Nodes on the world map: shown.",
+	["Nodos en el mapa del mundo: ocultos."] = "Nodes on the world map: hidden.",
+	["Nodos en el minimapa: visibles."] = "Nodes on the minimap: shown.",
+	["Nodos en el minimapa: ocultos."] = "Nodes on the minimap: hidden.",
 }

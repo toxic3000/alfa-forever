@@ -52,7 +52,7 @@ end
 -- Nombre de la escala: corto (el motor corta a 40 letras) y reconocible.
 local function nombreEscala(b)
 	local t = "Alfa: " .. (b.titulo or b.id)
-	if #t > 40 then t = t:sub(1, 40) end
+	if #t > 40 then t = M.Cortar and M.Cortar(t, 40) or t:sub(1, 40) end -- 1.3.7: sin partir letras
 	return t
 end
 

@@ -144,7 +144,7 @@ step("El buzón: dinero de varias cartas y objetos, con el oro tarde", function(
   check(not Bz.Tomando(), "no terminó")
   check(Bz.ultimo and Bz.ultimo.dinero == 6600, "no contó el dinero de las 3 cartas (" .. tostring(Bz.ultimo and Bz.ultimo.dinero) .. ")")
   local a = ultimo()
-  check(a and (a.texto or ""):find("Recibiste 20 objetos", 1, true), "el resumen no dice los objetos: " .. tostring(a and a.texto))
+  check(a and (a.texto or ""):find("Recibiste 20 piezas", 1, true), "el resumen no dice los objetos: " .. tostring(a and a.texto))
   check(a and (a.texto or ""):find("Dejé 1 carta", 1, true), "el resumen no dice la carta que dejó: " .. tostring(a and a.texto))
   llegaDinero()
   RUN_TIMERS(2)

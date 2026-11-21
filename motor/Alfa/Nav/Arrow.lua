@@ -954,6 +954,13 @@ function Arrow.Llegada()
 	}
 end
 
+-- 1.3.7: el marco de la placa mientras se ve (para que el anuncio de zona,
+-- Kit/Anuncio.lua, salga en orden: espera o va debajo de ella, nunca encima).
+function Arrow.PlacaMarco()
+	if llegadaVista and llegada and llegada:IsShown() and not llegada.alfaOculta then return llegada end
+	return nil
+end
+
 local function setMode(m)
 	if m == mode then return end
 	mode = m
@@ -1086,11 +1093,19 @@ local function shouldShow()
 		and not Nav.TomTomArrowGuides() and not Nav.HandedOff()
 end
 
+-- Alfa 1.3.7: los tiempos como en todo Alfa (N.Duracion: «1 h 13 min»,
+-- «4 min 10 s»), no «73:05» (agente Rutas, ítems 101-102).
+local function duracion(secs)
+	local Nu = rawget(_G, "AlfaNucleo")
+	if type(Nu) == "table" and type(Nu.Duracion) == "function" then return Nu.Duracion(secs) end
+	return ("%d:%02d"):format(floor(secs / 60), secs % 60)
+end
+
 local function showSeconds(secs)
 	secs = floor(secs + 0.5)
 	if secs ~= lastEta then
 		lastEta = secs
-		etaText:SetFormattedText(L["%d:%02d total"], floor(secs / 60), secs % 60)
+		etaText:SetText(ns.T("%s en total"):format(duracion(secs)))
 	end
 	etaText:Show()
 end
@@ -1213,7 +1228,7 @@ local function sample(elapsed)
 			local secs = floor(dist / closeSpeed + 0.5)
 			if secs ~= lastEta then
 				lastEta = secs
-				etaText:SetFormattedText("%d:%02d", floor(secs / 60), secs % 60)
+				etaText:SetText(duracion(secs)) -- Alfa 1.3.7
 			end
 			etaText:Show()
 		else

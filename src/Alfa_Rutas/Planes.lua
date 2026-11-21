@@ -671,7 +671,8 @@ end
 
 for _, ev in ipairs({ "BAG_UPDATE_DELAYED", "PLAYER_MONEY", "SKILL_LINES_CHANGED", "CHAT_MSG_SKILL", "PLAYER_LEVEL_UP",
 	"QUEST_ACCEPTED", "QUEST_TURNED_IN", "QUEST_REMOVED", "QUEST_LOG_UPDATE", "ZONE_CHANGED_NEW_AREA" }) do
-	A.RegisterEvent(ev, revisarPronto)
+	-- 1.3.7: al subir de nivel, tras la animación del juego (N.TrasNivel).
+	A.RegisterEvent(ev, ev == "PLAYER_LEVEL_UP" and AlfaNucleo.TrasNivel and AlfaNucleo.TrasNivel("rutas.planes", revisarPronto) or revisarPronto)
 end
 A.OnLogin(function() A.After(2, function() if Pl.Activo() then ultima = nil Pl.Revisar() end end) end)
 

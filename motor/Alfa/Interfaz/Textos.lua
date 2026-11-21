@@ -41,6 +41,7 @@ M.EN = {
 	["Acomodar la pantalla"] = "Arrange your screen",
 	["Ventana de guía"] = "Guide window",
 	["Ocultar la flecha"] = "Hide the arrow",
+	["Medidor de daño"] = "Damage meter", -- 1.3.7: el menú de Alfa
 	["Mostrar la flecha"] = "Show the arrow",
 	["Mostrar Alfa"] = "Show Alfa",
 	["Ocultar Alfa"] = "Hide Alfa",
@@ -173,6 +174,7 @@ M.EN = {
 	["Llegaste"] = "You made it",
 	["Busca por aquí"] = "Search around here",
 	["Siguiente lugar"] = "Next spot",
+	["%s en total"] = "%s total", -- 1.3.7: el tiempo del viaje en la flecha (Rutas)
 	-- 1.3.3: la placa de la piedra de hogar (Nav/Arrow.lua, pintarPiedra)
 	["Usa tu piedra de hogar"] = "Use your Hearthstone",
 	["Usa tu piedra de hogar: te lleva a tu posada."] = "Use your Hearthstone: it takes you to your inn.",

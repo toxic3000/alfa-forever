@@ -41,23 +41,43 @@ end
 local function accion()
 	local listas = Cr.ListasAhora()
 	local g, done, total = guiaActual()
-	if listas >= 3 then
+	if listas >= M.Vuelta.MIN and not M.Vuelta.Entregando() then
 		return { icono = "ic-misiones", tono = "exito", sobre = L["Lo que más conviene ahora"],
 			titulo = format(L["Tienes %d misiones listas para entregar"], listas),
 			texto = L["Alfa arma la ruta más corta para cobrarlas, junta por PNJ. La flecha usa vuelos y tu piedra de hogar cuando conviene, y te avisa si una entrega queda lejos."],
 			estado = { texto = format(L["%d listas"], listas), tono = "exito" },
-			accion = { texto = L["Entregarlas ahora"], icono = "ic-seguir", alClic = function() Cr.Ahora("listas") end },
+			accion = { texto = L["Entregarlas ahora"], icono = "ic-seguir", alClic = function() M.EntregarListas() end },
 			secundaria = { texto = L["Cerrar todas mis misiones"], alClic = function() Cr.Ahora("todas") end } }
 	end
 	if g then
 		local u = A.UI
+		local nombre = u and u.GuideLabel and u.GuideLabel(g) or g.title
+		-- 1.3.7: la guía terminada ya no dice «Faltan 0 pasos» (74): dice
+		-- «¡Terminaste!» y ofrece la que sigue, lo mismo que el rastreador y Hoy.
+		local Rs = M.Rastreador
+		local c = Rs and Rs.Cierre and Rs.Cierre()
+		if c and c.terminada then
+			return { lobo = "aullando", tono = "exito", sobre = L["Tu guía"], titulo = L["¡Terminaste!"],
+				texto = c.sig and format(L["%s quedó completa. Lo que sigue para tu nivel: %s."], nombre, c.sig.nombre or "?")
+					or format(L["%s quedó completa. Elige qué sigue y la manada va contigo."], nombre),
+				progreso = total > 0 and { actual = total, total = total, huellas = true, texto = L["Guía completa"] } or nil,
+				accion = { texto = Rs.TextoCierre(c), icono = "ic-ruta", alClic = function() Rs.SeguirCierre(c) end },
+				secundaria = { texto = L["¿Qué quieres hacer?"], alClic = function() M.Asistente.Abrir() end } }
+		end
+		local falta = total - done
+		local textoFalta = M.Plural(falta, L["Falta %d paso"], L["Faltan %d pasos"])
+		-- 1.3.7: cuánto falta en tiempo, como Hoy (122).
+		local min = M.Hora and M.Hora.Estimado and M.Hora.Estimado()
+		if min and falta > 0 then
+			if min >= 60 then min = floor(min / 5 + 0.5) * 5 end
+			textoFalta = textoFalta .. "  \194\183  " .. format(L["unos %s"], N.Duracion(min * 60, true))
+		end
 		return { icono = "ic-huella", tono = "acento", sobre = L["Tu guía"],
-			titulo = u and u.GuideLabel and u.GuideLabel(g) or g.title,
+			titulo = nombre,
 			texto = total > 0 and format(L["%d de %d pasos hechos. El rastreador te dice el siguiente y la flecha te lleva."], done, total)
 				or L["El rastreador te dice el siguiente paso y la flecha te lleva."],
 			-- Un solo número, los pasos (como el rastreador): sin un % aparte.
-			progreso = total > 0 and { actual = done, total = total, huellas = true,
-				texto = total - done == 1 and L["Falta 1 paso"] or format(L["Faltan %d pasos"], total - done) } or nil,
+			progreso = total > 0 and falta > 0 and { actual = done, total = total, huellas = true, texto = textoFalta } or nil,
 			accion = { texto = L["Mostrar mi guía"], icono = "ic-seguir", alClic = function() M.Empezar() end },
 			secundaria = { texto = L["¿Qué quieres hacer?"], alClic = function() M.Asistente.Abrir() end } }
 	end
@@ -76,7 +96,8 @@ local function opciones()
 		alClic = function() M.Asistente.Abrir() end }
 	if enLog > 0 then
 		out[#out + 1] = { icono = "ic-misiones", tono = "exito", titulo = L["Cerrar mis misiones"],
-			texto = listas > 0 and format(L["%d en tu registro, %d listas: termínalas y entrégalas en el orden más corto."], enLog, listas)
+			texto = listas == 1 and format(L["%d en tu registro, 1 lista: termínalas y entrégalas en el orden más corto."], enLog)
+				or listas > 0 and format(L["%d en tu registro, %d listas: termínalas y entrégalas en el orden más corto."], enLog, listas)
 				or format(L["%d en tu registro: termínalas y entrégalas en el orden más corto."], enLog),
 			alClic = function() Cr.Ahora() end }
 	end
@@ -110,12 +131,13 @@ local function opciones()
 	end
 	local r = M.RutaActiva() or M.RutaEditada()
 	if r and #r.tramos > 0 then
-		out[#out + 1] = { icono = "ic-ruta", titulo = r.nombre, texto = format(L["Tu ruta de %d tramos."], #r.tramos),
+		out[#out + 1] = { icono = "ic-ruta", titulo = r.nombre, texto = M.Plural(#r.tramos, L["Tu ruta de %d tramo."], L["Tu ruta de %d tramos."]),
 			alClic = function() M.Seguir(r) end }
 	end
 	return out
 end
 M.OpcionesPagina = opciones -- (1.3.2: para el banco)
+M.AccionPagina = accion -- (1.3.7: para el banco)
 
 -- 5. Los ajustes.
 local function ajustes(padre)
@@ -298,6 +320,9 @@ do
 			{ kind = "toggle", key = M.ID .. ".cadenaCompleta", label = L["Ver la cadena completa"],
 				help = L["En el menú de una misión: toda su cadena, lo que ya hiciste y el premio del final."],
 				search = "quest chain, follow up, final reward" },
+			{ kind = "toggle", key = M.ID .. ".xpEntrega", label = L["La experiencia de cada entrega"],
+				help = L["En el seguimiento: «+1,250 XP» junto a cada misión por entregar, y si con ella subes de nivel."],
+				search = "xp, experiencia, entregar, turn in, level up" },
 			{ kind = "toggle", key = M.ID .. ".mapaGrupo", label = L["Misiones de tu grupo en el mapa"],
 				help = L["En grupo, dónde está lo que pide cada misión y quién la lleva."],
 				search = "party quests, group map, members objectives" },

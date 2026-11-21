@@ -388,7 +388,7 @@ A.RegisterEvent("BAG_CONTAINER_UPDATE", function()
 end)
 A.RegisterEvent("PLAYER_EQUIPMENT_CHANGED", function() M.Luego(0.2, D.GuardarEquipo) end)
 A.RegisterEvent("PLAYER_MONEY", D.GuardarCabecera)
-A.RegisterEvent("PLAYER_LEVEL_UP", function() M.Luego(0.5, D.GuardarCabecera) end)
+A.RegisterEvent("PLAYER_LEVEL_UP", (N.TrasNivel or function(_, f) return f end)("bolsas.cabecera", function() M.Luego(0.5, D.GuardarCabecera) end)) -- 1.3.7
 
 A.RegisterEvent("BANKFRAME_OPENED", function()
 	bancoAbierto = true

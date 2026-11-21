@@ -118,9 +118,10 @@ local function abriendoTodo(si)
 	if CM and CM.SetOpeningAll then llamar(CM.SetOpeningAll, si and true or false) end
 end
 
--- "Recibiste 3 objetos y 12 de oro" / ...
+-- "Recibiste 3 piezas y 12 de oro" / ... 1.3.7: cuenta piezas (20 de una
+-- pila son 20 piezas), así que dice «piezas», no «objetos».
 function Bz.TextoResumen(objetos, dinero)
-	local o = objetos == 1 and L["1 objeto"] or format(L["%d objetos"], objetos)
+	local o = N.Plural(objetos, L["%d pieza"], L["%d piezas"])
 	if objetos > 0 and dinero > 0 then return format(L["Recibiste %s y %s."], o, N.Dinero(dinero, true)) end
 	if objetos > 0 then return format(L["Recibiste %s."], o) end
 	if dinero > 0 then return format(L["Recibiste %s."], N.Dinero(dinero, true)) end
@@ -133,6 +134,7 @@ local function terminar(corte)
 	tomando = nil
 	if t.ticker then t.ticker:Cancel() end
 	abriendoTodo(false)
+	if Bz.PintarProgreso then Bz.PintarProgreso() end
 	-- 1.3.1: en el juego tu oro sube un momento después de tomarlo (PLAYER_MONEY
 	-- llega tarde), así que no basta con comparar tu oro: también cuenta el
 	-- dinero que ya salió de las cartas (t.recibido). Sin esto decía «No había
@@ -153,6 +155,8 @@ local function terminar(corte)
 		partes[#partes + 1] = L["Se cerró el buzón antes de terminar."]
 	elseif corte == "combate" then
 		partes[#partes + 1] = L["Paré por el combate: lo demás sigue en el buzón."]
+	elseif corte == "cancelado" then
+		partes[#partes + 1] = L["Paraste: lo demás sigue en el buzón."]
 	end
 	if t.saltadas > 0 then
 		partes[#partes + 1] = t.saltadas == 1 and L["Dejé 1 carta que se abre a mano (pago contra entrega o de un MJ)."]
@@ -258,16 +262,79 @@ function Bz.Tomar()
 		dineroMonto = {}, recibido = 0,
 		dinero0 = num(GetMoney and GetMoney()) or 0,
 	}
+	tomando.total = tomando.i
 	abriendoTodo(true)
 	if refrescarBarra then refrescarBarra() end
 	paso()
+	Bz.PintarProgreso()
 	-- 1.3.1: el paso lo mueve el reloj de Alfa (N.Ticker: se ve en /alfa
 	-- rendimiento y un error repetido lo quita), no un C_Timer.NewTicker suelto.
 	if tomando and N.Ticker then
-		tomando.ticker = N.Ticker("comercio.buzon", CADA, paso)
+		tomando.ticker = N.Ticker("comercio.buzon", CADA, function() paso() Bz.PintarProgreso() end)
 	end
 	return true
 end
+
+---------------------------------------------------------------------------
+-- 1.3.7: cómo va «Tomar todo». Una placa chica bajo el buzón, solo mientras
+-- Alfa toma tus cartas (o espera a que carguen): «Tomando tus cartas: 3 de
+-- 12», una barra y el botón «Parar». Al terminar se va sola (el resumen sale
+-- en el aviso). No es la barra de antes: esa no vuelve (1.3.2).
+---------------------------------------------------------------------------
+
+local placa
+local PLACA_W, PLACA_H = 320, 40
+
+local function armarPlaca()
+	if placa then return placa end
+	local padre = rawget(_G, "MailFrame")
+	if type(padre) ~= "table" or type(padre.GetObjectType) ~= "function" or not K then return nil end
+	placa = CreateFrame("Frame", nil, K.Raiz())
+	if padre.GetFrameStrata then placa:SetFrameStrata(padre:GetFrameStrata()) end
+	placa:SetSize(PLACA_W, PLACA_H)
+	placa:SetPoint("TOPLEFT", padre, "BOTTOMLEFT", 0, -2)
+	placa.caja = K.Caja(placa, { fondo = "fondo", borde = "linea", corte = K.CORTE.panel })
+	placa.Icono = K.Icono(placa, "ic-oro", 16, "acento")
+	placa.Icono:SetPoint("LEFT", placa, "LEFT", K.ESP.m, 0)
+	placa.Boton = K.Boton(placa, L["Parar"], function() Bz.Tomar() end, { tipo = "secundario", tam = "chico" })
+	placa.Boton:SetPoint("RIGHT", placa, "RIGHT", -K.ESP.m, 0)
+	placa.Texto = K.Texto(placa, "pequeno", "texto")
+	placa.Texto:SetPoint("LEFT", placa.Icono, "RIGHT", K.ESP.s, 0)
+	placa.Texto:SetPoint("RIGHT", placa.Boton, "LEFT", -K.ESP.s, 0)
+	placa.Texto:SetWordWrap(true)
+	if placa.Texto.SetMaxLines then placa.Texto:SetMaxLines(2) end
+	placa.Texto:SetJustifyH("LEFT")
+	placa.Barra = K.Progreso(placa, { alto = 2 })
+	placa.Barra:SetPoint("BOTTOMLEFT", placa, "BOTTOMLEFT", K.CORTE.panel, 1)
+	placa.Barra:Acomodar(PLACA_W - 2 * K.CORTE.panel)
+	placa:Hide()
+	return placa
+end
+
+function Bz.PintarProgreso()
+	local ver = abierto and (tomando ~= nil or pendiente)
+	if not ver then
+		if placa then placa:Hide() end
+		return
+	end
+	local p = armarPlaca()
+	if not p then return end
+	local t = tomando
+	if t then
+		local total = max(1, t.total or 1)
+		local hechas = min(total, max(0, total - (t.i or 0)))
+		local texto = format(L["Tomando tus cartas: %d de %d"], hechas, total)
+		if t.objetos > 0 then texto = texto .. " · " .. N.Plural(t.objetos, L["%d pieza"], L["%d piezas"]) end
+		K.Escribir(p.Texto, texto)
+		p.Barra:Show()
+		p.Barra:Set(hechas / total)
+	else
+		K.Escribir(p.Texto, L["Cargando tus cartas..."])
+		p.Barra:Hide()
+	end
+	p:Show()
+end
+function Bz.Placa() return placa end
 
 A.RegisterEvent("MAIL_INBOX_UPDATE", function()
 	cargado = true
@@ -350,6 +417,7 @@ local function textoEstado()
 end
 
 function refrescarBarra()
+	Bz.PintarProgreso()
 	if not barra then return end
 	local mostrar = abierto and M.Ajuste("buzon") and marcoBuzon() ~= nil
 	barra:SetShown(mostrar and true or false)
@@ -369,9 +437,7 @@ local function alAbrir()
 	cargado = (num(llamar(GetInboxNumItems)) or 0) > 0
 	-- 1.3.2: sin barra bajo el buzón.
 	-- Las cartas llegan con MAIL_INBOX_UPDATE; si ya estaban, se revisa aquí.
-	if C_Timer and C_Timer.After then
-		C_Timer.After(1, function() if abierto and not avisoVisto then Bz.RevisarVence() end end)
-	end
+	N.Una("comercio.buzonVence", 1, function() if abierto and not avisoVisto then Bz.RevisarVence() end end)
 end
 
 A.RegisterEvent("MAIL_SHOW", alAbrir)
@@ -380,6 +446,7 @@ A.RegisterEvent("MAIL_CLOSED", function()
 	cargado, pendiente = false, false
 	if tomando then terminar("cerrado") end
 	if barra then barra:Hide() end
+	if placa then placa:Hide() end
 end)
 A.RegisterEvent("MAIL_INBOX_UPDATE", function() if barra and barra:IsShown() and not tomando then refrescarBarra() end end)
 

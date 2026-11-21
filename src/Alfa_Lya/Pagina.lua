@@ -218,6 +218,9 @@ local function grupos(padre)
 		K.Mostrar(fila, false)
 		callados.pool[i] = fila
 	end
+	-- 1.3.7 (161): aquí caben 16; los que no caben se cuentan (y se devuelven con «todos»).
+	callados.mas = callados:Fila({ titulo = "", texto = L["Aquí caben 16. Devuelve alguno de arriba para ver los demás, o devuélvelos todos."] })
+	K.Mostrar(callados.mas, false)
 	callados.todos = callados:Fila({ titulo = L["Todos los que callaste"],
 		texto = L["Lya vuelve a decirte todos esos consejos."],
 		control = function(f) return K.Boton(f, L["Devolverlos todos"], function() if Ap then Ap.DevolverTodos() end end, { tipo = "secundario", tam = "chico" }) end })
@@ -232,6 +235,10 @@ local function grupos(padre)
 			end
 			K.Mostrar(fila, e ~= nil)
 		end
+		local fuera = #lista - #self.pool
+		if fuera > 0 then self.mas.alfaDatos.titulo = format(L["Y %d más"], fuera) end
+		K.Mostrar(self.mas, fuera > 0)
+		self.todos.alfaDatos.titulo = #lista > 1 and format(L["Todos los que callaste (%d)"], #lista) or L["Todos los que callaste"]
 		K.Mostrar(self.vacia, #lista == 0)
 		K.Mostrar(self.todos, #lista > 1)
 	end
@@ -310,6 +317,7 @@ end
 ---------------------------------------------------------------------------
 local function construir(view)
 	local ui = {}
+	M.paginaUI = ui -- (para el banco)
 	local t = K.Tablero(view, { margen = N.MargenPagina(), accion = "estado", tituloOpciones = L["Sus consejos"], min = 240 })
 	ui.historia = t:AgregarBloque(tuHistoria(t.Extra))
 	ui.retos = t:AgregarBloque(retos(t.Extra))
@@ -367,6 +375,19 @@ local CONTROLES = {
 		help = L["Lo menos que espera Lya entre un consejo y otro. Lo importante no espera."], search = "tips interval, minutes" },
 	{ kind = "toggle", key = clave("sonido"), label = L["Sonido suave"], disabled = no(visible),
 		help = L["Un clic bajito cuando Lya te dice algo."], search = "lya sound" },
+	-- 1.3.7 (156): los 4 que la búsqueda no encontraba.
+	{ kind = "dropdown", key = clave("letra"), label = L["Tamaño de su letra"], choices = elegir(LETRAS), disabled = no(visible),
+		help = L["Qué tan grande escribe Lya en su globo. También con clic derecho sobre ella."],
+		search = "lya font size, text size, bigger text, letra, tamaño de letra" },
+	{ kind = "toggle", key = clave("avisos"), label = L["Lya te dice los avisos"], disabled = no(visible),
+		help = L["Los avisos pequeños de Alfa los dice Lya en su globo, con su botón, en vez de salir arriba. Si está oculta o en combate, salen como siempre."],
+		search = "notifications, toasts, alerts, lya says, avisos, notificaciones" },
+	{ kind = "toggle", key = clave("aullidoMision"), label = L["Aullar al completar una misión"],
+		help = L["Un aullido corto cada vez que entregas una misión. Viene apagado."],
+		search = "howl, quest complete, quest turned in, sound, aullido, mision" },
+	{ kind = "toggle", key = clave("aullarGrupo"), label = L["Aullar con tu grupo"], disabled = no(visible),
+		help = L["Cuando alguien de tu grupo sube de nivel, Lya aúlla, lo felicita y te deja felicitarlo en el chat con un clic."],
+		search = "group level up, party, congratulate, grats, gz, felicitar, grupo" },
 	-- 1.2.7
 	{ kind = "toggle", key = clave("compacto"), label = L["Globo compacto"], disabled = no(visible),
 		help = L["El globo de Lya en una sola línea, con sus botones. Pasa el ratón encima para leerlo completo."], search = "compact bubble, one line, small" },

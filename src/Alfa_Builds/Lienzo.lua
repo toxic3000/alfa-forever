@@ -176,7 +176,7 @@ function Lz.Nuevo(padre)
 			local dc = M.DatosClase()
 			local delPlan = b and dc and dc.especialidades and dc.especialidades[b.spec]
 			local esRama = delPlan and delPlan.indice == i
-			p.Puntos:Set(format(L["%d puntos"], s.gastado or 0), esRama and "acento" or "neutro")
+			p.Puntos:Set(N.Plural(s.gastado or 0, L["%d punto"], L["%d puntos"]), esRama and "acento" or "neutro")
 			K.Ajustar(p.Nombre, pw - 2 * PAD - K.num(p.Puntos:GetWidth(), 0) - ESP.s)
 			p.caja:Estilo({ borde = esRama and "acento" or "linea", alfaBorde = esRama and 0.5 or nil })
 		end

@@ -90,7 +90,7 @@ local function armar(idx, ceder)
 			ultimo = k and { k = k, paso = paso } or nil
 		end
 	end
-	P.Anotar(pasos[1], format(L["%d misiones para tomar cerca de ti. Después, ciérralas con «Cerrar mis misiones»."], #paradas))
+	P.Anotar(pasos[1], M.Plural(#paradas, L["%d misión para tomar cerca de ti. Después, ciérrala con «Cerrar mis misiones»."], L["%d misiones para tomar cerca de ti. Después, ciérralas con «Cerrar mis misiones»."]))
 	return pasos, nil, #paradas
 end
 
@@ -138,7 +138,7 @@ function R.Ahora()
 			M.Aviso(L["Nada que recoger"], texto, { icono = "ic-info", tono = "neutro" })
 			return
 		end
-		instalarYAbrir(def, format(L["%d misiones para recoger"], n or 0))
+		instalarYAbrir(def, M.Plural(n or 0, L["%d misión para recoger"], L["%d misiones para recoger"]))
 		M.Avisar("SEGUIR", "recoger")
 	end)
 end

@@ -119,7 +119,25 @@ function J.Comunes(clave, zona)
 	return #lista, lista
 end
 
+-- 1.3.7: los títulos de las misiones que haces con ese lobo, en corto:
+-- "“A”, “B” y 2 más" (para su tarjeta en la página).
+function J.Titulos(ids, tope)
+	tope = tope or 2
+	local t = {}
+	for _, id in ipairs(ids or {}) do
+		local titulo = mias[id]
+		if type(titulo) == "string" and titulo ~= "" then t[#t + 1] = format(L["“%s”"], U.Cortar(titulo, 32)) end
+	end
+	if #t == 0 then return nil end
+	if #t <= tope then
+		if #t == 1 then return t[1] end
+		return format(L["%s y %s"], concat(t, ", ", 1, #t - 1), t[#t])
+	end
+	return format(L["%s y %s"], concat(t, ", ", 1, tope), format(L["%d más"], #t - tope))
+end
+
 local dichos = {} -- clave -> true: ya se ofreció cazar juntos en esta sesión
+
 
 local function aviso(o)
 	local K = N.Kit
