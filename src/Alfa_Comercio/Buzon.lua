@@ -53,7 +53,7 @@ local avisoVisto  -- ya se revisó el vencimiento en esta visita
 -- Lectura del buzón
 ---------------------------------------------------------------------------
 
-local function secreto(v) return v ~= nil and issecretvalue ~= nil and issecretvalue(v) and true or false end
+local function secreto(v) return type(v) ~= "nil" and issecretvalue ~= nil and issecretvalue(v) and true or false end
 local function num(v) if secreto(v) then return nil end return tonumber(v) end
 local function leer(v) if secreto(v) then return nil end return v end
 

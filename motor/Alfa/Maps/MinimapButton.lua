@@ -91,11 +91,17 @@ function Maps.ButtonTip(owner, drag, opens)
 	else
 		click = ns.Hidden() and { L["Alfa is hidden: click to show"], T.Accent() } or L["Click: hide Alfa"]
 	end
-	ns.Widgets.Tooltip(owner, "ANCHOR_LEFT", "Alfa", {
-		click,
-		L["Right-click: menu"],
-		drag,
-	})
+	-- Alfa 1.3.7: el numerito rojo dice qué es (la misma cuenta que la campanita).
+	local avisos
+	local Nu = rawget(_G, "AlfaNucleo")
+	local n = type(Nu) == "table" and type(Nu.AvisosSinVer) == "function" and Nu.AvisosSinVer() or 0
+	if n > 0 and type(Nu.TextoSinVer) == "function" then
+		avisos = { Nu.TextoSinVer(n) .. ": " .. ns.T("clic en el número rojo para verlos"), T.Accent() }
+	end
+	local lines = { click, L["Right-click: menu"] }
+	if avisos then lines[#lines + 1] = avisos end
+	if drag then lines[#lines + 1] = drag end
+	ns.Widgets.Tooltip(owner, "ANCHOR_LEFT", "Alfa", lines)
 end
 
 local function showTip(self)

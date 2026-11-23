@@ -607,7 +607,7 @@ function Cr.Ahora(filtro, alListo)
 		if i then
 			M.Aviso(L["Plan en marcha"], L["Sigue la flecha: las paradas van en el orden más corto, juntas por PNJ."], { lobo = "aullando" })
 		elseif por == "tabs" then
-			M.Aviso(L["Tienes 6 guías abiertas"], L["Cierra una pestaña para abrir tu plan."], { icono = "ic-aviso", tono = "aviso" })
+			M.EnCurso.AvisoLleno(L["Es el máximo a la vez. Quita una que ya no uses y vuelve a armar tu plan."])
 		end
 		M.Avisar("SEGUIR", "liberar")
 		if alListo then alListo(i ~= nil) end

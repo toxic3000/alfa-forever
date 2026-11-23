@@ -31,7 +31,7 @@ local floor, sqrt = math.floor, math.sqrt
 ---------------------------------------------------------------------------
 
 function U.Secreto(v)
-	return v ~= nil and issecretvalue ~= nil and issecretvalue(v) and true or false
+	return type(v) ~= "nil" and issecretvalue ~= nil and issecretvalue(v) and true or false
 end
 
 -- El valor, o nil si es secreto.

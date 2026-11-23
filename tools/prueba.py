@@ -50,9 +50,9 @@ def memoria_mb(p) -> int:
     return 0
 
 
-def correr(escena: str, entorno: dict | None = None):
+def correr(escena: str, entorno: dict | None = None, modulos: str | None = None):
     codigo = ("import sys, runpy; sys.path.insert(0, %r); sys.argv = ['run.py', %r, %r, %r]; "
-              "runpy.run_path(%r, run_name='__main__')" % (str(SITE), str(DIST), MODULOS, escena, str(RAIZ / "tools" / "banco" / "run.py")))
+              "runpy.run_path(%r, run_name='__main__')" % (str(SITE), str(DIST), modulos or MODULOS, escena, str(RAIZ / "tools" / "banco" / "run.py")))
     p = subprocess.Popen([sys.executable, "-u", "-c", codigo], cwd=RAIZ, stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT, env={**os.environ, "PYTHONUNBUFFERED": "1", "PYTHONIOENCODING": "utf-8", **(entorno or {})})
     inicio, salida = time.time(), []
@@ -141,12 +141,17 @@ def main() -> int:
                 s, c = correr(escena, {"BANCO_GUARDADAS": str(archivo), "BANCO_FASE": fase})
                 salida += s
                 cortado = cortado or c
+        elif escena == "prueba_137c_bugs.lua":
+            # 1.3.7: cada caso entra al juego en otra situación (tools/casos137c.py).
+            sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+            import casos137c
+            salida, cortado = casos137c.correr_casos(correr, MODULOS)
         else:
             salida, cortado = correr(escena)
         if escena != "prueba.lua":
             print("--", escena)
         for l in salida:
-            if l.startswith(("FALLA EN", "   ", "AVISO", "PRUEBA:", "errores al entrar", "ERROR")):
+            if l.startswith(("FALLA EN", "   ", "AVISO", "PRUEBA:", "errores al entrar", "ERROR", "CASO ")):
                 print(l)
         if cortado:
             print("PRUEBA CORTADA:", escena, cortado)

@@ -468,5 +468,9 @@ M.EN = {
 	["%s · una vez"] = "%s · once",
 	["Uso: /alfa comercio precio <objeto o su nombre>"] = "Usage: /alfa comercio precio <item or its name>",
 	["¿Vender, subastar o transformar? (escanear, precio <objeto>, oficios, gangas, alt)"] = "Vendor, auction or craft? (escanear = scan, precio <item> = price, oficios, gangas = deals, alt)",
+	-- 1.3.7: la barra de la subasta, compacta
+	["Pidiendo precios…"] = "Asking for prices…",
+	["Sin precios todavía"] = "No prices yet",
+	["Precios %s"] = "Prices %s",
 }
 M.L = AlfaNucleo.Textos(M.EN)

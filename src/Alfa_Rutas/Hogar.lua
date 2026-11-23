@@ -16,6 +16,7 @@
 
 local ADDON, M = ...
 local A, L = M.A, M.L
+local N = M.N
 local K = M.K
 local Hg = {}
 M.Hogar = Hg
@@ -149,11 +150,11 @@ end
 local function enInstancia()
 	if not IsInInstance then return false end
 	local ok, dentro = pcall(IsInInstance)
-	return ok and dentro == true
+	return ok and N.Si(dentro) -- 1.3.7: secretos
 end
 
 local function enVuelo()
-	return UnitOnTaxi and UnitOnTaxi("player") and true or false
+	return N.SiJuego(rawget(_G, "UnitOnTaxi"), "player")
 end
 
 function Hg.Revisar()

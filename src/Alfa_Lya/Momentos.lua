@@ -31,7 +31,7 @@ M.Momentos = Mo
 
 local function ahora() return GetTime and GetTime() or 0 end
 local function reloj() return (GetServerTime and GetServerTime()) or (time and time()) or 0 end
-local function secreto(v) return issecretvalue ~= nil and v ~= nil and issecretvalue(v) and true or false end
+local function secreto(v) return issecretvalue ~= nil and type(v) ~= "nil" and issecretvalue(v) and true or false end
 local function num(v) if secreto(v) then return nil end return tonumber(v) end
 local function texto(v) if secreto(v) or type(v) ~= "string" or v == "" then return nil end return v end
 

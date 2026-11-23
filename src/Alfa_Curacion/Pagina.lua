@@ -35,7 +35,8 @@ local DOT = "  \194\183  "
 ---------------------------------------------------------------------------
 
 local function queHace(e)
-	if type(e) ~= "table" or e.t == "nada" then return L["no hace nada"] end
+	-- 1.3.7: con «Curar y seleccionar», una ranura sin acción al menos selecciona (Mapa.lua).
+	if type(e) ~= "table" or e.t == "nada" then return M.CurarSelecciona() and L["selecciona"] or L["no hace nada"] end
 	if e.t == "spell" then return M.NombreHechizo(e.id) or L["un hechizo"] end
 	if e.t == "target" then return L["selecciona"] end
 	if e.t == "menu" then return L["abre su menú"] end
@@ -389,13 +390,29 @@ local function nuevoRaton(padre)
 	end
 	b.Nota = K.Texto(b.Panel, "nota", "textoTenue")
 	b.Aviso = K.Texto(b.Panel, "nota", "aviso")
+	b.Copiar = K.Boton(b.Panel, L["Copiar mis atajos de Blizzard al mapa de Alfa"], function()
+		if M.EnCombate() then
+			N.Imprimir(L["Tus clics de Curación se aplican al salir de combate."])
+			return
+		end
+		local n = M.CopiarBlizzard()
+		if n > 0 then
+			N.Imprimir(N.Plural(n, L["Listo: copié %d atajo de Blizzard a tu mapa de Alfa."], L["Listo: copié %d atajos de Blizzard a tu mapa de Alfa."]))
+		end
+		M.Avisar()
+	end, { tipo = "secundario", tam = "chico" })
+	b.Copiar:Hide()
 	function b:Llenar()
 		local mapa = M.Mapa()
 		for r, c in pairs(self.celdas) do M.PintarRanura(c.Icono, c.Nombre, c.Tipo, mapa[r]) end
 		K.Escribir(self.Nota, L["Clic en una casilla para elegir qué hace sobre el compañero bajo tu ratón; clic derecho la deja sin acción. Los cambios se aplican fuera de combate."])
-		local choques = M.ChoquesBlizzard()
-		self.alfaChoques = choques
-		K.Escribir(self.Aviso, choques > 0 and format(L["Ojo: tu clic para lanzar de Blizzard usa %d de estas teclas, y ese manda también aquí. Para igualarlos, usa «Usar también en los marcos de Blizzard»."], choques) or "")
+		-- 1.3.7: los marcos de Alfa ya no obedecen al clic para lanzar de
+		-- Blizzard (botones de acción, Mapa.lua): aquí manda solo tu mapa. Si
+		-- tienes atajos de Blizzard en esos mismos clics, se avisa, y los que
+		-- se pueden copiar (hechizos, seleccionar, menú) se copian con un botón.
+		self.alfaChoques = M.ChoquesBlizzard()
+		self.alfaCopiables = self.alfaChoques > 0 and (M.CopiarBlizzard(true)) or 0
+		K.Escribir(self.Aviso, self.alfaChoques > 0 and L["En los marcos de Alfa manda tu mapa de clics; tus atajos de Blizzard no aplican aquí."] or "")
 	end
 	function b:Acomodar(ancho)
 		self.Seccion:ClearAllPoints()
@@ -434,6 +451,13 @@ local function nuevoRaton(padre)
 			self.Aviso:ClearAllPoints()
 			self.Aviso:SetPoint("TOPLEFT", self.Panel, "TOPLEFT", pad, -y)
 			y = y + K.Parrafo(self.Aviso, dentro, 3)
+		end
+		self.Copiar:SetShown(self.Aviso:IsShown() and (self.alfaCopiables or 0) > 0)
+		if self.Copiar:IsShown() then
+			y = y + ESP.s
+			self.Copiar:ClearAllPoints()
+			self.Copiar:SetPoint("TOPLEFT", self.Panel, "TOPLEFT", pad, -y)
+			y = y + K.num(self.Copiar:GetHeight(), 24)
 		end
 		y = y + pad
 		self.Panel:ClearAllPoints()
@@ -553,8 +577,10 @@ local function grupos(ui, padre)
 		muestran:Fila({ titulo = titulo, texto = texto, control = interruptor(clave), activa = activo })
 	end
 	fila(L["Color de clase"], "colorClase", L["La barra de vida con el color de la clase de cada uno. Apagado: barra verde y el nombre con su color."])
+	-- 1.3.7: maná, furia o energía bajo la vida (Marcos.lua).
+	fila(L["Maná, furia o energía"], "recurso", L["Una barra delgada bajo la vida con el maná, la furia o la energía de cada uno, en su color."])
 	fila(L["Curas que van llegando"], "entrantes", L["Una franja verde clara muestra las curas que ya vienen en camino."])
-	fila(L["Amenaza"], "amenaza", L["Una línea roja arriba avisa cuando un enemigo va por ese compañero."])
+	fila(L["Amenaza"], "amenaza", L["Una línea roja arriba avisa cuando un enemigo va por ese compañero; si no es el tanque, su marco brilla en naranja por fuera."])
 	fila(L["Perjuicios que puedes quitar"], "disipar", L["El borde toma el color del perjuicio (magia, maldición, enfermedad o veneno) cuando tú lo puedes quitar."])
 	muestran:Fila({ titulo = L["Ícono del tipo de perjuicio"], control = interruptor("tipoPerjuicio"), hija = true,
 		activa = function() return activo() and N.Get(ID, "disipar") and true or false end,
@@ -562,6 +588,8 @@ local function grupos(ui, padre)
 	-- 1.3.6: «hechizo de apoyo» en vez de «buff».
 	fila(L["Le falta tu hechizo de apoyo"], "buffs", L["Un punto azul abajo a la derecha si a ese compañero le falta tu hechizo de apoyo (el que le das antes de pelear). Se revisa fuera de combate."])
 	fila(L["Tanque en apuros"], "tanque", L["El marco del tanque late en rojo cuando le queda menos del 40 % de vida."])
+	-- 1.3.7 (Peligro.lua)
+	fila(L["En peligro"], "peligro", L["Un velo rojo respira sobre la barra de quien baja del 35 % de vida, para verlo a la primera."])
 	fila(L["Maná de los curanderos"], "mana", L["Arriba de tus marcos, el maná de quienes curan en tu grupo. Se destaca al terminar cada pelea."])
 	fila(L["Porcentaje de vida"], "porcentaje", L["Muestra la vida en número, debajo del nombre."])
 	fila(L["Atenuar a quien está lejos"], "alcance", L["Si está fuera de tu alcance, su marco se ve más tenue."])
@@ -664,13 +692,15 @@ local CONTROLES = {
 	{ kind = "button", label = L["Volver a su lugar"], button = L["Reiniciar"], icon = "window", disabled = apagado,
 		help = L["Pone los marcos donde estaban al instalar Alfa."], onClick = function() M.ReiniciarPosicion() end, search = "reset position" },
 	toggle("colorClase", L["Color de clase"], L["La barra de vida con el color de la clase de cada uno. Apagado: barra verde y el nombre con su color."], "class colours"),
+	toggle("recurso", L["Maná, furia o energía"], L["Una barra delgada bajo la vida con el maná, la furia o la energía de cada uno, en su color."], "power bar, mana bar, rage, energy, runic power"),
 	toggle("entrantes", L["Curas que van llegando"], L["Una franja verde clara muestra las curas que ya vienen en camino."], "incoming heals, heal prediction"),
-	toggle("amenaza", L["Amenaza"], L["Una línea roja arriba avisa cuando un enemigo va por ese compañero."], "threat, aggro"),
+	toggle("amenaza", L["Amenaza"], L["Una línea roja arriba avisa cuando un enemigo va por ese compañero; si no es el tanque, su marco brilla en naranja por fuera."], "threat, aggro"),
 	toggle("disipar", L["Perjuicios que puedes quitar"], L["El borde toma el color del perjuicio (magia, maldición, enfermedad o veneno) cuando tú lo puedes quitar."], "dispel, debuffs, decurse"),
 	toggle("tipoPerjuicio", L["Ícono del tipo de perjuicio"], L["Arriba a la derecha, el ícono de magia, maldición, veneno o enfermedad. Al pasar el ratón te dice qué clic lo quita."], "debuff type icon, dispel", true),
 	-- 1.3.6: «hechizo de apoyo» en vez de «buff».
 	toggle("buffs", L["Le falta tu hechizo de apoyo"], L["Un punto azul abajo a la derecha si a ese compañero le falta tu hechizo de apoyo (el que le das antes de pelear). Se revisa fuera de combate."], "missing buffs, buff, hechizo de apoyo, fortitude, mark of the wild, arcane intellect, blessing"),
 	toggle("tanque", L["Tanque en apuros"], L["El marco del tanque late en rojo cuando le queda menos del 40 % de vida."], "tank alert, low health"),
+	toggle("peligro", L["En peligro"], L["Un velo rojo respira sobre la barra de quien baja del 35 % de vida, para verlo a la primera."], "low health, danger, red, alert"),
 	toggle("mana", L["Maná de los curanderos"], L["Arriba de tus marcos, el maná de quienes curan en tu grupo. Se destaca al terminar cada pelea."], "healer mana, group mana"),
 	toggle("porcentaje", L["Porcentaje de vida"], L["Muestra la vida en número, debajo del nombre."], "health percent"),
 	toggle("alcance", L["Atenuar a quien está lejos"], L["Si está fuera de tu alcance, su marco se ve más tenue."], "range, out of range fade"),

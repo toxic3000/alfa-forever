@@ -169,7 +169,7 @@ function AlfaMazmorras.Dentro()
 	-- Fuera de una instancia no hace falta cargar el Codex (~7 MB).
 	if IsInInstance then
 		local ok, dentro = pcall(IsInInstance)
-		if ok and not dentro then return nil end
+		if ok and not N.Secreto(dentro) and not dentro then return nil end
 	end
 	if not D.Listo() then return nil end
 	local key = D.MazmorraActual()

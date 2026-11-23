@@ -21,7 +21,7 @@ local type, tonumber, pcall, ipairs, format = type, tonumber, pcall, ipairs, str
 local Sv = {}
 M.SuVoz = Sv
 
-local function secreto(v) return issecretvalue ~= nil and v ~= nil and issecretvalue(v) and true or false end
+local function secreto(v) return issecretvalue ~= nil and type(v) ~= "nil" and issecretvalue(v) and true or false end
 local function texto(v) if secreto(v) or type(v) ~= "string" or v == "" then return nil end return v end
 
 -- Lo que hay que hacer, por tipo de objetivo.

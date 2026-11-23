@@ -622,12 +622,16 @@ local function nombreDePin(p)
 			if type(nombre) == "string" and nombre ~= "" then return nombre end
 		end
 	end
-	if type(p.tooltip) == "string" then
-		local linea = p.tooltip:match("^([^\n]+)")
+	-- (DistanciaPines.lua envuelve el cuadro en una función y deja el texto en alfaTipTexto)
+	local tip = p.alfaTipTexto or p.tooltip
+	if type(tip) == "string" then
+		local linea = tip:match("^([^\n]+)")
 		if linea then return (linea:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")) end
 	end
 	return nil
 end
+
+Mk.NombreDePin = nombreDePin
 
 -- El pin en el mapa de su zona: mapa, x, y | nil
 local function lugarDePin(p)

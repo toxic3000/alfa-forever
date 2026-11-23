@@ -18,7 +18,7 @@ local _, N = ...
 local A = N.A
 
 -- 1.3.3: también Talentos (builds).
-N.ESENCIALES = { inicio = true, rutas = true, mundo = true, bolsas = true, builds = true, lya = true }
+N.ESENCIALES = { inicio = true, planes = true, rutas = true, mundo = true, bolsas = true, builds = true, lya = true }
 
 function N.Modo()
 	local m = A and A.Get and A.Get("bienvenida.modo")

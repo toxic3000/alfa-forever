@@ -774,8 +774,17 @@ function K.Segmentos(padre, opts)
 		for i, o in ipairs(self.opciones) do
 			local b = self.botones[i]
 			local iw = o.icono and 18 or 0
-			local tw = K.Ajustar(b.Texto)
-			local cw = (o.cuenta ~= nil) and (K.Ajustar(b.Cuenta) + 6) or 0
+			-- 1.3.7: antes del primer dibujo el juego puede medir 0 (la pastilla
+			-- salía «Mun…»): nunca menos que un cálculo por letras.
+			local function medir(fs, txt)
+				local w = K.Ajustar(fs)
+				local n = type(txt) == "string" and #(txt:gsub("[" .. string.char(128) .. "-" .. string.char(191) .. "]", "")) or 0
+				local minimo = floor(n * K.Tamano("insignia") * 0.5)
+				if w < minimo then w = minimo fs:SetWidth(w + 1) end
+				return w
+			end
+			local tw = medir(b.Texto, o.texto or tostring(o.valor))
+			local cw = (o.cuenta ~= nil) and (medir(b.Cuenta, tostring(o.cuenta)) + 6) or 0
 			local w = 12 + iw + tw + cw + 12
 			local h = alto - dentro * 2
 			if self.alfaEstilo ~= "segmentos" and x > 0 and ancho and x + w > ancho then

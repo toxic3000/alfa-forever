@@ -406,6 +406,8 @@ N.Modulo({
 		salidas = true,     -- salidas de zona (Entradas.lua)
 		portales = true,    -- portales a pie (Entradas.lua)
 		vueloEnMapa = true, -- la línea de tu vuelo en grifo en el mapa de Alfa (Trayecto.lua, 1.2.1)
+		rastro = true,      -- 1.3.7c: tu camino de hoy en el mapa de Alfa (Rastro.lua)
+		distanciaPines = true, -- 1.3.7c: «A 120 yd, al noreste» en el cuadro de cada pin (DistanciaPines.lua)
 		porDescubrir = true, -- los rincones de tu zona que no exploras (Descubrir.lua, 1.2.9)
 		vuelosFaltan = true, -- los vuelos de tu zona que no conoces (Descubrir.lua, 1.2.9)
 		peligros = true,    -- los élites y raros peligrosos de tu zona (Peligros.lua, 1.3.0)
@@ -428,6 +430,9 @@ N.Modulo({
 		{ kind = "toggle", key = "mundo.menuMapa", label = L["Capas en la lupa del mapa del juego"], search = "tracking menu, layers" },
 		{ kind = "toggle", key = "mundo.detalle", label = L["Más detalle al acercar el mapa"], search = "map detail, textures, zoom, detalle fino" },
 		{ kind = "toggle", key = "mundo.vueloEnMapa", label = L["Tu vuelo en el mapa"], search = "flight path, gryphon, taxi, flight line, vuelo, grifo, línea" },
+		{ kind = "toggle", key = "mundo.rastro", label = L["Tu camino de hoy"], search = "trail, path, today, breadcrumbs, rastro, camino, huellas" },
+		{ kind = "toggle", key = "mundo.distanciaPines", label = L["La distancia en el cuadro de los pines"],
+			search = "distance, pins, tooltip, minimap, yards, distancia, pines, minimapa, yardas" },
 		{ kind = "toggle", key = "mundo.porDescubrir", label = L["Por descubrir"], search = "explore, unexplored, discover, exploration xp, explorar" },
 		{ kind = "toggle", key = "mundo.vuelosFaltan", label = L["Vuelos que te faltan"], search = "flight paths, missing, taxi, flight master, vuelos" },
 		{ kind = "toggle", key = "mundo.peligros", label = L["Peligros"], search = "danger, elites, dangerous rares, elite mobs, peligro" },

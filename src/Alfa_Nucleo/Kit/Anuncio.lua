@@ -442,8 +442,20 @@ local function tocar(boton)
 	local fn = f.alfaClic
 	if fn and not enCombate() then
 		K.Llamar(fn)
-		cerrar()
 	end
+	cerrar()
+end
+
+-- Quién toma el ratón: la franja entera nunca (no estorba los clics alrededor:
+-- un PNJ, girar la cámara); el bloque del contenido y su X, solo fuera de
+-- combate. Se mira con InCombatLockdown al armar, al mostrar y en cada cambio
+-- de pelea, así no depende de si ya peleaste antes.
+local function raton()
+	if not f then return end
+	local si = not enCombate() and not f.alfaSaliendo
+	f:EnableMouse(false)
+	f.Toque:EnableMouse(si)
+	f.X:EnableMouse(si)
 end
 
 local function armar()
@@ -451,7 +463,6 @@ local function armar()
 	f:SetSize(ANCHO_MAX, 170)
 	f:SetPoint("TOP", UIParent, "TOP", 0, -130)
 	f:SetFrameStrata("HIGH")
-	-- 1.3.7: la franja nunca toma el ratón; solo el título (f.Toque).
 	f:EnableMouse(false)
 	f:Hide()
 	-- El contenido se mueve entero con la animación.
@@ -497,15 +508,18 @@ local function armar()
 		f.Borde[i] = t
 	end
 
-	-- Solo el nombre se toca (clic: su acción; clic derecho: cerrar).
+	-- El anuncio se cierra con un clic en su contenido (ícono, nombre y línea:
+	-- clic derecho siempre cierra; el izquierdo hace su acción si la tiene y
+	-- cierra) o en su X. Solo ese bloque toma el ratón, nunca la franja ancha.
 	f.Toque = CreateFrame("Button", nil, C)
-	f.Toque:SetPoint("TOPLEFT", f.Titulo, "TOPLEFT", -10, 6)
-	f.Toque:SetPoint("BOTTOMRIGHT", f.Titulo, "BOTTOMRIGHT", 10, -6)
+	f.Toque:SetPoint("TOP", C, "TOP", 0, -10)
+	f.Toque:SetSize(200, 120)
 	if f.Toque.RegisterForClicks then f.Toque:RegisterForClicks("LeftButtonUp", "RightButtonUp") end
 	f.Toque:SetScript("OnClick", function(_, boton) tocar(boton) end)
-	f.Toque:EnableMouse(false)
-	-- (Lo de antes: quien llame OnMouseUp en el marco hace lo mismo.)
-	f:SetScript("OnMouseUp", function(_, boton) tocar(boton) end)
+	f.X = K.BotonIcono(C, "ic-cerrar", function() cerrar() end, { tam = 18, icono = 10, ayuda = K.L and K.L["Cerrar"] or nil })
+	f.X:SetPoint("TOPRIGHT", f.Toque, "TOPRIGHT", 0, 0)
+	f.X:SetFrameLevel(f.Toque:GetFrameLevel() + 2)
+	raton()
 
 	f:SetScript("OnHide", function(self)
 		if self.Huellas then self.Huellas:Hide() end
@@ -541,7 +555,7 @@ local function armar()
 				if razon ~= "vencido" then reencolar(self, t) end
 				self.alfaSale = SALE_RAPIDO
 				self.alfaFin = t
-				self.Toque:EnableMouse(false)
+				raton()
 			end
 		end
 		local salida = self.alfaSale or sale
@@ -743,13 +757,23 @@ mostrar = function(o)
 	f.C:ClearAllPoints()
 	f.C:SetAllPoints(f)
 	colocar(chico)
+	-- Lo que se toca: solo el bloque del contenido (su ancho, no la franja).
+	local abajo = f.Titulo
+	if (o.texto or "") ~= "" or o.cuenta then abajo = f.Texto end
+	if o.alClic and (o.pista or "") ~= "" then abajo = f.Pista end
+	local tocaW = max(tw, K.AnchoTexto(f.Texto), K.AnchoTexto(f.Sobre), K.AnchoTexto(f.Pista), chico and 0 or 58)
+	tocaW = min(util, tocaW + 36)
+	f.Toque:ClearAllPoints()
+	f.Toque:SetPoint("TOP", f.C, "TOP", 0, chico and -2 or -10)
+	f.Toque:SetPoint("BOTTOM", abajo, "BOTTOM", 0, -4)
+	f.Toque:SetWidth(tocaW)
 	f.alfaClic = o.alClic
 	f.alfaCuenta = o.cuenta
 	f.alfaSeg = nil
 	f.alfaDura = tonumber(o.segundos) or est.segundos or 6
 	f.alfaT = 0
-	-- Solo el nombre toma el ratón, y nunca en combate.
-	f.Toque:EnableMouse(not enCombate())
+	-- En combate ni el contenido ni la X toman el ratón.
+	raton()
 	pintar(f)
 	f:SetAlpha(0)
 	f:Show()
@@ -816,6 +840,7 @@ function K.AnuncioActual()
 		estilo = o.estilo or "general", titulo = o.titulo, sobre = o.sobre, texto = o.texto, chico = f.alfaChico,
 		prioridad = prioridad(o), color = tono(o, est), anim = est.anim, bajoPlaca = f.alfaBajoPlaca or nil,
 		ancho = f:GetWidth(), toca = f.Toque:IsMouseEnabled() or nil, marcoToca = f:IsMouseEnabled() or nil,
+		x = f.X:IsMouseEnabled() or nil, tocaAncho = f.Toque:GetWidth(),
 		huellas = f.Huellas ~= nil and f.Huellas:IsShown() or nil, borde = f.Borde[1]:IsShown() or nil,
 		rolTitulo = f.Titulo.alfaRol, vuelve = o.vuelve or nil,
 	}
@@ -876,9 +901,10 @@ ev:RegisterEvent("PLAYER_REGEN_ENABLED")
 ev:SetScript("OnEvent", function(_, evento)
 	if evento == "PLAYER_REGEN_DISABLED" then
 		pelea = true
-		if f then f:EnableMouse(false) f.Toque:EnableMouse(false) end
+		raton()
 	else
 		pelea = false
+		raton()
 		if #cola > 0 then programar(1) end
 	end
 end)

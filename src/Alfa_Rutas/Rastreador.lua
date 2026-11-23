@@ -426,6 +426,15 @@ function Rs.Ocultar()
 	A.Set("ui.shown", false)
 end
 
+-- 1.3.7c: plegada, el rastreador deja la cabecera (con su barra de avance),
+-- el paso de ahora y la línea de la flecha; un clic en la cabecera la abre.
+-- Se recuerda entre sesiones.
+function Rs.Plegada() return datos().plegada == true end
+function Rs.Plegar(si)
+	datos().plegada = si and true or nil
+	if F and F:IsShown() then Rs.Pintar() end
+end
+
 local function menuGuia(dueno)
 	local e = E()
 	local tabs, activa = engine("GetTabs")
@@ -510,6 +519,10 @@ local function menuMeta(fila)
 		-- 1.3.0: la cadena completa (Cadena.lua).
 		if M.Cadena and A.Get(M.ID .. ".cadenaCompleta") ~= false then
 			op[#op + 1] = { valor = function() M.Cadena.Abrir(q) end, texto = L["Ver la cadena completa"], icono = "ic-ruta" }
+		end
+		-- 1.3.7: abandonarla desde aquí (con confirmación; EnCurso.lua).
+		if M.Indice.EnRegistro(q) and M.EnCurso and M.EnCurso.AbandonarMision then
+			op[#op + 1] = { valor = function() M.EnCurso.AbandonarMision(q) end, texto = L["Abandonar misión"], icono = "ic-cerrar" }
 		end
 	end
 	if #op == 0 then return end
@@ -926,7 +939,7 @@ local function textoFlecha() return (Rs.Distancia()) end
 -- línea aparece o se va, se acomoda todo.
 local function latido()
 	if not (F and F:IsShown() and ui.flecha) then return end
-	local t = ui.conFlecha and compacto() and textoFlecha() or nil
+	local t = ui.conFlecha and (compacto() or Rs.Plegada()) and textoFlecha() or nil
 	if (t ~= nil) ~= ui.flecha:IsShown() then Rs.Luego() return end
 	if t then K.Escribir(ui.flecha.Texto, t) end
 end
@@ -974,8 +987,14 @@ local function construir()
 	c:SetHeight(CAB)
 	c:EnableMouse(true)
 	c:RegisterForDrag("LeftButton")
-	c:SetScript("OnDragStart", function() if not (A.DragLocked and A.DragLocked()) then F:StartMoving() end end)
+	c:SetScript("OnDragStart", function() c.alfaArrastre = true if not (A.DragLocked and A.DragLocked()) then F:StartMoving() end end)
 	c:SetScript("OnDragStop", function() F:StopMovingOrSizing() guardarLugar() end)
+	-- 1.3.7c: un clic (sin arrastrar) en la cabecera pliega o despliega la guía.
+	c:SetScript("OnMouseDown", function() c.alfaArrastre = false end)
+	c:SetScript("OnMouseUp", function(_, boton)
+		if boton == "LeftButton" and not c.alfaArrastre then Rs.Plegar(not Rs.Plegada()) end
+		c.alfaArrastre = false
+	end)
 	c.Icono = K.Icono(c, "ic-huella", 16, "acento")
 	c.Icono:SetPoint("LEFT", c, "LEFT", PAD, 0)
 	c.Cerrar = K.BotonIcono(c, "ic-cerrar", function() Rs.Ocultar() end, { tam = 22, icono = 10, ayuda = L["Ocultar la guía"] })
@@ -992,11 +1011,20 @@ local function construir()
 	c.Sub = K.Texto(c, "pequeno", "textoTenue")
 	c.Sub:SetPoint("TOPLEFT", c.Titulo, "BOTTOMLEFT", 0, -2)
 	Rs.BotonCerca()
-	-- El nombre completo de la guía (en la cabecera puede ir cortado).
-	K.ConInfo(c, function(self) return self.alfaNombre, nil end)
+	-- El nombre completo de la guía (en la cabecera puede ir cortado) y,
+	-- 1.3.7c, el clic para plegarla.
+	K.ConInfo(c, function(self)
+		return self.alfaNombre or L["Tu guía"], Rs.Plegada() and L["Clic: despliega la guía. Arrastra para moverla."]
+			or L["Clic: pliega la guía y deja solo el paso de ahora. Arrastra para moverla."]
+	end)
 	c.Linea = K.Linea(c, "linea")
 	c.Linea:SetPoint("BOTTOMLEFT", c, "BOTTOMLEFT", PAD, 0)
 	c.Linea:SetPoint("BOTTOMRIGHT", c, "BOTTOMRIGHT", -PAD, 0)
+	-- 1.3.7c: el avance de la guía en la línea de la cabecera (lo lleno es lo hecho).
+	c.Avance = K.Progreso(c, { alto = 3, tono = "acento" })
+	c.Avance:SetPoint("BOTTOMLEFT", c, "BOTTOMLEFT", PAD, 0)
+	c.Avance:SetPoint("BOTTOMRIGHT", c, "BOTTOMRIGHT", -PAD, 0)
+	c.Avance:Hide()
 
 	ui.huellas = K.Huellas(F, { tam = 11, max = 16, gap = 4 })
 
@@ -1426,6 +1454,11 @@ local function cabecera(g, v)
 	local hs = linea ~= "" and K.AltoTexto(c.Sub) or 0
 	ui.altoCab = max(CAB, 7 + ht + (hs > 0 and (2 + hs) or 0) + 7)
 	c:SetHeight(ui.altoCab)
+	-- 1.3.7c: la barra del avance en lugar de la línea, con una guía de pasos.
+	local conBarra = c.Avance ~= nil and total ~= nil and total > 0
+	if conBarra then c.Avance:Set(done or 0, total) end
+	if c.Avance then c.Avance:SetShown(conBarra) end
+	c.Linea:SetShown(not conBarra)
 	ui.huellas:Set(done or 0, total or 0)
 	return total and total > 0
 end
@@ -1613,6 +1646,36 @@ function Rs.Pintar()
 	cxR.previa = previa
 	local conAvance = cabecera(g, v)
 	local y = (ui.altoCab or CAB) + K.ESP.s
+	-- 1.3.7c: plegada, solo el paso de ahora y la flecha.
+	if Rs.Plegada() and g and v then
+		for _, f in ipairs({ ui.huellas, ui.plan, ui.aviso, ui.vacio, ui.nota, ui.mas, ui.antes, ui.flecha,
+			ui.detalle, ui.omitir, ui.siguiente, ui.pieLinea }) do f:Hide() end
+		ocultarPaso(cxR)
+		-- La meta de ahora, como en la compacta (con su clic); sin metas, el título.
+		local abiertas = metasAbiertas(v)
+		if abiertas[1] then
+			ui.paso:Hide()
+			y = pintarFila(cxR, 1, v, abiertas[1], x, y + 2, ancho, nil, 2, false, true)
+		else
+			K.Escribir(ui.paso, tituloPaso(v))
+			ui.paso:ClearAllPoints()
+			ui.paso:SetPoint("TOPLEFT", F, "TOPLEFT", x, -y)
+			ui.paso:Show()
+			y = y + K.Parrafo(ui.paso, ancho, 2) + 4
+		end
+		ui.conFlecha = live ~= nil
+		local t = ui.conFlecha and textoFlecha() or nil
+		if t then
+			K.Escribir(ui.flecha.Texto, t)
+			ui.flecha:ClearAllPoints()
+			ui.flecha:SetPoint("TOPLEFT", F, "TOPLEFT", x, -(y + 2))
+			ui.flecha:SetWidth(ancho)
+			ui.flecha:Show()
+			y = y + 20
+		end
+		F:SetHeight(y + K.ESP.s)
+		return
+	end
 	if conAvance and not comp then
 		ui.huellas:ClearAllPoints()
 		ui.huellas:SetPoint("TOPLEFT", F, "TOPLEFT", x, -y)

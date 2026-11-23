@@ -160,8 +160,9 @@ end)
 
 step("Curar y seleccionar: apagado, en combate y al salir", function()
   Cu.FijarCurarSelecciona(false)
-  check(boton:GetAttribute("type1") == "spell" and boton:GetAttribute("spell1") == "Curación relámpago", "apagado, el izquierdo no lanza el hechizo")
-  check(boton:GetAttribute("macrotext1") == nil, "apagado, sobra la macro")
+  -- 1.3.7 (segunda vuelta): apagado, el ajuste manda en todos los clics: el hechizo solo.
+  check(boton:GetAttribute("type1") == "spell" and boton:GetAttribute("spell1") == "Curación relámpago", "apagado, el izquierdo no es el hechizo solo")
+  check(boton:GetAttribute("macrotext1") == nil, "apagado, sobra la macro del izquierdo")
   -- En combate nada se toca.
   combate = true
   local orig, cambios = boton.SetAttribute, 0
@@ -186,7 +187,8 @@ step("La venda: preajuste de quien no cura y su macro", function()
   check(Cu.venda == 6450, "no encontró la venda de seda: " .. tostring(Cu.venda))
   check(boton:GetAttribute("ctrl-macrotext3") == "/target party1\n/use [@party1] item:6450", "macro de la venda: " .. tostring(boton:GetAttribute("ctrl-macrotext3")))
   Cu.FijarRanura("ctrl-3", { t = "nada" })
-  check(boton:GetAttribute("ctrl-type3") == nil, "sin acción quedó un tipo en ctrl-3")
+  -- 1.3.7: con «Curar y seleccionar», una ranura sin acción al menos selecciona.
+  check(boton:GetAttribute("ctrl-type3") == "target" and boton:GetAttribute("ctrl-macrotext3") == nil, "sin acción, ctrl-3 no selecciona")
 end)
 
 step("Tus clics: los hechizos por tipo", function()

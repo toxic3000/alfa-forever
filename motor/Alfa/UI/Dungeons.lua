@@ -2363,6 +2363,13 @@ local function openPlanned(open, key, nothing)
 	if reason == "nothing" then
 		text = nothing()
 	elseif reason == "tabs" then
+		-- Alfa 1.3.7: el aviso trae «Ver lo que sigues» (Alfa_Rutas/EnCurso.lua).
+		local R = rawget(_G, "AlfaRuta")
+		if type(R) == "table" and type(R.AvisoLleno) == "function" then
+			R.AvisoLleno()
+			refresh()
+			return nil, reason
+		end
 		text = L["Six tabs is the limit. Close one to open another."]
 	else
 		text = format(L["No guide could be made for this (%s)."], tostring(reason))

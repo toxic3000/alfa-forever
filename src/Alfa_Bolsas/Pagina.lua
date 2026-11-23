@@ -640,6 +640,7 @@ local function grupos(padre)
 	marcas:Fila({ titulo = L["Chatarra"], control = interruptor("marcaChatarra"), texto = L["Una moneda sobre lo gris y lo que marcaste como chatarra."] })
 	marcas:Fila({ titulo = L["Objetos nuevos"], control = interruptor("marcaNuevos"), texto = L["Brillan los objetos que acabas de conseguir, hasta que cierras las bolsas."] })
 	marcas:Fila({ titulo = L["Flecha de mejora"], control = interruptor("marcaMejora"), texto = L["Una flecha verde en el equipo que es mejor que lo que llevas puesto, según tu clase y nivel."] })
+	marcas:Fila({ titulo = L["Atajos a lo nuevo y a tus mejoras"], control = interruptor("atajos"), texto = L["En la búsqueda de tus bolsas, «3 nuevos» y «1 mejora»: un clic resalta solo eso."] })
 	-- Un solo selector para los dos ajustes (brilloMision manda sobre marcaMision,
 	-- Botones.lua); lee lo que ya tienes y solo cambia lo que eliges.
 	marcas:Fila({ titulo = L["Objetos de misión"],

@@ -45,10 +45,13 @@ end
 
 function M.Ajuste(clave) return N.Get(M.ID, clave) end
 
+-- 1.3.7: N.Reino recuerda tu reino cuando el juego lo da vacío (Nucleo.lua).
+-- -> el reino ("?" si no se sabe), seguro (del juego o de este personaje)
 local function nombreReino()
-	local r = GetRealmName and GetRealmName()
-	if type(r) ~= "string" or r == "" then r = "?" end
-	return r
+	local r, seguro
+	if N.Reino then r, seguro = N.Reino() else r, seguro = GetRealmName and GetRealmName(), true end
+	if type(r) ~= "string" or r == "" then return "?", false end
+	return r, seguro
 end
 
 -- "Reino-Facción": cada casa de subastas tiene sus precios.
@@ -56,7 +59,7 @@ function M.ClaveReino()
 	local C = A.Compat
 	local f = C and C.GetPlayerFaction and C.GetPlayerFaction() or "Neutral"
 	if type(f) ~= "string" then f = "Neutral" end
-	return nombreReino() .. "-" .. f
+	return (nombreReino()) .. "-" .. f
 end
 
 function M.NombrePersonaje()
@@ -66,7 +69,7 @@ function M.NombrePersonaje()
 end
 
 function M.ClavePersonaje()
-	return M.NombrePersonaje() .. "-" .. nombreReino()
+	return M.NombrePersonaje() .. "-" .. (nombreReino())
 end
 
 -- "hace 5 min" / "hace 3 h" / "hace 2 d".
@@ -277,7 +280,103 @@ function M.Podar(ahora)
 	end
 	return quitados
 end
-A.OnLogin(function() pcall(M.Podar) end)
+-- 1.3.7: lo que se guardó con el reino vacío («?-Alliance», «Toxic-?»: el
+-- juego dio GetRealmName() vacío desde el 20/11/2026) vuelve a tu reino de
+-- verdad en cuanto Alfa lo sabe (N.Reino): precios (el más nuevo gana), su
+-- historial (el mínimo de cada día), el último escaneo, tus recetas y tu
+-- Encantamiento. -> cuántas cosas se mudaron
+local function juntarHistoria(a, b)
+	local dias = {}
+	for _, s in ipairs({ a, b }) do
+		if type(s) == "string" then
+			for dia, precio in s:gmatch("(%d+):(%d+)") do
+				dia, precio = tonumber(dia), tonumber(precio)
+				if not dias[dia] or precio < dias[dia] then dias[dia] = precio end
+			end
+		end
+	end
+	local orden = {}
+	for dia in pairs(dias) do orden[#orden + 1] = dia end
+	table.sort(orden)
+	local partes = {}
+	for i = math.max(1, #orden - HISTORIA + 1), #orden do partes[#partes + 1] = orden[i] .. ":" .. dias[orden[i]] end
+	return #partes > 0 and table.concat(partes, ",") or nil
+end
+-- Solo con el reino seguro de este personaje (N.Reino: del juego o de lo que
+-- el juego le dio antes), y solo lo suyo: sus recetas «Nombre-?» y los
+-- precios «?-SuFacción». Las recetas se juntan receta por receta (nada se tira).
+local function juntarFicha(f, otra)
+	if type(otra) ~= "table" then return f end
+	-- otra (la que ya tenía reino) queda de base; lo de «?» es lo más nuevo
+	for campo, v in pairs(f) do
+		if campo ~= "r" and campo ~= "profs" and campo ~= "s" and v ~= nil then otra[campo] = v end
+	end
+	if type(f.r) == "table" then
+		otra.r = type(otra.r) == "table" and otra.r or {}
+		for rid, rec in pairs(f.r) do otra.r[rid] = rec end
+	end
+	if type(f.profs) == "table" then
+		otra.profs = type(otra.profs) == "table" and otra.profs or {}
+		for prof, nivel in pairs(f.profs) do
+			if type(nivel) ~= "number" or nivel >= (tonumber(otra.profs[prof]) or 0) then otra.profs[prof] = nivel end
+		end
+	end
+	if type(f.s) == "number" and f.s > (tonumber(otra.s) or 0) then otra.s = f.s end
+	return otra
+end
+
+function M.JuntarReinoSinNombre()
+	local real, seguro = nombreReino()
+	if real == "?" or not seguro then return 0 end
+	local d = M.Datos()
+	local n = 0
+	local C = A.Compat
+	local miFaccion = C and C.GetPlayerFaction and C.GetPlayerFaction()
+	-- (primero las claves: agregar a una tabla mientras se recorre no se vale)
+	local sueltos = {}
+	for clave in pairs(d.reinos) do sueltos[#sueltos + 1] = clave end
+	for _, clave in ipairs(sueltos) do
+		local r = d.reinos[clave]
+		local faccion = type(clave) == "string" and clave:match("^%?%-(.+)$")
+		if faccion and faccion == miFaccion and type(r) == "table" then
+			local dest = M.Reino(real .. "-" .. faccion)
+			for id, e in pairs(type(r.p) == "table" and r.p or {}) do
+				local otro = dest.p[id]
+				if type(e) == "table" and (type(otro) ~= "table" or (tonumber(e[2]) or 0) > (tonumber(otro[2]) or 0)) then
+					dest.p[id] = e
+				end
+				n = n + 1
+			end
+			for id, s in pairs(type(r.h) == "table" and r.h or {}) do dest.h[id] = juntarHistoria(dest.h[id], s) end
+			local ea, eb = r.escaneo, dest.escaneo
+			if type(ea) == "table" and (type(eb) ~= "table" or (tonumber(ea[1]) or 0) > (tonumber(eb[1]) or 0)) then dest.escaneo = ea end
+			if type(r.pedido) == "number" and r.pedido > (tonumber(dest.pedido) or 0) then dest.pedido = r.pedido end
+			d.reinos[clave] = nil
+		end
+	end
+	-- Recetas y Encantamiento: solo «TuNombre-?» pasa a «TuNombre-Reino»
+	-- (las de tus otros personajes esperan a que ellos entren).
+	local yo = M.NombrePersonaje()
+	if yo ~= "?" then
+		local clave, nueva = yo .. "-?", yo .. "-" .. real
+		for _, campo in ipairs({ "recetas", "encantar" }) do
+			local t = type(d[campo]) == "table" and d[campo] or nil
+			local f = t and t[clave]
+			if type(f) == "table" then
+				if type(f.rk) == "string" then f.rk = f.rk:gsub("^%?%-", real .. "-") end
+				t[nueva] = juntarFicha(f, t[nueva])
+				t[clave] = nil
+				n = n + 1
+			end
+		end
+	end
+	return n
+end
+
+A.OnLogin(function()
+	pcall(M.JuntarReinoSinNombre)
+	pcall(M.Podar)
+end)
 
 ---------------------------------------------------------------------------
 -- Lectura de precios

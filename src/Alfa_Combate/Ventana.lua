@@ -57,6 +57,8 @@ local function infoFila(self)
 	if not M.Secreto(total) and type(total) == "number" and total > 0 and type(x.valor) == "number" then
 		lineas[#lineas + 1] = format(L["%d %% del total"], floor(x.valor * 100 / total + 0.5))
 	end
+	-- 1.3.7: en la gráfica, el clic abre su detalle (Detalle.lua).
+	if self.alfaCompacta then lineas[#lineas + 1] = L["Clic: sus hechizos y su parte del grupo."] end
 	return tostring(x.nombre or "?"), lineas
 end
 
@@ -273,13 +275,16 @@ local function crear()
 		if peleando() then return end
 		brillar()
 		if M.Desbloqueado() then return end
-		K.MostrarInfo(self, L["Medidor de daño"], L["Arrástralo para moverlo. Clic derecho: qué se mide, anunciar y más."])
+		K.MostrarInfo(self, L["Medidor de daño"], L["Arrástralo para moverlo. Clic en una barra: el detalle de esa persona. Clic derecho: qué se mide, anunciar y más."])
 	end)
 	v:SetScript("OnLeave", function(self)
 		K.OcultarInfo(self)
 		pedirAtenuar()
 	end)
-	v:SetScript("OnHide", function() N.Quitar("combate.medidorAtenuar") end)
+	v:SetScript("OnHide", function()
+		N.Quitar("combate.medidorAtenuar")
+		if M.Detalle then M.Detalle.Cerrar() end
+	end)
 	v:Hide()
 	return v
 end
@@ -331,9 +336,16 @@ function V.Pintar(forzar)
 			v.filas[i] = f
 			-- Sobre una fila también se arrastra la gráfica y sale su menú.
 			f:RegisterForDrag("LeftButton")
-			f:SetScript("OnDragStart", function() local s = v:GetScript("OnDragStart") if s then s(v) end end)
+			f:SetScript("OnDragStart", function(self) self.alfaArrastre = true local s = v:GetScript("OnDragStart") if s then s(v) end end)
 			f:SetScript("OnDragStop", function() local s = v:GetScript("OnDragStop") if s then s(v) end end)
-			f:SetScript("OnMouseUp", function(_, boton) if boton == "RightButton" and not peleando() then V.Menu(v) end end)
+			f:SetScript("OnMouseDown", function(self) self.alfaArrastre = nil end)
+			-- 1.3.7: clic izquierdo (sin arrastrar), su detalle a un lado (Detalle.lua).
+			f:SetScript("OnMouseUp", function(self, boton)
+				if peleando() then return end
+				if boton == "RightButton" then V.Menu(v)
+				elseif boton == "LeftButton" and not self.alfaArrastre and M.Detalle and not M.Desbloqueado() then M.Detalle.Alternar(self, v) end
+				self.alfaArrastre = nil
+			end)
 			f:HookScript("OnEnter", function() if not peleando() then brillar() end end)
 			f:HookScript("OnLeave", function() pedirAtenuar() end)
 		end
@@ -434,6 +446,7 @@ end
 function V.Pelea(empieza)
 	if not (v and v:IsShown()) then return end
 	raton(not empieza)
+	if empieza and M.Detalle then M.Detalle.Cerrar() end
 	if empieza then brillar() else pedirAtenuar() end
 end
 

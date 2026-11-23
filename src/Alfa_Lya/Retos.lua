@@ -25,7 +25,7 @@ M.Retos = Re
 local DIA = 24 * 3600
 local NIVEL_MAX = 60
 
-local function secreto(v) return issecretvalue ~= nil and v ~= nil and issecretvalue(v) and true or false end
+local function secreto(v) return issecretvalue ~= nil and type(v) ~= "nil" and issecretvalue(v) and true or false end
 local function activo() return N.Get(ID, "retos") ~= false end
 
 local function datos()

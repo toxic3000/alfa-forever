@@ -38,7 +38,7 @@ local DE_LUGAR = {
 	INVTYPE_2HWEAPON = { 16 }, INVTYPE_WEAPON = { 16 }, INVTYPE_WEAPONMAINHAND = { 16 },
 }
 
-local function legible(v) return v ~= nil and not (issecretvalue and issecretvalue(v)) end
+local function legible(v) return type(v) ~= "nil" and not (issecretvalue and issecretvalue(v)) end
 local function enCombate() return InCombatLockdown and InCombatLockdown() and true or false end
 
 ---------------------------------------------------------------------------

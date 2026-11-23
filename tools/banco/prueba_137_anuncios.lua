@@ -8,12 +8,14 @@
 --   5. una pelea lo desvanece y vuelve después si aún vale;
 --   6. llegar a una zona: su nombre, su dueño y sus niveles; el del juego se
 --      esconde (y vuelve con la opción apagada); no se repite antes de 10 min;
---      nada en grifo (sale al aterrizar) ni en combate;
+--      nada en grifo (sale al aterrizar) ni en combate; sin mapa (el tranvía,
+--      un túnel) no truena;
 --   7. rincones (chicos, 20 s entre uno y otro), descubrir (con Lya),
 --      mazmorra (una vez cada 30 min), zona peligrosa, ciudad;
 --   8. la placa de llegada primero; el ancho se adapta a la pantalla;
 --   9. barco con menos de 10 s: compacto y ya; raro en plena pelea: ícono chico;
---  10. Ajustes: «Probar» de cada tipo.
+--  10. cerrar un anuncio con clic (izquierdo y derecho);
+--  11. Ajustes: «Probar» de cada tipo.
 SNAPSHOTS = {}
 local pasos = 0
 local function step(nombre, fn, ...)
@@ -196,23 +198,35 @@ end)
 ---------------------------------------------------------------------------
 -- 4. Los clics
 ---------------------------------------------------------------------------
-step("Solo el título toma el ratón y el clic derecho lo cierra", function()
+step("Solo el contenido y su X toman el ratón; nunca la franja ancha", function()
   limpiar()
   local clic = 0
   K.Anuncio({ estilo = "raro", titulo = "Rak'shiri", alClic = function() clic = clic + 1 end, pista = "Clic: ir de caza", ya = true })
   local a = actual()
-  check(a and a.toca and not a.marcoToca, "la franja entera toma el ratón (o el título no)")
+  check(a and a.toca and a.x and not a.marcoToca, "la franja entera toma el ratón (o el contenido/la X no)")
+  check(a and a.tocaAncho and a.tocaAncho < a.ancho, "lo que se toca es tan ancho como la franja: " .. tostring(a and a.tocaAncho))
   local f = anuncio()
   FIRE(f.Toque, "OnClick", "LeftButton")
-  check(clic == 1 and not f:IsShown(), "el clic en el título no hizo su acción")
+  check(clic == 1 and not f:IsShown(), "el clic en el contenido no hizo su acción")
   K.Anuncio({ estilo = "zona", titulo = "Durotar", ya = true })
   FIRE(f.Toque, "OnClick", "RightButton")
   check(not f:IsShown(), "el clic derecho no lo cerró")
-  -- En pelea no toma el ratón.
+  K.Anuncio({ estilo = "zona", titulo = "Mulgore", ya = true })
+  FIRE(f.X, "OnClick", "LeftButton")
+  check(not f:IsShown(), "la X no lo cerró")
+  -- En pelea no toma el ratón, y al terminar vuelve a tomarlo.
   K.Anuncio({ estilo = "raro", titulo = "Rak'shiri", alClic = function() end, ya = true, enCombate = true })
   pelea(true)
-  check(not f.Toque:IsMouseEnabled(), "en pelea el título sigue tomando el ratón")
+  check(not f.Toque:IsMouseEnabled() and not f.X:IsMouseEnabled() and not f:IsMouseEnabled(), "en pelea el anuncio sigue tomando el ratón")
   pelea(false)
+  check(f.Toque:IsMouseEnabled() and f.X:IsMouseEnabled() and not f:IsMouseEnabled(), "al terminar la pelea no volvió a tomar el ratón (o la franja sí)")
+  limpiar()
+  -- Uno que se muestra ya en combate (sin el evento): tampoco toma el ratón.
+  local icl = InCombatLockdown
+  InCombatLockdown = function() return true end
+  K.Anuncio({ estilo = "raro", titulo = "Thuros", ya = true, enCombate = true })
+  check(f:IsShown() and not f.Toque:IsMouseEnabled() and not f.X:IsMouseEnabled(), "un anuncio mostrado en combate toma el ratón")
+  InCombatLockdown = icl
   limpiar()
 end)
 
@@ -304,6 +318,33 @@ step("Nada en grifo (sale al aterrizar) ni en combate", function()
   check(not anuncio():IsShown(), "salió en combate")
   mundo.combate = false
   zt:Hide()
+  limpiar()
+end)
+
+-- 1.3.7-fix: el tranvía y los túneles no tienen mapa. C_Map.GetBestMapForUnit
+-- devuelve CERO valores (no un nil: nada) y Zonas.lua envolvía eso en
+-- tonumber() → «bad argument #1 to 'tonumber' (value expected)» (el error del
+-- juego real del 21/11/2026 al salir de Ventormenta por el túnel del tranvía).
+step("Sin mapa (el tranvía, un túnel): no truena y la zona sale sin niveles", function()
+  limpiar()
+  local antes = C_Map.GetBestMapForUnit
+  C_Map.GetBestMapForUnit = function() return end -- como el cliente en el tranvía: ni un valor
+  mundo.zona, mundo.sub = "Tranvía Subterráneo", ""
+  local ok, err = pcall(llegar, "Tranvía Subterráneo")
+  check(ok, "en el tranvía truena: " .. tostring(err))
+  local a = actual()
+  check(a and a.titulo == "Tranvía Subterráneo", "sin mapa no salió la zona")
+  check(not (a and a.texto and a.texto:find("Niveles", 1, true)), "sin mapa dijo niveles")
+  -- Y leer la zona a mano (lo que hace una pantalla de carga) tampoco truena.
+  local ok2, err2 = pcall(Z.Zona)
+  check(ok2, "leer la zona sin mapa truena: " .. tostring(err2))
+  C_Map.GetBestMapForUnit = function() return nil end -- tampoco un nil suelto
+  local ok3, err3 = pcall(Z.Zona)
+  check(ok3, "con el mapa en nil truena: " .. tostring(err3))
+  FIRE_EVENT("PLAYER_ENTERING_WORLD", false, true)
+  RUN_TIMERS(3)
+  C_Map.GetBestMapForUnit = antes
+  correr(8)
   limpiar()
 end)
 
@@ -507,6 +548,27 @@ step("Raro en plena pelea: ícono chico ya y el grande después si sigue ahí", 
   limpiar()
   Rr.Toast.Show({ kind = "treasure", id = 9, name = "Cofre", zone = "Durotar" })
   check(actual() and actual().estilo == "tesoro", "el tesoro no salió con su estilo")
+  limpiar()
+end)
+
+-- 1.3.7-fix: los anuncios se pueden cerrar con un clic (clic derecho siempre;
+-- clic izquierdo ejecuta su acción si la tiene y cierra). Antes solo se
+-- tocaba el título y había anuncios que no se podían cerrar.
+step("Cerrar un anuncio con un clic (izquierdo y derecho)", function()
+  limpiar()
+  local f = Z.Probar("zona")
+  check(f and anuncio() and anuncio():IsShown(), "no salió el anuncio de prueba")
+  -- Clic izquierdo lo cierra (y ejecuta su acción si tiene).
+  FIRE(anuncio().Toque, "OnClick", "LeftButton")
+  RUN_TIMERS(1)
+  check(not anuncio():IsShown(), "el clic izquierdo no cerró el anuncio")
+  limpiar()
+  Z.Probar("descubrir")
+  check(anuncio() and anuncio():IsShown(), "no salió el anuncio de descubrir")
+  FIRE(anuncio().Toque, "OnClick", "RightButton")
+  check(not anuncio():IsMouseEnabled(), "la franja entera toma el ratón")
+  RUN_TIMERS(1)
+  check(not anuncio():IsShown(), "el clic derecho no cerró el anuncio")
   limpiar()
 end)
 

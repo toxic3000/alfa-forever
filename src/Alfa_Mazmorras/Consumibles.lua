@@ -75,12 +75,12 @@ local function misBufos()
 	for i = 1, 40 do
 		local id, icono, n
 		if type(CU) == "table" and type(CU.GetAuraDataByIndex) == "function" then
-			local a = D.Llamar(CU.GetAuraDataByIndex, "player", i, "HELPFUL")
+			local a = leer(D.Llamar(CU.GetAuraDataByIndex, "player", i, "HELPFUL"))
 			if type(a) ~= "table" then break end
 			id, icono, n = leer(a.spellId), leer(a.icon), leer(a.name)
 		elseif UnitBuff then
 			local nb, ic, _, _, _, _, _, _, _, sid = D.Llamar(UnitBuff, "player", i)
-			if not nb then break end
+			if not leer(nb) then break end
 			id, icono, n = leer(sid), leer(ic), leer(nb)
 		else
 			break

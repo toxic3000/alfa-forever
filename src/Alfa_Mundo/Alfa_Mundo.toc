@@ -13,12 +13,14 @@ Textos.lua
 Datos.lua
 TerrenoDatos.lua
 Capas.lua
+DistanciaPines.lua
 Entradas.lua
 Descubrir.lua
 Peligros.lua
 Lienzo.lua
 Marcas.lua
 Trayecto.lua
+Rastro.lua
 Emergente.lua
 PanelCapas.lua
 Marcadores.lua

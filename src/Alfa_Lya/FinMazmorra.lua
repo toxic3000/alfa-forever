@@ -32,7 +32,7 @@ M.FinMazmorra = Fm
 local MINIMO = 180 -- segundos adentro para que cuente
 local ADENTRO = 60  -- cada cuánto se apunta que sigues adentro
 
-local function secreto(v) return issecretvalue ~= nil and v ~= nil and issecretvalue(v) and true or false end
+local function secreto(v) return issecretvalue ~= nil and type(v) ~= "nil" and issecretvalue(v) and true or false end
 local function num(v) if secreto(v) then return nil end return tonumber(v) end
 local function texto(v) if secreto(v) or type(v) ~= "string" or v == "" then return nil end return v end
 local function reloj() return (GetServerTime and GetServerTime()) or (time and time()) or 0 end

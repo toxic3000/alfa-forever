@@ -465,4 +465,15 @@ M.EN = {
 	["Clic: póntelo (en combate, al terminar)."] = "Click: put it on (in combat, when the fight ends).",
 	["Clic derecho: ponértelo al salir de cada combate."] = "Right-click: put it on after every fight.",
 	["Te lo pongo al salir de cada combate."] = "I put it on you after every fight.",
+	-- 1.3.7 (tercera vuelta): Atajos.lua
+	["Atajos a lo nuevo y a tus mejoras"] = "Shortcuts to new items and upgrades",
+	["En la búsqueda de tus bolsas, «3 nuevos» y «1 mejora»: un clic resalta solo eso."] = "In your bags' search, \"3 new\" and \"1 upgrade\": one click highlights just that.",
+	["Lo nuevo"] = "New items",
+	["Resalta lo que acabas de conseguir. Otro clic lo quita."] = "Highlights what you just got. Click again to clear it.",
+	["Tus mejoras"] = "Your upgrades",
+	["Resalta el equipo de tus bolsas que es mejor que el tuyo. Otro clic lo quita."] = "Highlights the gear in your bags that beats what you wear. Click again to clear it.",
+	["%d nuevo"] = "%d new",
+	["%d nuevos"] = "%d new",
+	["%d mejora"] = "%d upgrade",
+	["%d mejoras"] = "%d upgrades",
 }

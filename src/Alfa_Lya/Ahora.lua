@@ -33,7 +33,7 @@ M.Ahora = Ah
 
 local REPETIR = 6 * 3600
 
-local function secreto(v) return issecretvalue ~= nil and v ~= nil and issecretvalue(v) and true or false end
+local function secreto(v) return issecretvalue ~= nil and type(v) ~= "nil" and issecretvalue(v) and true or false end
 local function reloj() return (GetServerTime and GetServerTime()) or (time and time()) or 0 end
 
 local function memoria()

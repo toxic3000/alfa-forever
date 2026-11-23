@@ -34,7 +34,7 @@ local NIVEL_MAX = 60
 
 local login = false
 
-local function secreto(v) return issecretvalue ~= nil and v ~= nil and issecretvalue(v) and true or false end
+local function secreto(v) return issecretvalue ~= nil and type(v) ~= "nil" and issecretvalue(v) and true or false end
 
 local function rgb(nombre)
 	local T = A.Theme
@@ -173,7 +173,7 @@ local function tipRincon(zona)
 	return function(tip)
 		tip:SetText(L["Por descubrir"], rgb("text"))
 		tip:AddLine(format(L["Un rincón de %s que todavía no pisas."], nombre), rgb("textDim"))
-		if nivel() < NIVEL_MAX then
+		if zona and nivel() < NIVEL_MAX then
 			local xp = tonumber(datos().exploracion[zona])
 			if xp then
 				tip:AddLine(format(L["Descubrir aquí te dio %d de experiencia la última vez."], xp), rgb("quest"))

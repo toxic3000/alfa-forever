@@ -1,0 +1,20 @@
+{
+ "Al instante": "Sofort",
+ "Rápido (0,3 s)": "Schnell (0,3 s)",
+ "Normal (0,6 s)": "Normal (0,6 s)",
+ "Con calma (1 s)": "Gemütlich (1 s)",
+ "Solo con Mayús o clic derecho": "Nur mit Umschalt oder Rechtsklick",
+ "Lo que llevas puesto": "Was du trägst",
+ "Comparar con mi equipo": "Mit meiner Ausrüstung vergleichen",
+ "No llevas nada puesto en esa ranura.": "In diesem Platz trägst du nichts.",
+ "Comparar con…": "Vergleichen mit…",
+ "No tienes piezas de esa ranura, ni puestas ni en tus bolsas.": "Du hast keine Teile für diesen Platz, weder angelegt noch in deinen Taschen.",
+ "Ver ficha": "Details ansehen",
+ "Alfa no conoce un camino que pueda guiar para esto.": "Alfa kennt keinen Weg, den es dafür führen kann.",
+ "Agregar a mi lista de compras": "Zu meiner Einkaufsliste hinzufügen",
+ "La lista de compras es de Comercio: actívalo para usarla.": "Die Einkaufsliste gehört zu Handel: aktiviere es, um sie zu nutzen.",
+ "Cuadro del objeto al pasar el ratón": "Gegenstands-Tooltip beim Überfahren",
+ "Cuánto esperar con el ratón quieto antes de enseñarlo. Con Mayús lo ves al momento y comparado con tu equipo; con clic derecho, comparar y más.": "Wie lange die Maus stillstehen muss, bevor er erscheint. Mit Umschalt siehst du ihn sofort und mit deiner Ausrüstung verglichen; mit Rechtsklick Vergleichen und mehr.",
+ "Pidiendo precios…": "Preise werden angefragt…",
+ "Precios %s": "Preise %s"
+}

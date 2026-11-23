@@ -43,8 +43,84 @@ function IsInRaid() return false end
 function GetNumGroupMembers() return 0 end
 function InCombatLockdown() return false end
 function IsLoggedIn() return true end
-function issecretvalue() return false end
-function canaccessvalue() return true end
+-- Valores secretos simulados (1.3.7, arreglos). SECRETO(v) da un valor que se
+-- porta como un secreto del juego dentro del código de Alfa: type() dice el
+-- tipo de lo que esconde, issecretvalue() dice true, y compararlo (< > y ==
+-- entre dos secretos), hacer cuentas, indexarlo (s:find), llamarlo, medirlo
+-- (#), pasarlo a tonumber o a string.* truena con «secret». tostring y ..
+-- dan otro secreto, como en el juego. Lua 5.1 no deja atrapar `if v`,
+-- `not v` ni `v == true`: eso lo revisa prueba_137b_bugs.lua leyendo el
+-- código. Los marcos del banco (mock.lua/api.lua) sí lo leen, como el juego.
+-- SECRETOS_PRENDER({ "UnitIsAFK", ... }) hace que esas funciones den sus
+-- respuestas en secreto; SECRETOS_APAGAR() las devuelve.
+do
+  local rtype, rtonumber, rtostring, getmt = type, tonumber, tostring, getmetatable
+  local OCULTO = setmetatable({}, { __mode = "k" })
+  local function deBanco(nivel)
+    local info = debug.getinfo(nivel, "S")
+    local s = info and info.source or ""
+    return s == "@mock.lua" or s == "@api.lua" or s == "@dump.lua" or s == "@drive.lua" or s == "=[C]"
+  end
+  local function truena(que) error("attempt to " .. que .. " a secret value (banco)", 3) end
+  local MT = {}
+  local function nuevo(v)
+    local p = newproxy(true)
+    local mt = getmt(p)
+    for k, f in pairs(MT) do mt[k] = f end
+    OCULTO[p] = { v = v, t = rtype(v) }
+    return p
+  end
+  MT.__index = function(_, k) if deBanco(2) then return nil end truena("index") end
+  MT.__newindex = function() truena("index") end
+  MT.__call = function() truena("call") end
+  MT.__len = function() truena("get length of") end
+  MT.__eq = function() truena("compare") end
+  MT.__lt = function() truena("compare") end
+  MT.__le = function() truena("compare") end
+  for _, op in ipairs({ "__add", "__sub", "__mul", "__div", "__mod", "__pow", "__unm" }) do
+    MT[op] = function() truena("perform arithmetic on") end
+  end
+  MT.__concat = function() return nuevo("<secreto>") end
+  MT.__tostring = function() return "<secreto>" end
+  function SECRETO(v) return nuevo(v) end
+  function SECRETO_VALOR(p) local o = OCULTO[p] return o and o.v end
+  function issecretvalue(v) return rtype(v) == "userdata" and OCULTO[v] ~= nil end
+  function canaccessvalue(v) return not issecretvalue(v) end
+  function type(v)
+    local t = rtype(v)
+    if t == "userdata" and OCULTO[v] then return OCULTO[v].t end
+    return t
+  end
+  function tonumber(v, base)
+    if rtype(v) == "userdata" and OCULTO[v] then
+      if deBanco(2) then return nil end
+      error("bad argument #1 to 'tonumber' (a secret value) (banco)", 2)
+    end
+    return rtonumber(v, base)
+  end
+  function tostring(v)
+    if rtype(v) == "userdata" and OCULTO[v] and not deBanco(2) then return nuevo("<secreto>") end
+    return rtostring(v)
+  end
+  local guardadas = {}
+  function SECRETOS_PRENDER(nombres)
+    for _, n in ipairs(nombres) do
+      local f = rawget(_G, n)
+      if guardadas[n] == nil and rtype(f) == "function" then
+        guardadas[n] = f
+        rawset(_G, n, function(...)
+          local r = { f(...) }
+          for i = 1, table.maxn(r) do if r[i] ~= nil then r[i] = nuevo(r[i]) end end
+          return unpack(r, 1, table.maxn(r))
+        end)
+      end
+    end
+  end
+  function SECRETOS_APAGAR()
+    for n, f in pairs(guardadas) do rawset(_G, n, f) end
+    guardadas = {}
+  end
+end
 function securecallfunction(fn, ...) return fn(...) end
 function GetMoney() return 123456 end
 function GetZoneText() return "Durotar" end
@@ -367,6 +443,8 @@ function seterrorhandler() end
 
 function LOAD_FILE(name, src, addon, ns)
   local fn, err = loadstring(src, "@" .. name)
+  ARCHIVOS_CARGADOS = ARCHIVOS_CARGADOS or {}
+  ARCHIVOS_CARGADOS[#ARCHIVOS_CARGADOS + 1] = name
   if not fn then NOTE(name, err) return end
   local t0 = PERFIL_RELOJ()
   local ok, e = xpcall(function() return fn(addon, ns) end, debug.traceback)

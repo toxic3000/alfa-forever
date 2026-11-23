@@ -156,6 +156,7 @@ local function colocar()
 	aparte(Lz.Colocar, cu, cv, k, vw, vh, z)
 	aparte(Mc.Colocar, cu, cv, k, vw, vh, z)
 	aparte(Tr.Colocar, cu, cv, k, vw, vh, z)
+	if M.Rastro then aparte(M.Rastro.Colocar, cu, cv, k, vw, vh, z) end -- 1.3.7c: tu camino de hoy
 	if Lz.Pendiente() then sucio = true end
 end
 
@@ -438,7 +439,7 @@ local function mostrarAtajos()
 			L["Clic derecho: pon un marcador ahí."],
 			L["Ctrl+clic: la flecha te lleva ahí."],
 			L["Rueda: acerca y aleja. Arrastra para moverte."],
-		}, "|n"))
+		}, "\n")) -- 1.3.7c: «\n» como en todo Alfa (con «|n» el banco no medía los renglones)
 		atajos.Ok = K.Boton(atajos, L["Entendido"], function() V.OcultarAtajos(true) end, { tipo = "primario", tam = "chico" })
 	end
 	local w = 300
@@ -626,6 +627,7 @@ local function alActualizar(_, dt)
 		if not sucio then
 			Mc.Latido()
 			aparte(Tr.Latido)
+			if M.Rastro then aparte(M.Rastro.Latido) end
 		end
 		actualizarPie()
 	end
@@ -776,6 +778,7 @@ local function construir()
 	Mc.Crear(vista)
 	-- Tu camino (1.2.1): la ruta, el vuelo y el destino, entre el arte y los pines.
 	Tr.Crear(vista)
+	if M.Rastro then M.Rastro.Crear(vista) end -- 1.3.7c: tu camino de hoy, bajo la ruta
 	Tr.alVerCamino = function() V.VerCamino() end
 	if not lienzo then
 		sinArte = true

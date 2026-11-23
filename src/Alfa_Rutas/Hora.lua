@@ -18,6 +18,7 @@
 
 local ADDON, M = ...
 local A = M.A
+local N = M.N
 local H = {}
 M.Hora = H
 
@@ -166,14 +167,13 @@ function H.Pausa()
 end
 H.Poner = poner -- (para el banco)
 local function revisarTaxi()
-	local f = rawget(_G, "UnitOnTaxi")
-	poner("taxi", type(f) == "function" and f("player") == true)
+	-- 1.3.7: nunca `== true` con lo que da el juego (puede ser secreto).
+	poner("taxi", N.SiJuego(rawget(_G, "UnitOnTaxi"), "player"))
 end
 A.RegisterEvent("PLAYER_CONTROL_LOST", function() A.After(0.5, revisarTaxi) end)
 A.RegisterEvent("PLAYER_CONTROL_GAINED", revisarTaxi)
 A.RegisterEvent("PLAYER_FLAGS_CHANGED", function()
-	local f = rawget(_G, "UnitIsAFK")
-	poner("afk", type(f) == "function" and f("player") == true)
+	poner("afk", N.SiJuego(rawget(_G, "UnitIsAFK"), "player"))
 end)
 A.RegisterEvent("AUCTION_HOUSE_SHOW", function() poner("subasta", true) end)
 A.RegisterEvent("AUCTION_HOUSE_CLOSED", function() poner("subasta", false) end)

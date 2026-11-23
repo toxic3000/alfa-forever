@@ -43,10 +43,15 @@ M.EN = {
 	["Blizzard no deja que un addon copie tu mapa. Se abrió su ventana de clic para lanzar: arma ahí los mismos clics."] = "Blizzard doesn't let an addon copy your map. Its click casting window opened: set up the same clicks there.",
 	["Se cerró la ventana de clic para lanzar de Blizzard. Vuelve a pulsar «Abrir clic para lanzar» para abrirla."] = "Blizzard's click casting window closed. Press \"Open click casting\" again to open it.",
 	["Blizzard no deja que un addon copie tu mapa. Abre su ventana con el botón «Abrir clic para lanzar» o escribe %s en el chat, y arma ahí los mismos clics."] = "Blizzard doesn't let an addon copy your map. Open its window with the \"Open click casting\" button or type %s in chat, and set up the same clicks there.",
+	["En los marcos de Alfa manda tu mapa de clics; tus atajos de Blizzard no aplican aquí."] = "On Alfa's frames your click map is in charge; your Blizzard shortcuts don't apply here.",
+	["Copiar mis atajos de Blizzard al mapa de Alfa"] = "Copy my Blizzard shortcuts to Alfa's map",
+	["Listo: copié %d atajo de Blizzard a tu mapa de Alfa."] = "Done: copied %d Blizzard shortcut to your Alfa map.",
+	["Listo: copié %d atajos de Blizzard a tu mapa de Alfa."] = "Done: copied %d Blizzard shortcuts to your Alfa map.",
 	["Blizzard no deja que un addon copie tu mapa. Ábrelo en el menú del juego: Opciones, Clic para lanzar."] = "Blizzard doesn't let an addon copy your map. Open it from the game menu: Options, Click Casting.",
 
 	-- Marcos
 	["Desconectado"] = "Offline",
+	["Fuera [desconectado]"] = "Off", -- 1.3.7: el corto, si «Desconectado» no cabe en el marco
 	["Fantasma"] = "Ghost",
 	["Muerto"] = "Dead",
 	["Listo"] = "Done",
@@ -298,4 +303,11 @@ M.EN = {
 	-- 1.3.7: la venda
 	["Tus vendas piden más Primeros auxilios del que tienes: sube tu oficio o lleva vendas más sencillas."] = "Your bandages need more First Aid than you have: train it up or carry simpler bandages.",
 	["No llevas vendas en las bolsas: el clic de venda no hace nada hasta que tengas una."] = "You have no bandages in your bags: the bandage click does nothing until you have one.",
+	-- 1.3.7: la barra de recurso
+	["Maná, furia o energía"] = "Mana, rage or energy",
+	["Una barra delgada bajo la vida con el maná, la furia o la energía de cada uno, en su color."] = "A thin bar under the health with each one's mana, rage or energy, in its colour.",
+	-- 1.3.7 (tercera vuelta): Peligro.lua
+	["En peligro"] = "In danger",
+	["Un velo rojo respira sobre la barra de quien baja del 35 % de vida, para verlo a la primera."] = "A breathing red veil over the bar of anyone below 35 % health, so you spot them right away.",
+	["Una línea roja arriba avisa cuando un enemigo va por ese compañero; si no es el tanque, su marco brilla en naranja por fuera."] = "A red line on top warns when an enemy is going after that member; if they're not the tank, their frame glows orange around the edge.",
 }

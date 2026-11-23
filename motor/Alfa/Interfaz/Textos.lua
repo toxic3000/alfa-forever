@@ -33,6 +33,12 @@ M.EN = {
 	-- Botón del minimapa
 	["Clic: abrir o cerrar la ventana de Alfa"] = "Click: open or close the Alfa window",
 	["Alfa está oculto: clic para mostrarlo y abrir su ventana"] = "Alfa is hidden: click to show it and open its window",
+	-- 1.3.7: la campanita (UI/Options.lua) y «Lo que sigues» (Alfa_Rutas/EnCurso.lua)
+	["Avisos"] = "Notices",
+	["Clic: ver tus avisos"] = "Click: see your notices",
+	["clic en el número rojo para verlos"] = "click the red number to see them",
+	["Lo que sigues"] = "What you're following",
+	["Ya sigues 6 guías: clic para ver lo que sigues y quitar alguna"] = "You're following 6 guides: click to see what you're following and remove one",
 
 	-- El menú de Alfa (1.3.2): el mismo en el ícono, la lista de addons y el menú Esc
 	["Volver"] = "Back",
@@ -175,6 +181,8 @@ M.EN = {
 	["Busca por aquí"] = "Search around here",
 	["Siguiente lugar"] = "Next spot",
 	["%s en total"] = "%s total", -- 1.3.7: el tiempo del viaje en la flecha (Rutas)
+	["≈ %s a pie"] = "≈ %s on foot", -- 1.3.7c: la flecha, sin moverte (mundo)
+	["≈ %s montado"] = "≈ %s mounted",
 	-- 1.3.3: la placa de la piedra de hogar (Nav/Arrow.lua, pintarPiedra)
 	["Usa tu piedra de hogar"] = "Use your Hearthstone",
 	["Usa tu piedra de hogar: te lleva a tu posada."] = "Use your Hearthstone: it takes you to your inn.",
@@ -208,4 +216,10 @@ M.EN = {
 	["mueve con el ratón lo que Alfa pone en pantalla"] = "move what Alfa puts on screen with the mouse",
 	["cuéntanos si algo falla"] = "tell us if something breaks",
 	["cuánta memoria y procesador usa Alfa"] = "how much memory and CPU Alfa uses",
+	-- 1.3.7e: Planes (Alfa_Rutas/EnCurso.lua, PaginaPlanes.lua) y el tope de 12 guías
+	["Planes"] = "Plans",
+	["sigues %s guías"] = "following %s guides",
+	["%d pestañas más"] = "%d more tabs",
+	["Clic: elegir una"] = "Click: choose one",
+	["Ya sigues %d guías y todas están fijadas: clic para ver tus planes"] = "You're following %d guides and they're all pinned: click to see your plans",
 }

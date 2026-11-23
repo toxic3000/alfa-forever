@@ -50,7 +50,7 @@ local format, lower, find, match = string.format, string.lower, string.find, str
 local function secreto(v)
 	local C = A.Compat
 	if C and C.IsSecret then return C.IsSecret(v) == true end
-	return issecretvalue ~= nil and v ~= nil and issecretvalue(v) and true or false
+	return N.Secreto(v)
 end
 
 local function legible(v)
@@ -67,11 +67,13 @@ local function ahora()
 end
 D.Ahora = ahora
 
+-- 1.3.7b: todo lo que da la función (antes solo 4 valores: el spellID de
+-- UnitBuff, el décimo, llegaba nil).
 local function llamar(fn, ...)
 	if type(fn) ~= "function" then return nil end
-	local ok, a, b, c, d = pcall(fn, ...)
-	if not ok then return nil end
-	return a, b, c, d
+	local r = { pcall(fn, ...) }
+	if not r[1] or table.maxn(r) < 2 then return nil end
+	return unpack(r, 2, table.maxn(r))
 end
 D.Llamar = llamar
 

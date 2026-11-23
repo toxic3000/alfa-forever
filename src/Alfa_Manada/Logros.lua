@@ -350,11 +350,12 @@ A.RegisterEvent("PLAYER_ENTERING_WORLD", function()
 	local ok, dentro, tipo = pcall(IsInInstance)
 	-- (1.3.1) Afuera otra vez: sale lo que se quedó en la instancia (al ratito,
 	-- cuando la hermandad ya está a la mano).
-	if ok and not U.Leer(dentro) then
+	-- Con «dentro» secreto no se sabe: no se manda nada (U.Leer daría nil).
+	if ok and not N.Secreto(dentro) and not dentro then
 		N.Una("manada.logrosPendientes", 5, function() pcall(Lo.MandarPendientes) end)
 		return
 	end
-	if not (ok and U.Leer(dentro) and tipo == "party") then return end
+	if not (ok and U.Leer(dentro) and U.Leer(tipo) == "party") then return end
 	local okN, nombre = pcall(GetInstanceInfo)
 	nombre = okN and limpiar(nombre) or "?"
 	local d = N.DatosPersonaje(ID)

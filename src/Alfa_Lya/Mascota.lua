@@ -20,7 +20,7 @@ local random = math.random
 local Ma = {}
 M.Mascota = Ma
 
-local function secreto(v) return issecretvalue ~= nil and v ~= nil and issecretvalue(v) and true or false end
+local function secreto(v) return issecretvalue ~= nil and type(v) ~= "nil" and issecretvalue(v) and true or false end
 local function texto(v) if secreto(v) or type(v) ~= "string" or v == "" then return nil end return v end
 local function activo() return N.Get(ID, "mascota") ~= false end
 

@@ -2118,9 +2118,15 @@ renderSearch = function()
 		elseif searchView.Lya then
 			searchView.Lya:Hide()
 		end
+		-- 1.3.7: y las páginas de Alfa a un clic (Alfa_Bienvenida/Ventana.lua).
+		if not corta and O.SinResultados then
+			local ok, abajo = pcall(O.SinResultados, searchView, y, query)
+			if ok and type(abajo) == "number" then y = abajo end
+		elseif O.SinResultados then pcall(O.SinResultados, searchView, nil) end
 	else
 		if searchView.Enciclopedia then searchView.Enciclopedia:Hide() end
 		if searchView.Lya then searchView.Lya:Hide() end
+		if O.SinResultados then pcall(O.SinResultados, searchView, nil) end
 	end
 	for i = shown + 1, #links do links[i]:Hide() end
 	y = layoutTodo(todoPara(corta and "" or query), y)
@@ -2188,6 +2194,8 @@ end
 
 local SECCIONES = {
 	{ key = "hoy", label = "Hoy", icon = "sec-hoy", pages = { "inicio" } },
+	-- 1.3.7: las guías y planes que sigues (Alfa_Rutas/PaginaPlanes.lua), con su número cuando está casi llena.
+	{ key = "planes", label = "Planes", icon = "ic-lista", pages = { "planes" } },
 	{ key = "aventura", label = "Aventura", icon = "sec-aventura", pages = { "rutas", "mazmorras", "enciclopedia" } },
 	{ key = "personaje", label = "Personaje", icon = "sec-personaje", pages = { "builds", "combate", "curacion", "bolsas" } },
 	{ key = "mundo", label = "Mundo", icon = "sec-mundo", pages = { "mundo", "recoleccion" } },
@@ -2195,6 +2203,7 @@ local SECCIONES = {
 	{ key = "manada", label = "Manada", icon = "sec-manada", pages = { "manada" } },
 }
 local AJUSTES = { key = "ajustes", label = "Ajustes", icon = "sec-ajustes", right = true }
+local CAMPANA = "avisos" -- 1.3.7: la campanita de la barra (no es una sección: abre «Avisos»)
 O.SECCIONES, O.AJUSTES = SECCIONES, AJUSTES
 local OCULTAS = { thanks = true, guia = true } -- "Tu guia" quedo en Ruta (src/Alfa_Rutas)
 local seccionDe, posicion = {}, {} -- page key -> section key, its place in the section
@@ -2305,13 +2314,92 @@ local function sectionItems()
 			local dot = false
 			for _, p in ipairs(pages) do if p.dot and p.dot() then dot = true end end
 			items[#items + 1] = { key = s.key, label = T(s.label), icon = s.icon, dot = dot }
+			-- 1.3.7: Planes trae «10/12» cuando está casi llena (AlfaRuta.CuentaPlanes).
+			local Ru = s.key == "planes" and rawget(_G, "AlfaRuta")
+			if type(Ru) == "table" and type(Ru.CuentaPlanes) == "function" then
+				local ok, txt, tono = pcall(Ru.CuentaPlanes)
+				if ok and type(txt) == "string" then
+					local it = items[#items]
+					it.cuentaTexto, it.cuentaTono = txt, tono
+					it.tip = T("Planes") .. ": " .. string.format(T("sigues %s guías"), txt)
+				end
+			end
 		end
 	end
 	local dot = false
 	for _, p in ipairs(pagesOf(AJUSTES.key)) do if p.dot and p.dot() then dot = true end end
 	items[#items + 1] = { key = AJUSTES.key, label = T(AJUSTES.label), icon = AJUSTES.icon, right = true, dot = dot }
+	-- 1.3.7: la campanita, junto a Ajustes: abre «Avisos» (Alfa_Nucleo/Momentos.lua)
+	-- con la misma cuenta que el globito del minimapa (AlfaNucleo.AvisosSinVer).
+	local Nu = rawget(_G, "AlfaNucleo")
+	if type(Nu) == "table" and type(Nu.VerAvisos) == "function" then
+		local n = type(Nu.AvisosSinVer) == "function" and Nu.AvisosSinVer() or 0
+		local tip = type(Nu.TextoSinVer) == "function" and Nu.TextoSinVer(n) or nil
+		items[#items + 1] = { key = CAMPANA, label = T("Avisos"), icon = "ic-aviso", right = true, cuenta = n,
+			tip = tip and (tip .. ". " .. T("Clic: ver tus avisos")) or T("Avisos") }
+	end
 	return items
 end
+
+-- El numerito rojo de la campanita (0: no sale).
+local function pintarCampana(items)
+	if not (win and win.sectionButtons) then return end
+	local n = 0
+	local porClave = {}
+	for _, it in ipairs(items) do
+		if it.key == CAMPANA then n = it.cuenta or 0 end
+		porClave[it.key] = it
+	end
+	for _, b in ipairs(win.sectionButtons) do
+		local es = b:IsShown() and b.psKey == CAMPANA
+		-- 1.3.7: el número de Planes («10/12»), en una pastilla junto al ícono.
+		local it = b:IsShown() and porClave[b.psKey]
+		local txt = it and it.cuentaTexto
+		if txt and not b.psPlanes then
+			local c = CreateFrame("Frame", nil, b)
+			c:SetHeight(13)
+			-- En la orilla de arriba, a la derecha del botón: no tapa el ícono ni el nombre.
+			c:SetPoint("TOPRIGHT", b, "TOPRIGHT", -2, 1)
+			c:SetFrameLevel(b:GetFrameLevel() + 3)
+			c.Fondo = W.Tex(c, "ARTWORK", "white", "warning")
+			c.Fondo:SetAllPoints(c)
+			c.Texto = W.Text(c, "caption", "text")
+			c.Texto:SetPoint("CENTER", c, "CENTER", 0, 0)
+			b.psPlanes = c
+		end
+		if b.psPlanes then
+			if txt then
+				b.psPlanes.Texto:SetText(txt)
+				b.psPlanes:SetWidth(math.ceil(b.psPlanes.Texto:GetStringWidth() or 20) + 6)
+				W.Color(b.psPlanes.Fondo, it.cuentaTono == "peligro" and "danger" or "warning")
+				b.psPlanes:Show()
+			else
+				b.psPlanes:Hide()
+			end
+		end
+		if es and n > 0 and not b.psCuenta then
+			local c = CreateFrame("Frame", nil, b)
+			c:SetSize(16, 16)
+			c:SetPoint("CENTER", b.Icon, "TOPRIGHT", 1, -1)
+			c:SetFrameLevel(b:GetFrameLevel() + 3)
+			c.Fondo = W.Tex(c, "ARTWORK", "circle", "danger")
+			c.Fondo:SetAllPoints(c)
+			c.Texto = W.Text(c, "caption", "text")
+			c.Texto:SetPoint("CENTER", c, "CENTER", 0, 0)
+			b.psCuenta = c
+		end
+		if b.psCuenta then
+			if es and n > 0 then
+				b.psCuenta.Texto:SetText(n > 9 and "9+" or tostring(n))
+				b.psCuenta:SetWidth(n > 9 and 22 or 16)
+				b.psCuenta:Show()
+			else
+				b.psCuenta:Hide()
+			end
+		end
+	end
+end
+O.CAMPANA = CAMPANA
 
 -- The page the window opens on: Hoy's, else the first of the first section.
 local function defaultPage()
@@ -2328,7 +2416,16 @@ local function renderNav()
 	if not win then return end
 	local searching = query ~= ""
 	local active = (not searching and current) and sectionOf(current) or nil
-	W.ShellSections(win, sectionItems(), active, function(k) O.SelectSection(k) end)
+	local items = sectionItems()
+	W.ShellSections(win, items, active, function(k)
+		if k == CAMPANA then
+			local Nu = rawget(_G, "AlfaNucleo")
+			if type(Nu) == "table" and type(Nu.VerAvisos) == "function" then Nu.VerAvisos() end
+			return
+		end
+		O.SelectSection(k)
+	end)
+	pintarCampana(items)
 	if searching or not current then
 		W.ShellPills(win, nil)
 		return
@@ -2727,10 +2824,12 @@ function O.MenuItems(anchor, opts)
 			Lya.Guia()
 		end }
 	end
-	-- 1.3.7: «Lo que me perdí» (Alfa_Nucleo/Momentos.lua), con cuántos no viste.
+	-- 1.3.7: «Avisos» (la campanita, Alfa_Nucleo/Momentos.lua), con cuántos no viste.
 	local Nu = rawget(_G, "AlfaNucleo")
-	local perdi = type(Nu) == "table" and type(Nu.MenuPerdidos) == "function" and Nu.MenuPerdidos() or nil
+	local menuAvisos = type(Nu) == "table" and (Nu.MenuAvisos or Nu.MenuPerdidos) or nil
+	local perdi = type(menuAvisos) == "function" and menuAvisos() or nil
 	if type(perdi) == "table" then items[#items + 1] = perdi end
+	-- 1.3.7: «Lo que sigues» ya es la sección Planes (arriba, con las demás).
 	local Acomodar = rawget(_G, "AlfaAcomodar")
 	if type(Acomodar) == "table" and type(Acomodar.Abrir) == "function" then
 		items[#items + 1] = { text = T("Acomodar la pantalla"), icon = "compact", onClick = function()
@@ -2797,6 +2896,10 @@ end)
 
 -- Late pages (a module's) and their dots show in the sections at once.
 ns.On("ALFA_MODULO", function() if win and win:IsShown() then renderNav() end end)
+-- 1.3.7: la cuenta de la campanita sigue a la lista de avisos.
+ns.On("ALFA_AVISOS", function() if win and win:IsShown() then renderNav() end end)
+-- 1.3.7: y el número de Planes («10/12») a las pestañas de guías.
+ns.On("TABS_CHANGED", function() if win and win:IsShown() then renderNav() end end)
 
 -- What a page holds (tests): { custom = bool, tabs = { { name, keys = { key = true } } } },
 -- or nil if there is no such page (an alias counts). 1.2.0.

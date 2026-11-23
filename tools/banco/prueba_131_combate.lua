@@ -392,7 +392,8 @@ step("La venda: con «Curar y seleccionar» apagado no te cambia el objetivo", f
   Cu.FijarCurarSelecciona(true)
   check(a("ctrl-type3") == "macro" and a("ctrl-item3") == nil, "al prender no volvió la macro de la venda")
   Cu.FijarRanura("ctrl-3", { t = "nada" })
-  check(a("ctrl-type3") == nil and a("ctrl-item3") == nil, "sin acción quedó algo en ctrl-3")
+  -- 1.3.7: con «Curar y seleccionar», sin acción al menos selecciona (sin venda ni macro).
+  check(a("ctrl-type3") == "target" and a("ctrl-item3") == nil and a("ctrl-macrotext3") == nil, "sin acción quedó algo en ctrl-3")
 end)
 
 ---------------------------------------------------------------------------

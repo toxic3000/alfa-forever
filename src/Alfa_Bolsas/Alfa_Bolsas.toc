@@ -29,6 +29,7 @@ Acomodar.lua
 Barra.lua
 Oro.lua
 Ventana.lua
+Atajos.lua
 Reemplazo.lua
 Pagina.lua
 Personajes.lua

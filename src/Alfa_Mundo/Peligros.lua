@@ -39,7 +39,7 @@ local login = false
 local indice        -- zona -> { criatura, ... } (nil: sin armar)
 local armando       -- { ids, i, porZona }
 
-local function secreto(v) return issecretvalue ~= nil and v ~= nil and issecretvalue(v) and true or false end
+local function secreto(v) return issecretvalue ~= nil and type(v) ~= "nil" and issecretvalue(v) and true or false end
 
 local function rgb(nombre)
 	local T = A.Theme

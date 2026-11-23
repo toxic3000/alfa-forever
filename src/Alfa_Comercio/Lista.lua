@@ -288,6 +288,12 @@ function Li.Guiar(id)
 		if N.EmpezarRuta then pcall(N.EmpezarRuta) end
 		return true
 	end
+	-- 1.3.7: sin lugar para otra guía, el aviso con «Ver lo que sigues» (Alfa_Rutas/EnCurso.lua).
+	local R = rawget(_G, "AlfaRuta")
+	if ok and motivo == "tabs" and type(R) == "table" and type(R.AvisoLleno) == "function" then
+		R.AvisoLleno()
+		return false
+	end
 	N.Imprimir(Li.TextoMotivo(ok and motivo or nil))
 	return false
 end

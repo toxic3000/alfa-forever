@@ -368,7 +368,8 @@ local function aviso(o)
 end
 
 local function porque(razon)
-	if razon == "tabs" then return L["Tienes seis guías abiertas: cierra una y vuelve a intentarlo."] end
+	-- 1.3.7: el tope es de 12 y solo se llena con todas fijadas (Alfa_Rutas/EnCurso.lua).
+	if razon == "tabs" then return (AlfaRuta and AlfaRuta.TextoLleno and AlfaRuta.TextoLleno()) or L["Tienes seis guías abiertas: cierra una y vuelve a intentarlo."] end
 	if razon == "off" then return L["El diario de mazmorras del motor está apagado (Ajustes > Descubrir > Mazmorras)."] end
 	if razon == "combat" then return L["Espera a salir de combate."] end
 	return format(L["No se pudo armar la guía (%s)."], tostring(razon or "?"))
@@ -401,7 +402,8 @@ function P.Preparar(key)
 			return true
 		end
 		if razon ~= "nothing" then
-			aviso({ titulo = L["No pude preparar la ruta"], texto = porque(razon), icono = "ic-alerta", tono = "aviso" })
+			aviso({ titulo = L["No pude preparar la ruta"], texto = porque(razon), icono = "ic-alerta", tono = "aviso",
+				accion = razon == "tabs" and AlfaRuta and AlfaRuta.AccionLleno and AlfaRuta.AccionLleno() or nil }) -- 1.3.7
 			return false
 		end
 	end
@@ -424,7 +426,8 @@ function P.Entregar(key)
 	end
 	local plan = Dgx.HandinPlan and llamar(Dgx.HandinPlan, key)
 	local texto = razon ~= "nothing" and porque(razon) or (plan and Dgx.HandinText and llamar(Dgx.HandinText, plan)) or nil
-	aviso({ titulo = L["Nada que entregar todavía"], texto = texto, icono = "ic-info", tono = "neutro" })
+	aviso({ titulo = L["Nada que entregar todavía"], texto = texto, icono = "ic-info", tono = "neutro",
+		accion = razon == "tabs" and AlfaRuta and AlfaRuta.AccionLleno and AlfaRuta.AccionLleno() or nil }) -- 1.3.7
 	return false
 end
 

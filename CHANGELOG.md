@@ -6,6 +6,45 @@ La versión más grande de Alfa: 200 correcciones y mejoras pensadas en cómo se
 
 **Español**
 
+*Planes y «Guíame»*
+- Nueva sección **Planes** (entre Hoy y Aventura): todas las guías y planes que sigues, con su avance, cuándo los tocaste y la que marca la flecha; Seguir, Fijar y Quitar con Deshacer.
+- Ahora puedes seguir hasta **12 guías** a la vez. Si abres otra con todas ocupadas, Alfa quita sola la que tocaste hace más tiempo (nunca la que sigues ni las fijadas) y te deja deshacerlo.
+- «Guíame» ya no se queda sin hacer nada: arranca la guía y cierra la Enciclopedia (hay un ajuste para dejarla abierta).
+- La ventana de guía acomoda muchas pestañas: las que no caben van en «+N».
+- Abandona misiones desde Alfa (Planes o clic derecho en el rastreador), siempre con confirmación.
+
+*20 mejoras que se notan*
+- Atajos en la ventana de Alfa: Ctrl y un número cambia de sección, Ctrl+← y Ctrl+→ de página, Ctrl+F busca y Alt+← vuelve; cada botón dice su atajo.
+- Nuevo botón «‹» junto al título para volver a la página donde estabas.
+- La ventana de Alfa se hace más alta desde su esquina y recuerda su alto y su lugar.
+- El buscador te muestra tus últimas búsquedas e ideas para empezar; si no encuentra nada, te ofrece todas las páginas a un clic.
+- La campanita filtra por tipo («Sin ver», Bolsas, Ruta…) y, sin avisos, el lobo duerme tranquilo.
+- Lo nuevo de la 1.3.7 trae «Ver» en cada novedad para ir directo a probarla.
+- El rastreador muestra el avance de tu guía en una barra, y un clic en su título lo pliega a solo tu paso de ahora.
+- La flecha te dice cuánto te toma llegar aunque estés parado («≈ 34 s a pie»).
+- Al pasar el ratón por cualquier pin del minimapa o de los mapas, ves a qué distancia está y hacia dónde.
+- El anuncio de zona te dice si es tu primera vez ahí y cuántas de tus misiones son de esa zona.
+- El mapa de Alfa dibuja tu camino de hoy como un rastro de puntitos.
+- Lya da un brinco de gusto cuando llegas a donde apunta la flecha.
+- Medidor de daño: un clic en la barra de un compañero muestra sus hechizos que más rindieron y su parte del grupo.
+- El resumen de tu pelea enseña tus tres golpes que más rindieron, tu parte del grupo y celebra «¡Tu mejor pelea!» cuando superas tu marca.
+- Curación: un velo rojo marca a quien baja del 35 % de vida, y el marco brilla en naranja si un enemigo va por alguien que no es el tanque.
+- Bolsas: «3 nuevos» y «1 mejora» en la búsqueda; un clic resalta solo eso.
+- Cuando el juego no da el nombre de tu reino, tus bolsas, precios y recetas quedan a salvo (nada se pierde ni se mezcla con otro personaje de tu mismo nombre) y se juntan solos en cuanto el reino vuelve.
+- En Curación, «Desconectado» y «Fantasma» ya no salen cortados, y los filtros de la campanita tampoco.
+
+*Arreglos y mejoras tras las primeras pruebas*
+- Arreglado el error «Sesion.lua:304: attempt to compare a secret boolean value» y todos los de su tipo: Alfa revisa primero si el juego esconde un dato (en combate, en vuelo o en mazmorras) antes de leerlo, en Hoy, Rutas, zonas, chat, mazmorras, pesca y la manada.
+- Al salir de Ventormenta por el tranvía o en un túnel sin mapa, el anuncio de zona ya no truena: sale sin niveles.
+- Los anuncios grandes se cierran con un clic (izquierdo hace su acción y cierra; derecho siempre cierra).
+- Curación: cada clic que cura también selecciona a ese compañero, con cualquier botón y tecla, aunque uses el clic para lanzar de Blizzard; un clic sin hechizo al menos lo selecciona.
+- Curación: una barra delgada con el maná, la furia o la energía de cada uno, y marcos más tranquilos (fondo oscuro, color de clase suave, nombre con contorno, más compactos).
+- Nueva campanita de avisos junto a Ajustes, con su número: abre la lista de todo lo que Alfa te dijo, con su hora y su botón. El número rojo del minimapa ahora dice qué es y abre la misma lista.
+- Nuevo «Lo que sigues»: tus guías y tu plan en curso con su avance, para seguirlos o quitarlos con un clic (con Deshacer), y «Quitar todas menos la actual». Cuando ya no cabe otra guía, el aviso te lleva ahí.
+- Enciclopedia: el cuadro de un objeto ya no salta encima; sale al dejar el ratón quieto un momento y sin comparaciones (con Mayús, como en el juego). Clic derecho: comparar con tu equipo o con cualquier pieza tuya, ver ficha, guíame, lista de compras y vincular.
+- La barra de la subasta es más chica, ya no tapa las pestañas ni sale con el vendedor, y se esconde sola al terminar.
+- «Listo para salir» reconoce las armas de fuego, y el aviso de comida y elixir de las mazmorras reconoce tus bufos.
+
 *Lo que pediste*
 - Tu oro sale una sola vez en tus bolsas. Un clic en las monedas abre «Tu oro»: cada personaje con el color de su clase y cuándo lo viste, el subtotal de cada reino y facción, toda la cuenta y lo de esta sesión (ganado, gastado, del buzón y por hora). Clic en otro personaje y ves sus bolsas.
 - El oro de tu sesión ya no se borra con /reload y el «por hora» sale bien. Alfa también cuenta tu botín de farmeo, cuánto vale y tu mejor zona.
@@ -24,7 +63,7 @@ La versión más grande de Alfa: 200 correcciones y mejoras pensadas en cómo se
 - El entrenador y el punto de talento se dicen una sola vez por nivel, y Curación te ofrece el hechizo nuevo una sola vez, con «Usarlo / Ahora no».
 - Cada aviso dura según lo largo de su texto y no se va en combate ni con el ratón encima. La tarjeta de Hoy sale arriba a la derecha.
 - Sonidos suaves según el tipo de aviso, con el ajuste «Sonidos de Alfa» (todos, solo los importantes o ninguno).
-- Los anuncios ya no se enciman: el más urgente va primero, un barco que ya zarpó o un raro que ya se fue no se anuncian tarde, el sonido suena al aparecer, solo el título se toca (clic derecho lo cierra), en una pelea se van y vuelven después, y se adaptan a tu pantalla.
+- Los anuncios ya no se enciman: el más urgente va primero, un barco que ya zarpó o un raro que ya se fue no se anuncian tarde, el sonido suena al aparecer, el anuncio se cierra con un clic en él o en su X y nunca estorba tus clics alrededor, en una pelea se van y vuelven después, y se adaptan a tu pantalla.
 - Al entrar a una mazmorra, su nombre en morado con sus niveles y jefes; en una zona de más nivel que tú, «ve con cuidado» en rojo.
 - «Un lobo de La Jauría anda cerca» sale una vez al día por persona y, en ciudades, como aviso chico.
 
@@ -67,6 +106,45 @@ La versión más grande de Alfa: 200 correcciones y mejoras pensadas en cómo se
 
 **English**
 
+*Plans and "Guide me"*
+- New **Plans** section (between Today and Adventure): every guide and plan you follow, with progress, when you last touched it and the one the arrow points to; Follow, Pin and Remove with Undo.
+- You can now follow up to **12 guides** at once. Opening another with all of them taken makes Alfa remove the one you touched longest ago (never the one you follow nor pinned ones), with Undo.
+- "Guide me" no longer does nothing: it starts the guide and closes the Encyclopedia (there's a setting to keep it open).
+- The guide window fits many tabs: the ones that don't fit go under "+N".
+- Abandon quests from Alfa (Plans or right-click in the tracker), always with confirmation.
+
+*20 improvements you'll notice*
+- Shortcuts in Alfa's window: Ctrl and a number switch sections, Ctrl+← and Ctrl+→ switch pages, Ctrl+F searches and Alt+← goes back; each button shows its shortcut.
+- New "‹" button next to the title takes you back to the page you were on.
+- Alfa's window gets taller from its corner and remembers its height and place.
+- The search box shows your recent searches and ideas to start; when it finds nothing, it offers every page one click away.
+- The bell filters by type ("Unseen", Bags, Route…) and, with no notices, the wolf sleeps peacefully.
+- What's new in 1.3.7 has "See" on each item to go straight to it.
+- The tracker shows your guide's progress as a bar, and one click on its title folds it to just your current step.
+- The arrow tells you how long it takes to get there even while standing still ("≈ 34 s on foot").
+- Hovering any pin on the minimap or the maps shows how far it is and in which direction.
+- The zone announcement tells you if it's your first time there and how many of your quests are from that zone.
+- Alfa's map draws today's trail as a line of dots.
+- Lya gives a happy hop when you reach where the arrow points.
+- Damage meter: click a teammate's bar to see their top spells and their share of the group.
+- Your fight summary shows your three best spells and your share of the group, and celebrates "Your best fight!" when you beat your mark.
+- Healing: a red veil marks anyone below 35 % health, and the frame glows orange if an enemy goes after someone who isn't the tank.
+- Bags: "3 new" and "1 upgrade" in the search box; one click highlights just that.
+- When the game doesn't give your realm's name, your bags, prices and recipes stay safe (nothing is lost or mixed with another character of your name) and merge back on their own as soon as the realm returns.
+- Healing no longer cuts off "Offline" or "Ghost", and the bell's filters no longer get cut off.
+
+*Fixes and improvements after the first tests*
+- Fixed "Sesion.lua:304: attempt to compare a secret boolean value" and every error like it: Alfa first checks whether the game is hiding a value (in combat, in flight or in dungeons) before reading it, in Today, Route, zones, chat, dungeons, fishing and the pack.
+- Leaving Stormwind by the tram or in a tunnel with no map no longer breaks the zone announcement: it shows without levels.
+- Big announcements close with a click (left runs their action and closes; right always closes).
+- Healing: every click that heals also targets that teammate, with any button and modifier, even with Blizzard's click casting; a click with no spell at least targets them.
+- Healing: a thin mana, rage or energy bar for each member, and calmer frames (dark background, softer class color, outlined names, more compact).
+- New notification bell next to Settings, with its count: it opens the list of everything Alfa told you, with its time and button. The red number on the minimap now says what it is and opens the same list.
+- New "What you're following": your guides and plan in progress with their progress, to follow or remove in one click (with Undo), plus "Remove all but the current one". When no more guides fit, the notice takes you there.
+- Encyclopedia: item tooltips no longer pop up instantly; they show after resting the mouse a moment and without comparisons (with Shift, like the game). Right-click: compare with your gear or any of your items, see details, guide me, shopping list and link.
+- The auction house bar is smaller, no longer covers the tabs or shows with the vendor, and hides by itself when done.
+- "Ready to go" recognizes firearms, and the dungeon food and elixir reminder recognizes your buffs.
+
 *What you asked for*
 - Your gold shows only once in your bags. A click on the coins opens "Your gold": every character in their class color and when you last saw them, a subtotal per realm and faction, the whole account and this session (earned, spent, from mail and per hour). Click another character to see their bags.
 - Your session gold no longer resets on /reload and "per hour" is right. Alfa also counts your farming loot, what it's worth and your best zone.
@@ -85,7 +163,7 @@ La versión más grande de Alfa: 200 correcciones y mejoras pensadas en cómo se
 - The trainer and the talent point are mentioned once per level, and Healing offers a new spell once, with "Use it / Not now".
 - Each notice lasts according to its text and doesn't leave during combat or while your mouse is over it. The Today card shows top right.
 - Soft sounds by notice type, with the "Alfa sounds" setting (all, important only or none).
-- Announcements no longer overlap: the most urgent goes first, a boat that already left or a rare that's gone isn't announced late, the sound plays when it appears, only the title is clickable (right-click closes it), they step aside for a fight and come back, and they fit your screen.
+- Announcements no longer overlap: the most urgent goes first, a boat that already left or a rare that's gone isn't announced late, the sound plays when it appears, an announcement closes with a click on it or on its X and never gets in the way of your clicks around it, they step aside for a fight and come back, and they fit your screen.
 - Entering a dungeon shows its name in purple with levels and bosses; a zone above your level warns "be careful" in red.
 - "A La Jauría wolf is nearby" shows once a day per person and, in cities, as a small notice.
 

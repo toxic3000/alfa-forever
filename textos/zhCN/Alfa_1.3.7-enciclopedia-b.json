@@ -1,0 +1,20 @@
+{
+ "Al instante": "立即",
+ "Rápido (0,3 s)": "快速（0.3 秒）",
+ "Normal (0,6 s)": "普通（0.6 秒）",
+ "Con calma (1 s)": "从容（1 秒）",
+ "Solo con Mayús o clic derecho": "仅按住 Shift 或右键时",
+ "Lo que llevas puesto": "你身上穿的",
+ "Comparar con mi equipo": "与我的装备比较",
+ "No llevas nada puesto en esa ranura.": "你在这个栏位没有穿戴任何东西。",
+ "Comparar con…": "比较对象…",
+ "No tienes piezas de esa ranura, ni puestas ni en tus bolsas.": "这个栏位你没有任何装备，身上和背包里都没有。",
+ "Ver ficha": "查看详情",
+ "Alfa no conoce un camino que pueda guiar para esto.": "Alfa 不知道能为此引导的路线。",
+ "Agregar a mi lista de compras": "加入我的购物清单",
+ "La lista de compras es de Comercio: actívalo para usarla.": "购物清单属于“商业”模块：启用后才能使用。",
+ "Cuadro del objeto al pasar el ratón": "鼠标悬停时的物品提示",
+ "Cuánto esperar con el ratón quieto antes de enseñarlo. Con Mayús lo ves al momento y comparado con tu equipo; con clic derecho, comparar y más.": "鼠标静止多久后显示提示。按住 Shift 立即显示并与你的装备比较；右键可比较及更多操作。",
+ "Pidiendo precios…": "正在请求价格…",
+ "Precios %s": "价格 %s"
+}

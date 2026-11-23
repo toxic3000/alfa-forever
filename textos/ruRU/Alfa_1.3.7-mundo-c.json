@@ -1,0 +1,17 @@
+{
+ "Clic: despliega la guía. Arrastra para moverla.": "Клик: развернуть гайд. Перетащи, чтобы сдвинуть.",
+ "Clic: pliega la guía y deja solo el paso de ahora. Arrastra para moverla.": "Клик: свернуть гайд до текущего шага. Перетащи, чтобы сдвинуть.",
+ "≈ %s a pie": "≈ %s пешком",
+ "≈ %s montado": "≈ %s верхом",
+ "Tu camino de hoy": "Твой путь за сегодня",
+ "Por dónde pasaste hoy, como un rastro de puntitos: tenues los de la mañana, vivos los de hace poco, y una huella donde empezaste.": "Где ты сегодня побывал, следом из точек: бледные — утренние, яркие — недавние, и отпечаток лапы там, где ты начал.",
+ "La distancia en el cuadro de los pines": "Расстояние в подсказке меток",
+ "Al pasar el ratón por un pin del minimapa o de los mapas: a cuántas yardas está y hacia dónde.": "При наведении на метку на миникарте или картах: сколько до неё ярдов и в какую сторону.",
+ "Aquí mismo": "Прямо здесь",
+ "A %s, %s": "%s, %s",
+ "¡Primera vez aquí!": "Впервые здесь!",
+ "%d de tus misiones es de aquí": "Заданий отсюда: %d",
+ "%d de tus misiones son de aquí": "Заданий отсюда: %d",
+ "Brincar al llegar": "Прыжок по прибытии",
+ "Cuando llegas a donde apunta la flecha, Lya da un brinco de gusto. Sin palabras ni sonido.": "Когда ты приходишь туда, куда указывает стрелка, Лия радостно подпрыгивает. Без слов и звуков."
+}

@@ -85,7 +85,53 @@ local function golpeMayor()
 	return mejor
 end
 
--- -> el resumen { dur, dano, dps, cura, cps, golpe } (lo que se pudo leer)
+-- 1.3.7: tus hechizos que más pegaron (o curaron): { { id, nombre, icono, valor, frac } } (hasta 3).
+local function tusGolpes(curacion)
+	local fn = C_DamageMeter.GetCombatSessionSourceFromType
+	if type(fn) ~= "function" then return nil end
+	local guid = M.Legible(M.Llamar(UnitGUID, "player"))
+	if type(guid) ~= "string" then return nil end
+	local s = M.Llamar(fn, actual(), curacion and enumTipo("HealingDone", 2) or enumTipo("DamageDone", 0), guid)
+	local lista = type(s) == "table" and not M.Secreto(s) and s.combatSpells
+	if type(lista) ~= "table" or M.Secreto(lista) then return nil end
+	local todos, suma = {}, 0
+	for _, x in ipairs(lista) do
+		local v = type(x) == "table" and numero(x.totalAmount)
+		if v and v > 0 then
+			local id = numero(x.spellID)
+			todos[#todos + 1] = { id = id, valor = v,
+				nombre = id and id > 0 and M.NombreHechizo(id) or (curacion and L["Otras curas"] or L["Golpes cuerpo a cuerpo"]) }
+			suma = suma + v
+		end
+	end
+	if #todos == 0 then return nil end
+	table.sort(todos, function(a, b) return a.valor > b.valor end)
+	local out = {}
+	for i = 1, min(3, #todos) do
+		local h = todos[i]
+		h.frac = suma > 0 and h.valor / suma or 0
+		out[i] = h
+	end
+	return out
+end
+
+-- 1.3.7: tu parte del daño (o la curación) del grupo: fracción o nil (solo, o si no se lee).
+local function tuParte(tipo, num)
+	local s = M.Llamar(C_DamageMeter.GetCombatSessionFromType, actual(), enumTipo(tipo, num))
+	local fuentes = type(s) == "table" and not M.Secreto(s) and s.combatSources
+	if type(fuentes) ~= "table" or M.Secreto(fuentes) or #fuentes < 2 then return nil end
+	local total = numero(s.totalAmount)
+	if not total or total <= 0 then return nil end
+	for _, x in ipairs(fuentes) do
+		if type(x) == "table" and M.Legible(x.isLocalPlayer) == true then
+			local v = numero(x.totalAmount)
+			return v and min(1, v / total) or nil
+		end
+	end
+	return nil
+end
+
+-- -> el resumen { dur, dano, dps, cura, cps, golpe, golpes, curas, parte } (lo que se pudo leer)
 function Rs.Leer(dur)
 	local r = { dur = dur }
 	local D = M.Medidor
@@ -94,12 +140,35 @@ function Rs.Leer(dur)
 		if md and md > 0 then r.dur = md end
 		r.dano, r.dps = tuyo("DamageDone", 0)
 		r.cura, r.cps = tuyo("HealingDone", 2)
+		-- 1.3.7: lo tuyo que más rindió y tu parte del grupo, de lo que más hiciste.
+		r.curas = (r.cura or 0) > (r.dano or 0) or nil
+		r.golpes = tusGolpes(r.curas)
+		if r.curas then r.parte = tuParte("HealingDone", 2) else r.parte = tuParte("DamageDone", 0) end
 		r.golpe = golpeMayor()
 		local d = r.dur or 0
 		if r.dano and not r.dps and d > 0 then r.dps = r.dano / d end
 		if r.cura and not r.cps and d > 0 then r.cps = r.cura / d end
 	end
 	return r
+end
+
+---------------------------------------------------------------------------
+-- 1.3.7: tu mejor pelea (por personaje): por segundo, de lo que más hiciste,
+-- en peleas de RECORD_MIN segundos o más. La primera pelea solo anota.
+---------------------------------------------------------------------------
+Rs.RECORD_MIN = 15
+-- -> true si esta pelea es tu nueva mejor (y la anota)
+function Rs.Record(r, d)
+	if type(r) ~= "table" or (tonumber(r.dur) or 0) < Rs.RECORD_MIN then return false end
+	local clave = r.curas and "mejorCps" or "mejorDps"
+	local v = r.curas and r.cps or r.dps
+	if type(v) ~= "number" or v <= 0 then return false end
+	d = d or N.DatosPersonaje(M.ID)
+	local antes = type(d[clave]) == "table" and tonumber(d[clave].v) or nil
+	if antes and v <= antes then r.mejor = antes return false end
+	d[clave] = { v = v, cuando = time and time() or nil }
+	r.mejor = antes
+	return antes ~= nil
 end
 
 ---------------------------------------------------------------------------
@@ -132,6 +201,14 @@ local function crear()
 	f.Cerrar = K.BotonIcono(f.Fondo, "ic-cerrar", function() f:Hide() end, { tam = 16, ayuda = L["Cerrar"] })
 	f.Cerrar:SetPoint("TOPRIGHT", f, "TOPRIGHT", -4, -4)
 	f.Dano, f.Cura = fila(f.Fondo), fila(f.Fondo)
+	-- 1.3.7: tu mejor pelea, tu parte del grupo y tus golpes que más rindieron.
+	f.Record = K.Insignia(f.Fondo, "", "oro", { icono = "ic-estrella" })
+	f.Record:Hide()
+	f.ParteTexto = K.Texto(f.Fondo, "pequeno", "textoSuave")
+	f.ParteValor = K.Texto(f.Fondo, "pequeno", "texto")
+	f.ParteValor:SetJustifyH("RIGHT")
+	f.Parte = K.Progreso(f.Fondo, { alto = 3 })
+	f.golpes = {}
 	f.Golpe = K.Texto(f.Fondo, "nota", "textoSuave")
 	f:SetScript("OnHide", function(self) self.alfaHasta = nil end)
 	-- 1.3.6: se arrastra directo (fuera de combate), sin «Mover marcos», y
@@ -235,12 +312,91 @@ function Rs.TextoGolpe(g)
 	return format(L["Lo que más te pegó: %s (%s)."], g.nombre, num(g.cuanto))
 end
 
+-- 1.3.7: una fila de «tus golpes»: ícono, nombre, barra y porcentaje.
+local function filaGolpe(i)
+	local x = f.golpes[i]
+	if x then return x end
+	x = CreateFrame("Frame", nil, f.Fondo)
+	x:SetHeight(18)
+	x.Icono = x:CreateTexture(nil, "ARTWORK")
+	x.Icono:SetSize(14, 14)
+	x.Icono:SetPoint("LEFT", x, "LEFT", 0, 1)
+	x.Icono:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+	x.Pct = K.Texto(x, "pequeno", "textoSuave")
+	x.Pct:SetJustifyH("RIGHT")
+	x.Pct:SetWidth(34)
+	x.Pct:SetPoint("RIGHT", x, "RIGHT", 0, 1)
+	x.Nombre = K.Texto(x, "pequeno", "texto")
+	x.Nombre:SetJustifyH("LEFT")
+	x.Nombre:SetWordWrap(false)
+	x.Nombre:SetPoint("LEFT", x.Icono, "RIGHT", 5, 0)
+	x.Nombre:SetPoint("RIGHT", x.Pct, "LEFT", -4, 0)
+	x.Barra = K.Progreso(x, { alto = 2 })
+	x.Barra:SetPoint("BOTTOMLEFT", x, "BOTTOMLEFT", 19, 0)
+	f.golpes[i] = x
+	return x
+end
+
+-- La insignia de récord, tu parte del grupo y tus golpes. -> nueva y
+function Rs.PintarExtras(r, y)
+	local w = ANCHO - 2 * ESP.m
+	-- Tu parte del grupo: texto, porcentaje y una barra delgada.
+	if type(r.parte) == "number" and r.parte > 0 then
+		K.Escribir(f.ParteTexto, r.curas and L["Tu parte de la curación"] or L["Tu parte del daño"])
+		f.ParteTexto:ClearAllPoints()
+		f.ParteTexto:SetPoint("TOPLEFT", f, "TOPLEFT", ESP.m, -y)
+		f.ParteValor:SetText(format("%d %%", floor(r.parte * 100 + 0.5)))
+		f.ParteValor:ClearAllPoints()
+		f.ParteValor:SetPoint("TOPRIGHT", f, "TOPRIGHT", -ESP.m, -y)
+		f.Parte:ClearAllPoints()
+		f.Parte:SetPoint("TOPLEFT", f, "TOPLEFT", ESP.m, -(y + 15))
+		f.Parte:Acomodar(w)
+		f.Parte:Set(r.parte)
+		f.ParteTexto:Show() f.ParteValor:Show() f.Parte:Show()
+		y = y + 15 + 3 + ESP.s
+	else
+		f.ParteTexto:Hide() f.ParteValor:Hide() f.Parte:Hide()
+	end
+	-- Tus golpes que más rindieron (hasta 3).
+	local lista = type(r.golpes) == "table" and r.golpes or {}
+	local n = 0
+	for i, h in ipairs(lista) do
+		if i > 3 then break end
+		n = i
+		local x = filaGolpe(i)
+		x:ClearAllPoints()
+		x:SetPoint("TOPLEFT", f, "TOPLEFT", ESP.m, -y)
+		x:SetWidth(w)
+		local icono = h.id and h.id > 0 and M.IconoHechizo(h.id) or nil
+		x.Icono:SetTexture(icono or (r.curas and "Interface\\Icons\\Spell_Holy_Heal" or "Interface\\Icons\\INV_Sword_04"))
+		K.Escribir(x.Nombre, h.nombre or "?")
+		x.Pct:SetText(format("%d %%", floor((h.frac or 0) * 100 + 0.5)))
+		x.Barra:Acomodar(w - 19)
+		x.Barra:Set(h.frac or 0)
+		x:Show()
+		y = y + 18 + 2
+	end
+	for i = n + 1, #f.golpes do f.golpes[i]:Hide() end
+	return y
+end
+
 function Rs.Pintar(r)
 	crear()
 	f.Dura:SetText(M.Medidor and M.Medidor.Tiempo(r.dur) or "")
 	local y = ESP.s + 2 + K.Tamano("mayus") + ESP.s + 2
+	-- 1.3.7: ¡Tu mejor pelea! (bajo el título, con tu marca anterior en su cuadro).
+	if r.record then
+		f.Record:Set(L["¡Tu mejor pelea!"], "oro", "ic-estrella")
+		f.Record:ClearAllPoints()
+		f.Record:SetPoint("TOPLEFT", f, "TOPLEFT", ESP.m - 2, -(y - 2))
+		f.Record:Show()
+		y = y + K.ALTO.insignia + 4
+	else
+		f.Record:Hide()
+	end
 	y = ponerFila(f.Dano, L["Tu daño"], r.dano and r.dano > 0 and format(L["%s (%s por s)"], num(r.dano), num(r.dps or 0)) or nil, y)
 	y = ponerFila(f.Cura, L["Tu curación"], r.cura and r.cura > 0 and format(L["%s (%s por s)"], num(r.cura), num(r.cps or 0)) or nil, y)
+	y = Rs.PintarExtras(r, y)
 	local g = Rs.TextoGolpe(r.golpe)
 	if not (r.dano and r.dano > 0) and not (r.cura and r.cura > 0) and not g then
 		g = L["El medidor del juego no tiene números de esta pelea."]
@@ -291,8 +447,15 @@ function Rs.Termina()
 		if not hay and M.Medidor and M.Medidor.Existe() then return end
 		ultimaVez = ahora
 		local d = N.DatosPersonaje(M.ID)
+		r.record = Rs.Record(r, d)
+		local golpes
+		for i, h in ipairs(r.golpes or {}) do
+			golpes = golpes or {}
+			golpes[i] = { id = h.id, nombre = h.nombre, valor = h.valor, frac = h.frac }
+		end
 		d.ultimaPelea = { dur = r.dur, dano = r.dano, dps = r.dps, cura = r.cura, cps = r.cps,
 			golpe = r.golpe and { nombre = r.golpe.nombre, quien = r.golpe.quien, cuanto = r.golpe.cuanto } or nil,
+			golpes = golpes, parte = r.parte, curas = r.curas, record = r.record or nil,
 			cuando = time and time() or nil }
 		Rs.Pintar(r)
 		M.Avisar()

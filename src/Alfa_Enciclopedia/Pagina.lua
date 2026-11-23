@@ -159,6 +159,12 @@ local function atajos(padre)
 	g:Fila({ titulo = L["Alt+clic en un objeto abre su ficha"],
 		texto = L["En tus bolsas, el botín, el chat o cualquier enlace: Alt+clic abre la guía para conseguirlo o, si no hay, su ficha en la enciclopedia."],
 		control = function(fila) return K.Interruptor(fila, { clave = "lookup.altClick" }) end })
+	-- 1.3.7: el cuadro de un objeto al pasar el ratón por la lista (Cuadro.lua).
+	g:Fila({ titulo = L["Cuadro del objeto al pasar el ratón"],
+		texto = L["Cuánto esperar con el ratón quieto antes de enseñarlo. Con Mayús lo ves al momento y comparado con tu equipo; con clic derecho, comparar y más."],
+		control = function(fila)
+			return K.Desplegable(fila, { clave = ID .. ".cuadro", ancho = 220, opciones = M.Cuadro.OPCIONES })
+		end })
 	g:Fila({ titulo = L["Comando"], texto = L["/alfa enciclopedia abre la ventana; /alfa enciclopedia <texto> busca de una vez."] })
 	return g
 end
@@ -189,6 +195,20 @@ N.Modulo({
 	-- 1.3.6: subtítulo corto (la ventana esconde los de más de 60 letras).
 	subtitulo = L["Todo el juego: objetos, monturas, PNJ, misiones y más."],
 	construir = construir,
+	ajustes = { cuadro = "normal", cerrarAlGuiar = true }, -- 1.3.7: Cuadro.lua; cerrarAlGuiar: Fichas.lua
+	controles = {
+		{ kind = "toggle", key = ID .. ".cerrarAlGuiar", label = L["Cerrar la Enciclopedia al darle «Guíame»"],
+			help = L["Al arrancar la guía se cierra (y la ventana de Alfa, si de ahí vino): queda la flecha y el rastreador."],
+			search = "guide me, close, encyclopedia, guiame, cerrar" },
+		{ kind = "dropdown", key = ID .. ".cuadro", label = L["Cuadro del objeto al pasar el ratón"],
+			help = L["Cuánto esperar con el ratón quieto antes de enseñarlo. Con Mayús lo ves al momento y comparado con tu equipo; con clic derecho, comparar y más."],
+			choices = (function()
+				local t = {}
+				for _, o in ipairs(M.Cuadro.OPCIONES) do t[#t + 1] = { value = o.valor, label = o.texto } end
+				return t
+			end)(),
+			search = "tooltip, delay, hover, compare, encyclopedia, item tooltip" },
+	},
 })
 
 ---------------------------------------------------------------------------

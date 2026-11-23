@@ -118,7 +118,7 @@ function B.Seguir(id, nueva)
 		if e.SelectTab then e.SelectTab(i) end
 	elseif nueva and e.OpenTab then
 		if not e.OpenTab(id, true) then
-			M.Aviso(L["Tienes 6 guías abiertas"], L["Cierra una pestaña para abrir otra."], { icono = "ic-aviso", tono = "aviso" })
+			M.EnCurso.AvisoLleno() -- 1.3.7: con «Ver lo que sigues»
 			return
 		end
 	elseif e.SetGuide then

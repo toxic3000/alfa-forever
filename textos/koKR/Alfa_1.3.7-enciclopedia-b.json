@@ -1,0 +1,20 @@
+{
+ "Al instante": "즉시",
+ "Rápido (0,3 s)": "빠르게 (0.3초)",
+ "Normal (0,6 s)": "보통 (0.6초)",
+ "Con calma (1 s)": "느긋하게 (1초)",
+ "Solo con Mayús o clic derecho": "Shift 또는 오른쪽 클릭으로만",
+ "Lo que llevas puesto": "착용 중인 것",
+ "Comparar con mi equipo": "내 장비와 비교",
+ "No llevas nada puesto en esa ranura.": "그 칸에 착용한 것이 없습니다.",
+ "Comparar con…": "비교하기…",
+ "No tienes piezas de esa ranura, ni puestas ni en tus bolsas.": "그 칸에 맞는 장비가 없습니다. 착용한 것도, 가방에 있는 것도 없습니다.",
+ "Ver ficha": "정보 보기",
+ "Alfa no conoce un camino que pueda guiar para esto.": "Alfa가 이것을 안내할 길을 알지 못합니다.",
+ "Agregar a mi lista de compras": "내 쇼핑 목록에 추가",
+ "La lista de compras es de Comercio: actívalo para usarla.": "쇼핑 목록은 거래 모듈의 기능입니다: 사용하려면 켜세요.",
+ "Cuadro del objeto al pasar el ratón": "마우스를 올릴 때 아이템 툴팁",
+ "Cuánto esperar con el ratón quieto antes de enseñarlo. Con Mayús lo ves al momento y comparado con tu equipo; con clic derecho, comparar y más.": "툴팁을 보여 주기 전에 마우스를 멈추고 기다릴 시간입니다. Shift를 누르면 바로 내 장비와 비교해서 보여 주고, 오른쪽 클릭으로 비교 등을 할 수 있습니다.",
+ "Pidiendo precios…": "가격 요청 중…",
+ "Precios %s": "가격 %s"
+}

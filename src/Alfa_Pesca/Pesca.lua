@@ -1440,7 +1440,7 @@ A.RegisterEvent("PLAYER_ENTERING_WORLD", function(_, inicial)
 	recuperar()
 	local d = N.DatosPersonaje(ID)
 	if d.modo and habilitado() and not E.modo then
-		local enInstancia = IsInInstance and select(2, IsInInstance())
+		local enInstancia = IsInInstance and N.Leer((select(2, IsInInstance())))
 		if enInstancia and enInstancia ~= "none" then
 			d.modo = nil
 		else

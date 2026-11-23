@@ -163,6 +163,12 @@ function V.Guiar(kind, id)
 		if N.EmpezarRuta then pcall(N.EmpezarRuta) end
 		return true
 	end
+	-- 1.3.7: sin lugar (las 12 fijadas): el cuadro de elegir de Rutas (EnCurso.lua).
+	local R = rawget(_G, "AlfaRuta")
+	if ok and motivo == "tabs" and type(R) == "table" and type(R.AvisoLleno) == "function" then
+		R.AvisoLleno()
+		return false
+	end
 	K.Aviso({ titulo = L["Guíame"], texto = MOTIVO[motivo] or L["No se pudo armar la guía."], icono = "ic-aviso", tono = "aviso" })
 	return false
 end

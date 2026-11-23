@@ -23,7 +23,7 @@ M.Cocina = Co
 
 local COCINA_HECHIZOS = { 2550, 3102, 3413, 18260 }
 
-local function legible(v) return v ~= nil and not (issecretvalue and issecretvalue(v)) end
+local function legible(v) return type(v) ~= "nil" and not (issecretvalue and issecretvalue(v)) end
 
 local function nombreHechizo(id)
 	local S = C_Spell

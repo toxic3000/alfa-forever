@@ -26,7 +26,7 @@ local type, pairs, ipairs, floor, max, min, ceil, format = type, pairs, ipairs, 
 local Of = {}
 M.Oficios = Of
 
-local function secreto(v) return v ~= nil and issecretvalue ~= nil and issecretvalue(v) and true or false end
+local function secreto(v) return type(v) ~= "nil" and issecretvalue ~= nil and issecretvalue(v) and true or false end
 local function num(v) if secreto(v) then return nil end return tonumber(v) end
 
 ---------------------------------------------------------------------------

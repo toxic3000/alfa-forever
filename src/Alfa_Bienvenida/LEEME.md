@@ -50,6 +50,10 @@ De dónde salen: el listado de archivos de la comunidad, [wowdev/wow-listfile](h
 
 Un solo modo para mover con el ratón lo de Alfa que está en pantalla: Lya, tu guía (el rastreador), la flecha, la tarjeta de avisos, la barra y las metas de pesca, y los marcos de Combate y Curación (prende los suyos con `AlfaCombate.Mover()` y `AlfaCuracion.Mover(true)`). Cada cosa sale con un marco verde y su nombre; se arrastra y guarda su lugar con su propio `OnDragStop` (nada nuevo se guarda aquí); clic derecho la regresa a su lugar de siempre (Lya, la flecha y los avisos). Mientras está abierto, `A.DragLocked` da false. Se abre con `/alfa acomodar` o con «Acomodar» en Ajustes > Estilo y sonido; «Listo», Esc o una pelea lo terminan; en combate no se abre. Prueba: `tools/banco/prueba_131_varios.lua`.
 
+## La ventana de Alfa, más cómoda (`Ventana.lua`, 1.3.7)
+
+Envuelve `O.Select` y `O.RefreshNav` de `motor/Alfa/UI/Options.lua` sin cambiar cómo se arma cada página. Atajos con la ventana abierta y fuera de combate (`bienvenida.atajosVentana`): Ctrl+número (sección, en el orden de la barra), Ctrl+← / Ctrl+→ (página), Ctrl+F (buscador), Alt+← (volver); un marco hijo con `EnableKeyboard` deja seguir al juego toda otra tecla (`SetPropagateKeyboardInput`). «‹» volver (historial de 12, se limpia al abrir) corre el título y las pastillas con `win.psPillLeft` (Widgets.lua). La esquina de abajo a la derecha estira solo el alto (`StartSizing("BOTTOM")`); alto y lugar en `AlfaNucleoDB.bienvenida.ventana` si `bienvenida.recordarVentana`. Buscador: al entrar vacío, tus 5 búsquedas recientes (`AlfaNucleoDB.bienvenida.busquedas`) e ideas; sin resultados, `O.SinResultados` pone las páginas a un clic. Prueba: `tools/banco/prueba_137c_ventana.lua` (`BANCO_FOTOS=1` dibuja las capturas).
+
 ## Comandos
 
 - `/alfa bienvenida`: abre la configuración (pendiente: donde la dejaste; terminada: el resumen). `/alfa bienvenida novedades`: lo nuevo de la versión. `/alfa bienvenida aullido [corto|largo|manada]`: suena ese aullido y queda como el de la intro.

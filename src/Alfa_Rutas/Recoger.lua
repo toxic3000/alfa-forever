@@ -122,7 +122,7 @@ local function instalarYAbrir(def, exito)
 	if i then
 		M.Aviso(exito, L["Sigue la flecha."], { lobo = "aullando" })
 	elseif por == "tabs" then
-		M.Aviso(L["Tienes 6 guías abiertas"], L["Cierra una pestaña para abrir esta guía."], { icono = "ic-aviso", tono = "aviso" })
+		M.EnCurso.AvisoLleno()
 	end
 	return i ~= nil
 end

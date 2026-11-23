@@ -100,7 +100,7 @@ local function sec(v) return M.Secreto(v) end
 
 -- -> true si es «del suelo» y hay que avisar ahora
 function S.Revisar(a, ahora)
-	if type(a) ~= "table" then return false end
+	if sec(a) or type(a) ~= "table" then return false end
 	local danino, mio, id, dura, disipa, fuente = a.isHarmful, a.isFromPlayerOrPlayerPet, a.spellId, a.duration, a.dispelName, a.sourceUnit
 	if sec(danino) or sec(mio) or sec(id) or sec(dura) or sec(disipa) or sec(fuente) then esconde() return false end
 	if danino ~= true or mio == true or type(id) ~= "number" then return false end

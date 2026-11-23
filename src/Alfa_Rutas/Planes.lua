@@ -515,6 +515,11 @@ local function guiarObjeto(m)
 		M.Aviso(Pl.Titulo(m), L["Guía abierta en una pestaña nueva: sigue la flecha."], { icono = "ic-guia" })
 		return
 	end
+	-- 1.3.7: sin lugar para otra guía, el aviso trae «Ver lo que sigues» (EnCurso.lua).
+	if ok and motivo == "tabs" and M.EnCurso then
+		M.EnCurso.AvisoLleno()
+		return
+	end
 	local textos = {
 		tabs = L["Ya tienes seis guías abiertas: cierra una y vuelve a intentar."],
 		nosource = L["No se conoce de dónde sale."], noguide = L["No hay un camino que Alfa pueda guiar para esto."],

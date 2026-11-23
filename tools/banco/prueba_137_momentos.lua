@@ -160,17 +160,21 @@ step("«Te perdiste esto»: los últimos 30, con hora, el contador y el menú", 
   check(N.PerdidosSinVer() == 2, "el contador no cuenta 2: " .. N.PerdidosSinVer())
   -- El menú de Alfa y la ventana.
   local item = N.MenuPerdidos()
-  check(item and item.text:find("Lo que me perdí", 1, true) and item.text:find("2", 1, true), "el menú no dice «Lo que me perdí (2)»")
+  -- 1.3.7 (la campanita): «Lo que me perdí» ahora es «Avisos».
+  check(item and item.text:find("Avisos", 1, true) and item.text:find("2", 1, true), "el menú no dice «Avisos (2)»")
   local O = A.UI and A.UI.Options
   if O and O.MenuItems then
     local hayMenu = false
-    for _, it in ipairs(O.MenuItems(UIParent)) do if type(it.text) == "string" and it.text:find("Lo que me perdí", 1, true) then hayMenu = true end end
-    check(hayMenu, "el menú de Alfa no trae «Lo que me perdí»")
+    for _, it in ipairs(O.MenuItems(UIParent)) do if type(it.text) == "string" and it.text:find("Avisos", 1, true) then hayMenu = true end end
+    check(hayMenu, "el menú de Alfa no trae «Avisos»")
   end
   N.VerPerdidos()
   check(_G.AlfaPerdidos and _G.AlfaPerdidos:IsShown(), "no se abrió «Lo que me perdí»")
   NOW = NOW + 1
-  check(N.PerdidosSinVer() == 0, "al abrirla, el contador no volvió a cero")
+  -- 1.3.7: abrirla ya no marca todo como visto; eso es «Marcar todo como visto».
+  check(N.PerdidosSinVer() == 2, "abrir la lista marcó todo como visto")
+  N.MarcarAvisosVistos()
+  check(N.PerdidosSinVer() == 0, "al marcar todo como visto, el contador no volvió a cero")
   check(not mm.alfaContador:IsShown(), "el contador siguió a la vista")
   _G.AlfaPerdidos:Hide()
 end)

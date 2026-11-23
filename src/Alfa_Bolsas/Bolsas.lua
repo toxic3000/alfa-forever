@@ -63,6 +63,7 @@ M.AJUSTES = {
 	acomodar = true,          -- 1.3.0: el botón «Acomodar» (Acomodar.lua)
 	barraConjuntos = true,    -- 1.3.7: un botón por conjunto junto a tu personaje (Cambio.lua)
 	nivelPersonaje = true,    -- 1.3.7: nivel de objeto y durabilidad en tu personaje y la inspección (Ranuras.lua)
+	atajos = true,            -- 1.3.7: «3 nuevos» y «1 mejora» en la búsqueda, a un clic (Atajos.lua)
 	deposito = "banco",       -- lo último que elegiste en "Depositar"
 }
 
@@ -142,6 +143,8 @@ local CONTROLES = {
 	{ kind = "toggle", key = clave("marcaNuevos"), label = L["Objetos nuevos"], help = L["Brillan los objetos que acabas de conseguir, hasta que cierras las bolsas."], search = "new items, glow" },
 	{ kind = "toggle", key = clave("marcaMejora"), label = L["Flecha de mejora"],
 		help = L["Una flecha verde en el equipo que es mejor que lo que llevas puesto, según tu clase y nivel."], search = "upgrade arrow" },
+	{ kind = "toggle", key = clave("atajos"), label = L["Atajos a lo nuevo y a tus mejoras"],
+		help = L["En la búsqueda de tus bolsas, «3 nuevos» y «1 mejora»: un clic resalta solo eso."], search = "new items, upgrades, filter, shortcut" },
 	{ kind = "dropdown", key = clave("brilloMision"), label = L["Objetos de misión"],
 		help = L["Brillo: un borde dorado que late y una insignia «!» (llena si el objeto empieza una misión). Marco fijo: el marco dorado del juego. Nada: sin marca."],
 		choices = { { value = "brillo", label = L["Brillo"] }, { value = "marco", label = L["Marco fijo"] }, { value = "nada", label = L["Nada"] } },
@@ -200,7 +203,7 @@ end
 ---------------------------------------------------------------------------
 
 local function secreto(v)
-	return v ~= nil and issecretvalue ~= nil and issecretvalue(v) and true or false
+	return type(v) ~= "nil" and issecretvalue ~= nil and issecretvalue(v) and true or false
 end
 
 function M.Leer(v)

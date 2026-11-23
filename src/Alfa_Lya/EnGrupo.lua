@@ -40,7 +40,7 @@ local ESCUCHA = 5 * 60    -- s entre dos mensajes aceptados de una misma persona
 local PROB_PLATICA = 0.25 -- al entregar una misión en grupo
 
 local function ahora() return GetTime and GetTime() or 0 end
-local function secreto(v) return issecretvalue ~= nil and v ~= nil and issecretvalue(v) and true or false end
+local function secreto(v) return issecretvalue ~= nil and type(v) ~= "nil" and issecretvalue(v) and true or false end
 local function activo() return N.Get(ID, "manada") ~= false end
 
 -- Las pláticas: lo que dice tu Lya y lo que contesta la otra.

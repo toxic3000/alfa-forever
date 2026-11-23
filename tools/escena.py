@@ -17,7 +17,11 @@ def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8", errors="backslashreplace")
     malo = False
     for escena in sys.argv[1:]:
-        salida, cortado = prueba.correr(escena)
+        if escena == "prueba_137c_bugs.lua":
+            import casos137c
+            salida, cortado = casos137c.correr_casos(prueba.correr, prueba.MODULOS)
+        else:
+            salida, cortado = prueba.correr(escena)
         print("--", escena, "(" + str(prueba.DIST) + ")")
         for l in salida:
             print(l)

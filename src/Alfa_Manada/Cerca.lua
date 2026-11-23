@@ -36,7 +36,7 @@ local function encendido() return N.Get(ID, "lobosCerca") ~= false end
 local function enInstancia()
 	if type(IsInInstance) ~= "function" then return false end
 	local ok, dentro, tipo = pcall(IsInInstance)
-	return ok and U.Leer(dentro) == true and tipo ~= "none"
+	return ok and U.Leer(dentro) == true and U.Leer(tipo) ~= "none"
 end
 
 local function enCombate()

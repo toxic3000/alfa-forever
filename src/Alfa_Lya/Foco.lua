@@ -20,7 +20,7 @@ local pcall, type, rawget = pcall, type, rawget
 local Fo = {}
 M.Foco = Fo
 
-local function secreto(v) return issecretvalue ~= nil and v ~= nil and issecretvalue(v) and true or false end
+local function secreto(v) return issecretvalue ~= nil and type(v) ~= "nil" and issecretvalue(v) and true or false end
 
 local combate = false
 

@@ -117,7 +117,7 @@ end
 function M.Legible(v)
 	local C = A.Compat
 	if C and C.Readable then return C.Readable(v) end
-	if v ~= nil and issecretvalue and issecretvalue(v) then return nil end
+	if type(v) ~= "nil" and issecretvalue and issecretvalue(v) then return nil end
 	return v
 end
 

@@ -227,7 +227,7 @@ M.HECHIZOS = {
 	},
 }
 
-local function secreto(v) return issecretvalue ~= nil and v ~= nil and issecretvalue(v) and true or false end
+local function secreto(v) return issecretvalue ~= nil and type(v) ~= "nil" and issecretvalue(v) and true or false end
 
 -- id -> línea, para tu clase
 local porId, deClase

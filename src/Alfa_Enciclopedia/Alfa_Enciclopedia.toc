@@ -15,5 +15,6 @@ Indices.lua
 Fichas.lua
 Coleccion.lua
 Legado.lua
+Cuadro.lua
 Ventana.lua
 Pagina.lua

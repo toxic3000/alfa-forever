@@ -598,7 +598,8 @@ local function llenarResumen(r, key, d, e, nivel, lado)
 				local gid, porque
 				if x.Attune then gid, porque = llamar(x.Attune, key, a.id) end
 				if gid then if N.EmpezarRuta then N.EmpezarRuta() else A.Set("ui.shown", true) end
-				elseif K.Aviso then K.Aviso({ titulo = L["No pude armar esa guía"], texto = porque == "tabs" and L["Tienes seis guías abiertas: cierra una y vuelve a intentarlo."] or nil, icono = "ic-alerta", tono = "aviso" }) end
+				elseif K.Aviso then K.Aviso({ titulo = L["No pude armar esa guía"], texto = porque == "tabs" and ((AlfaRuta and AlfaRuta.TextoLleno and AlfaRuta.TextoLleno()) or L["Tienes seis guías abiertas: cierra una y vuelve a intentarlo."]) or nil, icono = "ic-alerta", tono = "aviso",
+					accion = porque == "tabs" and AlfaRuta and AlfaRuta.AccionLleno and AlfaRuta.AccionLleno() or nil }) end -- 1.3.7
 			end } or nil,
 		}
 	end

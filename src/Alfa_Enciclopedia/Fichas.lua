@@ -1040,6 +1040,14 @@ function F.GuiaDeZona(mapa)
 	return mejor
 end
 
+-- 1.3.7: sin lugar para otra guía, el aviso de Rutas con «Ver lo que sigues»
+-- (Alfa_Rutas/EnCurso.lua); sin él, el texto de siempre.
+local function sinLugar()
+	local R = rawget(_G, "AlfaRuta")
+	if type(R) == "table" and type(R.AvisoLleno) == "function" then R.AvisoLleno() return nil end
+	return L["Ya tienes seis guías abiertas: cierra una y vuelve a intentar."]
+end
+
 -- Abre una guía: su pestaña si ya está, una nueva, o la de ahora.
 function F.AbrirGuia(gid)
 	local E = A.Engine
@@ -1054,7 +1062,7 @@ function F.AbrirGuia(gid)
 		end
 	end
 	if E.OpenTab then
-		if not E.OpenTab(gid, true) then return false, L["Ya tienes seis guías abiertas: cierra una y vuelve a intentar."] end
+		if not E.OpenTab(gid, true) then return false, sinLugar() end
 	elseif E.SetGuide then
 		E.SetGuide(gid)
 	else
@@ -1109,6 +1117,11 @@ local MOTIVO = {
 -- Al empezar a seguir algo: la ventana de seguimiento a la vista y las de
 -- Alfa (esta también) se cierran (N.EmpezarRuta del núcleo; sin él, la guía).
 local function empezar()
+	-- 1.3.7: con «Cerrar al darle Guíame» apagado, la Enciclopedia se queda abierta.
+	if A.Get and A.Get("enciclopedia.cerrarAlGuiar") == false then
+		if A.Set then A.Set("ui.shown", true) end
+		return
+	end
 	if N.EmpezarRuta then
 		local ok = pcall(N.EmpezarRuta)
 		if ok then return end
@@ -1137,6 +1150,7 @@ function F.Guiar(kind, id, fila)
 		empezar()
 		return true, L["Guía abierta en una pestaña nueva: sigue la flecha."]
 	end
+	if motivo == "tabs" then return false, sinLugar() end
 	return false, MOTIVO[motivo] or format(L["No se pudo armar la guía (%s)."], tostring(motivo or "?"))
 end
 

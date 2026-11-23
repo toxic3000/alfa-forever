@@ -1528,6 +1528,9 @@ GF.CATEGORY_ICON = CATEGORY_ICON
 
 function GF.RenderTabs()
 	if not F then return end
+	-- Alfa 1.3.7: el ancho de una pestaña con solo su ícono, y el del «+N» (locales
+	-- de la función: el archivo ya llega al tope de 200 locales).
+	local TAB_MIN_W, TAB_MORE_W = 30, 30
 	local tabs, active = tabsOf(Engine())
 	local n = tabs and #tabs or 0
 	strip.psCount = n
@@ -1540,11 +1543,34 @@ function GF.RenderTabs()
 		otherW = floor((avail - activeW) / (n - 1))
 	end
 	activeW, otherW = min(TAB_MAX_W, activeW), min(TAB_MAX_W, otherW)
+	-- Alfa 1.3.7: hasta 12 pestañas. Las que no caben con su ancho mínimo (el
+	-- ícono) se esconden tras «+N», un menú para elegirlas; se quedan a la
+	-- vista la activa y sus vecinas.
+	local oculta, nOcultas = {}, 0
+	if n >= 2 and active and otherW < TAB_MIN_W then
+		local room = avail - TAB_MORE_W - activeW
+		local k = max(0, floor(room / TAB_MIN_W))
+		if k < n - 1 then
+			local orden = {}
+			for i = 1, n do if i ~= active then orden[#orden + 1] = i end end
+			table.sort(orden, function(a, b)
+				local da, db = abs(a - active), abs(b - active)
+				if da ~= db then return da < db end
+				return a < b
+			end)
+			for j = k + 1, #orden do oculta[orden[j]] = true nOcultas = nOcultas + 1 end
+		end
+		otherW = k > 0 and min(TAB_MAX_W, floor(room / k)) or TAB_MIN_W
+	end
 	local G = ns.Guides
 	local x = 1
 	for i = 1, n do
 		local t = tabs[i]
 		local b = tabButton(i)
+		if oculta[i] then
+			b.psIndex, b.psActive = i, false
+			b:Hide()
+		else
 		b.psIndex = i
 		b.psActive = i == active
 		b.psTitle = t.title or t.guideId
@@ -1570,13 +1596,61 @@ function GF.RenderTabs()
 		b:SetPoint("BOTTOMLEFT", strip, "BOTTOMLEFT", x, 0)
 		x = x + w
 		b:Show()
+		end
 	end
 	for i = n + 1, #tabButtons do tabButtons[i]:Hide() end
+	-- «+N»: las pestañas que no cupieron, en un menú.
+	local more = strip.More
+	if nOcultas > 0 and not more then
+		more = CreateFrame("Button", nil, strip)
+		more:SetSize(TAB_MORE_W, TAB_H)
+		more.Label = T(more, "small", "textDim")
+		more.Label:SetPoint("CENTER", more, "CENTER", 0, 0)
+		W.Hover(more, 0.7)
+		more:SetScript("OnClick", function(self)
+			local items = {}
+			local list = tabsOf(Engine()) or {}
+			for i, tt in ipairs(list) do
+				if self.psOcultas and self.psOcultas[i] then
+					local idx = i
+					items[#items + 1] = { text = tt.title or tt.guideId, icon = CATEGORY_ICON[tt.category] or "icon-level",
+						onClick = function() local E = Engine() if E and E.SelectTab then E.SelectTab(idx) end end }
+				end
+			end
+			if #items > 0 then W.ShowMenu(self, items, { point = "TOPLEFT", relPoint = "BOTTOMLEFT" }) end
+		end)
+		more:SetScript("OnEnter", function(self)
+			W.Tooltip(self, "ANCHOR_TOP", string.format(ns.T("%d pestañas más"), self.psN or 0), { ns.T("Clic: elegir una") })
+		end)
+		more:SetScript("OnLeave", function(self) W.HideTooltip(self) end)
+		strip.More = more
+	end
+	if more then
+		more.psOcultas, more.psN = oculta, nOcultas
+		if nOcultas > 0 then
+			more.Label:SetText("+" .. nOcultas)
+			W.Color(more.Label, "textMuted")
+			more:ClearAllPoints()
+			more:SetPoint("BOTTOMLEFT", strip, "BOTTOMLEFT", x, 0)
+			x = x + TAB_MORE_W
+			more:Show()
+		else
+			more:Hide()
+		end
+	end
 	strip.Add:ClearAllPoints()
 	strip.Add:SetPoint("LEFT", strip, "BOTTOMLEFT", x + 2, TAB_H / 2)
-	local full = n >= 6
-	W.SetIconState(strip.Add, false, not full)
-	strip.Add.psTip = full and L["Six tabs is the limit"] or L["Open a guide in a new tab"]
+	local E = Engine()
+	local maxTabs = (E and E.MAX_TABS) or 12
+	local R = rawget(_G, "AlfaRuta")
+	-- Alfa 1.3.7: lleno, Alfa hace lugar sola (quita la más vieja que no sigues
+	-- ni fijaste): el + sigue abriendo guías. Solo con todas fijadas abre Planes.
+	local full = n >= maxTabs and not (type(R) == "table" and type(R.PuedeAbrir) == "function" and R.PuedeAbrir())
+	local conVista = type(R) == "table" and type(R.EnCurso) == "function"
+	W.SetIconState(strip.Add, false, conVista or not full)
+	strip.Add.psFull = full
+	strip.Add.psTip = full and (conVista and string.format(ns.T("Ya sigues %d guías y todas están fijadas: clic para ver tus planes"), maxTabs) or L["Six tabs is the limit"])
+		or L["Open a guide in a new tab"]
 end
 
 ---------------------------------------------------------------------------
@@ -4608,6 +4682,8 @@ local function openMenu(button)
 	local items = {
 		{ text = L["Choose guide"], icon = "search", onClick = function() UI.ShowPicker() end },
 		{ text = L["Open in new tab"], icon = "plus", disabled = not (E and E.OpenTab), onClick = function() UI.ShowPicker({ newTab = true }) end },
+		-- Alfa 1.3.7: tus guías y tu plan en curso, para verlos y quitarlos (Alfa_Rutas/EnCurso.lua).
+		{ text = ns.T("Lo que sigues"), icon = "guides", disabled = not (rawget(_G, "AlfaRuta") and AlfaRuta.EnCurso), onClick = function() AlfaRuta.EnCurso() end },
 		-- No step on screen (a finished guide): nothing to skip, as with the navigator's Skip.
 		{ text = L["Skip this step"], icon = "skip", disabled = not (hasGuide and E.GetStepIndex and E.GetStepIndex()), onClick = function() GF.SkipStep() end },
 		{ text = L["Report a problem"], icon = "bug", onClick = function() UI.ShowReport() end },
@@ -4953,7 +5029,9 @@ local function build()
 	strip.Rule = W.Divider(strip)
 	strip.Rule:SetPoint("BOTTOMLEFT", strip, "BOTTOMLEFT", 0, 0)
 	strip.Rule:SetPoint("BOTTOMRIGHT", strip, "BOTTOMRIGHT", 0, 0)
-	strip.Add = W.IconButton(strip, "plus", 24, L["Open a guide in a new tab"], function()
+	strip.Add = W.IconButton(strip, "plus", 24, L["Open a guide in a new tab"], function(self)
+		local R = rawget(_G, "AlfaRuta")
+		if self and self.psFull and type(R) == "table" and type(R.EnCurso) == "function" then return R.EnCurso() end
 		UI.ShowPicker({ newTab = true })
 	end, 12)
 	hoverable(strip.Add)

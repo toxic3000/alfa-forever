@@ -25,8 +25,9 @@ end
 local function enMazmorra()
 	if not IsInInstance then return false end
 	local ok, dentro, tipo = pcall(IsInInstance)
-	if not ok or dentro ~= true then return false end
-	return tipo == "party" or tipo == "raid" or tipo == "scenario"
+	if not ok or not N.Si(dentro) then return false end -- 1.3.7: secretos
+	local t = N.Leer(tipo)
+	return t == "party" or t == "raid" or t == "scenario"
 end
 
 local function enCombate()

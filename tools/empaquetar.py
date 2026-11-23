@@ -1,6 +1,8 @@
 """Arma el .zip de Alfa para subirlo a CurseForge.
 
 Uso:  python -I tools/empaquetar.py        (antes corre tools/build.py)
+      python -I tools/empaquetar.py --salida 1.3.7-fix
+         (un zip con otro nombre, para un arreglo suelto: paquetes/1.3.7-fix.zip)
 
 Deja paquetes/Alfa-<version>.zip con las carpetas de addon en la raiz del
 zip (Alfa, Alfa_Nucleo, Alfa_Bolsas...), como pide CurseForge, mas
@@ -15,6 +17,15 @@ import zipfile
 RAIZ = pathlib.Path(__file__).resolve().parent.parent
 
 
+def nombre_pedido(argumentos: list) -> str | None:
+    for i, a in enumerate(argumentos):
+        if a == "--salida" and i + 1 < len(argumentos):
+            return argumentos[i + 1]
+        if a.startswith("--salida="):
+            return a.split("=", 1)[1]
+    return None
+
+
 def main() -> int:
     cfg = json.loads((RAIZ / "tools" / "alfa.json").read_text(encoding="utf-8"))
     dist = RAIZ / "dist"
@@ -22,7 +33,16 @@ def main() -> int:
         print("Falta dist/: corre tools/build.py")
         return 1
     version = cfg["version"]
-    salida = RAIZ / "paquetes" / f"Alfa-{version}.zip"
+    pedido = nombre_pedido(sys.argv[1:])
+    if pedido:
+        # Sin ruta ni .zip: un nombre suelto dentro de paquetes/.
+        nombre = pathlib.Path(pedido).name
+        if nombre.lower().endswith(".zip"):
+            nombre = nombre[:-4]
+        nombre += ".zip"
+    else:
+        nombre = f"Alfa-{version}.zip"
+    salida = RAIZ / "paquetes" / nombre
     salida.parent.mkdir(exist_ok=True)
     carpetas = sorted(p for p in dist.iterdir() if p.is_dir())
     for c in carpetas:

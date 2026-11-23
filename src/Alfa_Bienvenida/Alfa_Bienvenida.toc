@@ -22,4 +22,5 @@ Diagnostico.lua
 Recorrido.lua
 Teclas.lua
 Acomodar.lua
+Ventana.lua
 Pagina.lua

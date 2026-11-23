@@ -44,7 +44,7 @@ local function llamar(obj, metodo, ...)
 	return nil
 end
 
-local function secreto(v) return v ~= nil and issecretvalue ~= nil and issecretvalue(v) and true or false end
+local function secreto(v) return type(v) ~= "nil" and issecretvalue ~= nil and issecretvalue(v) and true or false end
 local function num(v) if secreto(v) then return nil end return tonumber(v) end
 
 -- La pestaña de vender que se ve: -> marco, "commodity" | "item"

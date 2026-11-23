@@ -874,12 +874,25 @@ local function tarjetaPlan(pl, activo)
 		texto = format(L["Sigue: %s"], Pl.Titulo(m))
 	end
 	local id = pl.id
+	local accion
+	if sigo then
+		-- Plan activo: dejar de seguirlo (cerrar el seguimiento) con una X.
+		accion = { texto = L["Dejar de seguir"], icono = "ic-cerrar", tono = "peligro",
+			alClic = function()
+				K.Dialogo({ titulo = L["¿Dejar de seguir este plan?"],
+					texto = format(L["Dejarás de seguir «%s» y la flecha dejará de guiarte. ¿Estás seguro?"], pl.nombre),
+					aceptar = L["Dejar de seguir"], peligro = true,
+					alAceptar = function() Pl.Dejar() end })
+			end }
+	elseif total > 0 and m then
+		accion = { texto = L["Seguir"], icono = "ic-seguir", alClic = function() Pl.Seguir(id) end }
+	end
 	return {
 		icono = "ic-lista", tono = sigo and "acento" or "neutro", titulo = pl.nombre, texto = texto,
 		estado = sigo and { texto = L["Lo sigues"], tono = "exito" } or nil, elegida = sigo,
 		progreso = total > 0 and { actual = n, total = total, texto = format(L["%d de %d metas"], n, total), huellas = total <= 12 } or nil,
 		alClic = function() VP.Abrir(id) end,
-		accion = (not sigo and total > 0 and m) and { texto = L["Seguir"], icono = "ic-seguir", alClic = function() Pl.Seguir(id) end } or nil,
+		accion = accion,
 		secundaria = { texto = L["Editar"], alClic = function() VP.Abrir(id) end },
 	}
 end

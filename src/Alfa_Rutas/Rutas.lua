@@ -40,7 +40,7 @@ function M.Seguir(r, silencioso)
 			if i then
 				M.Aviso(L["Ruta en marcha"], format(L["%s: sigue la flecha."], r.nombre), { lobo = "aullando" })
 			elseif por == "tabs" then
-				M.Aviso(L["Tienes 6 guías abiertas"], L["Cierra una pestaña para abrir tu ruta."], { icono = "ic-aviso", tono = "aviso" })
+				M.EnCurso.AvisoLleno(L["Es el máximo a la vez. Quita una que ya no uses y vuelve a abrir tu ruta."])
 			end
 		end)
 	end

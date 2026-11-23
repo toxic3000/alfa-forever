@@ -6,24 +6,39 @@
 --
 -- Cómo llega a los botones (siempre fuera de combate, N.FueraDeCombate):
 --   * Hechizo: "type1" = "spell", "spell1" = nombre del hechizo en tu idioma.
---   * Seleccionar: en el izquierdo o el derecho sin tecla, "type" = "target".
---     En las demás ranuras el juego lo ignora (SecureUnitButton_OnClick de
---     Forever exige ahí un clic de interacción de C_ClickBindings), así que va
---     como macro "/target <unidad>"; la unidad la pone el propio marco seguro
---     al cambiar de jugador (atributo refreshUnitChange), también en combate.
+--   * Seleccionar: "type" = "target" (hasta la 1.3.7-fix, fuera del izquierdo
+--     y el derecho sin tecla iba como macro "/target <unidad>", porque
+--     SecureUnitButton_OnClick exigía un clic de interacción de C_ClickBindings).
+--     La unidad de las macros la pone el propio marco seguro al cambiar de
+--     jugador (atributo refreshUnitChange), también en combate.
 --   * Menú: "togglemenu", solo en el izquierdo o el derecho sin tecla.
---   * 1.3.0, «Curar y seleccionar» (por personaje, prendido de fábrica): un
---     hechizo va como macro "/target <unidad>\n/cast [@<unidad>] <Hechizo>"
+--   * 1.3.0: un hechizo va como macro "/target <unidad>\n/cast [@<unidad>] <Hechizo>"
 --     (cura Y lo deja seleccionado para tus otros poderes). La venda igual,
 --     con "/use [@<unidad>] item:<id>". El texto se rehace en el entorno
 --     seguro con la unidad nueva (REFRESCO), con "alfa-cmd-" y "alfa-arg-".
 --     1.3.1: apagado, la venda va como "type" = "item", "item" = "item:<id>"
 --     (el juego la usa sobre la unidad del botón) y no te cambia el objetivo.
+--   1.3.7 (segunda vuelta): «Curar y seleccionar» de punta a punta.
+--     * Los botones ya no son SecureUnitButtonTemplate sino
+--       SecureActionButtonTemplate (Marcos.lua). El de unidad consulta antes
+--       el clic para lanzar de Blizzard (C_ClickBindings): si ahí tenías un
+--       hechizo en ese clic, el juego lo lanzaba él SIN seleccionar y nunca
+--       llegaba a la macro de Alfa (por eso el arreglo de la 1.3.7-fix «no
+--       servía»). Con el de acción, en los marcos de Alfa manda tu mapa.
+--     * "useOnKeyDown" = false: el de acción lanza al soltar el botón del
+--       ratón (con ActionButtonUseKeyDown prendido y solo "AnyUp" no hacía nada).
+--     * Con «Curar y seleccionar» (de fábrica), todo clic que cura (cualquier
+--       botón y tecla, hechizo o venda) es "/target u" y luego "/cast [@u] X";
+--       una ranura sin hechizo (vacía, o el hechizo o la venda que ya no
+--       tienes) al menos selecciona. Apagado: el hechizo solo, sin seleccionar.
+--     * "Seleccionar" va como "type" = "target" en todas las ranuras (el de
+--       acción no pide el clic de interacción de Blizzard).
 -- La cabecera copia los mismos atributos a cualquier botón nuevo
 -- (_initialAttributeNames), aunque se cree en combate.
 --
 -- Clic para lanzar de Blizzard (C_ClickBindings): sus atajos de hechizo
--- mandan sobre cualquier botón de unidad seguro, también los de Alfa. "Usar
+-- mandan sobre los botones de unidad seguros (SecureUnitButton_OnClick); los
+-- de Alfa, desde la 1.3.7, son de acción y siguen solo tu mapa. "Usar
 -- también en los marcos de Blizzard" abre su ventana para que armes ahí los
 -- mismos clics (C_ClickBindings.SetProfileByInfo es restringida).
 
@@ -88,10 +103,23 @@ function M.Macro(unidad, cmd, arg)
 	return m
 end
 
--- «Curar y seleccionar»: por personaje, prendido si nunca lo tocaste.
-function M.CurarSelecciona() return M.Datos().curarSel ~= false end
+-- «Curar y seleccionar»: por personaje, prendido si nunca lo tocaste (nil).
+-- 1.3.7: quien lo apagó a mano (false) lo sigue teniendo apagado; la marca
+-- solo anota que ya se revisó este personaje.
+local function migrarSel(d)
+	if d.curarSelMig == 1 then return end
+	d.curarSelMig = 1
+end
+M.MigrarSeleccion = migrarSel
+function M.CurarSelecciona()
+	local d = M.Datos()
+	migrarSel(d)
+	return d.curarSel ~= false
+end
 function M.FijarCurarSelecciona(si)
-	M.Datos().curarSel = si and true or false
+	local d = M.Datos()
+	d.curarSelMig = 1
+	d.curarSel = si and true or false
 	M.AplicarMapa()
 end
 
@@ -103,40 +131,37 @@ local TOPE_ARG = 200 -- la macro entera no pasa de 255 letras
 local function atributos(unidad)
 	local mapa = M.Mapa()
 	local t, objetivos = {}, {}
+	-- «Curar y seleccionar»: todo clic que cura también selecciona (cualquier
+	-- botón, con o sin tecla). Apagado, el hechizo solo.
+	local sel = M.CurarSelecciona()
 	for _, r in ipairs(M.RANURAS) do
 		local p, s = M.Partes(r)
 		local e = mapa[r]
 		local tipo, hechizo, macro, cmd, arg, objeto
-		local sel = M.CurarSelecciona()
-		if type(e) == "table" then
-			if e.t == "spell" then
-				local n = M.NombreHechizo(e.id)
-				if n and sel and #n <= TOPE_ARG then
-					tipo, cmd, arg = "macro", "/cast", n
-				elseif n then
-					tipo, hechizo = "spell", n
-				end
-			elseif e.t == "venda" then
-				if sel then
-					tipo, cmd = "macro", "/use"
-					if M.venda then arg = "item:" .. M.venda end
-				elseif M.venda then
-					-- 1.3.1: sin «Curar y seleccionar», solo la venda sobre ese
-					-- compañero (el tipo "item" la usa en la unidad del botón), sin /target.
-					tipo, objeto = "item", "item:" .. M.venda
-				end
-			elseif e.t == "target" then
-				if p == "" and (s == "1" or s == "2") then
-					tipo = "target"
-				else
-					tipo = "macro"
-					objetivos[#objetivos + 1] = p .. ":" .. s
-					if type(unidad) == "string" then macro = "/target " .. unidad end
-				end
-			elseif e.t == "menu" and M.PermiteMenu(r) then
-				tipo = "togglemenu"
+		local et = type(e) == "table" and e.t or "nada"
+		if et == "spell" then
+			local n = M.NombreHechizo(e.id)
+			if n and sel and #n <= TOPE_ARG then
+				tipo, cmd, arg = "macro", "/cast", n
+			elseif n then
+				tipo, hechizo = "spell", n
 			end
+		elseif et == "venda" then
+			if sel and M.venda then
+				tipo, cmd, arg = "macro", "/use", "item:" .. M.venda
+			elseif M.venda then
+				-- 1.3.1: sin «Curar y seleccionar», solo la venda sobre ese
+				-- compañero (el tipo "item" la usa en la unidad del botón), sin /target.
+				tipo, objeto = "item", "item:" .. M.venda
+			end
+		elseif et == "target" then
+			tipo = "target"
+		elseif et == "menu" and M.PermiteMenu(r) then
+			tipo = "togglemenu"
 		end
+		-- Sin nada que lanzar (ranura vacía, o un hechizo o una venda que ya no
+		-- tienes): con «Curar y seleccionar», el clic al menos selecciona.
+		if not tipo and sel then tipo = "target" end
 		if cmd then
 			objetivos[#objetivos + 1] = p .. ":" .. s
 			if type(unidad) == "string" then macro = M.Macro(unidad, cmd, arg) end
@@ -150,6 +175,8 @@ local function atributos(unidad)
 	end
 	t[#t + 1] = { "alfa-objetivos", #objetivos > 0 and table.concat(objetivos, " ") or nil }
 	t[#t + 1] = { "refreshUnitChange", REFRESCO }
+	-- SecureActionButtonTemplate: al soltar el botón del ratón (registrado "AnyUp").
+	t[#t + 1] = { "useOnKeyDown", false }
 	return t
 end
 
@@ -408,6 +435,8 @@ local function bitsModificadores()
 	end
 	return bitsCache or nil
 end
+-- Para volver a leerlos (el banco de pruebas).
+function M.OlvidarBitsBlizzard() bitsCache = nil end
 
 local BOTON_BLIZZARD = {}
 for _, bt in ipairs(M.BOTONES) do BOTON_BLIZZARD[bt.s] = bt.blizzard end
@@ -461,6 +490,52 @@ function M.ChoquesBlizzard()
 		end
 	end
 	return n
+end
+
+-- Copia tus atajos de Blizzard (C_ClickBindings.GetProfileInfo, que solo se
+-- lee) a las ranuras de tu mapa que caen en el mismo botón y teclas: hechizos,
+-- seleccionar y el menú. Las macros no se pueden copiar (el mapa de Alfa no
+-- las tiene) y se dejan como están. `probar`: solo cuenta, no cambia nada.
+-- -> copiados, sin copiar
+function M.CopiarBlizzard(probar)
+	local C = C_ClickBindings
+	local bits = bitsModificadores()
+	local E = tiposClick()
+	local I = Enum and Enum.ClickBindingInteraction
+	if not (C and C.GetProfileInfo and bits and E) then return 0, 0 end
+	if not probar and enCombate() then return 0, 0 end
+	local ok, perfil = pcall(C.GetProfileInfo)
+	if not ok or type(perfil) ~= "table" then return 0, 0 end
+	local mapa, n, sin = M.Mapa(), 0, 0
+	for i = 1, #perfil do
+		local e = perfil[i]
+		if type(e) == "table" then
+			for _, r in ipairs(M.RANURAS) do
+				local p, s = M.Partes(r)
+				if e.button == BOTON_BLIZZARD[s] and e.modifiers == bits[p] then
+					local nueva
+					if e.type == E.Spell and type(e.actionID) == "number" and M.NombreHechizo(e.actionID) then
+						local mia = mapa[r]
+						if not (type(mia) == "table" and mia.t == "spell" and idBase(mia.id) == e.actionID) then
+							nueva = { t = "spell", id = e.actionID, k = M.ClaveDe(e.actionID) }
+						end
+					elseif e.type == E.Interaction and I then
+						local mia = type(mapa[r]) == "table" and mapa[r].t or nil
+						if e.actionID == I.Target and mia ~= "target" then nueva = { t = "target" }
+						elseif e.actionID == I.OpenContextMenu and M.PermiteMenu(r) and mia ~= "menu" then nueva = { t = "menu" } end
+					elseif e.type == E.Macro or e.type == E.Spell then
+						sin = sin + 1
+					end
+					if nueva then
+						n = n + 1
+						if not probar then mapa[r] = nueva end
+					end
+				end
+			end
+		end
+	end
+	if n > 0 and not probar then M.AplicarMapa() end
+	return n, sin
 end
 
 -- La ventana de clic para lanzar de Blizzard. Alfa nunca la abre desde su

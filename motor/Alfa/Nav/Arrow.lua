@@ -434,6 +434,9 @@ local SALE = 0.6          -- segundos del fundido al irse
 local QUIETA_ENTRA, QUIETA_SALE = 0.15, 0.2 -- con ui.reduceMotion: fundidos cortos
 local LOBO_TAM = MEDALLA * 0.62
 Arrow.PLACA = { QUEDA = QUEDA, QUEDA_CAMBIO = QUEDA_CAMBIO, SALE = SALE, ENTRA = ENTRA_PLACA } -- (para el banco)
+-- Alfa 1.3.7c: el estimado sin moverte (yardas por segundo corriendo y en
+-- una montura de nivel 40, y desde cuántas yardas se dice).
+Arrow.PASO_A_PIE, Arrow.PASO_MONTADO, Arrow.ESTIMA_DESDE = 7, 11.2, 40
 
 local function kit()
 	local N = rawget(_G, "AlfaNucleo")
@@ -988,6 +991,8 @@ local function setMode(m)
 		skinDisc:SetVertexColor(0.031, 0.024, 0.016, 0.45)
 		wolfPaw:SetSize(DIAL * 0.5, DIAL * 0.5)
 		wolfPaw:SetAlpha(1)
+		-- Alfa 1.3.7c: quien quiera festejar la llegada (Lya da un brinco).
+		if m == "arrived" and ns.Fire then ns.Fire("ALFA_LLEGADA", Nav.GetTarget()) end
 		-- Alfa 1.2.9: la llegada de La Jauría (pintarLlegada); sin el Kit, la de antes.
 		if not pintarLlegada(m) then
 			distText:SetTextColor(Nav.RGB("arrowNearText"))
@@ -1229,6 +1234,19 @@ local function sample(elapsed)
 			if secs ~= lastEta then
 				lastEta = secs
 				etaText:SetText(duracion(secs)) -- Alfa 1.3.7
+			end
+			etaText:Show()
+		elseif dist >= Arrow.ESTIMA_DESDE then
+			-- Alfa 1.3.7c: parado (o yendo a otro lado), un estimado en línea
+			-- recta a tu paso: a pie o montado. Así se sabe si queda lejos
+			-- antes de echar a correr.
+			local m = IsMounted and IsMounted() -- (sin probarlo antes de saber si es secreto)
+			local montado = not (issecretvalue and issecretvalue(m)) and m == true
+			local secs = floor(dist / (montado and Arrow.PASO_MONTADO or Arrow.PASO_A_PIE) + 0.5)
+			local clave = (montado and 1e7 or 0) + secs
+			if clave ~= lastEta then
+				lastEta = clave
+				etaText:SetText(ns.T(montado and "≈ %s montado" or "≈ %s a pie"):format(duracion(secs)))
 			end
 			etaText:Show()
 		else

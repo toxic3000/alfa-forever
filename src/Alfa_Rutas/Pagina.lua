@@ -94,6 +94,27 @@ local function opciones()
 	local out = {}
 	out[#out + 1] = { icono = "ic-lobo", titulo = L["¿Qué quieres hacer?"], texto = L["Subir de nivel, profesiones, oro o mazmorras."],
 		alClic = function() M.Asistente.Abrir() end }
+	-- 1.3.7: «Lo que sigues»: tus guías y tu plan en curso, para verlos y quitarlos.
+	local EC = M.EnCurso
+	if EC then
+		local abiertas, maxi, lleno = EC.Cuantas()
+		local Pl = M.Planes
+		local plan = Pl and Pl.Activo and Pl.Activo()
+		if abiertas > 0 or plan then
+			local texto
+			if lleno then
+				texto = format(L["Tienes %d de %d guías abiertas: quita las que ya no uses para abrir otra."], abiertas, maxi)
+			elseif plan and abiertas == 0 then
+				texto = L["Tu plan en curso: míralo o quítalo."]
+			elseif plan then
+				texto = format(L["%s y tu plan: síguelos o quítalos."], M.Plural(abiertas, L["%d guía"], L["%d guías"]))
+			else
+				texto = format(L["%s: síguelas o quítalas."], M.Plural(abiertas, L["%d guía"], L["%d guías"]))
+			end
+			out[#out + 1] = { icono = "ic-lista", tono = lleno and "aviso" or nil, titulo = L["Lo que sigues"], texto = texto,
+				alClic = function() EC.Abrir() end }
+		end
+	end
 	if enLog > 0 then
 		out[#out + 1] = { icono = "ic-misiones", tono = "exito", titulo = L["Cerrar mis misiones"],
 			texto = listas == 1 and format(L["%d en tu registro, 1 lista: termínalas y entrégalas en el orden más corto."], enLog)
@@ -214,6 +235,7 @@ A.RegisterEvent("QUEST_REMOVED", luego)
 A.RegisterEvent("BAG_UPDATE_DELAYED", luego)
 A.On("GUIDE_CHANGED", luego)
 A.On("STEP_CHANGED", luego)
+A.On("TABS_CHANGED", luego) -- 1.3.7: «Lo que sigues» cuenta tus guías abiertas
 M.Escuchar("NIVEL", luego)
 M.Escuchar("SEGUIR", luego)
 M.Escuchar("CERRAR", luego)

@@ -46,7 +46,7 @@ local LISTO = "|TInterface\\RaidFrame\\ReadyCheck-Ready:12:12|t"
 local function secreto(v)
 	local C = A.Compat
 	if C and C.IsSecret then return C.IsSecret(v) == true end
-	return issecretvalue ~= nil and v ~= nil and issecretvalue(v) and true or false
+	return issecretvalue ~= nil and type(v) ~= "nil" and issecretvalue(v) and true or false
 end
 local function leer(v) if secreto(v) then return nil end return v end
 

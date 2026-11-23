@@ -27,4 +27,5 @@ Resumen.lua
 Panel.lua
 Medidor.lua
 Ventana.lua
+Detalle.lua
 Pagina.lua

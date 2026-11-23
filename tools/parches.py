@@ -647,6 +647,17 @@ PARCHES += [
      lambda cfg: 'ns.On("WAYPOINT_CHANGED", refreshSoon)\nns.On("ROUTE_CHANGED", refreshSoon) -- Alfa 1.3.3: el tramo de la piedra\n'),
 ]
 
+# 1.3.7 (arreglos): IsInInstance puede dar un valor secreto; un secreto no se
+# prueba en un if (`if not inside`). Se lee con readable primero: secreto o no
+# legible cuenta como «afuera», igual que sin la función.
+PARCHES += [
+    ("Alfa/Core/Compat.lua",
+     '\tlocal inside, kind = IsInInstance()\n\tif not inside then return false end\n\treturn true, kind\n',
+     lambda cfg: '\tlocal inside, kind = IsInInstance()\n'
+                 '\tif isSecret(inside) or not inside then return false end -- Alfa 1.3.7: secretos\n'
+                 '\treturn true, readable(kind)\n'),
+]
+
 # Textos que se agregan al final de un archivo: las traducciones de lo nuevo.
 # Textos del motor que el paquete de idioma de Polestar deja en inglés.
 SIN_TRADUCIR_ES = {"Recorder": "Grabadora"}
@@ -1068,6 +1079,29 @@ PARCHES += [
      lambda c: '\tif ns.LogFullHold and ns.LogFullHold(q) then return false end -- Alfa 1.3.7: bitacora llena\n'
                '\tnoteActed()\n'
                '\tif QuestGetAutoAccept and QuestGetAutoAccept() then'),
+]
+
+# 1.3.7: hasta 12 guías a la vez (antes 6). El tope es un local del motor que
+# usan abrir, reabrir una cerrada, guardar/restaurar al entrar y la ficha de
+# tus personajes: se cambia de raíz. Lleno, abrir otra no se bloquea: Alfa
+# quita sola la más vieja que no sigues ni fijaste (Engine.HacerLugar, de
+# Alfa_Rutas/EnCurso.lua). Solo lo que abre el jugador (no lo automático).
+PARCHES += [
+    ("Alfa/Core/Engine.lua",
+     "local MAX_TABS = 6\nEngine.MAX_TABS = MAX_TABS\n",
+     _fijo("local MAX_TABS = 12 -- Alfa 1.3.7: 12 guías a la vez (Polestar: 6)\nEngine.MAX_TABS = MAX_TABS\n")),
+    # Las cerradas que se recuerdan (Reabrir, Deshacer de «Quitar todas»): más que las abiertas.
+    ("Alfa/Core/Engine.lua",
+     "Own.MAX_CLOSED = 10\n",
+     _fijo("Own.MAX_CLOSED = 24 -- Alfa 1.3.7: más que las 12 abiertas (Polestar: 10)\n")),
+    ("Alfa/Core/Engine.lua",
+     "\tif #tabs >= MAX_TABS then return nil end\n\tlocal tab = { guide = g, passedUpTo = 0,",
+     _fijo("\t-- Alfa 1.3.7: lleno, Alfa hace lugar (quita la más vieja que no sigues ni fijaste).\n"
+           "\tif #tabs >= MAX_TABS and not auto and type(Engine.HacerLugar) == \"function\" then pcall(Engine.HacerLugar, id) end\n"
+           "\tif #tabs >= MAX_TABS then return nil end\n\tlocal tab = { guide = g, passedUpTo = 0,")),
+    ("Alfa/Alts/Snapshot.lua",
+     "local MAX_TABS = 6\nlocal RIDING = 762\n",
+     _fijo("local MAX_TABS = 12 -- Alfa 1.3.7: las mismas 12 del motor\nlocal RIDING = 762\n")),
 ]
 
 

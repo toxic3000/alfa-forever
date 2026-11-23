@@ -28,7 +28,7 @@ local type, ipairs, pairs, floor, format, min, max = type, ipairs, pairs, math.f
 local In = {}
 M.Inspeccion = In
 
-local function secreto(v) return v ~= nil and issecretvalue ~= nil and issecretvalue(v) and true or false end
+local function secreto(v) return type(v) ~= "nil" and issecretvalue ~= nil and issecretvalue(v) and true or false end
 local function leer(fn, ...)
 	if type(fn) ~= "function" then return nil end
 	local ok, v = pcall(fn, ...)

@@ -1130,7 +1130,10 @@ local function load(id, inNewTab)
 	if not (E and id) then return end
 	if inNewTab and E.OpenTab then
 		if not E.OpenTab(id) then
-			ns.Print(L["Six tabs is the limit. Close one to open another."])
+			-- Alfa 1.3.7: el aviso trae «Ver lo que sigues» (Alfa_Rutas/EnCurso.lua).
+			local R = rawget(_G, "AlfaRuta")
+			if type(R) == "table" and type(R.AvisoLleno) == "function" then R.AvisoLleno()
+			else ns.Print(L["Six tabs is the limit. Close one to open another."]) end
 			return
 		end
 	elseif E.SetGuide then

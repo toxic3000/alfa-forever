@@ -14,6 +14,7 @@
 
 local ADDON, M = ...
 local A, L = M.A, M.L
+local N = M.N
 local Pg = {}
 M.Peligro = Pg
 
@@ -75,7 +76,7 @@ end
 local function enInstancia()
 	if not IsInInstance then return false end
 	local ok, dentro = pcall(IsInInstance)
-	return ok and dentro == true
+	return ok and N.Si(dentro) -- 1.3.7: secretos
 end
 
 local function nivelJugador()

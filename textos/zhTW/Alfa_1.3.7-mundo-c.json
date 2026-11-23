@@ -1,0 +1,17 @@
+{
+ "Clic: despliega la guía. Arrastra para moverla.": "點擊：展開指南。拖曳可移動。",
+ "Clic: pliega la guía y deja solo el paso de ahora. Arrastra para moverla.": "點擊：收起指南，只留目前這一步。拖曳可移動。",
+ "≈ %s a pie": "≈ %s（步行）",
+ "≈ %s montado": "≈ %s（坐騎）",
+ "Tu camino de hoy": "你今天的足跡",
+ "Por dónde pasaste hoy, como un rastro de puntitos: tenues los de la mañana, vivos los de hace poco, y una huella donde empezaste.": "你今天走過的路，化作一串小點：早上的淡，剛才的亮，起點處留一個爪印。",
+ "La distancia en el cuadro de los pines": "圖釘提示中顯示距離",
+ "Al pasar el ratón por un pin del minimapa o de los mapas: a cuántas yardas está y hacia dónde.": "滑鼠移到小地圖或地圖上的圖釘時：顯示它有多少碼遠、在哪個方向。",
+ "Aquí mismo": "就在這裡",
+ "A %s, %s": "%s，%s",
+ "¡Primera vez aquí!": "第一次來這裡！",
+ "%d de tus misiones es de aquí": "%d 個任務在這裡",
+ "%d de tus misiones son de aquí": "%d 個任務在這裡",
+ "Brincar al llegar": "抵達時蹦一下",
+ "Cuando llegas a donde apunta la flecha, Lya da un brinco de gusto. Sin palabras ni sonido.": "當你抵達箭頭所指的地方，莉婭會開心地蹦一下。沒有文字，也沒有聲音。"
+}

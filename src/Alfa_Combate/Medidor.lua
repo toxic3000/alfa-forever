@@ -185,6 +185,8 @@ function D.Leer(sesion, tipo, filas)
 			local x = {
 				pos = i, nombre = f.name, clase = M.Legible(f.classFilename), yo = M.Legible(f.isLocalPlayer) == true,
 				valor = f.totalAmount, porSeg = f.amountPerSecond,
+				-- 1.3.7: para su detalle (Detalle.lua); el GUID puede llegar secreto.
+				guid = f.sourceGUID, criatura = f.sourceCreatureID,
 			}
 			if M.Secreto(x.nombre) or M.Secreto(x.valor) or M.Secreto(x.porSeg) then r.secreto = true end
 			if i <= filas then

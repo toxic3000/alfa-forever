@@ -46,5 +46,7 @@ Biblioteca.lua
 Asistente.lua
 VistaMisiones.lua
 VistaArbol.lua
+EnCurso.lua
+PaginaPlanes.lua
 Pagina.lua
 Contrato.lua

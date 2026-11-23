@@ -111,6 +111,20 @@ local function grupos(ui, padre)
 			control = function(fila) return K.Interruptor(fila, { clave = "nucleo.limpia" .. g.id }) end })
 	end
 
+	-- 1.3.7: la ventana de Alfa (Ventana.lua).
+	local vent = K.GrupoAjustes(padre, { titulo = L["La ventana de Alfa"] })
+	vent:Fila({ titulo = L["Atajos de teclado en la ventana"],
+		texto = L["Con la ventana abierta: Ctrl y un número cambian de sección, Ctrl+← y Ctrl+→ de página, Ctrl+F busca y Alt+← vuelve a donde estabas."],
+		control = function(fila) return K.Interruptor(fila, { clave = ID .. ".atajosVentana" }) end })
+	vent:Fila({ titulo = L["Recordar su alto y su lugar"],
+		texto = L["La esquina de abajo a la derecha la hace más alta. Alfa la abre donde la dejaste y del alto que la dejaste."],
+		control = function(fila) return K.Interruptor(fila, { clave = ID .. ".recordarVentana" }) end })
+	vent:Fila({ titulo = L["La ventana como venía"], hija = true,
+		texto = L["Vuelve a su alto de siempre, en el centro de la pantalla."],
+		control = function(fila) return K.Boton(fila, L["Devolverla"], function()
+			if M.Ventana then M.Ventana.Restablecer() end
+		end, { tipo = "secundario", icono = "ic-ventana" }) end })
+
 	-- 1.3.0: tus atajos (Teclas.lua).
 	local atajos = K.GrupoAjustes(padre, { titulo = L["Tus atajos"] })
 	atajos:Fila({ titulo = L["Tus atajos de Alfa"],
@@ -327,6 +341,17 @@ local CONTROLES = {
 		help = L["Con una tecla escondes lo del juego que no necesitas y quedan Alfa, tu rastreador y Lya. Otra pulsación lo devuelve todo."],
 		onClick = function() if N.PantallaLimpia then N.PantallaLimpia.Alternar() end end,
 		search = "clean screen, hide ui, minimal ui, screenshot mode, immersion, pantalla limpia" },
+	-- 1.3.7: la ventana de Alfa (Ventana.lua).
+	{ kind = "toggle", key = ID .. ".atajosVentana", label = L["Atajos de teclado en la ventana"],
+		help = L["Con la ventana abierta: Ctrl y un número cambian de sección, Ctrl+← y Ctrl+→ de página, Ctrl+F busca y Alt+← vuelve a donde estabas."],
+		search = "keyboard shortcuts, hotkeys, ctrl, navigation, atajos, teclado, teclas, secciones, volver, back" },
+	{ kind = "toggle", key = ID .. ".recordarVentana", label = L["Recordar su alto y su lugar"],
+		help = L["La esquina de abajo a la derecha la hace más alta. Alfa la abre donde la dejaste y del alto que la dejaste."],
+		search = "window size, resize, taller, position, remember, tamaño, alto, agrandar, ventana, lugar" },
+	{ kind = "button", label = L["La ventana como venía"], button = L["Devolverla"], icon = "info",
+		help = L["Vuelve a su alto de siempre, en el centro de la pantalla."],
+		onClick = function() if M.Ventana then M.Ventana.Restablecer() end end,
+		search = "reset window, window size, position, center, ventana, tamaño, centro" },
 	{ kind = "button", label = L["Tus atajos de Alfa"], button = L["Abrir"], icon = "info",
 		help = L["Todas las teclas de Alfa en un lugar, para cambiarlas ahí mismo. También con /alfa teclas."],
 		onClick = function() M.Teclas.Abrir() end, search = "keybindings, key bindings, hotkeys, shortcuts, keys, teclas, atajos" },
@@ -366,7 +391,9 @@ N.Modulo({
 		anuncios = true,
 		-- 1.2.9: "sencillo" (lo esencial a la vista) | "completo" (todo Alfa).
 		-- Quien ya tenía Alfa queda en completo (migración 3, Pasos.lua).
-		modo = "sencillo" },
+		modo = "sencillo",
+		-- 1.3.7: la ventana de Alfa (Ventana.lua): sus atajos y recordar su alto y lugar.
+		atajosVentana = true, recordarVentana = true },
 	controles = CONTROLES,
 	construir = construir,
 	-- 1.3.3: un punto en la página (y en Ajustes) con las novedades sin ver.

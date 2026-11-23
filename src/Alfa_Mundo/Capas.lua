@@ -353,6 +353,12 @@ motor(G_GUIA, "guia.ruta", "nav.routeLines", L["Línea de la ruta"],
 motor(G_GUIA, "guia.vuelo", ID .. ".vueloEnMapa", L["Tu vuelo en el mapa"],
 	L["Mientras vuelas en grifo, la línea de tu viaje en el mapa de Alfa: por dónde vas y dónde aterrizas."],
 	MAPA .. "flightmaster", "success", { esencial = true, propia = true })
+motor(G_GUIA, "guia.rastro", ID .. ".rastro", L["Tu camino de hoy"],
+	L["Por dónde pasaste hoy, como un rastro de puntitos: tenues los de la mañana, vivos los de hace poco, y una huella donde empezaste."],
+	UI .. "icon-goto", "accent", { propia = true }) -- 1.3.7c (Rastro.lua)
+motor(G_GUIA, "guia.distancia", ID .. ".distanciaPines", L["La distancia en el cuadro de los pines"],
+	L["Al pasar el ratón por un pin del minimapa o de los mapas: a cuántas yardas está y hacia dónde."],
+	MAPA .. "pin", "accent", { esencial = true, propia = true }) -- 1.3.7c (DistanciaPines.lua)
 motor(G_GUIA, "guia.siguientes", "nav.upcomingPins", L["Pasos que siguen, numerados"],
 	L["Un pin pequeño con su número donde te llevan los próximos pasos."], MAPA .. "pin", "accent")
 motor(G_GUIA, "guia.minimapa", "nav.minimapPins", L["La guía en el minimapa"],

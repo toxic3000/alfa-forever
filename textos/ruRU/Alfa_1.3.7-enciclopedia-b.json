@@ -1,0 +1,20 @@
+{
+ "Al instante": "Сразу",
+ "Rápido (0,3 s)": "Быстро (0,3 с)",
+ "Normal (0,6 s)": "Обычно (0,6 с)",
+ "Con calma (1 s)": "Спокойно (1 с)",
+ "Solo con Mayús o clic derecho": "Только с Shift или правым щелчком",
+ "Lo que llevas puesto": "Что на тебе надето",
+ "Comparar con mi equipo": "Сравнить с моей экипировкой",
+ "No llevas nada puesto en esa ranura.": "В этой ячейке у тебя ничего не надето.",
+ "Comparar con…": "Сравнить с…",
+ "No tienes piezas de esa ranura, ni puestas ni en tus bolsas.": "У тебя нет вещей для этой ячейки ни на себе, ни в сумках.",
+ "Ver ficha": "Открыть карточку",
+ "Alfa no conoce un camino que pueda guiar para esto.": "Альфа не знает пути, по которому может провести к этому.",
+ "Agregar a mi lista de compras": "Добавить в мой список покупок",
+ "La lista de compras es de Comercio: actívalo para usarla.": "Список покупок — часть «Торговли»: включи её, чтобы им пользоваться.",
+ "Cuadro del objeto al pasar el ratón": "Подсказка предмета при наведении",
+ "Cuánto esperar con el ratón quieto antes de enseñarlo. Con Mayús lo ves al momento y comparado con tu equipo; con clic derecho, comparar y más.": "Сколько ждать с неподвижной мышью, прежде чем показать её. С Shift видно сразу и со сравнением с экипировкой; правый щелчок — сравнить и другое.",
+ "Pidiendo precios…": "Запрашиваю цены…",
+ "Precios %s": "Цены %s"
+}

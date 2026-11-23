@@ -53,13 +53,89 @@ end
 
 local clave -- "Nombre-Reino" del personaje actual
 
+-- 1.3.7: con el reino vacío (Forever lo da así desde el 20/11/2026) la clave
+-- salía «Toxic-» y el mismo personaje quedaba dos veces en «Tus personajes»;
+-- N.Reino recuerda el que el juego le dio a este personaje. Solo con un reino
+-- seguro (del juego o del registro propio de este personaje) se fija la clave
+-- y se junta el registro sin reino; con uno supuesto se usa sin juntar nada.
 function D.Clave()
 	if clave then return clave end
 	local nombre = M.Texto(UnitName and UnitName("player"))
-	local reino = M.Texto(GetNormalizedRealmName and GetNormalizedRealmName()) or M.Texto(GetRealmName and GetRealmName())
 	if not nombre or nombre == "" then return nil end
-	clave = reino and (nombre .. "-" .. reino) or nombre
+	local reino, seguro
+	if N.Reino then
+		reino, seguro = N.Reino(true)
+	else
+		reino = M.Texto(GetNormalizedRealmName and GetNormalizedRealmName()) or M.Texto(GetRealmName and GetRealmName())
+		seguro = true
+	end
+	if reino == "" then reino = nil end
+	if not reino then return nombre .. "-" end
+	if not seguro then return nombre .. "-" .. reino end
+	clave = nombre .. "-" .. reino
+	D.JuntarSinReino(nombre, clave)
 	return clave
+end
+
+-- 1.3.7: el registro que se guardó sin reino («Nombre-» o «Nombre») vuelve al
+-- de verdad. Gana el que se vio más reciente, pero lo que trae vacío (una
+-- tabla vacía que D.Actual creó, un texto vacío) lo pone el otro: el banco
+-- de hace días no se pierde. Cada tabla con su sello viene del mismo lado
+-- (banco con bancoVisto; compra con su t), el más nuevo de los que traen algo.
+local function vacio(v)
+	return v == nil or v == "" or (type(v) == "table" and next(v) == nil)
+end
+
+local function juntarRegistros(a, b)
+	local nuevo, viejo = a, b
+	if (tonumber(b.visto) or 0) > (tonumber(a.visto) or 0) then nuevo, viejo = b, a end
+	local t = {}
+	for campo, v in pairs(viejo) do t[campo] = v end
+	for campo, v in pairs(nuevo) do if not vacio(v) or vacio(t[campo]) then t[campo] = v end end
+	-- el banco y su sello, del mismo lado
+	local function sello(r) return tonumber(r.bancoVisto) or 0 end
+	local banco = nil
+	if not vacio(a.banco) and not vacio(b.banco) then banco = sello(a) >= sello(b) and a or b
+	elseif not vacio(a.banco) then banco = a
+	elseif not vacio(b.banco) then banco = b end
+	if banco then t.banco, t.bancoVisto = banco.banco, banco.bancoVisto end
+	local function selloCompra(r) return type(r.compra) == "table" and tonumber(r.compra.t) or 0 end
+	local compra = nil
+	if not vacio(a.compra) and not vacio(b.compra) then compra = selloCompra(a) >= selloCompra(b) and a or b
+	elseif not vacio(a.compra) then compra = a
+	elseif not vacio(b.compra) then compra = b end
+	if compra then t.compra = compra.compra end
+	t.v = math.max(tonumber(a.v) or 0, tonumber(b.v) or 0) + 1
+	return t
+end
+
+-- ¿Es el mismo personaje? Con el reino vacío, dos «Toxic» de dos reinos
+-- escribían en el mismo «Toxic-»: si la clase, la facción o el reino no
+-- cuadran, no se junta (queda como estaba).
+local function esElMismo(r, otra)
+	local yo = type(otra) == "table" and otra or {}
+	if type(otra) ~= "table" then
+		local _, clase = UnitClass and UnitClass("player")
+		yo.clase = M.Texto(clase)
+		yo.faccion = M.Texto(UnitFactionGroup and UnitFactionGroup("player"))
+	end
+	for _, campo in ipairs({ "clase", "faccion" }) do
+		if not vacio(r[campo]) and not vacio(yo[campo]) and r[campo] ~= yo[campo] then return false end
+	end
+	if not vacio(r.reino) and not vacio(yo.reino) and r.reino ~= yo.reino then return false end
+	return true
+end
+
+function D.JuntarSinReino(nombre, buena)
+	local lista = D.Raiz().personajes
+	for _, k in ipairs({ nombre .. "-", nombre }) do
+		local r = lista[k]
+		if k ~= buena and type(r) == "table" and esElMismo(r, lista[buena]) then
+			local otra = lista[buena]
+			lista[buena] = type(otra) == "table" and juntarRegistros(r, otra) or r
+			lista[k] = nil
+		end
+	end
 end
 
 -- El registro del personaje actual (se crea si falta). nil antes de saber quién es.
@@ -229,7 +305,10 @@ end
 local function cabecera(r)
 	local nombre = M.Texto(UnitName and UnitName("player"))
 	if nombre then r.nombre = nombre end
-	r.reino = M.Texto(GetRealmName and GetRealmName()) or r.reino
+	-- (N.Reino no usa el reino de la cuenta: sin el tuyo da nil y no se escribe)
+	local reino
+	if N.Reino then reino = N.Reino() else reino = M.Texto(GetRealmName and GetRealmName()) end
+	if type(reino) == "string" and reino ~= "" then r.reino = reino end
 	local faccion = M.Texto(UnitFactionGroup and UnitFactionGroup("player"))
 	if faccion == "Alliance" or faccion == "Horde" then r.faccion = faccion end
 	if UnitClass then

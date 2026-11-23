@@ -115,7 +115,8 @@ vigiaInstancia:RegisterEvent("PLAYER_ENTERING_WORLD")
 vigiaInstancia:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 vigiaInstancia:SetScript("OnEvent", function()
 	local ok, dentro = pcall(function() return IsInInstance and IsInInstance() end)
-	adentro = ok and dentro == true or false
+	-- 1.3.7b: un secreto no se compara (== true): primero issecretvalue.
+	adentro = ok and not (issecretvalue and type(dentro) ~= "nil" and issecretvalue(dentro)) and dentro == true or false
 end)
 local wipe = wipe or function(t) for k in pairs(t) do t[k] = nil end return t end
 

@@ -56,7 +56,7 @@ Z.REPETIR, Z.ENTRE_RINCONES, Z.MAZMORRA_CADA = REPETIR, ENTRE_RINCONES, MAZMORRA
 
 local function ahora() return GetTime and GetTime() or 0 end
 local function reloj() return (GetServerTime and GetServerTime()) or (time and time()) or 0 end
-local function secreto(v) return issecretvalue ~= nil and v ~= nil and issecretvalue(v) and true or false end
+local secreto = N.Secreto
 local function texto(v)
 	if type(v) ~= "string" or secreto(v) or v == "" then return nil end
 	return v
@@ -65,7 +65,13 @@ local function llamar(fn, ...)
 	if type(fn) ~= "function" then return nil end
 	local r = { pcall(fn, ...) }
 	if not r[1] then return nil end
-	return unpack(r, 2)
+	-- 1.3.7-fix: una función del juego que no devuelve nada (C_Map.
+	-- GetBestMapForUnit en el tranvía o en un túnel: no hay mapa) devolvía
+	-- CERO valores y quien la envolvía en tonumber() tronaba con
+	-- «bad argument #1 to 'tonumber' (value expected)». Ahora siempre llega
+	-- al menos un nil.
+	if #r < 2 then return nil end
+	return unpack(r, 2, #r)
 end
 local function datos()
 	local d = N.DatosPersonaje("anuncios")
@@ -82,10 +88,10 @@ function Z.Olvidar()
 	ultimaZona, ultimoRincon = -math.huge, -math.huge
 	vuelo = false
 	local d = datos()
-	d.mazmorras, d.lya = {}, {}
+	d.mazmorras, d.lya, d.zonas = {}, {}, {}
 end
 
-local function enTaxi() return UnitOnTaxi and UnitOnTaxi("player") and true or false end
+local function enTaxi() return N.SiJuego(UnitOnTaxi, "player") end
 local function enCombate() return InCombatLockdown and InCombatLockdown() and true or false end
 local function descansando() return IsResting and IsResting() and true or false end
 local function repetido(clave, cada)
@@ -169,7 +175,10 @@ end
 -- La zona donde estás (su uiMapID de tipo zona: una cueva cuenta como su zona).
 function Z.MapaZona()
 	if not (C_Map and C_Map.GetBestMapForUnit) then return nil end
-	local id = tonumber(llamar(C_Map.GetBestMapForUnit, "player"))
+	-- 1.3.7-fix: sin mapa (el tranvía, un túnel) no hay id: no se anuncia con
+	-- niveles, pero tampoco se rompe nada.
+	local mejor = N.Leer(llamar(C_Map.GetBestMapForUnit, "player"))
+	local id = mejor ~= nil and tonumber(mejor) or nil
 	local primero = id
 	for _ = 1, 6 do
 		if not id then break end
@@ -199,13 +208,59 @@ function Z.Niveles(mapa)
 end
 
 local function rango(lo, hi) return lo == hi and tostring(lo) or (lo .. "\226\128\147" .. hi) end
-local function miNivel() return tonumber(llamar(UnitLevel, "player")) end
+local function miNivel() return tonumber(N.Leer(llamar(UnitLevel, "player"))) end
 
 local function nombres()
 	local zona = texto(llamar(GetRealZoneText)) or texto(llamar(GetZoneText))
 	local sub = texto(llamar(GetSubZoneText))
 	if sub == zona then sub = nil end
 	return zona, sub
+end
+
+-- 1.3.7c: ¿es tu primera vez en esta zona? Nunca anunciada para este
+-- personaje Y el juego no tiene explorado más de un rincón de ella (así un
+-- personaje que ya anduvo ahí antes de esta versión no la ve como nueva).
+-- Sin el dato de exploración, nunca es «primera vez».
+function Z.PrimeraVez(mapa)
+	mapa = tonumber(mapa)
+	if not mapa then return false end
+	local d = datos()
+	if type(d.zonas) ~= "table" then d.zonas = {} end
+	if d.zonas[mapa] then return false end
+	local X = C_MapExplorationInfo
+	if not (X and type(X.GetExploredMapTextures) == "function") then return false end
+	local lista = llamar(X.GetExploredMapTextures, mapa)
+	if type(lista) ~= "table" or secreto(lista) then return false end
+	return #lista <= 1
+end
+-- Ya anunciada (no vuelve a ser «primera vez»).
+function Z.Visitada(mapa)
+	mapa = tonumber(mapa)
+	if not mapa then return end
+	local d = datos()
+	if type(d.zonas) ~= "table" then d.zonas = {} end
+	d.zonas[mapa] = true
+end
+
+-- 1.3.7c: cuántas misiones de tu registro van bajo el encabezado de esta zona.
+function Z.MisionesDe(zona)
+	local QL = C_QuestLog
+	if type(zona) ~= "string" or not (QL and QL.GetNumQuestLogEntries and QL.GetInfo) then return 0 end
+	local n = tonumber(N.Leer(llamar(QL.GetNumQuestLogEntries))) or 0
+	local enZona, cuenta = false, 0
+	for i = 1, n do
+		local info = llamar(QL.GetInfo, i)
+		if type(info) == "table" and not secreto(info) then
+			local cab = N.Leer(info.isHeader)
+			if cab then
+				local t = texto(info.title)
+				enZona = t == zona
+			elseif enZona and not N.Si(info.isHidden) then
+				cuenta = cuenta + 1
+			end
+		end
+	end
+	return cuenta
 end
 
 -- Lo que diría al llegar a la zona donde estás: o, clave.
@@ -226,8 +281,17 @@ function Z.Zona()
 		partes = { format(L["Zona de nivel %s: ve con cuidado"], rango(lo, hi)) }
 	elseif descansando() and K.AnuncioPrendido("ciudad") then
 		o.estilo, o.color, o.sobre = "ciudad", nil, L["Un lugar para descansar"]
+	elseif Z.PrimeraVez(mapa) then
+		-- 1.3.7c: tu primera vez en la zona (lo dice arriba, en su color).
+		o.sobre, o.primera = L["¡Primera vez aquí!"], true
 	end
 	o.texto = concat(partes, "  \194\183  ")
+	-- 1.3.7c: cuántas misiones de tu registro son de esta zona.
+	local n = Z.MisionesDe(zona)
+	if n > 0 then
+		local m = N.Plural(n, L["%d de tus misiones es de aquí"], L["%d de tus misiones son de aquí"])
+		o.texto = o.texto ~= "" and (o.texto .. "\n" .. m) or m
+	end
 	return o, "z:" .. zona, sub
 end
 
@@ -246,7 +310,7 @@ end
 ---------------------------------------------------------------------------
 local function enInstancia()
 	local en, tipo = llamar(IsInInstance)
-	return en and true or false, tipo
+	return N.Si(en), N.Leer(tipo)
 end
 
 local function anunciarZona()
@@ -261,6 +325,7 @@ local function anunciarZona()
 	o.alMostrar = function() ocultarJuego(ZONA_JUEGO) end
 	o.tapaJuego = ZONA_JUEGO
 	lanzar(o, clave, o.estilo == "peligro" and 2 or 3)
+	Z.Visitada(Z.MapaZona()) -- 1.3.7c
 	return true
 end
 
@@ -402,7 +467,7 @@ function Z.Mazmorra(forzar)
 	if not en or (tipo ~= "party" and tipo ~= "raid") then return false end
 	if not forzar and not puede("mazmorra") then return false end
 	local nombre, _, _, _, _, _, _, id = llamar(GetInstanceInfo)
-	nombre, id = texto(nombre), tonumber(id)
+	nombre, id = texto(nombre), tonumber(N.Leer(id))
 	if not nombre then return false end
 	local marca = tostring(id or nombre)
 	local d = datos()
@@ -437,7 +502,7 @@ A.RegisterEvent("PLAYER_ENTERING_WORLD", function(_, login, recarga)
 		local en = enInstancia()
 		if en then
 			local nombre, _, _, _, _, _, _, id = llamar(GetInstanceInfo)
-			local marca = tostring(tonumber(id) or texto(nombre) or "?")
+			local marca = tostring(tonumber(N.Leer(id)) or texto(nombre) or "?")
 			datos().mazmorras[marca] = reloj()
 		end
 		return

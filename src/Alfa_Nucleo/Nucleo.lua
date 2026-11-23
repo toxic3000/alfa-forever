@@ -44,6 +44,32 @@ local function sinContexto(k)
 end
 N.SinContexto = sinContexto
 
+-- 1.3.7 (arreglos): valores secretos. En combate y en mazmorras el juego puede dar un
+-- valor «secreto» (UnitIsAFK, UnitOnTaxi, nombres, vida...): no se compara
+-- (==, <), no se prueba en un if ni con and/or/not, no sirve de clave ni se
+-- pasa a tonumber. Siempre se pregunta antes con estas.
+local function esSecreto(v)
+	return type(v) ~= "nil" and issecretvalue ~= nil and issecretvalue(v) and true or false
+end
+N.Secreto = esSecreto
+-- El valor si se puede leer; si es secreto, 'otro' (nil si no se da).
+function N.Leer(v, otro)
+	if esSecreto(v) then return otro end
+	return v
+end
+-- true solo con un «sí» que se puede leer; un secreto cuenta como «no sé».
+function N.Si(v)
+	if esSecreto(v) then return false end
+	return v and true or false
+end
+-- N.Si de lo que da una función del juego (false si no existe o falla).
+function N.SiJuego(fn, ...)
+	if type(fn) ~= "function" then return false end
+	local ok, v = pcall(fn, ...)
+	if not ok then return false end
+	return N.Si(v)
+end
+
 function N.Textos(en)
 	-- 1.3.6: cada lectura de L[...] corría un gsub (español) o buscaba en el
 	-- diccionario: el resultado se guarda en la tabla (rawset), y la próxima
@@ -320,6 +346,110 @@ function N.DatosPersonaje(id)
 	AlfaNucleoCharDB = type(AlfaNucleoCharDB) == "table" and AlfaNucleoCharDB or {}
 	AlfaNucleoCharDB[id] = type(AlfaNucleoCharDB[id]) == "table" and AlfaNucleoCharDB[id] or {}
 	return AlfaNucleoCharDB[id]
+end
+
+-- 1.3.7: tu reino. Desde el 20/11/2026 Forever da GetRealmName() vacío, y
+-- Bolsas y Comercio (que guardan por «Nombre-Reino») empezaban otro registro
+-- del mismo personaje («Toxic-», «?-Alliance»). De dónde sale, en orden:
+--   1. el juego (se recuerda en AlfaNucleoCharDB.reino: es de este personaje);
+--   2. lo que el juego le dio antes a este mismo personaje (AlfaNucleoCharDB);
+--   3. una suposición: el único registro de Bolsas con tu nombre, tu clase y
+--      tu facción (y no más nivel que tú). Si hay dos o más, no se supone.
+-- El reino de la cuenta (AlfaNucleoDB.reino, el último visto) no sirve para
+-- saber quién eres: puede ser de otro personaje. Lo seguro (1 y 2) se guarda
+-- para toda la sesión; la suposición (3) se busca una sola vez y nunca se
+-- guarda como certeza.
+-- normalizado: sin espacios ni guiones (GetNormalizedRealmName).
+-- -> el nombre (o nil si no se sabe), seguro (true si vino de 1 o 2)
+local reinoSesion        -- { nombre, normal } seguro
+local reinoGuardado      -- ya se escribió en AlfaNucleoCharDB
+local reinoSupuesto      -- { nombre, normal } | false (se buscó y no hubo una sola)
+
+local function sinSeparar(t) return (t:gsub("[%s%-]", "")) end
+
+local function leerReinoJuego(fn)
+	if type(fn) ~= "function" then return nil end
+	local ok, v = pcall(fn)
+	if ok and type(v) == "string" and not esSecreto(v) and v ~= "" then return v end
+	return nil
+end
+
+local function leerJugador(fn, i)
+	if type(fn) ~= "function" then return nil end
+	local r = { pcall(fn, "player") }
+	if not r[1] then return nil end
+	local v = r[(i or 1) + 1]
+	if esSecreto(v) then return nil end
+	return v
+end
+
+-- La suposición (3). -> { nombre, normal } | false (no hubo una sola), o nil
+-- si todavía no se puede buscar (las guardadas o tus datos no han llegado).
+local function suponerReino()
+	local db = type(AlfaNucleoDB) == "table" and AlfaNucleoDB
+	local lista = db and type(db.bolsas) == "table" and type(db.bolsas.personajes) == "table" and db.bolsas.personajes
+	if not lista or type(AlfaNucleoCharDB) ~= "table" then return nil end
+	local yo = leerJugador(UnitName)
+	local clase = leerJugador(UnitClass, 2)
+	local faccion = leerJugador(UnitFactionGroup)
+	local nivel = leerJugador(UnitLevel)
+	if type(yo) ~= "string" or yo == "" or type(clase) ~= "string" or type(faccion) ~= "string"
+		or type(nivel) ~= "number" or nivel < 1 then
+		return nil
+	end
+	local hallado, cuantos, vistos = nil, 0, {}
+	for _, r in pairs(lista) do
+		if type(r) == "table" and r.nombre == yo and type(r.reino) == "string" and r.reino ~= "" then
+			-- (cada reino con alguien de tu nombre cuenta, aunque no se parezca:
+			-- con dos «Toxic» en dos reinos no se supone ninguno)
+			local s = sinSeparar(r.reino)
+			if not vistos[s] then
+				vistos[s] = true
+				cuantos = cuantos + 1
+				if (r.clase == nil or r.clase == clase) and (r.faccion == nil or r.faccion == faccion)
+					and (tonumber(r.nivel) or 0) <= nivel then
+					hallado = r.reino
+				end
+			end
+		end
+	end
+	if cuantos ~= 1 or not hallado then return false end
+	return { nombre = hallado, normal = sinSeparar(hallado) }
+end
+
+function N.Reino(normalizado)
+	if not reinoSesion then
+		local nombre = leerReinoJuego(GetRealmName)
+		if nombre then
+			reinoSesion = { nombre = nombre, normal = leerReinoJuego(GetNormalizedRealmName) or sinSeparar(nombre) }
+		else
+			local d = type(AlfaNucleoCharDB) == "table" and type(AlfaNucleoCharDB.reino) == "table" and AlfaNucleoCharDB.reino
+			if d and type(d.nombre) == "string" and d.nombre ~= "" then
+				reinoSesion = { nombre = d.nombre, normal = type(d.normal) == "string" and d.normal ~= "" and d.normal or sinSeparar(d.nombre) }
+				reinoGuardado = true
+			end
+		end
+	end
+	if reinoSesion then
+		-- (las guardadas pueden llegar después de la primera consulta)
+		if not reinoGuardado and type(AlfaNucleoCharDB) == "table" then
+			reinoGuardado = true
+			local d = N.DatosPersonaje("reino")
+			d.nombre, d.normal = reinoSesion.nombre, reinoSesion.normal
+			local c = N.Datos("reino")
+			c.nombre, c.normal = reinoSesion.nombre, reinoSesion.normal
+		end
+		return normalizado and reinoSesion.normal or reinoSesion.nombre, true
+	end
+	if reinoSupuesto == nil then reinoSupuesto = suponerReino() end
+	if reinoSupuesto then return normalizado and reinoSupuesto.normal or reinoSupuesto.nombre, false end
+	return nil, false
+end
+
+-- Para el banco de pruebas (y por si cambias de personaje sin recargar):
+-- olvida lo que se supo del reino en esta sesión.
+function N.ReinoOlvidar()
+	reinoSesion, reinoGuardado, reinoSupuesto = nil, nil, nil
 end
 
 ---------------------------------------------------------------------------

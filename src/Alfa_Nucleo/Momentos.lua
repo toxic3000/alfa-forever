@@ -22,6 +22,8 @@
 --   N.EnCalma() -> bool, motivo   N.Calma(modo) («30», «60», «sesion», «no»)
 --   N.Perdido(o)   N.Perdidos() -> lista   N.PerdidosSinVer() -> n
 --   N.OlvidarPerdido(e)   N.VerPerdidos()   N.MenuPerdidos() -> item del menú
+--   1.3.7, la campanita: N.Avisos()  N.AvisosSinVer()  N.VerAvisos()  N.MenuAvisos()
+--       N.AvisoReciente(o, por)  N.MarcarAvisosVistos()  (más abajo, «Avisos»)
 --   N.Sonar(tipo, prioridad)   N.SonidoPermitido(prioridad) -> bool
 --   N.YaDicho(voz) -> bool   N.Anotar(voz)   (AlfaNucleo.dichosSesion)
 --   N.AnunciosGrandes() -> bool   el ajuste que manda sobre los anuncios grandes
@@ -42,7 +44,7 @@ local tinsert, tremove, tsort, concat = table.insert, table.remove, table.sort, 
 
 local function ahora() return GetTime and GetTime() or 0 end
 local function reloj() return (GetServerTime and GetServerTime()) or (time and time()) or 0 end
-local function secreto(v) return issecretvalue ~= nil and v ~= nil and issecretvalue(v) and true or false end
+local function secreto(v) return issecretvalue ~= nil and type(v) ~= "nil" and issecretvalue(v) and true or false end
 local function num(v) if secreto(v) then return nil end return tonumber(v) end
 local function enCombate() return InCombatLockdown and InCombatLockdown() and true or false end
 local function datos() return N.DatosPersonaje("momentos") end
@@ -456,42 +458,102 @@ end
 ---------------------------------------------------------------------------
 -- «Te perdiste esto» (51-53): lo que se fue sin que lo vieras, guardado por
 -- personaje (los últimos 30, con su hora). Los botones solo viven en la sesión.
+--
+-- 1.3.7 (la campanita): «Avisos» junta en una sola lista lo que te perdiste
+-- y los últimos avisos que sí viste (N.AvisoReciente, desde K.Aviso). Una
+-- sola cuenta para todo: N.AvisosSinVer() (lo perdido que no has visto) es
+-- la de la campanita de la ventana de Alfa y la del globito del minimapa.
+--   N.Avisos() -> lista (lo más nuevo primero)   N.AvisosSinVer() -> n
+--   N.MarcarVisto(e)   N.MarcarAvisosVistos()   N.OlvidarAviso(e)   N.OlvidarAvisos()
+--   N.IrDeAviso(e) -> { texto, alClic } | nil    N.VerAvisos()   N.MenuAvisos()
+-- Evento ALFA_AVISOS: la lista cambió (ALFA_PERDIDOS: además cambió lo perdido).
 ---------------------------------------------------------------------------
 local MAX_PERDIDOS = 30
+local MAX_RECIENTES = 20
 local acciones = setmetatable({}, { __mode = "k" }) -- entrada -> { texto, alClic }
 
 local function lista()
 	local d = datos()
 	if type(d.perdidos) ~= "table" then d.perdidos = {} end
+	-- 1.3.7: lo visto va en cada aviso (e.visto); la hora de «visto hasta» de
+	-- antes se pasa una vez a sus avisos.
+	local hasta = tonumber(d.perdidosVisto)
+	if hasta then
+		for _, e in ipairs(d.perdidos) do
+			if type(e) == "table" and (tonumber(e.t) or 0) <= hasta then e.visto = true end
+		end
+		d.perdidosVisto = nil
+	end
 	return d.perdidos
 end
+local function recientes()
+	local d = datos()
+	if type(d.recientes) ~= "table" then d.recientes = {} end
+	return d.recientes
+end
 local pintarContador -- abajo
+local refrescarVentana -- abajo
 
-local function avisarCambio()
-	if A and A.Fire then pcall(A.Fire, "ALFA_PERDIDOS") end
+local function avisarCambio(soloLista)
+	if not soloLista and A and A.Fire then pcall(A.Fire, "ALFA_PERDIDOS") end
+	if A and A.Fire then pcall(A.Fire, "ALFA_AVISOS") end
 	if pintarContador then pcall(pintarContador) end
+	if refrescarVentana then pcall(refrescarVentana) end
+end
+
+-- El título y el texto de un aviso, si se pueden guardar (nunca un valor secreto).
+local function textosDe(o)
+	if secreto(o.titulo) or secreto(o.texto) then return nil end
+	local titulo = type(o.titulo) == "string" and o.titulo or ""
+	local texto = type(o.texto) == "string" and o.texto or ""
+	if titulo == "" and texto == "" then return nil end
+	return titulo, texto
+end
+local function quitarIgual(l, titulo, texto)
+	for i = #l, 1, -1 do
+		local x = l[i]
+		if type(x) ~= "table" or (x.titulo == titulo and x.texto == texto) then tremove(l, i) end
+	end
+end
+local function guardarAccion(e, ac)
+	if type(ac) == "table" and type(ac.alClic or ac.fn) == "function" and not ac.seguro and type(ac.texto) == "string" then
+		acciones[e] = { texto = ac.texto, alClic = ac.alClic or ac.fn }
+	end
 end
 
 function N.Perdido(o)
 	if type(o) ~= "table" then return nil end
-	local titulo = type(o.titulo) == "string" and o.titulo or ""
-	local texto = type(o.texto) == "string" and o.texto or ""
-	if titulo == "" and texto == "" then return nil end
+	local titulo, texto = textosDe(o)
+	if not titulo then return nil end
 	local l = lista()
-	for i = #l, 1, -1 do
-		local x = l[i]
-		if x.titulo == titulo and x.texto == texto then tremove(l, i) end
-	end
+	quitarIgual(l, titulo, texto)
+	quitarIgual(recientes(), titulo, texto) -- (el que viste y se fue sin tocarlo queda como perdido)
 	local e = { titulo = titulo, texto = texto, icono = type(o.icono) == "string" and o.icono or nil,
 		origen = type(o.origen) == "string" and o.origen or nil, t = reloj(),
-		hora = date and date("%H:%M") or "" }
-	local ac = o.accion
-	if type(ac) == "table" and type(ac.alClic or ac.fn) == "function" and not ac.seguro and type(ac.texto) == "string" then
-		acciones[e] = { texto = ac.texto, alClic = ac.alClic or ac.fn }
-	end
+		hora = date and date("%H:%M") or "", pagina = type(o.pagina) == "string" and o.pagina or nil }
+	guardarAccion(e, o.accion)
 	tinsert(l, 1, e)
 	while #l > MAX_PERDIDOS do tremove(l) end
 	avisarCambio()
+	return e
+end
+
+-- 1.3.7: un aviso que salió en pantalla (o que dijo Lya): queda en «Avisos»
+-- como visto. Lo que pediste también (es lo que Alfa te contestó).
+function N.AvisoReciente(o, por)
+	if type(o) ~= "table" or o.historial == false then return nil end
+	local titulo, texto = textosDe(o)
+	if not titulo then return nil end
+	local l = recientes()
+	quitarIgual(l, titulo, texto)
+	local e = { titulo = titulo, texto = texto, icono = type(o.icono) == "string" and o.icono or (o.lobo and "ic-lobo") or nil,
+		origen = type(por) == "string" and por or "aviso", t = reloj(), hora = date and date("%H:%M") or "",
+		visto = true, reciente = true, pagina = type(o.pagina) == "string" and o.pagina or nil }
+	local ac = type(o.accion) == "table" and o.accion or (type(o.acciones) == "table" and o.acciones[1]) or nil
+	guardarAccion(e, ac)
+	tinsert(l, 1, e)
+	while #l > MAX_RECIENTES do tremove(l) end
+	avisarCambio(true)
 	return e
 end
 
@@ -507,24 +569,87 @@ function N.OlvidarPerdidos()
 	avisarCambio()
 end
 function N.PerdidosSinVer()
-	local visto = tonumber(datos().perdidosVisto) or 0
 	local n = 0
-	for _, e in ipairs(lista()) do if (tonumber(e.t) or 0) > visto then n = n + 1 end end
+	for _, e in ipairs(lista()) do if type(e) == "table" and not e.visto then n = n + 1 end end
 	return n
 end
+N.AvisosSinVer = N.PerdidosSinVer -- (la misma cuenta: campanita y minimapa)
 function N.MarcarPerdidosVistos()
-	datos().perdidosVisto = reloj()
+	for _, e in ipairs(lista()) do if type(e) == "table" then e.visto = true end end
 	avisarCambio()
+end
+N.MarcarAvisosVistos = N.MarcarPerdidosVistos
+function N.MarcarVisto(e)
+	if type(e) ~= "table" or e.visto then return end
+	e.visto = true
+	avisarCambio()
+end
+
+-- Todo junto, lo más nuevo primero (lo perdido gana si son del mismo segundo).
+function N.Avisos()
+	local a, b, out = lista(), recientes(), {}
+	local i, j = 1, 1
+	while a[i] or b[j] do
+		local x, y = a[i], b[j]
+		if x and (not y or (tonumber(x.t) or 0) >= (tonumber(y.t) or 0)) then
+			out[#out + 1] = x
+			i = i + 1
+		else
+			out[#out + 1] = y
+			j = j + 1
+		end
+	end
+	return out
+end
+function N.OlvidarAviso(e)
+	if type(e) ~= "table" then return end
+	local l = e.reciente and recientes() or lista()
+	for i = #l, 1, -1 do if l[i] == e then tremove(l, i) end end
+	avisarCambio(e.reciente)
+end
+function N.OlvidarAvisos()
+	local d = datos()
+	d.perdidos, d.recientes = {}, {}
+	avisarCambio()
+end
+
+-- Su botón: el que traía el aviso (en esta sesión) o, si no, la página de
+-- Alfa de donde salió (por su ícono o su o.pagina).
+local MISMO_ICONO = { ["ic-huella"] = "ic-ruta", ["ic-guia"] = "ic-ruta", ["ic-misiones"] = "ic-ruta", ["ic-seguir"] = "ic-ruta",
+	["ic-flecha"] = "ic-ruta", ["ic-oro"] = "ic-comercio", ["ic-oficios"] = "ic-comercio", ["ic-raros"] = "ic-mundo",
+	["ic-mapa"] = "ic-mundo", ["ic-nivel"] = "ic-hoy", ["ic-reloj"] = "ic-hoy" }
+-- 1.3.7: el módulo de Alfa de un aviso (su página, o el dueño de su ícono), o nil.
+function N.ModuloDeAviso(e)
+	if type(e) ~= "table" then return nil end
+	local spec = e.pagina and N.ModuloPorId and N.ModuloPorId(e.pagina)
+	if not spec and e.icono then
+		local ic = MISMO_ICONO[e.icono] or e.icono
+		for _, m in ipairs(N.modulos or {}) do
+			if m.icono == ic and m.construir then spec = m break end
+		end
+	end
+	return (spec and spec.id) and spec or nil
+end
+
+function N.IrDeAviso(e)
+	if type(e) ~= "table" then return nil end
+	local ac = acciones[e]
+	if ac then return ac end
+	local spec = N.ModuloDeAviso(e)
+	if not (spec and spec.id) then return nil end
+	local nombre = type(spec.nombre) == "string" and spec.nombre or spec.id
+	return { texto = format(L["Ver en %s"], nombre), alClic = function() N.Abrir(spec.id) end }
 end
 
 -- El contador en el botón de Alfa del minimapa (52).
 pintarContador = function()
 	local b = rawget(_G, "AlfaMinimapButton")
 	if type(b) ~= "table" or not b.CreateTexture or not K then return end
-	local n = N.PerdidosSinVer()
+	local n = N.AvisosSinVer()
 	if not b.alfaContador then
 		if n == 0 then return end
-		local c = CreateFrame("Frame", nil, b)
+		-- 1.3.7: el globito dice qué es al pasar el ratón y su clic abre «Avisos».
+		local c = CreateFrame("Button", nil, b)
 		c:SetSize(16, 16)
 		c:SetPoint("TOPRIGHT", b, "TOPRIGHT", 4, 4)
 		c:SetFrameLevel((b.GetFrameLevel and b:GetFrameLevel() or 1) + 5)
@@ -532,6 +657,31 @@ pintarContador = function()
 		c.Fondo:SetAllPoints(c)
 		c.Texto = K.Texto(c, "pequeno", "texto", "OVERLAY")
 		c.Texto:SetPoint("CENTER", c, "CENTER", 0, 0)
+		-- Solo su clic izquierdo es suyo: el derecho (el menú de Alfa) y el
+		-- arrastre (mover el botón) pasan al botón de Alfa, como si no estuviera.
+		-- (SetPassThroughButtons es protegida: se reenvía a mano.)
+		if c.RegisterForClicks then c:RegisterForClicks("LeftButtonUp") end
+		if c.RegisterForDrag then c:RegisterForDrag("LeftButton") end
+		local function alPadre(script, ...)
+			local fn = b.GetScript and b:GetScript(script)
+			if fn then K.Llamar(fn, b, ...) end
+		end
+		c:SetScript("OnClick", function(self)
+			K.OcultarInfo(self)
+			N.VerAvisos()
+		end)
+		c:SetScript("OnMouseUp", function(self, boton)
+			if boton ~= "RightButton" then return end
+			K.OcultarInfo(self)
+			if self.IsMouseOver and not self:IsMouseOver() then return end
+			alPadre("OnClick", "RightButton")
+		end)
+		c:SetScript("OnDragStart", function(self) K.OcultarInfo(self) alPadre("OnDragStart") end)
+		c:SetScript("OnDragStop", function() alPadre("OnDragStop") end)
+		c:SetScript("OnEnter", function(self)
+			K.MostrarInfo(self, N.TextoSinVer(), L["Clic: ver tus avisos"])
+		end)
+		c:SetScript("OnLeave", function(self) K.OcultarInfo(self) end)
 		b.alfaContador = c
 	end
 	local c = b.alfaContador
@@ -545,72 +695,189 @@ pintarContador = function()
 end
 N.PintarContadorPerdidos = pintarContador
 
--- La ventana «Lo que me perdí».
+-- «3 avisos sin ver» (el globito, la campanita y el botón del minimapa).
+function N.TextoSinVer(n)
+	n = n or N.AvisosSinVer()
+	if n <= 0 then return L["No tienes avisos sin ver"] end
+	return N.Plural(n, L["%d aviso sin ver"], L["%d avisos sin ver"])
+end
+
+-- La ventana «Avisos» (1.3.7: antes «Lo que me perdí»; la abre la campanita
+-- de la ventana de Alfa, el globito del minimapa, el menú y /alfa avisos).
+-- Abrirla no marca nada como visto: eso es «Marcar todo como visto» o el
+-- botón de cada aviso.
 local ventana, ui = nil, {}
+local DE_DONDE = { calma = "Mientras tenías la calma", entrada = "Mientras entrabas", lya = "Te lo dijo Lya" }
+-- 1.3.7: los filtros de arriba: «Todos», «Sin ver» y uno por módulo con avisos
+-- (los 4 con más), más «Otros» para los que no son de ninguno.
+local filtro = "todos"
+local FILTROS_MODULO = 4
+local function claveFiltro(e)
+	local spec = N.ModuloDeAviso(e)
+	return spec and spec.id or "otros"
+end
+function N.FiltroAvisos(v)
+	if v ~= nil then filtro = v end
+	return filtro
+end
+local function opcionesFiltro(todos)
+	local sinVer, por, orden = 0, {}, {}
+	for _, e in ipairs(todos) do
+		if not e.visto then sinVer = sinVer + 1 end
+		local k = claveFiltro(e)
+		if not por[k] then por[k] = 0 orden[#orden + 1] = k end
+		por[k] = por[k] + 1
+	end
+	local opciones = { { valor = "todos", texto = L["Todos"], cuenta = #todos } }
+	if sinVer > 0 then opciones[#opciones + 1] = { valor = "sinver", texto = L["Sin ver"], cuenta = sinVer } end
+	local mods = {}
+	for _, k in ipairs(orden) do if k ~= "otros" then mods[#mods + 1] = k end end
+	table.sort(mods, function(a, b) if por[a] ~= por[b] then return por[a] > por[b] end return a < b end)
+	local hayOtros = por.otros ~= nil
+	for i, k in ipairs(mods) do
+		if i > FILTROS_MODULO then hayOtros = true break end
+		local spec = N.ModuloPorId and N.ModuloPorId(k)
+		opciones[#opciones + 1] = { valor = k, texto = spec and spec.nombre or k, icono = spec and spec.icono or nil, cuenta = por[k] }
+	end
+	-- «Otros» solo si separa algo (con un solo tipo de aviso no hace falta).
+	if hayOtros and #mods > 0 then
+		local n = 0
+		for _, e in ipairs(todos) do
+			local k = claveFiltro(e)
+			local listado = false
+			for i = 1, math.min(#mods, FILTROS_MODULO) do if mods[i] == k then listado = true end end
+			if not listado then n = n + 1 end
+		end
+		opciones[#opciones + 1] = { valor = "otros", texto = L["Otros"], cuenta = n }
+	end
+	return opciones, mods
+end
+local function pasaFiltro(e, mods)
+	if filtro == "todos" then return true end
+	if filtro == "sinver" then return not e.visto end
+	local k = claveFiltro(e)
+	if filtro == "otros" then
+		for i = 1, math.min(#mods, FILTROS_MODULO) do if mods[i] == k then return false end end
+		return true
+	end
+	return k == filtro
+end
 local function llenarVentana()
 	if not ventana then return end
 	local items = {}
-	for _, e in ipairs(lista()) do
-		local ac = acciones[e]
+	local todos = N.Avisos()
+	local opciones, mods = opcionesFiltro(todos)
+	local existe = false
+	for _, o in ipairs(opciones) do if o.valor == filtro then existe = true end end
+	if not existe then filtro = "todos" end
+	if ui.filtros then
+		ui.filtros:SetOpciones(opciones)
+		ui.filtros:SetValor(filtro)
+		K.Mostrar(ui.filtros, #opciones > 2 or (#opciones == 2 and opciones[2].valor == "sinver"))
+	end
+	local lista = {}
+	for _, e in ipairs(todos) do if pasaFiltro(e, mods) then lista[#lista + 1] = e end end
+	for _, e in ipairs(lista) do
+		local ir = N.IrDeAviso(e)
+		local nuevo = not e.visto
+		local partes = {}
+		if (e.hora or "") ~= "" then partes[#partes + 1] = e.hora end
+		if nuevo then partes[#partes + 1] = L["no lo viste"] end
+		if e.origen and DE_DONDE[e.origen] then partes[#partes + 1] = L[DE_DONDE[e.origen]] end
+		local linea = concat(partes, "  \194\183  ")
+		local cuerpo = (e.titulo ~= "" and e.texto ~= "") and e.texto or ""
+		if cuerpo ~= "" then linea = linea ~= "" and (linea .. "\n" .. cuerpo) or cuerpo end
 		items[#items + 1] = {
 			icono = e.icono or "ic-aviso",
 			titulo = e.titulo ~= "" and e.titulo or e.texto,
-			texto = (e.titulo ~= "" and e.texto ~= "") and (e.hora .. "  \194\183  " .. e.texto) or e.hora,
-			ayuda = e.texto ~= "" and e.texto or nil,
-			tono = "aviso",
-			alClic = ac and function()
-				N.OlvidarPerdido(e)
-				K.Llamar(ac.alClic)
-				llenarVentana()
-			end or nil,
+			texto = linea,
+			tono = nuevo and "aviso" or "neutro",
+			elegida = nuevo or nil,
+			accion = ir and { texto = ir.texto, alClic = function()
+				N.MarcarVisto(e)
+				K.Llamar(ir.alClic)
+			end } or (nuevo and { texto = L["Visto"], alClic = function() N.MarcarVisto(e) end }) or nil,
+			secundaria = { texto = L["Quitar"], alClic = function() N.OlvidarAviso(e) end },
 		}
 	end
 	ui.rejilla:Llenar(items)
-	K.Mostrar(ui.vacio, #items == 0)
-	K.Mostrar(ui.rejilla, #items > 0)
+	local n = N.AvisosSinVer()
+	K.Escribir(ui.resumen.Texto, #todos == 0 and ""
+		or (n > 0 and (N.TextoSinVer(n) .. ". " .. L["Lo más nuevo va arriba."]) or L["Ya viste todo. Lo más nuevo va arriba."]))
+	K.Mostrar(ui.resumen, #todos > 0)
+	if ui.vacio.Set then
+		ui.vacio:Set({ lobo = "dormido", titulo = L["Todo tranquilo"],
+			texto = L["No hay avisos. Aquí quedan los últimos que te dio Alfa y los que se fueron sin que los vieras."] })
+	end
+	K.Mostrar(ui.vacio, #todos == 0)
+	K.Mostrar(ui.rejilla, #todos > 0)
+	if ui.marcar then ui.marcar:SetActivo(n > 0) end
+	if ui.borrar then ui.borrar:SetActivo(#todos > 0) end
 	local ancho = ventana:AnchoCuerpo()
 	local h = ui.pila:Acomodar(ancho)
 	ui.pila:ClearAllPoints()
 	ui.pila:SetPoint("TOPLEFT", ventana.Cuerpo, "TOPLEFT", ventana.margen, -ventana.margen)
 	ventana:SetAltoContenido(h + 2 * ventana.margen)
 end
+refrescarVentana = function() if ventana and ventana:IsShown() then llenarVentana() end end
+
+local function parrafo(p, color)
+	local f = CreateFrame("Frame", nil, p)
+	f.Texto = K.Texto(f, "nota", color or "textoTenue")
+	f.Texto:SetPoint("TOPLEFT")
+	function f:Acomodar(ancho) local h = K.Parrafo(self.Texto, ancho) self:SetHeight(h) return h end
+	return f
+end
 
 local function armarVentana()
-	ventana = K.Ventana({ nombre = "AlfaPerdidos", titulo = L["Lo que me perdí"], icono = "ic-aviso", ancho = 520, alto = 460,
-		desplazar = true, alAbrir = function() N.MarcarPerdidosVistos() end })
-	ventana:SetTitulo(L["Lo que me perdí"], L["Lo que Alfa te dijo mientras no veías"], "ic-aviso")
+	ventana = K.Ventana({ nombre = "AlfaPerdidos", titulo = L["Avisos"], icono = "ic-aviso", ancho = 540, alto = 500, desplazar = true })
+	ventana:SetTitulo(L["Avisos"], L["Lo que Alfa te dijo, con su hora"], "ic-aviso")
 	ventana.alAcomodar = llenarVentana
 	local p = K.Pila(ventana.Cuerpo, { espacio = K.ESP.base })
 	ui.pila = p
-	local vacio = CreateFrame("Frame", nil, p)
-	vacio.Texto = K.Texto(vacio, "nota", "textoTenue")
-	vacio.Texto:SetPoint("TOPLEFT")
-	K.Escribir(vacio.Texto, L["No te perdiste nada. Aquí quedan los avisos que se fueron sin que los vieras."])
-	function vacio:Acomodar(ancho) local h = K.Parrafo(self.Texto, ancho) self:SetHeight(h) return h end
-	ui.vacio = p:Agregar(vacio)
-	ui.rejilla = p:Agregar(K.Rejilla(p, { min = 420, variante = "compacta" }))
-	ventana:SetPie({ K.Boton(ventana, L["Cerrar"], function() ventana:Cerrar() end, { tipo = "primario" }) },
-		{ K.Boton(ventana, L["Borrar todo"], function() N.OlvidarPerdidos() llenarVentana() end, { tipo = "fantasma" }) })
+	ui.resumen = p:Agregar(parrafo(p, "textoSuave"))
+	-- 1.3.7: filtros por tipo y un estado vacío con el lobo dormido.
+	ui.filtros = p:Agregar(K.Segmentos(p, { alCambiar = function(v) filtro = v llenarVentana() end }))
+	ui.vacio = p:Agregar(K.Vacio(p, {}), { espacio = K.ESP.l })
+	ui.rejilla = p:Agregar(K.Rejilla(p, { min = 440, gap = K.ESP.s, variante = "normal" }))
+	ui.marcar = K.Boton(ventana, L["Marcar todo como visto"], function() N.MarcarAvisosVistos() end, { tipo = "secundario" })
+	ui.borrar = K.Boton(ventana, L["Borrar"], function()
+		K.Dialogo({ titulo = L["¿Borrar todos los avisos?"], texto = L["La lista queda vacía. Lo que Alfa te diga después vuelve a aparecer aquí."],
+			aceptar = L["Borrar"], peligro = true, alAceptar = function() N.OlvidarAvisos() end })
+	end, { tipo = "fantasma" })
+	ventana:SetPie({ K.Boton(ventana, L["Cerrar"], function() ventana:Cerrar() end, { tipo = "primario" }) }, { ui.borrar, ui.marcar })
 end
 
-function N.VerPerdidos()
+function N.VerAvisos()
 	if not K then return end
 	if not ventana then armarVentana() end
 	ventana:Abrir()
-	N.MarcarPerdidosVistos()
 	llenarVentana()
+	-- 1.3.7: el juego mide mal un texto antes de su primer dibujo (las
+	-- pastillas de los filtros salían «Mun…»): se acomoda otra vez al siguiente cuadro.
+	if N.Una then N.Una("momentos.avisosOtraVez", 0, function() if refrescarVentana then refrescarVentana() end end) end
+	return ventana
 end
+N.VerPerdidos = N.VerAvisos -- (/alfa perdi y quien lo llamaba así)
 
 -- El renglón del menú de Alfa (motor/Alfa/UI/Options.lua, O.MenuItems).
-function N.MenuPerdidos()
-	local n = N.PerdidosSinVer()
-	local t = L["Lo que me perdí"]
+function N.MenuAvisos()
+	local n = N.AvisosSinVer()
+	local t = L["Avisos"]
 	if n > 0 then t = t .. "  (" .. n .. ")" end
-	return { text = t, icon = "ic-aviso", onClick = function() N.VerPerdidos() end }
+	return { text = t, icon = "ic-aviso", onClick = function() N.VerAvisos() end }
 end
+N.MenuPerdidos = N.MenuAvisos
 
+-- Lo que sale en pantalla queda en la lista (Kit/Ventanas.lua dispara ALFA_AVISO).
 if A and A.On then
-	A.On("ALFA_PERDIDOS", function() if ventana and ventana:IsShown() then llenarVentana() end end)
+	A.On("ALFA_AVISO", function(o) if type(o) == "table" then pcall(N.AvisoReciente, o, o.origen) end end)
+end
+-- Al entrar, el globito del minimapa con lo que quedó sin ver (el botón se arma al entrar).
+if A and A.OnLogin then
+	A.OnLogin(function()
+		if N.Una then N.Una("nucleo.contadorAvisos", 2, function() pcall(pintarContador) end) else pcall(pintarContador) end
+	end)
 end
 
 ---------------------------------------------------------------------------
@@ -629,7 +896,7 @@ local function terminarCalma()
 	aviso({ titulo = L["Se acabó la calma"], pedido = true, lya = false, icono = "ic-aviso",
 		texto = n > 0 and N.Plural(n, L["Te guardé %d cosa mientras tanto."], L["Te guardé %d cosas mientras tanto."])
 			or L["No pasó nada importante mientras tanto."],
-		accion = n > 0 and { texto = L["Ver lo que me perdí"], alClic = N.VerPerdidos } or nil })
+		accion = n > 0 and { texto = L["Ver mis avisos"], alClic = N.VerPerdidos } or nil })
 end
 
 -- modo: "30" | "60" | "sesion" | "no" -> true
@@ -658,9 +925,9 @@ function N.Calma(modo)
 	end
 	calmaAvisada = "si"
 	aviso({ titulo = L["No molestar"], pedido = true, lya = false, icono = "ic-aviso", importante = "siempre",
-		texto = seg and format(L["Durante %s Alfa no te avisa nada que no sea urgente. Lo que llegue queda en «Lo que me perdí»."],
+		texto = seg and format(L["Durante %s Alfa no te avisa nada que no sea urgente. Lo que llegue queda en tus avisos (la campanita)."],
 				seg < 3600 and format(L["%d min"], floor(seg / 60)) or N.Plural(floor(seg / 3600), L["%d hora"], L["%d horas"]))
-			or L["Hasta que salgas del juego Alfa no te avisa nada que no sea urgente. Lo que llegue queda en «Lo que me perdí»."],
+			or L["Hasta que salgas del juego Alfa no te avisa nada que no sea urgente. Lo que llegue queda en tus avisos (la campanita)."],
 		accion = { texto = L["Quitar la calma"], alClic = function() N.Calma("no") end } })
 	if A and A.Fire then pcall(A.Fire, "ALFA_CALMA", true) end
 	return true
@@ -675,7 +942,8 @@ if A and A.RegisterCommand then
 			N.Calma(r)
 		end
 	end, L["no molestar: /alfa calma 30 | 60 | sesion | no"])
-	A.RegisterCommand("perdi", function() N.VerPerdidos() end, L["abre «Lo que me perdí»"])
+	A.RegisterCommand("perdi", function() N.VerAvisos() end, L["abre tus avisos"])
+	A.RegisterCommand("avisos", function() N.VerAvisos() end, L["abre tus avisos (la campanita)"])
 end
 
 ---------------------------------------------------------------------------
@@ -841,7 +1109,7 @@ function N.FilasMomentos(grupo)
 		texto = L["Cada aviso suena suave según su tipo. Con «Solo los importantes», lo demás sale callado."],
 		control = function(fila) return K.Desplegable(fila, { opciones = opcionesSonido(), clave = "nucleo.sonidos", ancho = 180 }) end })
 	grupo:Fila({ titulo = L["No molestar"],
-		texto = L["Con /alfa calma, Alfa no te avisa nada que no sea urgente por 30 min, 1 h o la sesión. También respeta el /dnd del juego. Lo callado queda en «Lo que me perdí»."],
+		texto = L["Con /alfa calma, Alfa no te avisa nada que no sea urgente por 30 min, 1 h o la sesión. También respeta el /dnd del juego. Lo callado queda en tus avisos (la campanita)."],
 		control = function(fila) return K.Boton(fila, L["30 min de calma"], function() N.Calma("30") end, { tipo = "secundario", icono = "ic-aviso" }) end })
 end
 
@@ -858,10 +1126,10 @@ function N.ControlesMomentos()
 			help = L["Con /dnd (no molestar del juego), Alfa también se calla y guarda lo que te diría."],
 			search = "dnd, do not disturb, busy, no molestar, calma" },
 		{ kind = "button", label = L["No molestar"], button = L["30 min de calma"], icon = "info",
-			help = L["Con /alfa calma, Alfa no te avisa nada que no sea urgente por 30 min, 1 h o la sesión. También respeta el /dnd del juego. Lo callado queda en «Lo que me perdí»."],
+			help = L["Con /alfa calma, Alfa no te avisa nada que no sea urgente por 30 min, 1 h o la sesión. También respeta el /dnd del juego. Lo callado queda en tus avisos (la campanita)."],
 			onClick = function() N.Calma("30") end, search = "do not disturb, quiet, calm, silence, no molestar, calma" },
-		{ kind = "button", label = L["Lo que me perdí"], button = L["Ver"], icon = "info",
-			help = L["Los avisos que se fueron sin que los vieras, con su hora. También con /alfa perdi."],
-			onClick = function() N.VerPerdidos() end, search = "missed, history, notifications, perdidos, historial, avisos" },
+		{ kind = "button", label = L["Avisos"], button = L["Ver"], icon = "info",
+			help = L["Lo que Alfa te dijo, con su hora, y lo que se fue sin que lo vieras. También con la campanita de la ventana de Alfa o /alfa avisos."],
+			onClick = function() N.VerAvisos() end, search = "missed, history, notifications, perdidos, historial, avisos" },
 	}
 end

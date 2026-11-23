@@ -78,10 +78,19 @@ end
 
 local refrescarBarra
 
-local function terminar(texto)
+local function terminar(texto, bien)
 	estado, progreso, mensaje = "listo", 0, texto
 	if temporizador then N.Quitar(temporizador) end
 	temporizador = nil
+	-- 1.3.7: lo que dijo al terminar se va solo y la barra vuelve a quedarse quieta.
+	if texto then
+		N.Una("comercio.mensaje", bien and 8 or 20, function()
+			if mensaje == texto and estado == "listo" then
+				mensaje = nil
+				if refrescarBarra then refrescarBarra() end
+			end
+		end)
+	end
 	if refrescarBarra then refrescarBarra() end
 	M.Cambio()
 end
@@ -126,7 +135,7 @@ local function procesar()
 			end
 		end
 		r.escaneo = { ahora, k, n }
-		terminar(L["¡Listo! %s precios guardados."]:format(miles(k)))
+		terminar(L["¡Listo! %s precios guardados."]:format(miles(k)), true)
 		N.Imprimir(L["Escaneo completo: %s objetos con precio (%s subastas)."]:format(miles(k), miles(n)))
 	end, function()
 		terminar(L["No se pudo leer el escaneo. Intenta de nuevo más tarde."])
@@ -176,24 +185,100 @@ end)
 ---------------------------------------------------------------------------
 -- La barra bajo la ventana de la subasta (hecha con el Kit)
 ---------------------------------------------------------------------------
+-- 1.3.7: compacta (una fila de 30) y sin tapar nada del juego. Va junto a las
+-- pestañas de la subasta (Comprar, Vender, Subastas), a su derecha; si no
+-- cabe, debajo de ellas. Solo se ve con la subasta a la vista: con otra
+-- ventana (la del vendedor) no se queda pegada. Quieta (con precios al día y
+-- sin nada que decir) se encoge a su botón: el estado sale en su cuadro de
+-- información, y el avance es una línea fina abajo.
 
 local barra
-local BARRA_W, BARRA_H = 440, 44
+local BARRA_H = 30
+local ANCHO_MAX, ANCHO_MIN = 520, 300
 
 local function marcoSubasta()
-	return AuctionHouseFrame
+	local AH = rawget(_G, "AuctionHouseFrame")
+	return type(AH) == "table" and AH or nil
 end
 
-local function textoEstado()
-	if estado == "esperando" then return L["Pidiendo los precios a la subasta..."], "textoSuave" end
-	if estado == "procesando" then
-		return L["Leyendo precios... %d%%"]:format(floor(progreso * 100 + 0.5)), "textoSuave"
+local function num(v)
+	if v == nil or (issecretvalue and issecretvalue(v)) then return nil end
+	return tonumber(v)
+end
+
+-- La subasta a la vista (y no otra ventana con la marca vieja de abierta).
+local function subastaVisible()
+	local AH = marcoSubasta()
+	if not (AH and AH.IsVisible and AH:IsVisible()) then return false end
+	local MF = rawget(_G, "MerchantFrame")
+	if type(MF) == "table" and MF.IsVisible and MF:IsVisible() then return false end
+	return true
+end
+M.SubastaVisible = subastaVisible
+
+-- Las pestañas de la subasta que se ven.
+local function pestanas(AH)
+	local out, vistos = {}, {}
+	local function poner(t)
+		if type(t) == "table" and not vistos[t] and t.IsShown and t:IsShown() and t.GetRight then
+			vistos[t] = true
+			out[#out + 1] = t
+		end
 	end
-	if mensaje then return mensaje, "texto" end
+	local tabs = rawget(AH, "Tabs")
+	if type(tabs) == "table" then for _, t in pairs(tabs) do poner(t) end end
+	for _, n in ipairs({ "AuctionHouseFrameBuyTab", "AuctionHouseFrameSellTab", "AuctionHouseFrameAuctionsTab" }) do poner(rawget(_G, n)) end
+	for i = 1, 6 do
+		poner(rawget(_G, "AuctionHouseFrameTab" .. i))
+		poner(rawget(_G, "AuctionFrameTab" .. i))
+	end
+	return out
+end
+M.PestanasSubasta = pestanas
+
+-- -> ancho que cabe, desplazamiento hacia abajo (en la escala de la barra)
+local function lugar()
+	local AH = marcoSubasta()
+	local eB = K.num(barra.GetEffectiveScale and barra:GetEffectiveScale(), 1)
+	local eA = K.num(AH.GetEffectiveScale and AH:GetEffectiveScale(), 1)
+	if eB <= 0 then eB = 1 end
+	if eA <= 0 then eA = 1 end
+	local f = eA / eB -- de la escala de la subasta a la de la barra
+	local ahL, ahR, ahB = num(AH:GetLeft()), num(AH:GetRight()), num(AH:GetBottom())
+	if not (ahL and ahR and ahB) then return ANCHO_MAX, 2 end
+	local derTabs, bajan = nil, 0
+	for _, t in ipairs(pestanas(AH)) do
+		local r, b = num(t:GetRight()), num(t:GetBottom())
+		if r and b then
+			local te = K.num(t.GetEffectiveScale and t:GetEffectiveScale(), eA)
+			r, b = r * te / eA, b * te / eA
+			if r > ahL then derTabs = max(derTabs or ahL, r) end
+			bajan = max(bajan, ahB - b)
+		end
+	end
+	local anchoAH = (ahR - ahL) * f
+	if not derTabs then return min(ANCHO_MAX, anchoAH), 2 end
+	local libre = (ahR - derTabs) * f - 8
+	-- Junto a las pestañas; el tercer y cuarto valor, por si lo de la barra
+	-- no cabe ahí (refrescarBarra la baja para no tapar «Subastas»).
+	if libre >= ANCHO_MIN then return min(ANCHO_MAX, libre), 2, min(ANCHO_MAX, anchoAH), bajan * f + 4 end
+	-- No cabe junto a las pestañas: debajo de ellas.
+	return min(ANCHO_MAX, anchoAH), bajan * f + 4
+end
+
+-- -> el texto corto de la barra, su color, y el largo para su cuadro de información
+local function textoEstado()
+	if estado == "esperando" then return L["Pidiendo precios…"], "textoSuave", L["Pidiendo los precios a la subasta..."] end
+	if estado == "procesando" then
+		local t = L["Leyendo precios... %d%%"]:format(floor(progreso * 100 + 0.5))
+		return t, "textoSuave", t
+	end
+	if mensaje then return mensaje, "texto", mensaje end
 	local fecha, objetos = M.Escaneo()
-	if not fecha then return L["Aún no tienes precios. Pulsa «Escanear con Alfa»."], "aviso" end
-	local texto = L["Precios %s · %s objetos"]:format(M.Hace(fecha), miles(objetos or 0))
-	return texto, M.Viejo(fecha) and "aviso" or "textoSuave"
+	if not fecha then return L["Sin precios todavía"], "aviso", L["Aún no tienes precios. Pulsa «Escanear con Alfa»."] end
+	local largo = L["Precios %s · %s objetos"]:format(M.Hace(fecha), miles(objetos or 0))
+	local viejo = M.Viejo(fecha)
+	return L["Precios %s"]:format(M.Hace(fecha)), viejo and "aviso" or "textoSuave", largo, not viejo
 end
 
 -- El texto y el estado del botón de escanear (también lo usa la página).
@@ -208,34 +293,57 @@ local reloj -- refresca la barra mientras se ve
 
 function refrescarBarra()
 	if not barra then return end
-	local mostrar = abierta and M.Ajuste("boton") and api() ~= nil
+	local mostrar = abierta and M.Ajuste("boton") and api() ~= nil and subastaVisible()
 	barra:SetShown(mostrar and true or false)
 	if not mostrar then
 		if reloj then reloj:Cancel() reloj = nil end
 		return
 	end
 	if not reloj then reloj = N.Ticker("comercio.subasta", 0.5, function() refrescarBarra() end) end
-	local texto, color = textoEstado()
-	K.Escribir(barra.Estado, texto)
-	K.ColorTexto(barra.Estado, color)
+	local corto, color, largo, alDia = textoEstado()
+	barra.infoEstado = largo
 	local t, activo = M.BotonEscaneo()
 	barra.Boton:SetTexto(t)
 	barra.Boton:SetActivo(activo)
-	-- 1.3.7: el botón de gangas (Gangas.lua) y el estado termina junto a él.
-	if M.PintarGangas then
-		local junto = M.PintarGangas(barra)
-		if junto ~= barra.estadoJunto then
-			barra.estadoJunto = junto
-			barra.Estado:ClearAllPoints()
-			barra.Estado:SetPoint("LEFT", barra.Titulo, "RIGHT", K.ESP.s, 0)
-			barra.Estado:SetPoint("RIGHT", junto, "LEFT", -K.ESP.s, 0)
-		end
+	-- El botón de gangas (Gangas.lua) va junto a «¿Qué hago con mis objetos?».
+	local junto = M.PintarGangas and M.PintarGangas(barra) or barra.Abrir
+	-- Quieta: sin nada que decir, solo sus botones (el estado, en su cuadro de información).
+	local quieta = estado == "listo" and not mensaje and alDia and true or false
+	barra.quieta = quieta
+	local ancho, abajo, anchoDebajo, abajoDebajo = lugar()
+	local w = K.ESP.m + 18 + K.ESP.s + K.num(K.AnchoTexto(barra.Titulo), 28)
+	local derecha = K.ESP.m + K.num(barra.Boton:GetWidth(), 120) + K.ESP.s + 24
+	if junto ~= barra.Abrir then derecha = derecha + K.ESP.s + K.num(junto:GetWidth(), 80) end
+	-- Sus botones no caben junto a las pestañas: debajo de ellas, para no
+	-- tapar la pestaña «Subastas».
+	if anchoDebajo and w + derecha > ancho then ancho, abajo = anchoDebajo, abajoDebajo end
+	barra.Estado:SetShown(not quieta)
+	if quieta then
+		ancho = min(ancho, w + K.ESP.m + derecha)
+	else
+		K.Escribir(barra.Estado, corto)
+		K.ColorTexto(barra.Estado, color)
+		local cabe = ancho - w - derecha - 2 * K.ESP.s
+		-- Nunca cortado: si no cabe, solo en el cuadro de información.
+		if K.num(K.AnchoTexto(barra.Estado), 0) > cabe then barra.Estado:Hide() end
+		barra.Estado:ClearAllPoints()
+		barra.Estado:SetPoint("LEFT", barra.Titulo, "RIGHT", K.ESP.s, 0)
+		barra.Estado:SetPoint("RIGHT", junto, "LEFT", -K.ESP.s, 0)
+	end
+	ancho = floor(max(w + derecha, ancho))
+	if barra.alfaAncho ~= ancho or barra.alfaAbajo ~= abajo then
+		barra.alfaAncho, barra.alfaAbajo = ancho, abajo
+		barra:SetSize(ancho, BARRA_H)
+		barra:ClearAllPoints()
+		barra:SetPoint("TOPRIGHT", marcoSubasta(), "BOTTOMRIGHT", 0, -abajo)
+		barra.Progreso:Acomodar(ancho - 2 * K.CORTE.panel)
 	end
 	local enCurso = estado == "procesando"
 	barra.Progreso:SetShown(enCurso)
 	if enCurso then barra.Progreso:Set(progreso) end
 end
 M.RefrescarBarra = function() if refrescarBarra then refrescarBarra() end end
+M.Barra = function() return barra end
 
 local function crearBarra()
 	if barra then return barra end
@@ -247,17 +355,12 @@ local function crearBarra()
 	-- de Alfa y deja la ventana contaminada (ns.CreateFrameUnder del motor).
 	barra = CreateFrame("Frame", nil, K.Raiz())
 	if padre.GetFrameStrata then barra:SetFrameStrata(padre:GetFrameStrata()) end
-	-- 1.3.7: tan ancha como la subasta (sin pasar de 720) y el estado en dos
-	-- líneas: «Aún no tienes precios...» ya no se corta.
-	local anchoPadre = padre.GetWidth and tonumber(padre:GetWidth()) or 0
-	BARRA_W = max(440, min(720, floor(anchoPadre)))
-	barra:SetSize(BARRA_W, BARRA_H)
+	barra:SetSize(ANCHO_MIN, BARRA_H)
 	barra:SetPoint("TOPRIGHT", padre, "BOTTOMRIGHT", 0, -2)
 	barra.caja = K.Caja(barra, { fondo = "fondo", borde = "linea", corte = K.CORTE.panel })
-	barra.Marca = K.Marca(barra, K.CORTE.panel, "acento")
 	barra.Icono = K.Icono(barra, "ic-comercio", 18, "acento")
 	barra.Icono:SetPoint("LEFT", barra, "LEFT", K.ESP.m, 0)
-	barra.Titulo = K.Texto(barra, "encabezado", "texto")
+	barra.Titulo = K.Texto(barra, "etiqueta", "texto")
 	K.Escribir(barra.Titulo, "Alfa")
 	barra.Titulo:SetPoint("LEFT", barra.Icono, "RIGHT", K.ESP.s, 0)
 	barra.Boton = K.Boton(barra, L["Escanear con Alfa"], function() M.Escanear() end, { tipo = "primario", tam = "chico", icono = "ic-buscar" })
@@ -268,15 +371,22 @@ local function crearBarra()
 	barra.Estado = K.Texto(barra, "pequeno", "textoSuave")
 	barra.Estado:SetPoint("LEFT", barra.Titulo, "RIGHT", K.ESP.s, 0)
 	barra.Estado:SetPoint("RIGHT", barra.Abrir, "LEFT", -K.ESP.s, 0)
-	barra.Estado:SetWordWrap(true)
-	if barra.Estado.SetMaxLines then barra.Estado:SetMaxLines(2) end
+	barra.Estado:SetWordWrap(false)
 	barra.Estado:SetJustifyH("LEFT")
+	-- El estado completo (y cuántos objetos) al pasar el ratón por la barra.
+	barra:EnableMouse(true)
+	K.ConInfo(barra, function(self) return L["Precios de la subasta"], self.infoEstado end)
 	barra.Progreso = K.Progreso(barra, { alto = 2 })
 	barra.Progreso:SetPoint("BOTTOMLEFT", barra, "BOTTOMLEFT", K.CORTE.panel, 1)
-	barra.Progreso:Acomodar(BARRA_W - 2 * K.CORTE.panel)
+	barra.Progreso:Acomodar(ANCHO_MIN - 2 * K.CORTE.panel)
 	barra.Progreso:Hide()
 	if M.ArmarGangas then M.ArmarGangas(barra) end
 	barra:SetScript("OnHide", function() if reloj then reloj:Cancel() reloj = nil end end)
+	-- Si la subasta se esconde sin avisar (otra ventana la tapa), la barra se va con ella.
+	if padre.HookScript then
+		padre:HookScript("OnHide", function() if barra then barra:Hide() end end)
+		padre:HookScript("OnShow", function() if refrescarBarra then refrescarBarra() end end)
+	end
 	return barra
 end
 

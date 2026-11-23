@@ -32,7 +32,7 @@ local ANGEL = 25          -- % de durabilidad que cuesta el ángel (en todo el e
 local CORRER = 7          -- yardas por segundo de un espíritu, si el juego no lo dice
 local DEBIL = 600         -- s de debilidad de resurrección desde el nivel 11 (Forever)
 
-local function secreto(v) return issecretvalue ~= nil and v ~= nil and issecretvalue(v) and true or false end
+local function secreto(v) return issecretvalue ~= nil and type(v) ~= "nil" and issecretvalue(v) and true or false end
 local function num(v) if secreto(v) then return nil end return tonumber(v) end
 local function si(v) return not secreto(v) and v == true end
 

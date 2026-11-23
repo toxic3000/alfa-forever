@@ -359,6 +359,8 @@ local function franja(f)
 	f.Busca:ClearAllPoints()
 	f.Busca:SetPoint("LEFT", fr, "LEFT", PAD, 0)
 	f.Busca:SetPoint("RIGHT", fr, "RIGHT", x, 0)
+	-- 1.3.7: «3 nuevos» y «1 mejora» dentro de la búsqueda (Atajos.lua).
+	if M.Atajos then K.Llamar(M.Atajos.Pintar, f, propia(f) and f.tipo == "bolsas" and vivo) end
 end
 
 ---------------------------------------------------------------------------
@@ -524,6 +526,7 @@ local function acomodar(f)
 	f.colaI = 1
 	local nFoto, nCab = 0, 0
 	local coinciden = 0
+	local nuevos, mejoras = 0, 0
 	local libres, total, libresR, totalR = 0, 0, 0, 0
 	local libresE, totalE = 0, 0 -- 1.3.0: bolsas especiales (carcaj, almas, hierbas...)
 	local y = ESP.s
@@ -548,7 +551,12 @@ local function acomodar(f)
 		b:Show()
 		usados[b] = true
 		puestos[b] = ent
-		if esVivo then colocados[b] = ent end
+		if esVivo then
+			colocados[b] = ent
+			-- 1.3.7: lo nuevo y las mejoras, para sus atajos (Atajos.lua).
+			if ent.rec and ent.rec.nuevo then nuevos = nuevos + 1 end
+			if ent.mejora then mejoras = mejoras + 1 end
+		end
 		if filtro then
 			ent.coincide = ent.rec and O.Coincide(filtro, ent) or false
 			if ent.coincide then coinciden = coinciden + 1 end
@@ -807,6 +815,7 @@ local function acomodar(f)
 	-- Pie y búsqueda.
 	f.libres, f.total, f.libresR, f.totalR = libres, total, libresR, totalR
 	f.libresE, f.totalE = libresE, totalE
+	f.alfaNuevos, f.alfaMejoras = nuevos, mejoras
 	V.Pie(f)
 	if filtro then
 		K.Escribir(f.Coinciden, coinciden > 0 and (L["%d coinciden"]):format(coinciden) or L["Ninguno coincide"])

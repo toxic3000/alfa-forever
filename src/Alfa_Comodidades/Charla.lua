@@ -34,7 +34,7 @@ M.Charla = Ch
 local type, pairs, ipairs, pcall, tostring, tonumber, format, floor, select = type, pairs, ipairs, pcall, tostring, tonumber, string.format, math.floor, select
 local lower, gsub, find, sub = string.lower, string.gsub, string.find, string.sub
 
-local function secreto(v) return v ~= nil and issecretvalue and issecretvalue(v) and true or false end
+local secreto = N.Secreto
 local function texto(v) return type(v) == "string" and not secreto(v) and v or nil end
 local function ahora() return GetTime and GetTime() or 0 end
 
@@ -55,11 +55,11 @@ local function deConfianza(nombre, guid)
 	local F = C_FriendList
 	if g and F and type(F.IsFriend) == "function" then
 		local ok, si = pcall(F.IsFriend, g)
-		if ok and si == true then return true end
+		if ok and N.Si(si) then return true end
 	end
 	if g and type(IsGuildMember) == "function" then
 		local ok, si = pcall(IsGuildMember, g)
-		if ok and si == true then return true end
+		if ok and N.Si(si) then return true end
 	end
 	if g and C_BattleNet and type(C_BattleNet.GetGameAccountInfoByGUID) == "function" then
 		local ok, info = pcall(C_BattleNet.GetGameAccountInfoByGUID, g)
@@ -69,7 +69,7 @@ local function deConfianza(nombre, guid)
 		local f = rawget(_G, fn)
 		if type(f) == "function" then
 			local ok, si = pcall(f, corto)
-			if ok and si and not secreto(si) then return true end
+			if ok and N.Si(si) then return true end
 		end
 	end
 	return false

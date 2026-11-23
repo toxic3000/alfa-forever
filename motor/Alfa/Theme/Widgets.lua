@@ -3064,7 +3064,8 @@ end
 local PILL_GAP, PILL_ROW_GAP = 6, 6
 local function placePills(f)
 	local row = f.PillRow
-	local first = SHELL.pad - 6
+	-- Alfa 1.3.7: f.psPillLeft deja lugar a la izquierda (el «‹» de volver).
+	local first = SHELL.pad - 6 + (rawget(f, "psPillLeft") or 0)
 	local maxX = (row:GetWidth() or 0) - SHELL.pad + 6
 	local x, y, rows = first, 0, 1
 	local top = (TOP.pills - PILL_H) / 2
@@ -3104,7 +3105,7 @@ local function layoutPillRow(f)
 		end
 	else
 		f.Title:SetShown((f.Title:GetText() or "") ~= "")
-		f.Title:SetPoint("LEFT", row, "LEFT", pad, 0)
+		f.Title:SetPoint("LEFT", row, "LEFT", pad + (rawget(f, "psPillLeft") or 0), 0)
 		f.Subtitle:SetPoint("LEFT", f.Title, "RIGHT", 14, -1)
 	end
 	f.Subtitle:SetPoint("RIGHT", row, "RIGHT", -pad, last and 0 or -1)
@@ -3230,6 +3231,9 @@ function W.ShellCharacter(f)
 	local name = UnitName and UnitName("player")
 	local level = UnitLevel and UnitLevel("player")
 	local parts, quitar = {}, {}
+	-- 1.3.7: en mazmorra el nombre puede llegar secreto (no se compara ni se une).
+	if issecretvalue and issecretvalue(name) then name = nil end
+	if issecretvalue and issecretvalue(level) then level = nil end
 	if type(name) == "string" and name ~= "" then parts[#parts + 1] = name end
 	local iClase, iRama
 	if c.nombre ~= "" then parts[#parts + 1] = c.nombre iClase = #parts end

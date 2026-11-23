@@ -711,7 +711,11 @@ function K.Aviso(o)
 	-- Alfa_Lya) y no salen avisos por todos lados. Siempre el aviso: o.lya =
 	-- false (quien usa la ventanita que se devuelve) o un botón seguro (abre
 	-- una ventana del juego; el globo de Lya no puede).
-	if o.lya ~= false and not seguro and K.PorLya(o) then return true end
+	if o.lya ~= false and not seguro and K.PorLya(o) then
+		-- 1.3.7: lo que dijo Lya también queda en «Avisos» (la campanita), como visto.
+		if N.AvisoReciente then pcall(N.AvisoReciente, o, "lya") end
+		return true
+	end
 	local a
 	for _, x in ipairs(avisos) do if not x.alfaVivo then a = x break end end
 	if not a then

@@ -17,6 +17,7 @@
 local ADDON, M = ...
 local N, A, K, L = M.N, M.A, M.K, M.L
 local Cat, I, F = M.Cat, M.Indices, M.F
+local Cu = M.Cuadro -- 1.3.7: el cuadro con retraso y el menú del clic derecho (Cuadro.lua)
 local V = {}
 M.V = V
 
@@ -402,7 +403,7 @@ end
 -- Una fila de una sección.
 local function filaFicha(padre)
 	local r = CreateFrame("Button", nil, padre)
-	r:RegisterForClicks("LeftButtonUp")
+	r:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 	r.velo = K.Velo(r, K.CORTE.chico, 0.045)
 	r.Objeto = K.IconoObjeto(r, 26)
 	r.Objeto:EnableMouse(false)
@@ -422,26 +423,37 @@ local function filaFicha(padre)
 		local g = self:GetParent().dato.guia
 		if g then local ok, msg = F.Guiar(g.kind, g.id, g.fila) aviso(ok, msg) end
 	end, { tam = 22, icono = 12, ayuda = L["Guíame aquí"] })
+	-- 1.3.7: el cuadro sale con el ratón quieto un rato (Cuadro.lua), sin las
+	-- comparaciones del equipo salvo con Mayús.
 	r:SetScript("OnEnter", function(self)
 		self.velo:Show()
 		local d = self.dato
 		if not d then return end
-		if d.icono and d.icono.objeto and GameTooltip then
-			GameTooltip:SetOwner(self, "ANCHOR_LEFT")
-			GameTooltip:SetHyperlink("item:" .. d.icono.objeto)
-			GameTooltip:Show()
+		if d.icono and d.icono.objeto then
+			Cu.Entrar(self, { item = d.icono.objeto, ancla = "ANCHOR_LEFT" })
 		elseif d.texto and d.texto ~= "" then
-			K.MostrarInfo(self, d.titulo, d.viaje and (d.texto .. M.SEP .. d.viaje) or d.texto)
+			Cu.Entrar(self, { titulo = d.titulo, texto = d.viaje and (d.texto .. M.SEP .. d.viaje) or d.texto })
 		end
 	end)
 	r:SetScript("OnLeave", function(self)
 		self.velo:Hide()
+		Cu.Salir(self)
 		K.OcultarInfo(self)
-		if GameTooltip and GameTooltip:GetOwner() == self then GameTooltip:Hide() end
 	end)
-	r:SetScript("OnClick", function(self)
+	r:SetScript("OnClick", function(self, boton)
 		local d = self.dato
 		if not d then return end
+		-- Clic derecho en un objeto: su menú (comparar, guiar, la lista de compras, vincular).
+		if boton == "RightButton" then
+			local obj = d.icono and d.icono.objeto
+			if obj then
+				Cu.Menu("item", obj, { dueno = self, verFicha = function() navegar(d.ir or { kind = "item", id = obj }) end })
+			elseif d.ir and d.ir.kind and d.ir.id and d.ir.kind ~= "instance" then
+				Cu.Menu(d.ir.kind, d.ir.id, { dueno = self, verFicha = function() navegar(d.ir) end })
+			end
+			return
+		end
+		Cu.Cerrar()
 		if d.icono and d.icono.objeto and IsModifiedClick and IsModifiedClick("CHATLINK") then F.Vincular("item", d.icono.objeto) return end
 		if d.ir then navegar(d.ir) elseif d.punto then flecha(d.punto) end
 	end)
@@ -819,7 +831,7 @@ local function crearFila(f)
 	f.Linea = K.Texto(f, "pequeno", "textoTenue")
 	f.Linea:SetPoint("TOPLEFT", f.Nombre, "BOTTOMLEFT", 0, -2)
 	f.Linea:SetPoint("RIGHT", f, "RIGHT", -10, 0)
-	f:HookScript("OnLeave", function(self) if GameTooltip and GameTooltip:GetOwner() == self then GameTooltip:Hide() end end)
+	f:HookScript("OnLeave", function(self) Cu.Salir(self) end)
 end
 
 local ICONO_TIPO = { npc = { "ic-personajes", "acento" }, rare = { "ic-raros", "raro" }, treasure = { "ic-raros", "oro" },
@@ -854,23 +866,39 @@ local function pintarFila(f, i)
 	end
 end
 
+-- 1.3.7: objetos, monturas y mascotas igual que en la ficha: el cuadro tras un
+-- rato quieto (enciclopedia.cuadro) y sin comparar salvo con Mayús.
 local function alEntrarFila(f, i)
 	local c = Cat.Col(est.tipo)
-	if not (c and i and GameTooltip) then return end
+	if not (c and i) then return end
 	local kind = Cat.Kind(c, i)
 	if M.ES_OBJETO[kind] then
-		GameTooltip:SetOwner(f, "ANCHOR_RIGHT")
-		GameTooltip:SetHyperlink("item:" .. c.id[i])
-		GameTooltip:Show()
-	elseif kind == "mountspell" and GameTooltip.SetSpellByID then
-		GameTooltip:SetOwner(f, "ANCHOR_RIGHT")
-		if pcall(GameTooltip.SetSpellByID, GameTooltip, c.id[i]) then GameTooltip:Show() else GameTooltip:Hide() end
+		Cu.Entrar(f, { item = c.id[i] })
+	elseif kind == "mountspell" then
+		Cu.Entrar(f, { spell = c.id[i] })
 	end
 end
 
-local function alClicFila(i, _, boton)
+-- La fila bajo el ratón (para anclar la comparación a ella).
+local function filaSobre()
+	for _, f in pairs(ui.lf and ui.lf.Lista.filas or {}) do
+		if f.alfaSobre and f:IsShown() then return f end
+	end
+	return nil
+end
+
+local function alClicFila(i, pos, boton)
 	local c = Cat.Col(est.tipo)
-	if c and i and M.ES_OBJETO[Cat.Kind(c, i)] and IsModifiedClick and IsModifiedClick("CHATLINK") then F.Vincular("item", c.id[i]) end
+	if not (c and i) then return end
+	local kind = Cat.Kind(c, i)
+	if boton == "RightButton" then
+		local inv = c.f and M.ES_OBJETO[kind] and Cat.Inv(i) or nil
+		Cu.Menu(kind, c.id[i], { dueno = filaSobre(), inv = inv,
+			verFicha = function() if pos then ui.lf:Elegir(pos) end end })
+		return
+	end
+	Cu.Cerrar()
+	if M.ES_OBJETO[kind] and IsModifiedClick and IsModifiedClick("CHATLINK") then F.Vincular("item", c.id[i]) end
 end
 
 ---------------------------------------------------------------------------
@@ -1302,7 +1330,7 @@ local function crear()
 	v = K.Ventana({ nombre = "AlfaEnciclopediaVentana", titulo = L["Enciclopedia"], subtitulo = L["Todo el juego, aunque no lo tengas"],
 		icono = "ic-enciclopedia", ancho = V.Tamano(), alto = select(2, V.Tamano()),
 		alCerrar = function()
-			if GameTooltip then GameTooltip:Hide() end
+			Cu.Cerrar()
 			if reloj then reloj:Cancel() reloj = nil end
 		end })
 	V.ArmarAsa()

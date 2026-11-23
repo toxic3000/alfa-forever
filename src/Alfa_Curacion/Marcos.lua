@@ -46,8 +46,9 @@ M.AJUSTES = {
 	activo = true,           -- usar los marcos de Alfa
 	solo = false,            -- verte a ti estando solo
 	ocultarBlizzard = true,  -- ocultar los marcos de grupo de Blizzard
-	ancho = 88,
-	alto = 36,
+	-- 1.3.7: más compactos (antes 88 x 36), con la barra de recurso abajo.
+	ancho = 84,
+	alto = 32,
 	porColumna = 5,          -- miembros por columna (o por fila)
 	crecer = "abajo",        -- "abajo" | "derecha"
 	orden = "grupo",         -- "grupo" | "rol" | "clase" | "nombre"
@@ -68,6 +69,7 @@ M.AJUSTES = {
 	descripcionCombate = true, -- en combate, un cuadro corto solo con lo que dice Alfa
 	-- 1.3.7
 	listos = true,           -- «¿Listos?» del juego: lo que te falta y los apoyos del grupo (Listos.lua)
+	recurso = true,          -- maná, furia o energía: una barra delgada bajo la vida
 }
 
 local function opt(k) return N.Get(ID, k) end
@@ -186,30 +188,74 @@ local function texto(padre, rol)
 	return fs
 end
 
+-- 1.3.7: el aspecto de fábrica, menos chillón. Antes la barra llenaba el marco
+-- con el color de la clase a todo color (bloques rosas, naranjas, amarillos).
+-- Ahora: fondo oscuro translúcido del estilo de Alfa (K.Color "fondo"), un
+-- borde fino (K.Color "linea"), la vida con el color de la clase apagado
+-- (APAGAR) sobre un hueco casi negro, el nombre con contorno y, abajo, una
+-- barra delgada de maná, furia o energía (RECURSO_H). Se repinta al cambiar
+-- de estilo (K.AlRepintar).
+local APAGAR, BASE = 0.5, 0.04   -- color de la vida = clase * APAGAR + BASE
+local ALFA_SECRETO = 0.62        -- con la clase secreta no se multiplica: se apaga con la opacidad
+local ALFA_FONDO = 0.8
+local RECURSO_H = 3
+local cuerpos = {}
+M.cuerpos = cuerpos
+
+local function colorKit(token, r, g, b)
+	local K = N.Kit
+	if K and K.Color then
+		local ok, cr, cg, cb = pcall(K.Color, token)
+		if ok and type(cr) == "number" then return cr, cg, cb end
+	end
+	return r, g, b
+end
+
+-- El fondo y el borde, con los colores del estilo de ahora.
+local function pintarMarco(c)
+	local r, g, b = colorKit("fondo", 0.06, 0.07, 0.08)
+	c.fondo:SetVertexColor(r * 0.7, g * 0.7, b * 0.7, ALFA_FONDO)
+	local lr, lg, lb = colorKit("linea", 0.15, 0.18, 0.16)
+	colorBorde(c.marco, lr * 0.8, lg * 0.8, lb * 0.8, 1)
+	if c.recurso then c.recurso.fondo:SetVertexColor(0, 0, 0, 0.55) end
+end
+M.PintarMarco = pintarMarco
+
 function M.CrearCuerpo(padre)
 	local c = CreateFrame("Frame", nil, padre)
 	c:SetAllPoints(padre)
 	c.fondo = textura(c, "BACKGROUND")
 	c.fondo:SetAllPoints(c)
-	c.fondo:SetVertexColor(0.02, 0.025, 0.04, 0.92)
+	c.marco = borde(c, 1, "BORDER")
 
 	local barra = CreateFrame("StatusBar", nil, c)
 	barra:SetPoint("TOPLEFT", c, "TOPLEFT", 1, -1)
-	barra:SetPoint("BOTTOMRIGHT", c, "BOTTOMRIGHT", -1, 1)
+	barra:SetPoint("BOTTOMRIGHT", c, "BOTTOMRIGHT", -1, 1 + RECURSO_H + 1)
 	barra:SetStatusBarTexture(BLANCO)
 	barra:SetMinMaxValues(0, 1)
 	barra:SetValue(1)
-	barra:SetStatusBarColor(VERDE[1], VERDE[2], VERDE[3], 1)
 	barra.fondo = textura(barra, "BACKGROUND")
 	barra.fondo:SetAllPoints(barra)
-	barra.fondo:SetVertexColor(VERDE[1] * 0.2, VERDE[2] * 0.2, VERDE[3] * 0.2, 1)
 	-- Un brillo apenas visible arriba, para que no se vea plano.
 	barra.brillo = textura(barra, "ARTWORK", 3)
 	barra.brillo:SetPoint("TOPLEFT", barra, "TOPLEFT", 0, 0)
 	barra.brillo:SetPoint("TOPRIGHT", barra, "TOPRIGHT", 0, 0)
 	barra.brillo:SetHeight(1)
-	barra.brillo:SetVertexColor(1, 1, 1, 0.18)
+	barra.brillo:SetVertexColor(1, 1, 1, 0.07)
 	c.barra = barra
+
+	-- 1.3.7: maná, furia o energía, una barra delgada abajo (Marcos: recurso()).
+	local rec = CreateFrame("StatusBar", nil, c)
+	rec:SetPoint("BOTTOMLEFT", c, "BOTTOMLEFT", 1, 1)
+	rec:SetPoint("BOTTOMRIGHT", c, "BOTTOMRIGHT", -1, 1)
+	rec:SetHeight(RECURSO_H)
+	rec:SetStatusBarTexture(BLANCO)
+	rec:SetMinMaxValues(0, 1)
+	rec:SetValue(1)
+	rec.fondo = textura(rec, "BACKGROUND")
+	rec.fondo:SetAllPoints(rec)
+	c.recurso = rec
+	M.PintarRecurso(c, nil)
 
 	-- Las curas entrantes: otra barra que empieza donde termina la vida, recortada.
 	local recorte = CreateFrame("Frame", nil, c)
@@ -218,7 +264,7 @@ function M.CrearCuerpo(padre)
 	if recorte.SetClipsChildren then recorte:SetClipsChildren(true) end
 	local inc = CreateFrame("StatusBar", nil, recorte)
 	inc:SetStatusBarTexture(BLANCO)
-	inc:SetStatusBarColor(VERDE[1], VERDE[2], VERDE[3], 0.45)
+	inc:SetStatusBarColor(VERDE[1], VERDE[2], VERDE[3], 0.4)
 	local fin = barra:GetStatusBarTexture()
 	inc:SetPoint("TOPLEFT", fin, "TOPRIGHT", 0, 0)
 	inc:SetPoint("BOTTOMLEFT", fin, "BOTTOMRIGHT", 0, 0)
@@ -233,19 +279,26 @@ function M.CrearCuerpo(padre)
 	capa:SetFrameLevel(barra:GetFrameLevel() + 3)
 	c.capa = capa
 	c.nombre = texto(capa, "label")
+	-- 1.3.7: el nombre con contorno, legible sobre cualquier color de clase.
+	if T and T.SetOutline then T.SetOutline(c.nombre, true) end
+	c.nombre:SetTextColor(0.96, 0.97, 0.98, 1)
 	c.estado = texto(capa, "caption")
 	c.estado:SetTextColor(0.85, 0.87, 0.9, 1)
-	-- 1.3.7: en un marco bajo, nombre y estado van en una línea (M.LineaBaja):
-	-- cada vez que el estado cambia o se muestra, se reparten el ancho.
+	-- 1.3.7: en un marco bajo, nombre y estado van en una línea (M.LineaBaja);
+	-- en uno alto, el nombre se centra si no hay estado (M.LineaAlta).
 	for _, metodo in ipairs({ "SetText", "SetFormattedText", "Show", "Hide" }) do
 		local original = c.estado[metodo]
 		c.estado[metodo] = function(self, ...)
 			original(self, ...)
-			if c.bajo and M.LineaBaja then M.LineaBaja(c) end
+			if c.bajo then
+				if M.LineaBaja then M.LineaBaja(c) end
+			elseif c.bajo == false and M.LineaAlta then
+				M.LineaAlta(c)
+			end
 		end
 	end
 	c.rol = capa:CreateTexture(nil, "OVERLAY")
-	c.rol:SetSize(11, 11)
+	c.rol:SetSize(10, 10)
 	c.rol:SetPoint("TOPLEFT", c, "TOPLEFT", 3, -3)
 	c.rol:Hide()
 	c.amenaza = textura(capa, "OVERLAY")
@@ -266,8 +319,8 @@ function M.CrearCuerpo(padre)
 	c.perjuicio:SetPoint("TOPRIGHT", c, "TOPRIGHT", -3, -3)
 	c.perjuicio:Hide()
 	c.punto = textura(capa, "OVERLAY")
-	c.punto:SetSize(6, 6)
-	c.punto:SetPoint("BOTTOMRIGHT", c, "BOTTOMRIGHT", -3, 3)
+	c.punto:SetSize(5, 5)
+	c.punto:SetPoint("BOTTOMRIGHT", c.barra, "BOTTOMRIGHT", -2, 2)
 	c.punto:SetVertexColor(AZUL_BUFF[1], AZUL_BUFF[2], AZUL_BUFF[3], 1)
 	c.punto:Hide()
 	local pulso = CreateFrame("Frame", nil, c)
@@ -288,46 +341,99 @@ function M.CrearCuerpo(padre)
 	end
 	pulso:Hide()
 	c.pulso = pulso
+	pintarMarco(c)
+	M.PintarBarra(c, VERDE[1], VERDE[2], VERDE[3])
+	cuerpos[#cuerpos + 1] = c
 	return c
+end
+
+-- ¿Con la barra de recurso? (ajuste, y el marco con alto para ella)
+local function conRecurso(h)
+	return opt("recurso") and (h or 32) >= 20 and true or false
 end
 
 -- El tamaño de las piezas que no siguen solas al marco.
 local function ajustarCuerpo(c, w, h)
+	local rec = conRecurso(h)
+	c.conRecurso = rec
+	c.barra:ClearAllPoints()
+	c.barra:SetPoint("TOPLEFT", c, "TOPLEFT", 1, -1)
+	c.barra:SetPoint("BOTTOMRIGHT", c, "BOTTOMRIGHT", -1, rec and (1 + RECURSO_H + 1) or 1)
+	if rec then c.recurso:Show() else c.recurso:Hide() end
+	c.altoVida = max(1, h - 2 - (rec and (RECURSO_H + 1) or 0))
 	c.entrantes:SetWidth(max(1, w - 2))
 	c.nombre:SetWidth(max(1, w - 8))
 	c.estado:SetWidth(max(1, w - 8))
 	c.nombre:ClearAllPoints()
 	c.estado:ClearAllPoints()
+	c.alfaConEstado = nil
 	if h >= 30 then
 		c.bajo = false
 		c.nombre:SetJustifyH("CENTER")
 		c.estado:SetJustifyH("CENTER")
-		c.nombre:SetPoint("CENTER", c, "CENTER", 0, 5)
-		c.estado:SetPoint("CENTER", c, "CENTER", 0, -8)
+		M.LineaAlta(c)
 	else
 		-- 1.3.7: bajo, una sola línea: «Nombre 45 %» (antes se encimaban).
 		c.bajo, c.anchoBajo = true, w
 		c.nombre:SetJustifyH("LEFT")
 		c.estado:SetJustifyH("RIGHT")
-		c.nombre:SetPoint("LEFT", c, "LEFT", 4, 0)
-		c.estado:SetPoint("RIGHT", c, "RIGHT", -4, 0)
+		c.nombre:SetPoint("LEFT", c.barra, "LEFT", 3, 0)
+		c.estado:SetPoint("RIGHT", c.barra, "RIGHT", -3, 0)
 		M.LineaBaja(c)
 	end
 end
 M.AjustarCuerpo = ajustarCuerpo
 
+-- Alto: el nombre al centro de la vida; con estado, el nombre arriba y el estado abajo.
+function M.LineaAlta(c)
+	local conEstado = c.estado:IsShown() and true or false
+	if c.alfaConEstado == conEstado then return end
+	c.alfaConEstado = conEstado
+	c.nombre:ClearAllPoints()
+	c.estado:ClearAllPoints()
+	if conEstado then
+		c.nombre:SetPoint("CENTER", c.barra, "CENTER", 0, 5)
+		c.estado:SetPoint("CENTER", c.barra, "CENTER", 0, -7)
+	else
+		c.nombre:SetPoint("CENTER", c.barra, "CENTER", 0, 0)
+		c.estado:SetPoint("CENTER", c.barra, "CENTER", 0, -7)
+	end
+end
+
 -- El ancho del estado (lo que mide, sin pasar de la mitad del marco) y el
 -- nombre con lo que queda. Un texto secreto no se mide: se le da un ancho fijo.
 function M.LineaBaja(c)
-	local w = c.anchoBajo or 88
+	local w = c.anchoBajo or 84
 	local ew = 0
 	if c.estado:IsShown() then
 		local ok, medida = pcall(c.estado.GetUnboundedStringWidth, c.estado)
 		if not ok or secreto(medida) or type(medida) ~= "number" then medida = 30 end
-		ew = min(floor(w * 0.55), ceil(medida) + 2)
+		-- (una palabra de estado, «Muerto», puede tomar un poco más que el porcentaje)
+		ew = min(floor(w * (c.alfaPalabra and 0.65 or 0.55)), ceil(medida) + 2)
 	end
 	c.estado:SetWidth(max(1, ew))
 	c.nombre:SetWidth(max(1, w - 8 - ew - (ew > 0 and 3 or 0)))
+end
+
+-- Los colores del recurso (algo apagados, como la vida), por su nombre en el
+-- juego y por su número (Enum.PowerType).
+local RECURSO = {
+	MANA = { 0.25, 0.5, 0.95 }, RAGE = { 0.85, 0.24, 0.2 }, ENERGY = { 0.93, 0.8, 0.27 },
+	FOCUS = { 0.92, 0.55, 0.26 }, RUNIC_POWER = { 0.1, 0.75, 0.92 },
+}
+local RECURSO_NUM = { [0] = "MANA", [1] = "RAGE", [2] = "FOCUS", [3] = "ENERGY", [6] = "RUNIC_POWER" }
+M.RECURSO = RECURSO
+
+-- tipo: "MANA", "RAGE"... o nil (desconocido o secreto: el del maná).
+function M.PintarRecurso(c, tipo)
+	local col = RECURSO[tipo or ""] or RECURSO.MANA
+	c.recurso:SetStatusBarColor(col[1], col[2], col[3], 1)
+	c.recurso.alfaTipo = tipo
+end
+
+-- Repintar con el estilo nuevo (Ajustes > Apariencia).
+if N.Kit and N.Kit.AlRepintar then
+	N.Kit.AlRepintar(function() for _, c in ipairs(cuerpos) do pintarMarco(c) end end)
 end
 
 ---------------------------------------------------------------------------
@@ -354,9 +460,10 @@ local function colorDeClase(clase)
 end
 M.ColorDeClase = colorDeClase
 
+-- 1.3.7: el color apagado (APAGAR) sobre un hueco casi negro con un tinte de la clase.
 local function pintarBarra(c, r, g, b)
-	c.barra:SetStatusBarColor(r, g, b, 1)
-	c.barra.fondo:SetVertexColor(r * 0.22, g * 0.22, b * 0.22, 1)
+	c.barra:SetStatusBarColor(r * APAGAR + BASE, g * APAGAR + BASE, b * APAGAR + BASE, 1)
+	c.barra.fondo:SetVertexColor(r * 0.1 + 0.02, g * 0.1 + 0.02, b * 0.1 + 0.025, 0.75)
 end
 M.PintarBarra = pintarBarra
 
@@ -381,12 +488,62 @@ local function vida(b)
 	if opt("porcentaje") and not b.alfaEstado and curvaPorcentaje and UnitHealthPercent then
 		local ok, p = pcall(UnitHealthPercent, u, true, curvaPorcentaje)
 		if ok then
+			c.alfaPalabra = nil
 			c.estado:SetFormattedText("%.0f%%", p)
 			c.estado:Show()
 		end
 	elseif not b.alfaEstado then
 		c.estado:Hide()
 	end
+	if M.Peligro then M.Peligro(b) end -- 1.3.7: el velo de «en peligro» (Peligro.lua)
+end
+
+-- 1.3.7: maná, furia o energía. El valor va directo a la barra (puede llegar
+-- secreto, como la vida); el tipo solo se lee si llega legible (si no, se
+-- queda el color que tenía).
+local function recurso(b)
+	local c, u = b.cuerpo, b.unidad
+	if not c.conRecurso then return end
+	local okT, num, token = pcall(UnitPowerType, u)
+	if okT then
+		local tipo
+		if not secreto(token) and type(token) == "string" and M.RECURSO[token] then
+			tipo = token
+		elseif not secreto(num) and type(num) == "number" then
+			tipo = RECURSO_NUM[num]
+		end
+		if tipo and tipo ~= c.recurso.alfaTipo then M.PintarRecurso(c, tipo) end
+	end
+	local okM, mx = pcall(UnitPowerMax, u)
+	local okV, v = pcall(UnitPower, u)
+	-- Lo secreto primero (ni siquiera se compara con nil).
+	if okM and okV and (secreto(mx) or type(mx) == "number") and (secreto(v) or type(v) == "number") then
+		c.recurso:SetMinMaxValues(0, mx)
+		c.recurso:SetValue(v)
+	end
+end
+M.Recurso = recurso
+
+-- 1.3.7: la palabra del estado sin cortarse («Desconecta…» en un marco de 84):
+-- si no cabe en su lugar (el ancho del marco, o su parte de la línea en uno
+-- bajo), va la corta («Fuera»). -> la que quedó (c.alfaPalabra: es una palabra, no el %)
+-- (Fantasma, si no cabe: Muerto, que también lo es; con letra grande pasaba.)
+local CORTO = { ["Desconectado"] = "Fuera [desconectado]", ["Fantasma"] = "Muerto" }
+function M.PonerEstado(c, clave)
+	local largo = L[clave]
+	c.alfaPalabra = true
+	c.estado:SetText(largo)
+	local corta = CORTO[clave]
+	if not corta then return largo end
+	-- (alto: el ancho que le dio ajustarCuerpo; bajo: hasta el 55 % de la línea, como M.LineaBaja)
+	local w = c.bajo and floor((c.anchoBajo or 84) * 0.65) or (c.estado.GetWidth and c.estado:GetWidth()) or 76
+	local ok, medida = pcall(c.estado.GetUnboundedStringWidth, c.estado)
+	if ok and type(medida) == "number" and not secreto(medida) and medida > w - 2 then
+		local texto = L[corta]
+		c.estado:SetText(texto)
+		return texto
+	end
+	return largo
 end
 
 -- Muerto, fantasma o desconectado: barra gris y su palabra. Color de clase.
@@ -397,17 +554,17 @@ local function aspecto(b, forzar)
 	local muerto = leer(UnitIsDeadOrGhost, u)
 	local estado
 	if conectado == false then
-		estado = L["Desconectado"]
+		estado = "Desconectado"
 	elseif fantasma == true then
-		estado = L["Fantasma"]
+		estado = "Fantasma"
 	elseif muerto == true then
-		estado = L["Muerto"]
+		estado = "Muerto"
 	end
 	if not forzar and estado == b.alfaEstado and b.alfaPintado then return end
 	b.alfaEstado, b.alfaPintado = estado, true
 	if estado then
-		c.estado:SetText(estado)
 		c.estado:Show()
+		M.PonerEstado(c, estado)
 		pintarBarra(c, GRIS[1], GRIS[2], GRIS[3])
 		c.nombre:SetTextColor(0.7, 0.7, 0.72, 1)
 		return
@@ -422,9 +579,10 @@ local function aspecto(b, forzar)
 		elseif okC and secreto(clase) then
 			-- Un compañero cuya clase llega secreta: el color va sin leerse.
 			local bien = pcall(function()
+				-- (un color secreto no se multiplica: se apaga con la opacidad)
 				local col = C_ClassColor.GetClassColor(clase)
-				c.barra:SetStatusBarColor(col.r, col.g, col.b, 1)
-				c.barra.fondo:SetVertexColor(0.1, 0.1, 0.12, 1)
+				c.barra:SetStatusBarColor(col.r, col.g, col.b, ALFA_SECRETO)
+				c.barra.fondo:SetVertexColor(0.05, 0.055, 0.065, 0.85)
 			end)
 			if not bien then pintarBarra(c, VERDE[1], VERDE[2], VERDE[3]) end
 		else
@@ -471,9 +629,13 @@ end
 
 local function amenaza(b)
 	local c = b.cuerpo
-	if not opt("amenaza") then return c.amenaza:Hide() end
+	if not opt("amenaza") then
+		if M.Aggro then M.Aggro(b, nil) end
+		return c.amenaza:Hide()
+	end
 	local s = leer(UnitThreatSituation, b.unidad)
 	if type(s) == "number" and s >= 2 then c.amenaza:Show() else c.amenaza:Hide() end
+	if M.Aggro then M.Aggro(b, s) end -- 1.3.7: el resplandor de quien no es tanque (Peligro.lua)
 end
 
 local function objetivo(b)
@@ -684,6 +846,7 @@ function M.ActualizarTodo(b)
 	nombre(b)
 	aspecto(b, true)
 	vida(b)
+	recurso(b)
 	rol(b)
 	disipar(b)
 	buffFalta(b)
@@ -850,8 +1013,8 @@ local ancla, cabecera, asa, prueba
 local moviendo, enPrueba = false, nil
 
 function M.Medidas()
-	local w = tonumber(opt("ancho")) or 88
-	local h = tonumber(opt("alto")) or 36
+	local w = tonumber(opt("ancho")) or 84
+	local h = tonumber(opt("alto")) or 32
 	local porCol = tonumber(opt("porColumna")) or 5
 	w = max(40, min(240, floor(w + 0.5)))
 	h = max(16, min(100, floor(h + 0.5)))
@@ -941,8 +1104,8 @@ M.TextoAsa = textoAsa
 -- Se ejecuta en el entorno seguro al crear un botón nuevo (aunque sea en combate).
 local INICIAL = [[
 	local h = self:GetParent()
-	self:SetWidth(h:GetAttribute("alfa-ancho") or 88)
-	self:SetHeight(h:GetAttribute("alfa-alto") or 36)
+	self:SetWidth(h:GetAttribute("alfa-ancho") or 84)
+	self:SetHeight(h:GetAttribute("alfa-alto") or 32)
 	h:CallMethod("alfaNuevoBoton", self:GetName())
 ]]
 
@@ -953,7 +1116,9 @@ local function nuevaCabecera(nombre, grupo)
 		local b = type(nombreBoton) == "string" and rawget(_G, nombreBoton) or nil
 		if b then M.PrepararBoton(b) end
 	end
-	h:SetAttribute("template", "SecureUnitButtonTemplate")
+	-- 1.3.7: de acción, no de unidad: SecureUnitButton_OnClick lanza antes el
+	-- clic para lanzar de Blizzard (y entonces no seleccionaba). Ver Mapa.lua.
+	h:SetAttribute("template", "SecureActionButtonTemplate")
 	h:SetAttribute("templateType", "Button")
 	h:SetAttribute("showRaid", true)
 	h:SetAttribute("showParty", not grupo)
@@ -1170,7 +1335,7 @@ local EJEMPLOS = {
 	{ "Brasa", "WARLOCK", 0.55, nil, disipar = { 0.6, 0, 1 }, tipo = "Curse" }, { "Trueno", "SHAMAN", 0.84, "HEALER" },
 	{ "Escudo", "PALADIN", 0.97, "TANK" }, { "Niebla", "MAGE", 0.4, nil, entrantes = 0.3 },
 	{ "Hoja", "ROGUE", 1.0 }, { "Ceniza", "WARLOCK", 0.7, nil, desconectado = true },
-	{ "Rocío", "DRUID", 0.88, "HEALER" }, { "Acero", "WARRIOR", 0.5, "DAMAGER", entrantes = 0.25 },
+	{ "Rocío", "DRUID", 0.88, "HEALER" }, { "Acero", "WARRIOR", 0.5, "DAMAGER", entrantes = 0.25, amenaza = true },
 	{ "Ámbar", "PALADIN", 0.66 }, { "Rayo", "SHAMAN", 0.92 },
 	{ "Eco", "HUNTER", 0.25, nil, disipar = { 0, 0.6, 0 }, tipo = "Poison" }, { "Lince", "DRUID", 0.32, "TANK", tanqueBajo = true },
 	{ "Nube", "PRIEST", 0.81, "HEALER" }, { "Vela", "MAGE", 0.58, nil, lejos = true },
@@ -1211,8 +1376,8 @@ local function pintarFalso(f, e)
 	local r, g, b = colorDeClase(e[2])
 	if e.muerto or e.desconectado then
 		pintarBarra(c, GRIS[1], GRIS[2], GRIS[3])
-		c.estado:SetText(e.muerto and L["Muerto"] or L["Desconectado"])
 		c.estado:Show()
+		M.PonerEstado(c, e.muerto and "Muerto" or "Desconectado")
 		c.nombre:SetTextColor(0.7, 0.7, 0.72, 1)
 	else
 		if opt("colorClase") and r then
@@ -1223,6 +1388,7 @@ local function pintarFalso(f, e)
 			if r then c.nombre:SetTextColor(r, g, b, 1) end
 		end
 		if opt("porcentaje") then
+			c.alfaPalabra = nil
 			c.estado:SetFormattedText("%.0f%%", e[3] * 100)
 			c.estado:Show()
 		else
@@ -1268,7 +1434,14 @@ local function pintarFalso(f, e)
 		if c.pulso.anim then c.pulso.anim:Stop() end
 		c.pulso:Hide()
 	end
+	-- 1.3.7: el recurso de muestra (furia el guerrero, energía el pícaro, maná los demás).
+	if c.conRecurso then
+		M.PintarRecurso(c, (e[2] == "WARRIOR" and "RAGE") or (e[2] == "ROGUE" and "ENERGY") or "MANA")
+		c.recurso:SetMinMaxValues(0, 1)
+		c.recurso:SetValue((e.muerto or e.desconectado) and 0 or (e.poder or (0.3 + 0.6 * e[3])))
+	end
 	c:SetAlpha((e.lejos and opt("alcance")) and FUERA or 1)
+	if M.PeligroFalso then M.PeligroFalso(c, e) end -- 1.3.7 (Peligro.lua)
 end
 
 -- Un clic sobre un marco de prueba: la ranura que tocó (botón y tecla) y lo
@@ -1448,6 +1621,30 @@ for ev, fn in pairs(POR_UNIDAD) do
 	end)
 end
 
+-- 1.3.7: el recurso cambia muy seguido: un marco propio que solo escucha
+-- mientras la barra está prendida, y cada aviso es una búsqueda en
+-- porUnidad (los de otras unidades, como placas de nombre, se ignoran).
+local POR_RECURSO = {
+	UNIT_POWER_UPDATE = recurso,
+	UNIT_MAXPOWER = recurso,
+	UNIT_DISPLAYPOWER = recurso,
+}
+local oyeRecurso = CreateFrame("Frame")
+oyeRecurso:SetScript("OnEvent", function(_, ev, u)
+	local b = boton(u)
+	if b then POR_RECURSO[ev](b) end
+end)
+M.oyeRecurso = oyeRecurso
+function M.EscucharRecurso()
+	local quiere = opt("activo") and opt("recurso") and true or false
+	if quiere == oyeRecurso.alfaOye then return quiere end
+	oyeRecurso.alfaOye = quiere
+	for ev in pairs(POR_RECURSO) do
+		if quiere then oyeRecurso:RegisterEvent(ev) else oyeRecurso:UnregisterEvent(ev) end
+	end
+	return quiere
+end
+
 local function todos(fn)
 	for _, b in ipairs(M.botones) do
 		if b.unidad and b.cuerpo then fn(b) end
@@ -1524,6 +1721,7 @@ end
 -- (Se decide al entrar al mundo: al cargar todavía no están tus ajustes.)
 
 A.RegisterEvent("PLAYER_ENTERING_WORLD", function()
+	M.EscucharRecurso()
 	M.RelojAlcance()
 	M.Iniciar()
 	A.After(3, function() M.Inicial() end)
@@ -1533,6 +1731,7 @@ end)
 A.On("SETTING_CHANGED", function(path)
 	path = type(path) == "string" and path or ""
 	if path ~= "" and path ~= ID and path:sub(1, #ID + 1) ~= ID .. "." then return end
+	M.EscucharRecurso()
 	M.RelojAlcance()
 	M.Disponer()
 end)

@@ -236,7 +236,7 @@ function Ci.Ahora()
 		if i then
 			M.Aviso(def.title, format(n == 1 and L["%d misión: sigue la flecha."] or L["%d misiones: sigue la flecha."], n), { lobo = "aullando" })
 		elseif por == "tabs" then
-			M.Aviso(L["Tienes 6 guías abiertas"], L["Cierra una pestaña para abrir tu plan."], { icono = "ic-aviso", tono = "aviso" })
+			M.EnCurso.AvisoLleno(L["Es el máximo a la vez. Quita una que ya no uses y vuelve a armar tu plan."])
 		end
 		M.Avisar("SEGUIR", "circuito")
 	end)

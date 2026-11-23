@@ -230,7 +230,7 @@ end
 ---------------------------------------------------------------------------
 -- La recorrida
 ---------------------------------------------------------------------------
-local PAGINAS = { "inicio", "rutas", "enciclopedia", "builds", "bolsas", "manada", "mazmorras", "mundo",
+local PAGINAS = { "inicio", "planes", "rutas", "enciclopedia", "builds", "bolsas", "manada", "mazmorras", "mundo",
   "pesca", "lya", "vista", "comodidades", "comercio", "recoleccion", "combate", "curacion", "bienvenida", "questing" }
 local solo = rawget(_G, "BANCO_PAGINAS") or (os and os.getenv and os.getenv("BANCO_PAGINAS"))
 if type(solo) == "string" and solo ~= "" then

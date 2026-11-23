@@ -22,7 +22,9 @@ M.AJUSTES = { mostrar = true, frecuencia = "muchos", minutos = 3, tamano = 64, s
 	muerte = true, momento = true, clase = true, foco = true,
 	-- 1.3.0: las Lyas de tu grupo se saludan; tus misiones en su voz; tu
 	-- mascota; los retos de la semana; los cumpleaños (el tuyo y el de Alfa)
-	manada = true, misionVoz = true, mascota = true, retos = true, cumple = true }
+	manada = true, misionVoz = true, mascota = true, retos = true, cumple = true,
+	-- 1.3.7c: un brinco cuando llegas a donde apunta la flecha (Llegada.lua)
+	brincoLlegar = true }
 M.Avisar = function() end -- Pagina.lua la cambia: rehace la página si está a la vista
 
 M.EN = {
@@ -1833,6 +1835,9 @@ M.EN = {
 	["Ver lo que te dije"] = "See what I told you",
 	["Abrir tus atajos"] = "Open your shortcuts",
 	["Abrir Misiones"] = "Open Questing",
+	-- 1.3.7c (mundo): el brinco al llegar (Llegada.lua)
+	["Brincar al llegar"] = "Hop on arrival",
+	["Cuando llegas a donde apunta la flecha, Lya da un brinco de gusto. Sin palabras ni sonido."] = "When you reach where the arrow points, Lya gives a happy hop. No words, no sound.",
 }
 
 M.L = AlfaNucleo.Textos(M.EN)

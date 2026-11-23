@@ -1,0 +1,17 @@
+{
+ "Clic: despliega la guía. Arrastra para moverla.": "클릭: 가이드를 펼칩니다. 끌어서 옮기세요.",
+ "Clic: pliega la guía y deja solo el paso de ahora. Arrastra para moverla.": "클릭: 가이드를 접고 지금 단계만 남깁니다. 끌어서 옮기세요.",
+ "≈ %s a pie": "≈ %s (도보)",
+ "≈ %s montado": "≈ %s (탈것)",
+ "Tu camino de hoy": "오늘의 발자취",
+ "Por dónde pasaste hoy, como un rastro de puntitos: tenues los de la mañana, vivos los de hace poco, y una huella donde empezaste.": "오늘 지나온 길을 점으로 남깁니다: 아침 것은 흐리게, 방금 것은 선명하게, 시작한 곳에는 발자국을.",
+ "La distancia en el cuadro de los pines": "핀 툴팁에 거리 표시",
+ "Al pasar el ratón por un pin del minimapa o de los mapas: a cuántas yardas está y hacia dónde.": "미니맵이나 지도의 핀에 마우스를 올리면: 몇 야드 떨어져 있고 어느 방향인지.",
+ "Aquí mismo": "바로 여기",
+ "A %s, %s": "%s, %s",
+ "¡Primera vez aquí!": "처음 온 곳!",
+ "%d de tus misiones es de aquí": "이곳 퀘스트 %d개",
+ "%d de tus misiones son de aquí": "이곳 퀘스트 %d개",
+ "Brincar al llegar": "도착하면 껑충",
+ "Cuando llegas a donde apunta la flecha, Lya da un brinco de gusto. Sin palabras ni sonido.": "화살표가 가리키는 곳에 도착하면 리아가 기뻐서 껑충 뜁니다. 말도 소리도 없이."
+}

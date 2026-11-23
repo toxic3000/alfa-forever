@@ -32,6 +32,20 @@ local CABECERA, PIE = K.ALTO.cabecera, K.ALTO.pie
 -- Los puntos de una versión: el ícono a la izquierda, alineado con el primer
 -- renglón, y el texto que baja de renglón a su lado.
 ---------------------------------------------------------------------------
+-- 1.3.7: un punto puede llevar a donde se prueba (su 3.er campo, una clave de
+-- M.IR_NOTA): sale «Ver» a la derecha y las notas se cierran al ir.
+M.IR_NOTA = {
+	avisos = function() if N.VerAvisos then N.VerAvisos() end end,
+	ventana = function() N.Abrir("inicio") end,
+	combate = function() N.Abrir("combate") end,
+	pesca = function() N.Abrir("pesca") end,
+	anuncios = function() N.Abrir("bienvenida") end,
+	oro = function()
+		local B = rawget(_G, "AlfaBolsas")
+		if type(B) == "table" and type(B.Abrir) == "function" then B.Abrir() else N.Abrir("bolsas") end
+	end,
+}
+
 function M.BloquePuntos(padre)
 	local b = CreateFrame("Frame", nil, padre)
 	b.filas = {}
@@ -49,6 +63,19 @@ function M.BloquePuntos(padre)
 			end
 			K.SetIcono(fila.Icono, p[1] or "ic-exito", "acento")
 			K.Escribir(fila.Texto, L[p[2]])
+			local ir = type(p[3]) == "string" and M.IR_NOTA[p[3]] or nil
+			if ir and not fila.Ir then
+				fila.Ir = K.Boton(fila, L["Ver"], function(boton)
+					local fn = boton.alfaIr
+					if M.CerrarNotas then M.CerrarNotas() end
+					if fn then K.Llamar(fn) end
+				end, { tipo = "secundario", tam = "chico" })
+				fila.Ir:SetPoint("TOPRIGHT", fila, "TOPRIGHT", 0, 0)
+			end
+			if fila.Ir then
+				fila.Ir.alfaIr = ir
+				K.Mostrar(fila.Ir, ir ~= nil)
+			end
 			fila:Show()
 		end
 		for i = #puntos + 1, #self.filas do self.filas[i]:Hide() end
@@ -56,10 +83,11 @@ function M.BloquePuntos(padre)
 	end
 	function b:Acomodar(ancho)
 		local y = 0
-		local tw = max(40, ancho - ICONO - ESP.m)
 		for i = 1, self.n or 0 do
 			local fila = self.filas[i]
-			local h = max(ICONO + 2, K.Parrafo(fila.Texto, tw))
+			local conIr = fila.Ir and fila.Ir:IsShown()
+			local tw = max(40, ancho - ICONO - ESP.m - (conIr and (K.num(fila.Ir:GetWidth(), 48) + ESP.m) or 0))
+			local h = max(ICONO + 2, K.Parrafo(fila.Texto, tw), conIr and K.ALTO.botonChico or 0)
 			fila:ClearAllPoints()
 			fila:SetPoint("TOPLEFT", self, "TOPLEFT", 0, -y)
 			fila:SetSize(ancho, h)
@@ -220,6 +248,7 @@ local function intermedias(n)
 end
 
 function M.NotasVisibles() return v ~= nil and v:IsShown() end
+function M.CerrarNotas() if v and v:IsShown() then v:Cerrar() end end
 
 function M.AbrirNotas(n)
 	if not n then

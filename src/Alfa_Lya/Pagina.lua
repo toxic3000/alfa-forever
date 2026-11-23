@@ -151,6 +151,8 @@ local function grupos(padre)
 		texto = L["Un aullido corto cada vez que entregas una misión. Viene apagado."] })
 	consejos:Fila({ titulo = L["Aullar con tu grupo"], control = interruptor("aullarGrupo"), activa = visible,
 		texto = L["Cuando alguien de tu grupo sube de nivel, Lya aúlla, lo felicita y te deja felicitarlo en el chat con un clic."] })
+	consejos:Fila({ titulo = L["Brincar al llegar"], control = interruptor("brincoLlegar"), activa = visible, -- 1.3.7c
+		texto = L["Cuando llegas a donde apunta la flecha, Lya da un brinco de gusto. Sin palabras ni sonido."] })
 	consejos:Fila({ titulo = L["Consejos vistos"], activa = visible,
 		texto = L["Cada frase sale tres veces como mucho. Con esto vuelven a salir desde el principio."],
 		control = function(fila) return K.Boton(fila, L["Volver a mostrarlos"], function() Ce.OlvidarVistos() end, { tipo = "secundario", tam = "chico" }) end })
@@ -388,6 +390,9 @@ local CONTROLES = {
 	{ kind = "toggle", key = clave("aullarGrupo"), label = L["Aullar con tu grupo"], disabled = no(visible),
 		help = L["Cuando alguien de tu grupo sube de nivel, Lya aúlla, lo felicita y te deja felicitarlo en el chat con un clic."],
 		search = "group level up, party, congratulate, grats, gz, felicitar, grupo" },
+	{ kind = "toggle", key = clave("brincoLlegar"), label = L["Brincar al llegar"], disabled = no(visible), -- 1.3.7c
+		help = L["Cuando llegas a donde apunta la flecha, Lya da un brinco de gusto. Sin palabras ni sonido."],
+		search = "arrive, arrival, hop, jump, arrow, llegar, brinco, flecha" },
 	-- 1.2.7
 	{ kind = "toggle", key = clave("compacto"), label = L["Globo compacto"], disabled = no(visible),
 		help = L["El globo de Lya en una sola línea, con sus botones. Pasa el ratón encima para leerlo completo."], search = "compact bubble, one line, small" },

@@ -37,16 +37,15 @@ S.VISTO_CADA = 30   -- cada cuánto se anota que la sesión sigue viva
 
 -- Un número del cliente: nil si es secreto o no es número.
 local function num(v)
-	if v == nil then return nil end
-	if issecretvalue and issecretvalue(v) then return nil end
+	-- 1.3.7b: primero si es secreto (un secreto no se compara ni con nil).
+	if N.Secreto(v) or type(v) == "nil" then return nil end
 	return tonumber(v)
 end
 M.num = num
 
 -- Un texto del cliente: nil si es secreto o no es texto.
 local function texto(v)
-	if v == nil then return nil end
-	if issecretvalue and issecretvalue(v) then return nil end
+	if N.Secreto(v) then return nil end
 	return type(v) == "string" and v or nil
 end
 M.texto = texto
@@ -300,14 +299,20 @@ A.RegisterEvent("AUCTION_HOUSE_SHOW", function() enSubasta = true end)
 A.RegisterEvent("AUCTION_HOUSE_CLOSED", function() enSubasta = false end)
 function S.Pausado()
 	if enSubasta then return true end
-	local afk = rawget(_G, "UnitIsAFK")
-	if type(afk) == "function" and afk("player") == true then return true end
-	local taxi = rawget(_G, "UnitOnTaxi")
-	if type(taxi) == "function" and taxi("player") == true then return true end
+	-- 1.3.7b: UnitIsAFK / UnitOnTaxi / IsInInstance pueden dar un valor secreto
+	-- (en combate o en una mazmorra). Un secreto no se compara (== true) NI se
+	-- prueba en un if: «attempt to compare a secret boolean value» venía de
+	-- aquí (tarea inicio.sesion). Se pregunta con N.SiJuego / N.Leer primero;
+	-- un secreto cuenta como «no sé» y la sesión no se pausa por él.
+	if N.SiJuego(rawget(_G, "UnitIsAFK"), "player") then return true end
+	if N.SiJuego(rawget(_G, "UnitOnTaxi"), "player") then return true end
 	local inst = rawget(_G, "IsInInstance")
 	if type(inst) == "function" then
-		local si, tipo = inst()
-		if si == true and (tipo == "party" or tipo == "raid") then return true end
+		local ok, si, tipo = pcall(inst)
+		if ok and N.Si(si) then
+			local t = texto(tipo)
+			if t == "party" or t == "raid" then return true end
+		end
 	end
 	return false
 end

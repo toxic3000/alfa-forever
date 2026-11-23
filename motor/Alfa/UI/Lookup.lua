@@ -495,7 +495,12 @@ function LK.Guide(i)
 		return gid
 	end
 	if reason == "tabs" then
-		setStatus(L["Six tabs is the limit. Close one to open another."])
+		-- Alfa 1.3.7: el tope es de 12 y solo llega aquí con todas fijadas.
+		local RL = rawget(_G, "AlfaRuta")
+		setStatus(type(RL) == "table" and type(RL.TextoLleno) == "function" and RL.TextoLleno() or L["Six tabs is the limit. Close one to open another."])
+		-- Alfa 1.3.7: y el aviso con «Ver lo que sigues» (Alfa_Rutas/EnCurso.lua).
+		local R = rawget(_G, "AlfaRuta")
+		if type(R) == "table" and type(R.AvisoLleno) == "function" then R.AvisoLleno() end
 	elseif reason == "mount" then
 		setStatus(MOUNT_NOTE)
 	else

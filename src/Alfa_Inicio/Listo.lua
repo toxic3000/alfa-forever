@@ -34,12 +34,14 @@ local function nivel() return num(UnitLevel and UnitLevel("player")) or 1 end
 
 local function llamar(fn, ...)
 	if type(fn) ~= "function" then return nil end
-	local ok, a, b, c, d = pcall(fn, ...)
-	if ok then return a, b, c, d end
+	-- 1.3.7b: hasta 8 valores (GetItemInfoInstant da la clase en el 6.º: con 4
+	-- las armas de fuego contaban flechas).
+	local ok, a, b, c, d, e, f, g, h = pcall(fn, ...)
+	if ok then return a, b, c, d, e, f, g, h end
 	return nil
 end
 
-local function secreto(v) return v ~= nil and issecretvalue ~= nil and issecretvalue(v) and true or false end
+local function secreto(v) return type(v) ~= "nil" and issecretvalue ~= nil and issecretvalue(v) and true or false end
 
 -- 1.3.1: lo de los objetos, primero con C_Item (el de Forever,
 -- ItemDocumentation.lua) y el global viejo solo de respaldo, como M.Tienes de
@@ -267,7 +269,7 @@ local function enBase() return (GetTime and GetTime() or 0) < baseHasta end
 local function enMazmorra()
 	if not IsInInstance then return false end
 	local _, tipo = IsInInstance()
-	return tipo == "party"
+	return N.Leer(tipo) == "party"
 end
 
 local function nombreZona()
