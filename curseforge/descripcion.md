@@ -46,7 +46,9 @@
 
 ![Info bar and cooldowns](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/37-137-info.png)
 
-**✨ And much more / Y mucho más** — info bar, big cooldown numbers, chat timestamps and spam filter, item level on your gear, gear sets in one click, dungeon timer and boss map, bargains at the auction house, send to your alt, and a hundred fixes. · Barra de información, números en tus recargas, hora y filtro de spam en el chat, nivel de objeto en tu equipo, conjuntos en un clic, cronómetro y mapa de jefes, gangas en la subasta, mandar a tu alt y un centenar de arreglos. [Full notes / Notas completas](https://github.com/toxic3000/alfa-forever/blob/main/CHANGELOG.md)
+**📋 Plans and notifications / Planes y avisos** — a new **Plans** section shows every guide you follow (up to 12), lets you pin, follow or remove them, and "Guide me" never gets stuck; a bell next to Settings keeps every notice with its time. · Nueva sección **Planes** con todas las guías que sigues (hasta 12) para fijar, seguir o quitar, y «Guíame» ya nunca se atora; una campanita junto a Ajustes guarda cada aviso con su hora.
+
+**✨ And much more / Y mucho más** — healing frames that heal and target with one click, info bar, big cooldown numbers, chat timestamps and spam filter, item level on your gear, gear sets in one click, dungeon timer and boss map, bargains at the auction house, send to your alt, and a hundred fixes. · Barra de información, números en tus recargas, hora y filtro de spam en el chat, nivel de objeto en tu equipo, conjuntos en un clic, cronómetro y mapa de jefes, gangas en la subasta, mandar a tu alt y un centenar de arreglos. [Full notes / Notas completas](https://github.com/toxic3000/alfa-forever/blob/main/CHANGELOG.md)
 
 > If something breaks, tell us with `/alfa reportar`, on [Discord](https://discord.gg/hUNjA6BJwh), in the comments or on [GitHub](https://github.com/toxic3000/alfa-forever/issues). · Si algo falla, avísanos con `/alfa reportar`, en el [Discord de La Jauría](https://discord.gg/hUNjA6BJwh), en los comentarios o en [GitHub](https://github.com/toxic3000/alfa-forever/issues).
 
