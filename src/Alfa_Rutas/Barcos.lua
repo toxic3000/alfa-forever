@@ -68,9 +68,15 @@ local function agregar(out, t, lado, e, otro, X, ahora)
 		if okA then llega, sale = a, s end
 	end
 	local hasta = nombre(otro)
+	local siguiente
 	if llega then
 		if llega <= 0 then texto = format(L["En el muelle: sale en %s hacia %s"], cuenta(sale or 0), hasta)
 		else texto = format(L["Llega en %s; va a %s"], cuenta(llega), hasta) end
+		-- 1.3.8: el horario real del que sigue (mejora 4).
+		if X.NextDeparture and sale then
+			local okS, sig = pcall(X.NextDeparture, t.kind, t.id, ahora + sale + 5, lado)
+			if okS and type(sig) == "number" then siguiente = format(L["Si lo pierdes, el siguiente sale en %s"], N.Duracion(sale + 5 + sig, true)) end
+		end
 	else
 		local espera
 		if X and X.NextDeparture then
@@ -81,7 +87,7 @@ local function agregar(out, t, lado, e, otro, X, ahora)
 			or format(L["Va a %s"], hasta)
 	end
 	out[#out + 1] = { id = t.id, tipo = t.kind, lado = lado, desde = nombre(e), hasta = hasta, texto = texto,
-		segundos = llega, sale = sale, map = e.map, x = e.x, y = e.y, f = e.f }
+		segundos = llega, sale = sale, siguiente = siguiente, map = e.map, x = e.x, y = e.y, f = e.f }
 end
 
 function Bc.Lista()
@@ -149,6 +155,10 @@ function Bc.Pines(lista)
 			tooltip = function(tip)
 				tip:SetText(titulo, K.Color("texto"))
 				tip:AddLine(Bc.TextoDe(h.id, h.lado) or h.texto, K.Color("acento"))
+				-- 1.3.8: el siguiente, con su horario real.
+				for _, x in ipairs(Bc.Lista()) do
+					if x.id == h.id and x.lado == h.lado and x.siguiente then tip:AddLine(x.siguiente, K.Color("textoSuave")) end
+				end
 				tip:AddLine(L["Clic: la flecha te lleva al muelle."], K.Color("textoTenue"))
 			end,
 			onClick = function(boton)

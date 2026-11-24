@@ -1,0 +1,18 @@
+{
+ "Un borde rojo suave respira alrededor de quien baja del 35 % de vida, para verlo a la primera.": "生命值低於 35 % 的人，周圍會有一圈柔和的紅色邊框呼吸般閃動，一眼就能看到。",
+ "Color de los marcos": "框架顏色",
+ "Color de la barra": "血條顏色",
+ "Por clase: el color de la clase de cada uno, apagado para que no canse. Un solo color: el que tú elijas. Según la vida: verde, amarillo y rojo según lo que le queda.": "依職業：每個人的職業顏色，調暗一些不刺眼。單一顏色：你自己選的顏色。依生命值：依剩餘生命顯示綠色、黃色和紅色。",
+ "Un solo color": "單一顏色",
+ "Según la vida": "依生命值",
+ "Tu color": "你的顏色",
+ "Elegir color": "選擇顏色",
+ "El color de todas las barras con «Un solo color», con el selector de colores del juego.": "「單一顏色」時所有血條的顏色，用遊戲的顏色選擇器來選。",
+ "Intensidad": "鮮豔度",
+ "Qué tan vivo se ve el color de las barras.": "血條顏色看起來有多鮮豔。",
+ "Apagado [color]": "柔和",
+ "Normal [color]": "普通",
+ "Vivo [color]": "鮮豔",
+ "Así se ven": "效果預覽",
+ "Llena, a media y baja (con el borde de «En peligro»).": "滿血、一半和低血（含「危險」邊框）。"
+}

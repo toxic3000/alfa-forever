@@ -499,6 +499,8 @@ local function bloquePersonajes(padre)
 			local cr, cg, cb = M.ColorClase(p.r.clase)
 			local nombre = M.Pintado(p.r.nombre or p.clave, cr, cg, cb)
 			if p.clave == actual then nombre = nombre .. "  " .. K.Tenir("textoTenue", L["(tú)"]) end
+			-- 1.3.8: los de la otra facción van al final y marcados.
+			if p.otraFaccion then nombre = nombre .. "  " .. K.Tenir("textoTenue", "(" .. (p.r.faccion == "Alliance" and L["Alianza"] or L["Horda"]) .. ")") end
 			f.alfaDatos.titulo, f.alfaDatos.texto = nombre, textoPersonaje(p, actual)
 			f.Control:Poner(p.clave == actual)
 			f:Refrescar()
@@ -634,6 +636,15 @@ local function grupos(padre)
 	equipo:Fila({ titulo = L["Botón «Acomodar»"], control = interruptor("acomodar"),
 		texto = L["En tus bolsas: con un comerciante vende tu chatarra; con un banquero guarda tus materiales. Con tu clic."] })
 
+	-- 1.3.8: el candado de objetos (Candado.lua).
+	local candado = K.GrupoAjustes(padre, { titulo = L["Candado de objetos"] })
+	candado:Fila({ titulo = L["Candado de objetos"], control = interruptor("candado"),
+		texto = L["Alt+clic derecho sobre un objeto de tus bolsas le pone o le quita el candado. Con candado no se borra, no se vende y nada de Alfa lo toca."] })
+	candado:Fila({ titulo = L["Candado automático"], control = interruptor("candadoAuto"), hija = true, activa = siempre("candado"),
+		texto = L["Sin que hagas nada: lo épico y legendario, lo de misiones, tu piedra de hogar y lo de tus conjuntos de equipo."] })
+	candado:Fila({ titulo = L["Candados para toda la cuenta"], control = interruptor("candadoCuenta"), hija = true, activa = siempre("candado"),
+		texto = L["Los candados que pongas valen también para tus otros personajes. Apagado, cada personaje tiene los suyos."] })
+
 	local marcas = K.GrupoAjustes(padre, { titulo = L["Marcas sobre cada objeto"] })
 	marcas:Fila({ titulo = L["Nivel de objeto"], control = interruptor("marcaNivel"), texto = L["El número abajo a la izquierda de cada pieza de equipo."] })
 	marcas:Fila({ titulo = L["Borde de calidad"], control = interruptor("marcaCalidad"), texto = L["Un borde del color de la calidad: verde, azul, morado..."] })
@@ -668,7 +679,7 @@ local function grupos(padre)
 		end })
 	marcas:Fila({ titulo = L["Cuántos tienes, en el cuadro de cada objeto"], control = interruptor("cuadroConteo"),
 		texto = L["Al pasar el ratón por un objeto: «Tienes 12 (Lobato: 7 en bolsas, Alt: 5 en banco)», con todos tus personajes."] })
-	return { ventana, juego, ordenar, lleno, equipo, marcas }
+	return { ventana, juego, ordenar, lleno, equipo, candado, marcas }
 end
 
 ---------------------------------------------------------------------------

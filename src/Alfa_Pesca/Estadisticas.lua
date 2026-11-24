@@ -84,7 +84,8 @@ end
 ---------------------------------------------------------------------------
 -- Estadísticas
 ---------------------------------------------------------------------------
-local VISIBLES = 12
+-- 1.3.8: aquí solo las últimas; todas, con filtros, en la pestaña Sesiones.
+local VISIBLES = 3
 
 local function construirEstadisticas(padre)
 	local p = V.Pagina(padre)
@@ -117,16 +118,13 @@ local function construirEstadisticas(padre)
 		local v = M.Vida()
 		ui.secVida:Set(L["Desde siempre"], { cuenta = format(L["%d sesiones · %d especies"], v.sesiones, M.Especies()) })
 		local h = M.Historial()
-		local n = ui.verMas and #h or min(#h, VISIBLES)
+		local n = min(#h, VISIBLES)
 		local datos = {}
-		for i = 1, n do datos[i] = tarjetaSesion(h[i]) end
+		for i = 1, n do datos[i] = M.TarjetaSesion and M.TarjetaSesion(h[i]) or tarjetaSesion(h[i]) end
 		ui.hist:Llenar(datos)
 		K.Mostrar(ui.hist, n > 0)
 		ui.secHist:Set(L["Sesiones anteriores"], { cuenta = #h > 0 and #h or nil,
-			enlace = #h > VISIBLES and { texto = ui.verMas and L["Ver menos"] or format(L["Ver todas (%d)"], #h), alClic = function()
-				ui.verMas = not ui.verMas
-				V.Acomodar()
-			end } or nil })
+			enlace = #h > 0 and { texto = format(L["Ver todas (%d)"], #h), alClic = function() V.Mostrar("sesiones") end } or nil })
 		ui.histVacio:Set(#h == 0 and L["Una sesión termina tras 20 minutos sin lanzar o cuando empiezas otra; entonces aparece aquí con lo que sacaste y dónde."] or nil)
 	end
 	return p

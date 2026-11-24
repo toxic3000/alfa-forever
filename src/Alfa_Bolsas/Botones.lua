@@ -399,6 +399,8 @@ function B.Pintar(b, ent)
 			p.tinte:SetVertexColor(r, g, bb, 0.07)
 			p.tinte:Show()
 		end
+		if M.Separar then M.Separar.Pintar(b, p, ent) end
+		if M.Candado then M.Candado.Pintar(b, p, ent) end
 		return
 	end
 	local e = ent.e or {}
@@ -478,6 +480,10 @@ function B.Pintar(b, ent)
 		if p.anim:IsPlaying() then p.anim:Stop() end
 		p.nuevo:Hide()
 	end
+	-- 1.3.8: «Separar»: subasta o comerciante (Separar.lua).
+	if M.Separar then M.Separar.Pintar(b, p, ent) end
+	-- 1.3.8: el candado (Candado.lua): la marca y, con un comerciante, que no se venda.
+	if M.Candado then M.Candado.Pintar(b, p, ent) end
 end
 
 -- Resultado de la búsqueda sobre un botón ya pintado.

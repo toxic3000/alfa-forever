@@ -600,6 +600,12 @@ local FILTROS = {}
 
 FILTROS.objeto = function(c, i, f, ctx)
 	if f.calidad and (c.q[i] % 10) - 1 ~= f.calidad then return false end
+	-- 1.3.8: cómo se consigue y de qué facción (Origen.lua).
+	if f.origen or f.bando then
+		local O = M.Origen
+		local m, b = O.Fila(i)
+		if not O.Pasa(m, b, f.origen, f.bando) then return false end
+	end
 	local fc = c.f
 	if not fc then return true end
 	local v = fc[i]
@@ -677,6 +683,7 @@ local function pendienteDe(tipo, f)
 	if tipo == "objeto" then
 		if (f.tipo or f.sub or f.ranura) and not facetas.lista then return "facetas" end
 		if (f.nivel or f.usable) and not facetas.nivel then return "registros" end
+		if (f.origen or f.bando or f.probable) and M.Origen and not M.Origen.Listo() then return "origenes" end
 	elseif tipo == "mision" then
 		if (f.nivel or f.paraMi) and not I.MisionesListas() then return "misiones" end
 	elseif tipo == "raro" then
@@ -691,6 +698,48 @@ Cat.Pendiente = pendienteDe
 -- palabra, luego lo demás; dentro de cada grupo, por nombre (sin ordenar:
 -- se reparte en cubetas recorriendo el orden de base).
 local cubetas = { {}, {}, {}, {}, {}, {} }
+
+-- 1.3.8: lo de tu facción primero. Los PNJ (y los maestros de vuelo) de la
+-- otra facción van al final, en el mismo orden; con «Solo tu facción»
+-- (f.bando = "mio") no salen. El bando de cada PNJ se lee del Codex una vez
+-- por sesión y solo de lo que encontró la búsqueda (con más de TOPE_BANDO
+-- resultados y sin pedir «Solo tu facción», queda el orden de siempre).
+local bandoDe = {} -- id -> "A" | "H" | false
+function Cat.BandoPnj(id)
+	if id == nil then return false end
+	local b = bandoDe[id]
+	if b == nil then
+		local C = M.CodexListo()
+		local ok, n = false, nil
+		if C and C.Npc then ok, n = pcall(C.Npc, id) end
+		local fa = ok and type(n) == "table" and n.faction or nil
+		b = (fa == "A" or fa == "H") and fa or false
+		if C then bandoDe[id] = b end
+	end
+	return b
+end
+Cat.TOPE_BANDO = 4000
+Cat.BANDOS_PNJ = { { valor = false, texto = L["Tu facción primero"] }, { valor = "mio", texto = L["Solo tu facción"] } }
+
+local otros = {}
+local function porBando(c, salida, n, f)
+	local mio = M.MiBando and M.MiBando()
+	if not mio or (n > Cat.TOPE_BANDO and f.bando ~= "mio") then return n end
+	for k = #otros, 1, -1 do otros[k] = nil end
+	local m = 0
+	for k = 1, n do
+		local i = salida[k]
+		local b = Cat.BandoPnj(c.id[i])
+		if b and b ~= mio then otros[#otros + 1] = i else m = m + 1 salida[m] = i end
+	end
+	if f.bando ~= "mio" then
+		for k = 1, #otros do m = m + 1 salida[m] = otros[k] end
+	end
+	for k = m + 1, n do salida[k] = nil end
+	for k = #otros, 1, -1 do otros[k] = nil end
+	return m
+end
+Cat.PorBando = porBando
 
 function Cat.Buscar(tipo, texto, f, salida)
 	salida = salida or {}
@@ -736,6 +785,20 @@ function Cat.Buscar(tipo, texto, f, salida)
 			for k = 1, n do copia[k] = salida[k] end
 			for k = 1, n do salida[k] = copia[claves[k] % 1000000] end
 		end
+	end
+	if tipo == "pnj" and not pend then porBando(c, salida, n, f) end
+	-- 1.3.8: «Más probable primero» (lo que sueltan los enemigos).
+	if tipo == "objeto" and f.probable and not pend and M.Origen then
+		local O = M.Origen
+		local claves = {}
+		for k = 1, n do
+			local _, _, p = O.Fila(salida[k])
+			claves[k] = floor((100 - min(100, p or -1)) * 100000) * 100000 + k
+		end
+		sort(claves)
+		local copia = {}
+		for k = 1, n do copia[k] = salida[k] end
+		for k = 1, n do salida[k] = copia[claves[k] % 100000] end
 	end
 	return salida, pend
 end

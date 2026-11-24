@@ -64,6 +64,10 @@ M.AJUSTES = {
 	barraConjuntos = true,    -- 1.3.7: un botón por conjunto junto a tu personaje (Cambio.lua)
 	nivelPersonaje = true,    -- 1.3.7: nivel de objeto y durabilidad en tu personaje y la inspección (Ranuras.lua)
 	atajos = true,            -- 1.3.7: «3 nuevos» y «1 mejora» en la búsqueda, a un clic (Atajos.lua)
+	separar = true,           -- 1.3.8: el botón «Separar»: subasta o vendedor (Separar.lua)
+	candado = true,           -- 1.3.8: el candado de objetos: no se borra ni se vende por error (Candado.lua)
+	candadoAuto = true,       -- 1.3.8: candado solo en lo épico, de misión, la piedra de hogar y tus conjuntos
+	candadoCuenta = false,    -- 1.3.8: los candados nuevos valen para toda la cuenta
 	deposito = "banco",       -- lo último que elegiste en "Depositar"
 }
 
@@ -137,6 +141,16 @@ local CONTROLES = {
 	{ kind = "toggle", key = clave("acomodar"), label = L["Botón «Acomodar»"],
 		help = L["En tus bolsas: con un comerciante vende tu chatarra; con un banquero guarda tus materiales. Con tu clic."],
 		search = "tidy, clean bags, sell junk, deposit materials" },
+	-- 1.3.8: el candado de objetos (Candado.lua).
+	{ kind = "toggle", key = clave("candado"), label = L["Candado de objetos"],
+		help = L["Alt+clic derecho sobre un objeto de tus bolsas le pone o le quita el candado. Con candado no se borra, no se vende y nada de Alfa lo toca."],
+		search = "item lock, lock, protect, delete, sell, padlock" },
+	{ kind = "toggle", key = clave("candadoAuto"), label = L["Candado automático"], child = true, disabled = apagado("candado"),
+		help = L["Sin que hagas nada: lo épico y legendario, lo de misiones, tu piedra de hogar y lo de tus conjuntos de equipo."],
+		search = "auto lock, epic, quest items, hearthstone, gear sets" },
+	{ kind = "toggle", key = clave("candadoCuenta"), label = L["Candados para toda la cuenta"], child = true, disabled = apagado("candado"),
+		help = L["Los candados que pongas valen también para tus otros personajes. Apagado, cada personaje tiene los suyos."],
+		search = "account wide lock, all characters" },
 	{ kind = "toggle", key = clave("marcaNivel"), label = L["Nivel de objeto"], help = L["El número abajo a la izquierda de cada pieza de equipo."], search = "item level, ilvl" },
 	{ kind = "toggle", key = clave("marcaCalidad"), label = L["Borde de calidad"], help = L["Un borde del color de la calidad: verde, azul, morado..."], search = "quality border, rarity" },
 	{ kind = "toggle", key = clave("marcaChatarra"), label = L["Chatarra"], help = L["Una moneda sobre lo gris y lo que marcaste como chatarra."], search = "junk, grey items" },

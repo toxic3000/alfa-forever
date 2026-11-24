@@ -16,9 +16,26 @@ Hecho por **toxic3000** y La Jauría — [Discord](https://discord.gg/hUNjA6BJwh
 
 <p align="center"><em>Cada entrada empieza con el lobo y la luna.</em></p>
 
-## Lo nuevo de la 1.3.7: la manada a tu ritmo
+## Lo nuevo de la 1.3.8: la manada en dos pantallas
 
-200 correcciones y mejoras para que todo llegue a su tiempo. [Todas las notas](CHANGELOG.md).
+Alfa en tu segundo monitor y 40 mejoras. [Todas las notas](CHANGELOG.md).
+
+| | |
+|---|---|
+| ![Alfa en tu segundo monitor](curseforge/galeria/38-138-pantallas.png) | ![Tu escritorio, a tu modo](curseforge/galeria/39-138-editor.png) |
+| **Dos pantallas** — el juego en tu monitor principal y en el otro tu guía, la flecha, el mapa, Hoy, Lya y más; se pone en un clic (`/alfa pantallas`). | **Tu escritorio, a tu modo** — arrastra los paneles sobre una rejilla con imán y agrega más desde el catálogo. |
+| ![Viajes en barco](curseforge/galeria/40-138-flecha-barco.png) | ![Antes de pescar](curseforge/galeria/41-138-pesca-previa.png) |
+| **Avisos que se sienten únicos** — el barco en la flecha: a dónde, cuándo sale y cuándo llegas; un solo mensaje por suceso. | **Antes de pescar** — elige tu caña, tu cebo y tu barra; Alfa lo recuerda por personaje. |
+| ![Tu nivel de pescador](curseforge/galeria/42-138-pesca-pescador.png) | ![Cómo se consigue cada objeto](curseforge/galeria/43-138-enc-lista-alfa.png) |
+| **Tu nivel de pescador** — del 1 al 60, con títulos, récords, el pez de la semana y tus sesiones. | **Enciclopedia con etiquetas** — cómo se consigue, de qué facción es y qué tan probable es que caiga. |
+| ![Candado](curseforge/galeria/44-138-candado-bolsas.png) | ![Curación a tu color](curseforge/galeria/45-138-curacion-todos.png) |
+| **Candado** — Alt+clic derecho: no se borra, no se vende por error y Alfa nunca lo toca. | **Curación a tu color** — por clase, un solo color o según la vida; «En peligro» es un borde suave. |
+
+Y además: la Horda y la Alianza, cada una por su lado; «Busco grupo» y la ficha de cada lobo en La Jauría; y el modo Zen (`/alfa zen`).
+
+## 1.3.7: la manada a tu ritmo
+
+200 correcciones y mejoras para que todo llegue a su tiempo.
 
 | | |
 |---|---|
@@ -90,6 +107,8 @@ A mano: descarga `Alfa-<versión>.zip` de [Releases](https://github.com/toxic300
 | `/alfa reportar` | Reportes | Errores, mejoras y comentarios para el buzón privado del Discord, revisados por el desarrollador |
 | (Ajustes) | Comodidades | Minimapa, colores de clase, cuadro de información, barra de información, números en las recargas, hora y filtro de spam en el chat, IDs en el cuadro, probador, vuelo, misiones y sonidos |
 | `/alfa calma` · `/alfa perdi` | Avisos | No molestar (30 min, 1 h o la sesión) y «Lo que me perdí»: los últimos 30 avisos con su hora |
+| `/alfa pantallas` | Dos pantallas | El escritorio de Alfa en tu segundo monitor: tu guía, la flecha, el mapa, Hoy, Lya y tu grupo; se pone en un clic y lo editas arrastrando los paneles |
+| `/alfa zen` | Modo Zen | Esconde todo Alfa menos la flecha, para explorar o tomar capturas; otro toque lo devuelve |
 | `/alfa copiar` · `/alfa susurros` · `/alfa filtrado` | Chat | Copiar del chat, tu historial de susurros y lo que filtró el filtro de spam |
 
 Alfa no depende de ningún otro addon. Versiones y notas: [`docs/VERSIONES.md`](docs/VERSIONES.md) y [`CHANGELOG.md`](CHANGELOG.md).

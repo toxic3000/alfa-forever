@@ -474,7 +474,23 @@ end
 local avisos, MAX_AVISOS = {}, 3
 local ancla
 
+-- 1.3.8: con un anuncio grande a la vista (Kit/Anuncio.lua), los avisos van
+-- debajo de él: nunca se empalman.
+local ANCLA_Y = -110
+local function anclar()
+	if not ancla then return end
+	local an = rawget(_G, "AlfaAnuncio")
+	ancla:ClearAllPoints()
+	if type(an) == "table" and an.IsShown and an:IsShown() and not an.alfaSaliendo then
+		ancla:SetPoint("TOP", an, "BOTTOM", 0, -ESP.s)
+		ancla.alfaBajoAnuncio = true
+	else
+		ancla:SetPoint("TOP", UIParent, "TOP", 0, ANCLA_Y)
+		ancla.alfaBajoAnuncio = nil
+	end
+end
 local function recolocar()
+	anclar()
 	local y = 0
 	for _, a in ipairs(avisos) do
 		if a:IsShown() then
@@ -512,6 +528,8 @@ local function ratonAvisos(on)
 	end
 end
 K.RatonAvisos = ratonAvisos -- (para el banco)
+function K.RecolocarAvisos() if ancla then recolocar() end end
+function K.AvisosBajoAnuncio() return ancla ~= nil and ancla.alfaBajoAnuncio == true end
 do
 	local ev = CreateFrame("Frame")
 	ev:RegisterEvent("PLAYER_REGEN_DISABLED")
@@ -536,6 +554,18 @@ local function armarAviso()
 	a.Icono = a:CreateTexture(nil, "ARTWORK")
 	a.Icono:SetSize(28, 28)
 	a.Icono:SetPoint("TOPLEFT", a, "TOPLEFT", ESP.base, -ESP.m - 2)
+	-- 1.3.8: la firma del módulo (Kit/Firmas.lua): su ícono chico sobre un
+	-- disco oscuro, abajo a la derecha del ícono del aviso.
+	a.FirmaFondo = a:CreateTexture(nil, "ARTWORK", nil, 2)
+	a.FirmaFondo:SetTexture(K.Ruta("circle"))
+	a.FirmaFondo:SetSize(16, 16)
+	a.FirmaFondo:SetPoint("CENTER", a.Icono, "BOTTOMRIGHT", -1, 1)
+	a.FirmaFondo:SetVertexColor(K.Color("fondo"))
+	a.Firma = a:CreateTexture(nil, "ARTWORK", nil, 3)
+	a.Firma:SetSize(11, 11)
+	a.Firma:SetPoint("CENTER", a.FirmaFondo, "CENTER", 0, 0)
+	a.Firma:Hide()
+	a.FirmaFondo:Hide()
 	a.Titulo = K.Texto(a, "encabezado", "texto")
 	a.Texto = K.Texto(a, "nota", "textoSuave")
 	-- El botón no se llama "Cerrar": a:Cerrar(turno) (abajo) es la función para quitar el aviso.
@@ -660,11 +690,101 @@ local function ponerBoton(a, campo, ac, x, y)
 	return K.num(b:GetWidth(), 80)
 end
 
+---------------------------------------------------------------------------
+-- 1.3.8: únicos y juntos (pedidos de Toxic)
+--   * Lo que ya salió por otro lado en los últimos VISTO s (N.YaSeVio,
+--     Momentos.lua) no sale otra vez; o.suceso = clave: el primero que avisa
+--     de ese suceso lo dice y los demás se callan (N.Suceso).
+--   * Agrupar (mejora 8): los parecidos que llegan juntos (en JUNTOS s) van
+--     en uno solo: los de un mismo o.grupo (con o.agrupar = fn(n, lista) ->
+--     titulo, texto, p. ej. «3 misiones listas para entregar») o, sin grupo,
+--     los de un mismo título sin botones: sus textos uno bajo otro (hasta 3 y
+--     «y N más»). o.agrupar = false lo evita.
+---------------------------------------------------------------------------
+local VISTO, JUNTOS = 45, 5
+K.AVISO_VISTO, K.AVISO_JUNTOS = VISTO, JUNTOS
+local grupos = {}
+
+local function esTexto(v) return type(v) == "string" and not (N.Secreto and N.Secreto(v)) end
+local function textoDe(o)
+	local t = esTexto(o.titulo) and o.titulo or ""
+	local x = esTexto(o.texto) and o.texto or ""
+	if t == "" then return x end
+	if x == "" then return t end
+	return t .. " " .. x
+end
+
+local function claveGrupo(o)
+	if o.grupo ~= nil then return "g:" .. tostring(o.grupo) end
+	if o.agrupar == false or o.accion or o.acciones or o.boton then return nil end
+	if not esTexto(o.titulo) or o.titulo == "" then return nil end
+	return "t:" .. o.titulo
+end
+
+local function agrupar(o)
+	local c = claveGrupo(o)
+	if not c then return o end
+	local g = grupos[c]
+	local t = GetTime()
+	if not g or t - g.t > JUNTOS then return o end
+	local lista = {}
+	for _, x in ipairs(g.lista) do lista[#lista + 1] = x end
+	lista[#lista + 1] = o
+	local titulo, texto
+	if type(o.agrupar) == "function" then
+		local ok, t1, t2 = pcall(o.agrupar, #lista, lista)
+		if ok and esTexto(t1) then titulo, texto = t1, t2 end
+	end
+	if not titulo then
+		titulo = o.titulo
+		local partes, ya = {}, {}
+		for _, x in ipairs(lista) do
+			local tx = x.texto
+			if esTexto(tx) and tx ~= "" and not ya[tx] then ya[tx] = true partes[#partes + 1] = tx end
+		end
+		if #partes > 3 then
+			local resto = #partes - 3
+			partes = { partes[1], partes[2], partes[3], string.format(L["y %d más"], resto) }
+		end
+		texto = table.concat(partes, "\n")
+	end
+	local nuevo = {}
+	for k, v in pairs(o) do nuevo[k] = v end
+	nuevo.titulo, nuevo.texto = titulo, texto
+	nuevo.alfaGrupo = { c = c, lista = lista }
+	nuevo.duracion = nil
+	-- El de antes deja su lugar (sin contar como perdido: sigue en el nuevo).
+	local a = g.a
+	if a and a.alfaVivo and a.turno == g.turno then
+		a.alfaO = nil
+		quitar(a)
+	end
+	return nuevo
+end
+K.AgruparAviso = agrupar -- (para el banco)
+
+local function recordarGrupo(o, a)
+	local c = o.alfaGrupo and o.alfaGrupo.c or claveGrupo(o)
+	if not c then return end
+	for k, g in pairs(grupos) do if GetTime() - g.t > 60 then grupos[k] = nil end end
+	grupos[c] = { t = GetTime(), lista = o.alfaGrupo and o.alfaGrupo.lista or { o }, a = a, turno = a and a.turno }
+end
+
 function K.Aviso(o)
 	o = o or {}
 	-- 1.2.9: con Alfa sencillo (Modo.lua) no salen los avisos de detalle
 	-- (o.detalle = true: lo que es bueno saber, pero no hace falta). -> false
 	if o.detalle and N.Sencillo and N.Sencillo() then return false end
+	-- 1.3.8: de qué módulo viene (se mira aquí, con la pila de quien lo pidió).
+	if o.alfaFirma == nil and K.FirmaDe then
+		local f, clave = K.FirmaDe(o)
+		o.alfaFirma = clave or false
+	end
+	-- 1.3.8: un mensaje por suceso: lo que otro ya dijo (o.suceso) no se repite.
+	if o.suceso ~= nil and not o.alfaSuceso and o.pedido ~= true then
+		if N.Suceso and not N.Suceso(o.suceso, o.ventana) then return false end
+		o.alfaSuceso = true
+	end
 	local seguro = esSeguro(o)
 	-- 1.3.3: la entrada en silencio (Entrada.lua): al entrar al juego no sale
 	-- nada; queda guardado para Hoy y Lya. Salvo lo que no puede esperar
@@ -711,9 +831,18 @@ function K.Aviso(o)
 	-- Alfa_Lya) y no salen avisos por todos lados. Siempre el aviso: o.lya =
 	-- false (quien usa la ventanita que se devuelve) o un botón seguro (abre
 	-- una ventana del juego; el globo de Lya no puede).
+	-- 1.3.8: lo mismo que ya salió (en otro aviso, un anuncio, Lya o el chat)
+	-- no sale otra vez; y los parecidos que llegan juntos van en uno solo.
+	-- (1.3.8 revisión) Nunca lo urgente (prioridad 1) ni lo importante
+	-- «siempre»: un «Te atacan» que se repite tiene que salir otra vez.
+	if not pedido and not seguro and prio > 1 and o.importante ~= "siempre"
+		and N.YaSeVio and N.YaSeVio(textoDe(o), o.ventana or VISTO) then return false end
+	if not pedido then o = agrupar(o) end
 	if o.lya ~= false and not seguro and K.PorLya(o) then
 		-- 1.3.7: lo que dijo Lya también queda en «Avisos» (la campanita), como visto.
 		if N.AvisoReciente then pcall(N.AvisoReciente, o, "lya") end
+		if N.Visto then N.Visto(textoDe(o), "aviso") end
+		recordarGrupo(o, nil)
 		return true
 	end
 	local a
@@ -734,9 +863,21 @@ function K.Aviso(o)
 	end
 	table.insert(avisos, 1, a)
 	local relleno, texto = K.Tono(o.tono or "acento")
-	K.ColorPlano(a.Franja, relleno)
-	if o.lobo then a.Icono:SetTexture(K.Lobo(o.lobo)) else a.Icono:SetTexture(K.Ruta(o.icono or "ic-aviso")) end
+	-- 1.3.8: la franja lleva el color del módulo de donde viene (su firma) y
+	-- su ícono chico va junto al del aviso; el ícono sigue diciendo el tono.
+	local firma = K.FIRMAS and o.alfaFirma and K.FIRMAS[o.alfaFirma] or nil
+	K.ColorPlano(a.Franja, firma and o.tono ~= "peligro" and firma.color or relleno)
+	if o.lobo then a.Icono:SetTexture(K.Lobo(o.lobo)) else a.Icono:SetTexture(K.Ruta(o.icono or (firma and firma.icono) or "ic-aviso")) end
 	a.Icono:SetVertexColor(K.Color(relleno))
+	local conFirma = firma ~= nil and firma.icono ~= (o.icono or (not o.lobo and firma.icono) or nil)
+		and not (o.lobo and o.alfaFirma == "lya")
+	a.Firma:SetShown(conFirma)
+	a.FirmaFondo:SetShown(conFirma)
+	if conFirma then
+		a.Firma:SetTexture(K.Ruta(firma.icono))
+		a.Firma:SetVertexColor(K.Color(firma.color))
+	end
+	a.alfaFirma = o.alfaFirma or nil
 	local x = ESP.base + 28 + ESP.m
 	local tw = K.ANCHO.aviso - x - 30
 	K.Escribir(a.Titulo, o.titulo or "")
@@ -800,10 +941,18 @@ function K.Aviso(o)
 		while #l > 20 do table.remove(l, 1) end
 	end
 	-- 69: un sonido suave según su tipo (lo importante, o el que lo pide).
-	if o.sonido ~= false and (o.sonido or prio <= 2) and N.Sonar then
+	-- 1.3.8 (mejora 7): sin un sonido propio, el corto de su módulo (lo útil
+	-- también; los detalles, callados).
+	-- (1.3.8 revisión) Lo urgente (prioridad 1 y 2) suena como siempre: la
+	-- firma del módulo solo en lo normal (3; lo de detalle sigue sin sonido).
+	if o.sonido == nil and firma and o.tono ~= "peligro" and prio == 3 and K.SonarFirma then
+		K.SonarFirma(o.alfaFirma, prio)
+	elseif o.sonido ~= false and (o.sonido or prio <= 2) and N.Sonar then
 		local tipo = type(o.sonido) == "string" and o.sonido or (o.tono == "peligro" and "peligro") or (prio <= 2 and "importante") or "aviso"
 		N.Sonar(tipo, prio)
 	end
+	if N.Visto then N.Visto(textoDe(o), "aviso") end
+	recordarGrupo(o, a)
 	if A and A.Fire then pcall(A.Fire, "ALFA_AVISO", o) end
 	local function vencer()
 		if not a.alfaVivo or a.alfaTurno ~= turno then return end

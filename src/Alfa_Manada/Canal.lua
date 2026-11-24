@@ -37,9 +37,29 @@ local U = M.U
 local C = {}
 M.Canal = C
 
-C.NOMBRES = { "AlfaJauria", "AlfaJauria2", "AlfaJauria3" }
-C.NOMBRE = C.NOMBRES[1]
+-- 1.3.8: un canal por facción («AlfaJauriaH» de la Horda, «AlfaJauriaA» de
+-- la Alianza). La otra facción ni lo oye: las ubicaciones de la manada
+-- nunca le llegan, aunque el juego dejara compartir canales entre facciones
+-- (y aunque alguien con un Alfa viejo entrara al de antes, «AlfaJauria», que
+-- ya no se usa). Hasta que el juego diga tu facción, no hay canal.
+C.BASES = { H = "AlfaJauriaH", A = "AlfaJauriaA" }
+C.VIEJO = "AlfaJauria"
+C.NOMBRES = {}
+C.NOMBRE = ""
 local cual = 1 -- el nombre de ahora en C.NOMBRES
+
+-- Arma los nombres de tu facción (una vez). -> true si ya se sabe.
+local function nombres()
+	if C.faccion then return true end
+	local l = N.FaccionLetra and N.FaccionLetra()
+	local b = l and C.BASES[l]
+	if not b then return false end
+	C.faccion = l
+	C.NOMBRES = { b, b .. "2", b .. "3" }
+	C.NOMBRE = C.NOMBRES[cual]
+	return true
+end
+C.Nombres = nombres
 
 -- 1.2.0: si alguien le pone contraseña al canal, nos banea o no nos deja
 -- entrar, se pasa al siguiente nombre (todos los que usan Alfa ven lo mismo
@@ -67,13 +87,13 @@ local function unirFn()
 end
 
 function C.Disponible()
-	return unirFn() ~= nil and type(GetChannelName) == "function"
+	return nombres() and unirFn() ~= nil and type(GetChannelName) == "function"
 		and C_ChatInfo ~= nil and C_ChatInfo.SendAddonMessage ~= nil
 end
 
 -- El número del canal (como /5), o nil si no estamos dentro.
 function C.Id()
-	if type(GetChannelName) ~= "function" then return nil end
+	if type(GetChannelName) ~= "function" or not nombres() then return nil end
 	local ok, n = pcall(GetChannelName, C.NOMBRE)
 	n = ok and U.Numero(n) or nil
 	if n and n > 0 then return n end
@@ -83,9 +103,17 @@ end
 -- Si un nombre de canal ("AlfaJauria", "5. AlfaJauria") es el nuestro.
 function C.EsNuestro(nombre)
 	nombre = U.Texto(nombre)
-	if not nombre then return false end
+	if not nombre or C.NOMBRE == "" then return false end
 	nombre = nombre:gsub("^%d+%.%s*", "")
 	return nombre:lower() == C.NOMBRE:lower()
+end
+
+-- (1.3.8 revisión) El canal de antes, «AlfaJauria» (o «5. AlfaJauria»).
+function C.EsViejo(nombre)
+	nombre = U.Texto(nombre)
+	if not nombre then return false end
+	nombre = nombre:gsub("^%d+%.%s*", "")
+	return nombre:lower() == C.VIEJO:lower()
 end
 
 function C.Listo() return estado == "dentro" and C.Id() ~= nil end
@@ -103,7 +131,7 @@ local EVENTOS_CHAT = { "CHAT_MSG_CHANNEL", "CHAT_MSG_CHANNEL_NOTICE", "CHAT_MSG_
 -- zona, número, "AlfaJauria", ...)
 local function filtro(_, _, _, _, _, canal, _, _, _, _, base)
 	if U.Secreto(canal) or U.Secreto(base) then return false end
-	return C.EsNuestro(base) or C.EsNuestro(canal)
+	return C.EsNuestro(base) or C.EsNuestro(canal) or C.EsViejo(base) or C.EsViejo(canal)
 end
 
 local filtrado = false
@@ -172,6 +200,27 @@ function C.Entrar()
 		return false
 	end
 	desde = desde or U.Ahora()
+	-- (1.3.8) Sin tu facción no hay canal: se espera a que el juego la diga.
+	if not nombres() then
+		if U.Ahora() - desde >= ESPERA_MAX then
+			estado, razon = "fallo", "faccion"
+			return false
+		end
+		estado = "esperando"
+		A.After(3, function()
+			if estado == "esperando" then
+				estado = "fuera"
+				C.Entrar()
+			end
+		end)
+		return false
+	end
+	-- El canal de antes (un Alfa viejo en esta sesión): se deja.
+	if type(LeaveChannelByName) == "function" then
+		local ok, n = pcall(GetChannelName, C.VIEJO)
+		n = ok and U.Numero(n) or nil
+		if n and n > 0 then pcall(LeaveChannelByName, C.VIEJO) end
+	end
 	if not canalesDelJuego() and U.Ahora() - desde < ESPERA_MAX then
 		estado = "esperando"
 		A.After(3, function()
@@ -231,6 +280,16 @@ local NO_ENTRA = {
 -- (evento, tipo, autor, idioma, "5. AlfaJauria", autor2, banderas, zona, número, "AlfaJauria")
 A.RegisterEvent("CHAT_MSG_CHANNEL_NOTICE", function(_, tipo, _, _, canal, _, _, _, _, base)
 	if U.Secreto(tipo) or U.Secreto(canal) or U.Secreto(base) then return end
+	-- (1.3.8 revisión) El juego puede volver a meterte al canal de antes
+	-- (lo recuerda de un Alfa viejo) después de entrar: se deja en silencio.
+	if C.EsViejo(base) or C.EsViejo(canal) then
+		local t = U.Texto(tipo)
+		if (t == "YOU_JOINED" or t == "YOU_CHANGED") and type(LeaveChannelByName) == "function" then
+			filtrar()
+			pcall(LeaveChannelByName, C.VIEJO)
+		end
+		return
+	end
 	if not (C.EsNuestro(base) or C.EsNuestro(canal)) then return end
 	tipo = U.Texto(tipo)
 	if tipo == "YOU_JOINED" or tipo == "YOU_CHANGED" then

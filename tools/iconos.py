@@ -463,6 +463,16 @@ def i_reloj(l):
     l.linea((16, 9), (16, 16), (21, 19))
 
 
+def i_candado(l):
+    # Candado (1.3.8): el arco, el cuerpo facetado y el ojo de la llave.
+    l.arco(16, 12.5, 6, 180, 360)
+    l.linea((10, 12.5), (10, 15))
+    l.linea((22, 12.5), (22, 15))
+    l.caja(6, 15, 26, 28, corte=3)
+    l.punto(16, 20.2, 2.1)
+    l.linea((16, 21), (16, 24.5), w=2)
+
+
 ICONOS = {
     # Secciones de la ventana principal (los mismos que usa Options.lua).
     "sec-hoy": i_hoy, "sec-aventura": i_aventura, "sec-personaje": i_personaje, "sec-mundo": i_mundo,
@@ -479,7 +489,7 @@ ICONOS = {
     "ic-rejilla": i_rejilla, "ic-seguir": i_seguir, "ic-nivel": i_nivel, "ic-comodidades": i_comodidades,
     "ic-misiones": i_misiones, "ic-apariencia": i_apariencia, "ic-mando": i_mando, "ic-grabar": i_grabar,
     "ic-conexiones": i_conexiones, "ic-comunidad": i_comunidad, "ic-descubrir": i_descubrir,
-    "ic-ventana": i_ventana, "ic-lobo": i_lobo, "ic-reloj": i_reloj,
+    "ic-ventana": i_ventana, "ic-lobo": i_lobo, "ic-reloj": i_reloj, "ic-candado": i_candado,
 }
 
 

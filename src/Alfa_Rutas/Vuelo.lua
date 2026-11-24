@@ -37,6 +37,14 @@ local function mundo(p)
 end
 
 local function objetivo()
+	-- 1.3.8: «Toma el grifo» puso la flecha en el maestro de vuelo: el paso es tu destino de antes.
+	local v = M.Grifo and M.Grifo.Vuelta and M.Grifo.Vuelta()
+	if type(v) == "table" and v.map then return v end
+	if type(v) == "table" and v.guia then
+		local E = A.Engine
+		local w = E and E.GetWaypoint and E.GetWaypoint()
+		if type(w) == "table" then return w end
+	end
 	local Nav = A.Nav
 	local t = Nav and Nav.GetTarget and Nav.GetTarget()
 	if not t then

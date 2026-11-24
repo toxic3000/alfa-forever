@@ -340,6 +340,16 @@ local function franja(f)
 		textoAcomodar(f)
 	end
 	if f.Conjuntos then f.Conjuntos:SetShown(propia(f) and M.Get("conjuntos") ~= false) end
+	-- 1.3.8: «Separar» (Separar.lua): su botón, y «Marcar» lo del comerciante.
+	if f.Separar then
+		local Sp = M.Separar
+		f.Separar:SetShown(vivo and propia(f) and M.Get("separar") ~= false and true or false)
+		f.Separar:SetMarcado(Sp and Sp.Activo() or false)
+		local c = Sp and Sp.Activo() and Sp.Cuentas()
+		local n = c and c.sinMarcar or 0
+		if n > 0 then f.SepMarcar:SetTexto(format(L["Marcar %d para vender"], n)) end
+		f.SepMarcar:SetShown(vivo and n > 0 and true or false)
+	end
 	f.Volver:SetShown(not propia(f))
 	if not vivo then
 		local r = D.Personaje(f.clave or D.Clave())
@@ -349,7 +359,7 @@ local function franja(f)
 		f.Foto:Hide()
 	end
 	local x = -PAD
-	for _, w in ipairs({ f.Depositar or false, f.Ordenar, f.Acomodar or false, f.Volver, f.Foto }) do
+	for _, w in ipairs({ f.Depositar or false, f.Ordenar, f.Acomodar or false, f.SepMarcar or false, f.Volver, f.Foto }) do
 		if w and w:IsShown() then
 			w:ClearAllPoints()
 			w:SetPoint("RIGHT", fr, "RIGHT", x, 0)
@@ -823,6 +833,12 @@ local function acomodar(f)
 	else
 		f.Coinciden:Hide()
 	end
+	-- 1.3.8: «Separar»: cuántos van a la subasta y cuántos al comerciante, en el pie.
+	if f.SepTexto then
+		local on = f.tipo == "bolsas" and M.Separar and M.Separar.Activo() and propia(f)
+		if on then K.Escribir(f.SepTexto, M.Separar.TextoCorto()) end
+		f.SepTexto:SetShown(on and true or false)
+	end
 	pintarVistas(f)
 	franja(f)
 end
@@ -1027,6 +1043,7 @@ local function menuPersonajes(f, ancla)
 		local r, g, b = M.ColorClase(p.r.clase)
 		local nombre = M.Pintado(p.r.nombre or p.clave, r, g, b)
 		if p.clave == actual then nombre = nombre .. " " .. L["(tú)"] end
+		if p.otraFaccion then nombre = nombre .. " (" .. (p.r.faccion == "Alliance" and L["Alianza"] or L["Horda"]) .. ")" end -- 1.3.8
 		ops[#ops + 1] = { valor = p.clave, texto = nombre }
 	end
 	if #ops == 0 then ops[1] = { valor = "", texto = L["Aún no hay personajes guardados"] } end
@@ -1114,6 +1131,12 @@ local function crear(tipo)
 			{ tam = 28, ayuda = L["Conjuntos de equipo"], ayudaTexto = L["Ponte un conjunto guardado o guarda lo que llevas puesto."] })
 		f.Conjuntos:SetPoint("RIGHT", ultimo, "LEFT", -2, 0)
 		ultimo = f.Conjuntos
+		-- 1.3.8: «Separar»: subasta o comerciante (Separar.lua).
+		f.Separar = K.BotonIcono(cab, "ic-comercio", function() if M.Separar then M.Separar.Alternar(f) franja(f) end end,
+			{ tam = 28, ayuda = L["Separar: subasta o comerciante"],
+				ayudaTexto = L["Marca lo que vale la pena subastar (el martillo) y lo que conviene vender al comerciante (la moneda); lo demás se atenúa. Otro clic lo quita."] })
+		f.Separar:SetPoint("RIGHT", ultimo, "LEFT", -2, 0)
+		ultimo = f.Separar
 		f.BotonBanco = K.Boton(cab, L["Banco"], function() V.MostrarBanco(f.clave) end, { tipo = "fantasma", tam = "chico" })
 		K.ConInfo(f.BotonBanco, L["Tu banco"], L["En vivo si estás con un banquero; si no, la última foto."])
 		f.BotonBanco:SetPoint("RIGHT", ultimo, "LEFT", -ESP.xs, 0)
@@ -1161,6 +1184,10 @@ local function crear(tipo)
 		-- 1.3.0: «Acomodar»: vende la chatarra o guarda los materiales (Acomodar.lua).
 		f.Acomodar = K.Boton(fr, L["Acomodar"], function() M.Acomodar.Hacer() end, { tipo = "secundario" })
 		K.ConInfo(f.Acomodar, function() return L["Acomodar"], M.Acomodar.Ayuda() end)
+		-- 1.3.8: con «Separar», marcar como chatarra lo del comerciante (Separar.lua).
+		f.SepMarcar = K.Boton(fr, L["Marcar para vender"], function() if M.Separar then M.Separar.MarcarVendedor() franja(f) end end, { tipo = "fantasma" })
+		K.ConInfo(f.SepMarcar, function() return L["Marcar para vender"], (M.Separar and M.Separar.Texto() or "") .. " " .. L["Lo del comerciante queda como chatarra: se vende sola al hablar con un comerciante (o con «Acomodar»)."] end)
+		f.SepMarcar:Hide()
 	end
 	f.Volver = K.Boton(fr, L["Volver"], function() V.Ver(f, nil) end, { tipo = "fantasma" })
 	K.ConInfo(f.Volver, nil, L["Volver a tus propias cosas"])
@@ -1200,6 +1227,12 @@ local function crear(tipo)
 	f.Cuando = K.Texto(pie, "pequeno", "textoTenue")
 	f.Cuando:SetPoint("LEFT", f.Monedas or f.Dinero, "RIGHT", ESP.s, 0)
 	f.Cuando:Hide()
+	-- 1.3.8: lo de «Separar» (Separar.lua), al centro del pie.
+	if tipo == "bolsas" then
+		f.SepTexto = K.Texto(pie, "pequeno", "acento")
+		f.SepTexto:SetPoint("CENTER", pie, "CENTER", 0, 0)
+		f.SepTexto:Hide()
+	end
 	f.Libre = K.Texto(pie, "pequeno", "textoSuave")
 	f.Libre:SetPoint("RIGHT", pie, "RIGHT", -(PAD + 2), 0)
 	f.Libre:SetJustifyH("RIGHT")
@@ -1235,6 +1268,8 @@ local function crear(tipo)
 		end
 		self.clave = nil
 		if self.tipo == "bolsas" and M.Oro then M.Oro.Cerrar() end
+		-- 1.3.8: «Separar» se apaga al cerrar tus bolsas.
+		if self.tipo == "bolsas" and M.Separar and M.Separar.Activo() then M.Separar.Alternar(self, false) end
 		sonido(false)
 		M.Avisar("VENTANA_CERRADA", self.tipo)
 	end)

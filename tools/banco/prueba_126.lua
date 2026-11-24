@@ -125,7 +125,7 @@ step("Llamar a la manada", function()
   R.Via = function() return "hermandad" end
   local salidos = {}
   local envio = C_ChatInfo.SendAddonMessage
-  C_ChatInfo.SendAddonMessage = function(_, t, c, d) salidos[#salidos + 1] = { t, c, d } end
+  C_ChatInfo.SendAddonMessage = function(_, t, c, d) salidos[#salidos + 1] = { (t:gsub("|~[HA]$", "")), c, d } end
   local ok = Ll.Llamar()
   for _ = 1, 60 do FIRE(R.motor, "OnUpdate", 0.2) end
   local a
@@ -137,7 +137,7 @@ step("Llamar a la manada", function()
   local av = K.Aviso
   K.Aviso = function(o) avisos[#avisos + 1] = o end
   local map = AlfaNucleo.A.Compat.GetPlayerMapPosition()
-  FIRE_EVENT("CHAT_MSG_ADDON", "AlfaManada", "1A|" .. tostring(map) .. "|45.00|55.00|Mor'Ladim", "GUILD", "Ana Smith")
+  FIRE_EVENT("CHAT_MSG_ADDON", "AlfaManada", "1A|" .. tostring(map) .. "|45.00|55.00|Mor'Ladim|~H", "GUILD", "Ana Smith")
   check(avisos[1] and avisos[1].accion and avisos[1].accion.texto == "¡Voy!" and avisos[1].texto:find("Mor'Ladim", 1, true), "no llegó el llamado con «¡Voy!»")
   if avisos[1] and avisos[1].accion then avisos[1].accion.alClic() end
   for _ = 1, 60 do FIRE(R.motor, "OnUpdate", 0.2) end
@@ -146,7 +146,7 @@ step("Llamar a la manada", function()
   check(b, "«¡Voy!» no le avisó a quien llamó")
   local tgt = A.Nav and A.Nav.GetTarget and A.Nav.GetTarget()
   check(tgt and math.abs((tgt.x or 0) - 45) < 0.01, "la flecha no apunta a donde llamaron (0-100)")
-  FIRE_EVENT("CHAT_MSG_ADDON", "AlfaManada", "1B", "WHISPER", "Beto Ruiz")
+  FIRE_EVENT("CHAT_MSG_ADDON", "AlfaManada", "1B|~H", "WHISPER", "Beto Ruiz")
   check(avisos[#avisos] and avisos[#avisos].titulo:find("Beto Ruiz", 1, true), "no te avisó quién va en camino")
   K.Aviso = av
   C_ChatInfo.SendAddonMessage = envio

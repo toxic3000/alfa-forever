@@ -102,12 +102,14 @@ end
 Of.Reactivos = reactivos
 
 -- Cuántas veces quedan de un paso según tu habilidad (proporcional).
-local function vecesQueFaltan(p, rank)
-	local desde, hasta = p[1], p[2]
-	if rank >= hasta then return 0 end
+-- 1.3.8: meta, la habilidad a la que quieres llegar (de fábrica, 300).
+local function vecesQueFaltan(p, rank, meta)
+	local desde, hasta = p[1], min(p[2], meta or p[2])
+	if rank >= hasta or desde >= hasta then return 0 end
 	local total = p.n or 1
-	if rank <= desde then return total end
-	return max(1, ceil(total * (hasta - rank) / max(1, hasta - desde)))
+	local base = max(rank, desde)
+	if base <= desde and hasta >= p[2] then return total end
+	return max(1, ceil(total * (hasta - base) / max(1, p[2] - desde)))
 end
 
 function Of.Pasos(linea, rank)
@@ -147,25 +149,28 @@ local function sumar(t, orden, id, n, prods, hondo)
 	t[id] = (t[id] or 0) + n
 end
 
-function Of.Faltan(linea, rank)
+-- 1.3.8: meta (opcional): hasta qué habilidad (tu tope, 150...); sin ella, 300.
+function Of.Faltan(linea, rank, meta)
 	local g = G[linea]
 	if not g or g.tipo ~= "crear" then return {} end
 	rank = rank or 0
+	meta = tonumber(meta) or 300
 	local propias = recetasPropias()
 	local prods = productos(g, propias)
 	local t, orden = {}, {}
 	for _, p in ipairs(g.pasos) do
-		if rank < p[2] then
+		if rank < p[2] and p[1] < meta then
 			local r = reactivos(p, propias)
 			if p.o then
-				local veces = vecesQueFaltan(p, rank)
+				local veces = vecesQueFaltan(p, rank, meta)
 				for i = 1, #r, 2 do
 					local id, q = r[i], r[i + 1]
 					if type(id) == "number" and type(q) == "number" then sumar(t, orden, id, veces * q, prods, 0) end
 				end
 			else
 				-- Un paso general: sus materiales ya son el total del tramo.
-				local parte = rank > p[1] and (p[2] - rank) / max(1, p[2] - p[1]) or 1
+				local hasta = min(p[2], meta)
+				local parte = (hasta - max(rank, p[1])) / max(1, p[2] - p[1])
 				for i = 1, #r, 2 do
 					local id, q = r[i], r[i + 1]
 					if type(id) == "number" and type(q) == "number" then sumar(t, orden, id, max(1, ceil(q * parte)), prods, 0) end

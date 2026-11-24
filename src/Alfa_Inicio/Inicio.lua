@@ -2124,6 +2124,14 @@ AlfaInicio.Comida = function() return M.Comida.Contar() end
 AlfaInicio.TengoTiempo = function(minutos) return M.Tiempo.Armar(minutos) end
 AlfaInicio.Plan = function() return M.Tiempo.Actual() end
 AlfaInicio.Camino = function() P.AbrirCamino() end
+-- 1.3.8: para el Escritorio de Alfa (dos pantallas, Alfa_Bienvenida/EscritorioPaneles.lua):
+-- lo mismo que pinta Hoy, sin armar la página.
+AlfaInicio.Paso = function() return pasoActual() end
+AlfaInicio.Alertas = function() return alertas() end
+AlfaInicio.Numeros = function() return numeros() end
+AlfaInicio.Distancia = function() return distancia() end
+AlfaInicio.Sesion = function() return S.Estado() end
+AlfaInicio.Jugado = function() return M.Jugado and M.Jugado.Datos() or nil end
 
 A.RegisterCommand("camino", function() P.AbrirCamino() end, L["tu camino al 60"], true)
 

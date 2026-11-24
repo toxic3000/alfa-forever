@@ -653,4 +653,10 @@ M.EN = {
 	["Tu parte del daño"] = "Your share of the damage",
 	["Tu parte de la curación"] = "Your share of the healing",
 	["Prende «Tus efectos a la vista» en Combate: una fila chica con tus venenos, maldiciones, escudos y curas que duran, con los segundos que les quedan. Si uno se cae en plena pelea, te avisa."] = "Turn on \"Your effects on screen\" in Combat: a small row with your poisons, curses, shields and lasting heals, with the seconds they have left. If one drops in the middle of a fight, it warns you.",
+	-- 1.3.8 (oficios y ventana)
+	["Alfa guarda tu última pelea: cuánto duró, tu daño y tu curación por segundo y lo que más te pegó. La ves en Combate o en el menú del medidor («Ver mi última pelea»); si quieres que salga sola, prende «Resumen al terminar cada pelea» en Combate."] = "Alfa keeps your last fight: how long it lasted, your damage and healing per second and what hit you hardest. See it in Combat or in the meter's menu (\"See my last fight\"); to have it pop up on its own, turn on \"Summary after each fight\" in Combat.",
+	["Ver mi última pelea"] = "See my last fight",
+	["A pedido"] = "On request",
+	["Resumen al terminar cada pelea"] = "Summary after each fight",
+	["Una tarjeta al terminar: cuánto duró, tu daño y tu curación por segundo y lo que más te pegó. Apagado, tu última pelea se guarda igual y la ves aquí arriba o en el menú del medidor."] = "A card when it ends: how long it lasted, your damage and healing per second and what hit you hardest. Off, your last fight is still kept and you can see it up here or in the meter's menu.",
 }

@@ -1,5 +1,103 @@
 # Cambios de Alfa
 
+## 1.3.8 — La manada en dos pantallas: Alfa en tu segundo monitor y 40 mejoras (24/11/2026)
+
+Alfa llega a tu segundo monitor, la Horda y la Alianza quedan cada una por su lado, los avisos se sienten únicos, la pesca suma tamaños, récords y nivel de pescador, y tus objetos importantes llevan candado. Cada cambio trae su prueba en el banco y pasó una revisión independiente.
+
+**Español**
+
+*Dos pantallas*
+- **Escritorio de Alfa en tu segundo monitor:** estira la ventana del juego sobre dos monitores (o usa Offhand) y Alfa deja el juego y su interfaz en tu monitor principal y pone en el otro tus paneles en vivo: tu guía en grande, la flecha con «Llegas en…», el mapa, Hoy, Planes, Avisos, Lya, el medidor del grupo, tu última pelea, la pesca, tus bolsas, tu oro y tu grupo.
+- **En un clic:** si tienes otro monitor y el juego ocupa solo uno, Alfa te lo ofrece una vez («Vi que tienes otro monitor. ¿Pongo Alfa ahí?»). Con «Sí, en un clic» estira la ventana del juego a tus dos monitores, pone el escritorio y lo pruebas 15 segundos; si no dices «Sí», la ventana vuelve a su modo y tamaño de antes. Para tres monitores, uno arriba de otro u Offhand, está «Ajustar a mano».
+- Un asistente con el dibujo de tus monitores te lo acomoda, y lo pruebas antes de guardar: si no dices «Sí», en 15 segundos vuelve solo.
+- Edítalo arrastrando los paneles sobre una rejilla con imán, agrégalos desde un catálogo y guarda tus propios escritorios. Cambia solo en una mazmorra, pescando o en la subasta. Con un solo monitor, va a un lado. Ajustes > Dos pantallas o `/alfa pantallas`.
+
+*Avisos que se sienten únicos*
+- El viaje en barco, zepelín, tranvía, portal o vuelo se dice claro en la flecha: a dónde, cuándo sale (con cuenta real si se conoce), el siguiente y cuándo llegas; sin coordenadas sueltas. Los muelles del mapa dicen cuándo sale el siguiente.
+- Un solo mensaje por suceso: lo que Alfa ya dijo en un aviso, un anuncio, Lya o el chat no se repite en otro lado; al llegar en barco o a una zona peligrosa sale uno solo.
+- Anuncios de zona más épicos: entrada con profundidad, luz sobre el nombre, polvo o chispas por tipo, salida elegante y un sonido propio por tipo; el nombre del juego ya no sale a la par.
+- Cada aviso lleva la firma de su módulo (color, ícono y un sonido corto), los avisos parecidos que llegan juntos se juntan en uno, y los avisos ya no se enciman con los anuncios grandes.
+- «La última vez…»: al entrar, Hoy te recuerda lo que dejaste pendiente.
+- El resumen de tu pelea ya no sale solo después de cada combate (se prende en Combate); tu última pelea se ve con «Ver mi última pelea».
+- Las tarjetas de sugerencia del rastreador (como «Yuki lleva 4 misiones que tú no tienes») se cierran con su X; con clic derecho apagas las rutas del grupo.
+- Al terminar una guía, el rastreador te festeja con una tarjeta propia, todo dentro del rastreador y con su X.
+
+*Pesca*
+- Antes de pescar, un cuadro para elegir tu caña, tu cebo y cómo quieres la barra; se recuerda por personaje.
+- «A pelear» funciona a la primera: escudo, armas de dos manos, varitas y arcos, armas que cambiaste mientras pescabas, y la espada sale sola si no ves la barra. El aviso «te atacan con la caña» sale al instante con tu tecla.
+- Cada captura tiene su tamaño, con tus récords por pez y por zona; tu nivel de pescador de Alfa, del 1 al 60, con títulos; el pez de la semana; la pestaña Sesiones; y la tabla de pescadores de La Jauría (opcional, solo tu hermandad y tu facción).
+
+*Horda y Alianza*
+- Cada facción por su lado: todo lo que comparte La Jauría (ubicaciones, guaridas, notas, raros, citas, planes, pesca) lleva tu facción y la otra nunca lo ve; el canal oculto es uno por facción.
+- Tus personajes de la otra facción salen al final y marcados; al entrar, Alfa ya no prepara guías de clase lejanas de tu nivel.
+- Enciclopedia y Mazmorras: lo de tu facción va primero, con el filtro «Solo tu facción».
+- Ojo: un lobo con Alfa 1.3.7 y otro con la 1.3.8 ya no se ven en el mapa por el canal oculto (solo por la hermandad) hasta que los dos actualicen.
+
+*Enciclopedia*
+- Cada objeto dice cómo se consigue (Lo sueltan, De jefe, De raro, Misión, Serie de misiones, Vendedor, Fabricado, Pesca, Recolección, Mundo), de qué facción es y la probabilidad de que caiga («Lo sueltan · 12 %»).
+- La ficha empieza con «Cómo se consigue»: el mejor ejemplo de cada forma, su porcentaje y «Guíame». Filtros nuevos: «Cómo se consigue», «Más probable primero» y «Facción».
+
+*Tu mundo y La Jauría*
+- «Toma el grifo»: si volar te ahorra tiempo, el rastreador te dice desde dónde y cuánto ahorras.
+- La flecha te avisa antes si tu camino pasa por una zona muy arriba de tu nivel.
+- Nueva capa del mapa con las misiones de tu zona por color según tu nivel.
+- Lya te sugiere una pausa tras 2 horas seguidas, cambia con tu hora del día y festeja tus primeras veces (pez raro, récord, mazmorra, guía completa, nivel 60).
+- «Busco grupo» a tu hermandad desde una misión de élite o de mazmorra; la ficha de cada lobo con sus oficios y lo que puede fabricarte; y compartir tu plan o tu guía con un lobo.
+
+*Personaje y oficios*
+- Candado de objetos: Alt+clic derecho le pone candado a un objeto; con candado no se borra (el juego te lo regresa), no se vende con un clic mal dado y Alfa nunca lo vende ni lo manda solo. Candado automático para lo épico, lo de misiones, tu piedra de hogar y tus conjuntos.
+- Curación: arreglado el rojo sólido de los marcos con la vida llena; «En peligro» es un borde suave solo bajo el 35 %. Nuevo «Color de los marcos»: por clase (de fábrica), un solo color con el selector del juego, o según la vida, con intensidad.
+- Recetas de vendedor que te faltan cerca, lista de compras que descuenta lo de tus otros personajes, y «Separar» en las bolsas para ver qué subastar y qué vender.
+- Mazmorras: una línea con lo más importante del jefe al apuntarle, y una tarjeta al terminar con tu tiempo, tu daño o curación, tu botín y tu récord.
+- Tamaño propio para las ventanas de Alfa, modo Zen (`/alfa zen`), «Lo más usado» arriba en Ajustes y adornos de temporada opcionales.
+
+**English**
+
+*Two screens*
+- **Alfa desktop on your second monitor:** stretch the game window across two monitors (or use Offhand) and Alfa keeps the game and its interface on your main monitor while the other one shows your live panels: your guide in big, the arrow with "You'll be there in…", the map, Today, Plans, Notices, Lya, the group meter, your last fight, fishing, your bags, your gold and your group.
+- **In one click:** if you have another monitor and the game uses only one, Alfa offers it once ("I see you have another monitor. Shall I put Alfa there?"). "Yes, in one click" stretches the game window across both monitors, sets up the desktop and lets you try it for 15 seconds; if you don't say "Yes", the window goes back to its previous mode and size. For three monitors, one above the other or Offhand, there's "Adjust by hand".
+- An assistant with a drawing of your monitors sets it up, and you try it before saving: if you don't say "Yes", it goes back by itself in 15 seconds.
+- Edit it by dragging panels on a snapping grid, add them from a catalog and save your own desktops. It switches by itself in dungeons, while fishing or at the auction house. With one monitor, it goes on one side. Settings > Two screens or `/alfa pantallas`.
+
+*Notices that feel unique*
+- Boat, zeppelin, tram, portal and flight legs read clearly on the arrow: where to, when it leaves (live countdown when known), the next one and when you arrive; no loose coordinates. Map docks show when the next one leaves.
+- One message per event: what Alfa already said in a notice, an announcement, Lya or chat doesn't repeat elsewhere; arriving by boat or in a dangerous zone gives a single message.
+- More epic zone announcements: depth entrance, light across the name, dust or sparks per type, an elegant exit and a sound per type; the game's own zone name no longer shows at the same time.
+- Every notice carries its module's signature (colour, icon and a short sound), similar notices arriving together merge into one, and notices no longer overlap the big announcements.
+- "Last time…": on login, Today reminds you what you left pending.
+- The fight summary no longer pops up after every fight (turn it on in Combat); see your last fight with "See my last fight".
+- Tracker suggestion cards (like "Yuki has 4 quests you don't") close with their X; right-click to turn off group routes.
+- When you finish a guide, the tracker celebrates with its own card, all inside the tracker and with its X.
+
+*Fishing*
+- Before you fish, a box to pick your pole, your lure and how you want the bar; remembered per character.
+- "To arms" works on the first try: shields, two-handers, wands and bows, weapons you swapped while fishing, and the sword shows up on its own if the bar isn't visible. The "attacked with your pole in hand" alert shows instantly with your key.
+- Every catch has its size, with your records per fish and per zone; your Alfa angler level, 1 to 60, with titles; the fish of the week; the Sessions tab; and the La Jauría anglers board (optional, your guild and faction only).
+
+*Horde and Alliance*
+- Each faction on its own side: everything La Jauría shares (locations, lairs, notes, rares, meetups, plans, fishing) carries your faction and the other side never sees it; the hidden channel is one per faction.
+- Your characters from the other faction are listed last and marked; on login, Alfa no longer prepares class guides far from your level.
+- Encyclopedia and Dungeons: your faction's things come first, with an "Only your faction" filter.
+- Heads-up: a wolf on Alfa 1.3.7 and another on 1.3.8 no longer see each other on the map through the hidden channel (only through the guild) until both update.
+
+*Encyclopedia*
+- Every item shows how you get it (Drops, Boss drop, Rare drop, Quest, Quest chain, Vendor, Crafted, Fishing, Gathering, World), its faction and its drop chance ("Drops · 12%").
+- Item details start with "How to get it": the best example of each way, its chance and "Guide me". New filters: "How to get it", "Most likely first" and "Faction".
+
+*Your world and La Jauría*
+- "Take the gryphon": if flying saves time, the tracker tells you where to fly from and how much you save.
+- The arrow warns you ahead if your path crosses a zone far above your level.
+- A new map layer shows your zone's quests by colour for your level.
+- Lya suggests a break after 2 hours straight, changes with your time of day and celebrates your firsts (rare fish, record, dungeon, finished guide, level 60).
+- "Looking for group" to your guild from an elite or dungeon quest; each wolf's card with their professions and what they can craft for you; and share your plan or guide with a wolf.
+
+*Character and professions*
+- Item lock: Alt+right-click an item to lock it; a locked item can't be deleted (it goes back to your bags), won't be sold by a stray click, and Alfa never sells or mails it on its own. Automatic lock for epics, quest items, your hearthstone and your gear sets.
+- Healing: fixed the solid red frames at full health; "In danger" is a soft border only below 35%. New "Frame colour": by class (default), one colour from the game's colour picker, or by health, with intensity.
+- Vendor recipes you're missing nearby, a shopping list that subtracts what your other characters have, and "Sort" in your bags to see what to auction and what to sell.
+- Dungeons: one line with what matters most about a boss when you target it, and a card at the end with your time, damage or healing, loot and record.
+- Alfa's own window size, Zen mode (`/alfa zen`), "Most used" at the top of Settings and optional seasonal decorations.
+
 ## 1.3.7 — La manada a tu ritmo: 200 mejoras para que todo llegue a su tiempo (21/11/2026)
 
 La versión más grande de Alfa: 200 correcciones y mejoras pensadas en cómo se siente jugar. Los avisos ya no se enciman y esperan a que termine lo del juego, cada zona se anuncia con su propia animación, el medidor de daño sale solo en grupo, tu oro se ve una sola vez y la pesca te devuelve tus armas con un clic. Cada cambio trae su prueba en el banco y pasó una revisión independiente.

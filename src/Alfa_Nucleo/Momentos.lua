@@ -82,6 +82,81 @@ function N.UnaVez(voz)
 end
 
 ---------------------------------------------------------------------------
+-- 1.3.8: un mensaje por suceso (pedido de Toxic: «los mensajes al llegar en
+-- barco se repiten o se empalman; quiero que se sientan únicos»).
+--   N.Suceso(clave, ventana) -> true la primera vez en `ventana` s (y la
+--       anota); false si otro canal ya lo dijo. Quien avisa de lo mismo
+--       (la zona peligrosa: el anuncio de zona y el aviso de Rutas) usa la
+--       misma clave: el primero lo dice, el segundo se calla.
+--   N.Visto(texto, canal)   anota lo que salió (avisos, anuncios, Lya, chat)
+--   N.YaSeVio(texto, ventana, canal) -> bool, canal   ¿ya salió por OTRO canal?
+--   N.Normalizar(texto) -> el texto sin colores, íconos, signos ni mayúsculas
+--   N.Salidas() -> los últimos mensajes { canal, texto, t } (banco, /alfa rendimiento)
+---------------------------------------------------------------------------
+local SUCESO_VENTANA = 60
+local VISTO_VENTANA = 45
+local MAX_SALIDAS = 40
+local sucesos = {}  -- clave -> GetTime()
+local vistosTexto = {} -- texto normalizado -> { t, canal }
+local salidas = {}
+N.SUCESO_VENTANA, N.VISTO_VENTANA = SUCESO_VENTANA, VISTO_VENTANA
+
+function N.Normalizar(t)
+	if type(t) ~= "string" or secreto(t) then return nil end
+	t = t:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub("|T.-|t", ""):gsub("|H.-|h(.-)|h", "%1")
+	t = t:lower():gsub("[%p]", " "):gsub("\194[\161\171\183\187\191]", " "):gsub("\226\128[\147\148\166]", " ")
+	t = t:gsub("%s+", " "):gsub("^ ", ""):gsub(" $", "")
+	if t == "" then return nil end
+	return t
+end
+
+local function podar(tabla, ventana)
+	local t0 = ahora()
+	for k, v in pairs(tabla) do
+		local cuando = type(v) == "table" and v.t or v
+		if t0 - (tonumber(cuando) or 0) > ventana then tabla[k] = nil end
+	end
+end
+
+function N.Suceso(clave, ventana)
+	if clave == nil then return true end
+	clave = tostring(clave)
+	local t = sucesos[clave]
+	if t and ahora() - t < (tonumber(ventana) or SUCESO_VENTANA) then return false end
+	podar(sucesos, 3600)
+	sucesos[clave] = ahora()
+	return true
+end
+-- (1.3.8 revisión) Lo que se anotó y al final no se dijo.
+function N.OlvidarSuceso(clave)
+	if clave ~= nil then sucesos[tostring(clave)] = nil end
+end
+function N.SucesoDicho(clave, ventana)
+	local t = clave ~= nil and sucesos[tostring(clave)]
+	return t ~= nil and t ~= false and ahora() - t < (tonumber(ventana) or SUCESO_VENTANA)
+end
+
+function N.Visto(texto, canal)
+	local n = N.Normalizar(texto)
+	if not n then return end
+	podar(vistosTexto, 300)
+	vistosTexto[n] = { t = ahora(), canal = canal or "?" }
+	salidas[#salidas + 1] = { canal = canal or "?", texto = texto, t = ahora() }
+	while #salidas > MAX_SALIDAS do tremove(salidas, 1) end
+end
+
+function N.YaSeVio(texto, ventana, canal)
+	local n = N.Normalizar(texto)
+	local v = n and vistosTexto[n]
+	if not v or ahora() - v.t >= (tonumber(ventana) or VISTO_VENTANA) then return false end
+	if canal and v.canal == canal then return false end
+	return true, v.canal
+end
+
+function N.Salidas() return salidas end
+function N.OlvidarSucesos() sucesos, vistosTexto, salidas = {}, {}, {} end -- (para el banco)
+
+---------------------------------------------------------------------------
 -- Lo que hace el juego
 ---------------------------------------------------------------------------
 local CALMA_CARGA = 3      -- s de calma después de una pantalla de carga
@@ -441,6 +516,22 @@ function N.Sonar(tipo, p)
 	if not id then return false end
 	sonadoEn = t
 	N.ultimoSonido = tipo or "aviso"
+	if A and A.PlaySound then pcall(A.PlaySound, id, "SFX")
+	elseif PlaySound then pcall(PlaySound, id, "SFX") end
+	return true
+end
+
+-- 1.3.8: un sonido por su nombre del juego (o su id de respaldo): la firma de
+-- cada módulo (Kit/Firmas.lua). Las mismas reglas que N.Sonar.
+function N.SonarId(nombre, respaldo, etiqueta, p)
+	if not N.SonidoPermitido(p) then return false end
+	local t = ahora()
+	if t - sonadoEn < 0.5 then return false end
+	local id = type(SOUNDKIT) == "table" and type(nombre) == "string" and rawget(SOUNDKIT, nombre) or nil
+	if type(id) ~= "number" then id = respaldo end
+	if type(id) ~= "number" then return false end
+	sonadoEn = t
+	N.ultimoSonido = etiqueta or nombre
 	if A and A.PlaySound then pcall(A.PlaySound, id, "SFX")
 	elseif PlaySound then pcall(PlaySound, id, "SFX") end
 	return true

@@ -151,6 +151,19 @@ local EN_VIVO = {
 			{ value = "dano", text = L["Daño"] },
 		},
 		disabled = function() return N.Get(ID, "enVivo") == false end },
+	-- 1.3.8: una línea con lo que más importa (de fábrica) o la tarjeta de antes.
+	{ kind = "dropdown", key = ID .. ".enVivoForma", label = L["Cómo se ve"], child = true,
+		help = L["Una línea: el jefe y lo más importante de su pelea, sin tapar nada. Tarjeta: tres consejos y tus misiones de ahí."],
+		choices = {
+			{ value = "linea", text = L["Una línea"] },
+			{ value = "tarjeta", text = L["Tarjeta"] },
+		},
+		search = "boss tip, one line, compact, card, jefe, consejo, una línea",
+		disabled = function() return N.Get(ID, "enVivo") == false end },
+	-- 1.3.8: el resumen al terminar (Resumen.lua).
+	{ kind = "toggle", key = ID .. ".resumenFin", label = L["Resumen al terminar una mazmorra"],
+		help = L["Al vencer al último jefe, una tarjeta con tu tiempo, tu daño o tu curación, tu botín y si hiciste récord."],
+		search = "dungeon summary, run summary, record, time, loot, resumen, récord" },
 }
 
 A.RegisterDefaults(ID, { nivelAvisos = 1 })

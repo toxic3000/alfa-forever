@@ -113,6 +113,23 @@ VISTAS = [
      "Notices you didn't get to see are kept, with their time."),
     ("shot-137-info.png", "Barra de información y recargas", "Rendimiento, oro, equipo, bolsas y experiencia por hora; y cuánto le falta a cada botón.",
      "Performance, gold, gear, bags and XP per hour; plus the time left on each button."),
+    # 1.3.8 (escenas del escritorio y tools/banco/galeria138*.lua)
+    ("shot-138-pantallas.png", "Alfa en tu segundo monitor", "El juego en tu pantalla principal y en la otra tu guía, la flecha, el mapa, Hoy, Lya y más.",
+     "The game on your main screen; on the other, your guide, the arrow, the map, Today, Lya and more."),
+    ("shot-138-editor.png", "Tu escritorio, a tu modo", "Arrastra los paneles sobre una rejilla con imán y agrega más desde el catálogo.",
+     "Drag panels on a snapping grid and add more from the catalog."),
+    ("shot-138-flecha-barco.png", "Viajes en barco, claros", "A dónde, cuándo sale, el siguiente y cuándo llegas, en la flecha.",
+     "Where to, when it leaves, the next one and when you arrive, right on the arrow."),
+    ("shot-138-pesca-previa.png", "Antes de pescar", "Elige tu caña, tu cebo y tu barra; Alfa lo recuerda por personaje.",
+     "Pick your pole, your lure and your bar; Alfa remembers it per character."),
+    ("shot-138-pesca-pescador.png", "Tu nivel de pescador", "Del 1 al 60, con títulos, récords y el pez de la semana.",
+     "From 1 to 60, with titles, records and the fish of the week."),
+    ("shot-138-enc-lista-alfa.png", "Cómo se consigue cada objeto", "La Enciclopedia dice de dónde sale, de qué facción es y qué tan probable es.",
+     "The Encyclopedia shows where it comes from, its faction and how likely it drops."),
+    ("shot-138-candado-bolsas.png", "Candado para tus objetos", "Lo que tiene candado no se borra, no se vende por error y Alfa nunca lo toca.",
+     "Locked items can't be deleted, sold by mistake or touched by Alfa."),
+    ("shot-138-curacion-todos.png", "Curación a tu color", "Por clase, un solo color o según la vida; «En peligro» es un borde suave.",
+     "By class, one colour or by health; \"In danger\" is a soft border."),
 ]
 
 
@@ -164,6 +181,7 @@ def cabecera(im, titulo, es, en):
 # 1.3.7: las vistas chicas (un anuncio, un aviso, una barra) se agrandan hasta
 # este tanto para que se lean; las de antes se quedan como estaban.
 AMPLIAR = {a: 1.7 for a, *_ in VISTAS if a.startswith("shot-137-")}
+AMPLIAR.update({"shot-138-flecha-barco.png": 1.7, "shot-138-candado-bolsas.png": 1.3, "shot-138-pesca-previa.png": 1.2})
 
 
 def enmarcar(vista, titulo, es, en, ampliar=1.0):

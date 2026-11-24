@@ -338,3 +338,10 @@ end)
 -- Para otros módulos (Lya, Inicio): AlfaBolsas.Sesion().
 AlfaBolsas = type(rawget(_G, "AlfaBolsas")) == "table" and rawget(_G, "AlfaBolsas") or {}
 AlfaBolsas.Sesion = function() return Se.Datos() end
+-- 1.3.8: el oro de toda la cuenta (el panel de oro del Escritorio de Alfa), o nil.
+AlfaBolsas.OroCuenta = function()
+	local O = M.Oro
+	if not (O and O.Grupos) then return nil end
+	local ok, _, total = pcall(O.Grupos)
+	return ok and tonumber(total) or nil
+end

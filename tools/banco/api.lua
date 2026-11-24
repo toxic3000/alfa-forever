@@ -3,6 +3,9 @@ UIP = CreateFrame("Frame", "UIParent")
 UIP._parent = nil
 UIParent = UIP
 WorldFrame = CreateFrame("Frame", "WorldFrame")
+-- 1.3.8: el mundo no tiene padre y llena la pantalla, como en el juego.
+WorldFrame:SetParent(nil)
+WorldFrame:SetAllPoints()
 UISpecialFrames = {}
 ADDON_META, LOADED = {}, {}
 local nsByAddon = {}
@@ -127,8 +130,9 @@ function GetZoneText() return "Durotar" end
 function GetRealZoneText() return "Durotar" end
 function GetSubZoneText() return "" end
 function GetMinimapZoneText() return "Durotar" end
-function GetScreenWidth() return 1920 end
-function GetScreenHeight() return 1080 end
+function GetScreenWidth() return (PANTALLA_TAM()) end
+function GetScreenHeight() return select(2, PANTALLA_TAM()) end
+function GetPhysicalScreenSize() return PANTALLA_TAM() end
 function GetCursorPosition() return 0, 0 end
 function IsShiftKeyDown() return false end
 function IsControlKeyDown() return false end

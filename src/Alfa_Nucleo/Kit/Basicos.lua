@@ -315,7 +315,13 @@ function K.Boton(padre, texto, alClic, opts)
 	function b:AnchoNatural() return medirBoton(self) end
 	function b:SetAncho(w) self.alfaAncho = w if w then self:SetWidth(w) end acomodarBoton(self) end
 
-	K.Pintar(b, function(x) pintarBoton(x) acomodarBoton(x) end)
+	-- (1.3.8 revisión) Al repintar (cambio de estilo), el de dos renglones
+	-- (K.BotonQueQuepa, Bloques.lua) no vuelve a uno solo.
+	K.Pintar(b, function(x)
+		pintarBoton(x)
+		acomodarBoton(x)
+		if x.alfaDosLineas and K.BotonDosLineas then K.BotonDosLineas(x) end
+	end)
 	return b
 end
 

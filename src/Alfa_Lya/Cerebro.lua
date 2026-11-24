@@ -120,6 +120,7 @@ local LIBRES = {
 	nivel = true, muerte = true, reparar = true, bolsas = true, entrenar = true, entregar = true,
 	descanso = true, misionesHoy = true, animo = true, carino = true, ambiente = true, zona = true,
 	hambre = true, salchichas = true,
+	llegadaManana = true, llegadaNoche = true, llegadaMadrugada = true, saludoMadrugada = true, -- 1.3.8
 	-- 1.2.7: las mazmorras, los ánimos de racha, la salchicha y la despedida (Momentos.lua)
 	mazmorra = true, mazmorraSin = true, consuelo = true, racha = true, pideSalchicha = true,
 	gracias = true, graciasTotal = true, antesDeIrte = true, adios = true, adiosSin = true,
@@ -362,6 +363,10 @@ end
 
 function Ce.Decir(c)
 	if type(c) ~= "table" or type(c.texto) ~= "string" or c.texto == "" then return false end
+	-- 1.3.8: un mensaje por suceso: lo que acaba de salir en un aviso, un
+	-- anuncio o el chat no lo repite (un dato de la zona: en 5 min).
+	if not c.pedido and N.YaSeVio and N.YaSeVio(c.texto, c.clase == "dato" and 300 or nil, "lya") then return false, "repetido" end
+	if c.suceso ~= nil and not c.pedido and N.Suceso and not N.Suceso(c.suceso, c.ventana) then return false, "repetido" end
 	local por = motivo(c)
 	-- 1.3.3: mientras entras, lo que diría sola se guarda para después.
 	if guardable(c, por) then
@@ -401,6 +406,7 @@ function Ce.Decir(c)
 	table.insert(Ce.historial, 1, { texto = c.texto, acciones = c.acciones, hora = date and date("%H:%M") or "" })
 	while #Ce.historial > HISTORIAL do table.remove(Ce.historial) end
 	UI.Hablar(c)
+	if N.Visto then N.Visto(c.texto, "lya") end -- 1.3.8
 	if c.voz then Ce.Anotar(c.voz) end
 	if type(c.alDecir) == "function" then K.Llamar(c.alDecir) end
 	return true
@@ -730,7 +736,7 @@ Ce.Suelto = suelto
 -- El saludo al entrar, según la hora (y a veces uno de los de siempre).
 local function saludar(nombre)
 	local h = tonumber(date and date("%H")) or 12
-	local cat = (h >= 5 and h < 12 and "saludoManana") or (h >= 12 and h < 19 and "saludoTarde") or "saludoNoche"
+	local cat = (h >= 5 and h < 12 and "saludoManana") or (h >= 12 and h < 19 and "saludoTarde") or (h < 5 and "saludoMadrugada") or "saludoNoche"
 	if random() < 0.35 then cat = "bienvenida" end
 	return decirDe(cat, { salto = true }, nombre)
 end
@@ -843,6 +849,11 @@ end
 local function revisarSesion()
 	local d = datos()
 	d.ultimaVez = reloj()
+	-- 1.3.8: la pausa por tramos (Pausa.lua) y la hora del día (HoraReal.lua).
+	if M.Pausa then
+		if M.Pausa.Revisar() then return true end
+		return M.HoraReal and M.HoraReal.Revisar() or false
+	end
 	local inicio = tonumber(d.sesionInicio)
 	if not inicio then return false end
 	local dur = reloj() - inicio
@@ -865,6 +876,7 @@ local function latido()
 	if not UI.Dormida() and not enCombate() then
 		if not revisarSesion() and not revisarContexto(false) then
 			local gap = SIN_HABLAR[Ce.Frecuencia()]
+			if gap and M.HoraReal then gap = M.HoraReal.Espera(gap) end -- 1.3.8: de noche, más tranquila
 			if gap and ahora() - ultimo >= gap then
 				-- La plática (Charla.lua): rondas entre el lugar, el lore, lo de tu
 				-- raza, clase y profesiones, consejos, el momento y las salchichas.
@@ -988,7 +1000,8 @@ A.RegisterEvent("PLAYER_ENTERING_WORLD", function(_, esLogin, esRecarga)
 		if antes and reloj() - antes > 3 * 86400 then
 			decirDe("volver", { salto = true, acciones = N.ModuloPorId("inicio") and { { texto = L["Abrir Hoy"], fn = function() N.Abrir("inicio") end } } or nil }, nombre)
 		elseif llegada.corrio then
-			decirDe("llegada", { cara = "atenta" }, nombre)
+			local cat = M.HoraReal and M.HoraReal.Llegada() or "llegada" -- 1.3.8: según tu hora
+			if not decirDe(cat, { cara = "atenta" }, nombre) and cat ~= "llegada" then decirDe("llegada", { cara = "atenta" }, nombre) end
 		else
 			saludar(nombre)
 		end
@@ -1253,5 +1266,15 @@ end
 -- La tecla de su botón (1.2.6).
 function API.Responder() return UI.Responder() end
 function API.Visible() return UI.Visible() end
+-- 1.3.8: lo último que dijo Lya (el panel de Lya del Escritorio de Alfa):
+-- una copia, lo más nuevo primero: { { texto, hora }, ... }.
+function API.Historial(n)
+	local out = {}
+	for i, h in ipairs(Ce.historial or {}) do
+		if n and i > n then break end
+		if type(h) == "table" and type(h.texto) == "string" then out[#out + 1] = { texto = h.texto, hora = h.hora } end
+	end
+	return out
+end
 -- El recuerdo de Lya (para una línea en otra página): titulo, texto, pie.
 function API.Recuerdo() return L[M.RECUERDO_TITULO], L[M.RECUERDO], L[M.RECUERDO_PIE] end

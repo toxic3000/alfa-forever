@@ -154,7 +154,10 @@ function En.Candidatos(l)
 		for ranura = 1, (type(n) == "number" and n or 0) do
 			local ok, info = pcall(C.GetContainerItemInfo, bolsa, ranura)
 			local id = ok and type(info) == "table" and info.itemID
-			if type(id) == "number" and info.isBound ~= true and info.isLocked ~= true and En.Va(l, id) then
+			-- 1.3.8: lo que tiene candado (Alfa_Bolsas, Candado.lua) no se manda.
+			local candado = AlfaBolsas and AlfaBolsas.TieneCandado
+			if type(id) == "number" and info.isBound ~= true and info.isLocked ~= true and En.Va(l, id)
+				and not (candado and candado(bolsa, ranura)) then
 				out[#out + 1] = { bolsa = bolsa, ranura = ranura, id = id, cantidad = info.stackCount or 1 }
 			end
 		end

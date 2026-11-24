@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "Die 1.3.7: Das Rudel in deinem Tempo", "items": ["**Hinweise zur rechten Zeit:** Alles stellt sich an und wartet auf das Spiel; beim Stufenaufstieg kommt eine einzige Zusammenfassung. `/alfa calma` für Nicht stören und „Was ich verpasst habe“ (`/alfa perdi`) für Verpasstes.", "**Jede Zone wird angekündigt:** bei der Ankunft groß und mit eigener Animation (Schiff, Seltener, Dungeon, Entdeckung …). Auswahl unter Einstellungen > Stil und Klang > Ankündigungen.", "**Dein Gold und dein Schaden:** Gold erscheint einmal; die Münzen zeigen das jedes Charakters. Der Schadensmesser erscheint in der Gruppe von selbst, ohne deine Leisten zu verdecken.", "**Angeln, bereit zum Kampf:** Das Schwert auf der Leiste gibt dir mit einem Klick deine Waffen zurück, sogar mitten im Kampf."]}
+    "mapa": {"titulo": "Die 1.3.8: Das Rudel auf zwei Bildschirmen", "items": ["**Zwei Bildschirme:** Mit einem zweiten Monitor legt Alfa dort deinen Guide, den Pfeil, die Karte, Heute und Lya ab. Ein Klick richtet es ein, und du testest es vor dem Speichern (`/alfa pantallas`).", "**Einzigartige Hinweise:** Das Schiff steht klar am Pfeil (wohin, wann es ablegt und wann du ankommst), und jedes Ereignis gibt nur eine Nachricht.", "**Angeln und Schloss:** Größen, Rekorde und deine Anglerstufe von 1 bis 60. Alt+Rechtsklick sperrt einen Gegenstand, damit er weder gelöscht noch verkauft wird.", "**Jede Fraktion für sich:** Was La Jauría teilt, bleibt in deiner Fraktion, und die Enzyklopädie zeigt, wie du jeden Gegenstand bekommst und wie wahrscheinlich er ist."]}
   },
   "contraportada": {
     "titulo": "Komm ins Rudel",

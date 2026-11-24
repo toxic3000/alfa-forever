@@ -1,0 +1,18 @@
+{
+ "Un borde rojo suave respira alrededor de quien baja del 35 % de vida, para verlo a la primera.": "Une bordure rouge douce respire autour de quiconque passe sous 35 % de vie, pour le voir du premier coup d'œil.",
+ "Color de los marcos": "Couleur des cadres",
+ "Color de la barra": "Couleur de la barre",
+ "Por clase: el color de la clase de cada uno, apagado para que no canse. Un solo color: el que tú elijas. Según la vida: verde, amarillo y rojo según lo que le queda.": "Par classe : la couleur de classe de chacun, adoucie pour ne pas fatiguer. Une seule couleur : celle que tu choisis. Selon la vie : vert, jaune et rouge selon ce qu'il reste.",
+ "Un solo color": "Une seule couleur",
+ "Según la vida": "Selon la vie",
+ "Tu color": "Ta couleur",
+ "Elegir color": "Choisir la couleur",
+ "El color de todas las barras con «Un solo color», con el selector de colores del juego.": "La couleur de toutes les barres avec « Une seule couleur », avec le sélecteur de couleurs du jeu.",
+ "Intensidad": "Intensité",
+ "Qué tan vivo se ve el color de las barras.": "À quel point la couleur des barres est vive.",
+ "Apagado [color]": "Douce",
+ "Normal [color]": "Normale",
+ "Vivo [color]": "Vive",
+ "Así se ven": "Aperçu",
+ "Llena, a media y baja (con el borde de «En peligro»).": "Pleine, à moitié et basse (avec la bordure « En danger »)."
+}

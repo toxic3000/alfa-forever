@@ -940,6 +940,139 @@ local function pintarPiedra(leg)
 end
 Arrow.PintarPiedra = pintarPiedra
 
+---------------------------------------------------------------------------
+-- Alfa 1.3.8: el mensaje de un viaje, a la manera de Alfa (pedido de Toxic).
+-- Antes, sobre el muelle: «Toma el barco a Isla Theramore / Barco: espera
+-- promedio 2:55 / Ve a 23.8, 77.3 / 18 min 55 s en total» (el texto del
+-- motor heredado). Ahora, tres líneas claras y sin coordenadas sueltas:
+--   «Toma el barco a Isla Theramore · sale en ~3 min»   (sin horario medido)
+--   «Toma el barco a Isla Theramore · sale en 1:20»     (cuenta real, al segundo)
+--   «¡Ya está en el muelle! Sale en 0:40»               (atracado)
+--   debajo, el siguiente: «Si lo pierdes, el siguiente sale en 14 min», o
+--   «Hora aproximada: aún nadie lo ha medido»; y al final «Llegas en 19 min».
+-- Lo mismo para el zepelín, el tranvía, un portal y un vuelo. Los horarios
+-- son los del motor (Nav/Transit.lua: lo mismo que ven el aviso de barcos,
+-- Nav/Alerts.lua, y los muelles del mapa, Alfa_Rutas/Barcos.lua).
+--   Arrow.TextoViaje(leg) -> linea, debajo, llegas | nil
+--   Arrow.Viaje() -> { linea, debajo, llegas, kind } | nil   (lo que se ve)
+---------------------------------------------------------------------------
+local VIAJE = {
+	boat = { toma = "Toma el barco a %s", abordo = "En el barco a %s", aqui = "¡El barco ya está en el muelle! Sale en %s" },
+	zeppelin = { toma = "Toma el zepelín a %s", abordo = "En el zepelín a %s", aqui = "¡El zepelín ya está en la torre! Sale en %s" },
+	tram = { toma = "Toma el tranvía a %s", abordo = "En el tranvía a %s", aqui = "¡El tranvía ya está en el andén! Sale en %s" },
+	portal = { toma = "Cruza el portal a %s" },
+	fly = { toma = "Vuela a %s", debajo = "Habla con el maestro de vuelo" },
+}
+Arrow.VIAJE = VIAJE
+local VIAJE_ALTO = 16 -- la tercera línea («Llegas en…») cabe dentro del marco
+local viajeVisto, viajeCuando -- { linea, debajo, llegas, kind } mientras se ve; GetTime() de la última vez
+
+local function mmss(secs)
+	secs = math.max(0, math.ceil(secs or 0))
+	return ("%d:%02d"):format(floor(secs / 60), secs % 60)
+end
+-- «1:20» en el último par de minutos (se cuenta al segundo), «~3 min» antes.
+local function cuantoFalta(secs, medido)
+	if medido and secs <= 120 then return mmss(secs) end
+	local m = math.max(1, floor(secs / 60 + 0.5))
+	return (medido and "%d min" or "~%d min"):format(m)
+end
+
+local function duracionRedonda(secs)
+	local Nu = rawget(_G, "AlfaNucleo")
+	if type(Nu) == "table" and type(Nu.Duracion) == "function" then return Nu.Duracion(secs, secs >= 120) end
+	return mmss(secs)
+end
+
+local function destino(leg)
+	local T = Nav.travel
+	local p = leg.to
+	local n = p and ((T and T.PlaceName and T.PlaceName(p)) or p.name)
+	if type(n) ~= "string" or n == "" then return nil end
+	return n:match("^([^,]+)") or n
+end
+
+function Arrow.TextoViaje(leg, secsTotal)
+	local v = type(leg) == "table" and VIAJE[leg.kind]
+	if not v then return nil end
+	local lugar = destino(leg)
+	if not lugar then return nil end
+	local linea, debajo = ns.T(v.toma):format(lugar), v.debajo and ns.T(v.debajo) or nil
+	local X = ns.Transit
+	local id = type(leg.transport) == "table" and leg.transport.id or leg.transport
+	if v.abordo and X and id and X.NextDeparture then
+		local now = X.Now and X.Now() or 0
+		local riding = X.Riding and X.Riding(now)
+		if type(riding) == "table" and riding.kind == leg.kind then
+			linea = ns.T(v.abordo):format(lugar)
+		else
+			local llega, sale = X.NextArrival(leg.kind, id, now, leg.side)
+			local espera, _, medido = X.NextDeparture(leg.kind, id, now, leg.side)
+			if llega and llega <= 0 and sale then
+				linea = ns.T(v.aqui):format(mmss(sale))
+			elseif llega and medido then
+				linea = linea .. "  \194\183  " .. ns.T("sale en %s"):format(cuantoFalta(espera or llega, true))
+			elseif espera then
+				linea = linea .. "  \194\183  " .. ns.T("sale en %s"):format(cuantoFalta(espera, false))
+			end
+			-- El siguiente (el horario real, cuando alguien de la manada lo midió).
+			if medido and espera then
+				local sig = X.NextDeparture(leg.kind, id, now + espera + 5, leg.side)
+				if sig then debajo = ns.T("Si lo pierdes, el siguiente sale en %s"):format(duracionRedonda(espera + 5 + sig)) end
+			elseif espera then
+				debajo = ns.T("Hora aproximada: aún nadie lo ha medido")
+			end
+		end
+	end
+	local llegas = secsTotal and ns.T("Llegas en %s"):format(duracionRedonda(secsTotal)) or nil
+	return linea, debajo, llegas
+end
+
+-- Pinta el viaje en la flecha (solo lo que cambió). -> true si era un viaje.
+local function pintarViaje(leg, secsTotal)
+	-- Cuatro veces por segundo basta (la flecha mira el mundo 20 veces).
+	local t = GetTime()
+	if viajeVisto and viajeCuando and t - viajeCuando < 0.25 and viajeVisto.leg == leg then return true end
+	viajeCuando = t
+	local linea, debajo, llegas = Arrow.TextoViaje(leg, secsTotal)
+	if not linea then
+		-- Alfa 1.3.8 (revisión): el tramo dejó de ser viaje sin cambiar de modo:
+		-- la flecha vuelve a su tamaño de siempre.
+		if viajeVisto and (floor(frame:GetWidth() + 0.5) ~= WIDTH or floor(frame:GetHeight() + 0.5) ~= DIAL + TEXT_H) then
+			frame:SetSize(WIDTH, DIAL + TEXT_H)
+			grabArea(true) -- (en «instruction» el disco está a la vista)
+		end
+		viajeVisto = nil
+		return false
+	end
+	local v = viajeVisto
+	if not (v and v.linea == linea) then distText:SetText(linea) end
+	if not (v and v.debajo == debajo) then labelText:SetText(debajo or "") end
+	if llegas then
+		if not (v and v.llegas == llegas) then etaText:SetText(llegas) end
+		etaText:Show()
+	else
+		etaText:Hide()
+	end
+	viajeVisto = { linea = linea, debajo = debajo, llegas = llegas, kind = leg.kind, leg = leg }
+	-- El marco crece con lo que dice (nada de textos que se salgan de su caja);
+	-- solo el disco sigue tomando el ratón.
+	local w = WIDTH
+	for _, fs in ipairs({ distText, labelText, etaText }) do
+		local sw = fs:IsShown() and fs.GetStringWidth and fs:GetStringWidth() or 0
+		if type(sw) == "number" and sw + 12 > w then w = sw + 12 end
+	end
+	w = math.ceil(w)
+	local h = DIAL + TEXT_H + VIAJE_ALTO
+	if w ~= floor(frame:GetWidth() + 0.5) or h ~= floor(frame:GetHeight() + 0.5) then
+		frame:SetSize(w, h)
+		local side = (w - DIAL) / 2
+		frame:SetHitRectInsets(side, side, 0, h - DIAL)
+	end
+	return true
+end
+function Arrow.Viaje() return mode == "instruction" and viajeVisto or nil end
+
 -- Para el banco y para quien quiera saber qué dice la llegada.
 function Arrow.Llegada()
 	if not (llegadaVista and llegada and llegada:IsShown()) then return nil end
@@ -967,6 +1100,8 @@ end
 local function setMode(m)
 	if m == mode then return end
 	mode = m
+	viajeVisto, viajeCuando = nil, nil -- Alfa 1.3.8: el viaje se vuelve a pintar entero
+	if floor(frame:GetWidth() + 0.5) ~= WIDTH or floor(frame:GetHeight() + 0.5) ~= DIAL + TEXT_H then frame:SetSize(WIDTH, DIAL + TEXT_H) end
 	if not (m == "arrived" or m == "search" or m == "instruction") then quitarLlegada() end
 	local travel, done, act = m == "travel", m == "arrived" or m == "search", m == "instruction"
 	dial:SetShown(travel or done or act)
@@ -1187,6 +1322,8 @@ local function sample(elapsed)
 		setMode("instruction")
 		if piedraVista then etaText:Hide() return true end
 		local secs = showEta and T.Remaining(nil)
+		-- Alfa 1.3.8: un viaje (barco, zepelín, tranvía, portal, vuelo), a la manera de Alfa.
+		if pintarViaje(leg, secs or nil) then return true end
 		if secs then showSeconds(secs) else etaText:Hide() end
 		return true
 	end

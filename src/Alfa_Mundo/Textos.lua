@@ -2,6 +2,17 @@
 local _, M = ...
 
 M.EN = {
+	-- 1.3.8 (mundo): Toma el grifo, peligros del camino, misiones por color, la pausa, Lya y tu hora, festejos, busco grupo, la ficha y compartir
+	["Misiones por color"] = "Quests by color",
+	["Quien te da misiones en tu zona que ya puedes tomar: verde fácil, amarillo buena, naranja difícil y rojo peligrosa para tu nivel. Se arman al abrir el mapa de Alfa."] = "Quest givers in your zone you can take now: green easy, yellow good, orange hard and red dangerous for your level. Built when you open Alfa's map.",
+	["Fácil"] = "Easy",
+	["Buena para ti"] = "Good for you",
+	["Difícil"] = "Hard",
+	["Peligrosa"] = "Dangerous",
+	["Misión %d"] = "Quest %d",
+	["Nivel %d · %s"] = "Level %d · %s",
+	["¿Qué misiones me quedan bien aquí?"] = "Which quests suit me here?",
+	["En el mapa de Alfa, la capa «Misiones por color» marca a quien te da misiones en tu zona: verde fácil, amarillo buena, naranja difícil y rojo peligrosa para tu nivel."] = "On Alfa's map, the \"Quests by color\" layer marks quest givers in your zone: green easy, yellow good, orange hard and red dangerous for your level.",
 	-- Página y módulo
 	["Mundo"] = "World",
 	-- 1.3.6

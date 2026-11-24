@@ -73,13 +73,20 @@ end
 -- Motor de Alfa simulado: lo mismo que usan los modulos de verdad.
 local settings, defaults = {}, {}
 local handlersA, eventosA, opciones, comandos = {}, {}, {}, {}
-local function partes(path) local t = {} for p in path:gmatch("[^%.]+") do t[#t+1] = p end return t end
+-- Una clave que no es texto (p. ej. un comodin) seria un bucle sin fin con
+-- gmatch: se anota como error y se trata como vacia.
+local function partes(path)
+  if type(path) ~= "string" then
+    falla(errores, "A.Get/A.Set", "clave que no es texto (" .. type(path) .. ")\n" .. debug.traceback("", 3))
+    return {}
+  end
+  local t = {} for p in path:gmatch("[^%.]+") do t[#t+1] = p end return t end
 local function buscar(raiz, keys) local n = raiz for i = 1, #keys do if type(n) ~= "table" then return nil end n = n[keys[i]] end return n end
 local A = {
   version = "0.1.0", name = "Alfa", stage = "Beta",
   RegisterDefaults = function(sec, t) defaults[sec] = defaults[sec] or {} for k, v in pairs(t) do defaults[sec][k] = v end end,
-  Get = function(path) local k = partes(path) local v = buscar(settings, k) if v == nil then v = buscar(defaults, k) end return v end,
-  Set = function(path, v) local k = partes(path) local n = settings for i = 1, #k - 1 do n[k[i]] = type(n[k[i]]) == "table" and n[k[i]] or {} n = n[k[i]] end n[k[#k]] = v end,
+  Get = function(path) local k = partes(path) if #k == 0 then return nil end local v = buscar(settings, k) if v == nil then v = buscar(defaults, k) end return v end,
+  Set = function(path, v) local k = partes(path) if #k == 0 then return end local n = settings for i = 1, #k - 1 do n[k[i]] = type(n[k[i]]) == "table" and n[k[i]] or {} n = n[k[i]] end n[k[#k]] = v end,
   RegisterOptions = function(spec)
     if type(spec) ~= "table" or type(spec.page) ~= "string" or type(spec.controls) ~= "table" then return false, "RegisterOptions: spec mal formado" end
     opciones[#opciones + 1] = spec return true end,

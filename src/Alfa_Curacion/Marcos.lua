@@ -82,6 +82,7 @@ local ROLES = {
 	DAMAGER = { 20 / 64, 39 / 64, 22 / 64, 41 / 64 },
 }
 local VERDE = { 0.545, 0.878, 0.306 } -- #8be04e, el verde de Alfa
+M.VERDE = VERDE
 local GRIS = { 0.36, 0.37, 0.4 }
 local DISIPAR = { 0.72, 0.38, 1 }     -- si el juego no da el color del perjuicio
 local AMENAZA = { 1, 0.24, 0.2 }
@@ -119,22 +120,51 @@ do
 			if bien then curvaDisipar = c end
 		end
 	end
-	-- 1.3.0: el tanque bajo el 40 %: rojo opaco abajo del umbral, transparente arriba.
-	if CU and CU.CreateColorCurve and CreateColor then
-		local ok, c = pcall(CU.CreateColorCurve)
-		if ok and c then
-			local bien = pcall(function()
-				if c.SetType and Enum and Enum.LuaCurveType and Enum.LuaCurveType.Step then c:SetType(Enum.LuaCurveType.Step) end
-				c:AddPoint(0, CreateColor(ROJO[1], ROJO[2], ROJO[3], 1))
-				c:AddPoint(UMBRAL_TANQUE, CreateColor(ROJO[1], ROJO[2], ROJO[3], 0))
-			end)
-			if bien then M.curvaTanque = c end
-		end
-	end
+end
+
+-- (1.3.8 revisión) La documentación no dice si UnitHealthPercent va de 0 a 1
+-- o de 0 a 100. Se averigua una vez fuera de combate comparándolo con
+-- UnitHealth/UnitHealthMax (legibles) y se guarda; las curvas (porcentaje,
+-- tanque, peligro, color según la vida) ponen sus puntos en esa escala.
+-- M.EscalaVida() -> 1 | 100 ; M.DetectarEscalaVida() -> 1 | 100 | nil
+function M.EscalaVida()
+	local d = M.Datos and M.Datos()
+	return (type(d) == "table" and d.escalaVida == 100) and 100 or 1
+end
+
+local function armarPorcentaje(e)
+	curvaPorcentaje = nil
+	local CU = C_CurveUtil
 	if CU and CU.CreateCurve then
+		e = e or M.EscalaVida()
 		local ok, c = pcall(CU.CreateCurve)
-		if ok and c and pcall(function() c:AddPoint(0, 0); c:AddPoint(1, 100) end) then curvaPorcentaje = c end
+		if ok and c and pcall(function() c:AddPoint(0, 0); c:AddPoint(e, 100) end) then curvaPorcentaje = c end
 	end
+end
+armarPorcentaje(1) -- (al cargar; con tus datos, al entrar al mundo)
+M.ArmarPorcentaje = armarPorcentaje
+
+M.escalaVista = false
+function M.DetectarEscalaVida()
+	if not UnitHealthPercent or (InCombatLockdown and InCombatLockdown()) then return nil end
+	local okV, v = pcall(UnitHealth, "player")
+	local okM, mx = pcall(UnitHealthMax, "player")
+	local okP, p = pcall(UnitHealthPercent, "player", false)
+	if not (okV and okM and okP) or secreto(v) or secreto(mx) or secreto(p) then return nil end
+	if type(v) ~= "number" or type(mx) ~= "number" or type(p) ~= "number" or mx <= 0 or v <= 0 then return nil end
+	local f = v / mx
+	local e
+	if math.abs(p - f) <= 0.02 then e = 1
+	elseif math.abs(p - f * 100) <= 2 then e = 100 end
+	if not e then return nil end
+	M.escalaVista = true
+	local d = M.Datos()
+	if d.escalaVida ~= e then
+		d.escalaVida = e
+		if M.OlvidarCurvas then M.OlvidarCurvas() end
+		armarPorcentaje()
+	end
+	return e
 end
 
 ---------------------------------------------------------------------------
@@ -168,6 +198,43 @@ end
 
 local function colorBorde(e, r, g, b, a)
 	for i = 1, 4 do e[i]:SetVertexColor(r, g, b, a or 1) end
+end
+
+-- 1.3.8: "BLEND" (normal) o "ADD" (suma luz: el negro no se ve).
+local function mezcla(e, modo)
+	if e.alfaMezcla == modo then return end
+	e.alfaMezcla = modo
+	for i = 1, 4 do if e[i].SetBlendMode then e[i]:SetBlendMode(modo) end end
+end
+M.Mezcla = mezcla
+
+-- 1.3.8: una curva de color con escalones, armada al primer uso (no al cargar).
+-- puntos = { { x, r, g, b }, ... } (opacidad 1: no se confía en ella) -> curva | nil
+function M.CurvaEscalones(puntos)
+	local CU = rawget(_G, "C_CurveUtil")
+	if not (CU and CU.CreateColorCurve and CreateColor) then return nil end
+	local ok, c = pcall(CU.CreateColorCurve)
+	if not (ok and c) then return nil end
+	local bien = pcall(function()
+		if c.SetType and Enum and Enum.LuaCurveType and Enum.LuaCurveType.Step then c:SetType(Enum.LuaCurveType.Step) end
+		for _, p in ipairs(puntos) do c:AddPoint(p[1], CreateColor(p[2], p[3], p[4], 1)) end
+	end)
+	return bien and c or nil
+end
+
+-- El tanque bajo el 40 % con la vida secreta: rojo abajo del umbral y negro
+-- arriba (con ADD el negro no se ve).
+local curvaTanque
+function M.CurvaTanque()
+	if curvaTanque == nil then
+		curvaTanque = M.CurvaEscalones({ { 0, ROJO[1] * 0.85, ROJO[2] * 0.85, ROJO[3] * 0.85 }, { UMBRAL_TANQUE * M.EscalaVida(), 0, 0, 0 } }) or false
+	end
+	return curvaTanque or nil
+end
+function M.OlvidarCurvas()
+	curvaTanque = nil
+	if M.OlvidarCurvaPeligro then M.OlvidarCurvaPeligro() end
+	if M.OlvidarCurvasColor then M.OlvidarCurvasColor() end
 end
 
 local function verBorde(e, si)
@@ -461,8 +528,11 @@ end
 M.ColorDeClase = colorDeClase
 
 -- 1.3.7: el color apagado (APAGAR) sobre un hueco casi negro con un tinte de la clase.
+-- 1.3.8: con la intensidad que elijas (Color.lua: M.FactorColor).
 local function pintarBarra(c, r, g, b)
-	c.barra:SetStatusBarColor(r * APAGAR + BASE, g * APAGAR + BASE, b * APAGAR + BASE, 1)
+	local k, base = APAGAR, BASE
+	if M.FactorColor then k, base = M.FactorColor() end
+	c.barra:SetStatusBarColor(r * k + base, g * k + base, b * k + base, 1)
 	c.barra.fondo:SetVertexColor(r * 0.1 + 0.02, g * 0.1 + 0.02, b * 0.1 + 0.025, 0.75)
 end
 M.PintarBarra = pintarBarra
@@ -495,6 +565,7 @@ local function vida(b)
 	elseif not b.alfaEstado then
 		c.estado:Hide()
 	end
+	if M.ColorVida then M.ColorVida(b) end -- 1.3.8: «Según la vida» (Color.lua)
 	if M.Peligro then M.Peligro(b) end -- 1.3.7: el velo de «en peligro» (Peligro.lua)
 end
 
@@ -570,29 +641,8 @@ local function aspecto(b, forzar)
 		return
 	end
 	c.estado:Hide()
-	local okC, _, clase = pcall(UnitClass, u)
-	local r, g, bb
-	if okC and not secreto(clase) and type(clase) == "string" then r, g, bb = colorDeClase(clase) end
-	if opt("colorClase") then
-		if r then
-			pintarBarra(c, r, g, bb)
-		elseif okC and secreto(clase) then
-			-- Un compañero cuya clase llega secreta: el color va sin leerse.
-			local bien = pcall(function()
-				-- (un color secreto no se multiplica: se apaga con la opacidad)
-				local col = C_ClassColor.GetClassColor(clase)
-				c.barra:SetStatusBarColor(col.r, col.g, col.b, ALFA_SECRETO)
-				c.barra.fondo:SetVertexColor(0.05, 0.055, 0.065, 0.85)
-			end)
-			if not bien then pintarBarra(c, VERDE[1], VERDE[2], VERDE[3]) end
-		else
-			pintarBarra(c, VERDE[1], VERDE[2], VERDE[3])
-		end
-		c.nombre:SetTextColor(1, 1, 1, 1)
-	else
-		pintarBarra(c, VERDE[1], VERDE[2], VERDE[3])
-		if r then c.nombre:SetTextColor(r, g, bb, 1) else c.nombre:SetTextColor(1, 1, 1, 1) end
-	end
+	-- 1.3.8: por clase, un solo color o según la vida (Color.lua).
+	M.PintarColor(b)
 end
 
 local function nombre(b)
@@ -780,26 +830,41 @@ local function tanque(b)
 		if p.anim then p.anim:Stop() end
 		return p:Hide()
 	end
-	local pintado = false
-	if M.curvaTanque and UnitHealthPercent then
-		pintado = pcall(function()
-			local col = UnitHealthPercent(u, true, M.curvaTanque)
-			local r, g, bb, a = col:GetRGBA()
-			colorBorde(c.alerta, r, g, bb, a)
-		end)
-	end
-	if not pintado then
-		local v, mx = leer(UnitHealth, u), leer(UnitHealthMax, u)
-		if type(v) ~= "number" or type(mx) ~= "number" or mx <= 0 then
-			b.alfaTanqueBajo = nil
+	-- 1.3.8: la vida legible primero (sin curva). Solo secreta va por la curva,
+	-- y la curva ya no pinta con su opacidad (en el juego no se respetaba: de
+	-- ahí el rojo fijo): suma luz (ADD) y arriba del umbral da negro = nada.
+	local v, mx = leer(UnitHealth, u), leer(UnitHealthMax, u)
+	if type(v) == "number" and type(mx) == "number" and mx > 0 then
+		b.alfaTanqueBajo = (v > 0 and (v / mx) < UMBRAL_TANQUE) and true or false
+		mezcla(c.alerta, "BLEND")
+		if not b.alfaTanqueBajo then
 			if p.anim then p.anim:Stop() end
 			return p:Hide()
 		end
-		b.alfaTanqueBajo = (v / mx) < UMBRAL_TANQUE
-		colorBorde(c.alerta, ROJO[1], ROJO[2], ROJO[3], b.alfaTanqueBajo and 1 or 0)
+		colorBorde(c.alerta, ROJO[1], ROJO[2], ROJO[3], 0.9)
+		p:Show()
+		if p.anim and not p.anim:IsPlaying() then p.anim:Play() end
+		return
 	end
+	b.alfaTanqueBajo = nil
+	local curva = M.CurvaTanque()
+	local pintado = false
+	if curva and UnitHealthPercent then
+		pintado = pcall(function()
+			local col = UnitHealthPercent(u, true, curva)
+			local r, g, bb = col:GetRGB()
+			mezcla(c.alerta, "ADD")
+			colorBorde(c.alerta, r, g, bb, 1)
+		end)
+	end
+	if p.anim then p.anim:Stop() end
+	if not pintado then
+		mezcla(c.alerta, "BLEND")
+		return p:Hide()
+	end
+	-- (fijo: con la vida secreta no se sabe si está bajo; no se anima de balde)
+	p:SetAlpha(1)
 	p:Show()
-	if p.anim and not p.anim:IsPlaying() then p.anim:Play() end
 end
 M.Tanque = tanque
 
@@ -1373,20 +1438,13 @@ local function pintarFalso(f, e)
 	c.nombre:SetText(e[1])
 	c.barra:SetMinMaxValues(0, 1)
 	c.barra:SetValue(e[3])
-	local r, g, b = colorDeClase(e[2])
 	if e.muerto or e.desconectado then
 		pintarBarra(c, GRIS[1], GRIS[2], GRIS[3])
 		c.estado:Show()
 		M.PonerEstado(c, e.muerto and "Muerto" or "Desconectado")
 		c.nombre:SetTextColor(0.7, 0.7, 0.72, 1)
 	else
-		if opt("colorClase") and r then
-			pintarBarra(c, r, g, b)
-			c.nombre:SetTextColor(1, 1, 1, 1)
-		else
-			pintarBarra(c, VERDE[1], VERDE[2], VERDE[3])
-			if r then c.nombre:SetTextColor(r, g, b, 1) end
-		end
+		M.ColorFalso(c, e) -- 1.3.8 (Color.lua)
 		if opt("porcentaje") then
 			c.alfaPalabra = nil
 			c.estado:SetFormattedText("%.0f%%", e[3] * 100)
@@ -1526,6 +1584,15 @@ function M.Prueba(n)
 end
 
 function M.EnPrueba() return enPrueba end
+
+-- 1.3.8: volver a pintar los marcos de prueba (al cambiar el color).
+function M.RepintarPrueba()
+	if not enPrueba then return end
+	for i = 1, math.min(enPrueba, #EJEMPLOS) do
+		local f = falsos[i]
+		if f then pintarFalso(f, EJEMPLOS[i]) end
+	end
+end
 
 ---------------------------------------------------------------------------
 -- Ocultar los marcos de grupo de Blizzard (fuera de combate)
@@ -1675,7 +1742,12 @@ A.RegisterEvent("PLAYER_REGEN_DISABLED", function()
 	end
 	M.Avisar()
 end)
+-- (1.3.8 revisión) La escala de UnitHealthPercent: una vez, fuera de combate.
+A.RegisterEvent("UNIT_HEALTH", function(_, u)
+	if not M.escalaVista and u == "player" then M.DetectarEscalaVida() end
+end)
 A.RegisterEvent("PLAYER_REGEN_ENABLED", function()
+	if not M.escalaVista then M.DetectarEscalaVida() end
 	todos(buffFalta) -- al salir de la pelea, a quién le falta tu buff
 	M.Avisar()
 end)
@@ -1722,6 +1794,10 @@ end
 
 A.RegisterEvent("PLAYER_ENTERING_WORLD", function()
 	M.EscucharRecurso()
+	if not M.escalaVista then
+		if M.EscalaVida() ~= 1 then M.OlvidarCurvas() armarPorcentaje() end -- la escala guardada
+		M.DetectarEscalaVida()
+	end
 	M.RelojAlcance()
 	M.Iniciar()
 	A.After(3, function() M.Inicial() end)
@@ -1731,6 +1807,7 @@ end)
 A.On("SETTING_CHANGED", function(path)
 	path = type(path) == "string" and path or ""
 	if path ~= "" and path ~= ID and path:sub(1, #ID + 1) ~= ID .. "." then return end
+	if M.CLAVES_COLOR and M.CLAVES_COLOR[path] then return end -- 1.3.8: solo se repinta (Color.lua)
 	M.EscucharRecurso()
 	M.RelojAlcance()
 	M.Disponer()

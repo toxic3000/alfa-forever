@@ -78,7 +78,10 @@ M.AJUSTES = {
 	amenazaPapel = "auto", -- auto | tanque | dano
 	amenazaAviso = 80,    -- desde qué % avisa (si no eres tanque)
 	amenazaSonido = true,
-	resumen = true,       -- la tarjeta de tu pelea al terminar (Resumen.lua)
+	-- 1.3.8 (pedido de Toxic): la tarjeta ya no sale sola tras cada pelea. Solo
+	-- cambia a quien nunca tocó el ajuste (lo guardado a mano se respeta); la
+	-- última pelea se sigue guardando para verla a pedido.
+	resumen = false,      -- la tarjeta de tu pelea al terminar (Resumen.lua)
 	resumenMin = 10,      -- segundos mínimos de pelea para mostrarla (en grupo o instancia)
 	resumenMinSolo = 30,  -- 1.3.2: yendo solo, en el mundo
 	recargas = true,      -- tus recargas largas en una barra discreta (Recargas.lua)
@@ -607,4 +610,9 @@ AlfaCombate = {
 	-- 1.3.0
 	UltimaPelea = function() return M.Resumen and M.Resumen.Ultima() end,
 	Recargas = function() return M.Recargas and M.Recargas.Activas() end,
+	-- 1.3.8: el medidor para el Escritorio de Alfa (sin abrir la ventana): las
+	-- filas tal cual (lo secreto se pasa a SetText/SetValue, nunca se suma).
+	LeerMedidor = function(sesion, tipo, filas) return M.Medidor and M.Medidor.Leer(sesion or "actual", tipo or "dps", filas or 8) end,
+	NumeroMedidor = function(v) return M.Medidor and M.Medidor.Numero(v) end,
+	ColorClase = function(clase) return M.Medidor and M.Medidor.Color(clase) end,
 }

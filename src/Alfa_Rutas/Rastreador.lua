@@ -443,6 +443,10 @@ local function menuGuia(dueno)
 		op[#op + 1] = { valor = function() Rs.AbrirDetalle() end, texto = L["Ver detalle"], icono = "ic-lista" }
 		op[#op + 1] = { valor = function() A.Set(M.ID .. ".seguimientoCompleto", compacto()) end,
 			texto = compacto() and L["Mostrar más en el seguimiento"] or L["Mostrar menos en el seguimiento"], icono = "ic-ventana" }
+		-- 1.3.8: la tarjeta de «¡Terminaste!» cerrada: vuelve a pedirla.
+		if Rs.FinOculta and Rs.FinOculta() then
+			op[#op + 1] = { valor = function() Rs.PedirFin() end, texto = L["¿Qué sigue?"], icono = "ic-ruta" }
+		end
 		op[#op + 1] = { separador = true }
 	end
 	for i, t in ipairs(tabs or {}) do
@@ -468,6 +472,22 @@ local function menuGuia(dueno)
 	end
 	op[#op + 1] = { valor = function() N.Abrir(M.ID) end, texto = L["Página Ruta"], icono = "ic-ruta" }
 	K.Menu(dueno, op, nil, function(fn) if type(fn) == "function" then fn() end end, 240)
+end
+
+-- 1.3.8: una meta de élite, de grupo o de mazmorra (la vista del motor o la
+-- etiqueta de la misión en el juego: 1 grupo, 62 banda, 81 mazmorra).
+local TAGS_GRUPO = { [1] = true, [62] = true, [81] = true }
+function Rs.DeGrupo(g)
+	if type(g) ~= "table" then return false end
+	local p = type(g.party) == "table" and g.party
+	if p and (p.kind == "elite" or p.kind == "group") then return true end
+	local f = C_QuestLog and C_QuestLog.GetQuestTagInfo
+	if type(f) ~= "function" or not tonumber(g.quest) then return false end
+	local ok, info = pcall(f, tonumber(g.quest))
+	if not (ok and type(info) == "table") then return false end
+	if N.Leer(info.isElite) == true then return true end
+	local id = tonumber(N.Leer(info.tagID))
+	return id ~= nil and TAGS_GRUPO[id] == true
 end
 
 local function menuMeta(fila)
@@ -507,6 +527,12 @@ local function menuMeta(fila)
 			op[#op + 1] = { valor = function()
 				if not Gr.Compartir(q) then M.Aviso(L["No la pude compartir"], L["Solo se comparten las misiones de tu registro que se pueden compartir."], { icono = "ic-info" }) end
 			end, texto = L["Compartir con mi grupo"], icono = "ic-manada" }
+		end
+		-- 1.3.8: de élite, de grupo o de mazmorra: «Busco grupo» a tu manada (La Jauría).
+		local Ma = rawget(_G, "AlfaManada")
+		if type(Ma) == "table" and type(Ma.BuscoGrupo) == "function" and Rs.DeGrupo(g) then
+			local titulo = g.title or M.TituloMision(q)
+			op[#op + 1] = { valor = function() Ma.BuscoGrupo(titulo, "q") end, texto = L["Busco grupo para esta misión"], icono = "ic-manada" }
 		end
 		if M.Cerrar.EnPlan(q) then
 			op[#op + 1] = { valor = function() M.Cerrar.Quitar(q) end, texto = L["Quitar de Cerrar mis misiones"], icono = "ic-misiones" }
@@ -967,6 +993,8 @@ function Rs.BotonCerca()
 	if F and F:IsShown() and Rs.Luego then Rs.Luego() end
 end
 
+local construirFin -- 1.3.8: la tarjeta del cierre (más abajo, junto a su pintado)
+
 local function construir()
 	F = CreateFrame("Frame", "AlfaRastreador", K.Raiz())
 	F:SetSize(ANCHO, 200)
@@ -1046,6 +1074,29 @@ local function construir()
 	b.Texto:SetWordWrap(true)
 	b.Uno = K.Boton(b, "", nil, { tipo = "acento", tam = "chico" })
 	b.Dos = K.Boton(b, "", nil, { tipo = "fantasma", tam = "chico" })
+	-- 1.3.8: la X de las sugerencias (d.cerrar); su clic derecho, d.menu.
+	-- En combate no toma el ratón (pintarAviso y PLAYER_REGEN_*).
+	b.Cerrar = K.BotonIcono(b, "ic-cerrar", function(self, boton)
+		local d = b.alfaDatos
+		if not d then return end
+		if boton == "RightButton" then
+			if d.menu then K.Menu(self, d.menu, nil, function(fn) if type(fn) == "function" then fn() end end, 240) end
+			return
+		end
+		if type(d.cerrar) == "function" then d.cerrar() end
+		luego()
+	end, { tam = 18, ayuda = L["Cerrar"], ayudaTexto = L["No te lo vuelvo a sugerir en esta sesión."] })
+	b.Cerrar:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+	b.Cerrar:SetPoint("TOPRIGHT", b, "TOPRIGHT", -5, -5)
+	b.Cerrar:Hide()
+	-- El clic derecho en la tarjeta: el mismo menú (solo si trae uno y fuera de combate).
+	b:SetScript("OnMouseUp", function(self, boton)
+		local d = self.alfaDatos
+		if boton == "RightButton" and d and d.menu and not (InCombatLockdown and InCombatLockdown()) then
+			K.Menu(self.Cerrar, d.menu, nil, function(fn) if type(fn) == "function" then fn() end end, 240)
+		end
+	end)
+	b:EnableMouse(false)
 
 	-- Mi plan: la meta de ahora
 	local pl = CreateFrame("Button", nil, F)
@@ -1105,6 +1156,9 @@ local function construir()
 	ui.vacio = K.Vacio(F, { lobo = "dormido", titulo = L["No sigues ninguna guía"],
 		texto = L["Elige qué quieres hacer y Alfa te lleva paso a paso."],
 		accion = { texto = L["¿Qué quieres hacer?"], icono = "ic-lobo", alClic = function() if M.Asistente then M.Asistente.Abrir() end end } })
+
+	-- 1.3.8: la tarjeta de «¡Terminaste esta guía!» (Rs.PintarFin).
+	construirFin()
 
 	-- El pie
 	ui.detalle = K.Boton(F, L["Ver detalle"], function() Rs.AlternarDetalle() end,
@@ -1173,12 +1227,15 @@ local function aviso(v, live)
 		local sig = not m.choose and not m.next and M.Siguiente and M.Siguiente.Proponer() or nil
 		local uno = (m.choose and L["Elegir mi camino"]) or (m.next and seguirCon(m.nextLabel or nombreGuia(m.next)))
 			or (sig and seguirCon(sig.nombre)) or L["Elegir otra guía"]
+		-- 1.3.8: el nombre de la que sigue va en el texto: si el botón no cabe, dice «Seguir con la siguiente».
+		local cual = (m.next and (m.nextLabel or nombreGuia(m.next))) or (sig and sig.nombre)
+		if type(cual) == "string" and cual ~= "" then texto = texto .. " " .. format(L["Lo que sigue para tu nivel: %s."], cual) end
 		return { tono = m.complete and "exito" or "acento", icono = m.complete and "ic-exito" or "ic-huella",
 			titulo = format(m.complete and L["¡Bien hecho! %s"] or L["Final de %s"], m.label or ""), texto = texto,
 			uno = { uno, function()
 				est.fin = nil
 				if sig then M.Siguiente.Seguir(sig) elseif fin.Empezar then fin.Empezar() end
-			end },
+			end, (m.next or sig) and L["Seguir con la siguiente"] or nil }, -- 1.3.8: el texto corto si no cabe
 			dos = { L["Después"], function() est.fin = nil if fin.Despues then fin.Despues() end Rs.Pintar() end } }
 	end
 	local q, titulo = engine("LostQuestion")
@@ -1254,19 +1311,42 @@ local function aviso(v, live)
 	end
 	-- 1.2.9: lo que sigue es de élite o alguien de tu grupo no tiene una
 	-- misión tuya (Grupo.lua); en modo foco, eso espera.
+	-- 1.3.8: las sugerencias de aquí abajo traen su X (Rs.Sugerencia): cerrada,
+	-- no vuelve en la sesión y sale la siguiente.
 	if not (M.Foco and M.Foco.Activo()) then
-		local d = M.Grupo and M.Grupo.Aviso(v, live)
+		local d = Rs.Sugerencia(M.Grupo and M.Grupo.Aviso(v, live))
 		if d then return d end
 	end
 	-- 1.2.8: con 2 o más misiones listas, ofrecer la vuelta a entregar.
-	local d = Vt and Vt.Aviso() or nil
+	local d = Rs.Sugerencia(Vt and Vt.Aviso() or nil)
+	if d then return d end
+	-- 1.3.8: tu camino pasa por una zona peligrosa (Peligro.lua) y un vuelo
+	-- que te ahorra camino (Grifo.lua).
+	d = Rs.Sugerencia(M.Peligro and M.Peligro.AvisoCamino and M.Peligro.AvisoCamino() or nil)
+	if d then return d end
+	d = Rs.Sugerencia(M.Grifo and M.Grifo.Aviso() or nil)
 	if d then return d end
 	-- 1.2.9: un paso de nivel, claro: lo que falta y dónde rinde más (Nivel.lua).
-	d = M.Nivel and M.Nivel.Aviso(v, live) or nil
+	d = Rs.Sugerencia(M.Nivel and M.Nivel.Aviso(v, live) or nil)
 	if d then return d end
 	-- 1.3.7: dentro de una mazmorra, su siguiente jefe y lo que te falta ahí (111).
-	return Rs.AvisoMazmorra()
+	return Rs.Sugerencia(Rs.AvisoMazmorra()) or nil
 end
+
+-- 1.3.8: una sugerencia del rastreador con su X. La que trae su propio
+-- d.cerrar (RutaGrupo, Grifo, Peligro) decide sola; a las demás, la X las
+-- calla en la sesión por su clave (d.clave, o el texto de su primer botón,
+-- o su título). -> d | false (cerrada: pasa a la siguiente) | nil
+local calladas = {}
+function Rs.Sugerencia(d)
+	if type(d) ~= "table" then return nil end
+	if d.cerrar ~= nil then return d end
+	local clave = d.clave or (type(d.uno) == "table" and d.uno[1]) or d.titulo
+	if clave and calladas[clave] then return false end
+	d.cerrar = function() if clave then calladas[clave] = true end end
+	return d
+end
+function Rs.OlvidarCerradas() calladas = {} end -- (para el banco)
 
 -- 1.3.7: AlfaMazmorras.Dentro() (área Mundo), protegido y guardado unos
 -- segundos (el rastreador se repinta seguido); nada en combate.
@@ -1363,13 +1443,20 @@ end
 
 local function pintarAviso(d, ancho)
 	local b = ui.aviso
-	if not d then b:Hide() return 0 end
+	if not d then b.alfaDatos = nil b:Hide() return 0 end
+	b.alfaDatos = d
 	local relleno = K.Tono(d.tono or "aviso")
 	b.caja:Estilo({ borde = relleno, alfaBorde = 0.5 })
 	K.ColorPlano(b.Franja, relleno)
 	K.SetIcono(b.Icono, d.icono or "ic-aviso", relleno)
 	local x = 34
-	local tw = ancho - x - 10
+	-- 1.3.8: con la X, el título y el texto dejan su lugar (nunca se enciman).
+	local conX = type(d.cerrar) == "function"
+	local tw = ancho - x - 10 - (conX and 20 or 0)
+	local libre = not (InCombatLockdown and InCombatLockdown())
+	b.Cerrar:SetShown(conX)
+	b.Cerrar:EnableMouse(conX and libre)
+	b:EnableMouse((d.menu ~= nil) and libre)
 	K.Escribir(b.Titulo, d.titulo or "")
 	b.Titulo:ClearAllPoints()
 	b.Titulo:SetPoint("TOPLEFT", b, "TOPLEFT", x, -9)
@@ -1395,21 +1482,29 @@ local function pintarAviso(d, ancho)
 	elseif b.Barra then
 		b.Barra:Hide()
 	end
-	local bx = x
+	-- 1.3.8: los botones nunca salen de la tarjeta: el que no cabe baja a otra
+	-- fila, y uno solo más ancho («Seguir con <nombre largo>») va en dos renglones.
+	local bx, by, alto = x, y + 8, 0
+	local bw = ancho - x - 10
 	for _, k in ipairs({ "Uno", "Dos" }) do
 		local bt, dd = b[k], d[k == "Uno" and "uno" or "dos"]
 		if dd then
-			bt:SetTexto(dd[1])
 			bt.alClic = dd[2]
+			local h1, w1 = K.BotonQueQuepa(bt, dd[1], dd[3], bw)
+			if bx > x and bx + w1 > x + bw then
+				by = by + alto + K.ESP.xs
+				bx, alto = x, 0
+			end
 			bt:ClearAllPoints()
-			bt:SetPoint("TOPLEFT", b, "TOPLEFT", bx, -(y + 8))
-			bx = bx + bt:AnchoNatural() + K.ESP.s
+			bt:SetPoint("TOPLEFT", b, "TOPLEFT", bx, -by)
+			bx = bx + w1 + K.ESP.s
+			alto = max(alto, h1)
 			bt:Show()
 		else
 			bt:Hide()
 		end
 	end
-	if d.uno or d.dos then y = y + 8 + K.ALTO.botonChico end
+	if d.uno or d.dos then y = by + alto end
 	local h = y + 10
 	b:SetSize(ancho, h)
 	b:Show()
@@ -1438,15 +1533,25 @@ local function resumenGuia(g, v)
 	return nombre, linea, done, total, corta
 end
 
-local function cabecera(g, v)
+local function cabecera(g, v, hecha)
 	local c = ui.cab
 	local nombre, linea, done, total, corta = resumenGuia(g, v)
+	-- 1.3.8: terminada, la cabecera lo dice (también con su tarjeta cerrada).
+	if hecha then
+		corta = corta ~= "" and (L["Terminada"] .. "  \194\183  " .. corta) or L["Terminada"]
+		linea = linea ~= "" and (L["Terminada"] .. "  \194\183  " .. linea) or L["Terminada"]
+	end
 	c.alfaNombre = g and nombre or nil
 	K.Escribir(c.Titulo, nombre)
 	K.Escribir(c.Sub, linea)
 	-- Con la guarida, solo si cabe entera (nada de textos cortados).
 	if linea ~= corta and K.AnchoTexto(c.Sub) > (c.alfaAnchoTitulo or (ANCHO - 120)) then
 		linea = corta
+		K.Escribir(c.Sub, linea)
+	end
+	-- 1.3.8: terminada y sin lugar para los pasos: solo «Terminada».
+	if hecha and linea ~= L["Terminada"] and K.AnchoTexto(c.Sub) > (c.alfaAnchoTitulo or (ANCHO - 120)) then
+		linea = L["Terminada"]
 		K.Escribir(c.Sub, linea)
 	end
 	-- El nombre en hasta dos renglones; la cabecera crece con él.
@@ -1587,7 +1692,8 @@ local function cuadroVacio(g)
 			if not (vacioSig and vacioSig.alfaId == clave) then
 				vacioSig = { lobo = "aullando", titulo = VACIO_HECHA.titulo, alfaId = clave,
 					texto = c.elegir and L["Tu ruta se abre en dos: elige por dónde sigues."] or format(L["Lo que sigue para tu nivel: %s."], c.sig.nombre or "?"),
-					accion = { texto = Rs.TextoCierre(c), icono = "ic-ruta", alClic = function() Rs.SeguirCierre(c) end } }
+					accion = { texto = Rs.TextoCierre(c), icono = "ic-ruta", alClic = function() Rs.SeguirCierre(c) end,
+						corto = c.sig and L["Seguir con la siguiente"] or nil } } -- 1.3.8: el nombre ya va arriba
 			end
 			return vacioSig
 		end
@@ -1632,6 +1738,239 @@ local function ponerVacio(cuadro, g)
 	end
 end
 
+---------------------------------------------------------------------------
+-- 1.3.8: la tarjeta de «¡Terminaste esta guía!»
+---------------------------------------------------------------------------
+-- Antes era el cuadro vacío (K.Vacio) con el nombre de la que sigue dentro
+-- del botón: con un nombre largo el botón atravesaba el rastreador, el texto
+-- quedaba fuera del fondo y no se podía cerrar. Ahora es una tarjeta propia,
+-- toda dentro del rastreador: el lobo aullando, el festejo, la que sigue en
+-- una mini tarjeta (su nombre, su zona y sus niveles) con «Seguir» dentro, y
+-- su X. Cerrada, el rastreador queda en su cabecera («Terminada · ...») hasta
+-- que cambies de guía o pidas «¿Qué sigue?» en su menú. Clic derecho en la X
+-- o en la tarjeta: «No enseñar al terminar una guía» (rutas.tarjetaFin).
+-- En combate ni la X ni la tarjeta toman el ratón.
+A.RegisterDefaults(M.ID, { tarjetaFin = true })
+
+local FIN_LOBO = 44
+local FIN_PAD = 12
+
+-- est.finCerrada: la guía cuya tarjeta cerraste; est.finPedida: la que
+-- pediste ver con «¿Qué sigue?» (aunque el ajuste la apague).
+local function idGuia(g) return type(g) == "table" and g.id or nil end
+
+local function finPermitida(g)
+	local id = idGuia(g)
+	if not id then return false end
+	if est.finPedida == id then return true end
+	if est.finCerrada == id then return false end
+	return A.Get(M.ID .. ".tarjetaFin") ~= false
+end
+
+local function guiaDe(id)
+	local G = A.Guides
+	if type(id) ~= "string" or not (G and type(G.Get) == "function") then return nil end
+	local ok, h = pcall(G.Get, id)
+	return ok and type(h) == "table" and h or nil
+end
+
+-- «Los Humedales · Niveles 30–33», como en la Biblioteca.
+local function metaGuia(h)
+	local u = U()
+	if type(h) ~= "table" or not (u and type(u.GuideMeta) == "function") then return nil end
+	local ok, s = pcall(u.GuideMeta, h)
+	return ok and type(s) == "string" and s ~= "" and s or nil
+end
+
+-- Lo que dice la tarjeta (la guía ya está terminada). -> d
+local function datosFin(g)
+	local d = { lobo = "aullando", sobre = L["Guía terminada"], titulo = L["¡Terminaste esta guía!"] }
+	local esp = M.Guias and M.Guias.Especial(g.id)
+	if esp == "desbloquear" then
+		volverDeDesbloquear()
+		d.titulo, d.texto = VACIO_DESBLOQUEADA.titulo, VACIO_DESBLOQUEADA.texto
+		d.uno = { L["Elegir qué sigue"], function() A.Fire("SHOW_PICKER") end }
+		return d
+	end
+	local c = Rs.Cierre()
+	if c and c.elegir then
+		d.texto = L["Tu ruta se abre en dos: elige por dónde sigues."]
+		d.uno = { L["Elegir mi camino"], function() Rs.SeguirCierre(c) end }
+	elseif c and c.sig then
+		d.texto = L["Buena cacería. Esto es lo que sigue para tu nivel:"]
+		local h = guiaDe(c.sig.id)
+		local meta = metaGuia(h)
+		-- Con su zona y niveles aparte, el nombre va sin «(30–33)».
+		d.sig = { nombre = (meta and h.title) or c.sig.nombre or nombreGuia(h) or "?", meta = meta,
+			uno = { L["Seguir con esta guía"], function() est.finPedida = nil Rs.SeguirCierre(c) end },
+			dos = { L["Elegir otra guía"], function() A.Fire("SHOW_PICKER") end } }
+	else
+		d.texto = VACIO_HECHA.texto
+		d.uno = { L["Elegir qué sigue"], function() A.Fire("SHOW_PICKER") end }
+	end
+	return d
+end
+
+function Rs.CerrarFin()
+	est.finCerrada = idGuia(engine("GetGuide")) or true
+	est.finPedida = nil
+	if F and F:IsShown() then Rs.Pintar() end
+end
+
+-- «¿Qué sigue?» del menú: la tarjeta vuelve (aunque el ajuste la apague).
+function Rs.PedirFin()
+	est.finCerrada = nil
+	est.finPedida = idGuia(engine("GetGuide"))
+	if F and F:IsShown() then Rs.Pintar() end
+end
+
+-- La guía está terminada y su tarjeta no se ve (cerrada o apagada).
+function Rs.FinOculta()
+	local g = engine("GetGuide")
+	if not g or est.fin or finPermitida(g) then return false end
+	return terminada()
+end
+
+function Rs.FinVisible() return ui.fin ~= nil and ui.fin:IsShown() end
+
+local function menuFin(dueno)
+	K.Menu(dueno, {
+		{ valor = function() Rs.CerrarFin() end, texto = L["Cerrar"], icono = "ic-cerrar" },
+		{ valor = function() A.Set(M.ID .. ".tarjetaFin", false) Rs.CerrarFin() end, texto = L["No enseñar al terminar una guía"] },
+	}, nil, function(fn) if type(fn) == "function" then fn() end end, 240)
+end
+Rs.MenuFin = menuFin
+
+construirFin = function()
+	local t = CreateFrame("Frame", nil, F)
+	ui.fin = t
+	t.caja = K.Caja(t, { fondo = "panel", borde = "acento", corte = K.CORTE.tarjeta })
+	t.caja:Estilo({ alfaBorde = 0.5 })
+	t.Marca = K.Marca(t, K.CORTE.tarjeta, "acento", 24)
+	t.Lobo = t:CreateTexture(nil, "ARTWORK")
+	t.Lobo:SetSize(FIN_LOBO, FIN_LOBO)
+	t.Lobo:SetPoint("TOPLEFT", t, "TOPLEFT", FIN_PAD, -FIN_PAD)
+	t.Sobre = K.Texto(t, "mayus", "acento")
+	t.Titulo = K.Texto(t, "subtitulo", "texto")
+	t.Texto = K.Texto(t, "nota", "textoSuave")
+	t.Accion = K.Boton(t, "", nil, { tipo = "acento", tam = "chico", icono = "ic-ruta" }) -- (no «Uno»: así se reconoce el aviso)
+	t.Cerrar = K.BotonIcono(t, "ic-cerrar", function(self, boton)
+		if boton == "RightButton" then menuFin(self) return end
+		Rs.CerrarFin()
+	end, { tam = 18, ayuda = L["Cerrar"], ayudaTexto = L["Vuelve al cambiar de guía o con «¿Qué sigue?» en el menú. Clic derecho: más opciones."] })
+	t.Cerrar:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+	t.Cerrar:SetPoint("TOPRIGHT", t, "TOPRIGHT", -5, -5)
+	t:SetScript("OnMouseUp", function(self, boton)
+		if boton == "RightButton" and not (InCombatLockdown and InCombatLockdown()) then menuFin(self.Cerrar) end
+	end)
+	-- La que sigue: una mini tarjeta con su nombre, su zona y niveles, y «Seguir».
+	local s = CreateFrame("Frame", nil, t)
+	t.Sig = s
+	s.caja = K.Caja(s, { fondo = "elevado", borde = "linea", corte = K.CORTE.control })
+	s.Icono = K.Icono(s, "ic-guia", 16, "acento")
+	s.Icono:SetPoint("TOPLEFT", s, "TOPLEFT", 10, -10)
+	s.Nombre = K.Texto(s, "etiqueta", "texto")
+	s.Meta = K.Texto(s, "pequeno", "textoTenue")
+	s.Uno = K.Boton(s, "", nil, { tipo = "primario", tam = "chico", icono = "ic-ruta" })
+	s.Dos = K.Boton(s, "", nil, { tipo = "fantasma", tam = "chico" })
+	t:Hide()
+end
+
+-- Los botones en fila dentro de `w` desde (x, y) de su padre: el que no cabe
+-- baja a otra fila; uno solo más ancho que `w` va en dos renglones
+-- (K.BotonQueQuepa). Nunca salen de la tarjeta. -> la y de abajo
+local function filaBotones(padre, botones, x, y, w)
+	local bx, alto = x, 0
+	for _, par in ipairs(botones) do
+		local b, d = par[1], par[2]
+		if d then
+			b.alClic = d[2]
+			local bh, bw = K.BotonQueQuepa(b, d[1], d[3], w)
+			if bx > x and bx + bw > x + w then
+				y = y + alto + K.ESP.xs
+				bx, alto = x, 0
+			end
+			b:ClearAllPoints()
+			b:SetPoint("TOPLEFT", padre, "TOPLEFT", bx, -y)
+			b:Show()
+			bx = bx + bw + K.ESP.s
+			alto = max(alto, bh)
+		else
+			b:Hide()
+		end
+	end
+	return y + alto
+end
+
+local function pintarFin(d, ancho)
+	local t = ui.fin
+	t.alfaDatos = d
+	local libre = not (InCombatLockdown and InCombatLockdown())
+	t.Cerrar:EnableMouse(libre)
+	t:EnableMouse(libre)
+	t.Lobo:SetTexture(K.Lobo(d.lobo or "aullando"))
+	t.Lobo:SetVertexColor(K.Color("acento"))
+	-- La columna del texto, a la derecha del lobo y antes de la X.
+	local x = FIN_PAD + FIN_LOBO + K.ESP.m
+	local tw = ancho - x - FIN_PAD - 14
+	K.Escribir(t.Sobre, K.Mayus(d.sobre or ""))
+	t.Sobre:ClearAllPoints()
+	t.Sobre:SetPoint("TOPLEFT", t, "TOPLEFT", x, -(FIN_PAD + 2))
+	local y = FIN_PAD + 2 + K.Parrafo(t.Sobre, tw)
+	K.Escribir(t.Titulo, d.titulo or "")
+	t.Titulo:ClearAllPoints()
+	t.Titulo:SetPoint("TOPLEFT", t, "TOPLEFT", x, -(y + 3))
+	y = y + 3 + K.Parrafo(t.Titulo, tw)
+	if d.texto and d.texto ~= "" then
+		K.Escribir(t.Texto, d.texto)
+		t.Texto:ClearAllPoints()
+		t.Texto:SetPoint("TOPLEFT", t, "TOPLEFT", x, -(y + 4))
+		y = y + 4 + K.Parrafo(t.Texto, ancho - x - FIN_PAD)
+		t.Texto:Show()
+	else
+		t.Texto:Hide()
+	end
+	-- Sin la que sigue, el botón va en la columna del texto.
+	if d.uno and not d.sig then
+		y = filaBotones(t, { { t.Accion, d.uno } }, x, y + K.ESP.s, ancho - x - FIN_PAD)
+	else
+		t.Accion:Hide()
+	end
+	y = max(y, FIN_PAD + FIN_LOBO)
+	local s = t.Sig
+	if d.sig then
+		local sw = ancho - 2 * FIN_PAD
+		local sx = 10 + 16 + K.ESP.s
+		local stw = sw - sx - 10
+		K.Escribir(s.Nombre, d.sig.nombre or "")
+		s.Nombre:ClearAllPoints()
+		s.Nombre:SetPoint("TOPLEFT", s, "TOPLEFT", sx, -10)
+		local sy = 10 + K.Parrafo(s.Nombre, stw)
+		if d.sig.meta then
+			K.Escribir(s.Meta, d.sig.meta)
+			s.Meta:ClearAllPoints()
+			s.Meta:SetPoint("TOPLEFT", s, "TOPLEFT", sx, -(sy + 2))
+			sy = sy + 2 + K.Parrafo(s.Meta, stw)
+			s.Meta:Show()
+		else
+			s.Meta:Hide()
+		end
+		sy = filaBotones(s, { { s.Uno, d.sig.uno }, { s.Dos, d.sig.dos } }, sx, sy + K.ESP.s, stw) + 10
+		y = y + K.ESP.m
+		s:SetSize(sw, sy)
+		s:ClearAllPoints()
+		s:SetPoint("TOPLEFT", t, "TOPLEFT", FIN_PAD, -y)
+		s:Show()
+		y = y + sy
+	else
+		s:Hide()
+	end
+	local h = y + FIN_PAD
+	t:SetSize(ancho, h)
+	t:Show()
+	return h
+end
+
 function Rs.Pintar()
 	if not (F and F:IsShown()) then return end
 	local comp = compacto()
@@ -1644,7 +1983,12 @@ function Rs.Pintar()
 	-- Vista previa: miras otro paso que el de ahora.
 	local previa = v ~= nil and live ~= nil and v.index ~= live
 	cxR.previa = previa
-	local conAvance = cabecera(g, v)
+	-- 1.3.8: otra guía: la tarjeta del cierre que cerraste vuelve a valer.
+	local gid = idGuia(g)
+	if est.finCerrada and est.finCerrada ~= gid then est.finCerrada = nil end
+	if est.finPedida and est.finPedida ~= gid then est.finPedida = nil end
+	local hecha = g ~= nil and v == nil and terminada()
+	local conAvance = cabecera(g, v, hecha)
 	local y = (ui.altoCab or CAB) + K.ESP.s
 	-- 1.3.7c: plegada, solo el paso de ahora y la flecha.
 	if Rs.Plegada() and g and v then
@@ -1692,9 +2036,13 @@ function Rs.Pintar()
 		ui.plan:SetPoint("TOPLEFT", F, "TOPLEFT", x, -y)
 		y = y + hp + K.ESP.m
 	end
-	local conVacio = vacio and not est.fin and hp == 0
+	-- 1.3.8: terminada, la tarjeta propia (o nada, si la cerraste) en vez del cuadro vacío.
+	local fin = vacio and not est.fin and hp == 0 and hecha
+	local dFin = fin and finPermitida(g) and datosFin(g) or nil
+	local conVacio = vacio and not est.fin and hp == 0 and not fin
 	if conVacio then ponerVacio(ui.vacio, g) end
 	ui.vacio:SetShown(conVacio)
+	if not dFin then ui.fin:Hide() end
 	-- El aviso
 	local h = pintarAviso(aviso(v, live), ancho)
 	if h > 0 then
@@ -1775,6 +2123,19 @@ function Rs.Pintar()
 		ui.vacio:ClearAllPoints()
 		ui.vacio:SetPoint("TOPLEFT", F, "TOPLEFT", x, -y)
 		y = y + vh + K.ESP.base
+	end
+	if dFin then
+		y = y + K.ESP.xs
+		local fh = pintarFin(dFin, ancho)
+		ui.fin:ClearAllPoints()
+		ui.fin:SetPoint("TOPLEFT", F, "TOPLEFT", x, -y)
+		y = y + fh + K.ESP.s
+	end
+	-- Cerrada la tarjeta y sin nada más: solo la cabecera.
+	if fin and not dFin and h == 0 then
+		for _, b in ipairs({ ui.detalle, ui.omitir, ui.siguiente, ui.pieLinea }) do b:Hide() end
+		F:SetHeight(ui.altoCab or CAB)
+		return
 	end
 	-- El pie: Ver detalle · Omitir · Siguiente
 	local conPie = not vacio
@@ -2007,6 +2368,8 @@ function Rs.AlternarDetalle()
 end
 
 function Rs.DetalleVisible() return D ~= nil and D:IsShown() end
+-- 1.3.8 (para el banco): la tarjeta del cierre, el aviso y los cuadros vacíos.
+function Rs.Piezas() return { fin = ui.fin, aviso = ui.aviso, vacio = ui.vacio, vacioDetalle = dui.vacio, cab = ui.cab } end
 
 -- Muchas cosas cambian seguido (cada bicho muerto, cada paso): se pinta una
 -- vez por tanda, lo que esté a la vista.
@@ -2098,6 +2461,13 @@ A.RegisterEvent("QUEST_LOG_UPDATE", luego)
 A.RegisterEvent("BAG_UPDATE_DELAYED", luego)
 -- Al salir de combate: lo que se dejó para después (agregar lo que falta).
 A.RegisterEvent("PLAYER_REGEN_ENABLED", luego)
+-- 1.3.8: en combate, la X y la tarjeta no toman el ratón.
+A.RegisterEvent("PLAYER_REGEN_DISABLED", function()
+	local b = ui.aviso
+	if b then b.Cerrar:EnableMouse(false) b:EnableMouse(false) end
+	local t = ui.fin
+	if t then t.Cerrar:EnableMouse(false) t:EnableMouse(false) end
+end)
 K.AlRepintar(function()
 	if F and F:IsShown() then Rs.Pintar() end
 	Rs.PintarDetalle()

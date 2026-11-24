@@ -867,3 +867,11 @@ G.Abrir = function(id) if M.VistaPlanes then M.VistaPlanes.Abrir(id) end end
 G.Tarjeta = function() return Pl.Tarjeta() end
 G.AgregarObjeto = function(item, cantidad) return Pl.AgregarObjeto(item, cantidad) end
 G.AgregarMeta = function(id, meta) return Pl.AgregarMeta(id, meta) end
+-- 1.3.8: compartir un plan con un lobo (La Jauría, Compartir.lua): el que
+-- llega se guarda como un plan nuevo con sus metas ya limpias (Pl.NuevaMeta).
+G.De = function(id) return Pl.De(id) end
+G.Recibir = function(nombre, metas)
+	local pl = Pl.Nuevo(nombre, metas)
+	if pl and #pl.metas == 0 then Pl.Borrar(pl.id) return nil end
+	return pl
+end

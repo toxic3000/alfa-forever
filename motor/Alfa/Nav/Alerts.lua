@@ -49,6 +49,13 @@ local ARRIVES = {
 	tram = "El tranvía a %s ya viene",
 }
 local KICKER = "La manada viaja" -- (ns.T at use: the core's dictionary loads later)
+-- Alfa 1.3.8: on board, each its own line (the zone you reach says the rest).
+local ABORDO = {
+	boat = "¡Tierra a la vista! Llegas en %s",
+	zeppelin = "¡Ya se ve la torre! Bajas en %s",
+	tram = "Ya casi llegamos: %s",
+}
+Alerts.ABORDO = ABORDO
 -- What the game plays for each (FileDataIDs, sound/doodad/): the bell a ship
 -- rings as it docks (boatdockedwarning.ogg), the zeppelin's horn
 -- (zeppelinhorn.ogg), the tram pulling in (subwaystop.ogg).
@@ -377,8 +384,13 @@ function Alerts.Check()
 	local ride = X.Riding and X.Riding(now)
 	if type(ride) == "table" then
 		if ARRIVES[ride.kind] and ride.dock and Alerts.Due(ride.arriveIn, ON_BOARD) then
+			-- Alfa 1.3.8: la zona a la que llegas dirá cómo llegaste (Zonas.lua)
+			-- y no repite el muelle; aquí, solo cuánto falta.
+			local N = rawget(_G, "AlfaNucleo")
+			local Z = N and N.Zonas
+			if Z and Z.Llegando then pcall(Z.Llegando, ride.kind, ride.dock, ride.arriveIn) end
 			return alert(tostring(ride.route) .. ":" .. ride.dock, ride.kind,
-				ride.dock, ns.T("¡Tierra a la vista! La manada desembarca en %s"), ride.arriveIn)
+				ride.dock, ns.T(ABORDO[ride.kind] or ABORDO.boat), ride.arriveIn)
 		end
 		return false
 	end

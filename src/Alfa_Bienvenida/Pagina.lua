@@ -81,6 +81,19 @@ local function grupos(ui, padre)
 	leer:Fila({ titulo = L["«¿Qué es esto?»"],
 		texto = L["Deja esta tecla abajo y pasa el ratón por cualquier cosa de Alfa: te digo para qué sirve."],
 		control = function(fila) return K.Desplegable(fila, { opciones = M.OPCIONES_AYUDA(), clave = "nucleo.ayudaTecla", ancho = 150 }) end })
+	-- 1.3.8: la escala de las ventanas de Alfa (Kit/Estilos.lua).
+	leer:Fila({ titulo = L["Tamaño de las ventanas de Alfa"],
+		texto = L["Agranda o achica las ventanas de Alfa enteras, aparte de la escala del juego. La ventana principal de Alfa tiene la suya en Apariencia."],
+		control = function(fila)
+			local d = K.Deslizador(fila, { min = 0.8, max = 1.3, paso = 0.05, clave = "nucleo.escalaVentanas",
+				formato = function(v) return ("%d %%"):format(math.floor((v or 1) * 100 + 0.5)) end })
+			d.alfaAnchoFila = 220
+			return d
+		end })
+	-- 1.3.8: el adorno de temporada (Kit/Estilos.lua).
+	leer:Fila({ titulo = L["Adornos de temporada"],
+		texto = L["En Noche de Brujas, Fiesta de Invierno, Amor en el aire y el Fuego del Solsticio, un detalle chiquito de la fiesta en cada ventana de Alfa."],
+		control = function(fila) return K.Interruptor(fila, { clave = "nucleo.temporada" }) end })
 	-- 1.3.6: un interruptor que dice si el modo ayuda está prendido (Kit/Ayuda.lua).
 	leer:Fila({ titulo = L["Modo ayuda"], hija = true,
 		texto = L["Sin tener una tecla abajo: lo prendes o lo apagas con su atajo, o aquí."],
@@ -105,6 +118,15 @@ local function grupos(ui, padre)
 		control = function(fila) return K.Atajo(fila, { accion = "ALFA_PANTALLA_LIMPIA", titulo = L["Pantalla limpia"], ancho = 150 }) end })
 	limpia:Fila({ titulo = L["Probar la pantalla limpia"], texto = L["También con /alfa limpia."],
 		control = function(fila) return K.Boton(fila, L["Probar"], function() if Pl then Pl.Alternar() end end, { tipo = "secundario", icono = "ic-lobo" }) end })
+	-- 1.3.8: el modo Zen (Zen.lua).
+	limpia:Fila({ titulo = L["Modo Zen"],
+		texto = L["Una tecla esconde todo Alfa menos la flecha, para explorar o tomar capturas. Otra pulsación lo devuelve. También con /alfa zen."],
+		control = function(fila) return K.Atajo(fila, { accion = "ALFA_ZEN", titulo = L["Modo Zen"], ancho = 150 }) end })
+	limpia:Fila({ titulo = L["Probar el modo Zen"], hija = true, texto = L["Para volver: otra vez tu tecla, /alfa zen o el lobo del minimapa."],
+		control = function(fila) return K.Boton(fila, L["Probar"], function()
+			if N.CerrarVentana then N.CerrarVentana() end
+			if M.Zen then M.Zen.Alternar(true) end
+		end, { tipo = "secundario", icono = "ic-flecha" }) end })
 	for _, g in ipairs(Pl and Pl.GRUPOS or {}) do
 		limpia:Fila({ titulo = K.L[g.nombre], hija = true,
 			texto = (g.id == "Barras" or g.id == "Retratos") and L["Si estás en combate, espera a que termine."] or nil,
@@ -242,7 +264,12 @@ local function grupos(ui, padre)
 	end
 	-- 1.3.6: «Configuración y ayuda» primero.
 	-- 1.3.7 anuncios: un interruptor y «Probar» por tipo (Alfa_Nucleo/Zonas.lua), después del sonido.
-	local lista = { bienvenida, sonido }
+	-- 1.3.8: «Lo más usado» hasta arriba (Usados.lua; sin nada usado, no sale).
+	local lista = {}
+	if M.Usados then lista[1] = M.Usados.Grupo(padre) end
+	lista[#lista + 1] = bienvenida
+	lista.ayuda = bienvenida
+	lista[#lista + 1] = sonido
 	if N.GrupoAnuncios then lista[#lista + 1] = N.GrupoAnuncios(padre) end
 	for _, g in ipairs({ leer, limpia, atajos, perfiles, respaldos, errores }) do lista[#lista + 1] = g end
 	return lista
@@ -257,7 +284,7 @@ local function construir(view)
 	ui.grupos = grupos(ui, t.Extra)
 	for i, g in ipairs(ui.grupos) do
 		t:AgregarBloque(g, { espacio = i == 1 and ESP.xl or ESP.l })
-		if i == 1 then ui.estilos = t:AgregarBloque(estilos, { espacio = ESP.xl }) end
+		if g == ui.grupos.ayuda then ui.estilos = t:AgregarBloque(estilos, { espacio = ESP.xl }) end
 	end
 	K.EnPagina(view, t, function()
 		t:SetAccion(estado())
@@ -323,6 +350,18 @@ local CONTROLES = {
 	{ kind = "toggle", key = "nucleo.letraGrande", label = L["Letra más grande"],
 		help = L["Todo el texto de Alfa un poco más grande, en cada ventana. Se suma al tamaño de Ajustes > Apariencia."],
 		search = "bigger text, large font, accessibility, readability, letra grande, accesibilidad" },
+	-- 1.3.8
+	{ kind = "slider", key = "nucleo.escalaVentanas", label = L["Tamaño de las ventanas de Alfa"], min = 0.8, max = 1.3, step = 0.05,
+		format = function(v) return ("%d %%"):format(math.floor((v or 1) * 100 + 0.5)) end,
+		help = L["Agranda o achica las ventanas de Alfa enteras, aparte de la escala del juego. La ventana principal de Alfa tiene la suya en Apariencia."],
+		search = "window scale, size, bigger windows, smaller, zoom, escala, tamaño, ventanas grandes" },
+	{ kind = "toggle", key = "nucleo.temporada", label = L["Adornos de temporada"],
+		help = L["En Noche de Brujas, Fiesta de Invierno, Amor en el aire y el Fuego del Solsticio, un detalle chiquito de la fiesta en cada ventana de Alfa."],
+		search = "holiday, seasonal, halloween, winter veil, christmas, love is in the air, midsummer, temporada, fiesta, navidad" },
+	{ kind = "button", label = L["Modo Zen"], button = L["Probar"], icon = "info",
+		help = L["Una tecla esconde todo Alfa menos la flecha, para explorar o tomar capturas. Otra pulsación lo devuelve. También con /alfa zen."],
+		onClick = function() if M.Zen then M.Zen.Alternar(true) end end,
+		search = "zen, screenshot, hide alfa, only arrow, minimal, capturas, esconder, solo la flecha" },
 	-- 1.3.5
 	{ kind = "toggle", key = "nucleo.ligero", label = L["Modo ligero"],
 		help = L["Para computadoras modestas: lo que Alfa revisa en segundo plano va a la mitad de velocidad, Lya se anima más despacio y los anuncios salen como tarjeta, sin animación."],

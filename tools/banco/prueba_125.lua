@@ -144,7 +144,7 @@ step("Raros de la manada y la guarida de un lobo", function()
   R.Via = function() return "hermandad" end
   local salidos = {}
   local envio = C_ChatInfo.SendAddonMessage
-  C_ChatInfo.SendAddonMessage = function(_, t, c, d) salidos[#salidos + 1] = { t, c, d } end
+  C_ChatInfo.SendAddonMessage = function(_, t, c, d) salidos[#salidos + 1] = { (t:gsub("|~[HA]$", "")), c, d } end
   local function cola() for _ = 1, 60 do FIRE(R.motor, "OnUpdate", 0.2) end end
   local ue, ug = UnitExists, UnitGUID
   local guid = { nameplate1 = "Creature-0-5250-0-7994-299-0000ABCDEF" }
@@ -165,7 +165,7 @@ step("Raros de la manada y la guarida de un lobo", function()
   local avisos = {}
   local av = K.Aviso
   K.Aviso = function(o) avisos[#avisos + 1] = o end
-  local function llega(t, c, q) FIRE_EVENT("CHAT_MSG_ADDON", "AlfaManada", t, c, q) end
+  local function llega(t, c, q) FIRE_EVENT("CHAT_MSG_ADDON", "AlfaManada", t .. "|~H", c, q) end
   llega("1G|" .. map .. "|8001|1", "GUILD", "Ana Smith")
   llega("1V|" .. map .. "|8001|r|" .. map .. "|40.00|50.00|Mor'Ladim", "GUILD", "Ana Smith")
   check(avisos[1] and avisos[1].titulo:find("Mor'Ladim", 1, true), "no llegó el aviso del raro de la manada")

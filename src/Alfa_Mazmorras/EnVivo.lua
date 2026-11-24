@@ -144,6 +144,40 @@ function Ev.Consejos(jefe, papel)
 	return out
 end
 
+-- 1.3.8: lo que más importa de la pelea, en una línea: el consejo con más
+-- peso (interrumpir, salir del fuego, quitar un veneno, matar primero a sus
+-- ayudantes...), los de tu papel con un poco más. Se mira el texto en
+-- español (el de los datos); sale en el idioma del cliente.
+local PESOS = {
+	{ "interrump", 6 }, { "fuego", 5 }, { "sal de", 5 }, { "salgan", 5 }, { "aléj", 5 }, { "alej", 5 }, { "charco", 5 },
+	{ "suelo", 4 }, { "quita", 4 }, { "veneno", 3 }, { "maldición", 3 }, { "enfermedad", 3 }, { "primero", 3 },
+	{ "invoca", 3 }, { "llama a", 3 }, { "asusta", 3 }, { "miedo", 3 }, { "huye", 3 }, { "no corran", 2 },
+	{ "rápido", 2 }, { "aturde", 2 }, { "espaldas", 2 }, { "vida del tanque", 2 },
+}
+local function peso(es)
+	if type(es) ~= "string" then return 0 end
+	local t = es:lower()
+	local n = 0
+	for _, p in ipairs(PESOS) do
+		if t:find(p[1], 1, true) then n = n + p[2] end
+	end
+	return n
+end
+Ev.Peso = peso
+
+function Ev.LoMasImportante(jefe, papel)
+	local lista = type(jefe) == "table" and jefe.consejos or nil
+	if type(lista) ~= "table" then return nil end
+	local mejor, mejorPeso
+	for _, c in ipairs(lista) do
+		if type(c) == "table" and (c.rol == nil or c.rol == papel) then
+			local w = peso(c[1]) + (c.rol == papel and 2 or 0)
+			if not mejor or w > mejorPeso then mejor, mejorPeso = c, w end
+		end
+	end
+	return mejor and N.Traducir(mejor[1], mejor[2]) or nil
+end
+
 -- Tus misiones de esta mazmorra (las de tu registro): leídas fuera de combate.
 local misiones = {} -- key -> { { texto, lista }, ... }
 
@@ -208,8 +242,58 @@ end
 
 local turno = 0
 
+---------------------------------------------------------------------------
+-- 1.3.8: la línea (de fábrica): una tira chica con el jefe y lo que más
+-- importa de su pelea. Tampoco atrapa clics. Ajuste mazmorras.enVivoForma:
+-- "linea" | "tarjeta" (la de antes, con tres consejos y tus misiones).
+---------------------------------------------------------------------------
+local tl
+local LINEA_MAX, LINEA_MIN = 440, 220
+
+local function forma() return N.Get(ID, "enVivoForma") == "tarjeta" and "tarjeta" or "linea" end
+Ev.Forma = forma
+
+local function construirLinea()
+	tl = CreateFrame("Frame", "AlfaMazmorrasEnVivoLinea", K.Raiz())
+	tl:SetFrameStrata("MEDIUM")
+	tl:SetFrameLevel(20)
+	tl:SetClampedToScreen(true)
+	tl:EnableMouse(false) -- nunca atrapa clics
+	tl:SetSize(LINEA_MIN, 28)
+	tl:SetPoint("TOP", UIParent, "TOP", 0, -150)
+	tl.caja = K.Caja(tl, { fondo = "panel", borde = "lineaFuerte", corte = K.CORTE.control })
+	tl.Icono = K.Icono(tl, "ic-mazmorra", 14, "acento")
+	tl.Icono:SetPoint("TOPLEFT", tl, "TOPLEFT", 8, -7)
+	tl.Texto = K.Texto(tl, "nota", "texto")
+	tl.Texto:SetPoint("TOPLEFT", tl, "TOPLEFT", 28, -7)
+	tl:Hide()
+	return tl
+end
+
+local function mostrarLinea(key, jefe)
+	if not tl then construirLinea() end
+	local papel = Ev.Papel()
+	tl.key, tl.jefe = key, jefe
+	local nombre = type(jefe.nombre) == "string" and jefe.nombre or L["Jefe"]
+	local consejo = Ev.LoMasImportante(jefe, papel) or L["Sin consejos para este jefe: vayan con calma y escuchen al tanque."]
+	local texto = K.Tenir("acento", nombre) .. "  \194\183  " .. consejo
+	K.Escribir(tl.Texto, texto)
+	local ancho = math.floor(K.AnchoTexto(tl.Texto) + 0.5)
+	local w = max(LINEA_MIN, min(LINEA_MAX, ancho + 28 + 10))
+	local h = K.Parrafo(tl.Texto, w - 28 - 10, 2)
+	tl:SetSize(w, max(28, h + 14))
+	tl:Show()
+	if t then t:Hide() end
+	return true
+end
+
 function Ev.Mostrar(key, jefe)
 	if not (activa() and type(jefe) == "table") then return false end
+	if forma() == "linea" then
+		turno = turno + 1
+		return mostrarLinea(key, jefe)
+	end
+	if tl then tl:Hide() end
 	if not t then construir() end
 	turno = turno + 1
 	local papel = Ev.Papel()
@@ -254,10 +338,17 @@ end
 function Ev.Ocultar()
 	turno = turno + 1
 	if t then t:Hide() t.key, t.jefe = nil, nil end
+	if tl then tl:Hide() tl.key, tl.jefe = nil, nil end
 end
 
-function Ev.Visible() return t and t:IsShown() and true or false end
+function Ev.Visible() return (t and t:IsShown()) or (tl and tl:IsShown()) and true or false end
 function Ev.Marco() return t end
+function Ev.Linea() return tl end
+-- Lo que se ve ahora (la tarjeta o la línea): su clave y su jefe.
+local function vista()
+	if tl and tl:IsShown() then return tl end
+	return t
+end
 
 -- Se va en unos segundos si nada la vuelve a pedir.
 local function irseEn(seg)
@@ -314,15 +405,17 @@ A.RegisterEvent("PLAYER_REGEN_ENABLED", function()
 	encuentro = false
 	if not actual then return end
 	Ev.LeerMisiones(actual.key)
-	if Ev.Visible() and t.jefe then Ev.Mostrar(t.key, t.jefe) irseEn(20) end
+	local x = vista()
+	if Ev.Visible() and x and x.jefe then Ev.Mostrar(x.key, x.jefe) irseEn(20) end
 end)
 
 A.RegisterEvent("QUEST_LOG_UPDATE", function()
 	if actual and not enCombate() and Ev.Visible() then
 		K.Despues(0.5, function()
-			if actual and not enCombate() and Ev.Visible() and t.jefe then
+			local x = vista()
+			if actual and not enCombate() and Ev.Visible() and x and x.jefe then
 				Ev.LeerMisiones(actual.key)
-				Ev.Mostrar(t.key, t.jefe)
+				Ev.Mostrar(x.key, x.jefe)
 			end
 		end)
 	end
@@ -338,7 +431,8 @@ A.On("CODEX_LOADED", function() if actual then actual.porNpc = {} end end)
 
 A.On("SETTING_CHANGED", function(path)
 	if path == ID .. ".enVivo" and not activa() then Ev.Ocultar() end
-	if path == ID .. ".enVivoRol" and Ev.Visible() and t.jefe then Ev.Mostrar(t.key, t.jefe) end
+	local x = vista()
+	if (path == ID .. ".enVivoRol" or path == ID .. ".enVivoForma") and Ev.Visible() and x and x.jefe then Ev.Mostrar(x.key, x.jefe) end
 end)
 
 -- Lya lo enseña en «¿En qué te ayudo?».

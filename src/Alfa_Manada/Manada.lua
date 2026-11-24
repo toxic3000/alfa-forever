@@ -92,6 +92,9 @@ N.Modulo({
 		botinCompartir = false, -- tu clase y nivel a tu hermandad, para el botín (1.3.0)
 		guaridasMapa = true, -- las guaridas de la manada en el mapa (1.3.0)
 		calendario = true, -- el calendario de la semana con las citas (1.3.0)
+		tablonAviso = true, -- 1.3.8: la tarjeta «Me apunto» cuando un lobo busca grupo (Tablon.lua)
+		ficha = true, -- 1.3.8: contestar «tu ficha» (nivel, oficios, qué fabricas) a tu hermandad y tu grupo (Ficha.lua)
+		recibirRutas = true, -- 1.3.8: recibir el plan o la guía que te comparte un lobo (Compartir.lua)
 	},
 	construir = P.Construir,
 })
@@ -173,6 +176,21 @@ AlfaManada.Red = {
 	end,
 }
 function AlfaManada.Tablon() return M.Tablon and M.Tablon.Lista() or {} end
+-- 1.3.8: «Busco grupo para X» al tablón de tu hermandad (el clic derecho de una
+-- misión de élite o de mazmorra en Rutas). tipo: "m" mazmorra | "q" misión | "f" farmear.
+function AlfaManada.BuscoGrupo(texto, tipo)
+	if not M.Tablon then return false end
+	return M.Tablon.PonerYDecir(tipo or "m", texto)
+end
+-- 1.3.8: la ficha de un lobo por su nombre (la página de La Jauría la abre con un clic).
+function AlfaManada.Ficha(nombre)
+	if not (M.Ficha and nombre) then return false end
+	local clave = U.Clave(nombre)
+	for _, f in ipairs(M.Gente.Manada() or {}) do
+		if f.clave == clave then return M.Ficha.Abrir(f) end
+	end
+	return M.Ficha.Abrir({ clave = clave, nombre = U.Mostrar(nombre), envio = nombre })
+end
 function AlfaManada.Mentor()
 	if not M.Mentor then return nil end
 	return { mentor = M.Mentor.Mentor(), aprendices = M.Mentor.Aprendices() }

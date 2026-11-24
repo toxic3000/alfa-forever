@@ -10,7 +10,7 @@ local K = N.Kit
 local A = N.A
 local L = K.L
 
-local floor, max, min, ipairs = math.floor, math.max, math.min, ipairs
+local floor, max, min, ipairs, format = math.floor, math.max, math.min, ipairs, string.format
 local ESP = K.ESP
 
 ---------------------------------------------------------------------------
@@ -332,4 +332,171 @@ function K.SelectorAcento(padre, opts)
 	-- Un acento elegido en otra parte (Ajustes, otro selector) se marca al repintar.
 	K.Pintar(sel, function(x) x:Leer() end)
 	return sel
+end
+
+---------------------------------------------------------------------------
+-- 1.3.8: la escala de las ventanas de Alfa (aparte de la del juego)
+--   nucleo.escalaVentanas (1 = 100 %, de 0,8 a 1,3): cada ventana del Kit
+--   (K.Ventana) se agranda o se achica entera, con su letra y sus cajas, así
+--   que nada se corta. Las piezas que acompañan al jugar (capa MEDIUM: el
+--   medidor, los marcos) tienen su propio tamaño y no cambian.
+--   K.EscalaVentanas() -> número ; K.AplicarEscala(v)
+---------------------------------------------------------------------------
+local ESCALA_MIN, ESCALA_MAX = 0.8, 1.3
+if A and A.RegisterDefaults then A.RegisterDefaults("nucleo", { escalaVentanas = 1, temporada = false }) end
+
+function K.EscalaVentanas()
+	local v = tonumber(A and A.Get and A.Get("nucleo.escalaVentanas")) or 1
+	if v ~= v then v = 1 end
+	return max(ESCALA_MIN, min(ESCALA_MAX, v))
+end
+
+local function escalable(v)
+	return v and v.SetScale and (v.GetFrameStrata and v:GetFrameStrata()) ~= "MEDIUM"
+end
+
+function K.AplicarEscala(v)
+	if not escalable(v) then return end
+	local e = K.EscalaVentanas()
+	if K.num(v:GetScale(), 1) ~= e then v:SetScale(e) end
+end
+
+local function escalarTodas()
+	for _, v in ipairs(K.VENTANAS or {}) do K.AplicarEscala(v) end
+end
+K.EscalarTodas = escalarTodas
+
+---------------------------------------------------------------------------
+-- 1.3.8: el estilo de temporada (opcional, apagado de fábrica)
+--   nucleo.temporada: en las fechas de las fiestas del juego, un adorno chico
+--   en la cabecera de cada ventana del Kit (calabaza, copo, corazón, llama) y
+--   una línea fina de su color arriba. Sobre cualquier estilo: no cambia
+--   colores ni letras. Al llegar una fiesta, si nunca lo elegiste, Alfa te
+--   pregunta una vez (un aviso con «Prender»).
+--   K.TEMPORADAS ; K.TemporadaDe(mes, dia) -> t | nil ; K.Temporada() -> t | nil (prendida y en fecha)
+---------------------------------------------------------------------------
+local MEDIA_N = "Interface\\AddOns\\Alfa_Nucleo\\Media\\"
+K.TEMPORADAS = {
+	{ clave = "brujas", nombre = "Noche de Brujas", desde = { 10, 18 }, hasta = { 11, 1 }, color = { 1, 0.55, 0.12 }, adorno = MEDIA_N .. "temporada-calabaza" },
+	{ clave = "invierno", nombre = "Fiesta de Invierno", desde = { 12, 15 }, hasta = { 1, 2 }, color = { 0.55, 0.85, 1 }, adorno = MEDIA_N .. "temporada-copo" },
+	{ clave = "amor", nombre = "Amor en el aire", desde = { 2, 7 }, hasta = { 2, 20 }, color = { 1, 0.45, 0.65 }, adorno = MEDIA_N .. "temporada-corazon" },
+	{ clave = "fuego", nombre = "Fuego del Solsticio", desde = { 6, 21 }, hasta = { 7, 5 }, color = { 1, 0.7, 0.2 }, adorno = MEDIA_N .. "temporada-llama" },
+}
+
+local function enRango(t, mes, dia)
+	local x = mes * 100 + dia
+	local a, b = t.desde[1] * 100 + t.desde[2], t.hasta[1] * 100 + t.hasta[2]
+	if a <= b then return x >= a and x <= b end
+	return x >= a or x <= b -- cruza el año (Fiesta de Invierno)
+end
+
+function K.TemporadaDe(mes, dia)
+	mes, dia = tonumber(mes), tonumber(dia)
+	if not (mes and dia) then return nil end
+	for _, t in ipairs(K.TEMPORADAS) do
+		if enRango(t, mes, dia) then return t end
+	end
+	return nil
+end
+
+-- La fecha de hoy (el banco la cambia con K.fechaPrueba = { mes, dia }).
+local function hoy()
+	if K.fechaPrueba then return K.fechaPrueba[1], K.fechaPrueba[2] end
+	local d = date and date("*t")
+	if type(d) == "table" then return d.month, d.day end
+	return nil
+end
+
+function K.TemporadaHoy() return K.TemporadaDe(hoy()) end
+
+function K.Temporada()
+	if not (A and A.Get and A.Get("nucleo.temporada")) then return nil end
+	return K.TemporadaHoy()
+end
+
+local function adornar(v)
+	if not (v and v.Cabecera) then return end
+	local c = v.Cabecera
+	local t = K.Temporada()
+	if not t then
+		if c.alfaAdorno then c.alfaAdorno:Hide() c.alfaTiraTemp:Hide() end
+		return
+	end
+	if not c.alfaAdorno then
+		c.alfaAdorno = c:CreateTexture(nil, "ARTWORK", nil, 2)
+		c.alfaAdorno:SetSize(18, 18)
+		c.alfaAdorno:SetPoint("RIGHT", c, "RIGHT", -48, 0)
+		c.alfaTiraTemp = v:CreateTexture(nil, "ARTWORK", nil, 4)
+		c.alfaTiraTemp:SetColorTexture(1, 1, 1, 1)
+		c.alfaTiraTemp:SetHeight(2)
+		c.alfaTiraTemp:SetPoint("TOPRIGHT", v, "TOPRIGHT", -K.CORTE.ventana - 6, 0)
+		c.alfaTiraTemp:SetWidth(64)
+	end
+	c.alfaAdorno:SetTexture(t.adorno)
+	c.alfaAdorno:SetVertexColor(t.color[1], t.color[2], t.color[3], 0.95)
+	c.alfaAdorno:Show()
+	c.alfaTiraTemp:SetVertexColor(t.color[1], t.color[2], t.color[3], 0.8)
+	c.alfaTiraTemp:Show()
+	c.alfaTemporada = t.clave
+end
+K.Adornar = adornar
+
+local function adornarTodas()
+	for _, v in ipairs(K.VENTANAS or {}) do adornar(v) end
+end
+K.AdornarTodas = adornarTodas
+
+-- Cada ventana nueva nace con su escala y su adorno.
+if type(K.Ventana) == "function" and not K.alfaVentanaEnvuelta then
+	local crear = K.Ventana
+	K.alfaVentanaEnvuelta = true
+	function K.Ventana(opts)
+		local v = crear(opts)
+		K.AplicarEscala(v)
+		adornar(v)
+		return v
+	end
+end
+
+if A and A.On then
+	A.On("SETTING_CHANGED", function(path)
+		if path == "nucleo.escalaVentanas" then escalarTodas() end
+		if path == "nucleo.temporada" then
+			adornarTodas()
+			-- Lo elegiste tú: ya no se pregunta.
+			if N.PidioJugador and N.PidioJugador() then N.Datos("kit").temporadaElegida = true end
+		end
+	end)
+end
+
+-- Al llegar una fiesta: si nunca lo elegiste, una pregunta (una vez por fiesta y año).
+function K.PreguntarTemporada()
+	local t = K.TemporadaHoy()
+	if not t or (A and A.Get and A.Get("nucleo.temporada")) then return false end
+	local d = N.Datos("kit")
+	if d.temporadaElegida then return false end
+	local anio = date and tonumber(date("%Y")) or 0
+	local clave = t.clave .. ":" .. anio
+	d.temporadaPreguntada = type(d.temporadaPreguntada) == "table" and d.temporadaPreguntada or {}
+	if d.temporadaPreguntada[clave] then return false end
+	d.temporadaPreguntada[clave] = true
+	if not K.Aviso then return false end
+	K.Aviso({ titulo = format(L["Llegó %s"], L[t.nombre]), icono = "ic-apariencia", tono = "acento", prioridad = 4,
+		texto = L["¿Le pongo a Alfa un adorno de temporada? Es un detalle chiquito en cada ventana; lo quitas en Estilo y sonido."],
+		acciones = {
+			{ texto = L["Prender"], alClic = function()
+				N.Datos("kit").temporadaElegida = true
+				if A.Set then A.Set("nucleo.temporada", true) end
+			end },
+			{ texto = L["No, gracias"], alClic = function() N.Datos("kit").temporadaElegida = true end },
+		} })
+	return true
+end
+
+if A and A.OnLogin then
+	A.OnLogin(function()
+		escalarTodas()
+		adornarTodas()
+		if N.Una then N.Una("kit.temporada", 20, function() pcall(K.PreguntarTemporada) end, { fueraDeCombate = true }) end
+	end)
 end

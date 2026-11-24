@@ -831,7 +831,58 @@ local function crearFila(f)
 	f.Linea = K.Texto(f, "pequeno", "textoTenue")
 	f.Linea:SetPoint("TOPLEFT", f.Nombre, "BOTTOMLEFT", 0, -2)
 	f.Linea:SetPoint("RIGHT", f, "RIGHT", -10, 0)
+	f.pildoras = {} -- 1.3.8: cómo se consigue y la facción (Origen.lua), a la derecha
 	f:HookScript("OnLeave", function(self) Cu.Salir(self) end)
+end
+
+-- 1.3.8: hasta 3 etiquetas a la derecha de la fila, las que quepan sin cortar
+-- el nombre ni su línea (y nunca dejándoles menos de TEXTO_MIN).
+local TEXTO_MIN = 150
+local function pildorasFila(f, lista)
+	lista = lista or {}
+	local ancho = K.num(f:GetWidth(), 0)
+	if ancho <= 0 then ancho = 320 end
+	-- El nombre y su línea nunca se cortan: las etiquetas usan lo que sobra.
+	local texto = max(TEXTO_MIN, K.num(K.AnchoTexto(f.Nombre), 0), K.num(K.AnchoTexto(f.Linea), 0))
+	local libre = ancho - 48 - 10 - 8 - texto
+	-- Las que caben, por importancia (pri: la primera de cómo se consigue, la
+	-- facción, lo demás); se ven en su orden, la más útil a la izquierda.
+	local orden = {}
+	for k in ipairs(lista) do orden[k] = k end
+	table.sort(orden, function(x, y)
+		local px, py = lista[x].pri or x, lista[y].pri or y
+		if px ~= py then return px < py end
+		return x < y
+	end)
+	local elegida, anchoDe, total, cuantas = {}, {}, 0, 0
+	for _, k in ipairs(orden) do
+		local x = lista[k]
+		local p = f.pildoras[k] or K.Insignia(f, "", "neutro")
+		f.pildoras[k] = p
+		local w = p:Set(x[1], x[2], x[3])
+		local mas = (cuantas > 0 and 4 or 0) + w
+		if total + mas <= libre then
+			elegida[k], anchoDe[k], total, cuantas = true, w, total + mas, cuantas + 1
+		end
+	end
+	local visibles = {}
+	for k = 1, #f.pildoras do
+		if elegida[k] then visibles[#visibles + 1] = k else f.pildoras[k]:Hide() end
+	end
+	local n = #visibles
+	-- Ancladas a la derecha (si la fila cambia de ancho, siguen en su lugar).
+	local der = 10
+	for j = n, 1, -1 do
+		local k = visibles[j]
+		local p = f.pildoras[k]
+		p:ClearAllPoints()
+		p:SetPoint("RIGHT", f, "RIGHT", -der, 0)
+		p:Show()
+		der = der + anchoDe[k] + 4
+	end
+	local fin = n > 0 and (10 + total + 8) or 10
+	f.Nombre:SetPoint("RIGHT", f, "RIGHT", -fin, 0)
+	f.Linea:SetPoint("RIGHT", f, "RIGHT", -fin, 0)
 end
 
 local ICONO_TIPO = { npc = { "ic-personajes", "acento" }, rare = { "ic-raros", "raro" }, treasure = { "ic-raros", "oro" },
@@ -843,6 +894,10 @@ local function pintarFila(f, i)
 	local kind, id = Cat.Kind(c, i), c.id[i]
 	local nombre = M.Nombre(kind, id)
 	K.Escribir(f.Nombre, nombre)
+	-- 1.3.8: un PNJ de la otra facción, atenuado (va al final de la lista).
+	local mio = est.tipo == "pnj" and M.MiBando and M.MiBando()
+	local suyo = mio and Cat.BandoPnj(id)
+	f:SetAlpha((suyo and suyo ~= mio) and 0.6 or 1)
 	if M.ES_OBJETO[kind] then
 		f.Objeto:Show()
 		f.Baldosa:Hide()
@@ -851,9 +906,11 @@ local function pintarFila(f, i)
 		local r, g, b = M.ColorCalidad(q)
 		if r then f.Nombre:SetTextColor(r, g, b) else K.ColorTexto(f.Nombre, "objeto") end
 		K.Escribir(f.Linea, lineaObjeto(c, i, kind))
+		pildorasFila(f, est.tipo == "objeto" and M.Origen and M.Origen.Etiquetas(id, 3) or nil)
 	else
 		f.Objeto:Hide()
 		f.Baldosa:Show()
+		pildorasFila(f, nil)
 		local ic = ICONO_TIPO[kind] or { "ic-enciclopedia", "acento" }
 		K.SetIcono(f.Glifo, ic[1], select(2, K.Tono(ic[2])))
 		if kind == "mountspell" then
@@ -915,7 +972,8 @@ local function avanceTexto(nombre)
 	return p and format("%d %%", floor(p * 100)) or ""
 end
 
-local PREPARA = { facetas = L["los tipos"], registros = L["los niveles"], misiones = L["las misiones"], raros = L["los raros"], catalogo = L["el catálogo"] }
+local PREPARA = { facetas = L["los tipos"], registros = L["los niveles"], misiones = L["las misiones"], raros = L["los raros"], catalogo = L["el catálogo"],
+	origenes = L["cómo se consigue cada objeto"] }
 
 local function cuentaTexto(n)
 	local c = Cat.Col(est.tipo)
@@ -924,6 +982,7 @@ local function cuentaTexto(n)
 	if est.pend then
 		local que = PREPARA[est.pend] or est.pend
 		local pct = (est.pend == "facetas" or est.pend == "registros") and avanceTexto(est.pend) or ""
+		if est.pend == "origenes" and M.Origen.avance then pct = format("%d %%", floor(M.Origen.avance * 100)) end
 		base = base .. M.SEP .. format(L["preparando %s para filtrar %s"], que, pct)
 	end
 	return base
@@ -943,7 +1002,8 @@ end
 local function pedirPreparacion(pend)
 	if pend == "facetas" or pend == "registros" then Cat.PrepararFacetas()
 	elseif pend == "misiones" then I.PrepararMisiones()
-	elseif pend == "raros" then I.PrepararRaros() end
+	elseif pend == "raros" then I.PrepararRaros()
+	elseif pend == "origenes" then M.Origen.Preparar() end
 	vigilarAvance()
 end
 
@@ -1080,7 +1140,21 @@ local function armarBarra(tipo)
 		cs[4] = desplegable(tipo, "nivel", Cat.NIVELES, 116)
 		cs[5] = desplegable(tipo, "ranura", Cat.OpcionesRanura(), 136)
 		cs[6] = alternar(tipo, "usable", L["Puedo usar"], L["Solo lo que tu personaje puede usar hoy: clase, armadura, armas, nivel y profesión."])
-		bar.alQuitar = function() sub.alfaVisible = false end
+		-- 1.3.8: cómo se consigue (con «Más probable primero» para lo que sueltan) y de qué facción (Origen.lua).
+		local O = M.Origen
+		local probable
+		cs[7] = desplegable(tipo, "origen", O.ORIGENES, 150, function(val)
+			probable.alfaVisible = val == "suelta"
+			if val ~= "suelta" and est.filtros.objeto.probable then
+				est.filtros.objeto.probable = nil
+				probable:Pintar()
+			end
+		end)
+		probable = alternar(tipo, "probable", L["Más probable primero"], L["Los que caen más seguido van arriba: la mejor probabilidad de cada objeto, de más a menos."])
+		probable.alfaVisible = est.filtros.objeto.origen == "suelta"
+		cs[8] = probable
+		cs[9] = desplegable(tipo, "bando", O.BANDOS, 130)
+		bar.alQuitar = function() sub.alfaVisible = false probable.alfaVisible = false end
 		-- Cuando las facetas están listas, los desplegables muestran solo lo que hay.
 		bar.Refrescar = function()
 			cs[1]:SetOpciones(Cat.OpcionesTipo())
@@ -1112,6 +1186,7 @@ local function armarBarra(tipo)
 		local clase = A.Compat.GetPlayerInfo().class
 		if clase then ops[#ops + 1] = { valor = "class:" .. clase, texto = format(L["Instructores de %s"], M.NombreClase(clase)) } end
 		cs[1] = desplegable(tipo, "rol", ops, 220)
+		cs[2] = desplegable(tipo, "bando", Cat.BANDOS_PNJ, 180) -- 1.3.8: lo de tu facción primero
 	elseif tipo == "mision" then
 		cs[1] = desplegable(tipo, "nivel", Cat.NIVELES, 150)
 		cs[2] = alternar(tipo, "paraMi", L["Para mí"], L["Solo las que puedes tomar: tu bando, raza, clase y nivel, y que no hayas hecho."])
@@ -1448,7 +1523,8 @@ end
 
 M.alIndice = function(cual)
 	if not V.Visible() then return end
-	if est.pend and ((cual == "misiones" and est.tipo == "mision") or (cual == "raros" and est.tipo == "raro")) then filtrar() end
+	if est.pend and ((cual == "misiones" and est.tipo == "mision") or (cual == "raros" and est.tipo == "raro")
+		or (cual == "origenes" and est.tipo == "objeto")) then filtrar() end
 	if est.ficha and est.ficha.nota then rehacerFichaActual() end
 end
 

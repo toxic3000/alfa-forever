@@ -396,11 +396,9 @@ local function anclaEnCursor()
 		ancla = CreateFrame("Frame", nil, UIParent)
 		ancla:SetSize(1, 1)
 	end
-	local x, y = cursor()
-	local e = K.num(UIParent and UIParent:GetEffectiveScale(), 1)
-	if e <= 0 then e = 1 end
+	local x, y = K.CursorEnUI() -- (1.3.8 revisión: con el escritorio movido, igual)
 	ancla:ClearAllPoints()
-	ancla:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", x / e, y / e)
+	ancla:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", x, y)
 	ancla:Show()
 	return ancla
 end

@@ -1,0 +1,18 @@
+{
+ "Un borde rojo suave respira alrededor de quien baja del 35 % de vida, para verlo a la primera.": "Мягкая красная рамка дышит вокруг того, у кого меньше 35 % здоровья, чтобы вы сразу его заметили.",
+ "Color de los marcos": "Цвет рамок",
+ "Color de la barra": "Цвет полосы",
+ "Por clase: el color de la clase de cada uno, apagado para que no canse. Un solo color: el que tú elijas. Según la vida: verde, amarillo y rojo según lo que le queda.": "По классу: цвет класса каждого, приглушённый, чтобы не утомлял. Один цвет: тот, что вы выберете. По здоровью: зелёный, жёлтый и красный в зависимости от остатка.",
+ "Un solo color": "Один цвет",
+ "Según la vida": "По здоровью",
+ "Tu color": "Ваш цвет",
+ "Elegir color": "Выбрать цвет",
+ "El color de todas las barras con «Un solo color», con el selector de colores del juego.": "Цвет всех полос в режиме «Один цвет», через палитру игры.",
+ "Intensidad": "Яркость",
+ "Qué tan vivo se ve el color de las barras.": "Насколько ярко выглядит цвет полос.",
+ "Apagado [color]": "Приглушённый",
+ "Normal [color]": "Обычный",
+ "Vivo [color]": "Яркий",
+ "Así se ven": "Как выглядят",
+ "Llena, a media y baja (con el borde de «En peligro»).": "Полная, половина и мало (с рамкой «В опасности»)."
+}

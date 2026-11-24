@@ -31,6 +31,14 @@ M.NOVEDADES = {
 --   { version, titulo, puntos = { { icono (ic-*), texto } } }
 ---------------------------------------------------------------------------
 M.NOTAS = {
+	{ version = "1.3.8", titulo = "La manada en dos pantallas", puntos = {
+		{ "ic-ventana", "Alfa en tu segundo monitor: tu guía, la flecha, el mapa y tu grupo en la otra pantalla, en un clic.", "pantallas" },
+		{ "ic-aviso", "Avisos que se sienten únicos: el barco se dice claro en la flecha y cada suceso da un solo mensaje." },
+		{ "ic-pesca", "Pesca con tamaños y récords, tu nivel de pescador del 1 al 60 y un cuadro para elegir caña y cebo.", "pesca" },
+		{ "ic-manada", "La Horda y la Alianza, cada una por su lado: lo que comparte La Jauría se queda en tu facción.", "manada" },
+		{ "ic-enciclopedia", "La Enciclopedia dice cómo se consigue cada objeto, de qué facción es y qué tan probable es que caiga.", "enciclopedia" },
+		{ "ic-candado", "Candado para tus objetos (Alt+clic derecho), y en Curación los marcos van por clase, de un color o según la vida.", "curacion" },
+	} },
 	{ version = "1.3.7", titulo = "La manada a tu ritmo", puntos = {
 		{ "ic-oro", "Tu oro, una sola vez: un clic en las monedas y ves cuánto tiene cada personaje.", "oro" },
 		{ "ic-mapa", "Cada zona se anuncia al llegar, con su propia animación para barcos, raros, mazmorras y más.", "anuncios" },

@@ -246,6 +246,8 @@ local function datoPersona(f)
 		texto = (nc ~= "" and (nc .. "\n") or "") .. lugar(f) .. (juntos and ("\n" .. juntos) or ""),
 		accion = { texto = siguiendo and L["Dejar de seguir"] or L["Seguir"], icono = siguiendo and "ic-cerrar" or "ic-seguir", alClic = function() seguir(f) end },
 		secundaria = invitable(f) and { texto = L["Invitar"], alClic = function() invitar(f) end } or nil,
+		-- 1.3.8: clic en la tarjeta: su ficha (Ficha.lua).
+		alClic = M.Ficha and function() M.Ficha.Abrir(f) end or nil,
 		persona = f,
 	}
 end
@@ -1579,6 +1581,13 @@ local function grupos(ui, padre)
 		texto = L["Tus lugares nuevos también salen en el mapa de los lobos de tu hermandad, y ves los suyos."] })
 	crece:Fila({ titulo = L["El tablón de la manada"], control = interruptor("tablon"),
 		texto = L["Ve quién de tu hermandad busca grupo y pon tu anuncio. Se quita solo en una hora."] })
+	-- 1.3.8
+	crece:Fila({ titulo = L["Tarjeta cuando alguien busca grupo"], control = interruptor("tablonAviso"), activa = function() return N.Get(ID, "tablon") ~= false end,
+		texto = L["Cuando un lobo de tu hermandad pone un anuncio, te sale una tarjeta con «Me apunto»: él te ve y te invita con su clic."] })
+	crece:Fila({ titulo = L["Compartir mi ficha"], control = interruptor("ficha"),
+		texto = L["Tu hermandad y tu grupo ven en tu ficha tu nivel, tus oficios y lo que puedes fabricarles, cuando la abren."] })
+	crece:Fila({ titulo = L["Recibir planes y guías"], control = interruptor("recibirRutas"),
+		texto = L["Un lobo de tu hermandad o tu grupo te puede compartir su plan o su guía: te llega con «Aceptar»."] })
 	crece:Fila({ titulo = L["Mentor"], control = interruptor("mentor"),
 		texto = L["Adopta a un lobo nuevo o deja que uno con más nivel te adopte. Lo que comparten queda entre los dos."] })
 	crece:Fila({ titulo = L["Botín para la manada"], control = interruptor("botin"),

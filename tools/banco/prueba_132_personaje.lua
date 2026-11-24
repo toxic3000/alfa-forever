@@ -239,6 +239,7 @@ step("Solo: el corte no suena; en grupo o instancia sí; con «También yendo so
 end)
 
 step("Solo: el resumen solo sale en peleas de 30 s o más; en grupo, desde 10 s", function()
+  A.Set("combate.resumen", true) -- 1.3.8: apagado de fábrica; aquí se prende a mano
   local function pelea(seg)
     local f = rawget(_G, "AlfaCombateResumen")
     if f then f:Hide() end

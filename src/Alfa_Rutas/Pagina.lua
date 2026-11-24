@@ -318,9 +318,23 @@ do
 			{ kind = "toggle", key = M.ID .. ".siguienteGuia", label = L["Proponer la siguiente guía"],
 				help = L["Al terminar una guía, la que sigue para tu nivel a un clic."],
 				search = "next guide, guide finished, continue" },
+			-- 1.3.8: la tarjeta de «¡Terminaste esta guía!» del rastreador (Rastreador.lua).
+			{ kind = "toggle", key = M.ID .. ".tarjetaFin", label = L["Enseñar la tarjeta al terminar una guía"],
+				help = L["Al terminar una guía, el rastreador te festeja y te enseña la que sigue. Con su X la cierras."],
+				search = "guide finished, completed, next guide card, tarjeta, terminada" },
 			{ kind = "toggle", key = M.ID .. ".vueloListo", label = L["Marcar el mejor vuelo"],
 				help = L["Con el mapa de vuelos abierto, marca el destino más cerca de tu paso de ahora."],
 				search = "flight master, taxi, flight map, fly" },
+			-- 1.3.8
+			{ kind = "toggle", key = M.ID .. ".tomaGrifo", label = L["Proponer tomar el grifo"],
+				help = L["Si vas a caminar lejos y un vuelo te ahorra tiempo, el rastreador te dice desde dónde volar y cuánto ahorras."],
+				search = "flight, gryphon, wyvern, save time, fly, grifo, vuelo" },
+			{ kind = "toggle", key = M.ID .. ".peligroCamino", label = L["Avisar si tu camino pasa por una zona peligrosa"],
+				help = L["Antes de llegar, el rastreador te dice si tu camino o tu destino están en una zona con enemigos muy arriba de tu nivel."],
+				search = "dangerous zone, path, route, high level, peligro, camino" },
+			{ kind = "toggle", key = M.ID .. ".sugerirRutaGrupo", label = L["Sugerir rutas de mi grupo"],
+				help = L["En grupo, si un compañero lleva misiones que tú no, el rastreador te propone pedírselas y seguir su ruta."],
+				search = "group route, party quests, follow route, ruta de grupo" },
 		} })
 	if not ok and geterrorhandler then geterrorhandler()(err) end
 end

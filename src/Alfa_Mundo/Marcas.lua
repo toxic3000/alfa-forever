@@ -38,7 +38,7 @@ local FLECHA = "Interface\\Minimap\\MinimapArrow"
 local CAPAS_MOTOR = {
 	{ "maps.services", 7 }, { "quests.available", 4 }, { "quests.objectives", 3.5 }, { "quests.turnin", 3.5 },
 	{ "mundo.salidas", 6 }, { "mundo.portales", 3 }, { "mundo.porDescubrir", 2.5 },
-	{ "rares.treasure", 4 }, { "rares.rare", 3.5 }, { "mundo.peligros", 3 }, { "maps.inns", 3.5 }, { "maps.docks", 2.2 }, { "maps.taxi", 1.5 }, { "mundo.vuelosFaltan", 1.5 },
+	{ "rares.treasure", 4 }, { "rares.rare", 3.5 }, { "mundo.peligros", 3 }, { "mundo.misionesColor", 3 }, { "maps.inns", 3.5 }, { "maps.docks", 2.2 }, { "maps.taxi", 1.5 }, { "mundo.vuelosFaltan", 1.5 },
 	{ "maps.dungeons", 1.6 }, { "nav.upcoming", 1.6 }, { "nav.goals", 2.5 }, { "nav.spots", 3 }, { "nav.route", 1.4 },
 	{ "qol.death", 0 }, { "nav.target", 0 },
 }
@@ -804,6 +804,8 @@ end
 -- Al abrir el mapa: si alguna capa necesita el Codex (mazmorras, servicios,
 -- raros), se carga una vez; el motor rehace sus capas al terminar.
 function Mc.PrepararDatos()
+	-- 1.3.8: las misiones por color usan la base de misiones, no el Codex (MisionesColor.lua).
+	if M.MisionesColor and A.Get("mundo.misionesColor") ~= false then pcall(M.MisionesColor.Preparar) end
 	local X = A.Codex
 	if not (X and type(X.IsLoaded) == "function" and type(X.Load) == "function") then return end
 	-- 1.3.0: los peligros de tu zona se arman con el Codex ya cargado (Peligros.lua).

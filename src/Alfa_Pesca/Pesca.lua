@@ -81,6 +81,10 @@ M.AJUSTES = {
 	avisoPelear = true,      -- al entrar en combate con la caña, un aviso con cómo volver a tus armas
 	resumenCerrar = true,    -- al cerrar el modo, lo que pescaste mientras estuvo abierto
 	consejos = true,         -- se acabó el cebo, llegaste al tope de tu rango
+	-- 1.3.8
+	previa = true,           -- al abrir el modo, la ventana de antes de pescar (caña, cebo y barra)
+	avisoNivel = true,       -- al subir de nivel de pescador de Alfa, un aviso
+	jauria = false,          -- compartir tu nivel y tus récords con la tabla de La Jauría (tu hermandad)
 }
 
 _G["BINDING_NAME_" .. ACCION] = L["Pescar: lanzar y recoger"]
@@ -753,6 +757,8 @@ function M.AbrirModo(auto)
 	ponerTeclasModo()
 	M.Aplicar()
 	M.Avisar("modo")
+	-- 1.3.8: la ventana de antes de pescar (Previa.lua); tras un /reload, no.
+	if not E.sinPrevia and M.Previa then M.Previa.AlAbrirModo() end
 	return true
 end
 
@@ -831,6 +837,10 @@ AlfaPesca.Alternar = function() M.Alternar() end
 AlfaPesca.Abrir = function() return M.AbrirModo() end
 AlfaPesca.Cerrar = function() M.CerrarModo() end
 AlfaPesca.Activo = function() return E.modo end
+-- 1.3.8: para el Escritorio de Alfa (el panel de pesca).
+AlfaPesca.Estado = function() return M.Estado() end
+AlfaPesca.Habilidad = function() return M.TextoHabilidad() end
+AlfaPesca.Sesion = function() local s = M.Sesion() return s, M.Cuentas(s) end
 
 -- Al moverte, la tecla del modo vuelve a ser la de siempre (Espacio salta).
 A.RegisterEvent("PLAYER_STARTED_MOVING", function()
@@ -1444,7 +1454,11 @@ A.RegisterEvent("PLAYER_ENTERING_WORLD", function(_, inicial)
 		if enInstancia and enInstancia ~= "none" then
 			d.modo = nil
 		else
-			N.FueraDeCombate(function() M.AbrirModo(true) end)
+			N.FueraDeCombate(function()
+				E.sinPrevia = true
+				M.AbrirModo(true)
+				E.sinPrevia = nil
+			end)
 		end
 	end
 	if habilitado() and M.Pescando() then
@@ -1458,6 +1472,8 @@ A.On("SETTING_CHANGED", function(path)
 	path = type(path) == "string" and path or ""
 	if path ~= "" and path ~= ID and path:sub(1, #ID + 1) ~= ID .. "." then return end
 	if path == ID .. ".excluir" or path == ID .. ".prepararEquipo" or path == ID .. ".prepararCebo" or path == ID .. ".ceboPreferido" then Eq.Marcar() end
+	-- 1.3.8: el cebo preferido de los Ajustes vuelve a mandar en este personaje.
+	if path == ID .. ".ceboPreferido" then Eq.Eleccion().cebo = nil end
 	M.PrepararBotones()
 	if not habilitado() then
 		if E.modo then M.CerrarModo(true) end
@@ -1479,7 +1495,9 @@ local ENCENDER = { on = true, encender = true, prender = true, activar = true }
 local APAGAR = { off = true, apagar = true, desactivar = true }
 local REINICIAR = { reiniciar = true, reset = true, nuevo = true, nueva = true }
 local VENTANA = { diario = "diario", guia = "guia", ["guía"] = "guia", cocina = "cocina", metas = "metas",
-	estadisticas = "estadisticas", ["estadísticas"] = "estadisticas", logros = "logros", historial = "estadisticas" }
+	estadisticas = "estadisticas", ["estadísticas"] = "estadisticas", logros = "logros", historial = "sesiones",
+	sesiones = "sesiones", pescador = "pescador", nivel = "pescador", records = "pescador", ["récords"] = "pescador",
+	semana = "pescador", jauria = "jauria", ["jauría"] = "jauria", tabla = "jauria" }
 
 function M.Comando(resto)
 	resto = (type(resto) == "string" and resto or ""):lower():gsub("^%s+", ""):gsub("%s+$", "")
@@ -1494,6 +1512,8 @@ function M.Comando(resto)
 	elseif REINICIAR[resto] then
 		M.NuevaSesion()
 		N.Imprimir(L["Sesión de pesca nueva."])
+	elseif resto == "antes" or resto == "previa" then
+		if M.Previa then M.Previa.Abrir(true) end
 	elseif VENTANA[resto] then
 		if VENTANA[resto] == "metas" and M.Metas then M.Metas.Alternar(true)
 		elseif M.V then M.V.Abrir(VENTANA[resto]) end

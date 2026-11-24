@@ -339,21 +339,24 @@ step("4. curación: el velo de «en peligro» bajo el 35 %", function()
   check(#ERRORS == antes, "con la vida secreta tronó")
   check(not b1.cuerpo.alfaPeligro.velo:IsShown(), "con la vida secreta y sin curva salió el velo")
   -- Con la curva: el color llega hecho (aunque secreto) y va directo a la textura.
+  -- (1.3.8: el velo suma luz con ADD y el color de la curva; ya no depende de
+  -- su opacidad, que el juego no respetaba: prueba_138_curacion.lua.)
   local pintado
-  Cu.curvaPeligro = {}
+  local curvas = Cu.CurvasPeligro
+  Cu.CurvasPeligro = function() return { borde = {}, tinte = {} } end
   local uhp = rawget(_G, "UnitHealthPercent")
   UnitHealthPercent = function(u, pred, c)
-    return { GetRGBA = function() return SECRETO(1), SECRETO(0.16), SECRETO(0.14), SECRETO(0.34) end }
+    return { GetRGB = function() return SECRETO(0.78), SECRETO(0.15), SECRETO(0.11) end }
   end
-  local tex = b1.cuerpo.alfaPeligro.velo
+  local tex = b1.cuerpo.alfaPeligro.tinte
   local sv = tex.SetVertexColor
-  tex.SetVertexColor = function(self, r, g, bb, a) pintado = issecretvalue(a) return sv(self, 1, 0.16, 0.14, 0.34) end
+  tex.SetVertexColor = function(self, r, g, bb, a) pintado = issecretvalue(r) return sv(self, 0.16, 0.03, 0.025, 1) end
   Cu.Peligro(b1)
   check(pintado == true, "con la curva no pasó el color tal cual")
-  check(tex:IsShown(), "con la curva no se muestra el velo (el color decide)")
+  check(b1.cuerpo.alfaPeligro.velo:IsShown(), "con la curva no se muestra el velo (el color decide)")
   tex.SetVertexColor = sv
   UnitHealthPercent = uhp
-  Cu.curvaPeligro = curva
+  Cu.CurvasPeligro = curvas
   UnitHealth = function(u) return vida[u] or 100 end
 end)
 

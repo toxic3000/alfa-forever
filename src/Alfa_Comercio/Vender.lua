@@ -229,6 +229,10 @@ function Ve.Refrescar()
 	if not e then return ocultar() end
 	local clave = table.concat({ e.id, e.precio or 0, e.sugerido or 0, #(e.historia or {}), e.bajo and 1 or 0, M.version or 0 }, ":")
 	if estado and estado.clave == clave and panel and panel:IsShown() then return end
+	-- 1.3.8: un objeto con candado (Alfa_Bolsas, Candado.lua) en la subasta: un aviso.
+	if not (estado and estado.id == e.id) and AlfaBolsas and AlfaBolsas.AvisarCandado then
+		pcall(AlfaBolsas.AvisarCandado, e.id, nil, "subasta")
+	end
 	e.clave = clave
 	estado = e
 	pintar(e)

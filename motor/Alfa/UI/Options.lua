@@ -2837,6 +2837,15 @@ function O.MenuItems(anchor, opts)
 			Acomodar.Abrir()
 		end }
 	end
+	-- 1.3.8: Alfa en tu segundo monitor (Alfa_Bienvenida/Escritorio.lua).
+	local Escritorio = rawget(_G, "AlfaEscritorio")
+	if type(Escritorio) == "table" and type(Escritorio.Abrir) == "function" then
+		local puesto = type(Escritorio.Activo) == "function" and Escritorio.Activo() or nil
+		items[#items + 1] = { text = T("Dos pantallas"), icon = "window", checked = puesto or nil, onClick = function()
+			if ns.Hidden and ns.Hidden() then ns.SetHidden(false) end
+			Escritorio.Abrir()
+		end }
+	end
 	items[#items + 1] = { text = T("Ventana de guía"), icon = "window", checked = ns.GuideShown and ns.GuideShown() or nil,
 		onClick = function() ns.Fire("TOGGLE_FRAME") end }
 	-- 1.3.7: el medidor de daño (Alfa_Combate), a la vista o fuera.
@@ -2861,6 +2870,11 @@ function O.MenuItems(anchor, opts)
 			ns.ToggleHidden()
 			if not estaba and ns.Print then ns.Print(T("Alfa quedó escondido. Para volver: clic en el lobo del minimapa o escribe /alfa.")) end
 		end }
+	-- 1.3.8: el modo Zen (Alfa_Bienvenida/Zen.lua): todo Alfa fuera menos la flecha.
+	local Zen = rawget(_G, "AlfaZen")
+	if type(Zen) == "table" and type(Zen.Alternar) == "function" and type(Zen.TextoMenu) == "function" then
+		items[#items + 1] = { text = Zen.TextoMenu(), icon = "dart", checked = Zen.Activo() or nil, onClick = function() Zen.Alternar() end }
+	end
 	items[#items + 1] = { text = T("Reportar un problema"), icon = "bug", onClick = function()
 		if ns.Hidden and ns.Hidden() then ns.SetHidden(false) end
 		ns.Fire("SHOW_REPORT")
@@ -2915,6 +2929,30 @@ function O.Estructura(key)
 		out.tabs[#out.tabs + 1] = { name = t.name, keys = keys }
 	end
 	return out
+end
+
+-- 1.3.8: un ajuste por su clave, para «Lo más usado» (Alfa_Bienvenida/Usados.lua):
+-- -> { kind, key, label, help, choices = { { value, text } }, min, max, step, format,
+--      page = clave de la página, pageLabel, tab } | nil (sin página a la vista).
+function O.ControlDe(key)
+	if type(key) ~= "string" then return nil end
+	for _, p in ipairs(pageList) do
+		if pageShown(p) and not OCULTAS[p.key] then
+			for _, t in ipairs(shownTabs(p)) do
+				for _, s in ipairs(t.sections or {}) do
+					for _, c in ipairs(s.controls or {}) do
+						if c.key == key and available(c) then
+							return { kind = c.kind, key = c.key, label = labelOf(c), help = helpOf(c),
+								choices = (c.kind == "dropdown") and choicesOf(c) or nil,
+								min = c.min, max = c.max, step = c.step, format = c.format,
+								page = p.key, pageLabel = O.PageLabel(p), tab = t.name }
+						end
+					end
+				end
+			end
+		end
+	end
+	return nil
 end
 
 -- The pages the Ajustes section lists, by key, in order (tests). 1.2.0.

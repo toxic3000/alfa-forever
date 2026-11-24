@@ -33,6 +33,8 @@ QuienTiene.lua
 Tablon.lua
 Botin.lua
 Mentor.lua
+Ficha.lua
+Compartir.lua
 Logros.lua
 Mapa.lua
 Pagina.lua

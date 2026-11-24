@@ -22,5 +22,13 @@ Diagnostico.lua
 Recorrido.lua
 Teclas.lua
 Acomodar.lua
+Escritorio.lua
+EscritorioPaneles.lua
+EscritorioEditor.lua
+EscritorioAsistente.lua
+EscritorioAuto.lua
+EscritorioPagina.lua
 Ventana.lua
+Zen.lua
+Usados.lua
 Pagina.lua

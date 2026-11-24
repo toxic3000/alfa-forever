@@ -1104,6 +1104,44 @@ PARCHES += [
      _fijo("local MAX_TABS = 12 -- Alfa 1.3.7: las mismas 12 del motor\nlocal RIDING = 762\n")),
 ]
 
+# 1.3.8 (Facciones): la Horda y la Alianza, cada una por su lado. Lo que el
+# motor oye de otros (el avance de misiones del grupo, los barcos de la
+# hermandad, el grupo o la banda) se ignora si el juego dice que quien lo
+# manda es de la otra facción (un grupo de facciones mezcladas). Estos
+# mensajes no llevan marca de facción para que los Alfa viejos los sigan
+# entendiendo; solo viajan por PARTY, RAID y GUILD (Alfa_Nucleo/Faccion.lua).
+_AJENA = ("local FA = rawget(_G, \"AlfaNucleo\") if type(FA) == \"table\" and type(FA.FaccionAjena) == \"function\" "
+          "and FA.FaccionAjena(sender) then return end -- Alfa 1.3.8: la otra facción, no")
+PARCHES += [
+    ("Alfa/Quests/Party.lua",
+     '\tif prefix ~= Party.PREFIX or channel ~= "PARTY" or type(sender) ~= "string" then return end\n'
+     '\tlocal key = C.SenderName(sender)\n',
+     _fijo('\tif prefix ~= Party.PREFIX or channel ~= "PARTY" or type(sender) ~= "string" then return end\n'
+           f'\t{_AJENA}\n'
+           '\tlocal key = C.SenderName(sender)\n')),
+    ("Alfa/Nav/Transit.lua",
+     "\tif not fromThisRealm(sender) then return end\n\tlocal now = Transit.Now()\n",
+     _fijo(f"\tif not fromThisRealm(sender) then return end\n\t{_AJENA}\n\tlocal now = Transit.Now()\n")),
+    # Las guías de clase de niveles lejanos (más de 10 por encima o 10 por
+    # debajo de su último nivel) no se arman al entrar para ver si se ofrecen:
+    # sus pasos se leen solo cuando las pides (la Biblioteca, la búsqueda y
+    # «Planes» las siguen viendo por su ficha).
+    ("Alfa/QoL/ClassQuests.lua",
+     "function ClassQuests.Ready()\n",
+     _fijo("-- Alfa 1.3.8: una guía de clase lejos de tu nivel no se arma al entrar.\n"
+           "ClassQuests.LEJOS = 10\n"
+           "function ClassQuests.Lejana(g, level)\n"
+           "\tlocal lo, hi = tonumber(g and rawget(g, \"minLevel\")), tonumber(g and rawget(g, \"maxLevel\"))\n"
+           "\tif lo and lo > level + ClassQuests.LEJOS then return true end\n"
+           "\treturn hi ~= nil and hi < level - ClassQuests.LEJOS\n"
+           "end\n\n"
+           "function ClassQuests.Ready()\n")),
+    ("Alfa/QoL/ClassQuests.lua",
+     '\t\tif h.category == "Class" and due and G.GuideMatches(h, player) and E.GetGuideState(h.id) == "new" then\n',
+     _fijo('\t\tif h.category == "Class" and due and G.GuideMatches(h, player) and E.GetGuideState(h.id) == "new"\n'
+           '\t\t\tand not ClassQuests.Lejana(G.Get(h.id), level) then -- Alfa 1.3.8\n')),
+]
+
 
 def aplicar(dist: pathlib.Path, cfg: dict) -> list:
     errores = []

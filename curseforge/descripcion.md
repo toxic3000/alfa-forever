@@ -14,7 +14,49 @@
 
 ---
 
-## 🆕 New in 1.3.7 — a pack at your pace / Lo nuevo: la manada a tu ritmo
+## 🆕 New in 1.3.8 — the pack on two screens / Lo nuevo: la manada en dos pantallas
+
+**Alfa on your second monitor and 40 improvements.** · **Alfa en tu segundo monitor y 40 mejoras.**
+
+![Alfa on your second monitor](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/38-138-pantallas.png)
+
+**🖥️ Two screens / Dos pantallas** — the game stays on your main monitor and the other one shows your live panels: your guide in big, the arrow, the map, Today, Lya, your group and more. If Alfa sees another monitor, it offers it once and sets it up in one click; you try it for 15 seconds before keeping it. `/alfa pantallas` · El juego se queda en tu monitor principal y en el otro van tus paneles en vivo: tu guía en grande, la flecha, el mapa, Hoy, Lya, tu grupo y más. Si Alfa ve otro monitor, te lo ofrece una vez y lo pone en un clic; lo pruebas 15 segundos antes de quedártelo.
+
+![Edit your desktop](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/39-138-editor.png)
+
+**🧩 Your desktop, your way / Tu escritorio, a tu modo** — drag panels on a snapping grid, add more from the catalog and save your own desktops; it switches by itself in dungeons, while fishing or at the auction house. · Arrastra los paneles sobre una rejilla con imán, agrega más desde el catálogo y guarda tus escritorios; cambia solo en mazmorras, pescando o en la subasta.
+
+![Boat trip on the arrow](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/40-138-flecha-barco.png)
+
+**⛵ Notices that feel unique / Avisos que se sienten únicos** — boats, zeppelins and portals read clearly on the arrow: where to, when it leaves, the next one and when you arrive. Each event gives one single message, and every notice carries its module's colour, icon and sound. · Barcos, zepelines y portales se dicen claro en la flecha: a dónde, cuándo sale, el siguiente y cuándo llegas. Cada suceso da un solo mensaje, y cada aviso lleva el color, el ícono y el sonido de su módulo.
+
+![Before you fish](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/41-138-pesca-previa.png)
+
+![Your angler level](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/42-138-pesca-pescador.png)
+
+**🎣 Fishing / Pesca** — pick your pole, lure and bar before you fish; every catch has its size and your records; your angler level from 1 to 60 with titles, the fish of the week, your sessions and the La Jauría anglers board. · Elige caña, cebo y barra antes de pescar; cada captura tiene su tamaño y tus récords; tu nivel de pescador del 1 al 60 con títulos, el pez de la semana, tus sesiones y la tabla de pescadores de La Jauría.
+
+**⚔️ Horde and Alliance, each on its side / Horda y Alianza, cada una por su lado** — everything La Jauría shares stays within your faction, and your faction's things come first in the Encyclopedia and Dungeons. · Todo lo que comparte La Jauría se queda en tu facción, y lo de tu facción sale primero en la Enciclopedia y en Mazmorras.
+
+![How to get each item](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/43-138-enc-lista-alfa.png)
+
+**📚 Encyclopedia with labels / Enciclopedia con etiquetas** — every item says how you get it (drops, boss, quest, vendor, crafted, fishing…), its faction and its drop chance, with new filters. · Cada objeto dice cómo se consigue (lo sueltan, de jefe, misión, vendedor, fabricado, pesca…), de qué facción es y qué tan probable es que caiga, con filtros nuevos.
+
+![Item lock](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/44-138-candado-bolsas.png)
+
+**🔒 Item lock / Candado** — Alt+right-click locks an item: it can't be deleted, won't be sold by a stray click and Alfa never sells or mails it. Epics, quest items, your hearthstone and your gear sets get it by themselves. · Alt+clic derecho le pone candado a un objeto: no se borra, no se vende por un clic mal dado y Alfa nunca lo vende ni lo manda. Lo épico, lo de misiones, tu piedra de hogar y tus conjuntos lo llevan solos.
+
+![Healing frame colours](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/45-138-curacion-todos.png)
+
+**💚 Healing in your colour / Curación a tu color** — no more solid red at full health: frames by class, in one colour or by health, and "In danger" is a soft border below 35%. · Se acabó el rojo sólido con la vida llena: marcos por clase, de un solo color o según la vida, y «En peligro» es un borde suave bajo el 35 %.
+
+**✨ And more / Y más** — "Take the gryphon", a quest layer by colour, "Looking for group" and each wolf's card in La Jauría, Lya's breaks and firsts, a boss line and an end card in dungeons, and Zen mode (`/alfa zen`). · «Toma el grifo», capa de misiones por color, «Busco grupo» y la ficha de cada lobo en La Jauría, las pausas y primeras veces de Lya, una línea por jefe y una tarjeta al terminar la mazmorra, y el modo Zen (`/alfa zen`). [Full notes / Notas completas](https://github.com/toxic3000/alfa-forever/blob/main/CHANGELOG.md)
+
+> If something breaks, tell us with `/alfa reportar`, on [Discord](https://discord.gg/hUNjA6BJwh), in the comments or on [GitHub](https://github.com/toxic3000/alfa-forever/issues). · Si algo falla, avísanos con `/alfa reportar`, en el [Discord de La Jauría](https://discord.gg/hUNjA6BJwh), en los comentarios o en [GitHub](https://github.com/toxic3000/alfa-forever/issues).
+
+---
+
+## 1.3.7 — a pack at your pace / la manada a tu ritmo
 
 **200 fixes and improvements** so everything arrives at the right time. · **200 correcciones y mejoras** para que todo llegue a su tiempo.
 
@@ -49,8 +91,6 @@
 **📋 Plans and notifications / Planes y avisos** — a new **Plans** section shows every guide you follow (up to 12), lets you pin, follow or remove them, and "Guide me" never gets stuck; a bell next to Settings keeps every notice with its time. · Nueva sección **Planes** con todas las guías que sigues (hasta 12) para fijar, seguir o quitar, y «Guíame» ya nunca se atora; una campanita junto a Ajustes guarda cada aviso con su hora.
 
 **✨ And much more / Y mucho más** — healing frames that heal and target with one click, info bar, big cooldown numbers, chat timestamps and spam filter, item level on your gear, gear sets in one click, dungeon timer and boss map, bargains at the auction house, send to your alt, and a hundred fixes. · Barra de información, números en tus recargas, hora y filtro de spam en el chat, nivel de objeto en tu equipo, conjuntos en un clic, cronómetro y mapa de jefes, gangas en la subasta, mandar a tu alt y un centenar de arreglos. [Full notes / Notas completas](https://github.com/toxic3000/alfa-forever/blob/main/CHANGELOG.md)
-
-> If something breaks, tell us with `/alfa reportar`, on [Discord](https://discord.gg/hUNjA6BJwh), in the comments or on [GitHub](https://github.com/toxic3000/alfa-forever/issues). · Si algo falla, avísanos con `/alfa reportar`, en el [Discord de La Jauría](https://discord.gg/hUNjA6BJwh), en los comentarios o en [GitHub](https://github.com/toxic3000/alfa-forever/issues).
 
 ---
 
@@ -159,20 +199,21 @@ It doesn't switch your brain off: Alfa backs you up and you decide. The first ti
 - **Today** — "What do we do today?": your next step, "An hour of hunting", turn in or pick up quests, alerts (durability, full bags, spells to train), your class, your session numbers and how long your guide has left.
 - **Route** — a two-click assistant (leveling, professions, gold or dungeons), Alfa's own tracker with an arrow, a guide library, **a route that turns in every ready quest**, a quest plan you build yourself, and only quests you can actually do: missing prerequisites are added for you. A compact tracker with details apart, and **My plans** for your own goals. A **turn-in run** by the shortest way, the best quest reward marked, the hearthstone at the right time and a warning before dangerous zones.
 - **Find nearby** — flight master, inn, repair, bank, mailbox, auction house and trainers, with arrow and route.
-- **Encyclopedia** — every item, NPC, quest, zone, rare, mount and pet in the game, even if you don't own it: who drops it, who sells it, which quest gives it, and a "Guide me" button. A Legacy points guide.
+- **Encyclopedia** — every item, NPC, quest, zone, rare, mount and pet in the game, even if you don't own it: who drops it, who sells it, which quest gives it, and a "Guide me" button. Every item labelled with how you get it, its faction and its drop chance. A Legacy points guide.
 - **Dungeons** — the one for your level, with "Get me ready": bosses, loot, quests to bring, tips and the way to the entrance.
 - **Talents** — which talent to take now and why, applied in one click. Pick a goal (solo leveling, dungeons, tank, PvP) and a style (safe, balanced, risky).
 - **Combat** — a rotation helper for all 27 specializations, your quest mobs highlighted, reaction alerts, a group damage meter that shows up by itself in a group, "Get out!" when you stand in fire, the pull countdown and boss timers learned fight by fight.
-- **Healing** — click-to-heal party and raid frames: your heal also targets the teammate, every click set up in a minute, curses/poisons/magic/disease shown and cleansed in one click, missing buffs marked, the tank in trouble and healers' mana.
-- **Bags** — three views (all, categories, per bag), a bag bar, your bank from anywhere with quick deposit and slot purchase, every character's inventory, and what to sell when they fill up. Your gold once, with every character's at a click; gold and loot per hour and your best zone; item level on your gear and gear sets in one click; and an alert for expiring mail with **Take all**.
+- **Healing** — click-to-heal party and raid frames: your heal also targets the teammate, every click set up in a minute, curses/poisons/magic/disease shown and cleansed in one click, missing buffs marked, the tank in trouble and healers' mana. Frames by class, in one colour or by health.
+- **Bags** — three views (all, categories, per bag), a bag bar, your bank from anywhere with quick deposit and slot purchase, every character's inventory, and what to sell when they fill up. Your gold once, with every character's at a click; gold and loot per hour and your best zone; item level on your gear and gear sets in one click; and an alert for expiring mail with **Take all**. An **item lock** (Alt+right-click) so nothing important gets deleted or sold by mistake.
 - **World** — all of Azeroth on one zoomable map with real terrain, flight points, entrances and exits (dungeons, boats, zeppelins, portals), your own markers and one layer control.
 - **Gathering** — ore, herbs, fishing pools and treasures on map and minimap, with gathering routes.
 - **Trade** — auction prices and what to do with each item: vendor, auction or craft.
-- **Fishing** — fully re-engineered: a one-key fishing mode (gear, lure, cast and loot), a fishing bar, catch journal, achievements, goals, a 1–300 guide and cooking by the water.
+- **Fishing** — fully re-engineered: a one-key fishing mode (gear, lure, cast and loot), a fishing bar, catch journal, achievements, goals, a 1–300 guide and cooking by the water. Catch sizes and records, your **angler level** (1 to 60), the fish of the week, your sessions and the La Jauría anglers board.
 - **Scenery** — the game's graphics settings in plain words, presets, one-click undo and screen filters.
-- **La Jauría** — your group and Alfa users who opt in to be seen, on the map; a **Follow** button with the arrow; call the pack; dens to play together; rares shared by the pack with their timers; **outings** with a day and time; "Who's going?"; notes on your map; a short announcement when a wolf who uses Alfa is nearby, so you can say hi; the La Jauría badge and the guild page.
+- **La Jauría** — your group and Alfa users who opt in to be seen, on the map; a **Follow** button with the arrow; call the pack; dens to play together; rares shared by the pack with their timers; **outings** with a day and time; "Who's going?"; notes on your map; a short announcement when a wolf who uses Alfa is nearby, so you can say hi; the La Jauría badge and the guild page. **"Looking for group"** to your guild from a quest, each wolf's **card** with their professions, and share your plan with a wolf. Horde and Alliance, each on its own side.
 - **Comforts** (Settings) — minimap, class colors, info box, an info bar (fps, gold, durability, bags, XP per hour), big cooldown numbers, chat timestamps, copy and spam filter, IDs in tooltips, dressing room, flight bar, quest automation and sounds.
-- **Announcements and notices** — every zone announced with its own animation; notices that wait their turn and never block your clicks; `/alfa calma` for do not disturb and "What I missed" (`/alfa perdi`).
+- **Announcements and notices** — every zone announced with its own animation; notices that wait their turn and never block your clicks; one single message per event; `/alfa calma` for do not disturb and "What I missed" (`/alfa perdi`). **Zen mode** (`/alfa zen`) hides all of Alfa but the arrow, to explore or take screenshots.
+- **Two screens** (`/alfa pantallas`) — Alfa's desktop on your second monitor: your guide in big, the arrow, the map, Today, Lya, your group and more, set up in one click and edited by dragging panels.
 
 **Plays by Forever's and Blizzard's rules:** nothing decides for you in combat. Healing, fishing, applying talents and using items always need your key or click, and out of combat when the game requires it. Free, open source, no ads, and nothing posts to other players' chat on its own.
 
@@ -193,20 +234,21 @@ No busca apagarte el cerebro: Alfa te apoya, y tú decides. La primera vez te pr
 | **Hoy** `/alfa inicio` | "¿Qué hacemos hoy?": tu siguiente paso, «Una hora de caza», entregar o recoger misiones, alertas (durabilidad, bolsas llenas, habilidades por entrenar), tu clase, tus números de la sesión y cuánto te falta de tu guía. |
 | **Ruta** `/alfa rutas` | Un asistente de dos clics (subir de nivel, profesiones, oro o mazmorras), un rastreador propio con flecha, una biblioteca de guías, **una ruta que entrega todas tus misiones listas**, un plan de misiones que armas tú y solo misiones que de verdad puedes hacer: si falta una previa, Alfa la agrega sola. Seguimiento compacto con el detalle aparte y **Mis planes** para armar tus propias metas. **Vuelta a entregar** por el camino más corto, la mejor recompensa marcada, la piedra de hogar a tiempo y aviso antes de zonas peligrosas. |
 | **Buscar cerca** `/alfa cerca` | Maestro de vuelo, posada, reparar, banco, buzón, subastas y entrenadores, con flecha y ruta. |
-| **Enciclopedia** `/alfa enciclopedia` | Todos los objetos, PNJ, misiones, zonas, raros, monturas y mascotas del juego, aunque no los tengas: quién lo suelta, quién lo vende, qué misión lo da, y un botón "Guíame". Guía de los puntos del Legado. |
+| **Enciclopedia** `/alfa enciclopedia` | Todos los objetos, PNJ, misiones, zonas, raros, monturas y mascotas del juego, aunque no los tengas: quién lo suelta, quién lo vende, qué misión lo da, y un botón "Guíame". Cada objeto con su etiqueta de cómo se consigue, su facción y qué tan probable es que caiga. Guía de los puntos del Legado. |
 | **Mazmorras** `/alfa mazmorras` | La que te toca por nivel, con "Prepárame": jefes, botín, misiones que conviene llevar, consejos y cómo llegar a la entrada. |
 | **Talentos** `/alfa builds` | Qué talento poner ahora y por qué, aplicado con un clic. Eliges objetivo (subir solo, mazmorras, tanque, JcJ) y estilo (tranquilo, equilibrado, arriesgado). |
 | **Combate** `/alfa combate` · `/alfa dps` | Ayuda de rotación para las 27 especializaciones, los enemigos de tus misiones resaltados, avisos de reacción, un medidor de daño de tu grupo que sale solo en grupo, «¡Sal de ahí!» si pisas fuego, la cuenta para jalar y los tiempos del jefe aprendidos pelea a pelea. |
-| **Curación** `/alfa curacion` | Marcos de grupo y banda para curar con un clic: al curar también seleccionas al compañero, tus clics listos en un minuto, maldiciones, venenos, magia y enfermedades a la vista y fuera con un clic, hechizos de apoyo que faltan, el tanque en apuros y el maná de los sanadores. |
-| **Bolsas** `/alfa bolsas` | Tres vistas (todo junto, por categorías o por bolsa), barra de bolsas, banco desde cualquier lugar con depósito rápido y compra de espacios, el inventario de tus personajes y qué vender cuando se llenan. Tu oro una sola vez y el de cada personaje a un clic; oro y botín por hora y tu mejor zona; nivel de objeto en tu equipo y conjuntos en un clic; y un aviso de cartas por vencer con **Tomar todo**. |
+| **Curación** `/alfa curacion` | Marcos de grupo y banda para curar con un clic: al curar también seleccionas al compañero, tus clics listos en un minuto, maldiciones, venenos, magia y enfermedades a la vista y fuera con un clic, hechizos de apoyo que faltan, el tanque en apuros y el maná de los sanadores. Marcos por clase, de un solo color o según la vida. |
+| **Bolsas** `/alfa bolsas` | Tres vistas (todo junto, por categorías o por bolsa), barra de bolsas, banco desde cualquier lugar con depósito rápido y compra de espacios, el inventario de tus personajes y qué vender cuando se llenan. Tu oro una sola vez y el de cada personaje a un clic; oro y botín por hora y tu mejor zona; nivel de objeto en tu equipo y conjuntos en un clic; y un aviso de cartas por vencer con **Tomar todo**. **Candado** (Alt+clic derecho) para que nada importante se borre ni se venda por error. |
 | **Mundo** `/alfa mapa` (o la tecla M) | Todo Azeroth en un solo mapa con zoom y el terreno real, puntos de vuelo, entradas y salidas (mazmorras, barcos, zepelines y portales), tus marcadores y un solo control de capas. |
 | **Recolección** `/alfa recoleccion` | Minerales, hierbas, bancos de peces y tesoros en el mapa y el minimapa, con rutas para juntar. |
 | **Comercio** `/alfa comercio` | Precios de la subasta y qué hacer con cada objeto: venderlo, subastarlo o transformarlo. |
-| **Pesca** `/alfa pesca` | Reingeniería completa: modo pesca de una tecla (equipo, cebo, lanzar y recoger), barra, diario de capturas, logros, metas, guía de 1 a 300 y cocina junto al agua. |
+| **Pesca** `/alfa pesca` | Reingeniería completa: modo pesca de una tecla (equipo, cebo, lanzar y recoger), barra, diario de capturas, logros, metas, guía de 1 a 300 y cocina junto al agua. Tamaños y récords de cada captura, tu **nivel de pescador** (del 1 al 60), el pez de la semana, tus sesiones y la tabla de pescadores de La Jauría. |
 | **Paisaje** `/alfa paisaje` | Los ajustes gráficos del juego explicados en palabras simples, preajustes, deshacer de un clic y filtros de pantalla. |
-| **La Jauría** `/alfa manada` · `/alfa cita` · `/alfa nota` | Tu grupo y quienes usan Alfa y aceptan que la manada los vea, en el mapa; botón **Seguir** con la flecha; llamar a la manada; guaridas para jugar juntos; raros compartidos por la manada con su reloj; **citas** con día y hora; «¿Quién va?»; notas en tu mapa; un anuncio corto cuando anda cerca un lobo que usa Alfa, para que lo saludes; la insignia de La Jauría y la página del clan. |
+| **La Jauría** `/alfa manada` · `/alfa cita` · `/alfa nota` | Tu grupo y quienes usan Alfa y aceptan que la manada los vea, en el mapa; botón **Seguir** con la flecha; llamar a la manada; guaridas para jugar juntos; raros compartidos por la manada con su reloj; **citas** con día y hora; «¿Quién va?»; notas en tu mapa; un anuncio corto cuando anda cerca un lobo que usa Alfa, para que lo saludes; la insignia de La Jauría y la página del clan. **«Busco grupo»** a tu hermandad desde una misión, la **ficha** de cada lobo con sus oficios y compartir tu plan con un lobo. Horda y Alianza, cada una por su lado. |
 | **Comodidades** (Ajustes) | Minimapa, colores de clase, cuadro de información, barra de información (fps, oro, durabilidad, bolsas, experiencia por hora), números grandes en tus recargas, hora, copiar y filtro de spam en el chat, IDs en el cuadro, probador, barra de vuelo, misiones automáticas y sonidos. |
-| **Anuncios y avisos** `/alfa calma` · `/alfa perdi` | Cada zona se anuncia con su propia animación; los avisos esperan su turno y nunca te bloquean los clics; No molestar y «Lo que me perdí». |
+| **Anuncios y avisos** `/alfa calma` · `/alfa perdi` · `/alfa zen` | Cada zona se anuncia con su propia animación; los avisos esperan su turno y nunca te bloquean los clics; un solo mensaje por suceso; No molestar y «Lo que me perdí». El **modo Zen** esconde todo Alfa menos la flecha, para explorar o tomar capturas. |
+| **Dos pantallas** `/alfa pantallas` | El escritorio de Alfa en tu segundo monitor: tu guía en grande, la flecha, el mapa, Hoy, Lya, tu grupo y más; se pone en un clic y lo editas arrastrando los paneles. |
 
 **Respeta las reglas de Forever y de Blizzard:** nada decide por ti en combate. Curar, pescar, aplicar talentos y usar objetos siempre es con tu tecla o tu clic, y fuera de combate cuando el juego lo pide. Gratis, código abierto, sin anuncios y nada escribe solo en el chat de otros.
 

@@ -218,6 +218,8 @@ local function filaFuente(r, kind, id)
 		fl.icono = { ic = "ic-misiones", tono = "oro" }
 		fl.titulo, fl.color = r.label, "mision"
 		fl.texto = unir(q and q.level and format(L["Nivel %d"], q.level), lugar, src.choice and L["a elegir"] or nil)
+		-- 1.3.8: una recompensa de misión es segura (si no es a elegir).
+		if not src.choice then fl.valor = M.Porcentaje(100) end
 		fl.ir = src.quest and { kind = "quest", id = src.quest } or nil
 	elseif r.type == "craft" then
 		fl.icono = { ic = "ic-oficios", tono = "acento" }
@@ -411,6 +413,11 @@ function F.Objeto(id)
 			end
 			seccion(f, d[1], d[2], filas)
 		end
+	end
+	-- 1.3.8: cómo se consigue y de qué facción es (Origen.lua): sus insignias y su sección, primero.
+	if M.Origen then
+		local okO, e = pcall(M.Origen.Ficha, f, kind, id, rec, lista)
+		if not okO and geterrorhandler then geterrorhandler()(e) end
 	end
 
 	-- Lo que se sabe al revés (cuando el índice está listo).

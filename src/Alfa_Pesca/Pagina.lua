@@ -185,6 +185,10 @@ local function accesos()
 		{ icono = M.ICONO.fogata, titulo = L["Cocina junto al agua"], texto = L["Tus recetas de pescado, la cola de cocina y la fogata."], alClic = abrir("cocina") },
 		{ icono = M.ICONO.meta, titulo = L["Metas de pesca"], texto = metas > 0 and format(L["%d metas en marcha."], metas) or L["Ponte una meta: un pez, capturas, tiempo o valor."], alClic = function() M.Metas.Alternar(true) end },
 		{ icono = "ic-raros", titulo = L["Logros de pesca"], texto = format(L["%d de %d logrados."], hechos, #M.LOGROS), alClic = abrir("logros") },
+		-- 1.3.8
+		{ icono = "ic-huella", titulo = L["Tu nivel de pescador"], texto = M.Pez and (M.Pez.TextoNivel()) or "", alClic = abrir("pescador") },
+		{ icono = "ic-lista", titulo = L["Tus sesiones"], texto = L["Cada sesión con su lugar, sus peces, su tamaño total y la mejor captura."], alClic = abrir("sesiones") },
+		{ icono = "ic-manada", titulo = L["La tabla de La Jauría"], texto = M.Opt("jauria") and L["Los mejores pescadores de tu hermandad."] or L["Opcional: compárate con tu hermandad."], alClic = abrir("jauria") },
 	}
 end
 
@@ -298,6 +302,19 @@ local function grupos(ui, padre)
 			end })
 	end
 	g[#g + 1] = equipo
+
+	-- 1.3.8: la ventana de antes de pescar, tu nivel y la tabla de La Jauría.
+	local antes = K.GrupoAjustes(padre, { titulo = L["Antes de pescar y tu nivel"] })
+	antes:Fila({ titulo = L["Preguntar antes de pescar"], control = interruptor("previa"), activa = activa,
+		texto = L["Al abrir el modo pesca, un cuadro para elegir tu caña, tu cebo y cómo quieres la barra. Si tienes una sola caña y ningún cebo, no sale."] })
+	antes:Fila({ titulo = L["Antes de pescar"], hija = true, activa = activa,
+		texto = L["Ábrelo ahora, aunque le hayas dicho que no vuelva a preguntar."],
+		control = function(fila) return K.Boton(fila, L["Abrir"], function() if M.Previa then M.Previa.Abrir(true) end end, { tipo = "secundario", tam = "chico" }) end })
+	antes:Fila({ titulo = L["Avisar al subir de nivel de pescador"], control = interruptor("avisoNivel"), activa = activa,
+		texto = L["Tu nivel de pescador de Alfa sube con cada captura; más con lo raro, lo nuevo, tus récords y los bancos de peces."] })
+	antes:Fila({ titulo = L["Compartir en la tabla de La Jauría"], control = interruptor("jauria"),
+		texto = L["Tu nivel de pescador y tus récords, solo con tu hermandad (y solo los de tu facción los ven). Nada va a canales públicos."] })
+	g[#g + 1] = antes
 
 	local barra = K.GrupoAjustes(padre, { titulo = L["La barra de pesca"] })
 	barra:Fila({ titulo = L["Mostrar la barra en el modo pesca"], control = interruptor("barra"), activa = activa })
@@ -472,6 +489,10 @@ for _, c in ipairs({
 	toggle("resumenCerrar", L["Resumen al cerrar el modo"], L["Al cerrar el modo pesca, cuánto sacaste mientras estuvo abierto."], nil, "summary, session"),
 	toggle("consejos", L["Consejos mientras pescas"], L["Cuando se acaba tu cebo y no te queda otro, o cuando llegas al tope de tu rango de Pesca."], nil, "tips, lure, skill cap"),
 	toggle("avisoPelear", L["Avisar si te atacan con la caña"], L["Al entrar en combate con la caña puesta, un aviso breve con cómo volver a tus armas."], nil, "combat, weapons, pvp"),
+	toggle("previa", L["Preguntar antes de pescar"], L["Al abrir el modo pesca, un cuadro para elegir tu caña, tu cebo y cómo quieres la barra. Si tienes una sola caña y ningún cebo, no sale."], nil, "pole, lure, before fishing, caña, cebo"),
+	toggle("avisoNivel", L["Avisar al subir de nivel de pescador"], nil, nil, "fishing level, angler level, nivel"),
+	{ kind = "toggle", key = clave("jauria"), label = L["Compartir en la tabla de La Jauría"],
+		help = L["Tu nivel de pescador y tus récords, solo con tu hermandad (y solo los de tu facción los ven). Nada va a canales públicos."], search = "leaderboard, guild, records, tabla" },
 	toggle("metasVentana", L["Ventana de metas"], L["Con el modo pesca abierto y alguna meta, la ventanita de metas se ve sola."], nil, "goals window"),
 	toggle("ocultarUI", L["Ocultar la interfaz al pescar"], L["Mientras pescas se ve solo el mundo y la barra de pesca. Nunca en combate: al empezar uno, todo vuelve."], nil, "hide ui, hide interface"),
 	toggle("uiMinimapa", L["Dejar el minimapa"], nil, "ocultarUI", "minimap"),
@@ -514,4 +535,4 @@ N.Modulo({
 })
 
 -- /alfa pesca abre o cierra el modo; con algo más, lo dice M.Comando.
-A.RegisterCommand("pesca", M.Comando, L["abre o cierra el modo pesca (también: ajustes, diario, guia, cocina, metas, estadisticas, logros, on, off, reiniciar)"])
+A.RegisterCommand("pesca", M.Comando, L["abre o cierra el modo pesca (también: antes, diario, pescador, sesiones, jauria, guia, cocina, metas, estadisticas, logros, ajustes, on, off, reiniciar)"])

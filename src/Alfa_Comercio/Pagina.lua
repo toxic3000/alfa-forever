@@ -673,7 +673,7 @@ local function bloqueCompras(padre)
 			local costo = x.faltan > 0 and M.CostoCompra(x.id) or nil
 			filas[i] = {
 				id = x.id, cantidad = x.necesita, nombre = nombreObjeto(x.id),
-				detalle = format(L["Tienes %d de %d"], x.tienes, x.necesita) .. (donde and (DOT .. donde) or ""),
+				detalle = (M.TextoTienes and M.TextoTienes(x) or format(L["Tienes %d de %d"], x.tienes, x.necesita)) .. (donde and (DOT .. donde) or ""),
 				chip = x.listo and L["Listo"] or format(L["Faltan %d"], x.faltan), tono = x.listo and "exito" or "aviso",
 				valor = costo and M.Dinero(costo * x.faltan) or nil,
 				extra = costo and L["si lo compras"] or nil, colorExtra = "textoTenue",
@@ -797,6 +797,9 @@ local function grupos(padre)
 	local compras = K.GrupoAjustes(padre, { titulo = L["Lista de compras y oficios"] })
 	compras:Fila({ titulo = L["Avisar al juntar lo de tu lista"], control = function(f) return K.Interruptor(f, { clave = ruta("listaAviso") }) end,
 		texto = L["Un aviso cuando juntas todo lo de un material o la lista entera."] })
+	-- 1.3.8: lo de tus otros personajes (ListaCuenta.lua).
+	compras:Fila({ titulo = L["Contar lo de tus otros personajes"], control = function(f) return K.Interruptor(f, { clave = ruta("listaCuenta") }) end,
+		texto = L["Lo que ya tienen en sus bolsas y su banco no sale como «falta», y cada material dice quién lo tiene."] })
 	compras:Fila({ titulo = L["Oficios de 1 a 300 en esta página"], control = function(f) return K.Interruptor(f, { clave = ruta("oficios") }) end,
 		texto = L["Tus oficios con su paso de ahora y la guía de cada uno. La guía también se abre con /alfa comercio oficios."] })
 	-- 1.3.0 (Fabricar.lua)
@@ -909,6 +912,9 @@ local CONTROLES = {
 		help = L["Cuánto por debajo de lo que vale tiene que estar tu precio para avisarte."], search = "low price warning, cheap" },
 	{ kind = "toggle", key = ruta("listaAviso"), label = L["Avisar al juntar lo de tu lista"],
 		help = L["Un aviso cuando juntas todo lo de un material o la lista entera."], search = "shopping list, materials, reagents" },
+	{ kind = "toggle", key = ruta("listaCuenta"), label = L["Contar lo de tus otros personajes"],
+		help = L["Lo que ya tienen en sus bolsas y su banco no sale como «falta», y cada material dice quién lo tiene."],
+		search = "shopping list, alts, other characters, bank, account, lista de compras, otros personajes" },
 	{ kind = "toggle", key = ruta("fabricar"), label = L["Qué fabricar con lo que tienes"],
 		help = L["En tus recetas que dejan ganancia, primero las que ya puedes hacer con lo que llevas, y cuánto ganarías haciéndolas todas."],
 		search = "crafting profit, what to craft, profession gold" },
@@ -943,6 +949,7 @@ N.Modulo({
 		fabricar = true, -- 1.3.0: Fabricar.lua
 		gangas = true, -- 1.3.7: Gangas.lua
 		buzonAlt = true, -- 1.3.7: Envios.lua
+		listaCuenta = true, -- 1.3.8: ListaCuenta.lua
 	},
 	controles = CONTROLES,
 	construir = construir,

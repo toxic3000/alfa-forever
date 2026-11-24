@@ -12,6 +12,7 @@ Textos.lua
 Base.lua
 Catalogo.lua
 Indices.lua
+Origen.lua
 Fichas.lua
 Coleccion.lua
 Legado.lua

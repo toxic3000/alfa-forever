@@ -664,10 +664,8 @@ local function colocar()
 			F:SetPoint("TOPLEFT", ancla, "BOTTOMLEFT", 0, -4)
 		end
 	else
-		local x, y = 0, 0
-		if GetCursorPosition then x, y = GetCursorPosition() end
-		local s = max(0.01, K.num(UIParent:GetEffectiveScale(), 1))
-		F:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", K.num(x, 0) / s - 24, K.num(y, 0) / s + 12)
+		local x, y = K.CursorEnUI() -- (1.3.8 revisión: con el escritorio movido, igual)
+		F:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", x - 24, y + 12)
 	end
 end
 

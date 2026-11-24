@@ -17,6 +17,7 @@ DistanciaPines.lua
 Entradas.lua
 Descubrir.lua
 Peligros.lua
+MisionesColor.lua
 Lienzo.lua
 Marcas.lua
 Trayecto.lua

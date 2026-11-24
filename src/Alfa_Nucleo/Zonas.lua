@@ -87,6 +87,7 @@ function Z.Olvidar()
 	vistos = {}
 	ultimaZona, ultimoRincon = -math.huge, -math.huge
 	vuelo = false
+	if Z.OlvidarViaje then Z.OlvidarViaje() end
 	local d = datos()
 	d.mazmorras, d.lya, d.zonas = {}, {}, {}
 end
@@ -116,7 +117,8 @@ local function lanzar(o, clave, prioridad)
 	local fn = function() K.Anuncio(o) end
 	local libre = rawget(N, "AlLibre")
 	if type(libre) == "function" then
-		local ok = pcall(libre, "anuncio." .. (o.clave or "zona"), fn, prioridad or 3, { tipo = "anuncio", caduca = est.caduca or 15 })
+		local ok = pcall(libre, "anuncio." .. (o.clave or "zona"), fn, prioridad or 3, { tipo = "anuncio", caduca = est.caduca or 15,
+			alCaducar = function() if K.AvisarPerdido then K.AvisarPerdido(o) end end }) -- (1.3.8 revisión)
 		if ok then return end
 	end
 	fn()
@@ -126,29 +128,47 @@ end
 -- El nombre que pone el juego
 ---------------------------------------------------------------------------
 local ocultarHasta = setmetatable({}, { __mode = "k" })
+local escondidos = setmetatable({}, { __mode = "k" }) -- marco -> cuándo lo escondió Alfa
 local enganchados = setmetatable({}, { __mode = "k" })
 local function marcoJuego(nombre)
 	local g = rawget(_G, nombre)
 	if type(g) == "table" and type(g.Hide) == "function" and type(g.IsShown) == "function" then return g end
 	return nil
 end
--- Esconde los del juego que están a la vista y los que salgan en los siguientes 2 s.
-local function ocultarJuego(nombres)
+-- Esconde los del juego que están a la vista y los que salgan en los siguientes
+-- `seg` s (2 de fábrica; 1.3.8: al saber que Alfa va a anunciar, desde ya).
+local function ocultarJuego(nombres, seg)
 	for _, n in ipairs(nombres) do
 		local g = marcoJuego(n)
 		if g then
 			if not enganchados[g] and type(g.HookScript) == "function" then
 				enganchados[g] = true
 				pcall(g.HookScript, g, "OnShow", function(self)
-					if ahora() <= (ocultarHasta[self] or 0) then self:Hide() end
+					if ahora() <= (ocultarHasta[self] or 0) then self:Hide() escondidos[self] = ahora() end
 				end)
 			end
-			ocultarHasta[g] = ahora() + 2
-			if g:IsShown() then g:Hide() end
+			ocultarHasta[g] = math.max(ocultarHasta[g] or 0, ahora() + (seg or 2))
+			if g:IsShown() then g:Hide() escondidos[g] = ahora() end
 		end
 	end
 end
 Z.OcultarJuego = ocultarJuego
+
+-- (1.3.8 revisión) El de Alfa no salió (falló, caducó o se calló): el del
+-- juego ya no se esconde y, si se acaba de esconder, vuelve a salir.
+local function devolverJuego(nombres)
+	for _, n in ipairs(nombres) do
+		local g = marcoJuego(n)
+		if g then
+			ocultarHasta[g] = 0
+			local cuando = escondidos[g]
+			escondidos[g] = nil
+			local fs = rawget(_G, "FadingFrame_Show")
+			if cuando and ahora() - cuando < 8 and not g:IsShown() and type(fs) == "function" then pcall(fs, g) end
+		end
+	end
+end
+Z.DevolverJuego = devolverJuego
 local ZONA_JUEGO = { "ZoneTextFrame", "SubZoneTextFrame" }
 local RINCON_JUEGO = { "SubZoneTextFrame" }
 
@@ -263,6 +283,31 @@ function Z.MisionesDe(zona)
 	return cuenta
 end
 
+-- 1.3.8: el viaje en que llegaste. Nav/Alerts.lua avisa a bordo («¡Tierra a
+-- la vista!») y lo anota aquí: la zona a la que llegas dice cómo llegaste.
+--   Z.Llegando(kind, lugar, segundos)   Z.DeViaje() -> { kind, lugar, t } | nil
+local SOBRE_LLEGADA = { boat = "La manada desembarca", zeppelin = "La manada baja del zepelín", tram = "La manada baja del tranvía" }
+Z.SOBRE_LLEGADA = SOBRE_LLEGADA
+local llegada
+function Z.Llegando(kind, lugar, seg)
+	if type(lugar) ~= "string" or secreto(lugar) then return end
+	llegada = { kind = kind, lugar = lugar, t = ahora() + (tonumber(seg) or 0) }
+end
+function Z.DeViaje()
+	if not llegada then return nil end
+	local t = ahora()
+	if t > llegada.t + 90 then llegada = nil return nil end
+	if t < llegada.t - 40 then return nil end
+	return llegada
+end
+function Z.OlvidarViaje() llegada = nil end
+
+-- 1.3.8: la clave del suceso «zona peligrosa» (la misma para Rutas/Peligro.lua).
+function Z.SucesoPeligro(zona)
+	local n = N.Normalizar and N.Normalizar(zona) or zona
+	return "peligro:" .. tostring(n or "?")
+end
+
 -- Lo que diría al llegar a la zona donde estás: o, clave.
 function Z.Zona()
 	local zona, sub = nombres()
@@ -279,11 +324,27 @@ function Z.Zona()
 	if lo and hi and nivel and lo >= nivel + PELIGRO and K.AnuncioPrendido("peligro") then
 		o.estilo, o.color, o.sobre = "peligro", "peligro", L["Zona peligrosa"]
 		partes = { format(L["Zona de nivel %s: ve con cuidado"], rango(lo, hi)) }
+		-- 1.3.8: un solo aviso de la zona peligrosa (el de Rutas se calla) y
+		-- con su salida: la guía de tu nivel (Rutas la presta: N.SalidaPeligro).
+		o.sucesoPeligro = Z.SucesoPeligro(zona)
+		local salida = rawget(N, "SalidaPeligro")
+		if type(salida) == "function" then
+			o.alClic, o.pista = function() K.Llamar(salida) end, L["Clic: llévame a una zona de mi nivel"]
+		end
 	elseif descansando() and K.AnuncioPrendido("ciudad") then
 		o.estilo, o.color, o.sobre = "ciudad", nil, L["Un lugar para descansar"]
 	elseif Z.PrimeraVez(mapa) then
 		-- 1.3.7c: tu primera vez en la zona (lo dice arriba, en su color).
 		o.sobre, o.primera = L["¡Primera vez aquí!"], true
+	end
+	-- 1.3.8: llegaste en barco, zepelín o tranvía (el aviso de a bordo ya dijo
+	-- el muelle): arriba, cómo llegaste; el muelle no se repite abajo.
+	local v = Z.DeViaje()
+	if v and o.estilo ~= "peligro" then
+		o.sobre, o.viaje = L[SOBRE_LLEGADA[v.kind] or SOBRE_LLEGADA.boat], v.kind
+		local nl = N.Normalizar and N.Normalizar(v.lugar)
+		if sub and nl and N.Normalizar(sub) == nl and partes[1] == sub then table.remove(partes, 1) end
+		if nl and N.Normalizar(zona) == nl then o.mismoMuelle = true end
 	end
 	o.texto = concat(partes, "  \194\183  ")
 	-- 1.3.7c: cuántas misiones de tu registro son de esta zona.
@@ -313,16 +374,35 @@ local function enInstancia()
 	return N.Si(en), N.Leer(tipo)
 end
 
-local function anunciarZona()
-	if enInstancia() then return false end
+local function anunciarZona(como)
+	-- (1.3.8 revisión) Si Alfa no anuncia, el nombre del juego ya no se esconde.
+	if enInstancia() then devolverJuego(ZONA_JUEGO) return false end
 	local o, clave, sub = Z.Zona()
-	if not o or repetido(clave) or not puede("zona") then return false end
+	if not o or repetido(clave) or not puede("zona") then
+		if o and o.sucesoPeligro and not repetido(clave) and N.OlvidarSuceso then N.OlvidarSuceso(o.sucesoPeligro) end
+		devolverJuego(ZONA_JUEGO)
+		return false
+	end
+	if o.sucesoPeligro and N.Suceso then N.Suceso(o.sucesoPeligro, 600) end -- (apartado hasta que salga o se pierda)
+	-- 1.3.8: al aterrizar del grifo, arriba dice cómo llegaste.
+	if como == "grifo" and o.estilo == "zona" and not o.primera and not o.viaje then o.sobre = L["Aterrizas en"] end
+	-- (el nombre del juego ya se escondió al cambiar de zona; la espera se alarga)
+	o.caduca = ahora() + 20
 	ultimaZona = ahora()
 	-- El rincón ya lo dijo la zona.
 	if sub then vistos["s:" .. o.titulo .. ":" .. sub] = ahora() end
 	-- 1.3.7: el nombre del juego se esconde cuando el de Alfa sale de verdad
 	-- (si empieza una pelea o caduca en la fila, se queda el del juego).
-	o.alMostrar = function() ocultarJuego(ZONA_JUEGO) end
+	-- (1.3.8 revisión) El suceso de zona peligrosa se anota solo si el anuncio
+	-- sale: si no, el aviso de Rutas sigue pudiendo decirlo.
+	o.alMostrar = function()
+		if o.sucesoPeligro and N.Suceso then N.Suceso(o.sucesoPeligro, 600) end
+		ocultarJuego(ZONA_JUEGO)
+	end
+	o.alPerder = function()
+		if o.sucesoPeligro and N.OlvidarSuceso then N.OlvidarSuceso(o.sucesoPeligro) end
+		devolverJuego(ZONA_JUEGO)
+	end
 	o.tapaJuego = ZONA_JUEGO
 	lanzar(o, clave, o.estilo == "peligro" and 2 or 3)
 	Z.Visitada(Z.MapaZona()) -- 1.3.7c
@@ -333,6 +413,12 @@ function Z.AlCambiarZona()
 	if enInstancia() then return Z.Mazmorra() end
 	local o, clave = Z.Zona()
 	if not o or repetido(clave) or not puede("zona") then return end
+	-- 1.3.8: Alfa va a anunciar: el nombre del juego no sale ni un momento
+	-- antes (si no, salían los dos, uno tras otro). Y si es peligrosa, el
+	-- suceso queda apartado desde ya: el aviso de Rutas (2 s después) espera.
+	-- (1.3.8 revisión: si el anuncio no sale, se olvida y Rutas lo dice.)
+	ocultarJuego(ZONA_JUEGO, 6)
+	if o.sucesoPeligro and N.Suceso then N.Suceso(o.sucesoPeligro, 600) end
 	-- Un momento: el juego termina de decir dónde estás (el rincón, el dueño).
 	N.Una("anuncios.zona", 0.6, anunciarZona)
 end
@@ -438,6 +524,8 @@ function Z.AlMensaje(msg)
 		if dato then
 			d.lya[mapa] = true
 			partes[#partes + 1] = format(L["Lya: «%s»"], dato)
+			-- 1.3.8: Lya no lo vuelve a contar en su globo al ratito.
+			if N.Visto then N.Visto(dato, "anuncio") end
 		end
 	end
 	local o = { estilo = "descubrir", clave = "descubrir", titulo = nombre, sobre = L["¡Descubriste un lugar nuevo!"],
@@ -508,6 +596,13 @@ A.RegisterEvent("PLAYER_ENTERING_WORLD", function(_, login, recarga)
 		return
 	end
 	-- Una pantalla de carga (un portal, una mazmorra): como llegar.
+	-- 1.3.8: si Alfa lo va a anunciar, el nombre del juego se esconde desde ya.
+	if not enInstancia() then
+		local o, clave = Z.Zona()
+		if o and not repetido(clave) and puede("zona") then -- (1.3.8 revisión: lo de siempre, también combate)
+			ocultarJuego(ZONA_JUEGO, 8)
+		end
+	end
 	N.Una("anuncios.entrar", 1, function()
 		if enInstancia() then Z.Mazmorra() else Z.AlCambiarZona() end
 	end)
@@ -516,7 +611,10 @@ end)
 A.RegisterEvent("PLAYER_CONTROL_GAINED", function()
 	if not vuelo or enTaxi() then return end
 	vuelo = false
-	N.Una("anuncios.zona", 1, anunciarZona)
+	-- 1.3.8: el nombre del juego no sale encima del de Alfa al aterrizar.
+	local o, clave = Z.Zona()
+	if o and not repetido(clave) and puede("zona") then ocultarJuego(ZONA_JUEGO, 4) end
+	N.Una("anuncios.zona", 1, function() anunciarZona("grifo") end)
 end)
 A.RegisterEvent("CHAT_MSG_SYSTEM", function(_, msg) Z.AlMensaje(msg) end)
 A.RegisterEvent("UI_INFO_MESSAGE", function(_, _, msg) Z.AlMensaje(msg) end)

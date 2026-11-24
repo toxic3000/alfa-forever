@@ -168,6 +168,23 @@ F.saludoTarde = {
 	"¡Buenas tardes, %s! Buena hora para unas misiones.",
 	"¡Hola, %s! La tarde pinta tranquila. ¿Qué cazamos hoy?",
 }
+-- 1.3.8: según tu hora (HoraReal.lua). De madrugada, bajito.
+F.saludoMadrugada = {
+	"Buenas noches, %s. Ya es muy tarde: te acompaño un ratito, despacito.",
+	"Shh… hola, %s. A estas horas Azeroth está tranquilo. Cazamos sin prisa.",
+}
+F.llegadaManana = {
+	"¡Buenos días, %s! Vine corriendo con el sol. ¿Desayunamos aventura?",
+	"¡Buen día, %s! Te extrañé toda la noche. ¿A dónde vamos hoy?",
+}
+F.llegadaNoche = {
+	"Buenas noches, lobo. Vine sin hacer ruido, %s: aquí estoy contigo.",
+	"¡%s! Llegué despacito, que ya es de noche. Te extrañé.",
+}
+F.llegadaMadrugada = {
+	"Buenas noches, %s… ya es de madrugada. Vine calladita a acompañarte.",
+	"Shh, %s, que todos duermen. Te extrañé; cazamos tranquilos.",
+}
 F.saludoNoche = {
 	"¡Buenas noches, %s! Las lobas cazamos mejor de noche.",
 	"¡Hola, %s! Noche de luna: perfecta para la manada.",

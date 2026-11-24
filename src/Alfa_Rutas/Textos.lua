@@ -4,6 +4,37 @@
 local ADDON, M = ...
 
 M.EN = {
+	-- 1.3.8 (cierre): la tarjeta de «¡Terminaste esta guía!» del rastreador
+	["Guía terminada"] = "Guide complete",
+	["Buena cacería. Esto es lo que sigue para tu nivel:"] = "Good hunting. Here's what's next for your level:",
+	["Seguir con esta guía"] = "Continue with this guide",
+	["Seguir con la siguiente"] = "Continue with the next one",
+	["No enseñar al terminar una guía"] = "Don't show when a guide is finished",
+	["Vuelve al cambiar de guía o con «¿Qué sigue?» en el menú. Clic derecho: más opciones."] = "It comes back when you change guides or with «What's next?» in the menu. Right-click: more options.",
+	["Enseñar la tarjeta al terminar una guía"] = "Show the card when a guide is finished",
+	["Al terminar una guía, el rastreador te festeja y te enseña la que sigue. Con su X la cierras."] = "When you finish a guide, the tracker celebrates and shows you the next one. Close it with its X.",
+	-- 1.3.8 (mundo): Toma el grifo, peligros del camino, misiones por color, la pausa, Lya y tu hora, festejos, busco grupo, la ficha y compartir
+	["Vuela desde %s: ahorras %s"] = "Fly from %s: you save %s",
+	["A pie son unos %s; con el vuelo, unos %s."] = "On foot it's about %s; flying, about %s.",
+	["Llévame al maestro de vuelo"] = "Take me to the flight master",
+	["La flecha te lleva al maestro de vuelo de %s."] = "The arrow takes you to the flight master at %s.",
+	["Maestro de vuelo: %s"] = "Flight master: %s",
+	["Toma el grifo"] = "Take the gryphon",
+	["el maestro de vuelo"] = "the flight master",
+	["Ahí los enemigos son nivel %s: ve con cuidado o con la manada."] = "Enemies there are level %s: go carefully or with the pack.",
+	["Tu camino pasa por %s"] = "Your path goes through %s",
+	["Tu destino está en %s"] = "Your destination is in %s",
+	["Una zona peligrosa"] = "A dangerous zone",
+	["Busco grupo para esta misión"] = "Looking for group for this quest",
+	["Alfa: busco grupo para esta misión"] = "Alfa: looking for group for this quest",
+	["No te lo vuelvo a sugerir en esta sesión."] = "I won't suggest it again this session.",
+	["Proponer tomar el grifo"] = "Suggest taking the gryphon",
+	["Si vas a caminar lejos y un vuelo te ahorra tiempo, el rastreador te dice desde dónde volar y cuánto ahorras."] = "If you're about to walk far and a flight saves time, the tracker tells you where to fly from and how much you save.",
+	["Avisar si tu camino pasa por una zona peligrosa"] = "Warn if your path crosses a dangerous zone",
+	["Antes de llegar, el rastreador te dice si tu camino o tu destino están en una zona con enemigos muy arriba de tu nivel."] = "Before you get there, the tracker tells you if your path or destination is in a zone with enemies far above your level.",
+	["Sugerir rutas de mi grupo"] = "Suggest my group's routes",
+	["En grupo, si un compañero lleva misiones que tú no, el rastreador te propone pedírselas y seguir su ruta."] = "In a group, if a companion has quests you don't, the tracker offers to ask for them and follow their route.",
+	["No sugerir rutas de mi grupo"] = "Don't suggest my group's routes",
 	-- Asistente
 	["Subir de nivel"] = "Level up",
 	["Una guía para tu nivel y tu zona, o tu propia ruta de misiones."] = "A guide for your level and zone, or your own quest route.",
@@ -930,6 +961,7 @@ M.EN = {
 	["Zepelín de %s"] = "%s zeppelin",
 	["En el muelle: sale en %s hacia %s"] = "At the dock: leaves in %s for %s",
 	["Llega en %s; va a %s"] = "Arrives in %s; goes to %s",
+	["Si lo pierdes, el siguiente sale en %s"] = "If you miss it, the next one leaves in %s", -- 1.3.8
 	["Espera de unos %d min; va a %s"] = "About a %d min wait; goes to %s",
 	["Va a %s"] = "Goes to %s",
 	["¡Ya!"] = "Now!",

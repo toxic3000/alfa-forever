@@ -138,15 +138,22 @@ end
 local HX = { TOPLEFT = 0, LEFT = 0, BOTTOMLEFT = 0, TOP = 0.5, CENTER = 0.5, BOTTOM = 0.5, TOPRIGHT = 1, RIGHT = 1, BOTTOMRIGHT = 1 }
 local HY = { TOPLEFT = 1, TOP = 1, TOPRIGHT = 1, LEFT = 0.5, CENTER = 0.5, RIGHT = 0.5, BOTTOMLEFT = 0, BOTTOM = 0, BOTTOMRIGHT = 0 }
 
+-- 1.3.8: el tamaño de la pantalla simulada (de fábrica 1920 x 1080).
+-- PANTALLA_SIMULADA(3840, 1080) simula una ventana sobre dos monitores; un
+-- UIParent con anclas propias (el Escritorio de Alfa lo achica) se calcula
+-- como cualquier marco.
+local PANT = { 1920, 1080 }
+function PANTALLA_SIMULADA(w, h) PANT[1], PANT[2] = w or 1920, h or 1080 end
+function PANTALLA_TAM() return PANT[1], PANT[2] end
 local depth = 0
 local function rect(self)
-  if self == UIP then return 0, 0, 1920, 1080 end
+  if self == UIP and #self._points == 0 then return 0, 0, PANT[1], PANT[2] end
   depth = depth + 1
   if depth > 60 then depth = depth - 1; return 0, 0, self._w or 0, self._h or 0 end
   local left, right, cx, top, bottom, cy
   for _, p in ipairs(self._points) do
     local rel = p[2]
-    local rl, rb, rw, rh = 0, 0, 1920, 1080
+    local rl, rb, rw, rh = 0, 0, PANT[1], PANT[2]
     if rel and rel ~= self then rl, rb, rw, rh = rect(rel) end
     local ax = rl + rw * (HX[p[3]] or 0.5) + p[4]
     local ay = rb + rh * (HY[p[3]] or 0.5) + p[5]

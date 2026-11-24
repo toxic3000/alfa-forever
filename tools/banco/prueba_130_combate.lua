@@ -190,9 +190,11 @@ step("Los archivos nuevos están cargados y sus ajustes, prendidos", function()
   check(type(M.Amenaza) == "table" and M.Amenaza.Ver and M.Amenaza.Leer, "falta Amenaza.lua")
   check(type(M.Resumen) == "table" and M.Resumen.Termina and M.Resumen.VerDeNuevo, "falta Resumen.lua")
   check(type(M.Recargas) == "table" and M.Recargas.Falta and M.Recargas.Conocidas, "falta Recargas.lua")
-  for _, k in ipairs({ "corte", "corteFoco", "corteSonido", "amenaza", "amenazaSonido", "resumen", "recargas", "teclaGrande" }) do
+  for _, k in ipairs({ "corte", "corteFoco", "corteSonido", "amenaza", "amenazaSonido", "recargas", "teclaGrande" }) do
     check(A.Get("combate." .. k) == true, "combate." .. k .. " no viene prendido")
   end
+  -- 1.3.8 (pedido de Toxic): el resumen de cada pelea ya no sale solo de fábrica.
+  check(A.Get("combate.resumen") == false, "combate.resumen viene prendido (1.3.8: apagado de fábrica)")
   check(A.Get("combate.tam") == 52, "el ícono no viene más grande (combate.tam = " .. tostring(A.Get("combate.tam")) .. ")")
   check(A.Get("combate.amenazaPapel") == "auto", "combate.amenazaPapel no viene en automático")
   check(A.Get("combate.recargasMin") == 30, "combate.recargasMin no viene en 30")
@@ -404,6 +406,7 @@ end)
 ---------------------------------------------------------------------------
 step("Resumen: al terminar, tu daño, tu curación y lo que más te pegó", function()
   local Rs = M.Resumen
+  A.Set("combate.resumen", true) -- 1.3.8: apagado de fábrica; aquí se prende a mano
   entrar()
   NOW = NOW + 30
   salir()

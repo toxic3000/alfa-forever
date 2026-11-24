@@ -496,16 +496,33 @@ A.RegisterEvent("PLAYER_MONEY", function() if bancoAbierto then guardarCompra() 
 -- Consultas
 ---------------------------------------------------------------------------
 
--- Los personajes guardados, el actual primero, luego por nombre.
--- -> { { clave, r }, ... }
+-- 1.3.8: ¿es de la otra facción? Solo si los dos se saben (uno guardado sin
+-- facción, de una versión vieja, cuenta como tuyo: nada se esconde de más).
+function D.FaccionMia()
+	local f = N.Faccion and N.Faccion() or M.Texto(UnitFactionGroup and UnitFactionGroup("player"))
+	if f == "Alliance" or f == "Horde" then return f end
+	return nil
+end
+function D.OtraFaccion(r)
+	if type(r) ~= "table" or (r.faccion ~= "Alliance" and r.faccion ~= "Horde") then return false end
+	local mia = D.FaccionMia()
+	return mia ~= nil and r.faccion ~= mia
+end
+
+-- Los personajes guardados, el actual primero, luego los de tu facción y al
+-- final los de la otra (1.3.8, marcados con p.otraFaccion), por nombre.
+-- -> { { clave, r, otraFaccion }, ... }
 function D.Lista()
 	local out = {}
 	local actual = D.Clave()
 	for k, r in pairs(D.Raiz().personajes) do
-		if type(k) == "string" and type(r) == "table" then out[#out + 1] = { clave = k, r = r } end
+		if type(k) == "string" and type(r) == "table" then
+			out[#out + 1] = { clave = k, r = r, otraFaccion = k ~= actual and D.OtraFaccion(r) or nil }
+		end
 	end
 	table.sort(out, function(a, b)
 		if (a.clave == actual) ~= (b.clave == actual) then return a.clave == actual end
+		if (a.otraFaccion and true or false) ~= (b.otraFaccion and true or false) then return not a.otraFaccion end
 		local na, nb = tostring(a.r.nombre or a.clave), tostring(b.r.nombre or b.clave)
 		if na ~= nb then return na < nb end
 		return a.clave < b.clave
@@ -613,7 +630,7 @@ function D.Conteo(id)
 			local n = e[1] + e[2] + e[3]
 			if n > 0 then
 				total = total + n
-				partes[#partes + 1] = { clave = p.clave, r = p.r, bolsas = e[1], banco = e[2], equipo = e[3] }
+				partes[#partes + 1] = { clave = p.clave, r = p.r, bolsas = e[1], banco = e[2], equipo = e[3], otraFaccion = p.otraFaccion }
 			end
 		end
 	end
@@ -631,7 +648,9 @@ function D.Sumas(id)
 		if type(k) == "string" and type(r) == "table" then
 			local e = indice(r)[id]
 			if e then
-				if k == actual then banco = e[2] else otros = otros + e[1] + e[2] + e[3] end
+				-- (1.3.8) Lo de tus personajes de la otra facción no cuenta: no se
+				-- les puede mandar nada por correo.
+				if k == actual then banco = e[2] elseif not D.OtraFaccion(r) then otros = otros + e[1] + e[2] + e[3] end
 			end
 		end
 	end
@@ -650,6 +669,8 @@ function D.LineaCuadro(id)
 		if p.equipo > 0 then donde[#donde + 1] = (p.equipo == 1 and L["%d equipado"] or L["%d equipados"]):format(p.equipo) end
 		local r, g, b = M.ColorClase(p.r.clase)
 		local nombre = M.Pintado(p.r.nombre or p.clave, r, g, b)
+		-- (1.3.8) Los de la otra facción, marcados.
+		if p.otraFaccion then nombre = nombre .. " (" .. (p.r.faccion == "Alliance" and L["Alianza"] or L["Horda"]) .. ")" end
 		trozos[#trozos + 1] = nombre .. ": " .. table.concat(donde, L[" y "])
 	end
 	local ar, ag, ab = M.Acento()

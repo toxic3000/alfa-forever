@@ -198,6 +198,8 @@ function Fm.Salir()
 	datos().corrida = nil
 	local dur = max(0, (tonumber(r.ultimo) or 0) - (tonumber(r.inicio) or 0))
 	if dur < MINIMO then return false end
+	-- 1.3.8: tu primera mazmorra terminada, una página de tu historia (Festejos.lua).
+	if M.Festejos then pcall(M.Festejos.Mazmorra, r) end
 	if M.Diario then
 		M.Diario.Anotar({ clave = "corrida", icono = "ic-mazmorra", reemplaza = true, festejo = false,
 			t = r.nombre and "Última mazmorra: %s" or "Última mazmorra", a = r.nombre and { r.nombre } or nil,

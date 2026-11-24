@@ -309,5 +309,22 @@ M.EN = {
 	-- 1.3.7 (tercera vuelta): Peligro.lua
 	["En peligro"] = "In danger",
 	["Un velo rojo respira sobre la barra de quien baja del 35 % de vida, para verlo a la primera."] = "A breathing red veil over the bar of anyone below 35 % health, so you spot them right away.",
+	-- 1.3.8: el color de los marcos (Color.lua) y el borde de «En peligro»
+	["Un borde rojo suave respira alrededor de quien baja del 35 % de vida, para verlo a la primera."] = "A soft red border breathes around anyone below 35 % health, so you spot them right away.",
+	["Color de los marcos"] = "Frame colour",
+	["Color de la barra"] = "Bar colour",
+	["Por clase: el color de la clase de cada uno, apagado para que no canse. Un solo color: el que tú elijas. Según la vida: verde, amarillo y rojo según lo que le queda."] = "By class: each one's class colour, softened so it's easy on the eyes. One colour: the one you pick. By health: green, yellow and red depending on what they have left.",
+	["Un solo color"] = "One colour",
+	["Según la vida"] = "By health",
+	["Tu color"] = "Your colour",
+	["Elegir color"] = "Pick colour",
+	["El color de todas las barras con «Un solo color», con el selector de colores del juego."] = "The colour of every bar with «One colour», with the game's colour picker.",
+	["Intensidad"] = "Intensity",
+	["Qué tan vivo se ve el color de las barras."] = "How bright the bar colour looks.",
+	["Apagado [color]"] = "Soft",
+	["Normal [color]"] = "Normal",
+	["Vivo [color]"] = "Vivid",
+	["Así se ven"] = "How they look",
+	["Llena, a media y baja (con el borde de «En peligro»)."] = "Full, half and low (with the «In danger» border).",
 	["Una línea roja arriba avisa cuando un enemigo va por ese compañero; si no es el tanque, su marco brilla en naranja por fuera."] = "A red line on top warns when an enemy is going after that member; if they're not the tank, their frame glows orange around the edge.",
 }

@@ -67,12 +67,19 @@ function N.PorPrefijo(prefijo, fn)
 	if marcoPrefijos then return end
 	marcoPrefijos = CreateFrame("Frame")
 	marcoPrefijos:RegisterEvent("CHAT_MSG_ADDON")
-	marcoPrefijos:SetScript("OnEvent", function(_, ev, pre, ...)
+	marcoPrefijos:SetScript("OnEvent", function(_, ev, pre, texto, ...)
 		if issecretvalue and issecretvalue(pre) then return end
 		local l = porPrefijo[pre]
 		if not l then return end
+		-- 1.3.8 (Faccion.lua): lo de la otra facción no llega a nadie, y la
+		-- marca de facción se quita antes de repartir.
+		if N.FiltroFaccion then
+			local sigue, limpio = N.FiltroFaccion(texto, ...)
+			if not sigue then return end
+			texto = limpio
+		end
 		for i = 1, #l do
-			local bien, err = pcall(l[i], ev, pre, ...)
+			local bien, err = pcall(l[i], ev, pre, texto, ...)
 			if not bien then avisar(err) end
 		end
 	end)

@@ -127,7 +127,7 @@ step("Guaridas: tu capa, las de la manada y pedir entrar", function()
   R.Via = function() return "hermandad" end
   local salidos = {}
   local envioViejo = C_ChatInfo.SendAddonMessage
-  C_ChatInfo.SendAddonMessage = function(pre, texto, canal, destino) table.insert(salidos, { texto, canal, destino }) end
+  C_ChatInfo.SendAddonMessage = function(pre, texto, canal, destino) table.insert(salidos, { (texto:gsub("|~[HA]$", "")), canal, destino }) end
   -- La cola de Red.lua sale en su OnUpdate (un mensaje por segundo).
   local function T(n)
     RUN_TIMERS(n or 2)
@@ -150,7 +150,7 @@ step("Guaridas: tu capa, las de la manada y pedir entrar", function()
   check(salio("^1G|" .. map .. "|7994|0"), "no dijo tu guarida a la manada")
 
   -- La manada: dos en otra guarida, uno con la puerta abierta.
-  local function llega(texto, canal, quien) FIRE_EVENT("CHAT_MSG_ADDON", "AlfaManada", texto, canal, quien) end
+  local function llega(texto, canal, quien) FIRE_EVENT("CHAT_MSG_ADDON", "AlfaManada", texto .. "|~H", canal, quien) end
   llega("1G|" .. map .. "|8001|1", "GUILD", "Ana Smith")
   llega("1G|" .. map .. "|8001|0", "GUILD", "Beto Ruiz")
   llega("1G|" .. map .. "|nan|1", "GUILD", "Malo Malo")

@@ -36,7 +36,15 @@ M.ICONO = {
 	cebo = MEDIA .. "pesca-cebo", fogata = MEDIA .. "pesca-fogata", meta = MEDIA .. "pesca-meta", diario = MEDIA .. "pesca-diario",
 }
 
-local function opt(k) return N.Get(ID, k) end
+-- 1.3.8: la barra que elegiste en la ventana de antes de pescar (Previa.lua)
+-- manda sobre los ajustes de siempre, solo en este personaje.
+local function opt(k)
+	if M.Previa then
+		local v = M.Previa.Barra(k)
+		if v ~= nil then return v end
+	end
+	return N.Get(ID, k)
+end
 local function enCombate() return InCombatLockdown and InCombatLockdown() and true or false end
 
 local function reloj(seg)
@@ -279,7 +287,14 @@ function B.Acomodar()
 	local vertical = opt("barraVertical") and true or false
 	local pad = ESP.m
 	local conBotones = not plegada
-	for _, b in ipairs(f.botones) do b:SetShown(conBotones) end
+	-- 1.3.8: los botones que elegiste ver (el hueco de «A pelear» y cerrar, siempre).
+	local ocultos = M.Previa and M.Previa.Ocultos() or {}
+	local vis = {}
+	for _, b in ipairs(f.botones) do
+		local si = conBotones and not ocultos[b.alfaId]
+		b:SetShown(si)
+		if not ocultos[b.alfaId] then vis[#vis + 1] = b end
+	end
 	f.Bono:SetShown(conBotones and (f.alfaBono or 0) > 0)
 	f.Baldosa:ClearAllPoints()
 	f.Habilidad:ClearAllPoints()
@@ -296,13 +311,13 @@ function B.Acomodar()
 		local x = pad + tile + ESP.m
 		f.Habilidad:SetPoint("TOPLEFT", f, "TOPLEFT", x, -(pad + (conBotones and 4 or 0)))
 		-- Lo que deja libre la fila de botones (con su insignia de bonificación).
-		local libre = ancho - pad - #f.botones * (TAM_BOTON + GAP) - x - ESP.s
+		local libre = ancho - pad - #vis * (TAM_BOTON + GAP) - x - ESP.s
 		local bono = f.Bono:IsShown() and (K.num(f.Bono:GetWidth(), 0) + ESP.s) or 0
 		K.Ajustar(f.Habilidad, conBotones and max(80, libre - bono) or (ancho - x - pad))
 		f.Bono:SetPoint("LEFT", f.Habilidad, "RIGHT", ESP.s, 0)
 		local bx = ancho - pad
-		for i = #f.botones, 1, -1 do
-			local b = f.botones[i]
+		for i = #vis, 1, -1 do
+			local b = vis[i]
 			b:ClearAllPoints()
 			b:SetPoint("TOPRIGHT", f, "TOPLEFT", bx, -pad)
 			bx = bx - TAM_BOTON - GAP
@@ -341,12 +356,12 @@ function B.Acomodar()
 			y = y + ESP.s
 			local porFila = 5
 			local gap = floor((ancho - 2 * pad - porFila * TAM_BOTON) / (porFila - 1))
-			for i, b in ipairs(f.botones) do
+			for i, b in ipairs(vis) do
 				local fila, col = floor((i - 1) / porFila), (i - 1) % porFila
 				b:ClearAllPoints()
 				b:SetPoint("TOPLEFT", f, "TOPLEFT", pad + col * (TAM_BOTON + gap), -(y + fila * (TAM_BOTON + 6)))
 			end
-			local filas = math.ceil(#f.botones / porFila)
+			local filas = math.ceil(#vis / porFila)
 			y = y + filas * TAM_BOTON + (filas - 1) * 6
 		end
 		f:SetSize(ancho, y + pad)
@@ -483,7 +498,8 @@ function B.Actualizar()
 		barra = barra or crearBarra()
 		if not barra:IsShown() then
 			ponerEnSuLugar(barra, "lugar", { "BOTTOM", "BOTTOM", 0, 220 })
-			plegada = false
+			-- 1.3.8: la vista mínima de la ventana de antes de pescar empieza plegada.
+			plegada = (M.Previa and M.Previa.Barra("minima")) and true or false
 			barra:Show()
 			B.PlegarLuego()
 		end
@@ -708,6 +724,20 @@ function M.FaltanAqui()
 	return out
 end
 
+-- 1.3.8: el cebo preferido de este personaje si ya eligió uno (la ventana de
+-- antes de pescar); si no, el ajuste de siempre.
+function B.PreferirCebo(id)
+	local e = Eq.Eleccion()
+	if e.cebo ~= nil then
+		e.cebo = id
+		Eq.Marcar()
+		M.PrepararBotones()
+		M.Avisar("ajustes")
+	else
+		N.Set(ID, "ceboPreferido", id)
+	end
+end
+
 local function minutos(seg)
 	if seg <= 0 then return nil end
 	if seg >= 60 then return format(L["%d min"], floor(seg / 60 + 0.5)) end
@@ -738,7 +768,7 @@ B.MENUS = {
 	end,
 	cebo = function()
 		local filas = {}
-		local pref = tonumber(opt("ceboPreferido")) or 0
+		local pref = Eq.CeboElegido()
 		local cana = Eq.CanaPuesta()
 		local activo = Eq.CeboActivo()
 		for _, c in ipairs(Eq.Cebos()) do
@@ -751,7 +781,7 @@ B.MENUS = {
 				seguro = c.nombre and { type1 = "macro", macrotext1 = "/use " .. c.nombre .. "\n/use 16", type2 = nil } or nil,
 				trasClic = function(d, boton)
 					if boton == "RightButton" then
-						N.Set(ID, "ceboPreferido", d.id == pref and 0 or d.id)
+						B.PreferirCebo(d.id == pref and 0 or d.id)
 						B.CerrarMenu()
 					end
 				end,
@@ -762,7 +792,7 @@ B.MENUS = {
 		if #filas == 0 then nota = L["No tienes cebos. Los venden los vendedores de suministros de pesca; la guía dice cuáles sirven a tu habilidad."] end
 		return {
 			titulo = L["Cebos"], nota = nota, filas = filas,
-			pie = { { texto = L["Usar siempre el mejor"], activo = pref ~= 0, alClic = function() N.Set(ID, "ceboPreferido", 0) end } },
+			pie = { { texto = L["Usar siempre el mejor"], activo = pref ~= 0, alClic = function() B.PreferirCebo(0) end } },
 		}
 	end,
 	cocina = function()
@@ -820,7 +850,13 @@ B.MENUS = {
 			alClic = function() abrirVentana("logros") B.CerrarMenu() end }
 		local vertical = opt("barraVertical") and true or false
 		filas[#filas + 1] = { icono = "ic-rejilla", nombre = vertical and L["Barra horizontal"] or L["Barra vertical"], valor = "",
-			alClic = function() B.CerrarMenu() N.Set(ID, "barraVertical", not vertical) end }
+			alClic = function()
+				B.CerrarMenu()
+				if not (M.Previa and M.Previa.AlternarVertical()) then N.Set(ID, "barraVertical", not vertical) end
+			end }
+		-- 1.3.8: la ventana de antes de pescar (caña, cebo y barra), aunque pediste no verla.
+		filas[#filas + 1] = { icono = "ic-ajustes", nombre = L["Antes de pescar"], valor = L["Tu caña, tu cebo y tu barra"],
+			apagada = enCombate(), alClic = function() B.CerrarMenu() if M.Previa then M.Previa.Abrir(true) end end }
 		return {
 			titulo = L["Más de la pesca"], filas = filas,
 			pie = { { texto = L["Empezar otra sesión"], alClic = function()
@@ -885,7 +921,12 @@ function M.MostrarCaptura(tomados, nuevo)
 	end
 	local x = ESP.m + n * 34 + ESP.s
 	local o = tomados[1]
-	K.Escribir(toast.Titulo, format(L["%s ×%d"], o.nombre or "?", o.cantidad or 1))
+	-- 1.3.8: con su tamaño (Pescador.lua).
+	local primero = nuevo and nuevo[1]
+	local tam = primero and primero.tam and M.Pez and M.Pez.Texto(primero.tam)
+	local titulo = format(L["%s ×%d"], o.nombre or "?", o.cantidad or 1)
+	if tam then titulo = titulo .. " \194\183 " .. tam end
+	K.Escribir(toast.Titulo, titulo)
 	toast.Titulo:ClearAllPoints()
 	toast.Titulo:SetPoint("TOPLEFT", toast, "TOPLEFT", x, -ESP.m - 1)
 	local extra
@@ -893,10 +934,20 @@ function M.MostrarCaptura(tomados, nuevo)
 		if x2.nivel then
 			local _, nombre = M.Maestria(x2.total)
 			extra = format(L["Maestría nueva: %s (%d)"], nombre or "", x2.total or 0)
+		elseif x2.record == "pez" and not extra then
+			extra = L["¡Nuevo récord!"]
+		elseif x2.record == "zona" and not extra then
+			extra = L["¡Récord en esta zona!"]
+		elseif x2.tam and x2.tam.ejemplar and not extra then
+			extra = L["¡Un ejemplar! Más grande que casi todos"]
 		elseif x2.primera and not extra then
 			extra = L["¡Primera vez! Nuevo en tu diario"]
 		end
 	end
+	if not extra and M.Pez and M.Pez.subio then
+		extra = format(L["Pescador de Alfa: nivel %d"], M.Pez.subio)
+	end
+	if M.Pez then M.Pez.subio = nil end
 	if not extra and #tomados > 1 then
 		local otros = {}
 		for i = 2, #tomados do otros[#otros + 1] = format(L["%s ×%d"], tomados[i].nombre or "?", tomados[i].cantidad or 1) end

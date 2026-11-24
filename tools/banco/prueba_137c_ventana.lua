@@ -363,15 +363,22 @@ end)
 
 ---------------------------------------------------------------------------
 step("lo nuevo de la 1.3.7 con «Ver»", function()
-  check(M.AbrirNotas(), "no abrió las notas")
+  -- 1.3.8: ya no es la primera; se busca por su versión
+  local nota
+  for _, x in ipairs(M.NOTAS) do if x.version == "1.3.7" then nota = x end end
+  check(nota ~= nil, "no está la nota de la 1.3.7")
+  nota = nota or M.NOTAS[1]
+  check(M.AbrirNotas(nota), "no abrió las notas")
   RUN_TIMERS(2)
   local nv = rawget(_G, "AlfaNotasVersion")
   check(nv and nv:IsShown(), "no se ven las notas")
-  local nota = M.NOTAS[1]
-  check(nota.version == "1.3.7", "la primera nota no es la 1.3.7")
   for _, p in ipairs(nota.puntos) do
     check(not p[2]:find("Lo que me perdí", 1, true), "las notas aún dicen «Lo que me perdí»")
-    if p[3] then check(M.IR_NOTA[p[3]] ~= nil, "el punto lleva a «" .. p[3] .. "», que no existe") end
+  end
+  for _, x in ipairs(M.NOTAS) do
+    for _, p in ipairs(x.puntos) do
+      if p[3] then check(M.IR_NOTA[p[3]] ~= nil, x.version .. ": el punto lleva a «" .. p[3] .. "», que no existe") end
+    end
   end
 end)
 SNAP("notas", rawget(_G, "AlfaNotasVersion"))

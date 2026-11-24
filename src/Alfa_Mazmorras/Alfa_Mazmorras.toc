@@ -30,5 +30,6 @@ Reemplazos.lua
 Capa.lua
 EnVivo.lua
 Cronometro.lua
+Resumen.lua
 Consumibles.lua
 BotinGrupo.lua

@@ -465,6 +465,22 @@ function N.Imprimir(...)
 		N.GuardarAlEntrar({ id = "chat:" .. t, texto = t, icono = "ic-info", origen = "chat" })
 		return
 	end
+	-- 1.3.8: lo mismo que acaba de salir (en el chat, un aviso o Lya) no se
+	-- escribe otra vez, salvo lo que pediste tú.
+	if N.Visto and select("#", ...) > 0 then
+		local partes = {}
+		for i = 1, select("#", ...) do
+			local v = (select(i, ...))
+			if N.Secreto and N.Secreto(v) then partes = nil break end
+			partes[i] = tostring(v)
+		end
+		local t = partes and table.concat(partes, " ")
+		if t then
+			local pidio = N.PidioJugador and N.PidioJugador()
+			if not pidio and N.YaSeVio and N.YaSeVio(t, 10) then return end
+			N.Visto(t, "chat")
+		end
+	end
 	A.Print(...)
 end
 

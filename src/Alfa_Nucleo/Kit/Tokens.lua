@@ -577,6 +577,21 @@ end
 local function num(v, d) return type(v) == "number" and v or (d or 0) end
 K.num = num
 
+-- (1.3.8 revisión) El cursor en unidades de UIParent, medido desde su esquina
+-- de abajo a la izquierda: con el escritorio de dos pantallas UIParent no
+-- empieza en el borde de la pantalla y un menú anclado al cursor salía corrido.
+-- Para SetPoint(punto, UIParent, "BOTTOMLEFT", x, y). -> x, y
+function K.CursorEnUI()
+	local x, y = 0, 0
+	if GetCursorPosition then x, y = GetCursorPosition() end
+	local U = UIParent
+	local s = num(U and U.GetEffectiveScale and U:GetEffectiveScale(), 1)
+	if s <= 0 then s = 1 end
+	local l = num(U and U.GetLeft and U:GetLeft(), 0)
+	local b = num(U and U.GetBottom and U:GetBottom(), 0)
+	return num(x, 0) / s - l, num(y, 0) / s - b
+end
+
 function K.AnchoTexto(fs)
 	local w = fs.GetUnboundedStringWidth and fs:GetUnboundedStringWidth() or fs:GetStringWidth()
 	return ceil(num(w))

@@ -27,6 +27,9 @@ TuHistoria.lua
 FinMazmorra.lua
 Muerte.lua
 Ahora.lua
+Pausa.lua
+HoraReal.lua
+Festejos.lua
 Clase.lua
 Foco.lua
 EnGrupo.lua

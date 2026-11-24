@@ -433,15 +433,18 @@ function Rs.Termina()
 	if not inicio then return end
 	local dur = GetTime() - inicio
 	inicio = nil
-	if not M.Opt("resumen") then return end
+	-- 1.3.8: con el resumen apagado (de fábrica) la pelea se guarda igual, sin
+	-- tarjeta, para verla a pedido («Ver mi última pelea»).
+	local mostrar = M.Opt("resumen") and true or false
 	-- 1.3.2: yendo solo en el mundo, solo las peleas largas (resumenMinSolo).
 	local enGrupo = M.EnGrupo()
 	local minimo = max(0, tonumber(M.Opt(enGrupo and "resumenMin" or "resumenMinSolo")) or (enGrupo and 10 or 30))
-	if dur < minimo then return end
+	if mostrar and dur < minimo then return end
+	if not mostrar and dur < 5 then return end
 	A.After(1, function()
 		if M.EnCombate() then return end -- ya empezó otra: no se lee (llegaría secreto)
 		local ahora = GetTime()
-		if ultimaVez and ahora - ultimaVez < ENTRE then return end
+		if mostrar and ultimaVez and ahora - ultimaVez < ENTRE then return end
 		local r = Rs.Leer(dur)
 		local hay = (r.dano and r.dano > 0) or (r.cura and r.cura > 0) or r.golpe
 		if not hay and M.Medidor and M.Medidor.Existe() then return end
@@ -457,7 +460,7 @@ function Rs.Termina()
 			golpe = r.golpe and { nombre = r.golpe.nombre, quien = r.golpe.quien, cuanto = r.golpe.cuanto } or nil,
 			golpes = golpes, parte = r.parte, curas = r.curas, record = r.record or nil,
 			cuando = time and time() or nil }
-		Rs.Pintar(r)
+		if mostrar then Rs.Pintar(r) end
 		M.Avisar()
 	end)
 end
@@ -491,5 +494,5 @@ end
 A.OnLogin(function()
 	M.Ensenar({ id = "combate.resumen", icono = "ic-lista",
 		pregunta = L["¿Cómo me fue en la pelea?"],
-		respuesta = L["Al terminar una pelea, Alfa te deja una tarjeta pequeña con cuánto duró, tu daño y tu curación por segundo y lo que más te pegó. Usa el medidor oficial del juego y solo cuenta lo tuyo."] })
+		respuesta = L["Alfa guarda tu última pelea: cuánto duró, tu daño y tu curación por segundo y lo que más te pegó. La ves en Combate o en el menú del medidor («Ver mi última pelea»); si quieres que salga sola, prende «Resumen al terminar cada pelea» en Combate."] })
 end)

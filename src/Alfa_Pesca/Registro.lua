@@ -60,7 +60,7 @@ end
 -- Sesión
 ---------------------------------------------------------------------------
 local CAMPOS = { "segundos", "activo", "lanzamientos", "capturas", "total", "escapes", "fallos", "valor", "subasta",
-	"racha", "mejorRacha", "tiempoCaptura", "nTiempo", "bancos" }
+	"racha", "mejorRacha", "tiempoCaptura", "nTiempo", "bancos", "peso", "xp" }
 
 function M.Sesion()
 	local d = datos()
@@ -111,11 +111,14 @@ function M.CerrarSesion()
 		end
 		local zonas = {}
 		for z, n in pairs(s.zonas or {}) do zonas[z] = num(n) end
+		-- 1.3.8: el tamaño total, la experiencia de pescador y la mejor captura.
+		local mejor = type(s.mejor) == "table" and { id = s.mejor.id, nombre = s.mejor.nombre, g = s.mejor.g, mm = s.mejor.mm } or nil
 		table.insert(h, 1, {
 			inicio = s.inicio, fin = s.fin or s.inicio, segundos = num(s.segundos), activo = num(s.activo),
 			lanzamientos = num(s.lanzamientos), capturas = num(s.capturas), total = num(s.total), escapes = num(s.escapes),
 			valor = num(s.valor), subasta = num(s.subasta), objetos = objetos, zonas = zonas,
 			rangoInicial = s.rangoInicial, rangoFinal = M.Habilidad and M.Habilidad() or nil,
+			peso = num(s.peso), xp = num(s.xp), mejor = mejor,
 		})
 		for i = #h, MAX_HISTORIAL + 1, -1 do h[i] = nil end
 		M.Vida().sesiones = M.Vida().sesiones + 1
@@ -277,6 +280,8 @@ end
 function R.Captura(objetos, info)
 	info = info or {}
 	if #objetos == 0 then return {} end
+	-- 1.3.8: el nivel de pescador empieza con tu diario de antes de esta captura.
+	if M.Pez then M.Pez.Datos() end
 	local s = M.Sesion()
 	local v = M.Vida()
 	local d = datos()
@@ -318,6 +323,7 @@ function R.Captura(objetos, info)
 	end
 	s.zonas[zona] = num(s.zonas[zona]) + 1
 	M.SumarMeta("capturas", nil, 1)
+	local medidas = {}
 	for _, o in ipairs(objetos) do
 		local clave = o.id or o.nombre or "?"
 		local n = max(1, num(o.cantidad))
@@ -362,9 +368,15 @@ function R.Captura(objetos, info)
 		if info.banco then e.banco = info.banco end
 		local despues = M.Maestria(e.n)
 		M.SumarMeta("pez", clave, n)
+		-- 1.3.8: su tamaño, el récord y la experiencia de pescador (Pescador.lua).
+		local pz = M.Pez and M.Pez.Anotar(o, clave, n, zona, { banco = info.banco, primera = primera }) or {}
+		pz.id, pz.nombre = o.id, o.nombre
+		medidas[#medidas + 1] = pz
+		local tam = pz.tam
 		-- El registro de cada captura.
-		reg[#reg + 1] = { t = ahora, id = clave, n = n, z = zi, s = si }
-		out[#out + 1] = { o = o, primera = primera, nivel = despues > antes and despues or nil, total = e.n }
+		reg[#reg + 1] = { t = ahora, id = clave, n = n, z = zi, s = si, g = tam and tam.g or nil, mm = tam and tam.mm or nil }
+		out[#out + 1] = { o = o, primera = primera, nivel = despues > antes and despues or nil, total = e.n,
+			tam = tam, record = pz.record, xp = pz.xp, semana = pz.semana }
 	end
 	while #reg > MAX_REGISTRO do table.remove(reg, 1) end
 	if s.valor > v.mejorValor then v.mejorValor = s.valor end
@@ -373,6 +385,7 @@ function R.Captura(objetos, info)
 	if M.EnConcurso and M.EnConcurso() and M.MapaJugador and M.MapaJugador() == M.CONCURSO.mapa then
 		d.concurso = (tonumber(d.concurso) or 0) + 1
 	end
+	if M.Pez then M.Pez.TrasCaptura(s, medidas) end
 	R.RevisarLogros()
 	M.Avisar("registro")
 	return out
@@ -532,6 +545,7 @@ end
 function M.BorrarTodo()
 	local d = datos()
 	for _, k in ipairs({ "sesion", "historial", "vida", "diario", "registro", "lugares", "logros", "metas", "concurso" }) do d[k] = nil end
+	if M.Pez then M.Pez.Borrar() end
 	M.Sesion()
 	M.Avisar("registro")
 end

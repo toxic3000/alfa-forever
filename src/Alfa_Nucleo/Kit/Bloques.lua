@@ -771,8 +771,56 @@ end
 
 ---------------------------------------------------------------------------
 -- Estado vacío: el lobo, un título, un texto y, si sirve, un botón.
---   opts = { lobo = "dormido", titulo, texto, accion = { texto, alClic, icono } }
+--   opts = { lobo = "dormido", titulo, texto, accion = { texto, alClic, icono, corto } }
+-- 1.3.8: el botón nunca es más ancho que el cuadro (antes crecía con su texto
+-- y atravesaba el rastreador): si no cabe, dice accion.corto; si tampoco
+-- cabe (o no hay), va sin ícono y en dos renglones (o los que pida), sin cortar nada.
 ---------------------------------------------------------------------------
+local VACIO_PAD = 12 -- el aire del texto a los lados en el botón de dos renglones
+
+-- El botón en dos renglones (o más) dentro de `w` (después de cada acomodo del Kit,
+-- que lo vuelve a poner en uno al pulsarlo).
+local function botonDosLineas(b)
+	local w = b.alfaDosLineas
+	if not w then return end
+	b:SetWidth(w)
+	if b.Icono then b.Icono:Hide() end
+	b.Texto:ClearAllPoints()
+	b.Texto:SetPoint("CENTER", b, "CENTER", 0, b.alfaAbajo and -1 or 0)
+	b.Texto:SetWidth(max(1, w - 2 * VACIO_PAD))
+	b.Texto:SetWordWrap(true)
+	b.Texto:SetMaxLines(0) -- sin tope: el botón crece, nunca se corta
+	b.Texto:SetJustifyH("CENTER")
+	b:SetHeight(max(K.ALTO.boton, K.AltoTexto(b.Texto) + 14))
+end
+K.BotonDosLineas = botonDosLineas
+
+-- Pone el texto del botón y lo deja caber en `w`. -> alto del botón
+function K.BotonQueQuepa(b, texto, corto, w)
+	if b.alfaDosLineas then
+		b.alfaDosLineas = nil
+		b.Texto:SetWordWrap(false)
+		b.Texto:SetMaxLines(1)
+		b.Texto:SetWidth(0)
+	end
+	b.alfaAncho = nil
+	b:SetTexto(texto or "")
+	local function natural() return K.num(b:AnchoNatural(), 0) end
+	w = K.num(w, 0)
+	if natural() > w and corto and corto ~= "" then b:SetTexto(corto) end
+	if natural() > w then
+		b.alfaDosLineas = floor(w)
+		b.alfaAncho = floor(w)
+		if not b.alfaGanchoDos then
+			b.alfaGanchoDos = true
+			b:HookScript("OnMouseDown", botonDosLineas)
+			b:HookScript("OnMouseUp", botonDosLineas)
+		end
+		botonDosLineas(b)
+	end
+	return K.num(b:GetHeight(), K.ALTO.boton), K.num(b:GetWidth(), w)
+end
+
 function K.Vacio(padre, opts)
 	local v = CreateFrame("Frame", nil, padre)
 	v.Lobo = v:CreateTexture(nil, "ARTWORK")
@@ -790,8 +838,8 @@ function K.Vacio(padre, opts)
 		K.Escribir(self.Texto, o.texto or "")
 		if o.accion then
 			self.Accion = self.Accion or K.Boton(self, "", nil, { tipo = "secundario", conIcono = true })
-			self.Accion:SetTexto(o.accion.texto)
 			self.Accion:SetIcono(o.accion.icono)
+			K.BotonQueQuepa(self.Accion, o.accion.texto, o.accion.corto, 100000)
 			self.Accion.alClic = o.accion.alClic
 			K.SeguroDe(self.Accion, o.accion)
 			self.Accion:Show()
@@ -807,8 +855,8 @@ function K.Vacio(padre, opts)
 		y = 72 + ESP.base
 		self.Titulo:ClearAllPoints()
 		self.Titulo:SetPoint("TOP", self, "TOP", 0, -y)
-		self.Titulo:SetWidth(w)
-		y = y + K.AltoTexto(self.Titulo)
+		-- 1.3.8: el título también se envuelve (en alemán o ruso no cabía en uno).
+		y = y + K.Parrafo(self.Titulo, w)
 		if (self.Texto:GetText() or "") ~= "" then
 			y = y + 6
 			self.Texto:ClearAllPoints()
@@ -817,9 +865,11 @@ function K.Vacio(padre, opts)
 		end
 		if self.Accion and self.Accion:IsShown() then
 			y = y + ESP.base
+			local a = self.alfaDatos and self.alfaDatos.accion
+			local bh = K.BotonQueQuepa(self.Accion, a and a.texto, a and a.corto, w)
 			self.Accion:ClearAllPoints()
 			self.Accion:SetPoint("TOP", self, "TOP", 0, -y)
-			y = y + K.num(self.Accion:GetHeight(), 32)
+			y = y + bh
 		end
 		self:SetSize(ancho, y)
 		return y

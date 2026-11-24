@@ -40,6 +40,17 @@ M.IR_NOTA = {
 	combate = function() N.Abrir("combate") end,
 	pesca = function() N.Abrir("pesca") end,
 	anuncios = function() N.Abrir("bienvenida") end,
+	-- 1.3.8
+	pantallas = function()
+		local E = rawget(_G, "AlfaEscritorio")
+		if type(E) == "table" and type(E.Abrir) == "function" then E.Abrir() else N.Abrir("pantallas") end
+	end,
+	manada = function() N.Abrir("manada") end,
+	curacion = function() N.Abrir("curacion") end,
+	enciclopedia = function()
+		local E = rawget(_G, "AlfaEnciclopedia")
+		if type(E) == "table" and type(E.Abrir) == "function" then E.Abrir("objeto") else N.Abrir("enciclopedia") end
+	end,
 	oro = function()
 		local B = rawget(_G, "AlfaBolsas")
 		if type(B) == "table" and type(B.Abrir) == "function" then B.Abrir() else N.Abrir("bolsas") end

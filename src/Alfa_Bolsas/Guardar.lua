@@ -75,7 +75,7 @@ local function objetosDeMisiones()
 	-- Sin misiones de otros personajes no hace falta cargar el Codex.
 	local hay = false
 	for _, p in ipairs(D.Lista()) do
-		if not D.EsActual(p.clave) and type(p.r.misiones) == "table" and #p.r.misiones > 0 then hay = true break end
+		if not D.EsActual(p.clave) and not p.otraFaccion and type(p.r.misiones) == "table" and #p.r.misiones > 0 then hay = true break end
 	end
 	if not hay then return {}, {} end
 	if not (X.IsLoaded and X.IsLoaded()) then
@@ -91,7 +91,7 @@ local function objetosDeMisiones()
 			if ok and type(rec) == "table" then
 				for _, o in ipairs(rec.objectives or {}) do
 					if o.type == "item" and type(o.id) == "number" then
-						if propio then mios[o.id] = true elseif not deOtros[o.id] then deOtros[o.id] = p.r.nombre or p.clave end
+						if propio then mios[o.id] = true elseif not deOtros[o.id] and not p.otraFaccion then deOtros[o.id] = p.r.nombre or p.clave end
 					end
 				end
 			end
@@ -272,4 +272,19 @@ end
 
 AlfaBolsas = type(rawget(_G, "AlfaBolsas")) == "table" and rawget(_G, "AlfaBolsas") or {}
 AlfaBolsas.Cuantos = Gu.Cuantos
+-- 1.3.8: quién de tus otros personajes tiene un objeto (para la lista de compras
+-- de Comercio): -> { { nombre, clase, bolsas, banco, equipo }, ... } (sin el actual)
+AlfaBolsas.QuienTiene = function(id)
+	local out = {}
+	local ok, _, partes = pcall(D.Conteo, id)
+	if not ok or type(partes) ~= "table" then return out end
+	local yo = D.Clave()
+	for _, p in ipairs(partes) do
+		if p.clave ~= yo then
+			local r = type(p.r) == "table" and p.r or {}
+			out[#out + 1] = { nombre = r.nombre or p.clave, clase = r.clase, bolsas = p.bolsas or 0, banco = p.banco or 0, equipo = p.equipo or 0, otraFaccion = p.otraFaccion }
+		end
+	end
+	return out
+end
 AlfaBolsas.QueGuardar = Gu.Sugerencias

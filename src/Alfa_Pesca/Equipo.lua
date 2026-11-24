@@ -344,6 +344,26 @@ end
 function Eq.OlvidarIntentos() intentos = {} end
 
 ---------------------------------------------------------------------------
+-- 1.3.8: lo que elegiste en la ventana de antes de pescar (Previa.lua), por
+-- personaje: { cana = id | nil, cebo = id | 0 (el mejor) | nil }
+---------------------------------------------------------------------------
+function Eq.Eleccion()
+	local d = N.DatosPersonaje(ID)
+	if type(d.previa) ~= "table" then d.previa = {} end
+	return d.previa
+end
+
+function Eq.CanaElegida() return tonumber(Eq.Eleccion().cana) end
+
+-- El cebo que prefieres: lo de este personaje (ventana de antes de pescar o el
+-- clic derecho del menú de cebos) y, si no eligió nada, el ajuste de siempre.
+function Eq.CeboElegido()
+	local c = Eq.Eleccion().cebo
+	if c ~= nil then return tonumber(c) or 0 end
+	return tonumber(N.Get(ID, "ceboPreferido")) or 0
+end
+
+---------------------------------------------------------------------------
 -- Lo mejor que tienes
 ---------------------------------------------------------------------------
 -- -> lista de cambios { { ranura, id, enlace, nombre, bono } } para quedar con lo mejor de pesca
@@ -351,14 +371,26 @@ function Eq.MejorEquipo()
 	local t = Eq.Inventario()
 	local cambios = {}
 	-- La caña.
-	local tiene, _, enlace16 = Eq.CanaPuesta()
+	local tiene, idPuesta, enlace16 = Eq.CanaPuesta()
 	local bono16 = tiene and Eq.BonoPuesto(16) or -1
-	local mejor
-	for _, c in ipairs(t.canas) do
-		if c.usable and not Eq.NoEntra(c.enlace, 16)
-			and (not mejor or c.bono > mejor.bono or (c.bono == mejor.bono and Eq.Calidad(c.id) > Eq.Calidad(mejor.id))) then mejor = c end
+	-- 1.3.8: la caña que elegiste antes de pescar (Previa.lua) manda, si la
+	-- tienes y te sirve; si ya la llevas puesta, no se cambia por otra.
+	local elegida = Eq.CanaElegida()
+	local mejor, porGusto
+	if elegida and tiene and idPuesta == elegida then
+		porGusto = true
+	elseif elegida then
+		for _, c in ipairs(t.canas) do
+			if c.id == elegida and c.usable and not Eq.NoEntra(c.enlace, 16) then mejor, porGusto = c, true break end
+		end
 	end
-	if mejor and (not tiene or mejor.bono > bono16) and mejor.enlace ~= enlace16 then
+	if not porGusto then
+		for _, c in ipairs(t.canas) do
+			if c.usable and not Eq.NoEntra(c.enlace, 16)
+				and (not mejor or c.bono > mejor.bono or (c.bono == mejor.bono and Eq.Calidad(c.id) > Eq.Calidad(mejor.id))) then mejor = c end
+		end
+	end
+	if mejor and (porGusto or not tiene or mejor.bono > bono16) and mejor.enlace ~= enlace16 then
 		cambios[#cambios + 1] = { ranura = 16, id = mejor.id, enlace = mejor.enlace, bono = mejor.bono }
 	end
 	-- Las demás ranuras: por cada lugar, lo de más bono que supere lo puesto.
@@ -418,7 +450,7 @@ end
 function Eq.MejorCebo()
 	local t = Eq.Inventario()
 	local rango = M.Habilidad and M.Habilidad() or 0
-	local pref = tonumber(N.Get(ID, "ceboPreferido")) or 0
+	local pref = Eq.CeboElegido()
 	local mejor
 	for _, c in ipairs(t.cebos) do
 		local puede = c.usable and (rango or 0) >= (c.pide or 0) and Eq.Cuenta(c.id) > 0
@@ -496,13 +528,14 @@ local function esDePesca(enlace, ranura)
 end
 
 function Eq.Foto()
-	for r = 1, 17 do foto[r] = puesto(r) or false end
+	for r = 1, 18 do foto[r] = puesto(r) or false end
 end
 
 -- PLAYER_EQUIPMENT_CHANGED: si entró algo de pesca, lo que estaba se recuerda.
 function Eq.AlCambiar(ranura)
 	ranura = tonumber(ranura)
-	if not ranura or ranura > 17 then return end
+	-- 1.3.8: también la ranura 18 (varita, arco, arma arrojadiza).
+	if not ranura or ranura > 18 then return end
 	local nuevo = puesto(ranura)
 	local viejo = foto[ranura]
 	foto[ranura] = nuevo or false
@@ -512,10 +545,11 @@ function Eq.AlCambiar(ranura)
 		if n[ranura] == nil and viejo ~= nil and not (viejo and esDePesca(viejo, ranura)) then
 			n[ranura] = viejo or false
 		end
-	elseif ranura == 17 and not nuevo and viejo and n[17] == nil then
-		-- Una caña de dos manos quita lo de la otra mano: también se recuerda.
+	elseif (ranura == 17 or ranura == 18) and not nuevo and viejo and n[ranura] == nil then
+		-- Una caña de dos manos quita lo de la otra mano: también se recuerda
+		-- (1.3.8: igual con la varita o el arco que se quitó con la caña puesta).
 		local cana = Eq.CanaPuesta()
-		if cana then n[17] = viejo end
+		if cana then n[ranura] = viejo end
 	elseif nuevo and n[ranura] ~= nil and not esDePesca(nuevo, ranura) then
 		-- Te pusiste otra cosa a mano: esa ranura ya no se devuelve.
 		n[ranura] = nil
@@ -527,14 +561,49 @@ function Eq.HayNormal()
 	return false
 end
 
--- 1.3.7: tus armas de antes (mano derecha y mano izquierda) para el botón
--- «A pelear»: en combate el juego deja cambiar las armas, no la armadura.
--- -> { { ranura, enlace, nombre } } (sin las ranuras que excluyes)
+-- 1.3.8: ¿es un arma de dos manos (no una caña)? Con ella, la otra mano queda vacía.
+function Eq.DosManos(enlace)
+	local id = idDe(enlace)
+	if not id or esCana(id) then return false end
+	local lugar = instante(id)
+	return lugar == "INVTYPE_2HWEAPON"
+end
+
+-- 1.3.8: ¿sigue en tus bolsas o puesto? true | false | nil (no se pueden leer las bolsas).
+local function loTienes(enlace)
+	local id = idDe(enlace)
+	if not id then return false end
+	for r = 1, 18 do if idDe(puesto(r)) == id then return true end end
+	local alguna = false
+	for _, b in ipairs(BOLSAS) do
+		local n = ranurasDe(b)
+		if n > 0 then alguna = true end
+		for s = 1, n do if idDe(enlaceBolsa(b, s)) == id then return true end end
+	end
+	if not alguna then return nil end
+	return false
+end
+Eq.LoTienes = loTienes
+
+-- 1.3.8: con un arma de dos manos recordada en la derecha, la izquierda no se
+-- devuelve (te la quitaría); lo que vendiste o tiraste tampoco.
+local function limpiarNormal()
+	local n = normal()
+	if type(n[16]) == "string" and Eq.DosManos(n[16]) then n[17] = nil end
+end
+Eq.LimpiarNormal = limpiarNormal
+
+-- 1.3.7: tus armas de antes (mano derecha, mano izquierda y, desde la 1.3.8,
+-- la ranura 18: varita, arco o arma arrojadiza) para el botón «A pelear»: en
+-- combate el juego deja cambiar las armas, no la armadura.
+-- -> { { ranura, enlace, nombre } } (sin las ranuras que excluyes ni lo que ya no tienes)
 function Eq.Armas()
+	limpiarNormal()
 	local n, out = normal(), {}
-	for _, r in ipairs({ 16, 17 }) do
+	local dos = type(n[16]) == "string" and Eq.DosManos(n[16])
+	for _, r in ipairs({ 16, 17, 18 }) do
 		local e = n[r]
-		if type(e) == "string" and not Eq.Excluido(r) then
+		if type(e) == "string" and not Eq.Excluido(r) and not (r == 17 and dos) and loTienes(e) ~= false then
 			local id = idDe(e)
 			local nombre = Eq.Nombre(id, e) or (id and ("item:" .. id))
 			if nombre then out[#out + 1] = { ranura = r, enlace = e, nombre = nombre } end
@@ -544,16 +613,45 @@ function Eq.Armas()
 end
 
 -- La macro que te pone esas armas (funciona también en combate). -> texto | nil
+-- (1.3.8 revisión) Con dos armas del mismo nombre en 16 y 17, «/equipslot 17
+-- Nombre» podría tomar la misma que la 16: cada una va por su bolsa y casilla
+-- reales. La macro se rearma al moverse las bolsas (Pelear.lua).
+local function casillasDe(id)
+	local out = {}
+	for _, b in ipairs(BOLSAS) do
+		for s = 1, ranurasDe(b) do
+			if idDe(enlaceBolsa(b, s)) == id then out[#out + 1] = { b, s } end
+		end
+	end
+	return out
+end
+
 function Eq.MacroArmas()
 	local lineas = {}
-	for _, a in ipairs(Eq.Armas()) do lineas[#lineas + 1] = format("/equipslot %d %s", a.ranura, a.nombre) end
+	local armas = Eq.Armas()
+	local por = {} -- ranura -> { bolsa, casilla }
+	local a16, a17
+	for _, a in ipairs(armas) do
+		if a.ranura == 16 then a16 = a elseif a.ranura == 17 then a17 = a end
+	end
+	if a16 and a17 and a16.nombre == a17.nombre then
+		local id = idDe(a17.enlace)
+		local c = id and casillasDe(id) or {}
+		if #c >= 2 then por[16], por[17] = c[1], c[2]
+		elseif #c == 1 and idDe(puesto(16)) == id then por[17] = c[1] end
+	end
+	for _, a in ipairs(armas) do
+		local c = por[a.ranura]
+		if c then lineas[#lineas + 1] = format("/equipslot %d %d %d", a.ranura, c[1], c[2])
+		else lineas[#lineas + 1] = format("/equipslot %d %s", a.ranura, a.nombre) end
+	end
 	if #lineas == 0 then return nil end
 	return table.concat(lineas, "\n")
 end
 
 -- ¿Queda algo que no sea arma por devolver?
 function Eq.HayResto()
-	for r in pairs(normal()) do if r ~= 16 and r ~= 17 then return true end end
+	for r in pairs(normal()) do if r ~= 16 and r ~= 17 and r ~= 18 then return true end end
 	return false
 end
 
@@ -578,6 +676,11 @@ function Eq.Restaurar()
 		return a < b
 	end)
 	if #orden == 0 or Eq.restaurando then return 0 end
+	-- 1.3.8: un arma de dos manos recordada: la otra mano no se pone (te la quitaría).
+	if type(n[16]) == "string" and Eq.DosManos(n[16]) and n[17] ~= nil then
+		n[17] = nil
+		for k = #orden, 1, -1 do if orden[k] == 17 then table.remove(orden, k) end end
+	end
 	Eq.restaurando = true
 	-- 1.3.7: si el botón «Volver a mi equipo» (Pelear.lua) ya te puso las armas
 	-- con su macro, esas no se vuelven a pedir (quedan anotadas hasta verlas puestas).
@@ -615,7 +718,10 @@ function Eq.Restaurar()
 			return
 		end
 		local e = n[r]
-		if e and sinArmas and (r == 16 or r == 17) then
+		if e and loTienes(e) == false then
+			-- 1.3.8: ya no lo tienes (lo vendiste o lo tiraste): se olvida.
+			n[r] = nil
+		elseif e and sinArmas and (r == 16 or r == 17 or r == 18) then
 			-- Ya va en camino por la macro: solo se espera a que entre.
 		elseif e and not Eq.Excluido(r) then
 			-- Queda anotada hasta que verificar() la ve puesta; si falló, queda para la próxima.

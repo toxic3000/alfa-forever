@@ -156,7 +156,11 @@ local function herramientas()
 	else
 		p.texto = L["Al terminar una pelea, aquí queda su resumen: tu daño, tu curación y lo que más te pegó."]
 	end
-	if not M.Opt("resumen") then p.insignias = { { L["Apagado"], "neutro" } } end
+	-- 1.3.8: apagado (de fábrica) no sale solo, pero se guarda: «a pedido».
+	if not M.Opt("resumen") then
+		p.insignias = p.insignias or {}
+		p.insignias[#p.insignias + 1] = { L["A pedido"], "neutro" }
+	end
 	out[#out + 1] = p
 	local corte = Co.Habilidad()
 	local c = { icono = "ic-alerta", titulo = L["Aviso para cortar"], lineas = 5 }
@@ -619,8 +623,8 @@ local function grupos(padre)
 	g5:Fila({ titulo = L["Avisar desde"], control = deslizador("amenazaAviso", 60, 95, 5, porciento), hija = true, activa = si("amenaza"),
 		texto = L["Si no eres tanque: con cuánta amenaza se pone amarilla."] })
 	g5:Fila({ titulo = L["Con sonido"], control = interruptor("amenazaSonido"), hija = true, activa = si("amenaza") })
-	g5:Fila({ titulo = L["Resumen de cada pelea"], control = interruptor("resumen"),
-		texto = L["Al terminar: cuánto duró, tu daño y tu curación por segundo y lo que más te pegó."] })
+	g5:Fila({ titulo = L["Resumen al terminar cada pelea"], control = interruptor("resumen"),
+		texto = L["Una tarjeta al terminar: cuánto duró, tu daño y tu curación por segundo y lo que más te pegó. Apagado, tu última pelea se guarda igual y la ves aquí arriba o en el menú del medidor."] })
 	g5:Fila({ titulo = L["Solo peleas de al menos"], control = deslizador("resumenMin", 0, 30, 5, segundos), hija = true, activa = si("resumen"),
 		texto = L["En grupo o en una instancia."] })
 	g5:Fila({ titulo = L["Yendo solo, peleas de al menos"], control = deslizador("resumenMinSolo", 0, 60, 5, segundos), hija = true, activa = si("resumen"),
@@ -820,8 +824,8 @@ local CONTROLES = {
 	{ kind = "slider", key = clave("amenazaAviso"), label = L["Avisar desde"], help = L["Si no eres tanque: con cuánta amenaza se pone amarilla."],
 		min = 60, max = 95, step = 5, format = porciento, child = true, disabled = no(si("amenaza")), search = "threat warning percent" },
 	toggle("amenazaSonido", L["Con sonido"], nil, "amenaza", "threat sound"),
-	toggle("resumen", L["Resumen de cada pelea"], L["Al terminar: cuánto duró, tu daño y tu curación por segundo y lo que más te pegó."], nil,
-		"fight summary, combat recap, dps, hps"),
+	toggle("resumen", L["Resumen al terminar cada pelea"], L["Una tarjeta al terminar: cuánto duró, tu daño y tu curación por segundo y lo que más te pegó. Apagado, tu última pelea se guarda igual y la ves aquí arriba o en el menú del medidor."], nil,
+		"fight summary, combat recap, dps, hps, resumen de pelea, ventana de daño"),
 	{ kind = "slider", key = clave("resumenMin"), label = L["Solo peleas de al menos"], min = 0, max = 30, step = 5,
 		format = segundos, child = true, disabled = no(si("resumen")), search = "fight summary minimum" },
 	{ kind = "slider", key = clave("resumenMinSolo"), label = L["Yendo solo, peleas de al menos"], min = 0, max = 60, step = 5,

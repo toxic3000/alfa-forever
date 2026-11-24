@@ -208,6 +208,35 @@ local function flushBatch(q, b)
 	if link then say(PartyChat.ObjectivesLine(link, b)) end
 end
 
+-- Alfa 1.3.8 (mejora 8): the quests that turn ready together go in one line
+-- in your own chat («3 misiones listas para entregar: [A], [B], [C]»); in the
+-- party's chat each keeps its own line (it carries the link they click).
+local readyBatch
+local function flushReady()
+	local b = readyBatch
+	readyBatch = nil
+	if not b or #b == 0 then return end
+	if #b == 1 or (grouped() and ns.Get("party.chat")) then
+		for _, link in ipairs(b) do say(L["%s is ready to turn in"]:format(link)) end
+		return
+	end
+	local N = rawget(_G, "AlfaNucleo")
+	local head = N and N.Plural and N.Plural(#b, ns.T("%d misión lista para entregar"), ns.T("%d misiones listas para entregar"))
+		or ns.T("%d misiones listas para entregar"):format(#b)
+	local line = head .. ": " .. table.concat(b, ", ")
+	if live and DEFAULT_CHAT_FRAME and DEFAULT_CHAT_FRAME.AddMessage then
+		DEFAULT_CHAT_FRAME:AddMessage(PartyChat.Local(marker() .. line))
+	end
+end
+function PartyChat.Lista(link)
+	if not readyBatch then
+		readyBatch = {}
+		ns.After(BATCH, flushReady)
+	end
+	readyBatch[#readyBatch + 1] = link
+end
+PartyChat.FlushReady = flushReady -- (tests)
+
 -- A quest first seen is learned, never said. `finished` is the client's
 -- verdict on an objective: Forever can report 1/1 on one not done yet.
 local function check(q, objs, quiet)
@@ -236,7 +265,7 @@ local function check(q, objs, quiet)
 		-- The ready line says it all: objectives still waiting are dropped.
 		batches[q] = nil
 		local link = questLink(q)
-		if link then say(L["%s is ready to turn in"]:format(link)) end
+		if link then PartyChat.Lista(link) end
 		return
 	end
 	local b = batches[q]

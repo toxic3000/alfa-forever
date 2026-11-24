@@ -24,10 +24,47 @@ M.AJUSTES = { mostrar = true, frecuencia = "muchos", minutos = 3, tamano = 64, s
 	-- mascota; los retos de la semana; los cumpleaños (el tuyo y el de Alfa)
 	manada = true, misionVoz = true, mascota = true, retos = true, cumple = true,
 	-- 1.3.7c: un brinco cuando llegas a donde apunta la flecha (Llegada.lua)
-	brincoLlegar = true }
+	brincoLlegar = true,
+	-- 1.3.8: la pausa tras 2 horas seguidas (Pausa.lua), Lya según tu hora
+	-- (HoraReal.lua) y sus festejos de lo que logras con Alfa (Festejos.lua)
+	pausa = true, horaReal = true, festejos = true }
 M.Avisar = function() end -- Pagina.lua la cambia: rehace la página si está a la vista
 
 M.EN = {
+	-- 1.3.8 (mundo): Toma el grifo, peligros del camino, misiones por color, la pausa, Lya y tu hora, festejos, busco grupo, la ficha y compartir
+	["Llevas %s seguidas de cacería, lobo. ¿Una pausa? Estírate, toma agua y aquí te espero."] = "You've been hunting for %s straight, wolf. A break? Stretch, drink some water, I'll wait right here.",
+	["Ya van %s sin parar. Hasta las lobas descansan: levántate un ratito, yo cuido tu lugar."] = "That's %s without stopping. Even she-wolves rest: get up for a bit, I'll keep your spot.",
+	["%s seguidas… ¡qué aguante! Unos minutos lejos de la pantalla y vuelves con más fuerza."] = "%s straight… what stamina! A few minutes away from the screen and you'll come back stronger.",
+	["Llevas %s jugando. Si te tomas un respiro, prometo no comerme tus salchichas."] = "You've been playing for %s. If you take a breather, I promise not to eat your sausages.",
+	["Recuérdamelo en 30 min"] = "Remind me in 30 min",
+	["¡Ya amaneció, lobo! Buenos días. El sol pinta bonito Azeroth."] = "The sun is up, wolf! Good morning. Azeroth looks lovely in the sunlight.",
+	["Buenos días: ya salió el sol. ¿Seguimos con energía?"] = "Good morning: the sun is out. Shall we keep going with energy?",
+	["Ya se hizo de noche, lobo. Me pongo tranquilita: aquí sigo contigo."] = "Night has fallen, wolf. I'll keep calm and quiet: I'm still here with you.",
+	["Buenas noches, lobo. La luna ya salió; cazamos con calma."] = "Good evening, wolf. The moon is up; let's hunt calmly.",
+	["Ya es de madrugada… buenas noches, lobo. Si sigues, yo te cuido despacito."] = "It's the small hours now… good night, wolf. If you keep going, I'll quietly look after you.",
+	["Qué tarde es ya. No te desveles mucho, ¿sí? Mañana también se caza."] = "It's so late already. Don't stay up too long, okay? There's hunting tomorrow too.",
+	["Buenas noches, %s. Ya es muy tarde: te acompaño un ratito, despacito."] = "Good night, %s. It's very late: I'll keep you company for a little while, quietly.",
+	["Shh… hola, %s. A estas horas Azeroth está tranquilo. Cazamos sin prisa."] = "Shh… hi, %s. At this hour Azeroth is quiet. Let's hunt without hurry.",
+	["¡Buenos días, %s! Vine corriendo con el sol. ¿Desayunamos aventura?"] = "Good morning, %s! I came running with the sun. Adventure for breakfast?",
+	["¡Buen día, %s! Te extrañé toda la noche. ¿A dónde vamos hoy?"] = "Good day, %s! I missed you all night. Where are we going today?",
+	["Buenas noches, lobo. Vine sin hacer ruido, %s: aquí estoy contigo."] = "Good evening, wolf. I came without a sound, %s: here I am with you.",
+	["¡%s! Llegué despacito, que ya es de noche. Te extrañé."] = "%s! I came softly, since it's night already. I missed you.",
+	["Buenas noches, %s… ya es de madrugada. Vine calladita a acompañarte."] = "Good night, %s… it's the small hours already. I came quietly to keep you company.",
+	["Shh, %s, que todos duermen. Te extrañé; cazamos tranquilos."] = "Shh, %s, everyone's asleep. I missed you; let's hunt calmly.",
+	["Tu primer pez raro: %s"] = "Your first rare fish: %s",
+	["Tu primer pez raro"] = "Your first rare fish",
+	["¡Mira cómo brilla! Ese no lo saca cualquiera."] = "Look how it shines! Not just anyone catches that.",
+	["Tu primer récord de pesca"] = "Your first fishing record",
+	["Le ganaste a tu propia marca. ¡Yo me pido la cola del pescado!"] = "You beat your own best. I call dibs on the fish tail!",
+	["Tu primera mazmorra terminada: %s"] = "Your first dungeon completed: %s",
+	["Tu primera mazmorra terminada"] = "Your first dungeon completed",
+	["Entramos, peleamos y salimos enteros. ¡Así caza la manada!"] = "We went in, fought and came out in one piece. That's how the pack hunts!",
+	["Tu primera guía completa: %s"] = "Your first guide completed: %s",
+	["Tu primera guía completa"] = "Your first guide completed",
+	["De principio a fin, sin perder el rastro."] = "From start to finish, without losing the trail.",
+	["La manada aúlla"] = "The pack howls",
+	["¡Nivel 60!"] = "Level 60!",
+	["Llegaste a la cima, alfa. Lya está orgullosa de ti."] = "You reached the top, alpha. Lya is proud of you.",
 	["Aquí caben 16. Devuelve alguno de arriba para ver los demás, o devuélvelos todos."] = "Up to 16 fit here. Bring one back above to see the rest, or bring them all back.",
 	["Y %d más"] = "And %d more",
 	["Todos los que callaste (%d)"] = "All the ones you muted (%d)",

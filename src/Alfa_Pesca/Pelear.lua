@@ -39,7 +39,8 @@ local P = {}
 M.Pelear = P
 
 local ICONO = "Interface\\Icons\\INV_Sword_04"
-local AVISO_CADA = 60 -- segundos entre dos avisos de «te atacan con la caña»
+local AVISO_CADA = 30 -- segundos entre dos avisos de «te atacan con la caña»
+local SUELTO = 36      -- (1.3.8) el tamaño del botón cuando sale solo, sin la barra
 
 local function opt(k) return N.Get(ID, k) end
 local function enCombate() return InCombatLockdown and InCombatLockdown() and true or false end
@@ -186,10 +187,29 @@ function P.Ocultar()
 	boton:Hide()
 end
 
+-- 1.3.8: con la caña puesta y sin la barra a la vista (el modo cerrado, la
+-- vista mínima, la barra apagada), al empezar la pelea el botón sale solo,
+-- abajo al centro: así funciona a la primera aunque no tengas tecla.
+function P.Suelto()
+	if enCombate() then return false end
+	if not (M.Habilitado() and P.macro and Eq.CanaPuesta()) then return false end
+	boton:SetScale(1)
+	boton:ClearAllPoints()
+	boton:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 300)
+	boton:SetSize(SUELTO, SUELTO)
+	boton.Icono:SetSize(24, 24)
+	boton.suelto = true
+	boton:Show()
+	P.Pintar()
+	return true
+end
+
 function P.Sincronizar()
 	if enCombate() then return end
 	local barra = M.Barra and M.Barra.Barra and M.Barra.Barra()
 	local h = barra and barra.hueco
+	boton.suelto = nil
+	boton.Icono:SetSize(16, 16)
 	if not (h and barra:IsShown() and h:IsShown() and E.modo and M.Habilitado()) then
 		boton:Hide()
 		return
@@ -229,29 +249,45 @@ A.RegisterEvent("PLAYER_REGEN_DISABLED", function()
 			M.Barra.Actualizar()
 		end
 		P.Sincronizar()
+		-- 1.3.8: sin la barra a la vista, el botón sale solo (antes del bloqueo).
+		if not boton:IsShown() then P.Suelto() end
 	end
 	P.Pintar()
 	if not (opt("avisoPelear") and M.Habilitado() and P.macro and Eq.CanaPuesta() and K.Aviso) then return end
 	local ahora = GetTime and GetTime() or 0
 	if ahora - ultimoAviso < AVISO_CADA then return end
 	ultimoAviso = ahora
-	local tecla, enBarra = P.Tecla(), boton:IsShown()
-	local texto
-	if tecla and enBarra then texto = format(L["Pulsa %s o la espada de la barra de pesca para ponerte tus armas."], tecla)
-	elseif enBarra then texto = L["Toca la espada de la barra de pesca para ponerte tus armas."]
-	elseif tecla then texto = format(L["Pulsa %s para ponerte tus armas."], tecla)
-	else return end
-	-- 1.3.7: sale ya (la pelea acaba de empezar) o nunca: después ya no sirve.
-	K.Aviso({ id = "pesca.atacan", icono = "ic-alerta", tono = "aviso", duracion = 6, prioridad = 1, caduca = 8,
-		donde = true, -- (el texto dice qué hacer: tu tecla o la espada de la barra de pesca)
-		titulo = L["Te atacan con la caña en la mano"], texto = texto })
+	P.AvisoAtacan()
 end)
+
+-- 1.3.8: el aviso sale al instante (prioridad 1, sin pasar por el globo de
+-- Lya) y dice tu tecla; sin tecla, dónde está la espada y cómo ponerle una.
+function P.AvisoAtacan()
+	local tecla, visible = P.Tecla(), boton:IsShown()
+	local donde = boton.suelto and L["la espada que salió abajo, al centro"] or L["la espada de la barra de pesca"]
+	local texto
+	if tecla and visible then texto = format(L["Pulsa %s o toca %s para ponerte tus armas."], tecla, donde)
+	elseif visible then texto = format(L["Toca %s para ponerte tus armas. Puedes ponerle una tecla en Atajos > Alfa."], donde)
+	elseif tecla then texto = format(L["Pulsa %s para ponerte tus armas."], tecla)
+	else return false end
+	-- 1.3.7: sale ya (la pelea acaba de empezar) o nunca: después ya no sirve.
+	K.Aviso({ id = "pesca.atacan", icono = "ic-alerta", tono = "aviso", duracion = 6, prioridad = 1, caduca = 8, lya = false,
+		importante = "siempre", donde = true, -- (el texto dice qué hacer: tu tecla o la espada)
+		titulo = L["Te atacan con la caña en la mano"], texto = texto })
+	return true
+end
 
 A.RegisterEvent("PLAYER_REGEN_ENABLED", function()
 	E.pelea = nil
 	P.Armar()
 	if M.Barra then M.Barra.Actualizar() end
 	P.Sincronizar()
+end)
+
+-- (1.3.8 revisión) Las bolsas se movieron: la macro al día (con dos armas del
+-- mismo nombre va por bolsa y casilla). Solo fuera de combate.
+A.RegisterEvent("BAG_UPDATE_DELAYED", function()
+	if not enCombate() and M.Habilitado() then P.Armar() end
 end)
 
 A.RegisterEvent("UPDATE_BINDINGS", function() if boton.alfaSobre then K.MostrarInfo(boton, P.Info()) end end)

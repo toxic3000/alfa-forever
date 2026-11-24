@@ -262,7 +262,16 @@ end
 function V.Acomodar()
 	if not v then return end
 	local ancho, alto = v:AnchoCuerpo(), v:AltoCuerpo()
-	v.Seg:Acomodar(ancho)
+	-- 1.3.8: ocho pestañas; si en tu idioma no caben con sus íconos, van sin ellos.
+	local _, usado = v.Seg:Acomodar(ancho)
+	if (usado or 0) > ancho and not v.sinIconos then
+		v.sinIconos = true
+		local opciones = {}
+		for _, id in ipairs(V.orden) do opciones[#opciones + 1] = { valor = id, texto = V.PESTANAS[id].nombre } end
+		v.Seg:SetOpciones(opciones)
+		v.Seg:SetValor(actual)
+		v.Seg:Acomodar(ancho)
+	end
 	v.Seg:ClearAllPoints()
 	v.Seg:SetPoint("TOPLEFT", v.Cuerpo, "TOPLEFT", v.margen, -ESP.base)
 	local y = ESP.base + K.ALTO.control + ESP.base

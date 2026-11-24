@@ -171,7 +171,9 @@ function M.Zona(map)
 end
 
 -- 48.1, 80.5 -> "48,1 · 80,5" (con punto en inglés)
-local DEC = N.espanol and "," or "."
+-- 1.3.8: la coma decimal en los idiomas que la usan (12,5 %), el punto en los demás.
+local COMA = { esMX = true, esES = true, frFR = true, deDE = true, ruRU = true, ptBR = true }
+local DEC = (N.espanol or COMA[N.locale or ""]) and "," or "."
 local function decimal(v, cifras)
 	local s = format(cifras == 2 and "%.2f" or "%.1f", tonumber(v) or 0)
 	if DEC ~= "." then s = s:gsub("%.", DEC) end
@@ -203,6 +205,16 @@ function M.Mayus(s)
 	return (s:gsub("\195[\161\169\173\179\186\177\188]", MAYUS))
 end
 
+-- 1.3.8: el signo como se escribe en cada idioma: «12 %» en español, francés,
+-- alemán y ruso; «12%» en inglés, portugués, coreano y chino.
+local CON_ESPACIO = { esMX = true, esES = true, frFR = true, deDE = true, ruRU = true }
+local PCT
+do
+	local loc = N.locale
+	if not loc then local ok, l = pcall(GetLocale) loc = ok and l or "esMX" end
+	PCT = (N.espanol or CON_ESPACIO[loc]) and " %" or "%"
+end
+M.PCT = PCT
 function M.Porcentaje(p)
 	p = tonumber(p)
 	if not p then return nil end
@@ -210,7 +222,7 @@ function M.Porcentaje(p)
 	if p >= 10 then s = tostring(floor(p + 0.5))
 	elseif p >= 1 then s = decimal(p)
 	else s = format("%.2f", p):gsub("0+$", ""):gsub("%.$", "") if DEC ~= "." then s = s:gsub("%.", DEC) end end
-	return s .. " %"
+	return s .. PCT
 end
 
 -- 12345 -> "12 345"

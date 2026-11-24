@@ -394,6 +394,7 @@ step("Mazmorras: la tarjeta del jefe por tu papel, con tus misiones, sin atrapar
     { grupo = "registro", q = { title = "Oro rojo" }, orden = 1 },
     { grupo = "hechas", q = { title = "Vieja" } },
   } } end
+  A.Set("mazmorras.enVivoForma", "tarjeta") -- 1.3.8: la de fábrica es la línea
   A.Set("mazmorras.enVivoRol", "tanque")
   FIRE_EVENT("PLAYER_ENTERING_WORLD", false, false)
   RUN_TIMERS(3)
@@ -443,6 +444,7 @@ step("Mazmorras: la tarjeta del jefe por tu papel, con tus misiones, sin atrapar
   FIRE_EVENT("PLAYER_TARGET_CHANGED")
   check(not Ev.Visible(), "con mazmorras.enVivo apagado salió la tarjeta")
   A.Set("mazmorras.enVivo", true)
+  A.Set("mazmorras.enVivoForma", nil)
   IsInInstance, UnitGUID, D.Listo, D.MazmorraActual, D.Jefes, P.Estado, issecretvalue, InCombatLockdown = ii, guid, listo, actual, jefes, estado, isv, icl
   FIRE_EVENT("PLAYER_ENTERING_WORLD", false, false)
   RUN_TIMERS(3)

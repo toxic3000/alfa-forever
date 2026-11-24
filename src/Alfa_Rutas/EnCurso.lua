@@ -588,6 +588,9 @@ R.AccionLleno = function() return EC.AccionLleno() end
 R.TextoLleno = function() return EC.TextoLleno() end
 R.ListaEnCurso = function() return EC.Lista() end
 R.CuentaPlanes = function() return EC.CuentaTexto() end
+-- 1.3.8: «Planes» en el Escritorio de Alfa: la línea de cada una y seguirla.
+R.LineaEnCurso = function(it) return EC.Linea(it) end
+R.SeguirEnCurso = function(it) return EC.Seguir(it) end
 -- ¿Cabe otra? (hay lugar, o una que se puede quitar sola)
 R.PuedeAbrir = function()
 	local n, maxi = EC.Cuantas()

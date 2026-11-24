@@ -46,7 +46,7 @@ local function conRed(fn, sinCompartir)
   local via, envio, av, guild = R.Via, C_ChatInfo.SendAddonMessage, K.Aviso, IsInGuild
   R.Via = function() return "hermandad" end
   IsInGuild = function() return true end
-  C_ChatInfo.SendAddonMessage = function(_, t, c, d) salidos[#salidos + 1] = { t, c, d } end
+  C_ChatInfo.SendAddonMessage = function(_, t, c, d) salidos[#salidos + 1] = { (t:gsub("|~[HA]$", "")), c, d } end
   K.Aviso = function(o) if o.lya == false then return av(o) end avisos[#avisos + 1] = o return true end
   local ok, e = pcall(fn)
   R.Via, C_ChatInfo.SendAddonMessage, K.Aviso, IsInGuild = via, envio, av, guild
@@ -61,7 +61,7 @@ local function con(t, campos, fn)
   if not ok then error(e) end
 end
 local function vaciarCola() for _ = 1, 60 do FIRE(R.motor, "OnUpdate", 0.2) end end
-local function llega(texto, quien, canal) FIRE_EVENT("CHAT_MSG_ADDON", "AlfaManada", texto, canal or "GUILD", quien) end
+local function llega(texto, quien, canal) FIRE_EVENT("CHAT_MSG_ADDON", "AlfaManada", texto .. "|~H", canal or "GUILD", quien) end
 local function salio(patron, canal, destino)
   for _, m in ipairs(salidos) do
     if m[1]:find(patron) and (not canal or m[2] == canal) and (not destino or m[3] == destino) then return m end

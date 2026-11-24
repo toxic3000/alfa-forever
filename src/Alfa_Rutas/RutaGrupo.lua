@@ -32,7 +32,7 @@ local A, L, K, N = M.A, M.L, M.K, M.N
 local RG = {}
 M.RutaGrupo = RG
 
-A.RegisterDefaults(M.ID, { rutaGrupo = true })
+A.RegisterDefaults(M.ID, { rutaGrupo = true, sugerirRutaGrupo = true })
 
 local type, ipairs, pairs, tonumber, tostring, pcall = type, ipairs, pairs, tonumber, tostring, pcall
 local format, concat = string.format, table.concat
@@ -352,10 +352,16 @@ function RG.Aviso()
 			texto = L["Tu flecha va a donde apunta la suya."],
 			uno = { L["Dejar de seguir"], function() RG.Dejar() end } }
 	end
+	-- 1.3.8: la sugerencia se apaga sola (rutas.sugerirRutaGrupo) y se cierra con la X.
+	if A.Get(M.ID .. ".sugerirRutaGrupo") == false then return nil end
 	for _, c in ipairs(RG.QueLleva()) do
-		if not pedidas[c.completo] then
+		if not pedidas[c.completo] and not RG.Cerrada(c.completo, c.ids) then
 			local n = #c.ids
+			local completo, ids = c.completo, c.ids
 			return { tono = "acento", icono = "ic-manada",
+				cerrar = function() RG.Cerrar(completo, ids) end,
+				menu = { { valor = function() A.Set(M.ID .. ".sugerirRutaGrupo", false) end,
+					texto = L["No sugerir rutas de mi grupo"], icono = "ic-cerrar" } },
 				titulo = format(n == 1 and L["%s lleva 1 misión que tú no tienes"] or L["%s lleva %d misiones que tú no tienes"], c.nombre, n == 1 and nil or n),
 				texto = L["Pídeselas y, si quieres, sigue su ruta: tu flecha irá con la suya."],
 				uno = { L["Pedírselas"], function() RG.Pedir(c.completo, c.ids) if M.Rastreador then M.Rastreador.Luego() end end },
@@ -363,6 +369,27 @@ function RG.Aviso()
 		end
 	end
 	return nil
+end
+
+-- 1.3.8: cerrada con la X: no vuelve para ese compañero en la sesión. Si
+-- trae misiones nuevas (VUELVE o más que no tenía al cerrarla), vuelve una
+-- sola vez.
+local VUELVE = 2
+local cerradas = {} -- completo -> { ids = { [qid] = true }, volvio = bool }
+function RG.Cerrar(completo, ids)
+	if not completo then return end
+	local antes = cerradas[completo]
+	local set = {}
+	for _, q in ipairs(ids or {}) do set[q] = true end
+	cerradas[completo] = { ids = set, volvio = antes ~= nil }
+end
+function RG.Cerrada(completo, ids)
+	local c = cerradas[completo]
+	if not c then return false end
+	if c.volvio then return true end
+	local nuevas = 0
+	for _, q in ipairs(ids or {}) do if not c.ids[q] then nuevas = nuevas + 1 end end
+	return nuevas < VUELVE
 end
 
 ---------------------------------------------------------------------------
@@ -462,7 +489,7 @@ end
 ---------------------------------------------------------------------------
 
 -- Para el banco.
-function RG.Reiniciar() sig, seguidores, ultimo, pedidas, porCompartir, ultimoW = nil, {}, {}, {}, {}, nil N.Quitar("rutas.rutaGrupo") end
+function RG.Reiniciar() sig, seguidores, ultimo, pedidas, porCompartir, ultimoW, cerradas = nil, {}, {}, {}, {}, nil, {} N.Quitar("rutas.rutaGrupo") end
 
 AlfaNucleo.PorPrefijo(PREFIJO, alAddon)
 A.On("WAYPOINT_CHANGED", anunciarLuego)

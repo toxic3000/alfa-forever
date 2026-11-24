@@ -119,11 +119,14 @@ function Li.Agregar(id, cantidad)
 end
 
 -- Lo que falta para subir un oficio desde tu habilidad hasta 300.
-function Li.AgregarOficio(linea)
+-- 1.3.8: meta (opcional): solo hasta esa habilidad (tu tope de ahora, por ejemplo).
+function Li.AgregarOficio(linea, meta)
 	local G = M.OFICIOS_GUIA
 	if not G[linea] or G[linea].tipo ~= "crear" then return false end
 	local rank = M.Oficios.Habilidad(linea) or 0
-	local faltan = M.Oficios.Faltan(linea, rank)
+	meta = tonumber(meta)
+	if meta and (meta >= 300 or meta <= rank) then meta = nil end
+	local faltan = M.Oficios.Faltan(linea, rank, meta)
 	local r = {}
 	for _, x in ipairs(faltan) do
 		r[#r + 1] = x.id
@@ -138,7 +141,7 @@ function Li.AgregarOficio(linea)
 		N.Imprimir(L["Tu lista ya tiene 20 metas: termina o quita alguna primero."])
 		return false
 	end
-	l.metas[#l.metas + 1] = { oficio = linea, n = 1, r = r, q = 1, total = true, desde = rank, t = M.Ahora() }
+	l.metas[#l.metas + 1] = { oficio = linea, n = 1, r = r, q = 1, total = true, desde = rank, hasta = meta, t = M.Ahora() }
 	foto(l)
 	cambio()
 	return true
@@ -163,7 +166,10 @@ end
 function Li.Metas() return datos().metas end
 
 function Li.NombreMeta(m)
-	if m.oficio then return format(L["Subir %s"], M.Oficios.Nombre(m.oficio)) end
+	if m.oficio then
+		if m.hasta then return format(L["Subir %s a %d"], M.Oficios.Nombre(m.oficio), m.hasta) end
+		return format(L["Subir %s"], M.Oficios.Nombre(m.oficio))
+	end
 	return nombreObjeto(m.id)
 end
 
@@ -175,7 +181,9 @@ local function veces(m)
 	return ceil((m.n or 1) / q)
 end
 
--- -> { { id, necesita, tienes, faltan, listo }, ... }, listos, total
+-- -> { { id, necesita, tienes, otros, faltan, listo }, ... }, listos, total
+-- 1.3.8: otros = lo que tienen tus otros personajes (bolsas, banco y equipo:
+-- ListaCuenta.lua); con comercio.listaCuenta se descuenta de lo que falta.
 function Li.Materiales()
 	local t, orden = {}, {}
 	for _, m in ipairs(datos().metas) do
@@ -193,9 +201,10 @@ function Li.Materiales()
 	for _, id in ipairs(orden) do
 		local necesita = ceil(t[id])
 		local tienes = M.Tienes(id)
-		local faltan = max(0, necesita - tienes)
+		local otros = M.TienesOtros and M.TienesOtros(id) or 0
+		local faltan = max(0, necesita - tienes - otros)
 		if faltan == 0 then listos = listos + 1 end
-		out[#out + 1] = { id = id, necesita = necesita, tienes = tienes, faltan = faltan, listo = faltan == 0 }
+		out[#out + 1] = { id = id, necesita = necesita, tienes = tienes, otros = otros, faltan = faltan, listo = faltan == 0 }
 	end
 	-- Lo que falta primero, luego lo listo.
 	table.sort(out, function(a, b)

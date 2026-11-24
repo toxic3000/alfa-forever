@@ -11,6 +11,7 @@ Textos.lua
 Hechizos.lua
 Mapa.lua
 Marcos.lua
+Color.lua
 Peligro.lua
 Mana.lua
 Listos.lua

@@ -106,7 +106,7 @@ if AlfaManada then AlfaManada.Red = nil end
 step("Lya en grupo: saluda una vez al juntarse, solo al grupo, y contesta el saludo", function()
   local ig, un, uip, ii, CI = IsInGroup, UnitName, UnitInParty, IsInInstance, C_ChatInfo
   local enviados = {}
-  C_ChatInfo = setmetatable({ SendAddonMessage = function(p, t, c, d) enviados[#enviados + 1] = { p = p, t = t, c = c, d = d } return true end }, { __index = CI })
+  C_ChatInfo = setmetatable({ SendAddonMessage = function(p, t, c, d) enviados[#enviados + 1] = { p = p, t = (t:gsub("|~[HA]$", "")), c = c, d = d } return true end }, { __index = CI })
   IsInGroup = function() return true end
   UnitName = function(u) if u == "party1" then return "Ana" end if u == "player" then return "Toxic" end return nil end
   UnitInParty = function(n) return n == "Ana" or n == "Eva" end
@@ -141,7 +141,7 @@ end)
 step("Lya en grupo: platican poquito, nunca en combate ni en instancias; apagado, nada", function()
   local ig, un, uip, ii, CI, icl = IsInGroup, UnitName, UnitInParty, IsInInstance, C_ChatInfo, InCombatLockdown
   local enviados = {}
-  C_ChatInfo = setmetatable({ SendAddonMessage = function(p, t, c) enviados[#enviados + 1] = { p = p, t = t, c = c } return true end }, { __index = CI })
+  C_ChatInfo = setmetatable({ SendAddonMessage = function(p, t, c) enviados[#enviados + 1] = { p = p, t = (t:gsub("|~[HA]$", "")), c = c } return true end }, { __index = CI })
   IsInGroup = function() return true end
   UnitName = function(u) if u == "player" then return "Toxic" end return nil end
   UnitInParty = function(n) return n == "Luz" or n == "Sol" end

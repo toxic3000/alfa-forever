@@ -147,6 +147,17 @@ local function siguientePaso(linea)
 		end
 	end }
 	d.secundaria = { texto = L["Ver mi lista"], alClic = function() N.Abrir(M.ID) end }
+	-- 1.3.8: con un tope menor a 300, la lista de compras va solo hasta tu tope.
+	if mx and mx < 300 and rank < mx then
+		d.accion.texto = format(L["Agregar lo que falta hasta %d"], mx)
+		local meta = mx
+		d.accion.alClic = function()
+			if M.Lista.AgregarOficio(linea, meta) then
+				K.Aviso({ titulo = L["Lista de compras"], icono = "ic-exito", tono = "exito",
+					texto = format(L["Agregué lo que te falta para subir %s a %d. Lo ves en Comercio."], Of().Nombre(linea), meta) })
+			end
+		end
+	end
 	return d
 end
 
@@ -193,17 +204,44 @@ local function tarjetasFaltan(linea)
 	local out = {}
 	for _, x in ipairs(Of().Faltan(linea, rank)) do
 		local donde = Li.Donde(x.id)
+		-- 1.3.8: lo de tus otros personajes también cuenta (ListaCuenta.lua).
+		local otros = M.TienesOtros and M.TienesOtros(x.id) or 0
+		x.faltan = math.max(0, x.faltan - otros)
 		out[#out + 1] = {
 			variante = "compacta", icono = iconoDe(x.id) or "ic-bolsas", tenir = false,
 			titulo = M.NombreObjeto(x.id),
-			texto = format(L["Tienes %d de %d"], x.tienes, x.necesita) .. (donde and (DOT .. donde) or ""),
+			-- 1.3.8: de dónde sale, en la ayuda (en una línea no cabía).
+			texto = M.TextoTienes and M.TextoTienes(x) or format(L["Tienes %d de %d"], x.tienes, x.necesita),
 			valor = x.faltan > 0 and format(L["Faltan %d"], x.faltan) or L["Listo"],
 			tono = x.faltan > 0 and "acento" or "exito",
 			alClic = x.faltan > 0 and function() Li.Guiar(x.id) end or nil,
-			ayuda = x.faltan > 0 and L["Clic: Guíame a conseguirlo."] or nil,
+			ayuda = (donde or x.faltan > 0) and ((donde and (donde .. ". ") or "") .. (x.faltan > 0 and L["Clic: Guíame a conseguirlo."] or "")) or nil,
 		}
 	end
 	return out
+end
+
+-- 1.3.8: las recetas de vendedor que te faltan, cerca de ti (RecetasZona.lua).
+local function tarjetasRecetas(linea)
+	local Rz = M.RecetasZona
+	if not Rz then return {}, nil end
+	local rank = Of().Habilidad(linea)
+	if not rank then return {}, "sinOficio" end
+	local lista, motivo = Rz.Buscar(linea, rank)
+	local out = {}
+	for _, x in ipairs(lista) do
+		local partes = { format(L["Vende: %s"], x.vendedor) }
+		if x.zona then partes[#partes + 1] = x.aqui and format(L["aquí, en %s"], x.zona) or x.zona end
+		local d = {
+			variante = "normal", icono = iconoDe(x.id) or "ic-oficios", tenir = false, lineas = 3,
+			titulo = x.nombre, texto = table.concat(partes, DOT),
+			insignias = { x.puede and { L["Ya puedes"], "exito", "ic-exito" } or { format(L["Con habilidad %d"], x.req), "neutro" } },
+			alClic = function() M.RecetasZona.Ir(x) end,
+			ayuda = x.limitada and L["Clic: la flecha a su vendedor. Vende pocas a la vez: puede no tenerla."] or L["Clic: la flecha a su vendedor."],
+		}
+		out[#out + 1] = d
+	end
+	return out, motivo
 end
 
 ---------------------------------------------------------------------------
@@ -231,6 +269,26 @@ local function llenar()
 	ui.faltan:Llenar(faltan)
 	K.Mostrar(ui.secFaltan, #faltan > 0)
 	K.Mostrar(ui.faltan, #faltan > 0)
+	-- 1.3.8: recetas cerca de ti y tu instructor.
+	local recetas, motivo = tarjetasRecetas(actual)
+	local linea = actual
+	ui.secRecetas:Set(L["Recetas que te faltan cerca de ti"], {
+		cuenta = #recetas > 0 and #recetas or nil,
+		enlace = motivo ~= "sinOficio" and { texto = L["Tu instructor más cercano"], alClic = function() Of().Instructor(linea) end } or nil })
+	if #recetas == 0 then
+		local texto
+		if motivo == "cargando" then texto = L["Buscando las recetas de vendedor de tu zona…"]
+		elseif motivo == "combate" then texto = L["Las busco al terminar el combate."]
+		elseif motivo == "codex" then texto = L["Faltan los datos del mundo de Alfa para buscarlas."]
+		else texto = L["No hay recetas de vendedor que te falten en tu zona ni cerca. Tu instructor te enseña las demás."] end
+		recetas = { { variante = "normal", icono = "ic-info", titulo = L["Recetas de vendedor"], texto = texto, lineas = 4 } }
+		if motivo == "cargando" and M.RecetasZona then
+			M.RecetasZona.Preparar(function() if VO.Visible() and actual == linea and VO.Rehacer then VO.Rehacer() end end)
+		end
+	end
+	ui.recetas:Llenar(recetas)
+	K.Mostrar(ui.secRecetas, motivo ~= "sinOficio")
+	K.Mostrar(ui.recetas, motivo ~= "sinOficio")
 	ui.nota:Set({ icono = "ic-info", tono = "neutro", titulo = L["Un consejo"], lineas = 6,
 		texto = L[g.nota] .. " " .. L["Los números son orientativos: cada receta da puntos según su color (naranja siempre, amarillo casi siempre, verde a veces)."] })
 end
@@ -260,6 +318,8 @@ local function armar()
 	ui.pasos = p:Agregar(K.Rejilla(p, { min = 300, gap = ESP.m }), { espacio = ESP.m })
 	ui.secFaltan = p:Agregar(K.Seccion(p, ""), { espacio = ESP.l })
 	ui.faltan = p:Agregar(K.Rejilla(p, { min = 300, gap = ESP.s, variante = "compacta" }), { espacio = ESP.m })
+	ui.secRecetas = p:Agregar(K.Seccion(p, ""), { espacio = ESP.l })
+	ui.recetas = p:Agregar(K.Rejilla(p, { min = 300, gap = ESP.m }), { espacio = ESP.m })
 	ui.nota = p:Agregar(K.Tarjeta(p, { variante = "normal" }), { espacio = ESP.l })
 end
 
@@ -283,6 +343,8 @@ function VO.Abrir(linea)
 end
 
 function VO.Visible() return v ~= nil and v:IsShown() end
+-- 1.3.8: rehacerla ya (las recetas de la zona llegan después).
+function VO.Rehacer() if VO.Visible() then llenar() acomodar() end end
 function VO.Linea() return actual end
 function VO.Ventana() return v end
 
@@ -299,3 +361,5 @@ end
 A.RegisterEvent("SKILL_LINES_CHANGED", rehacer)
 A.RegisterEvent("BAG_UPDATE_DELAYED", rehacer)
 A.On("ALFA_COMERCIO_LISTA", rehacer)
+-- 1.3.8: las recetas cerca de ti cambian con la zona.
+A.RegisterEvent("ZONE_CHANGED_NEW_AREA", rehacer)

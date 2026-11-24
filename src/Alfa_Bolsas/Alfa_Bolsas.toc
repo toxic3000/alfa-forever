@@ -26,6 +26,8 @@ Comparar.lua
 Ranuras.lua
 Todos.lua
 Acomodar.lua
+Separar.lua
+Candado.lua
 Barra.lua
 Oro.lua
 Ventana.lua

@@ -411,6 +411,7 @@ N.Modulo({
 		porDescubrir = true, -- los rincones de tu zona que no exploras (Descubrir.lua, 1.2.9)
 		vuelosFaltan = true, -- los vuelos de tu zona que no conoces (Descubrir.lua, 1.2.9)
 		peligros = true,    -- los élites y raros peligrosos de tu zona (Peligros.lua, 1.3.0)
+		misionesColor = true, -- 1.3.8: misiones de tu zona por color de dificultad (MisionesColor.lua)
 		explorador = true,  -- el modo explorador en la página (Descubrir.lua, 1.3.0)
 		botonMapa = true,   -- botones de Alfa junto a la lupa del mapa del juego
 		menuMapa = true,    -- las capas en el menú de la lupa
@@ -436,6 +437,7 @@ N.Modulo({
 		{ kind = "toggle", key = "mundo.porDescubrir", label = L["Por descubrir"], search = "explore, unexplored, discover, exploration xp, explorar" },
 		{ kind = "toggle", key = "mundo.vuelosFaltan", label = L["Vuelos que te faltan"], search = "flight paths, missing, taxi, flight master, vuelos" },
 		{ kind = "toggle", key = "mundo.peligros", label = L["Peligros"], search = "danger, elites, dangerous rares, elite mobs, peligro" },
+		{ kind = "toggle", key = "mundo.misionesColor", label = L["Misiones por color"], search = "quests, quest givers, difficulty, color, green, yellow, orange, red, misiones, dificultad" },
 		{ kind = "toggle", key = "mundo.explorador", label = L["Modo explorador"], search = "explorer, exploration progress, subzones, discovered, explorar" },
 		{ kind = "dropdown", key = "mundo.estiloMapa", label = L["Estilo del mapa"],
 			choices = { { value = "terreno", label = L["Terreno, como el minimapa"] }, { value = "clasico", label = L["Clásico, el arte pintado del juego"] } },

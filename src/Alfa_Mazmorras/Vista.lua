@@ -408,9 +408,15 @@ local function llenarInicio(t)
 	t.Rangos:SetOpciones(opciones)
 	t.Rangos:SetValor(estado.rango)
 	local datos = {}
+	-- 1.3.8: lo de tu facción primero: las de entrada enemiga, al final (marcadas).
+	local alFinal = {}
 	for _, x in ipairs(lista) do
-		if rangoDe(x) == estado.rango then datos[#datos + 1] = datosTarjeta(x, nivel, lado) end
+		if rangoDe(x) == estado.rango then
+			local dt = datosTarjeta(x, nivel, lado)
+			if enemiga(x.key) then alFinal[#alFinal + 1] = dt else datos[#datos + 1] = dt end
+		end
 	end
+	for _, dt in ipairs(alFinal) do datos[#datos + 1] = dt end
 	llenarTarjetas(t.Rejilla, datos)
 	K.Mostrar(t.Seccion, #opciones > 0)
 	K.Mostrar(t.Rangos, #opciones > 1)
@@ -1283,10 +1289,12 @@ function M.Anunciar(tipo, key, a, b)
 				or format(L["Tardaste %s."], N.Duracion(b.seg))
 			texto = t .. " " .. texto
 		end
+		local accion = e.llevas > 0 and { texto = L["Entregar misiones"], alClic = function() P.Entregar(key) end }
+			or { texto = L["Ver tu progreso"], alClic = function() V.Ir("progreso") end }
+		-- 1.3.8: la tarjeta del resumen (Resumen.lua): tiempo, daño o curación, botín y récord.
+		if M.ResumenVuelta and M.ResumenVuelta.Mostrar(key, b, veces, accion) then return end
 		K.Aviso({ lobo = "aullando", tono = "acento", duracion = 10, titulo = format(L["¡Completaste %s!"], nombre),
-			texto = texto,
-			accion = e.llevas > 0 and { texto = L["Entregar misiones"], alClic = function() P.Entregar(key) end }
-				or { texto = L["Ver tu progreso"], alClic = function() V.Ir("progreso") end } })
+			texto = texto, accion = accion })
 	end
 end
 
@@ -1301,6 +1309,8 @@ N.Modulo({
 	ajustes = { historia = true, avisoDescubrir = true, avisoEntrar = true, meSirve = false, capaEntradas = true,
 		-- 1.2.9: la tarjeta del jefe en vivo (EnVivo.lua) y tu papel ("auto" | "tanque" | "cura" | "dano")
 		enVivo = true, enVivoRol = "auto",
+		-- 1.3.8: "linea" (lo más importante, compacto) | "tarjeta" (la de antes); el resumen al terminar (Resumen.lua)
+		enVivoForma = "linea", resumenFin = true,
 		-- 1.3.7: lo que te falta tomar antes de un jefe (Consumibles.lua) y el botín de tu grupo (BotinGrupo.lua)
 		consumibles = true, historial = true },
 	construir = function(view) V.Construir(view) end,

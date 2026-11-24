@@ -248,7 +248,8 @@ function UI.Pose(nombre, segundos)
 	if not (f and f:IsVisible()) or combate or llegando() then return false end
 	if nombre == nil then
 		if dormida or UI.Hablando() then return false end
-		nombre = DEL_MOMENTO[random(#DEL_MOMENTO)]
+		-- 1.3.8: de noche, tranquila (HoraReal.lua): se sienta o se estira.
+		nombre = (M.HoraReal and M.HoraReal.Pose()) or DEL_MOMENTO[random(#DEL_MOMENTO)]
 	end
 	local p = POSES[nombre]
 	if not p then return false end

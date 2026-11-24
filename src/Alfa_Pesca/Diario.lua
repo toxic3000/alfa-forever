@@ -25,22 +25,45 @@ local FILTROS = {
 	pez = function(d) return d.clase == "pez" end,
 	especial = function(d) return d.clase == "trofeo" or d.clase == "concurso" or d.clase == "mision" end,
 	otros = function(d) return d.clase == "sorpresa" or d.clase == "botin" or d.clase == "otro" end,
+	-- 1.3.8: la colección de tu zona: lo que dan sus bancos y lo que sacaste aquí (con lo que falta).
+	zona = function(d) return d.enZona == true end,
 }
 
 local ORDEN_CLASE = { pez = 1, trofeo = 2, concurso = 3, mision = 4, sorpresa = 5, botin = 6, otro = 7 }
 
 local function minus(s) return (tostring(s or ""):lower()) end
 
+-- 1.3.8: lo que se pesca en tu zona: lo que dan sus bancos de peces y lo que
+-- tú ya sacaste aquí. -> { [id] = true }, nombre de la zona
+local function deEstaZona()
+	local zona = M.Lugar and (M.Lugar())
+	local mapa = M.MapaJugador and M.MapaJugador()
+	local aqui = {}
+	if mapa then
+		for _, b in pairs(M.BANCOS) do
+			for _, m in ipairs(b.mapas) do
+				if m == mapa then for _, id in ipairs(b.da) do aqui[id] = true end end
+			end
+		end
+	end
+	for clave, e in pairs(M.Diario()) do
+		if type(e) == "table" and type(e.zonas) == "table" and zona and (tonumber(e.zonas[zona]) or 0) > 0 then aqui[clave] = true end
+	end
+	return aqui, zona
+end
+
 -- Todas las entradas: el catálogo y lo que pescaste.
 local function entradas()
 	local diario = M.Diario()
+	local aqui = deEstaZona()
 	local lista, vistos = {}, {}
 	local function agregar(id, clase)
 		if id == nil or vistos[id] then return end
 		vistos[id] = true
 		local e = diario[id]
 		local n = type(e) == "table" and tonumber(e.n) or 0
-		local d = { id = id, clase = clase or M.CLASE[id] or "otro", n = n, e = type(e) == "table" and e or nil }
+		local d = { id = id, clase = clase or M.CLASE[id] or "otro", n = n, e = type(e) == "table" and e or nil, enZona = aqui[id] or nil }
+		d.record = M.Pez and M.Pez.Record(id) or nil
 		if type(id) == "number" then
 			d.nombre = V.NombreObjeto(id)
 			d.calidad = (d.e and d.e.calidad) or Eq.Calidad(id)
@@ -226,6 +249,30 @@ local function textoAguas(d)
 	return table.concat(lineas, "\n")
 end
 
+-- 1.3.8: tu récord, tus récords por zona y lo normal de la especie. -> texto | nil (sin tamaño)
+local function textoTamanos(d)
+	local Pz = M.Pez
+	if not Pz then return nil end
+	local base = Pz.Especie(type(d.id) == "number" and d.id or nil, d.clase, d.nombre)
+	if not base then return nil end
+	local lineas = {}
+	local r = d.record
+	if r then
+		local donde = r.z and format(L[" en %s"], r.z) or ""
+		lineas[#lineas + 1] = format(L["Tu récord: %s%s, %s."], Pz.Texto(r) or Pz.Peso(r.g), donde, V.Hace(r.t))
+		local zonas = Pz.RecordsDe(d.id)
+		if #zonas > 1 then
+			local partes = {}
+			for i = 1, min(4, #zonas) do partes[#partes + 1] = format(L["%s %s"], zonas[i].zona, Pz.Largo(zonas[i].mm or 0)) end
+			lineas[#lineas + 1] = format(L["Por zona: %s."], table.concat(partes, DOT))
+		end
+	else
+		lineas[#lineas + 1] = L["Cuando lo saques, Alfa anota su tamaño y tu récord."]
+	end
+	lineas[#lineas + 1] = format(L["Lo normal en su especie: unos %s."], Pz.Largo(base * 10))
+	return table.concat(lineas, "\n")
+end
+
 local function textoRecetas(d)
 	local rs = type(d.id) == "number" and M.RECETAS_DE[d.id]
 	if not rs then return nil end
@@ -254,6 +301,8 @@ local function ficha(pila, d)
 		pila.cab = pila:Agregar(cabecera(pila))
 		pila.maestria = pila:Agregar(maestria(pila))
 		pila.numeros = pila:Agregar(V.Parrafo(pila, "texto", "textoSuave"))
+		pila.tamSec = pila:Agregar(K.Seccion(pila, L["Tamaños y récords"]))
+		pila.tam = pila:Agregar(V.Parrafo(pila, "nota", "textoSuave"), { espacio = ESP.xs })
 		pila.aguasSec = pila:Agregar(K.Seccion(pila, L["Dónde sale"]))
 		pila.aguas = pila:Agregar(V.Parrafo(pila, "nota", "textoSuave"), { espacio = ESP.xs })
 		pila.recetasSec = pila:Agregar(K.Seccion(pila, L["Recetas"]))
@@ -265,6 +314,9 @@ local function ficha(pila, d)
 	pila.cab:Set(d)
 	pila.maestria:Set(d.n)
 	pila.numeros:Set(textoNumeros(d))
+	local tam = textoTamanos(d)
+	pila.tam:Set(tam)
+	K.Mostrar(pila.tamSec, tam ~= nil)
 	pila.aguas:Set(textoAguas(d))
 	local rec = textoRecetas(d)
 	pila.recetas:Set(rec)
@@ -314,6 +366,8 @@ local function construir(padre)
 			{ valor = "pez", texto = L["Peces"], cuenta = c.pez },
 			{ valor = "especial", texto = L["Trofeos y concurso"], cuenta = c.especial },
 			{ valor = "otros", texto = L["Sorpresas y cofres"], cuenta = c.otros },
+			{ valor = "zona", texto = L["En esta zona"], cuenta = c.zona,
+				ayuda = L["Lo que dan los bancos de peces de tu zona y lo que ya sacaste aquí. Lo apagado es lo que te falta."] },
 		}
 	end
 	local function rehacer(conservar)
@@ -351,7 +405,9 @@ local function construir(padre)
 			K.Escribir(f.Nombre, d.nombre or "?")
 			if d.n > 0 then V.ColorCalidad(f.Nombre, d.calidad) else K.ColorTexto(f.Nombre, "textoSuave") end
 			local nivel, nombre = M.Maestria(d.n)
-			K.Escribir(f.Sub, (M.NOMBRE_CLASE[d.clase] or "") .. (nivel > 0 and (DOT .. nombre) or ""))
+			-- 1.3.8: con tu récord («récord 32 cm»).
+			local rec = d.record and M.Pez and format(L["récord %s"], d.record.mm and M.Pez.Largo(d.record.mm) or M.Pez.Peso(d.record.g))
+			K.Escribir(f.Sub, (M.NOMBRE_CLASE[d.clase] or "") .. (nivel > 0 and (DOT .. nombre) or "") .. (rec and (DOT .. rec) or ""))
 			f.Cuenta:SetText(d.n > 0 and format("\195\151%d", d.n) or "\226\128\148")
 		end,
 		ficha = ficha,

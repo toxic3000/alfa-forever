@@ -300,9 +300,8 @@ function E.Abrir(opts)
 		-- ser un pin que se recicla al mover el mapa (y la ficha saltaría con él).
 		F:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", der * sa / sf + ESP.s, arriba * sa / sf)
 	else
-		local x, y = GetCursorPosition()
-		local s = UIParent:GetEffectiveScale()
-		F:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", (x or 0) / s + 14, (y or 0) / s - 10)
+		local x, y = K.CursorEnUI() -- (1.3.8 revisión: con el escritorio movido, igual)
+		F:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", x + 14, y - 10)
 	end
 	F:Show()
 	F:Raise()

@@ -201,6 +201,25 @@ local function agregarAlMenu(root, qid)
 	if M.Cadena and A.Get(M.ID .. ".cadenaCompleta") ~= false then
 		root:CreateButton(L["Alfa: ver la cadena completa"], function() M.Cadena.Abrir(qid) end)
 	end
+	-- 1.3.8: de élite, de grupo o de mazmorra: «Busco grupo» a tu manada (La Jauría).
+	local Ma = rawget(_G, "AlfaManada")
+	if type(Ma) == "table" and type(Ma.BuscoGrupo) == "function" and M.Rastreador.DeGrupo({ quest = qid }) then
+		root:CreateButton(L["Alfa: busco grupo para esta misión"], function() Ma.BuscoGrupo(M.TituloMision(qid), "q") end)
+	end
+end
+
+-- 1.3.8: tu guía de ahora y seguir una por su id (La Jauría: compartir tu ruta).
+function R.GuiaActual()
+	local E = A.Engine
+	local g = E and E.GetGuide and E.GetGuide()
+	if type(g) ~= "table" or type(g.id) ~= "string" then return nil end
+	return { id = g.id, nombre = M.NombreGuia(g) or g.id }
+end
+function R.NombreGuia(id) return type(id) == "string" and M.NombreGuia(id) or nil end
+function R.SeguirGuia(id)
+	if type(id) ~= "string" or not M.NombreGuia(id) then return false end
+	M.Biblioteca.Seguir(id)
+	return true
 end
 
 A.OnLogin(function()

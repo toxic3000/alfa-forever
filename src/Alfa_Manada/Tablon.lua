@@ -34,7 +34,8 @@ local type, tonumber, tostring, pairs, ipairs, format, floor, sort = type, tonum
 local V = "1"
 local DURA = 3600     -- un anuncio se va solo a la hora
 local REPITE = 600    -- el tuyo se repite cada 10 minutos
-local CADA = 15       -- segundos entre dos anuncios tuyos
+local CADA = 120      -- segundos entre dos anuncios tuyos (1.3.8: dos minutos, contra el spam)
+local CADA_TARJETA = 120 -- (1.3.8) de la misma persona, una tarjeta cada tanto
 local CADA_OIDO = 5   -- de la misma persona, uno cada tanto
 local TOPE = 40       -- anuncios de otros a la vez
 
@@ -54,7 +55,7 @@ Tb.MOTIVOS = {
 	apagado = "El tablón está apagado (Ajustes de La Jauría).",
 	hermandad = "Necesitas una hermandad: el tablón es de los lobos de la tuya.",
 	texto = "Escribe qué buscas: «Minas de la Muerte, falta sanador».",
-	espera = "Espera unos segundos antes de volver a poner tu anuncio.",
+	espera = "Espera un par de minutos antes de volver a poner tu anuncio.",
 	red = "Ahora no se puede hablar con la manada. Prueba en un rato.",
 }
 
@@ -184,8 +185,71 @@ local function numero(s, max)
 	return n and n <= max and n or nil
 end
 
+---------------------------------------------------------------------------
+-- 1.3.8: «Busco grupo»: la tarjeta con «Me apunto» y quién se apunta
+---------------------------------------------------------------------------
+
+local function aviso(o)
+	local K = N.Kit
+	if K and K.Aviso then return K.Aviso(o) end
+	U.Decir(o.titulo .. (o.texto and (" " .. o.texto) or ""))
+end
+
+local tarjetas = {} -- clave -> GetTime de la última tarjeta suya
+local apuntados = {} -- clave -> m.desde del anuncio al que se apuntó
+
+function Tb.MeApunto(x)
+	if not (x and x.destino) then return false end
+	local ok = M.Red.EnviarLibre("bs:" .. tostring(x.clave), V .. "b|s", x.destino)
+	if ok then U.Decir(format(L["Le avisé a %s que te apuntas."], x.nombre or "?")) end
+	return ok
+end
+
+-- Un anuncio nuevo de un lobo: la tarjeta (manada.tablonAviso), una cada CADA_TARJETA por persona.
+local function tarjeta(x)
+	if N.Get(ID, "tablonAviso") == false then return false end
+	local ahora = U.Ahora()
+	if tarjetas[x.clave] and ahora - tarjetas[x.clave] < CADA_TARJETA then return false end
+	U.Podar(tarjetas, CADA_TARJETA, ahora)
+	tarjetas[x.clave] = ahora
+	aviso({ icono = "ic-manada", tono = "acento", duracion = 20, clave = "tablon:" .. x.clave, prioridad = 3,
+		titulo = format(L["%s busca grupo: %s"], x.nombre or "?", Tb.NombreTipo(x.tipo)),
+		texto = x.nivel and format(L["«%s» · nivel %d"], x.texto, x.nivel) or format(L["«%s»"], x.texto),
+		accion = { texto = L["Me apunto"], alClic = function() Tb.MeApunto(x) end },
+		acciones = { { texto = L["Susurrar"], alClic = function() Tb.Susurrar(x) end } } })
+	return true
+end
+Tb.Tarjeta = tarjeta
+
+-- Alguien se apuntó a tu anuncio: «Invitar» (tu clic). Una vez por persona y anuncio.
+local function seApunta(clave, remitente)
+	local m = Tb.Mio()
+	if not m or apuntados[clave] == m.desde then return false end
+	-- (1.3.8 revisión) Tu anuncio es para tu hermandad: un «me apunto» de
+	-- cualquier otro no se toma. Lo de anuncios viejos se poda.
+	if not (M.Ficha and M.Ficha.DeMiHermandad and M.Ficha.DeMiHermandad(remitente)) then return false end
+	local n = 0
+	for k, desde in pairs(apuntados) do
+		if desde ~= m.desde then apuntados[k] = nil else n = n + 1 end
+	end
+	if n >= 40 then return false end
+	apuntados[clave] = m.desde
+	local nombre = U.Mostrar(remitente)
+	aviso({ icono = "ic-manada", tono = "exito", duracion = 25, clave = "apunta:" .. clave, prioridad = 2,
+		titulo = format(L["%s se apunta"], nombre or "?"), texto = format(L["A tu anuncio: «%s»."], m.texto),
+		accion = { texto = L["Invitar"], alClic = function() U.Invitar(remitente) end },
+		acciones = { { texto = L["Susurrar"], alClic = function() U.Susurrar(remitente, "") end } } })
+	return true
+end
+Tb.SeApunta = seApunta
+
 local repetirPedido = false
 M.Red.Oyentes.b = function(clave, remitente, _, f, canal)
+	-- 1.3.8: «me apunto», por susurro, a quien puso el anuncio.
+	if canal == "WHISPER" then
+		if f[1] == "s" and activo() then seApunta(clave, remitente) end
+		return
+	end
 	if canal ~= "GUILD" or not activo() then return end
 	if f[1] == "?" then
 		-- Alguien entró: si tengo anuncio, lo repito (una vez, al rato).
@@ -217,11 +281,13 @@ M.Red.Oyentes.b = function(clave, remitente, _, f, canal)
 	end
 	suyos[clave] = { clave = clave, nombre = U.Mostrar(remitente), destino = remitente, tipo = tipo,
 		nivel = nivel > 0 and nivel or nil, texto = texto, at = ahora - edad }
+	-- 1.3.8: un anuncio nuevo (no el mismo que se repite) trae su tarjeta.
+	if (not antes or antes.texto ~= texto) and edad < REPITE then tarjeta(suyos[clave]) end
 	cambio()
 end
 M.Red.Libres.b = true
 
-function Tb.Olvidar() wipe(suyos) wipe(oidos) cambio() end
+function Tb.Olvidar() wipe(suyos) wipe(oidos) wipe(tarjetas) wipe(apuntados) ultimoPuesto = -math.huge cambio() end
 
 ---------------------------------------------------------------------------
 -- Repetir el tuyo y preguntar al entrar

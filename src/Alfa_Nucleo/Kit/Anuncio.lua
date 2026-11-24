@@ -32,6 +32,11 @@
 --   llegada   el lobo aúlla               manada   huellas que cruzan
 -- Todo con un OnUpdate ligero que solo corre mientras se ve (al terminar el
 -- marco se oculta y deja de correr). En modo ligero, solo el fundido.
+-- 1.3.8: más cine para todos (cine/prepararCine: profundidad, la luz que
+-- cruza el nombre, polvo o chispas por tipo con K.PARTICULAS_ANUNCIO, salida
+-- que sube), un sonido distinto por tipo, un mensaje por suceso (o.suceso,
+-- N.YaSeVio: lo que otro canal acaba de decir no sale en grande) y los
+-- avisos chicos se acomodan debajo (K.RecolocarAvisos).
 --
 -- Los turnos (1.3.7):
 --   * Una cola por prioridad (1 urgente: el barco que llega; 2: un raro, un
@@ -103,6 +108,34 @@ local ESTILOS = {
 		anim = "cruzan", raya = 170, huellas = true, sonido = "IG_PLAYER_INVITE" },
 }
 K.ESTILOS_ANUNCIO = ESTILOS
+
+-- 1.3.8 (pedido de Toxic: «más cine»): el sonido de cada tipo, distinto y
+-- suave (SOUNDKIT del juego, revisados en referencia/), y sus partículas:
+-- n, color (nil: el del anuncio), mov = "sube" | "flota" | "lado" | "chispa" | "gira",
+-- vel (px/s), tam (px). Los del barco, zepelín y tranvía suenan con su
+-- propio sonido del juego (Nav/Alerts.lua); el raro, con el suyo (Rares).
+ESTILOS.subzona.sonido = false
+ESTILOS.ciudad.sonido = "UI_GARRISON_TOAST_BUILDING_COMPLETE"
+ESTILOS.mazmorra.sonido = "UI_WORLDQUEST_START"
+ESTILOS.tesoro.sonido = "UI_DIG_SITE_COMPLETION_TOAST"
+ESTILOS.llegada.sonido = "UI_WORLDQUEST_COMPLETE"
+local PARTICULAS = {
+	general = { n = 6, mov = "sube", vel = 10, tam = 6 },
+	zona = { n = 10, mov = "flota", vel = 9, tam = 7 },
+	descubrir = { n = 14, color = "oro", mov = "chispa", vel = 26, tam = 6 },
+	barco = { n = 10, color = "pnj", mov = "lado", vel = 22, tam = 6 },
+	zepelin = { n = 8, mov = "flota", vel = 6, tam = 10 },
+	tranvia = { n = 8, color = "aviso", mov = "lado", vel = 60, tam = 4 },
+	raro = { n = 10, mov = "chispa", vel = 30, tam = 5 },
+	tesoro = { n = 14, color = "oro", mov = "gira", vel = 1.3, tam = 6 },
+	mazmorra = { n = 12, mov = "sube", vel = 14, tam = 7 },
+	ciudad = { n = 8, mov = "flota", vel = 5, tam = 8 },
+	peligro = { n = 12, mov = "sube", vel = 20, tam = 5 },
+	llegada = { n = 8, mov = "chispa", vel = 20, tam = 6 },
+	manada = { n = 6, mov = "sube", vel = 10, tam = 6 },
+}
+K.PARTICULAS_ANUNCIO = PARTICULAS
+local MAX_PARTICULAS = 14
 -- El orden en que se enseñan (Ajustes).
 K.ORDEN_ANUNCIOS = { "zona", "subzona", "descubrir", "ciudad", "mazmorra", "peligro", "barco", "zepelin", "tranvia", "raro", "tesoro", "manada" }
 
@@ -234,7 +267,16 @@ end
 -- 1.3.7 (51): un barco o un raro que se fue sin verse (caducó en la fila,
 -- no cupo o se quitó) queda en «Lo que me perdí» (N.Perdido, Momentos.lua).
 local PERDIBLES = { barco = true, zepelin = true, tranvia = true, raro = true, tesoro = true }
+-- (1.3.8 revisión) o.alPerder(o): quien lo pidió se entera de que no salió
+-- (caducó, no cupo o se calló); Zonas.lua devuelve ahí el nombre del juego.
+local function avisarPerdido(o)
+	if type(o) ~= "table" or type(o.alPerder) ~= "function" or o.alfaAvisoPerdido then return end
+	o.alfaAvisoPerdido = true
+	K.Llamar(o.alPerder, o)
+end
+K.AvisarPerdido = avisarPerdido
 local function perdidoAnuncio(o)
+	avisarPerdido(o)
 	if type(o) ~= "table" or o.perdido == false or o.alfaPerdido then return end
 	if not PERDIBLES[o.estilo or ""] then return end
 	local Pe = rawget(N, "Perdido")
@@ -414,6 +456,150 @@ end
 K.ANIMACIONES_ANUNCIO = ANIM
 
 ---------------------------------------------------------------------------
+-- 1.3.8: el cine de todos (pedido de Toxic: «más cine: entrada con
+-- profundidad, brillo del nombre, partículas o polvo según el tipo, salida
+-- elegante»). Todo en el mismo OnUpdate, solo mientras se ve; en modo
+-- ligero y en el chico, nada de esto.
+--   * Profundidad: el halo llega de lejos (grande) y se asienta; el nombre
+--     se acerca un poco (SetTextScale, si el juego lo trae); la línea de
+--     arriba y la de abajo aparecen un instante después del nombre.
+--   * Brillo: una luz cruza el nombre una vez, al terminar de entrar.
+--   * Polvo: sus partículas (PARTICULAS) con semillas fijas, sin azar por cuadro.
+--   * Salida: el contenido sube un poco, las rayas se cierran y el halo se abre.
+---------------------------------------------------------------------------
+local PI = math.pi
+local function semilla(i, k)
+	local x = sin(i * 12.9898 + k * 78.233) * 43758.5453
+	return x - floor(x)
+end
+local SIN_PROFUNDIDAD = { destello = true, aulla = true, gira = true }
+
+local function prepararCine(x, o, est, chico, tw)
+	local p = (not chico and not x.alfaLigero) and PARTICULAS[o.estilo or "general"] or nil
+	if o.particulas == false then p = nil end
+	x.alfaP = p
+	x.alfaTW = tw or 200
+	x.alfaBandaW = nil
+	x.alfaConBrillo = not chico and not x.alfaLigero
+	x.alfaProfundo = x.alfaConBrillo and not SIN_PROFUNDIDAD[est.anim or ""]
+	local r, g, b = K.Color(tono(o, est))
+	local pr, pg, pb = r, g, b
+	if p and p.color then pr, pg, pb = K.Color(p.color) end
+	for i, t in ipairs(x.Polvo) do
+		if p and i <= p.n then
+			local s = (p.tam or 6) * (1.0 + 0.9 * semilla(i, 6))
+			t:SetSize(s, s)
+			t:SetVertexColor(pr, pg, pb, 1)
+			t:SetAlpha(0)
+			t:Show()
+		else
+			t:Hide()
+		end
+	end
+	local h = max(20, (x.Titulo.GetStringHeight and x.Titulo:GetStringHeight()) or 30)
+	if CreateColor then
+		x.BrilloI:SetGradient("HORIZONTAL", CreateColor(r, g, b, 0), CreateColor(1, 1, 1, 0.6))
+		x.BrilloD:SetGradient("HORIZONTAL", CreateColor(1, 1, 1, 0.6), CreateColor(r, g, b, 0))
+	end
+	for _, t in ipairs({ x.BrilloI, x.BrilloD }) do t:SetHeight(h) t:Hide() end
+	if CreateColor then
+		x.BandaI:SetGradient("HORIZONTAL", CreateColor(r, g, b, 0), CreateColor(r, g, b, 0.2))
+		x.BandaD:SetGradient("HORIZONTAL", CreateColor(r, g, b, 0.2), CreateColor(r, g, b, 0))
+	end
+	x.BandaI:ClearAllPoints()
+	x.BandaI:SetPoint("RIGHT", x.Titulo, "CENTER", 0, -2)
+	x.BandaD:ClearAllPoints()
+	x.BandaD:SetPoint("LEFT", x.Titulo, "CENTER", -1, -2)
+	for _, t in ipairs({ x.BandaI, x.BandaD }) do t:SetWidth(1) t:SetShown(x.alfaConBrillo) end
+	x.Sobre:SetAlpha(x.alfaConBrillo and 0 or 1)
+	x.Texto:SetAlpha(x.alfaConBrillo and 0 or 1)
+	x.Pista:SetAlpha(x.alfaConBrillo and 0 or 1)
+	if x.Titulo.SetTextScale then pcall(x.Titulo.SetTextScale, x.Titulo, 1) end
+end
+
+local function cine(self, t, a, fuera)
+	local entra = self.alfaEntra or 0.55
+	if self.alfaConBrillo then
+		-- La línea de arriba y la de abajo, un instante después del nombre.
+		local s1 = min(1, max(0, (t - 0.12) / 0.4))
+		local s2 = min(1, max(0, (t - 0.32) / 0.45))
+		self.Sobre:SetAlpha(s1)
+		self.Texto:SetAlpha(s2)
+		self.Pista:SetAlpha(s2)
+		-- La banda de luz se abre desde el centro y se cierra al salir.
+		local bw = (self.alfaTW or 200) * 0.5 + 120
+		local ab = suave(t / (entra * 1.3)) * (1 - suave(fuera or 0))
+		local w = max(1, floor(bw * ab + 0.5))
+		if w ~= self.alfaBandaW then
+			self.alfaBandaW = w
+			self.BandaI:SetWidth(w)
+			self.BandaD:SetWidth(w)
+		end
+		-- La luz que cruza el nombre.
+		local s = (t - entra * 0.6) / 0.9
+		if s > 0 and s < 1 and not fuera then
+			local tw = self.alfaTW or 200
+			local px = -tw / 2 - 36 + s * (tw + 72)
+			local al = sin(s * PI) * a
+			self.BrilloI:ClearAllPoints()
+			self.BrilloI:SetPoint("RIGHT", self.Titulo, "CENTER", px, 0)
+			self.BrilloD:ClearAllPoints()
+			self.BrilloD:SetPoint("LEFT", self.Titulo, "CENTER", px, 0)
+			self.BrilloI:SetAlpha(al)
+			self.BrilloD:SetAlpha(al)
+			self.BrilloI:Show()
+			self.BrilloD:Show()
+		elseif self.BrilloI:IsShown() then
+			self.BrilloI:Hide()
+			self.BrilloD:Hide()
+		end
+	end
+	-- La profundidad: el halo llega grande y se asienta; el nombre se acerca.
+	if self.alfaProfundo then
+		local k = 1 - suave(t / (entra * 1.6))
+		local abre = fuera or 0
+		local s = 150 * (1 + 1.1 * k + 0.35 * abre)
+		self.Halo:SetSize(s, s)
+		if k > 0 and self.Titulo.SetTextScale then pcall(self.Titulo.SetTextScale, self.Titulo, 1 + 0.16 * k) end
+	end
+	-- El polvo.
+	local p = self.alfaP
+	if not p then return end
+	local tw = self.alfaTW or 200
+	local W = tw + 140
+	local cy = self.alfaChico and -30 or -113
+	for i = 1, p.n do
+		local tex = self.Polvo[i]
+		local vida = 1.8 + semilla(i, 1) * 1.4
+		local fase = ((t + semilla(i, 2) * vida) % vida) / vida
+		local x0 = (semilla(i, 3) - 0.5) * W
+		local y0 = cy + (semilla(i, 4) - 0.5) * 56
+		local dx, dy = 0, 0
+		local mov = p.mov
+		if mov == "sube" then
+			dx, dy = sin((t + i) * 1.3) * 4, (fase - 0.3) * p.vel * vida
+		elseif mov == "flota" then
+			dx, dy = sin(t * 0.7 + i) * p.vel * 1.5, cos(t * 0.5 + i * 2) * p.vel * 0.8 + fase * 6
+		elseif mov == "lado" then
+			dx, dy = (fase - 0.5) * p.vel * vida * 2, sin(fase * PI * 2 + i) * 3
+		elseif mov == "chispa" then
+			dx = (semilla(i, 5) - 0.5) * p.vel * vida * fase * 2
+			dy = p.vel * vida * fase * (1 - fase) * 2
+			x0 = x0 * 0.5
+		elseif mov == "gira" then
+			local ang = t * p.vel + i * (2 * PI / p.n)
+			x0, y0 = 0, cy
+			dx, dy = cos(ang) * (tw / 2 + 22), sin(ang) * 24
+			fase = 0.5
+		end
+		tex:ClearAllPoints()
+		tex:SetPoint("CENTER", self.C, "TOP", floor(x0 + dx + 0.5), floor(y0 + dy + 0.5))
+		tex:SetAlpha(sin(fase * PI) * 0.9 * a * (1 - (fuera or 0)))
+	end
+end
+K.CineAnuncio = cine -- (para el banco)
+
+---------------------------------------------------------------------------
 -- El marco
 ---------------------------------------------------------------------------
 local function pintar(x)
@@ -499,6 +685,34 @@ local function armar()
 		t:SetHeight(2)
 	end
 
+	-- 1.3.8: el brillo que cruza el nombre al entrar (dos medias luces que
+	-- se suman) y el polvo o las chispas de cada tipo.
+	f.BrilloI = C:CreateTexture(nil, "OVERLAY")
+	f.BrilloD = C:CreateTexture(nil, "OVERLAY")
+	for _, t in ipairs({ f.BrilloI, f.BrilloD }) do
+		t:SetColorTexture(1, 1, 1, 1)
+		t:SetBlendMode("ADD")
+		t:SetSize(36, 30)
+		t:Hide()
+	end
+	-- La banda de luz detrás del nombre (de cine: se abre del centro a los lados).
+	f.BandaI = C:CreateTexture(nil, "BACKGROUND", nil, 1)
+	f.BandaD = C:CreateTexture(nil, "BACKGROUND", nil, 1)
+	for _, t in ipairs({ f.BandaI, f.BandaD }) do
+		t:SetColorTexture(1, 1, 1, 1)
+		t:SetHeight(58)
+		t:Hide()
+	end
+	f.Polvo = {}
+	for i = 1, MAX_PARTICULAS do
+		local t = C:CreateTexture(nil, "ARTWORK", nil, -1)
+		t:SetTexture(HALO)
+		t:SetBlendMode("ADD")
+		t:SetSize(6, 6)
+		t:Hide()
+		f.Polvo[i] = t
+	end
+
 	-- El borde que late (peligro): cuatro líneas alrededor del nombre y su línea.
 	f.Borde = {}
 	for i = 1, 4 do
@@ -525,6 +739,7 @@ local function armar()
 		if self.Huellas then self.Huellas:Hide() end
 		actual = nil
 		programar(0.05)
+		if K.RecolocarAvisos then K.RecolocarAvisos() end
 	end)
 
 	f:SetScript("OnUpdate", function(self, dt)
@@ -572,6 +787,9 @@ local function armar()
 		local dx, dy = 0, 0
 		local fn = not self.alfaLigero and ANIM[est.anim] or nil
 		if fn then dx, dy = fn(self, t, e, entra) end
+		-- 1.3.8: la salida elegante: sube un poco mientras se desvanece.
+		local fuera = (t > fin and salida > 0) and min(1, (t - fin) / salida) or nil
+		if fuera and not self.alfaLigero then dy = (dy or 0) + 12 * suave(fuera) end
 		dx, dy = floor((dx or 0) + 0.5), floor((dy or 0) + 0.5)
 		if dx ~= self.alfaDX or dy ~= self.alfaDY then
 			self.alfaDX, self.alfaDY = dx, dy
@@ -581,12 +799,14 @@ local function armar()
 		end
 		-- Las rayas se abren.
 		local r = min(1, max(0, (t - 0.2) / (est.anim == "baja" and 1.1 or 0.7)))
+		if fuera and not self.alfaLigero then r = r * (1 - suave(fuera)) end
 		local ancho = max(1, floor(r * (self.alfaRaya or 170) + 0.5))
 		if ancho ~= self.alfaRayaW then
 			self.alfaRayaW = ancho
 			self.RayaI:SetWidth(ancho)
 			self.RayaD:SetWidth(ancho)
 		end
+		if not self.alfaLigero then cine(self, t, a, fuera) end
 		-- La cuenta, al segundo.
 		local c = self.alfaCuenta
 		if c then
@@ -775,9 +995,17 @@ mostrar = function(o)
 	-- En combate ni el contenido ni la X toman el ratón.
 	raton()
 	pintar(f)
+	prepararCine(f, o, est, chico, tw)
 	f:SetAlpha(0)
 	f:Show()
 	sonar(o, est)
+	-- 1.3.8: lo que dijo queda anotado (nadie más lo repite) y los avisos chicos
+	-- se acomodan debajo.
+	if not o.vuelve and N.Visto and not (N.Secreto and (N.Secreto(o.titulo) or N.Secreto(o.texto))) then
+		N.Visto(o.titulo, "anuncio")
+		if type(o.texto) == "string" and o.texto ~= "" then N.Visto(o.titulo .. " " .. o.texto, "anuncio") end
+	end
+	if K.RecolocarAvisos then K.RecolocarAvisos() end
 	-- Quien lo pidió se entera de que salió de verdad (Zonas.lua esconde ahí el nombre del juego).
 	if type(o.alMostrar) == "function" then K.Llamar(o.alMostrar, o) end
 	return true
@@ -786,11 +1014,23 @@ end
 function K.Anuncio(o)
 	if type(o) ~= "table" or type(o.titulo) ~= "string" then return false end
 	local A = N.A
-	if A and A.Hidden and A.Hidden() then return false end
+	if A and A.Hidden and A.Hidden() then avisarPerdido(o) return false end
 	local est = estiloDe(o)
 	if o.caduca == nil and est.caduca then o.caduca = ahora() + est.caduca end
 	if o.espaciar == nil and est.espaciar then o.espaciar = est.espaciar end
-	if not vigente(o) then return false end
+	if not vigente(o) then avisarPerdido(o) return false end
+	-- 1.3.8: un mensaje por suceso. Lo que otro canal acaba de decir (un aviso,
+	-- Lya) no sale además en grande; o.suceso: el primero que lo cuenta gana.
+	local Sec = rawget(N, "Secreto")
+	if o.clave ~= "probar" and not (type(Sec) == "function" and (Sec(o.titulo) or Sec(o.texto))) then
+		local Su = rawget(N, "Suceso")
+		if o.suceso ~= nil and type(Su) == "function" and not Su(o.suceso, o.ventana) then avisarPerdido(o) return true end
+		local Ya = rawget(N, "YaSeVio")
+		if type(Ya) == "function" and Ya(o.titulo .. ((type(o.texto) == "string" and o.texto ~= "") and (" " .. o.texto) or ""), nil, "anuncio") then
+			avisarPerdido(o)
+			return true
+		end
+	end
 	local e = { o = o, desde = ahora(), n = 0 }
 	if f and f:IsShown() and actual then
 		-- Lo mismo que ya se ve no se repite.

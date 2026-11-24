@@ -157,6 +157,7 @@ local function analizar()
 				if type(c) == "table" and c.mejor ~= "vender" and c.mejor ~= "guardar" and (c.valor or 0) > 0 then
 					g.valor = (c.valor or 0) * g.cantidad
 					g.motivo = CM.TextoMejor and M.Llamar(CM.TextoMejor, c) or nil
+					g.mejor = c.mejor -- 1.3.8: «Separar» (Separar.lua) marca lo de la subasta
 					conservar[#conservar + 1] = g
 				elseif vendible(e, g.q, g.link, type(c) == "table" and c or nil) and (CM == nil or type(c) ~= "table" or c.mejor == "vender") then
 					g.valor = venta * g.cantidad
@@ -280,6 +281,8 @@ local function chatarraAhora()
 		for s = 1, M.Num(M.Llamar(C.GetContainerNumSlots, bolsa)) or 0 do
 			local id, cantidad, precio = M.Llamar(junkAt, bolsa, s)
 			id = M.Num(id)
+			-- 1.3.8: lo que tiene candado nunca se vende (Candado.lua; el motor ya lo salta).
+			if id and M.Candado and M.Candado.TieneCasilla(bolsa, s) then id = nil end
 			if id then
 				-- 1.3.1: con su precio, para sumar al vender solo lo que de verdad se vendió.
 				lista[#lista + 1] = { bolsa, s, id, precio = M.Num(precio) or 0 }

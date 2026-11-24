@@ -1,0 +1,6 @@
+<Bindings>
+	<!-- 1.3.8: el modo Zen (Zen.lua): todo Alfa fuera menos la flecha; otra pulsación lo devuelve. -->
+	<Binding name="ALFA_ZEN" category="Alfa" searchTags="BINDING_TAG_ALFA">
+		if AlfaZen and AlfaZen.Alternar then AlfaZen.Alternar() end
+	</Binding>
+</Bindings>

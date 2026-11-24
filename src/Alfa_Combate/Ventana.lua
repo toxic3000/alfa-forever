@@ -499,6 +499,10 @@ function V.Opciones()
 	local puede, porque = D.PuedeAnunciar(M.Opt("sesion"), M.Opt("tipo"))
 	o[#o + 1] = { valor = "anunciar", texto = L["Anunciar en el chat"], icono = "ic-manada", apagada = not puede, motivo = porque }
 	o[#o + 1] = { valor = "cero", texto = L["Empezar de cero"], icono = "ic-cerrar" }
+	-- 1.3.8: el resumen de tu última pelea, a pedido (ya no sale solo de fábrica).
+	local hay = M.Resumen and M.Resumen.Ultima() ~= nil
+	o[#o + 1] = { valor = "pelea", texto = L["Ver mi última pelea"], icono = "ic-lista", apagada = not hay,
+		motivo = not hay and L["Todavía no hay una pelea que resumir."] or nil }
 	o[#o + 1] = { valor = "ajustes", texto = L["Ajustes del medidor"], icono = "ic-ajustes" }
 	o[#o + 1] = { valor = "esconder", texto = L["Esconder hasta tu próximo grupo"] }
 	return o
@@ -512,6 +516,7 @@ function V.Elegir(valor)
 	elseif sesion then M.SetOpt("sesion", sesion)
 	elseif valor == "anunciar" then D.Anunciar(M.Opt("sesion"), M.Opt("tipo"))
 	elseif valor == "cero" then D.PedirReiniciar()
+	elseif valor == "pelea" then if M.Resumen then M.Resumen.VerDeNuevo() end
 	elseif valor == "ajustes" then N.Abrir(M.ID)
 	elseif valor == "esconder" then V.Cerrar() end
 end

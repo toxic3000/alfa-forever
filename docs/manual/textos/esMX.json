@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "La 1.3.7: la manada a tu ritmo", "items": ["**Avisos a su tiempo:** todo hace fila y espera a lo del juego; al subir de nivel sale un solo resumen. `/alfa calma` para no molestar y «Lo que me perdí» (`/alfa perdi`) para lo que se te pasó.", "**Cada zona se anuncia:** al llegar, en grande y con su animación (barco, raro, mazmorra, descubrir…). Se eligen en Ajustes > Estilo y sonido > Anuncios.", "**Tu oro y tu daño:** el oro sale una vez; las monedas te dan el de cada personaje. El medidor de daño sale solo en grupo, sin tapar tus barras.", "**Pesca lista para pelear:** la espada de la barra te devuelve tus armas en un clic, incluso en plena pelea."]}
+    "mapa": {"titulo": "La 1.3.8: la manada en dos pantallas", "items": ["**Dos pantallas:** con otro monitor, Alfa pone ahí tu guía, la flecha, el mapa, Hoy y Lya. Se pone en un clic y lo pruebas antes de guardar (`/alfa pantallas`).", "**Avisos únicos:** el barco se dice claro en la flecha (a dónde, cuándo sale y cuándo llegas) y cada suceso da un solo mensaje.", "**Pesca y candado:** tamaños, récords y tu nivel de pescador del 1 al 60. Alt+clic derecho le pone candado a un objeto para que no se borre ni se venda.", "**Cada facción por su lado:** lo que comparte La Jauría se queda en tu facción, y la Enciclopedia dice cómo se consigue cada objeto y qué tan probable es."]}
   },
   "contraportada": {
     "titulo": "Únete a la manada",

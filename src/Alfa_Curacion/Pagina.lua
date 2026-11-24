@@ -525,6 +525,127 @@ local function filaIzquierdo(ui)
 	table.insert(clics.filas, 1, ui.filaIzq)
 end
 
+---------------------------------------------------------------------------
+-- 1.3.8: Color de los marcos (Color.lua): el modo, tu color, la intensidad y
+-- una vista previa con tres barras (llena, a media y baja).
+---------------------------------------------------------------------------
+
+-- La muestra de «Tu color»: un cuadrito con el color (ya con la intensidad) y
+-- el botón que abre el selector de colores del juego.
+local function controlTuColor(fila)
+	local f = CreateFrame("Frame", nil, fila)
+	local chip = CreateFrame("Frame", nil, f)
+	chip:SetSize(30, 18)
+	chip.caja = K.Caja(chip, { fondo = "hundido", borde = "linea", corte = K.CORTE.chico })
+	chip.color = chip:CreateTexture(nil, "ARTWORK")
+	chip.color:SetTexture("Interface\\Buttons\\WHITE8x8")
+	chip.color:SetPoint("TOPLEFT", chip, "TOPLEFT", 3, -3)
+	chip.color:SetPoint("BOTTOMRIGHT", chip, "BOTTOMRIGHT", -3, 3)
+	local b = K.Boton(f, L["Elegir color"], function() M.ElegirColor() end, { tipo = "secundario", tam = "chico" })
+	chip:SetPoint("LEFT", f, "LEFT", 0, 0)
+	b:SetPoint("LEFT", chip, "RIGHT", ESP.s, 0)
+	f.Chip, f.Boton = chip, b
+	local function medir()
+		f:SetSize(30 + ESP.s + K.num(b:GetWidth(), 90), max(18, K.num(b:GetHeight(), 22)))
+	end
+	medir()
+	function f:Leer()
+		local k, base = M.FactorColor()
+		local r, g, bb = M.ColorUnico()
+		self.Chip.color:SetVertexColor(r * k + base, g * k + base, bb * k + base, 1)
+		medir()
+	end
+	function f:SetActivo(on)
+		if on == false then self.Boton:Disable() else self.Boton:Enable() end
+		self:SetAlpha(on == false and 0.45 or 1)
+	end
+	f:Leer()
+	return f
+end
+
+-- Así se ven: tres barras chicas con el modo y la intensidad de ahora.
+local MUESTRAS = { { "WARRIOR", 1 }, { "PRIEST", 0.6 }, { "MAGE", 0.25 } }
+local function controlVista(fila)
+	local f = CreateFrame("Frame", nil, fila)
+	local W, H = 64, 20
+	f:SetSize(3 * W + 2 * ESP.s, H)
+	f.minis = {}
+	for i, m in ipairs(MUESTRAS) do
+		local c = CreateFrame("Frame", nil, f)
+		c:SetSize(W, H)
+		c:SetPoint("LEFT", f, "LEFT", (i - 1) * (W + ESP.s), 0)
+		c.fondo = c:CreateTexture(nil, "BACKGROUND")
+		c.fondo:SetTexture("Interface\\Buttons\\WHITE8x8")
+		c.fondo:SetAllPoints(c)
+		c.fondo:SetVertexColor(0.03, 0.035, 0.04, 0.9)
+		c.hueco = c:CreateTexture(nil, "BORDER")
+		c.hueco:SetTexture("Interface\\Buttons\\WHITE8x8")
+		c.hueco:SetPoint("TOPLEFT", c, "TOPLEFT", 1, -1)
+		c.hueco:SetPoint("BOTTOMRIGHT", c, "BOTTOMRIGHT", -1, 1)
+		c.vida = c:CreateTexture(nil, "ARTWORK")
+		c.vida:SetTexture("Interface\\Buttons\\WHITE8x8")
+		c.vida:SetPoint("TOPLEFT", c, "TOPLEFT", 1, -1)
+		c.vida:SetPoint("BOTTOMLEFT", c, "BOTTOMLEFT", 1, 1)
+		c.vida:SetWidth(max(1, (W - 2) * m[2]))
+		c.borde = {}
+		for j = 1, 4 do
+			local t = c:CreateTexture(nil, "OVERLAY")
+			t:SetTexture("Interface\\Buttons\\WHITE8x8")
+			c.borde[j] = t
+		end
+		c.borde[1]:SetPoint("TOPLEFT") c.borde[1]:SetPoint("TOPRIGHT") c.borde[1]:SetHeight(2)
+		c.borde[2]:SetPoint("BOTTOMLEFT") c.borde[2]:SetPoint("BOTTOMRIGHT") c.borde[2]:SetHeight(2)
+		c.borde[3]:SetPoint("TOPLEFT") c.borde[3]:SetPoint("BOTTOMLEFT") c.borde[3]:SetWidth(2)
+		c.borde[4]:SetPoint("TOPRIGHT") c.borde[4]:SetPoint("BOTTOMRIGHT") c.borde[4]:SetWidth(2)
+		c.alfaMuestra = m
+		f.minis[i] = c
+	end
+	function f:Leer()
+		local P = M.PELIGRO
+		for _, c in ipairs(self.minis) do
+			local clase, vida = c.alfaMuestra[1], c.alfaMuestra[2]
+			local r, g, b = M.ColorPara(clase, vida)
+			c.vida:SetVertexColor(r, g, b, 1)
+			local cr, cg, cb = M.ColorDeClase(clase)
+			if M.ModoColor() ~= "clase" or not cr then cr, cg, cb = r, g, b end
+			c.hueco:SetVertexColor(cr * 0.1 + 0.02, cg * 0.1 + 0.02, cb * 0.1 + 0.025, 0.75)
+			local peligro = N.Get(ID, "peligro") and vida < M.UMBRAL_PELIGRO
+			for j = 1, 4 do
+				c.borde[j]:SetVertexColor(P.borde[1], P.borde[2], P.borde[3], P.borde[4])
+				c.borde[j]:SetShown(peligro and true or false)
+			end
+		end
+	end
+	f:Leer()
+	return f
+end
+
+function M.GrupoColor(padre, activo)
+	local g = K.GrupoAjustes(padre, { titulo = L["Color de los marcos"] })
+	g:Fila({ titulo = L["Color de la barra"], activa = activo,
+		texto = L["Por clase: el color de la clase de cada uno, apagado para que no canse. Un solo color: el que tú elijas. Según la vida: verde, amarillo y rojo según lo que le queda."],
+		control = function(fila)
+			return K.Desplegable(fila, { ancho = 180, opciones = {
+				{ valor = "clase", texto = L["Por clase"] }, { valor = "unico", texto = L["Un solo color"] }, { valor = "vida", texto = L["Según la vida"] } },
+				get = function() return M.ModoColor() end,
+				set = function(v) N.Set(ID, "colorModo", v) end })
+		end })
+	g:Fila({ titulo = L["Tu color"], hija = true,
+		activa = function() return activo() and M.ModoColor() == "unico" end,
+		texto = L["El color de todas las barras con «Un solo color», con el selector de colores del juego."],
+		control = controlTuColor })
+	g:Fila({ titulo = L["Intensidad"], activa = activo,
+		texto = L["Qué tan vivo se ve el color de las barras."],
+		control = function(fila)
+			return K.Desplegable(fila, { clave = ID .. ".colorIntensidad", ancho = 180, opciones = {
+				{ valor = "apagado", texto = L["Apagado [color]"] }, { valor = "normal", texto = L["Normal [color]"] }, { valor = "vivo", texto = L["Vivo [color]"] } } })
+		end })
+	g:Fila({ titulo = L["Así se ven"], activa = activo,
+		texto = L["Llena, a media y baja (con el borde de «En peligro»)."],
+		control = controlVista })
+	return g
+end
+
 local function grupos(ui, padre)
 	local clics = K.GrupoAjustes(padre, { titulo = L["Tus clics"] })
 	ui.clics = clics
@@ -572,11 +693,12 @@ local function grupos(ui, padre)
 	marcos:Fila({ titulo = L["Volver a su lugar"], texto = L["Pone los marcos donde estaban al instalar Alfa."], activa = activo,
 		control = function(fila) return K.Boton(fila, L["Reiniciar"], function() M.ReiniciarPosicion() end, { tipo = "secundario", tam = "chico" }) end })
 
+	local color = M.GrupoColor(padre, activo)
+
 	local muestran = K.GrupoAjustes(padre, { titulo = L["Qué muestran"] })
 	local function fila(titulo, clave, texto)
 		muestran:Fila({ titulo = titulo, texto = texto, control = interruptor(clave), activa = activo })
 	end
-	fila(L["Color de clase"], "colorClase", L["La barra de vida con el color de la clase de cada uno. Apagado: barra verde y el nombre con su color."])
 	-- 1.3.7: maná, furia o energía bajo la vida (Marcos.lua).
 	fila(L["Maná, furia o energía"], "recurso", L["Una barra delgada bajo la vida con el maná, la furia o la energía de cada uno, en su color."])
 	fila(L["Curas que van llegando"], "entrantes", L["Una franja verde clara muestra las curas que ya vienen en camino."])
@@ -589,7 +711,7 @@ local function grupos(ui, padre)
 	fila(L["Le falta tu hechizo de apoyo"], "buffs", L["Un punto azul abajo a la derecha si a ese compañero le falta tu hechizo de apoyo (el que le das antes de pelear). Se revisa fuera de combate."])
 	fila(L["Tanque en apuros"], "tanque", L["El marco del tanque late en rojo cuando le queda menos del 40 % de vida."])
 	-- 1.3.7 (Peligro.lua)
-	fila(L["En peligro"], "peligro", L["Un velo rojo respira sobre la barra de quien baja del 35 % de vida, para verlo a la primera."])
+	fila(L["En peligro"], "peligro", L["Un borde rojo suave respira alrededor de quien baja del 35 % de vida, para verlo a la primera."])
 	fila(L["Maná de los curanderos"], "mana", L["Arriba de tus marcos, el maná de quienes curan en tu grupo. Se destaca al terminar cada pelea."])
 	fila(L["Porcentaje de vida"], "porcentaje", L["Muestra la vida en número, debajo del nombre."])
 	fila(L["Atenuar a quien está lejos"], "alcance", L["Si está fuera de tu alcance, su marco se ve más tenue."])
@@ -598,7 +720,7 @@ local function grupos(ui, padre)
 	-- 1.3.7 (Listos.lua): no depende de los marcos.
 	muestran:Fila({ titulo = L["Lo que falta en «¿Listos?»"], control = interruptor("listos"),
 		texto = L["Cuando alguien pregunta «¿Listos?»: tu comida, munición, equipo y espacio, y a quién le falta un hechizo de apoyo, con un botón para dar el tuyo. También con /alfa curacion listos."] })
-	return { clics, marcos, muestran }
+	return { clics, marcos, color, muestran }
 end
 
 ---------------------------------------------------------------------------
@@ -691,7 +813,20 @@ local CONTROLES = {
 	toggle("porGrupos", L["En banda, un grupo por columna"], L["Cada grupo de la banda en su propia columna (o fila), como en la ventana de banda. Con el orden por grupo."], "raid groups, layout", true),
 	{ kind = "button", label = L["Volver a su lugar"], button = L["Reiniciar"], icon = "window", disabled = apagado,
 		help = L["Pone los marcos donde estaban al instalar Alfa."], onClick = function() M.ReiniciarPosicion() end, search = "reset position" },
-	toggle("colorClase", L["Color de clase"], L["La barra de vida con el color de la clase de cada uno. Apagado: barra verde y el nombre con su color."], "class colours"),
+	-- 1.3.8: «Color de los marcos» (antes, «Color de clase» prendido o apagado).
+	{ kind = "dropdown", key = clave("colorModo"), label = L["Color de la barra"], disabled = apagado,
+		help = L["Por clase: el color de la clase de cada uno, apagado para que no canse. Un solo color: el que tú elijas. Según la vida: verde, amarillo y rojo según lo que le queda."],
+		get = function() return M.ModoColor() end, set = function(v) N.Set(ID, "colorModo", v) end,
+		choices = { { value = "clase", label = L["Por clase"] }, { value = "unico", label = L["Un solo color"] }, { value = "vida", label = L["Según la vida"] } },
+		search = "class colours, frame colour, health colour, custom colour, color de clase" },
+	{ kind = "button", label = L["Tu color"], button = L["Elegir color"], icon = "window", child = true,
+		disabled = function() return apagado() or M.ModoColor() ~= "unico" end,
+		help = L["El color de todas las barras con «Un solo color», con el selector de colores del juego."], onClick = function() M.ElegirColor() end,
+		search = "custom colour, color picker" },
+	{ kind = "dropdown", key = clave("colorIntensidad"), label = L["Intensidad"], disabled = apagado,
+		help = L["Qué tan vivo se ve el color de las barras."],
+		choices = { { value = "apagado", label = L["Apagado [color]"] }, { value = "normal", label = L["Normal [color]"] }, { value = "vivo", label = L["Vivo [color]"] } },
+		search = "colour intensity, brightness, saturation" },
 	toggle("recurso", L["Maná, furia o energía"], L["Una barra delgada bajo la vida con el maná, la furia o la energía de cada uno, en su color."], "power bar, mana bar, rage, energy, runic power"),
 	toggle("entrantes", L["Curas que van llegando"], L["Una franja verde clara muestra las curas que ya vienen en camino."], "incoming heals, heal prediction"),
 	toggle("amenaza", L["Amenaza"], L["Una línea roja arriba avisa cuando un enemigo va por ese compañero; si no es el tanque, su marco brilla en naranja por fuera."], "threat, aggro"),
@@ -700,7 +835,7 @@ local CONTROLES = {
 	-- 1.3.6: «hechizo de apoyo» en vez de «buff».
 	toggle("buffs", L["Le falta tu hechizo de apoyo"], L["Un punto azul abajo a la derecha si a ese compañero le falta tu hechizo de apoyo (el que le das antes de pelear). Se revisa fuera de combate."], "missing buffs, buff, hechizo de apoyo, fortitude, mark of the wild, arcane intellect, blessing"),
 	toggle("tanque", L["Tanque en apuros"], L["El marco del tanque late en rojo cuando le queda menos del 40 % de vida."], "tank alert, low health"),
-	toggle("peligro", L["En peligro"], L["Un velo rojo respira sobre la barra de quien baja del 35 % de vida, para verlo a la primera."], "low health, danger, red, alert"),
+	toggle("peligro", L["En peligro"], L["Un borde rojo suave respira alrededor de quien baja del 35 % de vida, para verlo a la primera."], "low health, danger, red, alert"),
 	toggle("mana", L["Maná de los curanderos"], L["Arriba de tus marcos, el maná de quienes curan en tu grupo. Se destaca al terminar cada pelea."], "healer mana, group mana"),
 	toggle("porcentaje", L["Porcentaje de vida"], L["Muestra la vida en número, debajo del nombre."], "health percent"),
 	toggle("alcance", L["Atenuar a quien está lejos"], L["Si está fuera de tu alcance, su marco se ve más tenue."], "range, out of range fade"),

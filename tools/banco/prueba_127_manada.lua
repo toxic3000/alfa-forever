@@ -45,7 +45,7 @@ local function conRed(fn)
   R.Escuchar()
   local via, envio, av = R.Via, C_ChatInfo.SendAddonMessage, K.Aviso
   R.Via = function() return "hermandad" end
-  C_ChatInfo.SendAddonMessage = function(_, t, c, d) salidos[#salidos + 1] = { t, c, d } end
+  C_ChatInfo.SendAddonMessage = function(_, t, c, d) salidos[#salidos + 1] = { (t:gsub("|~[HA]$", "")), c, d } end
   K.Aviso = function(o) avisos[#avisos + 1] = o return true end
   local ok, e = pcall(fn)
   R.Via, C_ChatInfo.SendAddonMessage, K.Aviso = via, envio, av
@@ -53,7 +53,7 @@ local function conRed(fn)
   if not ok then error(e) end
 end
 local function vaciarCola() for _ = 1, 60 do FIRE(R.motor, "OnUpdate", 0.2) end end
-local function llega(texto, quien) FIRE_EVENT("CHAT_MSG_ADDON", "AlfaManada", texto, "GUILD", quien) end
+local function llega(texto, quien) FIRE_EVENT("CHAT_MSG_ADDON", "AlfaManada", texto .. "|~H", "GUILD", quien) end
 local function salio(patron)
   for _, m in ipairs(salidos) do if m[1]:find(patron) then return m[1] end end
   return nil

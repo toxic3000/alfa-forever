@@ -28,8 +28,9 @@
 -- Logros.lua (1.2.9).
 -- 1.3.0, en minúscula (un Alfa viejo los descarta): 1b en Tablon.lua (el
 -- tablón), 1a en Mentor.lua, 1i en Botin.lua; los spots van en 1N (5.º campo
--- "s"). 1Y queda para los saludos entre Lyas (Alfa_Lya). Libres: I, Z y casi
--- todas las minúsculas.
+-- "s"). 1Y queda para los saludos entre Lyas (Alfa_Lya). 1.3.8: 1p es la
+-- tabla de pescadores (Alfa_Pesca/Jauria.lua, por la hermandad, con su ajuste
+-- pesca.jauria). Libres: I, Z y casi todas las minúsculas.
 --
 -- La posición sale cada ENVIO segundos como mínimo y solo si te moviste más
 -- de MOVER yardas; quieto, una vez cada REFRESCO para que tu pin no caduque.
@@ -48,6 +49,13 @@
 -- entera (R.AlNoEstar[nombre] = fn(clave), Mentor.lua). Lo que se difunde
 -- (1G, 1V, 1A, 1T, 1M) no se acepta por susurro: solo por el canal o la
 -- hermandad, y solo si compartes.
+--
+-- 1.3.8 (Horda y Alianza, cada una por su lado): todo mensaje sale con la
+-- facción de quien lo manda como último campo ("|~H" o "|~A", R.Enviar), y
+-- al llegar (N.PorPrefijo, Alfa_Nucleo/Faccion.lua) se ignora el de la otra
+-- facción. Uno sin marca (un Alfa viejo) solo se acepta por la hermandad, el
+-- grupo o la banda, que ya son de tu facción. El canal oculto es uno por
+-- facción (Canal.lua): la otra ni lo oye.
 
 local ADDON, M = ...
 local N = AlfaNucleo
@@ -285,6 +293,9 @@ end))
 function R.Enviar(clave, texto, canal, destino, despedida)
 	if not R.PuedeEnviar(despedida) then return false end
 	R.Prefijo()
+	-- 1.3.8: todo lo de la manada lleva tu facción al final ("|~H" / "|~A");
+	-- quien es de la otra lo ignora (Núcleo, Faccion.lua).
+	if N.ConFaccion and type(texto) == "string" then texto = N.ConFaccion(texto) end
 	if not cola[clave] then orden[#orden + 1] = clave end
 	cola[clave] = { texto = texto, canal = canal, destino = destino, difundir = canal == nil, despedida = despedida or nil }
 	motor:Show()

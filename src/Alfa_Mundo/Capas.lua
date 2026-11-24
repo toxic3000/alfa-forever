@@ -377,6 +377,11 @@ motor(G_MISIONES, "misiones.objetivos", "qol.mapObjectives", L["Objetivos de tus
 motor(G_MISIONES, "misiones.minimapa", "qol.minimapObjectives", L["Misiones en el minimapa"],
 	L["Los mismos marcadores de misiones en el minimapa."], MAPA .. "quest-available", "textDim", { requiere = conBase })
 
+-- 1.3.8: quien te da misiones en tu zona, con el color de lo difícil que es (MisionesColor.lua).
+motor(G_MISIONES, "misiones.color", ID .. ".misionesColor", L["Misiones por color"],
+	L["Quien te da misiones en tu zona que ya puedes tomar: verde fácil, amarillo buena, naranja difícil y rojo peligrosa para tu nivel. Se arman al abrir el mapa de Alfa."],
+	MAPA .. "quest-available", "quest", { propia = true })
+
 -- Raros y tesoros
 motor(G_RAROS, "raros.mapa", "rares.worldRares", L["Raros en el mapa"],
 	L["Cada lugar conocido donde aparece un enemigo raro."], MAPA .. "rare", "rare", { requiere = conRaros })
