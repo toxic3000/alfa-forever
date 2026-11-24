@@ -469,3 +469,68 @@ function Pz.Borrar()
 	local d = datos()
 	d.records, d.recordsZona, d.pescador = nil, nil, nil
 end
+
+---------------------------------------------------------------------------
+-- 1.3.9: la fecha de un récord ("12 de noviembre de 2026"; sin el año si es
+-- de este año) y el aviso del pez de la semana al llegar a una de sus zonas.
+---------------------------------------------------------------------------
+function Pz.Fecha(t)
+	t = tonumber(t)
+	if not t then return nil end
+	local d = date("*t", t)
+	local hoy = date("*t", time())
+	local molde = d.year == hoy.year and L["{dia} de {mes}"] or L["{dia} de {mes} de {año}"]
+	local mes = Pz.MESES[d.month] or tostring(d.month)
+	return (molde:gsub("{dia}", tostring(d.day)):gsub("{mes}", mes):gsub("{año}", tostring(d.year)))
+end
+
+-- El mapa y sus padres (una subzona o una ciudad cuentan como su zona).
+local function zonasDe(mapa)
+	local out, n = {}, 0
+	local C = C_Map
+	while mapa and n < 4 do
+		out[#out + 1] = mapa
+		n = n + 1
+		if not (C and C.GetMapInfo) then break end
+		local ok, info = pcall(C.GetMapInfo, mapa)
+		local padre = ok and type(info) == "table" and tonumber(N.Leer(info.parentMapID)) or nil
+		if not padre or padre == mapa or padre == 0 then break end
+		mapa = padre
+	end
+	return out
+end
+
+-- -> true si avisó. Una vez por zona y por semana; nunca en combate; solo si pescas.
+function Pz.AvisoSemanaZona(mapa)
+	if not M.Opt("avisoSemana") then return false end
+	if InCombatLockdown and InCombatLockdown() then return false end
+	if (num(M.Habilidad and M.Habilidad() or 0)) <= 0 then return false end
+	local s = Pz.Semana()
+	if not s or s.premiado or s.llevas >= s.meta then return false end
+	mapa = mapa or (M.MapaJugador and M.MapaJugador())
+	if not mapa then return false end
+	local suya
+	local enLista = {}
+	for _, m in ipairs(s.mapas or {}) do enLista[m] = true end
+	for _, m in ipairs(zonasDe(mapa)) do if enLista[m] then suya = m break end end
+	if not suya then return false end
+	local p = Pz.Datos()
+	p.semana.avisados = type(p.semana.avisados) == "table" and p.semana.avisados or {}
+	if p.semana.avisados[suya] then return false end
+	p.semana.avisados[suya] = true
+	local nombre = M.V and M.V.NombreObjeto(s.id) or tostring(s.id)
+	local zona = M.V and M.V.NombreMapa(suya) or ""
+	local libre = N.AlLibre or function(_, f) f() end
+	libre("pesca.semanaZona", function()
+		if not (N.Kit and N.Kit.Aviso) then return end
+		N.Kit.Aviso({ id = "pesca.semanaZona", icono = "ic-pesca", tono = "oro", duracion = 8, prioridad = 3,
+			titulo = L["El pez de la semana anda por aquí"],
+			texto = format(L["%s sale en %s. Llevas %d de %d esta semana."], nombre, zona, s.llevas, s.meta),
+			accion = { texto = L["Ver el pez de la semana"], alClic = function() if M.V then M.V.Abrir("pescador") end end } })
+	end, 3)
+	return true
+end
+
+local function revisarZona() N.Una("pesca.semanaZona", 6, function() Pz.AvisoSemanaZona() end, { fueraDeCombate = true }) end
+A.RegisterEvent("ZONE_CHANGED_NEW_AREA", revisarZona)
+A.RegisterEvent("PLAYER_ENTERING_WORLD", revisarZona)

@@ -31,6 +31,7 @@ local N, A, L = M.N, M.A, M.L
 local T = A.Theme
 
 local type, pairs, ipairs, tonumber, floor, max = type, pairs, ipairs, tonumber, math.floor, math.max
+local next, format, tostring = next, string.format, tostring
 
 local B = {}
 M.Botones = B
@@ -508,13 +509,88 @@ function B.Bloqueo(b, bloqueado)
 	if p and p.icono then p.icono:SetDesaturated(bloqueado and true or false) end
 end
 
+---------------------------------------------------------------------------
+-- 1.3.9 (bug 14): el número de la recarga dentro de la casilla. El del juego
+-- («55m» en la piedra de hogar) es de su letra y su tamaño, y en las casillas
+-- de Alfa se salía. Ahora es un texto propio, con la letra de Alfa, que se
+-- achica hasta caber (nunca más ancho que la casilla menos 4 px), y el del
+-- juego se esconde. Con valores secretos (no se pueden leer) queda el del
+-- juego. Un solo reloj (N.Cada «bolsas.recargas», 1 s) mientras alguna
+-- recarga legible corre.
+---------------------------------------------------------------------------
+local recargas = {} -- botón -> p (con p.finRecarga)
+local RELOJ_RECARGAS = "bolsas.recargas"
+local ceil = math.ceil
+
+-- 3300 -> "55m", 7200 -> "2h", 42.2 -> "43"
+function B.TextoRecarga(falta)
+	if falta >= 3600 then return format(L["%dh [recarga]"], ceil(falta / 3600)) end
+	if falta >= 60 then return format(L["%dm [recarga]"], ceil(falta / 60)) end
+	return tostring(max(1, ceil(falta)))
+end
+
+-- Pone el texto y lo achica hasta que cabe en la casilla.
+local function escribirRecarga(p, texto)
+	local fs = p.recarga
+	local tam = max(16, p.tam or 36)
+	local tope = tam - 4
+	if p.recargaTexto == texto and p.recargaTam == tam then return end
+	p.recargaTexto, p.recargaTam = texto, tam
+	local letra = max(8, floor(tam * 0.32 + 0.5))
+	local cara = N.Kit and N.Kit.Cara and N.Kit.Cara("semibold") or (STANDARD_TEXT_FONT or "Fonts\FRIZQT__.TTF")
+	for _ = 1, 8 do
+		if N.Kit and N.Kit.FuenteSegura then N.Kit.FuenteSegura(fs, cara, letra, "OUTLINE")
+		else pcall(fs.SetFont, fs, cara, letra, "OUTLINE") end
+		fs:SetText(texto)
+		local w = tonumber(fs:GetStringWidth()) or 0
+		if w <= tope or letra <= 8 then break end
+		letra = letra - 1
+	end
+	p.recargaLetra = letra
+	fs:SetWidth(tope)
+end
+B.EscribirRecarga = escribirRecarga
+
+local function ticRecargas()
+	local ahora = GetTime and GetTime() or 0
+	for b, p in pairs(recargas) do
+		local falta = (p.finRecarga or 0) - ahora
+		if falta <= 0 or not p.recarga or not b:IsShown() then
+			recargas[b] = nil
+			p.finRecarga = nil
+			if p.recarga then p.recarga:Hide() end
+		elseif b:IsVisible() then
+			escribirRecarga(p, B.TextoRecarga(falta))
+			if falta <= 10 then p.recarga:SetTextColor(1, 0.82, 0.25, 1) else p.recarga:SetTextColor(1, 1, 1, 1) end
+			p.recarga:Show()
+		end
+	end
+	if next(recargas) == nil and N.Quitar then N.Quitar(RELOJ_RECARGAS) end
+end
+B.TicRecargas = ticRecargas
+B.Recargas = recargas
+
+local function numerosDelJuego(cd, mostrar)
+	if type(cd.SetHideCountdownNumbers) == "function" then pcall(cd.SetHideCountdownNumbers, cd, not mostrar) end
+end
+
+local function sinRecarga(p)
+	if not p then return end
+	p.finRecarga = nil
+	if p.recarga then p.recarga:Hide() end
+end
+
 -- El enfriamiento del objeto (pociones, piedra de hogar...), solo en vivo.
 function B.Enfriar(b, bolsa, casilla)
 	local cd = b.Cooldown
-	if type(cd) ~= "table" or not cd.SetCooldown then return end
+	-- (1.3.9: sin el marco del juego, el número propio igual se pone.)
+	if type(cd) ~= "table" or not cd.SetCooldown then cd = nil end
 	local p = partes[b]
-	if not (p and p.ent and p.ent.rec) then
-		if cd.Clear then cd:Clear() else cd:Hide() end
+	if not p then return end
+	if not (p.ent and p.ent.rec) then
+		if cd then if cd.Clear then cd:Clear() else cd:Hide() end end
+		recargas[b] = nil
+		sinRecarga(p)
 		return
 	end
 	local inicio, dur, activo = M.Llamar(C_Container and C_Container.GetContainerItemCooldown, bolsa, casilla)
@@ -522,12 +598,37 @@ function B.Enfriar(b, bolsa, casilla)
 	activo = M.Leer(activo)
 	local on = activo == true or (type(activo) == "number" and activo ~= 0)
 	if on and inicio and dur and inicio > 0 and dur > 0 then
-		cd:SetCooldown(inicio, dur)
-		cd:Show()
-	elseif cd.Clear then
-		cd:Clear()
+		if cd then
+			cd:SetCooldown(inicio, dur)
+			cd:Show()
+		end
+		-- 1.3.9: el número propio (las de más de 2 s; la global no lleva número).
+		local falta = inicio + dur - (GetTime and GetTime() or 0)
+		if dur > 2 and falta > 0 then
+			if cd then numerosDelJuego(cd, false) end
+			if not p.recarga then
+				p.recarga = p.capa:CreateFontString(nil, "OVERLAY")
+				p.recarga:SetPoint("CENTER", b, "CENTER", 0, 0)
+				p.recarga:SetJustifyH("CENTER")
+			end
+			p.finRecarga = inicio + dur
+			recargas[b] = p
+			escribirRecarga(p, B.TextoRecarga(falta))
+			p.recarga:SetTextColor(1, 1, 1, 1)
+			p.recarga:Show()
+			if N.Cada and not (N.HayTarea and N.HayTarea(RELOJ_RECARGAS)) then N.Cada(RELOJ_RECARGAS, 1, ticRecargas) end
+		else
+			recargas[b] = nil
+			sinRecarga(p)
+		end
 	else
-		cd:Hide()
+		recargas[b] = nil
+		sinRecarga(p)
+		if cd then
+			if cd.Clear then cd:Clear() else cd:Hide() end
+			-- Sin número legible (secreto): el del juego.
+			if on then numerosDelJuego(cd, true) end
+		end
 	end
 end
 

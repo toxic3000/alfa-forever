@@ -161,6 +161,66 @@ local function siguientePaso(linea)
 	return d
 end
 
+-- 1.3.9: la receta más barata para subir ahora (Of.MasBarata).
+local COLOR = { [0] = { L["Naranja: siempre sube"], "peligro" }, [1] = { L["Amarilla: casi siempre sube"], "aviso" },
+	[2] = { L["Verde: a veces sube"], "exito" }, guia = { L["La de la guía para tu tramo"], "acento" }, verde = { L["Verde: a veces sube"], "exito" } }
+
+local function barata(linea)
+	local rank = Of().Habilidad(linea)
+	if not rank or rank >= 300 then return nil end
+	local lista = Of().MasBarata(linea, rank)
+	local x = lista[1]
+	if not x then return nil end
+	local d = { variante = "normal", icono = iconoDe(x.o) or "ic-oro", tenir = false, sobre = L["Lo más barato para subir"],
+		titulo = M.NombreObjeto(x.o), lineas = 5, tono = "oro" }
+	local partes = {}
+	if x.veces > 0 then
+		partes[#partes + 1] = x.veces == 1 and L["Con lo que tienes la haces una vez sin gastar nada."]
+			or format(L["Con lo que tienes la haces %d veces sin gastar nada."], x.veces)
+	elseif x.porPunto then
+		partes[#partes + 1] = format(L["Cada punto te sale en unos %s (lo que te falta, a precio de subasta o de vendedor)."], M.Dinero(x.porPunto))
+	else
+		partes[#partes + 1] = L["Faltan precios de sus materiales: escanea la subasta para comparar."]
+	end
+	local otras = {}
+	for i = 2, math.min(3, #lista) do
+		local y = lista[i]
+		otras[#otras + 1] = y.porPunto and format(L["%s (%s por punto)"], M.NombreObjeto(y.o), M.Dinero(y.porPunto)) or M.NombreObjeto(y.o)
+	end
+	if #otras > 0 then partes[#partes + 1] = format(L["También: %s."], table.concat(otras, ", ")) end
+	d.texto = table.concat(partes, " ")
+	local c = COLOR[x.color]
+	d.insignias = {}
+	if c then d.insignias[#d.insignias + 1] = { c[1], c[2] } end
+	d.insignias[#d.insignias + 1] = x.sabe and { L["Ya la sabes"], "exito", "ic-exito" } or { L["Sin aprender"], "neutro" }
+	if x.veces == 0 then
+		d.accion = { texto = L["A mi lista de compras"], icono = "ic-mas", alClic = function()
+			if M.Lista.Agregar(x.o, 5) then
+				K.Aviso({ titulo = L["Lista de compras"], icono = "ic-exito", tono = "exito",
+					texto = format(L["Agregué %s ×%d a tu lista."], M.NombreObjeto(x.o), 5) })
+			end
+		end }
+	end
+	return d
+end
+VO.Barata = barata
+
+-- 1.3.9: lo que ya puedes fabricar y cuánto ganas (Of.YaPuedes).
+local function tarjetasYaPuedes(linea)
+	local out = {}
+	for i, x in ipairs(Of().YaPuedes(linea)) do
+		if i > 6 then break end
+		local rec = x.e.rec
+		out[#out + 1] = { variante = "compacta", icono = iconoDe(rec.o) or "ic-oficios", tenir = false, tono = "exito",
+			titulo = M.NombreObjeto(rec.o),
+			texto = x.veces == 1 and format(L["La haces una vez: +%s"], M.Dinero(x.total)) or format(L["La haces %d veces: +%s en total"], x.veces, M.Dinero(x.total)),
+			valor = format(L["+%s c/u"], M.Dinero(x.gana)),
+			ayuda = L["Lo que deja cada una: lo que vale menos lo que cuestan sus materiales. Alfa nunca fabrica por ti."] }
+	end
+	return out
+end
+VO.YaPuedes = tarjetasYaPuedes
+
 local function tarjetasPasos(linea)
 	local g = G()[linea]
 	local rank = Of().Habilidad(linea) or 0
@@ -253,7 +313,24 @@ local function llenar()
 	local g = G()[actual]
 	ui.oficios:SetOpciones(opciones())
 	ui.oficios:SetValor(actual)
-	ui.paso:Set(siguientePaso(actual))
+	local dPaso = siguientePaso(actual)
+	-- 1.3.9 (oficios): la guía de Alfa paso a paso, con la flecha (Alfa_Rutas/Oficios.lua).
+	local AR = rawget(_G, "AlfaRuta")
+	if type(AR) == "table" and type(AR.GuiaOficio) == "function" and AR.TieneGuiaOficio and AR.TieneGuiaOficio(actual) then
+		local linea = actual
+		local guia = { texto = L["Guíame paso a paso"], icono = "ic-seguir", alClic = function() AR.GuiaOficio(linea) end }
+		if dPaso.accion then dPaso.secundaria = guia else dPaso.accion = guia end
+	end
+	ui.paso:Set(dPaso)
+	-- 1.3.9: lo que ya puedes fabricar (primero) y lo más barato para subir.
+	local ya = tarjetasYaPuedes(actual)
+	ui.secYa:Set(L["Ya puedes fabricar y ganar"], { cuenta = #ya > 0 and #ya or nil })
+	ui.ya:Llenar(ya)
+	K.Mostrar(ui.secYa, #ya > 0)
+	K.Mostrar(ui.ya, #ya > 0)
+	local b = barata(actual)
+	if b then ui.barata:Set(b) end
+	K.Mostrar(ui.barata, b ~= nil)
 	ui.secPasos:Set(format(L["%s de 1 a 300"], L[g.nombre]))
 	ui.pasos:Llenar(tarjetasPasos(actual))
 	local crear = g.tipo == "crear"
@@ -314,6 +391,9 @@ local function armar()
 		acomodar()
 	end }))
 	ui.paso = p:Agregar(K.Tarjeta(p, { variante = "accion" }), { espacio = ESP.l })
+	ui.barata = p:Agregar(K.Tarjeta(p, { variante = "normal" }), { espacio = ESP.m })
+	ui.secYa = p:Agregar(K.Seccion(p, ""), { espacio = ESP.l })
+	ui.ya = p:Agregar(K.Rejilla(p, { min = 300, gap = ESP.s, variante = "compacta" }), { espacio = ESP.m })
 	ui.secPasos = p:Agregar(K.Seccion(p, ""), { espacio = ESP.l })
 	ui.pasos = p:Agregar(K.Rejilla(p, { min = 300, gap = ESP.m }), { espacio = ESP.m })
 	ui.secFaltan = p:Agregar(K.Seccion(p, ""), { espacio = ESP.l })

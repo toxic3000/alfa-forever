@@ -36,10 +36,14 @@
 --
 -- Automático (ajuste bolsas.candadoAuto, prendido): lo épico y legendario, lo
 -- de misiones, la piedra de hogar y lo de tus conjuntos de equipo.
+-- 1.3.9: también las herramientas de oficio (la caña de pescar, el pico de
+-- minero, el martillo de herrero, el cuchillo de desollar, las varas rúnicas
+-- de encantar, la llave de ingeniería...) y lo que te lleva de viaje (las
+-- monturas y los transportadores de ingeniería). Motivos "herramienta" y "viaje".
 -- Ajustes: bolsas.candado (todo), bolsas.candadoAuto, bolsas.candadoCuenta
 -- (los candados nuevos van a toda la cuenta).
 --
---   Cd.Tiene(id, link, o) -> bool, motivo ("tuyo" | "cuenta" | "epico" | "mision" | "hogar" | "conjunto")
+--   Cd.Tiene(id, link, o) -> bool, motivo ("tuyo" | "cuenta" | "epico" | "mision" | "hogar" | "conjunto" | "herramienta" | "viaje")
 --   Cd.TieneCasilla(bolsa, casilla) -> bool, motivo
 --   Cd.Poner(id, link, si, o) ; Cd.EnCuenta(id, link, si) ; Cd.Cuantos()
 --   Cd.Pintar(b, p, ent) (Botones.lua) ; Cd.Menu(id, link, ancla, o)
@@ -58,6 +62,38 @@ M.Candado = Cd
 
 local PIEDRA_HOGAR = 6948
 local DESENCANTAR = 13262
+
+-- 1.3.9: herramientas de oficio (por número) y objetos de viaje.
+Cd.HERRAMIENTAS = {
+	[2901] = true,  -- Pico de minero
+	[5956] = true,  -- Martillo de herrero
+	[7005] = true,  -- Cuchillo de desollar
+	[6219] = true,  -- Llave inglesa arcoluz (ingeniería)
+	[10498] = true, -- Microajustador giromático (ingeniería)
+	[6218] = true,  -- Vara rúnica de cobre (encantamiento)
+	[6339] = true,  -- Vara rúnica de plata
+	[11130] = true, -- Vara rúnica de oro
+	[11145] = true, -- Vara rúnica de veraplata
+	[16207] = true, -- Vara rúnica de arcanita
+	[9149] = true,  -- Piedra filosofal (alquimia)
+	[4471] = true,  -- Yesca y pedernal (cocina)
+}
+Cd.VIAJE = {
+	[18984] = true, -- Desgarrador dimensional: Everlook
+	[18986] = true, -- Transportador ultraseguro: Gadgetzan
+	[22589] = true, [22630] = true, [22631] = true, [22632] = true, -- Atiesh
+}
+local CLASE_ARMA, CANA = 2, 20       -- las cañas de pescar: arma, subclase 20
+local CLASE_VARIOS, MONTURA = 15, 5  -- las monturas: varios, subclase 5
+
+-- -> clase, subclase (al instante, sin esperar la caché)
+local function claseDe(id)
+	local f = C_Item and C_Item.GetItemInfoInstant
+	if type(f) ~= "function" then return nil end
+	local ok, _, _, _, _, _, clase, sub = pcall(f, id)
+	if not ok then return nil end
+	return M.Num(clase), M.Num(sub)
+end
 local ICONO = "ic-candado"
 local BOLSAS = { 0, 1, 2, 3, 4, 5 }
 
@@ -182,6 +218,12 @@ function Cd.Auto(id, o)
 	if clase == 12 then return "mision" end
 	if type(q) == "number" and q >= 4 then return "epico" end
 	if enConjunto(id) then return "conjunto" end
+	-- 1.3.9: herramientas de oficio y objetos de viaje.
+	if Cd.HERRAMIENTAS[id] then return "herramienta" end
+	if Cd.VIAJE[id] then return "viaje" end
+	local c, sub = claseDe(id)
+	if c == CLASE_ARMA and sub == CANA then return "herramienta" end
+	if c == CLASE_VARIOS and sub == MONTURA then return "viaje" end
 	return nil
 end
 
@@ -260,6 +302,8 @@ function Cd.TextoMotivo(m)
 	if m == "mision" then return L["automático: objeto de misión"] end
 	if m == "hogar" then return L["automático: tu piedra de hogar"] end
 	if m == "conjunto" then return L["automático: está en un conjunto tuyo"] end
+	if m == "herramienta" then return L["automático: herramienta de oficio"] end
+	if m == "viaje" then return L["automático: te lleva de viaje"] end
 	if m == "cuenta" then return L["en toda la cuenta"] end
 	return nil
 end

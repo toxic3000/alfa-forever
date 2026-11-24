@@ -168,7 +168,15 @@ end
 
 local function estiloDe(o) return ESTILOS[o and o.estilo or "general"] or ESTILOS.general end
 local function prioridad(o) return tonumber(o.prioridad) or estiloDe(o).prioridad or 2 end
-local function tono(o, est) return (o and o.color) or est.color or (K.Clasico() and "oro" or "acento") end
+local function tono(o, est)
+	if o and o.color then return o.color end
+	-- 1.3.9: con la temática de tu bando, lo que iba en el acento va en su color.
+	if (est.color == nil or est.color == "acento") and K.Bando then
+		local B = K.Bando()
+		if B then return B.color end
+	end
+	return est.color or (K.Clasico() and "oro" or "acento")
+end
 
 ---------------------------------------------------------------------------
 -- Lo que no se debe tapar
@@ -473,6 +481,26 @@ local function semilla(i, k)
 	return x - floor(x)
 end
 local SIN_PROFUNDIDAD = { destello = true, aulla = true, gira = true }
+-- 1.3.9 (105): la onda de entrada de cada animación: cuánto se abre (px),
+-- cuánto dura (s) y qué tan fuerte brilla.
+local ONDA = {
+	general = { ancho = 160, dura = 0.8, fuerza = 0.45 },
+	sube = { ancho = 160, dura = 0.8, fuerza = 0.45 },
+	baja = { ancho = 220, dura = 1.0, fuerza = 0.35 },
+	corto = { ancho = 80, dura = 0.4, fuerza = 0.25 },
+	lento = { ancho = 200, dura = 1.6, fuerza = 0.3 },
+	destello = { ancho = 300, dura = 0.9, fuerza = 0.7 },
+	desliza = { ancho = 240, dura = 1.1, fuerza = 0.4 },
+	flota = { ancho = 180, dura = 1.4, fuerza = 0.35 },
+	frena = { ancho = 140, dura = 0.5, fuerza = 0.55 },
+	rebote = { ancho = 200, dura = 0.6, fuerza = 0.6 },
+	gira = { ancho = 220, dura = 1.0, fuerza = 0.5 },
+	subeAbajo = { ancho = 200, dura = 0.9, fuerza = 0.45 },
+	late = { ancho = 260, dura = 0.7, fuerza = 0.6 },
+	aulla = { ancho = 280, dura = 1.0, fuerza = 0.55 },
+	cruzan = { ancho = 180, dura = 0.9, fuerza = 0.4 },
+}
+K.ONDA_ANUNCIO = ONDA
 
 local function prepararCine(x, o, est, chico, tw)
 	local p = (not chico and not x.alfaLigero) and PARTICULAS[o.estilo or "general"] or nil
@@ -561,6 +589,33 @@ local function cine(self, t, a, fuera)
 		local s = 150 * (1 + 1.1 * k + 0.35 * abre)
 		self.Halo:SetSize(s, s)
 		if k > 0 and self.Titulo.SetTextScale then pcall(self.Titulo.SetTextScale, self.Titulo, 1 + 0.16 * k) end
+	end
+	-- 1.3.9 (105): la onda que se abre desde el lobo al entrar (una vez, más
+	-- ancha en lo que se descubre o en el barco que llega), el emblema del bando
+	-- que asoma detrás y se asienta, y su tira que se dibuja del centro.
+	local onda = ONDA[self.alfaAnim or ""] or ONDA.general
+	if self.Onda:IsShown() then
+		local q = t / onda.dura
+		if q < 1 then
+			local s = 70 + onda.ancho * suave(q)
+			self.Onda:SetSize(s, s)
+			self.Onda:SetAlpha(onda.fuerza * (1 - q) * (1 - q) * a)
+		else
+			self.Onda:Hide()
+		end
+	end
+	if self.alfaTema then
+		local k = suave((t - 0.15) / (entra * 1.4))
+		local s = 92 * (1.25 - 0.25 * k)
+		self.Emblema:SetSize(s, s)
+		self.Emblema:SetAlpha(0.22 * k * a * (1 - (fuera or 0)))
+		if self.Tira and self.Tira:IsShown() then
+			local w = max(1, floor((self.alfaTiraW or 200) * suave((t - entra * 0.5) / 0.6) * (1 - suave(fuera or 0)) + 0.5))
+			if w ~= self.alfaTiraAhora then
+				self.alfaTiraAhora = w
+				self.Tira:SetWidth(w)
+			end
+		end
 	end
 	-- El polvo.
 	local p = self.alfaP
@@ -713,6 +768,18 @@ local function armar()
 		f.Polvo[i] = t
 	end
 
+	-- 1.3.9 (105): más cine. La onda que se abre al entrar (desde el lobo), el
+	-- emblema de tu bando detrás (con la temática, Kit/Bando.lua) y su tira
+	-- de madera o piedra que se dibuja bajo el nombre, del centro a los lados.
+	f.Onda = C:CreateTexture(nil, "BACKGROUND", nil, 2)
+	f.Onda:SetTexture(HALO)
+	f.Onda:SetBlendMode("ADD")
+	f.Onda:Hide()
+	f.Emblema = C:CreateTexture(nil, "BACKGROUND", nil, -2)
+	f.Emblema:SetSize(92, 92)
+	f.Emblema:Hide()
+	if K.TiraBando then f.Tira = K.TiraBando(C, 3, "ARTWORK") end
+
 	-- El borde que late (peligro): cuatro líneas alrededor del nombre y su línea.
 	f.Borde = {}
 	for i = 1, 4 do
@@ -863,7 +930,7 @@ local function sonar(o, est)
 		local id = type(SOUNDKIT) == "table" and rawget(SOUNDKIT, s)
 		if type(id) == "number" and PlaySound then pcall(PlaySound, id, "SFX") end
 	elseif type(s) == "number" and PlaySoundFile then
-		pcall(PlaySoundFile, s, "Master")
+		pcall(PlaySoundFile, s, "SFX") -- 1.3.9 (70): el mismo canal que los demás sonidos de Alfa
 	end
 end
 
@@ -996,6 +1063,35 @@ mostrar = function(o)
 	raton()
 	pintar(f)
 	prepararCine(f, o, est, chico, tw)
+	-- 1.3.9: el tema de tu bando (emblema y tira) y la onda de entrada.
+	local tema = K.Bando and K.Bando() or nil
+	f.alfaTema = (not chico) and tema or nil
+	f.alfaAnim, f.alfaTiraAhora = est.anim, nil
+	local r, g, b = K.Color(tono(o, est))
+	f.Onda:ClearAllPoints()
+	f.Onda:SetPoint("CENTER", f.Halo, "CENTER", 0, 0)
+	f.Onda:SetVertexColor(r, g, b, 1)
+	f.Onda:SetShown(f.alfaConBrillo and not chico)
+	f.Onda:SetAlpha(0)
+	f.Emblema:ClearAllPoints()
+	f.Emblema:SetPoint("CENTER", f.Halo, "CENTER", 0, -4)
+	if f.alfaTema then
+		f.Emblema:SetTexture(tema.emblema)
+		f.Emblema:SetVertexColor(1, 1, 1, 1)
+		f.Emblema:SetAlpha(f.alfaLigero and 0.2 or 0)
+		f.Emblema:SetSize(92, 92)
+		f.Emblema:Show()
+	else
+		f.Emblema:Hide()
+	end
+	if f.Tira then
+		f.Tira:ClearAllPoints()
+		f.Tira:SetPoint("TOP", f.Titulo, "BOTTOM", 0, -1)
+		f.Tira:SetWidth(1)
+		if not (f.alfaTema and f.Tira:Pintar(tema)) then f.Tira:Hide() end
+		f.alfaTiraW = min(util, tw + 60)
+		if f.alfaLigero and f.Tira:IsShown() then f.Tira:SetWidth(f.alfaTiraW) end
+	end
 	f:SetAlpha(0)
 	f:Show()
 	sonar(o, est)
@@ -1083,6 +1179,8 @@ function K.AnuncioActual()
 		x = f.X:IsMouseEnabled() or nil, tocaAncho = f.Toque:GetWidth(),
 		huellas = f.Huellas ~= nil and f.Huellas:IsShown() or nil, borde = f.Borde[1]:IsShown() or nil,
 		rolTitulo = f.Titulo.alfaRol, vuelve = o.vuelve or nil,
+		bando = f.alfaTema and f.alfaTema.clave or nil, -- 1.3.9
+		emblema = f.Emblema:IsShown() or nil, tira = f.Tira ~= nil and f.Tira:IsShown() or nil,
 	}
 end
 

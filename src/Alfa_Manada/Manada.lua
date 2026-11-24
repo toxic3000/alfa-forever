@@ -92,6 +92,7 @@ N.Modulo({
 		botinCompartir = false, -- tu clase y nivel a tu hermandad, para el botín (1.3.0)
 		guaridasMapa = true, -- las guaridas de la manada en el mapa (1.3.0)
 		calendario = true, -- el calendario de la semana con las citas (1.3.0)
+		censo = true, -- 1.3.9: tu versión de Alfa a tu hermandad; tu nivel y tu zona solo si los compartes (Censo.lua)
 		tablonAviso = true, -- 1.3.8: la tarjeta «Me apunto» cuando un lobo busca grupo (Tablon.lua)
 		ficha = true, -- 1.3.8: contestar «tu ficha» (nivel, oficios, qué fabricas) a tu hermandad y tu grupo (Ficha.lua)
 		recibirRutas = true, -- 1.3.8: recibir el plan o la guía que te comparte un lobo (Compartir.lua)

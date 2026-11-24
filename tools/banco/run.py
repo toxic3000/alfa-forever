@@ -134,14 +134,17 @@ def main() -> int:
         sys.path.insert(0, str(HERE))
         import render
         fonts = DIST / "Alfa" / "Media" / "Fonts"
+        # 1.3.9: BANCO_CAPTURAS=<carpeta> deja las capturas ahí (tools/regresion.py).
+        destino = pathlib.Path(os.environ["BANCO_CAPTURAS"]) if os.environ.get("BANCO_CAPTURAS") else HERE
+        destino.mkdir(parents=True, exist_ok=True)
         for name, snap in snaps.items():
             entries = [dict(e.items()) for e in snap.entries.values()]
             rect = (snap.l, snap.b, snap.w, snap.h)
-            out = HERE / ("shot-%s.png" % name)
+            out = destino / ("shot-%s.png" % name)
             render.render(entries, rect, out, fonts)
             if os.environ.get('BANCO_VOLCAR'):
                 import json
-                (HERE / ('shot-%s.json' % name)).write_text(json.dumps([{k: (dict(v.items()) if hasattr(v, 'items') else v) for k, v in e.items()} for e in entries], default=str), encoding='utf-8')
+                (destino / ('shot-%s.json' % name)).write_text(json.dumps({"rect": rect, "entries": [{k: (dict(v.items()) if hasattr(v, 'items') else v) for k, v in e.items()} for e in entries]} if os.environ.get("BANCO_CAPTURAS") else [{k: (dict(v.items()) if hasattr(v, 'items') else v) for k, v in e.items()} for e in entries], default=str), encoding='utf-8')
             print("PNG", out)
         for vista, texto, por in render.CORTES:
             print("CORTADO %s (%s): %s" % (vista, por, texto))

@@ -167,6 +167,11 @@ local function add(spec, builtin)
 			spec.controls = quedan
 		end
 	end
+	-- Alfa (1.3.9): el diario de encuentros del juego (ENCOUNTER_JOURNAL) no
+	-- existe en Forever: su sección lleva el nombre de Alfa (ver BUILTIN).
+	if spec.page == L["Discovery"] and spec.tab == L["Dungeons"] and spec.controls and type(spec.section) ~= "string" then
+		spec.section = T("Diario de mazmorras")
+	end
 	local p = pageOf(spec.page, spec.icon, spec.order, builtin, spec.key)
 	-- Un módulo que llega a una página ya creada por su clave (Comodidades):
 	-- su nombre es el que se ve.
@@ -370,6 +375,9 @@ local BUILTIN = {
 		H({ kind = "toggle", key = "nav.hideArrowWithGuide", label = L["Hide the arrow with the guide"], help = L["When the guide window is hidden, hide the arrow too."],
 			child = true, disabled = function() return not ns.Get("nav.arrow") end }),
 		H({ kind = "toggle", key = "nav.arrowEta", label = L["Arrival time"], help = L["Estimated time under the distance."], search = "eta, time left, travel time" }),
+		-- Alfa 1.3.9: la flecha mínima (Nav/Arrow.lua).
+		H({ kind = "toggle", key = "nav.arrowMinimo", label = ns.T("Flecha mínima"), help = ns.T("Solo la flecha y la distancia: sin la meta, sin el tiempo y sin la tarjeta del camino al muelle."),
+			search = "minimal arrow, compact, only distance, clean, flecha mínima, sencilla" }),
 		{ kind = "dropdown", key = "nav.distanceUnit", label = L["Distances"], help = L["How the arrow, map tooltips, rares and the death helper show distances."], search = "units, yards, metres, metric, distance",
 			choices = { { value = "yards", label = L["Yards (the game's unit)"] }, { value = "metres", label = L["Metres"] } } },
 		H({ kind = "toggle", key = "nav.arrivalSound", label = L["Arrival sound"], help = L["A soft chime when you reach a waypoint."], search = "sound, chime, audio, ding" }),
@@ -614,7 +622,8 @@ for _, list in ipairs({
 	}),
 	declare(DISCOVERY, "discovery", "search", 50, L["Lookup, the dungeon journal and rares: finding things in the world."], {
 		{ L["Lookup"], { L["How to get anything"] } },
-		{ L["Dungeons"], { ENCOUNTER_JOURNAL, L["Dungeons in leveling guides"] } },
+		-- 1.3.9: el nombre del juego solo si es un texto (en Forever puede no existir).
+		{ L["Dungeons"], { type(rawget(_G, "ENCOUNTER_JOURNAL")) == "string" and ENCOUNTER_JOURNAL or T("Diario de mazmorras"), L["Dungeons in leveling guides"] } },
 		{ L["Rares"], { L["When a rare shows up"], L["How rares are noticed"], L["History"] } },
 		{ L["Characters"], { L["Characters"] } },
 	}),
@@ -2380,7 +2389,8 @@ local function pintarCampana(items)
 		if es and n > 0 and not b.psCuenta then
 			local c = CreateFrame("Frame", nil, b)
 			c:SetSize(16, 16)
-			c:SetPoint("CENTER", b.Icon, "TOPRIGHT", 1, -1)
+			-- 1.3.9 (56): más arriba y a la izquierda: ya no tapa la «A» de Avisos.
+			c:SetPoint("CENTER", b.Icon, "TOPRIGHT", -2, 3)
 			c:SetFrameLevel(b:GetFrameLevel() + 3)
 			c.Fondo = W.Tex(c, "ARTWORK", "circle", "danger")
 			c.Fondo:SetAllPoints(c)
@@ -2558,6 +2568,57 @@ local function resetText(p)
 end
 O.ResetText = function(key) local p = pageByKey(key) return p and resetText(p) or nil end
 
+-- Alfa (1.3.9, mejora 39): «Deshacer» el último cambio de un ajuste hecho
+-- con la ventana de Alfa abierta. Los cambios del mismo momento (un clic que
+-- mueve varios, «Restablecer página») son uno solo; se recuerdan los últimos
+-- DESHACER_TOPE. Lo que Alfa cambia sola con la ventana cerrada no cuenta.
+local DESHACER_TOPE = 10
+local deshacer = {}      -- { { t = GetTime(), cambios = { { path, antes } }, nombre } }
+local deshaciendo = false
+local setOriginal = ns.Set
+local pintarDeshacer
+function ns.Set(path, value)
+	-- Solo lo que cambiaste tú: un clic en Alfa hace un momento (AlfaNucleo.PidioJugador).
+	local Nu = rawget(_G, "AlfaNucleo")
+	local tuyo = type(Nu) == "table" and type(Nu.PidioJugador) == "function" and Nu.PidioJugador() == true
+	if not deshaciendo and tuyo and win and win:IsShown() and type(path) == "string" and path ~= "" then
+		local antes = ns.Get(path)
+		if antes ~= value then
+			local ahora = GetTime and GetTime() or 0
+			local ultimo = deshacer[#deshacer]
+			if not (ultimo and ultimo.t == ahora) then
+				ultimo = { t = ahora, cambios = {} }
+				deshacer[#deshacer + 1] = ultimo
+				while #deshacer > DESHACER_TOPE do table.remove(deshacer, 1) end
+			end
+			local ya = false
+			for _, c in ipairs(ultimo.cambios) do if c[1] == path then ya = true end end
+			if not ya then ultimo.cambios[#ultimo.cambios + 1] = { path, antes } end
+			if pintarDeshacer and ns.After then ns.After(0, pintarDeshacer) end
+		end
+	end
+	return setOriginal(path, value)
+end
+
+function O.PuedeDeshacer() return #deshacer > 0 end
+-- Devuelve el último cambio. -> cuántos ajustes volvieron (0: nada que deshacer)
+function O.Deshacer()
+	local ultimo = table.remove(deshacer)
+	if not ultimo then return 0 end
+	deshaciendo = true
+	local ok, err = pcall(function()
+		for i = #ultimo.cambios, 1, -1 do
+			local c = ultimo.cambios[i]
+			setOriginal(c[1], c[2])
+		end
+	end)
+	deshaciendo = false
+	if not ok and geterrorhandler then geterrorhandler()(err) end
+	if pintarDeshacer then pintarDeshacer() end
+	return #ultimo.cambios
+end
+function O.OlvidarDeshacer() deshacer = {} if pintarDeshacer then pintarDeshacer() end end
+
 -- 1.3.6: el pie se arma de nuevo solo si cambia su forma (con o sin
 -- «Restablecer página»); al pasar de una página a otra solo cambia a qué
 -- página apunta (pieDe), sin rehacer sus botones.
@@ -2565,7 +2626,10 @@ local pieDe, pieForma
 local function renderFooter(p)
 	pieDe = p
 	local forma = (p and (#pageKeys(p) > 0 or p.restablecer)) and "restablecer" or "simple"
-	if forma == pieForma and win.psPieHecho then return end
+	if forma == pieForma and win.psPieHecho then
+		if pintarDeshacer then pintarDeshacer() end
+		return
+	end
 	pieForma, win.psPieHecho = forma, true
 	local left = {}
 	if forma == "restablecer" then
@@ -2578,7 +2642,22 @@ local function renderFooter(p)
 		end }
 	end
 	left[#left + 1] = { label = L["Reload UI"], onClick = function() if ReloadUI then ReloadUI() end end, opts = { icon = "reload", ghost = true } }
+	-- 1.3.9 (39): «Deshacer», solo cuando hay algo que deshacer.
+	left[#left + 1] = { label = T("Deshacer"), onClick = function() O.Deshacer() end, opts = { icon = "reset", ghost = true } }
+	win.psDeshacerI = #left
 	W.ShellFooter(win, left, { { label = L["Close"], onClick = function() win:Hide() end } })
+	if pintarDeshacer then pintarDeshacer() end
+end
+
+pintarDeshacer = function()
+	local b = win and win.footerButtons and win.psDeshacerI and win.footerButtons.left[win.psDeshacerI]
+	if not b then return end
+	b:SetShown(#deshacer > 0 and win.Footer and win.Footer:IsShown() and true or false)
+	local ultimo = deshacer[#deshacer]
+	local n = ultimo and #ultimo.cambios or 0
+	b.psTip = T("Deshacer")
+	b.psTipLines = { n == 1 and T("Vuelve el último ajuste que cambiaste a como estaba.")
+		or string.format(T("Vuelven los %d ajustes del último cambio a como estaban."), n) }
 end
 
 function O.ResetPage(p)
@@ -2664,6 +2743,9 @@ function O.Select(key, tabName)
 	-- Switching pages is frequent: a short fade, no movement.
 	Anim.To(view, "alpha", 0, 1, Anim.FAST, "out")
 	O.page, O.view = p, view
+	-- Alfa (1.3.9, mejoras 35 y 53): la primera vez en cada página
+	-- (Alfa_Bienvenida/PrimeraVez.lua): su clave, la pestaña y su subtítulo.
+	if ns.Fire then ns.Fire("ALFA_PAGINA", p.key, t.name, T(p.subtitle or "")) end
 end
 
 function O.SetQuery(text)
@@ -2822,6 +2904,14 @@ function O.MenuItems(anchor, opts)
 		items[#items + 1] = { text = T("Pregúntale a Lya"), icon = "ic-info", onClick = function()
 			if ns.Hidden and ns.Hidden() then ns.SetHidden(false) end
 			Lya.Guia()
+		end }
+	end
+	-- 1.3.9: «Cerrar mis misiones» con su resumen antes de salir (Alfa_Rutas/CerrarTodo.lua).
+	local Ruta = rawget(_G, "AlfaRuta")
+	if type(Ruta) == "table" and type(Ruta.CerrarTodo) == "function" and type(Ruta.TextoCerrar) == "function" then
+		items[#items + 1] = { text = Ruta.TextoCerrar(), icon = "ic-misiones", onClick = function()
+			if ns.Hidden and ns.Hidden() then ns.SetHidden(false) end
+			Ruta.CerrarTodo("menu")
 		end }
 	end
 	-- 1.3.7: «Avisos» (la campanita, Alfa_Nucleo/Momentos.lua), con cuántos no viste.
@@ -3024,7 +3114,16 @@ do
 		end
 		if SlashCmdList and SlashCmdList.ALFA == run then SlashCmdList.ALFA = ns.RunCommand end
 	end
-	ns.RegisterCommand("guia", function() ns.Fire("TOGGLE_FRAME") end, T("Mostrar u ocultar la ventana de guía"))
+	ns.RegisterCommand("guia", function(rest)
+		-- Alfa 1.3.9: /alfa guia restablecer (Alfa_Rutas/Restablecer.lua).
+		local sub = type(rest) == "string" and rest:match("^%s*(%S+)") or nil
+		local Ruta = rawget(_G, "AlfaRuta")
+		if sub and (sub:lower() == "restablecer" or sub:lower() == "reset") and type(Ruta) == "table" and type(Ruta.Restablecer) == "function" then
+			Ruta.Restablecer()
+			return
+		end
+		ns.Fire("TOGGLE_FRAME")
+	end, T("Mostrar u ocultar la ventana de guía"))
 end
 
 ---------------------------------------------------------------------------

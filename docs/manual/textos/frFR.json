@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "La 1.3.8 : la meute sur deux écrans", "items": ["**Deux écrans :** avec un autre moniteur, Alfa y place ton guide, la flèche, la carte, Aujourd'hui et Lya. Un clic suffit, et tu l'essaies avant d'enregistrer (`/alfa pantallas`).", "**Des avis uniques :** le bateau s'affiche clairement sur la flèche (où, quand il part et quand tu arrives) et chaque événement ne donne qu'un seul message.", "**Pêche et cadenas :** tailles, records et ton niveau de pêcheur de 1 à 60. Alt+clic droit met un cadenas sur un objet pour qu'il ne soit ni détruit ni vendu.", "**Chaque faction de son côté :** ce que partage La Jauría reste dans ta faction, et l'Encyclopédie indique comment obtenir chaque objet et ses chances."]}
+    "mapa": {"titulo": "La 1.3.9 : la meute chasse mieux", "items": ["**Terminer mes quêtes :** trace le meilleur itinéraire avec toutes tes quêtes, zone par zone et avec les rendus regroupés ; celles qui ne valent plus la peine vont dans « Pour plus tard ».", "**Guides de métier d’Alfa :** par paliers, avec la meilleure zone, la recette la moins chère qui donne encore des points et tes matériaux. « Réinitialiser ce guide » te situe tout seul.", "**Le voyage, refait :** le bateau et le zeppelin ont leur carte avec le compte à rebours du départ, et un clic sur la flèche t’emmène au lieu suivant.", "**Signaler en un clic :** le Grand Méchant Loup te prévient quand Alfa trouve une de ses erreurs. En plus : un tableau Horde et Alliance et la carte intérieure des donjons."]}
   },
   "contraportada": {
     "titulo": "Rejoignez la meute",

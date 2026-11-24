@@ -210,6 +210,9 @@ step("El «?» de una página abre a Lya en su tema", function()
     if h._kind == "FontString" and h:IsShown() and type(h._text) == "string" and h._text:find("Estás en Pesca", 1, true) then dice = true end
     ver(h) end end
   if v then ver(v) v:Cerrar() end
+  -- 1.3.9 (54): o ya contesta la primera pregunta de esa página.
+  local p = Ly.Guia.Dicha
+  if type(p) == "table" and p.modulo == "pesca" then dice = true end
   check(dice, "Lya no empezó por la página de Pesca")
   local O = NS_OF("Alfa").Options or (NS_OF("Alfa").UI and NS_OF("Alfa").UI.Options)
   check(O == nil or O.LyaHelp ~= nil, "la ventana de Alfa no tiene el «?» de Lya")

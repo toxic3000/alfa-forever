@@ -3243,7 +3243,9 @@ function W.ShellCharacter(f)
 	-- Si no cabe: primero se va la rama, luego la clase (el color ya la dice).
 	if iRama then quitar[#quitar + 1] = iRama end
 	if iClase then quitar[#quitar + 1] = iClase end
-	W.FitParts(card.Line, parts, quitar)
+	-- Alfa (1.3.9): primero la experiencia (a la derecha) y luego el nombre en
+	-- lo que queda: antes el nombre se medía con la experiencia vieja y, con
+	-- letra grande, «Nivel 23» quedaba debajo de «42 % de experiencia».
 	local maxLevel = GetMaxPlayerLevel and GetMaxPlayerLevel()
 	local cur, top = UnitXP and UnitXP("player") or 0, UnitXPMax and UnitXPMax("player") or 0
 	local off = (IsXPUserDisabled and IsXPUserDisabled()) or (type(maxLevel) == "number" and type(level) == "number" and level >= maxLevel)
@@ -3252,6 +3254,7 @@ function W.ShellCharacter(f)
 		bar.Fill:Hide()
 		bar.Rest:Hide()
 		card.XP:SetText(off and T("Nivel máximo") or "")
+		W.FitParts(card.Line, parts, quitar)
 		return
 	end
 	local width = math.max(1, bar:GetWidth())
@@ -3264,8 +3267,34 @@ function W.ShellCharacter(f)
 	bar.Rest:SetWidth(max(0.01, width * rest))
 	bar.Rest:SetShown(rested > 0)
 	local text = string.format(T("%d %% de experiencia"), floor(frac * 100))
+	local corto = text
 	if rested > 0 then text = text .. "  \194\183  " .. string.format(T("%d %% descansada"), floor(min(rested, top * 1.5) / top * 100)) end
-	card.XP:SetText(text)
+	-- El ancho que queda para el nombre se calcula aquí (el de la línea anclada
+	-- a la experiencia se actualiza hasta el siguiente cuadro).
+	local function ajustar(xp)
+		card.XP:SetText(xp)
+		local mideXP = card.XP.GetUnboundedStringWidth or card.XP.GetStringWidth
+		local libre = (card.GetWidth and card:GetWidth() or 0) - 16 - 14 - 12 - (mideXP and mideXP(card.XP) or 0)
+		local vivas = {}
+		for k = 1, #parts do vivas[k] = true end
+		local sep = "  \194\183  "
+		local function armar()
+			local out = {}
+			for k = 1, #parts do if vivas[k] then out[#out + 1] = parts[k] end end
+			return table.concat(out, sep)
+		end
+		card.Line:SetText(armar())
+		local mide = card.Line.GetUnboundedStringWidth or card.Line.GetStringWidth
+		if not (mide and libre > 1) then return true end
+		for _, k in ipairs(quitar) do
+			if mide(card.Line) <= libre + 0.5 then break end
+			vivas[k] = false
+			card.Line:SetText(armar())
+		 end
+		return not iClase or vivas[iClase]
+	end
+	-- Si para caber se tuvo que ir la clase, la experiencia sin lo descansado.
+	if not ajustar(text) and text ~= corto then ajustar(corto) end
 end
 
 local function refreshCharacters()

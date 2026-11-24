@@ -104,7 +104,7 @@ function M.BloqueMisiones(padre, alCambiar)
 		Cr.SetFiltro(f)
 		if alCambiar then alCambiar() end
 	end })
-	b.Armar = K.Boton(barra, L["Armar mi plan"], function() Cr.Ahora() end, { tipo = "primario", icono = "ic-seguir" })
+	b.Armar = K.Boton(barra, L["Armar mi plan"], function() M.CerrarTodo.Abrir({ origen = "pagina" }) end, { tipo = "primario", icono = "ic-seguir" })
 	function barra:Acomodar(ancho)
 		local sh, sw = b.Filtro:Acomodar(ancho - b.Armar:AnchoNatural() - K.ESP.base)
 		b.Filtro:ClearAllPoints()

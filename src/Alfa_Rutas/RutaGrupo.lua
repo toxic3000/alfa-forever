@@ -329,6 +329,44 @@ function RG.QueLleva()
 	return out
 end
 
+-- 1.3.9 (29): las misiones que llevan los dos (tú y cada compañero).
+-- -> { { nombre, completo, ids = { qid... } }, ... }
+function RG.EnComun()
+	local out = {}
+	local P = party()
+	if not (activo() and P and type(P.Members) == "function") then return out end
+	local ok, lista = pcall(P.Members)
+	if not (ok and type(lista) == "table") then return out end
+	local Cp = CP()
+	if not (Cp and Cp.IsOnQuest) then return out end
+	for _, m in ipairs(miembros()) do
+		for _, pm in ipairs(lista) do
+			if type(pm) == "table" and (pm.name == m.corto or pm.name == m.completo) and type(pm.quests) == "table" then
+				local ids = {}
+				for qid in pairs(pm.quests) do
+					qid = tonumber(qid)
+					if qid and Cp.IsOnQuest(qid) then ids[#ids + 1] = qid end
+				end
+				table.sort(ids)
+				if #ids > 0 then out[#out + 1] = { nombre = m.corto, completo = m.completo, ids = ids } end
+			end
+		end
+	end
+	return out
+end
+local MIN_COMUN = 2
+local comunes = {} -- completo -> cuántas tenían al cerrar o armar (vuelve si suben)
+
+function RG.ArmarJuntos(c)
+	if type(c) ~= "table" or not c.ids then return false end
+	comunes[c.completo] = #c.ids
+	local solo = {}
+	for _, q in ipairs(c.ids) do solo[q] = true end
+	local Ct = M.CerrarTodo
+	if not Ct then return false end
+	return Ct.Abrir({ origen = "grupo", solo = solo, titulo = format(L["Tu ruta con %s"], c.nombre) })
+end
+
 local pedidas = {} -- completo -> true: ya pedidas o «Ahora no» (esta sesión)
 
 function RG.Pedir(nombre, ids)
@@ -354,6 +392,20 @@ function RG.Aviso()
 	end
 	-- 1.3.8: la sugerencia se apaga sola (rutas.sugerirRutaGrupo) y se cierra con la X.
 	if A.Get(M.ID .. ".sugerirRutaGrupo") == false then return nil end
+	-- 1.3.9 (29): «Yuki y tú tienen 3 misiones en común: ¿armamos la ruta juntos?»
+	for _, c in ipairs(RG.EnComun()) do
+		if #c.ids >= MIN_COMUN and #c.ids > (comunes[c.completo] or 0) then
+			local este = c
+			return { tono = "acento", icono = "ic-manada",
+				cerrar = function() comunes[este.completo] = #este.ids end,
+				menu = { { valor = function() A.Set(M.ID .. ".sugerirRutaGrupo", false) end,
+					texto = L["No sugerir rutas de mi grupo"], icono = "ic-cerrar" } },
+				titulo = format(L["%s y tú tienen %d misiones en común"], c.nombre, #c.ids),
+				texto = L["¿Armamos la ruta juntos? Alfa las pone en el mejor orden y, si tu compañero también usa Alfa, le sale lo mismo."],
+				uno = { L["Armar la ruta juntos"], function() RG.ArmarJuntos(este) if M.Rastreador then M.Rastreador.Luego() end end },
+				dos = { L["Seguir su ruta"], function() comunes[este.completo] = #este.ids RG.Seguir(este.completo) end } }
+		end
+	end
 	for _, c in ipairs(RG.QueLleva()) do
 		if not pedidas[c.completo] and not RG.Cerrada(c.completo, c.ids) then
 			local n = #c.ids

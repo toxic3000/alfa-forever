@@ -9,7 +9,7 @@
 -- Datos del personaje (N.DatosPersonaje("rutas")): lo que depende de quién
 -- juega (facción, clase, nivel, lugar).
 --   { activa = rutaId?, editando = rutaId?, planes = { [rutaId] = plan },
---     guias = { [rutaId] = guía compilada }, liberar = guía?, marcas = { [questId] = "abandonar" | "fuera" },
+--     guias = { [rutaId] = guía compilada }, liberar = guía?, marcas = { [questId] = "abandonar" | "fuera" | "quitada" },
 --     progreso = { [rutaId] = { inicio, nivel } },
 --     extra = { questId, ... } (misiones agregadas a mano al plan de misiones),
 --     incluir = { [questId] = true } (las del registro que el filtro deja fuera pero tú pusiste),

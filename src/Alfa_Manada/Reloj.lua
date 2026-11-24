@@ -313,7 +313,7 @@ function Rl.Revisar()
 				icono = "ic-raros", duracion = 12,
 				accion = x.map and x.x and { texto = L["Ir de caza"], alClic = function() Rl.Ir(x) end } or nil,
 			}
-			if K and K.Aviso then K.Aviso(o) else U.Decir(o.titulo) end
+			if M.U and M.U.Aviso then M.U.Aviso(o) else U.Decir(o.titulo) end
 			-- (1.3.1) Uno por vuelta: los demás, en la siguiente (cada minuto).
 			break
 		end

@@ -170,7 +170,7 @@ function I.AyudaComunidad(persona, destino, quien)
 	local K = N.Kit
 	local abrir = K and K.AbrirJuego and K.AbrirJuego("comunidades")
 	if K and K.Aviso and abrir and not (InCombatLockdown and InCombatLockdown()) and not (A.GamepadUI and A.GamepadUI()) then
-		K.Aviso({
+		M.U.Aviso({
 			titulo = L["Invitar a %s"]:format(destino.nombre),
 			texto = L["%s no se puede invitar desde Alfa: el juego solo lo deja desde su ventana. Ábrela aquí y pega el nombre."]:format(destino.nombre),
 			icono = "ic-manada", duracion = 20,

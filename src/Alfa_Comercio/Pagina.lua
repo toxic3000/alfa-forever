@@ -117,7 +117,7 @@ local function irA(clase)
 		local ok, r = pcall(cerca.Go, clase)
 		if ok then return r end
 	end
-	N.Imprimir(L["No se pudo buscar el lugar más cercano."])
+	N.Imprimir(L["No pude buscar el lugar más cercano. Prueba de nuevo en un momento; si sigue, /alfa diagnostico lo revisa."])
 	return false
 end
 
@@ -774,6 +774,9 @@ local function grupos(padre)
 	local juego = K.GrupoAjustes(padre, { titulo = L["En el juego"] })
 	juego:Fila({ titulo = L["Consejo en el cuadro de los objetos"], control = function(f) return K.Interruptor(f, { clave = ruta("tooltip") }) end,
 		texto = L["Al pasar el ratón sobre un objeto: su precio en la subasta, lo que paga el comerciante y qué te conviene."] })
+	juego:Fila({ titulo = L["Con todo el detalle"], hija = true, activa = function() return M.Ajuste("tooltip") and true or false end,
+		control = function(f) return K.Interruptor(f, { clave = ruta("tooltipDetalle") }) end,
+		texto = L["Dos líneas: el precio en la subasta, lo que paga el comerciante y lo que conviene. Apagado, una sola línea; con Mayús ves el detalle."] })
 	juego:Fila({ titulo = L["Barra de Alfa en la casa de subastas"], control = function(f) return K.Interruptor(f, { clave = ruta("boton") }) end,
 		texto = L["El botón «Escanear con Alfa» bajo la ventana de la subasta."] })
 	juego:Fila({ titulo = L["Aprender de tus búsquedas"], control = function(f) return K.Interruptor(f, { clave = ruta("busquedas") }) end,
@@ -892,6 +895,9 @@ local CONTROLES = {
 	{ kind = "toggle", key = ruta("tooltip"), label = L["Consejo en el cuadro de los objetos"],
 		help = L["Al pasar el ratón sobre un objeto: su precio en la subasta, lo que paga el comerciante y qué te conviene."],
 		search = "tooltip, item price, auction price, vendor price" },
+	{ kind = "toggle", key = ruta("tooltipDetalle"), label = L["Con todo el detalle"], child = true,
+		help = L["Dos líneas: el precio en la subasta, lo que paga el comerciante y lo que conviene. Apagado, una sola línea; con Mayús ves el detalle."],
+		search = "tooltip detail, two lines, shift" },
 	{ kind = "toggle", key = ruta("boton"), label = L["Barra de Alfa en la casa de subastas"],
 		help = L["El botón «Escanear con Alfa» bajo la ventana de la subasta."], search = "auction house, scan button, ah" },
 	{ kind = "toggle", key = ruta("busquedas"), label = L["Aprender de tus búsquedas"],
@@ -950,6 +956,7 @@ N.Modulo({
 		gangas = true, -- 1.3.7: Gangas.lua
 		buzonAlt = true, -- 1.3.7: Envios.lua
 		listaCuenta = true, -- 1.3.8: ListaCuenta.lua
+		tooltipDetalle = false, -- 1.3.9: el consejo del cuadro en dos líneas (de fábrica, una; con Mayús, dos)
 	},
 	controles = CONTROLES,
 	construir = construir,

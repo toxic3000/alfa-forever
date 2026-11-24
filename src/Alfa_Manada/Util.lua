@@ -464,6 +464,39 @@ function U.Decir(...)
 end
 
 ---------------------------------------------------------------------------
+-- 1.3.9 (93): los avisos de La Jauría, con un solo estilo y sin duplicados.
+-- Todos los archivos de La Jauría pasan por aquí: la firma de la manada
+-- (Kit/Firmas.lua: su color, su ícono chico y su sonido), su ícono si no
+-- trae otro, y el mismo mensaje (título y texto) no sale dos veces en
+-- REPETIDO segundos, ni si otro canal (Lya, un anuncio) acaba de decirlo.
+--   U.Aviso(o) -> lo que da K.Aviso, o nil si era repetido
+--   U.AvisosDados() -> { [clave] = momento }   (para las pruebas)
+---------------------------------------------------------------------------
+local REPETIDO = 120
+local dados = {}
+function U.Aviso(o)
+	if type(o) ~= "table" then return nil end
+	o.modulo = o.modulo or "manada"
+	o.icono = o.icono or "ic-manada"
+	local titulo, texto = o.titulo, o.texto
+	local legible = not (N.Secreto and (N.Secreto(titulo) or N.Secreto(texto)))
+	local clave = legible and (tostring(titulo or "") .. "|" .. tostring(texto or "")) or nil
+	local ahora = U.Ahora()
+	if clave then
+		local antes = dados[clave]
+		if antes and ahora - antes < REPETIDO then return nil end
+		if N.YaSeVio and type(titulo) == "string" and N.YaSeVio(titulo .. (type(texto) == "string" and (" " .. texto) or ""), REPETIDO, "aviso") then return nil end
+		for k, t in pairs(dados) do if ahora - t > REPETIDO * 2 then dados[k] = nil end end
+		dados[clave] = ahora
+	end
+	local K = N.Kit
+	if K and K.Aviso then return K.Aviso(o) end
+	U.Decir((titulo or "") .. (texto and (" " .. texto) or ""))
+	return nil
+end
+function U.AvisosDados() return dados end
+
+---------------------------------------------------------------------------
 -- (1.3.2) Un solo reloj para La Jauría
 ---------------------------------------------------------------------------
 -- Las tareas de La Jauría que se repiten cada 10 s o más (guaridas, plano,

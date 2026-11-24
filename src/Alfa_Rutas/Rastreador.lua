@@ -41,7 +41,7 @@ M.Rastreador = Rs
 
 
 -- rutas.seguimientoCompleto: la vista amplia del rastreador (de fábrica, la compacta).
-A.RegisterDefaults(M.ID, { seguimientoCompleto = false, xpEntrega = true }) -- 1.3.7: xpEntrega, «+1,250 XP» en cada entrega
+A.RegisterDefaults(M.ID, { seguimientoCompleto = false, xpEntrega = true, rastreadorEsencial = true }) -- 1.3.9: rastreadorEsencial (71) -- 1.3.7: xpEntrega, «+1,250 XP» en cada entrega
 
 local type, ipairs, pairs, tonumber, tostring = type, ipairs, pairs, tonumber, tostring
 local floor, max, min, format = math.floor, math.max, math.min, string.format
@@ -65,6 +65,8 @@ local function U() return A.UI end
 local function engine(fn, ...)
 	local e = E()
 	local f = e and e[fn]
+	-- 1.3.9 (19): la vista de un paso, compartida con Hoy y el Escritorio (Reloj.lua).
+	if fn == "GetStepView" and f and N.VistaPaso then f = N.VistaPaso end
 	if type(f) ~= "function" then return nil end
 	local ok, a, b, c = pcall(f, ...)
 	if ok then return a, b, c end
@@ -323,6 +325,7 @@ local function tituloPaso(v)
 	return ""
 end
 Rs.TituloPaso = tituloPaso -- 1.2.7 (el aviso de Omitir)
+-- 1.3.9 (42): Hoy y el Escritorio lo leen por AlfaRuta.TituloPaso (Contrato.lua).
 
 -- El número de un paso como lo cuenta la guía (los pasos ocultos no cuentan).
 local function numeroPaso(i)
@@ -447,6 +450,13 @@ local function menuGuia(dueno)
 		if Rs.FinOculta and Rs.FinOculta() then
 			op[#op + 1] = { valor = function() Rs.PedirFin() end, texto = L["¿Qué sigue?"], icono = "ic-ruta" }
 		end
+		-- 1.3.9: restablecerla (te ubica sola por tu oficio, tu nivel y tus misiones).
+		if M.Restablecer then
+			op[#op + 1] = { valor = function() M.Restablecer.Restablecer() end, texto = L["Restablecer esta guía"], icono = "ic-ruta" }
+			if M.Restablecer.PuedeDeshacer() then
+				op[#op + 1] = { valor = function() M.Restablecer.Deshacer() end, texto = L["Deshacer el restablecer"], icono = "ic-cerrar" }
+			end
+		end
 		op[#op + 1] = { separador = true }
 	end
 	for i, t in ipairs(tabs or {}) do
@@ -490,19 +500,17 @@ function Rs.DeGrupo(g)
 	return id ~= nil and TAGS_GRUPO[id] == true
 end
 
+-- 1.3.9 (73): el clic derecho de cualquier paso o meta, siempre en el
+-- mismo orden: «Llévame», «Omitir», «Ver en el mapa», «Abandonar misión»;
+-- debajo, lo demás (marcar, compartir, la cadena...).
 local function menuMeta(fila)
 	local g, s = fila.alfaMeta, fila.alfaPaso
 	if not (g and s) then return end
 	local op = {}
-	if g.tickable then
-		op[#op + 1] = { valor = function() engine("ToggleGoal", s, g.index) end, texto = g.ticked and L["Desmarcar"] or L["Marcar como hecha"], icono = "ic-exito" }
-	end
-	if g.optional and g.status ~= "done" then
-		op[#op + 1] = { valor = function() engine("SkipGoal", s, g.index) end, texto = L["Omitir esta meta"], icono = "ic-cerrar" }
-	end
-	-- 1.3.7: toda meta, con misión o sin ella (ir a un lugar, matar), tiene
-	-- «Llévame» y «Ver en el mapa» (105, 106).
-	if g.status ~= "done" then
+	local q = g.quest
+	local abierta = g.status ~= "done"
+	-- 1. Llévame
+	if abierta then
 		op[#op + 1] = { valor = function()
 			local ok, por, titulo = engine("AimGoal", s, g.index)
 			if not ok and por == "accept" and titulo then
@@ -510,21 +518,40 @@ local function menuMeta(fila)
 			end
 		end, texto = L["Llévame"], icono = "ic-flecha" }
 	end
-	if Rs.VerEnMapa then
-		op[#op + 1] = { valor = function() Rs.VerEnMapa() end, texto = L["Ver el camino en el mapa"], icono = "ic-mapa" }
-	end
-	if not g.quest and not g.optional and g.status ~= "done" and g.t ~= "note" then
+	-- 2. Omitir (la misión, la meta opcional o el paso)
+	if q then
+		-- 1.3.7: con «Deshacer», igual que omitir un paso (82).
+		op[#op + 1] = { valor = function() Rs.OmitirMision(q, g.title or g.text) end, texto = L["Omitir esta misión"], icono = "ic-cerrar" }
+	elseif g.optional and abierta then
+		op[#op + 1] = { valor = function() engine("SkipGoal", s, g.index) end, texto = L["Omitir esta meta"], icono = "ic-cerrar" }
+	elseif abierta and g.t ~= "note" then
 		-- Sin misión, «Omitir» deja el paso (con su «Deshacer»).
 		op[#op + 1] = { valor = function() Rs.Omitir() end, texto = L["Omitir este paso"], icono = "ic-cerrar" }
 	end
-	if g.quest then
-		local q = g.quest
-		-- 1.3.7: con «Deshacer», igual que omitir un paso (82).
-		op[#op + 1] = { valor = function() Rs.OmitirMision(q, g.title or g.text) end, texto = L["Omitir esta misión"], icono = "ic-cerrar" }
+	-- 3. Ver en el mapa
+	if Rs.VerEnMapa then
+		op[#op + 1] = { valor = function() Rs.VerEnMapa() end, texto = L["Ver el camino en el mapa"], icono = "ic-mapa" }
+	end
+	-- 4. Abandonar misión (con confirmación; EnCurso.lua)
+	if q and M.Indice.EnRegistro(q) and M.EnCurso and M.EnCurso.AbandonarMision then
+		op[#op + 1] = { valor = function() M.EnCurso.AbandonarMision(q) end, texto = L["Abandonar misión"], icono = "ic-cerrar" }
+	end
+	local extra = {}
+	if g.tickable then
+		extra[#extra + 1] = { valor = function() engine("ToggleGoal", s, g.index) end, texto = g.ticked and L["Desmarcar"] or L["Marcar como hecha"], icono = "ic-exito" }
+	end
+	if q and g.optional and abierta then
+		extra[#extra + 1] = { valor = function() engine("SkipGoal", s, g.index) end, texto = L["Omitir esta meta"], icono = "ic-cerrar" }
+	end
+	-- 1.3.9: que la guía siga desde este paso (con Deshacer).
+	if M.Restablecer and s ~= engine("GetLiveStep") then
+		extra[#extra + 1] = { valor = function() M.Restablecer.EmpezarDesde(s) end, texto = L["Empezar desde este paso"], icono = "ic-huella" }
+	end
+	if q then
 		-- 1.3.7: en grupo, compartirla con un clic tuyo (107).
 		local Gr = M.Grupo
 		if Gr and Gr.Compartir and IsInGroup and IsInGroup() then
-			op[#op + 1] = { valor = function()
+			extra[#extra + 1] = { valor = function()
 				if not Gr.Compartir(q) then M.Aviso(L["No la pude compartir"], L["Solo se comparten las misiones de tu registro que se pueden compartir."], { icono = "ic-info" }) end
 			end, texto = L["Compartir con mi grupo"], icono = "ic-manada" }
 		end
@@ -532,25 +559,23 @@ local function menuMeta(fila)
 		local Ma = rawget(_G, "AlfaManada")
 		if type(Ma) == "table" and type(Ma.BuscoGrupo) == "function" and Rs.DeGrupo(g) then
 			local titulo = g.title or M.TituloMision(q)
-			op[#op + 1] = { valor = function() Ma.BuscoGrupo(titulo, "q") end, texto = L["Busco grupo para esta misión"], icono = "ic-manada" }
+			extra[#extra + 1] = { valor = function() Ma.BuscoGrupo(titulo, "q") end, texto = L["Busco grupo para esta misión"], icono = "ic-manada" }
 		end
 		if M.Cerrar.EnPlan(q) then
-			op[#op + 1] = { valor = function() M.Cerrar.Quitar(q) end, texto = L["Quitar de Cerrar mis misiones"], icono = "ic-misiones" }
+			extra[#extra + 1] = { valor = function() M.Cerrar.Quitar(q, true) end, texto = L["Quitar de Cerrar mis misiones"], icono = "ic-misiones" }
 		else
-			op[#op + 1] = { valor = function() M.Cerrar.Agregar(q) end, texto = L["Agregar a Cerrar mis misiones"], icono = "ic-misiones" }
+			extra[#extra + 1] = { valor = function() M.Cerrar.Agregar(q) end, texto = L["Agregar a Cerrar mis misiones"], icono = "ic-misiones" }
 		end
 		if AlfaEnciclopedia and AlfaEnciclopedia.Abrir then
-			op[#op + 1] = { valor = function() AlfaEnciclopedia.Abrir("quest", q) end, texto = L["Ver en la Enciclopedia"], icono = "ic-enciclopedia" }
+			extra[#extra + 1] = { valor = function() AlfaEnciclopedia.Abrir("quest", q) end, texto = L["Ver en la Enciclopedia"], icono = "ic-enciclopedia" }
 		end
 		-- 1.3.0: la cadena completa (Cadena.lua).
 		if M.Cadena and A.Get(M.ID .. ".cadenaCompleta") ~= false then
-			op[#op + 1] = { valor = function() M.Cadena.Abrir(q) end, texto = L["Ver la cadena completa"], icono = "ic-ruta" }
-		end
-		-- 1.3.7: abandonarla desde aquí (con confirmación; EnCurso.lua).
-		if M.Indice.EnRegistro(q) and M.EnCurso and M.EnCurso.AbandonarMision then
-			op[#op + 1] = { valor = function() M.EnCurso.AbandonarMision(q) end, texto = L["Abandonar misión"], icono = "ic-cerrar" }
+			extra[#extra + 1] = { valor = function() M.Cadena.Abrir(q) end, texto = L["Ver la cadena completa"], icono = "ic-ruta" }
 		end
 	end
+	if #op > 0 and #extra > 0 then op[#op + 1] = { separador = true } end
+	for _, o in ipairs(extra) do op[#op + 1] = o end
 	if #op == 0 then return end
 	K.Menu(fila, op, nil, function(fn) if type(fn) == "function" then fn() end end, 240)
 end
@@ -807,7 +832,10 @@ local function pintarMetasCompacto(cx, v, x, y, ancho)
 	return y, max(0, #abiertas - n), antes
 end
 
-local function pintarObjeto(cx, x, y, ancho)
+-- soloCerca (1.3.9, 30): en la vista compacta, solo cuando estás cerca de su
+-- objetivo; con tu clic se usa (el seguro del Kit hace clic en el botón del
+-- motor, fuera de combate).
+local function pintarObjeto(cx, x, y, ancho, soloCerca)
 	local o = cx.objeto
 	local Q = A.QoL
 	local B = Q and Q.Buttons
@@ -816,13 +844,25 @@ local function pintarObjeto(cx, x, y, ancho)
 		local ok, r = pcall(B.ChooseQuestItem)
 		if ok then item = r end
 	end
+	local Ob0 = M.Objeto
+	if item and soloCerca and not (Ob0 and Ob0.Cerca and Ob0.Cerca()) then item = nil end
 	if not item then
 		if o then o:Hide() end
 		return y
 	end
 	if not o then
-		o = CreateFrame("Frame", nil, cx.padre)
+		o = CreateFrame("Button", nil, cx.padre)
 		cx.objeto = o
+		o:RegisterForClicks("LeftButtonUp")
+		K.Seguro(o, function()
+			local b = M.Objeto and M.Objeto.Boton()
+			if b and b:IsShown() and b.itemID then return { type = "click", clickbutton = b } end
+			return nil
+		end)
+		o.velo = K.Velo(o, K.CORTE.control, 0.05)
+		o.velo:Hide()
+		o:SetScript("OnEnter", function(self) self.velo:Show() end)
+		o:SetScript("OnLeave", function(self) self.velo:Hide() end)
 		o.caja = K.Caja(o, { fondo = "panel", borde = "linea", corte = K.CORTE.control })
 		o.Icono = K.IconoObjeto(o, 26)
 		o.Icono:SetPoint("LEFT", o, "LEFT", 8, 0)
@@ -839,8 +879,14 @@ local function pintarObjeto(cx, x, y, ancho)
 	local Ob = M.Objeto
 	K.Escribir(o.Nombre, Ob and Ob.Texto(item) or M.NombreObjeto(item))
 	local tecla = Ob and Ob.Tecla()
-	K.Escribir(o.Ayuda, tecla and format(L["Objeto de misión: úsalo con su botón o con %s."], tecla)
-		or L["Objeto de misión: úsalo con su botón o con tu tecla de paso."])
+	local pelea = InCombatLockdown and InCombatLockdown()
+	if not pelea and Ob and Ob.Cerca and Ob.Cerca() then
+		-- 1.3.9 (30): cerca de su objetivo, un clic aquí lo usa.
+		K.Escribir(o.Ayuda, tecla and format(L["Estás cerca: clic aquí para usarlo (o %s)."], tecla) or L["Estás cerca: clic aquí para usarlo."])
+	else
+		K.Escribir(o.Ayuda, tecla and format(L["Objeto de misión: úsalo con su botón o con %s."], tecla)
+			or L["Objeto de misión: úsalo con su botón o con tu tecla de paso."])
+	end
 	o:ClearAllPoints()
 	o:SetPoint("TOPLEFT", cx.padre, "TOPLEFT", x, -y)
 	o:SetWidth(ancho)
@@ -956,10 +1002,29 @@ function Rs.Distancia()
 		local ok3, r = pcall(A.FormatDistance, d)
 		if ok3 and type(r) == "string" then txt = r end
 	end
-	return (txt or format(L["%d yardas"], floor(d + 0.5))) .. " " .. rumbo(dn, dw), "neutro", label -- 1.3.2: traducido
+	-- 1.3.9 (74): y en cuánto llegas, a tu paso (corriendo si estás quieto).
+	-- (en mazmorras y en combate la velocidad llega secreta: no se compara)
+	local vel = GetUnitSpeed and tonumber(N.Leer((GetUnitSpeed("player")))) or nil
+	if not vel or vel < 1 then vel = 7 end
+	return (txt or format(L["%d yardas"], floor(d + 0.5))) .. " " .. rumbo(dn, dw), "neutro", label, d / vel -- 1.3.2: traducido
 end
 
-local function textoFlecha() return (Rs.Distancia()) end
+-- 1.3.9 (74): un tiempo de camino igual en todo Alfa: «45 s», «1 min 20 s»
+-- en los últimos dos minutos y «unos 12 min» antes (N.Duracion redondo),
+-- como la flecha.
+function Rs.Tiempo(seg)
+	seg = tonumber(seg)
+	if not seg or seg <= 0 then return nil end
+	return N.Duracion(seg, seg >= 120)
+end
+
+-- La línea de la flecha: la distancia y el rumbo y, si el camino pasa de un
+-- minuto, en cuánto llegas («120 yd al norte · 1 min 20 s»).
+local function textoFlecha()
+	local t, tono, _, seg = Rs.Distancia()
+	if t and tono == "neutro" and seg and seg >= 60 then return t .. "  \194\183  " .. Rs.Tiempo(seg) end
+	return t
+end
 
 -- Cada segundo, mientras el rastreador compacto se ve: solo el texto; si la
 -- línea aparece o se va, se acomoda todo.
@@ -1119,6 +1184,22 @@ local function construir()
 	-- El paso
 	ui.paso = K.Texto(F, "subtitulo", "texto")
 	ui.paso:SetWordWrap(true)
+	-- 1.3.9 (73): clic derecho en el título del paso: el mismo menú que en sus metas.
+	local pc = CreateFrame("Button", nil, F)
+	ui.pasoClic = pc
+	pc:SetAllPoints(ui.paso)
+	pc:RegisterForClicks("RightButtonUp")
+	pc:SetScript("OnClick", function(self)
+		local v = cxR.vista
+		if not (v and ui.paso:IsShown()) then return end
+		local g = metasAbiertas(v)[1] or (v.goals or {})[1]
+		if not g then return end
+		self.alfaMeta, self.alfaPaso = g, v.index
+		menuMeta(self)
+	end)
+	-- 1.3.9 (71): con el ratón encima se ve todo; al irse, solo lo esencial.
+	F:HookScript("OnEnter", function() Rs.Encima(true) end)
+	F:HookScript("OnLeave", function() Rs.Encima(false) end)
 	ui.nota = K.Texto(F, "nota", "textoSuave")
 	ui.nota:SetWordWrap(true)
 
@@ -1644,6 +1725,19 @@ function Rs.Cierre()
 			if type(nid) == "string" then c.sig = { id = nid, nombre = nombreGuia(nid), motor = true } end
 		end
 	end
+	-- 1.3.9 (revisión): «Cerrar/Entregar mis misiones» terminada con misiones
+	-- todavía en tu registro: lo que sigue es cerrarlas, no «¡Terminaste tu
+	-- guía! Elige qué sigue» (Toxic lo veía con 13 en su registro).
+	if esp == "liberar" then
+		-- (revisión 6: solo las que entrarían a un plan; con solo las «Para
+		-- después», lo que sigue es la guía de tu nivel)
+		local n = M.Cerrar and M.Cerrar.QuedanParaPlan and M.Cerrar.QuedanParaPlan() or 0
+		if n > 0 then
+			c.cerrar, c.quedan = true, n
+			c.sig = { id = "cerrar", nombre = L["Cerrar mis misiones"], cerrar = true }
+			return c
+		end
+	end
 	if not c.sig and not c.elegir and esp ~= "desbloquear" and M.Siguiente then c.sig = M.Siguiente.Proponer(g.id) end
 	return c
 end
@@ -1653,6 +1747,7 @@ end
 function Rs.SeguirCierre(c)
 	if not c then return false end
 	if c.elegir then engine("OfferRouteChoice") return true end
+	if c.cerrar and M.CerrarTodo then return M.CerrarTodo.Abrir({ origen = "fin" }) end
 	local s = c.sig
 	if not s then A.Fire("SHOW_PICKER") return true end
 	if s.motor and engine("StartNext", c.id) then M.Empezar() return true end
@@ -1673,6 +1768,7 @@ end
 -- El texto del botón grande del cierre.
 function Rs.TextoCierre(c)
 	if c and c.elegir then return L["Elegir mi camino"] end
+	if c and c.cerrar then return M.Plural(c.quedan or 0, L["Cerrar mi misión"], L["Cerrar mis %d misiones"]) end
 	if c and c.sig then return seguirCon(c.sig.nombre) end
 	return L["Elegir otra guía"]
 end
@@ -1688,12 +1784,18 @@ local function cuadroVacio(g)
 		-- 1.3.7: primero la que sigue en tu ruta, o el camino para elegir.
 		local c = Rs.Cierre()
 		if c and (c.sig or c.elegir) then
-			local clave = c.elegir and "elegir" or c.sig.id
+			local clave = c.elegir and "elegir" or (c.cerrar and ("cerrar" .. (c.quedan or 0))) or c.sig.id
 			if not (vacioSig and vacioSig.alfaId == clave) then
-				vacioSig = { lobo = "aullando", titulo = VACIO_HECHA.titulo, alfaId = clave,
-					texto = c.elegir and L["Tu ruta se abre en dos: elige por dónde sigues."] or format(L["Lo que sigue para tu nivel: %s."], c.sig.nombre or "?"),
+				local txt = c.elegir and L["Tu ruta se abre en dos: elige por dónde sigues."] or format(L["Lo que sigue para tu nivel: %s."], c.sig.nombre or "?")
+				-- 1.3.9 (revisión): el plan de misiones cumplido, con las que te quedan.
+				if c.cerrar then
+					txt = M.Plural(c.quedan or 0, L["Te queda %d misión en tu registro: Alfa arma la ruta para cerrarla."],
+						L["Te quedan %d misiones en tu registro: Alfa arma la ruta para cerrarlas."])
+				end
+				vacioSig = { lobo = "aullando", titulo = c.cerrar and L["¡Plan cumplido!"] or VACIO_HECHA.titulo, alfaId = clave,
+					texto = txt,
 					accion = { texto = Rs.TextoCierre(c), icono = "ic-ruta", alClic = function() Rs.SeguirCierre(c) end,
-						corto = c.sig and L["Seguir con la siguiente"] or nil } } -- 1.3.8: el nombre ya va arriba
+						corto = c.sig and not c.cerrar and L["Seguir con la siguiente"] or nil } } -- 1.3.8: el nombre ya va arriba
 			end
 			return vacioSig
 		end
@@ -1793,7 +1895,12 @@ local function datosFin(g)
 		return d
 	end
 	local c = Rs.Cierre()
-	if c and c.elegir then
+	if c and c.cerrar then
+		d.titulo = L["¡Plan cumplido!"]
+		d.texto = M.Plural(c.quedan or 0, L["Te queda %d misión en tu registro: Alfa arma la ruta para cerrarla."],
+			L["Te quedan %d misiones en tu registro: Alfa arma la ruta para cerrarlas."])
+		d.uno = { Rs.TextoCierre(c), function() est.finPedida = nil Rs.SeguirCierre(c) end }
+	elseif c and c.elegir then
 		d.texto = L["Tu ruta se abre en dos: elige por dónde sigues."]
 		d.uno = { L["Elegir mi camino"], function() Rs.SeguirCierre(c) end }
 	elseif c and c.sig then
@@ -1971,6 +2078,22 @@ local function pintarFin(d, ancho)
 	return h
 end
 
+-- 1.3.9 (71): ¿el ratón está sobre el rastreador? Al irse, se espera un
+-- momento (pasar del rastreador a uno de sus botones también es «irse»).
+local encima = false
+function Rs.EstaEncima() return encima end
+function Rs.Encima(si)
+	if si then
+		N.Quitar("rutas.rastreadorEncima")
+		if not encima then encima = true if A.Get(M.ID .. ".rastreadorEsencial") ~= false then Rs.Luego() end end
+		return
+	end
+	N.Una("rutas.rastreadorEncima", 0.4, function()
+		if F and F:IsShown() and F.IsMouseOver and F:IsMouseOver() then return Rs.Encima(false) end
+		if encima then encima = false if A.Get(M.ID .. ".rastreadorEsencial") ~= false then Rs.Luego() end end
+	end)
+end
+
 function Rs.Pintar()
 	if not (F and F:IsShown()) then return end
 	local comp = compacto()
@@ -1983,6 +2106,15 @@ function Rs.Pintar()
 	-- Vista previa: miras otro paso que el de ahora.
 	local previa = v ~= nil and live ~= nil and v.index ~= live
 	cxR.previa = previa
+	cxR.vista = v
+	-- 1.3.9 (71): en la vista compacta, solo lo esencial (el paso, sus metas y
+	-- la flecha); el pie, «y N más», «Antes» y «Mientras estás aquí», al
+	-- pasar el ratón (rutas.rastreadorEsencial).
+	local esencial = comp and A.Get(M.ID .. ".rastreadorEsencial") ~= false and not Rs.EstaEncima()
+	if ui.pasoClic then
+		ui.pasoClic:EnableMouse(not (InCombatLockdown and InCombatLockdown()))
+		ui.pasoClic:SetShown(v ~= nil)
+	end
 	-- 1.3.8: otra guía: la tarjeta del cierre que cerraste vuelve a valer.
 	local gid = idGuia(g)
 	if est.finCerrada and est.finCerrada ~= gid then est.finCerrada = nil end
@@ -2065,7 +2197,7 @@ function Rs.Pintar()
 			y = y + 2
 			local resto, antes
 			y, resto, antes = pintarMetasCompacto(cxR, v, x, y, ancho)
-			if resto > 0 then
+			if resto > 0 and not esencial then
 				K.Escribir(ui.mas.Texto, format(L["y %d más"], resto))
 				ui.mas:ClearAllPoints()
 				ui.mas:SetPoint("TOPLEFT", F, "TOPLEFT", x, -y)
@@ -2085,10 +2217,14 @@ function Rs.Pintar()
 				ui.flecha:Show()
 				y = y + 20
 			end
-			if cxR.objeto then cxR.objeto:Hide() end
+			-- 1.3.9 (30): el objeto de misión, cuando estás cerca de su objetivo.
+			local yo = pintarObjeto(cxR, x, y + 2, ancho, true)
+			if yo ~= y + 2 then y = yo end
 			-- Una sola línea de contexto: lo que la ruta agregó antes, o
 			-- lo que hay cerca.
-			if antes then
+			if esencial then
+				pintarCerca(cxR, x, y, ancho, 0, false)
+			elseif antes then
 				K.Escribir(ui.antes.Texto, format(L["Antes: %s"], antes))
 				ui.antes:ClearAllPoints()
 				ui.antes:SetPoint("TOPLEFT", F, "TOPLEFT", x, -(y + 2))
@@ -2138,7 +2274,7 @@ function Rs.Pintar()
 		return
 	end
 	-- El pie: Ver detalle · Omitir · Siguiente
-	local conPie = not vacio
+	local conPie = not vacio and not esencial
 	for _, b in ipairs({ ui.detalle, ui.omitir, ui.siguiente, ui.pieLinea }) do b:SetShown(conPie) end
 	-- Omitir salta el paso que se ve (Engine.Skip): en la vista previa no se
 	-- ofrece aquí (el detalle dice cuál omite).
@@ -2221,7 +2357,15 @@ local function construirDetalle()
 			fila.Hecho:SetShown(hecho and true or false)
 			K.ColorTexto(fila.Texto, actual and "acento" or (hecho and "textoTenue" or "texto"))
 		end,
-		alClic = function(i)
+		alClic = function(i, _, boton)
+			-- 1.3.9: clic derecho: «Empezar desde este paso» y «Restablecer esta guía».
+			if boton == "RightButton" then
+				if M.Restablecer then
+					local fila = dui.lista
+					K.Menu(fila, M.Restablecer.Opciones(i), nil, function(fn) if type(fn) == "function" then fn() end end, 260)
+				end
+				return
+			end
 			engine("Goto", i)
 			dvista = "paso"
 			dui.seg:SetValor("paso")

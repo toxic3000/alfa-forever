@@ -259,12 +259,16 @@ local function textoTamanos(d)
 	local r = d.record
 	if r then
 		local donde = r.z and format(L[" en %s"], r.z) or ""
-		lineas[#lineas + 1] = format(L["Tu récord: %s%s, %s."], Pz.Texto(r) or Pz.Peso(r.g), donde, V.Hace(r.t))
+		lineas[#lineas + 1] = format(L["Tu récord: %s%s, %s."], Pz.Texto(r) or Pz.Peso(r.g), donde, V.CuandoRecord(r.t))
+		-- 1.3.9: cada zona en su línea, con su fecha.
 		local zonas = Pz.RecordsDe(d.id)
 		if #zonas > 1 then
-			local partes = {}
-			for i = 1, min(4, #zonas) do partes[#partes + 1] = format(L["%s %s"], zonas[i].zona, Pz.Largo(zonas[i].mm or 0)) end
-			lineas[#lineas + 1] = format(L["Por zona: %s."], table.concat(partes, DOT))
+			lineas[#lineas + 1] = L["En cada zona:"]
+			for i = 1, min(5, #zonas) do
+				local z = zonas[i]
+				lineas[#lineas + 1] = format(L["· %s: %s, %s"], z.zona, Pz.Texto(z) or Pz.Peso(z.g), Pz.Fecha(z.t) or "—")
+			end
+			if #zonas > 5 then lineas[#lineas + 1] = format(L["· y %d zonas más"], #zonas - 5) end
 		end
 	else
 		lineas[#lineas + 1] = L["Cuando lo saques, Alfa anota su tamaño y tu récord."]

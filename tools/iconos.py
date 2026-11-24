@@ -408,6 +408,13 @@ def i_apariencia(l):
         l.punto(x, y, 2.1)
 
 
+def i_paisaje(l):
+    # 1.3.9 (58): Paisaje y graficos: dos montes y el sol (antes usaba la paleta
+    # de Estilo y sonido, que significa otra cosa).
+    l.linea((3, 26), (12, 13), (17, 20), (21, 15), (29, 26), cerrada=True)
+    l.aro(23.5, 8.5, 3, w=2)
+
+
 def i_mando(l):
     l.linea((7, 10), (25, 10), (29, 22), (26, 25.5), (21, 20.5), (11, 20.5), (6, 25.5), (3, 22), cerrada=True)
     l.linea((10.5, 13), (10.5, 18), w=2)
@@ -490,6 +497,7 @@ ICONOS = {
     "ic-misiones": i_misiones, "ic-apariencia": i_apariencia, "ic-mando": i_mando, "ic-grabar": i_grabar,
     "ic-conexiones": i_conexiones, "ic-comunidad": i_comunidad, "ic-descubrir": i_descubrir,
     "ic-ventana": i_ventana, "ic-lobo": i_lobo, "ic-reloj": i_reloj, "ic-candado": i_candado,
+    "ic-paisaje": i_paisaje,
 }
 
 

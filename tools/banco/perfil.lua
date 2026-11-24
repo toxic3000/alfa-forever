@@ -5,8 +5,21 @@
 -- ráfagas de los eventos que más se repiten y cuadros de OnUpdate. Imprime
 -- lo que más tarda en cada fase. Los tiempos son del banco (Lua 5.1 de lupa),
 -- no del juego: sirven para comparar, no como milisegundos reales.
+--
+-- 1.3.9: el mapa del mundo empieza cerrado, como en el juego (el marco del
+-- banco nace visible y hacía creer que el mapa estaba abierto al entrar: se
+-- cargaba el Codex y corría el reloj de los barcos). Lo del mapa abierto se
+-- mide aparte («MAPA ABIERTO»). Los manejadores que solo reparten (el
+-- OnEvent del motor y el reloj de Alfa entero) no tapan a los de verdad en
+-- las ráfagas. Al final, una línea RESUMEN que tools/perfil.py --veces junta.
 local clock = PERFIL_RELOJ
 collectgarbage("stop") -- la basura de cada manejador se ve completa
+if WorldMapFrame and WorldMapFrame.Hide then WorldMapFrame:Hide() end
+local RESUMEN = {}
+-- Los que reparten a otros (su tiempo ya está en los de abajo).
+local function repartidor(k)
+  return k:find("Core\\Init.lua:595", 1, true) ~= nil or k == "reloj N.Reloj (todo)"
+end
 local function limpiar() for k in pairs(PERFIL_KB) do PERFIL_KB[k] = nil end for k in pairs(PERFIL_T) do PERFIL_T[k] = nil end for k in pairs(PERFIL_N) do PERFIL_N[k] = nil end for k in pairs(PERFIL_EV) do PERFIL_EV[k] = nil end end
 local function top(titulo, n, total)
   local l = {}
@@ -44,6 +57,7 @@ for _, c in ipairs(PERFIL_CARGA or {}) do porAddon[c[3]] = (porAddon[c[3]] or 0)
 local la = {}
 for k, v in pairs(porAddon) do la[#la + 1] = { k, v } end
 table.sort(la, function(a, b) return a[2] > b[2] end)
+RESUMEN.carga_ms = total * 1000
 print(("== CARGA de archivos: %.1f ms"):format(total * 1000))
 for i = 1, math.min(15, #la) do print(("  %8.2f ms  %s"):format(la[i][2] * 1000, la[i][1])) end
 table.sort(PERFIL_CARGA, function(a, b) return a[2] > b[2] end)
@@ -56,6 +70,7 @@ local t0 = clock()
 FIRE_EVENT("PLAYER_LOGIN")
 FIRE_EVENT("PLAYER_ENTERING_WORLD", true, false)
 RUN_TIMERS(30)
+RESUMEN.entrar_ms = (clock() - t0) * 1000
 top("ENTRAR (PLAYER_LOGIN + ENTERING_WORLD + 30 relojes)", 25, clock() - t0)
 topEv(8)
 local cargados = {}
@@ -81,15 +96,40 @@ local function envolverTareas()
   end
 end
 envolverTareas()
-limpiar()
-do
-  local m0 = collectgarbage("count")
-  RUN_TIMERS(60)
+-- 1.3.9: el reloj de Alfa al paso de verdad (cada tarea cuando le toca, no
+-- todas en cada vuelta como RUN_TIMERS): un segundo por vuelta.
+local function segundos(n)
+  local R = AlfaNucleo and AlfaNucleo.Reloj
+  BANCO_RELOJ_REAL = true
+  for _ = 1, n do
+    if R and R.marco then FIRE(R.marco, "OnUpdate", 1) end
+    RUN_TIMERS(1) -- (adelanta NOW un segundo)
+  end
+  BANCO_RELOJ_REAL = nil
+end
+local function relojDe(titulo, n)
+  envolverTareas()
+  limpiar()
+  local m0, t0 = collectgarbage("count"), clock()
+  segundos(n)
+  local dt, kb = clock() - t0, collectgarbage("count") - m0
   local l = {}
   for k, v in pairs(PERFIL_KB) do if k:find("^tarea") or k:find("^reloj Alfa") then l[#l + 1] = { k, v, PERFIL_T[k], PERFIL_N[k] } end end
   table.sort(l, function(a, b) return a[2] > b[2] end)
-  print(("== RELOJ 60 s sin hacer nada: basura %.0f KB"):format(collectgarbage("count") - m0))
-  for i = 1, math.min(15, #l) do print(("  %7.0f KB  %6.2f ms  x%-3d %s"):format(l[i][2], l[i][3] * 1000, l[i][4], l[i][1])) end
+  print(("== %s: %.1f ms, basura %.0f KB"):format(titulo, dt * 1000, kb))
+  for i = 1, math.min(12, #l) do print(("  %7.0f KB  %6.2f ms  x%-3d %s"):format(l[i][2], l[i][3] * 1000, l[i][4], l[i][1])) end
+  return dt, kb
+end
+do
+  local dt, kb = relojDe("RELOJ 60 s sin hacer nada (al paso real)", 60)
+  RESUMEN.reloj_ms, RESUMEN.reloj_kb = dt * 1000, kb
+  -- El mapa del mundo abierto un minuto (barcos, pines, rastros).
+  if WorldMapFrame and WorldMapFrame.Show then
+    WorldMapFrame:Show()
+    dt, kb = relojDe("MAPA ABIERTO 60 s (al paso real)", 60)
+    RESUMEN.mapa_ms, RESUMEN.mapa_kb = dt * 1000, kb
+    WorldMapFrame:Hide()
+  end
 end
 
 -- 3. Un rato de juego: ráfagas de eventos.
@@ -108,12 +148,14 @@ for _, r in ipairs(RAFAGAS) do
   RUN_TIMERS(5)
   local dt = clock() - t
   print(("== RÁFAGA x100 %-22s %8.2f ms  basura %.0f KB"):format(r[1], dt * 1000, memoria() - m0))
+  RESUMEN.rafagas_ms = (RESUMEN.rafagas_ms or 0) + dt * 1000
+  RESUMEN.rafagas_kb = (RESUMEN.rafagas_kb or 0) + memoria() - m0
   local l = {}
-  for k, v in pairs(PERFIL_T) do l[#l + 1] = { k, v, PERFIL_N[k] } end
+  for k, v in pairs(PERFIL_T) do if not repartidor(k) then l[#l + 1] = { k, v, PERFIL_N[k] } end end
   table.sort(l, function(a, b) return a[2] > b[2] end)
   for i = 1, math.min(4, #l) do print(("      %8.2f ms  x%-4d %6.0f KB  %s"):format(l[i][2] * 1000, l[i][3], PERFIL_KB[l[i][1]] or 0, l[i][1])) end
   local b = {}
-  for k, v in pairs(PERFIL_KB) do if not k:find("^OnEvent Alfa\Core\Init") and not k:find("N.Reloj") then b[#b + 1] = { k, v } end end
+  for k, v in pairs(PERFIL_KB) do if not repartidor(k) then b[#b + 1] = { k, v } end end
   table.sort(b, function(x, y) return x[2] > y[2] end)
   for i = 1, math.min(3, #b) do print(("      basura %6.0f KB  %s"):format(b[i][2], b[i][1])) end
 end
@@ -128,8 +170,15 @@ for _ = 1, 300 do
     if f._scripts and f._scripts.OnUpdate and f:IsVisible() then vivos = vivos + 1; FIRE(f, "OnUpdate", 1 / 60) end
   end
 end
+RESUMEN.cuadros_ms, RESUMEN.cuadros_kb = (clock() - t) * 1000, memoria() - m0
 top(("CUADROS x300, %d OnUpdate vivos"):format(vivos), 15, clock() - t)
 print(("  basura en 5 s de cuadros: %.0f KB"):format(memoria() - m0))
+do
+  local b = {}
+  for k, v in pairs(PERFIL_KB) do if v > 1 then b[#b + 1] = { k, v } end end
+  table.sort(b, function(x, y) return x[2] > y[2] end)
+  for i = 1, math.min(5, #b) do print(("      basura %6.0f KB  %s"):format(b[i][2], b[i][1])) end
+end
 
 -- 5. Combate: entrar, 50 golpes de eventos, salir.
 limpiar()
@@ -140,6 +189,17 @@ for _ = 1, 50 do
 end
 FIRE_EVENT("PLAYER_REGEN_ENABLED")
 RUN_TIMERS(10)
+RESUMEN.combate_ms = (clock() - t) * 1000
 top("COMBATE (entrar, 50 golpes, salir)", 12, clock() - t)
 guiasLeidas("al final")
 print(("MEMORIA Lua al final: %.1f MB"):format(memoria() / 1024))
+-- 1.3.9: lo que sigue vivo después de recoger la basura (sin lo que ya se
+-- soltó), y una línea con todo para tools/perfil.py --veces.
+collectgarbage("restart"); collectgarbage("collect"); collectgarbage("collect")
+RESUMEN.viva_mb = memoria() / 1024
+print(("MEMORIA viva (tras recoger la basura): %.1f MB"):format(RESUMEN.viva_mb))
+local partes = {}
+for _, k in ipairs({ "carga_ms", "entrar_ms", "reloj_ms", "reloj_kb", "mapa_ms", "mapa_kb", "rafagas_ms", "rafagas_kb", "cuadros_ms", "cuadros_kb", "combate_ms", "viva_mb" }) do
+  if RESUMEN[k] then partes[#partes + 1] = ("%s=%.1f"):format(k, RESUMEN[k]) end
+end
+print("RESUMEN " .. table.concat(partes, " "))

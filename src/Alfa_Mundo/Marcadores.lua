@@ -167,7 +167,18 @@ function Mk.Donde(m)
 	return Mk.NombreLugar(m) .. "  \194\183  " .. Mk.TextoCoords(m.x, m.y)
 end
 
--- spec = { mapa, x, y (0-100), nombre, icono, color, de } -> el marcador
+-- 1.3.9 (79): la nota de un marcador (opcional, una línea, sin códigos).
+Mk.LARGO_NOTA = 120
+function Mk.LimpiarNota(t)
+	if type(t) ~= "string" then return nil end
+	if issecretvalue and issecretvalue(t) then return nil end
+	t = t:gsub("[|\r\n\t]+", " "):gsub("^%s+", ""):gsub("%s+$", "")
+	if t == "" then return nil end
+	if #t > Mk.LARGO_NOTA then t = t:sub(1, Mk.LARGO_NOTA):gsub("[\192-\255][\128-\191]*$", "") end
+	return t
+end
+
+-- spec = { mapa, x, y (0-100), nombre, icono, color, de, nota } -> el marcador
 function Mk.Crear(spec)
 	if type(spec) ~= "table" then return nil end
 	local mapa, x, y = tonumber(spec.mapa), tonumber(spec.x), tonumber(spec.y)
@@ -183,6 +194,7 @@ function Mk.Crear(spec)
 		color = porColor[spec.color] and spec.color or "acento",
 		creado = time and time() or 0,
 		de = type(spec.de) == "string" and spec.de ~= "" and spec.de or nil,
+		nota = Mk.LimpiarNota(spec.nota), -- 1.3.9 (79)
 	}
 	d.siguienteMarca = d.siguienteMarca + 1
 	-- Lo que te compartieron nunca saca a tus propios marcadores (1.2.0): si
@@ -219,6 +231,7 @@ function Mk.Cambiar(id, cambios)
 	end
 	if porIcono[cambios.icono] then m.icono = cambios.icono end
 	if porColor[cambios.color] then m.color = cambios.color end
+	if cambios.nota ~= nil then m.nota = Mk.LimpiarNota(cambios.nota) end -- 1.3.9 (79)
 	avisar()
 	return m
 end
@@ -527,6 +540,7 @@ local function tooltip(m)
 		local r, g, b = Mk.Color(m)
 		tt:SetText(m.nombre, r, g, b)
 		linea(tt, Mk.Donde(m), "textoSuave")
+		if m.nota then linea(tt, m.nota, "texto") end -- 1.3.9 (79)
 		if m.de then linea(tt, format(L["Compartido por %s"], m.de), "textoTenue") end
 		if Mk.Siguiendo(m.id) then linea(tt, L["La flecha te lleva aquí."], "acento") end
 		linea(tt,L["Clic: opciones  \194\183  Mayús+clic: seguir"], "textoTenue")
@@ -674,7 +688,7 @@ local API = AlfaMundo
 API.Marcadores = function()
 	local out = {}
 	for i, m in ipairs(Mk.Lista()) do
-		out[i] = { id = m.id, nombre = m.nombre, mapa = m.mapa, x = m.x, y = m.y, icono = m.icono, color = m.color, de = m.de }
+		out[i] = { id = m.id, nombre = m.nombre, mapa = m.mapa, x = m.x, y = m.y, icono = m.icono, color = m.color, de = m.de, nota = m.nota }
 	end
 	return out
 end

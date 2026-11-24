@@ -88,6 +88,14 @@ function K.Desplazable(padre)
 		barra:SetValue(0)
 		self.alfaQuieto = nil
 	end
+	-- 1.3.9: hasta abajo (lo que acaba de aparecer al final, a la vista).
+	function d:IrAbajo()
+		local r = rango()
+		self:SetVerticalScroll(r)
+		self.alfaQuieto = true
+		barra:SetValue(r)
+		self.alfaQuieto = nil
+	end
 	return d
 end
 
@@ -462,7 +470,9 @@ end
 --             (de fábrica: importante = true -> 2, si no 3), acciones = { { texto,
 --             alClic | fn }, ... } (hasta dos botones), pedido = true (lo pidió el
 --             jugador: sale ya), sonido = tipo | false, donde = true (dice dónde
---             verlo), alMostrar = fn(aviso) (cuando de verdad sale), caduca = s })
+--             verlo), alMostrar = fn(aviso) (cuando de verdad sale), caduca = s,
+--             1.3.9: textura = ruta (un ícono a color, sin teñir), firma = clave
+--             del Centro de avisos (Kit/Firmas.lua) })
 --   -> aviso | nil (guardado o esperando su turno) | true (lo dijo Lya) | false
 --   duracion: de fábrica según lo largo del texto (5 a 15 s); no se va en combate.
 --   aviso:Cerrar()   lo cierra desde fuera. El marco se reutiliza: Cerrar()
@@ -786,6 +796,13 @@ function K.Aviso(o)
 		o.alfaSuceso = true
 	end
 	local seguro = esSeguro(o)
+	-- 1.3.9 (67): el Centro de avisos (Ajustes > Estilo y sonido): cada tipo
+	-- (la firma de su módulo) con su interruptor. Apagado, no sale (queda en
+	-- la campanita); lo que pides tú, lo urgente y un botón seguro, sí.
+	if o.pedido ~= true and not seguro and N.AvisoApagado and N.AvisoApagado(o) then
+		if N.AvisoReciente then pcall(N.AvisoReciente, o, "apagado") end
+		return false
+	end
 	-- 1.3.3: la entrada en silencio (Entrada.lua): al entrar al juego no sale
 	-- nada; queda guardado para Hoy y Lya. Salvo lo que no puede esperar
 	-- (o.alEntrar, o.importante = "siempre") y un botón seguro (abre algo del juego).
@@ -838,6 +855,20 @@ function K.Aviso(o)
 	if not pedido and not seguro and prio > 1 and o.importante ~= "siempre"
 		and N.YaSeVio and N.YaSeVio(textoDe(o), o.ventana or VISTO) then return false end
 	if not pedido then o = agrupar(o) end
+	-- 1.3.9 (68): lo que se repite mucho en la sesión se calla solo. La
+	-- cuarta vez sale con «Ya te lo dije 3 veces» y «Seguir avisando»; las
+	-- siguientes, solo en la campanita (Momentos.lua, N.Repeticion).
+	-- (Uno que se juntó con otro que ya está a la vista no cuenta otra vez.)
+	local juntado = o.alfaGrupo and #o.alfaGrupo.lista > 1
+	if not pedido and not seguro and not juntado and prio > 1 and o.importante ~= "siempre" and N.Repeticion then
+		local r, clave = N.Repeticion(o)
+		if r == "callado" then
+			if N.AvisoReciente then pcall(N.AvisoReciente, o, "callado") end
+			return false
+		elseif r == "ultima" then
+			o = N.AvisoCallado(o, clave)
+		end
+	end
 	if o.lya ~= false and not seguro and K.PorLya(o) then
 		-- 1.3.7: lo que dijo Lya también queda en «Avisos» (la campanita), como visto.
 		if N.AvisoReciente then pcall(N.AvisoReciente, o, "lya") end
@@ -869,8 +900,13 @@ function K.Aviso(o)
 	K.ColorPlano(a.Franja, firma and o.tono ~= "peligro" and firma.color or relleno)
 	if o.lobo then a.Icono:SetTexture(K.Lobo(o.lobo)) else a.Icono:SetTexture(K.Ruta(o.icono or (firma and firma.icono) or "ic-aviso")) end
 	a.Icono:SetVertexColor(K.Color(relleno))
+	-- 1.3.9: una textura a color propia (el Lobo Malo de los errores): sin teñir.
+	if type(o.textura) == "string" then
+		a.Icono:SetTexture(o.textura)
+		a.Icono:SetVertexColor(1, 1, 1, 1)
+	end
 	local conFirma = firma ~= nil and firma.icono ~= (o.icono or (not o.lobo and firma.icono) or nil)
-		and not (o.lobo and o.alfaFirma == "lya")
+		and not (o.lobo and o.alfaFirma == "lya") and type(o.textura) ~= "string"
 	a.Firma:SetShown(conFirma)
 	a.FirmaFondo:SetShown(conFirma)
 	if conFirma then
@@ -883,14 +919,16 @@ function K.Aviso(o)
 	K.Escribir(a.Titulo, o.titulo or "")
 	a.Titulo:ClearAllPoints()
 	a.Titulo:SetPoint("TOPLEFT", a, "TOPLEFT", x, -ESP.m - 2)
-	a.Titulo:SetWidth(tw)
-	local y = ESP.m + 2 + K.AltoTexto(a.Titulo)
+	-- 1.3.9 (98): el título en hasta 2 renglones y el texto en hasta 6: en
+	-- alemán, francés o ruso un aviso de 3 renglones en español se cortaba
+	-- (tools/banco/prueba_139_calidad.lua los mide en los 10 idiomas).
+	local y = ESP.m + 2 + K.Parrafo(a.Titulo, tw, 2)
 	K.Escribir(a.Texto, o.texto or "")
 	if (o.texto or "") ~= "" then
 		y = y + 3
 		a.Texto:ClearAllPoints()
 		a.Texto:SetPoint("TOPLEFT", a, "TOPLEFT", x, -y)
-		y = y + K.Parrafo(a.Texto, tw, 3)
+		y = y + K.Parrafo(a.Texto, tw, 6)
 	end
 	-- Sus botones: o.accion, o.acciones (1.3.7: hasta dos, { texto, alClic | fn }).
 	local botones = {}

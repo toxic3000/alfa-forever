@@ -44,6 +44,7 @@ local floor, ceil, max, min = math.floor, math.ceil, math.max, math.min
 
 M.AJUSTES = {
 	activo = true,           -- usar los marcos de Alfa
+	mapaPorRama = true,      -- 1.3.9: al cambiar de talentos, el mapa de clics guardado para ellos (Perfiles.lua)
 	solo = false,            -- verte a ti estando solo
 	ocultarBlizzard = true,  -- ocultar los marcos de grupo de Blizzard
 	-- 1.3.7: más compactos (antes 88 x 36), con la barra de recurso abajo.

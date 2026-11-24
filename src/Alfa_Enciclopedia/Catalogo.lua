@@ -317,6 +317,7 @@ function Cat.PrepararFacetas()
 	facetas.pedidas = true
 	Cat.Pedir("objeto", function(ok)
 		if not ok then facetas.pedidas = nil return end
+		-- 1.3.9 (20): al frente de la cola: tipo y ranura listos en cuanto están los objetos.
 		M.Tarea("facetas", pasoFacetas(), function(bien)
 			facetas.lista = bien
 			if M.alFacetas then K.Llamar(M.alFacetas, "lista") end
@@ -324,7 +325,7 @@ function Cat.PrepararFacetas()
 				facetas.nivel = bien2
 				if M.alFacetas then K.Llamar(M.alFacetas, "nivel") end
 			end)
-		end)
+		end, true)
 	end)
 end
 
@@ -801,4 +802,95 @@ function Cat.Buscar(tipo, texto, f, salida)
 		for k = 1, n do salida[k] = copia[claves[k] % 100000] end
 	end
 	return salida, pend
+end
+
+---------------------------------------------------------------------------
+-- 1.3.9: búsqueda con errores de dedo. Cuando no hay nada igual, las filas
+-- cuyas palabras se parecen a las tuyas (una letra cambiada, de más, de menos
+-- o dos al revés; dos en palabras largas), en inglés o en tu idioma. Cada
+-- palabra tuya de 4 letras o más tiene que parecerse a alguna del nombre (las
+-- cortas, empezar igual). Solo se prueba con la primera letra igual y largos
+-- parecidos: rápido aunque sean miles de nombres. Como mucho LIMITE.
+--   Cat.Parecido(a, b, tope) -> true si a y b se parecen
+--   Cat.Parecidos(tipo, texto, filtro, salida) -> salida, n
+---------------------------------------------------------------------------
+local LIMITE = 200
+local byte = string.byte
+
+-- Distancia de edición con tope (Damerau corta): true si es <= tope.
+local function parecido(a, b, tope)
+	local la, lb = #a, #b
+	if la - lb > tope or lb - la > tope then return false end
+	if a == b then return true end
+	local prev2, prev, cur = {}, {}, {}
+	for j = 0, lb do prev[j] = j end
+	for i = 1, la do
+		cur[0] = i
+		local minimo = i
+		local ai = byte(a, i)
+		for j = 1, lb do
+			local bj = byte(b, j)
+			local costo = ai == bj and 0 or 1
+			local v = prev[j - 1] + costo
+			if prev[j] + 1 < v then v = prev[j] + 1 end
+			if cur[j - 1] + 1 < v then v = cur[j - 1] + 1 end
+			if i > 1 and j > 1 and ai == byte(b, j - 1) and byte(a, i - 1) == bj and prev2[j - 2] + 1 < v then v = prev2[j - 2] + 1 end
+			cur[j] = v
+			if v < minimo then minimo = v end
+		end
+		if minimo > tope then return false end
+		prev2, prev, cur = prev, cur, prev2
+	end
+	return prev[lb] <= tope
+end
+Cat.Parecido = parecido
+
+local function topeDe(w) return #w >= 8 and 2 or 1 end
+
+-- ¿La fila s se parece a las palabras ws?
+local function filaParecida(s, ws)
+	for k = 1, #ws do
+		local w = ws[k]
+		local ok = false
+		if #w < 4 then
+			ok = find(s, " " .. w, 1, true) ~= nil
+		else
+			local tope = topeDe(w)
+			local c1 = sub(w, 1, 1)
+			for palabra in s:gmatch("[^%s\1]+") do
+				if sub(palabra, 1, 1) == c1 and parecido(w, palabra, tope) then ok = true break end
+			end
+		end
+		if not ok then return false end
+	end
+	return true
+end
+Cat.FilaParecida = filaParecida
+
+function Cat.Parecidos(tipo, texto, f, salida)
+	salida = salida or {}
+	for k = #salida, 1, -1 do salida[k] = nil end
+	local c = col[tipo]
+	local p = preparar(texto)
+	if not (c and p and p.cuerpo and #p.cuerpo >= 4) then return salida, 0 end
+	local ws = {}
+	for w in p.cuerpo:gmatch("%S+") do ws[#ws + 1] = w end
+	local largo = false
+	for _, w in ipairs(ws) do if #w >= 4 then largo = true end end
+	if not largo then return salida, 0 end
+	f = f or {}
+	local pend = pendienteDe(tipo, f)
+	local filtro = not pend and FILTROS[tipo] or nil
+	local ctx = contexto(tipo, f)
+	local orden = c.orden or {}
+	local n = 0
+	for k = 1, #orden do
+		local i = orden[k]
+		if filaParecida(c.nom[i], ws) and (not filtro or filtro(c, i, f, ctx)) then
+			n = n + 1
+			salida[n] = i
+			if n >= LIMITE then break end
+		end
+	end
+	return salida, n
 end

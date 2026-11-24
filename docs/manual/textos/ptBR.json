@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "A 1.3.8: a matilha em duas telas", "items": ["**Duas telas:** com outro monitor, o Alfa coloca lá seu guia, a seta, o mapa, Hoje e Lya. Um clique configura, e você testa antes de salvar (`/alfa pantallas`).", "**Avisos únicos:** o barco aparece claro na seta (para onde, quando sai e quando você chega) e cada acontecimento dá uma só mensagem.", "**Pesca e cadeado:** tamanhos, recordes e seu nível de pescador de 1 a 60. Alt+clique direito põe cadeado num item para ele não ser apagado nem vendido.", "**Cada facção do seu lado:** o que La Jauría compartilha fica na sua facção, e a Enciclopédia diz como conseguir cada item e qual a chance."]}
+    "mapa": {"titulo": "A 1.3.9: a matilha caça melhor", "items": ["**Fechar minhas missões:** monta a melhor rota com todas as suas missões, zona por zona e com as entregas juntas; as que não valem mais a pena vão para \"Para depois\".", "**Guias de profissão do Alfa:** por faixas, com a melhor zona, a receita mais barata que ainda dá pontos e seus materiais. \"Redefinir este guia\" encontra onde você está.", "**A viagem, nova:** o navio e o zepelim têm seu cartão com a contagem da partida, e o clique na seta leva você ao próximo lugar.", "**Reporte com um clique:** o Lobo Mau avisa quando o Alfa encontra um erro dele. Além disso: placar de Horda e Aliança e o mapa por dentro das masmorras."]}
   },
   "contraportada": {
     "titulo": "Entre para a matilha",

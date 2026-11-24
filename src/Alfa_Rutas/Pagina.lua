@@ -47,7 +47,7 @@ local function accion()
 			texto = L["Alfa arma la ruta más corta para cobrarlas, junta por PNJ. La flecha usa vuelos y tu piedra de hogar cuando conviene, y te avisa si una entrega queda lejos."],
 			estado = { texto = format(L["%d listas"], listas), tono = "exito" },
 			accion = { texto = L["Entregarlas ahora"], icono = "ic-seguir", alClic = function() M.EntregarListas() end },
-			secundaria = { texto = L["Cerrar todas mis misiones"], alClic = function() Cr.Ahora("todas") end } }
+			secundaria = { texto = L["Cerrar todas mis misiones"], alClic = function() Cr.Ahora() end } }
 	end
 	if g then
 		local u = A.UI
@@ -57,8 +57,11 @@ local function accion()
 		local Rs = M.Rastreador
 		local c = Rs and Rs.Cierre and Rs.Cierre()
 		if c and c.terminada then
-			return { lobo = "aullando", tono = "exito", sobre = L["Tu guía"], titulo = L["¡Terminaste!"],
-				texto = c.sig and format(L["%s quedó completa. Lo que sigue para tu nivel: %s."], nombre, c.sig.nombre or "?")
+			return { lobo = "aullando", tono = "exito", sobre = L["Tu guía"], titulo = c.cerrar and L["¡Plan cumplido!"] or L["¡Terminaste!"],
+				-- 1.3.9 (revisión): el plan de misiones cumplido, con las que te quedan.
+				texto = c.cerrar and M.Plural(c.quedan or 0, L["Te queda %d misión en tu registro: Alfa arma la ruta para cerrarla."],
+					L["Te quedan %d misiones en tu registro: Alfa arma la ruta para cerrarlas."])
+					or c.sig and format(L["%s quedó completa. Lo que sigue para tu nivel: %s."], nombre, c.sig.nombre or "?")
 					or format(L["%s quedó completa. Elige qué sigue y la manada va contigo."], nombre),
 				progreso = total > 0 and { actual = total, total = total, huellas = true, texto = L["Guía completa"] } or nil,
 				accion = { texto = Rs.TextoCierre(c), icono = "ic-ruta", alClic = function() Rs.SeguirCierre(c) end },

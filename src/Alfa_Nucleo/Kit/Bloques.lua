@@ -211,12 +211,65 @@ end
 --   })
 --   tarjeta:Acomodar(ancho, altoMinimo) -> alto
 ---------------------------------------------------------------------------
+-- 1.3.9 (56): el relleno de cada variante sale de la tabla de medidas (K.MEDIDA).
+local MT = K.MEDIDA and K.MEDIDA.tarjeta or {}
 local VARIANTE = {
-	accion = { baldosa = 64, icono = 34, pad = ESP.l, titulo = "titulo", texto = "texto", lineas = 6, corte = K.CORTE.tarjeta },
-	normal = { baldosa = 40, icono = 22, pad = ESP.base, titulo = "subtitulo", texto = "nota", lineas = 6, corte = K.CORTE.tarjeta },
-	compacta = { baldosa = 28, icono = 16, pad = ESP.m, titulo = "cuerpo", texto = "pequeno", lineas = 1, corte = K.CORTE.control },
-	estado = { baldosa = 56, icono = 30, pad = ESP.l, titulo = "titulo", texto = "texto", lineas = 8, corte = K.CORTE.tarjeta },
+	accion = { baldosa = 64, icono = 34, pad = MT.accion or ESP.l, titulo = "titulo", texto = "texto", lineas = 6, corte = K.CORTE.tarjeta },
+	normal = { baldosa = 40, icono = 22, pad = MT.normal or ESP.base, titulo = "subtitulo", texto = "nota", lineas = 6, corte = K.CORTE.tarjeta },
+	compacta = { baldosa = 28, icono = 16, pad = MT.compacta or ESP.m, titulo = "cuerpo", texto = "pequeno", lineas = 1, corte = K.CORTE.control },
+	estado = { baldosa = 56, icono = 30, pad = MT.estado or ESP.l, titulo = "titulo", texto = "texto", lineas = 8, corte = K.CORTE.tarjeta },
 }
+
+---------------------------------------------------------------------------
+-- 1.3.9 (mejora 37): «Ahora no» y «No volver a mostrar» en las tarjetas de
+-- sugerencia. Una tarjeta con `descartar = "clave"` (o { clave, alDescartar })
+-- lleva una × chica arriba a la derecha (en la compacta, a la derecha); su
+-- clic abre un menú con las dos. «Ahora no» la esconde hasta que entres otra
+-- vez al juego; «No volver a mostrar», para siempre (se recupera con
+-- K.OlvidarDescartes(), el botón «Volver a mostrar lo que ocultaste» de Hoy).
+--   K.Descartado(clave) -> bool    K.Descartar(clave, siempre)
+--   K.Descartes() -> n (cuántas para siempre)    K.OlvidarDescartes()
+---------------------------------------------------------------------------
+local ahoraNo = {}
+local function descartesGuardados()
+	local d = N.Datos("kit")
+	if type(d.descartes) ~= "table" then d.descartes = {} end
+	return d.descartes
+end
+function K.Descartado(clave)
+	if type(clave) ~= "string" or clave == "" then return false end
+	return ahoraNo[clave] == true or descartesGuardados()[clave] == true
+end
+function K.Descartar(clave, siempre)
+	if type(clave) ~= "string" or clave == "" then return end
+	ahoraNo[clave] = true
+	if siempre then descartesGuardados()[clave] = true end
+	if N.A and N.A.Fire then pcall(N.A.Fire, "ALFA_DESCARTE", clave, siempre and true or false) end
+end
+function K.Descartes()
+	local n = 0
+	for _ in pairs(descartesGuardados()) do n = n + 1 end
+	return n
+end
+function K.OlvidarDescartes()
+	ahoraNo = {}
+	N.Datos("kit").descartes = {}
+	if N.A and N.A.Fire then pcall(N.A.Fire, "ALFA_DESCARTE", nil, false) end
+end
+
+local function menuDescartar(c)
+	local d = c.alfaDatos or {}
+	local x = d.descartar
+	local clave = type(x) == "table" and (x.clave or x[1]) or x
+	local alDescartar = type(x) == "table" and x.alDescartar or nil
+	K.Menu(c.Descartar, {
+		{ valor = "ahora", texto = L["Ahora no"], icono = "ic-reloj" },
+		{ valor = "siempre", texto = L["No volver a mostrar"], icono = "ic-cerrar" },
+	}, nil, function(v)
+		K.Descartar(clave, v == "siempre")
+		if alDescartar then K.Llamar(alDescartar, v == "siempre", clave) end
+	end, 200)
+end
 
 local function pintarTarjeta(c)
 	local d = c.alfaDatos or {}
@@ -348,6 +401,15 @@ function K.Tarjeta(padre, opts)
 		end
 		-- 1.3.6: la misma tabla de información, vaciada (no una nueva por Set).
 		if d.ayuda then K.ConInfo(self, d.titulo, d.ayuda) elseif self.alfaInfo then self.alfaInfo[1], self.alfaInfo[2] = nil, nil end
+		-- 1.3.9 (37): la × de «Ahora no / No volver a mostrar».
+		if d.descartar then
+			self.Descartar = self.Descartar or K.BotonIcono(self, "ic-cerrar", function() menuDescartar(self) end,
+				{ tam = 20, ayuda = L["Ocultar esta sugerencia"], ayudaTexto = L["«Ahora no» o «No volver a mostrar»."] })
+			self.Descartar:SetFrameLevel(self:GetFrameLevel() + 4)
+			self.Descartar:Show()
+		elseif self.Descartar then
+			self.Descartar:Hide()
+		end
 		pintarTarjeta(self)
 	end
 
@@ -360,20 +422,42 @@ function K.Tarjeta(padre, opts)
 		if self.Franja then x = x + 2 end
 		self:SetWidth(ancho)
 		if v == "compacta" then
-			local alto = max(K.ALTO.compacta, altoMin or 0)
-			self.Baldosa:ClearAllPoints()
-			self.Baldosa:SetPoint("LEFT", self, "LEFT", pad, 0)
-			local vw = (self.Valor:GetText() or "") ~= "" and (K.Ajustar(self.Valor, 120) + ESP.m) or 0
+			-- 1.3.9 (61): el valor hasta casi la mitad de la tarjeta (con letra
+			-- grande «Aún no lo aprendes» ya no se corta) y el texto en hasta tres
+			-- renglones si no cabe en uno (la tarjeta crece lo justo).
+			local vw = (self.Valor:GetText() or "") ~= "" and (K.Ajustar(self.Valor, max(120, floor(ancho * 0.42))) + 2 + ESP.m) or 0
+			if vw > 0 then self.Valor:SetWidth(vw - ESP.m) end
+			local dw = (self.Descartar and self.Descartar:IsShown()) and (20 + ESP.s) or 0
+			if dw > 0 then
+				self.Descartar:ClearAllPoints()
+				self.Descartar:SetPoint("RIGHT", self, "RIGHT", -pad + 4, 0)
+			end
 			self.Valor:ClearAllPoints()
-			self.Valor:SetPoint("RIGHT", self, "RIGHT", -pad, 0)
+			self.Valor:SetPoint("RIGHT", self, "RIGHT", -pad - dw, 0)
+			vw = vw + dw
 			local tw = max(40, ancho - x - pad - vw)
 			local conTexto = (self.Texto:GetText() or "") ~= ""
-			self.Titulo:ClearAllPoints()
 			self.Titulo:SetWidth(tw)
-			self.Titulo:SetPoint("LEFT", self, "LEFT", x, conTexto and 7 or 0)
+			self.Titulo:SetWordWrap(false)
+			local th = K.AltoTexto(self.Titulo)
+			local xh = 0
+			if conTexto then
+				self.Texto:SetWidth(tw)
+				self.Texto:SetWordWrap(false)
+				if K.AnchoTexto(self.Texto) > tw + 0.5 then
+					xh = K.Parrafo(self.Texto, tw, 3)
+				else
+					xh = K.AltoTexto(self.Texto)
+				end
+			end
+			local bloque = th + (conTexto and (2 + xh) or 0)
+			local alto = max(K.ALTO.compacta, altoMin or 0, bloque + 2 * ESP.s)
+			local y0 = floor((alto - bloque) / 2)
+			self.Baldosa:ClearAllPoints()
+			self.Baldosa:SetPoint("LEFT", self, "LEFT", pad, 0)
+			self.Titulo:ClearAllPoints()
+			self.Titulo:SetPoint("TOPLEFT", self, "TOPLEFT", x, -y0)
 			self.Texto:ClearAllPoints()
-			self.Texto:SetWidth(tw)
-			self.Texto:SetWordWrap(false)
 			self.Texto:SetPoint("TOPLEFT", self.Titulo, "BOTTOMLEFT", 0, -2)
 			self.Sobre:Hide()
 			for i = 1, #self.insignias do self.insignias[i]:Hide() end
@@ -389,6 +473,12 @@ function K.Tarjeta(padre, opts)
 		for _, b in ipairs(botones) do bw = max(bw, b:AnchoNatural()) end
 		local lado = (v == "accion" or v == "estado") and #botones > 0 and ancho >= 560
 		local derecha = lado and (bw + ESP.l) or 0
+		-- 1.3.9 (37): la × arriba a la derecha (el texto no pasa por debajo).
+		if self.Descartar and self.Descartar:IsShown() then
+			self.Descartar:ClearAllPoints()
+			self.Descartar:SetPoint("TOPRIGHT", self, "TOPRIGHT", -6, -6)
+			if not lado then derecha = max(derecha, 20) end
+		end
 		local tw = max(60, ancho - x - pad - derecha)
 		local y = pad
 		self.Baldosa:ClearAllPoints()
@@ -995,6 +1085,19 @@ function K.GrupoAjustes(padre, opts)
 		end
 		local py = 0
 		local visibles = 0
+		-- 1.3.9 (57): los botones de un grupo, del mismo ancho (el del más
+		-- largo, hasta 240): forman una columna pareja a la derecha.
+		local botones, bw = {}, 0
+		for _, f in ipairs(self.filas) do
+			local c = f.Control
+			if f:IsShown() and not f.alfaOculto and c and c.AnchoNatural and c.SetAncho and not c.alfaDosLineas and not c.alfaAnchoPropioFila then
+				botones[#botones + 1] = c
+				bw = max(bw, K.num(c:AnchoNatural(), 0))
+			end
+		end
+		if #botones >= 2 and bw <= 240 then
+			for _, c in ipairs(botones) do c:SetAncho(bw) end
+		end
 		for i, f in ipairs(self.filas) do
 			if f:IsShown() and not f.alfaOculto then
 				visibles = visibles + 1

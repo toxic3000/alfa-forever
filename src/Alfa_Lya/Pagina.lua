@@ -135,6 +135,9 @@ local function grupos(padre)
 	consejos:Fila({ titulo = L["Minutos entre consejos"], hija = true, activa = hablaMas,
 		control = deslizador("minutos", 2, 30, 1, function(v) return format(L["%d min"], floor(v + 0.5)) end),
 		texto = L["Lo menos que espera Lya entre un consejo y otro. Lo importante no espera."] })
+	-- 1.3.9 (69): más tranquila con quien empieza.
+	consejos:Fila({ titulo = L["Más tranquila con personajes nuevos"], control = interruptor("calmaNuevos"), hija = true, activa = hablaMas,
+		texto = L["Hasta el nivel 10, en tu primera hora de juego Lya habla mucho menos: hay mucho que aprender y no quiere abrumarte. Lo importante te lo dice igual."] })
 	consejos:Fila({ titulo = L["Sonido suave"], control = interruptor("sonido"), activa = visible,
 		texto = L["Un clic bajito cuando Lya te dice algo."] })
 	consejos:Fila({ titulo = L["Tamaño de su letra"], activa = visible,
@@ -375,6 +378,9 @@ local CONTROLES = {
 	{ kind = "slider", key = clave("minutos"), label = L["Minutos entre consejos"], min = 2, max = 30, step = 1, format = minutos,
 		child = true, disabled = no(hablaMas),
 		help = L["Lo menos que espera Lya entre un consejo y otro. Lo importante no espera."], search = "tips interval, minutes" },
+	{ kind = "toggle", key = clave("calmaNuevos"), label = L["Más tranquila con personajes nuevos"], child = true, disabled = no(hablaMas),
+		help = L["Hasta el nivel 10, en tu primera hora de juego Lya habla mucho menos: hay mucho que aprender y no quiere abrumarte. Lo importante te lo dice igual."],
+		search = "new player, beginner, quiet, less tips, nuevo, novato, tranquila" },
 	{ kind = "toggle", key = clave("sonido"), label = L["Sonido suave"], disabled = no(visible),
 		help = L["Un clic bajito cuando Lya te dice algo."], search = "lya sound" },
 	-- 1.3.7 (156): los 4 que la búsqueda no encontraba.

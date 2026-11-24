@@ -41,6 +41,8 @@ function UnitIsDeadOrGhost() return false end
 function UnitAffectingCombat() return false end
 function UnitOnTaxi() return false end
 function IsInInstance() return false, "none" end
+-- 1.3.9: quieto (0), corriendo 7, volando 7, nadando 4.72 (en combate y en mazmorras llega secreta).
+function GetUnitSpeed() return 0, 7, 7, 4.72 end
 function IsInGroup() return false end
 function IsInRaid() return false end
 function GetNumGroupMembers() return 0 end
@@ -73,7 +75,8 @@ do
     OCULTO[p] = { v = v, t = rtype(v) }
     return p
   end
-  MT.__index = function(_, k) if deBanco(2) then return nil end truena("index") end
+  -- (nivel 3: quien indexa; el 2 es esta misma función)
+  MT.__index = function(_, k) if deBanco(3) then return nil end truena("index") end
   MT.__newindex = function() truena("index") end
   MT.__call = function() truena("call") end
   MT.__len = function() truena("get length of") end
@@ -94,15 +97,19 @@ do
     if t == "userdata" and OCULTO[v] then return OCULTO[v].t end
     return t
   end
+  -- 1.3.9: como en el juego, tonumber de un número secreto da el mismo
+  -- secreto (compararlo después truena: Rastreador.lua:1007); de otro tipo,
+  -- truena. Nivel 3 = quien llama (el 2 es esta misma función).
   function tonumber(v, base)
     if rtype(v) == "userdata" and OCULTO[v] then
-      if deBanco(2) then return nil end
+      if deBanco(3) then return nil end
+      if OCULTO[v].t == "number" then return v end
       error("bad argument #1 to 'tonumber' (a secret value) (banco)", 2)
     end
     return rtonumber(v, base)
   end
   function tostring(v)
-    if rtype(v) == "userdata" and OCULTO[v] and not deBanco(2) then return nuevo("<secreto>") end
+    if rtype(v) == "userdata" and OCULTO[v] and not deBanco(3) then return nuevo("<secreto>") end
     return rtostring(v)
   end
   local guardadas = {}
@@ -263,7 +270,14 @@ C_AddOns = {
   GetAddOnMetadata = GetAddOnMetadata,
   IsAddOnLoaded = function(n) return LOADED[n] and true or false, LOADED[n] and true or false end,
   GetNumAddOns = GetNumAddOns,
-  GetAddOnInfo = function(n) local m = ADDON_META[n] if not m then return nil end return n, m.Title, m.Notes, true, nil, "INSECURE", false end,
+  GetAddOnInfo = function(n)
+    if type(n) == "number" then -- (1.3.9) por número, como en el juego: en orden alfabético
+      local l = {}
+      for k in pairs(ADDON_META) do l[#l + 1] = k end
+      table.sort(l)
+      n = l[n]
+    end
+    local m = n and ADDON_META[n] if not m then return nil end return n, m.Title, m.Notes, true, nil, "INSECURE", false end,
   GetAddOnEnableState = function(n) return ADDON_META[n] and 2 or 0 end,
   IsAddOnLoadOnDemand = function() return false end,
   LoadAddOn = function(n) if PERFIL_ON and not LOADED[n] then PERFIL_PIDIO = PERFIL_PIDIO or {}; local t0 = PERFIL_RELOJ(); local ok = PY_LOAD_ADDON(n); PERFIL_PIDIO[#PERFIL_PIDIO + 1] = { n, PERFIL_RELOJ() - t0, debug.traceback("", 2) }; return ok, (not ok) and "MISSING" or nil end if PY_LOAD_ADDON then local ok = PY_LOAD_ADDON(n) return ok, (not ok) and "MISSING" or nil end return false, "MISSING" end,

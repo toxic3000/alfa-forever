@@ -37,6 +37,9 @@ M.ICONO = "ic-nivel"
 local type, pairs, ipairs, pcall, floor, max, tonumber = type, pairs, ipairs, pcall, math.floor, math.max, tonumber
 
 M.AJUSTES = {
+	-- 1.3.9: la página con todos sus ajustes a la vista (apagado: lo de todos
+	-- los días y lo demás plegado bajo «Más ajustes»).
+	paginaCompleta = false,
 	-- Rotación
 	rotacion = true,      -- el ícono con la siguiente habilidad
 	-- La prioridad de Alfa antes que la ayuda de Blizzard (1.2.2: de fábrica;

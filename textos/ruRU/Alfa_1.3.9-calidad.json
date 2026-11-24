@@ -1,0 +1,12 @@
+{
+ "Módulos: %s": "Модули: %s",
+ "apagados: %s": "выключены: %s",
+ "Modo sencillo": "Простой режим",
+ "Modo completo": "Полный режим",
+ "Alfa usa %.1f MB": "Alfa занимает %.1f МБ",
+ "%d tareas del reloj (la que más tarda: %s)": "%d задач таймера (самая медленная: %s)",
+ "Otros addons (%d): %s": "Другие аддоны (%d): %s",
+ "<jugador>": "<игрок>",
+ "<tu personaje>": "<твой персонаж>",
+ "<tu reino>": "<твой сервер>"
+}

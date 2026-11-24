@@ -614,6 +614,13 @@ end
 ---------------------------------------------------------------------------
 
 function D.MazmorraActual()
+	-- 1.3.9: fuera de una instancia, nunca (GetInstanceMapID da el del
+	-- continente y podía confundirse con una mazmorra). Si el juego lo da
+	-- secreto, se sigue: en las instancias es donde se esconde.
+	if IsInInstance then
+		local ok, dentro = pcall(IsInInstance)
+		if ok and not N.Secreto(dentro) and not dentro then return nil end
+	end
 	local C = A.Compat
 	local mapa = C and legible(llamar(C.GetInstanceMapID))
 	if type(mapa) ~= "number" then return nil end

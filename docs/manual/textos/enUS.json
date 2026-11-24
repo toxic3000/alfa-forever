@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "1.3.8: the pack on two screens", "items": ["**Two screens:** with another monitor, Alfa puts your guide, the arrow, the map, Today and Lya there. One click sets it up and you try it before saving (`/alfa pantallas`).", "**Unique notices:** the boat reads clearly on the arrow (where to, when it leaves and when you arrive) and each event gives one single message.", "**Fishing and item lock:** sizes, records and your angler level from 1 to 60. Alt+right-click locks an item so it can't be deleted or sold.", "**Each faction on its side:** what La Jauría shares stays within your faction, and the Encyclopedia shows how to get each item and how likely it is."]}
+    "mapa": {"titulo": "1.3.9: the pack hunts better", "items": ["**Close my quests:** builds the best route with all your quests, zone by zone with turn-ins grouped; the ones no longer worth it go to \"For later\".", "**Alfa profession guides:** in stages, with the best zone, the cheapest recipe that still gives points and your materials. \"Reset this guide\" finds where you are.", "**Travel, rebuilt:** boats and zeppelins get their own card with the departure countdown, and clicking the arrow takes you to the next spot.", "**Report in one click:** the Big Bad Wolf lets you know when Alfa hits one of its own errors. Plus: a Horde and Alliance scoreboard and an inside map for dungeons."]}
   },
   "contraportada": {
     "titulo": "Join the pack",

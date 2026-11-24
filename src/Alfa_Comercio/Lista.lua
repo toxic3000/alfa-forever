@@ -285,6 +285,16 @@ function Li.Guiar(id)
 		N.Imprimir(L["Se puede al salir de combate."])
 		return false
 	end
+	-- 1.3.9 (oficios): lo que se recolecta va a la mejor zona por tu nivel y
+	-- facción, con una ruta por sus puntos (Recolección, Llevar.lua).
+	local AR = rawget(_G, "AlfaRecoleccion")
+	if type(AR) == "table" and type(AR.Llevar) == "function" then
+		local okR, si = pcall(AR.Llevar, id)
+		if okR and si then
+			if N.EmpezarRuta then pcall(N.EmpezarRuta) end
+			return true
+		end
+	end
 	if not (Lk and Lk.Guide) then
 		N.Imprimir(L["El motor no puede armar guías ahora."])
 		return false

@@ -224,6 +224,46 @@ end
 -- 2. La manada a la vista
 ---------------------------------------------------------------------------
 
+-- 1.3.9 (92): la manada a la vista, en orden: tu grupo, tu hermandad y los
+-- que andan cerca (los demás lobos de La Jauría). Dentro de cada parte, el
+-- orden de siempre (a quien sigues, los más cercanos...).
+local SECCION_ORDEN = { grupo = 1, hermandad = 2, cerca = 3 }
+P.SECCIONES = { grupo = "Tu grupo", hermandad = "Tu hermandad", cerca = "Cerca" }
+
+local function deMiHermandad(f)
+	if f.via == "hermandad" then return true end
+	local C = rawget(_G, "C_GuildInfo")
+	local fn = type(C) == "table" and C.MemberExistsByName
+	local nombre = f.envio or f.nombre
+	if type(fn) ~= "function" or type(nombre) ~= "string" then return false end
+	local ok, si = pcall(fn, nombre)
+	return ok and U.Leer(si) == true
+end
+
+function P.Ordenar(gente)
+	for i, f in ipairs(gente) do
+		f.alfaPos = i
+		f.seccion = f.tipo == "grupo" and "grupo" or (deMiHermandad(f) and "hermandad" or "cerca")
+	end
+	table.sort(gente, function(a, b)
+		local sa, sb = SECCION_ORDEN[a.seccion] or 4, SECCION_ORDEN[b.seccion] or 4
+		if sa ~= sb then return sa < sb end
+		return (a.alfaPos or 0) < (b.alfaPos or 0)
+	end)
+	return gente
+end
+
+-- «Tu grupo 2 · Tu hermandad 3 · Cerca 4» (solo las partes con alguien).
+function P.Cuentas(gente)
+	local n = { grupo = 0, hermandad = 0, cerca = 0 }
+	for _, f in ipairs(gente) do if n[f.seccion] then n[f.seccion] = n[f.seccion] + 1 end end
+	local partes = {}
+	for _, k in ipairs({ "grupo", "hermandad", "cerca" }) do
+		if n[k] > 0 then partes[#partes + 1] = format("%s %d", L[P.SECCIONES[k]], n[k]) end
+	end
+	return table.concat(partes, DOT), n
+end
+
 local function datoPersona(f)
 	local S = M.Seguir
 	local siguiendo = S.Sigue(f.clave)
@@ -239,7 +279,7 @@ local function datoPersona(f)
 	if juntos and titulos then juntos = format(L["%s: %s"], juntos, titulos) end
 	return {
 		variante = "normal", icono = "ic-huella",
-		sobre = U.Mayus(siguiendo and L["Siguiendo"] or (f.tipo == "grupo" and L["Tu grupo"] or L["La Jauría"])),
+		sobre = U.Mayus(siguiendo and L["Siguiendo"] or (f.seccion and L[P.SECCIONES[f.seccion]]) or (f.tipo == "grupo" and L["Tu grupo"] or L["La Jauría"])),
 		titulo = conInsignia(f, f.nombre),
 		-- Al pasar el ratón por la tarjeta: qué es el lobo junto al nombre.
 		ayuda = ins and (M.Insignias.Linea(ins)) or nil,
@@ -792,6 +832,9 @@ local function bloqueGuaridas(padre)
 		y = y + K.Parrafo(self.Titulo, w, 2) + ESP.s
 		en(self.Texto, xt, y)
 		y = y + K.Parrafo(self.Texto, min(w, 720)) + ESP.m
+		-- 1.3.9 (56): los tres botones del mismo ancho: sus notas empiezan en la misma columna.
+		local col = max(self.Abrir:AnchoNatural(), self.Llamar:AnchoNatural(), self.Plano:AnchoNatural())
+		self.Abrir:SetAncho(col) self.Llamar:SetAncho(col) self.Plano:SetAncho(col)
 		en(self.Abrir, xt, y)
 		local bw = K.num(self.Abrir:GetWidth(), 120)
 		local bh = K.num(self.Abrir:GetHeight(), K.ALTO.boton)
@@ -1572,6 +1615,9 @@ local function grupos(ui, padre)
 		texto = L["Tu hermandad se entera cuando llegas al nivel 60, consigues tu primera montura o cazas un raro."] })
 	juntos:Fila({ titulo = L["Compartir mi semana"], control = interruptor("semanaCompartir"),
 		texto = L["Tus misiones, raros, mazmorras y niveles de la semana suman en «La semana de la manada» de tu hermandad."] })
+	-- 1.3.9: el censo de la hermandad (Censo.lua).
+	juntos:Fila({ titulo = L["Lobos con Alfa"], control = interruptor("censo"),
+		texto = L["Tu versión de Alfa a tu hermandad, para saber quién usa Alfa y quién debe actualizar. Tu nivel y tu zona solo si los compartes."] })
 	-- 1.3.0: la manada crece.
 	local crece = K.GrupoAjustes(padre, { titulo = L["La manada crece"] })
 	crece:Fila({ titulo = L["Lugares para juntar"], control = interruptor("spots"), activa = function() return N.Get(ID, "notas") ~= false end,
@@ -1675,6 +1721,7 @@ local function firma(ui, gente)
 			f.edad and f.edad >= M.Gente.VIEJA and floor(f.edad / 60) or "", f.conectado == false and "x" or "")
 	end
 	partes[#partes + 1] = #gente
+	partes[#partes + 1] = M.Gente.Lobos and M.Gente.Lobos() or 0 -- 1.3.9: el marcador
 	partes[#partes + 1] = M.Guaridas.version
 	partes[#partes + 1] = M.Juntos and M.Juntos.version or 0 -- 1.2.7
 	-- 1.2.8: citas, notas, raros con reloj y la hora (los «hace X min»).
@@ -1696,7 +1743,7 @@ local BLOQUE_AJUSTE = {
 
 local function llenar(ui)
 	local t = ui.tablero
-	local gente = M.Gente.Manada()
+	local gente = P.Ordenar(M.Gente.Manada())
 	t:SetAccion(accion(ui, gente))
 	local n = ui.verTodo and #gente or min(#gente, VISIBLES)
 	local lista = {}
@@ -1706,8 +1753,12 @@ local function llenar(ui)
 		enlace = { texto = ui.verTodo and L["Ver menos"] or format(L["Ver todos (%d)"], #gente),
 			alClic = function() ui.verTodo = not ui.verTodo M.Avisar() end }
 	end
-	t:SetOpciones(lista, L["La manada a la vista"], { cuenta = #gente > 0 and #gente or nil, enlace = enlace })
+	-- 1.3.9 (92): el título dice cuántos hay en cada parte.
+	local cuentas = #gente > 0 and P.Cuentas(gente) or ""
+	t:SetOpciones(lista, cuentas ~= "" and format(L["La manada a la vista: %s"], cuentas) or L["La manada a la vista"],
+		{ cuenta = #gente > 0 and #gente or nil, enlace = enlace })
 	pintarPersonas(t.Rejilla, lista)
+	if ui.marcador then ui.marcador:Llenar() end
 	ui.guaridas:Llenar()
 	ui.citas:Llenar()
 	ui.notas:Llenar()
@@ -1739,7 +1790,7 @@ local function alMostrar()
 	ticker = N.Ticker("manada.pagina", REFRESCO, function()
 		local view, ui = P.view, P.ui
 		if not (view and ui and view:IsVisible()) then return end
-		if firma(ui, M.Gente.Manada()) ~= ui.firma then N.RehacerPagina(view) end
+		if firma(ui, P.Ordenar(M.Gente.Manada())) ~= ui.firma then N.RehacerPagina(view) end
 	end)
 end
 
@@ -1755,7 +1806,9 @@ function P.Construir(view)
 	P.ui = ui
 	local t = K.Tablero(view, { margen = N.MargenPagina(), accion = "accion", tituloOpciones = L["La manada a la vista"], min = 256 })
 	ui.tablero = t
-	ui.guaridas = t:AgregarBloque(bloqueGuaridas(t.Extra))
+	-- 1.3.9 (102): el marcador por bando (Marcador.lua), arriba de todo lo demás.
+	if M.Marcador then ui.marcador = t:AgregarBloque(M.Marcador.Nuevo(t.Extra)) end
+	ui.guaridas = t:AgregarBloque(bloqueGuaridas(t.Extra), ui.marcador and { espacio = ESP.l } or nil)
 	ui.citas = t:AgregarBloque(bloqueCitas(t.Extra), { espacio = ESP.l })
 	ui.calendario = t:AgregarBloque(bloqueCalendario(t.Extra), { espacio = ESP.l }) -- 1.3.0
 	ui.tablon = t:AgregarBloque(bloqueTablon(t.Extra), { espacio = ESP.l })

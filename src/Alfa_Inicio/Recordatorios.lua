@@ -86,7 +86,7 @@ local function irA(tipo)
 		local ok, puesto = pcall(near.Go, tipo)
 		if ok and puesto and N.EmpezarRuta then N.EmpezarRuta() end
 	else
-		N.Imprimir(L["La búsqueda de lugares cercanos no está disponible."])
+		N.Imprimir(L["La búsqueda de lugares cercanos no está lista: falta una parte de Alfa. /alfa diagnostico te dice cuál prender."])
 	end
 end
 R.IrA = irA

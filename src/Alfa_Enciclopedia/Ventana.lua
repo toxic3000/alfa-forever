@@ -515,17 +515,50 @@ local function filaFicha(padre)
 end
 
 -- Una sección: su título con cuántas hay, las filas y "Ver todas".
+-- 1.3.9: cada sección se pliega con un clic en su título (con su flecha); lo
+-- plegado se recuerda por tipo de sección (todas las fichas) en tu cuenta.
+local function plegadas()
+	local d = N.Datos(M.ID)
+	if type(d.plegadas) ~= "table" then d.plegadas = {} end
+	return d.plegadas
+end
+V.Plegadas = plegadas
+
 local function bloqueSeccion(pila)
 	local b = CreateFrame("Frame", nil, pila)
 	b.Seccion = K.Seccion(b, "")
+	b.Seccion.Titulo:ClearAllPoints()
+	b.Seccion.Titulo:SetPoint("LEFT", b.Seccion, "LEFT", 30, 0)
+	b.Flecha = K.Icono(b.Seccion, "chevron-down", 12, "textoSuave")
+	b.Flecha:SetPoint("LEFT", b.Seccion, "LEFT", 12, 0)
+	b.Plegar = CreateFrame("Button", nil, b.Seccion)
+	b.Plegar:SetPoint("TOPLEFT", b.Seccion, "TOPLEFT", 8, 0)
+	b.Plegar:SetPoint("BOTTOMLEFT", b.Seccion, "BOTTOMLEFT", 8, 0)
+	b.Plegar:SetWidth(120)
+	b.Plegar:RegisterForClicks("LeftButtonUp")
+	b.Plegar:SetScript("OnClick", function()
+		local s, clave = b.alfaS, b.alfaClave
+		if not s then return end
+		local p = plegadas()
+		p[s.clave] = not p[s.clave] or nil
+		b:Set(s, clave)
+		ui.lf:RehacerFicha()
+	end)
+	b.Plegar:SetScript("OnEnter", function(self) K.SetIcono(b.Flecha, b.alfaPlegada and "chevron-right" or "chevron-down", "texto") end)
+	b.Plegar:SetScript("OnLeave", function(self) K.SetIcono(b.Flecha, b.alfaPlegada and "chevron-right" or "chevron-down", "textoSuave") end)
+	K.ConInfo(b.Plegar, nil, L["Clic: plegar o abrir esta sección."])
 	b.filas = {}
 	b.Mas = K.Texto(b, "pequeno", "textoTenue")
 	function b:Set(s, clave)
+		self.alfaS, self.alfaClave = s, clave
+		local plegada = s.clave ~= nil and plegadas()[s.clave] and true or false
+		self.alfaPlegada = plegada
+		K.SetIcono(self.Flecha, plegada and "chevron-right" or "chevron-down", "textoSuave")
 		local abierta = est.abiertas[clave] and true or false
 		local n = #s.filas
-		local tope = abierta and EXPANDIDAS or VISIBLES
+		local tope = plegada and 0 or (abierta and EXPANDIDAS or VISIBLES)
 		local enlace
-		if n > VISIBLES then
+		if n > VISIBLES and not plegada then
 			enlace = { texto = abierta and L["Ver menos"] or format(L["Ver todas (%d)"], n), alClic = function()
 				est.abiertas[clave] = not est.abiertas[clave] or nil
 				self:Set(s, clave)
@@ -543,6 +576,7 @@ local function bloqueSeccion(pila)
 		for i = m + 1, #self.filas do self.filas[i]:Hide() self.filas[i].dato = nil end
 		self.alfaN = m
 		K.Escribir(self.Mas, n > m and abierta and format(L["y %d más"], n - m) or "")
+		self.Plegar:SetWidth(30 + math.min(260, K.AnchoTexto(self.Seccion.Titulo) + 40))
 	end
 	function b:Acomodar(w)
 		self.Seccion:ClearAllPoints()
@@ -718,6 +752,20 @@ local function pintarFicha(f, conVolver)
 		K.Mostrar(B.nota, false)
 	end
 	ordenarPila(arriba, abajo)
+	if V.RevisarGuiaFija then K.Despues(0.05, V.RevisarGuiaFija) end
+end
+
+-- 1.3.9: el «Guíame» fijo, solo cuando los botones de la ficha quedaron arriba.
+function V.RevisarGuiaFija()
+	local b = ui.guiaFija
+	if not b then return end
+	local a = est.ficha and est.ficha.acciones
+	local desp = ui.lf and ui.lf.FichaDesp
+	local bajo = 0
+	if desp and desp:IsShown() then bajo = K.num(desp:GetVerticalScroll(), 0) end
+	local tope = 0
+	if B.cab and B.acc then tope = K.num(B.cab:GetHeight(), 0) + K.num(B.acc:GetHeight(), 0) + ESP.base end
+	b:SetShown(a ~= nil and a.guiar ~= nil and bajo > tope and tope > 0)
 end
 
 -- Lo que la ListaFicha llama al elegir: un número (una fila del catálogo) o
@@ -979,6 +1027,7 @@ local function cuentaTexto(n)
 	local c = Cat.Col(est.tipo)
 	if not c then return format(L["Preparando %s… %s"], PREPARA.catalogo, avanceTexto("cat:" .. est.tipo)) end
 	local base = n == 1 and L["1 resultado"] or format(L["%s resultados"], M.Miles(n))
+	if est.aprox and n > 0 then base = format(L["%s parecidos a lo que escribiste"], M.Miles(n)) end
 	if est.pend then
 		local que = PREPARA[est.pend] or est.pend
 		local pct = (est.pend == "facetas" or est.pend == "registros") and avanceTexto(est.pend) or ""
@@ -1044,6 +1093,16 @@ filtrar = function(elegir)
 	est.resultados[tipo], est.pend = res, pend
 	if pend then pedirPreparacion(pend) end
 	local cuentas = actualizarCuentas()
+	-- 1.3.9: sin nada en ningún tipo, lo que se parece (un error de dedo, una letra de más).
+	est.aprox = nil
+	if #res == 0 and est.texto ~= "" and Cat.Parecidos then
+		local hay = false
+		for _, n in pairs(cuentas or {}) do if n > 0 then hay = true end end
+		if not hay then
+			local _, n = Cat.Parecidos(tipo, est.texto, est.filtros[tipo], res)
+			if n > 0 then est.aprox = true end
+		end
+	end
 	-- Sin nada en este tipo, pero sí en otro: allá vamos.
 	if #res == 0 and cuentas and not filtrosActivos(tipo) and not elegir then
 		local mejor, n = nil, 0
@@ -1429,6 +1488,17 @@ local function crear()
 		vacioFicha = { lobo = "atento", titulo = L["Elige algo de la lista"], texto = L["Verás de dónde sale, dónde está, cómo llegar y qué hacer después."] },
 	})
 	ui.lf.Lista.alEntrar = alEntrarFila
+	-- 1.3.9: «Guíame» siempre a la mano: si bajas en la ficha y sus botones
+	-- quedan arriba, fuera de la vista, sale fijo en la esquina de la ficha.
+	ui.guiaFija = K.Boton(ui.lf.Ficha, L["Guíame"], function()
+		local a = est.ficha and est.ficha.acciones
+		if a and a.guiar then local ok, msg = a.guiar() aviso(ok, msg) end
+	end, { tipo = "primario", tam = "chico", icono = "ic-seguir" })
+	ui.guiaFija:SetPoint("TOPRIGHT", ui.lf.Ficha, "TOPRIGHT", -ESP.base - 10, -ESP.s)
+	ui.guiaFija:SetFrameLevel(ui.lf.FichaDesp:GetFrameLevel() + 20)
+	ui.guiaFija:Hide()
+	ui.lf.FichaDesp:HookScript("OnVerticalScroll", function() V.RevisarGuiaFija() end)
+	ui.lf.FichaDesp:HookScript("OnMouseWheel", function() V.RevisarGuiaFija() end)
 	ui.estado = K.Vacio(cuerpo, { lobo = "dormido", titulo = "" })
 	ui.estado:Hide()
 	v.alAcomodar = function() acomodar() end

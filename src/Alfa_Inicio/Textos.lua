@@ -5,6 +5,8 @@
 local _, M = ...
 
 M.EN = {
+	-- 1.3.9 (avisos): el reporte, el Centro de avisos, Lya y los errores con qué hacer
+	["La búsqueda de lugares cercanos no está lista: falta una parte de Alfa. /alfa diagnostico te dice cuál prender."] = "The nearby places search isn't ready: a part of Alfa is missing. /alfa diagnostico tells you which one to turn on.",
 	["Ver el camino en el mapa"] = "See the way on the map",
 	["El mapa de Alfa, en el lugar de tu flecha"] = "Alfa's map, right where your arrow points",
 	["Abre el mapa de Alfa encuadrado donde apunta la flecha, con el camino de tu guía."] = "Opens Alfa's map framed where the arrow points, with your guide's way.",
@@ -782,3 +784,23 @@ M.EN = {
 	["Nivel %d en %s a tu ritmo"] = "Level %d in %s at your pace",
 	["Descansado: doble experiencia por cazar hasta el %d %% del nivel %d"] = "Rested: double experience from hunting up to %d %% of level %d",
 }
+
+-- 1.3.9 (interfaz): textos nuevos
+M.EN["Bajar"] = "Move down"
+M.EN["Subir"] = "Move up"
+M.EN["Sube, baja u oculta las partes de Hoy. Lo urgente sigue subiendo solo según dónde estés (en la ciudad, en una mazmorra)."] = "Move Today's parts up or down, or hide them. What's urgent still rises on its own depending on where you are (in a city, in a dungeon)."
+M.EN["Acomodar Hoy"] = "Arrange Today"
+M.EN["Tu orden y lo que quieres ver"] = "Your order and what you want to see"
+M.EN["Subir lo urgente según dónde estés"] = "Raise what's urgent depending on where you are"
+M.EN["En la ciudad, lo que se hace ahí; en una mazmorra, tu mazmorra y tu clase."] = "In a city, what you do there; in a dungeon, your dungeon and your class."
+M.EN["Volver al orden de fábrica"] = "Back to the default order"
+M.EN["Siguiente parada: %s"] = "Next stop: %s"
+M.EN["Sube, baja u oculta las partes de Hoy."] = "Move Today's parts up or down, or hide them."
+M.EN["Las sugerencias y alertas que ocultaste con «No volver a mostrar» vuelven a salir."] = "The suggestions and alerts you hid with \"Don't show again\" come back."
+M.EN["Volver a mostrar 1 que ocultaste"] = "Show the 1 you hid again"
+M.EN["Volver a mostrar %d que ocultaste"] = "Show the %d you hid again"
+M.EN["Lo primero ahora"] = "First things first"
+M.EN["Tienes 1 misión lista: entrégala y cobra lo tuyo."] = "You have 1 quest ready: turn it in and collect."
+M.EN["Tienes %d misiones listas: entrégalas y cobra lo tuyo."] = "You have %d quests ready: turn them in and collect."
+M.EN["unos %s XP"] = "about %s XP"
+M.EN["Lo de tu clase"] = "Your class"

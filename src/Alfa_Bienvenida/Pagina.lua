@@ -69,6 +69,8 @@ local function grupos(ui, padre)
 		control = function(fila) return K.Boton(fila, L["Escuchar"], function() M.Aullar(true) end, { tipo = "secundario", icono = "ic-lobo" }) end })
 	-- 1.3.7: «Sonidos de Alfa» y No molestar (Alfa_Nucleo/Momentos.lua).
 	if N.FilasMomentos then N.FilasMomentos(sonido) end
+	-- 1.3.9 (67): el Centro de avisos (Momentos.lua): cada tipo con su interruptor y «Probar».
+	local centro = N.GrupoCentroAvisos and N.GrupoCentroAvisos(padre) or nil
 
 	-- 1.3.0: para leer mejor (Kit/Tokens.lua, Kit/Ayuda.lua).
 	local leer = K.GrupoAjustes(padre, { titulo = L["Para leer mejor"] })
@@ -94,6 +96,15 @@ local function grupos(ui, padre)
 	leer:Fila({ titulo = L["Adornos de temporada"],
 		texto = L["En Noche de Brujas, Fiesta de Invierno, Amor en el aire y el Fuego del Solsticio, un detalle chiquito de la fiesta en cada ventana de Alfa."],
 		control = function(fila) return K.Interruptor(fila, { clave = "nucleo.temporada" }) end })
+	-- 1.3.9: la temática por bando (Kit/Bando.lua).
+	if N.FilasBando then N.FilasBando(leer) end
+	-- 1.3.9 (53, 55): la franja de la primera vez en cada página y el Modo aprendiz.
+	leer:Fila({ titulo = L["Para qué sirve cada página"],
+		texto = L["La primera vez que abres una página, una línea abajo te dice para qué sirve, con «Enséñame» para un recorrido de 3 pasos."],
+		control = function(fila) return K.Interruptor(fila, { clave = ID .. ".primeraVez" }) end })
+	leer:Fila({ titulo = L["Modo aprendiz"],
+		texto = L["La primera vez que sale cada aviso, Lya te cuenta de dónde viene y dónde se apaga."],
+		control = function(fila) return K.Interruptor(fila, { clave = ID .. ".aprendiz" }) end })
 	-- 1.3.6: un interruptor que dice si el modo ayuda está prendido (Kit/Ayuda.lua).
 	leer:Fila({ titulo = L["Modo ayuda"], hija = true,
 		texto = L["Sin tener una tecla abajo: lo prendes o lo apagas con su atajo, o aquí."],
@@ -167,7 +178,7 @@ local function grupos(ui, padre)
 		texto = L["Lya te enseña la ventana de Alfa paso a paso. También con /alfa recorrido."],
 		control = function(fila) return K.Boton(fila, L["Ver"], function() if M.Recorrido then M.Recorrido.Empezar() end end, { tipo = "secundario", icono = "ic-lobo" }) end })
 	bienvenida:Fila({ titulo = L["Reportar un error, una mejora o un comentario"],
-		texto = L["Alfa arma el reporte y tú lo pegas en el buzón privado del Discord de La Jauría. También con /alfa reportar."],
+		texto = L["Cuéntanos qué pasó y dale «Enviar»: le llega directo al desarrollador de Alfa. También con /alfa reportar."],
 		control = function(fila) return K.Boton(fila, L["Reportar"], function() M.AbrirReporte() end, { tipo = "secundario" }) end })
 	bienvenida:Fila({ titulo = L["Revisar Alfa"],
 		texto = L["Busca addons que chocan con Alfa, partes apagadas y ajustes raros, con el arreglo a un clic. También con /alfa diagnostico."],
@@ -271,6 +282,7 @@ local function grupos(ui, padre)
 	lista.ayuda = bienvenida
 	lista[#lista + 1] = sonido
 	if N.GrupoAnuncios then lista[#lista + 1] = N.GrupoAnuncios(padre) end
+	if centro then lista[#lista + 1] = centro end
 	for _, g in ipairs({ leer, limpia, atajos, perfiles, respaldos, errores }) do lista[#lista + 1] = g end
 	return lista
 end
@@ -336,7 +348,7 @@ local CONTROLES = {
 		onClick = function() if M.Recorrido then M.Recorrido.Empezar() end end,
 		search = "recorrido, ayuda, tutorial, help, tour, guided tour, how to use, como usar, primeros pasos, empezar" },
 	{ kind = "button", label = L["Reportar un error, una mejora o un comentario"], button = L["Reportar"], icon = "info",
-		help = L["Alfa arma el reporte y tú lo pegas en el buzón privado del Discord de La Jauría. También con /alfa reportar."],
+		help = L["Cuéntanos qué pasó y dale «Enviar»: le llega directo al desarrollador de Alfa. También con /alfa reportar."],
 		onClick = function() M.AbrirReporte() end, search = "bug report, feedback, suggestion, discord, reportar, ayuda, help" },
 	-- 1.3.2: noReset: «Restablecer página» no lo toca (lo de fábrica, sencillo, es para quien empieza).
 	{ kind = "dropdown", key = ID .. ".modo", label = L["Cómo ves Alfa"], noReset = true,
@@ -358,6 +370,10 @@ local CONTROLES = {
 	{ kind = "toggle", key = "nucleo.temporada", label = L["Adornos de temporada"],
 		help = L["En Noche de Brujas, Fiesta de Invierno, Amor en el aire y el Fuego del Solsticio, un detalle chiquito de la fiesta en cada ventana de Alfa."],
 		search = "holiday, seasonal, halloween, winter veil, christmas, love is in the air, midsummer, temporada, fiesta, navidad" },
+	-- 1.3.9 (Kit/Bando.lua)
+	{ kind = "toggle", key = "nucleo.bando", label = L["Temática de tu bando"],
+		help = L["Alfa se viste de tu bando: colores, emblema y adornos en las ventanas, los anuncios, Hoy y el marcador."],
+		search = "faction theme, horde, alliance, red, blue, emblem, bando, horda, alianza, facción" },
 	{ kind = "button", label = L["Modo Zen"], button = L["Probar"], icon = "info",
 		help = L["Una tecla esconde todo Alfa menos la flecha, para explorar o tomar capturas. Otra pulsación lo devuelve. También con /alfa zen."],
 		onClick = function() if M.Zen then M.Zen.Alternar(true) end end,
@@ -366,6 +382,13 @@ local CONTROLES = {
 	{ kind = "toggle", key = "nucleo.ligero", label = L["Modo ligero"],
 		help = L["Para computadoras modestas: lo que Alfa revisa en segundo plano va a la mitad de velocidad, Lya se anima más despacio y los anuncios salen como tarjeta, sin animación."],
 		search = "light mode, low end, performance, fps, lag, slow computer, modo ligero, rendimiento, lento" },
+	-- 1.3.9 (53, 55)
+	{ kind = "toggle", key = ID .. ".primeraVez", label = L["Para qué sirve cada página"],
+		help = L["La primera vez que abres una página, una línea abajo te dice para qué sirve, con «Enséñame» para un recorrido de 3 pasos."],
+		search = "first time, page intro, tutorial, onboarding, help, primera vez, recorrido, para qué sirve" },
+	{ kind = "toggle", key = ID .. ".aprendiz", label = L["Modo aprendiz"],
+		help = L["La primera vez que sale cada aviso, Lya te cuenta de dónde viene y dónde se apaga."],
+		search = "apprentice, beginner, newbie, learn, explain notices, aprendiz, principiante, nuevo, explicar avisos" },
 	{ kind = "toggle", key = "nucleo.daltonico", label = L["Colores para daltonismo"],
 		help = L["Lo bueno en azul, los avisos en amarillo y el peligro en naranja, y los perjuicios con colores que se distinguen sin el rojo y el verde."],
 		search = "colorblind, color blind, colour blind, deuteranopia, protanopia, accessibility, daltonismo, debuff colors" },

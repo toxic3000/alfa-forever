@@ -112,6 +112,8 @@ end
 function B.Seguir(id, nueva)
 	local e = E()
 	if not (e and id) then return end
+	-- 1.3.9 (oficios): una guía de oficio de Alfa se arma antes de abrirla.
+	if M.OficiosGuia and M.OficiosGuia.Preparar then M.OficiosGuia.Preparar(id) end
 	B.Reciente(id)
 	local i = pestana(id)
 	if i then
@@ -215,6 +217,8 @@ local function datos()
 	for _, g in ipairs(Gd.List and Gd.List() or {}) do
 		local mia = g.pack == M.PACK
 		local para = mia or not Gd.GuideMatches or Gd.GuideMatches(g, p)
+		-- 1.3.9 (oficios): la guía de Alfa de cada oficio reemplaza la del motor.
+		if para and M.OficiosGuia and M.OficiosGuia.Oculta(g) then para = false end
 		if para and (not conMision or conMision[g.id]) and coincide(g, q) then
 			local c = categoria(g)
 			local entra

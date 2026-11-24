@@ -58,6 +58,18 @@ function API.Flecha(tipo, id)
 	return true
 end
 function API.Visible() return V.Visible() end
+-- 1.3.9: lo último que viste, para el Escritorio -> { { kind, id, nombre } }
+function API.Recientes()
+	local d = N.DatosPersonaje(ID)
+	local out = {}
+	for _, r in ipairs(type(d.recientes) == "table" and d.recientes or {}) do
+		if type(r) == "table" and r.k and r.id ~= nil then
+			local ok, nombre = pcall(M.Nombre, r.k, r.id)
+			out[#out + 1] = { kind = r.k, id = r.id, nombre = ok and type(nombre) == "string" and nombre or tostring(r.id) }
+		end
+	end
+	return out
+end
 
 ---------------------------------------------------------------------------
 -- Reemplazos: la enciclopedia en lugar del buscador y los raros del motor

@@ -327,6 +327,13 @@ local function franja(f)
 	local combate = M.EnCombate()
 	f.Ordenar:SetShown(vivo and M.Get("ordenar") and true or false)
 	f.Ordenar:SetActivo(not combate)
+	-- 1.3.9: mientras Alfa ordena (Ordenar.lua), el botón lo detiene.
+	local ordenando = f.tipo == "bolsas" and M.Ordenar and M.Ordenar.Activo()
+	if f.ordenando ~= (ordenando and true or false) then
+		f.ordenando = ordenando and true or false
+		f.Ordenar:SetTexto(ordenando and L["Detener"] or L["Ordenar"])
+		f.Ordenar:SetIcono(ordenando and "ic-cerrar" or nil)
+	end
 	if f.Depositar then
 		f.Depositar:SetShown(vivo and true or false)
 		f.Depositar:SetActivo(not combate)
@@ -350,6 +357,11 @@ local function franja(f)
 		if n > 0 then f.SepMarcar:SetTexto(format(L["Marcar %d para vender"], n)) end
 		f.SepMarcar:SetShown(vivo and n > 0 and true or false)
 	end
+	-- 1.3.9: «Lo que me sobra» (Sobra.lua): tus bolsas, en vivo.
+	-- (en el pie; con «Separar» prendido su texto va al centro del pie y este se esconde)
+	if f.Sobra then
+		f.Sobra:SetShown(vivo and propia(f) and M.Sobra and M.Sobra.Encendido() and not (M.Separar and M.Separar.Activo()) and true or false)
+	end
 	f.Volver:SetShown(not propia(f))
 	if not vivo then
 		local r = D.Personaje(f.clave or D.Clave())
@@ -371,6 +383,53 @@ local function franja(f)
 	f.Busca:SetPoint("RIGHT", fr, "RIGHT", x, 0)
 	-- 1.3.7: «3 nuevos» y «1 mejora» dentro de la búsqueda (Atajos.lua).
 	if M.Atajos then K.Llamar(M.Atajos.Pintar, f, propia(f) and f.tipo == "bolsas" and vivo) end
+	V.Cabecera(f)
+end
+
+-- 1.3.9 (83): la cabecera de las dos ventanas, igual para tus bolsas, tu banco
+-- y los de tus otros personajes: los botones que se ven, uno junto al otro
+-- desde la derecha (sin huecos de los que no aplican), luego las vistas y el
+-- título con todo el espacio que queda.
+function V.Cabecera(f)
+	if not f.Cabeza then return end
+	local cab = f.Cabeza
+	local ultimo = f.Personajes
+	for _, w in ipairs({ f.Conjuntos or false, f.Separar or false }) do
+		if w and w:IsShown() then
+			w:ClearAllPoints()
+			w:SetPoint("RIGHT", ultimo, "LEFT", -2, 0)
+			ultimo = w
+		end
+	end
+	local otro = f.BotonBanco or f.BotonBolsas
+	if otro then
+		otro:ClearAllPoints()
+		otro:SetPoint("RIGHT", ultimo, "LEFT", -ESP.xs, 0)
+		ultimo = otro
+	end
+	-- Lo que necesita: los botones (con sus huecos de verdad), las vistas, el
+	-- ícono y el título entero.
+	local necesita = ESP.s + (PAD + 2) + 18 + ESP.s + K.num(f.Titulo:GetStringWidth(), 60) + ESP.s
+	local iconos = { f.Cerrar, f.Ajustes, f.Personajes, f.Conjuntos or false, f.Separar or false }
+	for _, w in ipairs(iconos) do
+		if w and w:IsShown() then necesita = necesita + K.num(w:GetWidth(), 28) + 2 end
+	end
+	if otro and otro:IsShown() then necesita = necesita + K.num(otro:GetWidth(), 60) + ESP.xs end
+	if f.GrupoVistas then necesita = necesita + K.num(f.GrupoVistas:GetWidth(), 88) + ESP.s end
+	necesita = math.ceil(necesita)
+	if f.anchoCabecera ~= necesita then
+		local antes = f.anchoCabecera
+		f.anchoCabecera = necesita
+		-- Solo si ya no cabe (o sobraba): la ventana se vuelve a medir.
+		if f:IsShown() and (necesita > K.num(f.ancho, MIN_W) or (antes and antes > MIN_W)) then V.Ya(f) end
+	end
+	if f.GrupoVistas then
+		f.GrupoVistas:ClearAllPoints()
+		f.GrupoVistas:SetPoint("RIGHT", ultimo, "LEFT", -ESP.s, 0)
+		f.Titulo:ClearAllPoints()
+		f.Titulo:SetPoint("LEFT", f.Icono, "RIGHT", ESP.s, 0)
+		f.Titulo:SetPoint("RIGHT", f.GrupoVistas, "LEFT", -ESP.s, 0)
+	end
 end
 
 ---------------------------------------------------------------------------
@@ -518,7 +577,8 @@ local function acomodar(f)
 	local cols = M.Numero("columnas", 4, 24)
 	local paso = tam + GAP
 	local gridW = cols * tam + (cols - 1) * GAP
-	local ancho = max(gridW + 2 * PAD, MIN_W)
+	-- 1.3.9: nunca más angosta que su cabecera (el título no se corta).
+	local ancho = max(gridW + 2 * PAD, MIN_W, f.anchoCabecera or 0)
 	local x0 = floor((ancho - gridW) / 2)
 	local vivo = enVivo(f)
 	f.esVivo = vivo
@@ -937,6 +997,7 @@ local function ya(f)
 	f.reacomodar, f.forzar = true, true
 	despertar(f)
 end
+V.Ya = ya -- (1.3.9: la cabecera, V.Cabecera, la pide si ya no cabe)
 
 ---------------------------------------------------------------------------
 -- Resaltar lo que lleva una bolsa (desde la barra de bolsas)
@@ -1141,12 +1202,19 @@ local function crear(tipo)
 		K.ConInfo(f.BotonBanco, L["Tu banco"], L["En vivo si estás con un banquero; si no, la última foto."])
 		f.BotonBanco:SetPoint("RIGHT", ultimo, "LEFT", -ESP.xs, 0)
 		ultimo = f.BotonBanco
+	else
+		-- 1.3.9 (83): el banco también tiene su botón a las bolsas del mismo personaje.
+		f.BotonBolsas = K.Boton(cab, L["Bolsas"], function() V.Ver(V.Ventana("bolsas"), f.clave) end, { tipo = "fantasma", tam = "chico" })
+		K.ConInfo(f.BotonBolsas, L["Bolsas"], L["Las bolsas del mismo personaje, en la ventana de bolsas."])
+		f.BotonBolsas:SetPoint("RIGHT", ultimo, "LEFT", -ESP.xs, 0)
+		ultimo = f.BotonBolsas
 	end
 	-- Las tres vistas, como un grupo de segmentos de ícono.
 	local grupo = CreateFrame("Frame", nil, cab)
 	grupo.caja = K.Caja(grupo, { fondo = "hundido", borde = "linea", corte = K.CORTE.control })
 	grupo:SetSize(3 * 26 + 2 * 2 + 6, 32)
 	grupo:SetPoint("RIGHT", ultimo, "LEFT", -ESP.s, 0)
+	f.GrupoVistas = grupo
 	f.Vistas = {}
 	local VISTAS = {
 		{ "una", "ic-rejilla", L["Todo junto"], L["Cada casilla en su lugar, como en tus bolsas."] },
@@ -1169,7 +1237,8 @@ local function crear(tipo)
 	fr:SetHeight(FRANJA_H)
 	f.Franja = fr
 	f.Busca = K.Buscador(fr, { ayuda = L["Buscar"], alCambiar = function(texto) V.Buscar(f, texto) end })
-	K.ConInfo(f.Busca, L["Buscar"], L["Por nombre, tipo o calidad (verde, azul...) y por nivel de objeto: 20, >20, 20-30. Lo que coincide se resalta."])
+	-- 1.3.9: también lo que es (arma, material, comida...) y lo que Alfa sabe (candado, sin usar, sobra, subasta).
+	K.ConInfo(f.Busca, L["Buscar"], L["Por nombre, tipo o calidad (verde, azul...) y por nivel de objeto: 20, >20, 20-30. También por lo que es (arma, material, comida...) y por lo que Alfa sabe: mejora, nuevo, candado, sin usar, sobra, subasta. Con «-» delante quitas: -gris. Lo que coincide se resalta."])
 	f.Coinciden = K.Texto(f.Busca, "pequeno", "textoTenue")
 	f.Coinciden:SetPoint("RIGHT", f.Busca, "RIGHT", -30, 0)
 	f.Coinciden:SetJustifyH("RIGHT")
@@ -1223,6 +1292,14 @@ local function crear(tipo)
 		f.Monedas = K.BotonIcono(pie, "ic-oro", function() if M.Oro then M.Oro.Alternar(f) end end,
 			{ tam = 24, icono = 14, ayuda = L["Tu oro"], ayudaTexto = L["Lo que tiene cada uno de tus personajes y lo de esta sesión."] })
 		f.Monedas:SetPoint("LEFT", f.Dinero, "RIGHT", ESP.xs, 0)
+	end
+	-- 1.3.9: «Lo que me sobra» (Sobra.lua), en el pie junto a tu oro: la
+	-- cabecera y la franja ya van llenas (los atajos de la búsqueda necesitan su espacio).
+	if tipo == "bolsas" then
+		f.Sobra = K.Boton(pie, L["Lo que me sobra"], function(self) if M.Sobra then M.Sobra.Menu(self) end end, { tipo = "fantasma", tam = "chico" })
+		K.ConInfo(f.Sobra, L["Lo que me sobra"], L["Lo que te sobra, para venderlo de un clic con un comerciante o mandárselo a otro de tus personajes desde el buzón. Lo que tiene candado no se toca."])
+		f.Sobra:SetPoint("LEFT", f.Monedas, "RIGHT", ESP.s, 0)
+		f.Sobra:Hide()
 	end
 	f.Cuando = K.Texto(pie, "pequeno", "textoTenue")
 	f.Cuando:SetPoint("LEFT", f.Monedas or f.Dinero, "RIGHT", ESP.s, 0)
@@ -1349,6 +1426,12 @@ function V.Buscar(f, texto)
 end
 
 function V.Ordenar(f)
+	-- 1.3.9: tu orden, o lo que tiene candado en su lugar: ordena Alfa (Ordenar.lua).
+	local Ord = M.Ordenar
+	if f.tipo == "bolsas" and Ord and (Ord.Activo() or Ord.Usar()) then
+		Ord.Empezar()
+		return
+	end
 	if M.EnCombate() then
 		N.Imprimir(L["No se puede ordenar en combate."])
 		return
@@ -1532,6 +1615,8 @@ end)
 -- La sugerencia y la compra del banco cambiaron: la parte de arriba otra vez.
 local function arriba(f) f.reacomodar = true despertar(f) end
 M.Escuchar("SUGERENCIAS", function() enCada(arriba) end)
+-- 1.3.9: «Ordenar» / «Detener» mientras ordena Alfa.
+M.Escuchar("ORDENAR", function() enCada(franja) end)
 M.Escuchar("COMPRA", function() enCada(arriba) end)
 M.Escuchar("LOTE", function() enCada(function(f)
 	textoDepositar(f)

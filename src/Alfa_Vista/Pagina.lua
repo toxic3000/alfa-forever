@@ -33,7 +33,7 @@ end
 local function estado()
 	local p = M.UltimoPreset()
 	local n = M.Elegidas()
-	local d = { icono = "ic-apariencia", titulo = L["Paisaje y gráficos"] }
+	local d = { icono = "ic-paisaje", titulo = L["Paisaje y gráficos"] }
 	if M.EnCombate() and M.Pendientes() > 0 then
 		d.tono, d.estado = "aviso", { texto = L["En espera"], tono = "aviso" }
 		d.texto = L["Estás en combate: tus cambios se aplican en cuanto termine."]
@@ -148,7 +148,7 @@ do
 end
 
 N.Modulo({
-	id = ID, nombre = L["Paisaje y gráficos"], icono = "ic-apariencia", orden = 33, seccion = "mundo",
+	id = ID, nombre = L["Paisaje y gráficos"], icono = "ic-paisaje", orden = 33, seccion = "mundo",
 	-- 1.3.6: subtítulo corto (el largo casi nunca se veía).
 	subtitulo = L["Para que el mundo se vea mejor, a tu gusto"],
 	ajustes = M.AJUSTES,

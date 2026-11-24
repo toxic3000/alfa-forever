@@ -198,6 +198,22 @@ function Ca.Abrir(qid)
 	for _, x in ipairs(d.lista) do if x.estado == "hecha" then hechas = hechas + 1 end end
 	ventana:Llenar(lista, M.TituloMision(qid),
 		#lista > 0 and (M.Plural(#lista, L["%d misión"], L["%d misiones"]) .. ", " .. M.Plural(hechas, L["%d hecha"], L["%d hechas"])) or nil,
-		#lista > 0 and Ca.TextoPremio(d) or "")
+		#lista > 0 and (Ca.TextoPremio(d) .. Ca.PorQueNo(d)) or "")
 	return true
+end
+
+-- 1.3.9 (32): «¿Por qué no puedo tomar esta misión?» Para la primera que
+-- te falta de la cadena, lo que te falta (nivel, misión previa,
+-- reputación...), con Disponible.lua. -> salto de línea y el texto | ""
+function Ca.PorQueNo(d)
+	local D = M.Disp
+	if not (d and D and D.Estado and D.Texto) then return "" end
+	for _, x in ipairs(d.lista or {}) do
+		if x.siguiente then
+			local ok, motivo, info = D.Estado(x.qid)
+			if ok or not motivo or motivo == "registro" then return "" end
+			return "\n" .. format(L["Para tomar «%s»: %s."], x.titulo or M.TituloMision(x.qid), D.Texto(motivo, info))
+		end
+	end
+	return ""
 end

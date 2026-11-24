@@ -144,8 +144,22 @@ local function analizar()
 		local e = O.Info(g.id, g.link)
 		g.nombre = e.nombre or (g.link and g.link:match("%[(.-)%]")) or ("#" .. g.id)
 		-- 1.3.0: Mk.Get por M.Llamar (sin él, un motor sin Get dejaba vacía la sugerencia).
-		local guardar = (Mk and (M.Llamar(Mk.Get, g.id) == "keep" or M.Leer(M.Llamar(Mk.Protected, g.id)))) or g.mision
+		local conservarlo = Mk and M.Llamar(Mk.Get, g.id) == "keep"
+		local guardar = (Mk and (conservarlo or M.Leer(M.Llamar(Mk.Protected, g.id)))) or g.mision
 			or e.clase == 12 or g.id == PIEDRA_HOGAR or guardaLaGuia(g.id)
+		-- 1.3.9: con bolsas.separarEpicos, lo épico con candado (que nunca se
+		-- vende) sí sale como «a la subasta» si su mejor destino es ese. Solo
+		-- en «conservar»: el candado sigue sin dejarlo vender ni borrar.
+		if guardar and not conservarlo and CM and (g.q or 0) >= 4 and M.Get("separarEpicos") and not g.mision
+			and e.clase ~= 12 and g.id ~= PIEDRA_HOGAR and not guardaLaGuia(g.id) and not g.sinValor then
+			local c = M.Llamar(CM.Consejo, g.id, { link = g.link })
+			if type(c) == "table" and c.mejor == "subastar" and (c.valor or 0) > 0 then
+				g.valor = (c.valor or 0) * g.cantidad
+				g.motivo = CM.TextoMejor and M.Llamar(CM.TextoMejor, c) or nil
+				g.mejor, g.candado = c.mejor, true
+				conservar[#conservar + 1] = g
+			end
+		end
 		if not guardar then
 			local basura = Mk and M.Leer(M.Llamar(Mk.Junk, g.id)) and true or false
 			local venta = precioVenta(g.id)
@@ -235,7 +249,7 @@ function S.ComercianteAbierto() return comercianteAbierto end
 function S.MarcarChatarra()
 	local Mk = marcas()
 	if not (Mk and Mk.Set) then
-		N.Imprimir(L["No se pudo marcar: falta el motor de Alfa."])
+		N.Imprimir(L["No pude marcarlo: falta la parte principal de Alfa. Revisa que «Alfa» esté activado en tu lista de addons."])
 		return 0
 	end
 	local est = S.Estado()
@@ -261,7 +275,7 @@ local function irA(clase)
 	local Nav = A.Nav
 	local cerca = Nav and Nav.nearby
 	if not (cerca and cerca.Go) then
-		N.Imprimir(L["No se pudo buscar el lugar más cercano."])
+		N.Imprimir(L["No pude buscar el lugar más cercano. Prueba de nuevo en un momento; si sigue, /alfa diagnostico lo revisa."])
 		return false
 	end
 	return M.Llamar(cerca.Go, clase) and true or false
@@ -531,5 +545,9 @@ A.On("SETTING_CHANGED", function(ruta)
 		estabaLleno = false
 		programar(0.2)
 	end
+end)
+-- 1.3.9: lo épico con candado en «Separar» cambia el análisis.
+A.On("SETTING_CHANGED", function(ruta)
+	if ruta == M.ID .. ".separarEpicos" or ruta == M.ID .. ".candadoAuto" then programar(0.2) end
 end)
 M.Escuchar("ITEM", function() S.Invalidar() end)

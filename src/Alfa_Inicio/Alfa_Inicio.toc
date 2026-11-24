@@ -21,4 +21,5 @@ Reputacion.lua
 Jugado.lua
 Barras.lua
 Clase.lua
+Acomodo.lua
 Inicio.lua

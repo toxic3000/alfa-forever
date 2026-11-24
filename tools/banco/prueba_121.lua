@@ -242,7 +242,8 @@ step("vuelo: en el aire se dibuja y la ficha dice a dónde vas", function()
   if not ficha:IsShown() then error("sin ficha en el aire") end
   local titulo = ficha.Nombre:GetText() or ""
   if not titulo:find("Nodo 3", 1, true) then error("la ficha no dice a dónde vuelas: " .. titulo) end
-  if not (ficha.Datos:GetText() or ""):find("0:42", 1, true) then error("la ficha no dice el tiempo de vuelo") end
+  -- 1.3.9 (74): el tiempo como la flecha y el rastreador («42 s», antes «0:42»).
+  if not (ficha.Datos:GetText() or ""):find("42 s", 1, true) then error("la ficha no dice el tiempo de vuelo: " .. tostring(ficha.Datos:GetText())) end
 end)
 
 step("vuelo: su capa lo apaga", function()

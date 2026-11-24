@@ -143,7 +143,7 @@ local function row(i)
 	local r = SL.rows[i]
 	if r then return r end
 	r = CreateFrame("Button", nil, SL.scroll.Child)
-	r:RegisterForClicks("LeftButtonUp")
+	r:RegisterForClicks("LeftButtonUp", "RightButtonUp") -- Alfa 1.3.9: clic derecho, «Empezar desde este paso»
 	-- The card's ground (corners cut in Alfa's look: SL.Paint), over it the
 	-- lift of the step on screen, and the hover in the same shape.
 	r.Card = Theme.CutShape(r, Theme.CUT.small, Theme.CUT.small, "BACKGROUND", -1)
@@ -177,8 +177,20 @@ local function row(i)
 	r.Tick = W.Tex(r, "ARTWORK", "check", "success")
 	r.Tick:SetSize(12, 12)
 	r.Tick:Hide()
-	r:SetScript("OnClick", function(self)
+	r:SetScript("OnClick", function(self, button)
 		if not self.psIndex then return end
+		-- Alfa 1.3.9: clic derecho: que la guía siga desde este paso, o restablecerla (Alfa_Rutas/Restablecer.lua).
+		local Ruta = rawget(_G, "AlfaRuta")
+		if button == "RightButton" then
+			if type(Ruta) == "table" and type(Ruta.EmpezarDesde) == "function" and type(Ruta.TextoEmpezarDesde) == "function" then
+				local i = self.psIndex
+				W.ShowMenu(self, {
+					{ text = Ruta.TextoEmpezarDesde(), icon = "skip", onClick = function() Ruta.EmpezarDesde(i) end },
+					{ text = Ruta.TextoRestablecer(), icon = "reset", onClick = function() Ruta.Restablecer() end },
+				})
+			end
+			return
+		end
 		GF().LookAt(self.psIndex)
 		SL.Toggle(false)
 	end)

@@ -98,14 +98,33 @@ local function opciones(camino)
 		out[#out + 1] = { icono = "ic-guia", tono = "neutro", titulo = L["Ver todas las guías"], texto = L["Elige tú la zona."],
 			alClic = hacer(function() M.Biblioteca.Abrir() end) }
 	elseif camino == "profesiones" then
-		local lista = guiasDe("Professions")
+		-- 1.3.9 (oficios): primero tus oficios, cada uno con su guía de Alfa por
+		-- tramos (OficiosGuia: armada para ti al abrirla); sin oficio, los que
+		-- puedes aprender. Después, juntar materiales y la Biblioteca.
+		local Og = M.OficiosGuia
+		local mios = Og and Og.Mios() or {}
+		for _, x in ipairs(mios) do
+			if #out >= 4 then break end
+			local linea = x.linea
+			local ins = { { format(L["%d de %d"], x.rank, x.max), x.rank >= x.max and x.max < 300 and "aviso" or "neutro" } }
+			local texto = x.rank >= 300 and L["Al máximo: ya no hay más que subir."]
+				or (x.rank >= x.max and format(L["Llegaste a tu tope (%d): toca ir con el instructor."], x.max))
+				or L["Qué hacer en tu tramo, cuántas, tus materiales y a dónde ir."]
+			out[#out + 1] = { icono = "ic-oficios", tono = "aviso", titulo = format(L["Guía de %s"], Og.Nombre(linea)), texto = texto, insignias = ins,
+				accion = { texto = L["Seguir mi guía"], icono = "ic-seguir" }, alClic = hacer(function() Og.Abrir(linea) end) }
+		end
+		if Og and #mios == 0 then
+			for _, linea in ipairs(M.OficiosDatos.ORDEN) do
+				if #out >= 6 then break end
+				out[#out + 1] = { icono = "ic-oficios", tono = "neutro", titulo = format(L["Aprender %s"], Og.Nombre(linea)),
+					texto = M.OficiosDatos.OFICIOS[linea].tipo == "juntar" and L["Recolección: juntas en el mundo y vendes o usas."] or L["Fabricación: haces cosas con materiales."],
+					alClic = hacer(function() Og.Abrir(linea) end) }
+			end
+		end
 		out[#out + 1] = { icono = "ic-oficios", tono = "aviso", titulo = L["Juntar los materiales de mi profesión"],
 			texto = L["Una ruta por los mejores lugares para tu habilidad, con unas misiones de XP en medio."],
 			accion = { texto = L["Armar la ruta"], icono = "ic-seguir" }, alClic = hacer(rutaDePlantilla("prof")) }
-		for i = 1, min(4, #lista) do out[#out + 1] = tarjetaGuia(lista[i]) end
-		if #lista > 4 then
-			out[#out + 1] = { icono = "ic-guia", tono = "neutro", titulo = L["Todas las guías de profesiones"], alClic = hacer(function() M.Biblioteca.Abrir({ categoria = "Professions" }) end) }
-		end
+		out[#out + 1] = { icono = "ic-guia", tono = "neutro", titulo = L["Todas las guías de profesiones"], alClic = hacer(function() M.Biblioteca.Abrir({ categoria = "Professions" }) end) }
 	elseif camino == "oro" then
 		out[#out + 1] = { icono = "ic-oro", tono = "oro", titulo = L["Mi ruta: hacer oro"], texto = L["Misiones que dejan dinero y materiales de tu profesión para vender."],
 			accion = { texto = L["Armar la ruta"], icono = "ic-seguir" }, alClic = hacer(rutaDePlantilla("oro")) }

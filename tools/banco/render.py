@@ -16,7 +16,8 @@ GLYPH = {
 
 def font(path_hint: str, size: float, fonts_dir: pathlib.Path):
     name = "Inter-Medium.ttf"
-    m = re.search(r"([A-Za-z]+-[A-Za-z]+)\.ttf", path_hint or "")
+    # (1.3.9) una letra del juego que el banco no tiene llega como tabla
+    m = re.search(r"([A-Za-z]+-[A-Za-z]+)\.ttf", path_hint if isinstance(path_hint, str) else "")
     if m and (fonts_dir / (m.group(1) + ".ttf")).exists():
         name = m.group(1) + ".ttf"
     key = (name, round(size))
@@ -206,7 +207,8 @@ def render(entries, rect, out_path, fonts_dir, scale=1.25):
                 pegar(base, real, (x0, y0, x1, y1), col, tc)
                 d = ImageDraw.Draw(base, "RGBA")
             elif tex in ("white", "color") or tex.startswith("band"):
-                d.rectangle([x0, y0, x1 - 1, y1 - 1], fill=col)
+                # (1.3.9) una línea de menos de un píxel no tumba el dibujo
+                d.rectangle([x0, y0, max(x0, x1 - 1), max(y0, y1 - 1)], fill=col)
             elif tex == "cut":
                 if e.get("flip"):
                     d.polygon([(x0, y0), (x1, y0), (x0, y1)], fill=col)

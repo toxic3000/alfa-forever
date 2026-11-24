@@ -4,6 +4,8 @@
 local _, M = ...
 
 M.EN = {
+	-- 1.3.9 (avisos): el reporte, el Centro de avisos, Lya y los errores con qué hacer
+	["No pude buscar el lugar más cercano. Prueba de nuevo en un momento; si sigue, /alfa diagnostico lo revisa."] = "I couldn't search for the nearest place. Try again in a moment; if it keeps happening, /alfa diagnostico checks it.",
 	-- Página y módulo
 	["Comercio"] = "Trade",
 	["¿Vender, subastar o transformar? Lo que más oro te deja con cada objeto."] = "Vendor, auction or craft? What earns you the most gold with each item.",
@@ -493,5 +495,35 @@ M.EN = {
 	["Subir %s a %d"] = "Raise %s to %d",
 	["Contar lo de tus otros personajes"] = "Count what your other characters have",
 	["Lo que ya tienen en sus bolsas y su banco no sale como «falta», y cada material dice quién lo tiene."] = "What they already have in their bags and bank isn't counted as \"missing\", and each material says who has it.",
+	-- 1.3.9 (módulos)
+	["Véndelo al comerciante"] = "Sell it to a vendor",
+	["Súbelo a la subasta"] = "Put it up for auction",
+	["Desencántalo"] = "Disenchant it",
+	["Guárdalo"] = "Keep it",
+	["precio viejo"] = "old price",
+	["estimado"] = "estimate",
+	["Con todo el detalle"] = "With all the detail",
+	["Dos líneas: el precio en la subasta, lo que paga el comerciante y lo que conviene. Apagado, una sola línea; con Mayús ves el detalle."] = "Two lines: the auction price, what the vendor pays and what's best. Off, a single line; hold Shift to see the detail.",
+	["Naranja: siempre sube"] = "Orange: always raises",
+	["Amarilla: casi siempre sube"] = "Yellow: almost always raises",
+	["Verde: a veces sube"] = "Green: sometimes raises",
+	["La de la guía para tu tramo"] = "The guide's pick for your range",
+	["Lo más barato para subir"] = "Cheapest way to level up",
+	["Con lo que tienes la haces una vez sin gastar nada."] = "With what you have you can make it once without spending anything.",
+	["Con lo que tienes la haces %d veces sin gastar nada."] = "With what you have you can make it %d times without spending anything.",
+	["Cada punto te sale en unos %s (lo que te falta, a precio de subasta o de vendedor)."] = "Each point costs you about %s (what you're missing, at auction or vendor price).",
+	["Faltan precios de sus materiales: escanea la subasta para comparar."] = "Some material prices are missing: scan the auction house to compare.",
+	["%s (%s por punto)"] = "%s (%s per point)",
+	["También: %s."] = "Also: %s.",
+	["Ya la sabes"] = "You know it",
+	["Sin aprender"] = "Not learned",
+	["A mi lista de compras"] = "To my shopping list",
+	["La haces una vez: +%s"] = "You can make it once: +%s",
+	["La haces %d veces: +%s en total"] = "You can make it %d times: +%s in total",
+	["+%s c/u"] = "+%s each",
+	["Lo que deja cada una: lo que vale menos lo que cuestan sus materiales. Alfa nunca fabrica por ti."] = "What each one earns: its value minus its materials. Alfa never crafts for you.",
+	["Ya puedes fabricar y ganar"] = "You can craft and earn now",
+	-- 1.3.9 (oficios)
+	["Guíame paso a paso"] = "Guide me step by step",
 }
 M.L = AlfaNucleo.Textos(M.EN)

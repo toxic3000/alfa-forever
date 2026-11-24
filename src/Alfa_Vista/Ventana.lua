@@ -629,7 +629,7 @@ end
 local function crear()
 	if v then return v end
 	v = K.Ventana({ nombre = "AlfaVistaVentana", titulo = L["Paisaje y gráficos"],
-		subtitulo = L["Lo que el menú del juego no enseña, a tu gusto"], icono = "ic-apariencia",
+		subtitulo = L["Lo que el menú del juego no enseña, a tu gusto"], icono = "ic-paisaje",
 		ancho = ANCHO, alto = ALTO, alCerrar = function() K.CerrarMenu() end })
 	V.v = v
 	local cuerpo = v.Cuerpo

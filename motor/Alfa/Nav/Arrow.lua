@@ -64,7 +64,7 @@ local TWO_PI = 2 * pi
 local STEP = TWO_PI / FRAMES
 local SPRITE = DIAL * 1.5
 
-ns.RegisterDefaults("nav", { arrowStyle = "skin" })
+ns.RegisterDefaults("nav", { arrowStyle = "skin", arrowMinimo = false })
 
 -- The style a skin's arrow takes ("skin" in nav.arrowStyle).
 local SKIN_ARROW = { alfa = "lobo", halo = "halo", hearth = "hearth", forever = "hearth", blizzard = "hearth", classic = "lobo" }
@@ -304,6 +304,7 @@ local floorShown -- the floor glyph's hint ("up" | "down") or nil
 local lastDist, closeSpeed = nil, 0
 local pulse = 0
 local showEta = true
+local minimo = false -- Alfa 1.3.9: nav.arrowMinimo, solo la flecha y la distancia
 local routeSeen = -1  -- Travel.version the label shows; -1 = the target's own label
 local loneSeen = -1   -- Travel.version a lone walk's warning was last asked for
 local WARN_SECONDS = 8 -- a walk's "Hostile town" warning stays under its step this long
@@ -407,7 +408,8 @@ end
 -- 1.3.1: la placa sin nada que contar no se queda. Con avance que seguir
 -- (las huellas o la barra: «1 de 10», la experiencia) se queda mientras dure,
 -- como antes. Sin él («Completa “Campamento básico: Peletería”», un
--- «Llegaste» suelto, también con «Siguiente lugar») entra, se queda QUEDA
+-- «Llegaste» suelto) entra, se queda QUEDA (1.3.9: con «Siguiente lugar» se
+-- queda, y la flecha sigue tomando el clic mientras haya otro lugar)
 -- segundos y se desvanece sola; solo vuelve, un rato más corto
 -- (QUEDA_CAMBIO), cuando cambia lo que dice de verdad: otro paso, otro
 -- destino o el estado (su firma), y si aparece un avance vuelve y se queda.
@@ -451,6 +453,32 @@ end
 local pelea = false
 local function enCombate() return pelea or (InCombatLockdown and InCombatLockdown()) or false end
 
+-- 1.3.9: el clic en la flecha lleva a «otro lugar». Primero el del motor (un
+-- área con varios lugares, Nav.NextSpot); si no, quien guía la flecha con una
+-- ruta propia (Recolección, buscar un material...) se apunta en
+-- Nav.OtroLugar = { disponible = fn() -> bool, ir = fn() -> bool }.
+local function hayOtroLugar()
+	local t = Nav.GetTarget and Nav.GetTarget()
+	if t and t.spots then return true end
+	local o = Nav.OtroLugar
+	if type(o) == "table" and type(o.disponible) == "function" then
+		local ok, si = pcall(o.disponible)
+		return ok and si and true or false
+	end
+	return false
+end
+
+local function irOtroLugar()
+	if Nav.NextSpot and Nav.NextSpot() then return true end
+	local o = Nav.OtroLugar
+	if type(o) == "table" and type(o.ir) == "function" then
+		local ok, si = pcall(o.ir)
+		return ok and si and true or false
+	end
+	return false
+end
+Arrow.OtroLugar, Arrow.HayOtroLugar = irOtroLugar, hayOtroLugar
+
 -- La letra de Alfa para un rol del Kit, con la sombra del tema (la placa ya
 -- da el fondo: sin contorno grueso).
 local function letra(K, fs, rol)
@@ -468,7 +496,9 @@ end
 local function desvanecida(self)
 	self.alfaOculta = true
 	self:Hide()
-	frame:EnableMouse(false)
+	-- 1.3.9: si hay otro lugar a dónde ir, la flecha sigue tomando el clic,
+	-- pero nunca en combate: ahí no se ve nada y no debe atrapar el ratón.
+	frame:EnableMouse(hayOtroLugar() and not enCombate())
 end
 
 -- La placa anima sola mientras se ve: entra subiendo, el halo respira y el
@@ -576,7 +606,7 @@ local function armarLlegada(K)
 	f.Relleno:SetPoint("BOTTOMLEFT", f.Pista, "BOTTOMLEFT", 0, 0)
 	if K.Boton then
 		f.Siguiente = K.Boton(f, ns.T("Siguiente lugar"), function()
-			if not enCombate() then Nav.NextSpot() end
+			if not enCombate() then irOtroLugar() end
 		end, { tam = "chico", icono = "ic-huella" })
 		f.Siguiente:Hide()
 	end
@@ -656,11 +686,15 @@ local function pintarLlegada(m)
 	local hay = d.max and d.max > 0
 	local frac = hay and math.max(0, math.min(1, (d.cur or 0) / d.max)) or 0
 	local texto = d.avance or (d.xp and ("%d%%"):format(math.floor(frac * 100)) or nil)
-	local otro = m == "search" and target ~= nil and target.spots ~= nil
+	-- 1.3.9: «otro lugar» del motor (un área con varios lugares) o de quien
+	-- guía la flecha con su ruta (Nav.OtroLugar: Recolección...).
+	local otro = hayOtroLugar()
 	local firma = firmaDe(m, accion, texto, d, target, otro)
 	local cambio = firma ~= f.alfaFirma
 	if not cambio and f.alfaOculta then
 		-- Ya se fue y nada cambió: sigue ida, y lo de la llegada de antes también.
+		-- Sin la placa, la flecha no se ve: en combate no toma el ratón (1.3.9).
+		frame:EnableMouse(otro and not enCombate())
 		sinLlegadaVieja()
 		distText:Hide()
 		labelText:Hide()
@@ -756,12 +790,13 @@ local function pintarLlegada(m)
 	f.alfaQuieta = ns.Get("ui.reduceMotion") and true or false
 	f.alfaCuenta = hay and true or false
 	if cambio then
-		local queda = hay and math.huge or (f.alfaFirma == nil and QUEDA or QUEDA_CAMBIO)
+		-- 1.3.9: con «Siguiente lugar» (otro) también se queda: su botón sigue a la mano.
+		local queda = (hay or otro) and math.huge or (f.alfaFirma == nil and QUEDA or QUEDA_CAMBIO)
 		f.alfaFirma = firma
 		if f.alfaOculta or not f:IsShown() then
 			f.alfaT, f.alfaAnclada = 0, false
 			f.alfaQueda = queda
-		elseif hay or f.alfaQueda == math.huge or (f.alfaQueda or 0) < queda then
+		elseif hay or otro or f.alfaQueda == math.huge or (f.alfaQueda or 0) < queda then
 			-- (de contar a no contar: ahora sí corre su rato)
 			f.alfaQueda = queda
 		end
@@ -1028,19 +1063,535 @@ function Arrow.TextoViaje(leg, secsTotal)
 	return linea, debajo, llegas
 end
 
+---------------------------------------------------------------------------
+-- Alfa 1.3.9: la tarjeta del viaje (pedido de Toxic: «no me gusta en lo
+-- absoluto, es igual al de Polestar»). En lugar de tres líneas sueltas sobre
+-- el mundo, una tarjeta de Alfa en el lugar de la flecha, como la placa de
+-- llegada: el panel del Kit con su corte y su franja (del color de tu bando
+-- con la temática de la 1.3.9, Kit/Bando.lua), un medallón con el transporte
+-- dibujado a la manera de Alfa (tools/bandos.py: viaje-barco, -zepelin,
+-- -tranvia, -portal, -grifo), el título claro («Barco a Trinquete») y la
+-- salida como protagonista: una cuenta grande («2:48») con su barra que se
+-- llena; sin horario medido, «~3 min», «Sale cada ~6 min», una barra que
+-- espera (un brillo que va y viene) y «Mide el horario: espéralo aquí una
+-- vez». Abajo, la ruta en tres puntos (Tú, el muelle, el destino) con el de
+-- ahora resaltado y cuánto falta para llegar.
+-- Estados (tarjeta.estado):
+--   "camino"    caminando al muelle (la flecha apunta; la tarjeta va debajo
+--               y dice la distancia: «Ve al muelle · 120 m»)
+--   "muelle"    esperando en el muelle (la cuenta de la salida)
+--   "abordo"    a bordo («A bordo», llegas en 0:40 con su barra de viaje)
+--   "llegando"  los últimos segundos («¡Tierra a la vista!»)
+-- Nada del texto del motor se ve a la vez (sinTextoViejo).
+--   Arrow.Tarjeta() -> { estado, kind, titulo, sobre, cuenta, nota, ruta, barra, espera } | nil
+---------------------------------------------------------------------------
+local NUCLEO_MEDIA = "Interface\\AddOns\\Alfa_Nucleo\\Media\\"
+local TARJETA = {
+	boat = { icono = "viaje-barco", titulo = "Barco a %s", ir = "Ve al muelle", espera = "Esperando en el muelle",
+		aqui = "¡El barco ya está aquí!", lugar = "el muelle", llegando = "¡Tierra a la vista!" },
+	zeppelin = { icono = "viaje-zepelin", titulo = "Zepelín a %s", ir = "Ve a la torre", espera = "Esperando en la torre",
+		aqui = "¡El zepelín ya está aquí!", lugar = "la torre", llegando = "¡Tierra a la vista!" },
+	tram = { icono = "viaje-tranvia", titulo = "Tranvía a %s", ir = "Ve al andén", espera = "Esperando en el andén",
+		aqui = "¡El tranvía ya está aquí!", lugar = "el andén", llegando = "¡Llegando al andén!" },
+	portal = { icono = "viaje-portal", titulo = "Portal a %s", ir = "Ve al portal", espera = "Cruza el portal",
+		lugar = "el portal" },
+	fly = { icono = "viaje-grifo", titulo = "Vuelo a %s", ir = "Ve con el maestro de vuelo", espera = "Habla con el maestro de vuelo",
+		lugar = "el maestro de vuelo" },
+}
+Arrow.TARJETA = TARJETA
+local TJ_ANCHO, TJ_PAD, TJ_MEDALLA = 300, 10, 46
+local TJ_COLUMNA = TJ_ANCHO - TJ_PAD * 3 - TJ_MEDALLA
+local LLEGANDO = 20 -- segundos antes de llegar: «¡Tierra a la vista!»
+local tarjeta       -- el marco (se arma la primera vez)
+local tarjetaVista  -- { ... } lo que dice mientras se ve
+
+local function colorTarjeta(K)
+	local B = K.Bando and K.Bando()
+	if B then return B.color[1], B.color[2], B.color[3], B.metal end
+	local r, g, b = Nav.RGB("arrow")
+	return r, g, b, nil
+end
+
+-- La barra que espera (sin horario): un brillo que va y viene; la tarjeta
+-- entra subiendo y el medallón respira. Nada se crea aquí.
+local function animarTarjeta(self, dt)
+	dt = tonumber(dt) or 0
+	local t = (self.alfaT or 0) + dt
+	self.alfaT = t
+	local quieta = self.alfaQuieta
+	local entra = quieta and QUIETA_ENTRA or ENTRA_PLACA
+	local e = t < entra and t / entra or 1
+	e = e * e * (3 - 2 * e)
+	self:SetAlpha(e)
+	if not self.alfaAnclada then
+		self:ClearAllPoints()
+		local abajo = self.alfaAbajo
+		local y = (quieta or e >= 1) and 0 or -(1 - e) * 10
+		if abajo then
+			self:SetPoint("TOP", dial, "BOTTOM", 0, -6 + y)
+		else
+			self:SetPoint("TOP", dial, "TOP", 0, y)
+		end
+		if quieta or e >= 1 then self.alfaAnclada = true end
+	end
+	if quieta then return end
+	self.Halo:SetAlpha(0.25 + 0.2 * (0.5 + 0.5 * sin(t * 2.2)))
+	if self.alfaEspera and self.Brillo:IsShown() then
+		local ancho = self.alfaPista or TJ_COLUMNA
+		local p = (t * 0.45) % 1
+		p = p < 0.5 and p * 2 or 2 - p * 2 -- va y viene
+		p = p * p * (3 - 2 * p)
+		self.Brillo:ClearAllPoints()
+		self.Brillo:SetPoint("LEFT", self.Pista, "LEFT", p * (ancho - 40), 0)
+	end
+	-- La cuenta late suave en sus últimos 10 segundos.
+	if self.alfaUrge then
+		self.Cuenta:SetAlpha(0.75 + 0.25 * (0.5 + 0.5 * sin(t * 6)))
+	end
+end
+
+local function armarTarjeta(K)
+	if tarjeta then return tarjeta end
+	local f = CreateFrame("Frame", "AlfaNavViaje", frame)
+	f:SetSize(TJ_ANCHO, 110)
+	f:SetPoint("TOP", dial, "TOP", 0, 0)
+	f:EnableMouse(false)
+	f:Hide()
+	f.caja = K.Caja(f, { corte = K.CORTE.tarjeta, rol = "panel", alfaFondo = 0.92 })
+	f.Franja = f:CreateTexture(nil, "ARTWORK", nil, 1)
+	f.Franja:SetColorTexture(1, 1, 1, 1)
+	f.Franja:SetWidth(3)
+	f.Franja:SetPoint("TOPLEFT", f, "TOPLEFT", 0, -K.CORTE.tarjeta - 4)
+	f.Franja:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 0, K.CORTE.tarjeta + 4)
+	-- El adorno del bando arriba (madera y hierro, o piedra y plata).
+	f.Adorno = f:CreateTexture(nil, "ARTWORK", nil, 2)
+	f.Adorno:SetHeight(4)
+	f.Adorno:SetPoint("TOPLEFT", f, "TOPLEFT", K.CORTE.tarjeta + 2, 0)
+	f.Adorno:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, 0)
+	f.Adorno:Hide()
+	-- El medallón con el transporte.
+	f.Medalla = CreateFrame("Frame", nil, f)
+	f.Medalla:SetSize(TJ_MEDALLA, TJ_MEDALLA)
+	f.Medalla:SetPoint("TOPLEFT", f, "TOPLEFT", TJ_PAD + 2, -TJ_PAD)
+	f.Halo = f.Medalla:CreateTexture(nil, "BACKGROUND", nil, 1)
+	f.Halo:SetTexture(MEDIA .. "glow")
+	f.Halo:SetBlendMode("ADD")
+	f.Halo:SetSize(TJ_MEDALLA * 1.7, TJ_MEDALLA * 1.7)
+	f.Halo:SetPoint("CENTER")
+	f.Fondo = f.Medalla:CreateTexture(nil, "BACKGROUND", nil, 2)
+	f.Fondo:SetTexture(UI_DIR .. "circle")
+	f.Fondo:SetAllPoints()
+	f.Aro = f.Medalla:CreateTexture(nil, "ARTWORK")
+	f.Aro:SetTexture(MEDIA .. "ring")
+	f.Aro:SetAllPoints()
+	f.Icono = f.Medalla:CreateTexture(nil, "ARTWORK", nil, 2)
+	f.Icono:SetSize(TJ_MEDALLA * 0.62, TJ_MEDALLA * 0.62)
+	f.Icono:SetPoint("CENTER")
+	-- La columna: el estado, el título y, a la derecha, la cuenta grande.
+	f.Sobre = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	f.Sobre:SetJustifyH("LEFT")
+	f.Titulo = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	f.Titulo:SetJustifyH("LEFT")
+	f.Titulo:SetWordWrap(true)
+	f.Titulo:SetMaxLines(2)
+	f.Cuenta = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	f.Cuenta:SetJustifyH("RIGHT")
+	f.CuentaSobre = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	f.CuentaSobre:SetJustifyH("RIGHT")
+	-- La barra: se llena con la cuenta; sin horario, un brillo que espera.
+	f.Pista = f:CreateTexture(nil, "ARTWORK")
+	f.Pista:SetHeight(4)
+	f.Relleno = f:CreateTexture(nil, "ARTWORK", nil, 1)
+	f.Relleno:SetPoint("TOPLEFT", f.Pista, "TOPLEFT", 0, 0)
+	f.Relleno:SetPoint("BOTTOMLEFT", f.Pista, "BOTTOMLEFT", 0, 0)
+	f.Brillo = f:CreateTexture(nil, "ARTWORK", nil, 2)
+	f.Brillo:SetSize(40, 4)
+	f.Brillo:SetColorTexture(1, 1, 1, 1)
+	f.Brillo:Hide()
+	f.Nota = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	f.Nota:SetJustifyH("LEFT")
+	f.Nota:SetWordWrap(true)
+	f.Nota:SetMaxLines(3)
+	-- La ruta: tres puntos en una línea y sus nombres debajo.
+	f.RutaLinea = f:CreateTexture(nil, "ARTWORK")
+	f.RutaLinea:SetHeight(2)
+	f.RutaHecha = f:CreateTexture(nil, "ARTWORK", nil, 1)
+	f.RutaHecha:SetHeight(2)
+	f.Puntos = {}
+	for i = 1, 3 do
+		local p = f:CreateTexture(nil, "ARTWORK", nil, 3)
+		p:SetTexture(UI_DIR .. "circle")
+		p:SetSize(8, 8)
+		f.Puntos[i] = p
+	end
+	f.Ruta = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	f.Ruta:SetJustifyH("LEFT")
+	f.Ruta:SetWordWrap(true)
+	f.Ruta:SetMaxLines(2)
+	f:SetScript("OnUpdate", animarTarjeta)
+	tarjeta = f
+	Arrow.tarjeta = f
+	return f
+end
+
+-- El texto viejo (el del motor: la línea dorada, la de abajo y «Llegas en»)
+-- y el disco no se ven con la tarjeta; el disco solo mientras caminas.
+local function sinTextoViejo(conDisco)
+	distText:Hide()
+	labelText:Hide()
+	etaText:Hide()
+	legIcon:Hide()
+	halo:Hide()
+	floorIcon:SetShown(conDisco and floorShown ~= nil or false)
+	if not conDisco then
+		-- Sin disco a la vista (en el muelle o a bordo): el texto de antes en
+		-- blanco, por si alguien lo lee (y nada atrapa el ratón).
+		distText:SetText("")
+		labelText:SetText("")
+	end
+end
+
+local function quitarTarjeta()
+	if tarjeta and tarjeta:IsShown() then
+		tarjeta:Hide()
+		distText:Show()
+		labelText:Show()
+		if frame.SetClampRectInsets then frame:SetClampRectInsets(0, 0, 0, 0) end
+	end
+	tarjetaVista = nil
+end
+Arrow.QuitarTarjeta = quitarTarjeta
+
+-- Lo que dice la tarjeta para un tramo de viaje y un estado.
+-- -> { estado, kind, titulo, sobre, cuenta, cuentaSobre, nota, ruta, paso, frac, espera, urge }
+function Arrow.DatosTarjeta(leg, estado, secsTotal, yardas)
+	local v = type(leg) == "table" and TARJETA[leg.kind]
+	if not v then return nil end
+	local lugar = destino(leg)
+	if not lugar then return nil end
+	local d = { estado = estado, kind = leg.kind, titulo = ns.T(v.titulo):format(lugar) }
+	local X = ns.Transit
+	local id = type(leg.transport) == "table" and leg.transport.id or leg.transport
+	local now = X and X.Now and X.Now() or 0
+	-- A bordo: el motor sabe cuándo llega.
+	if (estado == "muelle" or estado == "abordo") and X and X.Riding then
+		local riding = X.Riding(now)
+		if type(riding) == "table" and riding.kind == leg.kind then
+			estado = (tonumber(riding.arriveIn) or 99) <= LLEGANDO and "llegando" or "abordo"
+			d.estado = estado
+			d.llegaEn = tonumber(riding.arriveIn)
+		end
+	end
+	if estado == "camino" then
+		d.sobre = ns.T(v.ir)
+		if yardas then d.distancia = ns.FormatDistance(floor(yardas + 0.5)) end
+		d.paso = 1
+	elseif estado == "abordo" or estado == "llegando" then
+		d.sobre = estado == "llegando" and ns.T(v.llegando or "¡Tierra a la vista!") or ns.T("A bordo")
+		d.paso = 3
+		local ride
+		if X and X.NextDeparture and id then
+			local _, r2 = X.NextDeparture(leg.kind, id, now, leg.side)
+			ride = r2
+		end
+		local falta = d.llegaEn
+		if falta then
+			d.cuenta, d.cuentaSobre = mmss(falta), ns.T("llegas en")
+			local total = tonumber(ride) or tonumber(leg.seconds) or 0
+			if total > 0 then d.frac = math.max(0, math.min(1, 1 - falta / total)) end
+			d.urge = falta <= 10
+		end
+	else
+		d.sobre = ns.T(v.espera)
+		d.paso = 2
+	end
+	-- La salida (barco, zepelín, tranvía): la cuenta real o la espera de siempre.
+	if (estado == "camino" or estado == "muelle") and X and id and X.NextDeparture and v.aqui then
+		local llega, sale = X.NextArrival(leg.kind, id, now, leg.side)
+		local espera, _, medido = X.NextDeparture(leg.kind, id, now, leg.side)
+		if llega and llega <= 0 and sale then
+			if estado == "muelle" then d.sobre = ns.T(v.aqui) end
+			d.cuenta, d.cuentaSobre = mmss(sale), ns.T("zarpa en")
+			d.frac = 1
+			d.urge = sale <= 10
+		elseif medido and (espera or llega) then
+			local s = espera or llega
+			d.cuenta, d.cuentaSobre = mmss(s), ns.T("sale en")
+			d.urge = s <= 10
+			local sig = espera and X.NextDeparture(leg.kind, id, now + espera + 5, leg.side)
+			if sig then d.nota = ns.T("Si lo pierdes, el siguiente sale en %s"):format(duracionRedonda(espera + 5 + sig)) end
+			d.medido = true
+			d.restante = s
+		elseif espera then
+			d.cuenta, d.cuentaSobre = ("~%d min"):format(math.max(1, floor(espera / 60 + 0.5))), ns.T("sale en")
+			d.espera = true -- sin horario: la barra espera
+			local cada = math.max(1, floor(espera * 2 / 60 + 0.5))
+			d.nota = ns.T("Sale cada ~%d min"):format(cada) .. "\n" .. ns.T("Mide el horario: espéralo aquí una vez")
+		end
+	elseif leg.kind == "fly" and estado ~= "abordo" then
+		local s = tonumber(leg.seconds)
+		if s and s > 0 then d.cuenta, d.cuentaSobre = duracionRedonda(s), ns.T("de vuelo") end
+		if estado == "camino" then d.nota = ns.T("Habla con el maestro de vuelo") end
+	elseif leg.kind == "portal" and estado == "camino" then
+		d.nota = ns.T("Lo cruzas y llegas al momento")
+	end
+	-- La ruta: Tú, el muelle (o la torre...) y el destino.
+	local T = Nav.travel
+	local muelle = leg.from and T and T.PlaceName and T.PlaceName(leg.from)
+	if type(muelle) ~= "string" or muelle == "" or (issecretvalue and issecretvalue(muelle)) then muelle = ns.T(v.lugar) end
+	muelle = muelle:match("^([^,]+)") or muelle
+	d.puntos = { ns.T("Tú"), muelle, lugar }
+	-- A bordo la cuenta ya dice cuándo llegas: «llegas en» solo si después hay más camino.
+	if secsTotal and not (d.llegaEn and secsTotal < d.llegaEn + 60) then d.llegas = ns.T("llegas en %s"):format(duracionRedonda(secsTotal)) end
+	return d
+end
+
+-- Pinta la tarjeta. -> true si se pudo (sin el Kit, false: el texto de antes).
+local function pintarTarjeta(d, abajo)
+	local K = kit()
+	if not (K and d) then return false end
+	local f = armarTarjeta(K)
+	local r, g, b, metal = colorTarjeta(K)
+	local B = K.Bando and K.Bando()
+	local firma = table.concat({ d.estado, d.kind, d.titulo, d.sobre or "", d.distancia or "", d.cuenta or "", d.nota or "",
+		tostring(d.frac or ""), d.llegas or "", tostring(abajo) }, "|")
+	local nuevo = not f:IsShown() or f.alfaAbajo ~= abajo
+	if nuevo then
+		f.alfaT, f.alfaAnclada = 0, false
+		f:ClearAllPoints()
+		if abajo then f:SetPoint("TOP", dial, "BOTTOM", 0, -6) else f:SetPoint("TOP", dial, "TOP", 0, 0) end
+	end
+	f.alfaAbajo = abajo
+	f.alfaQuieta = ns.Get("ui.reduceMotion") and true or false
+	f.alfaEspera = d.espera and true or false
+	f.alfaUrge = d.urge and true or false
+	if not d.urge then f.Cuenta:SetAlpha(1) end
+	if firma == f.alfaFirma and not nuevo then
+		f:Show()
+		sinTextoViejo(abajo)
+		return true
+	end
+	f.alfaFirma = firma
+	f.Franja:SetVertexColor(r, g, b, 1)
+	f.Aro:SetVertexColor(r, g, b, 0.9)
+	f.Halo:SetVertexColor(r, g, b, 1)
+	f.Icono:SetTexture(NUCLEO_MEDIA .. TARJETA[d.kind].icono)
+	f.Icono:SetVertexColor(r, g, b, 1)
+	f.Fondo:SetVertexColor(K.ConAlfa("hundido", 0.95))
+	if B and B.adorno then
+		f.Adorno:SetTexture(B.adorno)
+		f.Adorno:SetVertexColor(1, 1, 1, 1)
+		f.Adorno:Show()
+	else
+		f.Adorno:Hide()
+	end
+	local x = TJ_PAD * 2 + 2 + TJ_MEDALLA
+	local y = TJ_PAD
+	-- La cuenta grande a la derecha.
+	local anchoCuenta = 0
+	if d.cuenta then
+		letra(K, f.CuentaSobre, "mayus")
+		f.CuentaSobre:SetTextColor(K.Color("textoSuave"))
+		f.CuentaSobre:SetText(K.Mayus(d.cuentaSobre or ""))
+		letra(K, f.Cuenta, "cifra")
+		if metal then f.Cuenta:SetTextColor(metal[1], metal[2], metal[3], 1) else f.Cuenta:SetTextColor(Nav.RGB("arrowText")) end
+		f.Cuenta:SetText(d.cuenta)
+		f.CuentaSobre:ClearAllPoints()
+		f.CuentaSobre:SetPoint("TOPRIGHT", f, "TOPRIGHT", -TJ_PAD - 2, -y - 1)
+		f.Cuenta:ClearAllPoints()
+		f.Cuenta:SetPoint("TOPRIGHT", f.CuentaSobre, "BOTTOMRIGHT", 0, -2)
+		anchoCuenta = math.ceil(math.max(f.Cuenta:GetStringWidth() or 0, f.CuentaSobre:GetStringWidth() or 0)) + 10
+		f.Cuenta:Show()
+		f.CuentaSobre:Show()
+	else
+		f.Cuenta:Hide()
+		f.CuentaSobre:Hide()
+	end
+	local ancho = TJ_COLUMNA - anchoCuenta
+	letra(K, f.Sobre, "mayus")
+	f.Sobre:SetTextColor(r, g, b, 1)
+	f.Sobre:SetWidth(ancho)
+	f.Sobre:SetText(K.Mayus(d.sobre or "") .. (d.distancia and ("  \194\183  " .. d.distancia) or ""))
+	f.Sobre:ClearAllPoints()
+	f.Sobre:SetPoint("TOPLEFT", f, "TOPLEFT", x, -y - 1)
+	y = y + 1 + altoTexto(K, f.Sobre, 10)
+	letra(K, f.Titulo, "subtitulo")
+	f.Titulo:SetTextColor(K.Color("texto"))
+	f.Titulo:SetWidth(ancho)
+	f.Titulo:SetText(d.titulo)
+	f.Titulo:ClearAllPoints()
+	f.Titulo:SetPoint("TOPLEFT", f, "TOPLEFT", x, -(y + 3))
+	y = y + 3 + altoTexto(K, f.Titulo, 16)
+	if d.cuenta then
+		local altoC = TJ_PAD + 1 + altoTexto(K, f.CuentaSobre, 10) + 2 + altoTexto(K, f.Cuenta, 24)
+		y = math.max(y, altoC)
+	end
+	-- La barra.
+	local conBarra = d.frac ~= nil or d.espera or d.medido
+	f.Pista:ClearAllPoints()
+	if conBarra then
+		f.Pista:SetPoint("TOPLEFT", f, "TOPLEFT", x, -(y + 7))
+		f.Pista:SetWidth(TJ_COLUMNA)
+		f.alfaPista = TJ_COLUMNA
+		f.Pista:SetColorTexture(K.ConAlfa("hundido", 0.95))
+		f.Pista:Show()
+		local frac = d.frac
+		if d.medido and d.restante then
+			-- La primera cuenta que vio es la barra entera: se llena al acercarse la salida.
+			if not f.alfaRef or f.alfaRefTramo ~= d.titulo or d.restante > f.alfaRef then
+				f.alfaRef, f.alfaRefTramo = math.max(d.restante, 1), d.titulo
+			end
+			frac = 1 - d.restante / f.alfaRef
+		end
+		f.Relleno:SetColorTexture(r, g, b, 1)
+		f.Relleno:SetWidth(math.max(1, TJ_COLUMNA * (frac or 0)))
+		f.Relleno:SetShown((frac or 0) > 0)
+		f.Brillo:SetVertexColor(r, g, b, 0.85)
+		f.Brillo:SetShown(d.espera and true or false)
+		if d.espera then
+			f.Brillo:ClearAllPoints()
+			f.Brillo:SetPoint("LEFT", f.Pista, "LEFT", 0, 0)
+		end
+		y = y + 7 + 4
+	else
+		f.Pista:Hide()
+		f.Relleno:Hide()
+		f.Brillo:Hide()
+	end
+	-- La nota.
+	if d.nota then
+		letra(K, f.Nota, "pequeno")
+		f.Nota:SetTextColor(K.Color("textoSuave"))
+		f.Nota:SetWidth(TJ_COLUMNA)
+		f.Nota:SetText(d.nota)
+		f.Nota:ClearAllPoints()
+		f.Nota:SetPoint("TOPLEFT", f, "TOPLEFT", x, -(y + 6))
+		f.Nota:Show()
+		y = y + 6 + altoTexto(K, f.Nota, 12)
+	else
+		f.Nota:Hide()
+	end
+	-- La ruta: los tres puntos y sus nombres, el de ahora en el color del viaje.
+	y = y + 10
+	local x0, x1 = x + 4, x + TJ_COLUMNA - 4
+	f.RutaLinea:ClearAllPoints()
+	f.RutaLinea:SetPoint("LEFT", f, "TOPLEFT", x0, -(y + 4))
+	f.RutaLinea:SetWidth(x1 - x0)
+	f.RutaLinea:SetColorTexture(K.ConAlfa("lineaFuerte", 1))
+	local paso = d.paso or 1
+	local hecho = (paso - 1) / 2
+	f.RutaHecha:ClearAllPoints()
+	f.RutaHecha:SetPoint("LEFT", f, "TOPLEFT", x0, -(y + 4))
+	f.RutaHecha:SetWidth(math.max(1, (x1 - x0) * hecho))
+	f.RutaHecha:SetColorTexture(r, g, b, 1)
+	f.RutaHecha:SetShown(hecho > 0)
+	for i, p in ipairs(f.Puntos) do
+		local px = x0 + (x1 - x0) * (i - 1) / 2
+		local actual = i == paso
+		local tam = actual and 10 or 7
+		p:SetSize(tam, tam)
+		p:ClearAllPoints()
+		p:SetPoint("CENTER", f, "TOPLEFT", px, -(y + 4))
+		if i <= paso then p:SetVertexColor(r, g, b, 1) else p:SetVertexColor(K.Color("textoTenue")) end
+	end
+	y = y + 10
+	local partes = {}
+	local cr, cg, cb = r, g, b
+	if metal then cr, cg, cb = metal[1], metal[2], metal[3] end
+	local hex = ("|cff%02x%02x%02x"):format(floor(cr * 255 + 0.5), floor(cg * 255 + 0.5), floor(cb * 255 + 0.5))
+	for i, n in ipairs(d.puntos or {}) do
+		partes[i] = i == paso and (hex .. n .. "|r") or n
+	end
+	local ruta = table.concat(partes, "  \226\128\186  ")
+	letra(K, f.Ruta, "pequeno")
+	f.Ruta:SetTextColor(K.Color("textoSuave"))
+	f.Ruta:SetWidth(TJ_COLUMNA)
+	if d.llegas then
+		-- En la misma línea si cabe; si no, en la suya (nunca partida a la mitad).
+		f.Ruta:SetText(ruta)
+		local libre = TJ_COLUMNA - (tonumber(f.Ruta:GetStringWidth()) or 0)
+		f.Ruta:SetText(d.llegas)
+		local pide = (tonumber(f.Ruta:GetStringWidth()) or 0) + 16
+		if libre >= pide then
+			ruta = ruta .. "  \194\183  " .. d.llegas
+		else
+			ruta = ruta .. "\n" .. d.llegas:sub(1, 1):upper() .. d.llegas:sub(2)
+		end
+	end
+	f.Ruta:SetText(ruta)
+	f.Ruta:ClearAllPoints()
+	f.Ruta:SetPoint("TOPLEFT", f, "TOPLEFT", x, -(y + 2))
+	y = y + 2 + altoTexto(K, f.Ruta, 12)
+	y = math.max(y, TJ_PAD + TJ_MEDALLA) + TJ_PAD
+	f:SetHeight(y)
+	f:SetWidth(TJ_ANCHO)
+	if f.alfaQuieta then f.Halo:SetAlpha(0.4) end
+	f:Show()
+	sinTextoViejo(abajo)
+	local sobra = math.max(0, (TJ_ANCHO - WIDTH) / 2)
+	if frame.SetClampRectInsets then frame:SetClampRectInsets(-sobra, sobra, 0, abajo and -(y + 6 - TEXT_H) or 0) end
+	tarjetaVista = d
+	return true
+end
+
+function Arrow.Tarjeta()
+	if not (tarjeta and tarjeta:IsShown() and tarjetaVista) then return nil end
+	local d = tarjetaVista
+	return { estado = d.estado, kind = d.kind, titulo = d.titulo, sobre = tarjeta.Sobre:GetText(), cuenta = d.cuenta,
+		nota = d.nota, ruta = tarjeta.Ruta:GetText(), barra = tarjeta.Pista:IsShown() or nil, espera = d.espera or nil,
+		abajo = tarjeta.alfaAbajo or nil, paso = d.paso,
+		viejo = distText:IsShown() or labelText:IsShown() or etaText:IsShown() or legIcon:IsShown() or nil }
+end
+
+-- Caminando a un muelle (el tramo que sigue es un viaje): la tarjeta va
+-- debajo de la flecha. -> true si la pintó.
+local function pintarCamino(T, dist)
+	local siguiente = T and T.NextLeg and T.NextLeg()
+	if not (type(siguiente) == "table" and TARJETA[siguiente.kind]) then return false end
+	local t = GetTime()
+	if tarjetaVista and tarjetaVista.estado == "camino" and viajeCuando and t - viajeCuando < 0.25 then
+		sinTextoViejo(true)
+		return true
+	end
+	viajeCuando = t
+	local okR, secs = false, nil
+	if showEta and T.Remaining then okR, secs = pcall(T.Remaining, dist) end
+	local d = Arrow.DatosTarjeta(siguiente, "camino", okR and tonumber(secs) or nil, dist)
+	return pintarTarjeta(d, true)
+end
+
 -- Pinta el viaje en la flecha (solo lo que cambió). -> true si era un viaje.
 local function pintarViaje(leg, secsTotal)
 	-- Cuatro veces por segundo basta (la flecha mira el mundo 20 veces).
 	local t = GetTime()
-	if viajeVisto and viajeCuando and t - viajeCuando < 0.25 and viajeVisto.leg == leg then return true end
+	if viajeVisto and viajeCuando and t - viajeCuando < 0.25 and viajeVisto.leg == leg then
+		if tarjetaVista then sinTextoViejo(false) end
+		return true
+	end
 	viajeCuando = t
 	local linea, debajo, llegas = Arrow.TextoViaje(leg, secsTotal)
+	-- 1.3.9: la tarjeta de Alfa; el texto de antes solo sin el Kit.
+	if linea and pintarTarjeta(Arrow.DatosTarjeta(leg, "muelle", secsTotal), false) then
+		viajeVisto = { linea = linea, debajo = debajo, llegas = llegas, kind = leg.kind, leg = leg }
+		if floor(frame:GetWidth() + 0.5) ~= WIDTH or floor(frame:GetHeight() + 0.5) ~= DIAL + TEXT_H then
+			frame:SetSize(WIDTH, DIAL + TEXT_H)
+		end
+		dial:Show()
+		showArrow(false)
+		-- Solo el área de la tarjeta (arriba) toma el ratón para moverla.
+		frame:SetHitRectInsets((WIDTH - DIAL) / 2, (WIDTH - DIAL) / 2, 0, TEXT_H)
+		return true
+	end
 	if not linea then
 		-- Alfa 1.3.8 (revisión): el tramo dejó de ser viaje sin cambiar de modo:
 		-- la flecha vuelve a su tamaño de siempre.
 		if viajeVisto and (floor(frame:GetWidth() + 0.5) ~= WIDTH or floor(frame:GetHeight() + 0.5) ~= DIAL + TEXT_H) then
 			frame:SetSize(WIDTH, DIAL + TEXT_H)
 			grabArea(true) -- (en «instruction» el disco está a la vista)
+		end
+		if viajeVisto or tarjetaVista then
+			quitarTarjeta()
+			grabArea(true)
 		end
 		viajeVisto = nil
 		return false
@@ -1101,6 +1652,7 @@ local function setMode(m)
 	if m == mode then return end
 	mode = m
 	viajeVisto, viajeCuando = nil, nil -- Alfa 1.3.8: el viaje se vuelve a pintar entero
+	quitarTarjeta() -- Alfa 1.3.9: la tarjeta del viaje vuelve a pintarse si sigue
 	if floor(frame:GetWidth() + 0.5) ~= WIDTH or floor(frame:GetHeight() + 0.5) ~= DIAL + TEXT_H then frame:SetSize(WIDTH, DIAL + TEXT_H) end
 	if not (m == "arrived" or m == "search" or m == "instruction") then quitarLlegada() end
 	local travel, done, act = m == "travel", m == "arrived" or m == "search", m == "instruction"
@@ -1237,7 +1789,9 @@ end
 -- «4 min 10 s»), no «73:05» (agente Rutas, ítems 101-102).
 local function duracion(secs)
 	local Nu = rawget(_G, "AlfaNucleo")
-	if type(Nu) == "table" and type(Nu.Duracion) == "function" then return Nu.Duracion(secs) end
+	-- 1.3.9 (74): igual que el rastreador, Hoy y el Escritorio: al segundo en
+	-- los últimos dos minutos, redondo antes («12 min», no «12 min 07 s»).
+	if type(Nu) == "table" and type(Nu.Duracion) == "function" then return Nu.Duracion(secs, secs >= 120) end
 	return ("%d:%02d"):format(floor(secs / 60), secs % 60)
 end
 
@@ -1349,6 +1903,11 @@ local function sample(elapsed)
 	local target = Nav.GetTarget()
 	applyColor(dist, target and target.r or Nav.DEFAULT_RADIUS)
 
+	-- Alfa 1.3.9: caminando a un muelle, la tarjeta del viaje debajo de la
+	-- flecha (con la flecha mínima, no: solo la flecha y la distancia).
+	if routed and not minimo and pintarCamino(T, dist) then return true end
+	if tarjetaVista then quitarTarjeta() end
+
 	if showEta then
 		if routed then
 			-- Whole-route time: legs ahead plus this walk (`measured`: dist is along a path).
@@ -1393,6 +1952,22 @@ local function sample(elapsed)
 	end
 	return true
 end
+
+-- Alfa 1.3.9 (72): la flecha mínima. Solo la flecha (o lo que hay que hacer:
+-- la tarjeta del viaje, la placa de llegada) y la distancia: ni la meta, ni
+-- el tiempo, ni la cuenta de una misión con tiempo, ni la tarjeta del camino
+-- al muelle.
+local muestraCompleta = sample
+sample = function(elapsed)
+	local sigue = muestraCompleta(elapsed)
+	if sigue and minimo and (mode == "travel" or mode == "far" or mode == "nopos") then
+		labelText:Hide()
+		etaText:Hide()
+		timerText:Hide()
+	end
+	return sigue
+end
+function Arrow.Minimo() return minimo end
 
 frame:SetScript("OnUpdate", ns.Safe(function(_, elapsed)
 	accum = accum + elapsed
@@ -1476,8 +2051,7 @@ frame:SetScript("OnEnter", function(self)
 	GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
 	GameTooltip:SetText(L["Alfa arrow"])
 	GameTooltip:AddLine(ns.Get("ui.lockHud") and L["Shift-drag to move."] or L["Drag to move."], Nav.RGB("text"))
-	local target = Nav.GetTarget()
-	if target and target.spots then GameTooltip:AddLine(L["Click for the next spot."], Nav.RGB("text")) end
+	if hayOtroLugar() then GameTooltip:AddLine(L["Click for the next spot."], Nav.RGB("text")) end
 	GameTooltip:Show()
 end)
 
@@ -1491,7 +2065,7 @@ local dragged = false
 frame:SetScript("OnMouseDown", function() dragged = false end)
 frame:HookScript("OnDragStart", function() dragged = true end)
 frame:SetScript("OnMouseUp", function(_, button)
-	if button == "LeftButton" and not dragged then Nav.NextSpot() end
+	if button == "LeftButton" and not dragged then irOtroLugar() end
 end)
 
 local function clamp(v, lo, hi, default)
@@ -1505,6 +2079,13 @@ function Arrow:OnSettings()
 	lastYards = nil -- nav.distanceUnit: redraw the distance on the next sample
 	showEta = ns.Get("nav.arrowEta") and true or false
 	if not showEta and mode == "travel" then etaText:Hide() end
+	-- Alfa 1.3.9: la flecha mínima (solo la flecha y la distancia).
+	local antes = minimo
+	minimo = ns.Get("nav.arrowMinimo") and true or false
+	if antes ~= minimo then
+		routeSeen, mode = -2, nil
+		if not minimo then labelText:Show() end
+	end
 	applyStyle(Arrow.StyleFor(ns.Get("nav.arrowStyle")))
 	applyPosition()
 	self:Refresh()
@@ -1544,7 +2125,7 @@ local function syncTimer()
 	timerShown = text
 	if text then timerText:SetText(text) end
 	if was ~= (text ~= nil) then
-		timerText:SetShown(text ~= nil)
+		timerText:SetShown(text ~= nil and not (minimo and mode == "travel"))
 		labelText:ClearAllPoints()
 		labelText:SetPoint("TOP", text and timerText or distText, "BOTTOM", 0, -5)
 	end

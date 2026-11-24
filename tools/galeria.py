@@ -130,6 +130,13 @@ VISTAS = [
      "Locked items can't be deleted, sold by mistake or touched by Alfa."),
     ("shot-138-curacion-todos.png", "Curación a tu color", "Por clase, un solo color o según la vida; «En peligro» es un borde suave.",
      "By class, one colour or by health; \"In danger\" is a soft border."),
+    # 1.3.9 (área interfaz: BANCO_FOTOS=1 tools/banco/prueba_139_interfaz.lua)
+    ("shot-139i-bienvenida-3.png", "Configura Alfa en un minuto", "Tres pantallas y Alfa te lleva a tu primera acción: tu guía, tus misiones o tus oficios.",
+     "Three screens, then Alfa takes you to your first action: your guide, your quests or your professions."),
+    ("shot-139i-acomodar-hoy.png", "Hoy, a tu manera", "Sube, baja u oculta cada parte de Hoy; lo urgente sube solo en la ciudad o en una mazmorra.",
+     "Move or hide each part of Today; what's urgent rises on its own in a city or a dungeon."),
+    ("shot-139i-primera-vez.png", "Cada página te dice para qué sirve", "La primera vez, una línea abajo y «Enséñame» para un recorrido de 3 pasos.",
+     "The first time, a line at the bottom and \"Show me\" for a 3-step tour."),
 ]
 
 

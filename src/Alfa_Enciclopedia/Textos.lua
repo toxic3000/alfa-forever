@@ -680,4 +680,7 @@ M.EN = {
 	["Más probable primero"] = "Most likely first",
 	["Los que caen más seguido van arriba: la mejor probabilidad de cada objeto, de más a menos."] = "The ones that drop most often go on top: each item's best chance, from highest to lowest.",
 	["cómo se consigue cada objeto"] = "how each item is obtained",
+	-- 1.3.9 (módulos)
+	["Clic: plegar o abrir esta sección."] = "Click: collapse or expand this section.",
+	["%s parecidos a lo que escribiste"] = "%s similar to what you typed",
 }

@@ -1,0 +1,12 @@
+{
+ "Módulos: %s": "模块：%s",
+ "apagados: %s": "已关闭：%s",
+ "Modo sencillo": "简洁模式",
+ "Modo completo": "完整模式",
+ "Alfa usa %.1f MB": "Alfa 占用 %.1f MB",
+ "%d tareas del reloj (la que más tarda: %s)": "%d 个计时任务（最慢的：%s）",
+ "Otros addons (%d): %s": "其他插件（%d）：%s",
+ "<jugador>": "<玩家>",
+ "<tu personaje>": "<你的角色>",
+ "<tu reino>": "<你的服务器>"
+}

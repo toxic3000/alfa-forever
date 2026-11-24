@@ -42,7 +42,7 @@ local function activo() return N.Get(ID, "recibirRutas") ~= false end
 
 local function aviso(o)
 	local K = N.Kit
-	if K and K.Aviso then return K.Aviso(o) end
+	if M.U and M.U.Aviso then return M.U.Aviso(o) end
 	U.Decir(o.titulo .. (o.texto and (" " .. o.texto) or ""))
 end
 

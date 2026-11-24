@@ -507,7 +507,8 @@ Es.DISTRIBUCIONES = {
 		paneles = { P("rastreador", 0, 0, 8, 10), P("flecha", 0, 10, 8, 6), P("mapa", 8, 0, 10, 10), P("hoy", 18, 0, 6, 8),
 			P("planes", 8, 10, 6, 6), P("avisos", 14, 10, 4, 6), P("lya", 18, 8, 6, 5), P("reloj", 18, 13, 6, 3) } },
 	{ id = "mazmorra", nombre = "Mazmorra", icono = "ic-mazmorra", texto = "El medidor, tu grupo, la pelea y los avisos.",
-		paneles = { P("medidor", 0, 0, 8, 8), P("pelea", 0, 8, 8, 8), P("grupo", 8, 0, 8, 7), P("mapa", 8, 7, 8, 9),
+		-- 1.3.9: dentro de una mazmorra, su plano (mapaMazmorra) en vez del mapa del mundo.
+		paneles = { P("medidor", 0, 0, 8, 8), P("pelea", 0, 8, 8, 8), P("grupo", 8, 0, 8, 7), P("mapaMazmorra", 8, 7, 8, 9),
 			P("avisos", 16, 0, 8, 6), P("lya", 16, 6, 8, 5), P("reloj", 16, 11, 8, 5) } },
 	{ id = "pesca", nombre = "Pesca", icono = "ic-pesca", texto = "Tu pesca, tus bolsas, tu oro y Lya.",
 		paneles = { P("pesca", 0, 0, 10, 7), P("mapa", 0, 7, 10, 9), P("bolsas", 10, 0, 7, 6), P("avisos", 10, 6, 7, 10),
@@ -515,6 +516,16 @@ Es.DISTRIBUCIONES = {
 	{ id = "comercio", nombre = "Comercio", icono = "ic-comercio", texto = "Tus bolsas, tu oro y tus planes.",
 		paneles = { P("bolsas", 0, 0, 9, 10), P("hoy", 0, 10, 9, 6), P("oro", 9, 0, 8, 7), P("planes", 9, 7, 8, 9),
 			P("avisos", 17, 0, 7, 8), P("lya", 17, 8, 7, 5), P("reloj", 17, 13, 7, 3) } },
+	-- 1.3.9: para un monitor de lado (vertical) y uno ultraancho. La vertical
+	-- trae su propio acomodo para la forma angosta (no el de dos columnas).
+	{ id = "vertical", nombre = "Monitor vertical", icono = "ic-ventana", texto = "Todo de arriba abajo: tu guía, la flecha, el mapa y tus misiones.",
+		paneles = { P("rastreador", 0, 0, 8, 10), P("flecha", 0, 10, 8, 6), P("mapa", 8, 0, 10, 10), P("misiones", 18, 0, 6, 10),
+			P("hoy", 8, 10, 8, 6), P("lya", 16, 10, 8, 6) },
+		angosta = { P("rastreador", 0, 0, 24, 3), P("flecha", 0, 3, 12, 2), P("hoy", 12, 3, 12, 2), P("mapa", 0, 5, 24, 5),
+			P("misiones", 0, 10, 12, 3), P("cerrar", 12, 10, 12, 3), P("lya", 0, 13, 12, 3), P("avisos", 12, 13, 12, 3) } },
+	{ id = "ultraancho", nombre = "Ultraancho", icono = "ic-ventana", texto = "Seis columnas: tu guía, el mapa grande, tus misiones, la manada y Lya.",
+		paneles = { P("rastreador", 0, 0, 5, 10), P("flecha", 0, 10, 5, 6), P("mapa", 5, 0, 9, 16), P("misiones", 14, 0, 5, 8),
+			P("cerrar", 14, 8, 5, 4), P("planes", 14, 12, 5, 4), P("hoy", 19, 0, 5, 6), P("manada", 19, 6, 5, 5), P("lya", 19, 11, 5, 5) } },
 }
 local porDistribucion = {}
 for _, d in ipairs(Es.DISTRIBUCIONES) do porDistribucion[d.id] = d end
@@ -615,7 +626,7 @@ function Es.PanelesDe(id)
 	elseif type(cambios()[clave(id)]) == "table" then lista = cambios()[clave(id)]
 	elseif porDistribucion[id] then
 		lista = porDistribucion[id].paneles
-		if angosta then lista = enColumnas(lista) end
+		if angosta then lista = porDistribucion[id].angosta or enColumnas(lista) end
 	end
 	local out, vistos = {}, {}
 	for _, x in ipairs(type(lista) == "table" and lista or {}) do
@@ -1215,3 +1226,5 @@ API.Editar = function() return M.EscritorioEditor and M.EscritorioEditor.Abrir()
 API.Usar = function(id) return Es.Usar(id, "jugador") end
 API.Distribucion = function() return distActual end
 API.EsAncha = function() return Es.EsAncha() end
+-- 1.3.9: otros módulos registran su panel (La Jauría: el marcador por bando).
+API.RegistrarPanel = function(def) return Es.Registrar(def) end

@@ -294,7 +294,7 @@ end
 
 local function aviso(o)
 	local K = N.Kit
-	if K and K.Aviso then K.Aviso(o) else U.Decir(o.titulo .. (o.texto and (" " .. o.texto) or "")) end
+	if M.U and M.U.Aviso then M.U.Aviso(o) else U.Decir(o.titulo .. (o.texto and (" " .. o.texto) or "")) end
 end
 
 local function probar()

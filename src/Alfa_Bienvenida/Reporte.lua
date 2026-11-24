@@ -1,24 +1,49 @@
 -- Alfa - Bienvenida: "Reportar un error, una mejora o un comentario"
 -- (toxic3000 / La Jauría). GPL-3.0.
 --
--- Un addon no puede enviar nada fuera del juego, así que esta ventana del Kit
--- arma el reporte y tú lo pegas en el buzón privado del Discord de La Jauría
--- (📮-buzon-alfa: los miembros escriben, pero no leen lo de los demás; solo
--- lo lee el desarrollador). Nunca lleva datos personales de nadie: ni el
--- nombre de tu personaje ni tu reino, y del desarrollador nada.
+-- 1.3.9 (101 y 106, pedido de Toxic: «un reporte de bugs sencillo, sin tanto
+-- tema, para que la comunidad nos ayude a encontrar bugs»):
+--   * Cuando Alfa atrapa un error de Lua suyo (Alfa_Nucleo/Errores.lua), sale
+--     un aviso discreto «Alfa encontró un error · Reportar», con el ícono del
+--     Lobo Malo (el que caza bichos). Nunca en combate, una vez por error
+--     distinto y tres por sesión como mucho. Se apaga en Ajustes > Estilo y
+--     sonido > Centro de avisos («Errores de Alfa», nucleo.avisos.errores).
+--   * Una sola ventana sencilla: pestañas chicas (Error · Mejora · Comentario),
+--     un cuadro «¿Qué hacías cuando pasó? (opcional)», lo técnico ya agregado
+--     y plegado («Ver lo que se manda») y un botón grande «Enviar».
+--   * «Enviar» guarda el reporte en el buzón (lo de abajo) y el instalador de
+--     Alfa (Instalar-Alfa.exe, fuera del juego: un addon no puede mandar nada
+--     a internet) lo manda solo al formulario del desarrollador (un
+--     formulario de Google que le llega a su correo).
+--   * «Enviar ya por el navegador»: el enlace del formulario con todo ya
+--     escrito, en un cuadro para copiar (el juego no abre el navegador).
+--     «Copiar» (el reporte para Discord, #buzon-alfa) queda como extra.
+--   * 106: el reporte de un error recuerda tomar una captura (la tecla del
+--     juego, de fábrica Impr Pant).
 --
---   1. Eliges qué es: Error, Mejora o Comentario.
---   2. Lo escribes (hasta 1000 letras).
---   3. Alfa compone el reporte listo para pegar: el tipo, tu texto, la
---      versión de Alfa, la del cliente, el idioma, tu clase y nivel, la zona
---      con coordenadas y, si es un error, los últimos errores de Lua que el
---      motor de Alfa atrapó en esta sesión (Alfa.Errors) y las acciones que
---      el juego le bloqueó (Alfa.Blocked). Cabe en un mensaje de Discord.
---   4. El reporte y la invitación al Discord van en cuadros para copiar
---      (se eligen solos al hacer clic; Ctrl+C).
+-- El reporte nunca lleva datos personales: ni el nombre de tu personaje ni tu
+-- reino. Lleva el tipo, tu texto, la versión de Alfa y del cliente, el idioma,
+-- tu clase y nivel, la zona, la guía que seguías y, si es un error, los
+-- últimos errores de Lua de Alfa (con su versión y cuántas veces salieron) y
+-- lo que el juego le bloqueó (Alfa.Blocked). Cabe en un mensaje de Discord.
+--
+-- El buzón (contrato con el instalador): la variable guardada AlfaNucleoDB
+-- (WTF/Account/<CUENTA>/SavedVariables/Alfa_Nucleo.lua), en
+--   AlfaNucleoDB.buzon.pendientes = { { id, fecha, version, tipo, texto, enviado = false }, ... }
+--   id       texto único ("1732400000-0042")
+--   fecha    "2026-11-24 18:30" (la hora de tu computadora)
+--   version  la de Alfa ("1.3.9")
+--   tipo     "error" | "mejora" | "comentario"
+--   texto    el reporte ya armado (Markdown de Discord, 1950 bytes como mucho)
+--   escrito  lo que escribió el jugador (o «(sin comentario)»)
+--   tecnico  los datos técnicos (versiones, clase, zona, errores)
+--   enviado  false (booleano); el instalador lo pone en true (o quita la entrada) al mandarlo
+-- Tope: 20 (se va el más viejo). Al entrar al juego se quitan los enviados.
 --
 -- Contrato (global AlfaReporte):
---   AlfaReporte.Abrir(tipo)   "error" | "mejora" | "comentario" (por omisión, error)
+--   AlfaReporte.Abrir(tipo)        "error" | "mejora" | "comentario" (de fábrica, error)
+--   AlfaReporte.Pendientes() -> n  reportes que esperan al instalador
+--   AlfaReporte.Buzon() -> lista   (la de AlfaNucleoDB.buzon.pendientes)
 -- Comando: /alfa reportar [error | mejora | comentario]
 
 local ADDON, M = ...
@@ -28,24 +53,32 @@ local K = N.Kit
 local L = M.L
 local ESP = K.ESP
 
-local format, max, min, floor = string.format, math.max, math.min, math.floor
+local format, max, min = string.format, math.max, math.min
+local type, tostring, tonumber, ipairs, pcall, rawget = type, tostring, tonumber, ipairs, pcall, rawget
 
 local idiomaJuego = GetLocale -- sin llamar: el build cambia las llamadas por el idioma de Alfa
-local ANCHO, ALTO = 680, 660
+local ANCHO, ALTO = 660, 580
 local MAX_TEXTO = 1000   -- letras de tu texto
 local MAX_REPORTE = 1950 -- un mensaje de Discord admite 2000
 local MAX_ERRORES = 5
 local MAX_LINEA = 180
+local MAX_BUZON = 20
+local MAX_AVISOS_SESION = 3
 -- El canal se llama "📮-buzon-alfa" en Discord, pero las letras del juego no
--- tienen emojis (saldría un cuadro): en el juego se escribe sin él, y en
--- Discord basta con buscar "buzon".
+-- tienen emojis (saldría un cuadro): en el juego se escribe sin él.
 local CANAL = "#buzon-alfa"
 local INVITACION = "https://discord.gg/hUNjA6BJwh"
+-- El Lobo Malo, el que caza bichos (tools/lobo_malo.py).
+local LOBO_MALO = "Interface\\AddOns\\Alfa_Nucleo\\Media\\lobo-malo"
+M.LOBO_MALO = LOBO_MALO
 
 local TIPOS = {
-	{ valor = "error", texto = "Error", ayuda = "Qué hacías, qué esperabas y qué pasó. Si puedes, cómo hacer que vuelva a pasar." },
-	{ valor = "mejora", texto = "Mejora [reporte]", ayuda = "Qué te gustaría que Alfa hiciera, o hiciera mejor, y para qué te serviría." },
-	{ valor = "comentario", texto = "Comentario", ayuda = "Lo que quieras contarle al desarrollador de Alfa." },
+	{ valor = "error", texto = "Error", pregunta = "¿Qué hacías cuando pasó? (opcional)",
+		ayuda = "Por ejemplo: «abrí las bolsas en el banco y salió el error»." },
+	{ valor = "mejora", texto = "Mejora [reporte]", pregunta = "¿Qué te gustaría que Alfa hiciera?",
+		ayuda = "Qué te gustaría que Alfa hiciera, o hiciera mejor, y para qué te serviría." },
+	{ valor = "comentario", texto = "Comentario", pregunta = "¿Qué nos quieres contar?",
+		ayuda = "Lo que quieras contarle al desarrollador de Alfa." },
 }
 
 local v
@@ -122,89 +155,272 @@ local function lugar()
 	return zona or "?"
 end
 
--- Los errores que el motor atrapó en esta sesión y lo que el juego le
--- bloqueó, los más nuevos al final.
-local function errores()
-	-- 1.2.9: los que Alfa atrapó y guardó (Alfa_Nucleo/Errores.lua), con su
-	-- versión y cuántas veces salieron, los más nuevos al final.
-	local guardados, vistos = {}, {}
-	for _, x in ipairs(N.Errores and N.Errores() or {}) do
-		if type(x) == "table" then
-			local msg = tostring(x.msg or "")
-			vistos[msg] = true
-			guardados[#guardados + 1] = format("%dx [%s] %s", tonumber(x.n) or 1, tostring(x.v or "?"), msg)
-		end
-	end
-	-- Y los del motor en esta sesión que no estén ya, con lo bloqueado.
-	local lista = {}
-	local ok, e = pcall(function() return A.Errors and A.Errors() end)
-	for _, x in ipairs(ok and type(e) == "table" and e or {}) do
-		local msg = tostring(x.msg or ""):gsub("^Interface[/\\]AddOns[/\\]", "")
-		if not vistos[msg] then
-			lista[#lista + 1] = { seq = x.seq or 0, texto = format("%dx %s", x.count or 1, msg) }
-		end
-	end
-	local ok2, b = pcall(function() return A.Blocked and A.Blocked() end)
-	for _, x in ipairs(ok2 and type(b) == "table" and b or {}) do
-		lista[#lista + 1] = { seq = x.seq or 0, texto = format(L["%dx bloqueado: %s en %s (%s)"], x.count or 1, plano(x.fn), tostring(x.addon or "?"), tostring(x.where or x.at or "?")) }
-	end
-	table.sort(lista, function(a, c) return a.seq < c.seq end)
-	-- Hasta MAX_ERRORES: lo bloqueado y lo del motor guardan 2 lugares si
-	-- los hay; el resto, los guardados más nuevos.
-	local otros = min(#lista, 2)
-	local deGuardados = min(#guardados, MAX_ERRORES - otros)
-	otros = min(#lista, MAX_ERRORES - deGuardados)
+-- Qué hacías según Alfa: la guía que seguías (sin nombres de nadie).
+local function haciendo()
+	local I = rawget(_G, "AlfaInicio")
+	if type(I) ~= "table" or type(I.Paso) ~= "function" then return nil end
+	local ok, p = pcall(I.Paso)
+	if not ok or type(p) ~= "table" then return nil end
+	local guia = type(p.guia) == "string" and p.guia ~= "" and plano(p.guia) or nil
+	if not guia then return nil end
+	if tonumber(p.num) then return format("Guía: %s (paso %d)", cortar(guia, 80), p.num) end
+	return format("Guía: %s", cortar(guia, 80))
+end
+
+local function textoEscrito()
+	return ((ui.texto or ""):gsub("^%s+", ""):gsub("%s+$", ""))
+end
+
+-- 1.3.9: el reporte se ve de Alfa Forever y se lee fácil en el formulario y
+-- en su hoja de cálculo: renglones claros con su etiqueta (en español, para
+-- que todas las filas digan lo mismo), sin bloques de código ni Markdown.
+local LOBO = "\240\159\144\186" -- 🐺 (las letras del juego no lo tienen: en la ventana no se dibuja)
+M.LOBO_EMOJI = LOBO
+local NOMBRE_TIPO = { error = "Error", mejora = "Mejora", comentario = "Comentario" }
+
+-- La traza corta de cada error (lo que pasó por los archivos de Alfa), de esta sesión.
+local trazas = {}
+local function trazaDe(pila)
+	if type(pila) ~= "string" or (issecretvalue and issecretvalue(pila)) then return nil end
 	local out = {}
-	for i = #guardados - deGuardados + 1, #guardados do out[#out + 1] = cortar(guardados[i], MAX_LINEA) end
-	for i = #lista - otros + 1, #lista do out[#out + 1] = cortar(lista[i].texto, MAX_LINEA) end
+	for linea in pila:gmatch("[^\n]+") do
+		if linea:find("AddOns[/\\]Alfa") then
+			linea = linea:gsub('%[string "@?([^"]*)"%]', "%1"):gsub("Interface[/\\]AddOns[/\\]", ""):gsub("^%s+", "")
+			out[#out + 1] = cortar(linea, 120)
+			if #out >= 4 then break end
+		end
+	end
+	return #out > 0 and out or nil
+end
+M.TrazaDe = trazaDe
+
+local function faccion()
+	if not UnitFactionGroup then return nil end
+	local ok, ingles, local_ = pcall(UnitFactionGroup, "player")
+	if not ok then return nil end
+	local f = legible(local_) or legible(ingles)
+	return type(f) == "string" and f ~= "" and f or nil
+end
+
+-- Los renglones técnicos: { texto, quitar = prioridad (mayor se quita antes) }.
+local function renglones(t)
+	local out = {}
+	local function pon(s, quitar) out[#out + 1] = { texto = s, quitar = quitar } end
+	local cv, build = cliente()
+	local idioma = tostring(idiomaJuego and idiomaJuego() or "?")
+	local cabeza = format("%s Alfa Forever %s · cliente %s (%s) · idioma %s", LOBO, version(), cv, build, idioma)
+	local alfaEn = M.IdiomaActual()
+	if alfaEn and alfaEn ~= idioma then cabeza = cabeza .. " · Alfa en " .. tostring(alfaEn) end
+	pon(cabeza)
+	local clase, nivel = personaje()
+	local f = faccion()
+	pon(format("Personaje: %s nivel %d%s", clase, nivel, f and (" (" .. f .. ")") or ""))
+	pon("Lugar: " .. lugar())
+	local h = haciendo()
+	if h then pon(h, 2) end
+	if t.valor == "error" then
+		local l = N.Errores and N.Errores() or {}
+		local e = l[#l]
+		if type(e) == "table" then
+			pon("Módulo: " .. tostring(e.addon or "?"))
+			-- (con la versión de Alfa en que salió y cuántas veces)
+			pon(format("Error: [%s] %s%s", tostring(e.v or "?"), tostring(e.msg or "?"), (tonumber(e.n) or 1) > 1 and format(" (%d veces)", e.n) or ""))
+			for _, x in ipairs(trazas[e.msg] or {}) do pon("  " .. x, 3) end
+			if #l > 1 then
+				pon("Otros errores:", 4)
+				for i = #l - 1, math.max(1, #l - MAX_ERRORES + 1), -1 do
+					local x = l[i]
+					if type(x) == "table" then
+						pon(cortar(format("  %dx [%s] %s", tonumber(x.n) or 1, tostring(x.v or "?"), tostring(x.msg or "")), MAX_LINEA), 4)
+					end
+				end
+			end
+		else
+			pon("Módulo: ?")
+			pon("Error: ninguno atrapado en esta sesión")
+		end
+		-- Lo que el juego le bloqueó a Alfa.
+		local ok2, b = pcall(function() return A.Blocked and A.Blocked() end)
+		b = ok2 and type(b) == "table" and b or {}
+		if #b == 0 then
+			pon("Acciones bloqueadas: ninguna")
+		else
+			pon(format("Acciones bloqueadas: %d", #b))
+			for i = #b, math.max(1, #b - 2), -1 do
+				local x = b[i]
+				pon(cortar(format("  %dx %s en %s (%s)", x.count or 1, plano(x.fn), tostring(x.addon or "?"), tostring(x.where or x.at or "?")), MAX_LINEA), 4)
+			end
+		end
+	end
+	-- Los módulos, el modo, la memoria y los otros addons (Alfa_Nucleo/Informe.lua).
+	local otros = false
+	if N.InformeTecnico then
+		local ok, l = pcall(N.InformeTecnico)
+		if ok and type(l) == "table" then
+			for i, x in ipairs(l) do
+				if i == 3 then otros = true end
+				pon(x, i < #l and 1 or nil)
+			end
+		end
+	end
+	if not otros then pon("Otros addons: 0") end
+	-- 1.3.9 (24): sin tu nombre, tu reino ni los de otros jugadores.
+	-- («Alfa Forever» se aparta antes: un reino que se llame Forever no lo borra.)
+	if N.SinPrivado then
+		for _, r in ipairs(out) do
+			r.texto = (N.SinPrivado((r.texto:gsub("Alfa Forever", "\1"))):gsub("\1", "Alfa Forever"))
+		end
+	end
 	return out
 end
 
--- El reporte, listo para pegar en Discord.
-local function componer()
+-- El reporte. -> texto (para «Copiar»), escrito (tal cual), tecnico (renglones)
+local function componerTodo()
 	local t = tipoDe(ui.tipo)
-	local texto = (ui.texto or ""):gsub("^%s+", ""):gsub("%s+$", "")
-	if texto == "" then texto = L["(todavía sin texto: escríbelo arriba)"] end
-	local cv, build = cliente()
-	local clase, nivel = personaje()
-	local datos = {
-		format(L["Alfa %s · cliente %s (%s) · %s · Alfa en %s"], version(), cv, build, tostring(idiomaJuego and idiomaJuego() or "?"), M.IdiomaActual()),
-		format(L["%s, nivel %d"], clase, nivel),
-		format(L["Lugar: %s"], lugar()),
-	}
-	local errs = {}
-	if t.valor == "error" then errs = errores() end
-	local function armar(nErr)
+	local escrito = textoEscrito()
+	-- 1.3.9 (24): tampoco lo que escribiste lleva tu nombre ni tu reino.
+	if N.SinPrivado and escrito ~= "" then escrito = N.SinPrivado(escrito) end
+	local lineas = renglones(t)
+	local function unir()
 		local d = {}
-		for i, l in ipairs(datos) do d[i] = l end
-		if t.valor == "error" then
-			if nErr == 0 then
-				d[#d + 1] = L["Errores de Lua de Alfa en esta sesión: ninguno"]
-			else
-				d[#d + 1] = L["Errores de Lua de Alfa en esta sesión:"]
-				for i = #errs - nErr + 1, #errs do d[#d + 1] = "  " .. errs[i] end
-			end
-		end
-		return format("**[Alfa] %s**\n%s\n```\n%s\n```", L[t.texto], texto, table.concat(d, "\n"))
+		for _, r in ipairs(lineas) do d[#d + 1] = r.texto end
+		return table.concat(d, "\n")
 	end
-	-- Si no cabe en un mensaje, se dejan fuera los errores más viejos.
-	local n = #errs
-	local s = armar(n)
-	while #s > MAX_REPORTE and n > 0 do
-		n = n - 1
-		s = armar(n)
+	local function armar(tec, esc)
+		local cuerpo = esc ~= "" and esc or (t.valor == "error" and L["(sin comentario)"] or L["(todavía sin texto: escríbelo arriba)"])
+		return format("%s Reporte de Alfa Forever · %s\n\n%s\n\n%s", LOBO, NOMBRE_TIPO[t.valor] or "Error", cuerpo, tec)
+	end
+	local tecnico = unir()
+	local s = armar(tecnico, escrito)
+	-- Si no cabe en un mensaje, se quitan los renglones de detalle (los que
+	-- más se pueden quitar primero, de abajo hacia arriba).
+	while #s > MAX_REPORTE do
+		local peor, idx = 0, nil
+		for i = #lineas, 1, -1 do
+			local q = lineas[i].quitar or 0
+			if q > peor then peor, idx = q, i end
+		end
+		if not idx then break end
+		table.remove(lineas, idx)
+		tecnico = unir()
+		s = armar(tecnico, escrito)
 	end
 	-- Si aún no cabe (un texto largo en ruso, coreano o chino ocupa más bytes
-	-- que letras), se recorta solo lo que escribiste: los datos y el cierre del
-	-- bloque se quedan completos.
+	-- que letras), se recorta lo que escribiste en el texto de «Copiar».
+	local esc = escrito
 	if #s > MAX_REPORTE then
-		texto = cortar(texto, math.max(20, #texto - (#s - MAX_REPORTE)))
-		s = armar(n)
+		esc = cortar(escrito, math.max(20, #escrito - (#s - MAX_REPORTE)))
+		s = armar(tecnico, esc)
 	end
-	return cortar(s, MAX_REPORTE)
+	return cortar(s, MAX_REPORTE), escrito, cortar(tecnico, MAX_REPORTE)
 end
 
+local function componer() return (componerTodo()) end
 M.ComponerReporte = componer
+M.ComponerPartes = componerTodo
+
+---------------------------------------------------------------------------
+-- 1.3.9: «Enviar ya por el navegador»: el formulario del desarrollador con
+-- todo ya escrito (el juego no abre el navegador: el enlace va en un cuadro
+-- para copiar). Cada valor codificado para URL (UTF-8 en %XX; espacio %20).
+---------------------------------------------------------------------------
+local FORMULARIO = "https://docs.google.com/forms/d/e/1FAIpQLSfCKW97uxmZL5ZGl5Ym4hLjUMTWt6O0N7TJgw6buSDMoRIXUA/viewform?usp=pp_url"
+local CAMPO = { tipo = "entry.832145550", escrito = "entry.1889667288", tecnico = "entry.917548369", version = "entry.1259972415" }
+-- El tipo, tal cual lo espera el formulario (sin traducir).
+local TIPO_FORMULARIO = { error = "Error", mejora = "Mejora", comentario = "Comentario" }
+local MAX_ENLACE = 1800
+
+local function codificar(s)
+	return (tostring(s or ""):gsub("[^A-Za-z0-9%-%._~]", function(c) return format("%%%02X", c:byte()) end))
+end
+M.CodificarURL = codificar
+
+-- s recortado (sin partir una letra) hasta que, codificado, quepa en n.
+local function caber(s, n)
+	if #codificar(s) <= n then return s end
+	if n <= 0 then return "" end
+	local lo, hi = 0, #s
+	while lo < hi do
+		local mid = math.floor((lo + hi + 1) / 2)
+		local pedazo = s:sub(1, mid):gsub("[\192-\255][\128-\191]*$", "")
+		if #codificar(pedazo .. "...") <= n then lo = mid else hi = mid - 1 end
+	end
+	local pedazo = s:sub(1, lo):gsub("[\192-\255][\128-\191]*$", "")
+	return pedazo ~= "" and (pedazo .. "...") or ""
+end
+
+-- -> el enlace (MAX_ENLACE letras como mucho): lo técnico se recorta primero;
+-- lo que escribiste, solo si aún no cabe.
+function M.EnlaceFormulario(tipo, escrito, tecnico, ver)
+	tipo = TIPO_FORMULARIO[tipoDe(tipo).valor] or "Error"
+	ver = tostring(ver or A.version or N.version or "dev")
+	local base = FORMULARIO .. "&" .. CAMPO.tipo .. "=" .. codificar(tipo) .. "&" .. CAMPO.version .. "=" .. codificar(ver)
+		.. "&" .. CAMPO.escrito .. "=" .. "&" .. CAMPO.tecnico .. "="
+	local libre = MAX_ENLACE - #base
+	escrito = caber(tostring(escrito or ""), math.max(0, libre - 200))
+	local resto = libre - #codificar(escrito)
+	tecnico = caber(tostring(tecnico or ""), math.max(0, resto))
+	return FORMULARIO .. "&" .. CAMPO.tipo .. "=" .. codificar(tipo)
+		.. "&" .. CAMPO.escrito .. "=" .. codificar(escrito)
+		.. "&" .. CAMPO.tecnico .. "=" .. codificar(tecnico)
+		.. "&" .. CAMPO.version .. "=" .. codificar(ver)
+end
+
+---------------------------------------------------------------------------
+-- El buzón: los reportes que esperan al instalador (AlfaNucleoDB.buzon)
+---------------------------------------------------------------------------
+local Bz = {}
+M.Buzon = Bz
+
+function Bz.Lista()
+	local d = N.Datos("buzon")
+	d.pendientes = type(d.pendientes) == "table" and d.pendientes or {}
+	return d.pendientes
+end
+
+-- Los que el instalador todavía no mandó.
+function Bz.Pendientes()
+	local n = 0
+	for _, e in ipairs(Bz.Lista()) do
+		if type(e) == "table" and e.enviado ~= true then n = n + 1 end
+	end
+	return n
+end
+
+-- Quita lo que el instalador ya mandó (y lo que no es un reporte).
+function Bz.Limpiar()
+	local l = Bz.Lista()
+	for i = #l, 1, -1 do
+		local e = l[i]
+		if type(e) ~= "table" or e.enviado == true or type(e.texto) ~= "string" then table.remove(l, i) end
+	end
+	while #l > MAX_BUZON do table.remove(l, 1) end
+end
+
+local siguiente = 0
+-- -> la entrada y true si ya estaba (el mismo texto sin mandar no se guarda dos veces).
+function Bz.Guardar(texto, tipo, escrito, tecnico)
+	local l = Bz.Lista()
+	for _, e in ipairs(l) do
+		if type(e) == "table" and e.enviado ~= true and e.texto == texto then return e, true end
+	end
+	siguiente = siguiente + 1
+	local t = time and time() or 0
+	local e = {
+		id = format("%d-%04d", t, (siguiente + (math.random and math.random(0, 9999) or 0)) % 10000),
+		fecha = date and date("%Y-%m-%d %H:%M") or "",
+		version = tostring(A.version or N.version or "dev"),
+		tipo = tipoDe(tipo).valor,
+		texto = cortar(texto, MAX_REPORTE),
+		-- (1.3.9) por separado, para el formulario del desarrollador
+		escrito = cortar(escrito or "", MAX_TEXTO * 4),
+		tecnico = cortar(tecnico or "", MAX_REPORTE),
+		enviado = false,
+	}
+	l[#l + 1] = e
+	while #l > MAX_BUZON do table.remove(l, 1) end
+	return e, false
+end
 
 ---------------------------------------------------------------------------
 -- Piezas: un cuadro de texto (para escribir o para copiar)
@@ -302,50 +518,33 @@ local function cuadro(padre, o)
 	return c
 end
 
--- Un cuadro para copiar con su botón: a la derecha, o debajo con su nota
--- (o.abajo, para el de varias líneas).
+-- Un cuadro para copiar con su botón a la derecha.
 local function filaCopiar(padre, o)
 	local f = CreateFrame("Frame", nil, padre)
 	f.Cuadro = cuadro(f, { alto = o.alto, lineas = o.lineas, soloCopiar = true })
-	f.Boton = K.Boton(f, L[o.boton or "Elegir para copiar"], function() f.Cuadro:Copiar() end, { tipo = o.abajo and "primario" or "secundario", icono = o.abajo and "ic-exito" or nil })
-	if o.nota then
-		f.Nota = K.Texto(f, "nota", "textoTenue")
-		K.Escribir(f.Nota, L[o.nota])
-	end
+	f.Boton = K.Boton(f, L[o.boton or "Elegir para copiar"], function() f.Cuadro:Copiar() end, { tipo = "secundario" })
 	function f:Set(t) self.Cuadro:Set(t) end
 	function f:Acomodar(ancho)
 		local bw = self.Boton:AnchoNatural()
 		self.Cuadro:ClearAllPoints()
 		self.Cuadro:SetPoint("TOPLEFT", self, "TOPLEFT", 0, 0)
 		self.Boton:ClearAllPoints()
-		local h
-		if o.abajo then
-			h = self.Cuadro:Acomodar(ancho) + ESP.m
-			self.Boton:SetPoint("TOPLEFT", self, "TOPLEFT", 0, -h)
-			if self.Nota then
-				self.Nota:ClearAllPoints()
-				self.Nota:SetPoint("LEFT", self.Boton, "RIGHT", ESP.m, 0)
-				K.Ajustar(self.Nota, max(60, ancho - bw - ESP.m))
-			end
-			h = h + K.num(self.Boton:GetHeight(), K.ALTO.boton)
-		else
-			h = self.Cuadro:Acomodar(max(120, ancho - bw - ESP.s))
-			self.Boton:SetPoint("TOPRIGHT", self, "TOPRIGHT", 0, 0)
-		end
+		local h = self.Cuadro:Acomodar(max(120, ancho - bw - ESP.s))
+		self.Boton:SetPoint("TOPRIGHT", self, "TOPRIGHT", 0, 0)
 		self:SetSize(ancho, h)
 		return h
 	end
 	return f
 end
 
--- Un bloque que no se estira: los segmentos miden su propio ancho.
+-- Un bloque que no se estira: los segmentos y los botones miden su propio ancho.
 local function suelto(padre, crear)
 	local b = CreateFrame("Frame", nil, padre)
 	local hijo = crear(b)
 	b.Hijo = hijo
 	hijo:SetPoint("TOPLEFT", b, "TOPLEFT", 0, 0)
 	function b:Acomodar(ancho)
-		local h = hijo:Acomodar(ancho)
+		local h = hijo.Acomodar and hijo:Acomodar(ancho) or K.num(hijo:GetHeight(), K.ALTO.boton)
 		self:SetSize(ancho, h)
 		return h
 	end
@@ -353,7 +552,7 @@ local function suelto(padre, crear)
 end
 
 -- Una línea de texto como bloque de una pila.
-local function parrafo(pila, rol, color)
+local function parrafo(pila, rol, color, opts)
 	local b = CreateFrame("Frame", nil, pila)
 	b.Texto = K.Texto(b, rol or "nota", color or "textoSuave")
 	b.Texto:SetPoint("TOPLEFT", b, "TOPLEFT", 0, 0)
@@ -363,19 +562,42 @@ local function parrafo(pila, rol, color)
 		self:SetHeight(h)
 		return h
 	end
-	return pila:Agregar(b)
+	return pila:Agregar(b, opts)
+end
+
+-- El Lobo Malo con su línea al lado (arriba de la ventana y al dar las gracias).
+local function conLobo(pila, rol, color, opts)
+	local TAM = 44
+	local b = CreateFrame("Frame", nil, pila)
+	b.Lobo = b:CreateTexture(nil, "ARTWORK")
+	b.Lobo:SetTexture(LOBO_MALO)
+	b.Lobo:SetSize(TAM, TAM)
+	b.Lobo:SetPoint("TOPLEFT", b, "TOPLEFT", 0, 0)
+	b.Texto = K.Texto(b, rol or "texto", color or "texto")
+	b.Texto:SetPoint("TOPLEFT", b, "TOPLEFT", TAM + ESP.m, 0)
+	function b:Set(t) K.Escribir(self.Texto, t or "") end
+	function b:Acomodar(ancho)
+		local h = K.Parrafo(self.Texto, max(60, ancho - TAM - ESP.m))
+		self.Texto:ClearAllPoints()
+		self.Texto:SetPoint("TOPLEFT", self, "TOPLEFT", TAM + ESP.m, -max(0, (TAM - h) / 2))
+		h = max(h, TAM)
+		self:SetHeight(h)
+		return h
+	end
+	return pila:Agregar(b, opts)
 end
 
 ---------------------------------------------------------------------------
 -- La ventana
 ---------------------------------------------------------------------------
-local function rehacer()
-	if not ui.reporte then return end
-	ui.reporte:Set(componer())
-	-- Letras, no bytes (como cuenta la caja): "ñ" o "я" son una sola.
-	local t = ui.texto or ""
-	local n = strlenutf8 and strlenutf8(t) or #(t:gsub("[\128-\191]", ""))
-	ui.cuenta:Set(format(L["%d de %d letras"], n, MAX_TEXTO))
+local function letras(t)
+	return strlenutf8 and strlenutf8(t) or #(t:gsub("[\128-\191]", ""))
+end
+
+-- La tecla del juego para las capturas (106).
+local function teclaCaptura()
+	local k = K.TeclaJuego and K.TeclaJuego("SCREENSHOT") or nil
+	return (type(k) == "string" and k ~= "") and k or L["Impr Pant"]
 end
 
 local function acomodar()
@@ -387,17 +609,110 @@ local function acomodar()
 	v:SetAltoContenido(h + 2 * ESP.base)
 end
 
+local function pintarEstado()
+	if not ui.pila then return end
+	local t = tipoDe(ui.tipo)
+	local enviado = ui.enviado ~= nil
+	ui.pregunta:Set(L[t.pregunta])
+	if ui.entrada then ui.entrada:SetAyuda(L[t.ayuda]) end
+	K.Mostrar(ui.captura, t.valor == "error")
+	ui.captura:Set(format(L["Una captura ayuda mucho: presiona %s y el juego la guarda en la carpeta Screenshots de tu WoW. Si quieres, mándala en %s del Discord de La Jauría."], teclaCaptura(), CANAL))
+	K.Mostrar(ui.reporte, ui.verDatos == true)
+	ui.plegar.Hijo:SetTexto(ui.verDatos and L["Ocultar lo que se manda"] or L["Ver lo que se manda"])
+	ui.plegar.Hijo:SetIcono(ui.verDatos and "ic-cerrar" or "ic-info")
+	-- Las gracias y dónde mandarlo ya, después de «Enviar» o «Copiar».
+	K.Mostrar(ui.gracias, enviado)
+	if enviado then
+		ui.gracias:Set(ui.enviado == "ya" and L["Ese reporte ya estaba guardado: se enviará solo con el instalador de Alfa."]
+			or L["¡Gracias! Se enviará solo la próxima vez que abras el instalador de Alfa. Si lo quieres mandar ya: «Enviar ya por el navegador»."])
+	end
+	-- El enlace del formulario, después de «Enviar ya por el navegador».
+	K.Mostrar(ui.navegadorNota, ui.mostrarEnlace == true)
+	K.Mostrar(ui.enlace, ui.mostrarEnlace == true)
+	K.Mostrar(ui.donde, ui.mostrarDonde == true)
+	K.Mostrar(ui.invitacion, ui.mostrarDonde == true)
+	local n = Bz.Pendientes()
+	K.Mostrar(ui.pendientes, n > 0)
+	if n > 0 then
+		ui.pendientes:Set(N.Plural and N.Plural(n, L["%d reporte espera al instalador de Alfa."], L["%d reportes esperan al instalador de Alfa."])
+			or format(L["%d reportes esperan al instalador de Alfa."], n))
+	end
+	if ui.enviar then
+		ui.enviar:SetTexto(enviado and L["Enviado"] or L["Enviar"])
+		ui.enviar:SetIcono(enviado and "ic-exito" or "ic-flecha")
+	end
+end
+
+local function rehacer()
+	if not ui.reporte then return end
+	-- (en la ventana sin el 🐺: las letras del juego no lo tienen)
+	ui.reporte:Set((componer():gsub(LOBO .. " ?", "")))
+	local t = ui.texto or ""
+	ui.cuenta:Set(format(L["%d de %d letras"], letras(t), MAX_TEXTO))
+	pintarEstado()
+	acomodar()
+end
+
+-- Lo que acaba de aparecer al final (las gracias, el enlace), a la vista.
+local function abajo()
+	if v and v.Desplazable and v.Desplazable.IrAbajo then v.Desplazable:IrAbajo() end
+end
+
 local function elegirTipo(valor)
-	ui.tipo = tipoDe(valor).valor
+	local nuevo = tipoDe(valor).valor
+	if nuevo ~= ui.tipo then ui.enviado, ui.mostrarEnlace = nil, nil end
+	ui.tipo = nuevo
 	if ui.segmentos then ui.segmentos:SetValor(ui.tipo) end
-	if ui.entrada then ui.entrada:SetAyuda(L[tipoDe(ui.tipo).ayuda]) end
 	rehacer()
+end
+
+-- «Enviar»: al buzón, para el instalador. -> la entrada guardada | nil
+function M.EnviarReporte()
+	local t = tipoDe(ui.tipo)
+	if t.valor ~= "error" and textoEscrito() == "" then
+		if ui.estado then ui.estado:Set(L["Escribe primero lo que nos quieres contar."]) K.Mostrar(ui.estado, true) end
+		if ui.entrada then ui.entrada.Campo:SetFocus() end
+		acomodar()
+		return nil
+	end
+	if ui.estado then K.Mostrar(ui.estado, false) end
+	local texto, escrito, tecnico = componerTodo()
+	local e, ya = Bz.Guardar(texto, t.valor, escrito, tecnico)
+	ui.enviado = ya and "ya" or "nuevo"
+	if ui.entrada then ui.entrada.Campo:ClearFocus() end
+	rehacer()
+	abajo()
+	if N.Sonar then N.Sonar("exito", 2) end
+	return e
+end
+
+-- «Enviar ya por el navegador»: el enlace del formulario con todo ya escrito,
+-- elegido para Ctrl+C. -> el enlace
+function M.EnlaceReporte()
+	local _, escrito, tecnico = componerTodo()
+	local url = M.EnlaceFormulario(ui.tipo, escrito, tecnico)
+	ui.mostrarEnlace = true
+	if ui.enlace then ui.enlace:Set(url) end
+	rehacer()
+	abajo()
+	if ui.enlace then ui.enlace.Cuadro:Copiar() end
+	return url
+end
+
+-- «Copiar» (lo de siempre, como extra): el reporte a la vista, elegido para
+-- Ctrl+C, y el Discord donde pegarlo.
+function M.CopiarReporte()
+	ui.verDatos = true
+	ui.mostrarDonde = true
+	rehacer()
+	abajo()
+	if ui.reporte then ui.reporte.Cuadro:Copiar() end
 end
 
 local function armar()
 	v = K.Ventana({
 		nombre = "AlfaReporteVentana", titulo = L["Reportar a Alfa"],
-		subtitulo = L["Un error, una mejora o un comentario, directo al desarrollador"], icono = "ic-info",
+		subtitulo = L["Ayúdanos a cazar errores: le llega directo al desarrollador"], icono = "ic-info",
 		ancho = ANCHO, alto = ALTO, desplazar = true,
 		fija = true, -- un reporte a medio escribir no se cierra al empezar algo
 	})
@@ -405,26 +720,42 @@ local function armar()
 	local p = K.Pila(v.Cuerpo, { espacio = ESP.m })
 	ui.pila = p
 
-	p:Agregar(K.Seccion(p, L["¿Qué nos quieres contar?"]))
+	conLobo(p, "texto", "texto"):Set(L["Cuéntanos qué pasó. Alfa agrega solo lo que ayuda a arreglarlo; nunca tu nombre ni tu reino."])
 	local opciones = {}
 	for i, t in ipairs(TIPOS) do opciones[i] = { valor = t.valor, texto = L[t.texto] } end
 	ui.segmentos = p:Agregar(suelto(p, function(b)
 		return K.Segmentos(b, { estilo = "segmentos", opciones = opciones, valor = ui.tipo, alCambiar = function(x) elegirTipo(x) end })
 	end)).Hijo
-	ui.entrada = p:Agregar(cuadro(p, { alto = 120, lineas = true, max = MAX_TEXTO,
-		alCambiar = function(t) ui.texto = t rehacer() end }), { espacio = ESP.base })
-	ui.cuenta = parrafo(p, "pequeno", "textoTenue")
+	ui.pregunta = parrafo(p, "subtitulo", "texto")
+	ui.entrada = p:Agregar(cuadro(p, { alto = 100, lineas = true, max = MAX_TEXTO,
+		alCambiar = function(t) ui.texto = t ui.enviado = nil ui.mostrarEnlace = nil rehacer() end }), { espacio = ESP.s })
+	ui.cuenta = parrafo(p, "pequeno", "textoTenue", { espacio = ESP.s })
+	ui.estado = parrafo(p, "nota", "aviso", { espacio = ESP.s })
+	K.Mostrar(ui.estado, false)
+	ui.captura = parrafo(p, "nota", "textoSuave")
 
-	p:Agregar(K.Seccion(p, L["Tu reporte, listo para pegar"]), { espacio = ESP.l })
-	parrafo(p, "nota", "textoSuave"):Set(L["Alfa le agregó lo que ayuda a arreglarlo: versiones, idioma, tu clase y nivel y dónde estás. No lleva tu nombre ni tu reino."])
-	ui.reporte = p:Agregar(filaCopiar(p, { alto = 150, lineas = true, abajo = true, boton = "Elegir todo", nota = "Luego cópialo con Ctrl+C." }))
+	-- Lo técnico, ya agregado y plegado.
+	ui.plegar = p:Agregar(suelto(p, function(b)
+		return K.Boton(b, L["Ver lo que se manda"], function()
+			ui.verDatos = not ui.verDatos
+			rehacer()
+		end, { tipo = "fantasma", icono = "ic-info" })
+	end))
+	ui.reporte = p:Agregar(filaCopiar(p, { alto = 140, lineas = true, boton = "Elegir todo" }), { espacio = ESP.s })
 
-	p:Agregar(K.Seccion(p, L["Dónde mandarlo"]), { espacio = ESP.l })
-	parrafo(p, "texto", "texto"):Set(format(L["Pégalo en %s del Discord de La Jauría."], CANAL))
-	ui.invitacion = p:Agregar(filaCopiar(p, {}))
-	parrafo(p, "nota", "textoSuave"):Set(L["Lo revisa el desarrollador de Alfa. En ese canal nadie más ve tu mensaje. Si aún no estás en el Discord, entra con la invitación de arriba."])
+	ui.gracias = conLobo(p, "texto", "exito", { espacio = ESP.l })
+	ui.navegadorNota = parrafo(p, "texto", "texto")
+	ui.navegadorNota:Set(L["Pega este enlace en tu navegador y dale Enviar."])
+	ui.enlace = p:Agregar(filaCopiar(p, { alto = 70, lineas = true, boton = "Elegir todo" }), { espacio = ESP.s })
+	ui.donde = parrafo(p, "nota", "textoSuave", { espacio = ESP.l })
+	ui.donde:Set(format(L["Si prefieres, pégalo en %s del Discord de La Jauría. Si aún no estás, entra con esta invitación:"], CANAL))
+	ui.invitacion = p:Agregar(filaCopiar(p, {}), { espacio = ESP.s })
+	ui.pendientes = parrafo(p, "pequeno", "textoTenue", { espacio = ESP.l })
 
-	v:SetPie({ K.Boton(v, L["Cerrar"], function() v:Cerrar() end, { tipo = "secundario" }) })
+	ui.enviar = K.Boton(v, L["Enviar"], function() M.EnviarReporte() end, { tipo = "primario", icono = "ic-flecha" })
+	ui.navegador = K.Boton(v, L["Enviar ya por el navegador"], function() M.EnlaceReporte() end, { tipo = "secundario" })
+	ui.copiar = K.Boton(v, L["Copiar"], function() M.CopiarReporte() end, { tipo = "fantasma" })
+	v:SetPie({ ui.navegador, ui.enviar }, { K.Boton(v, L["Cerrar"], function() v:Cerrar() end, { tipo = "secundario" }), ui.copiar })
 end
 
 function M.AbrirReporte(tipo)
@@ -432,12 +763,76 @@ function M.AbrirReporte(tipo)
 	local url = type(A.DiscordURL) == "string" and A.DiscordURL ~= "" and A.DiscordURL or INVITACION
 	ui.invitacion:Set(url)
 	if ui.entrada and ui.entrada.Campo:GetText() ~= (ui.texto or "") then ui.entrada:Set(ui.texto or "") end
-	elegirTipo(tipo or ui.tipo)
+	ui.mostrarDonde, ui.mostrarEnlace = nil, nil
 	v:Abrir()
+	elegirTipo(tipo or ui.tipo)
 	if v.Desplazable then v.Desplazable:IrArriba() end
 	acomodar()
 	ui.entrada.Campo:SetFocus()
 end
+
+-- Para el banco: la ventana y sus piezas.
+function M.ReporteUI() return v, ui end
+
+---------------------------------------------------------------------------
+-- El aviso del bicho: Alfa atrapó un error suyo (101)
+---------------------------------------------------------------------------
+local avisadosSesion, nAvisos = {}, 0
+
+local function avisarBicho()
+	if not (K and K.Aviso) then return end
+	K.Aviso({
+		id = "alfa.bicho", firma = "errores", textura = LOBO_MALO, lya = false,
+		titulo = L["Alfa encontró un error"],
+		texto = L["Ya lo guardé. Si lo reportas, nos ayudas a arreglarlo más rápido."],
+		prioridad = "util", caduca = 600, sonido = false,
+		acciones = { { texto = L["Reportar"], alClic = function() M.AbrirReporte("error") end } },
+	})
+end
+
+-- -> true si avisará (para el banco).
+function M.NuevoBicho(e)
+	if type(e) ~= "table" then return false end
+	if A.Get and A.Get("nucleo.avisos.errores") == false then return false end
+	local clave = tostring(e.msg or "")
+	if avisadosSesion[clave] or e.avisado or nAvisos >= MAX_AVISOS_SESION then return false end
+	-- En el banco, solo en las escenas que lo piden (las viejas anotan errores a propósito).
+	if rawget(_G, "FIRE_EVENT") ~= nil and rawget(_G, "BANCO_BICHO") ~= true then return false end
+	avisadosSesion[clave] = true
+	e.avisado = true
+	nAvisos = nAvisos + 1
+	-- Nunca dentro del manejador de errores ni en combate.
+	local function luego() N.FueraDeCombate("bienvenida.bicho", avisarBicho) end
+	if N.Una then N.Una("bienvenida.bicho", 2, luego) else luego() end
+	return true
+end
+function M.OlvidarBichos() avisadosSesion, nAvisos = {}, 0 end -- (para el banco)
+
+-- Se escucha al anotador del Núcleo (lo llama el manejador cada vez, por su
+-- nombre): un error nuevo (n = 1) es un bicho que avisar.
+if type(N.AnotarError) == "function" and not N.alfaBichoPuesto then
+	N.alfaBichoPuesto = true
+	local anotar = N.AnotarError
+	N.AnotarError = function(msg, pila)
+		local r = anotar(msg, pila)
+		if r == true and N.Errores then
+			local l = N.Errores()
+			local e = l[#l]
+			-- La traza corta, para el reporte (solo de esta sesión).
+			if type(e) == "table" and e.msg and not trazas[e.msg] then trazas[e.msg] = trazaDe(pila) end
+			if type(e) == "table" and tonumber(e.n) == 1 then pcall(M.NuevoBicho, e) end
+		end
+		return r
+	end
+end
+
+-- Al entrar: fuera lo que el instalador ya mandó.
+local ev = CreateFrame("Frame")
+ev:RegisterEvent("PLAYER_LOGIN")
+ev:SetScript("OnEvent", function(self)
+	self:UnregisterEvent("PLAYER_LOGIN")
+	pcall(Bz.Limpiar)
+end)
 
 -- /alfa reportar [error | mejora | comentario]
 local PALABRAS = { error = "error", bug = "error", fallo = "error", mejora = "mejora", idea = "mejora",
@@ -450,3 +845,5 @@ end, L["reporta un error, una mejora o un comentario al desarrollador de Alfa (t
 
 AlfaReporte = type(AlfaReporte) == "table" and AlfaReporte or {}
 function AlfaReporte.Abrir(tipo) return M.AbrirReporte(tipo) end
+function AlfaReporte.Pendientes() return Bz.Pendientes() end
+function AlfaReporte.Buzon() return Bz.Lista() end

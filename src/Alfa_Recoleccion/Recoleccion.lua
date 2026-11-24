@@ -706,6 +706,11 @@ A.RegisterCommand("recoleccion", function(resto)
 				texto = L["Alfa arma una con lo que puedes juntar en tu zona y la flecha te lleva de punto en punto."],
 				accion = { texto = L["Crear una ruta aquí"], alClic = function() crearRuta("") end } })
 		end
+	-- 1.3.9 (oficios): /alfa recoleccion llevame plata: la mejor zona y la ruta por sus puntos.
+	elseif orden == "llevame" or orden == "llévame" or orden == "buscar" then
+		local texto = (resto or ""):match("^%s*%S+%s+(.+)$")
+		local ok = M.Llevar.Llevar(texto or "")
+		if not ok then N.Imprimir(L["No encontré ese recurso en las zonas de tu facción."]) end
 	elseif orden == "parar" then
 		Ruta.Detener()
 	elseif orden == "mapa" or orden == "minimapa" then
@@ -758,6 +763,11 @@ A.RegisterEvent("SKILL_LINES_CHANGED", function()
 end)
 
 A.RegisterEvent("PLAYER_LOGOUT", function() R.CerrarSesion() end)
+
+-- 1.3.9 (oficios): lo que las guías de oficios de Alfa (Alfa_Rutas/Oficios*.lua)
+-- leen de aquí: el catálogo, la base de nodos y el nombre de cada recurso.
+AlfaRecoleccion = type(rawget(_G, "AlfaRecoleccion")) == "table" and rawget(_G, "AlfaRecoleccion") or {}
+AlfaRecoleccion.Datos = function() return { grupos = M.GRUPOS, base = M.BASE, nombre = R.Nombre, porObjeto = M.porObjeto, puntosDe = R.PuntosDe } end
 
 A.OnLogin(function()
 	R.LeerHabilidades()

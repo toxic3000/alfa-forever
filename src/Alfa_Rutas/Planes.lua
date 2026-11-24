@@ -485,7 +485,7 @@ local function asistente(camino) if M.Asistente then M.Asistente.Abrir(camino) e
 local function flechaA(mapa, x, y, nombre, f, auto)
 	local Nav = A.Nav
 	if type(Nav) ~= "table" or type(Nav.SetTarget) ~= "function" then
-		M.Aviso(L["Mi plan"], L["La flecha no está disponible ahora."], { icono = "ic-aviso", tono = "aviso" })
+		M.Aviso(L["Mi plan"], L["La flecha no está lista ahora. Prueba en un momento; si sigue, /alfa diagnostico lo revisa."], { icono = "ic-aviso", tono = "aviso" })
 		return false
 	end
 	local t = llamar(Nav.SetTarget, mapa, x, y, nombre, f)
@@ -509,6 +509,15 @@ local function guiarObjeto(m)
 		M.Aviso(Pl.Titulo(m), L["Se puede al salir de combate."], { icono = "ic-aviso", tono = "aviso" })
 		return
 	end
+	-- 1.3.9 (oficios): lo que se recolecta, a la mejor zona con su ruta (Recolección).
+	local AR = rawget(_G, "AlfaRecoleccion")
+	if (m.kind or "item") == "item" and type(AR) == "table" and type(AR.Llevar) == "function" then
+		local okR, si = pcall(AR.Llevar, m.item)
+		if okR and si then
+			M.Empezar()
+			return
+		end
+	end
 	local ok, gid, motivo = pcall(Lk.Guide, m.kind or "item", m.item)
 	if ok and gid then
 		M.Empezar()
@@ -525,7 +534,7 @@ local function guiarObjeto(m)
 		nosource = L["No se conoce de dónde sale."], noguide = L["No hay un camino que Alfa pueda guiar para esto."],
 		disabled = L["El buscador del motor está apagado (Ajustes > Descubrir): enciéndelo para que Alfa arme guías."],
 	}
-	local texto = ok and textos[motivo] or L["No se pudo armar la guía."]
+	local texto = ok and textos[motivo] or L["No pude armar la guía. Prueba otra vez en un momento; si sigue, cuéntanos con /alfa reportar."]
 	M.Aviso(Pl.Titulo(m), texto, { icono = "ic-aviso", tono = "aviso",
 		accion = AlfaEnciclopedia and AlfaEnciclopedia.Abrir and { texto = L["Ver en la Enciclopedia"], alClic = function() AlfaEnciclopedia.Abrir("item", m.item) end } or nil })
 end

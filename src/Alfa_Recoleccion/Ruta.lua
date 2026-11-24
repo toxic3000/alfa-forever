@@ -50,7 +50,10 @@ local function paradas(idx, b, tipo, recurso, radio)
 	for i = 1, idx.n do
 		local g = idx.g[i]
 		local gr = M.GRUPOS[g]
-		if gr.tipo == tipo and (recurso == nil or recurso == "todos" or gr.clave == recurso) and R.ParaRuta(idx, i) then
+		-- 1.3.9 (oficios): recurso también puede ser un conjunto { clave = true } (la plata y
+		-- las vetas de estaño y cobre donde puede salir).
+		if gr.tipo == tipo and (recurso == nil or recurso == "todos" or gr.clave == recurso
+			or (type(recurso) == "table" and recurso[gr.clave])) and R.ParaRuta(idx, i) then
 			local wx, wy = b.top + ky * idx.y[i], b.left + kx * idx.x[i]
 			local clave = floor(wx / radio) * 100000 + floor(wy / radio)
 			local p = celdas[clave]
@@ -256,8 +259,45 @@ local function apuntar(k)
 	end
 	R.Avisar("ruta")
 end
+Ruta.Apuntar = function(k) return apuntar(k) end
+
+-- 1.3.9: el clic en la flecha (Arrow.lua: A.Nav.OtroLugar) pasa a la
+-- siguiente parada libre mientras esta ruta guía; se suelta al parar.
+local gancho
+gancho = {
+	disponible = function()
+		local Nav = A.Nav
+		return ruta ~= nil and ruta.guiando and ruta.objetivo ~= nil and Nav and Nav.GetTarget and Nav.GetTarget() == ruta.objetivo or false
+	end,
+	ir = function()
+		if not (ruta and ruta.guiando) then return false end
+		local k = ruta.siguiente
+		ruta.vacio = ruta.vacio or {}
+		ruta.vacio[k] = GetTime()
+		ruta.llegada = nil
+		local Ruta_ = Ruta
+		local sig = Ruta_.SiguienteLibre(k)
+		N.Imprimir(L["Voy al siguiente (%d de %d)."]:format(sig, ruta.n))
+		Ruta_.Apuntar(sig)
+		return true
+	end,
+}
+local ganchoAntes
+local function tomarGancho()
+	local Nav = A.Nav
+	if not Nav then return end
+	if Nav.OtroLugar ~= gancho then ganchoAntes = Nav.OtroLugar end
+	Nav.OtroLugar = gancho
+end
+local function soltarGancho()
+	local Nav = A.Nav
+	if Nav and Nav.OtroLugar == gancho then Nav.OtroLugar = ganchoAntes end
+	ganchoAntes = nil
+end
+Ruta.Gancho = gancho
 
 local function parar(silencio)
+	soltarGancho()
 	if vigia then
 		vigia:Cancel()
 		vigia = nil
@@ -271,10 +311,50 @@ local function parar(silencio)
 	if not silencio then R.Avisar("ruta") end
 end
 
-local function avanzar()
-	if not (ruta and ruta.guiando) then return end
-	apuntar(ruta.siguiente % ruta.n + 1)
+-- 1.3.9 (oficios): puntos vacíos. Al llegar a una parada (CERCA yardas) y no
+-- recolectar ahí en ESPERA segundos (o si te vas sin recolectar), queda
+-- «vacía» VACIO segundos (lo que tarda en volver a salir) y la flecha pasa a
+-- la siguiente libre; lo que recolectas también queda así. Lo dice:
+-- «Aquí no hay ahora; voy al siguiente (3 de 12)».
+local VACIO, ESPERA, CERCA = 15 * 60, 8, 30
+Ruta.VACIO, Ruta.ESPERA, Ruta.CERCA = VACIO, ESPERA, CERCA
+
+local function libre(k, ahora)
+	local t = ruta.vacio and ruta.vacio[k]
+	return not t or ahora - t >= VACIO
 end
+
+-- La siguiente parada libre después de k (con todas vacías, la que lleva más tiempo así).
+local function siguienteLibre(k)
+	local ahora = GetTime()
+	for paso = 1, ruta.n do
+		local j = (k + paso - 1) % ruta.n + 1
+		if j ~= k and libre(j, ahora) then return j end
+	end
+	local mejor, viejo = k % ruta.n + 1, math.huge
+	for j = 1, ruta.n do
+		local t = ruta.vacio and ruta.vacio[j] or 0
+		if j ~= k and t < viejo then mejor, viejo = j, t end
+	end
+	return mejor
+end
+Ruta.SiguienteLibre = function(k) return ruta and siguienteLibre(k or ruta.siguiente or 1) end
+function Ruta.Vacia(k)
+	return ruta ~= nil and not libre(k, GetTime())
+end
+
+-- motivo: "vacio" (lo dice) | "recolectado" | nil
+local function avanzar(motivo)
+	if not (ruta and ruta.guiando) then return end
+	local k = ruta.siguiente
+	ruta.vacio = ruta.vacio or {}
+	ruta.vacio[k] = GetTime()
+	ruta.llegada = nil
+	local sig = siguienteLibre(k)
+	if motivo == "vacio" then N.Imprimir(L["Aquí no hay ahora; voy al siguiente (%d de %d)."]:format(sig, ruta.n)) end
+	apuntar(sig)
+end
+Ruta.Avanzar = avanzar
 
 local function vigilar()
 	if not (ruta and ruta.guiando) then return parar(true) end
@@ -291,7 +371,23 @@ local function vigilar()
 	if c and c == ruta.c then
 		local k = ruta.siguiente
 		local dx, dy = ruta.wx[k] - px, ruta.wy[k] - py
-		if dx * dx + dy * dy <= LLEGADA * LLEGADA then avanzar() end
+		local dd = dx * dx + dy * dy
+		if dd <= CERCA * CERCA then
+			-- Llegaste: si no recolectas aquí en un rato, está vacía (recolectando, se espera).
+			local ahora = GetTime()
+			if not ruta.llegada then
+				ruta.llegada = ahora
+			else
+				local lanzando = N.SiJuego(rawget(_G, "UnitCastingInfo"), "player")
+				-- 1.3.9: peleando con un bicho junto al nodo tampoco está vacío.
+				local peleando = (InCombatLockdown and InCombatLockdown()) or N.SiJuego(rawget(_G, "UnitAffectingCombat"), "player")
+				if lanzando or peleando then ruta.llegada = ahora
+				elseif ahora - ruta.llegada >= ESPERA then avanzar("vacio") end
+			end
+		elseif ruta.llegada and dd > (CERCA * 1.6) * (CERCA * 1.6) then
+			-- Te fuiste sin recolectar: también cuenta como vacía.
+			avanzar("vacio")
+		end
 	end
 end
 
@@ -311,6 +407,7 @@ function Ruta.Guiar()
 	end
 	ruta.guiando = true
 	apuntar(k)
+	tomarGancho()
 	if not vigia then vigia = N.Ticker("recoleccion.ruta", 0.5, vigilar) end
 	if N.EmpezarRuta then N.EmpezarRuta() end -- cierra las ventanas de Alfa y muestra el seguimiento
 	return true
@@ -333,7 +430,7 @@ function Ruta.Recolectado(mapID, x, y)
 	local _, wx, wy = R.AlMundo(b, x, y)
 	local k = ruta.siguiente
 	local dx, dy = ruta.wx[k] - wx, ruta.wy[k] - wy
-	if dx * dx + dy * dy <= RECOLECTADO * RECOLECTADO then avanzar() end
+	if dx * dx + dy * dy <= RECOLECTADO * RECOLECTADO then avanzar("recolectado") end
 end
 
 -- Un clic en un pin del mapa: la flecha va ahí (sin ruta).

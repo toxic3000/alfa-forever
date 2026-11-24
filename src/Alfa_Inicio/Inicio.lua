@@ -441,7 +441,7 @@ local function pasoActual()
 		return info
 	end
 	if type(i) ~= "number" then return info end
-	local okv, v = pcall(E.GetStepView, i)
+	local okv, v = pcall(N.VistaPaso or E.GetStepView, i) -- 1.3.9 (19): la lectura compartida
 	if not okv or type(v) ~= "table" then return info end
 	if type(E.StepNumber) == "function" then info.num = num(E.StepNumber(i)) end
 	if type(E.StepTotal) == "function" then info.total = num(E.StepTotal()) end
@@ -451,6 +451,13 @@ local function pasoActual()
 		if oks and type(s) == "string" then info.titulo = s end
 	end
 	info.titulo = (info.titulo and info.titulo ~= "" and info.titulo) or texto(v.title) or ""
+	-- 1.3.9 (42): nada en inglés mezclado: con un título que quedó en inglés,
+	-- el mismo del rastreador (lo que pide su meta, en tu idioma).
+	local sinTraducir, tituloPaso = deRuta("SinTraducir"), deRuta("TituloPaso")
+	if sinTraducir and tituloPaso and sinTraducir(info.titulo) then
+		local okt, t = pcall(tituloPaso, v)
+		info.titulo = okt and type(t) == "string" and t or ""
+	end
 	-- La meta de ahora primero, luego las demás abiertas (sin notas), tres a lo más.
 	local metas, usadas = {}, {}
 	local goals = type(v.goals) == "table" and v.goals or {}
@@ -458,7 +465,11 @@ local function pasoActual()
 		local gv = goals[k]
 		if type(gv) ~= "table" or usadas[k] or gv.folded or not ABIERTA[gv.status] then return end
 		usadas[k] = true
-		metas[#metas + 1] = { t = gv.t, texto = textoMeta(gv) }
+		local tm = textoMeta(gv)
+		-- 1.3.9 (42): una meta que quedó en inglés no se muestra (como en el rastreador).
+		local sinT = deRuta("SinTraducir")
+		if sinT and sinT(tm) then return end
+		metas[#metas + 1] = { t = gv.t, texto = tm }
 	end
 	if type(v.current) == "number" then tomar(v.current) end
 	for k, gv in ipairs(goals) do
@@ -572,7 +583,13 @@ local function insigniasPaso(info)
 	local dist, tono, hacia = distancia()
 	if dist then
 		insignias[#insignias + 1] = { dist, tono, "ic-flecha" }
+		-- 1.3.9 (42): sin el destino si quedó en inglés («Ve a The road north…»).
+		local sinT = deRuta("SinTraducir")
+		if hacia and sinT and sinT(hacia) then hacia = nil end
 		if hacia and diceAlgoMas(hacia, info) then insignias[#insignias + 1] = { format(L["Hacia: %s"], hacia), "neutro" } end
+		-- 1.3.9 (36): tu tecla de «siguiente parada», si tienes una, a la vista.
+		local tecla = K.TeclaJuego and K.TeclaJuego("ALFA_NEXT_WAYPOINT")
+		if tecla then insignias[#insignias + 1] = { format(L["Siguiente parada: %s"], tecla), "neutro", "ic-seguir" } end
 	end
 	return insignias
 end
@@ -620,6 +637,15 @@ local function tarjetaPaso()
 		local otra = accionCierre("ic-ruta")
 		local texto = format(L["%s quedó completa. Elige qué sigue y la manada va contigo."], info.guia ~= "" and info.guia or L["Tu guía"])
 		if otra and c.sig and c.sig.nombre then texto = format(L["%s quedó completa. Lo que sigue para tu nivel: %s."], info.guia ~= "" and info.guia or L["Tu guía"], c.sig.nombre) end
+		-- 1.3.9 (área misiones): el plan de misiones cumplido con misiones en tu registro.
+		local tCerrar = otra and c.cerrar and deRuta("TextoPlanCumplido")
+		if tCerrar then
+			local okT, t = pcall(tCerrar, c)
+			if okT and type(t) == "string" then
+				return { fin = true, lobo = "aullando", tono = "acento", sobre = L["Fin del camino"], titulo = info.guia ~= "" and info.guia or L["Tu guía"],
+					texto = t, accion = otra }
+			end
+		end
 		return { fin = true, lobo = "aullando", tono = "acento", sobre = L["Fin del camino"], titulo = L["¡Terminaste tu guía!"], texto = texto,
 			accion = otra or { texto = L["Elegir qué sigue"], icono = "ic-ruta", alClic = function() A.Fire("SHOW_PICKER") end },
 			secundaria = otra and { texto = L["Elegir otra"], alClic = function() A.Fire("SHOW_PICKER") end } or nil }
@@ -734,7 +760,11 @@ local function misiones()
 		end
 		lista[#lista + 1] = { variante = "compacta", icono = "ic-exito", titulo = L["Cerrar mis misiones"],
 			texto = textoC, valor = valor,
-			alClic = function() K.Llamar(liberar) end,
+			-- 1.3.9 (1): con todas tus misiones y su resumen antes de salir (AlfaRuta.CerrarTodo).
+			alClic = function()
+				local todo = deRuta("CerrarTodo")
+				if todo then K.Llamar(todo, "hoy") else K.Llamar(liberar) end
+			end,
 			ayuda = L["Arma el plan para cerrar las misiones de tu registro y te lleva a cada una."] }
 	end
 	if recoger then
@@ -851,7 +881,17 @@ local function alertas()
 		if px ~= py then return px < py end
 		return x.clave < y.clave
 	end)
-	return lista
+	-- 1.3.9 (37): cada alerta con su «Ahora no / No volver a mostrar» (la ×);
+	-- lo que ocultaste no sale (lo recuperas en Tus avisos).
+	local quedan = {}
+	for _, a in ipairs(lista) do
+		local clave = "hoy.alerta." .. a.clave
+		if not (K.Descartado and K.Descartado(clave)) then
+			a.descartar = K.Descartado and { clave = clave, alDescartar = function() if P.Relayout then P.Relayout() end end } or nil
+			quedan[#quedan + 1] = a
+		end
+	end
+	return quedan
 end
 
 local function firmaAlertas(lista)
@@ -1561,7 +1601,22 @@ local function nuevosAjustes(padre)
 		return h
 	end
 	b:Agregar(b.Nota, { espacio = ESP.s })
+	-- 1.3.9 (76, 37): acomodar Hoy a tu gusto y recuperar lo que ocultaste.
+	b.Acciones = CreateFrame("Frame", nil, b)
+	b.Acciones:SetHeight(K.ALTO.botonChico)
+	b.BotonAcomodar = K.Boton(b.Acciones, L["Acomodar Hoy"], function() if M.Acomodo then M.Acomodo.Abrir() end end,
+		{ tipo = "secundario", tam = "chico", icono = "ic-rejilla", ayuda = L["Sube, baja u oculta las partes de Hoy."] })
+	b.BotonAcomodar:SetPoint("LEFT", b.Acciones, "LEFT", 0, 0)
+	b.Recuperar = K.Boton(b.Acciones, "", function()
+		if K.OlvidarDescartes then K.OlvidarDescartes() end
+		if P.Relayout then P.Relayout() end
+	end, { tipo = "fantasma", tam = "chico", icono = "reset", ayuda = L["Las sugerencias y alertas que ocultaste con «No volver a mostrar» vuelven a salir."] })
+	b.Recuperar:SetPoint("LEFT", b.BotonAcomodar, "RIGHT", ESP.s, 0)
+	b:Agregar(b.Acciones, { espacio = ESP.s })
 	function b:Llenar()
+		local n = K.Descartes and K.Descartes() or 0
+		self.Recuperar:SetTexto(n == 1 and L["Volver a mostrar 1 que ocultaste"] or format(L["Volver a mostrar %d que ocultaste"], n))
+		self.Recuperar:SetShown(n > 0)
 		local ver = N.Get("inicio", "verAjustes") and true or false
 		self.Seccion:Set(L["Tus avisos"], { enlace = { texto = ver and L["Ocultar ajustes"] or L["Ajustar"],
 			alClic = function() N.Set("inicio", "verAjustes", not N.Get("inicio", "verAjustes")) end } })
@@ -1905,12 +1960,18 @@ local ORDEN = {
 	plan = { "plan", "accion", "opciones", "hora", "rejilla", "otra", "portada" },
 	nada = { "portada", "accion", "opciones", "hora", "rejilla", "plan", "otra" },
 	hora = { "hora", "accion", "opciones", "rejilla", "plan", "otra", "portada" },
+	-- 1.3.9 (75): dentro de una mazmorra, tu mazmorra y tus misiones primero.
+	mazmorra = { "opciones", "rejilla", "accion", "hora", "plan", "otra", "portada" },
 }
 
 local function ordenar(guia, plan, hora)
 	local E = P.entradas
 	local orden, ya = {}, {}
-	for _, k in ipairs(ORDEN[hora and "hora" or (guia and "guia" or (plan and "plan" or "nada"))]) do
+	local cual = hora and "hora" or (guia and "guia" or (plan and "plan" or "nada"))
+	-- 1.3.9 (75): en una mazmorra (con el orden por lugar prendido) sube lo de ahí.
+	local Ac = M.Acomodo
+	if Ac and A.Get("inicio.contexto") ~= false and Ac.Contexto() == "mazmorra" and not hora then cual = "mazmorra" end
+	for _, k in ipairs(ORDEN[cual]) do
 		if E[k] then orden[#orden + 1] = E[k] ya[E[k]] = true end
 	end
 	-- Lo que el Kit tenga además no se pierde; lo de abajo (t.Extra) al final.
@@ -1934,12 +1995,26 @@ local function llenarTodo()
 	P.portada:Llenar()
 	P.otra:Llenar()
 	P.firmaPaso = firmaPaso(paso)
+	-- 1.3.9 (34): sin guía ni plan, una sola «Siguiente acción» grande arriba
+	-- (lo urgente o tus misiones listas); los caminos bajan a la fila chica.
+	local lista = alertas()
+	local sig = (not paso and not plan and not hora) and P.SiguienteAccion(lista) or nil
+	if sig then
+		K.Mostrar(P.portada, false)
+		K.Mostrar(P.otra, true)
+		paso = sig
+	end
 	P.tablero:SetAccion(paso)
 	-- Con solo un plan arriba, tus misiones llevan su título (si no, se verían
 	-- como parte del plan); junto a la tarjeta del paso no lo necesitan.
 	P.tablero:SetOpciones(misiones(), (plan and not P.enGuia) and L["Tus misiones"] or false)
-	local lista = alertas()
 	P.firmaAlertas = firmaAlertas(lista)
+	-- La alerta que ya va arriba en grande no se repite abajo.
+	if sig and sig.alfaClave then
+		local quedan = {}
+		for _, a in ipairs(lista) do if a.clave ~= sig.alfaClave then quedan[#quedan + 1] = a end end
+		lista = quedan
+	end
 	P.alEntrar:Llenar()
 	P.alertas:Llenar(lista)
 	P.cerca:Llenar()
@@ -1949,12 +2024,70 @@ local function llenarTodo()
 	P.revision:Llenar(lista)
 	P.diario:Llenar()
 	P.ajustes:Llenar()
+	P.AcomodarAbajo()
+end
+
+-- 1.3.9 (75, 76): las partes de abajo en tu orden (y lo urgente según dónde
+-- estés), sin las que ocultaste. Los ajustes de tus avisos, siempre al final.
+function P.AcomodarAbajo()
+	local Ac, t = M.Acomodo, P.tablero
+	if not (Ac and t and P.abajo) then return end
+	local orden, ya = {}, {}
+	for _, id in ipairs(Ac.Orden()) do
+		local e = P.abajo[id]
+		if e then
+			orden[#orden + 1] = e
+			ya[e] = true
+			if Ac.Oculta(id) then K.Mostrar(e.b, false) end
+		end
+	end
+	for _, e in ipairs(t.Extra.bloques) do
+		if not ya[e] and e ~= P.abajo.ajustes then orden[#orden + 1] = e ya[e] = true end
+	end
+	if P.abajo.ajustes then orden[#orden + 1] = P.abajo.ajustes end
+	-- La primera parte no lleva el espacio grande de «Lo demás» (ESP.xl): el de siempre.
+	for i, e in ipairs(orden) do
+		if e == P.abajo.revision then e.espacio = i > 1 and ESP.xl or nil end
+	end
+	t.Extra.bloques = orden
+end
+
+-- 1.3.9 (34): sin guía ni plan, lo que más conviene hacer ahora, en la
+-- tarjeta grande: una alerta urgente (equipo por romperse, bolsas llenas) o
+-- entregar tus misiones listas. nil si no hay nada así (salen los caminos).
+function P.SiguienteAccion(lista)
+	for _, a in ipairs(lista or {}) do
+		if a.tono == "peligro" and a.accion then
+			return { alfaClave = a.clave, icono = a.icono, tono = "peligro", sobre = L["Lo primero ahora"], titulo = a.titulo, texto = a.texto,
+				accion = a.accion, secundaria = a.secundaria, descartar = a.descartar }
+		end
+	end
+	local liberar = deRuta("Liberar")
+	local fx = deRuta("XPListas")
+	local xl = fx and select(2, pcall(fx)) or nil
+	local oculta = K.Descartado and K.Descartado("hoy.accion.listas")
+	if liberar and not oculta and type(xl) == "table" and (tonumber(xl.n) or 0) > 0 then
+		local texto = xl.n == 1 and L["Tienes 1 misión lista: entrégala y cobra lo tuyo."]
+			or format(L["Tienes %d misiones listas: entrégalas y cobra lo tuyo."], xl.n)
+		if (tonumber(xl.xp) or 0) > 0 then texto = texto .. DOT .. format(L["unos %s XP"], miles(xl.xp)) end
+		if xl.subes then texto = texto .. DOT .. L["¡con eso subes de nivel!"] end
+		return { icono = "ic-exito", tono = "acento", sobre = L["Lo primero ahora"], titulo = L["Entrega tus misiones listas"], texto = texto,
+			accion = { texto = L["Cerrar mis misiones"], icono = "ic-seguir", alClic = function() K.Llamar(liberar) end },
+			descartar = { clave = "hoy.accion.listas", alDescartar = function() if P.Relayout then P.Relayout() end end } }
+	end
+	return nil
 end
 
 local function construir(view)
 	P.view = view
 	local t = K.Tablero(view, { margen = N.MargenPagina(), accion = "accion", min = 256 })
 	P.tablero = t
+	-- 1.3.9: la temática de tu bando (Kit/Bando.lua): el emblema tenue arriba
+	-- a la derecha de Hoy y el sello de la ventana de Alfa.
+	if K.SelloBando then
+		K.SelloBando(view, { tira = false, marca = 120, marcaX = -18, marcaY = -14, alfaMarca = 0.1, nivel = 0 })
+		if K.SelloVentanaAlfa then K.SelloVentanaAlfa() end
+	end
 	-- La portada, tu plan y la fila compacta de los caminos van en la pila
 	-- del tablero, junto a la tarjeta grande: ordenar() los acomoda.
 	P.portada = nuevaPortada(t)
@@ -1980,6 +2113,13 @@ local function construir(view)
 	P.revision = t:AgregarBloque(nuevaRevision(t.Extra), { espacio = ESP.xl })
 	P.diario = t:AgregarBloque(nuevoDiario(t.Extra))
 	P.ajustes = t:AgregarBloque(nuevosAjustes(t.Extra))
+	-- 1.3.9 (76): cada parte de abajo con su id (Acomodo.lua: orden y ocultas).
+	P.abajo = {}
+	for _, e in ipairs(t.Extra.bloques) do
+		for _, id in ipairs({ "alEntrar", "alertas", "cerca", "clase", "numeros", "camino", "revision", "diario", "ajustes" }) do
+			if e.b == P[id] then P.abajo[id] = e end
+		end
+	end
 	K.EnPagina(view, t, function()
 		llenarTodo()
 		-- La ventana crea la vista ya visible: su primer OnShow no llega, así
@@ -2080,6 +2220,7 @@ end)
 A.On("SETTING_CHANGED", function(path)
 	if type(path) ~= "string" then return end
 	if path == "inicio.verDiario" or path == "inicio.verAjustes" or path == "curacion.activo" or path == "manada.compartir"
+		or path == "inicio.orden" or path == "inicio.ocultas" or path == "inicio.contexto"
 		or path == "rutas.cercaHoy"
 		or path == "inicio.horaPlan" or path == "inicio.horaMin" or path == "inicio.camino" or path == "inicio.comidaAviso"
 		or path:find("^gear%.spec") then
@@ -2092,6 +2233,11 @@ A.RegisterEvent("PLAYER_TALENT_UPDATE", relayoutPronto)
 A.RegisterEvent("TRAIT_CONFIG_UPDATED", relayoutPronto)
 A.RegisterEvent("PLAYER_LEVEL_UP", (N.TrasNivel or function(_, f) return f end)("inicio.pagina", relayoutPronto)) -- 1.3.7: tras la animación del juego
 A.RegisterEvent("QUEST_ACCEPTED", relayoutPronto)
+-- 1.3.9 (75, 37): Hoy cambia de orden al llegar a la ciudad o entrar a una
+-- mazmorra, y al ocultar una sugerencia.
+A.RegisterEvent("PLAYER_UPDATE_RESTING", relayoutPronto)
+A.RegisterEvent("ZONE_CHANGED_NEW_AREA", relayoutPronto)
+A.On("ALFA_DESCARTE", relayoutPronto)
 A.RegisterEvent("QUEST_REMOVED", relayoutPronto)
 
 ---------------------------------------------------------------------------

@@ -75,6 +75,7 @@ function PM.PintarFila(f, m)
 	K.Escribir(f.Nombre, m.nombre)
 	local donde = Mk.Donde(m)
 	if m.de then donde = donde .. "  \194\183  " .. format(L["de %s"], m.de) end
+	if m.nota then donde = m.nota .. "  \194\183  " .. donde end -- 1.3.9 (79): la nota primero
 	K.Escribir(f.Donde, donde)
 	local siguiendo = Mk.Siguiendo(m.id)
 	f.Seguir:SetTexto(siguiendo and L["Dejar"] or L["Seguir"])

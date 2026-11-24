@@ -9,9 +9,12 @@ WoW Forever sin tocar carpetas a mano (toxic3000 / La Jauria, GPL-3.0).
    deja todo como estaba).
 4. Listo: cómo empezar en el juego y el Discord de La Jauría.
 
-No toca la carpeta WTF (tus ajustes) ni ningún otro addon.
+No toca tus ajustes ni ningún otro addon. En WTF solo cambia la palabra
+`enviado` de los reportes del buzón que ya mandó a Toxic (ver «Buzón»).
 
 Para probar sin ventana:   python instalador.py --sin-ventana --carpeta X [--zip Y]
+Solo el buzón:             python instalador.py --solo-buzon [--carpeta X]
+Sin mandar reportes:       python instalador.py --sin-buzon
 Para revisar el diseño:    python instalador.py --capturas CARPETA
 """
 import ctypes
@@ -29,11 +32,12 @@ import tempfile
 import threading
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 import webbrowser
 import zipfile
 
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 REPO = "toxic3000/alfa-forever"
 API = f"https://api.github.com/repos/{REPO}/releases/latest"
 DESCARGAS = f"https://github.com/{REPO}/releases"
@@ -336,6 +340,530 @@ def _mb(n: int) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Buzón: los reportes de errores que se escriben en el juego van a #buzon-alfa
+# ---------------------------------------------------------------------------
+# El juego no deja que un addon mande nada a internet: Alfa guarda cada reporte
+# en AlfaNucleoDB.buzon.pendientes (WTF/Account/<cuenta>/SavedVariables/
+# Alfa_Nucleo.lua). Con el juego cerrado, el instalador los manda al formulario
+# de Google de Toxic (las respuestas le llegan a su correo) y, si el .exe trae
+# webhook (buzon_local.json), también a #buzon-alfa en Discord. Luego los marca
+# enviado = true cambiando solo esa palabra del archivo.
+#
+# El formulario (camino principal): una URL pública, no es secreto.
+BUZON_FORMULARIO = {
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLSfCKW97uxmZL5ZGl5Ym4hLjUMTWt6O0N7TJgw6buSDMoRIXUA/formResponse",
+    "tipo": "entry.832145550",       # Error | Mejora | Comentario (exactamente así)
+    "texto": "entry.1889667288",     # lo que escribió el jugador
+    "datos": "entry.917548369",      # los datos técnicos (el resto del reporte)
+    "version": "entry.1259972415",   # la versión de Alfa
+}
+BUZON_TIPOS = {"error": "Error", "mejora": "Mejora", "comentario": "Comentario"}
+BUZON_ARCHIVO = "Alfa_Nucleo.lua"   # SavedVariables: AlfaNucleoDB (src/Alfa_Nucleo/Alfa_Nucleo.toc)
+BUZON_GLOBAL = "AlfaNucleoDB"
+BUZON_MAX = 5                       # reportes por apertura del instalador
+BUZON_LETRAS = 1950                 # largo máximo de cada texto
+BUZON_ESPERA = 1.2                  # segundos entre envíos (Discord: 5 cada 2 s por webhook)
+BUZON_CLAVE = b"La Jauria - buzon de Alfa"
+BUZON_WEBHOOK = re.compile(r"https://(?:(?:ptb|canary)\.)?discord(?:app)?\.com/api/webhooks/\d+/[\w-]+")
+
+
+def _buzon_ofuscar(texto: str) -> str:
+    """No es protección de verdad: solo evita que la URL se lea a simple vista dentro del .exe."""
+    import base64
+    b = texto.encode("utf-8")
+    return base64.b64encode(bytes(c ^ BUZON_CLAVE[i % len(BUZON_CLAVE)] for i, c in enumerate(b))).decode("ascii")
+
+
+def _buzon_desofuscar(dato: str) -> str:
+    import base64
+    b = base64.b64decode(dato.strip())
+    return bytes(c ^ BUZON_CLAVE[i % len(BUZON_CLAVE)] for i, c in enumerate(b)).decode("utf-8")
+
+
+def webhook_buzon() -> "str | None":
+    """La URL del webhook: dentro del .exe (buzon.dat) o, sin empaquetar, de instalador/buzon_local.json.
+    Si no hay o no es de Discord, el buzón no hace nada."""
+    url = None
+    try:
+        base = getattr(sys, "_MEIPASS", None)
+        if base:
+            p = pathlib.Path(base) / "buzon.dat"
+            if p.is_file():
+                url = _buzon_desofuscar(p.read_text(encoding="ascii"))
+        else:
+            p = pathlib.Path(__file__).resolve().parent / "buzon_local.json"
+            if p.is_file():
+                url = json.loads(p.read_text(encoding="utf-8")).get("webhook")
+    except (OSError, ValueError, UnicodeError, AttributeError):
+        return None
+    url = str(url or "").strip()
+    return url if BUZON_WEBHOOK.fullmatch(url) else None
+
+
+class _LuaMal(ValueError):
+    """El archivo guardado no se entiende: no se toca."""
+
+
+class _Num(str):
+    """Un número de Lua tal como está escrito (se compara por su texto, nunca se reescribe)."""
+
+
+class _TablaLua:
+    __slots__ = ("campos", "lugar")
+
+    def __init__(self):
+        self.campos = {}   # clave -> valor
+        self.lugar = {}    # clave -> (inicio, fin) del valor en el texto
+
+
+_LUA_NUM = re.compile(r"-?(?:inf|nan|[0-9.](?:[eE][+-]|[0-9A-Za-z_.#])*)(?:\(\w*\))?")
+_LUA_NOMBRE = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
+_LUA_LARGA = re.compile(r"\[(=*)\[")
+_LUA_ESCAPES = {"n": "\n", "t": "\t", "r": "\r", "a": "\a", "b": "\b", "f": "\f", "v": "\v",
+                "\\": "\\", '"': '"', "'": "'", "\n": "\n", "\r": "\n"}
+
+
+class _LectorLua:
+    """Lee lo que escribe el juego en SavedVariables: `Nombre = valor` con tablas, textos,
+    números, true/false/nil y comentarios. Cualquier otra cosa → _LuaMal."""
+
+    def __init__(self, texto: str):
+        self.t, self.i = texto, 0
+
+    def _blanco(self):
+        t = self.t
+        while self.i < len(t):
+            c = t[self.i]
+            if c in " \t\r\n\f\v;":
+                self.i += 1
+            elif t.startswith("--", self.i):
+                m = _LUA_LARGA.match(t, self.i + 2)
+                if m:
+                    fin = t.find("]" + m.group(1) + "]", m.end())
+                    if fin < 0:
+                        raise _LuaMal("comentario sin cerrar")
+                    self.i = fin + len(m.group(1)) + 2
+                else:
+                    nl = t.find("\n", self.i)
+                    self.i = len(t) if nl < 0 else nl + 1
+            else:
+                return
+
+    def _larga(self):
+        m = _LUA_LARGA.match(self.t, self.i)
+        cierre = "]" + m.group(1) + "]"
+        fin = self.t.find(cierre, m.end())
+        if fin < 0:
+            raise _LuaMal("texto largo sin cerrar")
+        s = self.t[m.end():fin]
+        self.i = fin + len(cierre)
+        return s[1:] if s.startswith("\n") else s
+
+    def _cadena(self):
+        t, q = self.t, self.t[self.i]
+        i, partes = self.i + 1, bytearray()
+        while True:
+            if i >= len(t):
+                raise _LuaMal("texto sin cerrar")
+            c = t[i]
+            if c == q:
+                self.i = i + 1
+                return partes.decode("utf-8", "replace")
+            if c == "\n":
+                raise _LuaMal("salto de línea dentro de un texto")
+            if c != "\\":
+                partes += c.encode("utf-8", "surrogateescape")
+                i += 1
+                continue
+            i += 1
+            e = t[i] if i < len(t) else ""
+            if e in _LUA_ESCAPES:
+                partes += _LUA_ESCAPES[e].encode("ascii")
+                i += 2 if t.startswith("\r\n", i) or t.startswith("\n\r", i) else 1
+            elif e.isdigit():
+                m = re.match(r"\d{1,3}", t[i:])
+                n = int(m.group())
+                if n > 255:
+                    raise _LuaMal("escape fuera de rango")
+                partes.append(n)
+                i += len(m.group())
+            elif e == "x" and re.fullmatch(r"[0-9a-fA-F]{2}", t[i + 1:i + 3]):
+                partes.append(int(t[i + 1:i + 3], 16))
+                i += 3
+            elif e == "z":
+                i += 1
+                while i < len(t) and t[i] in " \t\r\n\f\v":
+                    i += 1
+            elif e == "u" and (m := re.match(r"u\{([0-9a-fA-F]{1,6})\}", t[i:])):
+                partes += chr(min(int(m.group(1), 16), 0x10FFFF)).encode("utf-8", "surrogatepass")
+                i += len(m.group())
+            else:
+                raise _LuaMal("escape desconocido")
+
+    def _valor(self):
+        self._blanco()
+        t, i = self.t, self.i
+        if i >= len(t):
+            raise _LuaMal("se acabó el archivo")
+        c = t[i]
+        if c == "{":
+            return self._tabla()
+        if c in "\"'":
+            return self._cadena()
+        if _LUA_LARGA.match(t, i):
+            return self._larga()
+        for palabra, v in (("true", True), ("false", False), ("nil", None)):
+            if t.startswith(palabra, i) and not _LUA_NOMBRE.match(t, i + len(palabra)) and \
+                    not (i + len(palabra) < len(t) and t[i + len(palabra)].isdigit()):
+                self.i += len(palabra)
+                return v
+        m = _LUA_NUM.match(t, i)
+        if m and m.group() not in ("-", "."):
+            self.i = m.end()
+            return _Num(m.group())
+        raise _LuaMal(f"no entiendo lo que hay en la posición {i}")
+
+    def _tabla(self):
+        tabla, n = _TablaLua(), 0
+        self.i += 1
+        while True:
+            self._blanco()
+            t = self.t
+            if self.i >= len(t):
+                raise _LuaMal("tabla sin cerrar")
+            if t[self.i] == "}":
+                self.i += 1
+                return tabla
+            if t[self.i] == "[" and not _LUA_LARGA.match(t, self.i):
+                self.i += 1
+                clave = self._valor()
+                self._blanco()
+                if not t.startswith("]", self.i):
+                    raise _LuaMal("falta ]")
+                self.i += 1
+                self._blanco()
+                if not t.startswith("=", self.i):
+                    raise _LuaMal("falta =")
+                self.i += 1
+                if isinstance(clave, _Num):
+                    try:
+                        clave = int(clave)
+                    except ValueError:
+                        pass
+                if isinstance(clave, _TablaLua) or clave is None:
+                    raise _LuaMal("clave rara")
+            else:
+                m = _LUA_NOMBRE.match(t, self.i)
+                fin = m and m.end()
+                if m and m.group() not in ("true", "false", "nil"):
+                    j = fin
+                    while j < len(t) and t[j] in " \t\r\n":
+                        j += 1
+                    if t.startswith("=", j) and not t.startswith("==", j):
+                        clave = m.group()
+                        self.i = j + 1
+                    else:
+                        raise _LuaMal("nombre suelto en una tabla")
+                else:
+                    n += 1
+                    clave = n
+            self._blanco()
+            inicio = self.i
+            v = self._valor()
+            tabla.campos[clave] = v
+            tabla.lugar[clave] = (inicio, self.i)
+            self._blanco()
+            if self.i < len(t) and t[self.i] == ",":
+                self.i += 1
+
+    def todo(self) -> dict:
+        globales = {}
+        while True:
+            self._blanco()
+            if self.i >= len(self.t):
+                return globales
+            m = _LUA_NOMBRE.match(self.t, self.i)
+            if not m:
+                raise _LuaMal("se esperaba un nombre")
+            self.i = m.end()
+            self._blanco()
+            if not self.t.startswith("=", self.i):
+                raise _LuaMal("falta =")
+            self.i += 1
+            globales[m.group()] = self._valor()
+
+
+def _plano(v):
+    if isinstance(v, dict):
+        return {k: _plano(x) for k, x in v.items()}
+    if isinstance(v, _TablaLua):
+        return {k: _plano(x) for k, x in v.campos.items()}
+    return v
+
+
+def leer_lua(texto: str) -> dict:
+    return _LectorLua(texto).todo()
+
+
+def _buzon_pendientes(globales: dict) -> list:
+    """[(índice, tabla del reporte)] de los reportes con enviado = false."""
+    db = globales.get(BUZON_GLOBAL)
+    buzon = db.campos.get("buzon") if isinstance(db, _TablaLua) else None
+    lista = buzon.campos.get("pendientes") if isinstance(buzon, _TablaLua) else None
+    if not isinstance(lista, _TablaLua):
+        return []
+    salida = []
+    for k in sorted((k for k in lista.campos if isinstance(k, int))):
+        r = lista.campos[k]
+        if isinstance(r, _TablaLua) and r.campos.get("enviado") is False and isinstance(r.campos.get("texto"), str):
+            salida.append((k, r))
+    return salida
+
+
+def _buzon_clave(r: _TablaLua) -> str:
+    partes = [str(r.campos.get(c, "")) for c in ("id", "fecha", "tipo", "texto")]
+    return hashlib.sha256("\0".join(partes).encode("utf-8", "replace")).hexdigest()[:24]
+
+
+def _buzon_texto(v, largo=100) -> str:
+    s = "" if v is None or isinstance(v, (bool, _TablaLua)) else str(v)
+    s = s.encode("utf-8", "replace").decode("utf-8", "replace").strip()
+    return s[:largo]
+
+
+def _buzon_fecha(v) -> str:
+    if isinstance(v, _Num):
+        try:
+            return time.strftime("%Y-%m-%d %H:%M", time.localtime(int(float(v))))
+        except (ValueError, OverflowError, OSError):
+            pass
+    return _buzon_texto(v) or "—"
+
+
+def _buzon_mensaje(r: _TablaLua) -> dict:
+    """El mensaje para Discord: un embed sencillo, sin menciones (nadie puede hacer @everyone)."""
+    tipo = _buzon_texto(r.campos.get("tipo"), 60) or "reporte"
+    version = _buzon_texto(r.campos.get("version"), 40) or "?"
+    texto = _buzon_texto(r.campos.get("texto"), BUZON_LETRAS) or "(sin texto)"
+    ident = _buzon_texto(r.campos.get("id"), 80)
+    embed = {"title": f"{tipo[:1].upper()}{tipo[1:]} · Alfa {version}"[:256],
+             "description": texto,
+             "color": 0x8BE04E,
+             "fields": [{"name": "Tipo", "value": tipo, "inline": True},
+                        {"name": "Versión", "value": version, "inline": True},
+                        {"name": "Fecha", "value": _buzon_fecha(r.campos.get("fecha")), "inline": True}],
+             "footer": {"text": f"Instalador {VERSION}" + (f" · id {ident}" if ident else "")}}
+    return {"username": "Buzón de Alfa", "allowed_mentions": {"parse": []}, "embeds": [embed]}
+
+
+# El reporte que arma el addon (Alfa_Bienvenida/Reporte.lua, componer):
+#   **[Alfa] <Tipo>**\n<lo que escribió el jugador>\n```\n<datos técnicos>\n```
+_REPORTE = re.compile(r"\*\*\[Alfa\][^\n]*\*\*\n(.*)\n```\n(.*?)(?:\n?```)?\s*", re.S)
+_SIN_TEXTO = ("(sin comentario)", "(todavía sin texto: escríbelo arriba)")
+
+
+def separar_reporte(texto: str) -> tuple:
+    """(lo que escribió el jugador, datos técnicos). Si no tiene la forma de siempre, todo va a datos."""
+    m = _REPORTE.fullmatch(texto.strip())
+    if not m:
+        return "(sin texto)", texto.strip() or "(sin datos)"
+    suyo, datos = m.group(1).strip(), m.group(2).strip()
+    if not suyo or suyo in _SIN_TEXTO:
+        suyo = "(sin texto)"
+    return suyo, datos or "(sin datos)"
+
+
+def _buzon_formulario(r: _TablaLua) -> dict:
+    """Los campos del formulario de Google para un reporte."""
+    f = BUZON_FORMULARIO
+    tipo = BUZON_TIPOS.get(_buzon_texto(r.campos.get("tipo"), 60).lower(), "Comentario")
+    suyo, datos = separar_reporte(_buzon_texto(r.campos.get("texto"), BUZON_LETRAS))
+    extra = [f"id {_buzon_texto(r.campos.get('id'), 80) or '?'}", f"fecha {_buzon_fecha(r.campos.get('fecha'))}",
+             f"instalador {VERSION}"]
+    return {f["tipo"]: tipo, f["texto"]: suyo, f["datos"]: datos + "\n\n" + " · ".join(extra),
+            f["version"]: _buzon_texto(r.campos.get("version"), 40) or "?"}
+
+
+def _buzon_post(url: str, carga: dict, abrir, esperar, formulario=False) -> bool:
+    """True si llegó (200). Con el límite de velocidad (429) espera lo que pide y reintenta."""
+    if formulario:
+        datos = urllib.parse.urlencode(carga).encode("ascii")
+        tipo = "application/x-www-form-urlencoded"
+    else:  # Discord: pide confirmación del mensaje
+        url = url + ("&" if "?" in url else "?") + "wait=true"
+        datos = json.dumps(carga, ensure_ascii=False).encode("utf-8")
+        tipo = "application/json"
+    for _ in range(3):
+        req = urllib.request.Request(url, data=datos, method="POST",
+                                     headers={"Content-Type": tipo, "User-Agent": AGENTE})
+        try:
+            with abrir(req, timeout=15) as r:
+                return 200 <= getattr(r, "status", 200) < 300
+        except urllib.error.HTTPError as e:
+            if e.code != 429:
+                return False   # borrado (404), datos raros (400) o el servicio caído (5xx)
+            espera = 2.0
+            try:
+                espera = float(json.loads(e.read().decode("utf-8", "replace")).get("retry_after", espera))
+            except (ValueError, AttributeError, OSError):
+                try:
+                    espera = float(e.headers.get("Retry-After") or espera)
+                except (TypeError, ValueError):
+                    pass
+            esperar(min(max(espera, 0.5), 30.0))
+        except (urllib.error.URLError, OSError, ValueError):
+            return False       # sin internet: se intenta la próxima vez
+    return False
+
+
+def _buzon_registro(ruta: "pathlib.Path | None") -> pathlib.Path:
+    if ruta:
+        return pathlib.Path(ruta)
+    base = os.environ.get("LOCALAPPDATA") or tempfile.gettempdir()
+    return pathlib.Path(base) / "AlfaInstalador" / "buzon_enviados.json"
+
+
+def _registro_leer(ruta: pathlib.Path) -> list:
+    try:
+        datos = json.loads(ruta.read_text(encoding="utf-8"))
+        return [str(x) for x in datos.get("enviados", [])] if isinstance(datos, dict) else []
+    except (OSError, ValueError):
+        return []
+
+
+def _registro_guardar(ruta: pathlib.Path, claves: list):
+    try:
+        ruta.parent.mkdir(parents=True, exist_ok=True)
+        tmp = ruta.with_name(ruta.name + ".tmp")
+        tmp.write_text(json.dumps({"enviados": claves[-500:]}), encoding="utf-8")
+        os.replace(tmp, ruta)
+    except OSError:
+        pass
+
+
+def _buzon_marcar(archivo: pathlib.Path, crudo: bytes, indices: list) -> bool:
+    """Cambia `false` por `true` en el campo enviado de esos reportes y nada más.
+    Copia de respaldo antes; si algo no cuadra, el archivo se queda como estaba."""
+    try:
+        if archivo.read_bytes() != crudo:
+            return False   # alguien lo cambió mientras mandábamos (¿se abrió el juego?)
+        texto = crudo.decode("utf-8", "surrogateescape")
+        globales = leer_lua(texto)
+        lista = globales[BUZON_GLOBAL].campos["buzon"].campos["pendientes"]
+        esperado = _plano(globales)
+        cambios = []
+        for k in indices:
+            r = lista.campos[k]
+            a, b = r.lugar["enviado"]
+            if texto[a:b] != "false":
+                return False
+            cambios.append((a, b))
+            esperado[BUZON_GLOBAL]["buzon"]["pendientes"][k]["enviado"] = True
+        nuevo = texto
+        for a, b in sorted(cambios, reverse=True):
+            nuevo = nuevo[:a] + "true" + nuevo[b:]
+        if _plano(leer_lua(nuevo)) != esperado:
+            return False
+        datos = nuevo.encode("utf-8", "surrogateescape")
+        if len(datos) != len(crudo) - len(cambios):
+            return False
+        respaldo = archivo.with_name(archivo.name + ".antes-del-buzon")
+        if respaldo.exists():
+            os.chmod(respaldo, 0o666)
+            respaldo.unlink()
+        respaldo.write_bytes(crudo)
+        if respaldo.read_bytes() != crudo:
+            return False
+        tmp = archivo.with_name(archivo.name + ".alfa-buzon.tmp")
+        tmp.write_bytes(datos)
+        try:
+            os.replace(tmp, archivo)
+        except OSError:
+            try:
+                tmp.unlink()
+            except OSError:
+                pass
+            return False
+        return archivo.read_bytes() == datos
+    except (OSError, KeyError, AttributeError, TypeError, _LuaMal, UnicodeError, RecursionError):
+        return False
+
+
+def archivos_buzon(forevers) -> list:
+    """El Alfa_Nucleo.lua de cada cuenta de WTF, sin repetir."""
+    vistos = []
+    for f in forevers:
+        if not f:
+            continue
+        cuentas = pathlib.Path(f) / "WTF" / "Account"
+        try:
+            for c in sorted(cuentas.iterdir()):
+                p = c / "SavedVariables" / BUZON_ARCHIVO
+                if p.is_file() and p.resolve() not in vistos:
+                    vistos.append(p.resolve())
+        except OSError:
+            pass
+    return vistos
+
+
+def enviar_buzon(forevers, webhook=None, registro=None, maximo=BUZON_MAX, espera=BUZON_ESPERA,
+                 abrir=urllib.request.urlopen, esperar=time.sleep, formulario=None) -> dict:
+    """Manda los reportes con enviado = false de todas las cuentas al formulario de Toxic
+    (y, si hay webhook, también a #buzon-alfa) y los marca. Cuenta como enviado lo que recibió
+    el formulario; Discord es un extra y su falla no detiene nada.
+    Llamar solo con el juego cerrado (el juego reescribe el archivo al salir). Nunca lanza errores."""
+    res = {"enviados": 0, "marcados": 0, "sin_marcar": 0, "dañados": 0, "pendientes": 0, "discord": 0}
+    formulario = formulario or BUZON_FORMULARIO["url"]
+    ruta_reg = _buzon_registro(registro)
+    hechos = _registro_leer(ruta_reg)
+    cupo, primero, parar = maximo, True, False
+    for archivo in archivos_buzon(forevers):
+        if parar:
+            break
+        try:
+            crudo = archivo.read_bytes()
+            if b"buzon" not in crudo:
+                continue
+            pendientes = _buzon_pendientes(leer_lua(crudo.decode("utf-8", "surrogateescape")))
+        except (OSError, _LuaMal, UnicodeError, RecursionError):
+            res["dañados"] += 1
+            continue
+        marcar = []
+        for k, r in pendientes:
+            clave = _buzon_clave(r)
+            if clave in hechos:      # ya se mandó otra vez, pero no se pudo marcar
+                marcar.append(k)
+                continue
+            if cupo <= 0 or parar:
+                res["pendientes"] += 1
+                continue
+            if not primero:
+                esperar(espera)
+            primero = False
+            if not _buzon_post(formulario, _buzon_formulario(r), abrir, esperar, formulario=True):
+                parar = True
+                res["pendientes"] += 1
+                continue
+            if webhook and _buzon_post(webhook, _buzon_mensaje(r), abrir, esperar):
+                res["discord"] += 1
+            cupo -= 1
+            res["enviados"] += 1
+            hechos.append(clave)
+            _registro_guardar(ruta_reg, hechos)
+            marcar.append(k)
+        if marcar:
+            if _buzon_marcar(archivo, crudo, marcar):
+                res["marcados"] += len(marcar)
+            else:
+                res["sin_marcar"] += len(marcar)
+    return res
+
+
+def frase_buzon(n: int) -> str:
+    return f"Envié {n} reporte{'s' if n != 1 else ''} a Toxic. ¡Gracias por ayudar a la manada!"
+
+
+# ---------------------------------------------------------------------------
 # Ventana
 # ---------------------------------------------------------------------------
 FONDO = "#101412"
@@ -384,7 +912,7 @@ def _ventana():
             self._pintar(False)
 
     class Asistente(tk.Tk):
-        def __init__(self, carpeta=None, seguir=False, zip_local=None):
+        def __init__(self, carpeta=None, seguir=False, zip_local=None, buzon=True):
             try:
                 ctypes.windll.shcore.SetProcessDpiAwareness(1)
             except (AttributeError, OSError):
@@ -409,6 +937,10 @@ def _ventana():
             self.forever = forever_de(carpeta) if carpeta else None
             self.zip_local = pathlib.Path(zip_local) if zip_local else None
             self.ocupado = False
+            self.buzon_activo = buzon
+            self.webhook = webhook_buzon() if buzon else None
+            self.buzon_hecho = False
+            self.buzon_cerrojo = threading.Lock()
             self.protocol("WM_DELETE_WINDOW", self._cerrar)
 
             try:
@@ -438,6 +970,9 @@ def _ventana():
                 self.marcas.append((num, txt))
             tk.Label(lado, text=f"Hecho por toxic3000\npara La Jauría · v{VERSION}", font=(LETRA, 8),
                      fg=APAGADO, bg=LATERAL, justify="center").pack(side="bottom", pady=int(18 * s))
+            # la línea del buzón: solo aparece cuando se mandó algo
+            self.linea_buzon = tk.Label(lado, text="", font=(LETRA, 9), fg=ACENTO, bg=LATERAL, justify="center",
+                                        wraplength=int(176 * s))
 
             # Contenido del paso
             self.cuerpo = tk.Frame(self, bg=FONDO)
@@ -516,6 +1051,8 @@ def _ventana():
         def _preparar(self):
             encontradas = buscar_forever()
             self._en_ventana(lambda: self._al_encontrar(encontradas))
+            if self.buzon_activo:
+                threading.Thread(target=self._buzon, args=(encontradas,), daemon=True).start()
             while self.info is None:
                 try:
                     info = ultima_version()
@@ -524,6 +1061,28 @@ def _ventana():
                 except ErrorAmable as e:
                     self._en_ventana(lambda m=str(e): self._al_saber_version(None, m))
                     time.sleep(6)
+
+        def _buzon(self, encontradas=()):
+            """Manda los reportes del juego a Toxic. Con el juego abierto no toca nada:
+            se intenta de nuevo al terminar de instalar (ahí ya está cerrado)."""
+            if not self.buzon_activo or self.buzon_hecho or not self.buzon_cerrojo.acquire(blocking=False):
+                return
+            try:
+                if self.buzon_hecho or wow_abierto():
+                    return
+                lugares = [f for f in [self.forever, *encontradas, *self.instaladas] if f]
+                res = enviar_buzon(list(dict.fromkeys(lugares)), self.webhook)
+                self.buzon_hecho = True
+                if res["enviados"]:
+                    self._en_ventana(lambda n=res["enviados"]: self.mostrar_buzon(n))
+            except Exception:  # noqa: BLE001 - el buzón nunca debe estorbar a la instalación
+                pass
+            finally:
+                self.buzon_cerrojo.release()
+
+        def mostrar_buzon(self, n):
+            self.linea_buzon.config(text=frase_buzon(n).replace(". ¡", ".\n¡", 1))
+            self.linea_buzon.pack(side="bottom", padx=int(18 * self.s), pady=(0, int(4 * self.s)))
 
         def _al_encontrar(self, encontradas):
             self.instaladas = encontradas
@@ -691,6 +1250,8 @@ def _ventana():
                 self.ocupado = "copiando"
                 n = instalar(zip_path, self.forever, informar)
                 self.ocupado = False
+                if self.buzon_activo and not self.buzon_hecho:
+                    threading.Thread(target=self._buzon, daemon=True).start()
                 if not self.zip_local:
                     try:
                         zip_path.unlink()
@@ -744,6 +1305,23 @@ def _ventana():
 # ---------------------------------------------------------------------------
 # Modos sin ventana (pruebas) y capturas del diseño
 # ---------------------------------------------------------------------------
+def solo_buzon(carpeta) -> int:
+    """Manda los reportes pendientes sin instalar nada (para probarlo)."""
+    forevers = [forever_de(carpeta)] if carpeta else buscar_forever()
+    webhook = webhook_buzon()
+    print("Formulario:", BUZON_FORMULARIO["url"])
+    print("Discord:", "sí (buzon_local.json)" if webhook else "no (sin instalador/buzon_local.json)")
+    if wow_abierto():
+        print("WoW está abierto: ciérralo y vuelve a intentarlo")
+        return 1
+    print("Archivos:", *[str(a) for a in archivos_buzon(forevers)] or ["ninguno"], sep="\n  ")
+    res = enviar_buzon(forevers, webhook)
+    print(res)
+    if res["enviados"]:
+        print(frase_buzon(res["enviados"]))
+    return 0
+
+
 def sin_ventana(carpeta, zip_local) -> int:
     forever = forever_de(carpeta) if carpeta else (buscar_forever() or [None])[0]
     if not forever:
@@ -770,7 +1348,7 @@ def capturas(destino) -> int:
     destino = pathlib.Path(destino)
     destino.mkdir(parents=True, exist_ok=True)
     Asistente = _ventana()
-    app = Asistente()
+    app = Asistente(buzon=False)
     app.info = {"version": "1.0.0", "tam": 58014400, "url": "", "sha256": None, "nombre": "Alfa-1.0.0.zip"}
 
     def foto(nombre):
@@ -783,6 +1361,7 @@ def capturas(destino) -> int:
     app.lift()
     app.attributes("-topmost", True)
     app.paso_bienvenida(); foto("1-bienvenida")
+    app.mostrar_buzon(2); foto("1b-buzon")
     app.paso_carpeta(); foto("2-carpeta")
     guardada = app.forever
     app.forever = None
@@ -811,10 +1390,13 @@ def main(argv) -> int:
 
     if "--capturas" in argv:
         return capturas(valor("--capturas"))
+    if "--solo-buzon" in argv:
+        return solo_buzon(valor("--carpeta"))
     if "--sin-ventana" in argv:
         return sin_ventana(valor("--carpeta"), valor("--zip"))
     Asistente = _ventana()
-    Asistente(carpeta=valor("--carpeta"), seguir="--seguir" in argv, zip_local=valor("--zip")).mainloop()
+    Asistente(carpeta=valor("--carpeta"), seguir="--seguir" in argv, zip_local=valor("--zip"),
+              buzon="--sin-buzon" not in argv).mainloop()
     return 0
 
 

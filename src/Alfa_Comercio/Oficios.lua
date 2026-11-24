@@ -234,7 +234,7 @@ function Of.Instructor(linea)
 			return true
 		end
 	end
-	N.Imprimir(L["No se pudo buscar el lugar más cercano."])
+	N.Imprimir(L["No pude buscar el lugar más cercano. Prueba de nuevo en un momento; si sigue, /alfa diagnostico lo revisa."])
 	return false
 end
 
@@ -247,4 +247,106 @@ function Of.PasoActual(linea, rank)
 		if rank < p[2] then return p, i end
 	end
 	return nil
+end
+
+---------------------------------------------------------------------------
+-- 1.3.9: lo más barato para subir ahora. Tus recetas de este oficio que
+-- todavía dan puntos (su color, leído al abrir tu profesión) y el tramo de la
+-- guía que te toca, con lo que cuesta cada punto: lo que te falta comprar
+-- (lo que ya tienes no cuesta) entre la probabilidad de subir.
+--   Of.MasBarata(linea, rank) -> { { o, r, chance, color, sabe, veces, costo, porPunto }, ... }
+---------------------------------------------------------------------------
+Of.CHANCE = { [0] = 1, [1] = 0.8, [2] = 0.35 }
+
+local function chanceGuia(p, rank)
+	if rank >= p[1] and rank < p[2] then return 1, "guia" end
+	if rank >= p[2] and rank < p[2] + 10 then return Of.CHANCE[2], "verde" end
+	return nil
+end
+
+function Of.MasBarata(linea, rank)
+	local g = G[linea]
+	if not g or g.tipo ~= "crear" then return {} end
+	rank = rank or Of.Habilidad(linea) or 0
+	local nombre = Of.Nombre(linea)
+	local productos = {}
+	for _, p in ipairs(g.pasos) do if p.o then productos[p.o] = p end end
+	local cand, visto = {}, {}
+	local ok, todas = pcall(M.TodasLasRecetas or function() return {} end)
+	for _, e in ipairs(ok and type(todas) == "table" and todas or {}) do
+		local rec = e.rec
+		if e.propio and type(rec) == "table" and type(rec.o) == "number" and type(rec.r) == "table" and not visto[rec.o]
+			and (rec.p == nombre or productos[rec.o]) then
+			local ch, color
+			-- El color sirve si se leyó hace poco (con tu habilidad de ahora, o casi).
+			if type(rec.d) == "number" and (not rec.s or rank - rec.s < 5) then
+				ch, color = Of.CHANCE[rec.d], rec.d
+			elseif productos[rec.o] then
+				ch, color = chanceGuia(productos[rec.o], rank)
+			end
+			if ch and ch > 0 then
+				visto[rec.o] = true
+				cand[#cand + 1] = { o = rec.o, r = rec.r, chance = ch, color = color, sabe = true }
+			end
+		end
+	end
+	for _, p in ipairs(g.pasos) do
+		if p.o and not visto[p.o] then
+			local ch, color = chanceGuia(p, rank)
+			if ch then
+				visto[p.o] = true
+				cand[#cand + 1] = { o = p.o, r = p.r or {}, chance = ch, color = color, sabe = false }
+			end
+		end
+	end
+	local memo = {}
+	for _, x in ipairs(cand) do
+		local costo, conocido, veces = 0, true, nil
+		for i = 1, #x.r, 2 do
+			local id, q = x.r[i], x.r[i + 1]
+			if type(id) == "number" and type(q) == "number" and q > 0 then
+				if memo[id] == nil then memo[id] = M.Tienes(id) or 0 end
+				local v = floor(memo[id] / q)
+				veces = veces and min(veces, v) or v
+				local falta = max(0, q - memo[id])
+				if falta > 0 then
+					local c = M.CostoCompra and M.CostoCompra(id)
+					if c then costo = costo + c * falta else conocido = false end
+				end
+			end
+		end
+		x.veces = veces or 0
+		x.costo = conocido and costo or nil
+		x.porPunto = x.costo and floor(x.costo / x.chance + 0.5) or nil
+	end
+	table.sort(cand, function(a, b)
+		local pa, pb = a.porPunto, b.porPunto
+		if (pa ~= nil) ~= (pb ~= nil) then return pa ~= nil end
+		if pa and pa ~= pb then return pa < pb end
+		if a.chance ~= b.chance then return a.chance > b.chance end
+		if a.sabe ~= b.sabe then return a.sabe end
+		return a.o < b.o
+	end)
+	return cand
+end
+
+-- 1.3.9: lo que ya puedes fabricar de este oficio con lo que llevas y deja
+-- ganancia (Fabricar.lua), lo que más deja primero.
+function Of.YaPuedes(linea)
+	local g = G[linea]
+	if not g or not M.Fabricar then return {} end
+	local nombre = Of.Nombre(linea)
+	local productos = {}
+	for _, p in ipairs(g.pasos or {}) do if p.o then productos[p.o] = true end end
+	local out = {}
+	local ok, lista = pcall(M.Fabricar, { soloMias = true })
+	for _, x in ipairs(ok and type(lista) == "table" and lista or {}) do
+		local rec = x.e and x.e.rec
+		if rec and (x.veces or 0) > 0 and (rec.p == nombre or productos[rec.o]) then out[#out + 1] = x end
+	end
+	table.sort(out, function(a, b)
+		if a.total ~= b.total then return a.total > b.total end
+		return a.gana > b.gana
+	end)
+	return out
 end

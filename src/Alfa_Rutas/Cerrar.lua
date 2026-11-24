@@ -65,6 +65,21 @@ local function puntoDe(pm, listo)
 	return (not listo and pm.objetivo) or pm.fin
 end
 
+-- 1.3.9 (5): de élite o de grupo según el juego (la etiqueta de la misión:
+-- élite, 1 grupo, 62 banda, 81 mazmorra), protegido y sin leer secretos.
+local TAGS_GRUPO = { [1] = true, [62] = true, [81] = true }
+local function eliteDelJuego(qid)
+	local f = C_QuestLog and C_QuestLog.GetQuestTagInfo
+	if type(f) ~= "function" then return false end
+	local ok, info = pcall(f, qid)
+	if not (ok and type(info) == "table") then return false end
+	if N.Leer(info.isElite) == true then return true end
+	local id = tonumber(N.Leer(info.tagID))
+	return id ~= nil and TAGS_GRUPO[id] == true
+end
+-- Una misión así de niveles arriba de ti (roja) va a «Para después».
+Cr.NIVEL_ALTO = 5
+
 local function revisarUna(qid, desde, aqui, p, enLog)
 	local C, Cp = CX(), CP()
 	local q = C.Quest(qid)
@@ -74,6 +89,11 @@ local function revisarUna(qid, desde, aqui, p, enLog)
 		it.listo = Cp.IsQuestReadyForTurnIn(qid) or (q ~= nil and #(q.objectives or {}) == 0 and Cp.GetQuestObjectives(qid) == nil)
 		it.fallida = Cp.IsQuestFailed and Cp.IsQuestFailed(qid) or false
 		it.gris = it.nivel and Cp.IsQuestTrivial and Cp.IsQuestTrivial(it.nivel, p.level) or false
+		-- 1.3.9 (5): de élite o muy arriba de tu nivel, sin terminar: para después.
+		if not it.listo then
+			it.elite = eliteDelJuego(qid)
+			it.alto = it.nivel ~= nil and p.level ~= nil and it.nivel >= p.level + Cr.NIVEL_ALTO or false
+		end
 	else
 		-- Una agregada a mano: si se puede tomar y, si no, qué pide.
 		local ok, motivo, info = D.Estado(qid)
@@ -93,7 +113,7 @@ local function revisarUna(qid, desde, aqui, p, enLog)
 			it.pm = pm
 			-- dentro de una mazmorra: por la lista del motor o por la etiqueta del juego
 			local dentro = pm.dentro or I.EtiquetaMazmorra(it.id)
-			it.grupo, it.dentro = (pm.grupo or dentro) and not it.listo, dentro and not it.listo
+			it.grupo, it.dentro = (pm.grupo or dentro or it.elite) and not it.listo, dentro and not it.listo
 			it.mazmorra = pm.mazmorra
 			local destino = puntoDe(pm, it.listo)
 			it.destino = destino
@@ -107,15 +127,35 @@ local function revisarUna(qid, desde, aqui, p, enLog)
 	local r = it.razones
 	if it.fallida then r[#r + 1] = L["Fallida"] end
 	if it.gris then r[#r + 1] = L["Ya no da XP"] end
-	if it.grupo then r[#r + 1] = L["Pide grupo"] end
+	if it.grupo then r[#r + 1] = it.elite and L["De élite: mejor en grupo"] or L["Pide grupo"] end
+	if it.alto then r[#r + 1] = format(L["Nivel %d: aún te queda grande"], it.nivel) end
 	if it.dentro then r[#r + 1] = it.mazmorra and format(L["Dentro de %s (mazmorra)"], it.mazmorra) or L["En mazmorra"] end
 	if it.sinDatos then r[#r + 1] = L["Sin datos"] end
 	if it.sinEntrega then r[#r + 1] = L["No sé dónde se entrega"] end
 	-- Lo que no vale la pena: fallida, gris o muy lejos sin estar lista.
 	if enLog and (it.fallida or (not it.listo and it.gris)) then
 		it.sugerencia = "abandonar"
-	elseif it.dentro or it.grupo then
+	elseif it.dentro or it.grupo or it.alto then
 		it.sugerencia = "fuera"
+	end
+	-- 1.3.9 (5): «Para después», con su porqué (el resumen la lista aparte).
+	-- 1.3.9 (revisión con el registro de Toxic): una gris sin terminar (que
+	-- no da nada que valga la pena) también: la ruta empezaba mandándote a
+	-- hacer misiones de nivel 11 a nivel 33, antes que las tuyas.
+	it.grisSinValor = enLog and it.gris and not it.listo and not (M.GrisValiosa and M.GrisValiosa(qid)) or false
+	if enLog and (it.dentro or it.grupo or it.alto or it.sinDatos or it.sinEntrega or it.grisSinValor) then
+		-- El porqué más útil primero: lo que la saca de la ruta.
+		-- (en mazmorra antes que «pide grupo»: dice más; y si además es gris, también)
+		local por
+		if it.dentro then por = it.mazmorra and format(L["Dentro de %s (mazmorra)"], it.mazmorra) or L["En mazmorra"]
+		elseif it.grupo then por = it.elite and L["De élite: mejor en grupo"] or L["Pide grupo"]
+		elseif it.alto then por = format(L["Nivel %d: aún te queda grande"], it.nivel)
+		elseif it.grisSinValor then por = L["Ya no te da experiencia: suéltala o métela si quieres"]
+		else por = r[1] or L["Para después"] end
+		if it.gris and (it.dentro or it.grupo or it.alto) then por = por .. " \194\183 " .. L["ya no da XP"] end
+		it.despues = por
+		-- Orden de «Para después»: lo que aún da experiencia primero, lo gris al final.
+		it.despuesOrden = (it.gris and 2 or 1)
 	end
 	return it
 end
@@ -183,8 +223,13 @@ function Cr.Entra(it, filtro)
 	if marca then return false end
 	if it.extra and not it.enLog then return not it.imposible end
 	if not it.pm then return false end
+	-- 1.3.9 (29): un plan con unas cuantas («las que tienen en común»).
+	if type(filtro) == "table" then
+		if type(filtro.solo) == "table" then return filtro.solo[it.id] == true end
+		filtro = nil
+	end
 	if pj().incluir[it.id] then return true end
-	if it.dentro or it.grupo then return false end
+	if it.dentro or it.grupo or it.alto or it.grisSinValor then return false end
 	filtro = filtro or Cr.Filtro()
 	if filtro == "listas" then return it.listo and true or false end
 	if filtro == "zona" then return not it.otraZona end
@@ -234,13 +279,16 @@ function Cr.Agregar(qid)
 	return true
 end
 
-function Cr.Quitar(qid)
+-- siempre: quitada desde el rastreador o AlfaRuta («quitada»), se queda fuera
+-- aunque abras «Cerrar mis misiones» desde otro lado; sin él («fuera», las
+-- casillas del resumen), solo para este plan (1.3.9, revisión 7).
+function Cr.Quitar(qid, siempre)
 	qid = tonumber(qid)
 	if not qid then return false end
 	local p = pj()
 	p.incluir[qid] = nil
 	for i = #p.extra, 1, -1 do if p.extra[i] == qid then table.remove(p.extra, i) end end
-	if I.EnRegistro(qid) then p.marcas[qid] = "fuera" end
+	if I.EnRegistro(qid) then p.marcas[qid] = siempre and "quitada" or "fuera" end
 	revision = nil
 	M.Avisar("CERRAR")
 	return true
@@ -392,8 +440,183 @@ local function notaDe(pm, segundos, aqui)
 end
 
 ---------------------------------------------------------------------------
+-- 1.3.9 (4): el mejor orden de verdad
+---------------------------------------------------------------------------
+-- Encima del planificador del motor (el camino más corto entre paradas):
+--   * en cada zona, lo que hay que hacer va antes y las entregas al final
+--     (juntas por PNJ), si eso no alarga el camino más de un poco;
+--   * y lo que tarda: el camino entre paradas (con vuelos y la piedra) más
+--     un rato por cada objetivo, para el resumen («unos 55 min»).
+local TRABAJO_MISION = 60 -- segundos por misión por terminar, más...
+local TRABAJO_OBJETIVO = 25 -- ...por cada cosa que pide (matar, juntar, usar)
+local TOPE_TRABAJO = 600
+local VELOCIDAD = 7 -- yardas por segundo, corriendo
+local OTRO_CONTINENTE = 1200 -- segundos: un barco o un vuelo largo
+local OTRA_ZONA = 480 -- segundos: a otra zona sin camino medido
+local FINAS = 36 -- paradas finas (tomar, hacer y entregar por separado) hasta este número
+local HOLGURA = 1.15 -- reacomodar una zona no puede alargar su camino más de esto (y 60 s)
+
+local function zonaDe(s) return s.inP and s.inP.map or nil end
+
+local function costoTramo(orden, paradas, desde, costo, i1, i2)
+	local t, antes = 0, i1 > 1 and paradas[orden[i1 - 1]].outP or desde
+	for k = i1, i2 do
+		local s = paradas[orden[k]]
+		t = t + M.num(costo(antes, s.inP), 0)
+		antes = s.outP or antes
+	end
+	return t
+end
+
+-- -> orden nuevo (no toca las dependencias: si una parada de la zona
+-- depende de una entrega de la misma zona, esa zona se queda como estaba).
+local function entregasAlFinal(orden, paradas, desde, costo)
+	local out, i = {}, 1
+	while i <= #orden do
+		local z = zonaDe(paradas[orden[i]])
+		local j = i
+		while j < #orden and z ~= nil and zonaDe(paradas[orden[j + 1]]) == z do j = j + 1 end
+		local tramo = {}
+		for k = i, j do tramo[#tramo + 1] = orden[k] end
+		if #tramo > 2 then
+			local enTramo, pide = {}, false
+			for _, p in ipairs(tramo) do enTramo[p] = true end
+			for _, p in ipairs(tramo) do
+				for _, d in ipairs(paradas[p].deps or {}) do
+					if enTramo[d] and paradas[d].tipo == "T" then pide = true end
+				end
+			end
+			if not pide then
+				local hacer, entregar = {}, {}
+				for _, p in ipairs(tramo) do
+					if paradas[p].tipo == "T" then entregar[#entregar + 1] = p else hacer[#hacer + 1] = p end
+				end
+				-- Las entregas, juntas por PNJ (en el orden en que salía la primera de cada uno).
+				local porNpc, grupos = {}, {}
+				for _, p in ipairs(entregar) do
+					local g = paradas[p].pm.entregar
+					local k = g and (g.npc and ("n" .. g.npc) or (g.object and ("o" .. g.object))) or ("p" .. p)
+					if not porNpc[k] then porNpc[k] = {} grupos[#grupos + 1] = porNpc[k] end
+					local l = porNpc[k]
+					l[#l + 1] = p
+				end
+				local nuevo = {}
+				for _, p in ipairs(hacer) do nuevo[#nuevo + 1] = p end
+				for _, l in ipairs(grupos) do for _, p in ipairs(l) do nuevo[#nuevo + 1] = p end end
+				-- Comparar con el camino de antes (el que llega y el que sigue igual).
+				local prueba = {}
+				for k = 1, i - 1 do prueba[k] = out[k] end
+				local base = #prueba
+				for k, p in ipairs(tramo) do prueba[base + k] = p end
+				local antes = costoTramo(prueba, paradas, desde, costo, base + 1, base + #tramo)
+				for k, p in ipairs(nuevo) do prueba[base + k] = p end
+				local despues = costoTramo(prueba, paradas, desde, costo, base + 1, base + #tramo)
+				if despues <= antes * HOLGURA + 60 then tramo = nuevo end
+			end
+		end
+		for _, p in ipairs(tramo) do out[#out + 1] = p end
+		i = j + 1
+	end
+	return out
+end
+Cr.EntregasAlFinal = entregasAlFinal -- (para el banco)
+
+-- El orden de Cerrar: el del motor, con las entregas al final de cada zona.
+-- calc: { segundos, zonas = { map... } } se llena al ordenar (para el resumen).
+local function ordenCerrar(calc)
+	return function(paradas, desde, costo)
+		local orden = P.Ordenar(paradas, desde, costo)
+		orden = entregasAlFinal(orden, paradas, desde, costo)
+		-- Para el resumen, un tramo sin medida (otra zona sin camino medido)
+		-- cuenta por su distancia en línea recta, no como «lejísimos».
+		local function estimar(a, b2)
+			local t0 = costo(a, b2)
+			if type(t0) == "number" and t0 < I.LEJOS then return t0 end
+			local c1, x1, y1 = mundo(a)
+			local c2, x2, y2 = mundo(b2)
+			if c1 and c1 == c2 then return ((x2 - x1) ^ 2 + (y2 - y1) ^ 2) ^ 0.5 / VELOCIDAD * 1.25 end
+			if c1 and c2 then return OTRO_CONTINENTE end
+			-- Sin coordenadas del mundo: en la misma zona, por el mapa (1 % ≈ 35 yardas).
+			if a and b2 and a.map and a.map == b2.map and a.x and b2.x then
+				return ((b2.x - a.x) ^ 2 + (b2.y - a.y) ^ 2) ^ 0.5 * 35 / VELOCIDAD * 1.25
+			end
+			return OTRA_ZONA
+		end
+		local t = #orden > 0 and costoTramo(orden, paradas, desde, estimar, 1, #orden) or 0
+		local zonas, vistas = {}, {}
+		for _, p in ipairs(orden) do
+			local s = paradas[p]
+			if s.tipo == "O" or s.tipo == "Q" then
+				local n = 0
+				for _, g in ipairs(s.pm.objetivos or {}) do n = n + M.num(g.count, 1) end
+				t = t + min(TOPE_TRABAJO, TRABAJO_MISION + TRABAJO_OBJETIVO * n)
+			end
+			local z = zonaDe(s)
+			if z and not vistas[z] then vistas[z] = true zonas[#zonas + 1] = z end
+		end
+		calc.segundos = (calc.segundos or 0) + t
+		for _, z in ipairs(zonas) do
+			if not calc.vistas[z] then calc.vistas[z] = true calc.zonas[#calc.zonas + 1] = z end
+		end
+		return orden
+	end
+end
+
+-- Dos pasos seguidos de objetivos (matar, juntar, usar...) en el mismo
+-- lugar se hacen uno: «Junto aquí: X y Y». Nunca junta entregas ni tomas.
+local HACER = { kill = true, collect = true, interact = true, talk = true, complete = true, use = true, loot = true }
+local function soloHacer(paso)
+	if type(paso) ~= "table" or type(paso.goals) ~= "table" or #paso.goals == 0 then return nil end
+	local lugar
+	for _, g in ipairs(paso.goals) do
+		if not HACER[g.t] then return nil end
+		if not lugar and g.map and g.x and g.y then lugar = g end
+	end
+	return lugar
+end
+local function juntarCercanos(pasos)
+	local out = {}
+	for _, s in ipairs(pasos) do
+		local prev = out[#out]
+		local a, b = prev and soloHacer(prev), soloHacer(s)
+		local junta = false
+		if a and b then
+			local c1, x1, y1 = mundo(a)
+			local c2, x2, y2 = mundo(b)
+			if c1 and c2 then
+				junta = c1 == c2 and ((x1 - x2) ^ 2 + (y1 - y2) ^ 2) ^ 0.5 <= GRUPO_YARDAS
+			else
+				-- Sin coordenadas del mundo: en el mismo mapa, por su porcentaje (1 % ≈ 35 yardas).
+				junta = a.map == b.map and ((a.x - b.x) ^ 2 + (a.y - b.y) ^ 2) ^ 0.5 * 35 <= GRUPO_YARDAS
+			end
+		end
+		if junta then
+			for _, g in ipairs(s.goals) do prev.goals[#prev.goals + 1] = g end
+			prev.alfaJuntos = prev.alfaJuntos or { prev.title }
+			prev.alfaJuntos[#prev.alfaJuntos + 1] = s.title
+			prev.title = format(L["Junto aquí: %s"], concat(prev.alfaJuntos, ", "))
+			if not prev.note then prev.note = s.note end
+		else
+			out[#out + 1] = s
+		end
+	end
+	for _, s in ipairs(out) do s.alfaJuntos = nil end
+	return out
+end
+Cr.JuntarCercanos = juntarCercanos -- (para el banco)
+
+---------------------------------------------------------------------------
 -- Armar la guía
 ---------------------------------------------------------------------------
+
+-- «Para después»: lo que aún da experiencia primero (de más nivel a menos), lo gris al final.
+local function ordenarDespues(l)
+	table.sort(l, function(a, b)
+		if (a.orden or 1) ~= (b.orden or 1) then return (a.orden or 1) < (b.orden or 1) end
+		if (a.nivel or 0) ~= (b.nivel or 0) then return (a.nivel or 0) > (b.nivel or 0) end
+		return tostring(a.titulo) < tostring(b.titulo)
+	end)
+end
 
 local function armar(lista, filtro, idx, ceder, alAvanzar)
 	local desde = A.PlayerPoint and A.PlayerPoint() or nil
@@ -441,7 +664,14 @@ local function armar(lista, filtro, idx, ceder, alAvanzar)
 			fuera[#fuera + 1] = it
 		end
 	end
-	if #ahora + #despues == 0 then return nil, "nada" end
+	if #ahora + #despues == 0 then
+		local dl = {}
+		for _, it in ipairs(fuera) do
+			if it.despues and not marcas[it.id] then dl[#dl + 1] = { id = it.id, titulo = it.titulo, por = it.despues, nivel = it.nivel, orden = it.despuesOrden } end
+		end
+		ordenarDespues(dl)
+		return nil, "nada", nil, nil, nil, { despues = dl }
+	end
 	-- Los puntos de todas las paradas, para medir el camino una vez.
 	local puntos = { desde }
 	for _, grupo in ipairs({ ahora, despues }) do
@@ -473,7 +703,8 @@ local function armar(lista, filtro, idx, ceder, alAvanzar)
 		notas[#notas + 1] = format(lejos == 1 and L["%d parada queda a más de 10 minutos: la flecha te dice si conviene volar o usar tu piedra de hogar."]
 			or L["%d paradas quedan a más de 10 minutos: la flecha te dice si conviene volar o usar tu piedra de hogar."], lejos)
 	end
-	local pasos = P.PasosDe(ahora, desde, costo)
+	local calc = { segundos = 0, zonas = {}, vistas = {} }
+	local pasos = P.PasosDe(ahora, desde, costo, ordenCerrar(calc), FINAS)
 	-- Lo que pide un nivel: misiones de XP para llegar y el paso que lo espera.
 	if #despues > 0 then
 		if nivelExtra > I.Jugador().level then
@@ -489,15 +720,32 @@ local function armar(lista, filtro, idx, ceder, alAvanzar)
 			end
 			pasos[#pasos + 1] = P.PasoNivel(nivelExtra)
 		end
-		local mas = P.PasosDe(despues, desde, costo)
+		local mas = P.PasosDe(despues, desde, costo, ordenCerrar(calc), FINAS)
 		for _, s in ipairs(mas) do pasos[#pasos + 1] = s end
 	end
 	if #pasos == 0 then return nil, "vacio" end
+	pasos = juntarCercanos(pasos)
 	P.MarcarAntes(pasos, antesDe)
 	local ultimo = pasos[#pasos]
+	-- 1.3.9 (revisión): lo que quedó fuera, en una sola nota (antes, una por
+	-- misión: 13 renglones al final del plan) y con su porqué de verdad
+	-- (decía «la dejaste fuera» de las que solo dejó fuera el atajo).
+	local porque = {}
 	for _, it in ipairs(fuera) do
-		local por = marcas[it.id] == "abandonar" and L["la marcaste para abandonar"] or (it.razones[1] or L["la dejaste fuera"])
-		ultimo.goals[#ultimo.goals + 1] = { t = "note", text = format(L["Fuera de este plan: %s (%s)."], M.Citar(it.titulo), por) }
+		local por
+		if marcas[it.id] == "abandonar" then por = L["la marcaste para abandonar"]
+		elseif marcas[it.id] == "fuera" or marcas[it.id] == "quitada" then por = L["la dejaste fuera"]
+		elseif it.despues then por = it.despues
+		elseif filtro == "listas" and not it.listo then por = L["aún no está lista"]
+		elseif filtro == "zona" and it.otraZona then por = L["está en otra zona"]
+		else por = it.razones[1] or L["la dejaste fuera"] end
+		porque[#porque + 1] = format(L["%s (%s)"], M.Citar(it.titulo), por)
+	end
+	if #porque > 0 then
+		local MAX = 4
+		local lista = concat(porque, "; ", 1, math.min(MAX, #porque))
+		if #porque > MAX then lista = lista .. "; " .. format(L["y %d más"], #porque - MAX) end
+		ultimo.goals[#ultimo.goals + 1] = { t = "note", text = format(L["Fuera de este plan: %s."], lista) }
 	end
 	local listas, total = 0, #ahora + #despues
 	for _, pm in ipairs(ahora) do if pm.listo then listas = listas + 1 end end
@@ -512,7 +760,16 @@ local function armar(lista, filtro, idx, ceder, alAvanzar)
 	for _, grupo in ipairs({ ahora, despues }) do
 		for _, pm in ipairs(grupo) do dentro[pm.q.id] = true end
 	end
-	return pasos, nil, notas, listas == total, dentro
+	-- 1.3.9 (6): lo que el resumen cuenta antes de salir.
+	local xp = 0
+	for qid in pairs(dentro) do xp = xp + M.num(M.XPMision(qid), 0) end
+	local despuesL = {}
+	for _, it in ipairs(fuera) do
+		if it.despues and not marcas[it.id] then despuesL[#despuesL + 1] = { id = it.id, titulo = it.titulo, por = it.despues, nivel = it.nivel, orden = it.despuesOrden } end
+	end
+	ordenarDespues(despuesL)
+	local info = { segundos = calc.segundos, zonas = calc.zonas, xp = xp, misiones = total, listas = listas, despues = despuesL }
+	return pasos, nil, notas, listas == total, dentro, info
 end
 
 -- Lo que el plan vio del registro al armarse: { filtro, log = { [qid] = lista? }, dentro = { [qid] = true } }
@@ -533,11 +790,11 @@ function Cr.Armar(opts, alTerminar)
 	local function conLista(lista)
 		local function seguir(idx)
 			T.Lanzar("cerrar:armar", function(ceder)
-				local pasos, por, notas, soloEntregar, dentro = armar(lista, filtro, idx, ceder, opts.alAvanzar)
-				return { pasos = pasos, por = por, notas = notas, solo = soloEntregar, dentro = dentro }
+				local pasos, por, notas, soloEntregar, dentro, info = armar(lista, filtro, idx, ceder, opts.alAvanzar)
+				return { pasos = pasos, por = por, notas = notas, solo = soloEntregar, dentro = dentro, info = info }
 			end, function(res, err)
 				if not res or not res.pasos then
-					return alTerminar(nil, err and "error" or (res and res.por) or "vacio", nil, selloDe(lista, filtro))
+					return alTerminar(nil, err and "error" or (res and res.por) or "vacio", nil, selloDe(lista, filtro), res and res.info)
 				end
 				local mapa
 				for _, s in ipairs(res.pasos) do
@@ -547,7 +804,7 @@ function Cr.Armar(opts, alTerminar)
 				local def = M.Guias.Def(M.Guias.IdLiberar(), res.solo and L["Entregar mis misiones"] or L["Cerrar mis misiones"], res.pasos, {
 					zone = mapa, pitch = L["Tus misiones abiertas, para terminarlas y entregarlas por el camino más corto."],
 				})
-				alTerminar(def, nil, res.notas, selloDe(lista, filtro, res.dentro))
+				alTerminar(def, nil, res.notas, selloDe(lista, filtro, res.dentro), res.info)
 			end)
 		end
 		-- Con agregadas que piden nivel hace falta el índice (misiones de XP).
@@ -562,55 +819,66 @@ function Cr.Armar(opts, alTerminar)
 	end)
 end
 
--- Un clic: arma, instala y abre la guía; avisa qué hizo.
-function Cr.Ahora(filtro, alListo)
-	M.Aviso(L["Armando «Cerrar mis misiones»..."], L["Alfa mide los caminos (vuelos y piedra de hogar): tarda unos segundos."], { icono = "ic-misiones" })
-	Cr.Armar({ filtro = filtro }, function(def, motivo, notas, sello)
-		if not def then
-			local texto = (motivo == "nada" or motivo == "vacio") and L["No tienes misiones para este plan con ese filtro."] or I.TextoMotivo(motivo)
-			M.Aviso(L["No armé el plan"], texto, { icono = "ic-aviso", tono = "aviso" })
-			if alListo then alListo(false) end
-			return
+-- 1.3.9: instalar y abrir un plan ya armado (el resumen lo llama con
+-- «Empezar»). -> ok, por qué ("motor" | "tabs" | nil)
+function Cr.Instalar(def, notas, sello, callado)
+	-- Pedido con un clic: empieza limpio, sin los pasos que omitiste en
+	-- un plan anterior (Guias.Olvidar). El rearmado solo (Cr.Actualizar)
+	-- sí conserva lo hecho.
+	M.Guias.Olvidar(def.id)
+	-- Y las misiones de tu registro que omitiste con «Omitir esta misión»
+	-- (1.2.3): el motor las guarda por misión, para todas las guías, y
+	-- sin esto cada plan nuevo las seguía saltando y quedaba sin paso.
+	-- Pediste cerrarlas: vuelven.
+	local Eng = M.Motor("Engine")
+	if Eng and Eng.IsQuestSkipped and Eng.SkipQuest then
+		for qid in pairs(sello and sello.dentro or {}) do
+			if Eng.IsQuestSkipped(qid) then Eng.SkipQuest(qid, false) end
 		end
-		-- Pedido con un clic: empieza limpio, sin los pasos que omitiste en
-		-- un plan anterior (Guias.Olvidar). El rearmado solo (Cr.Actualizar)
-		-- sí conserva lo hecho.
-		M.Guias.Olvidar(def.id)
-		-- Y las misiones de tu registro que omitiste con «Omitir esta misión»
-		-- (1.2.3): el motor las guarda por misión, para todas las guías, y
-		-- sin esto cada plan nuevo las seguía saltando y quedaba sin paso.
-		-- Pediste cerrarlas: vuelven.
-		local Eng = M.Motor("Engine")
-		if Eng and Eng.IsQuestSkipped and Eng.SkipQuest then
-			for qid in pairs(sello and sello.dentro or {}) do
-				if Eng.IsQuestSkipped(qid) then Eng.SkipQuest(qid, false) end
-			end
-		end
-		local ok = M.Guias.Instalar(def)
-		if not ok then
-			M.Aviso(L["No armé el plan"], L["El motor no aceptó la guía."], { icono = "ic-aviso", tono = "aviso" })
-			if alListo then alListo(false) end
-			return
-		end
-		pj().liberarSello = sello
-		local i, por = M.Guias.Abrir(def.id)
-		-- Que abra en su paso de ahora, no en uno que mirabas del plan viejo
-		-- (el motor puede volver a guardar ese paso al cambiar la guía).
-		if i and Eng and Eng.GetLiveStep and Eng.GetStepIndex and Eng.Goto then
-			local vivo = Eng.GetLiveStep()
-			if vivo and Eng.GetStepIndex() ~= vivo then pcall(Eng.Goto, vivo) end
-		end
+	end
+	if not M.Guias.Instalar(def) then
+		M.Aviso(L["No armé el plan"], L["El motor no aceptó la guía."], { icono = "ic-aviso", tono = "aviso" })
+		return false, "motor"
+	end
+	pj().liberarSello = sello
+	local i, por = M.Guias.Abrir(def.id)
+	-- Que abra en su paso de ahora, no en uno que mirabas del plan viejo
+	-- (el motor puede volver a guardar ese paso al cambiar la guía).
+	if i and Eng and Eng.GetLiveStep and Eng.GetStepIndex and Eng.Goto then
+		local vivo = Eng.GetLiveStep()
+		if vivo and Eng.GetStepIndex() ~= vivo then pcall(Eng.Goto, vivo) end
+	end
+	if not callado then
 		for k, n in ipairs(notas or {}) do
 			if k > 3 then break end
 			M.Aviso(L["Ojo con tu plan"], n, { icono = "ic-info", tono = "aviso" })
 		end
 		if i then
 			M.Aviso(L["Plan en marcha"], L["Sigue la flecha: las paradas van en el orden más corto, juntas por PNJ."], { lobo = "aullando" })
-		elseif por == "tabs" then
-			M.EnCurso.AvisoLleno(L["Es el máximo a la vez. Quita una que ya no uses y vuelve a armar tu plan."])
 		end
-		M.Avisar("SEGUIR", "liberar")
-		if alListo then alListo(i ~= nil) end
+	end
+	if not i and por == "tabs" then
+		M.EnCurso.AvisoLleno(L["Es el máximo a la vez. Quita una que ya no uses y vuelve a armar tu plan."])
+	end
+	M.Avisar("SEGUIR", "liberar")
+	return i ~= nil, por
+end
+
+-- Un clic: arma, instala y abre la guía; avisa qué hizo (con un filtro
+-- dado: «Una hora de caza», «Entregar»). Sin filtro, el plan de punta a
+-- punta con su resumen (CerrarTodo.lua).
+function Cr.Ahora(filtro, alListo)
+	if filtro == nil and M.CerrarTodo then return M.CerrarTodo.Abrir({ origen = "ahora", alListo = alListo }) end
+	M.Aviso(L["Armando «Cerrar mis misiones»..."], L["Alfa mide los caminos (vuelos y piedra de hogar): tarda unos segundos."], { icono = "ic-misiones" })
+	Cr.Armar({ filtro = filtro }, function(def, motivo, notas, sello)
+		if not def then
+			local texto = (motivo == "nada" or motivo == "vacio") and L["No tienes misiones para este plan con ese filtro."] or I.TextoMotivo(motivo)
+			M.Aviso(L["No armé el plan"], texto, { icono = "ic-aviso", tono = "aviso", importante = "siempre" })
+			if alListo then alListo(false) end
+			return
+		end
+		local ok = Cr.Instalar(def, notas, sello)
+		if alListo then alListo(ok) end
 	end)
 end
 
@@ -663,7 +931,47 @@ function Cr.AlDia()
 		if antes == nil and not pj().marcas[qid] then return false end
 		if s.filtro == "listas" and antes == false and Cp.IsQuestReadyForTurnIn(qid) then return false end
 	end
+	-- 1.3.9 (8): una del plan que dejaste (abandonada, no entregada) también lo rehace.
+	if type(s.dentro) == "table" then
+		for qid in pairs(s.dentro) do
+			if s.log[qid] ~= nil and not (Cp.IsOnQuest and Cp.IsOnQuest(qid)) and not I.Hecha(qid) then return false end
+		end
+	end
 	return true
+end
+
+-- 1.3.9 (revisión 6): cuántas de tu registro entrarían a un plan nuevo. Las
+-- que el plan dejó «Para después» (élite, muy altas, grises, sin datos) o que
+-- quitaste no cuentan: con solo esas, lo que sigue es otra guía.
+-- -> número
+function Cr.QuedanParaPlan()
+	local Cp = CP()
+	if not (Cp and Cp.GetLogQuests) then return 0 end
+	local marcas = pj().marcas
+	local enLista = {}
+	for _, it in ipairs(revision or {}) do enLista[it.id] = it end
+	local s = pj().liberarSello
+	s = type(s) == "table" and type(s.log) == "table" and s or nil
+	local n = 0
+	for _, qid in ipairs(Cp.GetLogQuests() or {}) do
+		local it = enLista[qid]
+		local entra
+		if marcas[qid] then
+			entra = false
+		elseif it then
+			entra = Cr.Entra(it)
+		elseif s then
+			local antes = s.log[qid]
+			-- Nueva desde que se armó, o del plan y todavía sin entregar; una que
+			-- el atajo «solo listas» dejó fuera, si ya está lista.
+			entra = antes == nil or (type(s.dentro) == "table" and s.dentro[qid] == true)
+				or (s.filtro == "listas" and antes == false and Cp.IsQuestReadyForTurnIn and Cp.IsQuestReadyForTurnIn(qid) and true or false)
+		else
+			entra = true
+		end
+		if entra then n = n + 1 end
+	end
+	return n
 end
 
 -- Rearma el plan abierto con el registro de ahora, sin avisos de armado; dice

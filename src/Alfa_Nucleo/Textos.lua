@@ -3,6 +3,49 @@
 local ADDON, M = ...
 
 M.EN = {
+	-- 1.3.9 (calidad): los datos técnicos del reporte (Informe.lua)
+	["Módulos: %s"] = "Modules: %s",
+	["apagados: %s"] = "turned off: %s",
+	["Modo sencillo"] = "Simple mode",
+	["Modo completo"] = "Full mode",
+	["Alfa usa %.1f MB"] = "Alfa uses %.1f MB",
+	["%d tareas del reloj (la que más tarda: %s)"] = "%d clock tasks (the slowest: %s)",
+	["Otros addons (%d): %s"] = "Other addons (%d): %s",
+	["<jugador>"] = "<player>",
+	["<tu personaje>"] = "<your character>",
+	["<tu reino>"] = "<your realm>",
+	-- 1.3.9 (avisos): el reporte, el Centro de avisos, Lya y los errores con qué hacer
+	["Apagado en el Centro de avisos"] = "Turned off in the Notification center",
+	["Callado: se repetía mucho"] = "Muted: it kept repeating",
+	["Así se ve un aviso de %s"] = "This is how a %s notification looks",
+	["Ahora está apagado: no te saldrá hasta que lo prendas."] = "It's off right now: you won't see it until you turn it on.",
+	["Con su color, su ícono y su sonido, para saber de dónde viene sin leerlo."] = "With its color, icon and sound, so you know where it comes from without reading it.",
+	["Ya te lo dije %d veces: no lo repito en esta sesión."] = "I've told you %d times already: I won't repeat it this session.",
+	["Seguir avisando"] = "Keep notifying",
+	["Centro de avisos"] = "Notification center",
+	["Callar lo que se repite"] = "Mute what repeats",
+	["Un aviso que ya salió %d veces en la sesión se calla solo (queda en la campanita). «Seguir avisando» lo vuelve a prender."] = "A notification that already showed up %d times this session mutes itself (it stays in the bell). \"Keep notifying\" turns it back on.",
+	["Avisos callados"] = "Muted notifications",
+	["Los que se callaron en esta sesión por repetirse."] = "The ones muted this session for repeating.",
+	["Reactivar todos"] = "Turn all back on",
+	["Errores de Alfa"] = "Alfa errors",
+	["Cuando Alfa atrapa un error suyo, un aviso chico te ofrece reportarlo. Nunca en combate."] = "When Alfa catches one of its own errors, a small notification offers to report it. Never in combat.",
+	["Ruta"] = "Route",
+	["Hoy"] = "Today",
+	["Bolsas"] = "Bags",
+	["Pesca"] = "Fishing",
+	["Combate"] = "Combat",
+	["Curación"] = "Healing",
+	["La Jauría"] = "La Jauría",
+	["Lya"] = "Lya",
+	["Comercio"] = "Trade",
+	["Oficios"] = "Professions",
+	["Mundo"] = "World",
+	["Mazmorras"] = "Dungeons",
+	["Talentos"] = "Talents",
+	["Comodidades"] = "Comforts",
+	["Recolección"] = "Gathering",
+	["Enciclopedia"] = "Encyclopedia",
 	-- Piezas
 	["Buscar"] = "Search",
 	["Borrar la búsqueda"] = "Clear the search",
@@ -228,4 +271,21 @@ M.EN = {
 	["Fiesta de Invierno"] = "Feast of Winter Veil",
 	["Amor en el aire"] = "Love is in the Air",
 	["Fuego del Solsticio"] = "Midsummer Fire Festival",
+	-- 1.3.9 (bandos): la temática por bando (Kit/Bando.lua)
+	["la Horda"] = "the Horde",
+	["la Alianza"] = "the Alliance",
+	["La Horda"] = "The Horde",
+	["La Alianza"] = "The Alliance",
+	["¿Vestimos a Alfa de tu bando?"] = "Shall we dress Alfa in your faction's colours?",
+	["Los colores, el emblema y los adornos de %s en las ventanas, los anuncios, Hoy y el marcador de La Jauría. Lo cambias en Estilo y sonido."] = "The colours, emblem and trimmings of %s on the windows, the announcements, Today and La Jauría's scoreboard. You can change it in Style and sound.",
+	["Sí, vístelo"] = "Yes, dress it",
+	["Temática de tu bando"] = "Your faction's theme",
+	["Alfa se viste de %s: colores, emblema y adornos en las ventanas, los anuncios, Hoy y el marcador."] = "Alfa dresses as %s: colours, emblem and trimmings on the windows, the announcements, Today and the scoreboard.",
+	["Alfa se viste de tu bando: colores, emblema y adornos en las ventanas, los anuncios, Hoy y el marcador."] = "Alfa dresses in your faction's colours: emblem and trimmings on the windows, the announcements, Today and the scoreboard.",
 }
+
+-- 1.3.9 (interfaz): textos nuevos
+M.EN["Ocultar esta sugerencia"] = "Hide this suggestion"
+M.EN["«Ahora no» o «No volver a mostrar»."] = "\"Not now\" or \"Don't show again\"."
+M.EN["Ahora no"] = "Not now"
+M.EN["No volver a mostrar"] = "Don't show again"

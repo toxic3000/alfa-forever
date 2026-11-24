@@ -107,7 +107,9 @@ end
 M.tareas = {} -- nombre -> tarea en la cola
 
 -- nombre: una sola a la vez por nombre (pedirla otra vez suma su `fin`).
-function M.Tarea(nombre, paso, fin)
+-- 1.3.9 (20): primero = true la pone al frente de la cola (los filtros de
+-- los objetos no esperan a que se armen los otros catálogos).
+function M.Tarea(nombre, paso, fin, primero)
 	local t = M.tareas[nombre]
 	if t then
 		if fin then t.fin[#t.fin + 1] = fin end
@@ -115,7 +117,7 @@ function M.Tarea(nombre, paso, fin)
 	end
 	t = { nombre = nombre, paso = paso, fin = { fin } }
 	M.tareas[nombre] = t
-	cola[#cola + 1] = t
+	if primero then table.insert(cola, 1, t) else cola[#cola + 1] = t end
 	programar()
 	return t
 end

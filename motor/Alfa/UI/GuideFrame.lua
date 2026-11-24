@@ -1431,6 +1431,11 @@ local function tabMenu(self)
 	}
 	local reopen = GF.ReopenItem()
 	if reopen then table.insert(items, 3, reopen) end
+	-- Alfa 1.3.9: «Restablecer esta guía» (Alfa_Rutas/Restablecer.lua), en la pestaña que sigues.
+	local Ruta = rawget(_G, "AlfaRuta")
+	if self.psActive and type(Ruta) == "table" and type(Ruta.Restablecer) == "function" and type(Ruta.TextoRestablecer) == "function" then
+		items[#items + 1] = { text = Ruta.TextoRestablecer(), icon = "reset", onClick = function() Ruta.Restablecer() end }
+	end
 	W.ShowMenu(self, items, { point = "TOPLEFT", relPoint = "BOTTOMLEFT", x = 0, y = -2 })
 end
 

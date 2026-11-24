@@ -212,13 +212,45 @@ function Z.MapaZona()
 	return primero
 end
 
+-- 1.3.9 (80): los rangos del anuncio, revisados zona por zona. Los del motor
+-- (Maps/ZoneLevels.lua) salen de medir las criaturas y en varias zonas se
+-- estiran de más (Mulgore 3–27, Los Baldíos 8–28, Claro de la Luna 23–60):
+-- el anuncio usa los de siempre de cada zona. Las zonas nuevas de Forever
+-- (Monte Hyjal, Isla Zephras, Riverglades) conservan las del motor, que son
+-- las únicas medidas; un `false` es una zona sin rango (un santuario).
+-- { de siempre, de siempre, lo que mide el motor, lo que mide el motor }
+Z.NIVELES = {
+	[1411] = { 1, 10, 1, 10 }, [1412] = { 1, 10, 3, 27 }, [1413] = { 10, 25, 8, 28 }, [1416] = { 30, 40, 24, 39 }, [1417] = { 30, 40, 31, 39 },
+	[1418] = { 35, 45, 36, 43 }, [1419] = { 45, 55, 45, 54 }, [1420] = { 1, 10, 1, 10 }, [1421] = { 10, 20, 11, 19 }, [1422] = { 51, 58, 51, 57 },
+	[1423] = { 53, 60, 54, 59 }, [1424] = { 20, 30, 21, 33 }, [1425] = { 40, 50, 42, 51 }, [1426] = { 1, 10, 2, 10 }, [1427] = { 43, 50, 45, 56 },
+	[1428] = { 50, 58, 50, 56 }, [1429] = { 1, 10, 1, 10 }, [1430] = { 55, 60, 55, 60 }, [1431] = { 18, 30, 21, 39 }, [1432] = { 10, 20, 10, 18 },
+	[1433] = { 15, 25, 16, 25 }, [1434] = { 30, 45, 32, 45 }, [1435] = { 35, 45, 36, 45 }, [1436] = { 10, 20, 10, 18 }, [1437] = { 20, 30, 21, 29 },
+	[1438] = { 1, 10, 1, 10 }, [1439] = { 10, 20, 10, 20 }, [1440] = { 18, 30, 19, 41 }, [1441] = { 25, 35, 25, 34 }, [1442] = { 15, 27, 16, 26 },
+	[1443] = { 30, 40, 31, 38 }, [1444] = { 40, 50, 41, 51 }, [1445] = { 35, 45, 36, 43 }, [1446] = { 40, 50, 42, 50 }, [1447] = { 45, 55, 47, 54 },
+	[1448] = { 48, 55, 48, 54 }, [1449] = { 48, 55, 49, 54 }, [1450] = false, [1451] = { 55, 60, 55, 60 }, [1452] = { 53, 60, 54, 59 },
+}
+-- Quién es la zona cuando el juego no lo dice (las nuevas de Forever, o un
+-- cliente que devuelve nada): el color y el sobretítulo de siempre.
+Z.DUENO_ALFA = { [1450] = "sanctuary", [2482] = "contested", [2521] = "contested", [2548] = "contested" }
+-- Las zonas nuevas de Forever (para revisarlas en el juego y en el banco).
+Z.NUEVAS_FOREVER = { [2482] = "Mount Hyjal", [2521] = "Zephras Isle", [2548] = "Riverglades" }
+
 function Z.Niveles(mapa)
 	if not mapa then return nil end
+	local fijo = Z.NIVELES[tonumber(mapa) or 0]
+	if fijo == false then return nil end
 	local Maps = A.Maps
 	if Maps and type(Maps.GetZoneLevels) == "function" then
 		local lo, hi = llamar(Maps.GetZoneLevels, mapa)
-		if tonumber(lo) and tonumber(hi) then return tonumber(lo), tonumber(hi) end
+		lo, hi = tonumber(lo), tonumber(hi)
+		if lo and hi then
+			-- Lo medido por el motor se corrige con el rango de siempre (si el
+			-- motor dice otra cosa, otra versión de sus datos, se le cree).
+			if fijo and lo == fijo[3] and hi == fijo[4] then return fijo[1], fijo[2] end
+			return lo, hi
+		end
 	end
+	if fijo then return fijo[1], fijo[2] end
 	if C_Map and C_Map.GetMapLevels then
 		local lo, hi = llamar(C_Map.GetMapLevels, mapa)
 		lo, hi = tonumber(lo), tonumber(hi)
@@ -314,13 +346,21 @@ function Z.Zona()
 	if not zona then return nil end
 	local mapa = Z.MapaZona()
 	local lo, hi = Z.Niveles(mapa)
-	local d = DUENO[Z.Dueno() or ""]
+	local d = DUENO[Z.Dueno() or Z.DUENO_ALFA[tonumber(mapa) or 0] or ""]
 	local o = { estilo = "zona", clave = "zona", titulo = zona, color = d and d.color or nil,
 		sobre = d and L[d.sobre] or L["Llegas a"] }
 	local partes = {}
 	if sub then partes[#partes + 1] = sub end
-	if lo and hi then partes[#partes + 1] = format(L["Niveles %s"], rango(lo, hi)) end
 	local nivel = miNivel()
+	if lo and hi then
+		-- 1.3.9 (80): el rango en el color de qué tan difícil es para ti (el
+		-- mismo que el mapa del juego: Maps.LevelColor).
+		local t = format(L["Niveles %s"], rango(lo, hi))
+		local Maps = A.Maps
+		local tok = nivel and Maps and type(Maps.LevelColor) == "function" and llamar(Maps.LevelColor, lo, hi, nivel) or nil
+		if type(tok) == "string" and tok ~= "textDim" and K and K.Hex then t = "|c" .. K.Hex(tok) .. t .. "|r" end
+		partes[#partes + 1] = t
+	end
 	if lo and hi and nivel and lo >= nivel + PELIGRO and K.AnuncioPrendido("peligro") then
 		o.estilo, o.color, o.sobre = "peligro", "peligro", L["Zona peligrosa"]
 		partes = { format(L["Zona de nivel %s: ve con cuidado"], rango(lo, hi)) }

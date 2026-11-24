@@ -267,10 +267,14 @@ Es.Registrar({ id = "hoy", titulo = "Hoy", icono = "ic-hoy", texto = "Lo que con
 	end,
 	pintar = function(p, c, w, h, tam)
 		local I = G("AlfaInicio")
-		local abajo = p.botones:Poner({
-			{ texto = L["Una hora de caza"], alClic = function() llamar(G("AlfaRuta"), "UnaHora") end },
-			{ texto = L["Abrir Hoy"], alClic = function() N.Abrir("inicio") end },
-		}, w)
+		local botones = { { texto = L["Una hora de caza"], alClic = function() llamar(G("AlfaRuta"), "UnaHora") end } }
+		-- 1.3.9 (12, área misiones): el mismo «Cerrar mis misiones» de Hoy y del menú.
+		local cerrarTxt = llamar(G("AlfaRuta"), "TextoCerrar")
+		if type(cerrarTxt) == "string" then
+			botones[#botones + 1] = { texto = cerrarTxt, alClic = function() llamar(G("AlfaRuta"), "CerrarTodo", "escritorio") end }
+		end
+		botones[#botones + 1] = { texto = L["Abrir Hoy"], alClic = function() N.Abrir("inicio") end }
+		local abajo = p.botones:Poner(botones, w)
 		local alto = h - (abajo > 0 and abajo + ESP.s or 0)
 		local y = 0
 		poner(p.Sec, c, 0, y, w)
@@ -319,7 +323,7 @@ local function siguientes(n)
 	local out = {}
 	for k = i + 1, i + 12 do
 		if #out >= n then break end
-		local okv, v = pcall(E.GetStepView, k)
+		local okv, v = pcall(N.VistaPaso or E.GetStepView, k) -- 1.3.9 (19): la lectura compartida
 		if not okv or type(v) ~= "table" then break end
 		local t
 		if type(U) == "table" and type(U.StepSummary) == "function" then
@@ -1252,4 +1256,224 @@ Es.Registrar({ id = "grupo", titulo = "Tu grupo", icono = "ic-manada", texto = "
 			end
 		end
 		for i = n + 1, #p.barras do p.barras[i]:Hide() end
+	end })
+
+---------------------------------------------------------------------------
+-- 1.3.9: más paneles (Tus misiones, Cerrar mis misiones, Enciclopedia rápida,
+-- ¿Dónde está la manada?, Mapa de la mazmorra). Como los demás: usan lo que
+-- ya hace cada módulo (AlfaRuta, AlfaEnciclopedia, AlfaManada, AlfaMazmorras).
+---------------------------------------------------------------------------
+
+-- Tu diario: { { id, titulo, nivel, lista, meta } } (lo secreto no se lee).
+local function diario()
+	local out = {}
+	local Q = rawget(_G, "C_QuestLog")
+	if type(Q) ~= "table" or type(Q.GetNumQuestLogEntries) ~= "function" or type(Q.GetInfo) ~= "function" then return out end
+	local ok, n = pcall(Q.GetNumQuestLogEntries)
+	n = ok and num(n) or 0
+	for i = 1, min(n, 60) do
+		local okI, info = pcall(Q.GetInfo, i)
+		if okI and type(info) == "table" and not secreto(info) and info.isHeader ~= true and info.isHidden ~= true then
+			local id = num(info.questID)
+			if id and id > 0 then
+				local lista = info.isComplete == true or info.isComplete == 1
+				if not lista and type(Q.IsComplete) == "function" then
+					local okc, c = pcall(Q.IsComplete, id)
+					lista = okc and c == true
+				end
+				local meta
+				if not lista and type(Q.GetQuestObjectives) == "function" then
+					local oko, objs = pcall(Q.GetQuestObjectives, id)
+					for _, o in ipairs(oko and type(objs) == "table" and objs or {}) do
+						if type(o) == "table" and o.finished ~= true and type(o.text) == "string" and not secreto(o.text) and o.text ~= "" then meta = o.text break end
+					end
+				end
+				local titulo = info.title
+				out[#out + 1] = { id = id, titulo = (type(titulo) == "string" and not secreto(titulo)) and titulo or "?", nivel = num(info.level), lista = lista, meta = meta }
+			end
+		end
+	end
+	table.sort(out, function(a, b)
+		if a.lista ~= b.lista then return a.lista end
+		return (a.nivel or 0) < (b.nivel or 0)
+	end)
+	return out
+end
+Es.Diario = diario
+
+local function cerrarMisiones()
+	local R = G("AlfaRuta")
+	if R and type(R.CerrarTodo) == "function" then return llamar(R, "CerrarTodo") end
+	return llamar(R, "Liberar", "todas")
+end
+
+Es.Registrar({ id = "misiones", titulo = "Tus misiones", icono = "ic-misiones", texto = "Tu diario: lo que llevas de cada misión, las listas primero.",
+	forma = "lista", tam = { 6, 8 }, ritmo = 3,
+	abrir = function() llamar(G("AlfaRuta"), "Pagina") end,
+	crear = function(p, c)
+		p.filas = Filas(c)
+		p.vacio = Vacio(c)
+		p.botones = Botones(c)
+	end,
+	pintar = function(p, c, w, h, tam)
+		local lista = diario()
+		local abajo = p.botones:Poner(#lista > 0 and { { texto = L["Cerrar mis misiones"], alClic = cerrarMisiones } } or {}, w)
+		if #lista == 0 then
+			p.filas:Ocultar()
+			p.vacio:Poner(w, h - abajo, L["Tu diario está vacío"], L["Toma misiones y aquí ves cuánto te falta de cada una."], "dormido")
+			return
+		end
+		p.vacio:Hide()
+		local filas = {}
+		for _, q in ipairs(lista) do
+			if #filas >= 15 then break end
+			local id = q.id
+			filas[#filas + 1] = { icono = q.lista and "ic-exito" or "ic-misiones", color = q.lista and "exito" or "mision",
+				texto = q.titulo, sub = tam ~= "compacto" and (q.lista and L["Lista para entregar"] or q.meta) or nil,
+				valor = q.nivel and tostring(q.nivel) or nil, colorValor = "textoTenue", lineas = 1,
+				alClic = function() llamar(G("AlfaRuta"), "VerCadena", id) end }
+		end
+		p.filas:Poner(filas, w, 0, h - (abajo > 0 and abajo + ESP.s or 0))
+	end })
+
+Es.Registrar({ id = "cerrar", titulo = "Cerrar mis misiones", icono = "ic-misiones", texto = "Tus misiones en el mejor orden, con un clic.",
+	forma = "cifras", tam = { 6, 5 }, ritmo = 5,
+	abrir = cerrarMisiones,
+	crear = function(p, c)
+		p.cifras = Cifras(c)
+		p.botones = Botones(c)
+		p.Nota = texto(c, "nota", "textoSuave")
+	end,
+	pintar = function(p, c, w, h, tam)
+		local lista = diario()
+		local listas = 0
+		for _, q in ipairs(lista) do if q.lista then listas = listas + 1 end end
+		local R = G("AlfaRuta")
+		local abajo = p.botones:Poner({
+			{ texto = L["Cerrar mis misiones"], alClic = cerrarMisiones, activo = #lista > 0 },
+			{ texto = L["Solo las listas"], alClic = function() llamar(R, "Entregar") end, activo = listas > 0 },
+		}, w)
+		local alto = h - (abajo > 0 and abajo + ESP.s or 0)
+		local y = p.cifras:Poner({
+			{ titulo = L["En tu diario"], valor = tostring(#lista), texto = format(L["de %d"], 20) },
+			{ titulo = L["Listas para entregar"], valor = tostring(listas), colorValor = listas > 0 and "exito" or "texto" },
+		}, w, 0, alto, 2)
+		if y + ESP.s + 16 <= alto then
+			local t = #lista == 0 and L["Toma misiones y Alfa te arma la ruta para cerrarlas todas."]
+				or L["Alfa arma la ruta con todas tus misiones: zona por zona, juntando lo cercano y las entregas al final."]
+			parrafo(p.Nota, c, 0, y + ESP.s, w, 3, t)
+		else
+			p.Nota:Hide()
+		end
+	end })
+
+Es.Registrar({ id = "enciclopedia", titulo = "Enciclopedia rápida", icono = "ic-enciclopedia", texto = "Busca cualquier cosa del juego y vuelve a lo último que viste.",
+	forma = "lista", tam = { 6, 6 },
+	abrir = function() llamar(G("AlfaEnciclopedia"), "Abrir") end,
+	crear = function(p, c)
+		p.Buscar = K.Buscador(c, { ayuda = L["Busca, en español o en inglés…"], retraso = 0,
+			alEnter = function(t) if t and t ~= "" then llamar(G("AlfaEnciclopedia"), "Buscar", t) end end })
+		p.Sec = texto(c, "mayus", "textoTenue")
+		p.filas = Filas(c)
+	end,
+	pintar = function(p, c, w, h, tam)
+		p.Buscar:ClearAllPoints()
+		p.Buscar:SetPoint("TOPLEFT", c, "TOPLEFT", 0, 0)
+		p.Buscar:SetWidth(w)
+		p.Buscar:Show()
+		local y = K.ALTO.control + ESP.base
+		local E = G("AlfaEnciclopedia")
+		local rec = llamar(E, "Recientes") or {}
+		if #rec == 0 or y + 18 + 24 > h then
+			p.Sec:Hide()
+			p.filas:Ocultar()
+			return
+		end
+		poner(p.Sec, c, 0, y, w)
+		K.Escribir(p.Sec, K.Mayus(L["Lo último que viste"]))
+		y = y + 18
+		local filas = {}
+		for _, r in ipairs(rec) do
+			if #filas >= 8 then break end
+			local kind, id = r.kind, r.id
+			filas[#filas + 1] = { icono = r.icono or "ic-enciclopedia", color = "textoSuave", texto = r.nombre or "?", lineas = 1,
+				alClic = function() llamar(E, "Abrir", kind, id) end }
+		end
+		p.filas:Poner(filas, w, y, h)
+	end })
+
+Es.Registrar({ id = "manada", titulo = "¿Dónde está la manada?", icono = "ic-manada", texto = "Los lobos de tu hermandad con Alfa conectados: su zona y su nivel.",
+	forma = "lista", tam = { 6, 7 }, ritmo = 10,
+	abrir = function() llamar(G("AlfaManada"), "AbrirLobos") end,
+	crear = function(p, c)
+		p.filas = Filas(c)
+		p.vacio = Vacio(c)
+		p.botones = Botones(c)
+	end,
+	pintar = function(p, c, w, h, tam)
+		local Mn = G("AlfaManada")
+		local lista = llamar(Mn, "Conectados") or {}
+		local abajo = p.botones:Poner({ { texto = L["Lobos con Alfa"], alClic = function() llamar(Mn, "AbrirLobos") end } }, w)
+		if #lista == 0 then
+			p.filas:Ocultar()
+			p.vacio:Poner(w, h - abajo, L["La manada anda lejos"], (IsInGuild and IsInGuild()) and L["Cuando alguien de tu hermandad con Alfa se conecte, aquí ves dónde anda."]
+				or L["Con una hermandad, aquí ves dónde anda cada lobo con Alfa."], "dormido")
+			return
+		end
+		p.vacio:Hide()
+		local filas = {}
+		for _, e in ipairs(lista) do
+			if #filas >= 12 then break end
+			local partes = {}
+			if e.zona then partes[#partes + 1] = e.zona end
+			local nombre = e.nombre
+			filas[#filas + 1] = { icono = "ic-lobo", color = e.vieja and "aviso" or "acento", texto = nombre,
+				sub = tam ~= "compacto" and (#partes > 0 and table.concat(partes, DOT) or L["No comparte dónde anda"]) or nil,
+				valor = e.nivel and tostring(e.nivel) or nil, colorValor = "textoTenue",
+				alClic = function() llamar(Mn, "Ficha", nombre) end }
+		end
+		p.filas:Poner(filas, w, 0, h - (abajo > 0 and abajo + ESP.s or 0))
+	end })
+
+Es.Registrar({ id = "mapaMazmorra", titulo = "Mapa de la mazmorra", icono = "ic-mazmorra", texto = "Dentro de una mazmorra: su plano, el piso y por dónde vas con sus jefes.",
+	forma = "texto", tam = { 8, 8 }, ritmo = 2,
+	abrir = function() llamar(G("AlfaMazmorras"), "MapaDentro") end,
+	crear = function(p, c)
+		p.vacio = Vacio(c)
+		p.botones = Botones(c)
+		p.Nota = texto(c, "nota", "textoSuave")
+		local Mz = G("AlfaMazmorras")
+		p.plano = Mz and type(Mz.CrearPlano) == "function" and Mz.CrearPlano(c) or nil
+		if p.plano then p.plano:Hide() end
+	end,
+	pintar = function(p, c, w, h, tam)
+		local Mz = G("AlfaMazmorras")
+		local s = llamar(Mz, "LeerMapaDentro")
+		local abajo = p.botones:Poner({ { texto = L["Abrir el mapa"], alClic = function() llamar(Mz, "MapaDentro") end } }, w)
+		local alto = h - (abajo > 0 and abajo + ESP.s or 0)
+		if type(s) ~= "table" or not s.dentro then
+			if p.plano then p.plano:Hide() end
+			p.Nota:Hide()
+			p.vacio:Poner(w, alto, L["No estás en una mazmorra"], L["Al entrar a una, aquí ves su plano y por dónde vas."], "dormido")
+			return
+		end
+		p.vacio:Hide()
+		local partes = {}
+		local av = llamar(Mz, "AvanceDentro", s.key)
+		if av then partes[#partes + 1] = av end
+		if s.piso and s.pisos and #s.pisos > 1 and s.pisos[s.piso] then partes[#partes + 1] = format(L["Estás en: %s."], s.pisos[s.piso].nombre) end
+		local hn = parrafo(p.Nota, c, 0, 0, w, 3, table.concat(partes, " "))
+		local y = hn + ESP.s
+		local pl = p.plano
+		if pl and s.arte and alto - y > 60 then
+			pl:ClearAllPoints()
+			pl:SetPoint("TOPLEFT", c, "TOPLEFT", 0, -y)
+			pl:SetSize(w, alto - y)
+			if pl.mapaArte ~= s.ver then pl.mapaArte = s.ver pl.zoom, pl.ox, pl.oy = 1, 0, 0 pl:SetArte(s.arte) end
+			pl.px, pl.py = s.x, s.y
+			pl:Show()
+			pl:Colocar()
+		elseif pl then
+			pl:Hide()
+		end
 	end })

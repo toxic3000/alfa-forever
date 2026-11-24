@@ -244,7 +244,7 @@ local function refrescarEstilo()
 	acomodar()
 end
 
-local function pasoEstilo()
+local function pasoEstilo(corto)
 	return {
 		id = "estilo", corto = "Estilo",
 		titulo = L["¿Cómo quieres que se vea Alfa?"],
@@ -253,6 +253,8 @@ local function pasoEstilo()
 			ui.selEstilo = pila:Agregar(K.SelectorEstilo(pila, { min = 220, alCambiar = refrescarEstilo }))
 			ui.secAcento = pila:Agregar(K.Seccion(pila, L["Tu color de acento"]), { espacio = ESP.l })
 			ui.selAcento = pila:Agregar(K.SelectorAcento(pila, { alCambiar = function() acomodar() end }), { espacio = ESP.s })
+			-- 1.3.9 (51): en la bienvenida corta, el sonido y el modo quedan en «Ajustar más».
+			if corto then return end
 			local g = K.GrupoAjustes(pila, { titulo = L["Sonido"] })
 			g:Fila({ titulo = L["Aullido al abrir Alfa"],
 				texto = L["Un aullido de lobo, del propio juego, la primera vez que abres Alfa en cada sesión."],
@@ -617,14 +619,15 @@ local LYA_HOLA = {
 	"Cuando no sepas algo de Alfa, dame clic derecho y elige «¿En qué te ayudo?»: te explico cada cosa y te llevo a ella. También te cuento historias del lugar donde estás.",
 }
 
-local function pasoLya()
+local function pasoLya(corto)
 	return {
 		id = "lya", corto = "Lya",
 		titulo = L["Te presento a Lya"],
 		texto = L["Tu compañera en Alfa. Lleva el nombre de una gran perrita, en su memoria."],
 		construir = function(pila)
 			for i, t in ipairs(LYA_HOLA) do
-				lyaDice(pila, L[t], i == 1 and "aullando" or (i == 2 and "normal" or "atento"))
+				-- 1.3.9 (51): en la bienvenida corta, solo su saludo.
+				if not corto or i == 1 then lyaDice(pila, L[t], i == 1 and "aullando" or (i == 2 and "normal" or "atento")) end
 			end
 			ui.opLya = eleccion(pila, { min = 260,
 				opciones = {
@@ -677,8 +680,11 @@ end
 ---------------------------------------------------------------------------
 local function terminar(despues)
 	local d = datos()
+	-- 1.3.9 (52): la primera acción, solo al configurar por primera vez (no al revisar lo tuyo).
+	local primeraVez = M.Pendiente() and (tonumber(d.respondio) or 0) == 0
 	d.respondio = M.VERSION
 	d.paso = nil
+	d.largo = nil
 	d.cuando = time and time() or nil
 	M.MarcarVisto()
 	-- Quien recién configura Alfa ya tiene todo lo nuevo: las notas de esta versión no le salen.
@@ -701,12 +707,15 @@ local function terminar(despues)
 	if despues then K.Llamar(despues) end
 	-- 1.3.6: después de ALFA_CONFIGURADO, para que Lya ya esté a la vista y
 	-- el recorrido hable con su voz. Si entraste en combate, se queda el aviso.
-	if abrirHoy then
+	-- 1.3.9 (52): no solo Hoy: lo que elegiste en «¿Qué hacemos primero?».
+	local primera = primeraVez and M.PrimeraAccion and M.PrimeraAccion() or "hoy"
+	if abrirHoy or primera ~= "hoy" then
 		A.After(0.3, function()
-			-- (Si una pelea empezó en ese momento, Hoy se abre al terminarla: el
+			-- (Si una pelea empezó en ese momento, se abre al terminarla: el
 			-- aviso ya salió sin «Abrir Hoy».)
-			if N.FueraDeCombate then N.FueraDeCombate("bienvenida.abrirHoy", function() N.Abrir("inicio") end)
-			elseif not (InCombatLockdown and InCombatLockdown()) then N.Abrir("inicio") end
+			local function ir() M.IrAPrimera(primera) end
+			if N.FueraDeCombate then N.FueraDeCombate("bienvenida.abrirHoy", ir)
+			elseif not (InCombatLockdown and InCombatLockdown()) then ir() end
 		end)
 	end
 end
@@ -725,6 +734,9 @@ local function pasoResumen()
 			end
 			for i, paso in ipairs(a.pasos) do
 				if paso.resumen then agregar(L[paso.corto], paso.resumen, i) end
+				for _, parte in ipairs(paso.partes or {}) do
+					if parte.resumen then agregar(L[parte.corto], parte.resumen, i) end
+				end
 				-- Lo destacado (la ayuda de rotación, resaltar lo de misión), aparte.
 				for _, f in ipairs(paso.destacadas or {}) do
 					agregar(L[f.titulo], function() return resumenFila(f) end, i)
@@ -739,6 +751,162 @@ local function pasoResumen()
 			end
 			if ui.resumen then ui.resumen:Refrescar() end
 		end,
+	}
+end
+
+---------------------------------------------------------------------------
+-- 1.3.9 (mejoras 51 y 52): la bienvenida corta, en 3 pantallas
+--   1. Hola: el idioma y Lya (o qué es Alfa);
+--   2. Tu estilo y cuánto te ayuda Alfa;
+--   3. ¡A cazar!: si la manada te ve en el mapa y tu primera acción real
+--      (subir de nivel con una guía, cerrar tus misiones, tus oficios o Hoy).
+-- «Ajustar más» lleva a las pantallas de siempre (extras, Lya, sonido, modo
+-- y el resumen) para quien quiera afinar. Al terminar, Alfa te lleva a lo
+-- que elegiste en la pantalla 3, no solo a Hoy.
+---------------------------------------------------------------------------
+-- Lo que cada pantalla guarda en `ui` para refrescarse: una pantalla
+-- compuesta guarda lo suyo y lo pone de vuelta antes de refrescar (las de
+-- «Ajustar más» arman las suyas con los mismos nombres).
+local UI_CLAVES = { "opIdioma", "notaIdioma", "opLya", "selEstilo", "secAcento", "selAcento", "grupoSonido", "opModo",
+	"opPerfil", "opJauria", "rejExtras", "opPrimera" }
+
+local function compuesto(id, corto, titulo, texto, partes)
+	local lista = {}
+	for i = 1, #partes do
+		local p = partes[i]
+		if p then lista[#lista + 1] = p end
+	end
+	local guardado = {}
+	local paso = { id = id, corto = corto, titulo = titulo, texto = texto, partes = lista }
+	paso.construir = function(pila, a)
+		for i, p in ipairs(lista) do
+			if i > 1 then pila:Agregar(K.Seccion(pila, p.tituloCorto or p.titulo), { espacio = ESP.xl }) end
+			if p.construir then K.Llamar(p.construir, pila, a) end
+			local g = {}
+			for _, k in ipairs(UI_CLAVES) do g[k] = ui[k] end
+			guardado[i] = g
+		end
+	end
+	paso.alMostrar = function(pila, a)
+		for i, p in ipairs(lista) do
+			for k, x in pairs(guardado[i] or {}) do ui[k] = x end
+			if p.alMostrar then K.Llamar(p.alMostrar, pila, a) end
+		end
+	end
+	paso.antesDeSeguir = function()
+		for _, p in ipairs(lista) do
+			if p.antesDeSeguir and p.antesDeSeguir() then return true end
+		end
+		return false
+	end
+	return paso
+end
+
+-- 52: la primera acción real al terminar.
+local function nivelMaximo()
+	local tope = GetMaxPlayerLevel and GetMaxPlayerLevel()
+	local nv = UnitLevel and UnitLevel("player")
+	if issecretvalue and (issecretvalue(tope) or issecretvalue(nv)) then return false end
+	return type(tope) == "number" and type(nv) == "number" and nv >= tope
+end
+local function misionesEnRegistro()
+	local Q = C_QuestLog
+	if not (type(Q) == "table" and type(Q.GetNumQuestLogEntries) == "function") then return 0 end
+	local ok, _, n = pcall(Q.GetNumQuestLogEntries)
+	return ok and tonumber(n) or 0
+end
+local function deRuta(nombre)
+	local R0 = rawget(_G, "AlfaRuta")
+	local fn = type(R0) == "table" and R0[nombre]
+	return type(fn) == "function" and fn or nil
+end
+
+M.PRIMERAS = {
+	{ valor = "nivel", icono = "ic-nivel", titulo = "Subir de nivel con una guía",
+		texto = "Alfa elige la guía de tu zona y tu nivel y la flecha te lleva misión por misión.",
+		si = function() return not nivelMaximo() end },
+	{ valor = "misiones", icono = "ic-exito", titulo = "Cerrar mis misiones",
+		texto = "Arma un recorrido con las misiones que ya tienes y te lleva a cada una.",
+		si = function() return misionesEnRegistro() > 0 and deRuta("Liberar") ~= nil end },
+	{ valor = "profesiones", icono = "ic-oficios", titulo = "Subir mis profesiones",
+		texto = "Qué recolectar o fabricar cerca de ti para subirlas." },
+	{ valor = "hoy", icono = "ic-hoy", titulo = "Ver Hoy y decidir después",
+		texto = "Tu portada: lo urgente, tu siguiente paso y los caminos para hoy." },
+}
+
+local function primerasDisponibles()
+	local out = {}
+	for _, x in ipairs(M.PRIMERAS) do
+		if not x.si or x.si() then out[#out + 1] = x end
+	end
+	return out
+end
+
+-- Lo que conviene de fábrica: una guía si no estás en el nivel máximo; si
+-- no, tus misiones; si no, Hoy.
+local function primeraDeFabrica()
+	for _, x in ipairs(primerasDisponibles()) do
+		if x.valor == "nivel" or x.valor == "misiones" then return x.valor end
+	end
+	return "hoy"
+end
+
+function M.PrimeraAccion()
+	local v0 = datos().primera
+	for _, x in ipairs(primerasDisponibles()) do if x.valor == v0 then return v0 end end
+	return primeraDeFabrica()
+end
+
+-- Lleva a la primera acción elegida (fuera de combate). -> lo que hizo
+function M.IrAPrimera(valor)
+	valor = valor or M.PrimeraAccion()
+	if valor == "nivel" or valor == "profesiones" then
+		local fn = deRuta("Asistente")
+		if fn then K.Llamar(fn, valor) return valor end
+		if valor == "nivel" then A.Fire("SHOW_PICKER") return valor end
+	elseif valor == "misiones" then
+		local fn = deRuta("Liberar")
+		if fn then K.Llamar(fn) return valor end
+	end
+	if N.ModuloPorId and N.ModuloPorId("inicio") and N.Abrir then N.Abrir("inicio") return "hoy" end
+	return nil
+end
+
+local function pasoPrimera()
+	return {
+		id = "primera", corto = "Tu primera acción",
+		titulo = L["¿Qué hacemos primero?"], tituloCorto = L["¿Qué hacemos primero?"],
+		construir = function(pila)
+			local opciones = {}
+			for i, x in ipairs(primerasDisponibles()) do
+				opciones[i] = { valor = x.valor, icono = x.icono, titulo = x.titulo, texto = x.texto }
+			end
+			ui.opPrimera = eleccion(pila, { opciones = opciones, min = 240,
+				leer = function() return M.PrimeraAccion() end,
+				guardar = function(x) datos().primera = x end })
+			nota(pila, L["Al dar «Listo» te llevo ahí. Lo demás está en Hoy cuando lo quieras."])
+		end,
+		alMostrar = function() if ui.opPrimera then ui.opPrimera:Refrescar() end end,
+		resumen = function()
+			local v0 = M.PrimeraAccion()
+			for _, x in ipairs(M.PRIMERAS) do if x.valor == v0 then return L[x.titulo] end end
+			return ""
+		end,
+	}
+end
+
+local function pasosCortos()
+	local hola = lyaHay() and pasoLya(true) or pasoQueEs()
+	hola.tituloCorto = lyaHay() and L["Te presento a Lya"] or L["¿Qué es Alfa?"]
+	local per = pasoPerfil()
+	per.tituloCorto = L["¿Cuánto quieres que Alfa haga por ti?"]
+	local jau = manada() and pasoJauria() or false
+	if jau then jau.tituloCorto = L["La Jauría"] end
+	return {
+		compuesto("hola", "Hola", L["¡Hola! Empecemos"], L["Elige tu idioma y conoce a quien te acompaña."], { pasoIdioma(), hola }),
+		compuesto("tuestilo", "Tu estilo", L["Tu estilo y tu ayuda"], L["Cómo se ve Alfa y cuánto hace por ti. Todo se cambia después."],
+			{ pasoEstilo(true), per }),
+		compuesto("acazar", "¡A cazar!", L["¡A cazar!"], L["Lo último: la manada y por dónde empezamos."], { jau, pasoPrimera() }),
 	}
 end
 
@@ -796,15 +964,21 @@ end
 -- El pie del asistente: "Ir al resumen" a la izquierda de Siguiente, sin
 -- "Atrás" en el resumen (solo "Listo"), y "Recargar y seguir" cuando el
 -- idioma pide recargar.
-local function ajustarPie(a)
+local function ajustarPie(a, corta)
 	local refrescar = a.Refrescar
-	a.Saltar = K.Boton(a, L["Ir al resumen"], function() a:Ir(#a.pasos) end, { tipo = "fantasma" })
+	if corta then
+		-- 1.3.9 (51): «Ajustar más» lleva a las pantallas de siempre, después de
+		-- lo que ya elegiste (idioma, estilo y cuánto te ayuda).
+		a.Saltar = K.Boton(a, L["Ajustar más"], function() M.AjustarMas() end, { tipo = "fantasma", icono = "ic-filtro" })
+	else
+		a.Saltar = K.Boton(a, L["Ir al resumen"], function() a:Ir(#a.pasos) end, { tipo = "fantasma" })
+	end
 	a.Saltar:SetPoint("RIGHT", a.BotonSiguiente, "LEFT", -ESP.s, 0)
 	function a:Refrescar()
 		refrescar(self)
 		local i, n = self:Paso(), #self.pasos
-		self.BotonAtras:SetShown(i > 1 and i < n)
-		self.Saltar:SetShown(i > 1 and i < n)
+		self.BotonAtras:SetShown(i > 1 and (corta or i < n))
+		self.Saltar:SetShown(corta and i >= 2 or (i > 1 and i < n))
 		local paso = self.pasos[i]
 		if paso and paso.id == "idioma" and cambiaIdioma() then
 			self.BotonSiguiente:SetTexto(L["Recargar y seguir"])
@@ -822,7 +996,8 @@ end
 local function tituloAsistente()
 	local n = #ui.asistente.pasos
 	if M.Pendiente() then
-		v:SetTitulo(L["Configura tu Alfa"], format(L["%d pasos, unos 2 minutos"], n), "ic-lobo")
+		v:SetTitulo(L["Configura tu Alfa"], ui.asistente == ui.corto and format(L["%d pasos, como un minuto"], n)
+			or format(L["%d pasos, unos 2 minutos"], n), "ic-lobo")
 	else
 		v:SetTitulo(L["Tu configuración de Alfa"], L["Cambia lo que quieras: se guarda al momento."], "ic-ajustes")
 	end
@@ -853,19 +1028,38 @@ local function armar()
 	end
 	ui.portada:AgregarBloque(K.Seccion(ui.portada.Extra, L["Lo nuevo en Alfa 1.0"]), { espacio = ESP.xl })
 	ui.rejilla10 = ui.portada:AgregarBloque(K.Rejilla(ui.portada.Extra, { min = 230 }), { espacio = ESP.m })
-	ui.asistente = K.Asistente(v.Cuerpo, { margen = v.margen, textoTerminar = L["Listo"], alTerminar = function() terminar() end, pasos = pasos() })
-	-- Una huella por paso (el Kit pone 10 como tope y aquí hay más pasos).
-	if ui.asistente.Huellas then ui.asistente.Huellas.alfaMax = math.max(10, #ui.asistente.pasos) end
-	ajustarPie(ui.asistente)
-	ui.asistente.alCambiar = function(i)
-		if v.Desplazable then v.Desplazable:IrArriba() end
-		local p = ui.asistente.pasos[i]
-		if M.Pendiente() and p then datos().paso = p.id end
-		-- El alto del paso nuevo (sin esto la barra se quedaba con el del anterior).
-		acomodarYa()
+	-- 1.3.9 (51): dos asistentes: la bienvenida corta (3 pantallas) y la de
+	-- siempre («Ajustar más» y «Tu configuración»).
+	ui.largo = K.Asistente(v.Cuerpo, { margen = v.margen, textoTerminar = L["Listo"], alTerminar = function() terminar() end, pasos = pasos() })
+	ui.corto = K.Asistente(v.Cuerpo, { margen = v.margen, textoTerminar = L["Listo"], alTerminar = function() terminar() end, pasos = pasosCortos() })
+	for _, a in ipairs({ ui.largo, ui.corto }) do
+		-- Una huella por paso (el Kit pone 10 como tope y aquí hay más pasos).
+		if a.Huellas then a.Huellas.alfaMax = math.max(10, #a.pasos) end
+		ajustarPie(a, a == ui.corto)
+		a.alCambiar = function(i)
+			if v.Desplazable then v.Desplazable:IrArriba() end
+			local p = a.pasos[i]
+			if M.Pendiente() and p then datos().paso = p.id end
+			-- El alto del paso nuevo (sin esto la barra se quedaba con el del anterior).
+			acomodarYa()
+		end
+		a:Hide()
+		-- Ir a una pantalla de la otra (desde «Cambiar», o el banco): esa queda a la vista.
+		local ir = a.Ir
+		function a:Ir(i)
+			if ui.armado and ui.asistente ~= self and ui.vista == "asistente" then
+				ui.asistente:Hide()
+				ui.asistente = self
+				self:Show()
+				tituloAsistente()
+			end
+			return ir(self, i)
+		end
 	end
-	ui.asistente:Hide()
-	v.alfaPortada, v.alfaAsistente = ui.portada, ui.asistente
+	ui.asistente = ui.corto
+	ui.armado = true
+	-- (v.alfaAsistente: la de siempre, con todas sus pantallas; v.alfaCorto: la de 3.)
+	v.alfaPortada, v.alfaAsistente, v.alfaCorto = ui.portada, ui.largo, ui.corto
 
 	-- Pantalla completa: un velo oscuro detrás tapa el juego y la ventana
 	-- llena la pantalla; no se arrastra.
@@ -914,6 +1108,21 @@ local function armar()
 	end)
 end
 
+-- 1.3.9 (51): de la bienvenida corta a la de siempre, después de lo que ya
+-- elegiste (la pantalla que sigue a «Cuánto te ayuda Alfa»).
+function M.AjustarMas()
+	if not (v and ui.largo) then return end
+	datos().largo = true
+	ui.corto:Hide()
+	ui.asistente = ui.largo
+	ui.largo:Show()
+	local i = 1
+	for k, p in ipairs(ui.largo.pasos) do if p.id == "perfil" then i = k + 1 end end
+	ui.largo:Ir(math.min(i, #ui.largo.pasos))
+	tituloAsistente()
+	acomodarYa()
+end
+
 -- El asistente esperaba el fin de un combate para volver.
 function M.EsperaCombate() return ui.reabrir and true or false end
 
@@ -949,6 +1158,17 @@ function M.AbrirVentana(vista)
 	if ui.vista == "asistente" then
 		recomendar()
 		ui.portada:Hide()
+		-- 1.3.9 (51): la corta mientras configuras por primera vez (salvo que
+		-- hayas pedido «Ajustar más»); la de siempre para revisar lo tuyo.
+		-- Una configuración a medias en una pantalla de la de siempre (de una
+		-- versión anterior, o tras «Ajustar más») sigue en la de siempre.
+		local enCorto, enLargo = false, false
+		local p0 = datos().paso
+		for _, p in ipairs(ui.corto.pasos) do if p.id == p0 then enCorto = true end end
+		for _, p in ipairs(ui.largo.pasos) do if p.id == p0 then enLargo = true end end
+		ui.asistente = (M.Pendiente() and not datos().largo and not (enLargo and not enCorto)) and ui.corto or ui.largo
+		local otro = ui.asistente == ui.corto and ui.largo or ui.corto
+		otro:Hide()
 		ui.asistente:Show()
 		local i = 1
 		if not M.Pendiente() then
@@ -959,12 +1179,13 @@ function M.AbrirVentana(vista)
 		ui.asistente:Ir(i)
 		tituloAsistente()
 	else
-		ui.asistente:Hide()
+		ui.corto:Hide()
+		ui.largo:Hide()
 		ui.portada:Show()
 		ui.portada:SetAccion(accionPortada())
 		-- Sus huellas, una por paso como en el asistente.
 		local h = ui.portada.Accion and ui.portada.Accion.Huellas
-		local n = #ui.asistente.pasos
+		local n = #ui.corto.pasos
 		if h and h.alfaMax < n then
 			h.alfaMax = n
 			ui.portada:SetAccion(accionPortada())

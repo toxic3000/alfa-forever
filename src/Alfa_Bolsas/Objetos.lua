@@ -7,6 +7,11 @@
 --   O.Categoria(rec, info, bolsa) -> clave de O.CATEGORIAS
 --   O.Compilar(texto) -> filtro | nil ;  O.Coincide(filtro, entrada) -> bool
 --   O.Antes(a, b) -> orden dentro de una categoría
+-- 1.3.9: la búsqueda también entiende lo que es cada cosa: «arma»,
+-- «armadura», «material», «comida», «poción», «receta», «montura»...; y lo
+-- que Alfa sabe de ella: «candado», «sin usar» (equipo que no llevas, que no
+-- es mejora ni está en un conjunto tuyo, o que aún no puedes usar), «sobra»
+-- (para vender) y «subasta». Una palabra con «-» delante quita: «-gris».
 -- Un objeto que el cliente aún no tiene en caché se pide y, al llegar
 -- (GET_ITEM_INFO_RECEIVED), se avisa "ITEM" para volver a pintarlo.
 
@@ -71,7 +76,9 @@ end
 
 function O.Doblar(s)
 	if type(s) ~= "string" then return "" end
-	s = s:lower():gsub("\195[\128-\191]", ACENTOS)
+	-- 1.3.9: los acentos antes de bajar a minúsculas (un lower() que mire el
+	-- idioma del sistema cambiaba el primer byte de «ó» y ya no se encontraba).
+	s = s:gsub("\195[\128-\191]", ACENTOS):lower()
 	if s:find("[\208\209]") then s = s:gsub("[\208\209][\128-\191]", CIRILICO) end
 	return s
 end
@@ -241,11 +248,15 @@ function O.Compilar(texto)
 	local t = O.Doblar(texto)
 	t = t:gsub("^%s+", ""):gsub("%s+$", "")
 	if t == "" then return nil end
-	local f = { palabras = {}, numeros = {} }
+	local f = { palabras = {}, numeros = {}, sin = {} }
 	for tok in t:gmatch("%S+") do
 		local op, n = tok:match("^([<>]=?)(%d+)$")
 		local a, b = tok:match("^(%d+)%-(%d+)$")
-		if op then
+		local quita = tok:match("^%-(.+)$")
+		if quita and not quita:match("^%d") then
+			-- 1.3.9: «-gris» quita lo gris.
+			if not RELLENO[quita] then f.sin[#f.sin + 1] = quita end
+		elseif op then
 			f.numeros[#f.numeros + 1] = { op, tonumber(n) }
 		elseif a then
 			local x, y = tonumber(a), tonumber(b)
@@ -257,8 +268,65 @@ function O.Compilar(texto)
 			f.palabras[#f.palabras + 1] = tok
 		end
 	end
-	if #f.palabras == 0 and #f.numeros == 0 then return nil end
+	if #f.palabras == 0 and #f.numeros == 0 and #f.sin == 0 then return nil end
 	return f
+end
+
+-- 1.3.9: las palabras de lo que es cada objeto (por su clase y subclase).
+local function porClase(e)
+	local out = {}
+	local c, s = e.clase, e.subclase
+	if c == 2 then out[#out + 1] = L["arma"] end
+	if c == 4 then out[#out + 1] = L["armadura"] end
+	if c == 0 then
+		out[#out + 1] = L["consumible"]
+		if s == 5 then out[#out + 1] = L["comida"] out[#out + 1] = L["bebida"] end
+		if s == 1 or s == 2 or s == 3 then out[#out + 1] = L["poción"] end
+	end
+	if O.EsMaterial(e) then out[#out + 1] = L["material"] end
+	if c == 9 then out[#out + 1] = L["receta"] end
+	if c == 1 then out[#out + 1] = L["bolsa"] end
+	if c == 15 and s == 5 then out[#out + 1] = L["montura"] end
+	return out
+end
+
+-- Lo que Alfa sabe de él (cambia con el candado, la sugerencia y tus conjuntos:
+-- por eso lleva su versión, O.version).
+O.version = 0
+local enConjuntos, conjuntosVer = nil, -1
+local function enUnConjunto(id)
+	if conjuntosVer ~= O.version or not enConjuntos then
+		enConjuntos, conjuntosVer = {}, O.version
+		local Cj = M.Conjuntos
+		if Cj and Cj.Lista and M.Get("conjuntos") ~= false then
+			local ok, lista = pcall(Cj.Lista)
+			for _, c in ipairs(ok and lista or {}) do
+				for _, pieza in pairs(c.p or {}) do
+					local i = type(pieza) == "table" and tonumber(pieza.i)
+					if i then enConjuntos[i] = true end
+				end
+			end
+		end
+	end
+	return enConjuntos[id] == true
+end
+
+local function deAlfa(ent)
+	local out = {}
+	local e, rec = ent.e, ent.rec
+	local id = tonumber(rec.i)
+	local Cd = M.Candado
+	if Cd and id and Cd.Tiene(id, rec.l, { q = rec.q, mision = rec.mision }) then out[#out + 1] = L["candado"] end
+	if O.EsEquipo(e) and id then
+		local nivel = UnitLevel and tonumber(UnitLevel("player")) or nil
+		local noPuedes = e.req and nivel and e.req > nivel
+		if noPuedes or (not ent.mejora and not enUnConjunto(id)) then out[#out + 1] = L["sin usar"] end
+	end
+	local Sp = M.Separar
+	local clase = Sp and Sp.Clase and id and Sp.Clase(id) or nil
+	if clase == "vendedor" then out[#out + 1] = L["sobra"] out[#out + 1] = L["vender"] end
+	if clase == "subasta" then out[#out + 1] = L["subasta"] end
+	return out
 end
 
 -- El nombre que trae el enlace: con su sufijo ("del oso"), que el de la caché
@@ -268,7 +336,7 @@ function O.NombreEnlace(link)
 end
 
 local function pajar(ent)
-	if ent.pajar and ent.pajarListo == (ent.e.listo and true or false) then return ent.pajar end
+	if ent.pajar and ent.pajarListo == (ent.e.listo and true or false) and ent.pajarVer == O.version then return ent.pajar end
 	local e, rec = ent.e, ent.rec
 	local partes = { e.doblado or "", O.Doblar(e.tipo), O.Doblar(e.subtipo), O.Doblar(O.NOMBRE[ent.cat] or "") }
 	-- 1.3.0: el nombre del enlace, con su sufijo («Espada del mono»).
@@ -283,8 +351,11 @@ local function pajar(ent)
 	if ent.mejora then partes[#partes + 1] = O.Doblar(L["mejora"]) end
 	if rec.nuevo then partes[#partes + 1] = O.Doblar(L["nuevo"]) end
 	if rec.mision then partes[#partes + 1] = O.Doblar(L["misión"]) end
+	for _, w in ipairs(porClase(e)) do partes[#partes + 1] = O.Doblar(w) end
+	for _, w in ipairs(deAlfa(ent)) do partes[#partes + 1] = O.Doblar(w) end
 	ent.pajar = " " .. table.concat(partes, " ") .. " "
 	ent.pajarListo = e.listo and true or false
+	ent.pajarVer = O.version
 	return ent.pajar
 end
 
@@ -303,11 +374,20 @@ function O.Coincide(f, ent)
 		elseif op == "entre" then if n < x or n > y then return false end
 		end
 	end
-	if #f.palabras > 0 then
+	if #f.palabras > 0 or #(f.sin or {}) > 0 then
 		local h = pajar(ent)
 		for _, w in ipairs(f.palabras) do
 			if not h:find(w, 1, true) then return false end
 		end
+		for _, w in ipairs(f.sin or {}) do
+			if h:find(w, 1, true) then return false end
+		end
 	end
 	return true
 end
+
+-- 1.3.9: lo que Alfa sabe cambió: las búsquedas lo vuelven a mirar.
+local function otraVersion() O.version = O.version + 1 end
+M.Escuchar("CANDADO", otraVersion)
+M.Escuchar("SUGERENCIAS", otraVersion)
+M.Escuchar("CONJUNTOS", otraVersion)

@@ -305,6 +305,8 @@ step("Botones de conjuntos: el macro de las armas, preparado fuera de combate", 
   GetInventoryItemID = function(u, r) return puestoEn[r] end
   GetInventoryItemLink = function(u, r) return puestoEn[r] and ("|cff1eff00|Hitem:" .. puestoEn[r] .. "::::::::|h[x]|h|r") or nil end
   Cj.Guardar("Tanque")
+  -- (1.3.9: la barra no sale si tu único conjunto es el que ya llevas puesto.)
+  puestoEn[1] = nil
   Cb.Armar()
   local b = Cb.Botones()[1]
   check(Cb.Barra() and Cb.Barra():IsShown(), "la barra de conjuntos no salió junto a tu personaje")

@@ -476,6 +476,61 @@ local function bloqueRecargas(padre)
 end
 
 ---------------------------------------------------------------------------
+-- 4c. 1.3.9: tus últimas peleas, lado a lado (Resumen.lua)
+---------------------------------------------------------------------------
+local function hace(t)
+	t = tonumber(t)
+	if not (t and time) then return nil end
+	local s = math.max(0, time() - t)
+	if s < 90 then return L["hace un momento"] end
+	if s < 3600 then return format(L["hace %d min"], floor(s / 60)) end
+	if s < 86400 then return format(L["hace %d h"], floor(s / 3600)) end
+	return N.Plural(floor(s / 86400), L["hace %d día"], L["hace %d días"])
+end
+
+local function bloquePeleas(padre)
+	local b = K.Pila(padre, { espacio = ESP.m })
+	b.Seccion = b:Agregar(K.Seccion(b, L["Tus últimas peleas"]))
+	b.Nota = b:Agregar(K.Texto(b, "nota", "textoSuave"), { espacio = ESP.s })
+	b.Nota.Acomodar = function(self, ancho) return K.Parrafo(self, ancho, 3) end
+	b.Rejilla = b:Agregar(K.Rejilla(b, { min = 300, gap = ESP.s, variante = "compacta" }), { espacio = ESP.m })
+	function b:Llenar()
+		local lista = Rs.Peleas()
+		local datos = {}
+		local mejor
+		for _, p in ipairs(lista) do local v = Rs.Ritmo(p) if v and (not mejor or v > mejor) then mejor = v end end
+		for i, p in ipairs(lista) do
+			local v, tipo = Rs.Ritmo(p)
+			local partes = {}
+			local dur = D.Tiempo(p.dur)
+			if dur then partes[#partes + 1] = dur end
+			if p.zona then partes[#partes + 1] = p.zona end
+			local cuando = hace(p.cuando)
+			if cuando then partes[#partes + 1] = cuando end
+			local dif = Rs.Diferencia(i, lista)
+			local valor = v and v > 0 and format(tipo == "cps" and L["%s cps"] or L["%s dps"], D.Numero(v)) or L["sin datos"]
+			local d = { variante = "compacta", icono = tipo == "cps" and "ic-curacion" or M.ICONO,
+				titulo = i == 1 and L["La última"] or format(L["Hace %d peleas"], i - 1),
+				texto = table.concat(partes, "  \194\183  "), valor = valor,
+				tono = (v and mejor and v >= mejor and #lista > 1) and "exito" or "neutro" }
+			if dif then
+				local pct = floor(dif * 100 + 0.5)
+				d.texto = d.texto .. "  \194\183  " .. (pct >= 0 and format(L["+%d %% que la de antes"], pct) or format(L["%d %% que la de antes"], pct))
+			end
+			if v and mejor and v >= mejor and #lista > 1 then d.ayuda = L["Tu mejor de estas peleas."] end
+			datos[#datos + 1] = d
+		end
+		self.Seccion:Set(L["Tus últimas peleas"], { cuenta = #lista > 0 and #lista or nil })
+		self.Nota:SetText(#lista > 1 and L["Tu daño o tu curación por segundo en cada una, contra la de antes. Se guardan las últimas 5."]
+			or L["Al terminar cada pelea queda aquí, para compararla con las siguientes. Se guardan las últimas 5."])
+		self.Rejilla:Llenar(datos)
+		K.Mostrar(self.Rejilla, #datos > 0)
+		return #lista > 0
+	end
+	return b
+end
+
+---------------------------------------------------------------------------
 -- 5. Ajustes
 ---------------------------------------------------------------------------
 local function interruptor(clave)
@@ -671,8 +726,24 @@ local function grupos(padre)
 		texto = L["Tus venenos, maldiciones, escudos y curas que duran, con lo que les queda, en una fila chica."] })
 	g6:Fila({ titulo = L["Avisar cuando uno se acaba"], control = interruptor("efectosAviso"), hija = true, activa = si("efectos") })
 
+	-- 1.3.9: «Más ajustes». De fábrica se ven el ícono, cortar, la amenaza, el
+	-- resumen, las recargas y el medidor, sin sus detalles; lo demás (avisos y
+	-- golpe, jefes, misiones) y las filas hijas de esos grupos, plegados.
+	local g7 = K.GrupoAjustes(padre, {})
+	g7:Fila({ titulo = L["Más ajustes"], texto = L["Avisos de reacción, la barra de golpe, jefes y mazmorras, misiones y el detalle de cada herramienta."],
+		control = function(fila) return K.Interruptor(fila, { clave = ID .. ".paginaCompleta" }) end })
+	local avanzados = { g2, g6, g4 }
+	local conHijas = { g5, g3 }
+
 	-- Lo que no aplica a ti no se muestra.
 	local function filtrar()
+		local completa = M.Opt("paginaCompleta") and true or false
+		for _, g in ipairs(avanzados) do K.Mostrar(g, completa) end
+		for _, g in ipairs(conHijas) do
+			for _, f in ipairs(g.filas) do
+				if type(f.alfaDatos) == "table" and f.alfaDatos.hija then K.Mostrar(f, completa) end
+			end
+		end
 		local abiertas = M.masIcono and true or false
 		for _, f in ipairs(mas) do K.Mostrar(f, abiertas) end
 		K.Mostrar(masFila, true)
@@ -682,7 +753,7 @@ local function grupos(padre)
 		K.Mostrar(rama, R.Fuente() == "alfa" and #P.Ramas() > 0)
 		if type(expl.alfaDatos) == "table" then expl.alfaDatos.texto = textoExplicaciones() end
 	end
-	return { g1, g2, g5, g6, g4, g3 }, filtrar
+	return { g1, g5, g3, g7, g2, g6, g4 }, filtrar
 end
 
 ---------------------------------------------------------------------------
@@ -694,6 +765,7 @@ local function construir(view)
 	ui.medidor = t:AgregarBloque(bloqueMedidor(t.Extra))
 	ui.prioridad = t:AgregarBloque(bloquePrioridad(t.Extra), { espacio = ESP.xl })
 	ui.recargas = t:AgregarBloque(bloqueRecargas(t.Extra), { espacio = ESP.xl })
+	ui.peleas = t:AgregarBloque(bloquePeleas(t.Extra), { espacio = ESP.xl })
 	ui.ajustes, ui.filtrar = grupos(t.Extra)
 	for i, g in ipairs(ui.ajustes) do t:AgregarBloque(g, { espacio = i == 1 and ESP.xl or ESP.l }) end
 	K.EnPagina(view, t, function()
@@ -704,6 +776,7 @@ local function construir(view)
 		ui.medidor:Llenar()
 		K.Mostrar(ui.prioridad, ui.prioridad:Llenar() and M.Opt("rotacion") and true or false)
 		K.Mostrar(ui.recargas, ui.recargas:Llenar() and M.Opt("recargas") and true or false)
+		ui.peleas:Llenar()
 		ui.filtrar()
 		for _, g in ipairs(ui.ajustes) do g:Refrescar() end
 	end)

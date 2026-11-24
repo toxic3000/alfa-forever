@@ -230,7 +230,7 @@ end
 
 -- Una receta aprendida -> registro guardado, o nil (encantamientos sin
 -- objeto, reactivos de moneda, datos incompletos).
-local function leerReceta(TS, id, profesion)
+local function leerReceta(TS, id, profesion, habilidad)
 	local ok, info = pcall(TS.GetRecipeInfo, id)
 	if not ok or type(info) ~= "table" or not info.learned then return nil end
 	local ok2, sch = pcall(TS.GetRecipeSchematic, id, false)
@@ -260,9 +260,14 @@ local function leerReceta(TS, id, profesion)
 	local qmax = type(sch.quantityMax) == "number" and sch.quantityMax or qmin
 	if qmin < 1 then qmin = 1 end
 	if qmax < qmin then qmax = qmin end
+	-- 1.3.9: el color de la receta (0 naranja, 1 amarilla, 2 verde, 3 gris) y tu
+	-- habilidad cuando se leyó: para «lo más barato para subir» (Oficios.lua).
+	local dif = info.relativeDifficulty
 	return {
 		n = (type(sch.name) == "string" and sch.name) or (type(info.name) == "string" and info.name) or "?",
 		o = salida, q = (qmin + qmax) / 2, r = reactivos, p = profesion,
+		d = type(dif) == "number" and not (issecretvalue and issecretvalue(dif)) and dif or nil,
+		s = type(habilidad) == "number" and habilidad or nil,
 	}
 end
 
@@ -296,7 +301,7 @@ local function leerVentana()
 		local ficha = miFicha()
 		local nuevas = {}
 		for i = 1, #ids do
-			local rec = leerReceta(TS, ids[i], profesion)
+			local rec = leerReceta(TS, ids[i], profesion, base and base.skillLevel)
 			if rec then nuevas[ids[i]] = rec end
 			if i % 20 == 0 then M.Ceder() end
 		end

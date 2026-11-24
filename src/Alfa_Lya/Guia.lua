@@ -335,6 +335,7 @@ local function globo(padre)
 end
 
 local function decir(t, p)
+	Gi.Dicha = p -- (para el banco: la pregunta que contestó, o nil)
 	if ui.globo then ui.globo:Decir(t, p) end
 	-- Si está en pantalla, da un saltito al responder.
 	local UI = M.UI
@@ -482,6 +483,14 @@ function Gi.Abrir(pregunta, tema, historial)
 		llenar()
 		local p = pregunta and porId[pregunta]
 		local m = tema and N.ModuloPorId and N.ModuloPorId(tema)
+		-- 1.3.9 (54): desde el «?» de una página, Lya ya contesta la primera
+		-- pregunta de esa página (las demás, abajo).
+		if not p and m then
+			for _, x in ipairs(PREGUNTAS) do
+				if x.modulo == tema and vigente(x) then p = x break end
+			end
+		end
+		Gi.Dicha = (p and vigente(p)) and p or nil -- (la pregunta que contestó, para el banco)
 		if p and vigente(p) then decir(texto(p, "respuesta"), p)
 		elseif m then
 			decir(format(L["Estás en %s. %s Abajo tienes lo que más me preguntan de aquí."], m.nombre or tema, m.subtitulo or ""), nil)

@@ -12,6 +12,14 @@
 -- La barra se muestra, se esconde y se rehace solo fuera de combate: si la
 -- ventana de tu personaje se cierra en combate, los botones se van al terminar.
 -- Ajuste bolsas.barraConjuntos (de fábrica, encendido; con bolsas.conjuntos).
+-- 1.3.9 (bug 104: «sale un recuadro de pesca en la esquina de arriba a la
+-- derecha»): era esta barra, sola y sin título, encimada en la esquina de la
+-- ventana. Ahora es un panel con su encabezado («Tus conjuntos»), afuera del
+-- borde que se ve de la ventana (sus HitRectInsets: la del juego clásico
+-- trae 30 px transparentes a la derecha) y con aire; y no sale cuando no
+-- aporta: si tu único conjunto es el que ya llevas puesto (y no espera para
+-- el fin del combate). Al cambiarte de equipo con la ventana abierta se
+-- vuelve a mirar (fuera de combate).
 --   Cb.Armar() ; Cb.Macro(c) -> texto del macro de las armas ; Cb.Barra() ; Cb.AlSalir() -> nombre | nil
 
 local ADDON, M = ...
@@ -27,6 +35,8 @@ M.Cambio = Cb
 
 local ALTO, ANCHO = 22, 104
 local MAX = 10
+local PAD, CAB = 6, 20 -- (1.3.9) el margen del panel y la altura de su encabezado
+local AIRE = 8         -- (1.3.9) entre el borde que se ve de tu ventana y el panel
 local barra
 local botones = {}
 
@@ -136,6 +146,16 @@ function Cb.Pintar()
 	end
 end
 
+-- 1.3.9: lo transparente de la ventana a la derecha y arriba (sus HitRectInsets).
+local function margenes(ancla)
+	local f = ancla.GetHitRectInsets
+	if type(f) ~= "function" then return 0, 0 end
+	local ok, _, der, arriba = pcall(f, ancla)
+	if not ok then return 0, 0 end
+	return max(0, K.num(der, 0)), max(0, K.num(arriba, 0))
+end
+Cb.Margenes = margenes
+
 -- Rehace los botones y sus macros, y muestra u oculta la barra. Solo fuera de combate.
 function Cb.Sitio(ancla)
 	if not barra or enCombate() or type(ancla) ~= "table" then return false end
@@ -145,7 +165,9 @@ function Cb.Sitio(ancla)
 	local x, y = ancla.GetRight and ancla:GetRight(), ancla.GetTop and ancla:GetTop()
 	barra:ClearAllPoints()
 	if type(x) == "number" and type(y) == "number" then
-		barra:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", x - 30, y - 16)
+		-- 1.3.9: afuera de lo que se ve de la ventana, con aire, alineada con su borde de arriba.
+		local der, arriba = margenes(ancla)
+		barra:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", x - der + AIRE, y - arriba - 12)
 	else
 		barra:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 400, -120)
 	end
@@ -162,9 +184,19 @@ function Cb.Armar()
 	if not barra then
 		if #lista == 0 then return true end
 		barra = CreateFrame("Frame", "AlfaBolsasCambio", UIParent)
-		barra:SetSize(ANCHO, ALTO)
+		barra:SetSize(ANCHO + 2 * PAD, ALTO + CAB + 2 * PAD)
 		barra:SetFrameStrata("MEDIUM")
 		barra:Hide()
+		-- 1.3.9: un panel con su encabezado, para que se vea de Alfa y a propósito.
+		barra.caja = K.Caja(barra, { fondo = "fondo", borde = "linea", corte = K.CORTE.panel })
+		barra.Icono = K.Icono(barra, "ic-personaje", 12, "acento")
+		barra.Icono:SetPoint("TOPLEFT", barra, "TOPLEFT", PAD + 1, -(PAD + 3))
+		barra.Titulo = K.Texto(barra, "pequeno", "textoSuave")
+		barra.Titulo:SetPoint("LEFT", barra.Icono, "RIGHT", 4, 0)
+		barra.Titulo:SetWidth(ANCHO - 16)
+		barra.Titulo:SetJustifyH("LEFT")
+		K.Escribir(barra.Titulo, L["Tus conjuntos"])
+		K.Ajustar(barra.Titulo, ANCHO - 16)
 	end
 	local n = 0
 	for i, c in ipairs(lista) do
@@ -179,7 +211,7 @@ function Cb.Armar()
 			b:SetAttribute("type1", b.armas and "macro" or nil)
 			b:SetAttribute("macrotext1", b.armas and macro or nil)
 			b:ClearAllPoints()
-			b:SetPoint("TOPLEFT", barra, "TOPLEFT", 0, -(i - 1) * (ALTO + ESP.xs))
+			b:SetPoint("TOPLEFT", barra, "TOPLEFT", PAD, -(PAD + CAB + (i - 1) * (ALTO + ESP.xs)))
 			b:Show()
 		end
 	end
@@ -190,9 +222,9 @@ function Cb.Armar()
 		b:SetAttribute("macrotext1", nil)
 		b:Hide()
 	end
-	barra:SetHeight(max(ALTO, n * (ALTO + ESP.xs) - ESP.xs))
+	barra:SetHeight(2 * PAD + CAB + max(ALTO, n * (ALTO + ESP.xs) - ESP.xs))
 	barra:ClearAllPoints()
-	local visible = n > 0 and type(ancla) == "table" and ancla.IsShown and ancla:IsShown()
+	local visible = n > 0 and type(ancla) == "table" and ancla.IsShown and ancla:IsShown() and Cb.Aporta(lista)
 	if type(ancla) == "table" then
 		-- A la derecha de la ventana de tu personaje, por fuera de su marco.
 		-- 1.3.7: anclada a UIParent con las medidas de esa ventana (fuera de
@@ -203,6 +235,16 @@ function Cb.Armar()
 	barra:SetShown(visible and true or false)
 	Cb.Pintar()
 	return true
+end
+
+-- 1.3.9: ¿sirve de algo ahora? No, si tu único conjunto es el que ya llevas
+-- puesto y no espera para el fin del combate (solo se mira con la ventana abierta).
+function Cb.Aporta(lista)
+	lista = lista or (Cj() and Cj().Lista()) or {}
+	if #lista == 0 then return false end
+	if #lista > 1 or Cb.AlSalir() then return true end
+	local actual = Cj().Puesto and Cj().Puesto() or nil
+	return actual ~= lista[1].n
 end
 
 function Cb.Barra() return barra end
@@ -231,7 +273,17 @@ A.RegisterEvent("PLAYER_LOGIN", function()
 	enganchar()
 	Cb.Armar()
 end)
-A.RegisterEvent("PLAYER_EQUIPMENT_CHANGED", function() if barra and barra:IsShown() then Cb.Pintar() end end)
+-- 1.3.9: con tu ventana abierta, un cambio de equipo vuelve a mirar si la barra
+-- aporta (fuera de combate; en combate solo se pinta).
+A.RegisterEvent("PLAYER_EQUIPMENT_CHANGED", function()
+	local ancla = anclaPersonaje()
+	if not (barra and type(ancla) == "table" and ancla.IsShown and ancla:IsShown()) then return end
+	if enCombate() then
+		if barra:IsShown() then Cb.Pintar() end
+		return
+	end
+	if N.Una then N.Una("bolsas.cambioEquipo", 0.3, function() Cb.Armar() end) else Cb.Armar() end
+end)
 M.Escuchar("CONJUNTOS", function() Cb.Armar() end)
 A.On("SETTING_CHANGED", function(ruta)
 	if ruta == M.ID .. ".barraConjuntos" or ruta == M.ID .. ".conjuntos" or ruta == "" or ruta == M.ID then Cb.Armar() end

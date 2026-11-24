@@ -1,0 +1,5 @@
+<Bindings>
+	<Binding name="ALFA_MAZMORRA_MAPA" category="Alfa" searchTags="BINDING_TAG_ALFA">
+		if AlfaMazmorras and AlfaMazmorras.MapaDentro then AlfaMazmorras.MapaDentro() end
+	</Binding>
+</Bindings>

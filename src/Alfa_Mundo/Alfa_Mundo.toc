@@ -27,6 +27,7 @@ PanelCapas.lua
 Marcadores.lua
 Editor.lua
 PanelMarcadores.lua
+Buscar.lua
 Ventana.lua
 MapaJuego.lua
 Mundo.lua

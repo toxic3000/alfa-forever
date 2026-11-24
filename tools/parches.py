@@ -41,6 +41,30 @@ ACERCA = [
 ]
 
 PARCHES = [
+    # 1.3.9 (mejora 42): el título de un paso que su guía no traduce, por su
+    # forma («Into X» -> «Hacia X»; motor/Alfa/Interfaz/TitulosGuia.lua).
+    ("Alfa/Core/GuideTexts.lua",
+     "\treturn fill(g and g[en] or en, entry.names, live)",
+     lambda c: "\treturn fill(g and g[en] or (not english and ns.TituloDeGuia and ns.TituloDeGuia(en, locale)) or en, entry.names, live)"),
+    # 1.3.9 (mejora 40): la ruta en los mapas con sus propios colores, que el
+    # modo para daltonismo cambia (motor/Alfa/Theme/Theme.lua, RUTA_DE).
+    ("Alfa/Maps/RouteLines.lua",
+     'local TOKEN = { walk = "arrow", flight = "success", boat = "npc", zeppelin = "place", tram = "object", lift = "object" }',
+     lambda c: 'local TOKEN = { walk = "routeWalk", flight = "routeFlight", boat = "routeBoat", zeppelin = "routeZeppelin", tram = "routeTram", lift = "routeTram" }'),
+    ("Alfa/Maps/TravelPins.lua",
+     'boat = { label = L["Boat to %s"], color = "npc", icon = "map:boat" },',
+     lambda c: 'boat = { label = L["Boat to %s"], color = "routeBoat", icon = "map:boat" },'),
+    ("Alfa/Maps/TravelPins.lua",
+     'zeppelin = { label = L["Zeppelin to %s"], color = "place", icon = "map:zeppelin" },',
+     lambda c: 'zeppelin = { label = L["Zeppelin to %s"], color = "routeZeppelin", icon = "map:zeppelin" },'),
+    ("Alfa/Maps/TravelPins.lua",
+     'tram = { label = L["Deeprun Tram to %s"], color = "object", icon = "map:tram" },',
+     lambda c: 'tram = { label = L["Deeprun Tram to %s"], color = "routeTram", icon = "map:tram" },'),
+    # 1.3.9 (mejora 60): en Clasico WoW la placa del titulo de la ventana
+    # principal tapaba la tarjeta de tu personaje (la ventana ya lleva su marca).
+    ("Alfa/Theme/GameSkins.lua",
+     "\t\ttitle(f, o, \"TOP\", plate, 0, -14)\n",
+     lambda c: "\t\ttitle(f, o, \"TOP\", plate, 0, -14)\n\t\t-- Alfa (1.3.9): sin la placa en la ventana principal (tapaba tu personaje).\n\t\tplate:SetShown(not f.psTop)\n\t\tif f.psTop and store(f).title then store(f).title:Hide() end\n"),
     # Reportes y versiones nuevas van a la pagina de Alfa, no a la de Polestar.
     ("Alfa/Core/Init.lua",
      'ns.IssueURL = "https://github.com/fitzforge/polestar/issues/new"',
@@ -173,7 +197,7 @@ def _fijo(texto):
 
 INTERFAZ = [
     ("Alfa/Alfa.toc", "Theme\\Theme.xml\n",
-     _fijo("Interfaz\\Textos.lua\nInterfaz\\TextosGuia.lua\nInterfaz\\TextosVentanas.lua\nTheme\\Theme.xml\n")),
+     _fijo("Interfaz\\Textos.lua\nInterfaz\\TextosGuia.lua\nInterfaz\\TextosVentanas.lua\nInterfaz\\TitulosGuia.lua\nTheme\\Theme.xml\n")),
     # Sin nombrar addons de terceros: las opciones de los que Alfa reemplaza
     # solo se ven con ese addon cargado, y los demas textos van en neutro.
     # Los textos en espanol de las opciones los traduce la ventana al dibujarlos.
@@ -1140,6 +1164,18 @@ PARCHES += [
      '\t\tif h.category == "Class" and due and G.GuideMatches(h, player) and E.GetGuideState(h.id) == "new" then\n',
      _fijo('\t\tif h.category == "Class" and due and G.GuideMatches(h, player) and E.GetGuideState(h.id) == "new"\n'
            '\t\t\tand not ClassQuests.Lejana(G.Get(h.id), level) then -- Alfa 1.3.8\n')),
+]
+
+# 1.3.9: la tarjeta del viaje de la flecha (motor/Alfa/Nav/Arrow.lua) sabe,
+# mientras caminas al muelle, qué tramo sigue (el barco, el zepelín...).
+PARCHES += [
+    ("Alfa/Nav/Travel.lua",
+     "function Travel.CurrentLeg()\n",
+     _fijo("-- Alfa 1.3.9: el tramo que sigue al de ahora (o nil).\n"
+           "function Travel.NextLeg()\n"
+           "\treturn legs and legs[ci + 1]\n"
+           "end\n\n"
+           "function Travel.CurrentLeg()\n")),
 ]
 
 

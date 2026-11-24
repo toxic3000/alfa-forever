@@ -90,7 +90,7 @@ function Ce.Revisar(unit)
 	-- ciudad o posada (donde se cruza mucha gente), también: un aviso chico.
 	local enCiudad = IsResting and U.Leer(IsResting()) == true
 	if ((N.Ligero and N.Ligero()) or enCiudad or (N.AnunciosGrandes and not N.AnunciosGrandes())) and K.Aviso then
-		K.Aviso({ titulo = L["Un lobo de La Jauría anda cerca"],
+		M.U.Aviso({ titulo = L["Un lobo de La Jauría anda cerca"],
 			texto = (U.Mostrar(nombre) or nombre) .. ". " .. L["También usa Alfa: salúdalo."], icono = "ic-lobo" })
 		return true
 	end

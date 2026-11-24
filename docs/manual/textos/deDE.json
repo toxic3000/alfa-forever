@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "Die 1.3.8: Das Rudel auf zwei Bildschirmen", "items": ["**Zwei Bildschirme:** Mit einem zweiten Monitor legt Alfa dort deinen Guide, den Pfeil, die Karte, Heute und Lya ab. Ein Klick richtet es ein, und du testest es vor dem Speichern (`/alfa pantallas`).", "**Einzigartige Hinweise:** Das Schiff steht klar am Pfeil (wohin, wann es ablegt und wann du ankommst), und jedes Ereignis gibt nur eine Nachricht.", "**Angeln und Schloss:** Größen, Rekorde und deine Anglerstufe von 1 bis 60. Alt+Rechtsklick sperrt einen Gegenstand, damit er weder gelöscht noch verkauft wird.", "**Jede Fraktion für sich:** Was La Jauría teilt, bleibt in deiner Fraktion, und die Enzyklopädie zeigt, wie du jeden Gegenstand bekommst und wie wahrscheinlich er ist."]}
+    "mapa": {"titulo": "Die 1.3.9: Das Rudel jagt besser", "items": ["**Meine Quests abschließen:** baut die beste Route mit all deinen Quests, Zone für Zone und mit gebündelten Abgaben; was sich nicht mehr lohnt, kommt zu „Für später“.", "**Berufsguides von Alfa:** in Abschnitten, mit der besten Zone, dem günstigsten Rezept, das noch Punkte gibt, und deinen Materialien. „Guide zurücksetzen“ findet, wo du stehst.", "**Die Reise, neu:** Schiff und Zeppelin haben ihre eigene Karte mit dem Abfahrts-Countdown, und ein Klick auf den Pfeil führt dich zum nächsten Ort.", "**Melden mit einem Klick:** Der Böse Wolf sagt dir, wenn Alfa einen eigenen Fehler findet. Dazu: Horde-und-Allianz-Anzeige und eine Innenkarte für Dungeons."]}
   },
   "contraportada": {
     "titulo": "Komm ins Rudel",

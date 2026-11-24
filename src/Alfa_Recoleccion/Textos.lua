@@ -150,3 +150,12 @@ M.EN = {
 	["Nodos en el minimapa: visibles."] = "Nodes on the minimap: shown.",
 	["Nodos en el minimapa: ocultos."] = "Nodes on the minimap: hidden.",
 }
+
+-- 1.3.9 (oficios): «Llévame» a un material y los puntos vacíos
+M.EN["Aquí no hay ahora; voy al siguiente (%d de %d)."] = "Nothing here right now; on to the next one (%d of %d)."
+M.EN["Voy al siguiente (%d de %d)."] = "On to the next one (%d of %d)."
+M.EN["Mejor para tu nivel: %s, %d puntos, nivel %d–%d."] = "Best for your level: %s, %d spots, level %d–%d."
+M.EN["La mejor zona: %s, %d puntos."] = "The best zone: %s, %d spots."
+M.EN["%s sale a veces en lugar de %s: aquí hay %d."] = "%s sometimes spawns instead of %s: there are %d here."
+M.EN["Ruta a %s"] = "Route to %s"
+M.EN["No encontré ese recurso en las zonas de tu facción."] = "I couldn't find that resource in your faction's zones."

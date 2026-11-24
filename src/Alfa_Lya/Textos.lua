@@ -27,10 +27,25 @@ M.AJUSTES = { mostrar = true, frecuencia = "muchos", minutos = 3, tamano = 64, s
 	brincoLlegar = true,
 	-- 1.3.8: la pausa tras 2 horas seguidas (Pausa.lua), Lya según tu hora
 	-- (HoraReal.lua) y sus festejos de lo que logras con Alfa (Festejos.lua)
-	pausa = true, horaReal = true, festejos = true }
+	pausa = true, horaReal = true, festejos = true,
+	-- 1.3.9 (69): con un personaje nuevo, más tranquila en la primera hora (Cerebro.lua)
+	calmaNuevos = true }
 M.Avisar = function() end -- Pagina.lua la cambia: rehace la página si está a la vista
 
 M.EN = {
+	-- 1.3.9 (avisos): el reporte, el Centro de avisos, Lya y los errores con qué hacer
+	["¿Qué hago ahora?"] = "What do I do now?",
+	["Primero, a reparar: tu equipo está al %d %%. Roto ya no te protege."] = "First, go repair: your gear is at %d %%. Broken gear doesn't protect you.",
+	["Tus bolsas están casi llenas (te queda %d lugar). Vende lo que no usas y sigue."] = "Your bags are almost full (%d slot left). Sell what you don't use and keep going.",
+	["Tus bolsas están casi llenas (te quedan %d lugares). Vende lo que no usas y sigue."] = "Your bags are almost full (%d slots left). Sell what you don't use and keep going.",
+	["Tienes %d misión lista: ve a entregarla y cobra tu recompensa."] = "You have %d quest ready: go turn it in and collect your reward.",
+	["Tienes %d misiones listas: ve a entregarlas y cobra tus recompensas."] = "You have %d quests ready: go turn them in and collect your rewards.",
+	["Pasa con tu entrenador: puede que tengas habilidades nuevas por aprender."] = "Visit your trainer: you may have new skills to learn.",
+	["Todo en orden. Sigue tu ruta: %s"] = "All good. Keep following your route: %s",
+	["Todo en orden. En Hoy te digo qué te conviene: una ruta, una mazmorra o tus oficios."] = "All good. In Today I'll tell you what suits you: a route, a dungeon or your professions.",
+	["Más tranquila con personajes nuevos"] = "Calmer with new characters",
+	["Hasta el nivel 10, en tu primera hora de juego Lya habla mucho menos: hay mucho que aprender y no quiere abrumarte. Lo importante te lo dice igual."] = "Up to level 10, during your first hour of play Lya talks much less: there's a lot to learn and she doesn't want to overwhelm you. Important things she still tells you.",
+	["La búsqueda de lugares cercanos no está lista: falta una parte de Alfa. /alfa diagnostico te dice cuál prender."] = "The nearby places search isn't ready: a part of Alfa is missing. /alfa diagnostico tells you which one to turn on.",
 	-- 1.3.8 (mundo): Toma el grifo, peligros del camino, misiones por color, la pausa, Lya y tu hora, festejos, busco grupo, la ficha y compartir
 	["Llevas %s seguidas de cacería, lobo. ¿Una pausa? Estírate, toma agua y aquí te espero."] = "You've been hunting for %s straight, wolf. A break? Stretch, drink some water, I'll wait right here.",
 	["Ya van %s sin parar. Hasta las lobas descansan: levántate un ratito, yo cuido tu lugar."] = "That's %s without stopping. Even she-wolves rest: get up for a bit, I'll keep your spot.",

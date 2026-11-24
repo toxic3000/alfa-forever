@@ -284,3 +284,76 @@ function N.Tareas()
 	end)
 	return out
 end
+
+---------------------------------------------------------------------------
+-- 1.3.9 (19): una sola lectura de la guía por segundo para todos
+---------------------------------------------------------------------------
+-- Engine.GetStepView(i) arma una tabla nueva en cada llamada (unos 5 KB de
+-- basura y 0,1 ms en el banco). Hoy, el rastreador y los paneles del
+-- Escritorio leían los mismos pasos varias veces por segundo cada uno; ahora
+-- la primera lectura se comparte con los demás durante un segundo.
+--   N.VistaPaso(i) -> la vista del paso i (de solo lectura: no se cambia)
+--   N.Compartido(clave, seg, fn, ...) -> lo que dio fn(...), guardado seg
+--                               segundos para quien pida la misma clave
+--   N.Olvidar([clave])          olvida una (o todas) ya
+-- Todo se olvida solo cuando la guía cambia (de guía, de paso, una meta, un
+-- omitido) o cambia el diario o las bolsas, antes de que nadie más se entere.
+-- La vista guardada vale además solo con la misma guía, el mismo paso vivo y
+-- la misma función del motor (así una prueba que la cambia no lee la vieja).
+local compartidos = {}
+local vistas = {}
+
+function N.Olvidar(clave)
+	if clave == nil then
+		wipe(compartidos)
+		wipe(vistas)
+	else
+		compartidos[clave] = nil
+	end
+end
+
+function N.Compartido(clave, seg, fn, ...)
+	local c = compartidos[clave]
+	local now = ahora()
+	if c and now - c.t < (seg or 1) and now >= c.t then return unpack(c, 1, c.n) end
+	local function guardar(...) return { n = select("#", ...), t = now, ... } end
+	local r = guardar(fn(...))
+	compartidos[clave] = r
+	return unpack(r, 1, r.n)
+end
+
+function N.VistaPaso(i)
+	local A = N.A
+	local E = A and A.Engine
+	local get = E and E.GetStepView
+	if type(get) ~= "function" then return nil end
+	if type(i) ~= "number" then return get(i) end
+	local guia = type(E.GetGuide) == "function" and E.GetGuide() or nil
+	local vivo = type(E.GetLiveStep) == "function" and E.GetLiveStep() or nil
+	local now = ahora()
+	local c = vistas[i]
+	if c and c.get == get and c.guia == guia and c.vivo == vivo and now - c.t < 1 and now >= c.t then return c.v end
+	local v = get(i)
+	if type(v) == "table" then
+		vistas[i] = { v = v, t = now, get = get, guia = guia, vivo = vivo }
+	else
+		vistas[i] = nil
+	end
+	return v
+end
+
+do
+	local A = N.A
+	local function olvidar() wipe(compartidos) wipe(vistas) end
+	if A and A.On then
+		for _, m in ipairs({ "STEP_CHANGED", "STEP_UPDATED", "GUIDE_CHANGED", "GUIDE_PLACED", "GUIDE_CONTINUED", "GUIDE_COMPLETED",
+			"PLAYER_SKIPPED_STEP", "PLAYER_SKIPPED_QUEST", "STEP_SKIPPED", "ROUTE_CHOSEN", "WAYPOINT_CHANGED", "TABS_CHANGED" }) do
+			A.On(m, olvidar)
+		end
+	end
+	local f = CreateFrame("Frame")
+	for _, ev in ipairs({ "QUEST_LOG_UPDATE", "UNIT_QUEST_LOG_CHANGED", "QUEST_ACCEPTED", "QUEST_TURNED_IN", "BAG_UPDATE_DELAYED", "PLAYER_LEVEL_UP" }) do
+		pcall(f.RegisterEvent, f, ev)
+	end
+	f:SetScript("OnEvent", olvidar)
+end

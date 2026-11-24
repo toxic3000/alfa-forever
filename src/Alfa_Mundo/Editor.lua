@@ -67,12 +67,13 @@ function E.Cerrar() if F then F:Hide() end end
 -- -> el marcador guardado (nuevo o cambiado)
 local function guardar()
 	local nombre = F.Nombre:Texto()
+	local nota = F.Nota and F.Nota:Texto() or nil -- 1.3.9 (79)
 	if estado.m then
-		return Mk.Cambiar(estado.m.id, { nombre = nombre, icono = estado.icono, color = estado.color })
+		return Mk.Cambiar(estado.m.id, { nombre = nombre, icono = estado.icono, color = estado.color, nota = nota or "" })
 	end
 	local n = estado.nuevo
 	if not n then return nil end
-	local m = Mk.Crear({ mapa = n.mapa, x = n.x, y = n.y, nombre = nombre, icono = estado.icono, color = estado.color })
+	local m = Mk.Crear({ mapa = n.mapa, x = n.x, y = n.y, nombre = nombre, icono = estado.icono, color = estado.color, nota = nota })
 	if m then
 		E.ultimo = { icono = m.icono, color = m.color }
 		N.Imprimir(format(L["Marcador puesto: %s."], m.nombre))
@@ -107,14 +108,14 @@ end
 ---------------------------------------------------------------------------
 -- Armar
 ---------------------------------------------------------------------------
-local function campoDeNombre(padre)
-	local b = K.Buscador(padre, { ayuda = L["Nombre del marcador"], retraso = 0, alEnter = function() E.Guardar() end })
+local function campoDeNombre(padre, ayuda, largo)
+	local b = K.Buscador(padre, { ayuda = ayuda or L["Nombre del marcador"], retraso = 0, alEnter = function() E.Guardar() end })
 	-- Un campo de texto, no una búsqueda: sin lupa.
 	b.Lupa:Hide()
 	b.Campo:ClearAllPoints()
 	b.Campo:SetPoint("LEFT", b, "LEFT", ESP.m, 0)
 	b.Campo:SetPoint("RIGHT", b, "RIGHT", -30, 0)
-	b.Campo:SetMaxLetters(40)
+	b.Campo:SetMaxLetters(largo or 40)
 	b.Ayuda:ClearAllPoints()
 	b.Ayuda:SetPoint("LEFT", b.Campo, "LEFT", 1, 0)
 	b.Ayuda:SetPoint("RIGHT", b.Campo, "RIGHT", 0, 0)
@@ -160,6 +161,8 @@ local function construir()
 	F.Lugar:SetWordWrap(false)
 
 	F.Nombre = campoDeNombre(F)
+	-- 1.3.9 (79): una nota para el marcador (opcional): sale al pasar el ratón y en la lista.
+	F.Nota = campoDeNombre(F, L["Una nota (opcional)"], Mk.LARGO_NOTA or 120)
 
 	F.TIcono = K.Texto(F, "mayus", "textoTenue")
 	K.Escribir(F.TIcono, L["Ícono"]:upper())
@@ -208,6 +211,7 @@ local function construir()
 	F:SetScript("OnHide", function()
 		K.OcultarInfo()
 		F.Nombre.Campo:ClearFocus()
+		F.Nota.Campo:ClearFocus()
 		estado = {}
 	end)
 	if A.CloseOnEscape then A.CloseOnEscape(NOMBRE) end
@@ -220,6 +224,10 @@ local function acomodar()
 	F.Nombre:ClearAllPoints()
 	F.Nombre:SetPoint("TOPLEFT", F, "TOPLEFT", PAD, -y)
 	F.Nombre:SetWidth(w)
+	y = y + K.ALTO.control + ESP.s
+	F.Nota:ClearAllPoints()
+	F.Nota:SetPoint("TOPLEFT", F, "TOPLEFT", PAD, -y)
+	F.Nota:SetWidth(w)
 	y = y + K.ALTO.control + ESP.base
 
 	F.TIcono:ClearAllPoints()
@@ -289,6 +297,7 @@ function E.Abrir(opts)
 	K.Escribir(F.Lugar, donde)
 	F.Nombre:SetTexto(m and m.nombre or (n and n.nombre) or "", true)
 	F.Nombre:SetAyuda(Mk.NombreLugar(lugar))
+	F.Nota:SetTexto(m and m.nota or "", true)
 	acomodar()
 	pintar()
 	F:ClearAllPoints()

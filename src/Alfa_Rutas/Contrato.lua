@@ -61,6 +61,20 @@ AlfaRuta = R
 
 function R.Asistente(camino) M.Asistente.Abrir(camino) end
 function R.Liberar(filtro) Cr.Ahora(filtro) end
+-- 1.3.9 (12): un solo botón para «Cerrar mis misiones» (el resumen antes de salir).
+function R.CerrarTodo(origen) return M.CerrarTodo.Abrir({ origen = type(origen) == "string" and origen or "otro" }) end
+function R.TextoCerrar() return L["Cerrar mis misiones"] end
+-- 1.3.9: restablecer la guía que sigues y empezar desde un paso (Restablecer.lua).
+function R.Restablecer(sinPreguntar) return M.Restablecer.Restablecer(sinPreguntar) end
+function R.EmpezarDesde(paso) return M.Restablecer.EmpezarDesde(paso) end
+function R.TextoRestablecer() return L["Restablecer esta guía"] end
+-- 1.3.9 (revisión): «¡Plan cumplido! Te quedan N misiones en tu registro…» (Hoy, con el cierre).
+function R.TextoPlanCumplido(c)
+	local n = type(c) == "table" and tonumber(c.quedan) or 0
+	return string.format(n == 1 and L["¡Plan cumplido! Te queda %d misión en tu registro: Alfa arma la ruta para cerrarla."]
+		or L["¡Plan cumplido! Te quedan %d misiones en tu registro: Alfa arma la ruta para cerrarlas."], n)
+end
+function R.TextoEmpezarDesde() return L["Empezar desde este paso"] end
 function R.Entregar() return M.EntregarListas() end -- 1.3.7: la misma manera en todos lados
 function R.Recoger() M.Recoger.Ahora() end
 function R.AgregarObjeto(itemID) return M.AgregarObjeto(itemID) end
@@ -77,7 +91,7 @@ function R.AgregarMision(qid)
 end
 
 function R.QuitarMision(qid)
-	local ok = Cr.Quitar(qid)
+	local ok = Cr.Quitar(qid, true)
 	if ok then M.Aviso(L["Fuera de Cerrar mis misiones"], M.TituloMision(qid), { icono = "ic-misiones" }) end
 	return ok
 end
@@ -123,11 +137,16 @@ function R.FinGuia() return M.Rastreador.Fin and M.Rastreador.Fin() or nil end
 --   AlfaRuta.VerEnMapa()   el mapa de Alfa encuadrado en la flecha
 function R.GuiaTerminada() return M.GuiaTerminada and M.GuiaTerminada() or false end
 function R.Distancia() return M.Rastreador.Distancia() end
+-- 1.3.9 (74): el tiempo de camino con el formato de la flecha («1 min 20 s», «12 min»).
+function R.Tiempo(seg) return M.Rastreador.Tiempo(seg) end
 --   AlfaRuta.XPListas() -> { n, xp, conocidas, subes, faltan }   lo que dan tus misiones listas
 --   AlfaRuta.XPMision(questID) -> xp | nil
 function R.XPListas() return M.XPListas() end
 function R.XPMision(qid) return M.XPMision(qid) end
 function R.VerEnMapa() return M.Rastreador.VerEnMapa() end
+-- 1.3.9 (42): el título de un paso en tu idioma y si un texto quedó en inglés (Hoy, el Escritorio).
+function R.TituloPaso(v) return M.Rastreador.TituloPaso(v) end
+function R.SinTraducir(s) return M.Rastreador.SinTraducir(s) end
 function R.Cierre() return M.Rastreador.Cierre() end
 function R.SeguirCierre(c) return M.Rastreador.SeguirCierre(c) end
 function R.Recuperar(c) return M.Rastreador.Recuperar(c) end

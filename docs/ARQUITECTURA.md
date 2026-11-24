@@ -9,6 +9,7 @@ upstream/polestar-<v>/   Polestar publicado, bajado y verificado (no va en git)
 src/Alfa_*/              módulos propios (sí van en git)
 tools/                   fetch_upstream, build, renombrar, parches, revisar, humo
 dist/                    lo que se instala en Interface/AddOns (no va en git)
+motor/                   la interfaz propia del motor (diseño A) y sus archivos propios
 referencia/              código de la interfaz de Forever (no va en git)
 ```
 
@@ -82,6 +83,49 @@ N.Modulo({
 - **Lya:** `src/Alfa_Lya` es la loba compañera en pantalla; cualquier módulo puede hacerla hablar con `AlfaLya.Decir(texto, { importante, accion = { texto, fn } })`, que respeta sus reglas contra el spam (ver su `LEEME.md`).
 - **Paisaje y gráficos:** `src/Alfa_Vista` (Mundo > Paisaje y gráficos, `/alfa paisaje`) expone ajustes escondidos del juego (CVars), preajustes y filtros propios; otros módulos usan `AlfaVista.Abrir()`, `AlfaVista.AplicarPreset(nombre)` y `AlfaVista.Presets()` (ver su `LEEME.md`).
 - **Archivos:** cada módulo toca solo su carpeta. Si necesita algo del motor o del núcleo que no existe, lo dice en su reporte en lugar de editar otra carpeta.
+
+## El núcleo: lo que comparten los módulos (al día con la 1.3.9)
+
+`src/Alfa_Nucleo/` (global `AlfaNucleo`, `N` en el código) junta lo que antes cada módulo hacía a su manera. Cada archivo explica su contrato arriba; lo principal:
+
+| Archivo | Qué da |
+|---|---|
+| `Nucleo.lua` | `N.Modulo`, `N.Get/Set`, `N.Datos/N.DatosPersonaje`, `N.Migracion(n, fn)` y `N.MigrarDesde(n)`, `N.Repintar`, `N.Reino`, `N.Imprimir`, `N.Dinero`, `N.Duracion`, `N.Plural`, `N.Secreto/N.Leer/N.Si/N.SiJuego` (valores secretos) |
+| `Reloj.lua` (1.2.9) | Un solo reloj para todo lo que se repite: `N.Cada`, `N.Una`, `N.Ticker`, `N.Quitar`, `N.Tareas()`. Duerme sin tareas; modo combate (`N.DeFondo`), mazmorra (`N.DeAfuera`) y ligero (`N.Ligero`). 1.3.9: `N.VistaPaso(i)` y `N.Compartido(clave, seg, fn)`: una sola lectura de la guía por segundo para Hoy, el rastreador y el Escritorio |
+| `Eventos.lua` (1.3.5) | `N.DeUnidad(evento, unidades, fn)`, `N.Juntar(fn)` (una vez por cuadro), `N.PorPrefijo(prefijo, fn)` (un solo marco para los mensajes de addon, con el filtro de facción) |
+| `Entrada.lua` (1.3.3) | Entrar en silencio: `N.Entrando`, `N.GuardarAlEntrar`, `N.AlEntrar` |
+| `Momentos.lua` (1.3.7) | El orquestador: `N.Ocupado(tipo)`, `N.AlLibre(clave, fn, prioridad)`, `N.Perdido` («Lo que me perdí»), `N.Suceso/N.Visto` (un mensaje por suceso, 1.3.8), `N.Repeticion` (1.3.9) |
+| `Faccion.lua` (1.3.8) | `N.ConFaccion`: todo lo de la Red de La Jauría lleva la marca de tu facción; lo de la otra no llega |
+| `Errores.lua` (1.2.9) e `Informe.lua` (1.3.9) | Los errores de Alfa atrapados (`N.Errores`, 30 a lo más) y los datos técnicos del reporte (`N.InformeTecnico`: módulos, modo, memoria, tareas, otros addons; `N.SinPrivado`: sin tu nombre, tu reino ni el de otros) |
+| `Kit/` | El kit visual de Alfa (`K.Ventana`, `K.Aviso`, `K.Anuncio`, `K.Pila`, `K.Texto`, `K.Parrafo`...): ver `docs/KIT.md` |
+
+## Datos guardados y sus topes
+
+Todo lo que crece con el tiempo tiene un tope, para que entrar y salir del juego no se vuelva lento. Los de hoy (24/11/2026):
+
+| Dónde | Tope |
+|---|---|
+| `AlfaNucleoDB.errores` (Errores.lua) | 30 errores distintos |
+| `AlfaNucleoDB.comercio.reinos` (Comercio/Precios.lua) | los precios de más de 60 días se borran; un reino sin nada reciente, también |
+| `AlfaNucleoDB.lya.historias` (Lya/Historias.lua) | 500 misiones y 450 000 letras |
+| `AlfaNucleoCharDB.mazmorras.historial` (Mazmorras/BotinGrupo.lua) | 100 repartos de botín |
+| `AlfaNucleoCharDB.pesca` (Pesca/Registro.lua) | 40 sesiones y 1500 pescas |
+| `AlfaNucleoCharDB.momentos` (Momentos.lua) | 30 perdidos y 20 recientes |
+| `AlfaNucleoCharDB.inicio.sesiones` (Inicio/Sesion.lua) | las últimas sesiones (`keep`) |
+| buzón de reportes (Bienvenida/Reporte.lua) | 20 |
+
+Para medir los de una cuenta de verdad: `tools/banco/prueba_139_calidad.lua` (la sesión larga de 3 horas falla si lo guardado crece más de 64 KB entre la hora 1 y la 3).
+
+## Herramientas de calidad (tools/)
+
+| Herramienta | Para qué |
+|---|---|
+| `build.py`, `revisar.py`, `humo.py`, `sintaxis.py` | Armar `dist/`, revisar sintaxis y TOC/XML, cargar todo con el juego simulado |
+| `prueba.py` | La suite completa del banco: `prueba.lua`, cada `tools/banco/prueba_*.lua`, la galería (textos cortados), las guías diferidas, el tope de la entrada y la prueba visual. Termina con «RESULTADO: todo bien» |
+| `escena.py` | Corre una o varias escenas del banco y enseña su salida |
+| `perfil.py` | El perfil de la entrada y de un rato de juego (`--paginas`: cada página; `--veces N`: N corridas, el mínimo y la mediana). El mapa empieza cerrado, como en el juego |
+| `regresion.py` (1.3.9) | Prueba visual: captura cada página y algunas ventanas (`tools/banco/vistas.lua`) y las compara pieza por pieza con `tools/banco/referencia/vistas.json.gz`; lo que cambió sale como AVISO VISUAL con una imagen lado a lado (`tools/banco/shot-dif-*.png`). `--aceptar` al cerrar una versión |
+| `tools/banco/prueba_139_calidad.lua` | Todos los comandos `/alfa`, cada aviso en los 10 idiomas, el reporte sin datos privados, la sesión larga y la memoria de las páginas |
 
 ## Reglas de Forever (no negociables)
 

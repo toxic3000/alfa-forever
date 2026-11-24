@@ -445,3 +445,7 @@ function En.Comando(arg)
 	end
 	pintar()
 end
+
+-- 1.3.9: Bolsas («Lo que me sobra», Sobra.lua) lee tus listas y prepara la carta.
+AlfaComercio = type(AlfaComercio) == "table" and AlfaComercio or {}
+AlfaComercio.Envios = En

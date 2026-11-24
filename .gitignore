@@ -13,3 +13,5 @@ tools/banco/shot-*.json
 tools/anunciar_local.json
 # El manual en PDF se genera (tools/manual.py) y va adjunto a cada Release de GitHub.
 docs/manual/*.pdf
+# El webhook secreto de #buzon-alfa (instalador/LEEME.md); nunca se sube.
+instalador/buzon_local.json

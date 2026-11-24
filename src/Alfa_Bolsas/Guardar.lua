@@ -120,8 +120,9 @@ local function paraOtro(id)
 		if e.propio then return nil end -- este personaje también lo usa: se queda
 	end
 	local e = lista[1]
-	if e.profesion then return format(L["%s (%s)"], tostring(e.quien or "?"), tostring(e.profesion)) end
-	return tostring(e.quien or "?")
+	-- 1.3.9: también el nombre solo (para la carta de «Lo que me sobra», Sobra.lua).
+	if e.profesion then return format(L["%s (%s)"], tostring(e.quien or "?"), tostring(e.profesion)), e.quien end
+	return tostring(e.quien or "?"), e.quien
 end
 
 -- ¿Equipo que se liga al equiparlo y tu clase no usa?
@@ -156,10 +157,12 @@ function Gu.Sugerencias()
 				local quien = deOtros[id]
 				if quien then
 					x.motivo, x.para, x.tipo = format(L["Lo pide una misión de %s."], quien), quien, "mision"
+					x.nombre = quien
 				else
-					local otro = paraOtro(id)
+					local otro, quien2 = paraOtro(id)
 					if otro then
 						x.motivo, x.para, x.tipo = format(L["Para las recetas de %s."], otro), otro, "oficio"
+						x.nombre = type(quien2) == "string" and quien2 or nil
 					elseif boeQueNoUsas(info, link) then
 						x.motivo, x.tipo = L["Tu clase no lo usa: guárdalo para otro personaje o súbelo a la subasta."], "equipo"
 					end

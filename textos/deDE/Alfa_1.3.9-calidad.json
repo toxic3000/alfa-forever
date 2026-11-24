@@ -1,0 +1,12 @@
+{
+ "Módulos: %s": "Module: %s",
+ "apagados: %s": "ausgeschaltet: %s",
+ "Modo sencillo": "Einfacher Modus",
+ "Modo completo": "Vollständiger Modus",
+ "Alfa usa %.1f MB": "Alfa nutzt %.1f MB",
+ "%d tareas del reloj (la que más tarda: %s)": "%d Uhr-Aufgaben (die langsamste: %s)",
+ "Otros addons (%d): %s": "Andere Addons (%d): %s",
+ "<jugador>": "<Spieler>",
+ "<tu personaje>": "<dein Charakter>",
+ "<tu reino>": "<dein Realm>"
+}

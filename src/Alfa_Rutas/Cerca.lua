@@ -347,7 +347,7 @@ local function motivoLargo(tipo, linea, por)
 	elseif por == "none" then
 		return format(L["No conozco ningún lugar de «%s» para tu facción."], Ce.Nombre(tipo, linea))
 	elseif por == "motor" then
-		return L["La búsqueda de lugares cercanos no está disponible."]
+		return L["La búsqueda de lugares cercanos no está lista: falta una parte de Alfa. /alfa diagnostico te dice cuál prender."]
 	end
 	return format(L["No pude cargar los datos del mundo de Alfa (%s)."], tostring(por))
 end

@@ -27,8 +27,10 @@ Kit\Anuncio.lua
 Kit\Firmas.lua
 Kit\Plantillas.lua
 Kit\Estilos.lua
+Kit\Bando.lua
 Momentos.lua
 Zonas.lua
 UltimaVez.lua
 Modo.lua
 Limpia.lua
+Informe.lua

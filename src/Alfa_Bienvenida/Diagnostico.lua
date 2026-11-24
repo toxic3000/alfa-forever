@@ -410,7 +410,7 @@ A.OnLogin(function()
 		{ id = "bienvenida.modo", icono = "ic-huella", pregunta = L["Alfa tiene muchas páginas, ¿se puede más sencillo?"],
 			respuesta = L["Sí: en Ajustes > Estilo y sonido elige «Sencillo» en «Cómo ves Alfa». Dejo a la vista solo lo esencial y te aviso menos."] },
 		{ id = "bienvenida.errores", icono = "ic-alerta", pregunta = L["¿Cómo le mando un error a toxic3000?"],
-			respuesta = L["Con /alfa reportar: yo ya junté los errores que atrapé, con su versión y cuántas veces salieron. Tú solo lo pegas en el Discord."] },
+			respuesta = L["Con /alfa reportar: yo ya junté los errores que atrapé, con su versión y cuántas veces salieron. Tú solo le das «Enviar»."] },
 	}) do
 		p.modulo = M.ID
 		pcall(Lya.Ensenar, p)

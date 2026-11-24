@@ -31,7 +31,17 @@
 --       BANCO_MOMENTOS = true (sus escenas viejas prueban todo al instante)
 --
 -- Ajustes (nucleo.*): sonidos = "todos" | "importantes" | "ninguno",
--- respetarDnd = true, resumenNivel = true.
+-- respetarDnd = true, resumenNivel = true, callarRepetidos = true (1.3.9),
+-- avisos.<firma> = false (1.3.9: un tipo apagado en el Centro de avisos).
+--
+-- 1.3.9 (67, 68 y 70):
+--   N.AvisoApagado(o) -> bool   su tipo (la firma de su módulo) está apagado
+--   N.Repeticion(o) -> "sale" | "ultima" | "callado", clave
+--       la cuarta vez que un aviso igual sale en la sesión es la última (con
+--       «Ya te lo dije 3 veces»); las siguientes se callan
+--   N.AvisoCallado(o, clave) -> o   el aviso de la última vez
+--   N.Reactivar(clave)   N.ReactivarTodos()   N.Callados() -> n
+--   N.GrupoCentroAvisos(padre) -> grupo de ajustes   N.ProbarAviso(firma)
 
 local _, N = ...
 local A = N.A
@@ -55,7 +65,11 @@ local function banco() return rawget(_G, "FIRE_EVENT") ~= nil and rawget(_G, "BA
 function N.MomentosActivos() return not banco() end
 
 if A and A.RegisterDefaults then
-	A.RegisterDefaults("nucleo", { sonidos = "todos", respetarDnd = true, resumenNivel = true })
+	-- 1.3.9: callarRepetidos (68) y avisos.<firma> = false para apagar un tipo (67).
+	local avisos = {}
+	for c in pairs(K and K.FIRMAS or {}) do avisos[c] = true end
+	A.RegisterDefaults("nucleo", { sonidos = "todos", respetarDnd = true, resumenNivel = true, callarRepetidos = true,
+		avisos = avisos })
 end
 
 N.PRIORIDAD = { urgente = 1, importante = 2, util = 3, detalle = 4 }
@@ -798,7 +812,8 @@ end
 -- Abrirla no marca nada como visto: eso es «Marcar todo como visto» o el
 -- botón de cada aviso.
 local ventana, ui = nil, {}
-local DE_DONDE = { calma = "Mientras tenías la calma", entrada = "Mientras entrabas", lya = "Te lo dijo Lya" }
+local DE_DONDE = { calma = "Mientras tenías la calma", entrada = "Mientras entrabas", lya = "Te lo dijo Lya",
+	apagado = "Apagado en el Centro de avisos", callado = "Callado: se repetía mucho" } -- (1.3.9)
 -- 1.3.7: los filtros de arriba: «Todos», «Sin ver» y uno por módulo con avisos
 -- (los 4 con más), más «Otros» para los que no son de ninguno.
 local filtro = "todos"
@@ -1187,6 +1202,183 @@ if A and A.OnLogin then
 end
 
 ---------------------------------------------------------------------------
+-- 1.3.9 (67): el Centro de avisos. Cada tipo de aviso es la firma de su
+-- módulo (Kit/Firmas.lua) con su interruptor (nucleo.avisos.<firma>) y un
+-- botón «Probar». Apagado, el aviso no sale (queda en la campanita); lo
+-- urgente, lo importante «siempre» y lo que pides tú salen igual.
+---------------------------------------------------------------------------
+local refrescarCentro -- abajo
+local function prioridadAviso(o)
+	if o.prioridad ~= nil then return prioridad(o.prioridad) end
+	if o.importante == "siempre" then return 1 end
+	if o.importante then return 2 end
+	if o.detalle then return 4 end
+	return 3
+end
+
+function N.AvisoApagado(o)
+	if type(o) ~= "table" or o.pedido == true or o.importante == "siempre" then return false end
+	local f = o.alfaFirma
+	if type(f) ~= "string" or not (A and A.Get) then return false end
+	if A.Get("nucleo.avisos." .. f) ~= false then return false end
+	return prioridadAviso(o) > 1
+end
+
+-- El orden del Centro: los módulos, y al final Alfa y sus errores.
+local ORDEN_CENTRO = { "ruta", "hoy", "lya", "manada", "mundo", "mazmorras", "combate", "curacion", "bolsas",
+	"comercio", "oficios", "pesca", "recoleccion", "talentos", "enciclopedia", "comodidades", "alfa", "errores" }
+function N.TiposDeAviso()
+	local out, ya = {}, {}
+	local F = K and K.FIRMAS or {}
+	for _, c in ipairs(ORDEN_CENTRO) do
+		if F[c] then out[#out + 1] = c ya[c] = true end
+	end
+	local resto = {}
+	for c in pairs(F) do if not ya[c] then resto[#resto + 1] = c end end
+	tsort(resto)
+	for _, c in ipairs(resto) do out[#out + 1] = c end
+	return out
+end
+
+local function nombreFirma(c)
+	local f = K and K.FIRMAS and K.FIRMAS[c]
+	return f and L[f.nombre] or c
+end
+
+-- «Probar»: un aviso de muestra de ese tipo (sale aunque esté apagado).
+function N.ProbarAviso(c)
+	if not (K and K.Aviso) then return nil end
+	local f = K.FIRMAS and K.FIRMAS[c]
+	if not f then return nil end
+	local apagado = A and A.Get and A.Get("nucleo.avisos." .. c) == false
+	local a = K.Aviso({ pedido = true, firma = c, historial = false, agrupar = false, sonido = false, lya = false,
+		textura = f.textura, titulo = format(L["Así se ve un aviso de %s"], nombreFirma(c)),
+		texto = apagado and L["Ahora está apagado: no te saldrá hasta que lo prendas."]
+			or L["Con su color, su ícono y su sonido, para saber de dónde viene sin leerlo."] })
+	if K.SonarFirma then K.SonarFirma(c, 2) end
+	return a
+end
+
+---------------------------------------------------------------------------
+-- 1.3.9 (68): lo que se repite mucho en una sesión se calla solo
+---------------------------------------------------------------------------
+local REPETIR_MAX = 3
+N.REPETIR_MAX = REPETIR_MAX
+local repetidos = {} -- clave -> { n, callado, titulo }
+
+-- La clave de «lo mismo»: su id o su título (sin números: «Bolsas llenas (3)»
+-- y «(4)» son el mismo aviso).
+local function claveRepetido(o)
+	-- El título y el texto: «Misión lista: El lobo hambriento» y «…: Correo
+	-- para Gamon» son avisos distintos; solo los números no cuentan.
+	local titulo = type(o.titulo) == "string" and not secreto(o.titulo) and o.titulo or ""
+	local texto = type(o.texto) == "string" and not secreto(o.texto) and o.texto or ""
+	local t = N.Normalizar(titulo .. " " .. texto)
+	t = t and (t:gsub("%d+", "#")) or nil
+	-- Con id o clave, también cuenta el texto: «¡Lista! Sigue: X» y «…: Y»
+	-- comparten clave pero dicen otra cosa (1.3.9, revisión 1).
+	local id = o.id
+	if id == nil then id = o.clave end
+	if id ~= nil then return "id:" .. tostring(id) .. "|" .. (t or "") end
+	if not t then return nil end
+	return "t:" .. t
+end
+
+function N.Repeticion(o)
+	if type(o) ~= "table" or o.repetir == true then return "sale" end
+	if A and A.Get and A.Get("nucleo.callarRepetidos") == false then return "sale" end
+	local c = claveRepetido(o)
+	if not c then return "sale" end
+	local r = repetidos[c]
+	if not r then
+		r = { n = 0 }
+		repetidos[c] = r
+	end
+	r.n = r.n + 1
+	if r.callado then return "callado", c end
+	if not secreto(o.titulo) and type(o.titulo) == "string" then r.titulo = o.titulo end
+	if r.n > REPETIR_MAX then
+		r.callado = true
+		if refrescarCentro then pcall(refrescarCentro) end
+		return "ultima", c
+	end
+	return "sale", c
+end
+
+-- La última vez: el mismo aviso con «Ya te lo dije» y «Seguir avisando».
+function N.AvisoCallado(o, c)
+	local nuevo = {}
+	for k, v in pairs(o) do nuevo[k] = v end
+	local nota = format(L["Ya te lo dije %d veces: no lo repito en esta sesión."], REPETIR_MAX)
+	local texto = type(o.texto) == "string" and not secreto(o.texto) and o.texto or ""
+	nuevo.texto = texto ~= "" and (texto .. "\n" .. nota) or nota
+	local botones = {}
+	local primero = type(o.accion) == "table" and o.accion or (type(o.acciones) == "table" and o.acciones[1]) or nil
+	if primero then botones[1] = primero end
+	botones[#botones + 1] = { texto = L["Seguir avisando"], alClic = function() N.Reactivar(c) end }
+	nuevo.accion, nuevo.acciones = nil, botones
+	nuevo.duracion = nil
+	nuevo.alfaCallado = c
+	return nuevo
+end
+
+function N.Reactivar(c)
+	if c ~= nil then repetidos[c] = nil end
+	if refrescarCentro then pcall(refrescarCentro) end
+end
+function N.ReactivarTodos()
+	repetidos = {}
+	if refrescarCentro then pcall(refrescarCentro) end
+end
+function N.Callados()
+	local n = 0
+	for _, r in pairs(repetidos) do if r.callado then n = n + 1 end end
+	return n
+end
+
+---------------------------------------------------------------------------
+-- El Centro de avisos en la página «Estilo y sonido»: un grupo de ajustes
+---------------------------------------------------------------------------
+local centroBoton
+refrescarCentro = function()
+	if centroBoton and centroBoton.SetActivo then centroBoton:SetActivo(N.Callados() > 0) end
+end
+
+function N.GrupoCentroAvisos(padre)
+	if not (K and K.GrupoAjustes) then return nil end
+	local g = K.GrupoAjustes(padre, { titulo = L["Centro de avisos"] })
+	g:Fila({ titulo = L["Callar lo que se repite"],
+		texto = format(L["Un aviso que ya salió %d veces en la sesión se calla solo (queda en la campanita). «Seguir avisando» lo vuelve a prender."], REPETIR_MAX),
+		control = function(fila) return K.Interruptor(fila, { clave = "nucleo.callarRepetidos" }) end })
+	g:Fila({ titulo = L["Avisos callados"],
+		texto = L["Los que se callaron en esta sesión por repetirse."],
+		control = function(fila)
+			centroBoton = K.Boton(fila, L["Reactivar todos"], function() N.ReactivarTodos() end, { tipo = "secundario" })
+			return centroBoton
+		end })
+	for _, c in ipairs(N.TiposDeAviso()) do
+		local f = K.FIRMAS[c]
+		g:Fila({ titulo = nombreFirma(c), texto = f.ayuda and L[f.ayuda] or nil,
+			control = function(fila)
+				local caja = CreateFrame("Frame", nil, fila)
+				local sw = K.Interruptor(caja, { clave = "nucleo.avisos." .. c })
+				local pb = K.Boton(caja, L["Probar"], function() N.ProbarAviso(c) end, { tipo = "fantasma" })
+				sw:ClearAllPoints()
+				sw:SetPoint("RIGHT", caja, "RIGHT", 0, 0)
+				pb:ClearAllPoints()
+				pb:SetPoint("RIGHT", sw, "LEFT", -K.ESP.s, 0)
+				caja:SetSize(K.num(pb:GetWidth(), 60) + K.ESP.s + K.num(sw:GetWidth(), 40),
+					max(K.num(pb:GetHeight(), 24), K.num(sw:GetHeight(), 24)))
+				caja.Interruptor, caja.Probar = sw, pb
+				function caja:Leer() sw:Leer() end
+				return caja
+			end })
+	end
+	pcall(refrescarCentro)
+	return g
+end
+
+---------------------------------------------------------------------------
 -- Ajustes para la página «Estilo y sonido» (Alfa_Bienvenida): la fila y su búsqueda.
 ---------------------------------------------------------------------------
 local function opcionesSonido()
@@ -1222,5 +1414,12 @@ function N.ControlesMomentos()
 		{ kind = "button", label = L["Avisos"], button = L["Ver"], icon = "info",
 			help = L["Lo que Alfa te dijo, con su hora, y lo que se fue sin que lo vieras. También con la campanita de la ventana de Alfa o /alfa avisos."],
 			onClick = function() N.VerAvisos() end, search = "missed, history, notifications, perdidos, historial, avisos" },
+		-- 1.3.9 (67 y 68): el Centro de avisos, para la búsqueda.
+		{ kind = "toggle", key = "nucleo.callarRepetidos", label = L["Callar lo que se repite"],
+			help = format(L["Un aviso que ya salió %d veces en la sesión se calla solo (queda en la campanita). «Seguir avisando» lo vuelve a prender."], REPETIR_MAX),
+			search = "repeated, spam, notification center, centro de avisos, repetidos, callar" },
+		{ kind = "toggle", key = "nucleo.avisos.errores", label = L["Errores de Alfa"],
+			help = L["Cuando Alfa atrapa un error suyo, un aviso chico te ofrece reportarlo. Nunca en combate."],
+			search = "lua errors, bug report, bugs, errores, reportar, lobo malo, notification center, centro de avisos" },
 	}
 end

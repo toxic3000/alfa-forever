@@ -1,5 +1,95 @@
 # Cambios de Alfa
 
+## 1.3.9 — La manada caza mejor: tus misiones, tus oficios y más de 100 mejoras (24/11/2026)
+
+«Cerrar mis misiones» vuelve a funcionar y arma la mejor ruta, las guías de profesión ahora sí te ayudan a subir rápido, el mensaje del barco es nuevo y de Alfa, los errores se reportan con un clic, y llegan el marcador de Horda y Alianza, la temática por bando y el mapa por dentro de las mazmorras. Cada cambio trae su prueba en el banco y pasó una revisión independiente.
+
+**Español**
+
+*Tus misiones*
+- «Cerrar mis misiones» desde Hoy ya funciona: arma con todas tus misiones aunque antes hayas elegido «solo listas»; si falta la base de misiones la carga sola, y en combate espera y sigue sola.
+- El mejor orden: cada zona de una vez, las entregas al final y juntas por PNJ, y lo que está en el mismo lugar en un solo paso. Las de élite, de mazmorra, muy altas o grises que ya no dan experiencia van a «Para después», con su porqué de verdad y «Meterla».
+- Antes de salir, un resumen con misiones, zonas, tiempo y experiencia; eliges con casillas. Tu ruta sale en el mapa de Alfa y en el del juego con paradas numeradas, «¡Lista! Sigue: X» al entregar cada una y el festejo de Lya al cerrar la última.
+- Al terminar un plan con misiones en tu registro, Alfa dice «¡Plan cumplido!» y ofrece cerrarlas (ya no «¡Terminaste tu guía!»). Las entregas muestran la zona correcta de su PNJ.
+- **Restablecer una guía:** olvida lo omitido y te ubica solo por tu habilidad, tu nivel y tus misiones; y «Empezar desde este paso» en el clic derecho de cualquier paso. Los dos con Deshacer.
+- El rastreador muestra solo lo esencial (lo demás al pasar el ratón); el clic derecho de un paso va siempre en el mismo orden; registro casi lleno con sugerencias de qué soltar; ruta en común con tu grupo; el objeto de misión desde el rastreador; la cadena dice qué te falta; los pasos de guía en tu idioma («Hacia Vallefresno»).
+
+*Oficios y recolección*
+- **Guías de profesión de Alfa, por tramos (1–75, 75–150, 150–225, 225–300):** la mejor zona con su ruta, qué da puntos, cuándo ir al instructor, qué receta hacer y cuántas, y tus materiales con lo de tus otros personajes descontado. Cada paso se marca solo al llegar a tu habilidad y se salta si ya la pasaste.
+- «Llévame» a un mineral o una hierba te manda a la zona con más probabilidad para tu nivel y tu bando, y te dice por qué; la plata, el oro y la veraplata cuentan también las vetas donde salen. «plata», «mena de plata» y «silver» son lo mismo.
+- En vez de un solo punto, una ruta por todos los puntos; el punto vacío se salta solo («Aquí no hay ahora; voy al siguiente (3 de 12)»).
+- **Clic en la flecha:** vuelve a llevarte al siguiente lugar, también en tus rutas de recolección.
+- Oficios: la receta más barata para subir con lo que ya tienes y lo que ya puedes fabricar con ganancia.
+- Las guías de profesión eligen en cada punto la receta más barata que aún te da puntos: Herrería 225–300 pide unas 1,374 barras de torio en vez de 1,943, y la cabecera del tramo te dice cuánto ahorras.
+
+*El viaje y los anuncios*
+- **El mensaje del barco, nuevo y a la manera de Alfa:** una tarjeta con el transporte, la cuenta grande de la salida, la ruta y su momento (camino, muelle, a bordo, llegando), para barco, zepelín, tranvía, portal y vuelo.
+- Anuncios más cinematográficos, anuncios de zona con los rangos de nivel corregidos y las zonas nuevas de Forever, y flecha con modo mínimo.
+
+*Horda, Alianza y La Jauría*
+- Marcador de La Jauría por bando, y «Lobos con Alfa» (`/alfa lobos`): quién de tu hermandad usa Alfa, su versión y quién debe actualizar.
+- Temática por bando (opcional): Alfa se viste de la Horda o de la Alianza.
+- La página de La Jauría en Tu grupo, Tu hermandad y Cerca; los avisos de la manada con un solo estilo y sin repetirse.
+
+*Reportar errores*
+- El Lobo Malo caza bichos: si Alfa encuentra un error suyo te avisa en chiquito y lo reportas con un clic. Escribe qué pasó (opcional) y «Enviar»: el instalador lo entrega solo, o envíalo ya por el navegador. Nunca lleva tu nombre ni tu reino.
+
+*Mazmorras*
+- Mapa por dentro de la mazmorra, con zoom, pisos y tu avance por jefes.
+- «Antes de entrar»: una lista que se marca sola. El camino de jefes vuelve a salir en el resumen, y Alfa ya no cree que estás en una mazmorra cuando no es así.
+
+*Hoy, la bienvenida y los avisos*
+- Hoy pone arriba lo primero que conviene hacer, cambia según dónde estás y lo acomodas a tu gusto. Configura Alfa en 3 pantallas; cada página te dice para qué sirve la primera vez; el «?» y Lya («¿Qué hago ahora?») te contestan al momento.
+- Centro de avisos en Estilo y sonido, los avisos repetidos se callan solos, los avisos ya no se cortan en ningún idioma, «Deshacer» en Ajustes, y las sugerencias se ocultan con «Ahora no».
+
+*Bolsas, pesca, curación y combate*
+- La ventana del personaje ya no muestra un recuadro suelto en su esquina; el tiempo de recarga cabe en su casilla; candado automático para herramientas y monturas; «Lo que me sobra»; búsqueda más lista («arma», «-gris»); y ordenar a tu manera.
+- Pesca: aviso del pez de la semana, récords con fecha y lugar, y una ventana más sencilla. Curación: mapas de clics por especialización y el dibujo de tu ratón. Combate: tus últimas 5 peleas.
+- Escritorio: paneles nuevos y plantillas para monitor vertical y ultraancho; Dos pantallas con el monitor a la izquierda.
+
+**English**
+
+*Your quests*
+- "Close my quests" from Today works again: it builds with all your quests even if you last picked "ready only"; if the quest data is missing it loads it, and in combat it waits and carries on by itself.
+- The best order: each zone in one go, turn-ins at the end grouped by NPC, same-spot objectives in one step. Elite, dungeon, too-high or gray quests that no longer give experience go to "For later", with the real reason and "Add it".
+- Before you set off, a summary with quests, zones, time and experience; pick with checkboxes. Your route shows on Alfa's map and the game map with numbered stops, "Done! Next: X" after each turn-in and Lya's celebration after the last one.
+- When a plan ends with quests still in your log, Alfa says "Plan done!" and offers to close them (no more "You finished your guide!"). Turn-ins show their NPC's correct zone.
+- **Reset a guide:** forgets skips and places you automatically by skill, level and quests; plus "Start from this step" on any step's right-click. Both with Undo.
+- The tracker shows only the essentials (the rest on mouse-over); a step's right-click menu always comes in the same order; a nearly full log suggests what to drop; a shared route with your group; the quest item from the tracker; the chain says what you still need; guide steps in your language.
+
+*Professions and gathering*
+- **Alfa profession guides, in stages (1–75, 75–150, 150–225, 225–300):** the best zone with its route, what gives points, when to see the trainer, which recipe and how many, and your materials minus what your other characters hold. Every step checks itself off at your skill and is skipped if you're already past it.
+- "Take me" to an ore or herb sends you to the most likely zone for your level and faction, and tells you why; silver, gold and truesilver also count the veins they spawn in. "plata", "mena de plata" and "silver" mean the same thing.
+- Instead of one spot, a loop through all the spots; empty ones are skipped automatically ("Nothing here now; heading to the next (3 of 12)").
+- **Arrow click:** takes you to the next spot again, also on your gathering routes.
+- Professions: the cheapest recipe to level up with what you have, and what you can craft now at a profit.
+- Profession guides pick the cheapest recipe that still gives points at each skill: Blacksmithing 225–300 asks for about 1,374 Thorium Bars instead of 1,943, and the stage header tells you how much you save.
+
+*Travel and announcements*
+- **The boat message, rebuilt the Alfa way:** a card with the transport, a big departure countdown, the route and its stage (walking, at the dock, on board, arriving), for boats, zeppelins, trams, portals and flights.
+- More cinematic announcements, zone announcements with corrected level ranges and Forever's new zones, and a minimal arrow mode.
+
+*Horde, Alliance and La Jauría*
+- La Jauría scoreboard by faction, and "Wolves with Alfa" (`/alfa lobos`): who in your guild uses Alfa, their version and who needs to update.
+- Faction theme (optional): Alfa dresses as Horde or Alliance.
+- The La Jauría page in Your group, Your guild and Nearby; pack notices share one style and never repeat.
+
+*Reporting bugs*
+- The Big Bad Wolf hunts bugs: when Alfa finds one of its own errors it gives you a small heads-up and one click reports it. Write what happened (optional) and "Send": the installer delivers it, or send it now via your browser. It never includes your name or realm.
+
+*Dungeons*
+- An inside dungeon map with zoom, floors and your progress through the bosses.
+- "Before you enter": a checklist that ticks itself. The boss path shows again in the summary, and Alfa no longer thinks you're in a dungeon when you aren't.
+
+*Today, welcome and notices*
+- Today shows the first thing to do at the top, adapts to where you are and can be arranged your way. Set up Alfa in 3 screens; each page tells you what it's for the first time; the "?" and Lya ("What do I do now?") answer right away.
+- A notification center in Style & sound, repeated notices mute themselves, notices are never cut off in any language, "Undo" in Settings, and suggestions hide with "Not now".
+
+*Bags, fishing, healing and combat*
+- The character window no longer shows a stray box in its corner; cooldown timers fit their slot; automatic lock for tools and mounts; "Leftovers"; smarter search ("weapon", "-grey"); and sort your bags your way.
+- Fishing: fish-of-the-week alert, records with date and place, and a simpler window. Healing: click maps per spec and a drawing of your mouse. Combat: your last 5 fights.
+- Desktop: new panels and templates for vertical and ultrawide monitors; Two screens with the other monitor on the left.
+
 ## 1.3.8 — La manada en dos pantallas: Alfa en tu segundo monitor y 40 mejoras (24/11/2026)
 
 Alfa llega a tu segundo monitor, la Horda y la Alianza quedan cada una por su lado, los avisos se sienten únicos, la pesca suma tamaños, récords y nivel de pescador, y tus objetos importantes llevan candado. Cada cambio trae su prueba en el banco y pasó una revisión independiente.

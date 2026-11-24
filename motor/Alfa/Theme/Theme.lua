@@ -177,6 +177,15 @@ local DALTONICO = {
 }
 Theme.DALTONICO = DALTONICO
 
+-- 1.3.9 (mejora 40): los colores de la ruta en los mapas (a pie, vuelo,
+-- barco, zepelín, tranvía), con su propio token. De fábrica son los de
+-- siempre; con el modo para daltonismo, cuatro de Okabe e Ito que no se
+-- confunden entre sí (antes vuelo y barco quedaban los dos en azul claro).
+-- A pie sigue el color de tu flecha.
+local RUTA_DE = { routeWalk = "arrow", routeFlight = "success", routeBoat = "npc", routeZeppelin = "place", routeTram = "object" }
+local RUTA_DALTONICO = { routeFlight = hex("56b4e9"), routeBoat = hex("f0e442"), routeZeppelin = hex("e69f00"), routeTram = hex("cc79a7") }
+Theme.RUTA_DE, Theme.RUTA_DALTONICO = RUTA_DE, RUTA_DALTONICO
+
 -- Skins (ui.skin): "polestar", the house style above (the default), the
 -- two directions of the design handoff, and the game's own looks
 -- (docs/ARCHITECTURE.md, "Skins"):
@@ -604,6 +613,17 @@ end
 -- 1.3.0: el modo para daltonismo (Ajustes > Estilo y sonido).
 function Theme.Daltonico() return get("nucleo.daltonico") and true or false end
 
+-- 1.3.9 (40): los tokens de la ruta, ya con la flecha y los demás resueltos.
+local function rutas139(out)
+	for name, from in pairs(RUTA_DE) do
+		local c = out[from] or out.accent
+		if c then out[name] = copy(c) end
+	end
+	if Theme.Daltonico() then
+		for name, c in pairs(RUTA_DALTONICO) do out[name] = copy(c) end
+	end
+end
+
 -- Los colores de bien, aviso, peligro y perjuicios, en la paleta que toca.
 local function colores130(out)
 	for name, c in pairs(DEBUFF) do out[name] = copy(c) end
@@ -672,6 +692,7 @@ local function resolveSkin(skin)
 	colores130(out)
 	out.arrowNear = isColor(near) and { near[1], near[2], near[3], 1 } or copy(out.arrive)
 	out.arrowNearText = copy(out.arrowNear)
+	rutas139(out)
 	classTokens(out)
 	return out
 end
@@ -777,6 +798,7 @@ local function resolve()
 	out.chipAccent = { r, g, b, 0.16 }
 	out.inputBg = { out.shade[1], out.shade[2], out.shade[3], 0.35 }
 	out.skin = "alfa"
+	rutas139(out)
 	classTokens(out)
 	return out
 end

@@ -85,6 +85,9 @@ M.AJUSTES = {
 	previa = true,           -- al abrir el modo, la ventana de antes de pescar (caña, cebo y barra)
 	avisoNivel = true,       -- al subir de nivel de pescador de Alfa, un aviso
 	jauria = false,          -- compartir tu nivel y tus récords con la tabla de La Jauría (tu hermandad)
+	-- 1.3.9
+	avisoSemana = true,      -- al llegar a una zona del pez de la semana, un aviso (una vez por zona y semana)
+	pestanasTodas = false,   -- la ventana con sus ocho pestañas a la vista (apagado: cuatro y «Más»)
 }
 
 _G["BINDING_NAME_" .. ACCION] = L["Pescar: lanzar y recoger"]

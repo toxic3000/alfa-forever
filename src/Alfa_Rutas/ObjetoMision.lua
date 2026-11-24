@@ -152,6 +152,15 @@ function Ob.Pintar()
 	pintarListo(b)
 end
 
+-- 1.3.9 (30): ¿estás cerca de su objetivo? (el motor lo pinta "near"). El
+-- rastreador muestra entonces el objeto con su clic (K.Seguro: hace clic en
+-- el botón seguro del motor, solo fuera de combate y con tu clic).
+function Ob.Cerca()
+	local b = Ob.Boton()
+	return (encendido() and b and b.itemID and b:IsShown() and b.tint == "near") and true or false
+end
+local cercaAntes = false
+
 local enganchado = false
 local function enganchar()
 	local b = Ob.Boton()
@@ -164,6 +173,11 @@ local function enganchar()
 		if cada < 0.25 then return end
 		cada = 0
 		pintarListo(self)
+		local cerca = Ob.Cerca()
+		if cerca ~= cercaAntes then
+			cercaAntes = cerca
+			if M.Rastreador and M.Rastreador.Luego then M.Rastreador.Luego() end
+		end
 	end)
 	b:HookScript("OnShow", function() Ob.Pintar() end)
 	Ob.Pintar()

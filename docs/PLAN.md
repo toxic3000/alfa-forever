@@ -4,6 +4,8 @@
 
 Estrategia acordada el 15/11/2026: construir todo y probarlo en el juego al final. Mientras tanto, cada módulo pasa `revisar.py` y `humo.py`.
 
+**Estado del 24/11/2026 (1.3.9 en camino):** 19 módulos propios sobre el motor, publicados de la 1.0.0 a la 1.3.8; cada versión trae su prueba en el banco (`tools/banco/prueba_*.lua`, más de 100 escenas) y `tools/prueba.py` las corre todas. El plan de cada versión grande va aparte: `docs/PLAN-1.3.7.md` (200 mejoras) y `docs/PLAN-1.3.9.md` (106); lo que salió, en `CHANGELOG.md`; las notas para trabajar, en `CLAUDE.md`. Este archivo queda como la historia de las primeras rutas y la lista de pendientes de fondo (revisada el 24/11: lo ya hecho está marcado).
+
 **Estado del 16/11/2026:** los 11 módulos y el motor están construidos y en git. Todo junto da 473 archivos Lua en 40 carpetas sin errores de sintaxis, y los 12 módulos cargan juntos en la prueba de humo sin errores ni avisos. Cada módulo tiene su lista "Para verificar en el juego" en su `LEEME.md`. Siguiente paso: instalar con `tools/instalar.py --aplicar` (con WoW cerrado) y probar módulo por módulo.
 
 ## Ruta de la 1.1.6 a la 1.2.0 (acordada el 18/11/2026)
@@ -55,6 +57,19 @@ Sale de una revisión del código del 18/11. En cada versión va primero lo que 
 - [x] Lya tutea en francés y ruso (decidió Toxic el 18/11).
 - [x] La descripción de CurseForge dice que Alfa se hace con ayuda de IA, con la broma de Claudio la ballena y Jesus GPT, y agradece a quienes lo usan.
 
+## De la 1.2.9 a la 1.3.8 (hecho)
+
+- **1.2.9 — La gran cacería:** 32 mejoras; un solo reloj para todo lo que se repite (`N.Cada`, `Alfa_Nucleo/Reloj.lua`), errores atrapados (`Errores.lua`), respaldos, modo sencillo o completo.
+- **1.3.0 — La manada sana:** curar con un clic (Curación), la llegada de la flecha como placa propia, bolsas con conjuntos y comparar, resumen de combate con `C_DamageMeter`.
+- **1.3.1 — La manada afinada:** acomodar la pantalla (`/alfa acomodar`), anuncios que esperan a los del juego, migraciones como conjunto, revisión de la 1.2.4 a la 1.3.0.
+- **1.3.2 — La manada en orden:** un solo menú de Alfa (`O.MenuAlfa`), base de misiones sin Codex (`Rutas/Ligero.lua`), un solo reloj de La Jauría.
+- **1.3.3 — La manada en calma:** entrar en silencio (`Alfa_Nucleo/Entrada.lua`), una sola voz por aviso (`dichosSesion`), la ruta de tu grupo.
+- **1.3.4 — La manada ligera:** guías con los pasos diferidos (`tools/diferir.py`, `docs/DISENO-GUIAS-DIFERIDAS.md`): lo que Alfa lee al entrar bajó de 185 a unos 45 ms en el banco (`docs/perfil-1.3.4.txt`).
+- **1.3.5 — La manada más ligera:** modo combate, modo mazmorra y modo ligero del reloj (`N.DeFondo`, `N.DeAfuera`, `N.Ligero`), eventos por unidad y por prefijo (`Alfa_Nucleo/Eventos.lua`).
+- **1.3.6 — La manada te guía:** páginas que se arman una vez y se reusan (`tools/perfil.py --paginas`), ayuda para quien empieza.
+- **1.3.7 — La manada a tu ritmo:** 200 mejoras (`docs/PLAN-1.3.7.md`): el orquestador de momentos (`Alfa_Nucleo/Momentos.lua`: `N.Ocupado`, `N.AlLibre`, «Lo que me perdí»), anuncios de zona, la sección Planes.
+- **1.3.8 — La manada en dos pantallas:** el Escritorio en el segundo monitor (`Alfa_Bienvenida/Escritorio*.lua`), facciones separadas en la Red (`Alfa_Nucleo/Faccion.lua`), firmas de los avisos, pesca con récords, candado de objetos.
+
 ## Módulos
 
 | Módulo | Página (orden) | Qué hace |
@@ -77,27 +92,27 @@ Sale de una revisión del código del 18/11. En cada versión va primero lo que 
 ## Pendientes antes del lanzamiento
 
 - [x] Enlace de Discord de La Jauría: https://discord.gg/hUNjA6BJwh
-- [ ] Logo y marca de Alfa (`Alfa/Media/UI/logo`, `wordmark`), con colores de La Jauría.
-- [ ] Textos del motor que mencionan "Polestar Client" (avisos de actualización) y la página "Novedades", que hoy son de Polestar.
-- [ ] Texto de "Acerca de" con la historia de Alfa y La Jauría.
-- [ ] Pasar tus ajustes de Polestar a Alfa (`PolestarDB` → `AlfaDB`) al instalar.
-- [ ] Prueba en el juego, módulo por módulo, con /reload.
-- [ ] Página de CurseForge en español e inglés, repositorio público (GPL: el código debe estar disponible).
+- [x] Logo y marca de Alfa (`marca/`, `tools/marca.py`), con colores de La Jauría.
+- [x] Textos del motor que mencionan "Polestar Client" (avisos de actualización) y la página "Novedades", que hoy son de Polestar (1.1.6).
+- [x] Texto de "Acerca de" con la historia de Alfa y La Jauría (`ACERCA` en `tools/parches.py`).
+- [ ] Pasar tus ajustes de Polestar a Alfa (`PolestarDB` → `AlfaDB`) al instalar. (Al 24/11 no se hizo: Alfa empieza con ajustes propios; decidir con Toxic si aún hace falta.)
+- [x] Prueba en el juego, módulo por módulo, con /reload (Toxic prueba cada versión antes de publicarla).
+- [x] Página de CurseForge en español e inglés, repositorio público (GPL: el código debe estar disponible).
 
 ## Integración pendiente (sale de los reportes de cada módulo)
 
-- [ ] Núcleo: `N.Modulo` dentro de una página que ya existe del motor (Comodidades lo hace a mano reenviando `SHOW_OPTIONS`), y que `N.Abrir(id)` llegue a esa página.
-- [ ] Núcleo: vía pública entre módulos (por ejemplo, que Bolsas e Inicio pregunten a Comercio el valor y el consejo de un objeto).
-- [ ] Motor: forma estable de obtener el marco del temporizador de vuelo (hoy Comodidades usa el global `AlfaFlightTimer`).
+- [x] Núcleo: `N.Modulo` dentro de una página que ya existe del motor (1.2.0: la redirección de `add()` en `motor/Alfa/UI/Options.lua`) (Comodidades lo hace a mano reenviando `SHOW_OPTIONS`), y que `N.Abrir(id)` llegue a esa página.
+- [x] Núcleo: vía pública entre módulos (por ejemplo, que Bolsas e Inicio pregunten a Comercio el valor y el consejo de un objeto): `AlfaComercio.Consejo/ValorVenta/PrecioSubasta` y los globales `Alfa<Módulo>` de cada uno.
+- [x] Motor: forma estable de obtener el marco del temporizador de vuelo: `Maps.GetFlightFrame()` (1.1.6).
 - [x] Choque: `behavior.closeSkipped` del motor puede cerrar la ventana antes de que "todas las misiones" de Comodidades actúe.
-- [ ] Comodidades: cada grupo viene apagado; decidir con Toxic cuáles vienen encendidos.
+- [x] Comodidades: cada grupo viene apagado; decidir con Toxic cuáles vienen encendidos (1.2.0: las 5 recomendadas).
 - [x] Páginas propias (Pesca, Comercio, Inicio): sus ajustes no salen en el buscador de opciones.
 - [~] Mundo: `AlfaMundo.ActivarCapa` ya existe; falta una proyección para pintar pines en el mapa continuo (Recolección solo pinta en mapas de zona).
 - [x] Acerca de: créditos visibles del código y los datos reutilizados bajo MIT.
-- [ ] Núcleo: opción `alComando(rest)` en `N.Modulo` para comandos con argumentos (Manada y Pesca lo registran aparte).
+- [x] Núcleo: opción `alComando(rest)` en `N.Modulo` para comandos con argumentos (1.1.9).
 - [x] Motor: destino "persistente" en `Nav.SetTarget` para que Seguir (La Jauría) no se suelte cuando la guía cambia de paso.
 - [x] La Jauría: "Quiero unirme" lleva al Discord (sin oficiales con nombre de personaje en el código).
-- [ ] Núcleo: `N.Repintar(id)` oficial para volver a dibujar una página propia (Mazmorras, Pesca e Inicio usan piezas internas de Options).
+- [x] Núcleo: `N.Repintar(id)` oficial para volver a dibujar una página propia (1.1.9).
 - [ ] Mazmorras: confirmar en el juego si Forever trae las CVars de avisos de jefes (la variante "Camelot" dice `HasBossWarnings = false`).
 - [x] Builds y Rutas: terminados y en git el 16/11.
 - [x] Mundo: Recolección debería publicar sus nodos en `Alfa.Pins` (id `recoleccion.<tipo>`) para verse en el mapa continuo.
@@ -113,3 +128,10 @@ Sale de una revisión del código del 18/11. En cada versión va primero lo que 
 - [x] Términos: los textos del motor en esMX dicen "Calabozos"; los de Alfa dicen "Mazmorras". Hay que unificarlos.
 - [ ] Documentar `UI.HubKit` (piezas compartidas del centro de guías) en `docs/INTERFAZ.md`.
 - [ ] Revisar en el juego la lista "Qué revisar" de cada parte (esquinas cortadas, que quepan las píldoras, desplazamiento, mando).
+
+## Pendientes de fondo (revisados el 24/11/2026, con números de `tools/perfil.py --veces 3`)
+
+- [ ] Cargar las guías por rango de niveles (pendiente desde la 1.3.2): `Alfa_Guides_Horde` pesa 10 MB y unos 30 archivos del motor recorren todas las guías.
+- [ ] La lectura al entrar sigue en unos 58 ms del banco (meta de la 1.3.9: 45). Lo que más pesa: el paquete de idioma que `Core/Locale.lua` carga al vuelo (unos 13 ms, casi todo compilar `Alfa_esMX`: `Texts.lua` 4 ms, `Names.lua` 3 ms, `Interface.lua` 2 ms) y el registro de las guías (`Alfa_Guides` 7 ms y `Alfa_Guides_Horde` 5 ms). Bajarlo pide diferir también los textos de las guías por idioma (hoy se arman todos para el título de cada guía en la lista).
+- [ ] Comercio: en la cuenta de Toxic, los precios con el reino vacío («?-Alliance», 742 KB de los 1.7 MB de `AlfaNucleoDB`) siguen junto a los de su reino: `M.JuntarReinoSinNombre` solo los junta cuando el juego dice el reino con seguridad.
+- [ ] Banco: el ancho de las letras CJK es una estimación (la prueba de avisos cuenta casi un cuadro por letra); confirmar en el juego los avisos en coreano y chino.

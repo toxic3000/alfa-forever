@@ -71,7 +71,7 @@ local vistos = {} -- guid (o nombre) -> true: ya se ofreció en esta sesión
 
 local function aviso(o)
 	local K = N.Kit
-	if K and K.Aviso then return K.Aviso(o) end
+	if M.U and M.U.Aviso then return M.U.Aviso(o) end
 end
 
 -- Revisa tu objetivo: si es un raro sin marca, el aviso con el botón.

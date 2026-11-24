@@ -36,6 +36,29 @@ K.ALTO = {
 -- Anchos de referencia.
 K.ANCHO = { tarjeta = 256, ficha = 340, lista = 320, dialogo = 420, aviso = 360, info = 280 }
 
+-- 1.3.9 (mejora 56): la tabla de medidas de Alfa, en un solo lugar. Cada
+-- ventana, página y pieza usa estas (y la prueba de la 1.3.9 las revisa en
+-- todas las páginas). Lo que no está aquí sale de K.ESP, K.ALTO y K.TIPO.
+--   pagina      margen a los lados de una página de la ventana de Alfa
+--               (el del marco del motor, N.MargenPagina) y entre sus bloques
+--   ventana     margen dentro de una ventana propia (K.Ventana) y su pie
+--   tarjeta     relleno de cada variante de tarjeta (Bloques.lua, VARIANTE)
+--   rejilla     espacio entre tarjetas y el ancho mínimo de una columna
+--   fila        alto mínimo de una fila de ajustes y su relleno
+--   boton       los tres altos de botón y el espacio entre botones juntos
+--   tiposBoton  los únicos estilos de botón: principal (primario), secundario,
+--               fantasma (el de texto) y peligro; «acento» queda para un
+--               botón elegido de un grupo. El principal va a la derecha.
+K.MEDIDA = {
+	pagina = { margen = 32, arriba = 16, entreBloques = 24, entreSecciones = 32 },
+	ventana = { margen = 24, pie = 56 },
+	tarjeta = { accion = 24, estado = 24, normal = 16, compacta = 12 },
+	rejilla = { espacio = 16, espacioChico = 12, columna = 256 },
+	fila = { alto = 48, relleno = 12, compacta = 28, lista = 36 },
+	boton = { chico = 24, normal = 32, grande = 40, entre = 8 },
+	tiposBoton = { primario = true, secundario = true, fantasma = true, peligro = true, acento = true },
+}
+
 ---------------------------------------------------------------------------
 -- Colores: los nombres del Kit y su token del tema. El tema resuelve el
 -- esquema (Grafito, Noche, Pizarra), el acento propio y la legibilidad; sin

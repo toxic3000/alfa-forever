@@ -59,6 +59,45 @@ function M.LineasCuadro(c)
 	return uno, dos
 end
 
+-- 1.3.9: el consejo en una sola línea, lo que conviene y cuánto deja:
+--   «Alfa  Subástalo: 1o 20p (+700 %)»  /  «Alfa  Véndelo: 15p (×20: 3o)»
+-- Con Mayús (o con comercio.tooltipDetalle) salen las dos líneas de antes.
+local VERBO = {
+	vender = L["Véndelo al comerciante"], subastar = L["Súbelo a la subasta"], desencantar = L["Desencántalo"],
+	guardar = L["Guárdalo"],
+}
+function M.LineaCuadro(c)
+	if not c then return nil end
+	local gris = hex("textDim")
+	local _, color = M.ChipDe(c)
+	local verbo = VERBO[c.mejor] or VERBO.guardar
+	if c.mejor == "desencantar" or c.mejor == "receta" then
+		local t = M.TextoMejor(c)
+		-- «crear X (con Y)» / «desencantar (con Y)»: lo de los paréntesis se queda.
+		local con = t:match("(%b())%s*$")
+		if c.mejor == "receta" then verbo = (t:gsub("^%l", string.upper)) elseif con then verbo = verbo .. " " .. con end
+	end
+	local s = hex(color) .. verbo .. "|r"
+	if c.mejor == "guardar" then
+		if c.motivo then s = s .. " " .. gris .. "(" .. c.motivo .. ")|r" end
+		return s
+	end
+	s = s .. gris .. ":|r " .. hex("text") .. M.Dinero(c.valor) .. "|r"
+	local extra = {}
+	if c.mejor ~= "vender" and c.ganancia then extra[#extra + 1] = hex("success") .. M.Porcentaje(c.ganancia) .. "|r" end
+	if (c.info.pila or 1) > 1 and (c.valor or 0) > 0 then extra[#extra + 1] = gris .. "×" .. c.info.pila .. ":|r " .. M.Dinero(c.valor * c.info.pila) end
+	if c.mejor == "subastar" and c.subasta and c.subasta.viejo then extra[#extra + 1] = hex("warning") .. L["precio viejo"] .. "|r" end
+	if c.mejor == "desencantar" or c.mejor == "receta" then extra[#extra + 1] = gris .. L["estimado"] .. "|r" end
+	if #extra > 0 then s = s .. " " .. gris .. "(|r" .. table.concat(extra, gris .. " · |r") .. gris .. ")|r" end
+	return s
+end
+
+local function detalle()
+	if M.Ajuste("tooltipDetalle") then return true end
+	return IsShiftKeyDown and IsShiftKeyDown() == true or false
+end
+M.CuadroDetalle = detalle
+
 -- 1.3.7: objetos donde el consejo no dice nada útil y solo llena el cuadro:
 -- la piedra de hogar, los de misión y el equipo que ya es tuyo (ligado) o que
 -- no se puede vender ni transformar.
@@ -101,10 +140,16 @@ A.Hooks.ItemLines(M.ID, function(tooltip, link, itemID)
 	local ligado = ligadoDe(tooltip)
 	local c = M.Consejo(itemID, { link = link, ligado = ligado })
 	if M.SinConsejo(c, ligado) then return end
-	local uno, dos = M.LineasCuadro(c)
-	if not uno then return end
-	A.Hooks.AddLine(tooltip, N.HEX .. "Alfa|r " .. uno, nil, 1, 1, 1)
-	A.Hooks.AddLine(tooltip, dos, nil, 1, 1, 1)
+	if not detalle() then
+		local linea = M.LineaCuadro(c)
+		if not linea then return end
+		A.Hooks.AddLine(tooltip, N.HEX .. "Alfa|r  " .. linea, nil, 1, 1, 1)
+	else
+		local uno, dos = M.LineasCuadro(c)
+		if not uno then return end
+		A.Hooks.AddLine(tooltip, N.HEX .. "Alfa|r " .. uno, nil, 1, 1, 1)
+		A.Hooks.AddLine(tooltip, dos, nil, 1, 1, 1)
+	end
 	-- 1.3.7: con la subasta abierta, si es ganga (Gangas.lua).
 	if M.GangaDe and M.SubastaAbierta() and M.GangasActivas() then
 		local g = M.GangaDe(itemID)

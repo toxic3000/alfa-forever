@@ -272,7 +272,7 @@ function Rz.Ir(x)
 		if N.EmpezarRuta then pcall(N.EmpezarRuta) end
 		return true
 	end
-	N.Imprimir(L["No se pudo buscar el lugar más cercano."])
+	N.Imprimir(L["No pude buscar el lugar más cercano. Prueba de nuevo en un momento; si sigue, /alfa diagnostico lo revisa."])
 	return false
 end
 

@@ -50,7 +50,8 @@ local VIGENCIA = 3600       -- un vuelo guardado vale una hora (un /reload en el
 local MARCA_PARADA, MARCA_META = 6, 10 -- radio (unidades) del hueco de los puntos junto a un pin
 local FICHA_MAX = 380       -- ancho máximo de la ficha
 -- Colores del tema por tipo de tramo (los del motor: Maps/RouteLines.lua).
-local TOKEN = { walk = "arrow", flight = "success", boat = "npc", zeppelin = "place", tram = "object", lift = "object" }
+-- 1.3.9 (40): los tokens de la ruta del tema (cambian con el modo para daltonismo).
+local TOKEN = { walk = "routeWalk", flight = "routeFlight", boat = "routeBoat", zeppelin = "routeZeppelin", tram = "routeTram", lift = "routeTram" }
 
 local raiz, vista
 local duenos = {}          -- continente del juego -> marco con sus líneas
@@ -599,7 +600,10 @@ local function ponerFicha(nombre, yardas, segs, esVuelo)
 	end
 	if segs then
 		local Maps = A.Maps
-		local t = Maps and Maps.FormatTime and Maps.FormatTime(segs) or tostring(floor(segs + 0.5))
+		-- 1.3.9 (74, área misiones): el tiempo como la flecha y el rastreador («12 min», no «~12:07»).
+		local Nu = rawget(_G, "AlfaNucleo")
+		local t = (type(Nu) == "table" and type(Nu.Duracion) == "function" and Nu.Duracion(segs, segs >= 120))
+			or (Maps and Maps.FormatTime and Maps.FormatTime(segs)) or tostring(floor(segs + 0.5))
 		partes[#partes + 1] = "~" .. t
 	end
 	local datos = table.concat(partes, "  \194\183  ")

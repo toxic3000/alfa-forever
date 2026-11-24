@@ -10,6 +10,8 @@
 Textos.lua
 Hechizos.lua
 Mapa.lua
+Perfiles.lua
+Raton.lua
 Marcos.lua
 Color.lua
 Peligro.lua

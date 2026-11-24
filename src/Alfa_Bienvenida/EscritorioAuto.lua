@@ -17,7 +17,12 @@
 -- puede mover desde un addon: la prueba dice cómo dejarla en su orilla.
 -- Con Offhand cargado no se estira nada (él lo hace); para tres monitores o uno
 -- arriba de otro está «Ajustar a mano» (el asistente).
---   M.EscritorioAuto.Monitores() / PuedeUnClic() / UnClic() / Revertir() / Fase()
+--   M.EscritorioAuto.Monitores() / PuedeUnClic() / UnClic(lado) / Revertir() / Fase()
+-- 1.3.9: el otro monitor también puede estar a la IZQUIERDA. El juego no dice
+-- dónde está cada monitor, así que el aviso lo pregunta («Tu otro monitor
+-- está: A la derecha / A la izquierda»; se recuerda en pantallas.ladoOtro).
+-- A la izquierda, el juego queda en la parte derecha de la ventana estirada y
+-- tus paneles en la izquierda (Es.Probar con lado = "izquierda").
 
 local _, M = ...
 local N = AlfaNucleo
@@ -34,6 +39,7 @@ local Au = {}
 M.EscritorioAuto = Au
 
 local function opt(k) return N.Get(Es.ID, k) end
+local LADOS = { derecha = true, izquierda = true }
 local function datos() return N.Datos(Es.ID) end
 local function enCombate() return InCombatLockdown and InCombatLockdown() and true or false end
 local function video() local v = rawget(_G, "C_VideoOptions") return type(v) == "table" and v or nil end
@@ -96,6 +102,16 @@ function Au.Ventana()
 end
 
 function Au.Fase() local a = datos().auto return type(a) == "table" and a.fase or nil end
+
+-- 1.3.9: de qué lado está tu otro monitor (lo último que elegiste; de fábrica, a la derecha).
+function Au.Lado()
+	local l = datos().ladoOtro
+	return LADOS[l] and l or "derecha"
+end
+function Au.PonerLado(l)
+	if LADOS[l] then datos().ladoOtro = l end
+	return Au.Lado()
+end
 
 -- ¿Se puede hacer todo con un clic? -> ok, el plan { principal, otro, W, H, parte }
 function Au.Plan()
@@ -170,8 +186,12 @@ local function alVolverGraficos()
 		return
 	end
 	a.fase = "probando"
-	local ok = Es.Probar({ lado = "derecha", proporcion = "medida", medida = tonumber(a.parte) or 50 }, {
-		nota = L["Si la ventana no empieza en la orilla izquierda de tu monitor principal, arrástrala ahí una vez; Windows la recordará."],
+	-- 1.3.9: con el otro monitor a la izquierda, el juego va a la derecha y la
+	-- ventana empieza en la orilla izquierda de ese otro monitor.
+	local izq = a.lado == "izquierda"
+	local ok = Es.Probar({ lado = izq and "izquierda" or "derecha", proporcion = "medida", medida = tonumber(a.parte) or 50 }, {
+		nota = izq and L["Si la ventana no empieza en la orilla izquierda de tu otro monitor (el de la izquierda), arrástrala ahí una vez; Windows la recordará."]
+			or L["Si la ventana no empieza en la orilla izquierda de tu monitor principal, arrástrala ahí una vez; Windows la recordará."],
 		alConfirmar = function()
 			local x = datos().auto
 			if type(x) == "table" then x.fase = "hecho" end
@@ -188,8 +208,9 @@ end
 A.RegisterEvent("DISPLAY_SIZE_CHANGED", despuesDeGraficos)
 A.RegisterEvent("GX_RESTARTED", despuesDeGraficos)
 
--- «Sí, en un clic»: el clic del jugador, fuera de combate.
-function Au.UnClic()
+-- «Sí, en un clic»: el clic del jugador, fuera de combate. lado (1.3.9):
+-- "derecha" | "izquierda", dónde está tu otro monitor (sin él, lo último elegido).
+function Au.UnClic(lado)
 	if enCombate() then
 		N.Imprimir(L["Las pantallas se acomodan fuera de combate."])
 		return false
@@ -198,8 +219,9 @@ function Au.UnClic()
 	if not plan or Au.Fase() or Es.Aplicado() then return false end
 	local V = video()
 	local w, h = Au.Ventana()
+	lado = LADOS[lado] and Au.PonerLado(lado) or Au.Lado()
 	datos().auto = {
-		fase = "estirando", parte = plan.parte, W = plan.W, H = plan.H,
+		fase = "estirando", parte = plan.parte, W = plan.W, H = plan.H, lado = lado,
 		antes = { gxWindow = cvar("gxWindow"), gxMaximize = cvar("gxMaximize"),
 			gxWindowedResolution = cvar("gxWindowedResolution"), w = w, h = h },
 	}
@@ -253,7 +275,14 @@ local function armarOferta()
 	f.Titulo:SetJustifyH("LEFT")
 	f.Texto = K.Texto(f, "nota", "textoSuave")
 	f.Texto:SetJustifyH("LEFT")
-	f.Si = K.Boton(f, L["Sí, en un clic"], function() f:Hide() Au.UnClic() end, { tipo = "primario", icono = "ic-ventana" })
+	-- 1.3.9: de qué lado está tu otro monitor.
+	f.LadoTexto = K.Texto(f, "etiqueta", "texto")
+	f.LadoTexto:SetJustifyH("LEFT")
+	f.Lado = K.Segmentos(f, { estilo = "segmentos", opciones = {
+		{ valor = "izquierda", texto = L["A la izquierda"], icono = "chevron-left" },
+		{ valor = "derecha", texto = L["A la derecha"], icono = "chevron-right" },
+	}, valor = Au.Lado(), alCambiar = function(v) Au.PonerLado(v) end })
+	f.Si = K.Boton(f, L["Sí, en un clic"], function() f:Hide() Au.UnClic(f.Lado:Valor()) end, { tipo = "primario", icono = "ic-ventana" })
 	f.Ahora = K.Boton(f, L["Ahora no"], function() f:Hide() end, { tipo = "secundario" })
 	f.Nunca = K.Boton(f, L["No volver a preguntar"], function()
 		datos().noPreguntar = true
@@ -275,6 +304,17 @@ function Au.Ofrecer()
 	f.Texto:ClearAllPoints()
 	f.Texto:SetPoint("TOPLEFT", f, "TOPLEFT", x, -(ESP.l + th + ESP.s))
 	local y = ESP.l + th + ESP.s + K.Parrafo(f.Texto, tw, 4) + ESP.base
+	-- 1.3.9: «Tu otro monitor está:» y el lado.
+	K.Escribir(f.LadoTexto, L["Tu otro monitor está:"])
+	f.LadoTexto:ClearAllPoints()
+	f.LadoTexto:SetPoint("TOPLEFT", f, "TOPLEFT", x, -y)
+	f.LadoTexto:SetWidth(tw)
+	y = y + K.Parrafo(f.LadoTexto, tw, 1) + ESP.xs
+	f.Lado:SetValor(Au.Lado())
+	f.Lado:ClearAllPoints()
+	f.Lado:SetPoint("TOPLEFT", f, "TOPLEFT", x, -y)
+	if f.Lado.Acomodar then f.Lado:Acomodar(tw) end
+	y = y + K.num(f.Lado:GetHeight(), K.ALTO.control) + ESP.base
 	f.Si:ClearAllPoints()
 	f.Si:SetPoint("TOPLEFT", f, "TOPLEFT", x, -y)
 	f.Ahora:ClearAllPoints()

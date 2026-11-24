@@ -282,6 +282,25 @@ function G.ParaElMapa()
 	return out
 end
 
+-- 1.3.9: cuántos Alfa de tu bando se oyen ahora (para el marcador por
+-- bando, Marcador.lua): quien habló en los últimos OLVIDA segundos.
+-- 1.3.9: con los lobos de tu hermandad que dijeron su versión (Censo.lua,
+-- AlfaManada.Conectados), sin contar dos veces al mismo.
+function G.Lobos()
+	local vistos, n, ahora = {}, 0, U.Ahora()
+	for clave, e in pairs(alfa) do
+		if e.oido and ahora - e.oido <= OLVIDA then n = n + 1 vistos[clave] = true end
+	end
+	local Ce = M.Censo
+	if Ce and Ce.Conectados then
+		local ok, lista = pcall(Ce.Conectados)
+		for _, x in ipairs(ok and type(lista) == "table" and lista or {}) do
+			if x.clave and not x.yo and not vistos[x.clave] then n = n + 1 vistos[x.clave] = true end
+		end
+	end
+	return n
+end
+
 -- Cuántos se ven: de la manada (sin tu grupo) y de tu grupo.
 function G.Cuentas()
 	local manada, enElGrupo = 0, #grupo

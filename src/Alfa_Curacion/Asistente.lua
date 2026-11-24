@@ -9,6 +9,8 @@
 --      arrastras a donde los quieras, con su ancho, su alto y sus columnas.
 --   3. Prueba tus clics: haz clic en un marco de ejemplo (con o sin Mayús,
 --      Ctrl o Alt) y aquí ves qué lanzaría; debajo, todo tu mapa.
+-- 1.3.9: en los pasos 1 y 3, el dibujo de tu ratón (Raton.lua) con lo que hace
+-- cada botón con cada tecla; en el 3 se marca el botón que probaste.
 -- Al terminar, los marcos quedan encendidos y el asistente, hecho para este
 -- personaje (M.Datos().asistente). Cerrarlo a medias quita la prueba.
 --   M.AbrirAsistente(paso) ; M.RefrescarAsistente()
@@ -64,6 +66,7 @@ local function llenarPreajustes()
 		p.izq:Refrescar()
 	end
 	if p.sel then p.sel:Refrescar() end
+	if p.Raton then p.Raton:Pintar() end
 	if p.Resumen then
 		local mapa = M.Mapa()
 		local lineas = {}
@@ -116,6 +119,8 @@ local function paso1()
 				return h
 			end
 			pila:Agregar(pila.Resumen, { espacio = ESP.s })
+			-- 1.3.9: el dibujo de tu ratón con lo que hace cada botón.
+			pila.Raton = pila:Agregar(M.DibujoRaton(pila), { espacio = ESP.base })
 			llenarPreajustes()
 		end,
 		alMostrar = llenarPreajustes,
@@ -214,6 +219,8 @@ local function llenarPrueba()
 			titulo = L["Haz clic en un marco de ejemplo"],
 			texto = L["Con o sin Mayús, Ctrl o Alt. No lanza nada: aquí ves qué lanzaría sobre tu compañero."] })
 	end
+	-- 1.3.9: el dibujo marca el botón que probaste (y su tecla).
+	if p.Raton then p.Raton:Set({ marcar = r }) end
 	local lista = mapaComoTarjetas(r)
 	p.Rejilla:Llenar(lista)
 	-- Los hechizos, con su ícono del juego.
@@ -237,7 +244,9 @@ local function paso3()
 		construir = function(pila)
 			ui.p3 = pila
 			pila.Resultado = pila:Agregar(K.Tarjeta(pila, { variante = "estado" }))
-			pila.Rejilla = pila:Agregar(K.Rejilla(pila, { min = 170, gap = ESP.s }), { espacio = ESP.base })
+			pila.Raton = pila:Agregar(M.DibujoRaton(pila), { espacio = ESP.base })
+			-- 1.3.9: dos columnas (en tres, «Mayús + clic izquierdo» no cabía).
+			pila.Rejilla = pila:Agregar(K.Rejilla(pila, { min = 240, gap = ESP.s }), { espacio = ESP.base })
 			llenarPrueba()
 		end,
 		alMostrar = function()

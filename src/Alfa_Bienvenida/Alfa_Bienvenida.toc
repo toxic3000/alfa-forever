@@ -31,4 +31,6 @@ EscritorioPagina.lua
 Ventana.lua
 Zen.lua
 Usados.lua
+PrimeraVez.lua
+Aprendiz.lua
 Pagina.lua

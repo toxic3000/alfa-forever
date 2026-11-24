@@ -178,6 +178,13 @@ def main() -> int:
     malo = guias_iguales() or malo
     # El tope de la entrada (tools/perfil.py): lectura de archivos y guías armadas.
     malo = tope_entrada() or malo
+    # 1.3.9: la prueba visual (tools/regresion.py): lo que cambió desde la
+    # referencia sale como AVISO VISUAL (no falla); una página que no abre o un
+    # error de Lua, sí.
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+    import regresion
+    errores_visual, _ = regresion.revisar()
+    malo = bool(errores_visual) or malo
     # Orillas limpias en los iconos (tools/sangrado.py, 1.1.8): casi ningún
     # pixel transparente negro junto a uno visible (los que quedan son sombras).
     sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))

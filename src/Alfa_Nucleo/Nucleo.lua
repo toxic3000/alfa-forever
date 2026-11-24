@@ -502,6 +502,31 @@ local function iconoMoneda(i)
 	return "|T" .. ruta .. ":0:0:1:0|t"
 end
 
+-- 1.3.9 (66): un número con su separador de miles, el de tu idioma:
+-- 12,345 (español de México, inglés, coreano, chino), 12.345 (alemán,
+-- portugués) o 12 345 (francés, ruso; con un espacio que no se parte).
+local MILES = { deDE = ".", ptBR = ".", esES = ".", frFR = "\194\160", ruRU = "\194\160" }
+function N.Numero(n)
+	n = tonumber(n)
+	if not n then return "" end
+	local signo = n < 0 and "-" or ""
+	n = math.abs(n)
+	local entero = math.floor(n)
+	local resto = n - entero
+	local s = tostring(entero)
+	if #s > 3 then
+		local sep = MILES[N.locale or ""] or ","
+		-- (al revés por bytes: una marca de un byte y luego el separador)
+		s = s:reverse():gsub("(%d%d%d)", "%1\1"):reverse():gsub("^\1", "")
+		s = s:gsub("\1", sep)
+	end
+	if resto > 0.05 then
+		local dec = MILES[N.locale or ""] and "," or "."
+		s = s .. dec .. tostring(math.floor(resto * 10 + 0.5) % 10)
+	end
+	return signo .. s
+end
+
 local function dinero(cobre, corto, conIconos)
 	cobre = math.floor(tonumber(cobre) or 0)
 	local signo = cobre < 0 and "-" or ""
@@ -510,7 +535,7 @@ local function dinero(cobre, corto, conIconos)
 	local partes = {}
 	local function poner(i)
 		local marca = conIconos and iconoMoneda(i) or LETRAS[i]
-		partes[#partes + 1] = COLOR[i] .. valores[i] .. "|r" .. marca
+		partes[#partes + 1] = COLOR[i] .. (i == 1 and N.Numero(valores[i]) or valores[i]) .. "|r" .. marca
 	end
 	local o, p, c = valores[1], valores[2], valores[3]
 	if o > 0 then poner(1) end

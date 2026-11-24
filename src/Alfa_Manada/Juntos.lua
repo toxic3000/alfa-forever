@@ -141,7 +141,7 @@ local dichos = {} -- clave -> true: ya se ofreció cazar juntos en esta sesión
 
 local function aviso(o)
 	local K = N.Kit
-	if K and K.Aviso then K.Aviso(o) end
+	if M.U and M.U.Aviso then M.U.Aviso(o) end
 end
 
 -- Si un lobo de tu zona hace una misión contigo: la invitación, una vez.

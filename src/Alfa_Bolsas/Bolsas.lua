@@ -68,6 +68,10 @@ M.AJUSTES = {
 	candado = true,           -- 1.3.8: el candado de objetos: no se borra ni se vende por error (Candado.lua)
 	candadoAuto = true,       -- 1.3.8: candado solo en lo épico, de misión, la piedra de hogar y tus conjuntos
 	candadoCuenta = false,    -- 1.3.8: los candados nuevos valen para toda la cuenta
+	separarEpicos = false,    -- 1.3.9: «Separar» marca también lo épico con candado que vale para la subasta
+	sobra = true,             -- 1.3.9: el botón «Lo que me sobra»: vender o mandar a otro personaje (Sobra.lua)
+	ordenarModo = "juego",    -- 1.3.9: "juego" (el del juego) | "tipo" | "calidad" | "nombre" (Ordenar.lua)
+	ordenarCandado = false,   -- 1.3.9: Ordenar deja en su lugar lo que tiene candado (con el orden de Alfa)
 	deposito = "banco",       -- lo último que elegiste en "Depositar"
 }
 
@@ -107,6 +111,15 @@ local CONTROLES = {
 		help = L["Al hablar con un banquero se abre el banco de Alfa, con depositar rápido. La primera visita de cada personaje muestra el del juego: así recibe su primera pestaña."],
 		search = "bank, replace bank" },
 	{ kind = "toggle", key = clave("ordenar"), label = L["Botón Ordenar"], help = L["Junta los montones y acomoda tus objetos con un clic."], search = "sort, sort button" },
+	-- 1.3.9: tu orden y el candado (Ordenar.lua).
+	{ kind = "dropdown", key = clave("ordenarModo"), label = L["Cómo ordenar"], child = true, disabled = apagado("ordenar"),
+		help = L["Como el juego, o el orden de Alfa: por tipo (equipo, consumibles, materiales... y la chatarra al final), por calidad o por nombre."],
+		choices = { { value = "juego", label = L["Como el juego"] }, { value = "tipo", label = L["Por tipo"] },
+			{ value = "calidad", label = L["Por calidad"] }, { value = "nombre", label = L["Por nombre"] } },
+		search = "sort order, sort by type, sort by quality, sort by name" },
+	{ kind = "toggle", key = clave("ordenarCandado"), label = L["No mover lo que tiene candado"], child = true, disabled = apagado("ordenar"),
+		help = L["Al ordenar, lo que tiene candado se queda en su casilla y lo demás se acomoda alrededor."],
+		search = "sort, locked items, keep in place" },
 	{ kind = "toggle", key = clave("ordenarInverso"), label = L["Ordenar de derecha a izquierda"], child = true, disabled = apagado("ordenar"),
 		help = L["Los objetos se juntan al final de tus bolsas en lugar de al principio."], search = "reverse sort" },
 	{ kind = "toggle", key = clave("avisoLleno"), label = L["Sugerir qué vender"],
@@ -146,8 +159,15 @@ local CONTROLES = {
 		help = L["Alt+clic derecho sobre un objeto de tus bolsas le pone o le quita el candado. Con candado no se borra, no se vende y nada de Alfa lo toca."],
 		search = "item lock, lock, protect, delete, sell, padlock" },
 	{ kind = "toggle", key = clave("candadoAuto"), label = L["Candado automático"], child = true, disabled = apagado("candado"),
-		help = L["Sin que hagas nada: lo épico y legendario, lo de misiones, tu piedra de hogar y lo de tus conjuntos de equipo."],
-		search = "auto lock, epic, quest items, hearthstone, gear sets" },
+		help = L["Sin que hagas nada: lo épico y legendario, lo de misiones, tu piedra de hogar, lo de tus conjuntos de equipo, tus herramientas de oficio (caña, pico, martillo, cuchillo) y lo que te lleva de viaje."],
+		search = "auto lock, epic, quest items, hearthstone, gear sets, tools, fishing pole, mining pick, mount" },
+	-- 1.3.9
+	{ kind = "toggle", key = clave("separarEpicos"), label = L["«Separar»: lo épico con candado a la subasta"],
+		help = L["Con «Separar», lo épico que tiene candado también sale con el martillo si vale más en la subasta. El candado sigue: no se vende ni se borra."],
+		search = "separate, epic, auction, locked" },
+	{ kind = "toggle", key = clave("sobra"), label = L["Botón «Lo que me sobra»"],
+		help = L["En tus bolsas: lo que te sobra para venderlo de un clic con un comerciante o mandárselo a otro de tus personajes desde el buzón. Nunca toca lo que tiene candado."],
+		search = "leftovers, surplus, sell, send to alt, mail" },
 	{ kind = "toggle", key = clave("candadoCuenta"), label = L["Candados para toda la cuenta"], child = true, disabled = apagado("candado"),
 		help = L["Los candados que pongas valen también para tus otros personajes. Apagado, cada personaje tiene los suyos."],
 		search = "account wide lock, all characters" },

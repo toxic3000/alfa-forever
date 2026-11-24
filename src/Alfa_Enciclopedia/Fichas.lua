@@ -1141,6 +1141,16 @@ function F.Guiar(kind, id, fila)
 	local L2 = Lk()
 	if not (L2 and L2.Guide) then return false, L["El motor no puede armar guías ahora."] end
 	if InCombatLockdown() then return false, MOTIVO.combat end
+	-- 1.3.9 (oficios): un mineral o una hierba va a la mejor zona por tu nivel y
+	-- facción, con una ruta por sus puntos (Recolección, Llevar.lua), no a un punto suelto.
+	local AR = rawget(_G, "AlfaRecoleccion")
+	if kind == "item" and not fila and type(AR) == "table" and type(AR.Llevar) == "function" then
+		local okR, si = pcall(AR.Llevar, id)
+		if okR and si then
+			empezar()
+			return true
+		end
+	end
 	local ok, gid, motivo = pcall(L2.Guide, kind, id, fila)
 	if ok and not gid and motivo == "mount" and not fila then
 		-- Una montura sin guía cuidada: a su mejor fuente (el motor no la arma sola).

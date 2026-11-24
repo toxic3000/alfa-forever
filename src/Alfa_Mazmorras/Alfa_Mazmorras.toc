@@ -33,3 +33,5 @@ Cronometro.lua
 Resumen.lua
 Consumibles.lua
 BotinGrupo.lua
+Cotejo.lua
+MapaDentro.lua

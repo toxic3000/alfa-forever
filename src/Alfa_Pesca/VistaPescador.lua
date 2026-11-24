@@ -94,7 +94,7 @@ local function tarjetasRecords(todos)
 		local partes = { Pz.Texto(x.r) or Pz.Peso(x.r.g) }
 		if x.r.z then partes[#partes + 1] = x.r.z end
 		out[#out + 1] = { variante = "compacta", icono = icono or "ic-pesca", tenir = icono == nil, titulo = nombreDe(x.clave),
-			texto = table.concat(partes, DOT), ayuda = format(L["Lo sacaste %s."], V.Hace(x.r.t)) }
+			texto = table.concat(partes, DOT), ayuda = format(L["Lo sacaste %s."], V.CuandoRecord(x.r.t)) }
 	end
 	return out, #lista
 end

@@ -492,15 +492,18 @@ local function menu()
 	local grupos = {
 		-- 1.2.4: lo primero, la guía de todo Alfa («Volver a mostrar los consejos
 		-- vistos» se quedó en la página de Lya para que el menú siga en 10 filas).
-		{ { valor = "guia", texto = L["¿En qué te ayudo?"], icono = "ic-info" },
+		-- 1.3.9 (41): «¿Qué hago ahora?», tu siguiente mejor acción (Cerebro.lua).
+		{ { valor = "ahora", texto = L["¿Qué hago ahora?"], icono = "ic-flecha" },
+		  { valor = "guia", texto = L["¿En qué te ayudo?"], icono = "ic-info" },
 		  { valor = "silencio", texto = silencio and L["Quitar el silencio"] or L["Silenciar 1 hora"], icono = "ic-reloj" } },
 		{},
 		{ { valor = "frec", texto = L[A_FREC[SIGUE[frec] or "muchos"]], icono = "ic-filtro" },
 		  -- 1.2.6: el tamaño de su letra, una fila que pasa al siguiente con cada clic
 		  -- («Háblame de mi gente» sigue en el botón de «Cuéntame algo»).
 		  { valor = "letra", texto = L[A_LETRA[SIGUE_LETRA[N.Get(ID, "letra")] or "enorme"]], icono = "ic-apariencia" } },
-		{ { valor = "bloquear", texto = bloqueado and L["Desbloquear posición"] or L["Bloquear posición"], icono = "ic-seguir" },
-		  { valor = "ajustes", texto = L["Ajustes de Lya"], icono = "ic-ajustes" },
+		-- 1.3.9: «Bloquear posición» se quedó en sus ajustes («Bloquear su lugar»)
+		-- para que quepa «¿Qué hago ahora?» en las 10 filas.
+		{ { valor = "ajustes", texto = L["Ajustes de Lya"], icono = "ic-ajustes" },
 		  { valor = "ocultar", texto = L["Ocultar a Lya"], icono = "ic-cerrar" } },
 	}
 	-- 1.2.9: cambiar de plano (la API la pone Alfa_Manada). Para que el menú
@@ -509,7 +512,8 @@ local function menu()
 	local plano = type(Mn) == "table" and type(Mn.CambiarPlano) == "function"
 	if plano then
 		table.insert(grupos[1], { valor = "plano", texto = L["Cambiar de plano"], icono = "ic-comunidad" })
-		table.remove(grupos[4], 1)
+		-- 1.3.9: con ella, «Ocultar a Lya» se queda en sus ajustes («Mostrar a Lya»).
+		table.remove(grupos[4], 2)
 	end
 	local hist = grupos[2]
 	if Hi and Hi.Modo() ~= "nunca" then hist[#hist + 1] = { valor = "dato", texto = L["Cuéntame algo de aquí"], icono = "ic-mundo" } end
@@ -532,7 +536,8 @@ local function menu()
 		end
 	end
 	K.Menu(f, opciones, nil, function(v)
-		if v == "guia" then if M.Guia then M.Guia.Abrir() end
+		if v == "ahora" then Ce.QueHagoAhora()
+		elseif v == "guia" then if M.Guia then M.Guia.Abrir() end
 		elseif v == "silencio" then Ce.Silenciar(not silencio)
 		elseif v == "plano" then
 			local Mn2 = rawget(_G, "AlfaManada")

@@ -658,6 +658,8 @@ local function grupos(ui, padre)
 		end })
 	ui.filasClic = {}
 	for _, r in ipairs(M.PRINCIPALES) do ui.filasClic[#ui.filasClic + 1] = filaClic(clics, r) end
+	clics:Fila({ titulo = L["Cambiar de mapa con tus talentos"], control = interruptor("mapaPorRama"),
+		texto = L["Si guardaste un mapa de clics con otros talentos, al cambiarlos Alfa pone ese mapa solo (fuera de combate)."] })
 	ui.filaBlizzard = clics:Fila({ titulo = L["Usar también en los marcos de Blizzard"], texto = BASE_BLIZZARD,
 		control = function(fila)
 			local b = K.Boton(fila, L["Abrir clic para lanzar"], function() M.UsarEnBlizzard() end, { tipo = "secundario", tam = "chico" })
@@ -734,12 +736,15 @@ local function construir(view)
 	-- 1.3.0: primero «Tus clics» (lo más claro), luego todos los clics y lo demás.
 	t:AgregarBloque(ui.grupos[1])
 	ui.raton = t:AgregarBloque(nuevoRaton(t.Extra))
+	-- 1.3.9: tus mapas de clics guardados (Perfiles.lua).
+	ui.mapas = t:AgregarBloque(M.BloqueMapas(t.Extra))
 	for i = 2, #ui.grupos do t:AgregarBloque(ui.grupos[i]) end
 	local function repintar()
 		filaIzquierdo(ui)
 		t:SetAccion(estado())
 		t:SetOpciones(preajustes(), L["Preajustes"])
 		ui.raton:Llenar()
+		ui.mapas:Llenar()
 		local r = M.Datos().blizzard
 		ui.filaBlizzard.alfaDatos.texto = BASE_BLIZZARD .. ((type(r) == "table" and type(r.texto) == "string") and ("\n" .. r.texto) or "")
 		for _, g in ipairs(ui.grupos) do g:Refrescar() end
@@ -796,6 +801,9 @@ local CONTROLES = {
 			if (v == true) ~= M.CurarSelecciona() then M.FijarCurarSelecciona(v == true) end
 		end,
 		search = "heal and target, select on click, click casting" },
+	{ kind = "toggle", key = clave("mapaPorRama"), label = L["Cambiar de mapa con tus talentos"],
+		help = L["Si guardaste un mapa de clics con otros talentos, al cambiarlos Alfa pone ese mapa solo (fuera de combate)."],
+		search = "click profiles, spec, talents, saved click maps, mapas de clics" },
 	{ kind = "toggle", key = clave("activo"), label = L["Usar los marcos de Alfa"],
 		help = L["Tu grupo y tu banda con su vida, para curar con un clic. Se cambia fuera de combate."],
 		search = "raid frames, party frames, healing frames, click to heal" },

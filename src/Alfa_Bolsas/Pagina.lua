@@ -604,6 +604,19 @@ local function grupos(padre)
 	ordenar:Fila({ titulo = L["Botón Ordenar"], control = interruptor("ordenar"), texto = L["Junta los montones y acomoda tus objetos con un clic."] })
 	ordenar:Fila({ titulo = L["Ordenar de derecha a izquierda"], control = interruptor("ordenarInverso"), hija = true, activa = siempre("ordenar"),
 		texto = L["Los objetos se juntan al final de tus bolsas en lugar de al principio."] })
+	-- 1.3.9: tu orden y el candado (Ordenar.lua).
+	ordenar:Fila({ titulo = L["Cómo ordenar"], hija = true, activa = siempre("ordenar"),
+		texto = L["Como el juego, o el orden de Alfa: por tipo (equipo, consumibles, materiales... y la chatarra al final), por calidad o por nombre."],
+		control = function(fila)
+			return K.Desplegable(fila, { ancho = 170, opciones = {
+				{ valor = "juego", texto = L["Como el juego"] },
+				{ valor = "tipo", texto = L["Por tipo"] },
+				{ valor = "calidad", texto = L["Por calidad"] },
+				{ valor = "nombre", texto = L["Por nombre"] },
+			}, get = function() return M.Get("ordenarModo") or "juego" end, set = function(v) M.Set("ordenarModo", v) end })
+		end })
+	ordenar:Fila({ titulo = L["No mover lo que tiene candado"], control = interruptor("ordenarCandado"), hija = true, activa = siempre("ordenar"),
+		texto = L["Al ordenar, lo que tiene candado se queda en su casilla y lo demás se acomoda alrededor."] })
 
 	local lleno = K.GrupoAjustes(padre, { titulo = L["Cuando se llenan"] })
 	lleno:Fila({ titulo = L["Sugerir qué vender"], control = interruptor("avisoLleno"),
@@ -638,12 +651,17 @@ local function grupos(padre)
 
 	-- 1.3.8: el candado de objetos (Candado.lua).
 	local candado = K.GrupoAjustes(padre, { titulo = L["Candado de objetos"] })
+	-- 1.3.9 (los ajustes de «Separar» y «Lo que me sobra» van con los del candado: lo respetan)
 	candado:Fila({ titulo = L["Candado de objetos"], control = interruptor("candado"),
 		texto = L["Alt+clic derecho sobre un objeto de tus bolsas le pone o le quita el candado. Con candado no se borra, no se vende y nada de Alfa lo toca."] })
 	candado:Fila({ titulo = L["Candado automático"], control = interruptor("candadoAuto"), hija = true, activa = siempre("candado"),
-		texto = L["Sin que hagas nada: lo épico y legendario, lo de misiones, tu piedra de hogar y lo de tus conjuntos de equipo."] })
+		texto = L["Sin que hagas nada: lo épico y legendario, lo de misiones, tu piedra de hogar, lo de tus conjuntos de equipo, tus herramientas de oficio (caña, pico, martillo, cuchillo) y lo que te lleva de viaje."] })
 	candado:Fila({ titulo = L["Candados para toda la cuenta"], control = interruptor("candadoCuenta"), hija = true, activa = siempre("candado"),
 		texto = L["Los candados que pongas valen también para tus otros personajes. Apagado, cada personaje tiene los suyos."] })
+	candado:Fila({ titulo = L["«Separar»: lo épico con candado a la subasta"], control = interruptor("separarEpicos"),
+		texto = L["Con «Separar», lo épico que tiene candado también sale con el martillo si vale más en la subasta. El candado sigue: no se vende ni se borra."] })
+	candado:Fila({ titulo = L["Botón «Lo que me sobra»"], control = interruptor("sobra"),
+		texto = L["En tus bolsas: lo que te sobra para venderlo de un clic con un comerciante o mandárselo a otro de tus personajes desde el buzón. Nunca toca lo que tiene candado."] })
 
 	local marcas = K.GrupoAjustes(padre, { titulo = L["Marcas sobre cada objeto"] })
 	marcas:Fila({ titulo = L["Nivel de objeto"], control = interruptor("marcaNivel"), texto = L["El número abajo a la izquierda de cada pieza de equipo."] })

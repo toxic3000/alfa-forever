@@ -169,7 +169,7 @@ function V.Guiar(kind, id)
 		R.AvisoLleno()
 		return false
 	end
-	K.Aviso({ titulo = L["Guíame"], texto = MOTIVO[motivo] or L["No se pudo armar la guía."], icono = "ic-aviso", tono = "aviso" })
+	K.Aviso({ titulo = L["Guíame"], texto = MOTIVO[motivo] or L["No pude armar la guía. Prueba otra vez en un momento; si sigue, cuéntanos con /alfa reportar."], icono = "ic-aviso", tono = "aviso" })
 	return false
 end
 
@@ -230,6 +230,13 @@ function V.Hace(t)
 	return format(L["hace %d días"], floor(s / 86400))
 end
 
+-- 1.3.9: «el 12 de noviembre (hace 3 días)» para un récord.
+function V.CuandoRecord(t)
+	local f = M.Pez and M.Pez.Fecha(t)
+	if not f then return V.Hace(t) end
+	return format(L["el %s (%s)"], f, V.Hace(t))
+end
+
 function V.Porcentaje(f) return f and format(L["%d %%"], floor(f * 100 + 0.5)) or "—" end
 
 ---------------------------------------------------------------------------
@@ -244,14 +251,55 @@ local function subtitulo()
 	return format(L["%s · %d capturas desde siempre"], texto, vida.capturas)
 end
 
-local function crear()
-	v = K.Ventana({ nombre = "AlfaPescaVentana", titulo = L["Pesca"], subtitulo = subtitulo(), icono = "ic-pesca", ancho = 960, alto = 640 })
+-- 1.3.9: de fábrica se ven cuatro pestañas; las demás van en «Más» (un menú).
+-- Con pesca.pestanasTodas se ven todas, como antes.
+V.PRINCIPALES = { diario = true, pescador = true, guia = true, cocina = true }
+V.MAS = "__mas"
+local function todas() return M.Opt("pestanasTodas") and true or false end
+function V.Secundarias()
+	local out = {}
+	if todas() then return out end
+	for _, id in ipairs(V.orden) do if not V.PRINCIPALES[id] then out[#out + 1] = id end end
+	return out
+end
+
+local function opcionesPestanas(conIconos)
 	local opciones = {}
+	local sec = V.Secundarias()
 	for _, id in ipairs(V.orden) do
 		local p = V.PESTANAS[id]
-		opciones[#opciones + 1] = { valor = id, texto = p.nombre, icono = p.icono }
+		if #sec == 0 or V.PRINCIPALES[id] then
+			opciones[#opciones + 1] = { valor = id, texto = p.nombre, icono = conIconos and p.icono or nil }
+		end
 	end
-	v.Seg = K.Segmentos(v.Cuerpo, { estilo = "segmentos", opciones = opciones, valor = V.orden[1], alCambiar = function(id) V.Mostrar(id) end })
+	if #sec > 0 then
+		local enMas = actual and not V.PRINCIPALES[actual] and V.PESTANAS[actual]
+		opciones[#opciones + 1] = { valor = V.MAS, texto = enMas and enMas.nombre or L["Más [pestañas]"], icono = "chevron-down",
+			ayuda = L["Estadísticas, sesiones, logros y la tabla de La Jauría."] }
+	end
+	return opciones
+end
+V.OpcionesPestanas = opcionesPestanas
+
+function V.MenuMas()
+	if not (v and v.Seg) then return end
+	local b
+	for _, x in ipairs(v.Seg.botones) do if x.alfaValorOpcion == V.MAS then b = x end end
+	local ops = {}
+	for _, id in ipairs(V.Secundarias()) do ops[#ops + 1] = { valor = id, texto = V.PESTANAS[id].nombre, icono = V.PESTANAS[id].icono } end
+	K.Menu(b or v.Seg, ops, actual, function(id) V.Mostrar(id) end)
+end
+
+local function crear()
+	v = K.Ventana({ nombre = "AlfaPescaVentana", titulo = L["Pesca"], subtitulo = subtitulo(), icono = "ic-pesca", ancho = 960, alto = 640 })
+	v.Seg = K.Segmentos(v.Cuerpo, { estilo = "segmentos", opciones = opcionesPestanas(true), valor = V.orden[1], alCambiar = function(id)
+		if id == V.MAS then
+			v.Seg:SetValor(not V.PRINCIPALES[actual or ""] and V.MAS or actual)
+			V.MenuMas()
+			return
+		end
+		V.Mostrar(id)
+	end })
 	v.Area = CreateFrame("Frame", nil, v.Cuerpo)
 	v.vistas = {}
 	v.alAcomodar = function() V.Acomodar() end
@@ -266,10 +314,8 @@ function V.Acomodar()
 	local _, usado = v.Seg:Acomodar(ancho)
 	if (usado or 0) > ancho and not v.sinIconos then
 		v.sinIconos = true
-		local opciones = {}
-		for _, id in ipairs(V.orden) do opciones[#opciones + 1] = { valor = id, texto = V.PESTANAS[id].nombre } end
-		v.Seg:SetOpciones(opciones)
-		v.Seg:SetValor(actual)
+		v.Seg:SetOpciones(opcionesPestanas(false))
+		v.Seg:SetValor(V.ValorSeg())
 		v.Seg:Acomodar(ancho)
 	end
 	v.Seg:ClearAllPoints()
@@ -292,7 +338,9 @@ function V.Mostrar(id)
 	if not V.PESTANAS[id] then id = V.orden[1] end
 	actual = id
 	N.DatosPersonaje(ID).pestana = id
-	v.Seg:SetValor(id)
+	-- 1.3.9: «Más» dice cuál de las suyas está abierta.
+	v.Seg:SetOpciones(opcionesPestanas(not v.sinIconos))
+	v.Seg:SetValor(V.ValorSeg())
 	for k, vista in pairs(v.vistas) do vista:SetShown(k == id) end
 	if not v.vistas[id] then
 		local p = V.PESTANAS[id]
@@ -320,6 +368,11 @@ function V.Alternar(id)
 	V.Abrir(id)
 end
 
+function V.ValorSeg()
+	if actual and not V.PRINCIPALES[actual] and #V.Secundarias() > 0 then return V.MAS end
+	return actual
+end
+
 function V.Visible() return v ~= nil and v:IsShown() end
 function V.Actual() return actual end
 
@@ -336,4 +389,13 @@ M.Escuchar(function(m)
 			end
 		end
 	end
+end)
+
+-- 1.3.9: al cambiar «Todas las pestañas a la vista», la barra se rehace.
+A.On("SETTING_CHANGED", function(path)
+	if path ~= ID .. ".pestanasTodas" or not v then return end
+	v.sinIconos = nil
+	v.Seg:SetOpciones(opcionesPestanas(true))
+	v.Seg:SetValor(V.ValorSeg())
+	if v:IsShown() then V.Acomodar() end
 end)

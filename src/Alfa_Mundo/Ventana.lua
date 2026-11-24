@@ -334,6 +334,12 @@ end
 local function acomodarTitulo()
 	local c = F.Cabecera
 	local izq = F.BCerca:IsShown() and F.BCerca or F.BMarcas
+	-- 1.3.9 (78): la lupa va a la izquierda de todos.
+	if F.BBuscar then
+		F.BBuscar:ClearAllPoints()
+		F.BBuscar:SetPoint("RIGHT", izq, "LEFT", -ESP.xs, 0)
+		izq = F.BBuscar
+	end
 	c.Subtitulo:SetPoint("RIGHT", izq, "LEFT", -ESP.base, 0)
 	c.Titulo:SetPoint("RIGHT", izq, "LEFT", -ESP.base, 0)
 end
@@ -759,6 +765,11 @@ local function construir()
 	end)
 	F.BCerca:SetPoint("RIGHT", F.BMarcas, "LEFT", -ESP.xs, 0)
 	F.BCerca:SetShown(hayCerca())
+	-- 1.3.9 (78): buscar un lugar por su nombre y, sin escribir, la leyenda de las capas (Buscar.lua).
+	F.BBuscar = botonCab("ic-buscar", L["Buscar un lugar y leyenda"], function(self)
+		if M.Buscar then M.Buscar.Alternar(self) end
+	end, L["Escribe una zona, una ciudad o uno de tus marcadores y el mapa va hasta ahí. Sin escribir nada, la leyenda: qué pinta cada capa."])
+	F.BBuscar:SetPoint("RIGHT", F.BCerca:IsShown() and F.BCerca or F.BMarcas, "LEFT", -ESP.xs, 0)
 	acomodarTitulo()
 	c.Subtitulo:SetWordWrap(false)
 
@@ -919,6 +930,17 @@ function V.Cerrar() if F then F:Cerrar() end end
 function V.Visible() return F and F:IsShown() or false end
 function V.Alternar(mapa)
 	if V.Visible() then V.Cerrar() else V.Abrir(mapa) end
+end
+
+-- 1.3.9 (78): la vista va hasta una zona, un continente o una ciudad (Buscar.lua).
+function V.IrAZona(mapa)
+	if type(mapa) ~= "number" then return end
+	if not V.Visible() then
+		V.Abrir(mapa)
+		return
+	end
+	local zz, u, v = zoomPara(mapa)
+	if zz then irA(u, v, min(Z_MAX, zz)) end
 end
 
 -- La vista va hasta un marcador (abre el mapa si hace falta).

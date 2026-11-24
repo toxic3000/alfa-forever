@@ -95,10 +95,60 @@ local function tarjeta(it)
 	return d
 end
 
+-- 1.3.9 (77): arrastrar una tarjeta de guía sobre otra cambia su orden (el
+-- de las pestañas de la ventana de guía, Engine.MoveTab); «Ver en el mapa»
+-- abre el mapa de Alfa con su camino (si no es la que sigues, primero la sigue).
+local arrastrada
+local function guiaDe(c)
+	local d = c and c.alfaDatos
+	local it = d and d.alfaIt
+	return it and it.tipo == "guia" and it or nil
+end
+function M.MoverPlan(desde, hasta)
+	local E = M.Motor and M.Motor("Engine") or (A and A.Engine)
+	if not (E and E.MoveTab) or type(desde) ~= "number" or type(hasta) ~= "number" or desde == hasta then return false end
+	local ok = pcall(E.MoveTab, desde, hasta)
+	if vista then N.RehacerPagina(vista) end
+	return ok
+end
+local function soltar(c)
+	c:SetAlpha(1)
+	local de = arrastrada
+	arrastrada = nil
+	if not de then return end
+	for _, otra in ipairs(ui.rejilla and ui.rejilla.pool or {}) do
+		local it = guiaDe(otra)
+		if otra ~= c and it and otra:IsVisible() and otra.IsMouseOver and otra:IsMouseOver() then
+			M.MoverPlan(de.indice, it.indice)
+			return
+		end
+	end
+end
+function M.VerPlanEnMapa(it)
+	if type(it) ~= "table" then return end
+	if not it.activa then EC.Seguir(it) end
+	local R = rawget(_G, "AlfaRuta")
+	if type(R) == "table" and type(R.VerEnMapa) == "function" then pcall(R.VerEnMapa) end
+end
+
 -- El botón «Fijar» de cada tarjeta de guía, al lado de «Quitar».
 local function conFijar(c)
 	if c.alfaConFijar then return end
 	c.alfaConFijar = true
+	c:RegisterForDrag("LeftButton")
+	c:SetScript("OnDragStart", function(self)
+		local it = guiaDe(self)
+		if not it or (InCombatLockdown and InCombatLockdown()) then return end
+		arrastrada = it
+		self:SetAlpha(0.6)
+	end)
+	c:SetScript("OnDragStop", function(self) soltar(self) end)
+	-- (un ícono: con Seguir, Quitar y Fijar ya no cabe otro botón con texto)
+	c.Mapa = K.BotonIcono(c, "ic-mapa", function(self)
+		local d = self:GetParent().alfaDatos
+		M.VerPlanEnMapa(d and d.alfaIt)
+	end, { tam = 24, ayuda = L["Ver en el mapa"],
+		ayudaTexto = L["Abre el mapa de Alfa con su camino entero. Si no es la que sigues, primero la sigue."] })
 	c.Fijar = K.Boton(c, L["Fijar"], function(self)
 		local d = self:GetParent().alfaDatos
 		local it = d and d.alfaIt
@@ -117,6 +167,12 @@ local function conFijar(c)
 			self.Fijar:ClearAllPoints()
 			self.Fijar:SetPoint("LEFT", self.Secundaria, "RIGHT", K.ESP.s, 0)
 		end
+		local conMapa = it and self.Secundaria and self.Secundaria:IsShown()
+		K.Mostrar(self.Mapa, conMapa and true or false)
+		if conMapa then
+			self.Mapa:ClearAllPoints()
+			self.Mapa:SetPoint("LEFT", es and self.Fijar or self.Secundaria, "RIGHT", K.ESP.s, 0)
+		end
 		return h
 	end
 end
@@ -133,7 +189,8 @@ end
 
 local function llenar()
 	local lista = EC.Lista()
-	K.Escribir(ui.intro.Texto, format(L["Puedes seguir hasta %d guías a la vez. La que sigues ahora es la que marca la flecha."], EC.Maximo()))
+	K.Escribir(ui.intro.Texto, format(L["Puedes seguir hasta %d guías a la vez. La que sigues ahora es la que marca la flecha."], EC.Maximo())
+		.. (#lista > 1 and (" " .. L["Arrastra una tarjeta sobre otra para cambiar su orden."]) or ""))
 	K.Escribir(ui.resumen.Texto, #lista > 0 and resumen(lista) or L["No sigues nada ahora. Elige una guía en la Biblioteca o pregúntale al asistente qué hacer."])
 	local datos = {}
 	for i, it in ipairs(lista) do datos[i] = tarjeta(it) end
@@ -151,6 +208,8 @@ local function llenar()
 	K.Escribir(ui.misionesTexto.Texto, #qs > 0 and L["¿Una que ya no quieres? Abandónala aquí: te pregunto antes, y se puede volver a pedir."]
 		or L["No tienes misiones en tu registro."])
 	K.Mostrar(ui.abandonar, #qs > 0)
+	local Eng = A.Engine
+	K.Mostrar(ui.restablecer, (Eng and Eng.GetGuide and Eng.GetGuide()) and true or false)
 end
 
 local function construir(view)
@@ -170,7 +229,10 @@ local function construir(view)
 		if #op == 0 then return end
 		K.Menu(b or ui.abandonar, op, nil, function(q) EC.AbandonarMision(q) end, 280)
 	end
-	t:AgregarBloque(filaBotones(t.Extra, { ui.abandonar }), { espacio = K.ESP.s })
+	-- 1.3.9: restablecer la guía que sigues (te ubica sola; con Deshacer).
+	ui.restablecer = K.Boton(view, L["Restablecer la guía que sigues…"], function() if M.Restablecer then M.Restablecer.Restablecer() end end,
+		{ tipo = "secundario", icono = "ic-ruta" })
+	t:AgregarBloque(filaBotones(t.Extra, { ui.abandonar, ui.restablecer }), { espacio = K.ESP.s })
 	K.EnPagina(view, t, llenar)
 	vista = view
 end

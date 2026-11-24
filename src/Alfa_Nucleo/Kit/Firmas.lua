@@ -1,5 +1,9 @@
 -- Alfa - Kit: la firma de cada módulo (1.3.8). toxic3000 / La Jauría. GPL-3.0.
 --
+-- 1.3.9: errores (el Lobo Malo), f.textura (un ícono a color) y f.ayuda (la
+-- línea del Centro de avisos, Momentos.lua). Los sonidos, todos cortos y de
+-- la interfaz del juego, con un volumen parecido (70).
+--
 -- Pedido de Toxic (mejora 7): «cada aviso trae el color, el ícono y un sonido
 -- corto de su módulo, para saber de dónde viene sin leerlo». Una tabla central:
 --   K.FIRMAS[clave] = { nombre, color, icono, sonido (SOUNDKIT), id (FileDataID de respaldo) }
@@ -24,7 +28,8 @@ local FIRMAS = {
 	hoy = { nombre = "Hoy", color = "oro", icono = "ic-hoy", sonido = "IG_QUEST_LOG_OPEN", id = 844 },
 	bolsas = { nombre = "Bolsas", color = { 0.86, 0.66, 0.4, 1 }, icono = "ic-bolsas", sonido = "IG_BACKPACK_OPEN", id = 862 },
 	pesca = { nombre = "Pesca", color = { 0.36, 0.72, 0.95, 1 }, icono = "ic-pesca", sonido = "FISHING_REEL_IN", id = 3407 },
-	combate = { nombre = "Combate", color = "peligro", icono = "ic-nivel", sonido = "IG_CREATURE_AGGRO_SELECT", id = 873 },
+	-- 1.3.9 (70): el de combate era el «aggro» del juego, mucho más fuerte que los demás.
+	combate = { nombre = "Combate", color = "peligro", icono = "ic-nivel", sonido = "IG_CHARACTER_INFO_TAB", id = 841 },
 	curacion = { nombre = "Curación", color = "exito", icono = "ic-curacion", sonido = "IG_CHARACTER_INFO_OPEN", id = 839 },
 	manada = { nombre = "La Jauría", color = { 0.55, 0.88, 0.31, 1 }, icono = "ic-manada", sonido = "IG_PLAYER_INVITE", id = 880 },
 	lya = { nombre = "Lya", color = { 0.78, 0.7, 0.96, 1 }, icono = "ic-lobo", sonido = "IG_MAINMENU_OPTION_CHECKBOX_ON", id = 856 },
@@ -37,6 +42,10 @@ local FIRMAS = {
 	recoleccion = { nombre = "Recolección", color = { 0.55, 0.8, 0.45, 1 }, icono = "ic-recoleccion", sonido = "IG_INVENTORY_ROTATE_CHARACTER", id = 861 },
 	enciclopedia = { nombre = "Enciclopedia", color = "objeto", icono = "ic-enciclopedia", sonido = "IG_ABILITY_PAGE_TURN", id = 836 },
 	alfa = { nombre = "Alfa", color = "acento", icono = "ic-lobo", sonido = "IG_QUEST_LIST_OPEN", id = 875 },
+	-- 1.3.9 (101): los errores de Alfa que se atrapan, con el Lobo Malo (Alfa_Bienvenida/Reporte.lua).
+	errores = { nombre = "Errores de Alfa", color = { 0.9, 0.36, 0.3, 1 }, icono = "ic-alerta",
+		textura = "Interface\\AddOns\\Alfa_Nucleo\\Media\\lobo-malo", sonido = "IG_QUEST_LIST_OPEN", id = 875,
+		ayuda = "Cuando Alfa atrapa un error suyo, un aviso chico te ofrece reportarlo. Nunca en combate." },
 }
 K.FIRMAS = FIRMAS
 

@@ -90,11 +90,26 @@ local function avisoDeHoy()
 	return type(a) == "table" and a.IsShown and a:IsShown() and true or false
 end
 
+-- 1.3.9 (69): con un personaje nuevo (nivel 10 o menos), en la primera hora
+-- de la sesión Lya habla la tercera parte (lya.calmaNuevos): hay mucho que
+-- aprender del juego y no hace falta que ella sume. Lo importante, igual.
+local NOVATO_NIVEL, NOVATO_HORA, NOVATO_VECES = 10, 3600, 3
+local inicioSesion = ahora()
+function Ce.Novato()
+	if N.Get(ID, "calmaNuevos") == false then return false end
+	local lv = num(UnitLevel and UnitLevel("player"))
+	if not lv or lv > NOVATO_NIVEL then return false end
+	return ahora() - inicioSesion < NOVATO_HORA
+end
+function Ce.EmpezoSesion(t) inicioSesion = t or ahora() end -- (para el banco)
+
 local function intervalo()
 	local m = tonumber(N.Get(ID, "minutos")) or 5
 	if Ce.Frecuencia() == "pocos" then m = m * 2 end
+	if Ce.Novato() then m = m * NOVATO_VECES end
 	return max(1, m) * 60
 end
+Ce.Intervalo = intervalo -- (para el banco)
 
 local function veces(id) return tonumber(datos().vistos[id]) or 0 end
 local function contar(id) local d = datos() d.vistos[id] = veces(id) + 1 end
@@ -498,7 +513,7 @@ local function irA(tipo)
 		if ok and puesto then N.EmpezarRuta() end
 		return
 	end
-	N.Imprimir(L["La búsqueda de lugares cercanos no está disponible."])
+	N.Imprimir(L["La búsqueda de lugares cercanos no está lista: falta una parte de Alfa. /alfa diagnostico te dice cuál prender."])
 end
 
 -- Las bolsas: las de Alfa se abren desde aquí. Las de Blizzard no: abrirlas
@@ -660,6 +675,62 @@ local CONTEXTO = {
 		return ok
 	end,
 }
+
+-- 1.3.9 (41): «¿Qué hago ahora?» Tu siguiente mejor acción, en orden: reparar
+-- (lo roto primero), vaciar las bolsas, entregar lo listo, entrenar (lo que
+-- ganaste en este nivel) y, si no, seguir tu ruta. Siempre con su botón.
+--   Ce.SiguienteAccion() -> { clave, texto, acciones }   Ce.QueHagoAhora() -> bool
+function Ce.SiguienteAccion()
+	local pct = peorDurabilidad()
+	if pct and pct <= 30 then
+		return { clave = "reparar", texto = format(L["Primero, a reparar: tu equipo está al %d %%. Roto ya no te protege."], floor(pct + 0.5)),
+			acciones = { { texto = L["Llévame a reparar"], fn = function() irA("repair") end } } }
+	end
+	local fr, t = bolsasLibres()
+	if fr and t and t > 0 and fr <= 2 then
+		return { clave = "vender", texto = N.Plural(fr, L["Tus bolsas están casi llenas (te queda %d lugar). Vende lo que no usas y sigue."],
+				L["Tus bolsas están casi llenas (te quedan %d lugares). Vende lo que no usas y sigue."]),
+			acciones = { { texto = L["Llévame a un vendedor"], fn = function() irA("vendor") end },
+				{ texto = L["Abrir bolsas"], fn = abrirBolsas, seguro = seguroBolsas } } }
+	end
+	local n = listas()
+	if n > 0 then
+		local R = rawget(_G, "AlfaRuta")
+		local ac = (type(R) == "table" and type(R.Entregar) == "function") and { { texto = L["Entregar todas"], fn = entregarTodas } } or nil
+		return { clave = "entregar", texto = N.Plural(n, L["Tienes %d misión lista: ve a entregarla y cobra tu recompensa."],
+			L["Tienes %d misiones listas: ve a entregarlas y cobra tus recompensas."]), acciones = ac }
+	end
+	local lv = num(UnitLevel and UnitLevel("player"))
+	if lv and datos().entrenarNivel ~= lv and not Ce.YaSeDijo("entrenador:" .. lv) and porEntrenar() > 0 then
+		return { clave = "entrenar", texto = L["Pasa con tu entrenador: puede que tengas habilidades nuevas por aprender."],
+			acciones = { { texto = L["Llévame con mi entrenador"], fn = function() irA("class") end } } }
+	end
+	-- Lo de siempre: tu ruta (la guía que sigues) o Hoy.
+	local I = rawget(_G, "AlfaInicio")
+	local paso
+	if type(I) == "table" and type(I.Paso) == "function" then
+		local ok, p = pcall(I.Paso)
+		if ok and type(p) == "table" and not p.fin and type(p.titulo) == "string" and p.titulo ~= "" then paso = p.titulo end
+	end
+	if paso then
+		return { clave = "ruta", texto = format(L["Todo en orden. Sigue tu ruta: %s"], paso),
+			acciones = { { texto = L["Ver mi ruta"], fn = function() N.Abrir("rutas") end } } }
+	end
+	return { clave = "hoy", texto = L["Todo en orden. En Hoy te digo qué te conviene: una ruta, una mazmorra o tus oficios."],
+		acciones = { { texto = L["Abrir Hoy"], fn = function() N.Abrir("inicio") end } } }
+end
+
+-- Una sola voz con Hoy: lo que Lya ya dijo no lo repite otro (1.3.3).
+local VOZ_AHORA = { reparar = "reparar", vender = "bolsasLlenas", entregar = "entregar" }
+function Ce.QueHagoAhora()
+	if not Ce.Activa() or enCombate() then return false end
+	local ok, s = pcall(Ce.SiguienteAccion)
+	if not ok or type(s) ~= "table" then
+		if not ok and geterrorhandler then geterrorhandler()(s) end
+		return false
+	end
+	return Ce.Decir({ texto = s.texto, acciones = s.acciones, pedido = true, cara = "atenta", voz = VOZ_AHORA[s.clave] }) == true
+end
 
 local function revisarContexto(pedido)
 	for _, fn in ipairs(CONTEXTO) do
@@ -877,6 +948,7 @@ local function latido()
 		if not revisarSesion() and not revisarContexto(false) then
 			local gap = SIN_HABLAR[Ce.Frecuencia()]
 			if gap and M.HoraReal then gap = M.HoraReal.Espera(gap) end -- 1.3.8: de noche, más tranquila
+			if gap and Ce.Novato() then gap = gap * NOVATO_VECES end -- 1.3.9 (69)
 			if gap and ahora() - ultimo >= gap then
 				-- La plática (Charla.lua): rondas entre el lugar, el lore, lo de tu
 				-- raza, clase y profesiones, consejos, el momento y las salchichas.

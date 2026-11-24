@@ -312,6 +312,10 @@ local function grupos(ui, padre)
 		control = function(fila) return K.Boton(fila, L["Abrir"], function() if M.Previa then M.Previa.Abrir(true) end end, { tipo = "secundario", tam = "chico" }) end })
 	antes:Fila({ titulo = L["Avisar al subir de nivel de pescador"], control = interruptor("avisoNivel"), activa = activa,
 		texto = L["Tu nivel de pescador de Alfa sube con cada captura; más con lo raro, lo nuevo, tus récords y los bancos de peces."] })
+	antes:Fila({ titulo = L["Todas las pestañas a la vista"], control = interruptor("pestanasTodas"),
+		texto = L["En la ventana de pesca. Apagado se ven Diario, Pescador, Guía y Cocina, y lo demás en «Más»."] })
+	antes:Fila({ titulo = L["Avisar del pez de la semana en su zona"], control = interruptor("avisoSemana"), activa = activa,
+		texto = L["Al llegar a una zona donde sale el pez de la semana, un aviso breve con cuánto llevas. Una vez por zona y por semana."] })
 	antes:Fila({ titulo = L["Compartir en la tabla de La Jauría"], control = interruptor("jauria"),
 		texto = L["Tu nivel de pescador y tus récords, solo con tu hermandad (y solo los de tu facción los ven). Nada va a canales públicos."] })
 	g[#g + 1] = antes
@@ -491,6 +495,8 @@ for _, c in ipairs({
 	toggle("avisoPelear", L["Avisar si te atacan con la caña"], L["Al entrar en combate con la caña puesta, un aviso breve con cómo volver a tus armas."], nil, "combat, weapons, pvp"),
 	toggle("previa", L["Preguntar antes de pescar"], L["Al abrir el modo pesca, un cuadro para elegir tu caña, tu cebo y cómo quieres la barra. Si tienes una sola caña y ningún cebo, no sale."], nil, "pole, lure, before fishing, caña, cebo"),
 	toggle("avisoNivel", L["Avisar al subir de nivel de pescador"], nil, nil, "fishing level, angler level, nivel"),
+	toggle("pestanasTodas", L["Todas las pestañas a la vista"], L["En la ventana de pesca. Apagado se ven Diario, Pescador, Guía y Cocina, y lo demás en «Más»."], nil, "tabs, more, pestañas"),
+	toggle("avisoSemana", L["Avisar del pez de la semana en su zona"], L["Al llegar a una zona donde sale el pez de la semana, un aviso breve con cuánto llevas. Una vez por zona y por semana."], nil, "fish of the week, zone, semana"),
 	{ kind = "toggle", key = clave("jauria"), label = L["Compartir en la tabla de La Jauría"],
 		help = L["Tu nivel de pescador y tus récords, solo con tu hermandad (y solo los de tu facción los ven). Nada va a canales públicos."], search = "leaderboard, guild, records, tabla" },
 	toggle("metasVentana", L["Ventana de metas"], L["Con el modo pesca abierto y alguna meta, la ventanita de metas se ve sola."], nil, "goals window"),

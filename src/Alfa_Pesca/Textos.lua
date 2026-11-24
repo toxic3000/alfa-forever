@@ -3,6 +3,8 @@
 local ADDON, M = ...
 
 M.EN = {
+	-- 1.3.9 (avisos): el reporte, el Centro de avisos, Lya y los errores con qué hacer
+	["No pude armar la guía. Prueba otra vez en un momento; si sigue, cuéntanos con /alfa reportar."] = "I couldn't build the guide. Try again in a moment; if it keeps happening, tell us with /alfa reportar.",
 	-- Teclas, chat y comandos
 	["Pescar: lanzar y recoger"] = "Fishing: cast and reel in",
 	["Pescar: volver a lanzar"] = "Fishing: cast again",
@@ -745,4 +747,20 @@ M.EN = {
 	["%d sesiones"] = "%d sessions",
 	["Sesiones"] = "Sessions",
 	["Lo sacaste %s."] = "You caught it %s.",
+	-- 1.3.9 (módulos)
+	["{dia} de {mes}"] = "{mes} {dia}",
+	["{dia} de {mes} de {año}"] = "{mes} {dia}, {año}",
+	["El pez de la semana anda por aquí"] = "The fish of the week is around here",
+	["%s sale en %s. Llevas %d de %d esta semana."] = "%s bites in %s. You have %d of %d this week.",
+	["Ver el pez de la semana"] = "See the fish of the week",
+	["En cada zona:"] = "In each zone:",
+	["· %s: %s, %s"] = "· %s: %s, %s",
+	["· y %d zonas más"] = "· and %d more zones",
+	["el %s (%s)"] = "on %s (%s)",
+	["Más [pestañas]"] = "More",
+	["Estadísticas, sesiones, logros y la tabla de La Jauría."] = "Statistics, sessions, achievements and La Jauría's table.",
+	["Todas las pestañas a la vista"] = "All tabs in view",
+	["En la ventana de pesca. Apagado se ven Diario, Pescador, Guía y Cocina, y lo demás en «Más»."] = "In the fishing window. Off, you see Journal, Angler, Guide and Cooking, and the rest under «More».",
+	["Avisar del pez de la semana en su zona"] = "Tell me about the fish of the week in its zone",
+	["Al llegar a una zona donde sale el pez de la semana, un aviso breve con cuánto llevas. Una vez por zona y por semana."] = "When you reach a zone where the fish of the week bites, a short notice with how many you have. Once per zone and per week.",
 }

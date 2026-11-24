@@ -14,7 +14,37 @@
 
 ---
 
-## 🆕 New in 1.3.8 — the pack on two screens / Lo nuevo: la manada en dos pantallas
+## 🆕 New in 1.3.9 — the pack hunts better / Lo nuevo: la manada caza mejor
+
+**Your quests, your professions and 100+ improvements.** · **Tus misiones, tus oficios y más de 100 mejoras.**
+
+![Close my quests]($https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/51-139-cerrar.png)
+
+**📜 Close my quests / Cerrar mis misiones** — one click builds the best route with all your quests: each zone in one go, turn-ins grouped by NPC, and quests that no longer give experience set aside "For later". Your route shows on the map with numbered stops. · Con un clic arma la mejor ruta con todas tus misiones: cada zona de una vez, las entregas juntas por PNJ, y las que ya no dan experiencia van a «Para después». Tu ruta sale en el mapa con paradas numeradas.
+
+**⛏️ Profession guides that really help / Guías de profesión que sí ayudan** — Alfa's own guides by stage: the best zone with its route, the cheapest recipe that still gives points, when to visit the trainer and your materials minus what your other characters hold. "Reset this guide" finds where you are; "Take me" to an ore sends you to the most likely zone for your level. · Guías propias de Alfa por tramos: la mejor zona con su ruta, la receta más barata que aún da puntos, cuándo ir al instructor y tus materiales con lo de tus otros personajes descontado. «Restablecer esta guía» te ubica solo, y «Llévame» a un mineral te manda a la zona más probable para tu nivel.
+
+![The new travel card]($https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/49-139-barco.png)
+
+**⛵ Travel, rebuilt the Alfa way / El viaje, nuevo y a la manera de Alfa** — boats, zeppelins, trams, portals and flights get their own card with a big departure countdown, the route and its stage. Clicking the arrow takes you to the next spot again. · Barcos, zepelines, tranvías, portales y vuelos tienen su tarjeta con la cuenta grande de la salida, la ruta y su momento. El clic en la flecha vuelve a llevarte al siguiente lugar.
+
+![Report a bug]($https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/50-139-reporte.png)
+
+**🐺 The Big Bad Wolf hunts bugs / El Lobo Malo caza bichos** — if Alfa hits one of its own errors it tells you quietly and you report it in one click; it never includes your name or realm. · Si Alfa encuentra un error suyo te avisa en chiquito y lo reportas con un clic; nunca lleva tu nombre ni tu reino.
+
+![Inside a dungeon]($https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/52-139-mazmorra.png)
+
+**🏰 Dungeons from the inside / Mazmorras por dentro** — an inside map with zoom, floors and your progress through the bosses, plus a "Before you enter" checklist that ticks itself. · Un mapa por dentro con zoom, pisos y tu avance por jefes, y una lista «Antes de entrar» que se marca sola.
+
+**⚔️ Horde and Alliance / Horda y Alianza** — a La Jauría scoreboard by faction, "Wolves with Alfa" (who in your guild uses Alfa and who needs to update) and an optional faction theme. · Marcador de La Jauría por bando, «Lobos con Alfa» (quién de tu hermandad usa Alfa y quién debe actualizar) y temática por bando opcional.
+
+**✨ And more / Y más** — Today shows the first thing to do, a 3-screen setup, a notification center, smarter bag search and sorting, the fishing window simplified, healing click maps per spec, your last 5 fights, and many fixes. · Hoy pone primero lo que conviene hacer, configuración en 3 pantallas, centro de avisos, búsqueda y orden de bolsas más listos, ventana de pesca más sencilla, mapas de clics por especialización, tus últimas 5 peleas y muchos arreglos. [Full notes / Notas completas](https://github.com/toxic3000/alfa-forever/blob/main/CHANGELOG.md)
+
+> If something breaks, tell us with `/alfa reportar`, on [Discord](https://discord.gg/hUNjA6BJwh), in the comments or on [GitHub](https://github.com/toxic3000/alfa-forever/issues). · Si algo falla, avísanos con `/alfa reportar`, en el [Discord de La Jauría](https://discord.gg/hUNjA6BJwh), en los comentarios o en [GitHub](https://github.com/toxic3000/alfa-forever/issues).
+
+---
+
+## 1.3.8 — the pack on two screens / la manada en dos pantallas
 
 **Alfa on your second monitor and 40 improvements.** · **Alfa en tu segundo monitor y 40 mejoras.**
 
@@ -52,7 +82,6 @@
 
 **✨ And more / Y más** — "Take the gryphon", a quest layer by colour, "Looking for group" and each wolf's card in La Jauría, Lya's breaks and firsts, a boss line and an end card in dungeons, and Zen mode (`/alfa zen`). · «Toma el grifo», capa de misiones por color, «Busco grupo» y la ficha de cada lobo en La Jauría, las pausas y primeras veces de Lya, una línea por jefe y una tarjeta al terminar la mazmorra, y el modo Zen (`/alfa zen`). [Full notes / Notas completas](https://github.com/toxic3000/alfa-forever/blob/main/CHANGELOG.md)
 
-> If something breaks, tell us with `/alfa reportar`, on [Discord](https://discord.gg/hUNjA6BJwh), in the comments or on [GitHub](https://github.com/toxic3000/alfa-forever/issues). · Si algo falla, avísanos con `/alfa reportar`, en el [Discord de La Jauría](https://discord.gg/hUNjA6BJwh), en los comentarios o en [GitHub](https://github.com/toxic3000/alfa-forever/issues).
 
 ---
 

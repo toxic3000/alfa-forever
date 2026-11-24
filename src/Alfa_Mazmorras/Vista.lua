@@ -477,6 +477,8 @@ local function accionMazmorra(key, d, e, nivel)
 		end
 		t.estado = { texto = L["Dentro"], tono = "mazmorra" }
 		t.accion = { texto = L["Ver los jefes"], icono = "ic-seguir", alClic = function() V.Pestana("jefes") end }
+		-- 1.3.9: el mapa por dentro (MapaDentro.lua).
+		if M.MapaDentro then t.secundaria = { texto = L["Mapa por dentro"], alClic = function() M.MapaDentro.Abrir() end } end
 	elseif e.listas > 0 then
 		t.tono = "exito"
 		t.titulo = cuantas(e.listas, L["Tienes 1 misión lista para entregar"], L["Tienes %d misiones listas para entregar"])
@@ -525,6 +527,9 @@ local NOMBRE_REQ = { attunement = L["Requisito"], key = L["Llave"], item = L["Ob
 local function construirResumen(padre)
 	local r = K.Pila(padre, { espacio = ESP.l })
 	r.Estado = r:Agregar(K.Tarjeta(r, { variante = "estado" }))
+	-- 1.3.9: la lista de cotejo de «Prepárame» (Cotejo.lua), que se va marcando.
+	r.SecCotejo = r:Agregar(K.Seccion(r, L["Antes de entrar"]))
+	r.Cotejo = r:Agregar(K.Rejilla(r, { min = 300, gap = ESP.s, variante = "compacta" }), { espacio = ESP.s })
 	-- 1.3.7: el camino de sus jefes (dentro, o si ya venciste alguno).
 	r.Mapa = r:Agregar(Pz.MapaJefes(r))
 	r.Datos = r:Agregar(K.Rejilla(r, { min = 260, gap = ESP.m, variante = "compacta" }))
@@ -532,7 +537,9 @@ local function construirResumen(padre)
 	r.Req = r:Agregar(K.Rejilla(r, { min = 300, gap = ESP.m }), { espacio = ESP.m })
 	r.Botones = r:Agregar(Pz.Botones(r))
 	local B = r.Botones
-	r.Mapa = K.Boton(B, L["Ver en el mapa"], function() local x = Dg() if x and x.ShowOnMap then llamar(x.ShowOnMap, estado.clave) end end,
+	-- 1.3.9: el botón tenía el mismo nombre que el mapa de los jefes (r.Mapa) y lo
+	-- tapaba: el camino de los jefes nunca salía en el resumen.
+	r.VerMapa = K.Boton(B, L["Ver en el mapa"], function() local x = Dg() if x and x.ShowOnMap then llamar(x.ShowOnMap, estado.clave) end end,
 		{ tipo = "fantasma", tam = "chico", icono = "ic-mapa" })
 	r.Antes = K.Boton(B, L["Ya la hice antes"], function()
 		local k = estado.clave
@@ -552,12 +559,37 @@ local function construirResumen(padre)
 		if type(I) == "table" and type(I.RevisarMazmorra) == "function" then llamar(I.RevisarMazmorra, D.Nombre(estado.clave)) end
 	end, { tipo = "fantasma", tam = "chico", icono = "ic-lista",
 		ayuda = L["Mira si llevas lo que hace falta: el equipo reparado, espacio, comida y lo de tu clase."] })
-	B:Set({ r.Revisar, r.Mapa, r.Antes, r.Olvidar })
+	B:Set({ r.Revisar, r.VerMapa, r.Antes, r.Olvidar })
 	return r
 end
 
+-- 1.3.9: la lista de cotejo, como tarjetas chicas: lo hecho con su palomita,
+-- lo que falta con su botón (todo con tu clic).
+local function tarjetasCotejo(key)
+	local Ct = M.Cotejo
+	if not Ct then return {}, 0 end
+	local out, hechos = {}, 0
+	for _, x in ipairs(Ct.Lista(key)) do
+		if x.hecho then hechos = hechos + 1 end
+		local ac = x.accion
+		out[#out + 1] = { variante = "compacta", icono = x.hecho and "ic-exito" or "ic-reloj", tono = x.hecho and "exito" or "acento",
+			titulo = x.texto, valor = (not x.hecho and ac) and ac.texto or nil,
+			alClic = (not x.hecho and ac) and ac.alClic or nil,
+			ayuda = (not x.hecho and ac) and format(L["Clic: %s."], ac.texto) or nil }
+	end
+	return out, hechos
+end
+V.TarjetasCotejo = tarjetasCotejo
+
 local function llenarResumen(r, key, d, e, nivel, lado)
 	r.Estado:Set(accionMazmorra(key, d, e, nivel))
+	local dentro = D.MazmorraActual() == key
+	local cot, hechos = {}, 0
+	if not dentro then cot, hechos = tarjetasCotejo(key) end
+	r.Cotejo:Llenar(cot)
+	r.SecCotejo:Set(L["Antes de entrar"], { cuenta = #cot > 0 and format(L["%d de %d"], hechos, #cot) or nil })
+	K.Mostrar(r.SecCotejo, #cot > 0)
+	K.Mostrar(r.Cotejo, #cot > 0)
 	local x = Dg()
 	local v, total = D.Cuenta(key)
 	local h = D.Hecha(key)
@@ -615,7 +647,7 @@ local function llenarResumen(r, key, d, e, nivel, lado)
 	-- Atajos pequeños.
 	r.Antes:SetShown(D.Historia() and not h and total > 0)
 	r.Olvidar:SetShown(h ~= nil or v > 0)
-	r.Mapa:SetShown(d.entrance ~= nil)
+	r.VerMapa:SetShown(d.entrance ~= nil)
 	local I = rawget(_G, "AlfaInicio")
 	r.Revisar:SetShown(type(I) == "table" and type(I.RevisarMazmorra) == "function")
 	K.Mostrar(r.Botones, r.Botones:Hay())
@@ -1312,7 +1344,9 @@ N.Modulo({
 		-- 1.3.8: "linea" (lo más importante, compacto) | "tarjeta" (la de antes); el resumen al terminar (Resumen.lua)
 		enVivoForma = "linea", resumenFin = true,
 		-- 1.3.7: lo que te falta tomar antes de un jefe (Consumibles.lua) y el botín de tu grupo (BotinGrupo.lua)
-		consumibles = true, historial = true },
+		consumibles = true, historial = true,
+		-- 1.3.9: el botón del mapa por dentro en el mapa del juego (MapaDentro.lua)
+		mapaDentro = true },
 	construir = function(view) V.Construir(view) end,
 })
 

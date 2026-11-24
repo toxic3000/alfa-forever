@@ -142,7 +142,7 @@ function Qv.Revisar()
 			if #ok > 0 then U.Decir(format(L["Invitaste a %s a tu grupo."], concat(ok, ", "))) end
 		end },
 	}
-	if K and K.Aviso then K.Aviso(o) else U.Decir(o.titulo .. " " .. texto) end
+	if M.U and M.U.Aviso then M.U.Aviso(o) else U.Decir(o.titulo .. " " .. texto) end
 	return d.nombre
 end
 

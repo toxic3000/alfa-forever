@@ -1,0 +1,12 @@
+{
+ "Módulos: %s": "모듈: %s",
+ "apagados: %s": "꺼짐: %s",
+ "Modo sencillo": "간단 모드",
+ "Modo completo": "전체 모드",
+ "Alfa usa %.1f MB": "Alfa 사용량 %.1f MB",
+ "%d tareas del reloj (la que más tarda: %s)": "시계 작업 %d개 (가장 느린 작업: %s)",
+ "Otros addons (%d): %s": "다른 애드온 (%d): %s",
+ "<jugador>": "<플레이어>",
+ "<tu personaje>": "<내 캐릭터>",
+ "<tu reino>": "<내 서버>"
+}

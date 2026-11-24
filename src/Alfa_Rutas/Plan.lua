@@ -498,14 +498,14 @@ P.Ordenar = ordenar
 -- (se aceptan juntas las de un mismo PNJ y se entregan juntas); si son
 -- muchas, una parada por misión entera.
 -- ordenFn(paradas, desde, costo) -> orden (1.3.0: el circuito de la zona da el suyo).
-local function pasosDe(partes, desde, costo, ordenFn)
+local function pasosDe(partes, desde, costo, ordenFn, maxFinas)
 	local paradas, porQuest = {}, {}
 	local finas = 0
 	for _, pm in ipairs(partes) do
 		local aceptar = pm.aceptar and not I.EnRegistro(pm.q.id)
 		finas = finas + (aceptar and 1 or 0) + ((#pm.objetivos > 0 and not pm.listo) and 1 or 0) + 1
 	end
-	finas = finas <= MAX_PARADAS
+	finas = finas <= (maxFinas or MAX_PARADAS) -- 1.3.9: Cerrar pide más (las entregas al final de cada zona)
 	for _, pm in ipairs(partes) do
 		local enLog = I.EnRegistro(pm.q.id)
 		local hacer = #pm.objetivos > 0 and not pm.listo

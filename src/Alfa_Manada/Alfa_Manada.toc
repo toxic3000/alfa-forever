@@ -37,5 +37,7 @@ Ficha.lua
 Compartir.lua
 Logros.lua
 Mapa.lua
+Marcador.lua
 Pagina.lua
 Manada.lua
+Censo.lua

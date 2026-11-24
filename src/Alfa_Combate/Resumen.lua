@@ -460,6 +460,7 @@ function Rs.Termina()
 			golpe = r.golpe and { nombre = r.golpe.nombre, quien = r.golpe.quien, cuanto = r.golpe.cuanto } or nil,
 			golpes = golpes, parte = r.parte, curas = r.curas, record = r.record or nil,
 			cuando = time and time() or nil }
+		Rs.Anotar(d.ultimaPelea, d)
 		if mostrar then Rs.Pintar(r) end
 		M.Avisar()
 	end)
@@ -496,3 +497,51 @@ A.OnLogin(function()
 		pregunta = L["¿Cómo me fue en la pelea?"],
 		respuesta = L["Alfa guarda tu última pelea: cuánto duró, tu daño y tu curación por segundo y lo que más te pegó. La ves en Combate o en el menú del medidor («Ver mi última pelea»); si quieres que salga sola, prende «Resumen al terminar cada pelea» en Combate."] })
 end)
+
+---------------------------------------------------------------------------
+-- 1.3.9: tus últimas 5 peleas, para compararlas (por personaje). Cada una
+-- guarda lo de la tarjeta (sin los golpes) y dónde fue; la página de Combate
+-- las pone lado a lado con su diferencia contra la de antes.
+---------------------------------------------------------------------------
+Rs.MAX_PELEAS = 5
+
+local function zonaDeAhora()
+	local z = GetRealZoneText and GetRealZoneText()
+	if M.Secreto(z) or type(z) ~= "string" or z == "" then return nil end
+	return z
+end
+
+function Rs.Anotar(u, d)
+	if type(u) ~= "table" then return end
+	d = d or N.DatosPersonaje(M.ID)
+	if type(d.peleas) ~= "table" then d.peleas = {} end
+	local x = { dur = u.dur, dano = u.dano, dps = u.dps, cura = u.cura, cps = u.cps, curas = u.curas, record = u.record,
+		cuando = u.cuando, zona = zonaDeAhora(), golpe = u.golpe and { nombre = u.golpe.nombre, cuanto = u.golpe.cuanto } or nil }
+	table.insert(d.peleas, 1, x)
+	for i = #d.peleas, Rs.MAX_PELEAS + 1, -1 do d.peleas[i] = nil end
+end
+
+function Rs.Peleas()
+	local d = N.DatosPersonaje(M.ID)
+	return type(d.peleas) == "table" and d.peleas or {}
+end
+
+-- Lo que más hiciste en esa pelea (daño o curación) por segundo -> valor, "dps" | "cps"
+function Rs.Ritmo(p)
+	if type(p) ~= "table" then return nil end
+	if p.curas then return tonumber(p.cps), "cps" end
+	return tonumber(p.dps), "dps"
+end
+
+-- La diferencia contra la pelea de antes del mismo tipo (fracción) | nil
+function Rs.Diferencia(i, lista)
+	lista = lista or Rs.Peleas()
+	local p = lista[i]
+	local v, tipo = Rs.Ritmo(p)
+	if not v or v <= 0 then return nil end
+	for k = i + 1, #lista do
+		local w, t2 = Rs.Ritmo(lista[k])
+		if t2 == tipo and w and w > 0 then return (v - w) / w end
+	end
+	return nil
+end

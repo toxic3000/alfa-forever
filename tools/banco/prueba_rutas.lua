@@ -136,6 +136,9 @@ local function textos(f, out)
   return out
 end
 local function rastreadorDice(trozo)
+  -- 1.3.9 (71): de fábrica el rastreador muestra solo lo esencial; el pie
+  -- (Omitir, Siguiente) sale con el ratón encima.
+  if Ru.Rastreador.Encima then Ru.Rastreador.Encima(true) end
   Ru.Rastreador.Pintar()
   for _, t in ipairs(textos(_G.AlfaRastreador)) do
     if t:find(trozo, 1, true) then return true end

@@ -25,6 +25,8 @@ M.Teclas = Tc
 local ORDEN = {
 	"ALFA_OPTIONS", "ALFA_TOGGLE", "ALFA_HIDE", "ALFA_PANTALLA_LIMPIA", "ALFA_AYUDA", "ALFA_MUNDO_MAPA",
 	"ALFA_LYA_GUIA", "ALFA_LYA_BOTON", "ALFA_RUTAS_CERCA", "ALFA_NEXT", "ALFA_PREV",
+	-- 1.3.9 (36): cerrar tus misiones y la siguiente parada, a la vista.
+	"ALFA_CERRAR_MISIONES", "ALFA_NEXT_WAYPOINT",
 }
 
 local function esDeAlfa(accion)
@@ -123,3 +125,20 @@ A.RegisterCommand("teclas", function() Tc.Abrir() end, L["tus atajos de Alfa, pa
 -- 1.3.6: para el botón de Lya («¿Puedo llamarte con una tecla?», Alfa_Lya/Guia.lua).
 AlfaBienvenida = type(AlfaBienvenida) == "table" and AlfaBienvenida or {}
 function AlfaBienvenida.Teclas() return Tc.Abrir() end
+
+-- 1.3.9 (36): «Cerrar mis misiones» con una tecla: el mismo plan que el botón
+-- de Hoy y de Ruta (AlfaRuta.CerrarTodo; sin él, AlfaRuta.Liberar). En combate
+-- espera a que termine la pelea.
+BINDING_NAME_ALFA_CERRAR_MISIONES = L["Cerrar mis misiones (todas, en el mejor orden)"]
+function AlfaBienvenida.CerrarMisiones()
+	local function ir()
+		local R = rawget(_G, "AlfaRuta")
+		if type(R) ~= "table" then return end
+		if type(R.CerrarTodo) == "function" then R.CerrarTodo("tecla")
+		elseif type(R.Liberar) == "function" then R.Liberar() end
+	end
+	if InCombatLockdown and InCombatLockdown() and N.FueraDeCombate then N.FueraDeCombate("teclas.cerrarMisiones", ir) return end
+	ir()
+end
+-- El atajo de una acción como texto («Ctrl-M»), o nil si no tiene.
+function Tc.Tecla(accion) return K.TeclaJuego and K.TeclaJuego(accion) or nil end

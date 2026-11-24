@@ -55,3 +55,8 @@ EN["Entrada"] = "Entrance"
 EN["mejor en %d"] = "best at %d"
 EN["Escribe arriba el nombre de una mazmorra para buscarla."] = "Type a dungeon's name above to find it."
 EN["Clic: abre su página con sus misiones, jefes y entrada."] = "Click: opens its page with its quests, bosses and entrance."
+
+-- 1.3.9 (interfaz): textos nuevos
+M.EN["Deshacer"] = "Undo"
+M.EN["Vuelve el último ajuste que cambiaste a como estaba."] = "Puts the last setting you changed back as it was."
+M.EN["Vuelven los %d ajustes del último cambio a como estaban."] = "Puts the %d settings of the last change back as they were."

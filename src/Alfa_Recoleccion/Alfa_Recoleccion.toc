@@ -18,4 +18,5 @@ Mapa.lua
 Minimapa.lua
 MapaMundo.lua
 Ruta.lua
+Llevar.lua
 Recoleccion.lua
