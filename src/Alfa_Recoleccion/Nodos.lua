@@ -617,6 +617,35 @@ function R.AnotarBotin(objetos)
 	R.Avisar("historial")
 end
 
+-- 1.4.0 (plan 48): lo que vale un objeto: el precio de la subasta (Comercio)
+-- o, si no hay, lo que paga el comerciante. -> cobre por unidad
+function R.ValorObjeto(id)
+	id = tonumber(id)
+	if not id then return 0 end
+	local C = rawget(_G, "AlfaComercio")
+	if type(C) == "table" and type(C.PrecioSubasta) == "function" then
+		local ok, p = pcall(C.PrecioSubasta, id)
+		if ok and type(p) == "number" and p > 0 then return p end
+	end
+	local CI = rawget(_G, "C_Item")
+	local f = (type(CI) == "table" and CI.GetItemInfo) or rawget(_G, "GetItemInfo")
+	if type(f) == "function" then
+		local ok, _, _, _, _, _, _, _, _, _, _, venta = pcall(f, id)
+		venta = ok and N.Leer(venta) or nil
+		if type(venta) == "number" and venta > 0 then return venta end
+	end
+	return 0
+end
+
+-- Lo que vale lo juntado en una sesión (cobre).
+function R.ValorSesion(s)
+	local total = 0
+	for id, n in pairs(type(s) == "table" and type(s.objetos) == "table" and s.objetos or {}) do
+		total = total + R.ValorObjeto(id) * (tonumber(n) or 0)
+	end
+	return math.floor(total + 0.5)
+end
+
 -- Al salir: la sesión se cierra; si quedó vacía, se borra.
 function R.CerrarSesion()
 	if not sesion then return end

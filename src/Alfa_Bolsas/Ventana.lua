@@ -229,7 +229,43 @@ end
 local function despertar(f) end -- se define abajo
 
 local function plegada(f, cat)
-	return D.Raiz().ui.plegadas[f.tipo .. ":" .. cat] and true or false
+	return D.Plegadas()[f.tipo .. ":" .. cat] and true or false
+end
+
+-- 1.4.0 (22): arrastrar un objeto a la cabecera de una sección lo cambia de
+-- sección (O.PonerSeccion). Solo tus bolsas en vivo, vista por secciones.
+local function cursorObjeto()
+	local f = rawget(_G, "GetCursorInfo")
+	if type(f) ~= "function" then return nil end
+	local ok, tipo, id, link = pcall(f)
+	if not ok or M.Leer(tipo) ~= "item" then return nil end
+	return M.Num(id), M.Texto(link)
+end
+
+function V.PuedeSoltar(f, cat)
+	return f.esVivo and M.Vista() == "categorias" and O.SECCION_LIBRE[cat] and true or false
+end
+
+-- -> true si soltó un objeto
+function V.SoltarEnSeccion(f, cat)
+	if not V.PuedeSoltar(f, cat) then return false end
+	local id, link = cursorObjeto()
+	if not id then return false end
+	local e = O.Info(id, link) or {}
+	local _, _, q = M.Llamar(C_Item and C_Item.GetItemInfo, link or id)
+	local base = O.CategoriaBase({ i = id, q = M.Num(q), l = link }, e, nil)
+	-- Soltarlo otra vez en la que ya le elegiste lo devuelve a la suya.
+	if O.SeccionPropia(id) == cat then cat = base end
+	O.PonerSeccion(id, base ~= cat and cat or nil)
+	if ClearCursor then ClearCursor() end
+	local nombre = O.NombreEnlace(link) or e.nombre or L["Ese objeto"]
+	if base ~= cat then
+		N.Imprimir(format(L["%s saldrá siempre en «%s». Suéltalo otra vez ahí para devolverlo a «%s»."], nombre, O.NOMBRE[cat] or cat, O.NOMBRE[base] or base))
+	else
+		N.Imprimir(format(L["%s volvió a su sección de siempre."], nombre))
+	end
+	for _, x in pairs(ventanas) do x.reacomodar, x.forzar = true, true despertar(x) end
+	return true
 end
 
 local function cabecera(f, i)
@@ -249,8 +285,10 @@ local function cabecera(f, i)
 	h.Cuenta = K.Texto(h, "pequeno", "textoTenue")
 	h.Linea = K.Linea(h, "linea")
 	h:SetScript("OnClick", function(self)
+		-- 1.4.0 (22): con un objeto en el cursor, se suelta en esta sección.
+		if V.SoltarEnSeccion(f, self.cat) then return end
 		if not self.plegable then return end
-		local d = D.Raiz().ui.plegadas
+		local d = D.Plegadas() -- 1.4.0 (21): por personaje
 		local k = f.tipo .. ":" .. tostring(self.cat)
 		d[k] = (not d[k]) or nil
 		f.reacomodar, f.forzar = true, true
@@ -258,7 +296,14 @@ local function cabecera(f, i)
 	end)
 	h:SetScript("OnEnter", function(self) if self.plegable then self.velo:Show() end end)
 	h:SetScript("OnLeave", function(self) self.velo:Hide() end)
-	K.ConInfo(h, function(self) if self.plegable then return nil, L["Clic para plegar o desplegar"] end end)
+	h:SetScript("OnReceiveDrag", function(self) V.SoltarEnSeccion(f, self.cat) end)
+	K.ConInfo(h, function(self)
+		if not self.plegable then return nil end
+		if V.PuedeSoltar(f, self.cat) then
+			return nil, L["Clic para plegar o desplegar"] .. "\n" .. L["Suelta aquí un objeto para que siempre salga en esta sección."]
+		end
+		return nil, L["Clic para plegar o desplegar"]
+	end)
 	f.cabs[i] = h
 	return h
 end
@@ -453,6 +498,12 @@ local function crearConsejo(f)
 		despertar(f)
 	end, { tam = 20, icono = 10, ayuda = L["Ocultar hasta que vuelvan a llenarse"] })
 	c.Cerrar:SetPoint("TOPRIGHT", c, "TOPRIGHT", -4, -4)
+	-- 1.4.0 (20): compacta, una línea con «Ver»; abierta, lo de siempre.
+	c.Ver = K.Boton(c, L["Ver"], function()
+		f.consejoAbierto = not f.consejoAbierto
+		f.reacomodar, f.forzar = true, true
+		despertar(f)
+	end, { tipo = "fantasma", tam = "chico" })
 	local S = M.Sugerencias
 	c.Marcar = K.Boton(c, "", function() S.MarcarChatarra() end, { tipo = "acento", tam = "chico" })
 	c.Vender = K.Boton(c, "", function() S.VenderChatarra() end, { tipo = "primario", tam = "chico" })
@@ -499,11 +550,57 @@ local function acomodarConsejo(f, ancho)
 	local w = ancho - 2 * PAD
 	local x = ESP.m + 18 + ESP.s
 	local tw = w - x - 28
+	local enComerciante = S.ComercianteAbierto()
+	local chatarra = enComerciante and #S.ChatarraAhora() or 0
+	-- 1.4.0 (20): compacta (de fábrica): una línea, «Ver» y, con un comerciante, «Vender».
+	if not f.consejoAbierto then
+		c.Texto:Hide()
+		c.Marcar:Hide()
+		c.Llevar:Hide()
+		c.Banco:Hide()
+		c.Ver:SetTexto(L["Ver"])
+		c.Ver:SetAncho(nil)
+		local verW = c.Ver:AnchoNatural()
+		local alto = ESP.s * 2 + max(K.ALTO.botonChico, 20)
+		c.Ver:ClearAllPoints()
+		c.Ver:SetPoint("RIGHT", c, "TOPRIGHT", -28, -alto / 2)
+		c.Cerrar:ClearAllPoints()
+		c.Cerrar:SetPoint("RIGHT", c, "TOPRIGHT", -4, -alto / 2)
+		local derecha = verW + 28 + ESP.s
+		c.Vender:SetShown(chatarra > 0 or S.Vendiendo())
+		if c.Vender:IsShown() then
+			c.Vender:SetTexto(S.Vendiendo() and L["Detener"] or format(L["Vender (%d)"], chatarra))
+			c.Vender:SetAncho(nil)
+			c.Vender:ClearAllPoints()
+			c.Vender:SetPoint("RIGHT", c.Ver, "LEFT", -ESP.xs, 0)
+			derecha = derecha + c.Vender:AnchoNatural() + ESP.xs
+		end
+		c.Icono:ClearAllPoints()
+		c.Icono:SetPoint("LEFT", c, "TOPLEFT", ESP.m, -alto / 2)
+		K.Escribir(c.Titulo, est.libres == 1 and L["Queda 1 casilla libre."]
+			or format(L["Quedan %d casillas libres."], est.libres))
+		c.Titulo:ClearAllPoints()
+		c.Titulo:SetPoint("LEFT", c, "TOPLEFT", x, -alto / 2)
+		K.Ajustar(c.Titulo, max(40, w - x - derecha))
+		c:SetSize(w, alto)
+		c:Show()
+		return alto
+	end
+	c.Ver:SetTexto(L["Menos"])
+	c.Ver:SetAncho(nil)
+	c.Cerrar:ClearAllPoints()
+	c.Cerrar:SetPoint("TOPRIGHT", c, "TOPRIGHT", -4, -4)
+	c.Icono:ClearAllPoints()
+	c.Icono:SetPoint("TOPLEFT", c, "TOPLEFT", ESP.m, -ESP.m)
+	tw = tw - c.Ver:AnchoNatural() - ESP.xs
+	c.Ver:ClearAllPoints()
+	c.Ver:SetPoint("TOPRIGHT", c, "TOPRIGHT", -28, -ESP.s)
 	K.Escribir(c.Titulo, est.libres == 1 and L["Tus bolsas se están llenando: queda 1 casilla."]
 		or format(L["Tus bolsas se están llenando: quedan %d casillas."], est.libres))
 	c.Titulo:ClearAllPoints()
 	c.Titulo:SetPoint("TOPLEFT", c, "TOPLEFT", x, -ESP.m)
-	c.Titulo:SetWidth(tw)
+	K.Parrafo(c.Titulo, tw, 2)
+	c.Texto:Show()
 	local y = ESP.m + K.AltoTexto(c.Titulo) + 3
 	local texto
 	if #est.vender > 0 then
@@ -517,10 +614,9 @@ local function acomodarConsejo(f, ancho)
 	K.Escribir(c.Texto, texto)
 	c.Texto:ClearAllPoints()
 	c.Texto:SetPoint("TOPLEFT", c, "TOPLEFT", x, -y)
-	y = y + K.Parrafo(c.Texto, tw, 3) + ESP.s
+	-- 1.4.0 (20): abierta, el texto entero (antes se cortaba en 3 líneas).
+	y = y + K.Parrafo(c.Texto, w - x - 28, 8) + ESP.s
 	-- Los botones, en una fila.
-	local enComerciante = S.ComercianteAbierto()
-	local chatarra = enComerciante and #S.ChatarraAhora() or 0
 	local botones = {}
 	c.Vender:SetShown(chatarra > 0 or S.Vendiendo())
 	if c.Vender:IsShown() then
@@ -599,6 +695,7 @@ local function acomodar(f)
 	local nuevos, mejoras = 0, 0
 	local libres, total, libresR, totalR = 0, 0, 0, 0
 	local libresE, totalE = 0, 0 -- 1.3.0: bolsas especiales (carcaj, almas, hierbas...)
+	local familias = {} -- 1.4.0 (23): fam -> { libres, total }
 	local y = ESP.s
 
 	local function boton(bolsa, s)
@@ -714,6 +811,12 @@ local function acomodar(f)
 		if especial(bolsa) then
 			totalE = totalE + 1
 			if not rec then libresE = libresE + 1 end
+			-- 1.4.0 (23): y por tipo de bolsa (carcaj, hierbas, almas...).
+			local fam = tonumber(datos[bolsa].f) or 0
+			local t = familias[fam]
+			if not t then t = { libres = 0, total = 0 } familias[fam] = t end
+			t.total = t.total + 1
+			if not rec then t.libres = t.libres + 1 end
 		elseif bolsa == D.REAGENTES then
 			totalR = totalR + 1
 			if not rec then libresR = libresR + 1 end
@@ -885,6 +988,7 @@ local function acomodar(f)
 	-- Pie y búsqueda.
 	f.libres, f.total, f.libresR, f.totalR = libres, total, libresR, totalR
 	f.libresE, f.totalE = libresE, totalE
+	f.familias = familias
 	f.alfaNuevos, f.alfaMejoras = nuevos, mejoras
 	V.Pie(f)
 	if filtro then
@@ -1054,6 +1158,40 @@ local function sonido(abrir)
 	if id and PlaySound then pcall(PlaySound, id) end
 end
 
+---------------------------------------------------------------------------
+-- 1.4.0 (23): el espacio libre por tipo de bolsa. La familia de una bolsa
+-- especial (C_Container.GetContainerNumFreeSlots) es un juego de bits; se
+-- nombra por el primero que se conoce.
+---------------------------------------------------------------------------
+V.FAMILIAS = {
+	{ 1, L["Carcaj"] }, { 2, L["Bolsa de munición"] }, { 4, L["Bolsa de almas"] }, { 8, L["Peletería"] },
+	{ 16, L["Inscripción"] }, { 32, L["Hierbas"] }, { 64, L["Encantamiento"] }, { 128, L["Ingeniería"] },
+	{ 256, L["Llaves"] }, { 512, L["Gemas"] }, { 1024, L["Minería"] },
+}
+function V.NombreFamilia(fam)
+	fam = tonumber(fam) or 0
+	for _, x in ipairs(V.FAMILIAS) do
+		if floor(fam / x[1]) % 2 == 1 then return x[2] end
+	end
+	return L["Bolsa especial"]
+end
+
+-- -> { { nombre, libres, total } } (juntos los del mismo nombre, en orden de bits)
+function V.Familias(f)
+	local por, lista = {}, {}
+	local claves = {}
+	for fam in pairs(f.familias or {}) do claves[#claves + 1] = fam end
+	table.sort(claves)
+	for _, fam in ipairs(claves) do
+		local t = f.familias[fam]
+		local nombre = V.NombreFamilia(fam)
+		local x = por[nombre]
+		if not x then x = { nombre = nombre, libres = 0, total = 0 } por[nombre] = x lista[#lista + 1] = x end
+		x.libres, x.total = x.libres + t.libres, x.total + t.total
+	end
+	return lista
+end
+
 -- 1.3.7: el pie enseña solo el oro del personaje que miras (antes salía
 -- también «Cuenta: …», el oro dos veces); el de todos va en «Tu oro», el
 -- botón de monedas (Oro.lua). De otro personaje, también de cuándo es.
@@ -1067,13 +1205,30 @@ function V.Pie(f)
 		dinero = r and tonumber(r.dinero)
 		cuando = r and M.Hace(r.visto)
 	end
-	K.Escribir(f.Libre, (L["Libre: %d de %d"]):format(f.libres or 0, f.total or 0))
+	local base = (L["Libre: %d de %d"]):format(f.libres or 0, f.total or 0)
+	K.Escribir(f.Libre, base)
 	local poco = (f.total or 0) > 0 and (f.libres or 0) <= 2
 	K.ColorTexto(f.Libre, poco and "aviso" or "textoSuave")
 	-- Lo de la izquierda no pisa el espacio libre de la derecha.
 	local ancho = K.num(f.ancho or f:GetWidth(), MIN_W)
 	local libreW = K.Ajustar(f.Libre)
 	local monW = f.Monedas and (f.Monedas:IsShown() and K.num(f.Monedas:GetWidth(), 24) + ESP.xs) or 0
+	-- 1.4.0 (23): con una bolsa especial, su espacio también («· Carcaj: 12»), si cabe.
+	local fams = V.Familias(f)
+	if #fams > 0 then
+		local partes = {}
+		for _, x in ipairs(fams) do partes[#partes + 1] = (L["%s: %d"]):format(x.nombre, x.libres) end
+		K.Escribir(f.Libre, base .. "  \194\183  " .. table.concat(partes, "  \194\183  "))
+		local w = K.Ajustar(f.Libre)
+		K.Escribir(f.Dinero, N.Dinero(dinero or 0, true))
+		local izq = K.AnchoTexto(f.Dinero) + monW
+		if f.Sobra and f.Sobra:IsShown() then izq = izq + K.num(f.Sobra:GetWidth(), 0) + ESP.s end
+		if w + izq + 2 * (PAD + 2) + ESP.m * 2 > ancho then
+			K.Escribir(f.Libre, base)
+			w = K.Ajustar(f.Libre)
+		end
+		libreW = w
+	end
 	local tope = max(40, ancho - 2 * (PAD + 2) - libreW - ESP.m - monW)
 	K.Escribir(f.Dinero, N.Dinero(dinero or 0, true))
 	local dw = K.Ajustar(f.Dinero, tope)
@@ -1091,8 +1246,9 @@ local function infoPie(self)
 	if (f.totalR or 0) > 0 then
 		lineas[#lineas + 1] = (L["Bolsa de componentes: %d de %d libres"]):format(f.libresR or 0, f.totalR or 0)
 	end
-	if (f.totalE or 0) > 0 then
-		lineas[#lineas + 1] = (L["Bolsas especiales: %d de %d libres"]):format(f.libresE or 0, f.totalE or 0)
+	-- 1.4.0 (23): cada tipo de bolsa con lo suyo.
+	for _, x in ipairs(V.Familias(f)) do
+		lineas[#lineas + 1] = (L["%s: %d de %d libres"]):format(x.nombre, x.libres, x.total)
 	end
 	return L["Espacio"], lineas
 end
@@ -1152,6 +1308,8 @@ local function crear(tipo)
 	f:SetMovable(true)
 	f:SetSize(MIN_W, 300)
 	f:Hide()
+	-- 1.4.0 (62): con el tamaño de las ventanas de Alfa (nucleo.escalaVentanas).
+	if K.ConEscala then K.ConEscala(f) end
 	f.caja = K.Caja(f, { fondo = "fondo", borde = "linea", corte = K.CORTE.ventana })
 	f.Marca = K.Marca(f, K.CORTE.ventana, "acento", 44)
 	f.vivo, f.vivos, f.portas, f.fotos, f.cabs = {}, {}, {}, {}, {}
@@ -1245,6 +1403,8 @@ local function crear(tipo)
 	f.Coinciden:Hide()
 	f.Ordenar = K.Boton(fr, L["Ordenar"], function() V.Ordenar(f) end, { tipo = "secundario" })
 	K.ConInfo(f.Ordenar, L["Ordenar"], L["Junta los montones y acomoda tus objetos. No funciona en combate."])
+	-- 1.4.0 (19): al pasar el ratón, cómo quedarán (Previa.lua).
+	if M.Previa then M.Previa.Enganchar(f, f.Ordenar) end
 	if tipo == "banco" then
 		f.Depositar = K.Boton(fr, L["Depositar"], function(self) menuDepositar(f, self) end, { tipo = "primario", icono = "chevron-down" })
 		K.ConInfo(f.Depositar, L["Depositar rápido"], L["Elige qué guardar: lo que ya tienes en el banco, los materiales, una categoría o todo lo que no sea equipo. Se mueve de una vez, fuera de combate."])
@@ -1324,6 +1484,9 @@ local function crear(tipo)
 		franja(self)
 		sonido(true)
 		if A.Anim and A.Anim.To then A.Anim.To(self, "alpha", 0, 1, A.Anim.FAST, "out") end
+		-- 1.4.0 (bug 1): los números de las casillas otra vez, un instante después
+		-- de abrir (Forever deja algunos con la medida de antes).
+		if N.Una then N.Una("bolsas.letras", 0.1, B.OtraVezTodo) end
 	end)
 	f:SetScript("OnHide", function(self)
 		self:SetScript("OnUpdate", nil)

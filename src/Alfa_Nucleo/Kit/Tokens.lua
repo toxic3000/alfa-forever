@@ -137,6 +137,89 @@ end
 function K.Daltonico() return A and A.Get and A.Get("nucleo.daltonico") and true or false end
 function K.LetraGrande() return A and A.Get and A.Get("nucleo.letraGrande") and true or false end
 
+---------------------------------------------------------------------------
+-- 1.4.0 (66): «Alto contraste» (nucleo.altoContraste, apagado de fábrica).
+-- Un retoque de la paleta del tema (Theme.Retoque, motor/Alfa/Theme): el
+-- texto blanco puro, los textos secundarios más claros, los fondos opacos y
+-- un poco más oscuros (también en Cristal), las líneas y bordes visibles y
+-- el acento con 7:1 sobre cualquier fondo. Vale en los 3 estilos y se suma a
+-- «Colores para daltonismo» y «Letra más grande».
+---------------------------------------------------------------------------
+if A and A.RegisterDefaults then A.RegisterDefaults("nucleo", { altoContraste = false }) end
+function K.AltoContraste() return A and A.Get and A.Get("nucleo.altoContraste") and true or false end
+
+-- c llevado hacia el blanco (o el negro, sobre fondos claros) hasta que se
+-- lea con `minimo` sobre cada fondo. -> { r, g, b, 1 }
+function K.Legible(c, fondos, minimo)
+	local Th = T
+	local x = { c[1], c[2], c[3], 1 }
+	if not (Th and Th.Contrast) then return x end
+	local function basta(y)
+		for _, f in ipairs(fondos) do
+			if type(f) == "table" and Th.Contrast(y, f) < minimo then return false end
+		end
+		return true
+	end
+	if basta(x) then return x end
+	local claro = true
+	local f1 = fondos[1]
+	if type(f1) == "table" and Th.Luminance and Th.Luminance(f1[1], f1[2], f1[3]) > 0.4 then claro = false end
+	local d = claro and 1 or 0
+	-- Primero más brillo con el mismo tono (un rojo sigue rojo, no rosa);
+	-- luego, si hace falta, hacia el blanco.
+	if claro then
+		local m = math.max(c[1], c[2], c[3], 0.01)
+		for i = 1, 10 do
+			local k = 1 + (1 / m - 1) * i / 10
+			local y = { math.min(1, c[1] * k), math.min(1, c[2] * k), math.min(1, c[3] * k), 1 }
+			if basta(y) then return y end
+		end
+		x = { c[1] / m, c[2] / m, c[3] / m, 1 }
+		c = x
+	end
+	for i = 1, 20 do
+		local t = i * 0.05
+		local y = { c[1] + (d - c[1]) * t, c[2] + (d - c[2]) * t, c[3] + (d - c[3]) * t, 1 }
+		if basta(y) then return y end
+	end
+	return { d, d, d, 1 }
+end
+
+local FONDOS_CONTRASTE = { "bg", "panel", "panelAlt", "sidebar", "footer" }
+if T and T.Retoque then
+	T.Retoque(function(out)
+		if not K.AltoContraste() then return end
+		local claro = T.Luminance and out.bg and T.Luminance(out.bg[1], out.bg[2], out.bg[3]) > 0.4
+		for _, n in ipairs(FONDOS_CONTRASTE) do
+			local g = out[n]
+			if type(g) == "table" then
+				local k = claro and 1 or 0.7
+				out[n] = claro and { g[1], g[2], g[3], 1 } or { g[1] * k, g[2] * k, g[3] * k, 1 }
+			end
+		end
+		local fondos = {}
+		for _, n in ipairs(FONDOS_CONTRASTE) do fondos[#fondos + 1] = out[n] end
+		out.text = claro and { 0, 0, 0, 1 } or { 1, 1, 1, 1 }
+		if out.textDim then out.textDim = K.Legible(out.textDim, fondos, 9) end
+		if out.textMuted then out.textMuted = K.Legible(out.textMuted, fondos, 7) end
+		if out.accent then
+			out.accent = K.Legible(out.accent, fondos, 7)
+			local r, g, b = out.accent[1], out.accent[2], out.accent[3]
+			out.accentLine, out.padSelect, out.chipAccent = { r, g, b, 0.6 }, { r, g, b, 0.22 }, { r, g, b, 0.28 }
+			local tinta = { 0.04, 0.04, 0.04, 1 }
+			out.onAccent = (T.Contrast(tinta, out.accent) >= T.Contrast(out.text, out.accent)) and tinta or { out.text[1], out.text[2], out.text[3], 1 }
+		end
+		local t = out.text
+		out.line = { t[1], t[2], t[3], 0.35 }
+		out.lineStrong = { t[1], t[2], t[3], 0.6 }
+		out.border, out.divider = { t[1], t[2], t[3], 0.35 }, { t[1], t[2], t[3], 0.35 }
+		out.windowBorder = { t[1], t[2], t[3], 0.85 }
+		for _, n in ipairs({ "success", "warning", "danger", "gold", "quest", "npc", "item", "place", "rare" }) do
+			if type(out[n]) == "table" then out[n] = K.Legible(out[n], fondos, 7) end
+		end
+	end)
+end
+
 -- Los tipos de perjuicio del juego ("Magic", "Curse", "Disease", "Poison", "" o
 -- nil) y sus nombres en español, a su token del Kit.
 local PERJUICIO = {
@@ -427,6 +510,8 @@ K.TIPO = {
 	globoEnorme = { "medium", 18 },
 	-- 1.2.7: el nombre grande del anuncio animado (Anuncio.lua)
 	anuncio = { "semibold", 30 },
+	-- 1.4.0 (77): el nombre en la franja de cine del anuncio (baja a `anuncio` si no cabe)
+	cine = { "semibold", 36 },
 }
 
 local function letraDelJuego()
@@ -505,8 +590,64 @@ function K.Texto(padre, rol, color, capa)
 	fs:SetJustifyH("LEFT")
 	fs:SetWordWrap(false)
 	K.Pintar(fs, pintarTexto)
+	K.TEXTOS[fs] = true
 	return fs
 end
+
+---------------------------------------------------------------------------
+-- 1.4.0: Forever no vuelve a acomodar un texto hasta que su texto cambia
+-- (tras GX_RESTARTED, DISPLAY_SIZE_CHANGED, UI_SCALE_CHANGED o un cambio de
+-- tamaño de UIParent, como al volver de Dos pantallas): se quedaba con la
+-- medida de antes (grande, encimado o cortado). Tras uno de esos cambios,
+-- cada texto del Kit a la vista se pinta y se escribe otra vez (lo mismo que
+-- hace Bolsas con B.Refrescar), la ventana de Alfa también, y ALFA_PANTALLA
+-- avisa a quien se acomoda solo (Hoy).
+---------------------------------------------------------------------------
+K.TEXTOS = setmetatable({}, { __mode = "k" })
+
+local function otraVez(fs)
+	if fs.HasFocus and fs:HasFocus() then return end
+	local t = fs.GetText and fs:GetText()
+	if issecretvalue and issecretvalue(t) then return end
+	if type(t) == "string" and t ~= "" then
+		fs:SetText(t .. " ")
+		fs:SetText(t)
+	end
+end
+
+-- -> cuántos textos se escribieron otra vez
+function K.ReescribirTextos()
+	local n = 0
+	for fs in pairs(K.TEXTOS) do
+		if fs.IsVisible and fs:IsVisible() then
+			local ok = pcall(otraVez, fs)
+			if ok then n = n + 1 end
+		end
+	end
+	return n
+end
+
+function K.PantallaCambio()
+	if InCombatLockdown and InCombatLockdown() and N.FueraDeCombate then
+		return N.FueraDeCombate("kit.pantalla", K.PantallaCambio)
+	end
+	pcall(K.Repintar)
+	local n = K.ReescribirTextos()
+	local O = A and A.UI and A.UI.Options
+	if O and O.frame and O.frame:IsShown() and T and T.RetextLater then pcall(T.RetextLater, O.frame) end
+	if A and A.Fire then pcall(A.Fire, "ALFA_PANTALLA") end
+	return n
+end
+
+local function pantallaLuego()
+	if N.Una then N.Una("kit.pantalla", 0.2, K.PantallaCambio) else K.PantallaCambio() end
+end
+if A and A.RegisterEvent then
+	for _, ev in ipairs({ "DISPLAY_SIZE_CHANGED", "UI_SCALE_CHANGED", "GX_RESTARTED" }) do
+		A.RegisterEvent(ev, pantallaLuego)
+	end
+end
+if UIParent and UIParent.HookScript then UIParent:HookScript("OnSizeChanged", pantallaLuego) end
 
 function K.ColorTexto(fs, color)
 	fs.alfaColor = color
@@ -597,7 +738,11 @@ end
 -- Medir. El cliente puede devolver nada antes del primer dibujo: siempre
 -- un número.
 ---------------------------------------------------------------------------
-local function num(v, d) return type(v) == "number" and v or (d or 0) end
+-- 1.4.0: un número secreto del juego (en combate o mazmorras) no se usa: 'd'.
+local function num(v, d)
+	if issecretvalue and issecretvalue(v) then return d or 0 end
+	return type(v) == "number" and v or (d or 0)
+end
 K.num = num
 
 -- (1.3.8 revisión) El cursor en unidades de UIParent, medido desde su esquina

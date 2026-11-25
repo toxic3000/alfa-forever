@@ -428,3 +428,40 @@ A.OnLogin(function()
 	M.Cada("manada.citaRecordar", 30, Ci.Recordar)
 	M.Cada("manada.citaRepetir", REPITE, repetir)
 end)
+
+---------------------------------------------------------------------------
+-- 1.4.0 (53): la próxima cita en Hoy, con «Me apunto»
+---------------------------------------------------------------------------
+-- La próxima cita que no pasó (ni empezó hace más de 10 min) y a la que no
+-- dijiste «No puedo», ya en palabras para la tarjeta de Hoy (Alfa_Inicio).
+-- -> { llave, mia, voy, van, titulo, texto, valor, ayuda, apuntar } | nil
+function Ci.Proxima()
+	if not activo() then return nil end
+	local t = ahora()
+	for _, c in ipairs(Ci.Lista()) do
+		if c.cuando > t - 600 and c.mi ~= false and not c.cancelada then
+			local si = Ci.Quienes(c)
+			local x = { llave = c.llave, mia = c.mia and true or false, voy = c.mi == true, van = #si,
+				titulo = L["Cita de la manada"], texto = format(L["%s, %s."], c.que or "?", Ci.CuandoTexto(c.cuando)) }
+			if x.mia then
+				x.valor = #si > 0 and N.Plural(#si, L["Va %d"], L["Van %d"]) or L["Tu cita"]
+				x.ayuda = #si > 0 and format(L["La propusiste tú. Van: %s."], table.concat(si, ", "))
+					or L["La propusiste tú. Te aviso quién va y 15 minutos antes te la recuerdo."]
+			elseif x.voy then
+				x.valor = L["Vas"]
+				x.ayuda = format(L["Le dijiste a %s que vas. 15 minutos antes te la recuerdo."], c.de or "?")
+			else
+				x.valor = L["Me apunto"]
+				x.apuntar = true
+				x.ayuda = format(L["La propone %s. Con un clic le dices que vas."], c.de or "?")
+			end
+			return x
+		end
+	end
+	return nil
+end
+
+AlfaManada = type(rawget(_G, "AlfaManada")) == "table" and rawget(_G, "AlfaManada") or {}
+function AlfaManada.ProximaCita() return Ci.Proxima() end
+-- «Me apunto»: le dices a quien la propuso que vas (por susurro oculto, Ci.Responder).
+function AlfaManada.MeApunto(llave) return Ci.Responder(llave, true) end

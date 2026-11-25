@@ -213,6 +213,9 @@ function Gr.Oir(tipo, resto, emisor)
 	local okYo, yo = pcall(function() return A.Compat and A.Compat.SenderIsMe and A.Compat.SenderIsMe(emisor) end)
 	if (okYo and yo) or corto(emisor) == miNombre() then return false end
 	if not delGrupo(emisor) or enCombate() or enInstancia() then return false end
+	-- 1.4.0 (56): de un lobo que silenciaste, su Lya tampoco platica con la tuya.
+	local Mn = rawget(_G, "AlfaManada")
+	if type(Mn) == "table" and type(Mn.Callado) == "function" and Mn.Callado(emisor) then return false end
 	local t = oidoDe[emisor]
 	if t and ahora() - t < ESCUCHA then return false end
 	local quien = corto(emisor)

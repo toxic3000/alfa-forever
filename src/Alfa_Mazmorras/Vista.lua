@@ -1346,7 +1346,9 @@ N.Modulo({
 		-- 1.3.7: lo que te falta tomar antes de un jefe (Consumibles.lua) y el botín de tu grupo (BotinGrupo.lua)
 		consumibles = true, historial = true,
 		-- 1.3.9: el botón del mapa por dentro en el mapa del juego (MapaDentro.lua)
-		mapaDentro = true },
+		mapaDentro = true,
+		-- 1.4.0 (43): «¿Qué cae aquí para mí?» al entrar (ParaMi.lua)
+		paraMi = true },
 	construir = function(view) V.Construir(view) end,
 })
 
@@ -1384,13 +1386,26 @@ A.RegisterCommand("mazmorras", function(rest)
 	local p = plano(rest)
 	if p == "ajustes" then return abrirAjustes() end
 	if p == "progreso" then return V.Ir("progreso") end
+	-- 1.4.0 (diario, 91): reiniciar las mazmorras (solo o como líder).
+	if p == "reiniciar" then
+		if M.Reiniciar then M.Reiniciar.Reiniciar() end
+		return
+	end
+	-- 1.4.0 (43): lo que te sirve de la mazmorra donde estás (o de la que nombras).
+	if p == "parami" or p:sub(1, 7) == "parami " then
+		local Pm = M.ParaMi
+		local resto = rest:match("^%S+%s+(.+)$")
+		local key = (resto and D.Listo() and buscarMazmorra(resto)) or (D.MazmorraActual and D.MazmorraActual()) or estado.clave
+		if Pm and key then Pm.Avisar(key, true) else N.Imprimir(L["Entra a una mazmorra (o escribe su nombre) para ver qué te sirve."]) end
+		return
+	end
 	if rest ~= "" then
 		local key = D.Listo() and buscarMazmorra(rest)
 		if type(key) == "string" then return V.AbrirMazmorra(key) end
 		N.Imprimir(format(L["No encontré una mazmorra llamada «%s»."], rest))
 	end
 	V.Ir("inicio")
-end, L["La mazmorra para tu nivel; con un nombre, esa mazmorra (también: progreso, ajustes)"])
+end, L["La mazmorra para tu nivel; con un nombre, esa mazmorra (también: progreso, parami, ajustes)"])
 
 -- 1.3.7: lo que cambia con el botín (lo que recoges, el historial del grupo)
 -- solo repinta donde se ve; el resto, siempre.

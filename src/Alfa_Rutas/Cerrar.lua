@@ -115,6 +115,8 @@ local function revisarUna(qid, desde, aqui, p, enLog)
 			local dentro = pm.dentro or I.EtiquetaMazmorra(it.id)
 			it.grupo, it.dentro = (pm.grupo or dentro or it.elite) and not it.listo, dentro and not it.listo
 			it.mazmorra = pm.mazmorra
+			-- 1.4.0: sin lugar porque su parte del Codex no está leída: «Sin datos», no «En mazmorra».
+			if pm.sinCargar and not dentro and not it.listo then it.sinDatos, it.sinCargar = true, true end
 			local destino = puntoDe(pm, it.listo)
 			it.destino = destino
 			it.zona = destino and destino.map

@@ -614,6 +614,21 @@ end
 function Theme.Daltonico() return get("nucleo.daltonico") and true or false end
 
 -- 1.3.9 (40): los tokens de la ruta, ya con la flecha y los demás resueltos.
+-- Alfa 1.4.0: los retoques de la paleta que pide el Núcleo (Kit/Bando.lua:
+-- la paleta de tu bando; Kit/Tokens.lua: el alto contraste). Cada uno recibe
+-- la paleta ya resuelta y la cambia en su lugar; uno que falla no detiene a
+-- los demás. Theme.Retoque(fn) agrega uno.
+Theme.RETOQUES = Theme.RETOQUES or {}
+function Theme.Retoque(fn)
+	if type(fn) == "function" then Theme.RETOQUES[#Theme.RETOQUES + 1] = fn end
+end
+local function retoques140(out)
+	for i = 1, #Theme.RETOQUES do
+		local ok, err = pcall(Theme.RETOQUES[i], out)
+		if not ok and geterrorhandler then geterrorhandler()(err) end
+	end
+end
+
 local function rutas139(out)
 	for name, from in pairs(RUTA_DE) do
 		local c = out[from] or out.accent
@@ -692,6 +707,7 @@ local function resolveSkin(skin)
 	colores130(out)
 	out.arrowNear = isColor(near) and { near[1], near[2], near[3], 1 } or copy(out.arrive)
 	out.arrowNearText = copy(out.arrowNear)
+	retoques140(out)
 	rutas139(out)
 	classTokens(out)
 	return out
@@ -798,6 +814,7 @@ local function resolve()
 	out.chipAccent = { r, g, b, 0.16 }
 	out.inputBg = { out.shade[1], out.shade[2], out.shade[3], 0.35 }
 	out.skin = "alfa"
+	retoques140(out)
 	rutas139(out)
 	classTokens(out)
 	return out
@@ -985,6 +1002,7 @@ local FACES = {
 -- The size ladder, read at arm's length over a busy game world.
 local ROLES = {
 	hero = { "semibold", 26 },     -- shell page titles
+	pagina = { "semibold", 22 },   -- Alfa 1.4.0 (82): el título de la cabecera de página (barra lateral)
 	display = { "semibold", 18 },  -- the guide's step title, empty-state titles
 	title = { "semibold", 15 },    -- window and guide titles
 	heading = { "semibold", 13 },  -- section headers
@@ -2264,6 +2282,8 @@ local LOOKS = {
 	["ui"] = true, ["nav"] = true, [""] = true,
 	-- 1.3.0: accesibilidad (Alfa_Nucleo)
 	["nucleo.daltonico"] = true, ["nucleo.letraGrande"] = true, ["nucleo"] = true,
+	-- 1.4.0: la paleta de tu bando y el alto contraste (Alfa_Nucleo/Kit)
+	["nucleo.bando"] = true, ["nucleo.altoContraste"] = true,
 }
 
 -- Settings that hold a colour ({ r, g, b }, or false for none of your own).
@@ -2346,6 +2366,9 @@ if ns.OnLogin then ns.OnLogin(function() Theme.Refresh() end) end
 function Theme.Clase()
 	local nombre, archivo
 	if UnitClass then nombre, archivo = UnitClass("player") end
+	-- Alfa 1.4.0: en mazmorras puede llegar secreto (no se une ni se usa de clave).
+	if issecretvalue and issecretvalue(nombre) then nombre = nil end
+	if issecretvalue and issecretvalue(archivo) then archivo = nil end
 	local r, g, b = Theme.ClassColor(archivo)
 	if not r then r, g, b = Theme.Accent() end
 	local tr, tg, tb = Theme.Color("classText")

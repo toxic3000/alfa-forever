@@ -130,6 +130,12 @@ function M.PantallasDeAjustes()
 						texto = "Botones de acción, experiencia, menú y bolsas con tu estilo. Nunca se tocan en combate.",
 						existe = function() return hay("comodidades") and existe("comodidades.barras") end },
 				} },
+				-- 1.4.0 (67): la temática de tu bando, con su cambio al instante.
+				{ titulo = "Tu bando", filas = {
+					{ id = "bando", clave = "nucleo.bando", titulo = "Vestir a Alfa de tu bando",
+						texto = "Los colores, el emblema y el saludo de la Horda o la Alianza en todas las ventanas de Alfa.",
+						existe = function() local K = N.Kit return K and K.BandoMio and K.BandoMio() ~= nil and existe("nucleo.bando") end },
+				} },
 				{ titulo = "Tu compañera", filas = {
 					{ id = "lya", clave = "lya.mostrar", titulo = "Lya te acompaña",
 						texto = "Una loba negra que te da consejos y ánimo en el camino, sin estorbar. En memoria de una gran perrita.",
@@ -412,6 +418,7 @@ M.EXTRAS = {
 	{ "rotacion", "ic-nivel" }, { "curar", "ic-curacion" }, { "avisos", "ic-alerta" }, { "resaltar", "ic-misiones" },
 	{ "recoleccion", "ic-recoleccion" }, { "terreno", "ic-mapa" }, { "paisaje", "ic-mundo" },
 	{ "estiloChat", "ic-conexiones" }, { "estiloMinimapa", "ic-cerca" }, { "estiloBarras", "ic-rejilla" },
+	{ "bando", "ic-apariencia" }, -- 1.4.0 (67)
 }
 
 -- Lo que el resumen y la página dicen de los idiomas: cada uno en el suyo.

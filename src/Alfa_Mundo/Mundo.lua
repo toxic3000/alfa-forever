@@ -410,8 +410,12 @@ N.Modulo({
 		distanciaPines = true, -- 1.3.7c: «A 120 yd, al noreste» en el cuadro de cada pin (DistanciaPines.lua)
 		porDescubrir = true, -- los rincones de tu zona que no exploras (Descubrir.lua, 1.2.9)
 		vuelosFaltan = true, -- los vuelos de tu zona que no conoces (Descubrir.lua, 1.2.9)
+		vueloCerca = true, -- 1.4.0 (diario): aviso al pasar cerca de un vuelo que no conoces (VueloCerca.lua)
 		peligros = true,    -- los élites y raros peligrosos de tu zona (Peligros.lua, 1.3.0)
 		misionesColor = true, -- 1.3.8: misiones de tu zona por color de dificultad (MisionesColor.lua)
+		entrenadores = true, -- 1.4.0 (35): el de tu clase y los de tus oficios en tu zona (Servicios.lua)
+		provisiones = true,  -- 1.4.0 (36): comida, agua y reparación en tu zona (Servicios.lua)
+		horariosManada = true, -- 1.4.0 (37): los horarios de barcos con La Jauría (Horarios.lua)
 		explorador = true,  -- el modo explorador en la página (Descubrir.lua, 1.3.0)
 		botonMapa = true,   -- botones de Alfa junto a la lupa del mapa del juego
 		menuMapa = true,    -- las capas en el menú de la lupa
@@ -424,6 +428,8 @@ N.Modulo({
 	controles = {
 		{ kind = "toggle", key = "mundo.teclaM", label = L["Abrir el mapa de Alfa con la tecla del mapa"],
 			search = "map key, M key, world map, open map, tecla M, mapa" },
+		{ kind = "toggle", key = "mundo.vueloCerca", label = L["Avisar al pasar cerca de un vuelo que no conoces"],
+			search = "flight master nearby, unknown flight path, vuelo cerca, maestro de vuelo" },
 		{ kind = "toggle", key = "mundo.botonMapa", label = L["Botones de Alfa en el mapa del juego"], search = "world map buttons" },
 		{ kind = "toggle", key = "mundo.marcarEnMapaJuego", label = L["Marcadores con Mayús+clic derecho en el mapa del juego"],
 			search = "waypoints, markers, pins, marcadores, notas" },
@@ -437,6 +443,9 @@ N.Modulo({
 		{ kind = "toggle", key = "mundo.porDescubrir", label = L["Por descubrir"], search = "explore, unexplored, discover, exploration xp, explorar" },
 		{ kind = "toggle", key = "mundo.vuelosFaltan", label = L["Vuelos que te faltan"], search = "flight paths, missing, taxi, flight master, vuelos" },
 		{ kind = "toggle", key = "mundo.peligros", label = L["Peligros"], search = "danger, elites, dangerous rares, elite mobs, peligro" },
+		{ kind = "toggle", key = "mundo.entrenadores", label = L["Tus entrenadores"], search = "trainers, class trainer, profession trainer, entrenador, clase, oficios, profesiones" },
+		{ kind = "toggle", key = "mundo.provisiones", label = L["Comida, agua y reparación"], search = "food, water, drink, repair, vendor, comida, agua, bebida, reparar, vendedor" },
+		{ kind = "toggle", key = "mundo.horariosManada", label = L["Horarios de barcos con La Jauría"], search = "boat, zeppelin, tram, schedule, timetable, share, guild, barco, zepelín, horario, compartir" },
 		{ kind = "toggle", key = "mundo.misionesColor", label = L["Misiones por color"], search = "quests, quest givers, difficulty, color, green, yellow, orange, red, misiones, dificultad" },
 		{ kind = "toggle", key = "mundo.explorador", label = L["Modo explorador"], search = "explorer, exploration progress, subzones, discovered, explorar" },
 		{ kind = "dropdown", key = "mundo.estiloMapa", label = L["Estilo del mapa"],

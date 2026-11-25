@@ -300,6 +300,7 @@ step("Botones de conjuntos: el macro de las armas, preparado fuera de combate", 
   local cf = CreateFrame("Frame", "CharacterFrame", UIParent)
   cf:SetSize(384, 512)
   cf:Show()
+  Alfa.Set("bolsas.barraConjuntos", true) -- (1.4.0: apagado de fábrica)
   local orig = { GetInventoryItemID, GetInventoryItemLink }
   local puestoEn = { [16] = 9201, [1] = 9103 }
   GetInventoryItemID = function(u, r) return puestoEn[r] end

@@ -78,6 +78,8 @@ local AJUSTES = {
 	-- 1.3.7: lo de Alfa en los cuadros de las barras de experiencia y de
 	-- reputación, y tu tiempo jugado en Hoy (sin chat).
 	barraXP = true, barraRep = true, jugado = true,
+	-- 1.4.0 (82): la portada de Hoy (saludo, tu personaje y tus cifras).
+	portada = true,
 }
 
 local function apagado(clave) return function() return not N.Get("inicio", clave) end end
@@ -181,6 +183,9 @@ local C = {
 	barraRep = { kind = "toggle", key = "inicio.barraRep", label = L["Lo de Alfa en la barra de reputación"],
 		help = L["Al pasar el ratón: cuánto te falta para el rango que sigue y unas cuántas misiones son eso."],
 		search = "reputación, facción, rango, reputation, faction" },
+	portada = { kind = "toggle", key = "inicio.portada", label = L["Portada de Hoy"],
+		help = L["Arriba de Hoy: tu saludo, tu personaje y dónde estás, con tu sesión, tu guía y la manada a la vista."],
+		search = "portada, saludo, inicio, sesión, guía, manada, banner, greeting, home" },
 	jugado = { kind = "toggle", key = "inicio.jugado", label = L["Tu tiempo jugado en Hoy"],
 		help = L["Alfa lo pregunta al entrar sin escribir en tu chat."],
 		search = "tiempo jugado, played, horas" },
@@ -208,7 +213,7 @@ local CONTROLES = {
 	C.recBuff, C.buffCada, C.buffQueda, C.recDescanso, C.descansoBajo,
 	C.resumen, C.segAviso, C.sonido, C.diarioMax, C.probar, C.lugar, C.borrar,
 	C.horaPlan, C.horaMin, C.horaAuto, C.camino, C.listoAuto, C.listoDur, C.listoBolsas, C.listoComida,
-	C.comidaAviso, C.comidaMin, C.barraXP, C.barraRep, C.jugado,
+	C.comidaAviso, C.comidaMin, C.barraXP, C.barraRep, C.jugado, C.portada,
 }
 -- 1.3.3: con Bolsas, sus ajustes de bolsas ya salen en la búsqueda: no se repiten aquí.
 if CON_BOLSAS then
@@ -327,6 +332,233 @@ local function nuevaPortada(padre)
 	return b
 end
 
+-- 1.4.0 (82): la portada de Hoy, arriba de todo. A la izquierda el saludo
+-- (el de tu bando con la temática, Kit/Bando.lua; si no, el de la hora del
+-- día), tu personaje y dónde estás; a la derecha tres cifras que se tocan:
+-- tu sesión, tu guía y la manada. Con la temática, la madera o la piedra de
+-- tu bando detrás; sin ella, un brillo del acento que se apaga a la derecha
+-- (nunca un verde liso). Se quita en los ajustes de Hoy (inicio.portada).
+-- (Era el saludo del bando de la 1.4.0, n.º 67: P.saludo sigue siendo él.)
+local PORTADA_CIFRA_W, PORTADA_CIFRA_H = 106, 64
+
+local function saludoHora(nombre)
+	local h = tonumber(date("%H")) or 12
+	if not nombre then return L["¡Qué bueno verte!"] end
+	if h >= 6 and h < 12 then return format(L["¡Buenos días, %s!"], nombre) end
+	if h >= 12 and h < 20 then return format(L["¡Buenas tardes, %s!"], nombre) end
+	return format(L["¡Buenas noches, %s!"], nombre)
+end
+
+-- «Guerrero  ·  Nivel 23  ·  Bosque de Elwynn» (lo que se pueda leer).
+local function lineaPersonaje()
+	local partes = {}
+	local clase = UnitClass and UnitClass("player")
+	if N.Secreto and N.Secreto(clase) then clase = nil end
+	if type(clase) == "string" and clase ~= "" then partes[#partes + 1] = clase end
+	local nivel = UnitLevel and UnitLevel("player")
+	if N.Leer then nivel = N.Leer(nivel) elseif N.Secreto and N.Secreto(nivel) then nivel = nil end
+	if type(nivel) == "number" and nivel > 0 then partes[#partes + 1] = format(L["Nivel %d"], nivel) end
+	-- 1.4.0: cada una por N.Leer antes de probarla (un «or» con un secreto truena).
+	local zona = GetRealZoneText and N.Leer(GetRealZoneText()) or nil
+	if type(zona) ~= "string" or zona == "" then zona = GetZoneText and N.Leer(GetZoneText()) or nil end
+	if type(zona) == "string" and zona ~= "" then partes[#partes + 1] = zona end
+	return table.concat(partes, DOT)
+end
+
+-- Las tres cifras: { clave, icono, titulo, valor, ayuda, pie, alClic }.
+local function cifrasPortada()
+	local lista = {}
+	local okE, e = pcall(S.Estado)
+	if okE and type(e) == "table" then
+		local tar = P.TarjetaSesion(e)
+		lista[#lista + 1] = { clave = "sesion", icono = "ic-reloj", titulo = L["Tu sesión"], valor = N.Duracion(e.dur or 0, true),
+			ayuda = tar.texto .. "\n" .. (tar.ayuda or "") }
+	end
+	local E = A.Engine
+	local okG, g = pcall(function() return E and E.GetGuide and E.GetGuide() end)
+	local okP, hechos, todos = pcall(function() return E.GetProgress() end)
+	hechos, todos = okP and num(hechos) or nil, okP and num(todos) or nil
+	if okG and type(g) == "table" and todos and todos > 0 then
+		local nombre = texto(g.title) or L["Tu guía"]
+		lista[#lista + 1] = { clave = "guia", icono = "ic-huella", titulo = L["Tu guía"],
+			valor = format("%d %%", floor(math.min(1, (hechos or 0) / todos) * 100 + 0.5)),
+			ayuda = format(L["%s: %d de %d pasos hechos"], nombre, hechos or 0, todos), pie = L["Clic: seguir tu guía"],
+			alClic = function() if P.SeguirRuta then P.SeguirRuta() end end }
+	else
+		lista[#lista + 1] = { clave = "guia", icono = "ic-huella", titulo = L["Tu guía"], valor = RAYA,
+			ayuda = L["Elige una guía y Alfa te lleva paso a paso."], pie = L["Clic: elegir tu guía"],
+			alClic = function() A.Fire("SHOW_PICKER") end }
+	end
+	local lobos = P.Manada and P.Manada()
+	if lobos then
+		local n = tonumber(lobos.valor)
+		lista[#lista + 1] = { clave = "manada", icono = "ic-manada", titulo = L["Tu manada"],
+			valor = n and tostring(n) or RAYA, ayuda = lobos.texto .. ((lobos.ayuda and lobos.ayuda ~= "") and ("\n" .. lobos.ayuda) or ""),
+			alClic = lobos.alClic }
+	end
+	return lista
+end
+
+local function nuevaCifra(padre)
+	local c = CreateFrame("Button", nil, padre)
+	c:SetSize(PORTADA_CIFRA_W, PORTADA_CIFRA_H)
+	c.Fondo = K.Plano(c, "fondo", "BACKGROUND", 2)
+	c.Fondo:SetAllPoints(c)
+	c.Fondo:SetAlpha(0.55)
+	c.Luz = K.Plano(c, "elevado", "HIGHLIGHT", 0)
+	c.Luz:SetAllPoints(c)
+	c.Linea = K.Plano(c, "acento", "ARTWORK", 1)
+	c.Linea:SetHeight(2)
+	c.Linea:SetPoint("BOTTOMLEFT", c, "BOTTOMLEFT", 0, 0)
+	c.Linea:SetPoint("BOTTOMRIGHT", c, "BOTTOMRIGHT", 0, 0)
+	c.Icono = K.Icono(c, "ic-reloj", 12, "textoTenue")
+	c.Icono:SetPoint("TOPLEFT", c, "TOPLEFT", 10, -10)
+	c.Titulo = K.Texto(c, "pequeno", "textoTenue")
+	c.Titulo:SetPoint("LEFT", c.Icono, "RIGHT", 5, 0)
+	c.Valor = K.Texto(c, "cifra", "texto")
+	c.Valor:SetPoint("BOTTOMLEFT", c, "BOTTOMLEFT", 10, 9)
+	c:SetScript("OnClick", function(self) if self.alfaClic then K.Llamar(self.alfaClic) end end)
+	return c
+end
+
+local function nuevoSaludo(padre)
+	local b = CreateFrame("Frame", nil, padre)
+	b.Base = K.Plano(b, "elevado", "BACKGROUND", 0)
+	b.Base:SetAllPoints(b)
+	b.Brillo = b:CreateTexture(nil, "BACKGROUND", nil, 2)
+	b.Brillo:SetAllPoints(b)
+	-- (la textura blanca del tema: en el juego y en el banco el degradado la tiñe)
+	b.Brillo:SetTexture(A.Theme and A.Theme.Media and A.Theme.Media("white") or "Interface\\Buttons\\WHITE8X8")
+	K.Pintar(b.Brillo, function(t)
+		local r, g, bl = K.Color("acento")
+		if t.SetGradient and CreateColor then
+			t:SetGradient("HORIZONTAL", CreateColor(r, g, bl, 0.15), CreateColor(r, g, bl, 0))
+		else
+			t:SetVertexColor(r, g, bl, 0.08)
+		end
+	end)
+	b.Fondo = b:CreateTexture(nil, "BACKGROUND", nil, 1)
+	b.Fondo:SetAllPoints(b)
+	b.Barra = K.Plano(b, "acento", "ARTWORK", 2)
+	b.Barra:SetWidth(3)
+	b.Barra:SetPoint("TOPLEFT", b, "TOPLEFT", 0, 0)
+	b.Barra:SetPoint("BOTTOMLEFT", b, "BOTTOMLEFT", 0, 0)
+	b.Emblema = b:CreateTexture(nil, "ARTWORK")
+	b.Emblema:SetSize(60, 60)
+	b.Titulo = K.Texto(b, "portada", "texto")
+	b.Linea = K.Texto(b, "cuerpo", "texto")
+	b.Lema = K.Texto(b, "nota", "textoSuave")
+	b.cifras = {}
+	b:Hide()
+	function b:Llenar()
+		if N.Get("inicio", "portada") == false then
+			self.tema, self.alfaListo = nil, false
+			K.Mostrar(self, false)
+			return false
+		end
+		local t = K.Bando and K.Bando() or nil
+		local nombre = UnitName and UnitName("player")
+		if N.Secreto and N.Secreto(nombre) then nombre = nil end
+		if type(nombre) ~= "string" or nombre == "" then nombre = nil end
+		local saludo, lema
+		if t and K.SaludoBando then saludo, lema = K.SaludoBando(nombre, t) end
+		self.tema = saludo and t or nil
+		if self.tema then
+			self.Fondo:SetTexture(t.cabecera)
+			self.Fondo:SetVertexColor(1, 1, 1, K.Cristal() and 0.5 or 0.7)
+			self.Fondo:SetShown(not K.Clasico())
+			self.Brillo:Hide()
+			self.Emblema:SetTexture(t.emblema)
+			-- El saludo en el metal del bando (bronce / oro) sobre su madera o su
+			-- piedra; con alto contraste, el acento (ya llega a 7:1).
+			K.ColorTexto(self.Titulo, (K.AltoContraste and K.AltoContraste() or K.Clasico()) and "acento"
+				or (K.Legible and K.Legible(t.metal, { { 0.24, 0.16, 0.10 }, { 0.18, 0.20, 0.26 } }, 4.5)) or "acento")
+		else
+			saludo, lema = saludoHora(nombre), L["La manada está lista. ¿A qué salimos hoy?"]
+			self.Fondo:Hide()
+			self.Brillo:Show()
+			self.Emblema:SetTexture(K.Lobo("normal"))
+			K.ColorTexto(self.Titulo, "texto")
+		end
+		K.Escribir(self.Titulo, saludo)
+		K.Escribir(self.Linea, lineaPersonaje())
+		K.Escribir(self.Lema, lema or "")
+		self:LlenarCifras()
+		self.alfaListo = true
+		K.Mostrar(self, true)
+		return true
+	end
+	function b:LlenarCifras()
+		local lista = cifrasPortada()
+		for i, d in ipairs(lista) do
+			local c = self.cifras[i] or nuevaCifra(self)
+			self.cifras[i] = c
+			K.SetIcono(c.Icono, d.icono, "textoTenue")
+			K.Escribir(c.Titulo, d.titulo)
+			K.Escribir(c.Valor, d.valor or RAYA)
+			K.ColorTexto(c.Valor, d.clave == "sesion" and "acento" or "texto")
+			c.alfaClic = d.alClic
+			c.alfaClave = d.clave
+			K.ConInfo(c, d.titulo, d.ayuda and (d.pie and (d.ayuda .. "\n" .. d.pie) or d.ayuda) or nil)
+			c:Show()
+		end
+		for i = #lista + 1, #self.cifras do self.cifras[i]:Hide() end
+		self.alfaN = #lista
+	end
+	-- Cada segundo con Hoy abierto: solo los valores (el alto no cambia).
+	-- -> true si cambió cuántas cifras hay (hay que acomodar).
+	function b:Repintar()
+		if not (self:IsShown() and self.alfaListo) then return false end
+		local antes = self.alfaN
+		self:LlenarCifras()
+		return antes ~= self.alfaN
+	end
+	function b:Acomodar(ancho)
+		local pad = ESP.base + 4
+		local n = self.alfaN or 0
+		local wC = n * PORTADA_CIFRA_W + math.max(0, n - 1) * ESP.s
+		-- Las cifras a la derecha si cabe el saludo junto a ellas; si no, debajo.
+		local junto = n > 0 and ancho - wC - pad * 2 - 60 - ESP.base - ESP.l >= 300
+		local x = pad + 60 + ESP.base
+		local derecha = junto and (wC + ESP.l) or 0
+		local wT = ancho - x - pad - derecha
+		self.Titulo:ClearAllPoints()
+		self.Titulo:SetPoint("TOPLEFT", self, "TOPLEFT", x, -pad)
+		local y = pad + K.Parrafo(self.Titulo, wT, 2)
+		self.Linea:ClearAllPoints()
+		self.Linea:SetPoint("TOPLEFT", self, "TOPLEFT", x, -(y + 6))
+		y = y + 6 + K.Parrafo(self.Linea, wT, 2)
+		self.Lema:ClearAllPoints()
+		self.Lema:SetPoint("TOPLEFT", self, "TOPLEFT", x, -(y + 4))
+		y = y + 4 + K.Parrafo(self.Lema, wT, 2) + pad
+		local alto = math.max(y, junto and (PORTADA_CIFRA_H + pad * 2) or 0, 60 + pad * 2)
+		self.Emblema:ClearAllPoints()
+		self.Emblema:SetPoint("TOPLEFT", self, "TOPLEFT", pad, -math.floor((alto - 60) / 2))
+		if junto then
+			local cx = ancho - pad - wC
+			for i = 1, n do
+				local c = self.cifras[i]
+				c:SetWidth(PORTADA_CIFRA_W)
+				c:ClearAllPoints()
+				c:SetPoint("TOPLEFT", self, "TOPLEFT", cx + (i - 1) * (PORTADA_CIFRA_W + ESP.s), -math.floor((alto - PORTADA_CIFRA_H) / 2))
+			end
+		else
+			local cw = n > 0 and math.floor((ancho - pad * 2 - (n - 1) * ESP.s) / n) or 0
+			for i = 1, n do
+				local c = self.cifras[i]
+				c:SetWidth(cw)
+				c:ClearAllPoints()
+				c:SetPoint("TOPLEFT", self, "TOPLEFT", pad + (i - 1) * (cw + ESP.s), -(alto - pad + ESP.s))
+			end
+			if n > 0 then alto = alto + ESP.s + PORTADA_CIFRA_H end
+		end
+		self:SetSize(ancho, alto)
+		return alto
+	end
+	return b
+end
+P.NuevoSaludo = nuevoSaludo
+
 -- Con una guía o un plan en marcha: los mismos caminos en una fila de
 -- botones chicos, debajo de lo que sigues.
 local function nuevaOtra(padre)
@@ -392,6 +624,7 @@ local function seguirRuta()
 	if A.Get("nav.arrow") == false then A.Set("nav.arrow", true) end
 	empezar()
 end
+P.SeguirRuta = seguirRuta
 
 -- Ver pasos: la lista de pasos de tu guía.
 local function verPasos()
@@ -1256,6 +1489,42 @@ local function manada()
 		alClic = abrir and function() K.Llamar(abrir) end or nil,
 		ayuda = L["Los lobos que usan Alfa y se dejan ver en el mapa, y tu grupo, que ves ahora."] }
 end
+P.Manada = manada
+
+-- 1.4.0 (53, área La Jauría): la próxima cita de la manada, con «Me apunto».
+-- Los textos ya vienen hechos (AlfaManada.ProximaCita).
+local function citaManada()
+	local Ma = rawget(_G, "AlfaManada")
+	if type(Ma) ~= "table" or type(Ma.ProximaCita) ~= "function" then return nil end
+	local ok, c = pcall(Ma.ProximaCita)
+	if not ok or type(c) ~= "table" or type(c.texto) ~= "string" then return nil end
+	local abrir = type(Ma.Abrir) == "function" and Ma.Abrir or nil
+	return { variante = "compacta", icono = "ic-reloj", titulo = c.titulo, texto = c.texto,
+		valor = c.valor, colorValor = c.apuntar and "acento" or "texto", ayuda = c.ayuda,
+		alClic = function()
+			if c.apuntar and type(Ma.MeApunto) == "function" then K.Llamar(Ma.MeApunto, c.llave) P.Relayout()
+			elseif abrir then K.Llamar(abrir) end
+		end }
+end
+
+-- 1.4.0 (57): la tarjeta «Tu sesión». e = S.Estado().
+function P.TarjetaSesion(e)
+	local partes = {}
+	local mis = e.misiones or 0
+	if not e.maximo then
+		local xph = (e.ritmo and e.ritmo > 0) and e.ritmo or e.prom
+		partes[#partes + 1] = (xph and xph > 0) and format(L["%s XP/h"], miles(xph)) or L["XP/h: aún no"]
+	end
+	partes[#partes + 1] = format(L["+%s de oro"], N.Dinero(math.max(0, e.ganado or 0), true))
+	if mis > 0 then partes[#partes + 1] = N.Plural and N.Plural(mis, L["%d misión"], L["%d misiones"]) or format(L["%d misiones"], mis) end
+	local ayuda = { format(L["Empezó %s."], S.Cuando(e.inicio)) }
+	ayuda[#ayuda + 1] = mis == 1 and L["1 misión entregada"] or format(L["%d misiones entregadas"], mis)
+	if not e.maximo then ayuda[#ayuda + 1] = format(L["XP ganada: %s."], miles(e.xp or 0)) end
+	ayuda[#ayuda + 1] = format(L["Oro ganado: %s. Gastado: %s."], N.Dinero(e.ganado or 0), N.Dinero(e.gastado or 0))
+	return { variante = "compacta", icono = "ic-reloj", titulo = L["Tu sesión"],
+		texto = table.concat(partes, DOT), valor = N.Duracion(e.dur or 0), colorValor = "acento",
+		ayuda = table.concat(ayuda, "\n") }
+end
 
 local function numeros()
 	local e = S.Estado()
@@ -1311,12 +1580,14 @@ local function numeros()
 	lista[#lista + 1] = { variante = "compacta", icono = "ic-oro", titulo = L["Oro de hoy"],
 		texto = format(L["Ganado %s"], N.Dinero(ganado, true)), valor = (neto > 0 and "+" or "") .. N.Dinero(neto, true),
 		ayuda = format(L["Ganado: %s. Gastado: %s. Suma tus sesiones de hoy con este personaje."], N.Dinero(ganado), N.Dinero(gastado)) }
-	local mis = e.misiones or 0
-	lista[#lista + 1] = { variante = "compacta", icono = "ic-reloj", titulo = L["Esta sesión"],
-		texto = mis == 1 and L["1 misión entregada"] or format(L["%d misiones entregadas"], mis),
-		valor = N.Duracion(e.dur), ayuda = format(L["Empezó %s."], S.Cuando(e.inicio)) }
+	-- 1.4.0 (57): «Tu sesión» en una sola tarjeta, siempre al día (se repinta
+	-- cada segundo con Hoy abierto): el tiempo, tu XP por hora y el oro que
+	-- ganaste en esta sesión; el detalle al pasar el ratón.
+	lista[#lista + 1] = P.TarjetaSesion(e)
 	local lobos = manada()
 	if lobos then lista[#lista + 1] = lobos end
+	local cita = citaManada()
+	if cita then lista[#lista + 1] = cita end
 	return lista
 end
 
@@ -1572,6 +1843,7 @@ local function gruposAvisos(padre)
 	tie:Fila({ titulo = C.barraXP.label, texto = C.barraXP.help, control = interruptor("barraXP") })
 	tie:Fila({ titulo = C.barraRep.label, texto = C.barraRep.help, control = interruptor("barraRep") })
 	tie:Fila({ titulo = C.jugado.label, texto = C.jugado.help, control = interruptor("jugado") })
+	tie:Fila({ titulo = C.portada.label, texto = C.portada.help, control = interruptor("portada") })
 	g[#g + 1] = tie
 	local maz = K.GrupoAjustes(padre, { titulo = L["Listo para la mazmorra"] })
 	maz:Fila({ titulo = C.listoAuto.label, texto = C.listoAuto.help, control = interruptor("listoAuto") })
@@ -1818,11 +2090,12 @@ local function datosCamino()
 	end
 	lineas[#lineas + 1] = lineaHoy(r)
 	if r.dias then lineas[#lineas + 1] = r.dias == 1 and L["Como juegas, llegas en 1 día."] or format(L["Como juegas, llegas en unos %d días."], r.dias) end
-	local faltan = decimal(r.faltan)
+	-- 1.4.0: niveles enteros (sin «36.6 niveles»); la barra conserva el avance fino.
+	local faltan = tostring(math.max(1, math.ceil((tonumber(r.faltan) or 0) - 0.05)))
 	return { icono = "ic-nivel", tono = "acento", sobre = L["Camino al 60"],
 		titulo = faltan == "1" and L["Te falta 1 nivel para el 60"] or format(L["Te faltan %s niveles para el %d"], faltan, r.tope),
 		texto = table.concat(lineas, "\n"), lineas = 4,
-		progreso = { actual = floor(r.frac * 10), total = r.tope * 10, texto = format(L["Nivel %s de %d"], decimal(r.frac), r.tope) },
+		progreso = { actual = floor(r.frac * 10), total = r.tope * 10, texto = format(L["Nivel %s de %d"], tostring(floor(tonumber(r.frac) or 0)), r.tope) },
 		accion = { texto = L["Ver el camino"], icono = "ic-ruta", alClic = function() abrirCamino() end },
 		ayuda = L["Las guías y mazmorras de tu nivel al 60, y cuánto avanzas cada día."] }
 end
@@ -1979,6 +2252,12 @@ local function ordenar(guia, plan, hora)
 		if not ya[e] and e ~= E.extra then orden[#orden + 1] = e ya[e] = true end
 	end
 	if E.extra then orden[#orden + 1] = E.extra end
+	-- 1.4.0 (67): el saludo de tu bando, siempre arriba de todo.
+	-- (Sin la temática no está en la lista: lo de arriba sigue siendo tu plan o tu guía.)
+	if E.saludo then
+		for i = #orden, 1, -1 do if orden[i] == E.saludo then table.remove(orden, i) end end
+		if P.saludo and P.saludo.alfaListo then table.insert(orden, 1, E.saludo) else K.Mostrar(P.saludo, false) end
+	end
 	P.tablero.bloques = orden
 	K.Mostrar(P.portada, not (guia or plan or hora))
 	K.Mostrar(P.otra, (guia or plan or hora) and true or false)
@@ -1991,6 +2270,7 @@ local function llenarTodo()
 	local hora = P.hora:Llenar()
 	P.enGuia = enGuia(paso)
 	P.enHora = hora
+	if P.saludo then P.saludo:Llenar() end
 	ordenar(P.enGuia, plan, hora)
 	P.portada:Llenar()
 	P.otra:Llenar()
@@ -2072,7 +2352,7 @@ function P.SiguienteAccion(lista)
 		if (tonumber(xl.xp) or 0) > 0 then texto = texto .. DOT .. format(L["unos %s XP"], miles(xl.xp)) end
 		if xl.subes then texto = texto .. DOT .. L["¡con eso subes de nivel!"] end
 		return { icono = "ic-exito", tono = "acento", sobre = L["Lo primero ahora"], titulo = L["Entrega tus misiones listas"], texto = texto,
-			accion = { texto = L["Cerrar mis misiones"], icono = "ic-seguir", alClic = function() K.Llamar(liberar) end },
+			accion = { texto = L["Cerrar mis misiones"], icono = "ic-seguir", tecla = "ALFA_CERRAR_MISIONES", alClic = function() K.Llamar(liberar) end },
 			descartar = { clave = "hoy.accion.listas", alDescartar = function() if P.Relayout then P.Relayout() end end } }
 	end
 	return nil
@@ -2085,17 +2365,20 @@ local function construir(view)
 	-- 1.3.9: la temática de tu bando (Kit/Bando.lua): el emblema tenue arriba
 	-- a la derecha de Hoy y el sello de la ventana de Alfa.
 	if K.SelloBando then
-		K.SelloBando(view, { tira = false, marca = 120, marcaX = -18, marcaY = -14, alfaMarca = 0.1, nivel = 0 })
+		-- (1.4.0, 67: el emblema tenue cedió su lugar al saludo y al estandarte
+		-- de la ventana de Alfa; el sello queda para quien lo busca.)
+		K.SelloBando(view, { tira = false, nivel = 0 })
 		if K.SelloVentanaAlfa then K.SelloVentanaAlfa() end
 	end
 	-- La portada, tu plan y la fila compacta de los caminos van en la pila
 	-- del tablero, junto a la tarjeta grande: ordenar() los acomoda.
 	P.portada = nuevaPortada(t)
+	P.saludo = nuevoSaludo(t)
 	P.plan = nuevoPlan(t)
 	P.otra = nuevaOtra(t)
 	P.hora = nuevaHora(t)
 	local E = { portada = { b = P.portada, sangria = 0 }, plan = { b = P.plan, sangria = 0 }, otra = { b = P.otra, sangria = 0 },
-		hora = { b = P.hora, sangria = 0 } }
+		hora = { b = P.hora, sangria = 0 }, saludo = { b = P.saludo, sangria = 0 } }
 	for _, e in ipairs(t.bloques) do
 		if e.b == t.Accion then E.accion = e
 		elseif e.b == t.Opciones then E.opciones = e
@@ -2180,6 +2463,7 @@ local function pintar(completo)
 		t.Accion:Set(paso)
 		if t.Accion:Acomodar(K.num(t.Accion:GetWidth(), N.AnchoPagina())) ~= antes then return relayoutPronto() end
 	end
+	if P.saludo and P.saludo:Repintar() then return relayoutPronto() end
 	if P.numeros:Repintar() or P.clase:Repintar() or P.diario:Repintar() or P.hora:Repintar() or P.camino:Repintar() then return relayoutPronto() end
 end
 function P.Pintar() return pintar(true) end
@@ -2238,6 +2522,11 @@ A.RegisterEvent("QUEST_ACCEPTED", relayoutPronto)
 A.RegisterEvent("PLAYER_UPDATE_RESTING", relayoutPronto)
 A.RegisterEvent("ZONE_CHANGED_NEW_AREA", relayoutPronto)
 A.On("ALFA_DESCARTE", relayoutPronto)
+-- 1.4.0 (67): prender o cambiar la temática de tu bando pone o quita el saludo.
+A.On("ALFA_BANDO", relayoutPronto)
+-- 1.4.0: la pantalla cambió de tamaño o de escala (Kit/Tokens.lua, K.PantallaCambio):
+-- Hoy se acomoda otra vez con sus textos medidos de nuevo.
+A.On("ALFA_PANTALLA", relayoutPronto)
 A.RegisterEvent("QUEST_REMOVED", relayoutPronto)
 
 ---------------------------------------------------------------------------

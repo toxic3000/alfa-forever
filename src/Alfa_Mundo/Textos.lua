@@ -2,6 +2,11 @@
 local _, M = ...
 
 M.EN = {
+	-- 1.4.0 (diario): mejoras del día a día
+	["Llévame"] = "Take me there",
+	["Un vuelo que no conoces"] = "A flight path you don't know",
+	["A %d yd está %s. Háblale al maestro de vuelo para aprender el vuelo: luego te ahorra el camino."] = "%d yd away is %s. Talk to the flight master to learn the flight path: it saves you the walk later.",
+	["Avisar al pasar cerca de un vuelo que no conoces"] = "Tell me when I pass near a flight path I don't know",
 	-- 1.3.8 (mundo): Toma el grifo, peligros del camino, misiones por color, la pausa, Lya y tu hora, festejos, busco grupo, la ficha y compartir
 	["Misiones por color"] = "Quests by color",
 	["Quien te da misiones en tu zona que ya puedes tomar: verde fácil, amarillo buena, naranja difícil y rojo peligrosa para tu nivel. Se arman al abrir el mapa de Alfa."] = "Quest givers in your zone you can take now: green easy, yellow good, orange hard and red dangerous for your level. Built when you open Alfa's map.",
@@ -193,6 +198,7 @@ M.EN = {
 	["Alejar"] = "Zoom out",
 	["Rueda: zoom  \194\183  Arrastra: mover  \194\183  Clic derecho: marcador  \194\183  Ctrl+clic: llévame"] = "Wheel: zoom  \194\183  Drag: move  \194\183  Right-click: marker  \194\183  Ctrl-click: take me there",
 	["Niveles %s"] = "Levels %s",
+	["Nivel %s"] = "Level %s",
 	["Tú"] = "You",
 	["Cursor"] = "Cursor",
 	["Destino"] = "Target",
@@ -364,4 +370,23 @@ M.EN = {
 	["Ningún lugar con ese nombre"] = "No place with that name",
 	["Prueba con otra palabra o con parte del nombre."] = "Try another word or part of the name.",
 	["Una nota (opcional)"] = "A note (optional)",
+	-- 1.4.0 (agente mundo)
+	["Tu destino"] = "Your destination",
+	["Entrenador de tu clase"] = "Your class trainer",
+	["Entrenador de %s"] = "%s trainer",
+	["Vende comida y agua"] = "Sells food and water",
+	["Repara tu equipo"] = "Repairs your gear",
+	["¿Dónde entreno y dónde compro agua?"] = "Where do I train and buy water?",
+	["En el mapa de Alfa, «Tus entrenadores» marca al de tu clase y a los de tus oficios en tu zona, y «Comida, agua y reparación» a quien te vende provisiones y te repara. Clic en uno y la flecha te lleva."] = "On Alfa's map, \"Your trainers\" marks your class trainer and your professions' trainers in your zone, and \"Food, water and repairs\" who sells you supplies and repairs your gear. Click one and the arrow takes you there.",
+	["Escribe a quién o a dónde: /alfa ir <nombre>."] = "Type who or where: /alfa ir <name>.",
+	["En combate no busco: en cuanto termine la pelea te llevo."] = "Not during combat: as soon as the fight ends I'll take you.",
+	["No encontré «%s». Prueba con parte del nombre, o elige en «Llévame a…»."] = "I couldn't find \"%s\". Try part of the name, or pick it in \"Take me to...\".",
+	["¿Cómo llego con alguien sin saber dónde está?"] = "How do I reach someone without knowing where they are?",
+	["Escribe /alfa ir y su nombre (un PNJ, una zona, una ciudad o uno de tus marcadores): la flecha te lleva al más cercano."] = "Type /alfa ir and its name (an NPC, a zone, a city or one of your markers): the arrow takes you to the nearest one.",
+	["%d peligros aquí"] = "%d dangers here",
+	["Tus entrenadores"] = "Your trainers",
+	["El entrenador de tu clase y los de tus oficios en tu zona. Clic: la flecha te lleva."] = "Your class trainer and your professions' trainers in your zone. Click: the arrow takes you.",
+	["Comida, agua y reparación"] = "Food, water and repairs",
+	["Quien te vende comida y agua y quien te repara el equipo en tu zona. Clic: la flecha te lleva."] = "Who sells you food and water and who repairs your gear in your zone. Click: the arrow takes you.",
+	["Horarios de barcos con La Jauría"] = "Boat timetables with La Jauría",
 }

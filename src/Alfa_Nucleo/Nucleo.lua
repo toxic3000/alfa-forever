@@ -57,6 +57,15 @@ function N.Leer(v, otro)
 	if esSecreto(v) then return otro end
 	return v
 end
+-- 1.4.0: un número del juego que se puede usar (tonumber de lo legible), u
+-- 'otro'. Ojo: `N.Leer and N.Leer(x) or x` devuelve el secreto (el «or»).
+-- Antes de copiar un `local function num(v)` en un módulo, usa este.
+function N.LeerNumero(v, otro)
+	if esSecreto(v) then return otro end
+	v = tonumber(v)
+	if v == nil or v ~= v then return otro end
+	return v
+end
 -- true solo con un «sí» que se puede leer; un secreto cuenta como «no sé».
 function N.Si(v)
 	if esSecreto(v) then return false end

@@ -124,7 +124,12 @@ step("La sección Planes está entre Hoy y Aventura, con su número y las 12", f
   -- En orden: Hoy, Planes, Aventura (de izquierda a derecha).
   local bh, ba = botonSeccion("hoy"), botonSeccion("aventura")
   if b and bh and ba then
-    check(bh:GetLeft() < b:GetLeft() and b:GetLeft() < ba:GetLeft(), "la barra no los pone en orden")
+    -- (1.4.0, 82: con la barra lateral, de arriba abajo.)
+    if O.frame and O.frame.psLateral then
+      check(bh:GetTop() > b:GetTop() and b:GetTop() > ba:GetTop(), "la barra no los pone en orden")
+    else
+      check(bh:GetLeft() < b:GetLeft() and b:GetLeft() < ba:GetLeft(), "la barra no los pone en orden")
+    end
   end
   check(b and b.psPlanes and b.psPlanes:IsShown() and b.psPlanes.Texto:GetText() == "12/12", "la sección no dice «12/12»")
   check(tarjetasVisibles() == 12, "la página no enseña las 12 guías: " .. tarjetasVisibles())

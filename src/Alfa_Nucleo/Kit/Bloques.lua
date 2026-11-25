@@ -385,6 +385,11 @@ function K.Tarjeta(padre, opts)
 			self.Accion:SetTexto(d.accion.texto)
 			self.Accion:SetIcono(d.accion.icono)
 			self.Accion.alClic = d.accion.alClic
+			-- 1.4.0 (58): la tecla de su acción, en el globo del botón.
+			self.Accion.alfaTecla = d.accion.tecla
+			if d.accion.tecla and not rawget(self.Accion, "alfaConInfo") then
+				K.ConInfo(self.Accion, function(x) return x.Texto:GetText(), nil end)
+			end
 			K.SeguroDe(self.Accion, d.accion)
 			self.Accion:Show()
 		elseif self.Accion then
@@ -936,6 +941,16 @@ function K.Vacio(padre, opts)
 		elseif self.Accion then
 			self.Accion:Hide()
 		end
+		-- 1.4.0 (114): un segundo camino (o.accion2), al lado del primero o debajo si no cabe.
+		if o.accion and o.accion2 then
+			self.Accion2 = self.Accion2 or K.Boton(self, "", nil, { tipo = "fantasma", conIcono = true })
+			self.Accion2:SetIcono(o.accion2.icono)
+			K.BotonQueQuepa(self.Accion2, o.accion2.texto, o.accion2.corto, 100000)
+			self.Accion2.alClic = o.accion2.alClic
+			self.Accion2:Show()
+		elseif self.Accion2 then
+			self.Accion2:Hide()
+		end
 	end
 	function v:Acomodar(ancho)
 		local w = min(ancho, 440)
@@ -958,7 +973,23 @@ function K.Vacio(padre, opts)
 			local a = self.alfaDatos and self.alfaDatos.accion
 			local bh = K.BotonQueQuepa(self.Accion, a and a.texto, a and a.corto, w)
 			self.Accion:ClearAllPoints()
-			self.Accion:SetPoint("TOP", self, "TOP", 0, -y)
+			local a2 = self.Accion2 and self.Accion2:IsShown() and self.alfaDatos and self.alfaDatos.accion2
+			if a2 then
+				local bh2 = K.BotonQueQuepa(self.Accion2, a2.texto, a2.corto, w)
+				local w1, w2 = K.num(self.Accion:GetWidth(), 0), K.num(self.Accion2:GetWidth(), 0)
+				self.Accion2:ClearAllPoints()
+				if w1 + w2 + ESP.s <= w and bh == bh2 then
+					self.Accion:SetPoint("TOPLEFT", self, "TOP", -floor((w1 + w2 + ESP.s) / 2), -y)
+					self.Accion2:SetPoint("LEFT", self.Accion, "RIGHT", ESP.s, 0)
+				else
+					self.Accion:SetPoint("TOP", self, "TOP", 0, -y)
+					y = y + bh + ESP.xs
+					bh = bh2
+					self.Accion2:SetPoint("TOP", self, "TOP", 0, -y)
+				end
+			else
+				self.Accion:SetPoint("TOP", self, "TOP", 0, -y)
+			end
 			y = y + bh
 		end
 		self:SetSize(ancho, y)

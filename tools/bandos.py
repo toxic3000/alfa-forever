@@ -3,7 +3,7 @@
 Uso:  python -I tools/bandos.py [hoja.png]   ->  src/Alfa_Nucleo/Media/*.tga
 
 Todo es dibujo propio (nada copiado del arte de Blizzard):
-  viaje-barco, -zepelin, -tranvia, -portal, -grifo
+  viaje-barco, -zepelin, -tranvia, -portal, -grifo, -murcielago (1.4.0: siluetas llenas)
       los transportes con el trazo de los iconos de Alfa (tools/iconos.py):
       blancos con transparencia, el juego los tiñe. 64 px.
   bando-horda       escudo redondo de hierro con canto de bronce, campo rojo y
@@ -34,60 +34,79 @@ NADA = (0, 0, 0, 0)
 # Los transportes (rejilla de 32 unidades, trazo de Alfa)
 # ---------------------------------------------------------------------------
 
+# 1.4.0 (69): siluetas llenas y claras, que se entienden a 28 px (Toxic: «el
+# ícono no se entiende»): el barco con su vela grande, el zepelín con su
+# globo lleno, el tranvía con ventanas, el portal con su remolino, y para
+# volar un grifo (Alianza) o un murciélago (Horda) con las alas abiertas.
+
 def v_barco(l):
-    # El casco, el mástil, la vela y dos olas.
-    l.linea((4, 19), (28, 19), (24, 25), (8, 25), cerrada=True)
-    l.linea((16, 4), (16, 19))
-    l.lleno((17.5, 5), (26, 16), (17.5, 16))
-    l.lleno((14.5, 8), (14.5, 16), (8, 16))
-    l.arco(8, 30, 3, 200, 340, w=2)
-    l.arco(16, 30, 3, 200, 340, w=2)
-    l.arco(24, 30, 3, 200, 340, w=2)
+    # El casco lleno, el mástil, una vela grande y una chica, y el agua.
+    l.lleno((3, 18), (29, 18), (25, 25), (7, 25))
+    l.linea((16, 3), (16, 18), w=2.2)
+    l.lleno((17.5, 3.5), (27, 15.5), (17.5, 15.5))
+    l.lleno((14.5, 7), (14.5, 15.5), (7, 15.5))
+    l.linea((3, 29), (8, 27.5), (13, 29), (19, 27.5), (24, 29), (29, 27.5), w=2)
 
 
 def v_zepelin(l):
-    # El globo, sus costillas, las aletas y la barquilla.
-    l.ovalo(4, 5, 26, 17)
-    l.linea((9, 11), (21, 11), w=1.6)
-    l.linea((26, 9), (30, 6), (30, 16), (26, 13), w=2)
-    l.linea((12, 17), (13, 21))
-    l.linea((18, 17), (17, 21))
-    l.caja(10, 21, 20, 26, corte=2, w=2)
+    # El globo lleno con una franja, las aletas y la barquilla colgando.
+    l.ovalo(2, 4, 26, 17, lleno=True)
+    l.borrar((6, 10), (22, 10), (22, 11.6), (6, 11.6))
+    l.lleno((24, 8), (30, 4), (30, 17), (24, 13))
+    l.linea((11, 17), (12, 21.5), w=1.8)
+    l.linea((17, 17), (16, 21.5), w=1.8)
+    l.caja(8.5, 21, 19.5, 27, corte=2, lleno=True)
 
 
 def v_tranvia(l):
-    # El vagón con sus ventanas, las ruedas y el riel.
-    l.caja(5, 5, 27, 22, corte=4)
-    l.caja(8.5, 9, 14.5, 14, corte=1.5, w=1.8)
-    l.caja(17.5, 9, 23.5, 14, corte=1.5, w=1.8)
-    l.punto(11, 25, 2.2)
-    l.punto(21, 25, 2.2)
-    l.linea((3, 29), (29, 29), w=2)
+    # El vagón lleno con dos ventanas, la luz, las ruedas y el riel.
+    l.caja(4, 4, 28, 23, corte=4, lleno=True)
+    l.borrar((7.5, 8), (14.5, 8), (14.5, 14), (7.5, 14))
+    l.borrar((17.5, 8), (24.5, 8), (24.5, 14), (17.5, 14))
+    l.borrar_punto(16, 19, 1.6)
+    l.punto(10, 26, 2.6)
+    l.punto(22, 26, 2.6)
+    l.linea((2, 30), (30, 30), w=2)
 
 
 def v_portal(l):
-    # Un arco de piedra y el remolino adentro.
-    l.linea((7, 29), (7, 13))
-    l.linea((25, 29), (25, 13))
-    l.arco(16, 13, 9, 180, 360)
-    l.arco(16, 17, 5.5, 200, 520 - 40, w=2)
-    l.arco(16, 17, 2.2, 0, 300, w=1.8)
-    l.linea((4, 29), (28, 29), w=2)
+    # Un arco de piedra grueso y el remolino lleno adentro.
+    l.linea((6, 30), (6, 13), w=3)
+    l.linea((26, 30), (26, 13), w=3)
+    l.arco(16, 13, 10, 180, 360, w=3)
+    l.ovalo(10, 9, 22, 27, lleno=True)
+    l.borrar_punto(16, 18, 3.6)
+    l.punto(16, 18, 1.8)
 
 
 def v_grifo(l):
-    # Una cabeza con pico de águila y un ala de tres plumas.
-    l.aro(10, 11, 4.5)
-    l.lleno((13, 9.5), (19, 12), (13.5, 13.5))
-    l.punto(9.5, 10, 1.2)
-    l.linea((8, 16), (10, 27), (16, 22))
-    l.linea((14, 18), (29, 6))
-    l.linea((15, 21), (30, 13))
-    l.linea((16, 24), (28, 20))
+    # Un grifo de lado volando: cuerpo, un ala grande arriba, la otra detrás,
+    # la cabeza con pico y la cola.
+    l.ovalo(9, 15, 25, 22, lleno=True)
+    l.lleno((13, 16), (6, 2), (12, 4), (20, 15))
+    l.lleno((17, 16), (21, 3), (27, 7), (22, 16))
+    l.punto(25.5, 14.5, 3.6)
+    l.lleno((27.5, 12.5), (31, 14.5), (27.5, 16.5))
+    l.lleno((10, 18), (2, 15), (3, 21), (10, 20.5))
+    l.linea((13, 21), (12, 27), w=2)
+    l.linea((21, 21), (22, 27), w=2)
+    l.borrar_punto(26.2, 13.8, 0.9)
+
+
+def v_murcielago(l):
+    # Un murciélago de frente con las alas abiertas en puntas.
+    l.ovalo(13, 10, 19, 24, lleno=True)
+    l.punto(16, 9, 3.2)
+    l.lleno((13.5, 6.5), (14.5, 3), (15.5, 7))
+    l.lleno((16.5, 7), (17.5, 3), (18.5, 6.5))
+    l.lleno((13, 12), (2, 8), (3, 16), (6, 14.5), (8, 19), (10, 17), (13, 21))
+    l.lleno((19, 12), (30, 8), (29, 16), (26, 14.5), (24, 19), (22, 17), (19, 21))
+    l.borrar_punto(14.8, 8.6, 0.7)
+    l.borrar_punto(17.2, 8.6, 0.7)
 
 
 TRANSPORTES = {"viaje-barco": v_barco, "viaje-zepelin": v_zepelin, "viaje-tranvia": v_tranvia,
-               "viaje-portal": v_portal, "viaje-grifo": v_grifo}
+               "viaje-portal": v_portal, "viaje-grifo": v_grifo, "viaje-murcielago": v_murcielago}
 
 
 def transporte(fn, tam=64):
@@ -285,14 +304,128 @@ def esquina_alianza():
     return im.resize((N, N), Image.LANCZOS)
 
 
+# ---------------------------------------------------------------------------
+# 1.4.0 (67): las cabeceras de las ventanas y los estandartes (pedido de Toxic:
+# «que se note que estás en un bando u otro»). Oscuras para que el título se
+# lea encima; la tapa izquierda lleva el corte de 45 grados de Alfa.
+# ---------------------------------------------------------------------------
+CAB_ALTO = 56     # K.ALTO.cabecera
+CAB_CORTE = 8     # K.CORTE.ventana
+
+
+def _cortar_esquina(im, lado_px):
+    """Deja transparente el triángulo de arriba a la izquierda (el corte de Alfa)."""
+    m = Image.new("L", im.size, 255)
+    ImageDraw.Draw(m).polygon([(0, 0), (lado_px, 0), (0, lado_px)], fill=0)
+    a = im.split()[3]
+    im.putalpha(Image.composite(a, Image.new("L", im.size, 0), m))
+    return im
+
+
+def _madera(W, H, S, semilla):
+    im = Image.new("RGBA", (W * S, H * S), (58, 36, 22, 255))
+    d = ImageDraw.Draw(im)
+    rnd = random.Random(semilla)
+    for _ in range(int(W * 0.5)):  # la veta, larga y tenue
+        y = rnd.uniform(4, H - 4) * S
+        x = rnd.uniform(-20, W) * S
+        c = rnd.choice([(48, 29, 17, 255), (70, 44, 26, 255), (52, 32, 19, 255)])
+        d.line([(x, y), (x + rnd.uniform(30, 120) * S, y + rnd.uniform(-1.2, 1.2) * S)], fill=c, width=S)
+    for y in (H // 3, 2 * H // 3):  # las tablas
+        d.line([(0, y * S), (W * S, y * S)], fill=(36, 21, 12, 255), width=S)
+    return im, d
+
+
+def cabecera_horda(W, izq=False):
+    H, S = 64, 4
+    im, d = _madera(W, H, S, 1400 + (1 if izq else 0))
+    hierro, hierro_cl, bronce = (58, 54, 52, 255), (112, 104, 98, 255), (190, 130, 70, 255)
+    # La banda de hierro de abajo, con remaches de bronce.
+    d.rectangle([0, (H - 7) * S, W * S, H * S], fill=hierro)
+    d.rectangle([0, (H - 7) * S, W * S, (H - 6) * S], fill=hierro_cl)
+    for x in range(10, W, 28):
+        d.ellipse([(x - 2) * S, (H - 5.5) * S, (x + 2) * S, (H - 1.5) * S], fill=bronce)
+    # Bandas de hierro verticales con dos remaches (en la tapa, una).
+    for x in ((18,) if izq else (120, 392)):
+        d.rectangle([x * S, 0, (x + 12) * S, (H - 7) * S], fill=hierro)
+        d.rectangle([x * S, 0, (x + 1) * S, (H - 7) * S], fill=hierro_cl)
+        for y in (14, 38):
+            d.ellipse([(x + 3.5) * S, (y - 2.5) * S, (x + 8.5) * S, (y + 2.5) * S], fill=bronce)
+    out = im.resize((W, H), Image.LANCZOS)
+    return _cortar_esquina(out, round(CAB_CORTE / CAB_ALTO * H)) if izq else out
+
+
+def cabecera_alianza(W, izq=False):
+    H, S = 64, 4
+    im = Image.new("RGBA", (W * S, H * S), (40, 46, 60, 255))
+    d = ImageDraw.Draw(im)
+    rnd = random.Random(1410 + (1 if izq else 0))
+    for fila, (y0, y1) in enumerate(((0, 28), (28, 57))):  # sillares de piedra
+        off = 0 if fila == 0 else 30
+        for x in range(-off, W, 60):
+            t = rnd.randint(-6, 6)
+            d.rectangle([(x + 1) * S, (y0 + 1) * S, (x + 59) * S, (y1 - 1) * S], fill=(44 + t, 51 + t, 66 + t, 255))
+    plata, plata_os, oro = (206, 212, 226, 255), (120, 126, 142, 255), (232, 192, 86, 255)
+    # El filo de plata de abajo con clavos de oro.
+    d.rectangle([0, (H - 7) * S, W * S, H * S], fill=plata_os)
+    d.rectangle([0, (H - 7) * S, W * S, (H - 5.5) * S], fill=plata)
+    for x in range(14, W, 40):
+        d.ellipse([(x - 2) * S, (H - 5) * S, (x + 2) * S, (H - 1) * S], fill=oro)
+    # (la filigrana va en las escuadras de plata: aquí estorbaba al ícono)
+    out = im.resize((W, H), Image.LANCZOS)
+    return _cortar_esquina(out, round(CAB_CORTE / CAB_ALTO * H)) if izq else out
+
+
+def estandarte(emblema, tela_cl, tela_os, barra, adorno, borde_rasgado):
+    """Un estandarte que cuelga de su barra, con el emblema en medio (128x256)."""
+    W, H, S = 128, 256, 4
+    im = Image.new("RGBA", (W * S, H * S), NADA)
+    d = ImageDraw.Draw(im)
+    # La tela: punta abajo (rasgada en la Horda, cola de golondrina en la Alianza).
+    if borde_rasgado:
+        abajo = [(118, 214), (104, 236), (92, 220), (78, 244), (64, 226), (50, 246), (36, 222), (22, 238), (10, 216)]
+    else:
+        abajo = [(118, 240), (64, 206), (10, 240)]
+    forma = [(10, 16), (118, 16)] + abajo
+    masc = Image.new("L", im.size, 0)
+    ImageDraw.Draw(masc).polygon([(x * S, y * S) for x, y in forma], fill=255)
+    tela = Image.new("RGBA", im.size, NADA)
+    tp = ImageDraw.Draw(tela)
+    for y in range(0, H * S, S):  # degradado de arriba abajo
+        t = y / (H * S)
+        c = tuple(int(tela_cl[i] + (tela_os[i] - tela_cl[i]) * t) for i in range(3)) + (255,)
+        tp.line([(0, y), (W * S, y)], fill=c, width=S)
+    im.paste(tela, (0, 0), masc)
+    d = ImageDraw.Draw(im)
+    # Las orillas de la tela, con su adorno (bronce o oro).
+    d.line([(x * S, y * S) for x, y in [(10, 16), (10, abajo[-1][1])]], fill=adorno, width=3 * S)
+    d.line([(x * S, y * S) for x, y in [(118, 16), (118, abajo[0][1])]], fill=adorno, width=3 * S)
+    # La barra de arriba con sus remates.
+    d.rectangle([2 * S, 8 * S, 126 * S, 18 * S], fill=barra)
+    d.ellipse([0, 6 * S, 12 * S, 20 * S], fill=adorno)
+    d.ellipse([116 * S, 6 * S, 128 * S, 20 * S], fill=adorno)
+    out = im.resize((W, H), Image.LANCZOS)
+    e = emblema.resize((92, 92), Image.LANCZOS)
+    out.alpha_composite(e, (18, 64))
+    return out
+
+
 def todo():
     out = {n: transporte(fn) for n, fn in TRANSPORTES.items()}
+    out["cabecera-horda"] = cabecera_horda(512)
+    out["cabecera-horda-izq"] = cabecera_horda(64, izq=True)
+    out["cabecera-alianza"] = cabecera_alianza(512)
+    out["cabecera-alianza-izq"] = cabecera_alianza(64, izq=True)
     out["bando-horda"] = bando_horda()
     out["bando-alianza"] = bando_alianza()
     out["adorno-horda"] = adorno_horda()
     out["adorno-alianza"] = adorno_alianza()
     out["esquina-horda"] = esquina_horda()
     out["esquina-alianza"] = esquina_alianza()
+    out["estandarte-horda"] = estandarte(out["bando-horda"], (150, 26, 20), (70, 10, 8), (64, 42, 26, 255),
+                                         (190, 130, 70, 255), True)
+    out["estandarte-alianza"] = estandarte(out["bando-alianza"], (40, 82, 170), (14, 30, 76), (232, 192, 86, 255),
+                                           (232, 192, 86, 255), False)
     return out
 
 
@@ -302,7 +435,7 @@ def main():
     for n, im in imgs.items():
         im.save(SALIDA / f"{n}.tga")
     # Una hoja para revisar: los transportes teñidos sobre el fondo de Alfa.
-    hoja = Image.new("RGBA", (720, 330), (16, 20, 18, 255))
+    hoja = Image.new("RGBA", (760, 330), (16, 20, 18, 255))
     x = 10
     for n in TRANSPORTES:
         t = imgs[n]
@@ -316,6 +449,15 @@ def main():
     hoja.alpha_composite(imgs["adorno-alianza"], (290, 150))
     hoja.alpha_composite(imgs["esquina-horda"], (290, 200))
     hoja.alpha_composite(imgs["esquina-alianza"], (370, 200))
+    grande = Image.new("RGBA", (720, 620), (16, 20, 18, 255))
+    grande.alpha_composite(hoja, (0, 0))
+    hoja = grande
+    hoja.alpha_composite(imgs["cabecera-horda-izq"], (10, 340))
+    hoja.alpha_composite(imgs["cabecera-horda"].resize((400, 64)), (74, 340))
+    hoja.alpha_composite(imgs["cabecera-alianza-izq"], (10, 410))
+    hoja.alpha_composite(imgs["cabecera-alianza"].resize((400, 64)), (74, 410))
+    hoja.alpha_composite(imgs["estandarte-horda"].resize((64, 128)), (500, 340))
+    hoja.alpha_composite(imgs["estandarte-alianza"].resize((64, 128)), (580, 340))
     print("OK", SALIDA)
     return hoja
 

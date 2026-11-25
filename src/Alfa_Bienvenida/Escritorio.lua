@@ -49,10 +49,17 @@ M.Escritorio = Es
 local ID = "pantallas"
 Es.ID = ID
 Es.COLUMNAS, Es.FILAS = 24, 16
-Es.BARRA = 52
-Es.GAP = 8
+Es.BARRA = 56
+Es.GAP = 12 -- 1.4.0: más aire entre paneles (se ve el cielo de Alfa)
 Es.CABECERA = 34
 Es.PRUEBA_SEG = 15
+-- 1.4.0: el tamaño de los paneles (pantallas.tamano): todo crece junto,
+-- letras incluidas, para leerlo desde la silla.
+Es.TAMANOS = {
+	{ valor = "normal", texto = "Normal", escala = 1 },
+	{ valor = "grande", texto = "Grande", escala = 1.15 },
+	{ valor = "enorme", texto = "Muy grande", escala = 1.3 },
+}
 
 local function opt(k) return N.Get(ID, k) end
 local function setOpt(k, v) N.Set(ID, k, v) end
@@ -275,7 +282,12 @@ function Es.Aplicar(g)
 		N.FueraDeCombate("pantallas.aplicar", function() Es.Aplicar(g) end)
 		return false, "combate"
 	end
-	if not orig then orig = { mundo = anclas(WorldFrame), interfaz = anclas(UIParent) } end
+	if not orig then
+		orig = { mundo = anclas(WorldFrame), interfaz = anclas(UIParent), lleno = Es.FotoAntes() }
+		-- 1.4.0: lo de antes, guardado hasta confirmar que volvió (EscritorioReparar.lua).
+		if M.EscritorioReparar then M.EscritorioReparar.Guardar() end
+	end
+	if Es.CerrarVista then Es.CerrarVista() end
 	if Es.MueveMundo() then colocar(WorldFrame, g.principal, nil) else devolver(WorldFrame, orig.mundo) end
 	if Es.MueveInterfaz() then colocar(UIParent, g.principal, nil) else devolver(UIParent, orig.interfaz) end
 	actual = g
@@ -290,14 +302,64 @@ function Es.Volver()
 		N.FueraDeCombate("pantallas.aplicar", function() Es.Volver() end)
 		return false, "combate"
 	end
+	if Es.CerrarVista then Es.CerrarVista() end
 	if orig then
 		devolver(WorldFrame, orig.mundo)
 		devolver(UIParent, orig.interfaz)
 	end
+	local estaba = actual ~= nil
+	local lleno = orig and orig.lleno
 	orig, actual = nil, nil
+	-- 1.4.0: el mapa de Alfa vuelve a su lugar antes de esconder el escritorio.
+	if Es.SoltarMapa then pcall(Es.SoltarMapa) end
 	Es.MostrarEscritorio(false)
+	-- 1.4.0: volver siempre deja todo limpio: lo que llenaba la ventana antes
+	-- de Dos pantallas la vuelve a llenar, con la misma escala.
+	Es.Limpiar(lleno)
 	avisarAplicado()
+	if estaba then A.Fire("ALFA_ESCRITORIO", "volvio") end
 	return true
+end
+
+-- ¿El marco llena la ventana? (en unidades de la pantalla)
+local function llena(f)
+	local W, H = Es.Pantalla()
+	local k = escala(pantalla())
+	local s = escala(f) / k
+	local w, h = K.num(f:GetWidth(), 0) * s, K.num(f:GetHeight(), 0) * s
+	local l, b = K.num(f:GetLeft(), 0) * s, K.num(f:GetBottom(), 0) * s
+	return abs(w - W) <= 1 and abs(h - H) <= 1 and abs(l) <= 1 and abs(b) <= 1
+end
+Es.Llena = llena
+
+-- Lo de antes de aplicar: qué llenaba la ventana y la escala de la interfaz.
+function Es.FotoAntes()
+	return { mundo = llena(WorldFrame), interfaz = llena(UIParent), escala = tonumber(UIParent:GetScale()) or 1 }
+end
+
+-- ¿Quedó como estaba? -> ok, lo que no (mundo | interfaz | escala)
+function Es.Limpio(lleno)
+	if type(lleno) ~= "table" then lleno = { mundo = true, interfaz = true } end
+	if lleno.mundo and not llena(WorldFrame) then return false, "mundo" end
+	if lleno.interfaz and not llena(UIParent) then return false, "interfaz" end
+	if lleno.escala and abs((tonumber(UIParent:GetScale()) or 1) - lleno.escala) > 0.001 then return false, "escala" end
+	return true
+end
+
+-- Sin Dos pantallas puesto y fuera de combate: arregla lo que no quedó como
+-- estaba (nunca toca un mundo que ya venía achicado por otro addon).
+function Es.Limpiar(lleno)
+	if enCombate() or actual or type(lleno) ~= "table" or Es.OtroLoHace() then return false end
+	local arreglado = false
+	for _ = 1, 3 do
+		local ok, que = Es.Limpio(lleno)
+		if ok then break end
+		arreglado = true
+		if que == "mundo" then WorldFrame:ClearAllPoints() WorldFrame:SetAllPoints(nil)
+		elseif que == "interfaz" then UIParent:ClearAllPoints() UIParent:SetAllPoints(nil)
+		elseif que == "escala" then UIParent:SetScale(lleno.escala) end
+	end
+	return arreglado
 end
 
 -- Encender (guardado) y apagar el modo.
@@ -309,7 +371,14 @@ function Es.Apagar(silencio)
 	setOpt("activo", false)
 	local ok = Es.Volver()
 	-- 1.3.8: si Alfa estiró la ventana con un clic, la ventana vuelve a como estaba.
-	if ok and Es.DesestirarAuto then Es.DesestirarAuto() end
+	local estiro = ok and Es.DesestirarAuto and Es.DesestirarAuto()
+	-- 1.4.0: sin ventana que devolver, igual se revisa que la escala y todo
+	-- quedaran como antes (y se olvida lo guardado).
+	local Rp = M.EscritorioReparar
+	if ok and not estiro and Rp and Rp.Antes() then
+		datos().verificar = { foto = Rp.Antes(), intentos = 1 }
+		Rp.Verificar()
+	end
 	if not silencio then N.Imprimir(L["Alfa volvió a una sola pantalla. Para usar el escritorio otra vez: /alfa pantallas."]) end
 	return ok
 end
@@ -348,7 +417,7 @@ local function armarConfirmar()
 	local f = CreateFrame("Frame", "AlfaEscritorioConfirmar", K.Raiz())
 	f:SetFrameStrata("FULLSCREEN_DIALOG")
 	f:SetFrameLevel(50)
-	f:SetSize(440, 176)
+	f:SetSize(480, 184)
 	f:SetPoint("CENTER", UIParent, "CENTER", 0, 80)
 	f:EnableMouse(true)
 	f:SetClampedToScreen(true)
@@ -359,11 +428,15 @@ local function armarConfirmar()
 	f.Lobo:SetPoint("TOPLEFT", f, "TOPLEFT", ESP.l, -ESP.l)
 	f.Lobo:SetTexture(K.Lobo("atento"))
 	K.Pintar(f.Lobo, function(t) t:SetVertexColor(K.Color("acento")) end)
+	-- 1.4.0: los segundos que quedan, en grande (antes solo una barrita).
+	f.Cuenta = K.Texto(f, "portada", "acento")
+	f.Cuenta:SetPoint("TOPRIGHT", f, "TOPRIGHT", -ESP.l, -ESP.l + 2)
+	f.Cuenta:SetJustifyH("RIGHT")
 	f.Titulo = K.Texto(f, "titulo", "texto")
 	f.Titulo:SetPoint("TOPLEFT", f.Lobo, "TOPRIGHT", ESP.base, -2)
-	f.Titulo:SetPoint("RIGHT", f, "RIGHT", -ESP.l, 0)
+	f.Titulo:SetPoint("RIGHT", f, "RIGHT", -ESP.l - 48, 0)
 	f.Titulo:SetJustifyH("LEFT")
-	f.Texto = K.Texto(f, "nota", "textoSuave")
+	f.Texto = K.Texto(f, "texto", "textoSuave")
 	f.Texto:SetPoint("TOPLEFT", f.Titulo, "BOTTOMLEFT", 0, -ESP.s)
 	f.Texto:SetJustifyH("LEFT")
 	f.Barra = K.Progreso(f, { alto = 4, tono = "acento" })
@@ -400,10 +473,11 @@ local function pintarConfirmar()
 	if prueba.nota then donde = donde .. "\n" .. prueba.nota end
 	K.Escribir(confirmar.Texto, donde .. "\n" .. N.Plural(prueba.quedan, L["Si no eliges nada, vuelvo a como estaba en %d segundo."],
 		L["Si no eliges nada, vuelvo a como estaba en %d segundos."]))
-	local tw = 440 - ESP.l * 2 - 44 - ESP.base
+	local tw = 480 - ESP.l * 2 - 44 - ESP.base
 	local th = K.Parrafo(confirmar.Texto, tw)
-	confirmar:SetHeight(math.max(176, ESP.l + 26 + ESP.s + th + ESP.base + 4 + ESP.base + K.ALTO.boton + ESP.l))
+	confirmar:SetHeight(math.max(184, ESP.l + 30 + ESP.s + th + ESP.base + 4 + ESP.base + K.ALTO.boton + ESP.l))
 	confirmar.Barra:Set(prueba.quedan, Es.PRUEBA_SEG)
+	K.Escribir(confirmar.Cuenta, tostring(prueba.quedan))
 end
 
 function Es.Probando() return prueba ~= nil end
@@ -502,20 +576,23 @@ end
 -- Las distribuciones: dónde va cada panel (celdas de la rejilla 24 x 16)
 ---------------------------------------------------------------------------
 local function P(id, x, y, w, h) return { id = id, x = x, y = y, w = w, h = h } end
+-- 1.4.0 (tablero): arriba lo principal en grande (la guía y la flecha, el
+-- medidor, la pesca), abajo lo secundario; menos paneles y más grandes, y la
+-- hora va en la barra (el panel «Reloj y sesión» sigue en el catálogo).
 Es.DISTRIBUCIONES = {
 	{ id = "aventura", nombre = "Aventura", icono = "ic-aventura", texto = "Tu guía, la flecha grande, el mapa y Lya.",
-		paneles = { P("rastreador", 0, 0, 8, 10), P("flecha", 0, 10, 8, 6), P("mapa", 8, 0, 10, 10), P("hoy", 18, 0, 6, 8),
-			P("planes", 8, 10, 6, 6), P("avisos", 14, 10, 4, 6), P("lya", 18, 8, 6, 5), P("reloj", 18, 13, 6, 3) } },
+		paneles = { P("rastreador", 0, 0, 10, 9), P("flecha", 10, 0, 6, 9), P("mapa", 16, 0, 8, 9),
+			P("lya", 0, 9, 8, 7), P("hoy", 8, 9, 8, 7), P("avisos", 16, 9, 8, 7) } },
 	{ id = "mazmorra", nombre = "Mazmorra", icono = "ic-mazmorra", texto = "El medidor, tu grupo, la pelea y los avisos.",
 		-- 1.3.9: dentro de una mazmorra, su plano (mapaMazmorra) en vez del mapa del mundo.
-		paneles = { P("medidor", 0, 0, 8, 8), P("pelea", 0, 8, 8, 8), P("grupo", 8, 0, 8, 7), P("mapaMazmorra", 8, 7, 8, 9),
-			P("avisos", 16, 0, 8, 6), P("lya", 16, 6, 8, 5), P("reloj", 16, 11, 8, 5) } },
+		paneles = { P("medidor", 0, 0, 10, 9), P("grupo", 10, 0, 7, 9), P("avisos", 17, 0, 7, 9),
+			P("pelea", 0, 9, 10, 7), P("mapaMazmorra", 10, 9, 7, 7), P("lya", 17, 9, 7, 7) } },
 	{ id = "pesca", nombre = "Pesca", icono = "ic-pesca", texto = "Tu pesca, tus bolsas, tu oro y Lya.",
-		paneles = { P("pesca", 0, 0, 10, 7), P("mapa", 0, 7, 10, 9), P("bolsas", 10, 0, 7, 6), P("avisos", 10, 6, 7, 10),
-			P("oro", 17, 0, 7, 5), P("lya", 17, 5, 7, 6), P("reloj", 17, 11, 7, 5) } },
+		paneles = { P("pesca", 0, 0, 12, 9), P("mapa", 12, 0, 12, 9),
+			P("bolsas", 0, 9, 8, 7), P("oro", 8, 9, 8, 7), P("lya", 16, 9, 8, 7) } },
 	{ id = "comercio", nombre = "Comercio", icono = "ic-comercio", texto = "Tus bolsas, tu oro y tus planes.",
-		paneles = { P("bolsas", 0, 0, 9, 10), P("hoy", 0, 10, 9, 6), P("oro", 9, 0, 8, 7), P("planes", 9, 7, 8, 9),
-			P("avisos", 17, 0, 7, 8), P("lya", 17, 8, 7, 5), P("reloj", 17, 13, 7, 3) } },
+		paneles = { P("bolsas", 0, 0, 12, 9), P("oro", 12, 0, 6, 9), P("planes", 18, 0, 6, 9),
+			P("hoy", 0, 9, 12, 7), P("avisos", 12, 9, 6, 7), P("lya", 18, 9, 6, 7) } },
 	-- 1.3.9: para un monitor de lado (vertical) y uno ultraancho. La vertical
 	-- trae su propio acomodo para la forma angosta (no el de dos columnas).
 	{ id = "vertical", nombre = "Monitor vertical", icono = "ic-ventana", texto = "Todo de arriba abajo: tu guía, la flecha, el mapa y tus misiones.",
@@ -610,6 +687,12 @@ local function enColumnas(lista)
 			out[#out + 1] = { id = x.id, x = (col - 1) * mitad, y = alto[col], w = mitad, h = h }
 			alto[col] = alto[col] + h
 		end
+	end
+	-- 1.4.0: el último de cada columna llega hasta abajo (sin hueco vacío).
+	for col = 1, 2 do
+		local ultimo
+		for _, x in ipairs(out) do if x.x == (col - 1) * mitad and (not ultimo or x.y > ultimo.y) then ultimo = x end end
+		if ultimo then ultimo.h = Es.FILAS - ultimo.y end
 	end
 	return out
 end
@@ -737,20 +820,40 @@ local function crearPanel(def)
 	local p = CreateFrame("Frame", nil, desk.Area)
 	p.def = def
 	p:SetFrameLevel(desk.Area:GetFrameLevel() + 2)
-	p.caja = K.Caja(p, { fondo = "panel", borde = "linea", corte = K.CORTE.panel })
-	p.Marca = K.Marca(p, K.CORTE.panel, "acento")
+	-- 1.4.0: lo principal (la guía, la flecha, el medidor, la pesca) resalta:
+	-- su fondo un poco más claro, un brillo del acento arriba y el título más
+	-- grande; lo demás, más quieto.
+	local prota = def.protagonista == true
+	p.protagonista = prota
+	p.caja = K.Caja(p, { fondo = prota and "elevado" or "panel", borde = prota and "lineaFuerte" or "linea", corte = K.CORTE.panel })
+	p.Marca = K.Marca(p, K.CORTE.panel, "acento", prota and 64 or nil)
+	if prota then
+		p.Brillo = p:CreateTexture(nil, "BACKGROUND", nil, 2)
+		p.Brillo:SetTexture(K.Ruta("white"))
+		p.Brillo:SetPoint("TOPLEFT", p, "TOPLEFT", 1, -1)
+		p.Brillo:SetPoint("TOPRIGHT", p, "TOPRIGHT", -1, -1)
+		p.Brillo:SetHeight(90)
+		K.Pintar(p.Brillo, function(t)
+			local r, g, b = K.Color(K.Clasico() and "oro" or "acento")
+			if t.SetGradient and CreateColor then t:SetGradient("VERTICAL", CreateColor(r, g, b, 0), CreateColor(r, g, b, 0.08))
+			else t:SetVertexColor(r, g, b, 0.05) end
+		end)
+	end
 	local c = CreateFrame("Frame", nil, p)
 	p.Cab = c
 	c:SetPoint("TOPLEFT", p, "TOPLEFT", 0, 0)
 	c:SetPoint("TOPRIGHT", p, "TOPRIGHT", 0, 0)
-	c:SetHeight(Es.CABECERA)
-	c.Icono = K.Icono(c, def.icono or "ic-lobo", 16, "acento")
+	c:SetHeight(prota and Es.CABECERA + 6 or Es.CABECERA)
+	c.Icono = K.Icono(c, def.icono or "ic-lobo", prota and 18 or 14, prota and "acento" or "textoSuave")
 	c.Icono:SetPoint("LEFT", c, "LEFT", ESP.m, 0)
 	c.Cerrar = K.BotonIcono(c, "ic-cerrar", function() Es.QuitarPanel(def.id) end, { tam = 24, icono = 10, ayuda = L["Quitar del escritorio"] })
 	c.Cerrar:SetPoint("RIGHT", c, "RIGHT", -ESP.s, 0)
 	c.Menu = K.BotonIcono(c, "menu", function() menuPanel(p) end, { tam = 24, icono = 14, ayuda = L["Más"] })
 	c.Menu:SetPoint("RIGHT", c.Cerrar, "LEFT", -2, 0)
-	c.Titulo = K.Texto(c, "encabezado", "texto")
+	-- 1.4.0: «…» y «×» solo con el ratón encima (Es.RevisarRaton): menos ruido.
+	-- Revisión: escondidos no toman el ratón (nada invisible atrapa un clic).
+	Es.BotonesCabecera(c, false)
+	c.Titulo = K.Texto(c, prota and "subtitulo" or "encabezado", prota and "texto" or "textoSuave")
 	c.Titulo:SetPoint("LEFT", c.Icono, "RIGHT", ESP.s, 0)
 	c.Titulo:SetPoint("RIGHT", c.Menu, "LEFT", -ESP.s, 0)
 	c.Titulo:SetJustifyH("LEFT")
@@ -910,22 +1013,61 @@ function Es.PintarBarra()
 	if not b then return end
 	local ops = {}
 	for _, d in ipairs(Es.Distribuciones()) do ops[#ops + 1] = { valor = d.id, texto = d.nombre, icono = d.icono } end
-	b.Selector:SetOpciones(ops)
-	b.Selector:SetValor(distActual)
-	-- Las pastillas si caben en un renglón; si no (un escritorio angosto), una lista.
-	local libreW = K.num(b:GetWidth(), 0) - (b.Selector.alfaX or 300) - 420
-	local alto = b.Selector:Acomodar(max(200, libreW))
-	local caben = alto <= K.ALTO.pildora + 1
-	b.Selector:SetShown(caben)
 	b.Lista:SetOpciones(ops)
 	b.Lista:SetValor(distActual)
-	b.Lista:SetShown(not caben)
 	local auto = opt("auto") ~= false
 	b.Auto:SetValor(auto)
 	local nombre = Es.NombreDe(distActual) or ""
 	local sub
 	if auto then sub = format(L["%s · cambia sola"], nombre) else sub = nombre end
 	K.Escribir(b.Sub, sub)
+	local W = K.num(b:GetWidth(), 0)
+	-- Una barra angosta (el escritorio a un lado): primero se va el nombre,
+	-- luego «Una pantalla» (sigue en el menú «…»), luego la hora y «Cambia sola».
+	local x = ESP.base + 30 + ESP.m + max(K.AnchoTexto(b.Titulo), K.AnchoTexto(b.Sub)) + ESP.xl
+	local conUna = true
+	local function derechaDe() return K.num(b.Menu:GetWidth(), 32) + (conUna and K.num(b.Una:GetWidth(), 100) + ESP.s or 0) + K.num(b.Editar:GetWidth(), 90) + ESP.s + ESP.m end
+	local nombre = x + 200 + derechaDe() + ESP.m <= W
+	if not nombre then
+		x = ESP.base + 30 + ESP.m
+		if x + 200 + derechaDe() + ESP.m > W then conUna = false end
+	end
+	b.Titulo:SetShown(nombre)
+	b.Sub:SetShown(nombre)
+	b.Una:SetShown(conUna)
+	b.Editar:ClearAllPoints()
+	b.Editar:SetPoint("RIGHT", conUna and b.Una or b.Menu, "LEFT", -ESP.s, 0)
+	b.Lista:ClearAllPoints()
+	b.Lista:SetPoint("LEFT", b, "LEFT", x, 0)
+	local derecha = derechaDe()
+	local auto0 = K.num(b.Auto:GetWidth(), 40) + K.AnchoTexto(b.AutoTexto) + ESP.l + ESP.s
+	local libre = W - x - 200 - derecha
+	b.Auto:SetShown(libre >= auto0)
+	b.AutoTexto:SetShown(libre >= auto0)
+	if libre >= auto0 then libre = libre - auto0 end
+	Es.PintarHora()
+	local hw = max(K.AnchoTexto(b.Hora), K.AnchoTexto(b.Sesion)) + ESP.xl * 2
+	-- La hora va al centro si cabe sin encimarse; si no, se esconde.
+	local centro = W / 2
+	local cabe = centro - hw / 2 >= x + 200 + ESP.l and centro + hw / 2 <= W - derecha - (b.Auto:IsShown() and auto0 or 0)
+	b.Hora:SetShown(cabe)
+	b.Sesion:SetShown(cabe)
+end
+
+-- La hora (la de tu reloj, como el panel «Reloj y sesión») y tu sesión.
+function Es.PintarHora()
+	local b = desk and desk.Barra
+	if not (b and b.Hora) then return end
+	local t = date and date("%H:%M") or ""
+	K.Escribir(b.Hora, t)
+	local I = rawget(_G, "AlfaInicio")
+	local s
+	if type(I) == "table" and type(I.Sesion) == "function" then
+		local ok, x = pcall(I.Sesion)
+		local dur = ok and type(x) == "table" and tonumber(x.dur) or nil
+		if dur and dur > 0 then s = format(L["Esta sesión: %s"], N.Duracion(dur, true)) end
+	end
+	K.Escribir(b.Sesion, s or "")
 end
 
 local function menuEscritorio(dueno)
@@ -955,27 +1097,15 @@ local function crearEscritorio()
 	desk:SetFrameLevel(1)
 	desk:EnableMouse(true)
 	desk:SetClipsChildren(true)
-	-- El fondo: oscuro, con un brillo del acento arriba y el lobo de Alfa tenue.
-	desk.Fondo = K.Plano(desk, "fondo", "BACKGROUND", -8)
-	desk.Fondo:SetAllPoints(desk)
-	desk.Brillo = desk:CreateTexture(nil, "BACKGROUND", nil, -7)
-	desk.Brillo:SetPoint("TOPLEFT", desk, "TOPLEFT", 0, 0)
-	desk.Brillo:SetPoint("TOPRIGHT", desk, "TOPRIGHT", 0, 0)
-	desk.Brillo:SetHeight(360)
-	desk.Brillo:SetTexture(K.Ruta("white"))
-	desk.Marca = desk:CreateTexture(nil, "BACKGROUND", nil, -6)
-	desk.Marca:SetSize(420, 420)
-	desk.Marca:SetPoint("BOTTOMRIGHT", desk, "BOTTOMRIGHT", -60, 40)
-	desk.Marca:SetTexture(K.Lobo("aullando"))
+	-- 1.4.0: el fondo es una noche de Alfa (EscritorioFondo.lua): cielo
+	-- azul de noche, estrellas, la luna con su halo, colinas y el lobo.
+	desk.Cielo = CreateFrame("Frame", nil, desk)
+	desk.Cielo:SetAllPoints(desk)
+	desk.Cielo:SetFrameLevel(desk:GetFrameLevel())
+	if Es.ArmarCielo then Es.ArmarCielo(desk.Cielo) end
 	K.Pintar(desk, function(x)
-		local r, g, b = K.Color(K.Clasico() and "oro" or "acento")
-		if x.Brillo.SetGradient and CreateColor then
-			x.Brillo:SetGradient("VERTICAL", CreateColor(r, g, b, 0), CreateColor(r, g, b, 0.07))
-		else
-			x.Brillo:SetVertexColor(r, g, b, 0.04)
-		end
-		x.Marca:SetVertexColor(r, g, b, 0.05)
-		x.Fondo:SetAlpha(opt("fondo") == false and 0 or 1)
+		x.Cielo:SetAlpha(opt("fondo") == false and 0 or 1)
+		if Es.PintarCielo then Es.PintarCielo(x.Cielo) end
 	end)
 	-- La barra de arriba.
 	local b = CreateFrame("Frame", nil, desk)
@@ -985,6 +1115,7 @@ local function crearEscritorio()
 	b:SetHeight(Es.BARRA)
 	b.Fondo = K.Plano(b, "hundido", "BACKGROUND", 0)
 	b.Fondo:SetAllPoints(b)
+	b.Fondo:SetAlpha(0.82) -- 1.4.0: se asoma la noche de atrás
 	b.Linea = K.Linea(b, "linea")
 	b.Linea:SetPoint("BOTTOMLEFT", b, "BOTTOMLEFT", 0, 0)
 	b.Linea:SetPoint("BOTTOMRIGHT", b, "BOTTOMRIGHT", 0, 0)
@@ -999,17 +1130,26 @@ local function crearEscritorio()
 	b.Sub = K.Texto(b, "pequeno", "textoTenue")
 	b.Sub:SetPoint("TOPLEFT", b.Titulo, "BOTTOMLEFT", 0, -2)
 	b.Sub:SetWordWrap(false)
-	b.Selector = K.Segmentos(b, { estilo = "pildoras", alCambiar = function(v) Es.Usar(v, "jugador") end })
-	b.Selector.alfaX = 260
-	b.Selector:SetPoint("LEFT", b, "LEFT", b.Selector.alfaX, 0)
-	b.Lista = K.Desplegable(b, { ancho = 180, alCambiar = function(v) Es.Usar(v, "jugador") end })
-	b.Lista:SetPoint("LEFT", b, "LEFT", b.Selector.alfaX, 0)
-	b.Lista:Hide()
+	-- 1.4.0: un solo desplegable con el escritorio de ahora (antes, una fila
+	-- de pastillas que llenaba la barra).
+	b.Lista = K.Desplegable(b, { ancho = 200, alCambiar = function(v) Es.Usar(v, "jugador") end })
+	b.Lista:SetPoint("LEFT", b.Titulo, "RIGHT", ESP.xl, -8)
+	-- 1.4.0: la hora y tu sesión, en la barra (antes era un panel aparte).
+	b.Hora = K.Texto(b, "titulo", "texto")
+	b.Hora:SetPoint("CENTER", b, "CENTER", 0, 6)
+	b.Hora:SetWordWrap(false)
+	b.Sesion = K.Texto(b, "pequeno", "textoTenue")
+	b.Sesion:SetPoint("TOP", b.Hora, "BOTTOM", 0, -1)
+	b.Sesion:SetWordWrap(false)
 	b.Menu = K.BotonIcono(b, "menu", function(self) menuEscritorio(self) end, { tam = 32, icono = 16, ayuda = L["Más"] })
 	b.Menu:SetPoint("RIGHT", b, "RIGHT", -ESP.m, 0)
+	-- 1.4.0: volver a una pantalla a la vista, con un clic.
+	b.Una = K.Boton(b, L["Una pantalla"], function() Es.Apagar() end,
+		{ tipo = "secundario", icono = "ic-cerrar", ayuda = L["El juego y su interfaz vuelven a toda la ventana, como siempre."] })
+	b.Una:SetPoint("RIGHT", b.Menu, "LEFT", -ESP.s, 0)
 	b.Editar = K.Boton(b, L["Editar"], function() if M.EscritorioEditor then M.EscritorioEditor.Alternar() end end,
 		{ tipo = "secundario", icono = "ic-ajustes", ayuda = L["Mueve los paneles, cámbiales el tamaño y agrega otros."] })
-	b.Editar:SetPoint("RIGHT", b.Menu, "LEFT", -ESP.s, 0)
+	b.Editar:SetPoint("RIGHT", b.Una, "LEFT", -ESP.s, 0)
 	-- «Cambia sola»: un interruptor con su nombre.
 	b.AutoTexto = K.Texto(b, "etiqueta", "textoSuave")
 	K.Escribir(b.AutoTexto, L["Cambia sola"])
@@ -1025,6 +1165,16 @@ local function crearEscritorio()
 	area:SetPoint("TOPLEFT", b, "BOTTOMLEFT", ESP.s, -ESP.s)
 	area:SetPoint("BOTTOMRIGHT", desk, "BOTTOMRIGHT", -ESP.s, ESP.s)
 	area:SetFrameLevel(desk:GetFrameLevel() + 2)
+	area:SetScale(Es.Escala())
+	-- 1.4.0: «…» y «×» de cada panel se ven solo con el ratón encima (o al
+	-- editar); se revisa cada 0,15 s y solo con el escritorio a la vista.
+	local espera = 0
+	desk:SetScript("OnUpdate", function(_, dt)
+		espera = espera + (dt or 0)
+		if espera < 0.15 then return end
+		espera = 0
+		Es.RevisarRaton()
+	end)
 	desk:SetScript("OnSizeChanged", function() Es.Acomodar() end)
 	desk:SetScript("OnShow", function()
 		N.Cada("pantallas.paneles", 1, Es.Latido)
@@ -1040,15 +1190,192 @@ end
 function Es.Marco() return desk end
 function Es.Visible() return desk ~= nil and desk:IsVisible() end
 
+-- 1.4.0: la escala de los paneles (pantallas.tamano). En una franja angosta
+-- (el escritorio a un lado de una sola pantalla) no crece: no cabría.
+function Es.Escala()
+	local v = opt("tamano")
+	local e = 1
+	for _, t in ipairs(Es.TAMANOS) do if t.valor == v then e = t.escala end end
+	if desk then
+		local w, h = K.num(desk:GetWidth(), 0), K.num(desk:GetHeight(), 0)
+		if w > 0 and h > 0 and w / h < 1.15 then e = 1 end
+	end
+	return e
+end
+function Es.PonerEscala()
+	if not (desk and desk.Area) then return end
+	local e = Es.Escala()
+	if abs((tonumber(desk.Area:GetScale()) or 1) - e) > 0.001 then
+		desk.Area:SetScale(e)
+		for _, p in pairs(marcos) do p.medida = nil end
+		Es.Acomodar()
+	end
+end
+
+-- «…» y «×» de una cabecera: a la vista y con ratón, o invisibles y sin ratón.
+function Es.BotonesCabecera(c, ver)
+	local a = ver and 1 or 0
+	for _, b in ipairs({ c.Menu, c.Cerrar }) do
+		b:SetAlpha(a)
+		if b.EnableMouse then b:EnableMouse(ver and true or false) end
+	end
+end
+
+-- «…» y «×» de cada panel: solo con el ratón encima, al editar o con su menú abierto.
+function Es.RevisarRaton()
+	if not (desk and desk:IsVisible()) then return end
+	local editando = M.EscritorioEditor and M.EscritorioEditor.Activo()
+	for _, p in pairs(marcos) do
+		if p:IsShown() and p.Cab then
+			local ver = editando or (p.IsMouseOver and p:IsMouseOver()) or false
+			local a = ver and 1 or 0
+			if p.Cab.Menu:GetAlpha() ~= a then Es.BotonesCabecera(p.Cab, ver) end
+		end
+	end
+end
+
+---------------------------------------------------------------------------
+-- 1.4.0: la vista previa (el escritorio de verdad, sin mover nada)
+---------------------------------------------------------------------------
+-- Con la ventana ya estirada, Alfa pone su escritorio donde va a quedar y
+-- tapa el lado del juego con un velo que dice «aquí sigue tu juego». El mundo
+-- y la interfaz no se mueven: es solo para ver. Se cierra sola a los 30 s,
+-- con Esc o al entrar en combate; «Probar» sigue con la prueba de 15 s.
+local vista, velo
+function Es.EnVista() return vista ~= nil end
+
+local function armarVelo()
+	local f = CreateFrame("Frame", "AlfaEscritorioVista", K.Raiz())
+	f:SetFrameStrata("DIALOG")
+	f:SetFrameLevel(30)
+	f:EnableMouse(true)
+	f.Fondo = f:CreateTexture(nil, "BACKGROUND")
+	f.Fondo:SetAllPoints(f)
+	f.Fondo:SetColorTexture(0.02, 0.03, 0.05, 0.72)
+	f.Borde = K.Plano(f, "acento", "BORDER")
+	f.Tarjeta = CreateFrame("Frame", nil, f)
+	f.Tarjeta:SetSize(480, 200)
+	f.Tarjeta:SetPoint("CENTER", f, "CENTER", 0, 0)
+	f.Tarjeta.caja = K.Caja(f.Tarjeta, { fondo = "panel", borde = "lineaFuerte", corte = K.CORTE.ventana })
+	f.Tarjeta.Marca = K.Marca(f.Tarjeta, K.CORTE.ventana, "acento", 44)
+	local t = f.Tarjeta
+	t.Lobo = t:CreateTexture(nil, "ARTWORK")
+	t.Lobo:SetSize(48, 48)
+	t.Lobo:SetPoint("TOPLEFT", t, "TOPLEFT", ESP.l, -ESP.l)
+	t.Lobo:SetTexture(K.Lobo("atento"))
+	K.Pintar(t.Lobo, function(x) x:SetVertexColor(K.Color("acento")) end)
+	t.Titulo = K.Texto(t, "titulo", "texto")
+	t.Titulo:SetPoint("TOPLEFT", t.Lobo, "TOPRIGHT", ESP.base, -2)
+	t.Titulo:SetJustifyH("LEFT")
+	t.Texto = K.Texto(t, "texto", "textoSuave")
+	t.Texto:SetJustifyH("LEFT")
+	t.Probar = K.Boton(t, L["Probar 15 segundos"], function() Es.ProbarVista() end, { tipo = "primario", icono = "ic-ventana" })
+	t.Cerrar = K.Boton(t, L["Cerrar la vista previa"], function() Es.CerrarVista() end, { tipo = "secundario" })
+	f:EnableKeyboard(true)
+	if f.SetPropagateKeyboardInput then f:SetPropagateKeyboardInput(true) end
+	f:SetScript("OnKeyDown", function(self, tecla)
+		if enCombate() then return end
+		local esc = tecla == "ESCAPE"
+		if self.SetPropagateKeyboardInput then self:SetPropagateKeyboardInput(not esc) end
+		if esc then Es.CerrarVista() end
+	end)
+	f:Hide()
+	return f
+end
+
+local function pintarVelo()
+	if not (vista and velo) then return end
+	colocar(velo, vista.principal, pantalla())
+	local t = velo.Tarjeta
+	-- La raya del acento en la orilla con el escritorio.
+	velo.Borde:ClearAllPoints()
+	local l = vista.lado
+	if l == "derecha" then velo.Borde:SetPoint("TOPRIGHT", velo, "TOPRIGHT") velo.Borde:SetPoint("BOTTOMRIGHT", velo, "BOTTOMRIGHT") velo.Borde:SetWidth(3)
+	elseif l == "izquierda" then velo.Borde:SetPoint("TOPLEFT", velo, "TOPLEFT") velo.Borde:SetPoint("BOTTOMLEFT", velo, "BOTTOMLEFT") velo.Borde:SetWidth(3)
+	elseif l == "abajo" then velo.Borde:SetPoint("BOTTOMLEFT", velo, "BOTTOMLEFT") velo.Borde:SetPoint("BOTTOMRIGHT", velo, "BOTTOMRIGHT") velo.Borde:SetHeight(3)
+	else velo.Borde:SetPoint("TOPLEFT", velo, "TOPLEFT") velo.Borde:SetPoint("TOPRIGHT", velo, "TOPRIGHT") velo.Borde:SetHeight(3) end
+	K.Escribir(t.Titulo, L["Así queda tu escritorio"])
+	local W = 480
+	local x = ESP.l + 48 + ESP.base
+	local tw = W - x - ESP.l
+	t.Titulo:SetWidth(tw)
+	local th = K.Parrafo(t.Titulo, tw, 2)
+	local quedan = vista.quedan or 30
+	K.Escribir(t.Texto, (vista.una and L["Aquí sigue tu juego, y tus paneles al lado. Todavía no se movió nada: es solo para que lo veas."]
+		or L["Aquí sigue tu juego, en tu monitor principal, y tus paneles en el otro. Todavía no se movió nada: es solo para que lo veas."])
+		.. "\n" .. N.Plural(quedan, L["La vista previa se cierra sola en %d segundo."], L["La vista previa se cierra sola en %d segundos."]))
+	t.Texto:ClearAllPoints()
+	t.Texto:SetPoint("TOPLEFT", t, "TOPLEFT", x, -(ESP.l + th + ESP.s))
+	local tx = K.Parrafo(t.Texto, tw, 5)
+	local y = ESP.l + th + ESP.s + tx + ESP.base
+	t.Probar:ClearAllPoints()
+	t.Probar:SetPoint("TOPLEFT", t, "TOPLEFT", x, -y)
+	t.Cerrar:ClearAllPoints()
+	t.Cerrar:SetPoint("LEFT", t.Probar, "RIGHT", ESP.s, 0)
+	t:SetSize(W, y + K.ALTO.boton + ESP.l)
+	-- Que la tarjeta quepa en el lado del juego.
+	local vw = K.num(velo:GetWidth(), W)
+	if vw > 0 and vw < W + 20 then t:SetScale(max(0.6, (vw - 20) / W)) else t:SetScale(1) end
+end
+
+-- o = { lado, proporcion, medida }; alCerrar(probo) cuando se cierra.
+function Es.VistaPrevia(o, alCerrar)
+	if enCombate() then
+		N.Imprimir(L["Las pantallas se acomodan fuera de combate."])
+		return false
+	end
+	if actual or prueba then return false end
+	if vista then Es.CerrarVista(true) end
+	o = type(o) == "table" and o or {}
+	vista = Es.Geometria(o)
+	vista.o, vista.alCerrar, vista.quedan = o, alCerrar, 30
+	velo = velo or armarVelo()
+	Es.MostrarEscritorio(true)
+	-- Mientras se ve, el escritorio va encima de la interfaz del juego (que
+	-- sigue en toda la ventana): así se ve como va a quedar.
+	if desk then desk:SetFrameStrata("DIALOG") desk:SetFrameLevel(2) end
+	pintarVelo()
+	velo:Show()
+	N.Cada("pantallas.vista", 1, function()
+		if not vista then N.Quitar("pantallas.vista") return end
+		vista.quedan = vista.quedan - 1
+		if vista.quedan <= 0 then Es.CerrarVista() return end
+		pintarVelo()
+	end)
+	A.Fire("ALFA_ESCRITORIO", "vista")
+	return true
+end
+
+function Es.CerrarVista(probo)
+	if not vista then return false end
+	local alCerrar = vista.alCerrar
+	vista = nil
+	N.Quitar("pantallas.vista")
+	if velo then velo:Hide() end
+	if desk then desk:SetFrameStrata("BACKGROUND") desk:SetFrameLevel(1) end
+	if not actual then Es.MostrarEscritorio(false) end
+	if alCerrar then K.Llamar(alCerrar, probo == true) end
+	return true
+end
+
+-- «Probar 15 segundos» desde la vista previa: la prueba de siempre.
+function Es.ProbarVista()
+	if not vista then return false end
+	local o = vista.o
+	Es.CerrarVista(true)
+	return Es.Probar(o)
+end
+
 function Es.MostrarEscritorio(on)
 	if not on then
 		if desk then desk:Hide() end
 		return
 	end
 	if not desk then crearEscritorio() end
-	local g = actual
+	local g = actual or vista
 	if not g then return end
 	colocar(desk, g.escritorio, pantalla())
+	Es.PonerEscala()
 	if not distActual then
 		local d = opt("distribucion")
 		distActual = Es.Existe(d) and d or "aventura"
@@ -1078,6 +1405,7 @@ function Es.Latido()
 		end
 	end
 	if cuenta % 2 == 0 and not pelea then Es.RevisarContexto() end
+	if cuenta % 10 == 0 then Es.PintarHora() end
 end
 
 ---------------------------------------------------------------------------
@@ -1145,6 +1473,8 @@ end)
 -- Una pelea termina el editor (en combate no se acomoda nada).
 A.RegisterEvent("PLAYER_REGEN_DISABLED", function()
 	if M.EscritorioEditor and M.EscritorioEditor.Activo() then K.Llamar(M.EscritorioEditor.Cerrar) end
+	-- 1.4.0: la vista previa se cierra al empezar una pelea (nada que tape el juego).
+	if vista then Es.CerrarVista() end
 	-- (1.3.8 revisión) «¿Se ve bien?» no toma el teclado en combate (antes del bloqueo).
 	if confirmar then confirmar:EnableKeyboard(false) end
 end)
@@ -1194,6 +1524,8 @@ end
 local function comando(resto)
 	resto = type(resto) == "string" and resto:lower():gsub("^%s+", ""):gsub("%s+$", "") or ""
 	if resto == "volver" or resto == "una" or resto == "apagar" then return Es.Apagar() end
+	-- 1.4.0: «Reparar mi pantalla» (con confirmación).
+	if resto == "reparar" or resto == "arreglar" then return M.EscritorioReparar and M.EscritorioReparar.Preguntar() end
 	if resto == "probar" then return Es.Probar({ lado = opt("lado"), proporcion = opt("proporcion"), medida = opt("medida") }) end
 	if resto == "editar" then
 		if not actual then N.Imprimir(L["Primero acomoda tus pantallas: /alfa pantallas."]) return end
@@ -1210,8 +1542,8 @@ local function comando(resto)
 	end
 	Es.AbrirAsistente()
 end
-A.RegisterCommand("pantallas", comando, L["Alfa en tu segundo monitor (también: probar, volver, editar)"])
-A.RegisterCommand("escritorio", comando, L["Alfa en tu segundo monitor (también: probar, volver, editar)"], true)
+A.RegisterCommand("pantallas", comando, L["Alfa en tu segundo monitor (también: probar, volver, editar, reparar)"])
+A.RegisterCommand("escritorio", comando, L["Alfa en tu segundo monitor (también: probar, volver, editar, reparar)"], true)
 
 ---------------------------------------------------------------------------
 -- AlfaEscritorio: para el menú de Alfa, Lya, otros módulos y el banco

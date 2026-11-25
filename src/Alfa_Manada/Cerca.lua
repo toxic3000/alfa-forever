@@ -71,6 +71,7 @@ function Ce.Revisar(unit)
 	if not nombre or fundador(nombre) then return false end
 	local clave = U.Clave(nombre)
 	if not clave or clave == U.MiClave() then return false end
+	if M.Callados and M.Callados.Esta(clave) then return false end -- 1.4.0 (56): lo silenciaste
 	local G = M.Gente
 	if not (G and G.Alfa and G.Alfa(clave)) then return false end
 	if G.EnGrupo and G.EnGrupo(clave) then return false end

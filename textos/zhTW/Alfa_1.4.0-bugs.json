@@ -1,0 +1,11 @@
+{
+	"%d lobo": "%d 隻狼",
+	"Lo marcado con %s también está en el menú del juego.": "標有 %s 的設定在遊戲選單中也有。",
+	"Listo: tus PE por hora empiezan de cero.": "好了：每小時經驗從零開始計算。",
+	"Tu sonido vuelve en cuanto salgas de combate.": "脫離戰鬥後你的聲音就會恢復。",
+	"Tu sonido ya estaba como lo tenías: Alfa no tiene nada tuyo guardado ni apagado. Revisa el volumen en Opciones > Audio del juego.": "你的聲音本來就是原樣：Alfa 沒有儲存或關閉任何設定。請在遊戲的選項 > 音訊中檢查音量。",
+	"Listo: te devolví tu sonido (%d ajuste). La música, el ambiente y los efectos ya se oyen.": "好了：已恢復你的聲音（%d 項設定）。音樂、環境音和音效又能聽到了。",
+	"Listo: te devolví tu sonido (%d ajustes). La música, el ambiente y los efectos ya se oyen.": "好了：已恢復你的聲音（%d 項設定）。音樂、環境音和音效又能聽到了。",
+	"Devolver mi sonido: música, ambiente, efectos y mascotas como estaban antes de Alfa": "恢復我的聲音：音樂、環境音、音效和寵物聲音恢復到使用 Alfa 之前",
+	"lo mismo que /alfa sonido": "同 /alfa sonido"
+}

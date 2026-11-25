@@ -175,8 +175,39 @@ end)
 ---------------------------------------------------------------------------
 
 -- rec: { i, c, l, q, nuevo, mision, sinValor, basura (marcado como chatarra) }; e: O.Info.
-function O.Categoria(rec, e, bolsa)
-	if rec.nuevo then return "recientes" end
+---------------------------------------------------------------------------
+-- 1.4.0 (22): la sección que tú elegiste para un objeto, arrastrándolo a
+-- la cabecera de otra sección (Ventana.lua). Vale para toda la cuenta y
+-- para el orden de Alfa; soltarlo en la suya de siempre lo devuelve.
+--   O.SeccionPropia(id) -> clave | nil ; O.PonerSeccion(id, clave | nil)
+---------------------------------------------------------------------------
+O.SECCION_LIBRE = { equipo = true, consumibles = true, misiones = true, artesania = true,
+	reagentes = true, monturas = true, chatarra = true, otros = true }
+
+local function secciones()
+	local d = N.Datos(M.ID)
+	if type(rawget(d, "secciones")) ~= "table" then d.secciones = {} end
+	return d.secciones
+end
+O.Secciones = secciones
+
+function O.SeccionPropia(id)
+	id = tonumber(id)
+	if not id then return nil end
+	local c = secciones()[id]
+	return O.SECCION_LIBRE[c] and c or nil
+end
+
+function O.PonerSeccion(id, clave)
+	id = tonumber(id)
+	if not id then return false end
+	if clave ~= nil and not O.SECCION_LIBRE[clave] then return false end
+	secciones()[id] = clave
+	return true
+end
+
+-- La de siempre (sin lo que elegiste).
+local function categoriaBase(rec, e, bolsa)
 	if (rec.q == 0 or rec.basura) and not rec.sinValor then return "chatarra" end
 	local c, s = e.clase, e.subclase
 	if rec.mision or c == 12 then return "misiones" end
@@ -186,6 +217,14 @@ function O.Categoria(rec, e, bolsa)
 	if c == 7 or c == 9 or c == 19 or c == 3 or c == 8 or c == 16 then return "artesania" end
 	if c == 17 or (c == 15 and (s == 2 or s == 5 or s == 6)) then return "monturas" end
 	return "otros"
+end
+O.CategoriaBase = categoriaBase
+
+function O.Categoria(rec, e, bolsa)
+	if rec.nuevo then return "recientes" end
+	local propia = O.SeccionPropia(rec.i)
+	if propia then return propia end
+	return categoriaBase(rec, e, bolsa)
 end
 
 -- La categoría de un objeto por lo que es, sin "Recientes" (para depositar
@@ -318,7 +357,7 @@ local function deAlfa(ent)
 	local Cd = M.Candado
 	if Cd and id and Cd.Tiene(id, rec.l, { q = rec.q, mision = rec.mision }) then out[#out + 1] = L["candado"] end
 	if O.EsEquipo(e) and id then
-		local nivel = UnitLevel and tonumber(UnitLevel("player")) or nil
+		local nivel = UnitLevel and N.LeerNumero(UnitLevel("player")) -- 1.4.0: secreto
 		local noPuedes = e.req and nivel and e.req > nivel
 		if noPuedes or (not ent.mejora and not enUnConjunto(id)) then out[#out + 1] = L["sin usar"] end
 	end

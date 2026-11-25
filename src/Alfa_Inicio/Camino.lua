@@ -238,8 +238,19 @@ function Ca.Tramos()
 		if ultimo and ultimo.id == g.id then
 			ultimo.hasta = hasta
 		else
-			tramos[#tramos + 1] = { desde = desde, hasta = hasta, id = g.id, titulo = texto(g.title) or tostring(g.id),
-				zona = texto(g.zoneName), mazmorras = {} }
+			-- 1.4.0: el nombre de la guía en tu idioma (el mismo del rastreador,
+			-- AlfaRuta.NombreGuia); la zona en inglés no sale (la cubre el nombre).
+			local R0 = rawget(_G, "AlfaRuta")
+			local okN, nombre = false, nil
+			if type(R0) == "table" and type(R0.NombreGuia) == "function" then okN, nombre = pcall(R0.NombreGuia, g.id) end
+			local zona = texto(g.zoneName)
+			if zona and type(R0) == "table" and type(R0.SinTraducir) == "function" then
+				local okS, sin = pcall(R0.SinTraducir, zona)
+				if okS and sin then zona = nil end
+			end
+			tramos[#tramos + 1] = { desde = desde, hasta = hasta, id = g.id,
+				titulo = (okN and type(nombre) == "string" and nombre ~= "" and nombre) or texto(g.title) or tostring(g.id),
+				zona = zona, mazmorras = {} }
 		end
 		lv = max(hasta + 1, lv + 1)
 	end

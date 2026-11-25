@@ -5,6 +5,14 @@
 local _, M = ...
 
 M.EN = {
+	-- 1.4.0 (interfaz): «Tu sesión» (57) y el saludo de tu bando (67)
+	["Tu sesión"] = "Your session",
+	["%s XP/h"] = "%s XP/h",
+	["XP/h: aún no"] = "XP/h: not yet",
+	["+%s de oro"] = "+%s gold",
+	["%d misión"] = "%d quest",
+	["XP ganada: %s."] = "XP earned: %s.",
+	["Oro ganado: %s. Gastado: %s."] = "Gold earned: %s. Spent: %s.",
 	-- 1.3.9 (avisos): el reporte, el Centro de avisos, Lya y los errores con qué hacer
 	["La búsqueda de lugares cercanos no está lista: falta una parte de Alfa. /alfa diagnostico te dice cuál prender."] = "The nearby places search isn't ready: a part of Alfa is missing. /alfa diagnostico tells you which one to turn on.",
 	["Ver el camino en el mapa"] = "See the way on the map",
@@ -804,3 +812,14 @@ M.EN["Tienes 1 misión lista: entrégala y cobra lo tuyo."] = "You have 1 quest 
 M.EN["Tienes %d misiones listas: entrégalas y cobra lo tuyo."] = "You have %d quests ready: turn them in and collect."
 M.EN["unos %s XP"] = "about %s XP"
 M.EN["Lo de tu clase"] = "Your class"
+-- 1.4.0 (82, 84): la ventana, la portada de Hoy y la bienvenida de la 1.4
+M.EN["Portada de Hoy"] = "Today's cover"
+M.EN["Arriba de Hoy: tu saludo, tu personaje y dónde estás, con tu sesión, tu guía y la manada a la vista."] = "At the top of Today: your greeting, your character and where you are, with your session, your guide and the pack in view."
+M.EN["¡Qué bueno verte!"] = "Good to see you!"
+M.EN["¡Buenos días, %s!"] = "Good morning, %s!"
+M.EN["¡Buenas tardes, %s!"] = "Good afternoon, %s!"
+M.EN["¡Buenas noches, %s!"] = "Good evening, %s!"
+M.EN["La manada está lista. ¿A qué salimos hoy?"] = "The pack is ready. What are we hunting today?"
+M.EN["Clic: seguir tu guía"] = "Click: follow your guide"
+M.EN["Clic: elegir tu guía"] = "Click: pick your guide"
+M.EN["Elige una guía y Alfa te lleva paso a paso."] = "Pick a guide and Alfa takes you step by step."

@@ -516,7 +516,7 @@ local function estadoTexto()
 	else
 		partes[#partes + 1] = N.Plural(n, L["Alfa mantiene %d ajuste tuyo y lo vuelve a poner al entrar."], L["Alfa mantiene %d ajustes tuyos y los vuelve a poner al entrar."])
 	end
-	partes[#partes + 1] = format(L["La %s también está en el menú del juego."], estrella())
+	partes[#partes + 1] = format(L["Lo marcado con %s también está en el menú del juego."], estrella())
 	local _, faltan = M.Conteo()
 	if #faltan > 0 then partes[#partes + 1] = format(L["Este cliente no tiene %d de estos ajustes: no se muestran."], #faltan) end
 	return concat(partes, " ")

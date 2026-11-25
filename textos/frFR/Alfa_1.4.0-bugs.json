@@ -1,0 +1,11 @@
+{
+	"%d lobo": "%d loup",
+	"Lo marcado con %s también está en el menú del juego.": "Ce qui est marqué %s se trouve aussi dans le menu du jeu.",
+	"Listo: tus PE por hora empiezan de cero.": "C'est fait : ton XP par heure repart de zéro.",
+	"Tu sonido vuelve en cuanto salgas de combate.": "Ton son revient dès que tu sors du combat.",
+	"Tu sonido ya estaba como lo tenías: Alfa no tiene nada tuyo guardado ni apagado. Revisa el volumen en Opciones > Audio del juego.": "Ton son était déjà comme tu l'avais : Alfa n'a rien gardé ni coupé. Vérifie le volume dans Options > Audio du jeu.",
+	"Listo: te devolví tu sonido (%d ajuste). La música, el ambiente y los efectos ya se oyen.": "C'est fait : ton son est revenu (%d réglage). La musique, l'ambiance et les effets s'entendent à nouveau.",
+	"Listo: te devolví tu sonido (%d ajustes). La música, el ambiente y los efectos ya se oyen.": "C'est fait : ton son est revenu (%d réglages). La musique, l'ambiance et les effets s'entendent à nouveau.",
+	"Devolver mi sonido: música, ambiente, efectos y mascotas como estaban antes de Alfa": "Rendre mon son : musique, ambiance, effets et familiers comme avant Alfa",
+	"lo mismo que /alfa sonido": "comme /alfa sonido"
+}

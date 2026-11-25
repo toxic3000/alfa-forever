@@ -10,6 +10,7 @@
 Textos.lua
 Base.lua
 VentanaSimple.lua
+Banda.lua
 Tareas.lua
 Disponible.lua
 Indice.lua
@@ -20,6 +21,7 @@ OficiosDatos.lua
 Oficios.lua
 OficiosJuntar.lua
 OficiosCrear.lua
+OficiosComprar.lua
 Cerrar.lua
 Recoger.lua
 CerrarTodo.lua
@@ -38,6 +40,7 @@ Grupo.lua
 Siguiente.lua
 Vuelo.lua
 Grifo.lua
+Entrenador.lua
 Foco.lua
 ObjetoMision.lua
 Viaje.lua
@@ -46,6 +49,13 @@ MapaGrupo.lua
 RutaGrupo.lua
 Rutas.lua
 Cerca.lua
+Recompensa.lua
+MiNivel.lua
+Comprar.lua
+Entrega.lua
+Ciudad.lua
+Historial.lua
+Confirmar.lua
 Planes.lua
 VistaPlanes.lua
 Rastreador.lua

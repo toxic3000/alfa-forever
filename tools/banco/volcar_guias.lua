@@ -11,7 +11,7 @@ local G = A.Guides
 G.LoadFaction("All")
 RUN_TIMERS(5)
 
-local OMITIR = { stepsSrc = true, qref = true, groupQuests = true, steps = true }
+local OMITIR = { stepsSrc = true, qref = true, groupQuests = true, steps = true, stepsPart = true, dungeonMaps = true, alfaStart = true }
 
 local function serial(v, out, visto, raiz)
   local t = type(v)

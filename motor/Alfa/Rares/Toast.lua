@@ -418,7 +418,13 @@ local function anuncio(a, conSonido)
 			clave = "raro", texto = T.Distance(a) or "", lobo = "aullando", segundos = 8, sonido = snd, caduca = GetTime() + 60 })
 	end
 	local dist = T.Distance(a)
-	local texto = T.Facts(a) .. (dist and (DOT .. dist) or "")
+	local texto = T.Facts(a)
+	-- 1.4.0 (77): la zona donde ya estás no se repite en el anuncio.
+	local aqui = GetRealZoneText and GetRealZoneText()
+	if a.zone and type(aqui) == "string" and not (issecretvalue and issecretvalue(aqui)) and aqui == a.zone then
+		texto = texto:gsub(DOT:gsub("%p", "%%%0") .. a.zone:gsub("%p", "%%%0") .. "$", "")
+	end
+	texto = texto .. (dist and (DOT .. dist) or "")
 	local puede = a.map ~= nil and a.x ~= nil
 	local o = { sobre = a.kind == "treasure" and ns.T("Lya encontró un tesoro") or ns.T("Lya olfateó un raro"),
 		titulo = a.name or "", texto = texto, lobo = "atento", segundos = 7, estilo = estilo, clave = "raro",

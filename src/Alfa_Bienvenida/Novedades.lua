@@ -31,6 +31,18 @@ M.NOVEDADES = {
 --   { version, titulo, puntos = { { icono (ic-*), texto } } }
 ---------------------------------------------------------------------------
 M.NOTAS = {
+	-- 1.4.0 (65): con «Enséñamelo» (Notas.lua, M.RecorridoNotas): Alfa te
+	-- lleva a cada punto que tiene su «Ver», uno por uno.
+	-- 1.4.0 (84): la bienvenida de la 1.4: tarjetas con su título y «Pruébalo»
+	-- (bienvenida = true, Notas.lua); «Enséñamelo» las recorre una por una.
+	{ version = "1.4.0", titulo = "La manada firme", recorrido = true, bienvenida = true, puntos = {
+		{ "ic-lobo", "Cada pueblo, zona, nivel, barco o raro se anuncia en el centro de tu pantalla, con una presentación nueva.", "anuncios140", titulo = "Anuncios nuevos" },
+		{ "ic-ventana", "Arrastra la flecha, sus placas, el rastreador, Lya, los avisos y más a donde quieras con «Acomodar», o con Mayús y arrastrar.", "acomodar", titulo = "Mueve todo" },
+		{ "ic-apariencia", "Alfa se viste de tu bando: rojo sangre y madera para la Horda, azul real y piedra para la Alianza, con su saludo en Hoy.", "bando", titulo = "Tu bando" },
+		{ "ic-huella", "Tu aventura desde que usas Alfa: niveles, mazmorras, peces, oro y récords, lista para compartir.", "temporada", titulo = "Tu temporada" },
+		{ "ic-mapa", "Dos pantallas, rehecho: tableros grandes y claros, y al volver a una pantalla todo queda como estaba.", "pantallas", titulo = "Dos pantallas" },
+		{ "ic-hoy", "La ventana de Alfa, nueva: barra lateral, la portada de Hoy con tu día y cambios de página suaves.", "ventana", titulo = "Alfa se ve nuevo" },
+	} },
 	{ version = "1.3.8", titulo = "La manada en dos pantallas", puntos = {
 		{ "ic-ventana", "Alfa en tu segundo monitor: tu guía, la flecha, el mapa y tu grupo en la otra pantalla, en un clic.", "pantallas" },
 		{ "ic-aviso", "Avisos que se sienten únicos: el barco se dice claro en la flecha y cada suceso da un solo mensaje." },

@@ -293,23 +293,37 @@ local function grupoDe(npc)
 end
 I.GrupoDe = grupoDe
 
+-- 1.4.0: ¿está leída la parte del Codex de ese grupo ("npc", "object",
+-- "item"...)? El Codex va por partes (tools/tramos.py) y una parte que no se
+-- pudo leer (en combate antes del núcleo, o apagada) devuelve nil, igual que
+-- algo que no existe: sin esto, un objetivo sin lugar por falta de datos se
+-- tomaba por «dentro de una mazmorra» y la misión iba a «Para después».
+function I.Cargado(grupo)
+	local C = CX()
+	if not (C and C.NeedGroup) then return true end
+	local ok, si = pcall(C.NeedGroup, grupo)
+	return ok and si == true
+end
+
 -- Dónde se junta un objeto de misión: la fuente con más probabilidad que
--- tenga lugar conocido. -> spawn, registro, tipo, id, lista de spawns
+-- tenga lugar conocido. -> spawn, registro, tipo, id, lista de spawns, sinCargar
 local function fuenteObjeto(itemId, desde)
 	local C, Lk = CX(), LK()
 	local item = C.Item(itemId)
-	if not item then return nil end
+	if not item then return nil, nil, nil, nil, nil, not I.Cargado("item") end
+	local falta = false
 	local mejor, mejorP, rec, tipo, fid, spawns
 	for _, src in ipairs(item.sources or {}) do
 		local r, k, id
 		if src.type == "drop" and src.npc then r, k, id = C.Npc(src.npc), "npc", src.npc
 		elseif src.type == "object" and src.object then r, k, id = C.Object(src.object), "object", src.object end
+		if k and not r and not I.Cargado(k) then falta = true end
 		local p = src.chance or 0
 		if r and r.spawns and #r.spawns > 0 and (not mejor or p > mejorP) then
 			mejor, mejorP, rec, tipo, fid, spawns = Lk.Nearest(r.spawns, desde, true), p, r, k, id, r.spawns
 		end
 	end
-	return mejor, rec, tipo, fid, spawns
+	return mejor, rec, tipo, fid, spawns, (mejor == nil and falta)
 end
 
 -- Las misiones de mazmorra (la lista de misiones de cada mazmorra del
@@ -364,7 +378,9 @@ function I.EntradaMazmorra(clave)
 end
 
 -- El primer lugar de sus objetivos, si piden grupo y si algo queda dentro
--- de una mazmorra (sin lugar en el mundo).
+-- de una mazmorra (sin lugar en el mundo). 1.4.0: el cuarto valor, sinCargar,
+-- dice que no se sabe dónde está algo porque su parte del Codex no está leída
+-- (no es «dentro»).
 function I.Objetivo(e, desde)
 	local C, Lk = CX(), LK()
 	local q = C and C.Quest(e.id)
@@ -374,34 +390,39 @@ function I.Objetivo(e, desde)
 		local entrada = I.EntradaMazmorra(mz)
 		return entrada and punto(entrada) or nil, true, true
 	end
-	if not q then return nil end
-	local lugar, grupo, dentro
+	if not q then return nil, nil, nil, not I.Cargado("quest") end
+	local lugar, grupo, dentro, sinCargar
 	for _, o in ipairs(q.objectives or {}) do
-		local s
+		local s, falta
 		if (o.type == "kill" or o.type == "talk") and o.id then
 			local npc = C.Npc(o.id)
 			if npc then
 				if npc.instance then dentro = true end
 				if o.type == "kill" and grupoDe(npc) then grupo = true end
 				s = Lk.Nearest(npc.spawns, desde, true)
+			else
+				falta = not I.Cargado("npc")
 			end
 		elseif o.type == "item" and o.id then
 			local rec
-			s, rec = fuenteObjeto(o.id, desde)
+			s, rec, _, _, _, falta = fuenteObjeto(o.id, desde)
 			if rec and grupoDe(rec) then grupo = true end
 		elseif o.type == "object" and o.id then
 			local obj = C.Object(o.id)
 			s = obj and Lk.Nearest(obj.spawns, desde, true)
+			if not obj then falta = not I.Cargado("object") end
 		elseif o.map then
 			s = o
 		end
 		if s and s.map then
 			lugar = lugar or punto(s)
+		elseif falta then
+			sinCargar = true
 		elseif o.type ~= "event" then
 			dentro = true
 		end
 	end
-	return lugar, grupo, dentro
+	return lugar, grupo, dentro, sinCargar
 end
 
 ---------------------------------------------------------------------------
@@ -511,9 +532,10 @@ function I.PasosMision(q, desde)
 	local evento
 	for oi, o in ipairs(q.objectives or {}) do
 		local n = M.num(o.count, 1)
-		local g
+		local g, falta
 		if o.type == "kill" and o.id then
 			local npc = C.Npc(o.id)
+			falta = not npc and not I.Cargado("npc")
 			local nombre = (npc and npc.name) or o.text or format(L["PNJ %d"], o.id)
 			local s = npc and Lk.Nearest(npc.spawns, aqui, true)
 			g = en({ t = "kill", target = nombre, npc = o.id, tame = o.tame, quest = q.id, oi = oi, count = n, title = q.title, group = grupoDe(npc) }, s)
@@ -522,17 +544,20 @@ function I.PasosMision(q, desde)
 			if g.group then out.grupo = true end
 		elseif o.type == "item" and o.id then
 			local nombre = (C.Name("item", o.id)) or o.text or M.NombreObjeto(o.id)
-			local s, rec, tipo, fid, spawns = fuenteObjeto(o.id, aqui)
+			local s, rec, tipo, fid, spawns
+			s, rec, tipo, fid, spawns, falta = fuenteObjeto(o.id, aqui)
 			g = en({ t = "collect", item = o.id, itemName = nombre, quest = q.id, oi = oi, count = n, title = q.title, group = grupoDe(tipo == "npc" and rec or nil) }, s)
 			if rec and rec.name then g.from, g.fromId, g.fromKind = rec.name, fid, tipo end
 			lugares(g, spawns)
 			if g.group then out.grupo = true end
 		elseif o.type == "talk" and o.id then
 			local npc = C.Npc(o.id)
+			falta = not npc and not I.Cargado("npc")
 			local s = npc and Lk.Nearest(npc.spawns, aqui, true)
 			g = en({ t = "talk", npc = o.id, npcName = (npc and npc.name) or o.text or format(L["PNJ %d"], o.id), quest = q.id, oi = oi, title = q.title }, s)
 		elseif o.type == "object" and o.id then
 			local obj = C.Object(o.id)
+			falta = not obj and not I.Cargado("object")
 			local s = obj and Lk.Nearest(obj.spawns, aqui, true)
 			g = en({ t = "interact", object = o.id, objName = (obj and obj.name) or o.text or L["Objeto"], quest = q.id, oi = oi, count = n, title = q.title }, s)
 			lugares(g, obj and obj.spawns)
@@ -540,7 +565,10 @@ function I.PasosMision(q, desde)
 			evento = evento or o
 		end
 		if g then
-			if not g.map then out.dentro = true end
+			-- sin lugar: dentro de una mazmorra, salvo que falten datos por leer (1.4.0)
+			if not g.map then
+				if falta then out.sinCargar = true else out.dentro = true end
+			end
 			out.objetivos[#out.objetivos + 1] = g
 			if g.map and not out.objetivo then out.objetivo = { map = g.map, x = g.x, y = g.y, f = g.f } end
 		end

@@ -77,7 +77,9 @@ function E.PuedeDosArmas()
 		if ok and type(si) == "boolean" then return si end
 	end
 	local _, clase = UnitClass("player")
-	local nivel = UnitLevel("player") or 1
+	-- 1.4.0: en mazmorras pueden llegar secretos (no se comparan)
+	clase = N.Leer(clase)
+	local nivel = tonumber(N.Leer(UnitLevel("player"))) or 1
 	return clase == "ROGUE" or (clase == "WARRIOR" and nivel >= 10) or (clase == "HUNTER" and nivel >= 20)
 end
 
@@ -122,7 +124,7 @@ end
 
 function E.Resultado(b)
 	local r = b and cache[b.id]
-	local nivel = UnitLevel("player")
+	local nivel = N.Leer(UnitLevel("player")) -- 1.4.0: secreto
 	if r and r.nivel == nivel then return r end
 	return nil
 end
@@ -271,7 +273,7 @@ function E.Buscar(b, alListo, alAvance)
 	end)
 	if #ids == 0 then return false, "codex" end
 	trabajo = { build = b, ids = ids, i = 0, mejores = {}, w = w, alListo = alListo, alAvance = alAvance,
-		nivel = UnitLevel("player") or 1, dual = E.PuedeDosArmas(), dosManos = E.LlevasDosManos() }
+		nivel = tonumber(N.Leer(UnitLevel("player"))) or 1, dual = E.PuedeDosArmas(), dosManos = E.LlevasDosManos() }
 	A.After(0, paso)
 	return true
 end

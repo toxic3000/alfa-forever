@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "A 1.3.9: a matilha caça melhor", "items": ["**Fechar minhas missões:** monta a melhor rota com todas as suas missões, zona por zona e com as entregas juntas; as que não valem mais a pena vão para \"Para depois\".", "**Guias de profissão do Alfa:** por faixas, com a melhor zona, a receita mais barata que ainda dá pontos e seus materiais. \"Redefinir este guia\" encontra onde você está.", "**A viagem, nova:** o navio e o zepelim têm seu cartão com a contagem da partida, e o clique na seta leva você ao próximo lugar.", "**Reporte com um clique:** o Lobo Mau avisa quando o Alfa encontra um erro dele. Além disso: placar de Horda e Aliança e o mapa por dentro das masmorras."]}
+    "mapa": {"titulo": "A 1.4.0: a matilha firme", "items": ["**Alfa está de cara nova:** janela com barra lateral, capa do Hoje e anúncios de cinema, sempre centralizados.", "**Mova tudo:** `/alfa acomodar` ou Shift + arrastar para pôr cada coisa do Alfa onde quiser.", "**Sua facção e sua temporada:** o tema da Horda ou da Aliança e `/alfa temporada` com sua aventura em cartões.", "**Mais rápido e firme:** guias por faixa de nível, Duas telas sem aumentar a interface e rotas de minério perto de você."]}
   },
   "contraportada": {
     "titulo": "Entre para a matilha",

@@ -684,3 +684,7 @@ M.EN = {
 	["Clic: plegar o abrir esta sección."] = "Click: collapse or expand this section.",
 	["%s parecidos a lo que escribiste"] = "%s similar to what you typed",
 }
+-- 1.4.0 (pulido)
+M.EN["Con los filtros que elegiste no queda nada. Quítalos para ver todo lo que encontré."] = "Nothing is left with the filters you picked. Remove them to see everything I found."
+M.EN["Quitar los filtros"] = "Remove the filters"
+M.EN["Borrar la búsqueda"] = "Clear the search"

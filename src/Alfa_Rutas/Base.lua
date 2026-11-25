@@ -34,6 +34,7 @@ local floor, format, concat = math.floor, string.format, table.concat
 
 -- Un número de verdad (ni nil, ni un valor raro del cliente), o d.
 function M.num(v, d)
+	if issecretvalue and issecretvalue(v) then return d end -- 1.4.0: un secreto no es un número que se pueda usar
 	if type(v) == "number" and v == v then return v end
 	return d
 end
@@ -88,7 +89,7 @@ function M.XPMision(qid)
 		local xp = ok and type(q) == "table" and tonumber(q.xp) or nil
 		if xp and xp > 0 then
 			local Lv = M.Motor("Levels")
-			local nivel = UnitLevel and tonumber(UnitLevel("player")) or 1
+			local nivel = UnitLevel and N.LeerNumero(UnitLevel("player"), 1) -- 1.4.0: secreto
 			local parte = 1
 			if Lv and Lv.Share and tonumber(q.level or q.lvl) then
 				local okS, p = pcall(Lv.Share, nivel, tonumber(q.level or q.lvl))

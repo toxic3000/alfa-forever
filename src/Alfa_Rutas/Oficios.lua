@@ -234,7 +234,19 @@ function Of.Ctx(linea)
 		conoce = rank ~= nil, names = {}, motorNames = {}, steps = {} }
 	ctx.motorOk = leerMotor(ctx)
 	ctx.skillTok = Of.Tok(ctx, "skill", linea, o.en)
+	ctx.juego = Of.RecetasJuego(linea)
 	return ctx
+end
+
+-- 1.4.0 (plan 8): las recetas reales de Forever que leyó Comercio al abrir tu
+-- oficio (reactivos, colores y las que ya sabes), para C.Optimizar.
+-- -> { { spell, item, q, n, reagents, yellow, grey, sabe, desde }, ... } | nil
+function Of.RecetasJuego(linea)
+	local C = rawget(_G, "AlfaComercio")
+	if not (type(C) == "table" and type(C.CatalogoRecetas) == "function") then return nil end
+	local ok, lista = pcall(C.CatalogoRecetas, linea)
+	if not ok or type(lista) ~= "table" or #lista == 0 then return nil end
+	return lista
 end
 
 -- El tramo (1-4) de una habilidad: 75 ya es del segundo.
@@ -378,6 +390,14 @@ function Of.Instalar(linea)
 	if not ok then return false, err end
 	armadas[def.id] = true
 	Of.ultimo = { linea = linea, def = def }
+	-- 1.4.0 (plan 31): qué paso de materiales tiene algo que comprar (OficiosComprar.lua).
+	local porIndice = {}
+	for i, s in ipairs(def.steps) do
+		local c = ctx.comprarPaso and ctx.comprarPaso[s]
+		if c then porIndice[i] = c end
+	end
+	Of.comprar = Of.comprar or {}
+	Of.comprar[def.id] = { linea = linea, pasos = porIndice }
 	avisarMotor()
 	return true
 end

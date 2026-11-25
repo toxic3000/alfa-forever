@@ -22,6 +22,8 @@ local A, L = M.A, M.L
 local Ch = {}
 M.Cadenas = Ch
 
+A.RegisterDefaults(M.ID, { avisoCadena = true }) -- 1.4.0 (27)
+
 local type, ipairs, tonumber, pairs = type, ipairs, tonumber, pairs
 local format = string.format
 
@@ -209,13 +211,57 @@ local function alAbandonar()
 	if not qid or qid <= 0 then return end
 	local ahora = GetTime()
 	if dicho.qid == qid and ahora - dicho.t < 5 then return end -- (el juego puede llamarla dos veces)
+	if A.Get(M.ID .. ".avisoCadena") == false then return end
 	local f, titulo = Ch.Siguiente(qid)
 	if not f then return end
 	dicho.qid, dicho.t = qid, ahora
-	M.Aviso(L["Antes de abandonarla"], format(L["Si la abandonas, pierdes la cadena: después sigue “%s”."], titulo or ""),
-		{ icono = "ic-aviso", tono = "aviso" })
+	-- 1.4.0 (27): cuánto vale lo que pierdes (Ch.Valor): cuántas siguen, la
+	-- experiencia y el premio del final, con «Ver la cadena».
+	local val = Ch.Valor(qid)
+	local texto = format(L["Si la abandonas, pierdes la cadena: después sigue “%s”."], titulo or "")
+	local valiosa = val and val.valiosa
+	if val and val.texto then texto = texto .. " " .. val.texto end
+	local Ca = M.Cadena
+	M.Aviso(valiosa and L["Antes de abandonarla: abre una cadena valiosa"] or L["Antes de abandonarla"], texto,
+		{ icono = "ic-aviso", tono = "aviso", duracion = valiosa and 14 or nil, importante = valiosa and "siempre" or nil,
+			accion = Ca and Ca.Abrir and A.Get(M.ID .. ".cadenaCompleta") ~= false
+				and { texto = L["Ver la cadena"], alClic = function() Ca.Abrir(qid) end } or nil })
 end
 Ch.AlAbandonar = alAbandonar
+
+-- 1.4.0 (27): lo que vale la cadena que abre una misión. -> { siguen, xp,
+-- premio = itemID | nil, valiosa = bool, texto } | nil (sin datos o sin cadena)
+-- Valiosa: 2 o más misiones después, o un premio raro (o mejor) al final.
+function Ch.Valor(qid)
+	qid = tonumber(qid)
+	local Ca = M.Cadena
+	if not qid or enCombate() or not (Ca and Ca.De) then return nil end
+	local ok, d = pcall(Ca.De, qid)
+	if not ok or type(d) ~= "table" then return nil end
+	local siguen, xp, vistaEsta = 0, 0, false
+	local C = CX()
+	for _, x in ipairs(d.lista or {}) do
+		if x.estado == "esta" then
+			vistaEsta = true
+		elseif vistaEsta and x.estado ~= "hecha" then
+			siguen = siguen + 1
+			local r = C and C.Quest and C.Quest(x.qid)
+			xp = xp + (r and tonumber(r.xp) or 0)
+		end
+	end
+	if siguen == 0 then return nil end
+	local mejor, calidad
+	for _, it in ipairs(d.premio or {}) do
+		local i = C and C.Item and C.Item(it)
+		local cal = i and tonumber(i.quality)
+		if cal and cal >= CALIDAD_RARA and (not calidad or cal > calidad) then mejor, calidad = it, cal end
+	end
+	local partes = { M.Plural(siguen, L["Abre %d misión más"], L["Abre %d misiones más"]) }
+	if xp > 0 then partes[#partes + 1] = format(L["+%s XP"], M.Miles(xp)) end
+	if mejor then partes[#partes + 1] = format(L["al final da %s"], M.NombreObjeto(mejor)) end
+	return { siguen = siguen, xp = xp, premio = mejor, valiosa = siguen >= 2 or mejor ~= nil,
+		texto = table.concat(partes, "  \194\183  ") .. "." }
+end
 
 A.OnLogin(function()
 	local QL = C_QuestLog

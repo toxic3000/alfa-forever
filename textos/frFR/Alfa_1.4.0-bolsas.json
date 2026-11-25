@@ -1,0 +1,23 @@
+{
+ "%s saldrá siempre en «%s». Suéltalo otra vez ahí para devolverlo a «%s».": "%s apparaîtra toujours dans « %s ». Redéposez-le là pour le remettre dans « %s ».",
+ "%s volvió a su sección de siempre.": "%s est revenu dans sa section habituelle.",
+ "%s: %d de %d libres": "%s : %d sur %d libres",
+ "Así quedarán tus bolsas": "Voici vos sacs après le tri",
+ "Bolsa especial": "Sac spécial",
+ "El juego decide el orden final.": "Le jeu décide de l’ordre final.",
+ "Ese objeto": "Cet objet",
+ "Gemas": "Gemmes",
+ "Inscripción": "Calligraphie",
+ "Lo que tiene candado se queda en su lugar.": "Les objets verrouillés restent en place.",
+ "Mejor que lo que llevas:": "Mieux que ce que vous portez :",
+ "Menos": "Moins",
+ "Más o menos así quedarán": "À peu près ainsi",
+ "Nada se mueve hasta que das clic.": "Rien ne bouge tant que vous ne cliquez pas.",
+ "No hay nada que ordenar.": "Rien à trier.",
+ "Peor que lo que llevas:": "Moins bien que ce que vous portez :",
+ "Queda 1 casilla libre.": "Plus qu’1 emplacement libre.",
+ "Quedan %d casillas libres.": "Plus que %d emplacements libres.",
+ "Suelta aquí un objeto para que siempre salga en esta sección.": "Déposez un objet ici pour qu’il apparaisse toujours dans cette section.",
+ "Vender (%d)": "Vendre (%d)",
+ "desde el final": "depuis la fin"
+}

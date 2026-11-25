@@ -638,6 +638,62 @@ PARCHES += [
      lambda cfg: 'join:SetText(ns.T("Polestar es de código abierto:"))'),
     ("Alfa/UI/Thanks.lua", 'closing:SetText(L["Thank you for making Alfa possible."])',
      lambda cfg: 'closing:SetText(ns.T("Gracias por hacer posible el motor de Alfa."))'),
+    # 1.4.0 (83): la flecha decía «Ve a Ve al lugar 1»: un punto sin lugar
+    # conocido cuyo texto ya empieza con un verbo («Ve al…», «Habla con…»,
+    # «Vuelve a…», «Go to…», en cualquier idioma) se dice tal cual.
+    ("Alfa/Core/Engine.lua", "function Own.onThroughZone(s, goal)\n",
+     _fijo("-- Alfa 1.4.0: ¿el texto de un punto ya empieza con un verbo? (la primera\n"
+           "-- palabra de una acción del idioma, o una de las de siempre).\n"
+           "local VERBOS_FIJOS = { go = true, head = true, ['return'] = true, run = true, walk = true, travel = true,\n"
+           "\tfollow = true, take = true, use = true, ride = true, fly = true, enter = true, talk = true, speak = true,\n"
+           "\tve = true, vuelve = true, regresa = true, habla = true, entra = true, sigue = true, camina = true, corre = true,\n"
+           "\tusa = true, toma = true, vuela = true, cruza = true, sube = true, baja = true, busca = true,\n"
+           "\tva = true, ['rends-toi'] = true, retourne = true, parle = true, entre = true, prends = true, utilise = true, suis = true,\n"
+           "\tgeh = true, gehe = true, sprich = true, kehre = true, betritt = true, reise = true, fliege = true, folge = true, benutze = true,\n"
+           "\t['vá'] = true, volte = true, fale = true, siga = true, pegue = true, ir = true,\n"
+           "\t['Иди'] = true, ['Идите'] = true, ['Отправляйтесь'] = true, ['Поговорите'] = true, ['Вернитесь'] = true }\n"
+           "-- 1.4.0: también la acción traducida entera como prefijo: en chino,\n"
+           "-- japonés o coreano no hay espacios («前往暴风城») y en francés «Aller à»\n"
+           "-- son dos palabras. Tras el prefijo no sigue una letra (ASCII) más: así\n"
+           "-- «Entrada» no cuenta como «Entra».\n"
+           "function Own.conPrefijo(text, v)\n"
+           "\tv = v:match('^%s*(.-)%s*$')\n"
+           "\tif v == '' then return false end\n"
+           "\tlocal t = text:match('^%s*(.*)$')\n"
+           "\tif t:sub(1, #v) ~= v and t:sub(1, #v):lower() ~= v:lower() then return false end\n"
+           "\tlocal c = t:byte(#v + 1)\n"
+           "\treturn not c or c >= 128 or not string.char(c):match('%w')\n"
+           "end\n"
+           "function Own.empiezaConVerbo(text)\n"
+           "\tif type(text) ~= 'string' then return false end\n"
+           "\tlocal w = text:match('^%s*([^%s,.:;]+)')\n"
+           "\tif not w then return false end\n"
+           "\tif VERBOS_FIJOS[w] or VERBOS_FIJOS[w:lower()] then return true end\n"
+           "\tw = w:lower()\n"
+           "\tfor _, k in ipairs({ 'Go to', 'Talk to', 'Enter', 'Fly to', 'Click', 'Kill', 'Collect', 'Turn in', 'Accept', 'Wait', 'Use' }) do\n"
+           "\t\tlocal v = rawget(L, k)\n"
+           "\t\tlocal p = type(v) == 'string' and v:match('^%s*([^%s,.:;]+)')\n"
+           "\t\tif p and p:lower() == w then return true end\n"
+           "\t\tif type(v) == 'string' and Own.conPrefijo(text, v) then return true end\n"
+           "\tend\n"
+           "\treturn false\n"
+           "end\n"
+           "ns.EmpiezaConVerbo = Own.empiezaConVerbo -- (para el banco)\n\n"
+           "function Own.onThroughZone(s, goal)\n")),
+    ("Alfa/Core/Engine.lua",
+     "\t\tif place or goal.text then return L[\"Go to\"], place or goal.text, \"place\", mapName end\n",
+     _fijo("\t\tif not place and Own.empiezaConVerbo(goal.text) then return \"\", goal.text, \"text\", mapName end\n"
+           "\t\tif place or goal.text then return L[\"Go to\"], place or goal.text, \"place\", mapName end\n")),
+    # 1.4.0 (83): Comodidades > Rastreadores > «Reiniciar sesión» no decía nada
+    # al tocarlo (prueba_botones: «sin efecto»): ahora confirma.
+    ("Alfa/QoL/Options.lua", 'onClick = function() if QoL.XP then QoL.XP.ResetSession() end end },',
+     lambda cfg: 'onClick = function() if QoL.XP then QoL.XP.ResetSession() ns.Print(ns.T("Listo: tus PE por hora empiezan de cero.")) end end },'),
+    # 1.4.0 (83): con letra grande el número («40») salía «…»: se medía antes
+    # de que la letra creciera. Sin ancho fijo, el número siempre cabe entero.
+    ("Alfa/UI/Thanks.lua", 'r.Count:SetWidth(e[2] and W.TextWidth(r.Count) or 0)',
+     lambda cfg: 'r.Count:SetWidth(0)'),
+    ("Alfa/UI/Thanks.lua", 'r.Name:SetWidth(inner - 22 - 10 - (e[2] and r.Count:GetWidth() + 8 or 0))',
+     lambda cfg: 'r.Name:SetWidth(inner - 22 - 10 - (e[2] and W.TextWidth(r.Count) * 1.25 + 10 or 0))'),
 ]
 
 # 1.3.3: «Usa tu piedra de hogar». El tramo de la piedra guarda a dónde te
@@ -1178,6 +1234,466 @@ PARCHES += [
            "function Travel.CurrentLeg()\n")),
 ]
 
+# 1.4.0 (la manada firme, plan 4): guías por tramo de nivel (tools/tramos.py).
+# Los pasos de cada guía (su stepsSrc) viven en un paquete a pedido por tramo
+# (Alfa_Guides_Horde_Pasos1...); la ficha dice cuál (`stepsPart`). La primera
+# lectura de sus pasos carga ese paquete: fuera de combate con Data.Pack; en
+# combate solo si hacen falta ya (una guía abierta, su plan o la que el jugador
+# acaba de pedir), directo; las demás esperan al fin del combate (revisión).
+PARCHES += [
+    ("Alfa/Core/Guides.lua",
+     '\tlocal deferred = rawget(def, "steps") == nil and isStr(def.stepsSrc)\n',
+     lambda c: '\tlocal deferred = rawget(def, "steps") == nil and (isStr(def.stepsSrc) or isStr(rawget(def, "stepsPart"))) -- Alfa 1.4.0\n'),
+    ("Alfa/Core/Guides.lua",
+     'function Guides.Steps(def)\n\tlocal steps = rawget(def, "steps")\n\tif steps or type(rawget(def, "stepsSrc")) ~= "string" then return steps end\n',
+     lambda c: '''-- Alfa (1.4.0): a guide's steps may sit in the addon of its level range
+-- (tools/tramos.py: `stepsPart` in the header, the source handed in by
+-- Polestar.RegisterGuideSteps). The first read of its steps loads that addon:
+-- out of combat through Data.Pack; in combat only when the steps are wanted
+-- right then (Own.wantedNow), straight from the client.
+Own.stepSources = {} -- guide id -> steps source from its range's addon
+Own.partReported = {} -- steps addon -> true once its failure is told
+-- Alfa (1.4.0, revisión): steps addons whose load in combat failed: not
+-- tried again on every read while the fight lasts (again once it ends).
+Own.combatFailed = {}
+-- A part named with "*" (a class guide of both factions, in each faction's
+-- range addon) is the player's faction's. Alfa (1.4.0, revisión): never the
+-- other faction's once the player's is known (that one needs the other
+-- faction's whole guide pack): a missing part is told instead (Data.CheckInstall).
+function Own.partsOf(part)
+	if not part:find("*", 1, true) then return { part } end
+	local mine = ns.Compat and ns.Compat.GetPlayerFaction and ns.Compat.GetPlayerFaction()
+	if mine == "Horde" or mine == "Alliance" then return { (part:gsub("%*", mine)) } end
+	return { (part:gsub("%*", "Horde")), (part:gsub("%*", "Alliance")) }
+end
+
+-- Alfa (1.4.0, revisión): in combat a steps addon (0.7 to 2 MB) is read in
+-- only for a guide wanted right then: one an open tab shows (or the plan of
+-- one being made, Engine.PlanningTab), or the one the player just asked for.
+function Own.wantedNow(def)
+	local E = ns.Engine
+	if E and E.TabIds and E.TabIds()[def.id] then return true end
+	if E and E.PlanningTab and E.PlanningTab() then return true end
+	local N = rawget(_G, "AlfaNucleo")
+	return type(N) == "table" and type(N.PidioJugador) == "function" and N.PidioJugador() == true
+end
+
+function Own.partSource(def)
+	local part = rawget(def, "stepsPart")
+	if type(part) ~= "string" then return nil end
+	local src = Own.stepSources[def.id]
+	Own.held = nil
+	for _, name in ipairs(type(src) ~= "string" and Own.partsOf(part) or {}) do
+		local ok, reason = ns.Data.Pack(name)
+		if not ok and reason == "combat" then
+			if Own.combatFailed[name] or not Own.wantedNow(def) then
+				Own.held = true
+			elseif C_AddOns and C_AddOns.LoadAddOn then
+				pcall(C_AddOns.LoadAddOn, name)
+				if type(Own.stepSources[def.id]) ~= "string" then Own.combatFailed[name] = true end
+			end
+		end
+		src = Own.stepSources[def.id]
+		if type(src) == "string" then break end
+	end
+	if type(src) ~= "string" then return nil end
+	Own.held = nil
+	rawset(def, "stepsSrc", src)
+	return src
+end
+ns.RegisterEvent("PLAYER_REGEN_ENABLED", function()
+	if next(Own.combatFailed) then Own.combatFailed = {} end
+end)
+
+-- A guide whose range's addon is missing or turned off: one step that says
+-- so, not kept (a later read tries the addon again), and the pack's problem
+-- told once per addon. Alfa (1.4.0, revisión): the stand-in is marked
+-- (`steps.alfaFalta`, "falta" or "combate", through a metatable so pairs and
+-- rawget never see it): the Engine matches, maps and stores nothing of a
+-- save against it (Own.falta), so the guide's progress stays as it was
+-- until its steps are in. Held in combat it says so, and nothing is told.
+Own.FALTA = { __index = { alfaFalta = "falta" } }
+Own.EN_COMBATE = { __index = { alfaFalta = "combate" } }
+function Own.partMissing(def)
+	local part = rawget(def, "stepsPart")
+	if type(part) ~= "string" then return nil end
+	if Own.held then
+		return setmetatable({ { title = def.title, goals = { { t = "note", text = ns.T("Los pasos de esta guía se leen al salir de combate.") } } } }, Own.EN_COMBATE)
+	end
+	local r = packs[def.pack]
+	if r and not Own.partReported[part] then
+		Own.partReported[part] = true
+		problem(r, "guide-refused", (L["Guide %s was refused: %s."]):format(escape(def.id), escape("its steps' addon " .. part .. " is not loaded")), def.id)
+	end
+	return setmetatable({ { title = def.title, goals = { { t = "note", text = L["This guide could not be read."] } } } }, Own.FALTA)
+end
+
+-- Alfa (1.4.0, revisión): "falta" | "combate" when guide g (or the guide a
+-- plan was made from) shows the stand-in step of Own.partMissing, else nil.
+function Guides.FaltanPasos(g)
+	local st = type(g) == "table" and g.steps
+	return type(st) == "table" and st.alfaFalta or nil
+end
+
+function Guides.Steps(def)
+	local steps = rawget(def, "steps")
+	if steps then return steps end
+	if type(rawget(def, "stepsSrc")) ~= "string" and not Own.partSource(def) then return Own.partMissing(def) end
+'''),
+    ("Alfa/Core/Guides.lua",
+     '-- Guide id -> its baked legs (step -> string) from a race part, or nil.\n',
+     lambda c: '''-- Alfa (1.4.0): a steps addon (tools/tramos.py) hands in the steps source of
+-- its guides: { [guideId] = "return { ... }" }. Kept per id (a guide read in
+-- again finds it), given to the guide on the first read of its steps
+-- (Own.partSource). Strings only, never run here.
+function ns.RegisterGuideSteps(packId, list)
+	if type(packId) ~= "string" or type(list) ~= "table" or not packs[packId] then return end
+	for id, src in pairs(list) do
+		if type(id) == "string" and type(src) == "string" and ownsId(packId, id) then
+			Own.stepSources[id] = src
+		end
+	end
+end
+
+-- Guide id -> its baked legs (step -> string) from a race part, or nil.
+'''),
+    ("Alfa/Core/Engine.lua",
+     '\t\tlocal src = g and rawget(g, "steps") == nil and rawget(g, "stepsSrc")\n'
+     '\t\tif g and Guides.GuideMatches(g, player) and type(src) == "string" then\n',
+     lambda c: '''		local src = g and rawget(g, "steps") == nil and rawget(g, "stepsSrc")
+		-- Alfa (1.4.0): a guide whose range's addon is not read in yet lists
+		-- them in its header (`dungeonMaps`, tools/diferir.py and tramos.py).
+		local dm = g and rawget(g, "steps") == nil and type(src) ~= "string" and type(rawget(g, "stepsPart")) == "string"
+			and (type(rawget(g, "dungeonMaps")) == "table" and rawget(g, "dungeonMaps") or NONE)
+		if dm and Guides.GuideMatches(g, player) then
+			for _, map in ipairs(dm) do
+				if type(map) == "number" then out[map] = true end
+			end
+		elseif g and Guides.GuideMatches(g, player) and type(src) == "string" then
+'''),
+    ("Alfa/Core/Engine.lua",
+     '\t\tif g and Guides.GuideMatches(g, player) and rawget(g, "steps") == nil and type(rawget(g, "stepsSrc")) == "string" then\n',
+     lambda c: '\t\tif g and Guides.GuideMatches(g, player) and rawget(g, "steps") == nil and (type(rawget(g, "stepsSrc")) == "string" or type(rawget(g, "stepsPart")) == "string") then -- Alfa 1.4.0\n'),
+]
+
+
+# 1.4.0 (plan 15): la pasada de valores secretos por el motor. Lo que el juego
+# puede dar en secreto en combate y en mazmorras (combate, muerto, instancia,
+# taxi, el hechizo que lanzas, el nombre/clase/nivel de un compañero, una aura)
+# ya no se prueba en un if ni se compara crudo: pasa por Compat.Readable /
+# Compat.InCombat / Compat.IsInInstance (un secreto cuenta como «no sé»).
+# Prueba: tools/banco/prueba_140_secretos.lua.
+SECRETOS_140 = [
+    ("Alfa/Core/Engine.lua",
+     '\tif UnitAffectingCombat and UnitAffectingCombat("player") then return true end',
+     _fijo('\tif Compat().InCombat() then return true end -- Alfa 1.4.0: secretos')),
+    ("Alfa/Core/Engine.lua",
+     'if (UnitAffectingCombat and UnitAffectingCombat("player")) or st.sign ~= sign then',
+     _fijo('if Compat().InCombat() or st.sign ~= sign then -- Alfa 1.4.0: secretos')),
+    ("Alfa/Core/Engine.lua",
+     'local fighting = UnitAffectingCombat and UnitAffectingCombat("player")',
+     _fijo('local fighting = Compat().InCombat() -- Alfa 1.4.0: secretos')),
+    ("Alfa/Core/Engine.lua",
+     'if t == "die" then return not (UnitIsDeadOrGhost and UnitIsDeadOrGhost("player")) end',
+     _fijo('if t == "die" then return not Compat().Readable(UnitIsDeadOrGhost and UnitIsDeadOrGhost("player")) end')),
+    ("Alfa/Core/Engine.lua",
+     'if UnitAffectingCombat and UnitAffectingCombat("player") then Spots.noteWork(c, px, py, GetTime()) end',
+     _fijo('if Compat().InCombat() then Spots.noteWork(c, px, py, GetTime()) end -- Alfa 1.4.0: secretos')),
+    ("Alfa/Core/Engine.lua",
+     '\tif UnitIsDead and UnitIsDead(unit) then return nil end\n\treturn Compat().GetNpcID(unit)',
+     _fijo('\tif UnitIsDead and Compat().Readable(UnitIsDead(unit)) then return nil end\n\treturn Compat().GetNpcID(unit)')),
+    ("Alfa/Core/Engine.lua",
+     'if IsInInstance and IsInInstance() then return "instance" end\n\tif UnitOnTaxi and UnitOnTaxi("player") then return "flight" end',
+     _fijo('if Compat().IsInInstance() then return "instance" end -- Alfa 1.4.0: secretos\n'
+           '\tif Compat().IsOnTaxi() then return "flight" end')),
+    ("Alfa/Core/Engine.lua",
+     'local spell = select(9, UnitCastingInfo("player"))',
+     _fijo('local spell = Compat().Readable((select(9, UnitCastingInfo("player")))) -- Alfa 1.4.0: ni de índice')),
+    ("Alfa/Core/Engine.lua",
+     'if UnitAffectingCombat and UnitAffectingCombat("player") then return parked end',
+     _fijo('if Compat().InCombat() then return parked end -- Alfa 1.4.0: secretos')),
+    ("Alfa/Core/Engine.lua",
+     'elseif UnitAffectingCombat and UnitAffectingCombat("player") then',
+     _fijo('elseif Compat().InCombat() then -- Alfa 1.4.0: secretos')),
+    ("Alfa/Nav/Travel.lua",
+     'return UnitIsGhost ~= nil and UnitIsGhost("player") == true',
+     _fijo('return UnitIsGhost ~= nil and ns.Compat.Readable(UnitIsGhost("player")) == true -- Alfa 1.4.0')),
+    ("Alfa/QoL/Buttons.lua",
+     'if UnitIsDead and UnitIsDead("target") then',
+     _fijo('if UnitIsDead and ns.Compat.Readable(UnitIsDead("target")) then -- Alfa 1.4.0: secretos')),
+    ("Alfa/QoL/Buttons.lua",
+     'if UnitCanAttack and UnitCanAttack("player", "target") then return nil end',
+     _fijo('if UnitCanAttack and ns.Compat.Readable(UnitCanAttack("player", "target")) then return nil end')),
+    ("Alfa/QoL/Social.lua",
+     'return UnitAffectingCombat and UnitAffectingCombat(unit) and true or false',
+     _fijo('return readable(UnitAffectingCombat and UnitAffectingCombat(unit)) and true or false -- Alfa 1.4.0')),
+    ("Alfa/Quests/Party.lua",
+     'local concat = table.concat\n',
+     _fijo('local concat = table.concat\n'
+           '-- Alfa 1.4.0: conectado y caído de un compañero; un secreto es «no sé»\n'
+           '-- (conectado, de pie). Leen la función del juego al llamarla.\n'
+           'local function UnitIsConnected(u)\n'
+           '\tlocal f = _G.UnitIsConnected\n'
+           '\tif not f then return true end\n'
+           '\tlocal v = f(u)\n'
+           '\tif ns.Compat.IsSecret(v) then return true end\n'
+           '\treturn v\n'
+           'end\n'
+           'local function UnitIsDeadOrGhost(u)\n'
+           '\tlocal f = _G.UnitIsDeadOrGhost\n'
+           '\tif not f then return false end\n'
+           '\treturn ns.Compat.Readable(f(u)) and true or false\n'
+           'end\n')),
+    ("Alfa/Quests/Party.lua",
+     '\t\tlevel = UnitLevel(unit)\n',
+     _fijo('\t\tlevel = ns.Compat.Readable(UnitLevel(unit)) -- Alfa 1.4.0: secretos\n')),
+    ("Alfa/Quests/Party.lua",
+     'if unit and UnitClass then class = select(2, UnitClass(unit)) end',
+     _fijo('if unit and UnitClass then class = ns.Compat.Readable((select(2, UnitClass(unit)))) end')),
+    ("Alfa/Quests/Party.lua",
+     'if unit and UnitRace then race = select(2, UnitRace(unit)) end',
+     _fijo('if unit and UnitRace then race = ns.Compat.Readable((select(2, UnitRace(unit)))) end')),
+    ("Alfa/Quests/Party.lua",
+     'local sex = e.unit and UnitSex and UnitSex(e.unit)',
+     _fijo('local sex = e.unit and UnitSex and ns.Compat.Readable(UnitSex(e.unit)) -- Alfa 1.4.0')),
+    ("Alfa/UI/UI.lua",
+     'if IsInInstance and IsInInstance() then return nil end',
+     _fijo('if ns.Compat.IsInInstance() then return nil end -- Alfa 1.4.0: secretos')),
+    ("Alfa/Nav/Transit.lua",
+     'return inside and (kind == "pvp" or kind == "arena") or false',
+     _fijo('if ns.Compat.IsSecret(inside) or ns.Compat.IsSecret(kind) then return false end -- Alfa 1.4.0\n'
+           '\treturn inside and (kind == "pvp" or kind == "arena") or false')),
+    ("Alfa/Maps/Maps.lua",
+     '\tif not inside then return nil end\n\tlocal name, itype, difficultyID, _, _, _, _, instanceID = GetInstanceInfo()\n'
+     '\treturn name, itype or kind, difficultyID, instanceID\n',
+     _fijo('\tif not readable(inside) then return nil end -- Alfa 1.4.0: secretos\n'
+           '\tlocal name, itype, difficultyID, _, _, _, _, instanceID = GetInstanceInfo()\n'
+           '\treturn readable(name), readable(itype) or readable(kind), readable(difficultyID), readable(instanceID)\n')),
+    ("Alfa/QoL/Death.lua",
+     'local seconds = ok and type(aura) == "table" and readable(aura.duration)',
+     _fijo('local seconds = ok and type(readable(aura)) == "table" and readable(aura.duration) -- Alfa 1.4.0')),
+    ("Alfa/QoL/Rest.lua",
+     'if not ok or type(aura) ~= "table" then return nil end',
+     _fijo('if not ok or type(readable(aura)) ~= "table" then return nil end -- Alfa 1.4.0: secretos')),
+]
+PARCHES += SECRETOS_140
+
+# 1.4.0 (plan 5): el Codex por partes (tools/tramos.py, partir_codex). Cada
+# grupo de un paquete aparte se carga la primera vez que alguien pregunta por
+# él; si el grupo ya está (un Codex sin partir), no se carga nada.
+PARCHES += [
+    ("Alfa/Lookup/Codex.lua",
+     "-- group, id -> name, record string | nil (nil, nil when absent)\nlocal function entryOf(group, id)\n",
+     lambda c: '''-- Alfa (1.4.0): the Codex in parts (tools/tramos.py): items in one
+-- load-on-demand addon, NPCs and quests in another, read in the first time one of its groups is
+-- asked for (the core, with the meta and the search index, as before). Out
+-- of combat through Data.Pack; in combat never (see partWanted). A group
+-- already in (a Codex not split) loads nothing.
+local PART_OF = {
+	item = "Alfa_Codex_Objetos", mount = "Alfa_Codex_Objetos", pet = "Alfa_Codex_Objetos", recipe = "Alfa_Codex_Objetos", tabard = "Alfa_Codex_Objetos",
+	npc = "Alfa_Codex_Mundo", rare = "Alfa_Codex_Mundo", role = "Alfa_Codex_Mundo", object = "Alfa_Codex_Mundo", treasure = "Alfa_Codex_Mundo",
+	quest = "Alfa_Codex_Mundo",
+}
+local partIn = {} -- part addon -> true once read in
+-- Alfa (1.4.0, revisión): in combat no part is read in (1.8 and 3.4 MB, a
+-- hitch mid-fight): "not there" for now (nothing kept), and the parts asked
+-- for are read in once the fight ends (CODEX_LOADED again, so what showed
+-- without them fills in).
+local partWanted = {} -- part addon -> true: asked for in combat
+local function need(group)
+	local part = PART_OF[group]
+	if not part or partIn[part] or chunks[group] then return true end
+	local Data = ns.Data
+	local ok, reason = false, nil
+	if Data and Data.Pack then ok, reason = Data.Pack(part) end
+	if not ok and reason == "combat" then partWanted[part] = true end
+	if ok then partIn[part] = true end
+	return ok
+end
+Codex.NeedGroup = need
+
+-- The parts a window is about to use (Lookup, Dungeons, the Encyclopedia),
+-- read in out of combat; in combat, once it ends. -> true when all are in.
+function Codex.Preload(groups)
+	local all = true
+	for _, group in ipairs(type(groups) == "table" and groups or { "item", "npc" }) do
+		if not need(group) then all = false end
+	end
+	return all
+end
+
+function Codex.PartsWanted()
+	local out = {}
+	for part in pairs(partWanted) do out[#out + 1] = part end
+	table.sort(out)
+	return out
+end
+
+local function partsAfterCombat()
+	if not next(partWanted) then return end
+	local list = partWanted
+	partWanted = {}
+	local function readIn()
+		local any = false
+		for part in pairs(list) do
+			if not partIn[part] then
+				local ok, reason = ns.Data.Pack(part)
+				if ok then partIn[part], any = true, true elseif reason == "combat" then partWanted[part] = true end
+			end
+		end
+		if any and meta and ns.Fire then ns.Fire("CODEX_LOADED", meta) end
+	end
+	local N = rawget(_G, "AlfaNucleo")
+	if type(N) == "table" and type(N.AlLibre) == "function" then
+		N.AlLibre("codex.partes", readIn, 3, { tipo = "pesado" })
+	else
+		readIn()
+	end
+end
+ns.RegisterEvent("PLAYER_REGEN_ENABLED", partsAfterCombat)
+
+-- group, id -> name, record string | nil (nil, nil when absent)
+local function entryOf(group, id)
+'''),
+    ("Alfa/Lookup/Codex.lua",
+     "local function nameOf(group, id)\n\treturn (entryOf(group, id))\nend\n",
+     lambda c: "local function nameOf(group, id)\n\tif not need(group) then return nil end -- Alfa 1.4.0\n\treturn (entryOf(group, id))\nend\n"),
+    ("Alfa/Lookup/Codex.lua",
+     "\tif id == nil then return nil end\n\tif not c then\n",
+     lambda c: "\tif id == nil then return nil end\n\tif not need(group) then return nil end -- Alfa 1.4.0: its part not in (combat): nothing kept\n\tif not c then\n"),
+    ("Alfa/Lookup/Codex.lua",
+     "\tif not (id and ready()) then return {} end\n\tlocal ids = followUps[id]\n",
+     lambda c: "\tif not (id and ready() and need(\"quest\")) then return {} end\n\tlocal ids = followUps[id]\n"),
+    ("Alfa/Lookup/Codex.lua",
+     "\tif role == nil or not ready() then return {} end\n",
+     lambda c: "\tif role == nil or not ready() or not need(\"role\") then return {} end\n"),
+    ("Alfa/Lookup/Codex.lua",
+     "\tif not ready() then return end\n\tlocal list = chunks[kind]\n",
+     lambda c: "\tif not ready() or not need(kind) then return end\n\tlocal list = chunks[kind]\n"),
+]
+
+# 1.4.0 (plan 4, segunda vuelta): dónde empieza una guía sin leer sus pasos
+# (`alfaStart` en la ficha, tools/tramos.py), para las sugerencias al entrar.
+PARCHES += [
+    ("Alfa/Core/Guides.lua",
+     "\tlocal p = startOf[g]\n\tif p == nil then\n\t\tp = false\n",
+     lambda c: '''	local p = startOf[g]
+	-- Alfa (1.4.0): a guide whose steps are not read in says where it starts in
+	-- its header (`alfaStart`, tools/tramos.py: the same first goal with map
+	-- and coordinates), so ranking suggestions reads no steps.
+	if p == nil and rawget(g, "steps") == nil then
+		local known = rawget(g, "alfaStart")
+		if type(known) == "table" then
+			p = { map = known.map, x = known.x, y = known.y, f = known.f }
+		elseif known == false then
+			p = false
+		end
+		if p ~= nil then startOf[g] = p end
+	end
+	if p == nil then
+		p = false
+'''),
+]
+
+
+# 1.4.0 (revisión, arreglo 1): una guía cuyo paquete de pasos falta (o está
+# apagado, o se aguantó en combate) enseña un paso de relleno marcado
+# (`alfaFalta`, Guides.FaltanPasos). Con él no se calcula ni se guarda la forma,
+# no se remapea ni se borra nada del avance guardado (palomitas, omitidos,
+# `when`, la vista), y las cachés por guía no se quedan con el relleno: al
+# volver el paquete todo sigue como estaba. Prueba: prueba_140_revision.lua.
+PARCHES += [
+    ("Alfa/Core/Engine.lua",
+     "function Own.stepParts(g)\n",
+     _fijo("-- Alfa (1.4.0, revisión): guide g shows the stand-in step of a missing\n"
+           "-- steps addon (Guides.FaltanPasos): nothing of the save goes by it.\n"
+           "function Own.falta(g)\n"
+           "\treturn Guides.FaltanPasos and Guides.FaltanPasos(g) ~= nil or false\n"
+           "end\n\n"
+           "function Own.stepParts(g)\n")),
+    ("Alfa/Core/Engine.lua", "\tOwn.partsCache[g] = parts\n",
+     _fijo("\tif not Own.falta(g) then Own.partsCache[g] = parts end -- Alfa 1.4.0: never the stand-in\n")),
+    ("Alfa/Core/Engine.lua", "\tOwn.shapeCache[g] = h\n",
+     _fijo("\tif not Own.falta(g) then Own.shapeCache[g] = h end -- Alfa 1.4.0: never the stand-in\n")),
+    ("Alfa/Core/Engine.lua", "\tOwn.keysCache[g] = keys\n",
+     _fijo("\tif not Own.falta(g) then Own.keysCache[g] = keys end -- Alfa 1.4.0: never the stand-in\n")),
+    ("Alfa/Core/Engine.lua", "local function checkShape(g)\n",
+     _fijo("local function checkShape(g)\n"
+           "\tif Own.falta(g) then return end -- Alfa 1.4.0: its steps not in, the save stays as it is\n")),
+    ("Alfa/Core/Engine.lua", "function Own.reworked(g)\n",
+     _fijo("function Own.reworked(g)\n"
+           "\tif Own.falta(g) then return false end -- Alfa 1.4.0: its steps not in\n")),
+    ("Alfa/Core/Engine.lua", "function Own.savePin()\n\tif not guide then return end\n",
+     _fijo("function Own.savePin()\n"
+           "\tif not guide or Own.falta(guide) then return end -- Alfa 1.4.0: the stand-in moves no saved view\n")),
+    ("Alfa/Core/Engine.lua", "\tg2.onWay = next(plan.onWay) and plan.onWay or nil\n",
+     _fijo("\tg2.onWay = next(plan.onWay) and plan.onWay or nil\n"
+           "\t-- Alfa (1.4.0): planned from a stand-in, the plan is one too.\n"
+           "\tlocal falta = Guides.FaltanPasos and Guides.FaltanPasos(g)\n"
+           "\tif falta and getmetatable(plan.steps) == nil then setmetatable(plan.steps, { __index = { alfaFalta = falta } }) end\n")),
+]
+
+# Arreglo 2: el chequeo de la instalación conoce las carpetas de la 1.4.0
+# (los pasos por facción y tramo, Alfa_Guides_Pasos y las dos partes del
+# Codex): a quien le falte una, «Faltan partes» lo dice al entrar.
+PARCHES += [
+    ("Alfa/Core/Data.lua",
+     'local COMPANIONS = { "Alfa_Guides", "Alfa_Codex", "Alfa_Nav", "Alfa_QuestDB", "Alfa_ItemDB" }\n'
+     'local REQUIRED = { Alfa_Guides = true, Alfa_Codex = true }\n',
+     _fijo('-- Alfa (1.4.0): and the Codex\'s two parts (tools/tramos.py), never missing either.\n'
+           'local COMPANIONS = { "Alfa_Guides", "Alfa_Codex", "Alfa_Codex_Objetos", "Alfa_Codex_Mundo", "Alfa_Nav", "Alfa_QuestDB", "Alfa_ItemDB" }\n'
+           'local REQUIRED = { Alfa_Guides = true, Alfa_Codex = true, Alfa_Codex_Objetos = true, Alfa_Codex_Mundo = true }\n')),
+    ("Alfa/Core/Data.lua",
+     "\tfor _, name in ipairs(listed()) do check(name, s) end\n\treturn s.missing, s.stale, retiredLocales()\n",
+     _fijo('''	-- Alfa (1.4.0): the guides' steps live in addons of their own
+	-- (tools/tramos.py): the player's faction's three level ranges, the one of
+	-- any level, and every part a registered guide names. Without one, its
+	-- guides show a stand-in step: never missing either.
+	if installed("Alfa_Guides") then
+		local parts = { "Alfa_Guides_Pasos" }
+		local f = (faction == "Horde" or faction == "Alliance") and faction or nil
+		if f then
+			for i = 1, 3 do parts[#parts + 1] = "Alfa_Guides_" .. f .. "_Pasos" .. i end
+		end
+		local G = ns.Guides
+		if G and G.List and G.Get then
+			for _, h in ipairs(G.List() or {}) do
+				local g = G.Get(h.id)
+				local p = g and rawget(g, "stepsPart")
+				if type(p) == "string" and p:find("*", 1, true) then p = f and (p:gsub("%*", f)) or nil end
+				if type(p) == "string" then parts[#parts + 1] = p end
+			end
+		end
+		for _, part in ipairs(parts) do
+			if not s.seen[part] and not installed(part) then
+				s.seen[part] = true
+				s.missing[#s.missing + 1] = part
+			else
+				check(part, s)
+			end
+		end
+	end
+	for _, name in ipairs(listed()) do check(name, s) end
+	return s.missing, s.stale, retiredLocales()
+''')),
+]
+
+PARCHES += [
+    # Arreglo 3: el plan de una pestaña (sus guías de antes) puede leer pasos
+    # en combate (Guides.lua, Own.wantedNow); nada más.
+    ("Alfa/Core/Engine.lua", "\tlocal plan = Own.feederPlan(g)\n",
+     _fijo("\tOwn.planning = true -- Alfa 1.4.0: Engine.PlanningTab\n"
+           "\tlocal okPlan, plan = pcall(Own.feederPlan, g)\n"
+           "\tOwn.planning = nil\n"
+           "\tif not okPlan then error(plan, 0) end\n")),
+    ("Alfa/Core/Engine.lua", "function Own.withFeeders(id, again)\n",
+     _fijo("-- Alfa (1.4.0): true while a tab's guide is being planned (its feeders read).\n"
+           "function Engine.PlanningTab()\n"
+           "\treturn Own.planning == true\n"
+           "end\n\n"
+           "function Own.withFeeders(id, again)\n")),
+]
+
 
 def aplicar(dist: pathlib.Path, cfg: dict) -> list:
     errores = []
@@ -1246,6 +1762,10 @@ _MAZMORRAS = [
     ("Este calabozo", "Esta mazmorra"), ("este calabozo", "esta mazmorra"),
     ("CALABOZOS", "MAZMORRAS"), ("CALABOZO", "MAZMORRA"),
     ("Calabozos", "Mazmorras"), ("calabozos", "mazmorras"), ("Calabozo", "Mazmorra"), ("calabozo", "mazmorra"),
+    # 1.4.0 (83): dos ayudas decían «Mantén Shift»; las demás, «Mayús».
+    ("Mantén Shift para", "Mantén presionado Mayús para"),
+    # y «deathskips» en inglés: el texto de abajo explica qué es.
+    ('"Usar deathskips"', '"Morir a propósito para atajar"'),
 ]
 
 

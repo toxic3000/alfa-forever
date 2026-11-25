@@ -45,7 +45,7 @@ local function conRed(fn)
   R.Escuchar()
   local via, envio, av = R.Via, C_ChatInfo.SendAddonMessage, K.Aviso
   R.Via = function() return "hermandad" end
-  C_ChatInfo.SendAddonMessage = function(_, t, c, d) salidos[#salidos + 1] = { (t:gsub("|~[HA]$", "")), c, d } end
+  C_ChatInfo.SendAddonMessage = function(_, t, c, d) salidos[#salidos + 1] = { (t:gsub("|~[HA]$", ""):gsub("|%^%d+$", "")), c, d } end -- (1.4.0: sin la versión de la Red)
   K.Aviso = function(o) avisos[#avisos + 1] = o return true end
   local ok, e = pcall(fn)
   R.Via, C_ChatInfo.SendAddonMessage, K.Aviso = via, envio, av

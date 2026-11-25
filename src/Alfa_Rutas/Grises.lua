@@ -119,7 +119,7 @@ local function armar()
 	ventana = M.VentanaSimple({
 		boton = { texto = "", peligro = true, alClic = function() Gr.SoltarTodas() end },
 		nombre = "AlfaRutasGrises", titulo = L["Misiones grises"], icono = "ic-misiones", ancho = 440, alto = 460,
-		vacio = { lobo = "contento", titulo = L["Nada que soltar"], texto = L["Tus misiones grises valen la pena o no tienes ninguna."] },
+		vacio = { lobo = "aullando", titulo = L["Nada que soltar"], texto = L["Tus misiones grises valen la pena o no tienes ninguna."] },
 		crear = function(fila)
 			fila.Texto = K.Texto(fila, "cuerpo", "texto")
 			fila.Texto:SetPoint("LEFT", fila, "LEFT", 10, 0)

@@ -91,7 +91,23 @@ function Co.Diferencias(link)
 		if pa ~= pb then return pa > pb end
 		return a.clave < b.clave
 	end)
+	-- 1.4.0 (24): cuánto pesa el cambio para tu clase (con los pesos del motor).
+	local puntos, conPeso = 0, false
+	for _, x in ipairs(out) do
+		local w = tonumber(pesos[x.clave])
+		if w and w ~= 0 then puntos, conPeso = puntos + x.delta * w, true end
+	end
+	out.puntos = conPeso and puntos or nil
 	return out, r
+end
+
+-- 1.4.0 (24): «mejor», «peor» o nil (parecido o sin pesos para tu clase).
+function Co.Veredicto(lista)
+	local p = type(lista) == "table" and tonumber(lista.puntos)
+	if not p then return nil end
+	if p > 0.5 then return "mejor" end
+	if p < -0.5 then return "peor" end
+	return nil
 end
 
 local function numero(d)
@@ -114,7 +130,13 @@ function Co.Linea(link)
 		local texto = numero(x.delta) .. " " .. Co.NOMBRES[x.clave]
 		if x.delta >= 0 then partes[i] = M.Pintado(texto, gr, gg, gb) else partes[i] = M.Pintado(texto, rr, rg, rb) end
 	end
-	local texto = (r and r.empty and L["Ranura vacía:"] or L["Contra lo que llevas:"]) .. " " .. table.concat(partes, " \194\183 ")
+	-- 1.4.0 (24): primero el veredicto, en la misma línea: «Mejor que lo que llevas:».
+	local cabeza = L["Contra lo que llevas:"]
+	local v = Co.Veredicto(lista)
+	if r and r.empty then cabeza = L["Ranura vacía:"]
+	elseif v == "mejor" then cabeza = M.Pintado(L["Mejor que lo que llevas:"], gr, gg, gb)
+	elseif v == "peor" then cabeza = M.Pintado(L["Peor que lo que llevas:"], rr, rg, rb) end
+	local texto = cabeza .. " " .. table.concat(partes, " \194\183 ")
 	if #lista > MAX then texto = texto .. " " .. format(L["y %d más"], #lista - MAX) end
 	return texto
 end

@@ -1,0 +1,23 @@
+{
+ "%s saldrá siempre en «%s». Suéltalo otra vez ahí para devolverlo a «%s».": "%s теперь всегда будет в «%s». Перетащите туда ещё раз, чтобы вернуть в «%s».",
+ "%s volvió a su sección de siempre.": "%s снова в своём обычном разделе.",
+ "%s: %d de %d libres": "%s: свободно %d из %d",
+ "Así quedarán tus bolsas": "Так будут выглядеть сумки",
+ "Bolsa especial": "Особая сумка",
+ "El juego decide el orden final.": "Окончательный порядок выбирает игра.",
+ "Ese objeto": "Этот предмет",
+ "Gemas": "Самоцветы",
+ "Inscripción": "Начертание",
+ "Lo que tiene candado se queda en su lugar.": "Предметы под замком остаются на месте.",
+ "Mejor que lo que llevas:": "Лучше надетого:",
+ "Menos": "Свернуть",
+ "Más o menos así quedarán": "Примерно так",
+ "Nada se mueve hasta que das clic.": "Ничего не сдвинется, пока вы не нажмёте.",
+ "No hay nada que ordenar.": "Сортировать нечего.",
+ "Peor que lo que llevas:": "Хуже надетого:",
+ "Queda 1 casilla libre.": "Осталась 1 свободная ячейка.",
+ "Quedan %d casillas libres.": "Осталось свободных ячеек: %d.",
+ "Suelta aquí un objeto para que siempre salga en esta sección.": "Перетащите сюда предмет, чтобы он всегда был в этом разделе.",
+ "Vender (%d)": "Продать (%d)",
+ "desde el final": "с конца"
+}

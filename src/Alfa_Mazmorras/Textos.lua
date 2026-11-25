@@ -6,6 +6,19 @@
 local _, M = ...
 
 M.EN = {
+	-- 1.4.0 (diario): mejoras del día a día
+	["Se puede al salir de combate."] = "You can once you leave combat.",
+	["Reiniciar"] = "Reset",
+	["Reiniciar la mazmorra"] = "Reset the dungeon",
+	["¿Reiniciar la mazmorra?"] = "Reset the dungeon?",
+	["Si vas a repetir %s, reiníciala: los enemigos y el botín vuelven."] = "If you're running %s again, reset it: the enemies and the loot come back.",
+	["Si vas a repetir la mazmorra, reiníciala: los enemigos y el botín vuelven."] = "If you're running the dungeon again, reset it: the enemies and the loot come back.",
+	["Esta hora llevas %d de %d instancias."] = "This hour you've entered %d of %d instances.",
+	["Sal de la mazmorra para reiniciarla."] = "Leave the dungeon to reset it.",
+	["En grupo, solo quien lo dirige puede reiniciar las mazmorras."] = "In a group, only the leader can reset dungeons.",
+	["Ahora no hay ninguna mazmorra que reiniciar."] = "There's no dungeon to reset right now.",
+	["Ofrecer reiniciar la mazmorra al salir"] = "Offer to reset the dungeon when you leave",
+	["Al salir de una mazmorra, si vas solo o diriges el grupo, un aviso con «Reiniciar» y cuántas instancias llevas en esta hora. También con /alfa mazmorras reiniciar."] = "When you leave a dungeon solo or as group leader, a notice with \"Reset\" and how many instances you've entered this hour. Also with /alfa mazmorras reiniciar.",
 	-- La página
 	["Mazmorras"] = "Dungeons",
 	["La mazmorra para tu nivel, sus jefes, botín, misiones y consejos."] = "The dungeon for your level, its bosses, loot, quests and tips.",
@@ -456,4 +469,20 @@ M.EN = {
 	["%d de %d"] = "%d of %d",
 	["Botón del mapa por dentro en el mapa del juego"] = "Inside-map button on the game map",
 	["Dentro de una mazmorra, el mapa del juego trae un botón para abrir su plano con zoom, sus pisos y tu avance por jefes. También con su tecla."] = "Inside a dungeon, the game map gets a button to open its map with zoom, its floors and your boss progress. Also with its key.",
+	-- 1.4.0 (agente mundo)
+	["%s para ti, de %s."] = "%s for you, from %s.",
+	["%d mejora"] = "%d upgrade",
+	["%d mejoras"] = "%d upgrades",
+	["%s para dentro de unos niveles, de %s."] = "%s for a few levels from now, from %s.",
+	["En %s no veo nada que sea mejora para ti."] = "I don't see any upgrade for you in %s.",
+	["Para ti en %s"] = "For you in %s",
+	["¿Qué cae aquí para mí?"] = "What drops here for me?",
+	["Al entrar a una mazmorra te digo cuántas mejoras hay para ti y de qué jefes; «Ver» abre su botín con solo lo tuyo. También con /alfa mazmorras parami."] = "When you enter a dungeon I tell you how many upgrades there are for you and from which bosses; \"View\" opens its loot with only yours. Also with /alfa mazmorras parami.",
+	["%d jefe marcado donde lo encontraste."] = "%d boss marked where you found it.",
+	["%d jefes marcados donde los encontraste."] = "%d bosses marked where you found them.",
+	["Para ti: %s"] = "For you: %s",
+	["Entra a una mazmorra (o escribe su nombre) para ver qué te sirve."] = "Enter a dungeon (or type its name) to see what's useful for you.",
+	["La mazmorra para tu nivel; con un nombre, esa mazmorra (también: progreso, parami, ajustes)"] = "The dungeon for your level; with a name, that dungeon (also: progreso, parami, ajustes)",
+	["Al entrar a una mazmorra, un aviso chico con cuántas mejoras hay para ti y de qué jefes. También con /alfa mazmorras parami."] = "When you enter a dungeon, a small notice with how many upgrades there are for you and from which bosses. Also with /alfa mazmorras parami.",
+	["y %d más"] = "and %d more",
 }

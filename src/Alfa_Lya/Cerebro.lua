@@ -76,6 +76,21 @@ end
 
 function Ce.Silenciada() return (tonumber(datos().silencio) or 0) > reloj() end
 
+-- 1.4.0 (64): «Solo lo importante» de un clic. Recuerda cuántos consejos
+-- tenías (lya.frecuenciaAntes) para volver igual con el mismo clic.
+function Ce.SoloImportante() return Ce.Frecuencia() == "importantes" end
+function Ce.AlternarImportante(si)
+	if si == nil then si = not Ce.SoloImportante() end
+	if si then
+		if not Ce.SoloImportante() then N.Set(ID, "frecuenciaAntes", Ce.Frecuencia()) end
+		N.Set(ID, "frecuencia", "importantes")
+	else
+		local antes = N.Get(ID, "frecuenciaAntes")
+		N.Set(ID, "frecuencia", (antes == "pocos" or antes == "muchos") and antes or "muchos")
+	end
+	return si
+end
+
 local function enCombate()
 	return (InCombatLockdown and InCombatLockdown()) or (UnitAffectingCombat and si(UnitAffectingCombat("player"))) or false
 end
@@ -1215,6 +1230,15 @@ local function comando(resto)
 		if M.Dia then M.Dia.Contar() end
 	elseif palabra == "historias" and M.Historias then
 		M.Historias.Abrir()
+	elseif palabra == "importante" or palabra == "importantes" then
+		-- 1.4.0 (64): solo lo importante (otra vez: como estaba).
+		local si = Ce.AlternarImportante()
+		N.Imprimir(si and L["Listo: solo te digo lo importante. Con el mismo clic vuelvo a platicar."] or L["¡De vuelta! Te cuento todo otra vez."])
+	elseif palabra == "temporada" and M.Temporada then
+		M.Temporada.Abrir()
+	elseif (palabra == "recuerdo" or palabra == "recuerdos") and M.Recuerdos then
+		if not Ce.Activa() then Ce.Mostrar(true) end
+		M.Recuerdos.Contar(true)
 	elseif palabra == "dato" and M.Historias then
 		if not Ce.Activa() then Ce.Mostrar(true) end
 		M.Historias.Contar()
@@ -1229,7 +1253,7 @@ local function comando(resto)
 		end
 	end
 end
-A.RegisterCommand("lya", comando, L["muestra u oculta a Lya, tu loba compañera (también: ayuda, dia, semana, historia, historial, consejo, dato, historias, ajustes)"])
+A.RegisterCommand("lya", comando, L["muestra u oculta a Lya, tu loba compañera (también: ayuda, dia, semana, historia, historial, consejo, dato, historias, importante, recuerdo, temporada, ajustes)"])
 A.RegisterCommand("lobito", comando, L["lo mismo que /alfa lya"], true)
 
 ---------------------------------------------------------------------------

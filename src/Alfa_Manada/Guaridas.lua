@@ -523,6 +523,7 @@ function Gu.Responder(clave, remitente, map, capa, desde)
 	if not U.Invitar(remitente) then return "lleno" end
 	U.Podar(invitadoA, CADA_PERSONA, ahora) -- (1.3.1)
 	invitadoA[clave], ultimoInvite = ahora, ahora
+	if M.Logros and M.Logros.Ayudar then M.Logros.Ayudar("guarida:" .. clave) end -- 1.4.0 (55)
 	U.Decir(format(L["%s pidió entrar a tu guarida: lo invitaste a tu grupo. Saldrá solo al llegar."], U.Mostrar(remitente)))
 	return "ok"
 end

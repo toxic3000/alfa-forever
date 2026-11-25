@@ -9,8 +9,10 @@
 --     distinto y tres por sesión como mucho. Se apaga en Ajustes > Estilo y
 --     sonido > Centro de avisos («Errores de Alfa», nucleo.avisos.errores).
 --   * Una sola ventana sencilla: pestañas chicas (Error · Mejora · Comentario),
---     un cuadro «¿Qué hacías cuando pasó? (opcional)», lo técnico ya agregado
---     y plegado («Ver lo que se manda») y un botón grande «Enviar».
+--     un cuadro «¿Qué hacías cuando pasó? (opcional)» y un botón grande
+--     «Enviar». Lo técnico se agrega solo y se manda sin enseñarlo (1.4.0,
+--     plan 71: el jugador ya no ve ese bloque; nunca lleva datos privados).
+--     Una línea recuerda que las capturas se suben en el formulario.
 --   * «Enviar» guarda el reporte en el buzón (lo de abajo) y el instalador de
 --     Alfa (Instalar-Alfa.exe, fuera del juego: un addon no puede mandar nada
 --     a internet) lo manda solo al formulario del desarrollador (un
@@ -167,6 +169,24 @@ local function haciendo()
 	return format("Guía: %s", cortar(guia, 80))
 end
 
+-- 1.4.0 (71): el código de cada reporte, corto y fácil de copiar (sin letras
+-- que se confundan: ni I, L, O, 0 ni 1). Va al inicio del texto, en el buzón
+-- (su id) y en el enlace del formulario de capturas.
+local LETRAS_CODIGO = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
+function M.NuevoCodigo()
+	local out = {}
+	for i = 1, 6 do
+		local k = (math.random and math.random(1, #LETRAS_CODIGO)) or ((i * 7) % #LETRAS_CODIGO + 1)
+		out[i] = LETRAS_CODIGO:sub(k, k)
+	end
+	return table.concat(out)
+end
+local function codigo()
+	if not ui.codigo then ui.codigo = M.NuevoCodigo() end
+	return ui.codigo
+end
+M.CodigoReporte = codigo
+
 local function textoEscrito()
 	return ((ui.texto or ""):gsub("^%s+", ""):gsub("%s+$", ""))
 end
@@ -264,6 +284,12 @@ local function renglones(t)
 		end
 	end
 	if not otros then pon("Otros addons: 0") end
+	-- 1.4.0 (7): lo que confirmaste en el juego (/alfa confirmar, Alfa_Rutas/Confirmar.lua).
+	local Cf = rawget(_G, "AlfaConfirmar")
+	if type(Cf) == "table" and type(Cf.Resumen) == "function" then
+		local okC, sC = pcall(Cf.Resumen)
+		if okC and type(sC) == "string" and sC ~= "" then pon(sC, 2) end
+	end
 	-- 1.3.9 (24): sin tu nombre, tu reino ni los de otros jugadores.
 	-- («Alfa Forever» se aparta antes: un reino que se llame Forever no lo borra.)
 	if N.SinPrivado then
@@ -288,7 +314,7 @@ local function componerTodo()
 	end
 	local function armar(tec, esc)
 		local cuerpo = esc ~= "" and esc or (t.valor == "error" and L["(sin comentario)"] or L["(todavía sin texto: escríbelo arriba)"])
-		return format("%s Reporte de Alfa Forever · %s\n\n%s\n\n%s", LOBO, NOMBRE_TIPO[t.valor] or "Error", cuerpo, tec)
+		return format("%s Reporte de Alfa Forever · %s\nCódigo: %s\n\n%s\n\n%s", LOBO, NOMBRE_TIPO[t.valor] or "Error", codigo(), cuerpo, tec)
 	end
 	local tecnico = unir()
 	local s = armar(tecnico, escrito)
@@ -325,7 +351,14 @@ M.ComponerPartes = componerTodo
 -- para copiar). Cada valor codificado para URL (UTF-8 en %XX; espacio %20).
 ---------------------------------------------------------------------------
 local FORMULARIO = "https://docs.google.com/forms/d/e/1FAIpQLSfCKW97uxmZL5ZGl5Ym4hLjUMTWt6O0N7TJgw6buSDMoRIXUA/viewform?usp=pp_url"
-local CAMPO = { tipo = "entry.832145550", escrito = "entry.1889667288", tecnico = "entry.917548369", version = "entry.1259972415" }
+-- 1.4.0 (71): el formulario ya no tiene «Datos técnicos»: lo técnico va al
+-- final del texto, tras la línea «— Datos de Alfa —».
+local CAMPO = { tipo = "entry.832145550", escrito = "entry.1889667288", version = "entry.1259972415" }
+local SEPARADOR = "\n\n— Datos de Alfa —\n"
+M.SEPARADOR_DATOS = SEPARADOR
+-- Las capturas, en un formulario aparte (pide cuenta de Google): con el código.
+local FORMULARIO_CAPTURAS = "https://docs.google.com/forms/d/e/1FAIpQLSd8g5jhxh6AM5p9oAKSqz4LocnRLNhtIxpeYqP3Rx2o8KFV4Q/viewform?usp=pp_url"
+local CAMPO_CODIGO = "entry.1102491070"
 -- El tipo, tal cual lo espera el formulario (sin traducir).
 local TIPO_FORMULARIO = { error = "Error", mejora = "Mejora", comentario = "Comentario" }
 local MAX_ENLACE = 1800
@@ -349,21 +382,36 @@ local function caber(s, n)
 	return pedazo ~= "" and (pedazo .. "...") or ""
 end
 
--- -> el enlace (MAX_ENLACE letras como mucho): lo técnico se recorta primero;
--- lo que escribiste, solo si aún no cabe.
-function M.EnlaceFormulario(tipo, escrito, tecnico, ver)
+-- -> el enlace (MAX_ENLACE letras como mucho). Un solo texto: «Código: X»,
+-- lo que escribiste y, tras «— Datos de Alfa —», lo técnico (ya sin datos
+-- privados). Lo técnico se recorta primero; lo escrito, solo si aún no cabe.
+function M.EnlaceFormulario(tipo, escrito, tecnico, ver, cod)
 	tipo = TIPO_FORMULARIO[tipoDe(tipo).valor] or "Error"
 	ver = tostring(ver or A.version or N.version or "dev")
+	local cabeza = (type(cod) == "string" and cod ~= "") and ("Código: " .. cod .. "\n\n") or ""
+	tecnico = tostring(tecnico or "")
+	if N.SinPrivado and tecnico ~= "" then
+		tecnico = (N.SinPrivado((tecnico:gsub("Alfa Forever", "\1"))):gsub("\1", "Alfa Forever"))
+	end
 	local base = FORMULARIO .. "&" .. CAMPO.tipo .. "=" .. codificar(tipo) .. "&" .. CAMPO.version .. "=" .. codificar(ver)
-		.. "&" .. CAMPO.escrito .. "=" .. "&" .. CAMPO.tecnico .. "="
+		.. "&" .. CAMPO.escrito .. "=" .. codificar(cabeza)
 	local libre = MAX_ENLACE - #base
-	escrito = caber(tostring(escrito or ""), math.max(0, libre - 200))
+	local sep = tecnico ~= "" and SEPARADOR or ""
+	escrito = caber(tostring(escrito or ""), math.max(0, libre - (sep ~= "" and 200 or 0)))
 	local resto = libre - #codificar(escrito)
-	tecnico = caber(tostring(tecnico or ""), math.max(0, resto))
+	if sep ~= "" then
+		resto = resto - #codificar(sep)
+		tecnico = resto > 20 and caber(tecnico, resto) or ""
+		if tecnico == "" then sep = "" end
+	end
 	return FORMULARIO .. "&" .. CAMPO.tipo .. "=" .. codificar(tipo)
-		.. "&" .. CAMPO.escrito .. "=" .. codificar(escrito)
-		.. "&" .. CAMPO.tecnico .. "=" .. codificar(tecnico)
+		.. "&" .. CAMPO.escrito .. "=" .. codificar(cabeza .. escrito .. sep .. tecnico)
 		.. "&" .. CAMPO.version .. "=" .. codificar(ver)
+end
+
+-- 1.4.0 (71): el enlace del formulario de capturas, con el código ya puesto.
+function M.EnlaceCapturas(cod)
+	return FORMULARIO_CAPTURAS .. "&" .. CAMPO_CODIGO .. "=" .. codificar(cod or codigo())
 end
 
 ---------------------------------------------------------------------------
@@ -399,7 +447,7 @@ end
 
 local siguiente = 0
 -- -> la entrada y true si ya estaba (el mismo texto sin mandar no se guarda dos veces).
-function Bz.Guardar(texto, tipo, escrito, tecnico)
+function Bz.Guardar(texto, tipo, escrito, tecnico, cod)
 	local l = Bz.Lista()
 	for _, e in ipairs(l) do
 		if type(e) == "table" and e.enviado ~= true and e.texto == texto then return e, true end
@@ -407,7 +455,9 @@ function Bz.Guardar(texto, tipo, escrito, tecnico)
 	siguiente = siguiente + 1
 	local t = time and time() or 0
 	local e = {
-		id = format("%d-%04d", t, (siguiente + (math.random and math.random(0, 9999) or 0)) % 10000),
+		-- 1.4.0 (71): el id es el código que ve el jugador («Código: X»).
+		id = (type(cod) == "string" and cod ~= "") and cod or format("%d-%04d", t, (siguiente + (math.random and math.random(0, 9999) or 0)) % 10000),
+		codigo = (type(cod) == "string" and cod ~= "") and cod or nil,
 		fecha = date and date("%Y-%m-%d %H:%M") or "",
 		version = tostring(A.version or N.version or "dev"),
 		tipo = tipoDe(tipo).valor,
@@ -616,10 +666,10 @@ local function pintarEstado()
 	ui.pregunta:Set(L[t.pregunta])
 	if ui.entrada then ui.entrada:SetAyuda(L[t.ayuda]) end
 	K.Mostrar(ui.captura, t.valor == "error")
-	ui.captura:Set(format(L["Una captura ayuda mucho: presiona %s y el juego la guarda en la carpeta Screenshots de tu WoW. Si quieres, mándala en %s del Discord de La Jauría."], teclaCaptura(), CANAL))
+	-- 1.4.0 (71): las capturas se suben en su formulario (abajo), ya no en Discord.
+	ui.captura:Set(format(L["Una captura ayuda mucho: presiona %s y el juego la guarda en la carpeta Screenshots de tu WoW."], teclaCaptura()))
+	-- 1.4.0 (71): lo técnico no se enseña; solo sale el cuadro al pedir «Copiar».
 	K.Mostrar(ui.reporte, ui.verDatos == true)
-	ui.plegar.Hijo:SetTexto(ui.verDatos and L["Ocultar lo que se manda"] or L["Ver lo que se manda"])
-	ui.plegar.Hijo:SetIcono(ui.verDatos and "ic-cerrar" or "ic-info")
 	-- Las gracias y dónde mandarlo ya, después de «Enviar» o «Copiar».
 	K.Mostrar(ui.gracias, enviado)
 	if enviado then
@@ -628,6 +678,9 @@ local function pintarEstado()
 	end
 	-- El enlace del formulario, después de «Enviar ya por el navegador».
 	K.Mostrar(ui.navegadorNota, ui.mostrarEnlace == true)
+	if ui.codigoTexto then ui.codigoTexto:Set(format(L["Código: %s"], codigo())) end
+	K.Mostrar(ui.capturasNota, ui.mostrarCapturas == true)
+	K.Mostrar(ui.capturasEnlace, ui.mostrarCapturas == true)
 	K.Mostrar(ui.enlace, ui.mostrarEnlace == true)
 	K.Mostrar(ui.donde, ui.mostrarDonde == true)
 	K.Mostrar(ui.invitacion, ui.mostrarDonde == true)
@@ -677,7 +730,7 @@ function M.EnviarReporte()
 	end
 	if ui.estado then K.Mostrar(ui.estado, false) end
 	local texto, escrito, tecnico = componerTodo()
-	local e, ya = Bz.Guardar(texto, t.valor, escrito, tecnico)
+	local e, ya = Bz.Guardar(texto, t.valor, escrito, tecnico, codigo())
 	ui.enviado = ya and "ya" or "nuevo"
 	if ui.entrada then ui.entrada.Campo:ClearFocus() end
 	rehacer()
@@ -690,12 +743,23 @@ end
 -- elegido para Ctrl+C. -> el enlace
 function M.EnlaceReporte()
 	local _, escrito, tecnico = componerTodo()
-	local url = M.EnlaceFormulario(ui.tipo, escrito, tecnico)
+	local url = M.EnlaceFormulario(ui.tipo, escrito, tecnico, nil, codigo())
 	ui.mostrarEnlace = true
 	if ui.enlace then ui.enlace:Set(url) end
 	rehacer()
 	abajo()
 	if ui.enlace then ui.enlace.Cuadro:Copiar() end
+	return url
+end
+
+-- 1.4.0 (71): «Subir capturas»: el enlace del formulario de capturas con tu
+-- código, elegido para Ctrl+C.
+function M.EnlaceCapturasReporte()
+	local url = M.EnlaceCapturas(codigo())
+	ui.mostrarCapturas = true
+	if ui.capturasEnlace then ui.capturasEnlace:Set(url) end
+	rehacer()
+	if ui.capturasEnlace then ui.capturasEnlace.Cuadro:Copiar() end
 	return url
 end
 
@@ -723,6 +787,8 @@ local function armar()
 	conLobo(p, "texto", "texto"):Set(L["Cuéntanos qué pasó. Alfa agrega solo lo que ayuda a arreglarlo; nunca tu nombre ni tu reino."])
 	local opciones = {}
 	for i, t in ipairs(TIPOS) do opciones[i] = { valor = t.valor, texto = L[t.texto] } end
+	-- 1.4.0 (71): el código del reporte, a la vista.
+	ui.codigoTexto = parrafo(p, "subtitulo", "acento", { espacio = ESP.s })
 	ui.segmentos = p:Agregar(suelto(p, function(b)
 		return K.Segmentos(b, { estilo = "segmentos", opciones = opciones, valor = ui.tipo, alCambiar = function(x) elegirTipo(x) end })
 	end)).Hijo
@@ -733,14 +799,18 @@ local function armar()
 	ui.estado = parrafo(p, "nota", "aviso", { espacio = ESP.s })
 	K.Mostrar(ui.estado, false)
 	ui.captura = parrafo(p, "nota", "textoSuave")
+	-- 1.4.0 (71): el formulario tiene un campo opcional para subir capturas.
+	ui.capturasForm = parrafo(p, "texto", "acento", { espacio = ESP.s })
+	ui.capturasForm:Set(L["¿Tienes capturas? Súbelas en el formulario de capturas, con el código de tu reporte."])
+	ui.subirCapturas = p:Agregar(suelto(p, function(b)
+		return K.Boton(b, L["Subir capturas"], function() M.EnlaceCapturasReporte() end, { tipo = "secundario", icono = "ic-flecha" })
+	end), { espacio = ESP.s })
+	ui.capturasNota = parrafo(p, "nota", "textoSuave", { espacio = ESP.s })
+	ui.capturasNota:Set(L["Pega este enlace en tu navegador, entra con tu cuenta de Google y sube hasta 5 capturas."])
+	ui.capturasEnlace = p:Agregar(filaCopiar(p, { alto = 54, lineas = true, boton = "Elegir todo" }), { espacio = ESP.s })
 
-	-- Lo técnico, ya agregado y plegado.
-	ui.plegar = p:Agregar(suelto(p, function(b)
-		return K.Boton(b, L["Ver lo que se manda"], function()
-			ui.verDatos = not ui.verDatos
-			rehacer()
-		end, { tipo = "fantasma", icono = "ic-info" })
-	end))
+	-- Lo técnico se agrega solo y se manda sin enseñarlo (71); el cuadro solo
+	-- sale con «Copiar» (lo que se pega en Discord).
 	ui.reporte = p:Agregar(filaCopiar(p, { alto = 140, lineas = true, boton = "Elegir todo" }), { espacio = ESP.s })
 
 	ui.gracias = conLobo(p, "texto", "exito", { espacio = ESP.l })
@@ -763,7 +833,9 @@ function M.AbrirReporte(tipo)
 	local url = type(A.DiscordURL) == "string" and A.DiscordURL ~= "" and A.DiscordURL or INVITACION
 	ui.invitacion:Set(url)
 	if ui.entrada and ui.entrada.Campo:GetText() ~= (ui.texto or "") then ui.entrada:Set(ui.texto or "") end
-	ui.mostrarDonde, ui.mostrarEnlace = nil, nil
+	ui.mostrarDonde, ui.mostrarEnlace, ui.mostrarCapturas = nil, nil, nil
+	-- Un reporte ya enviado deja su código; el siguiente lleva uno nuevo.
+	if ui.enviado then ui.codigo, ui.enviado = nil, nil end
 	v:Abrir()
 	elegirTipo(tipo or ui.tipo)
 	if v.Desplazable then v.Desplazable:IrArriba() end

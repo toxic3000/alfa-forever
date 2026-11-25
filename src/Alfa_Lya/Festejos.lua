@@ -126,7 +126,7 @@ function Fe.Nivel(n)
 	if f.n60 then return false end
 	f.n60 = true
 	if K and K.Anuncio then
-		pcall(K.Anuncio, { estilo = "llegada", lobo = "aullando", sobre = L["La manada aúlla"], titulo = L["¡Nivel 60!"],
+		pcall(K.Anuncio, { estilo = "nivel", lobo = "aullando", sobre = L["La manada aúlla"], titulo = L["¡Nivel 60!"],
 			texto = L["Llegaste a la cima, alfa. Lya está orgullosa de ti."], segundos = 8, prioridad = 2, clave = "lya.n60" })
 	end
 	return true
@@ -150,7 +150,10 @@ if A.OnLogin then A.OnLogin(function() A.After(12, pronto) end) end
 A.RegisterEvent("LOOT_CLOSED", pronto)
 A.RegisterEvent("PLAYER_LEVEL_UP", N.TrasNivel and N.TrasNivel("lya.festejo60", function(_, n) Fe.Nivel(n) end)
 	or function(_, n) Fe.Nivel(n) end)
-if A.On then A.On("GUIDE_COMPLETED", function(id) pcall(Fe.Guia, id) end) end
+if A.On then A.On("GUIDE_COMPLETED", function(id)
+	pcall(Fe.Guia, id)
+	if M.Temporada and M.Temporada.Sumar then pcall(M.Temporada.Sumar, "guias", 1) end -- 1.4.0 (11)
+end) end
 
 -- Para otros módulos: una página de tu historia (Lya la festeja).
 local API = type(AlfaLya) == "table" and AlfaLya or nil

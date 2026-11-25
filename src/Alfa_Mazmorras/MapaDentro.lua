@@ -126,6 +126,44 @@ function Md.Posicion(mapa)
 	return x, y
 end
 
+---------------------------------------------------------------------------
+-- 1.4.0 (44): los jefes en el plano, donde Alfa los conoce. Los datos de
+-- Alfa no traen dónde está cada jefe por dentro, así que se aprende: al
+-- empezar un encuentro (ENCOUNTER_START) con el plano de la mazmorra y tu
+-- posición a la mano, ese lugar queda guardado para la cuenta
+-- (AlfaNucleoDB.mazmorras.jefesPlano[mapa][jefe] = { x, y }). La siguiente
+-- vez, el plano marca a cada jefe que ya conoce con su calavera y su nombre
+-- (palomita si ya lo vencieron esta vez). Sin posición del juego, nada se
+-- inventa. Nada se lee en combate más que el evento y tu posición (sin
+-- secretos: N.Secreto).
+--   Md.Jefes(mapa) -> { { nombre, x, y }, ... }   Md.Aprender(mapa, nombre, x, y)
+---------------------------------------------------------------------------
+local function guardados()
+	local d = N.Datos(D.ID or "mazmorras")
+	if type(d.jefesPlano) ~= "table" then d.jefesPlano = {} end
+	return d.jefesPlano
+end
+
+function Md.Aprender(mapa, nombre, x, y)
+	if type(mapa) ~= "number" or type(nombre) ~= "string" or nombre == "" or (N.Secreto and N.Secreto(nombre)) then return false end
+	if type(x) ~= "number" or type(y) ~= "number" then return false end
+	local g = guardados()
+	g[mapa] = type(g[mapa]) == "table" and g[mapa] or {}
+	g[mapa][nombre] = { x = math.floor(x * 1000 + 0.5) / 1000, y = math.floor(y * 1000 + 0.5) / 1000 }
+	return true
+end
+
+function Md.Jefes(mapa)
+	local out = {}
+	local g = mapa and guardados()[mapa]
+	if type(g) ~= "table" then return out end
+	for nombre, p in pairs(g) do
+		if type(p) == "table" and tonumber(p.x) and tonumber(p.y) then out[#out + 1] = { nombre = nombre, x = tonumber(p.x), y = tonumber(p.y) } end
+	end
+	table.sort(out, function(a, b) return a.nombre < b.nombre end)
+	return out
+end
+
 local function rumbo()
 	if not GetPlayerFacing then return nil end
 	local ok, f = pcall(GetPlayerFacing)
@@ -235,6 +273,32 @@ local function crearPlano(padre)
 		end
 		self.Lienzo:Show()
 		self:PonerFlecha()
+		self:PonerJefes()
+	end
+	-- 1.4.0 (44): las calaveras de los jefes que Alfa ya conoce en este plano.
+	c.jefes = {}
+	function c:PonerJefes()
+		local lista = self.arte and self.mapaArte and Md.Jefes(self.mapaArte) or {}
+		local _, _, lw, lh = self:Medidas()
+		for i, j in ipairs(lista) do
+			local m = self.jefes[i]
+			if not m then
+				m = CreateFrame("Frame", nil, self.Lienzo)
+				m:SetSize(18, 18)
+				m.Icono = K.Icono(m, "ic-raros", 16, "peligro", "OVERLAY")
+				m.Icono:SetPoint("CENTER")
+				m.Nombre = K.Texto(m, "pequeno", "texto")
+				m.Nombre:SetPoint("TOP", m, "BOTTOM", 0, -1)
+				m.Nombre:SetWordWrap(false)
+				self.jefes[i] = m
+			end
+			m:ClearAllPoints()
+			m:SetPoint("CENTER", self.Lienzo, "TOPLEFT", j.x * lw, -j.y * lh)
+			K.Escribir(m.Nombre, j.nombre)
+			K.Ajustar(m.Nombre, 140)
+			m:Show()
+		end
+		for i = #lista + 1, #self.jefes do self.jefes[i]:Hide() end
 	end
 	function c:PonerFlecha()
 		local x, y = self.px, self.py
@@ -363,6 +427,8 @@ local function pintar()
 	local partes = {}
 	if s.dentro then
 		if s.arte and not s.x then partes[#partes + 1] = L["Dentro de las mazmorras el juego no comparte tu posición."] end
+		local nj = s.ver and #Md.Jefes(s.ver) or 0
+		if s.arte and nj > 0 then partes[#partes + 1] = N.Plural(nj, L["%d jefe marcado donde lo encontraste."], L["%d jefes marcados donde los encontraste."]) end
 		if s.piso and #s.pisos > 1 then partes[#partes + 1] = format(L["Estás en: %s."], s.pisos[s.piso].nombre) end
 		local av = Md.TextoAvance(s.key)
 		if av then partes[#partes + 1] = av end
@@ -501,3 +567,14 @@ AlfaMazmorras.MapaDentro = function() return Md.Alternar() end
 AlfaMazmorras.LeerMapaDentro = function() return Md.Leer() end
 AlfaMazmorras.AvanceDentro = function(key) return Md.TextoAvance(key or D.MazmorraActual()) end
 AlfaMazmorras.CrearPlano = function(padre) return crearPlano(padre) end
+
+-- 1.4.0 (44): al empezar un encuentro, su lugar en el plano (si el juego da tu posición).
+A.RegisterEvent("ENCOUNTER_START", function(_, _, nombre)
+	if N.Secreto and N.Secreto(nombre) then return end
+	if not enInstancia() then return end
+	local mapa = cmap("GetBestMapForUnit", "player")
+	local info = type(mapa) == "number" and infoMapa(mapa)
+	if not (info and tonumber(leer(info.mapType)) == DUNGEON) then return end
+	local x, y = Md.Posicion(mapa)
+	if x and Md.Aprender(mapa, nombre, x, y) and v and v:IsShown() then N.FueraDeCombate("mazmorras.mapaJefes", pintar) end
+end)

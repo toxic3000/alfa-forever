@@ -396,7 +396,10 @@ step("En Hoy: el plan en marcha va arriba, con su avance", function()
     check(TM.Actual() ~= nil and (llamadas[1] == "vuelta" or llamadas[1] == "entregar"), "«Empezar» de Hoy no empezó el plan")
     A.Fire("SHOW_OPTIONS", "inicio")
     RUN_TIMERS(3)
-    check(P.tablero.bloques[1] and P.tablero.bloques[1].b == P.hora, "con el plan en marcha, no va hasta arriba de Hoy")
+    -- (1.4.0, 82: la portada de Hoy va siempre arriba de todo; el plan, justo debajo.)
+    local primero = P.tablero.bloques[1]
+    if primero and primero.b == P.saludo then primero = P.tablero.bloques[2] end
+    check(primero and primero.b == P.hora, "con el plan en marcha, no va hasta arriba de Hoy")
     check(P.hora.Ahora:IsShown() and not P.hora.Elegir:IsShown(), "en marcha no muestra el paso de ahora")
     local s = P.hora.Seccion
     TM.Dejar()

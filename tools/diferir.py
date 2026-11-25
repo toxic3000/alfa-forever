@@ -116,6 +116,12 @@ def ficha(tabla):
     p = unicos(numeros_en(tabla, "pre") + numeros_en(tabla, "preAll"))
     c = unicos(numeros_en(tabla, "closedBy"))
     partes.append("qref = { q = %s, p = %s, c = %s }" % (lista_lua(q), lista_lua(p), lista_lua(c)))
+    # 1.4.0: los calabozos de sus pasos `when dungeon` (no negados), para
+    # Opciones (Engine.GuideDungeons) sin leer los pasos ni su paquete de tramo
+    # (tools/tramos.py): el mismo patron que el motor busca en stepsSrc.
+    d = unicos(int(x) for x in re.findall(r'\{ k = "dungeon", name = "[^"]*", map = (\d+)', tabla))
+    if d:
+        partes.append("dungeonMaps = %s" % lista_lua(d))
     return ", ".join(partes)
 
 

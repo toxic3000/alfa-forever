@@ -55,6 +55,9 @@ function Di.Hoy()
 end
 
 local function sumar(campo, n)
+	-- 1.4.0 (11): también en tu temporada (antes de sumar al día: Temporada.lua
+	-- empieza su cuenta con lo que ya había).
+	if M.Temporada and M.Temporada.Sumar then pcall(M.Temporada.Sumar, campo, n or 1) end
 	local h = Di.Hoy()
 	h[campo] = (tonumber(h[campo]) or 0) + (n or 1)
 	return h[campo]

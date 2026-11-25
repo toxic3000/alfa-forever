@@ -16,7 +16,10 @@ Capas.lua
 DistanciaPines.lua
 Entradas.lua
 Descubrir.lua
+VueloCerca.lua
 Peligros.lua
+Servicios.lua
+Horarios.lua
 MisionesColor.lua
 Lienzo.lua
 Marcas.lua
@@ -28,6 +31,7 @@ Marcadores.lua
 Editor.lua
 PanelMarcadores.lua
 Buscar.lua
+Ir.lua
 Ventana.lua
 MapaJuego.lua
 Mundo.lua

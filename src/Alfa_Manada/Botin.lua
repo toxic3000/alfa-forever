@@ -291,6 +291,7 @@ function Bo.Regalar(s)
 		return false
 	end
 	local destino = s.para.destino
+	if M.Logros and M.Logros.Ayudar then M.Logros.Ayudar("botin:" .. tostring(destino)) end -- 1.4.0 (55)
 	local unit = unidadDe(destino)
 	local cerca = false
 	if unit and CheckInteractDistance then

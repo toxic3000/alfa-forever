@@ -29,7 +29,11 @@ Acomodar.lua
 Separar.lua
 Sobra.lua
 Ordenar.lua
+Previa.lua
 Candado.lua
+Abrir.lua
+BolsaNueva.lua
+ParaMisiones.lua
 Barra.lua
 Oro.lua
 Ventana.lua

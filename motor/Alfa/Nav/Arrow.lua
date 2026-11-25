@@ -64,7 +64,8 @@ local TWO_PI = 2 * pi
 local STEP = TWO_PI / FRAMES
 local SPRITE = DIAL * 1.5
 
-ns.RegisterDefaults("nav", { arrowStyle = "skin", arrowMinimo = false })
+ns.RegisterDefaults("nav", { arrowStyle = "skin", arrowMinimo = false,
+	flechaPorPersonaje = true, viajeCompacto = true }) -- 1.4.0 (33, 69)
 
 -- The style a skin's arrow takes ("skin" in nav.arrowStyle).
 local SKIN_ARROW = { alfa = "lobo", halo = "halo", hearth = "hearth", forever = "hearth", blizzard = "hearth", classic = "lobo" }
@@ -267,6 +268,105 @@ local etaText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 etaText:SetPoint("TOP", labelText, "BOTTOM", 0, -4)
 etaText:SetJustifyH("CENTER")
 
+---------------------------------------------------------------------------
+-- Alfa 1.4.0 (2, bug que Toxic vio en el juego): «Consigue Mena de estaño de
+-- Filón de estaño» se salía de su renglón y el juego la cortaba a medias. La
+-- meta cabe siempre en META_LINEAS renglones de LABEL_WIDTH: si no cabe, se
+-- acorta por palabras con un «…» limpio (nunca a media letra ni a media
+-- clave de color). Con un aviso debajo («Pueblo enemigo»), la meta va en un
+-- renglón y el aviso en el otro. Entera sale en el cuadro al pasar el ratón.
+--   Arrow.AcortarMeta(texto) -> lo que cabe     Arrow.Meta() -> mostrada, entera
+---------------------------------------------------------------------------
+local Meta = { entera = "", mostrada = "" } -- lo que dice la meta entera y lo que se ve
+local ponerMeta, acortarMeta, acortarCon
+do
+local META_LINEAS = 2
+local META_HOLGURA = 0.9 -- lo que de verdad se llena de un renglón al envolver por palabras
+local PUNTOS = "\226\128\166" -- «…»
+local medidor = frame:CreateFontString(nil, "BACKGROUND", "GameFontNormalSmall")
+medidor:Hide()
+
+local function anchoTexto(t, fuente)
+	local f, s, fl = (fuente or labelText):GetFont()
+	if f then pcall(medidor.SetFont, medidor, f, s, fl or "") end
+	medidor:SetText(t)
+	local w = medidor.GetUnboundedStringWidth and medidor:GetUnboundedStringWidth() or medidor:GetStringWidth()
+	return tonumber(w) or 0
+end
+
+-- Cierra una clave de color que quedó abierta al cortar.
+local function cerrarColor(t)
+	local abiertas = 0
+	for c in t:gmatch("|([cr])") do
+		if c == "c" then abiertas = abiertas + 1 elseif abiertas > 0 then abiertas = abiertas - 1 end
+	end
+	return abiertas > 0 and (t .. "|r") or t
+end
+
+-- Lo más largo de `t` que mide como mucho `tope`, con «…» al final.
+local function cortarA(t, tope, fuente)
+	if anchoTexto(t, fuente) <= tope then return t end
+	local palabras = {}
+	for p in t:gmatch("%S+") do palabras[#palabras + 1] = p end
+	local hecho = ""
+	for i, p in ipairs(palabras) do
+		local prueba = i == 1 and p or (hecho .. " " .. p)
+		if anchoTexto(cerrarColor(prueba) .. PUNTOS, fuente) > tope then break end
+		hecho = prueba
+	end
+	if hecho == "" then
+		-- Una sola palabra larguísima: por letras (UTF-8 entero, sin partir una letra).
+		local letras = {}
+		for ch in (palabras[1] or ""):gmatch("[%z\1-\127\194-\244][\128-\191]*") do letras[#letras + 1] = ch end
+		for i = 1, #letras do
+			local prueba = table.concat(letras, "", 1, i)
+			if anchoTexto(prueba .. PUNTOS, fuente) > tope then break end
+			hecho = prueba
+		end
+	end
+	-- Sin coma ni dos puntos colgando antes del «…».
+	hecho = hecho:gsub("[%s,;:%-]+$", "")
+	return cerrarColor(hecho) .. PUNTOS
+end
+
+-- 1.4.0 (76): un renglón de cualquier texto de la flecha, con la letra de `fs`.
+function acortarCon(fs, t, ancho)
+	if type(t) ~= "string" or t == "" or (issecretvalue and issecretvalue(t)) then return t end
+	return cortarA(t, ancho, fs)
+end
+
+function acortarMeta(texto)
+	texto = type(texto) == "string" and texto or ""
+	if texto == "" or (issecretvalue and issecretvalue(texto)) then return texto end
+	local renglon = LABEL_WIDTH * META_HOLGURA
+	local partes = {}
+	for p in (texto .. "\n"):gmatch("(.-)\n") do partes[#partes + 1] = p end
+	-- ¿Cuántos renglones pide cada parte?
+	local total = 0
+	for _, p in ipairs(partes) do total = total + math.max(1, math.ceil(anchoTexto(p) / renglon)) end
+	if total <= META_LINEAS then return texto end
+	if #partes == 1 then return cortarA(texto, renglon * META_LINEAS) end
+	-- La meta en un renglón, lo demás (el aviso) en el que queda.
+	local meta = cortarA(partes[1], renglon)
+	local resto = table.concat(partes, " ", 2)
+	return meta .. "\n" .. cortarA(resto, renglon * (META_LINEAS - 1))
+end
+
+-- Todo lo que va en el renglón de la meta pasa por aquí.
+function ponerMeta(texto)
+	texto = texto or ""
+	if issecretvalue and issecretvalue(texto) then
+		Meta.entera, Meta.mostrada = "", ""
+		labelText:SetText(texto)
+		return
+	end
+	if texto == Meta.entera and labelText:GetText() == Meta.mostrada then return end
+	Meta.entera = texto
+	Meta.mostrada = acortarMeta(texto)
+	labelText:SetText(Meta.mostrada)
+end
+end
+
 -- Up or down to the target's floor (Nav.FloorHint), left of the distance.
 local floorIcon = frame:CreateTexture(nil, "OVERLAY")
 floorIcon:SetSize(12, 12)
@@ -275,6 +375,7 @@ floorIcon:Hide()
 local UI_MEDIA = "Interface\\AddOns\\" .. ADDON .. "\\Media\\UI\\"
 
 local Arrow = {
+	AcortarMeta = acortarMeta, AcortarA = acortarCon, Meta = function() return Meta.mostrada, Meta.entera end,
 	frame = frame, dial = dial, mover = mover, body = body, facet = facet, glow = glow, sheet = sheet, sheetSpec = sheetSpec,
 	ring = ring, halo = halo, legIcon = legIcon, distText = distText, timerText = timerText, labelText = labelText, etaText = etaText, floorIcon = floorIcon,
 	dart = dart, dartEdge = dartEdge, skinRing = skinRing, skinCheck = skinCheck, skinDisc = skinDisc,
@@ -428,6 +529,90 @@ local PLACA_PAD = 10      -- su margen
 local MEDALLA = 46        -- el círculo del lobo, a la izquierda
 local COLUMNA = PLACA_ANCHO - PLACA_PAD * 3 - MEDALLA -- lo que queda para el texto
 local HUELLAS_MAX = 8
+-- 1.4.0 (79): la placa crece con lo que dice: más ancha (hasta Arrow.PL.MAX) y,
+-- si aún no cabe, más líneas. Nunca «te ahorras 2 min…».
+-- (todo en Arrow.PL, sin locales nuevos: el archivo ya roza el tope de 200 de Lua)
+Arrow.PL = { MAX = 360, LINEAS = 3, TOPE = 6 } -- ancho tope; líneas antes de ensanchar; líneas tope
+
+-- 1.4.0 (78/79): las placas (llegada, piedra de hogar, viaje) tienen su
+-- propia ancla, AlfaNavPlacas. De fábrica va arriba del disco (la placa
+-- ocupa el lugar de la flecha, como siempre); si la mueves («Acomodar la
+-- pantalla» o Mayús+arrastre), nav.placasPos la deja aparte de la flecha.
+-- «Volver a su lugar» la junta otra vez con ella.
+Arrow.PL.ancla = CreateFrame("Frame", "AlfaNavPlacas", UIParent)
+Arrow.PL.ancla:SetSize(PLACA_ANCHO, 72)
+Arrow.PL.ancla:SetFrameStrata("MEDIUM")
+Arrow.PL.ancla:SetClampedToScreen(true)
+Arrow.PL.ancla:EnableMouse(false)
+function Arrow.PL.aparte()
+	local p = ns.Get("nav.placasPos")
+	return type(p) == "table" and type(p.point) == "string"
+end
+function Arrow.PL.poner()
+	Arrow.PL.ancla:ClearAllPoints()
+	local p = ns.Get("nav.placasPos")
+	if type(p) == "table" and type(p.point) == "string" then
+		Arrow.PL.ancla:SetPoint(p.point, UIParent, p.relPoint or p.point, tonumber(p.x) or 0, tonumber(p.y) or 0)
+	else
+		Arrow.PL.ancla:SetPoint("TOP", dial, "TOP", 0, 0)
+	end
+	-- La que está a la vista, a su lugar nuevo (solo se ancla al entrar).
+	for _, nombre in ipairs({ "AlfaNavLlegada", "AlfaNavViaje" }) do
+		local f = rawget(_G, nombre)
+		if type(f) == "table" and f.IsShown and f:IsShown() then
+			f:ClearAllPoints()
+			Arrow.PL.anclar(f, nombre == "AlfaNavViaje" and f.alfaAbajo or false, 0)
+		end
+	end
+end
+-- La placa a la vista se ancla a ella; con la flecha, la tarjeta del camino
+-- (abajo) va debajo del disco.
+function Arrow.PL.anclar(f, abajo, dy)
+	dy = dy or 0
+	if Arrow.PL.aparte() then
+		f:SetPoint("TOP", Arrow.PL.ancla, "TOP", 0, dy)
+	elseif abajo then
+		f:SetPoint("TOP", dial, "BOTTOM", 0, -6 + dy)
+	else
+		f:SetPoint("TOP", dial, "TOP", 0, dy)
+	end
+end
+Arrow.PL.poner()
+-- La placa a la vista (llegada, piedra o viaje), o nil.
+function Arrow.PL.vista()
+	for _, nombre in ipairs({ "AlfaNavLlegada", "AlfaNavViaje" }) do
+		local f = rawget(_G, nombre)
+		if type(f) == "table" and f.IsVisible and f:IsVisible() and not f.alfaOculta and not f.alfaCerrada then return f end
+	end
+	return nil
+end
+Arrow.PlacaVista = Arrow.PL.vista
+-- Las deja aparte justo donde están ahora (al empezar a moverlas solas).
+function Arrow.SepararPlacas()
+	if Arrow.PL.aparte() then return true end
+	local src = Arrow.PL.vista() or Arrow.PL.ancla
+	local l, t = src:GetLeft(), src:GetTop()
+	if type(l) ~= "number" or type(t) ~= "number" then return false end
+	local us = UIParent:GetEffectiveScale()
+	local k = (src:GetEffectiveScale() or 1) / ((us and us > 0) and us or 1)
+	local ul, ub = UIParent:GetLeft() or 0, UIParent:GetBottom() or 0
+	-- (en la escala de la flecha, la misma del ancla)
+	ns.Set("nav.placasPos", { point = "TOPLEFT", relPoint = "BOTTOMLEFT", x = math.floor(l - ul / k + 0.5), y = math.floor(t - ub / k + 0.5) })
+	return true
+end
+-- El ancla mide lo que la placa (para el recuadro de «Acomodar la pantalla»).
+function Arrow.PL.medir(f)
+	local w, h = f:GetWidth(), f:GetHeight()
+	if type(w) == "number" and type(h) == "number" and w > 0 and h > 0 then Arrow.PL.ancla:SetSize(w, h) end
+end
+Arrow.placas, Arrow.PonerPlacas, Arrow.PlacasAparte = Arrow.PL.ancla, Arrow.PL.poner, Arrow.PL.aparte
+-- 1.4.0: qué tramo es (el mismo viaje aunque Travel rehaga el plan).
+function Arrow.PL.claveTramo(leg)
+	if type(leg) ~= "table" then return nil end
+	local de, a = type(leg.from) == "table" and leg.from or {}, type(leg.to) == "table" and leg.to or {}
+	return table.concat({ tostring(leg.kind), tostring(de.name or de.c), tostring(a.name or a.c),
+		tostring(leg.transport and leg.transport.id or "") }, "|")
+end
 
 local ENTRA_PLACA = 0.3   -- segundos que tarda en entrar subiendo
 local QUEDA = 6           -- segundos a la vista al llegar
@@ -525,10 +710,10 @@ local function animarPlaca(self, dt)
 	if not self.alfaAnclada then
 		self:ClearAllPoints()
 		if quieta or e >= 1 then
-			self:SetPoint("TOP", dial, "TOP", 0, 0)
+			Arrow.PL.anclar(self, false, 0)
 			self.alfaAnclada = true
 		else
-			self:SetPoint("TOP", dial, "TOP", 0, -(1 - e) * 10)
+			Arrow.PL.anclar(self, false, -(1 - e) * 10)
 		end
 	end
 	if quieta then return end
@@ -548,7 +733,7 @@ local function armarLlegada(K)
 	if llegada then return llegada end
 	local f = CreateFrame("Frame", "AlfaNavLlegada", frame)
 	f:SetSize(PLACA_ANCHO, 72)
-	f:SetPoint("TOP", dial, "TOP", 0, 0)
+	Arrow.PL.anclar(f, false, 0)
 	f:EnableMouse(false)
 	f:Hide()
 	-- La placa: el panel de Alfa con su corte, la franja de color a la
@@ -656,6 +841,32 @@ local function altoTexto(K, fs, base)
 	return K.num and K.num(fs:GetStringHeight(), base) or base
 end
 
+-- 1.4.0 (79): el ancho de una sola línea de un texto (sin cortar).
+function Arrow.PL.anchoSuelto(fs)
+	local fn = fs.GetUnboundedStringWidth or fs.GetStringWidth
+	local ok, w = pcall(fn, fs)
+	w = ok and tonumber(w) or 0
+	if issecretvalue and issecretvalue(w) then return 0 end
+	return w
+end
+
+-- La placa a la medida de su acción: hasta Arrow.PL.LINEAS líneas en el
+-- ancho de siempre; si no caben, más ancha (hasta Arrow.PL.MAX); y si ni así,
+-- las líneas que hagan falta (hasta Arrow.PL.TOPE). -> la columna del texto
+function Arrow.PL.ajustarAncho(f, largo)
+	local extra = PLACA_ANCHO - COLUMNA
+	local col = COLUMNA
+	if largo > COLUMNA * Arrow.PL.LINEAS then
+		col = math.min(Arrow.PL.MAX - extra, math.ceil(largo / Arrow.PL.LINEAS * 1.1))
+	end
+	f:SetWidth(col + extra)
+	for _, fs in ipairs({ f.Sobre, f.Accion, f.Nota }) do if fs then fs:SetWidth(col) end end
+	f.Accion:SetMaxLines(Arrow.PL.TOPE)
+	f.alfaColumna = col
+	return col
+end
+Arrow.PLACA.MAX, Arrow.PLACA.LINEAS = Arrow.PL.MAX, Arrow.PL.TOPE -- (para el banco)
+
 -- Esconde lo de la llegada de antes (el aro, la huella, el halo, la palomita
 -- de las otras apariencias): la placa ocupa su lugar.
 local function sinLlegadaVieja()
@@ -721,6 +932,7 @@ local function pintarLlegada(m)
 	letra(K, f.Accion, "cuerpo")
 	f.Accion:SetTextColor(K.Color("texto"))
 	f.Accion:SetText(accion)
+	local columna = Arrow.PL.ajustarAncho(f, Arrow.PL.anchoSuelto(f.Accion))
 	local x = PLACA_PAD * 2 + 2 + MEDALLA
 	local y = PLACA_PAD + 1 + altoTexto(K, f.Sobre, 10)
 	f.Accion:ClearAllPoints()
@@ -749,7 +961,7 @@ local function pintarLlegada(m)
 		y = y + 6 + alto
 	elseif hay then
 		if f.Huellas then f.Huellas:Hide() end
-		local ancho = COLUMNA - anchoAvance
+		local ancho = columna - anchoAvance
 		f.Pista:SetPoint("TOPLEFT", f, "TOPLEFT", x, -(y + 8))
 		f.Pista:SetWidth(ancho)
 		f.Pista:SetColorTexture(K.ConAlfa("hundido", 0.95))
@@ -808,11 +1020,13 @@ local function pintarLlegada(m)
 		if f.Lobo.SetRotation then f.Lobo:SetRotation(0) end
 		f.Lobo:SetSize(LOBO_TAM, LOBO_TAM)
 	end
-	frame:EnableMouse(true)
+	-- 1.4.0 (78): con las placas aparte, el lugar vacío de la flecha no toma el ratón.
+	frame:EnableMouse(not Arrow.PL.aparte())
 	f:Show()
+	Arrow.PL.medir(f)
 	sinLlegadaVieja()
 	-- La placa es más ancha que la flecha: que no se salga de la pantalla.
-	local sobra = math.max(0, (PLACA_ANCHO - WIDTH) / 2)
+	local sobra = Arrow.PL.aparte() and 0 or math.max(0, ((f:GetWidth() or PLACA_ANCHO) - WIDTH) / 2)
 	if frame.SetClampRectInsets then frame:SetClampRectInsets(-sobra, sobra, 0, 0) end
 	distText:Hide()
 	labelText:Hide()
@@ -926,6 +1140,7 @@ local function pintarPiedra(leg)
 	letra(K, f.Accion, "cuerpo")
 	f.Accion:SetTextColor(K.Color("texto"))
 	f.Accion:SetText(accion)
+	Arrow.PL.ajustarAncho(f, Arrow.PL.anchoSuelto(f.Accion))
 	local x = PLACA_PAD * 2 + 2 + MEDALLA
 	local y = PLACA_PAD + 1 + altoTexto(K, f.Sobre, 10)
 	f.Accion:ClearAllPoints()
@@ -959,11 +1174,13 @@ local function pintarPiedra(leg)
 		if f.Lobo.SetRotation then f.Lobo:SetRotation(0) end
 		f.Lobo:SetSize(LOBO_TAM, LOBO_TAM)
 	end
-	frame:EnableMouse(true)
+	-- 1.4.0 (78): con las placas aparte, el lugar vacío de la flecha no toma el ratón.
+	frame:EnableMouse(not Arrow.PL.aparte())
 	f:Show()
+	Arrow.PL.medir(f)
 	sinLlegadaVieja()
 	legIcon:Hide()
-	local sobra = math.max(0, (PLACA_ANCHO - WIDTH) / 2)
+	local sobra = Arrow.PL.aparte() and 0 or math.max(0, ((f:GetWidth() or PLACA_ANCHO) - WIDTH) / 2)
 	if frame.SetClampRectInsets then frame:SetClampRectInsets(-sobra, sobra, 0, 0) end
 	distText:Hide()
 	labelText:Hide()
@@ -1088,15 +1305,15 @@ end
 local NUCLEO_MEDIA = "Interface\\AddOns\\Alfa_Nucleo\\Media\\"
 local TARJETA = {
 	boat = { icono = "viaje-barco", titulo = "Barco a %s", ir = "Ve al muelle", espera = "Esperando en el muelle",
-		aqui = "¡El barco ya está aquí!", lugar = "el muelle", llegando = "¡Tierra a la vista!" },
+		aqui = "¡El barco ya está aquí!", lugar = "el muelle", corto = "Al muelle", llegando = "¡Tierra a la vista!" },
 	zeppelin = { icono = "viaje-zepelin", titulo = "Zepelín a %s", ir = "Ve a la torre", espera = "Esperando en la torre",
-		aqui = "¡El zepelín ya está aquí!", lugar = "la torre", llegando = "¡Tierra a la vista!" },
+		aqui = "¡El zepelín ya está aquí!", lugar = "la torre", corto = "A la torre", llegando = "¡Tierra a la vista!" },
 	tram = { icono = "viaje-tranvia", titulo = "Tranvía a %s", ir = "Ve al andén", espera = "Esperando en el andén",
-		aqui = "¡El tranvía ya está aquí!", lugar = "el andén", llegando = "¡Llegando al andén!" },
+		aqui = "¡El tranvía ya está aquí!", lugar = "el andén", corto = "Al andén", llegando = "¡Llegando al andén!" },
 	portal = { icono = "viaje-portal", titulo = "Portal a %s", ir = "Ve al portal", espera = "Cruza el portal",
-		lugar = "el portal" },
+		lugar = "el portal", corto = "Al portal" },
 	fly = { icono = "viaje-grifo", titulo = "Vuelo a %s", ir = "Ve con el maestro de vuelo", espera = "Habla con el maestro de vuelo",
-		lugar = "el maestro de vuelo" },
+		lugar = "el maestro de vuelo", corto = "Maestro de vuelo" },
 }
 Arrow.TARJETA = TARJETA
 local TJ_ANCHO, TJ_PAD, TJ_MEDALLA = 300, 10, 46
@@ -1127,15 +1344,12 @@ local function animarTarjeta(self, dt)
 		self:ClearAllPoints()
 		local abajo = self.alfaAbajo
 		local y = (quieta or e >= 1) and 0 or -(1 - e) * 10
-		if abajo then
-			self:SetPoint("TOP", dial, "BOTTOM", 0, -6 + y)
-		else
-			self:SetPoint("TOP", dial, "TOP", 0, y)
-		end
+		Arrow.PL.anclar(self, abajo, y)
 		if quieta or e >= 1 then self.alfaAnclada = true end
 	end
 	if quieta then return end
-	self.Halo:SetAlpha(0.25 + 0.2 * (0.5 + 0.5 * sin(t * 2.2)))
+	-- 1.4.0 (69): el aro y el halo quietos (Toxic: «el aro parpadea»).
+	self.Halo:SetAlpha(0.35)
 	if self.alfaEspera and self.Brillo:IsShown() then
 		local ancho = self.alfaPista or TJ_COLUMNA
 		local p = (t * 0.45) % 1
@@ -1144,17 +1358,13 @@ local function animarTarjeta(self, dt)
 		self.Brillo:ClearAllPoints()
 		self.Brillo:SetPoint("LEFT", self.Pista, "LEFT", p * (ancho - 40), 0)
 	end
-	-- La cuenta late suave en sus últimos 10 segundos.
-	if self.alfaUrge then
-		self.Cuenta:SetAlpha(0.75 + 0.25 * (0.5 + 0.5 * sin(t * 6)))
-	end
 end
 
 local function armarTarjeta(K)
 	if tarjeta then return tarjeta end
 	local f = CreateFrame("Frame", "AlfaNavViaje", frame)
 	f:SetSize(TJ_ANCHO, 110)
-	f:SetPoint("TOP", dial, "TOP", 0, 0)
+	Arrow.PL.anclar(f, false, 0)
 	f:EnableMouse(false)
 	f:Hide()
 	f.caja = K.Caja(f, { corte = K.CORTE.tarjeta, rol = "panel", alfaFondo = 0.92 })
@@ -1247,13 +1457,17 @@ local function sinTextoViejo(conDisco)
 		-- Sin disco a la vista (en el muelle o a bordo): el texto de antes en
 		-- blanco, por si alguien lo lee (y nada atrapa el ratón).
 		distText:SetText("")
-		labelText:SetText("")
+		ponerMeta("")
 	end
 end
 
 local function quitarTarjeta()
 	if tarjeta and tarjeta:IsShown() then
+		-- 1.4.0: si vuelve enseguida al mismo viaje, sale sin volver a entrar
+		-- (Toxic: «no deja de parpadear» esperando el barco).
+		tarjeta.alfaQuitada = GetTime()
 		tarjeta:Hide()
+		if Arrow.PL.aparte() then frame:EnableMouse(true) end -- 1.4.0 (78)
 		distText:Show()
 		labelText:Show()
 		if frame.SetClampRectInsets then frame:SetClampRectInsets(0, 0, 0, 0) end
@@ -1322,6 +1536,12 @@ function Arrow.DatosTarjeta(leg, estado, secsTotal, yardas)
 			if sig then d.nota = ns.T("Si lo pierdes, el siguiente sale en %s"):format(duracionRedonda(espera + 5 + sig)) end
 			d.medido = true
 			d.restante = s
+			-- 1.4.0 (37): el horario lo midió un lobo de tu hermandad (Alfa_Mundo/Horarios.lua).
+			local de = type(Nav.HorarioDeLaManada) == "function" and Nav.HorarioDeLaManada(id) or nil
+			if type(de) == "string" and de ~= "" then
+				d.deLaManada = de
+				d.nota = (d.nota and (d.nota .. "\n") or "") .. ns.T("Horario medido por %s, de La Jauría"):format(de)
+			end
 		elseif espera then
 			d.cuenta, d.cuentaSobre = ("~%d min"):format(math.max(1, floor(espera / 60 + 0.5))), ns.T("sale en")
 			d.espera = true -- sin horario: la barra espera
@@ -1346,11 +1566,221 @@ function Arrow.DatosTarjeta(leg, estado, secsTotal, yardas)
 	return d
 end
 
+---------------------------------------------------------------------------
+-- Alfa 1.4.0 (69): la tarjeta compacta (nav.viajeCompacto, de fábrica). Toxic:
+-- «ocupa mucho, no se entiende el ícono, no se cierra y se queda al llegar».
+-- Dos renglones junto al dibujo del transporte (grifo o murciélago según tu
+-- bando, barco, zepelín, tranvía, portal):
+--   «Vuelo a Forjaz                  1:31»
+--   «Ve con el maestro de vuelo · 1066 yd»
+-- Lo demás (la nota, la ruta, cuándo llegas) en el cuadro al pasar el ratón.
+-- Se cierra con su X o con clic derecho (hasta el siguiente destino); a bordo
+-- se queda TJ_A_BORDO segundos y se va sola, y al llegar ya no vuelve. Fuera
+-- de combate toma el ratón; en combate no (no atrapa clics).
+--   Arrow.Tarjeta().compacta / .cerrada ; Arrow.CerrarTarjeta()
+---------------------------------------------------------------------------
+local TJ_COMPACTA = 272
+local TJ_A_BORDO = 6
+local pintarCompacta
+Arrow.cerradas = {} -- tramo (kind|título) -> true: lo cerraste
+do
+local MEDALLA_C = 30
+
+local function claveDe(d) return tostring(d.kind) .. "|" .. tostring(d.titulo) end
+
+local function iconoDe(d)
+	if d.kind == "fly" then
+		local f = UnitFactionGroup and UnitFactionGroup("player")
+		if not (issecretvalue and issecretvalue(f)) and f == "Horde" then return "viaje-murcielago" end
+	end
+	return TARJETA[d.kind].icono
+end
+Arrow.IconoViaje = iconoDe
+
+local function detalle(f)
+	local d = tarjetaVista
+	if not d or enCombate() then return end
+	GameTooltip:SetOwner(f, "ANCHOR_BOTTOM")
+	GameTooltip:SetText(d.titulo, Nav.RGB("text"))
+	local r, g, b = Nav.RGB("textDim")
+	if d.sobre then GameTooltip:AddLine(d.sobre .. (d.distancia and ("  \194\183  " .. d.distancia) or ""), r, g, b, true) end
+	if d.cuenta then
+		local cr, cg, cb = Nav.RGB("arrowText")
+		GameTooltip:AddLine((d.cuentaSobre and (d.cuentaSobre .. " ") or "") .. d.cuenta, cr, cg, cb)
+	end
+	if d.nota then GameTooltip:AddLine(d.nota, r, g, b, true) end
+	if d.puntos then GameTooltip:AddLine(table.concat(d.puntos, "  \226\128\186  "), r, g, b, true) end
+	if d.llegas then GameTooltip:AddLine(d.llegas:sub(1, 1):upper() .. d.llegas:sub(2), r, g, b) end
+	GameTooltip:AddLine(" ")
+	local mr, mg, mb = Nav.RGB("textMuted")
+	GameTooltip:AddLine(ns.T("Clic derecho o la X: cerrarla"), mr, mg, mb)
+	GameTooltip:Show()
+end
+
+local function cerrar(f)
+	local d = tarjetaVista
+	if d then Arrow.cerradas[claveDe(d)] = true end
+	if GameTooltip:GetOwner() == f then GameTooltip:Hide() end
+	f:Hide()
+	f.alfaCerrada = true
+end
+Arrow.CerrarTarjeta = function() if tarjeta then cerrar(tarjeta) end end
+
+local function armarCompacta(K, f)
+	if f.Cerrar then return end
+	f.Cerrar = K.BotonIcono(f, "ic-cerrar", function() cerrar(f) end, { tam = 18, icono = 9, ayuda = ns.T("Cerrar") })
+	f.Cerrar:SetPoint("TOPRIGHT", f, "TOPRIGHT", -4, -4)
+	f:SetScript("OnEnter", detalle)
+	f:SetScript("OnLeave", function(self) if GameTooltip:GetOwner() == self then GameTooltip:Hide() end end)
+	f:SetScript("OnMouseUp", function(self, boton) if boton == "RightButton" and not enCombate() then cerrar(self) end end)
+end
+
+-- -> true si se encargó (pintada, cerrada o ida sola); false: la flecha de siempre.
+function pintarCompacta(K, f, d, abajo)
+	local clave = claveDe(d)
+	-- A bordo: unos segundos y se va; al llegar ya no vuelve.
+	if d.estado == "abordo" or d.estado == "llegando" then
+		f.alfaBordo = f.alfaBordo or {}
+		local t = GetTime and GetTime() or 0
+		f.alfaBordo[clave] = f.alfaBordo[clave] or t
+		if t - f.alfaBordo[clave] > TJ_A_BORDO or (d.llegaEn and d.llegaEn <= 1) then Arrow.cerradas[clave] = true end
+	end
+	if Arrow.cerradas[clave] then
+		if f:IsShown() then
+			f:Hide()
+			if GameTooltip:GetOwner() == f then GameTooltip:Hide() end
+		end
+		f.alfaCerrada = true
+		tarjetaVista = d
+		-- Caminando al muelle, la flecha de siempre; en el muelle o a bordo, nada.
+		if abajo then return false end
+		sinTextoViejo(false)
+		return true
+	end
+	f.alfaCerrada = false
+	armarCompacta(K, f)
+	local r, g, b, metal = colorTarjeta(K)
+	local nuevo = not f:IsShown() or f.alfaAbajo ~= abajo or f.alfaModo ~= "compacta"
+	if nuevo then
+		f.alfaT, f.alfaAnclada = 0, false
+		-- 1.4.0: el mismo viaje que se acaba de quitar vuelve sin entrar otra vez.
+		if f.alfaViaje == tostring(d.kind) .. "|" .. tostring(d.titulo) and GetTime() - (f.alfaQuitada or -99) < 2 then f.alfaT = 99 end
+		f.alfaViaje = tostring(d.kind) .. "|" .. tostring(d.titulo)
+		f:ClearAllPoints()
+		Arrow.PL.anclar(f, abajo, 0)
+	end
+	f.alfaModo, f.alfaFirma = "compacta", nil
+	f.alfaAbajo = abajo
+	f.alfaQuieta = ns.Get("ui.reduceMotion") and true or false
+	f.alfaEspera, f.alfaUrge = false, false
+	-- Lo que no va en la compacta.
+	for _, x in ipairs({ f.Pista, f.Relleno, f.Brillo, f.Nota, f.RutaLinea, f.RutaHecha, f.Ruta, f.CuentaSobre, f.Adorno }) do x:Hide() end
+	for _, p in ipairs(f.Puntos) do p:Hide() end
+	f.Medalla:SetSize(MEDALLA_C, MEDALLA_C)
+	f.Medalla:ClearAllPoints()
+	f.Medalla:SetPoint("LEFT", f, "LEFT", TJ_PAD + 2, 0)
+	f.Halo:SetSize(MEDALLA_C * 1.6, MEDALLA_C * 1.6)
+	f.Halo:SetAlpha(0.35)
+	f.Icono:SetSize(MEDALLA_C * 0.72, MEDALLA_C * 0.72)
+	f.Icono:SetTexture(NUCLEO_MEDIA .. iconoDe(d))
+	f.Icono:SetVertexColor(r, g, b, 1)
+	f.Aro:SetVertexColor(r, g, b, 0.9)
+	f.Halo:SetVertexColor(r, g, b, 1)
+	f.Fondo:SetVertexColor(K.ConAlfa("hundido", 0.95))
+	f.Franja:SetVertexColor(r, g, b, 1)
+	f.Cuenta:SetAlpha(1)
+	local x = TJ_PAD * 2 + 2 + MEDALLA_C
+	local derecha = 4 + 18 + 6 -- la X
+	-- Renglón 1: el título entero (el destino es lo que importa).
+	local ancho = TJ_COMPACTA - x - derecha
+	letra(K, f.Titulo, "cuerpo")
+	f.Titulo:SetTextColor(K.Color("texto"))
+	f.Titulo:SetWidth(ancho)
+	f.Titulo:SetWordWrap(false)
+	f.Titulo:SetMaxLines(1)
+	f.Titulo:SetText(Arrow.AcortarA and Arrow.AcortarA(f.Titulo, d.titulo, ancho) or d.titulo)
+	f.Titulo:ClearAllPoints()
+	f.Titulo:SetPoint("TOPLEFT", f, "TOPLEFT", x, -TJ_PAD)
+	local y = TJ_PAD + altoTexto(K, f.Titulo, 14)
+	-- Renglón 2: la cuenta (en el color del viaje) y qué hacer, o de quién es el horario.
+	local anchoCuenta = 0
+	-- Caminando al muelle, lo que importa es a cuánto está (la cuenta, en el cuadro).
+	local cuenta = d.estado ~= "camino" and d.cuenta or nil
+	if cuenta then
+		letra(K, f.Cuenta, "cuerpo")
+		f.Cuenta:SetJustifyH("LEFT")
+		f.Cuenta:SetWidth(0)
+		if metal then f.Cuenta:SetTextColor(metal[1], metal[2], metal[3], 1) else f.Cuenta:SetTextColor(Nav.RGB("arrowText")) end
+		f.Cuenta:SetText(cuenta)
+		f.Cuenta:ClearAllPoints()
+		f.Cuenta:SetPoint("TOPLEFT", f, "TOPLEFT", x, -(y + 3))
+		anchoCuenta = math.ceil(tonumber(f.Cuenta:GetStringWidth()) or 0) + 8
+		f.Cuenta:Show()
+	else
+		f.Cuenta:Hide()
+	end
+	local dos = d.sobre or ""
+	-- Corto y completo: «Maestro de vuelo · 1066 yd», no «Habla con el…».
+	local v = TARJETA[d.kind]
+	if v and v.corto and (dos == ns.T(v.ir) or (d.kind == "fly" and dos == ns.T(v.espera))) then dos = ns.T(v.corto) end
+	if d.distancia and d.estado == "camino" then dos = d.distancia .. "  \194\183  " .. dos
+	elseif d.distancia then dos = dos .. "  \194\183  " .. d.distancia end
+	if d.deLaManada and d.estado ~= "camino" then dos = ns.T("Horario medido por %s, de La Jauría"):format(d.deLaManada) end
+	local anchoDos = TJ_COMPACTA - x - TJ_PAD - anchoCuenta
+	letra(K, f.Sobre, "pequeno")
+	f.Sobre:SetTextColor(K.Color("textoSuave"))
+	f.Sobre:SetWidth(anchoDos)
+	f.Sobre:SetWordWrap(false)
+	f.Sobre:SetText(Arrow.AcortarA and Arrow.AcortarA(f.Sobre, dos, anchoDos) or dos)
+	f.Sobre:ClearAllPoints()
+	if cuenta then
+		f.Sobre:SetPoint("LEFT", f.Cuenta, "RIGHT", 8, 0)
+	else
+		f.Sobre:SetPoint("TOPLEFT", f, "TOPLEFT", x, -(y + 3))
+	end
+	f.Sobre:SetShown(dos ~= "")
+	if dos ~= "" or cuenta then
+		y = y + 3 + math.max(cuenta and altoTexto(K, f.Cuenta, 14) or 0, dos ~= "" and altoTexto(K, f.Sobre, 12) or 0)
+	end
+	y = math.max(y, MEDALLA_C) + TJ_PAD
+	f:SetSize(TJ_COMPACTA, y)
+	local libre = not enCombate()
+	f:EnableMouse(libre)
+	f.Cerrar:SetShown(libre)
+	f:Show()
+	Arrow.PL.medir(f) -- 1.4.0 (78)
+	sinTextoViejo(abajo)
+	local sobra = math.max(0, (TJ_COMPACTA - WIDTH) / 2)
+	if frame.SetClampRectInsets then frame:SetClampRectInsets(-sobra, sobra, 0, abajo and -(y + 6 - TEXT_H) or 0) end
+	tarjetaVista = d
+	return true
+end
+end
+
 -- Pinta la tarjeta. -> true si se pudo (sin el Kit, false: el texto de antes).
 local function pintarTarjeta(d, abajo)
 	local K = kit()
 	if not (K and d) then return false end
 	local f = armarTarjeta(K)
+	if ns.Get("nav.viajeCompacto") ~= false then return pintarCompacta(K, f, d, abajo) end
+	-- (la grande: lo que la compacta escondió vuelve)
+	if f.alfaModo ~= "grande" then
+		f.alfaModo, f.alfaFirma, f.alfaCerrada = "grande", nil, false
+		f.Medalla:SetSize(TJ_MEDALLA, TJ_MEDALLA)
+		f.Medalla:ClearAllPoints()
+		f.Medalla:SetPoint("TOPLEFT", f, "TOPLEFT", TJ_PAD + 2, -TJ_PAD)
+		f.Halo:SetSize(TJ_MEDALLA * 1.7, TJ_MEDALLA * 1.7)
+		f.Icono:SetSize(TJ_MEDALLA * 0.62, TJ_MEDALLA * 0.62)
+		f.Titulo:SetWordWrap(true)
+		f.Titulo:SetMaxLines(2)
+		f.Sobre:SetWordWrap(true)
+		f.Sobre:Show()
+		for _, x in ipairs({ f.RutaLinea, f.Ruta }) do x:Show() end
+		for _, p in ipairs(f.Puntos) do p:Show() end
+		if f.Cerrar then f.Cerrar:Hide() end
+		f.Cuenta:SetJustifyH("RIGHT")
+		f:EnableMouse(false)
+	end
 	local r, g, b, metal = colorTarjeta(K)
 	local B = K.Bando and K.Bando()
 	local firma = table.concat({ d.estado, d.kind, d.titulo, d.sobre or "", d.distancia or "", d.cuenta or "", d.nota or "",
@@ -1358,8 +1788,11 @@ local function pintarTarjeta(d, abajo)
 	local nuevo = not f:IsShown() or f.alfaAbajo ~= abajo
 	if nuevo then
 		f.alfaT, f.alfaAnclada = 0, false
+		-- 1.4.0: el mismo viaje que se acaba de quitar vuelve sin entrar otra vez.
+		if f.alfaViaje == tostring(d.kind) .. "|" .. tostring(d.titulo) and GetTime() - (f.alfaQuitada or -99) < 2 then f.alfaT = 99 end
+		f.alfaViaje = tostring(d.kind) .. "|" .. tostring(d.titulo)
 		f:ClearAllPoints()
-		if abajo then f:SetPoint("TOP", dial, "BOTTOM", 0, -6) else f:SetPoint("TOP", dial, "TOP", 0, 0) end
+		Arrow.PL.anclar(f, abajo, 0)
 	end
 	f.alfaAbajo = abajo
 	f.alfaQuieta = ns.Get("ui.reduceMotion") and true or false
@@ -1375,7 +1808,7 @@ local function pintarTarjeta(d, abajo)
 	f.Franja:SetVertexColor(r, g, b, 1)
 	f.Aro:SetVertexColor(r, g, b, 0.9)
 	f.Halo:SetVertexColor(r, g, b, 1)
-	f.Icono:SetTexture(NUCLEO_MEDIA .. TARJETA[d.kind].icono)
+	f.Icono:SetTexture(NUCLEO_MEDIA .. Arrow.IconoViaje(d))
 	f.Icono:SetVertexColor(r, g, b, 1)
 	f.Fondo:SetVertexColor(K.ConAlfa("hundido", 0.95))
 	if B and B.adorno then
@@ -1527,6 +1960,7 @@ local function pintarTarjeta(d, abajo)
 	f:SetWidth(TJ_ANCHO)
 	if f.alfaQuieta then f.Halo:SetAlpha(0.4) end
 	f:Show()
+	Arrow.PL.medir(f) -- 1.4.0 (78)
 	sinTextoViejo(abajo)
 	local sobra = math.max(0, (TJ_ANCHO - WIDTH) / 2)
 	if frame.SetClampRectInsets then frame:SetClampRectInsets(-sobra, sobra, 0, abajo and -(y + 6 - TEXT_H) or 0) end
@@ -1535,11 +1969,13 @@ local function pintarTarjeta(d, abajo)
 end
 
 function Arrow.Tarjeta()
+	if tarjeta and tarjeta.alfaCerrada and tarjetaVista then return { cerrada = true, estado = tarjetaVista.estado, kind = tarjetaVista.kind } end
 	if not (tarjeta and tarjeta:IsShown() and tarjetaVista) then return nil end
 	local d = tarjetaVista
 	return { estado = d.estado, kind = d.kind, titulo = d.titulo, sobre = tarjeta.Sobre:GetText(), cuenta = d.cuenta,
 		nota = d.nota, ruta = tarjeta.Ruta:GetText(), barra = tarjeta.Pista:IsShown() or nil, espera = d.espera or nil,
-		abajo = tarjeta.alfaAbajo or nil, paso = d.paso,
+		abajo = tarjeta.alfaAbajo or nil, paso = d.paso, compacta = tarjeta.alfaModo == "compacta" or nil,
+		icono = tarjeta.Icono:GetTexture(), cerrar = tarjeta.Cerrar ~= nil and tarjeta.Cerrar:IsShown() or nil,
 		viejo = distText:IsShown() or labelText:IsShown() or etaText:IsShown() or legIcon:IsShown() or nil }
 end
 
@@ -1580,6 +2016,8 @@ local function pintarViaje(leg, secsTotal)
 		showArrow(false)
 		-- Solo el área de la tarjeta (arriba) toma el ratón para moverla.
 		frame:SetHitRectInsets((WIDTH - DIAL) / 2, (WIDTH - DIAL) / 2, 0, TEXT_H)
+		-- 1.4.0 (78): con la tarjeta aparte, el lugar vacío de la flecha no toma el ratón.
+		if Arrow.PL.aparte() then frame:EnableMouse(false) end
 		return true
 	end
 	if not linea then
@@ -1598,7 +2036,7 @@ local function pintarViaje(leg, secsTotal)
 	end
 	local v = viajeVisto
 	if not (v and v.linea == linea) then distText:SetText(linea) end
-	if not (v and v.debajo == debajo) then labelText:SetText(debajo or "") end
+	if not (v and v.debajo == debajo) then ponerMeta(debajo or "") end
 	if llegas then
 		if not (v and v.llegas == llegas) then etaText:SetText(llegas) end
 		etaText:Show()
@@ -1717,13 +2155,13 @@ local function setMode(m)
 		distText:SetTextColor(Nav.RGB("arrowText"))
 		distText:SetText(T and T.CurrentLabel() or "")
 		local target = Nav.GetTarget()
-		labelText:SetText(target and target.label or "")
+		ponerMeta(target and target.label or "")
 		etaColor()
 	else
 		distText:SetTextColor(Nav.RGB("text"))
 		etaColor()
 		local T = Nav.travel
-		if T and T.Active() then labelText:SetText(routeLabel(T)) end
+		if T and T.Active() then ponerMeta(routeLabel(T)) end
 	end
 end
 
@@ -1821,8 +2259,21 @@ local function syncLabel(T, routed)
 			routeSeen = T.version
 			local w = T.TakeWarning and T.TakeWarning()
 			if w then warning, warnUntil = w, GetTime() + WARN_SECONDS end
-			labelText:SetText(routeLabel(T))
-			if mode == "instruction" then mode = nil end
+			-- 1.4.0: en el muelle (o con el maestro de vuelo) Travel sube su
+			-- versión cada segundo por la cuenta de la salida. Antes eso volvía a
+			-- armar el modo (setMode quitaba la tarjeta y la volvía a meter con su
+			-- entrada): la tarjeta parpadeaba sin parar. El mismo tramo se
+			-- repinta en su lugar; solo otro tramo (o la piedra) arma el modo.
+			local leg = mode == "instruction" and T.CurrentLeg and T.CurrentLeg()
+			if leg and leg.kind ~= "hearth" and Arrow.PL.tramo == Arrow.PL.claveTramo(leg) then
+				viajeVisto, viajeCuando = nil, nil
+				distText:SetText(T.CurrentLabel and T.CurrentLabel() or "")
+				local target = Nav.GetTarget()
+				ponerMeta(target and target.label or "")
+			else
+				ponerMeta(routeLabel(T))
+				if mode == "instruction" then mode = nil end
+			end
 		end
 		return
 	end
@@ -1836,7 +2287,7 @@ local function syncLabel(T, routed)
 		local target = Nav.GetTarget()
 		local text = withTargetWarning(target and target.label or "")
 		if warning then text = text ~= "" and (text .. "\n" .. warning) or warning end
-		labelText:SetText(text)
+		ponerMeta(text)
 	end
 end
 
@@ -1874,6 +2325,7 @@ local function sample(elapsed)
 		local esPiedra = leg ~= nil and leg.kind == "hearth"
 		if mode == "instruction" and esPiedra ~= piedraVista then mode = nil end
 		setMode("instruction")
+		Arrow.PL.tramo = Arrow.PL.claveTramo(leg) -- 1.4.0: el tramo que pinta el modo (syncLabel)
 		if piedraVista then etaText:Hide() return true end
 		local secs = showEta and T.Remaining(nil)
 		-- Alfa 1.3.8: un viaje (barco, zepelín, tranvía, portal, vuelo), a la manera de Alfa.
@@ -1969,12 +2421,171 @@ sample = function(elapsed)
 end
 function Arrow.Minimo() return minimo end
 
+---------------------------------------------------------------------------
+-- Alfa 1.4.0 (2): la flecha nunca queda detrás de una ventana de Alfa. En la
+-- captura de Toxic la ventana de Bolsas tapaba media meta. Cuatro veces por
+-- segundo (solo mientras la flecha se ve) se mira si lo que dice la flecha
+-- se encima con una ventana de Alfa a la vista; si sí, la flecha sube a la
+-- capa de arriba de esa ventana y su texto lleva una placa oscura debajo
+-- para leerse sobre la ventana. Al quitarse la ventana, vuelve a su capa.
+-- Solo el disco toma el ratón (como siempre): el texto encima no atrapa
+-- clics de la ventana. Las ventanas de diálogo (capa DIALOG y arriba) mandan:
+-- la flecha nunca las tapa.
+--   Nav.VentanasDeAlfa[#+1] = marco   otra ventana que la flecha no debe quedar debajo
+--   Arrow.Encima() -> nombre de la ventana | nil, capa de la flecha
+---------------------------------------------------------------------------
+local revisarEn, evitarVentanas = 0, nil
+do
+local CAPA_NUM = { BACKGROUND = 1, LOW = 2, MEDIUM = 3, HIGH = 4 }
+local CAPA_DE = { "LOW", "MEDIUM", "HIGH", "DIALOG" } -- [n] = la de arriba de la capa n
+local CAPA_PROPIA = "MEDIUM"
+local VENTANAS_ALFA = { "AlfaBolsasVentana", "AlfaBolsasBanco", "AlfaGuideFrame", "AlfaWelcome", "AlfaWhatsNew",
+	"AlfaRastreador", "AlfaEscritorioMarco", "AlfaMazmorrasResumen", "AlfaCombateMedidor" }
+Nav.VentanasDeAlfa = Nav.VentanasDeAlfa or {}
+local encima, encimaNombre -- la ventana que la flecha tiene debajo ahora
+-- 1.4.0 (revisión): subida encima de una ventana de Alfa, la flecha no toma
+-- el ratón: el disco quedaría sobre casillas y botones de esa ventana, y un
+-- clic en una bolsa movería la flecha. Al bajar vuelve lo que pidió el resto
+-- de la flecha (quiereRaton: el último EnableMouse de este archivo).
+local ponerRaton = frame.EnableMouse
+local quiereRaton = frame:IsMouseEnabled() and true or false
+frame.EnableMouse = function(self, on)
+	quiereRaton = on and true or false
+	return ponerRaton(self, quiereRaton and encima == nil)
+end
+local respaldo = frame:CreateTexture(nil, "BACKGROUND", nil, -7)
+respaldo:Hide()
+
+-- Un rectángulo en píxeles de pantalla: izq, abajo, der, arriba.
+local function caja(r, e)
+	if not (r and r.IsVisible and r:IsVisible()) then return nil end
+	local ok, l, b, w, h = pcall(r.GetRect, r)
+	l, b, w, h = tonumber(l), tonumber(b), tonumber(w), tonumber(h)
+	if not (ok and l and b and w and h) or w <= 0 or h <= 0 then return nil end
+	return l * e, b * e, (l + w) * e, (b + h) * e
+end
+
+local function unir(a, l, b, r, t)
+	if not l then return a end
+	if not a then return { l, b, r, t } end
+	if l < a[1] then a[1] = l end
+	if b < a[2] then a[2] = b end
+	if r > a[3] then a[3] = r end
+	if t > a[4] then a[4] = t end
+	return a
+end
+
+-- Lo que la flecha enseña (el disco, sus textos, la placa o la tarjeta).
+local function cajaFlecha()
+	local e = tonumber(frame:GetEffectiveScale()) or 1
+	local a
+	if dial:IsShown() then a = unir(a, caja(dial, e)) end
+	for _, fs in ipairs({ distText, timerText, labelText, etaText }) do
+		if fs:IsShown() and (fs:GetText() or "") ~= "" then a = unir(a, caja(fs, e)) end
+	end
+	if llegada and llegada:IsShown() then a = unir(a, caja(llegada, e)) end
+	if tarjeta and tarjeta:IsShown() then a = unir(a, caja(tarjeta, e)) end
+	return a
+end
+
+local function candidatas(fn)
+	for _, n in ipairs(VENTANAS_ALFA) do
+		local v = rawget(_G, n)
+		if type(v) == "table" then fn(v, n) end
+	end
+	local Nu = rawget(_G, "AlfaNucleo")
+	local K = type(Nu) == "table" and rawget(Nu, "Kit")
+	local lista = type(K) == "table" and rawget(K, "VENTANAS")
+	if type(lista) == "table" then
+		for _, v in ipairs(lista) do fn(v, v.alfaNombre or (v.GetName and v:GetName())) end
+	end
+	for _, v in ipairs(Nav.VentanasDeAlfa) do fn(v, v.GetName and v:GetName()) end
+end
+
+local function pintarRespaldo(on)
+	-- La placa y la tarjeta ya traen su panel.
+	on = on and not (llegada and llegada:IsShown()) and not (tarjeta and tarjeta:IsShown())
+	if not on then respaldo:Hide() return end
+	local w, arriba, abajo = 0, nil, nil
+	for _, fs in ipairs({ distText, timerText, labelText, etaText }) do
+		if fs:IsShown() and (fs:GetText() or "") ~= "" then
+			local sw = tonumber(fs:GetStringWidth()) or 0
+			if sw > w then w = sw end
+			arriba = arriba or fs
+			abajo = fs
+		end
+	end
+	if not arriba then respaldo:Hide() return end
+	local r, g, b = Nav.RGB("shade")
+	respaldo:SetColorTexture(r, g, b, 0.78)
+	respaldo:ClearAllPoints()
+	respaldo:SetPoint("TOP", arriba, "TOP", 0, 5)
+	respaldo:SetPoint("BOTTOM", abajo, "BOTTOM", 0, -5)
+	respaldo:SetWidth(math.ceil(w) + 20)
+	respaldo:Show()
+end
+
+-- Lo que dice la flecha es más ancho (LABEL_WIDTH) y más alto (dos renglones,
+-- la cuenta de una misión con tiempo) que su marco: el marco se sujeta a la
+-- pantalla contando todo su texto, para que nada quede fuera arriba, abajo ni
+-- a los lados. (La placa y la tarjeta ponen lo suyo.)
+local function sujetarTexto()
+	if not frame.SetClampRectInsets then return end
+	if (llegada and llegada:IsShown()) or (tarjeta and tarjeta:IsShown()) then return end
+	local lado = math.max(0, (LABEL_WIDTH - WIDTH) / 2)
+	local abajo = 0
+	local fb = tonumber(frame:GetBottom())
+	if fb then
+		for _, fs in ipairs({ distText, timerText, labelText, etaText }) do
+			if fs:IsShown() and (fs:GetText() or "") ~= "" then
+				local b = tonumber(fs:GetBottom())
+				if b and fb - b > abajo then abajo = fb - b end
+			end
+		end
+	end
+	frame:SetClampRectInsets(-lado, lado, 0, -math.ceil(abajo))
+end
+Arrow.SujetarTexto = sujetarTexto
+
+function evitarVentanas()
+	sujetarTexto()
+	local mia = cajaFlecha()
+	local capa, cual, nombre = 0, nil, nil
+	if mia then
+		candidatas(function(v, n)
+			if v == frame or not (v.IsVisible and v:IsVisible()) then return end
+			local cv = CAPA_NUM[v.GetFrameStrata and v:GetFrameStrata() or ""]
+			if not cv then return end -- DIALOG y arriba: esa ventana manda
+			local l, b, r, t = caja(v, tonumber(v:GetEffectiveScale()) or 1)
+			if not l or l >= mia[3] or r <= mia[1] or b >= mia[4] or t <= mia[2] then return end
+			if cv > capa then capa, cual, nombre = cv, v, n end
+		end)
+	end
+	local quiero = cual and CAPA_DE[capa] or CAPA_PROPIA
+	if (CAPA_NUM[quiero] or 5) < (CAPA_NUM[CAPA_PROPIA] or 3) then quiero = CAPA_PROPIA end
+	if frame:GetFrameStrata() ~= quiero then frame:SetFrameStrata(quiero) end
+	local antes = encima
+	encima, encimaNombre = cual, cual and (nombre or "?") or nil
+	if (antes == nil) ~= (cual == nil) then ponerRaton(frame, quiereRaton and cual == nil) end
+	pintarRespaldo(cual ~= nil)
+end
+Arrow.EvitarVentanas = evitarVentanas
+function Arrow.Encima() return encimaNombre, frame:GetFrameStrata(), respaldo:IsShown() or nil end
+function Arrow.TomaRaton() return frame:IsMouseEnabled() and true or false, quiereRaton end
+end
+local REVISAR = 0.25
+
 frame:SetScript("OnUpdate", ns.Safe(function(_, elapsed)
 	accum = accum + elapsed
 	if accum >= SAMPLE_INTERVAL then
 		local step = accum
 		accum = 0
 		if not sample(step) then return end
+	end
+	revisarEn = revisarEn - elapsed
+	if revisarEn <= 0 then
+		revisarEn = REVISAR
+		evitarVentanas()
 	end
 	if mode == "travel" and hasAngle then
 		local diff = wrap(goalAngle - curBearing)
@@ -2011,11 +2622,77 @@ end))
 
 frame:SetScript("OnShow", function()
 	accum, hasAngle = 0, false
+	revisarEn = 0 -- (1.4.0) lo primero: ¿hay una ventana de Alfa debajo?
 end)
 
 ---------------------------------------------------------------------------
 -- Moving, settings
 ---------------------------------------------------------------------------
+
+---------------------------------------------------------------------------
+-- Alfa 1.4.0 (33): la flecha de cada personaje. Con nav.flechaPorPersonaje
+-- (de fábrica, sí) el lugar, el tamaño y si la escondiste se guardan en este
+-- personaje (AlfaCharDB.flecha) y se ponen al entrar: tu cazador la tiene
+-- arriba y grande, tu sacerdote abajo y escondida. Un personaje que nunca la
+-- tocó usa la de la cuenta, como antes. «Restablecer» la flecha también la
+-- olvida en el personaje.
+---------------------------------------------------------------------------
+do
+local PROPIOS = { ["nav.arrowPos"] = "pos", ["nav.arrowScale"] = "escala", ["nav.arrow"] = "ver", ["nav.placasPos"] = "placas" }
+local poniendo = false
+local function flechaPropia(crear)
+	if not ns.Get("nav.flechaPorPersonaje") then return nil end
+	local s = ns.CharState and ns.CharState()
+	if type(s) ~= "table" then return nil end
+	if type(s.flecha) ~= "table" then
+		if not crear then return nil end
+		s.flecha = {}
+	end
+	return s.flecha
+end
+local function copia(v)
+	if type(v) ~= "table" then return v end
+	local o = {}
+	for k, x in pairs(v) do o[k] = x end
+	return o
+end
+function Arrow.Propia() return flechaPropia(false) end
+
+-- Al entrar: lo de este personaje manda.
+function Arrow.PonerPropia()
+	local f = flechaPropia(false)
+	if not f then return false end
+	poniendo = true
+	for ruta, campo in pairs(PROPIOS) do
+		local v = f[campo]
+		if v ~= nil then
+			if v == "nada" then v = nil end
+			local ahora = ns.Get(ruta)
+			local igual = ahora == v
+			if type(v) == "table" and type(ahora) == "table" then
+				igual = v.point == ahora.point and v.relPoint == ahora.relPoint and v.x == ahora.x and v.y == ahora.y
+			end
+			if not igual then pcall(ns.Set, ruta, copia(v)) end
+		end
+	end
+	poniendo = false
+	return true
+end
+
+ns.On("SETTING_CHANGED", function(path, value)
+	if poniendo then return end
+	local campo = PROPIOS[path]
+	if campo then
+		local f = flechaPropia(true)
+		-- (sin lugar guardado: «nada», para no volver al de la cuenta)
+		if f then f[campo] = value == nil and "nada" or copia(value) end
+	elseif path == "nav" or path == "" then
+		local f = flechaPropia(false)
+		if f then for _, c in pairs(PROPIOS) do f[c] = nil end end
+	end
+end)
+if ns.OnLogin then ns.OnLogin(function() Arrow.PonerPropia() end) end
+end
 
 local function applyPosition()
 	frame:ClearAllPoints()
@@ -2052,6 +2729,12 @@ frame:SetScript("OnEnter", function(self)
 	GameTooltip:SetText(L["Alfa arrow"])
 	GameTooltip:AddLine(ns.Get("ui.lockHud") and L["Shift-drag to move."] or L["Drag to move."], Nav.RGB("text"))
 	if hayOtroLugar() then GameTooltip:AddLine(L["Click for the next spot."], Nav.RGB("text")) end
+	-- 1.4.0 (2): la meta entera, si en la flecha va acortada.
+	if Meta.entera ~= "" and Meta.entera ~= Meta.mostrada and labelText:IsShown() then
+		GameTooltip:AddLine(" ")
+		local r, g, b = Nav.RGB("text")
+		GameTooltip:AddLine(Meta.entera, r, g, b, true)
+	end
 	GameTooltip:Show()
 end)
 
@@ -2088,6 +2771,9 @@ function Arrow:OnSettings()
 	end
 	applyStyle(Arrow.StyleFor(ns.Get("nav.arrowStyle")))
 	applyPosition()
+	-- 1.4.0 (78): el ancla de las placas, en la escala de la flecha.
+	Arrow.PL.ancla:SetScale(frame:GetScale() or 1)
+	Arrow.PL.poner()
 	self:Refresh()
 end
 
@@ -2149,6 +2835,8 @@ function Arrow:OnTheme()
 	end
 	etaColor()
 	Nav.SetHudFont(timerText, "small", skinStyle() and 11 or 12)
+	-- 1.4.0 (2): otra letra, otro ancho: la meta se vuelve a acomodar.
+	do local e = Meta.entera Meta.entera = false ponerMeta(e) end
 	-- Its colours are the theme's: set it afresh.
 	timerShown = nil
 	timerText:Hide()
@@ -2165,8 +2853,11 @@ function Arrow:OnTheme()
 end
 
 function Arrow:OnTarget(target)
-	labelText:SetText(target and target.label or "")
+	ponerMeta(target and target.label or "")
 	mode, hasAngle, routeSeen, loneSeen, warning = nil, false, -1, -1, nil
+	-- 1.4.0 (69): otro destino, las tarjetas cerradas vuelven a salir.
+	for k in pairs(Arrow.cerradas) do Arrow.cerradas[k] = nil end
+	if tarjeta then tarjeta.alfaBordo = nil end
 	-- 1.3.1: sin destino, la llegada se olvida (el siguiente sale entero).
 	if not target and llegada then llegada.alfaFirma = nil end
 	syncTimer()
@@ -2249,6 +2940,63 @@ end
 function Arrow.GetFrame()
 	if style ~= "3d" or shownFrame < 0 then return nil end
 	return shownFrame
+end
+
+---------------------------------------------------------------------------
+-- Alfa 1.4.0 (2, pista de Bolsas): Forever no vuelve a medir un texto hasta
+-- que su texto cambia. Tras reiniciar los gráficos, cambiar la resolución, la
+-- escala o el tamaño de UIParent (Dos pantallas) la meta, la distancia y la
+-- tarjeta se quedaban con la medida vieja (encimadas o cortadas). En esos
+-- casos (y 0,1 s después) cada texto de la flecha recibe otra vez su letra
+-- (otro tamaño y luego el suyo) y su texto, y la meta se vuelve a acomodar.
+---------------------------------------------------------------------------
+do
+local function remedir(fs)
+	if not (fs and fs.GetFont and fs.GetText) then return end
+	local f, s, fl = fs:GetFont()
+	if f and s then
+		pcall(fs.SetFont, fs, f, s + 1, fl or "")
+		pcall(fs.SetFont, fs, f, s, fl or "")
+	end
+	local t = fs:GetText()
+	if t ~= nil and not (issecretvalue and issecretvalue(t)) then
+		fs:SetText("")
+		fs:SetText(t)
+	end
+end
+
+local function textosDe(marco, lista)
+	if not marco then return end
+	for _, r in ipairs({ marco:GetRegions() }) do
+		if r.GetObjectType and r:GetObjectType() == "FontString" then lista[#lista + 1] = r end
+	end
+	for _, h in ipairs({ marco:GetChildren() }) do textosDe(h, lista) end
+end
+
+function Arrow.Remedir()
+	local lista = {}
+	textosDe(frame, lista)
+	for _, fs in ipairs(lista) do remedir(fs) end
+	-- La meta se acomoda con la medida nueva; la tarjeta se vuelve a pintar entera.
+	local e = Meta.entera
+	Meta.entera = false
+	ponerMeta(e or "")
+	if tarjeta then tarjeta.alfaFirma = nil end
+	viajeCuando = nil
+	revisarEn = 0
+	if frame:IsShown() then pcall(sample, 0) end
+end
+
+local function remedirLuego()
+	Arrow.Remedir()
+	if ns.After then ns.After(0.1, function() Arrow.Remedir() end) end
+end
+for _, ev in ipairs({ "DISPLAY_SIZE_CHANGED", "UI_SCALE_CHANGED", "GX_RESTARTED" }) do
+	ns.RegisterEvent(ev, remedirLuego)
+end
+if UIParent and UIParent.HookScript then UIParent:HookScript("OnSizeChanged", remedirLuego) end
+-- Dos pantallas (Alfa_Bienvenida/Escritorio*.lua) avisa al mover el mundo y al volver.
+ns.On("ALFA_ESCRITORIO", function() remedirLuego() end)
 end
 
 Nav.RegisterModule(Arrow)

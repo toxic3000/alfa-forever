@@ -157,6 +157,7 @@ local function ofrecer(clave, zona)
 	dichos[clave] = true
 	local quien = U.Mostrar(remitente)
 	aviso({
+		de = clave, -- 1.4.0 (56): si lo silenciaste, no sale
 		titulo = L["Cazar juntos"],
 		texto = format(L["%s también hace “%s”. ¿Cazan juntos?"], quien, titulo),
 		icono = "ic-manada", duracion = 15,

@@ -260,7 +260,44 @@ function Z.Niveles(mapa)
 end
 
 local function rango(lo, hi) return lo == hi and tostring(lo) or (lo .. "\226\128\147" .. hi) end
+-- 1.4.0: «Nivel 60» (no «Niveles 60») cuando el rango es de un solo nivel.
+local function textoNiveles(lo, hi)
+	if tonumber(lo) == tonumber(hi) then return format(L["Nivel %s"], tostring(lo)) end
+	return format(L["Niveles %s"], rango(lo, hi))
+end
+Z.TextoNiveles = textoNiveles
 local function miNivel() return tonumber(N.Leer(llamar(UnitLevel, "player"))) end
+-- «Niveles 17–24» en el color de qué tan difícil es para ti (el del mapa del
+-- juego, Maps.LevelColor); 1.4.0: también en las mazmorras.
+local function nivelesColor(lo, hi)
+	local t = textoNiveles(lo, hi)
+	local nivel = miNivel()
+	local Maps = A.Maps
+	local tok = nivel and Maps and type(Maps.LevelColor) == "function" and llamar(Maps.LevelColor, lo, hi, nivel) or nil
+	if type(tok) == "string" and tok ~= "textDim" and K and K.Hex then t = "|c" .. K.Hex(tok) .. t .. "|r" end
+	return t
+end
+Z.NivelesColor = nivelesColor
+
+-- 1.4.0 (77): cuánto descanso llevas, en % de un nivel («Descanso: 35 % de un nivel»).
+local function lineaDescanso()
+	local n = miNivel()
+	if not n or n >= 60 then return nil end
+	local exh = tonumber(N.Leer(llamar(rawget(_G, "GetXPExhaustion"))))
+	local tope = tonumber(N.Leer(llamar(UnitXPMax, "player")))
+	if not (exh and tope and tope > 0 and exh > 0) then return nil end
+	return format(L["Descanso acumulado: %d%% de un nivel"], math.min(150, math.floor(exh / tope * 100 + 0.5)))
+end
+Z.LineaDescanso = lineaDescanso
+
+-- Lo que Lya cuenta en un anuncio: una frase corta (la entera queda en su diario).
+local function corto(s, tope)
+	tope = tope or 110
+	if type(s) ~= "string" or #s <= tope then return s end
+	local cut = s:sub(1, tope):match("^(.*)[%s,;]") or s:sub(1, tope)
+	return cut .. "\226\128\166"
+end
+Z.Corto = corto
 
 local function nombres()
 	local zona = texto(llamar(GetRealZoneText)) or texto(llamar(GetZoneText))
@@ -355,15 +392,12 @@ function Z.Zona()
 	if lo and hi then
 		-- 1.3.9 (80): el rango en el color de qué tan difícil es para ti (el
 		-- mismo que el mapa del juego: Maps.LevelColor).
-		local t = format(L["Niveles %s"], rango(lo, hi))
-		local Maps = A.Maps
-		local tok = nivel and Maps and type(Maps.LevelColor) == "function" and llamar(Maps.LevelColor, lo, hi, nivel) or nil
-		if type(tok) == "string" and tok ~= "textDim" and K and K.Hex then t = "|c" .. K.Hex(tok) .. t .. "|r" end
-		partes[#partes + 1] = t
+		partes[#partes + 1] = nivelesColor(lo, hi)
 	end
 	if lo and hi and nivel and lo >= nivel + PELIGRO and K.AnuncioPrendido("peligro") then
 		o.estilo, o.color, o.sobre = "peligro", "peligro", L["Zona peligrosa"]
-		partes = { format(L["Zona de nivel %s: ve con cuidado"], rango(lo, hi)) }
+		-- 1.4.0: tu nivel junto al de la zona (lo que el juego no dice).
+		partes = { format(L["Zona de nivel %s y tú eres %d: ve con cuidado"], rango(lo, hi), nivel) }
 		-- 1.3.8: un solo aviso de la zona peligrosa (el de Rutas se calla) y
 		-- con su salida: la guía de tu nivel (Rutas la presta: N.SalidaPeligro).
 		o.sucesoPeligro = Z.SucesoPeligro(zona)
@@ -373,6 +407,8 @@ function Z.Zona()
 		end
 	elseif descansando() and K.AnuncioPrendido("ciudad") then
 		o.estilo, o.color, o.sobre = "ciudad", nil, L["Un lugar para descansar"]
+		local dl = lineaDescanso()
+		if dl then partes[#partes + 1] = dl end
 	elseif Z.PrimeraVez(mapa) then
 		-- 1.3.7c: tu primera vez en la zona (lo dice arriba, en su color).
 		o.sobre, o.primera = L["¡Primera vez aquí!"], true
@@ -402,7 +438,19 @@ function Z.Subzona()
 	if not (zona and sub) then return nil end
 	local d = DUENO[Z.Dueno() or ""]
 	local o = { estilo = "subzona", clave = "rincon", titulo = sub, sobre = zona, color = d and d.color or nil }
-	if descansando() then o.color = "pnj" end
+	-- 1.4.0: una línea útil y corta, solo si hay algo que decir: en una
+	-- posada, el descanso que llevas; si no, tus misiones de esta zona (una
+	-- vez cada 10 min por zona: no en cada rincón).
+	if descansando() then
+		o.color = "pnj"
+		o.texto = lineaDescanso()
+	else
+		local n = Z.MisionesDe(zona)
+		if n > 0 and not repetido("m:" .. zona) then
+			o.texto = N.Plural(n, L["%d de tus misiones es de aquí"], L["%d de tus misiones son de aquí"])
+			o.alMostrarMisiones = "m:" .. zona
+		end
+	end
 	return o, "s:" .. zona .. ":" .. sub
 end
 
@@ -471,7 +519,10 @@ local function anunciarRincon(claveAntes)
 	local t = ahora()
 	if t - ultimaZona < TRAS_ZONA or t - ultimoRincon < ENTRE_RINCONES then return false end
 	ultimoRincon = t
-	o.alMostrar = function() ocultarJuego(RINCON_JUEGO) end
+	o.alMostrar = function()
+		ocultarJuego(RINCON_JUEGO)
+		if o.alMostrarMisiones then vistos[o.alMostrarMisiones] = ahora() end
+	end
 	o.tapaJuego = RINCON_JUEGO
 	lanzar(o, clave, 4)
 	return true
@@ -507,7 +558,7 @@ local function descanso()
 	local clave = "c:" .. nombre
 	if repetido(clave) or not puede("ciudad") then return end
 	lanzar({ estilo = "ciudad", clave = "ciudad", titulo = nombre, sobre = L["Un lugar para descansar"],
-		texto = L["Descansas aquí: tu experiencia de descanso se llena."] }, clave, 3)
+		texto = lineaDescanso() or L["Descansas aquí: tu experiencia de descanso se llena."] }, clave, 3)
 end
 -- Un momento después: al llegar a una ciudad, el juego dice que descansas
 -- antes de que salga el anuncio de la zona.
@@ -554,7 +605,9 @@ function Z.AlMensaje(msg)
 	local zona = nombres()
 	if zona then vistos["s:" .. zona .. ":" .. nombre] = ahora() end
 	local partes = {}
+	-- 1.4.0: la experiencia y de qué zona es (en una línea).
 	if xp then partes[1] = format(L["+%d de experiencia"], xp) end
+	if zona and zona ~= nombre then partes[1] = partes[1] and (partes[1] .. "  \194\183  " .. zona) or zona end
 	-- La primera vez en esa zona, Lya cuenta algo de ella.
 	local mapa = Z.MapaZona()
 	local d = datos()
@@ -563,7 +616,7 @@ function Z.AlMensaje(msg)
 		local dato = type(Lya) == "table" and texto(llamar(Lya.DatoDeZona, mapa)) or nil
 		if dato then
 			d.lya[mapa] = true
-			partes[#partes + 1] = format(L["Lya: «%s»"], dato)
+			partes[#partes + 1] = format(L["Lya: «%s»"], corto(dato))
 			-- 1.3.8: Lya no lo vuelve a contar en su globo al ratito.
 			if N.Visto then N.Visto(dato, "anuncio") end
 		end
@@ -605,10 +658,11 @@ function Z.Mazmorra(forzar)
 	for k, v in pairs(d.mazmorras) do if t - (tonumber(v) or 0) > 86400 then d.mazmorras[k] = nil end end
 	local info = Z.InfoMazmorra(nombre)
 	local partes = {}
-	if info and tonumber(info.min) and tonumber(info.max) then partes[#partes + 1] = format(L["Niveles %s"], rango(info.min, info.max)) end
+	if info and tonumber(info.min) and tonumber(info.max) then partes[#partes + 1] = nivelesColor(tonumber(info.min), tonumber(info.max)) end
 	local jefes = info and tonumber(info.jefes)
 	if jefes and jefes > 0 then partes[#partes + 1] = N.Plural(jefes, L["%d jefe"], L["%d jefes"]) end
-	lanzar({ estilo = "mazmorra", clave = "mazmorra", titulo = nombre, texto = concat(partes, "  \194\183  "),
+	-- 1.4.0 (77): la banda con su propio anuncio (corona, ámbar).
+	lanzar({ estilo = tipo == "raid" and "banda" or "mazmorra", clave = "mazmorra", titulo = nombre, texto = concat(partes, "  \194\183  "),
 		sobre = tipo == "raid" and L["Entras a una banda"] or L["Entras a una mazmorra"],
 		alMostrar = function() ocultarJuego(ZONA_JUEGO) end, tapaJuego = ZONA_JUEGO }, nil, 2)
 	return true
@@ -691,10 +745,10 @@ function Z.Probar(tipo)
 		o.estilo = tipo
 		if tipo == "peligro" then
 			o.color, o.sobre = "peligro", L["Zona peligrosa"]
-			o.texto = format(L["Zona de nivel %s: ve con cuidado"], rango((miNivel() or 20) + 5, (miNivel() or 20) + 12))
+			o.texto = format(L["Zona de nivel %s y tú eres %d: ve con cuidado"], rango((miNivel() or 20) + 5, (miNivel() or 20) + 12), miNivel() or 20)
 		elseif tipo == "ciudad" then
 			o.color, o.sobre = nil, L["Un lugar para descansar"]
-			o.texto = L["Descansas aquí: tu experiencia de descanso se llena."]
+			o.texto = lineaDescanso() or L["Descansas aquí: tu experiencia de descanso se llena."]
 		end
 	elseif tipo == "subzona" then
 		o = Z.Subzona() or { estilo = "subzona", titulo = zona, sobre = zona }
@@ -707,10 +761,16 @@ function Z.Probar(tipo)
 	elseif tipo == "mazmorra" then
 		local v = ejemploMazmorra()
 		local partes = {}
-		if v and tonumber(v.min) and tonumber(v.max) then partes[1] = format(L["Niveles %s"], rango(v.min, v.max)) end
+		if v and tonumber(v.min) and tonumber(v.max) then partes[1] = textoNiveles(v.min, v.max) end
 		if v and tonumber(v.jefes) and v.jefes > 0 then partes[#partes + 1] = N.Plural(v.jefes, L["%d jefe"], L["%d jefes"]) end
 		o = { estilo = "mazmorra", titulo = v and v.nombre or L["Mazmorra de prueba"], sobre = L["Entras a una mazmorra"],
 			texto = concat(partes, "  \194\183  ") }
+	elseif tipo == "banda" then
+		o = { estilo = "banda", titulo = L["Núcleo de Magma"], sobre = L["Entras a una banda"],
+			texto = textoNiveles(60, 60) .. "  \194\183  " .. N.Plural(10, L["%d jefe"], L["%d jefes"]) }
+	elseif tipo == "nivel" then
+		o = { estilo = "nivel", titulo = L["¡Nivel 60!"], sobre = L["La manada aúlla"],
+			texto = L["Llegaste a la cima, alfa. Lya está orgullosa de ti."] }
 	elseif tipo == "raro" then
 		o = { estilo = "raro", titulo = "Mor'Ladim", sobre = L["Lya olfateó un raro"], texto = zona }
 	elseif tipo == "tesoro" then
@@ -723,6 +783,8 @@ function Z.Probar(tipo)
 	o.ya, o.caduca, o.clave, o.espaciar = true, nil, "probar", false
 	return K.Anuncio(o)
 end
+-- 1.4.0: un anuncio de muestra (la bienvenida de la 1.4.0: «Pruébalo»).
+K.ProbarAnuncio = function(tipo) return Z.Probar(type(tipo) == "string" and tipo or "zona") end
 
 ---------------------------------------------------------------------------
 -- Ajustes: un interruptor y «Probar» por tipo (página Estilo y sonido)
@@ -733,7 +795,7 @@ local FILAS = {
 	{ "subzonaChica", "Rincones en chico", "Que el de los rincones salga pequeño y sin el lobo.", hija = true, sinProbar = true },
 	{ "descubrir", "Lugares que descubres", "La primera vez que pisas un lugar: un destello dorado, la experiencia que ganaste y algo que Lya sabe de esa zona." },
 	{ "ciudad", "Ciudades y posadas", "Al llegar a donde descansas, un anuncio azul y tranquilo." },
-	{ "mazmorra", "Mazmorras y bandas", "Al entrar, su nombre en morado con sus niveles y sus jefes. Una vez cada 30 minutos." },
+	{ "mazmorra", "Mazmorras y bandas", "Al entrar, su nombre con sus niveles y sus jefes: morado en las mazmorras y ámbar con corona en las bandas. Una vez cada 30 minutos." },
 	{ "peligro", "Zonas peligrosas", "Si la zona es de más nivel que tú, un aviso en rojo para que vayas con cuidado." },
 	{ "barco", "Barcos", "Cuando tu barco está por llegar al muelle." },
 	{ "zepelin", "Zepelines", "Cuando tu zepelín está por llegar." },
@@ -741,12 +803,26 @@ local FILAS = {
 	{ "raro", "Raros", "Cuando Lya olfatea un raro. En plena pelea, un ícono chico y el anuncio después." },
 	{ "tesoro", "Tesoros", "Cuando Lya encuentra un tesoro." },
 	{ "manada", "La manada", "Cuando el alfa de La Jauría anda cerca." },
+	-- 1.4.0: el fondo detrás del nombre (Kit/Anuncio.lua, anuncios.fondo).
+	{ "fondo", "Fondo de los anuncios", "Cómo se ve detrás del nombre: una placa de esquinas cortadas, una cinta de pendón, ornamentos finos a los lados, una sombra suave o nada más el texto con contorno.",
+		opciones = { { valor = "placa", texto = "Placa" }, { valor = "cinta", texto = "Cinta" }, { valor = "filigrana", texto = "Filigrana" },
+			{ valor = "suave", texto = "Sombra suave" }, { valor = "nada", texto = "Sin fondo" } } },
 	{ "sonido", "Sonido de los anuncios", "Cada tipo con el suyo: el mapa al llegar, el destello al descubrir, el aviso de peligro.", sinProbar = true },
 }
 Z.FILAS = FILAS
 
 local function control(fila, fl)
 	local clave = "anuncios." .. fl[1]
+	if fl.opciones then
+		-- Elegir entre varias (el fondo): al cambiar, un anuncio de muestra.
+		local ops = {}
+		for i, op in ipairs(fl.opciones) do ops[i] = { valor = op.valor, texto = L[op.texto] } end
+		local seg = K.Segmentos(fila, { estilo = "pildoras", opciones = ops, valor = A.Get(clave),
+			alCambiar = function(v) A.Set(clave, v) Z.Probar("zona") end })
+		seg:Acomodar(300) -- (en dos renglones si no caben: nada se sale de la fila)
+		function seg:Leer() self:SetValor(A.Get(clave)) end
+		return seg
+	end
 	if fl.sinProbar then return K.Interruptor(fila, { clave = clave }) end
 	local c = CreateFrame("Frame", nil, fila)
 	c.I = K.Interruptor(c, { clave = clave })

@@ -348,11 +348,27 @@ local function posiciones()
 	return d.pos
 end
 
+-- 1.4.0 (42): cada personaje recuerda dónde dejó sus marcos (el medidor de
+-- tu sacerdote abajo, el de tu guerrero arriba). Se guarda en el personaje
+-- (AlfaNucleoCharDB.combate.pos) y también en la cuenta, que es el lugar con
+-- el que empieza un personaje que nunca los movió.
+local function propias()
+	local d = N.DatosPersonaje(ID)
+	d.pos = type(d.pos) == "table" and d.pos or {}
+	return d.pos
+end
+local function lugarDe(clave)
+	local p = propias()[clave]
+	if p ~= nil then return p end
+	return posiciones()[clave]
+end
+M.LugarDe = lugarDe
+
 -- 1.3.6: si el jugador ya movió ese marco (su lugar guardado), o nil.
-function M.Posicion(clave) return posiciones()[clave] end
+function M.Posicion(clave) return lugarDe(clave) end
 
 local function colocar(f)
-	local p = posiciones()[f.alfaClave]
+	local p = lugarDe(f.alfaClave)
 	f:ClearAllPoints()
 	if type(p) == "table" and type(p[1]) == "string" and type(p[3]) == "number"
 		and (p[2] == nil or type(p[2]) == "string") and (p[4] == nil or type(p[4]) == "number") then
@@ -366,7 +382,9 @@ end
 local function guardar(f)
 	local a, _, b, x, y = f:GetPoint(1)
 	if type(a) ~= "string" then return end
-	posiciones()[f.alfaClave] = { a, b, floor(K.num(x, 0) + 0.5), floor(K.num(y, 0) + 0.5) }
+	local lugar = { a, b, floor(K.num(x, 0) + 0.5), floor(K.num(y, 0) + 0.5) }
+	propias()[f.alfaClave] = lugar
+	posiciones()[f.alfaClave] = { lugar[1], lugar[2], lugar[3], lugar[4] }
 end
 
 -- clave: la del lugar guardado; nombre: lo que dice al moverlo.
@@ -420,6 +438,7 @@ end
 function M.ReiniciarPosiciones()
 	local d = N.Datos(ID)
 	d.pos = {}
+	N.DatosPersonaje(ID).pos = {}
 	for _, f in pairs(marcos) do colocar(f) end
 end
 

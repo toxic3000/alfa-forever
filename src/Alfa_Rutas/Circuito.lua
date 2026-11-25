@@ -145,7 +145,7 @@ local function partes(idx, desde, ceder)
 	for _, qid in ipairs(Cp.GetLogQuests and Cp.GetLogQuests() or {}) do
 		local q = C.Quest(qid)
 		local pm = q and I.PasosMision(q, desde)
-		if pm and not pm.dentro then
+		if pm and not pm.dentro and not pm.sinCargar then
 			pm.q = q
 			pm.listo = Cp.IsQuestReadyForTurnIn and Cp.IsQuestReadyForTurnIn(qid) or false
 			local aqui = enMapa(pm.fin, map) or (not pm.listo and enMapa(pm.objetivo, map))
@@ -176,7 +176,7 @@ local function partes(idx, desde, ceder)
 			if n >= MAX_TOMAR then break end
 			local q = C.Quest(c.e.id)
 			local pm = q and I.PasosMision(q, desde)
-			if pm and not pm.dentro and not (evitar and pm.grupo) and pm.aceptar and enMapa(pm.fin, map) then
+			if pm and not pm.dentro and not pm.sinCargar and not (evitar and pm.grupo) and pm.aceptar and enMapa(pm.fin, map) then
 				pm.q = q
 				out[#out + 1] = pm
 				n = n + 1

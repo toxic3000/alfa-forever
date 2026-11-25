@@ -79,10 +79,12 @@ def guias_iguales() -> bool:
     import tempfile
     sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
     import diferir
+    import tramos
     original = DIST
     copia = pathlib.Path(tempfile.mkdtemp(prefix="alfa_guias_")) / "dist"
     try:
         shutil.copytree(DIST, copia, ignore=shutil.ignore_patterns("Media", "*.tga", "*.blp", "*.ogg", "*.mp3", "*.ttf"))
+        tramos.juntar(copia)  # 1.4.0: los pasos de vuelta en Guides.lua
         for nombre in diferir.PAQUETES:
             p = copia / nombre / "Guides.lua"
             if p.exists():
@@ -141,6 +143,18 @@ def main() -> int:
                 s, c = correr(escena, {"BANCO_GUARDADAS": str(archivo), "BANCO_FASE": fase})
                 salida += s
                 cortado = cortado or c
+        elif escena == "prueba_140_revision.lua":
+            # 1.4.0 (revisión): sola, y luego tres corridas con las mismas
+            # variables guardadas: con el paquete de pasos, sin él y de vuelta.
+            import tempfile
+            archivo = pathlib.Path(tempfile.gettempdir()) / "alfa_banco_revision140.lua"
+            if archivo.exists():
+                archivo.unlink()
+            salida, cortado = correr(escena)
+            for fase in ("a", "b", "c"):
+                s, c = correr(escena, {"BANCO_GUARDADAS": str(archivo), "BANCO_FASE": fase})
+                salida += s
+                cortado = cortado or c
         elif escena == "prueba_137c_bugs.lua":
             # 1.3.7: cada caso entra al juego en otra situación (tools/casos137c.py).
             sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
@@ -155,6 +169,13 @@ def main() -> int:
                 print(l)
         if cortado:
             print("PRUEBA CORTADA:", escena, cortado)
+            malo = True
+        # 1.4.0 (revisión): una escena que ni corre (un error de sintaxis en la
+        # prueba) también falla; antes solo salía su traza y daba «todo bien».
+        rota = [l for l in salida if l.startswith("lupa.lua51.LuaError")]
+        for l in rota:
+            print("ESCENA ROTA:", escena, l)
+        if rota:
             malo = True
         if any(l.startswith("ERROR") or l.startswith("FALLA EN") for l in salida):
             malo = True
@@ -199,6 +220,24 @@ def main() -> int:
     if sucias > 40:
         print("ORILLAS SUCIAS: corre tools/build.py (tools/sangrado.py)")
         malo = True
+    # 1.4.0: cada textura nombrada con un texto fijo existe en el build
+    # (tools/texturas.py; un ícono que no existe sale verde o vacío en el juego).
+    import texturas
+    texturas.DIST = DIST
+    faltan = texturas.revisar()
+    for m in faltan:
+        print("TEXTURA FALTA", m)
+    print(f"TEXTURAS: {len(faltan)} nombres de textura que no existen")
+    malo = bool(faltan) or malo
+    # 1.4.0: globales por accidente (tools/globales.py, lee el bytecode con lupa).
+    sys.path.insert(0, str(SITE))
+    import globales
+    globales.DIST = DIST
+    sueltos = globales.revisar()
+    for m in sueltos:
+        print("GLOBAL", m)
+    print(f"GLOBALES: {len(sueltos)} globales por accidente")
+    malo = bool(sueltos) or malo
     print("RESULTADO:", "con problemas" if malo else "todo bien")
     return 1 if malo else 0
 

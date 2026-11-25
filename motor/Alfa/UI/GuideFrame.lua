@@ -4988,9 +4988,12 @@ end
 
 -- A button of the bottom row: its glyph, its tooltip and its lines; hovering
 -- it shows a transparent window's chrome.
+-- Alfa 1.4.0 (58): la tecla de cada botón, en su globo (W.Tooltip).
+GF.TECLA_ACTO = { Prev = "ALFA_PREV", Next = "ALFA_NEXT", Menu = "ALFA_MENU", Report = "ALFA_REPORT", Hide = "ALFA_TOGGLE" }
 function GF.ActButton(key, icon, tip, lines, onClick)
 	local b = W.IconButton(acts, icon, K.BTN, tip, onClick)
 	b.psTipLines = lines
+	b.psTecla = GF.TECLA_ACTO[key]
 	b:HookScript("OnEnter", function() GF.HoverIn() end)
 	acts[key] = b
 	return b

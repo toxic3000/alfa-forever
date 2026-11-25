@@ -672,6 +672,18 @@ local function questSteps(g)
 	local found = {}
 	questContext.steps[g.id] = found
 	if not full or (G.GuideMatches and not G.GuideMatches(g, player) and not (G.OtherStart and G.OtherStart(g, player))) then return found end
+	-- Alfa 1.4.0: only the guides whose header may name the quest (qref,
+	-- Guides.QuestGuides) open their steps; the rest stay unread (and their
+	-- level range's steps addon, unloaded).
+	if G.QuestGuides then
+		local cands = questContext.cands
+		if not cands then
+			cands = {}
+			for _, id in ipairs(G.QuestGuides("q", questContext.id) or {}) do cands[id] = true end
+			questContext.cands = cands
+		end
+		if not cands[g.id] then return found end
+	end
 	local function applies(only) return not G.Matches or G.Matches(only, player) end
 	for i, step in ipairs(full.steps or {}) do
 		if applies(step.only) then
@@ -3176,7 +3188,7 @@ ns.OnLogin(function()
 end)
 local function guidesChanged()
 	factCache = {}
-	if questContext then questContext.steps = {} end
+	if questContext then questContext.steps = {}; questContext.cands = nil end
 	P.Render()
 end
 ns.On("GUIDES_REGISTERED", guidesChanged)

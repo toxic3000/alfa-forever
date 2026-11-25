@@ -55,7 +55,7 @@ end
 local function nombresDeAqui()
 	local out = {}
 	local function poner(z)
-		if type(z) == "string" and z ~= "" and not secreto(z) then out[M.Plegar(z)] = true end
+		if not secreto(z) and type(z) == "string" and z ~= "" then out[M.Plegar(z)] = true end
 	end
 	for _, n in ipairs({ "GetRealZoneText", "GetZoneText" }) do
 		local fn = rawget(_G, n)

@@ -131,11 +131,12 @@ end)
 step("El enlace del formulario se arma bien (acentos, saltos, tope)", function()
   check(type(M.EnlaceFormulario) == "function", "falta M.EnlaceFormulario")
   if not M.EnlaceFormulario then return end
-  local url = M.EnlaceFormulario("error", "Abrí el mapa\ny salió", "Alfa 1.3.9 · cliente", "1.3.9")
+  local url = M.EnlaceFormulario("error", "Abrí el mapa\ny salió", "Alfa 1.3.9 · cliente", "1.3.9", "K7QM2F")
   check(url:find("^https://docs%.google%.com/forms/d/e/1FAIpQLSfCKW97uxmZL5ZGl5Ym4hLjUMTWt6O0N7TJgw6buSDMoRIXUA/viewform%?usp=pp_url"), "no empieza con el formulario")
   check(url:find("&entry.832145550=Error&", 1, true), "el tipo no es «Error»: " .. url)
-  check(url:find("&entry.1889667288=Abr%C3%AD%20el%20mapa%0Ay%20sali%C3%B3&", 1, true), "lo escrito no se codificó bien: " .. url)
-  check(url:find("&entry.917548369=Alfa%201.3.9%20%C2%B7%20cliente", 1, true), "lo técnico no se codificó bien: " .. url)
+  -- 1.4.0 (71): un solo texto: «Código: X», lo escrito y, tras «— Datos de Alfa —», lo técnico.
+  check(url:find("&entry.1889667288=C%C3%B3digo%3A%20K7QM2F%0A%0AAbr%C3%AD%20el%20mapa%0Ay%20sali%C3%B3%0A%0A%E2%80%94%20Datos%20de%20Alfa%20%E2%80%94%0AAlfa%201.3.9%20%C2%B7%20cliente&", 1, true), "el texto del formulario no lleva código, lo escrito y los datos: " .. url)
+  check(not url:find("entry.917548369", 1, true), "sigue mandando el campo borrado de datos técnicos")
   check(url:find("&entry.1259972415=1.3.9", 1, true), "falta la versión")
   check(not url:find(" ", 1, true) and not url:find("\n", 1, true), "quedaron espacios o saltos sin codificar")
   check(M.EnlaceFormulario("mejora", "", "", "1"):find("entry.832145550=Mejora&", 1, true), "el tipo de mejora no es «Mejora»")
@@ -143,6 +144,10 @@ step("El enlace del formulario se arma bien (acentos, saltos, tope)", function()
   -- Largo: lo técnico se recorta y nunca pasa de 1800; ruso largo, igual.
   local largo = M.EnlaceFormulario("error", ("Ошибка "):rep(200), ("línea técnica\n"):rep(300), "1.3.9")
   check(#largo <= 1800, "el enlace pasó de 1800: " .. #largo)
+  check(largo:find("Ошибка", 1, true) == nil and largo:find("%D0%9E", 1, true), "lo escrito largo no quedó en el enlace")
+  -- El formulario de capturas, aparte, con el código.
+  check(M.EnlaceCapturas and M.EnlaceCapturas("K7QM2F") == "https://docs.google.com/forms/d/e/1FAIpQLSd8g5jhxh6AM5p9oAKSqz4LocnRLNhtIxpeYqP3Rx2o8KFV4Q/viewform?usp=pp_url&entry.1102491070=K7QM2F", "el enlace de capturas no es el del formulario con el código")
+  check(M.NuevoCodigo and #M.NuevoCodigo() == 6 and not M.NuevoCodigo():find("[IL01O]"), "el código no es corto y claro")
   check(largo:find("entry.1259972415=1.3.9", 1, true), "al recortar se perdió la versión")
   check(not largo:find("%%[0-9A-F]?$") and not largo:find("%%[CD][0-9A-F]%%?$"), "se cortó a media letra")
   -- Lo que se arma de la ventana: los datos técnicos sin nombre ni reino.
@@ -188,12 +193,11 @@ step("La ventana: escribir, Enviar, Enviar ya por el navegador y Copiar", functi
   check(not ui.reporte:IsShown(), "lo técnico no viene plegado")
   check(ui.enviar and ui.enviar:IsShown() and ui.navegador and ui.navegador:IsShown(), "faltan «Enviar» o «Enviar ya por el navegador»")
   SNAP("reporte", fondo(v), { v })
-  -- Ver lo que se manda.
-  ui.plegar.Hijo:Click()
-  check(ui.reporte:IsShown(), "«Ver lo que se manda» no lo desplegó")
+  -- 1.4.0 (71): lo técnico ya no se enseña, pero se sigue armando y mandando.
+  check(ui.plegar == nil, "sigue el botón «Ver lo que se manda»")
+  check(ui.capturasForm and ui.capturasForm:IsShown() and tostring(ui.capturasForm.Texto:GetText()):find("capturas", 1, true), "no dice que las capturas se suben en el formulario (71)")
   local r = ui.reporte.Cuadro.texto or ""
   check(r:find("Bolsas.lua:12", 1, true), "lo que se manda no lleva el error atrapado")
-  ui.plegar.Hijo:Click()
   -- Escribir y Enviar.
   ui.texto = "Abrí las bolsas en el banco"
   ui.entrada:Set(ui.texto)
@@ -213,6 +217,17 @@ step("La ventana: escribir, Enviar, Enviar ya por el navegador y Copiar", functi
   local url = M.EnlaceReporte()
   check(ui.enlace:IsShown() and ui.navegadorNota:IsShown(), "no salió el enlace para copiar")
   check(url:find("Abr%C3%AD%20las%20bolsas", 1, true), "el enlace no lleva lo escrito")
+  local cod = M.CodigoReporte()
+  check(url:find("C%C3%B3digo%3A%20" .. cod, 1, true), "el enlace no empieza con el código del reporte")
+  check(l[1] and l[1].id == cod, "el id del buzón no es el código que ve el jugador")
+  check(ui.codigoTexto:IsShown() and ui.codigoTexto.Texto:GetText() == "Código: " .. cod, "no enseña «Código: X»")
+  check(tostring(l[1] and l[1].texto):find("Código: " .. cod, 1, true), "el texto guardado no lleva el código")
+  -- Subir capturas: el enlace aparte, con el código, para copiar.
+  check(not ui.capturasEnlace:IsShown(), "el enlace de capturas sale antes de pedirlo")
+  ui.subirCapturas.Hijo:Click()
+  check(ui.capturasEnlace:IsShown() and ui.capturasNota:IsShown(), "«Subir capturas» no enseñó el enlace")
+  check(tostring(ui.capturasEnlace.Cuadro.texto):find("entry.1102491070=" .. cod, 1, true), "el enlace de capturas no lleva el código")
+  check(tostring(ui.capturasNota.Texto:GetText()):find("hasta 5 capturas", 1, true), "falta la línea de cómo subirlas")
   check(#url <= 1800, "el enlace de la ventana pasó de 1800")
   SNAP("reporte-navegador", fondo(v), { v })
   -- Copiar (extra): el reporte y el Discord.

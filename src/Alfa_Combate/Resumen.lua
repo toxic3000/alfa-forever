@@ -202,7 +202,7 @@ local function crear()
 	f.Cerrar:SetPoint("TOPRIGHT", f, "TOPRIGHT", -4, -4)
 	f.Dano, f.Cura = fila(f.Fondo), fila(f.Fondo)
 	-- 1.3.7: tu mejor pelea, tu parte del grupo y tus golpes que más rindieron.
-	f.Record = K.Insignia(f.Fondo, "", "oro", { icono = "ic-estrella" })
+	f.Record = K.Insignia(f.Fondo, "", "oro", { icono = "star" })
 	f.Record:Hide()
 	f.ParteTexto = K.Texto(f.Fondo, "pequeno", "textoSuave")
 	f.ParteValor = K.Texto(f.Fondo, "pequeno", "texto")
@@ -386,7 +386,7 @@ function Rs.Pintar(r)
 	local y = ESP.s + 2 + K.Tamano("mayus") + ESP.s + 2
 	-- 1.3.7: ¡Tu mejor pelea! (bajo el título, con tu marca anterior en su cuadro).
 	if r.record then
-		f.Record:Set(L["¡Tu mejor pelea!"], "oro", "ic-estrella")
+		f.Record:Set(L["¡Tu mejor pelea!"], "oro", "star")
 		f.Record:ClearAllPoints()
 		f.Record:SetPoint("TOPLEFT", f, "TOPLEFT", ESP.m - 2, -(y - 2))
 		f.Record:Show()

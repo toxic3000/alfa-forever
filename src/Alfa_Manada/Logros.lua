@@ -17,7 +17,9 @@
 --   1E|n|<nivel>     llegué al nivel máximo
 --   1E|m             mi primera montura
 --   1E|r|<raro>      cacé un raro
---   1S|<semana>|<misiones>|<raros>|<mazmorras>|<niveles>   mi semana
+--   1S|<semana>|<misiones>|<raros>|<mazmorras>|<niveles>|<peces>|<ayuda>   mi semana
+--                    (1.4.0: peces y ayuda al final; un Alfa 1.3.x no los manda
+--                    ni los lee: cuentan 0)
 --   1F|<semana>      ¿me dicen su semana? (al abrir la página, cada 10 min)
 --
 --   Lo.Semana() -> { s, misiones, raros, mazmorras, niveles }   la tuya
@@ -25,6 +27,17 @@
 --   Lo.Festejar(tipo, quien, dato) -> true si lo dijo (para las pruebas)
 --   Lo.MandarPendientes() -> n   (1.3.1) los logros que no salieron por estar
 --                                en una instancia salen al volver (y cada minuto)
+--
+-- 1.4.0 (55): los logros de la semana. Tu semana suma también los peces que
+-- sacaste (de los datos de Pesca, sin tocarlos) y los lobos que ayudaste
+-- (Lo.Ayudar: «¡Voy!» a un llamado, abrir tu guarida, compartir tu plan o tu
+-- guía, regalar botín, darle la bienvenida a alguien). Al llegar a una meta
+-- (METAS), Lya lo festeja una vez por semana (manada.semanaLogros). Y en «La
+-- semana de la manada», lo destacado: quién sacó más peces, quién entregó más
+-- misiones y quién ayudó más (Lo.Destacados), con cariño y sin tabla de
+-- posiciones.
+--   Lo.Ayudar(que) ; Lo.Peces() -> n ; Lo.Destacados() -> { { que, nombre, n, tu } }
+--   Lo.Metas() -> { { clave, n, meta, hecho } } ; Lo.RevisarMetas() -> festejadas
 
 local ADDON, M = ...
 local N = AlfaNucleo
@@ -80,16 +93,34 @@ function Lo.NumeroSemana(t)
 end
 
 local CAMPOS = { "misiones", "raros", "mazmorras", "niveles" }
+local CAMPOS2 = { "peces", "ayuda" } -- 1.4.0: al final del mensaje (un Alfa viejo no los lee)
 
 function Lo.Semana()
 	local d = N.DatosPersonaje(ID)
 	local s = Lo.NumeroSemana()
 	local w = d.semana
 	if type(w) ~= "table" or w.s ~= s then
-		w = { s = s, misiones = 0, raros = 0, mazmorras = 0, niveles = 0 }
+		w = { s = s, misiones = 0, raros = 0, mazmorras = 0, niveles = 0, peces = 0, ayuda = 0 }
 		d.semana = w
 	end
+	w.peces = Lo.Peces(w)
+	w.ayuda = tonumber(w.ayuda) or 0
 	return w
+end
+
+-- 1.4.0: los peces de la semana: lo que sacaste desde que empezó (de los
+-- datos de Pesca; la primera vez que se mira, cuenta desde ahora).
+local function capturas()
+	local d = N.DatosPersonaje("pesca")
+	local v = type(d) == "table" and d.vida
+	return type(v) == "table" and tonumber(v.capturas) or 0
+end
+function Lo.Peces(w)
+	w = w or N.DatosPersonaje(ID).semana
+	if type(w) ~= "table" then return 0 end
+	local c = capturas()
+	if tonumber(w.pecesBase) == nil or c < w.pecesBase then w.pecesBase = c end
+	return math.max(0, c - w.pecesBase)
 end
 
 local sucia = false
@@ -107,7 +138,7 @@ function Lo.CompartirSemana(forzar)
 	local ahora = U.Ahora()
 	if not forzar and ahora - ultimaSemana < CADA_SEMANA then return false end
 	local w = Lo.Semana()
-	if M.Red.EnviarHermandad("S", format("%sS|%d|%d|%d|%d|%d", V, w.s, w.misiones, w.raros, w.mazmorras, w.niveles)) then
+	if M.Red.EnviarHermandad("S", format("%sS|%d|%d|%d|%d|%d|%d|%d", V, w.s, w.misiones, w.raros, w.mazmorras, w.niveles, w.peces or 0, w.ayuda or 0)) then
 		ultimaSemana = ahora
 		sucia = false
 		return true
@@ -153,6 +184,8 @@ M.Red.Oyentes.S = function(clave, remitente, _, f, canal)
 		if not v[campo] then return end
 	end
 	if s ~= Lo.NumeroSemana() then return end
+	-- 1.4.0: peces y ayuda (un Alfa 1.3.x no los manda: 0).
+	for i, campo in ipairs(CAMPOS2) do v[campo] = numero(f[#CAMPOS + 1 + i], 100000) or 0 end
 	v.s, v.nombre = s, U.Mostrar(remitente)
 	guardadas()[clave] = v
 	cambio()
@@ -172,13 +205,18 @@ end
 -- no sale de tu computadora si no la compartes).
 function Lo.Manada(orden)
 	local lista = {}
-	local tot = { misiones = 0, raros = 0, mazmorras = 0, niveles = 0, lobos = 0 }
+	local tot = { misiones = 0, raros = 0, mazmorras = 0, niveles = 0, peces = 0, ayuda = 0, lobos = 0 }
 	local function agregar(v, tu)
 		local x = { nombre = tu and L["Tú"] or v.nombre, tu = tu, aporte = 0 }
 		for _, c in ipairs(CAMPOS) do
 			x[c] = tonumber(v[c]) or 0
 			tot[c] = tot[c] + x[c]
 			x.aporte = x.aporte + x[c]
+		end
+		-- 1.4.0: los peces y la ayuda se suman aparte (no pesan en «lo que aportó»).
+		for _, c in ipairs(CAMPOS2) do
+			x[c] = tonumber(v[c]) or 0
+			tot[c] = tot[c] + x[c]
 		end
 		tot.lobos = tot.lobos + 1
 		lista[#lista + 1] = x
@@ -197,14 +235,114 @@ end
 local FORMAS = {
 	misiones = { "%d misión", "%d misiones" }, raros = { "%d raro", "%d raros" },
 	mazmorras = { "%d mazmorra", "%d mazmorras" }, niveles = { "%d nivel", "%d niveles" },
+	peces = { "%d pez", "%d peces" }, ayuda = { "%d ayuda", "%d ayudas" },
 }
 function Lo.TextoCuenta(v, sep)
 	local partes = {}
-	for _, c in ipairs(CAMPOS) do
-		local n = tonumber(v[c]) or 0
-		if n > 0 then partes[#partes + 1] = format(L[FORMAS[c][n == 1 and 1 or 2]], n) end
+	for _, lista in ipairs({ CAMPOS, CAMPOS2 }) do
+		for _, c in ipairs(lista) do
+			local n = tonumber(v[c]) or 0
+			if n > 0 then partes[#partes + 1] = format(L[FORMAS[c][n == 1 and 1 or 2]], n) end
+		end
 	end
 	if #partes == 0 then return L["Aún nada esta semana"] end
+	return table.concat(partes, sep or "  \194\183  ")
+end
+
+---------------------------------------------------------------------------
+-- 1.4.0 (55): los logros de la semana
+---------------------------------------------------------------------------
+
+-- Ayudaste a un lobo (una vez por cosa y lobo cada tanto: lo cuenta quien ayuda).
+local ayudados = {}
+function Lo.Ayudar(que)
+	que = tostring(que or "?")
+	local ahora = U.Ahora()
+	if ayudados[que] and ahora - ayudados[que] < 60 then return false end
+	U.Podar(ayudados, 60, ahora)
+	ayudados[que] = ahora
+	sumar("ayuda")
+	N.Una("manada.semanaMetas", 2, function() pcall(Lo.RevisarMetas) end)
+	return true
+end
+
+-- Las metas de la semana, de la más fácil a la más grande en cada cosa.
+Lo.METAS = {
+	{ clave = "misiones", meta = 50, titulo = "Cazador de la semana", texto = "¡%d misiones esta semana! La manada aúlla por ti." },
+	{ clave = "misiones", meta = 150, titulo = "Leyenda de la semana", texto = "¡%d misiones en una semana! Eso ya es de leyenda." },
+	{ clave = "peces", meta = 50, titulo = "Pescador de la semana", texto = "¡%d peces esta semana! Me guardas uno, ¿verdad?" },
+	{ clave = "peces", meta = 200, titulo = "Señor del agua", texto = "¡%d peces en una semana! El lago ya te conoce." },
+	{ clave = "ayuda", meta = 3, titulo = "Buen lobo", texto = "Ayudaste a la manada %d veces esta semana. Así se caza en manada." },
+	{ clave = "ayuda", meta = 10, titulo = "Corazón de la manada", texto = "¡%d veces ayudaste a la manada esta semana! Eres de los que hacen manada." },
+	{ clave = "mazmorras", meta = 5, titulo = "Explorador de las profundidades", texto = "¡%d mazmorras esta semana! Y volviste para contarlo." },
+}
+
+function Lo.Metas()
+	local w = Lo.Semana()
+	local out = {}
+	local hechas = type(w.metas) == "table" and w.metas or {}
+	for i, m in ipairs(Lo.METAS) do
+		local n = tonumber(w[m.clave]) or 0
+		out[#out + 1] = { i = i, clave = m.clave, n = n, meta = m.meta, hecho = n >= m.meta, festejada = hechas[i] and true or false,
+			titulo = L[m.titulo] }
+	end
+	return out
+end
+
+-- Lya festeja (una vez por semana cada meta) lo que alcanzaste. -> cuántas.
+function Lo.RevisarMetas()
+	if N.Get(ID, "semanaLogros") == false then return 0 end
+	local w = Lo.Semana()
+	w.metas = type(w.metas) == "table" and w.metas or {}
+	local n = 0
+	for i, m in ipairs(Lo.METAS) do
+		local v = tonumber(w[m.clave]) or 0
+		if v >= m.meta and not w.metas[i] then
+			w.metas[i] = true
+			n = n + 1
+			local titulo, texto = L[m.titulo], format(L[m.texto], v)
+			local Lya = rawget(_G, "AlfaLya")
+			local dicho = false
+			if type(Lya) == "table" and type(Lya.Decir) == "function" then
+				local ok, r = pcall(Lya.Decir, format(L["¡Logro de la semana: %s! %s"], titulo, texto), { importante = true, aullar = true, id = "manada.semana" .. i })
+				dicho = ok and (r == true or r == "espera")
+			end
+			if not dicho then aviso({ titulo = format(L["¡Logro de la semana: %s!"], titulo), texto = texto, lobo = "aullando", duracion = 12, detalle = true }) end
+		end
+	end
+	if n > 0 then cambio() end
+	return n
+end
+
+-- Lo destacado de la semana entre los lobos que la comparten (y tú): quién
+-- sacó más peces, quién entregó más misiones y quién ayudó más. Solo si hay
+-- dos lobos o más y algo que contar. -> { { que, titulo, nombre, n, tu } }
+local DESTACA = {
+	{ que = "peces", titulo = "Más peces" },
+	{ que = "misiones", titulo = "Más misiones" },
+	{ que = "ayuda", titulo = "Más ayuda" },
+}
+function Lo.Destacados()
+	local lista, tot = Lo.Manada("nombre")
+	local out = {}
+	if tot.lobos < 2 then return out end
+	for _, d in ipairs(DESTACA) do
+		local mejor
+		for _, x in ipairs(lista) do
+			local n = tonumber(x[d.que]) or 0
+			if n > 0 and (not mejor or n > mejor.n) then mejor = { nombre = x.nombre, n = n, tu = x.tu } end
+		end
+		if mejor then out[#out + 1] = { que = d.que, titulo = L[d.titulo], nombre = mejor.nombre, n = mejor.n, tu = mejor.tu } end
+	end
+	return out
+end
+
+-- "Más peces: Ana (80) · Más misiones: Tú (120)" | nil
+function Lo.TextoDestacados(sep)
+	local d = Lo.Destacados()
+	if #d == 0 then return nil end
+	local partes = {}
+	for _, x in ipairs(d) do partes[#partes + 1] = format(L["%s: %s (%d)"], x.titulo, x.nombre, x.n) end
 	return table.concat(partes, sep or "  \194\183  ")
 end
 
@@ -329,7 +467,10 @@ Lo.TieneMontura = tieneMontura
 -- Eventos
 ---------------------------------------------------------------------------
 
-A.RegisterEvent("QUEST_TURNED_IN", function() sumar("misiones") end)
+A.RegisterEvent("QUEST_TURNED_IN", function()
+	sumar("misiones")
+	N.Una("manada.semanaMetas", 2, function() pcall(Lo.RevisarMetas) end)
+end)
 
 -- 1.3.7: tras la animación del juego y escalonado con los demás mensajes de La Jauría.
 A.RegisterEvent("PLAYER_LEVEL_UP", (N.TrasNivel or function(_, f) return f end)("manada.logros", function(_, nivel)
@@ -378,6 +519,7 @@ A.OnLogin(function()
 	end
 	Lo.Semana()
 	M.Cada("manada.logros", 60, function()
+		pcall(Lo.RevisarMetas) -- 1.4.0: los peces llegan de Pesca: se mira cada minuto
 		if sucia then pcall(Lo.CompartirSemana, false) end
 		pcall(Lo.MandarPendientes) -- (1.3.1) por si salir de la instancia no lo mandó
 	end)

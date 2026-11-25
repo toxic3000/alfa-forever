@@ -424,6 +424,13 @@ motor(G_VIAJE, "viaje.posadas", "maps.innPins", L["Posadas"],
 	L["Posaderos; se marca el de tu piedra de hogar."], MAPA .. "inn", "place")
 motor(G_VIAJE, "viaje.servicios", "maps.servicePins", L["Servicios"],
 	L["Buzones, entrenadores, banco, subasta, reparar..."], MAPA .. "mailbox", "npc")
+-- 1.4.0 (35, 36): tus entrenadores y tus provisiones en tu zona (Servicios.lua).
+motor(G_VIAJE, "viaje.entrenadores", ID .. ".entrenadores", L["Tus entrenadores"],
+	L["El entrenador de tu clase y los de tus oficios en tu zona. Clic: la flecha te lleva."],
+	MAPA .. "trainer-class", "npc", { propia = true })
+motor(G_VIAJE, "viaje.provisiones", ID .. ".provisiones", L["Comida, agua y reparación"],
+	L["Quien te vende comida y agua y quien te repara el equipo en tu zona. Clic: la flecha te lleva."],
+	MAPA .. "vendor", "place", { propia = true })
 motor(G_VIAJE, "viaje.minimapa", "maps.travelMinimap", L["Iconos de viaje en el minimapa"],
 	L["Vuelos, barcos y posadas también en el minimapa."], MAPA .. "flightmaster", "textDim")
 motor(G_VIAJE, "viaje.serviciosMinimapa", "maps.serviceMinimap", L["Servicios en el minimapa"],

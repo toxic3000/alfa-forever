@@ -1,5 +1,143 @@
 # Cambios de Alfa
 
+## 1.4.0 — La manada firme: el cierre de la serie 1.3, más rápida, más sólida y con tu temporada (24/11/2026)
+
+Alfa cierra la serie 1.3 con lo que pediste después de jugarla: Dos pantallas rehecho y sin dejarte la interfaz agrandada, las bolsas y la flecha sin textos encimados, la ruta de minerales en la zona más cercana de tu nivel, la temática de tu bando que sí se nota, guías que cargan solo tu tramo, «Tu temporada con la manada», Lya 2.0 y una depuración completa del código con una prueba de un día de juego entero.
+
+**Español**
+
+*Lo que más se nota*
+- **La ventana de Alfa se renueva:** barra lateral con íconos, cabecera de cada página con su título en grande y cambios de página suaves; Hoy estrena portada con tu saludo, tu personaje, tu sesión, tu guía y la manada.
+- **Anuncios rehechos:** una franja de cine con un medallón por tipo (zona, lugar nuevo, posada, mazmorra, banda, peligro, barco, zepelín, tranvía, raro, tesoro, manada, nivel), siempre centrados en la pantalla; ya no se van junto al mapa.
+- **Todo se mueve:** «Acomodar la pantalla» (`/alfa acomodar`) enseña cada cosa de Alfa con su nombre, con imán, «Volver a su lugar» y acomodo por personaje; Mayús + arrastrar la mueve al momento (nunca en combate). Las placas de la flecha se mueven aparte y la de la piedra de hogar ya no corta su texto.
+- **Rastreador y avisos renovados:** el paso con «Paso 1 · ahora», cada meta con su ícono y su conteo a la derecha, el globo de ayuda al lado; los avisos con la banda de su módulo, en un solo lugar junto a la flecha y siempre encima de las ventanas de Alfa.
+- La primera vez en la 1.4, una bienvenida con cada novedad en su tarjeta y «Pruébalo».
+- El panel «Tus conjuntos» ya no tapa las pestañas de la ventana de tu personaje (viene apagado; se prende en Bolsas), la flecha ya no dice «Ve a Ve al…», y una cacería de textos cortados y botones mudos en todos los módulos.
+
+*Los últimos retoques*
+- Las tarjetas del barco, el zepelín, el tranvía y el vuelo ya no parpadean mientras esperas.
+- Arreglado: el globo de Lya ya no se queda con tus clics; un clic a un bicho o el giro de la cámara que empiezan sobre él llegan al mundo, y en combate Lya nunca estorba. Además, Lya ya no lee todas tus misiones cada vez que platica.
+- Arreglado: lo que cambias en Opciones > Audio (o con Ctrl+S) manda, aunque estés pescando o tengas un «Silenciar…» de Comodidades.
+- Los anuncios estrenan fondo: una placa ajustada al texto, de esquinas cortadas y borde del color de cada tipo; o, si prefieres, una cinta de pendón, filigrana, una sombra suave o solo el texto (Estilo y sonido > Anuncios).
+- Los rincones ya no parecen una barra pegada y la × solo sale al pasar el ratón.
+- Cada anuncio dice algo útil: tu descanso en posadas y ciudades, tu nivel frente al de una zona peligrosa, la zona de un lugar descubierto con un dato de Lya y tus misiones del lugar.
+- Arreglado: la pesca podía dejarte sin música ni ambiente; ahora tu volumen manda, y `/alfa sonido` («Devolver mi sonido») lo deja como estaba.
+- «Acomodar la pantalla» ya no desaparece del menú tras usarlo; la ventana de Alfa siempre cabe en tu pantalla; Mayús + arrastrar mueve los anuncios y las placas sin separarlas por error.
+- En el día a día: «Aprender todo» en el entrenador, «¿Reiniciar la mazmorra?» al salir, «Abrir» para almejas y cajas, «Aprender» para recetas que ya puedes, «Recomprar» si vendiste algo bueno sin querer, Alt+clic compra una pila, avisos al poder recolectar algo nuevo o si te falta la herramienta, lo de tus misiones que está en el banco, vuelos que no conoces cerca y «Ponte la bolsa». El botón «Usar la piedra» ya usa la piedra de hogar.
+- Pulido: «¿Quisiste decir…?» para comandos mal escritos y `/alfa comandos`, botones apagados que dicen por qué, la calma a la vista, Lya y la Enciclopedia con salida cuando no encuentran nada, lobos silenciados que puedes quitar aunque no estén conectados, la campanita con lo último, Enter acepta diálogos y Esc borra los buscadores.
+
+*Arreglos de lo que viste en el juego*
+- **Dos pantallas** deja tu ventana y el tamaño de la interfaz exactamente como estaban al volver (antes podía quedar todo más grande). «Reparar mi pantalla» (`/alfa pantallas reparar`) lo deja como antes.
+- Los números de las casillas de tus bolsas (montón, nivel de objeto y recarga) ya no salen gigantes ni encimados tras restablecer o cambiar la pantalla; tras cualquier cambio de pantalla los textos de Alfa se acomodan solos.
+- La meta de la flecha ya no se corta ni se esconde detrás de las ventanas de Alfa.
+- **Tarjeta de viaje compacta:** dos renglones con dibujos claros (grifo para la Alianza, murciélago para la Horda), se cierra con su X o con clic derecho y se va sola al llegar; sin parpadeo.
+- El mapa ya no se llena de calaveras: los peligros se agrupan con su número y sin PNJ amistosos; tu marca ya no parpadea.
+- **Buscar un mineral o una hierba** (y los pasos «Junta N de…») te lleva a la zona más cercana de tu nivel con un circuito corto que empieza por la veta más cercana.
+- La franja de color del rastreador es una banda completa con el título y los datos adentro, todo alineado.
+- «Restablecer todos los ajustes» ya funciona y respeta tu escala; el tamaño de las ventanas de Alfa se recuerda.
+- **Reportar un error:** cada reporte con su código, sin bloques técnicos a la vista, y las capturas se suben en su propio formulario con «Subir capturas».
+
+*Más rápida*
+- Las guías cargan solo los pasos de tu tramo de niveles: lo de las guías se lee en menos de la mitad del tiempo y ocupa unos 2.4 MB menos.
+- El Codex se carga en partes y a pedido, nunca todo de golpe; los precios del reino vacío se juntan con tu reino y la historia de precios tiene tope.
+- `/alfa revisar` abre cada página de Alfa y te dice solo lo que falla.
+
+*Tu bando y tu manada*
+- **Temática por bando que se nota:** colores, botones, barras, cabeceras de madera y hierro o de piedra y plata, el estandarte de fondo y «¡Lok'tar!» o «¡Por la Alianza!» en Hoy, con vista previa de los dos bandos.
+- **Tu temporada con la manada** (`/alfa temporada`): tus días juntos, tus días de caza y tu aventura en tarjetas, con un texto para Discord sin tu nombre ni tu reino.
+- **Lya 2.0:** recuerdos («¿Te acuerdas de…?»), días especiales, la historia detrás de tus misiones y «Solo lo importante» de un clic.
+- La Jauría: la 1.3 y la 1.4 se entienden; silenciar a un lobo; ver su guía y «Seguir la misma»; citas en Hoy con «Me apunto»; bienvenida a la manada; logros de la semana; el marcador del otro bando con ayuda del instalador; horarios de barcos compartidos.
+
+*Misiones y guías*
+- `/alfa confirmar`: una lista guiada de lo que falta probar en el juego, con «Funciona / No funciona»; va en tu reporte.
+- El rastreador dice tu avance y cuánto te falta; «Saltar a mi nivel»; qué recompensa elegir; el minimapa marca a quien recibe la misión; aviso del valor de una cadena antes de abandonarla; «Cerrar mis misiones» puede terminar en la ciudad; historial de guías terminadas.
+
+*Oficios, comercio y pesca*
+- Las guías de profesión usan las recetas reales que lees al abrir tu oficio (Sastrería y las demás bajan de costo) y ofrecen «Comprar lo que falta».
+- Aviso cuando algo de tu lista sale barato en la subasta, tu semana en la subasta, oro estimado de la recolección, meta de pesca del día, recordatorio del cebo y aviso cuando una receta pasa a verde.
+
+*Mapa, combate, curación y mazmorras*
+- `/alfa ir <nombre>`, capas de entrenadores y de comida y reparación, flecha por personaje y «Vuelve a tu cuerpo» al morir.
+- Curación con medidas por tamaño de grupo y un ícono de quién no tiene tu apoyo; el medidor recuerda su lugar; «¿Qué cae aquí para mí?» al entrar a una mazmorra y los jefes marcados en el plano donde los encontraste.
+
+*Bolsas, Hoy y el resto*
+- Vista previa de «Ordenar», tarjeta de bolsas llenas en una línea, secciones por personaje y arrastrar un objeto a una sección, espacio de bolsas especiales y comparar «Mejor/Peor que lo que llevas».
+- Dos pantallas como tablero: la guía y la flecha en grande, fondo de noche de Alfa, «Ver cómo queda», «Una pantalla» a la vista y tamaño de los paneles.
+- «Tu sesión» en Hoy, atajos en los globos de los botones, buscador con sinónimos y Enter, Esc cierra las ventanas de Alfa, campanita por día y módulo, «Lo nuevo de la 1.4» con «Enséñamelo» y modo de alto contraste.
+- Página web de Alfa en español e inglés.
+
+*Calidad*
+- Depuración completa: se arreglaron errores que tronaban en el juego (la X de las sugerencias, la tarjeta del personaje en mazmorras, íconos vacíos) y más lecturas de datos que el juego esconde en combate y mazmorras.
+- Revisiones automáticas nuevas: texturas que no existen, globales por accidente y un día de juego completo simulado que busca errores y fugas.
+- Si falta o está apagada una carpeta de pasos de las guías, tu avance ya no se borra, y «Revisar Alfa» te dice cuál falta. En combate Alfa ya no carga datos pesados: llegan al terminar la pelea.
+
+**English**
+
+*What you'll notice most*
+- **Alfa's window is redone:** a sidebar with icons, each page's header with a big title and smooth page changes; Today gets a cover with your greeting, your character, your session, your guide and the pack.
+- **Announcements remade:** a cinematic band with a medallion per type (zone, new place, inn, dungeon, raid, danger, boat, zeppelin, tram, rare, treasure, pack, level), always centered on screen; they no longer end up next to the map.
+- **Everything moves:** "Arrange your screen" (`/alfa acomodar`) shows each Alfa element with its name, with snapping, "Back to its place" and per-character layouts; Shift + drag moves it instantly (never in combat). The arrow's cards move on their own and the hearthstone card no longer cuts its text.
+- **Tracker and notices refreshed:** "Step 1 · now", each goal with its icon and count on the right, the help bubble beside it; notices carry their module's band, sit in one place next to the arrow and always show above Alfa's windows.
+- The first time on 1.4, a welcome with each new feature on its own card and "Try it".
+- The "Your sets" panel no longer covers your character window's tabs (off by default; turn it on in Bags), the arrow no longer says "Go to Go to…", and a sweep of cut-off text and silent buttons across every module.
+
+*Final touches*
+- Boat, zeppelin, tram and flight cards no longer flicker while you wait.
+- Fixed: Lya's speech bubble no longer steals your clicks; a click on a mob or a camera drag that starts over it reaches the world, and in combat Lya never gets in the way. Lya also no longer reads all your quests every time she chats.
+- Fixed: what you change in Options > Audio (or with Ctrl+S) wins, even while fishing or with a Comforts "Mute…" option on.
+- Announcements get a new background: a plate that fits the text, with cut corners and a border in each type's colour; or, if you prefer, a pennant ribbon, filigree, a soft shadow or just the text (Style and sound > Announcements).
+- Spot announcements no longer look like a stuck-on bar and the × only shows on mouse-over.
+- Every announcement says something useful: your rested XP at inns and cities, your level against a dangerous zone, a discovered place's zone with a note from Lya, and your quests there.
+- Fixed: fishing could leave you without music or ambience; your volume now wins, and `/alfa sonido` ("Give me back my sound") restores it.
+- "Arrange your screen" no longer vanishes from the menu after use; Alfa's window always fits your screen; Shift + drag moves announcements and cards without splitting them by accident.
+- Day to day: "Learn all" at trainers, "Reset the dungeon?" when you leave, "Open" for clams and boxes, "Learn" for recipes you can use, "Buy back" if you sold something good by mistake, Alt+click buys a stack, notices when you can gather something new or lack the tool, quest items sitting in your bank, unknown flight paths nearby and "Equip the bag". The "Use the stone" button now uses your hearthstone.
+- Polish: "Did you mean…?" for mistyped commands and `/alfa comandos`, disabled buttons that say why, quiet mode in sight, Lya and the Encyclopedia offer a way out when they find nothing, muted wolves you can unmute while offline, the bell shows the latest, Enter accepts dialogs and Esc clears search boxes.
+
+*Fixes for what you saw in game*
+- **Two screens** now restores your window and interface size exactly when you go back (it could leave everything larger). "Repair my screen" (`/alfa pantallas reparar`) puts it back.
+- Bag slot numbers (stack, item level, cooldown) no longer turn huge or overlap after a reset or display change; after any display change Alfa's texts re-fit on their own.
+- The arrow's goal no longer gets cut off or hidden behind Alfa windows.
+- **Compact travel card:** two lines with clear drawings (gryphon for Alliance, bat for Horde), closes with its X or right-click and leaves on its own when you arrive; no blinking.
+- The map is no longer flooded with skulls: dangers are grouped with a count and friendly NPCs left out; your marker no longer blinks.
+- **Looking for an ore or herb** (and "Collect N…" steps) takes you to the closest zone for your level with a short loop starting at the nearest node.
+- The tracker's color strip is a full band with the title and data inside, all aligned.
+- "Reset all settings" now works and keeps your scale; Alfa's window size is remembered.
+- **Reporting a bug:** each report gets a code, no technical blocks on screen, and screenshots go in their own form with "Upload screenshots".
+
+*Faster*
+- Guides load only your level range's steps: guide data is read in less than half the time and uses about 2.4 MB less.
+- The Codex loads in parts and on demand, never all at once; prices from the empty realm merge into yours and price history is capped.
+- `/alfa revisar` opens every Alfa page and tells you only what fails.
+
+*Your faction and your pack*
+- **A faction theme you can really see:** colors, buttons, bars, wood-and-iron or stone-and-silver headers, the banner in the background and "Lok'tar!" or "For the Alliance!" in Today, with a preview of both factions.
+- **Your season with the pack** (`/alfa temporada`): your days together, your hunting days and your adventure in cards, with a Discord text without your name or realm.
+- **Lya 2.0:** memories ("Remember when…?"), special days, the lore behind your quests and "Only what matters" in one click.
+- La Jauría: 1.3 and 1.4 understand each other; mute a wolf; see their guide and "Follow the same one"; meetups in Today with "Count me in"; welcome to the pack; weekly achievements; the other faction's scoreboard via the installer; shared boat timetables.
+
+*Quests and guides*
+- `/alfa confirmar`: a guided list of what's left to test in game, with "Works / Doesn't work"; it goes into your report.
+- The tracker shows progress and time left; "Skip to my level"; which reward to pick; the minimap marks the turn-in NPC; a chain's value before you abandon it; "Close my quests" can end in town; history of finished guides.
+
+*Professions, trade and fishing*
+- Profession guides use the real recipes read when you open your profession (Tailoring and the rest get cheaper) and offer "Buy what's missing".
+- A notice when something on your list is cheap at the auction, your week at the auction, estimated gathering gold, a daily fishing goal, a lure reminder and a notice when a recipe turns green.
+
+*Map, combat, healing and dungeons*
+- `/alfa ir <name>`, trainer and food/repair layers, per-character arrow and "Back to your body" when you die.
+- Healing frame sizes per group size and an icon for who lacks your buff; the meter remembers its place; "What drops here for me?" when entering a dungeon and bosses marked on the inside map where you found them.
+
+*Bags, Today and the rest*
+- "Sort" preview, a one-line bags-full card, per-character sections and dragging an item onto a section, special bag space, and "Better/Worse than what you wear".
+- Two screens as a dashboard: big guide and arrow, an Alfa night background, "See how it looks", a visible "One screen" button and panel size.
+- "Your session" in Today, shortcuts in button tooltips, search with synonyms and Enter, Esc closes Alfa windows, the bell grouped by day and module, "What's new in 1.4" with "Show me", and high-contrast mode.
+- Alfa's own website in Spanish and English.
+
+*Quality*
+- A full code cleanup: fixed errors that broke in game (the X on suggestions, the character card in dungeons, blank icons) and more reads of data the game hides in combat and dungeons.
+- New automatic checks: missing textures, accidental globals and a full simulated play day that looks for errors and leaks.
+- A missing or disabled guide-steps folder no longer wipes your progress, and "Check Alfa" tells you which one is missing. Alfa no longer loads heavy data in combat: it arrives once the fight ends.
+
 ## 1.3.9 — La manada caza mejor: tus misiones, tus oficios y más de 100 mejoras (24/11/2026)
 
 «Cerrar mis misiones» vuelve a funcionar y arma la mejor ruta, las guías de profesión ahora sí te ayudan a subir rápido, el mensaje del barco es nuevo y de Alfa, los errores se reportan con un clic, y llegan el marcador de Horda y Alianza, la temática por bando y el mapa por dentro de las mazmorras. Cada cambio trae su prueba en el banco y pasó una revisión independiente.

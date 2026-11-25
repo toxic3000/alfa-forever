@@ -95,16 +95,71 @@ local function pixel(region)
 	return 1
 end
 
-local function fuente(fs, tam)
-	local ruta = STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF"
+-- La letra de los números de las casillas (la del rol «number» del tema).
+local function caraNumeros()
 	if T and T.FontSpec then
 		local ok, p = pcall(T.FontSpec, "number")
-		if ok and type(p) == "string" then ruta = p end
+		if ok and type(p) == "string" then return p end
 	end
-	if not pcall(fs.SetFont, fs, ruta, tam, "OUTLINE") or not fs:GetFont() then
+	return STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF"
+end
+
+---------------------------------------------------------------------------
+-- 1.4.0 (bug 1): los números de las casillas, gigantes y encimados.
+-- Forever no vuelve a acomodar un texto tras una letra nueva o un cambio de
+-- pantalla (RestartGx, escala, «Dos pantallas») hasta que su texto cambia
+-- (lo mismo que motor/Alfa/Theme/Theme.lua arregla para sus textos con
+-- textAgain y RetextLater). Los números de las casillas (montón, nivel de
+-- objeto, recarga) y los de la barra son de letra propia, fuera del tema, y
+-- su texto casi nunca cambia: se quedaban dibujados con la medida de antes,
+-- el doble de grandes y fuera de su caja. Además B.Medir solo ponía la letra
+-- cuando cambiaba el tamaño de la casilla, así que un estilo nuevo
+-- (Restablecer) tampoco llegaba. Ahora:
+--   * B.Medir pone la letra otra vez si cambia la casilla, la letra o la
+--     «generación» de la pantalla (B.gen), y vuelve a escribir el texto;
+--   * B.Refrescar() sube B.gen y rehace todos (ahora y un instante después),
+--     con cada cambio de pantalla, de escala, de aspecto o de ajustes;
+--   * cada número se mide: su letra es fija respecto a la casilla y se achica
+--     hasta caber; el montón y el nivel nunca se enciman.
+---------------------------------------------------------------------------
+B.gen = 0
+B.LETRA = 0.30   -- montón y nivel: 30 % de la casilla
+B.LETRA_RECARGA = 0.32
+B.LETRA_MIN = 7
+
+local function esSecreto(v) return issecretvalue ~= nil and issecretvalue(v) and true or false end
+
+-- Escribe el mismo texto otra vez para que el juego lo acomode con su letra de ahora.
+local function otraVez(fs)
+	if not (fs and fs.GetText) then return end
+	local t = fs:GetText()
+	if esSecreto(t) or t == nil or t == "" then return end
+	fs:SetText(t .. " ")
+	fs:SetText(t)
+end
+B.OtraVez = otraVez
+
+-- Pone la letra; `forzar` la cambia de verdad (otro tamaño y luego el suyo:
+-- con los mismos datos el juego puede dejar la de antes) y reescribe el texto.
+local function fuente(fs, tam, forzar)
+	local ruta = caraNumeros()
+	if forzar then pcall(fs.SetFont, fs, ruta, tam + 1, "OUTLINE") end
+	local ok, puesta = pcall(fs.SetFont, fs, ruta, tam, "OUTLINE")
+	if not ok or puesta == false or not fs:GetFont() then
 		fs:SetFont(STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF", tam, "OUTLINE")
 	end
+	otraVez(fs)
 end
+
+-- Lo que mide un texto sin el ancho que se le haya puesto.
+local function anchoDe(fs)
+	local w
+	if fs.GetUnboundedStringWidth then w = fs:GetUnboundedStringWidth() end
+	w = tonumber(w)
+	if not w or w <= 0 then w = tonumber(fs:GetStringWidth()) or 0 end
+	return w
+end
+B.AnchoDe = anchoDe
 
 -- El aspecto de Alfa sobre cualquier botón: pozo, icono, marcas.
 local function decorar(b)
@@ -176,10 +231,44 @@ local function pintarPozo(b, p)
 	ponerMarco(p.borde, b, pixel(b), br, bg, bbb, ba)
 end
 
+-- El montón (abajo a la derecha) y el nivel (abajo a la izquierda) caben en
+-- la casilla y no se tocan: con los dos, cada uno en su mitad. La letra es la
+-- de la casilla (B.LETRA) y baja hasta caber.
+local function encajar(p)
+	local tam = p.tam or 0
+	if tam <= 0 then return end
+	local hayN = (p.nivel:GetText() or "") ~= ""
+	local hayC = (p.cuenta:GetText() or "") ~= ""
+	local tope = (hayN and hayC) and floor((tam - 6) / 2) or (tam - 5)
+	for _, fs in ipairs({ p.nivel, p.cuenta }) do
+		if (fs:GetText() or "") ~= "" then
+			fs:SetWidth(0)
+			local letra = p.letra or B.LETRA_MIN
+			local _, actual = fs:GetFont()
+			actual = tonumber(actual) or letra
+			-- Una casilla que antes achicó su letra la recupera si ya cabe.
+			if actual ~= letra and anchoDe(fs) * letra / max(1, actual) <= tope then
+				fuente(fs, letra)
+				actual = letra
+			end
+			local n = 0
+			while anchoDe(fs) > tope and actual > B.LETRA_MIN and n < 8 do
+				actual, n = actual - 1, n + 1
+				fuente(fs, actual)
+			end
+		end
+	end
+end
+B.Encajar = encajar
+
 function B.Medir(b, tam)
 	local p = partes[b]
-	if not p or p.tam == tam then return end
-	p.tam = tam
+	if not p then return end
+	local cara = caraNumeros()
+	if p.tam == tam and p.gen == B.gen and p.cara == cara then return end
+	-- Otra generación de pantalla o de letra: forzar (Forever guarda la de antes).
+	local forzar = (p.tam or 0) > 0
+	p.tam, p.gen, p.cara = tam, B.gen, cara
 	b:SetSize(tam, tam)
 	local px = pixel(b)
 	p.icono:ClearAllPoints()
@@ -189,9 +278,14 @@ function B.Medir(b, tam)
 	p.mejora:SetSize(flecha, flecha)
 	local moneda = max(9, floor(tam * 0.34 + 0.5))
 	p.chatarra:SetSize(moneda, moneda)
-	local letra = max(9, floor(tam * 0.30 + 0.5))
-	fuente(p.nivel, letra)
-	fuente(p.cuenta, letra)
+	local letra = max(B.LETRA_MIN + 1, floor(tam * B.LETRA + 0.5))
+	p.letra = letra
+	fuente(p.nivel, letra, forzar)
+	fuente(p.cuenta, letra, forzar)
+	encajar(p)
+	-- La insignia «!» y la recarga se miden otra vez al pintarse.
+	if p.insignia then p.insignia.alfaTam = nil end
+	p.recargaTam = nil
 	p.grosor = max(1, floor(tam / 20 + 0.5)) * px
 	pintarPozo(b, p)
 	p.firma = nil
@@ -395,6 +489,7 @@ function B.Pintar(b, ent)
 		else
 			p.cuenta:SetText("")
 		end
+		encajar(p)
 		if ent and ent.reagentes then
 			local r, g, bb = M.Color("skill", 0.6, 0.88, 0.46)
 			p.tinte:SetVertexColor(r, g, bb, 0.07)
@@ -444,6 +539,7 @@ function B.Pintar(b, ent)
 	else
 		p.nivel:SetText("")
 	end
+	encajar(p)
 
 	if M.Get("marcaChatarra") and (q == 0 or rec.basura) and not rec.sinValor then
 		p.chatarra:SetVertexColor(1, 0.82, 0.25, 1)
@@ -535,19 +631,28 @@ local function escribirRecarga(p, texto)
 	local tam = max(16, p.tam or 36)
 	local tope = tam - 4
 	if p.recargaTexto == texto and p.recargaTam == tam then return end
+	local otra = p.recargaTam ~= tam -- casilla o pantalla nueva (B.Medir la borra): forzar
 	p.recargaTexto, p.recargaTam = texto, tam
-	local letra = max(8, floor(tam * 0.32 + 0.5))
-	local cara = N.Kit and N.Kit.Cara and N.Kit.Cara("semibold") or (STANDARD_TEXT_FONT or "Fonts\FRIZQT__.TTF")
-	for _ = 1, 8 do
+	local letra = max(8, floor(tam * B.LETRA_RECARGA + 0.5))
+	local cara = N.Kit and N.Kit.Cara and N.Kit.Cara("semibold") or (STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF")
+	-- 1.4.0: se mide sin el ancho de antes (con él, el juego daba lo ya
+	-- recortado y la letra nunca bajaba: «56m» salía cortado).
+	fs:SetWidth(0)
+	for i = 1, 8 do
+		if otra and i == 1 then pcall(fs.SetFont, fs, cara, letra + 1, "OUTLINE") end
 		if N.Kit and N.Kit.FuenteSegura then N.Kit.FuenteSegura(fs, cara, letra, "OUTLINE")
 		else pcall(fs.SetFont, fs, cara, letra, "OUTLINE") end
 		fs:SetText(texto)
-		local w = tonumber(fs:GetStringWidth()) or 0
-		if w <= tope or letra <= 8 then break end
+		if otra and i == 1 then otraVez(fs) end
+		if anchoDe(fs) <= tope or letra <= 8 then break end
 		letra = letra - 1
 	end
 	p.recargaLetra = letra
 	fs:SetWidth(tope)
+	-- Con un montón abajo, la recarga sube un poco: nunca se enciman.
+	local hayC = p.cuenta and (p.cuenta:GetText() or "") ~= ""
+	fs:ClearAllPoints()
+	fs:SetPoint("CENTER", p.capa, "CENTER", 0, hayC and floor(tam * 0.14 + 0.5) or 0)
 end
 B.EscribirRecarga = escribirRecarga
 
@@ -639,3 +744,64 @@ function B.Tema()
 		p.firma = nil
 	end
 end
+
+---------------------------------------------------------------------------
+-- 1.4.0 (bug 1): todos los números de las casillas otra vez, con la medida
+-- de ahora (ver arriba, «los números de las casillas, gigantes»).
+--   B.Refrescar()      sube la generación y rehace letra y texto de todas
+--   B.RefrescarLuego() lo mismo, un instante después (junta varios avisos)
+--   B.OtraVezTodo()    solo reescribe los textos a la vista (al abrir)
+---------------------------------------------------------------------------
+function B.OtraVezTodo()
+	for b, p in pairs(partes) do
+		if b:IsVisible() then
+			otraVez(p.nivel)
+			otraVez(p.cuenta)
+			if p.recarga and p.recarga:IsShown() then otraVez(p.recarga) end
+			if p.insignia and p.insignia:IsShown() then otraVez(p.insignia.texto) end
+		end
+	end
+	if M.Barra and M.Barra.OtraVez then M.Barra.OtraVez() end
+end
+
+function B.Refrescar()
+	B.gen = B.gen + 1
+	for b, p in pairs(partes) do
+		if (p.tam or 0) > 0 then B.Medir(b, p.tam) end
+		if p.recarga and p.finRecarga and p.recargaTexto then
+			local t = p.recargaTexto
+			p.recargaTexto = nil
+			escribirRecarga(p, t)
+		end
+	end
+	if M.Barra and M.Barra.Refrescar then M.Barra.Refrescar() end
+	-- Y un instante después: un texto puesto en el mismo cuadro puede quedarse como estaba.
+	if N.Una then N.Una("bolsas.letras", 0.1, B.OtraVezTodo) end
+end
+
+function B.RefrescarLuego()
+	if N.Una then N.Una("bolsas.refrescar", 0.2, B.Refrescar) else B.Refrescar() end
+end
+
+-- Cambios de pantalla: resolución, escala, gráficos reiniciados (Dos pantallas).
+for _, ev in ipairs({ "DISPLAY_SIZE_CHANGED", "UI_SCALE_CHANGED", "GX_RESTARTED" }) do
+	A.RegisterEvent(ev, function() B.RefrescarLuego() end)
+end
+-- UIParent cambia de tamaño (Dos pantallas lo ancla a un monitor y lo devuelve).
+if UIParent and UIParent.HookScript then
+	UIParent:HookScript("OnSizeChanged", function() B.RefrescarLuego() end)
+end
+-- Restablecer (página o todo), un perfil, un respaldo, otro estilo o tamaño.
+local function tocaLetras(ruta)
+	if type(ruta) ~= "string" then return false end
+	if ruta == "" then return true end
+	for _, raiz in ipairs({ M.ID, "nucleo", "ui", "pantallas" }) do
+		if ruta == raiz or ruta:sub(1, #raiz + 1) == raiz .. "." then return true end
+	end
+	return false
+end
+B.TocaLetras = tocaLetras
+A.On("SETTING_CHANGED", function(ruta)
+	if tocaLetras(ruta) then B.RefrescarLuego() end
+end)
+if N.Kit and N.Kit.AlRepintar then N.Kit.AlRepintar(function() B.RefrescarLuego() end) end

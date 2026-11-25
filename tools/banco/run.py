@@ -61,28 +61,64 @@ def main() -> int:
     if g.PERFIL_ON:
         import time
         g.PERFIL_RELOJ = time.perf_counter
+    # 1.4.0: las tablas y funciones del banco, tomadas una vez (una carga a
+    # pedido desde una corrutina va por BANCO_CARGAR de api.lua: ver abajo).
+    LOADED, META, NS_OF, FIRE_EVENT = g.LOADED, g.ADDON_META, g.NS_OF, g.FIRE_EVENT
+
     def load_addon(name):
         folder = DIST / name
-        if g.LOADED[name]:
+        if LOADED[name]:
             return True
         if not folder.is_dir():
             return False
-        if not g.ADDON_META[name]:
+        if not META[name]:
             meta = lua.table()
             for k, v in toc_meta(folder).items():
                 meta[k] = v
-            g.ADDON_META[name] = meta
-        g.LOADED[name] = True
-        ns = g.NS_OF(name)
+            META[name] = meta
+        LOADED[name] = True
+        ns = NS_OF(name)
         for f in files_of(folder):
             src = f.read_bytes()
             if src[:3] == bytes([0xEF, 0xBB, 0xBF]):
                 src = src[3:]
             load(str(f.relative_to(DIST)), src, name, ns)
-        g.FIRE_EVENT("ADDON_LOADED", name)
+        FIRE_EVENT("ADDON_LOADED", name)
         return True
 
     g.PY_LOAD_ADDON = load_addon
+
+    # 1.4.0 (revisión): las carpetas que están en el dist aunque no se carguen
+    # (los paquetes a pedido): existen y están encendidas, como en el juego.
+    # -> "" si no existe; "1" si es a pedido; "0" si no.
+    def addon_exists(name):
+        folder = DIST / str(name)
+        if not folder.is_dir() or not any(folder.glob("*.toc")):
+            return ""
+        return "1" if toc_meta(folder).get("LoadOnDemand", "") == "1" else "0"
+
+    g.PY_ADDON_EXISTS = addon_exists
+
+    # 1.4.0: lo mismo, sin tocar Lua desde Python (para cargar desde una
+    # corrutina: ver BANCO_CARGAR en api.lua). -> bytes: los metadatos del toc
+    # (clave\x01valor, separados con \x02), y cada archivo como
+    # <largo>:<ruta><largo>:<fuente> (la fuente del Codex trae cualquier byte).
+    # b"" si no existe.
+    def addon_files(name):
+        folder = DIST / name
+        if not folder.is_dir():
+            return b""
+        meta = b"\x02".join(k.encode("utf-8") + b"\x01" + v.encode("utf-8") for k, v in toc_meta(folder).items())
+        out = [str(len(meta)).encode() + b":" + meta]
+        for f in files_of(folder):
+            src = f.read_bytes()
+            if src[:3] == bytes([0xEF, 0xBB, 0xBF]):
+                src = src[3:]
+            ruta = str(f.relative_to(DIST)).encode("utf-8")
+            out.append(str(len(ruta)).encode() + b":" + ruta + str(len(src)).encode() + b":" + src)
+        return b"".join(out)
+
+    g.PY_ADDON_FILES = addon_files
     # Variables guardadas entre dos corridas (prueba_ajustes.lua, 1.1.9): con
     # BANCO_GUARDADAS, se cargan antes de los addons, como hace el juego, y se
     # escriben al final, como al salir o con /reload.

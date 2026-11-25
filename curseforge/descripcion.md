@@ -14,7 +14,41 @@
 
 ---
 
-## 🆕 New in 1.3.9 — the pack hunts better / Lo nuevo: la manada caza mejor
+## 🆕 New in 1.4.0 — the steady pack / Lo nuevo: la manada firme
+
+**The close of the 1.3 series: Alfa looks new, everything moves, and it's faster and steadier.** · **El cierre de la serie 1.3: Alfa se ve nuevo, todo se mueve y es más rápida y firme.**
+
+![Alfa's new window](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/49-140-ventana-hoy.png)
+
+**🪟 A new look / Un Alfa nuevo** — a window with a sidebar, a big header on each page, smooth page changes and a Today cover with your greeting, your session, your guide and the pack. The first time on 1.4, a welcome walks you through every new feature. · Ventana con barra lateral, cabecera grande en cada página, cambios de página suaves y una portada en Hoy con tu saludo, tu sesión, tu guía y la manada. La primera vez en la 1.4, una bienvenida te enseña cada novedad.
+
+![New announcements](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/56-140-anuncios.png)
+
+**🎬 Announcements remade / Anuncios rehechos** — a cinematic band with a medallion per type (zone, new place, inn, dungeon, raid, danger, boat, zeppelin, tram, rare, treasure, pack, level), always centered on screen. · Una franja de cine con un medallón por tipo, siempre centrada en la pantalla.
+
+![Arrange your screen](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/58-140-acomodar.png)
+
+**🧭 Everything moves / Todo se mueve** — `/alfa acomodar` shows every Alfa element with its name, snapping to a grid and "Back to its place"; Shift + drag moves it instantly (never in combat). · `/alfa acomodar` enseña cada cosa de Alfa con su nombre, con imán y «Volver a su lugar»; Mayús + arrastrar la mueve al momento (nunca en combate).
+
+![Tracker and notices](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/57-140-rastreador-avisos.png)
+
+**📜 Tracker and notices / Rastreador y avisos** — each goal with its icon and count, the help bubble beside it, and notices with their module's band in one tidy place. · Cada meta con su ícono y su conteo, el globo de ayuda al lado, y avisos con la banda de su módulo en un solo lugar.
+
+![Your faction](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/51-140-ventana-hoy-horda.png)
+
+**⚔️ Your faction and your season / Tu bando y tu temporada** — the Horde or Alliance theme (wood and iron or stone and silver), and `/alfa temporada`: your adventure since you started with Alfa, with a text for Discord. Lya 2.0 remembers your adventures with you. · La temática de la Horda o la Alianza y `/alfa temporada`: tu aventura desde que usas Alfa, con un texto para Discord. Lya 2.0 recuerda contigo tus aventuras.
+
+![Two screens](https://raw.githubusercontent.com/toxic3000/alfa-forever/main/curseforge/galeria/54-140-pantallas.png)
+
+**🖥️ Two screens, redone / Dos pantallas, rehecho** — a dashboard with your guide and arrow in big, "See how it looks" before applying, and your window and interface size restored exactly (`/alfa pantallas reparar`). · Un tablero con tu guía y la flecha en grande, «Ver cómo queda» antes de aplicar, y tu ventana y el tamaño de la interfaz vuelven exactos.
+
+**⚡ Faster and steadier / Más rápida y firme** — guides load only your level range, the Codex loads in parts, gathering routes stay near you and at your level, a full code cleanup with a simulated play day, and dozens of fixes from your reports. · Las guías cargan solo tu tramo de niveles, el Codex por partes, las rutas de recolección cerca de ti y de tu nivel, una depuración completa del código con un día de juego simulado y decenas de arreglos de tus reportes. [Full notes / Notas completas](https://github.com/toxic3000/alfa-forever/blob/main/CHANGELOG.md)
+
+> If something breaks, tell us with `/alfa reportar`, on [Discord](https://discord.gg/hUNjA6BJwh), in the comments or on [GitHub](https://github.com/toxic3000/alfa-forever/issues). · Si algo falla, avísanos con `/alfa reportar`, en el [Discord de La Jauría](https://discord.gg/hUNjA6BJwh), en los comentarios o en [GitHub](https://github.com/toxic3000/alfa-forever/issues).
+
+---
+
+## 1.3.9 — the pack hunts better / la manada caza mejor
 
 **Your quests, your professions and 100+ improvements.** · **Tus misiones, tus oficios y más de 100 mejoras.**
 
@@ -40,7 +74,6 @@
 
 **✨ And more / Y más** — Today shows the first thing to do, a 3-screen setup, a notification center, smarter bag search and sorting, the fishing window simplified, healing click maps per spec, your last 5 fights, and many fixes. · Hoy pone primero lo que conviene hacer, configuración en 3 pantallas, centro de avisos, búsqueda y orden de bolsas más listos, ventana de pesca más sencilla, mapas de clics por especialización, tus últimas 5 peleas y muchos arreglos. [Full notes / Notas completas](https://github.com/toxic3000/alfa-forever/blob/main/CHANGELOG.md)
 
-> If something breaks, tell us with `/alfa reportar`, on [Discord](https://discord.gg/hUNjA6BJwh), in the comments or on [GitHub](https://github.com/toxic3000/alfa-forever/issues). · Si algo falla, avísanos con `/alfa reportar`, en el [Discord de La Jauría](https://discord.gg/hUNjA6BJwh), en los comentarios o en [GitHub](https://github.com/toxic3000/alfa-forever/issues).
 
 ---
 

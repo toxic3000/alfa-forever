@@ -14,12 +14,14 @@ Nucleo.lua
 Reloj.lua
 Eventos.lua
 Faccion.lua
+Comandos.lua
 Entrada.lua
 Errores.lua
 Respaldos.lua
 Kit\Tokens.lua
 Kit\Formas.lua
 Kit\Basicos.lua
+Kit\Movible.lua
 Kit\Ayuda.lua
 Kit\Bloques.lua
 Kit\Ventanas.lua
@@ -34,3 +36,4 @@ UltimaVez.lua
 Modo.lua
 Limpia.lua
 Informe.lua
+Revisar.lua

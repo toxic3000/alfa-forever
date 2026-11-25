@@ -55,8 +55,8 @@ local function armar(idx, ceder)
 			if dador then
 				local t = I.Viaje(desde, dador)
 				if t <= CERCA then
-					local _, grupo, dentro = I.Objetivo(e, dador)
-					if not dentro then
+					local _, grupo, dentro, sinCargar = I.Objetivo(e, dador)
+					if not dentro and not sinCargar then
 						local v = I.XPPara(e, nivel) / (t + 60)
 						if grupo then v = v * 0.2 end
 						elegidas[#elegidas + 1] = { e = e, q = q, dador = dador, v = v }

@@ -15,7 +15,7 @@ function DUMP(root, extra)
   end
   local function clipOf(f)
     while f do
-      if rawget(f, "_kind") == "ScrollFrame" then
+      if rawget(f, "_kind") == "ScrollFrame" or rawget(f, "_clips") then
         local l, b, w, h = f:GetRect()
         return { l, b, w, h }
       end

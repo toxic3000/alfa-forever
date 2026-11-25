@@ -253,6 +253,7 @@ end
 local function crear()
 	if v then return v end
 	v = M.Marco("Medidor", L["Medidor de daño"], ANCHO, CAB + 40, PUNTO)
+	v:SetScale(V.Escala()) -- 1.4.0 (42)
 	v.Fondo = CreateFrame("Frame", nil, v)
 	v.Fondo:SetAllPoints(v)
 	v.Fondo:SetFrameLevel(v:GetFrameLevel())
@@ -503,13 +504,40 @@ function V.Opciones()
 	local hay = M.Resumen and M.Resumen.Ultima() ~= nil
 	o[#o + 1] = { valor = "pelea", texto = L["Ver mi última pelea"], icono = "ic-lista", apagada = not hay,
 		motivo = not hay and L["Todavía no hay una pelea que resumir."] or nil }
+	-- 1.4.0 (42): su tamaño, por personaje.
+	local tam = V.Tamano()
+	for _, t in ipairs(V.TAMANOS) do
+		o[#o + 1] = { valor = "tam:" .. t.clave, texto = format(L["Tamaño: %s"], L[t.texto]), icono = t.clave == tam and "ic-exito" or nil }
+	end
 	o[#o + 1] = { valor = "ajustes", texto = L["Ajustes del medidor"], icono = "ic-ajustes" }
 	o[#o + 1] = { valor = "esconder", texto = L["Esconder hasta tu próximo grupo"] }
 	return o
 end
 
+-- 1.4.0 (42): el tamaño del medidor (su escala), guardado en el personaje.
+V.TAMANOS = { { clave = "chico", texto = "Chico", escala = 0.85 }, { clave = "normal", texto = "Normal", escala = 1 },
+	{ clave = "grande", texto = "Grande", escala = 1.2 } }
+function V.Tamano()
+	local t = N.DatosPersonaje(M.ID).medidorTam
+	for _, x in ipairs(V.TAMANOS) do if x.clave == t then return t end end
+	return "normal"
+end
+function V.Escala()
+	local t = V.Tamano()
+	for _, x in ipairs(V.TAMANOS) do if x.clave == t then return x.escala end end
+	return 1
+end
+function V.FijarTamano(clave)
+	if InCombatLockdown and InCombatLockdown() then return false end
+	N.DatosPersonaje(M.ID).medidorTam = clave ~= "normal" and clave or nil
+	if v then v:SetScale(V.Escala()) end
+	return true
+end
+
 function V.Elegir(valor)
 	if type(valor) ~= "string" then return end
+	local tam = valor:match("^tam:(.+)$")
+	if tam then V.FijarTamano(tam) return end
 	local tipo = valor:match("^tipo:(.+)$")
 	local sesion = valor:match("^sesion:(.+)$")
 	if tipo then M.SetOpt("tipo", tipo)

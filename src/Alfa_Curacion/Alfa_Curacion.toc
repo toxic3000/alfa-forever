@@ -13,6 +13,8 @@ Mapa.lua
 Perfiles.lua
 Raton.lua
 Marcos.lua
+Tamanos.lua
+SinBuff.lua
 Color.lua
 Peligro.lua
 Mana.lua

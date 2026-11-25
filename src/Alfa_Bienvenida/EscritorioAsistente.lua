@@ -1,15 +1,16 @@
 -- Alfa - Bienvenida: el asistente de «Dos pantallas» (1.3.8).
 -- toxic3000 / La Jauría. GPL-3.0.
 --
--- Tres pasos con el dibujo de tus monitores arriba, que cambia al momento:
---   1. Tu pantalla: lo que Alfa ve de tu ventana (su tamaño y proporción) y
---      cómo poner el juego sobre dos monitores; también va con Offhand y,
---      con un solo monitor, como escritorio a un lado.
---   2. Tus monitores: la proporción del principal (16:9, 21:9, 16:10 o a la
---      medida con una barra) y de qué lado está el otro.
---   3. Probar: se pone ya; si no dices «Sí» en 15 s, vuelve sola a como
---      estaba (Escritorio.lua, Es.Probar). Mientras pruebas, el asistente se
---      esconde y regresa si vuelves atrás.
+-- 1.4.0: dos pasos (antes tres) con el dibujo de tus monitores arriba, que
+-- cambia al momento:
+--   1. Tus monitores: lo que Alfa ve de tu ventana, la proporción del
+--      principal (16:9, 21:9, 16:10 o a la medida con una barra) y de qué
+--      lado está el otro. Si la ventana todavía es de un monitor, cómo
+--      estirarla (antes era un paso entero de instrucciones).
+--   2. Pruébalo: «Ver cómo queda» pone el escritorio de verdad donde va, sin
+--      mover nada (Es.VistaPrevia); «Probar 15 segundos» lo pone ya y, si no
+--      dices «Sí», vuelve solo a como estaba (Es.Probar). Mientras ves o
+--      pruebas, el asistente se esconde y regresa si vuelves atrás.
 --   M.EscritorioAsistente.Abrir() / Cerrar() / Paso(n) / Estado() (el banco)
 
 local _, M = ...
@@ -28,7 +29,7 @@ local As = {}
 M.EscritorioAsistente = As
 
 local ANCHO, ALTO = 760, 640
-local PASOS = { "Tu pantalla", "Tus monitores", "Probar" }
+local PASOS = { "Tus monitores", "Pruébalo" }
 local v       -- la ventana
 local ui = {}
 local est = { paso = 1 }
@@ -94,7 +95,10 @@ local function pintarDibujo(d, ancho)
 	local g = Es.Geometria({ lado = est.lado, proporcion = est.proporcion, medida = est.medida })
 	local W, H = Es.Pantalla()
 	local ratio = W / max(1, H)
-	local maxW, maxH = ancho - ESP.base * 2, 196
+	-- 1.4.0 (85): con la interfaz grande (768 de alto) la ventana medía 824 y
+	-- se salía por arriba: en pantallas bajas el dibujo se achica.
+	local pant = K.num(UIParent:GetHeight(), 1080)
+	local maxW, maxH = ancho - ESP.base * 2, pant < 900 and max(120, 196 - (900 - pant)) or 196
 	local w, h = maxW, maxW / ratio
 	if h > maxH then h, w = maxH, maxH * ratio end
 	w, h = floor(w), floor(h)
@@ -183,8 +187,11 @@ local function pintarDibujo(d, ancho)
 	d.Lobo:SetSize(7, 7)
 	d.Lobo:SetVertexColor(cr, cg, cb, 1)
 	K.Escribir(d.EtAlfa, L["Alfa"])
-	local ew, eh = floor(W * g.escritorio[3] + 0.5), floor(H * g.escritorio[4] + 0.5)
-	K.Escribir(d.EtAlfaSub, format("%d × %d", floor(ew * k + 0.5), floor(eh * k + 0.5)))
+	-- 1.4.0: lo de Alfa es lo que sobra del juego (antes 1919 + 1921 por redondeo).
+	local tw0, th0 = floor(W * k + 0.5), floor(H * k + 0.5)
+	local jw0, jh0 = floor(pw * k + 0.5), floor(ph * k + 0.5)
+	local hz0 = g.lado == "derecha" or g.lado == "izquierda"
+	K.Escribir(d.EtAlfaSub, format("%d × %d", hz0 and (tw0 - jw0) or tw0, hz0 and th0 or (th0 - jh0)))
 	local pw2 = max(K.AnchoTexto(d.EtAlfa), K.AnchoTexto(d.EtAlfaSub)) + ESP.base
 	d.Placa:ClearAllPoints()
 	d.Placa:SetPoint("CENTER", d.Alfa, "CENTER", 0, 0)
@@ -251,7 +258,9 @@ local function armar()
 	ui.Resumen = K.Texto(c, "nota", "textoSuave")
 	ui.Resumen:SetJustifyH("LEFT")
 	-- Paso 3
-	ui.Probar = K.Boton(c, L["Probar ahora"], function() As.Probar() end, { tipo = "primario", tam = "grande", icono = "ic-ventana" })
+	ui.Probar = K.Boton(c, L["Probar 15 segundos"], function() As.Probar() end, { tipo = "primario", tam = "grande", icono = "ic-ventana" })
+	ui.Ver = K.Boton(c, L["Ver cómo queda"], function() As.VistaPrevia() end, { tipo = "secundario", tam = "grande", icono = "ic-mapa",
+		ayuda = L["Pongo tu escritorio donde va a quedar, sin mover nada del juego, para que lo veas antes."] })
 	ui.Volver = K.Boton(c, L["Volver a una pantalla"], function() Es.Apagar() As.Pintar() end, { tipo = "secundario" })
 	ui.filas = {}
 	local function fila(clave, titulo, texto)
@@ -314,6 +323,7 @@ local INSTRUCCIONES = {
 	"Vuelve aquí: Alfa ve la ventana nueva y te propone cómo repartirla.",
 	"¿Usas Offhand? Déjalo estirar la ventana: Alfa no mueve nada y solo pone su escritorio en el otro monitor.",
 }
+-- 1.4.0: con la ventana ya ancha no hacen falta (solo la de Offhand, abajo).
 
 function As.Pintar()
 	if not (v and v:IsShown()) then return end
@@ -333,25 +343,30 @@ function As.Pintar()
 	ui.Dibujo:Show()
 	y = y + K.num(ui.Dibujo:GetHeight(), 220) + ESP.base
 	-- Todo lo de los pasos, escondido; cada uno saca lo suyo.
-	for _, f in ipairs({ ui.Titulo, ui.Texto, ui.SecProp, ui.Prop, ui.Medida, ui.MedidaTexto, ui.SecLado, ui.Lado, ui.Resumen, ui.Probar, ui.Volver }) do f:Hide() end
+	for _, f in ipairs({ ui.Titulo, ui.Texto, ui.SecProp, ui.Prop, ui.Medida, ui.MedidaTexto, ui.SecLado, ui.Lado, ui.Resumen, ui.Probar, ui.Ver, ui.Volver }) do f:Hide() end
 	for _, n in ipairs(ui.Lineas) do n:Hide() n.Texto:Hide() end
 	for _, f in ipairs(ui.filas) do f:Hide() end
 	if est.paso == 1 then
-		colocar(ui.Titulo, x, y, ancho)
-		K.Escribir(ui.Titulo, L["Tu pantalla"])
-		y = y + K.AltoTexto(ui.Titulo) + ESP.s
+		-- Lo que Alfa ve de tu ventana.
 		colocar(ui.Texto, x, y)
 		K.Escribir(ui.Texto, textoDeteccion())
 		y = y + K.Parrafo(ui.Texto, ancho, 3) + ESP.m
-		for i, n in ipairs(ui.Lineas) do
-			colocar(n, x, y)
-			n.Texto:ClearAllPoints()
-			n.Texto:SetPoint("TOPLEFT", c, "TOPLEFT", x + 22 + ESP.m, -(y + 3))
-			K.Escribir(n.Texto, L[INSTRUCCIONES[i]])
-			n.Texto:Show()
-			y = y + max(22, K.Parrafo(n.Texto, ancho - 22 - ESP.m, 3) + 3) + ESP.s
+		-- Con la ventana de un solo monitor: cómo estirarla (o el escritorio a un lado).
+		if not Es.EsAncha() then
+			local n = 0
+			for i, nn in ipairs(ui.Lineas) do
+				if i <= 3 then
+					n = n + 1
+					colocar(nn, x, y)
+					nn.Texto:ClearAllPoints()
+					nn.Texto:SetPoint("TOPLEFT", c, "TOPLEFT", x + 22 + ESP.m, -(y + 3))
+					K.Escribir(nn.Texto, L[INSTRUCCIONES[i]])
+					nn.Texto:Show()
+					y = y + max(22, K.Parrafo(nn.Texto, ancho - 22 - ESP.m, 3) + 3) + ESP.s
+				end
+			end
+			y = y + ESP.s
 		end
-	elseif est.paso == 2 then
 		colocar(ui.SecProp, x, y, ancho)
 		K.Escribir(ui.SecProp, L["Tu monitor principal (donde juegas)"])
 		y = y + 20
@@ -388,20 +403,26 @@ function As.Pintar()
 		local fw = Es.Fisica()
 		local k = (fw and W > 0) and fw / W or 1
 		local jw, jh = floor(W * g.principal[3] * k + 0.5), floor(H * g.principal[4] * k + 0.5)
-		local aw, ah = floor(W * g.escritorio[3] * k + 0.5), floor(H * g.escritorio[4] * k + 0.5)
+		local tw0, th0 = floor(W * k + 0.5), floor(H * k + 0.5)
+		local hz0 = g.lado == "derecha" or g.lado == "izquierda"
+		local aw, ah = hz0 and (tw0 - jw) or tw0, hz0 and th0 or (th0 - jh)
 		K.Escribir(ui.Resumen, format(L["El juego: %d × %d. Alfa: %d × %d."], jw, jh, aw, ah))
-		K.Parrafo(ui.Resumen, ancho, 2)
+		y = y + K.Parrafo(ui.Resumen, ancho, 2)
 	else
 		colocar(ui.Titulo, x, y, ancho)
 		K.Escribir(ui.Titulo, L["Pruébalo"])
 		y = y + K.AltoTexto(ui.Titulo) + ESP.s
 		colocar(ui.Texto, x, y)
 		local otro = Es.OtroLoHace()
-		local t = L["Lo pongo ya. Si algo se ve raro, no toques nada: en 15 segundos vuelvo a como estaba."]
+		local t = L["Primero míralo sin mover nada con «Ver cómo queda». Luego «Probar»: si algo se ve raro, no toques nada y en 15 segundos vuelvo a como estaba."]
 		if otro then t = t .. " " .. format(L["Veo %s: él acomoda la interfaz y yo solo pongo mi escritorio en el otro monitor."], otro) end
 		K.Escribir(ui.Texto, t)
-		y = y + K.Parrafo(ui.Texto, ancho, 3) + ESP.base
-		colocar(ui.Probar, x, y)
+		y = y + K.Parrafo(ui.Texto, ancho, 4) + ESP.base
+		colocar(ui.Ver, x, y)
+		ui.Probar:ClearAllPoints()
+		ui.Probar:SetPoint("LEFT", ui.Ver, "RIGHT", ESP.s, 0)
+		ui.Probar:Show()
+		ui.Ver:SetActivo(not Es.Aplicado())
 		if Es.Aplicado() then
 			ui.Volver:ClearAllPoints()
 			ui.Volver:SetPoint("LEFT", ui.Probar, "RIGHT", ESP.s, 0)
@@ -424,7 +445,7 @@ function As.Pintar()
 	end
 	-- La ventana mide lo que su paso (sin hueco abajo).
 	local alto = K.ALTO.cabecera + y + ESP.l + K.ALTO.pie
-	if est.paso == 2 then alto = alto + 20 end
+	if est.paso == 1 then alto = alto + 20 end
 	if abs(K.num(v:GetHeight(), 0) - alto) > 1 then v:SetTamano(ANCHO, alto) end
 	ui.Atras:SetActivo(est.paso > 1)
 	ui.Siguiente:SetShown(est.paso < #PASOS)
@@ -440,6 +461,24 @@ function As.Probar()
 	est.probando = true
 	if v then v:Cerrar() end
 	if not Es.Probar({ lado = est.lado, proporcion = est.proporcion, medida = est.medida }) then
+		est.probando = nil
+		if v then v:Abrir() As.Pintar() end
+		return false
+	end
+	return true
+end
+
+-- 1.4.0: «Ver cómo queda»: el escritorio de verdad donde va, sin mover
+-- nada. Al cerrarla vuelve el asistente; con «Probar» sigue la prueba.
+function As.VistaPrevia()
+	est.probando = true
+	if v then v:Cerrar() end
+	local ok = Es.VistaPrevia({ lado = est.lado, proporcion = est.proporcion, medida = est.medida }, function(probo)
+		if probo then return end
+		est.probando = nil
+		if v then v:Abrir() As.Pintar() end
+	end)
+	if not ok then
 		est.probando = nil
 		if v then v:Abrir() As.Pintar() end
 		return false

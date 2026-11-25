@@ -45,10 +45,12 @@ function M.TextoMeta(m)
 	if m.tipo == "lanzamientos" then return format(L["Lanzamientos: %d de %d"], min(h, o), o) end
 	if m.tipo == "tiempo" then return format(L["Pescar %s: llevas %s"], corto(o), corto(min(h, o), true)) end
 	if m.tipo == "valor" then return format(L["Valor de %s: llevas %s"], N.DineroTexto(o, true), N.DineroTexto(min(h, o), true)) end
+	if m.tipo == "dia" then return format(L["Meta del día: %s (%d de %d)"], m.largo or m.texto or "", min(h, o), o) end
 	return "?"
 end
 
 local function titulo(m)
+	if m.tipo == "dia" then return format(L["Hoy: %s"], m.texto or "") end -- 1.4.0: la meta del día (MetaDia.lua)
 	if m.tipo == "pez" then return m.nombre or (M.V and M.V.NombreObjeto(m.item)) or "?" end
 	if m.tipo == "capturas" then return L["Capturas"] end
 	if m.tipo == "lanzamientos" then return L["Lanzamientos"] end
@@ -173,9 +175,13 @@ local function fila(i)
 	r.Barra = K.Progreso(r, { alto = 4 })
 	r.Barra:SetPoint("TOPLEFT", r, "TOPLEFT", 0, -24)
 	r:SetScript("OnClick", function(self, boton)
-		if self.alfaMeta and boton == "RightButton" then menuMeta(self, self.alfaMeta) end
+		if self.alfaMeta and self.alfaMeta.tipo ~= "dia" and boton == "RightButton" then menuMeta(self, self.alfaMeta) end
 	end)
-	K.ConInfo(r, function(self) return self.alfaMeta and M.TextoMeta(self.alfaMeta) or nil, L["Clic derecho: reiniciar, quitar o llevar a Mis planes."] end)
+	K.ConInfo(r, function(self)
+		local m = self.alfaMeta
+		if m and m.tipo == "dia" then return M.TextoMeta(m), L["Una meta nueva cada día. Lya la festeja cuando la cumples."] end
+		return m and M.TextoMeta(m) or nil, L["Clic derecho: reiniciar, quitar o llevar a Mis planes."]
+	end)
 	f.filas[i] = r
 	return r
 end
@@ -213,7 +219,11 @@ end
 
 function Me.Refrescar()
 	if not (f and f:IsShown()) then return end
-	local metas = M.MetasGuardadas()
+	-- 1.4.0: la meta del día va primero.
+	local metas = {}
+	local dia = M.MetaDia and M.MetaDia.Fila()
+	if dia then metas[1] = dia end
+	for _, m in ipairs(M.MetasGuardadas()) do metas[#metas + 1] = m end
 	local y = ESP.m + 18 + ESP.s
 	local ancho = ANCHO - 2 * ESP.m
 	for i, m in ipairs(metas) do
@@ -272,7 +282,7 @@ function Me.Marco() return f end
 -- Con el modo pesca abierto y alguna meta, la ventanita se ve (si no la cerraste).
 M.Escuchar(function(m)
 	if m.modo or m.todo then
-		local hay = #M.MetasGuardadas() > 0
+		local hay = #M.MetasGuardadas() > 0 or (M.MetaDia and M.MetaDia.Fila() ~= nil)
 		if E.modo and hay and opt("metasVentana") and not N.DatosPersonaje(ID).metasCerrada then
 			Me.Alternar(true)
 		elseif not E.modo and f and f:IsShown() and opt("metasVentana") then

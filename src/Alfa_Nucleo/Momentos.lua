@@ -281,6 +281,18 @@ function N.CalmaHasta()
 	if calmaSesion then return huge end
 	return tonumber(datos().calmaHasta) or 0
 end
+-- 1.4.0 (113): cómo va la calma, para decirlo donde la ves (Avisos, la
+-- campanita, el globito). -> texto, modo ("sesion" | "tiempo" | "dnd") | nil
+function N.TextoCalma()
+	local en, modo = N.EnCalma()
+	if not en then return nil end
+	if modo == "sesion" then return L["Tienes la calma hasta que salgas del juego."], modo end
+	if modo == "tiempo" then
+		local falta = max(60, (tonumber(datos().calmaHasta) or 0) - reloj())
+		return format(L["Tienes la calma: faltan %s."], N.Duracion and N.Duracion(falta, true) or format(L["%d min"], floor(falta / 60))), modo
+	end
+	return L["Tienes puesto el /dnd del juego: Alfa guarda lo que no es urgente."], modo
+end
 
 ---------------------------------------------------------------------------
 -- N.Ocupado
@@ -784,7 +796,9 @@ pintarContador = function()
 		c:SetScript("OnDragStart", function(self) K.OcultarInfo(self) alPadre("OnDragStart") end)
 		c:SetScript("OnDragStop", function() alPadre("OnDragStop") end)
 		c:SetScript("OnEnter", function(self)
-			K.MostrarInfo(self, N.TextoSinVer(), L["Clic: ver tus avisos"])
+			-- 1.4.0 (117): lo último que no viste, y la calma si está puesta.
+			local lineas = N.LineasSinVer(3)
+			K.MostrarInfo(self, N.TextoSinVer(), lineas and (lineas .. "\n" .. L["Clic: ver tus avisos"]) or L["Clic: ver tus avisos"])
 		end)
 		c:SetScript("OnLeave", function(self) K.OcultarInfo(self) end)
 		b.alfaContador = c
@@ -805,6 +819,42 @@ function N.TextoSinVer(n)
 	n = n or N.AvisosSinVer()
 	if n <= 0 then return L["No tienes avisos sin ver"] end
 	return N.Plural(n, L["%d aviso sin ver"], L["%d avisos sin ver"])
+end
+
+-- 1.4.0 (117): para los globos de la campanita y del globito del minimapa: lo
+-- último que no viste (hasta `cuantos` títulos, cortados a 48 letras) y cómo
+-- va la calma. -> texto con renglones | nil
+local function corto(s, tope)
+	local n, fin = 0, nil
+	for i in s:gmatch("()[%z\1-\127\194-\244][\128-\191]*") do
+		n = n + 1
+		if n > tope then fin = i break end
+	end
+	if not fin then return s end
+	return (s:sub(1, fin - 1):gsub("%s+$", "")) .. "\226\128\166"
+end
+function N.LineasSinVer(cuantos)
+	cuantos = tonumber(cuantos) or 3
+	local renglones, n = {}, 0
+	for _, e in ipairs(lista()) do
+		if type(e) == "table" and not e.visto then
+			n = n + 1
+			if n <= cuantos then
+				local t = (e.titulo ~= "" and e.titulo) or e.texto or ""
+				if t ~= "" then
+					local hora = (e.hora or "") ~= "" and (e.hora .. "  ") or ""
+					renglones[#renglones + 1] = hora .. corto(t, 48)
+				end
+			end
+		end
+	end
+	if n > cuantos and #renglones > 0 then
+		renglones[#renglones + 1] = N.Plural(n - cuantos, L["y %d más"], L["y %d más [plural]"])
+	end
+	local calma = N.TextoCalma and N.TextoCalma()
+	if calma then renglones[#renglones + 1] = (K and K.Tenir and K.Tenir("aviso", calma)) or calma end
+	if #renglones == 0 then return nil end
+	return concat(renglones, "\n")
 end
 
 -- La ventana «Avisos» (1.3.7: antes «Lo que me perdí»; la abre la campanita
@@ -835,7 +885,9 @@ local function opcionesFiltro(todos)
 		por[k] = por[k] + 1
 	end
 	local opciones = { { valor = "todos", texto = L["Todos"], cuenta = #todos } }
-	if sinVer > 0 then opciones[#opciones + 1] = { valor = "sinver", texto = L["Sin ver"], cuenta = sinVer } end
+	-- (1.4.0: si todos están sin ver, «Sin ver» es lo mismo que «Todos»: no va,
+	-- y así los filtros caben sin cortarse.)
+	if sinVer > 0 and sinVer < #todos then opciones[#opciones + 1] = { valor = "sinver", texto = L["Sin ver"], cuenta = sinVer } end
 	local mods = {}
 	for _, k in ipairs(orden) do if k ~= "otros" then mods[#mods + 1] = k end end
 	table.sort(mods, function(a, b) if por[a] ~= por[b] then return por[a] > por[b] end return a < b end)
@@ -868,6 +920,111 @@ local function pasaFiltro(e, mods)
 	end
 	return k == filtro
 end
+-- 1.4.0 (63): la lista va por día (Hoy, Ayer, la fecha) y, dentro de cada
+-- día, por módulo (Bolsas · 2, Ruta · 3...). El día sale de la hora del
+-- aviso (e.t, la del servidor); uno sin hora va a «Antes».
+local function diaDe(e)
+	local t = tonumber(e and e.t)
+	if not (t and t > 0 and date) then return "?" end
+	return date("%Y-%m-%d", t)
+end
+local DIAS_SEMANA = { "domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado" }
+function N.NombreDiaAviso(dia, t)
+	if dia == "?" then return L["Antes"] end
+	local ahora = reloj()
+	if date and dia == date("%Y-%m-%d", ahora) then return L["Hoy"] end
+	if date and dia == date("%Y-%m-%d", ahora - 86400) then return L["Ayer"] end
+	t = tonumber(t)
+	if t and date then
+		local d = date("*t", t)
+		if d and DIAS_SEMANA[d.wday] then
+			return format(L["El %s %d/%d"], L[DIAS_SEMANA[d.wday]], d.day, d.month)
+		end
+	end
+	return dia
+end
+-- -> { { dia, nombre, n, modulos = { { clave, nombre, icono, lista } } } }
+function N.AgruparAvisos(lista)
+	local dias, porDia = {}, {}
+	for _, e in ipairs(lista) do
+		local d = diaDe(e)
+		local g = porDia[d]
+		if not g then
+			g = { dia = d, nombre = N.NombreDiaAviso(d, e.t), n = 0, modulos = {}, porMod = {} }
+			porDia[d] = g
+			dias[#dias + 1] = g
+		end
+		g.n = g.n + 1
+		local k = claveFiltro(e)
+		local m = g.porMod[k]
+		if not m then
+			local spec = k ~= "otros" and N.ModuloPorId and N.ModuloPorId(k) or nil
+			m = { clave = k, nombre = spec and spec.nombre or L["Otros"], icono = spec and spec.icono or "ic-aviso", lista = {} }
+			g.porMod[k] = m
+			g.modulos[#g.modulos + 1] = m
+		end
+		m.lista[#m.lista + 1] = e
+	end
+	for _, g in ipairs(dias) do g.porMod = nil end
+	return dias
+end
+
+-- Los bloques de la lista agrupada (se reusan): títulos de día, renglones de
+-- módulo y una rejilla por grupo.
+local function nuevaLista(padre)
+	local b = CreateFrame("Frame", nil, padre)
+	b.dias, b.mods, b.rejs = {}, {}, {}
+	b.grupos = {}
+	function b:Llenar(grupos) self.grupos = grupos or {} end
+	function b:Acomodar(ancho)
+		local y, nd, nm = 0, 0, 0
+		for gi, g in ipairs(self.grupos) do
+			nd = nd + 1
+			local s = self.dias[nd]
+			if not s then s = K.Seccion(self, "") self.dias[nd] = s end
+			s:Set(g.nombre, { cuenta = g.n })
+			s:ClearAllPoints()
+			s:SetPoint("TOPLEFT", self, "TOPLEFT", 0, -y)
+			s:SetWidth(ancho)
+			s:Show()
+			y = y + s:Acomodar(ancho) + K.ESP.s
+			for _, m in ipairs(g.modulos) do
+				nm = nm + 1
+				local h = self.mods[nm]
+				if not h then
+					h = CreateFrame("Frame", nil, self)
+					h.Icono = K.Icono(h, "ic-aviso", 14, "textoSuave")
+					h.Icono:SetPoint("LEFT", h, "LEFT", 2, 0)
+					h.Texto = K.Texto(h, "pequeno", "textoSuave")
+					h.Texto:SetPoint("LEFT", h.Icono, "RIGHT", 6, 0)
+					self.mods[nm] = h
+				end
+				K.SetIcono(h.Icono, m.icono or "ic-aviso", "textoSuave")
+				K.Escribir(h.Texto, format("%s  \194\183  %d", m.nombre, #m.items))
+				h:ClearAllPoints()
+				h:SetPoint("TOPLEFT", self, "TOPLEFT", 0, -y)
+				h:SetSize(ancho, 18)
+				h:Show()
+				y = y + 18 + 4
+				local r = self.rejs[nm]
+				if not r then r = K.Rejilla(self, { min = 440, gap = K.ESP.s, variante = "normal" }) self.rejs[nm] = r end
+				r:Llenar(m.items)
+				r:ClearAllPoints()
+				r:SetPoint("TOPLEFT", self, "TOPLEFT", 0, -y)
+				r:Show()
+				y = y + r:Acomodar(ancho) + K.ESP.m
+			end
+			if gi < #self.grupos then y = y + K.ESP.s end
+		end
+		for i = nd + 1, #self.dias do self.dias[i]:Hide() end
+		for i = nm + 1, #self.mods do self.mods[i]:Hide() end
+		for i = nm + 1, #self.rejs do self.rejs[i]:Llenar({}) self.rejs[i]:Hide() end
+		self:SetSize(ancho, math.max(1, y))
+		return y
+	end
+	return b
+end
+
 local function llenarVentana()
 	if not ventana then return end
 	local items = {}
@@ -883,6 +1040,7 @@ local function llenarVentana()
 	end
 	local lista = {}
 	for _, e in ipairs(todos) do if pasaFiltro(e, mods) then lista[#lista + 1] = e end end
+	local tarjetaDe = {}
 	for _, e in ipairs(lista) do
 		local ir = N.IrDeAviso(e)
 		local nuevo = not e.visto
@@ -894,6 +1052,7 @@ local function llenarVentana()
 		local cuerpo = (e.titulo ~= "" and e.texto ~= "") and e.texto or ""
 		if cuerpo ~= "" then linea = linea ~= "" and (linea .. "\n" .. cuerpo) or cuerpo end
 		items[#items + 1] = {
+			alfaAviso = e,
 			icono = e.icono or "ic-aviso",
 			titulo = e.titulo ~= "" and e.titulo or e.texto,
 			texto = linea,
@@ -906,7 +1065,16 @@ local function llenarVentana()
 			secundaria = { texto = L["Quitar"], alClic = function() N.OlvidarAviso(e) end },
 		}
 	end
-	ui.rejilla:Llenar(items)
+	-- 1.4.0 (63): por día y por módulo.
+	for _, it in ipairs(items) do tarjetaDe[it.alfaAviso] = it end
+	local grupos = N.AgruparAvisos(lista)
+	for _, g in ipairs(grupos) do
+		for _, m in ipairs(g.modulos) do
+			m.items = {}
+			for _, e in ipairs(m.lista) do m.items[#m.items + 1] = tarjetaDe[e] end
+		end
+	end
+	ui.rejilla:Llenar(grupos)
 	local n = N.AvisosSinVer()
 	K.Escribir(ui.resumen.Texto, #todos == 0 and ""
 		or (n > 0 and (N.TextoSinVer(n) .. ". " .. L["Lo más nuevo va arriba."]) or L["Ya viste todo. Lo más nuevo va arriba."]))
@@ -917,8 +1085,15 @@ local function llenarVentana()
 	end
 	K.Mostrar(ui.vacio, #todos == 0)
 	K.Mostrar(ui.rejilla, #todos > 0)
-	if ui.marcar then ui.marcar:SetActivo(n > 0) end
-	if ui.borrar then ui.borrar:SetActivo(#todos > 0) end
+	-- 1.4.0 (113)
+	local calma, modo = N.TextoCalma()
+	if ui.calma then
+		if calma then ui.calma:Set(modo == "dnd" and (calma .. " " .. L["Escribe /dnd otra vez en el chat para quitarlo."]) or calma, modo ~= "dnd") end
+		K.Mostrar(ui.calma, calma ~= nil)
+	end
+	-- 1.4.0 (112): apagados, con su porqué.
+	if ui.marcar then ui.marcar:SetActivo(n > 0, #todos > 0 and L["Ya viste todo."] or L["No hay avisos todavía."]) end
+	if ui.borrar then ui.borrar:SetActivo(#todos > 0, L["No hay avisos todavía."]) end
 	local ancho = ventana:AnchoCuerpo()
 	local h = ui.pila:Acomodar(ancho)
 	ui.pila:ClearAllPoints()
@@ -935,17 +1110,48 @@ local function parrafo(p, color)
 	return f
 end
 
+-- 1.4.0 (113): la franja de la calma: el reloj, cuánto falta y su botón a la derecha.
+local function franjaCalma(p)
+	local f = CreateFrame("Frame", nil, p)
+	f.caja = K.Caja(f, { fondo = "elevado", borde = "linea", corte = K.CORTE.control })
+	f.Icono = K.Icono(f, "ic-reloj", 16, "aviso")
+	f.Texto = K.Texto(f, "cuerpo", "texto")
+	f.Boton = K.Boton(f, L["Quitar la calma"], function() N.Calma("no") refrescarVentana() end, { tipo = "secundario" })
+	function f:Set(texto, conBoton)
+		K.Escribir(self.Texto, texto or "")
+		self.Boton:SetShown(conBoton and true or false)
+	end
+	function f:Acomodar(ancho)
+		local pad = K.ESP.m
+		local bw = self.Boton:IsShown() and (K.num(self.Boton:AnchoNatural(), 120) + K.ESP.m) or 0
+		local tw = max(80, ancho - pad * 2 - 16 - K.ESP.s - bw)
+		local th = K.Parrafo(self.Texto, tw)
+		local alto = max(K.ALTO.boton, th) + 2 * K.ESP.s
+		self.Icono:ClearAllPoints()
+		self.Icono:SetPoint("LEFT", self, "LEFT", pad, 0)
+		self.Texto:ClearAllPoints()
+		self.Texto:SetPoint("LEFT", self.Icono, "RIGHT", K.ESP.s, 0)
+		self.Boton:ClearAllPoints()
+		self.Boton:SetPoint("RIGHT", self, "RIGHT", -K.ESP.s, 0)
+		self:SetSize(ancho, alto)
+		return alto
+	end
+	return f
+end
+
 local function armarVentana()
 	ventana = K.Ventana({ nombre = "AlfaPerdidos", titulo = L["Avisos"], icono = "ic-aviso", ancho = 540, alto = 500, desplazar = true })
-	ventana:SetTitulo(L["Avisos"], L["Lo que Alfa te dijo, con su hora"], "ic-aviso")
+	ventana:SetTitulo(L["Avisos"], L["Lo que Alfa te dijo, por día y por módulo"], "ic-aviso")
 	ventana.alAcomodar = llenarVentana
 	local p = K.Pila(ventana.Cuerpo, { espacio = K.ESP.base })
 	ui.pila = p
 	ui.resumen = p:Agregar(parrafo(p, "textoSuave"))
+	-- 1.4.0 (113): con la calma puesta, arriba, cuánto le falta y «Quitar la calma».
+	ui.calma = p:Agregar(franjaCalma(p))
 	-- 1.3.7: filtros por tipo y un estado vacío con el lobo dormido.
 	ui.filtros = p:Agregar(K.Segmentos(p, { alCambiar = function(v) filtro = v llenarVentana() end }))
 	ui.vacio = p:Agregar(K.Vacio(p, {}), { espacio = K.ESP.l })
-	ui.rejilla = p:Agregar(K.Rejilla(p, { min = 440, gap = K.ESP.s, variante = "normal" }))
+	ui.rejilla = p:Agregar(nuevaLista(p)) -- 1.4.0 (63): por día y por módulo
 	ui.marcar = K.Boton(ventana, L["Marcar todo como visto"], function() N.MarcarAvisosVistos() end, { tipo = "secundario" })
 	ui.borrar = K.Boton(ventana, L["Borrar"], function()
 		K.Dialogo({ titulo = L["¿Borrar todos los avisos?"], texto = L["La lista queda vacía. Lo que Alfa te diga después vuelve a aparecer aquí."],

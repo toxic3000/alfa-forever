@@ -678,4 +678,9 @@ M.EN = {
 	["Al terminar cada pelea queda aquí, para compararla con las siguientes. Se guardan las últimas 5."] = "After each fight it stays here, to compare it with the next ones. The last 5 are kept.",
 	["Más ajustes"] = "More settings",
 	["Avisos de reacción, la barra de golpe, jefes y mazmorras, misiones y el detalle de cada herramienta."] = "Reaction alerts, the swing bar, bosses and dungeons, quests and each tool's detail.",
+	-- 1.4.0 (agente mundo)
+	["Tamaño: %s"] = "Size: %s",
+	["Chico"] = "Small",
+	["Normal"] = "Normal",
+	["Grande"] = "Large",
 }

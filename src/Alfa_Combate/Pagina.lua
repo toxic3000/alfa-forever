@@ -276,8 +276,8 @@ local function bloqueMedidor(padre)
 		end
 		for i = n + 1, #lista.filas do lista.filas[i]:Hide() end
 		K.Mostrar(lista, n > 0)
-		local puede = D.PuedeAnunciar(M.Opt("sesion"), M.Opt("tipo"), r) -- 1.3.7: con la misma lectura
-		barra.Anunciar:SetActivo(puede)
+		local puede, porque = D.PuedeAnunciar(M.Opt("sesion"), M.Opt("tipo"), r) -- 1.3.7: con la misma lectura
+		barra.Anunciar:SetActivo(puede, porque) -- (1.4.0, 112: apagado, su globo dice por qué)
 		barra.Anunciar:SetShown(r.ok and n > 0)
 		barra.Cero:SetShown(r.ok and n > 0)
 		K.Mostrar(barra, r.ok)

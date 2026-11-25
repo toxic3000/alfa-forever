@@ -71,6 +71,9 @@ M.AJUSTES = {
 	-- 1.3.7
 	listos = true,           -- «¿Listos?» del juego: lo que te falta y los apoyos del grupo (Listos.lua)
 	recurso = true,          -- maná, furia o energía: una barra delgada bajo la vida
+	-- 1.4.0
+	buffIcono = true,        -- (41) un ícono con cuántos no tienen tu hechizo de apoyo (SinBuff.lua)
+	porTamano = true,        -- (40) medidas propias solo, en grupo y en banda (Tamanos.lua)
 }
 
 local function opt(k) return N.Get(ID, k) end

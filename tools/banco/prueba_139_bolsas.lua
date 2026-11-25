@@ -218,6 +218,8 @@ check(Sb and Ord, "faltan Sobra.lua u Ordenar.lua")
 ---------------------------------------------------------------------------
 step("104: la barra de tus conjuntos junto a la ventana de tu personaje", function()
   fondo:Show()
+  -- (1.4.0: el panel viene apagado de fábrica; aquí lo pide el jugador.)
+  Alfa.Set("bolsas.barraConjuntos", true)
   -- Guardas «Pesca» con la caña y el sombrero; vuelves a la espada y el gorro.
   puesto[16], puesto[1] = enlace(CANA), enlace(SOMBRERO)
   Cj.Guardar("Pesca")

@@ -28,9 +28,15 @@ M.SEP = " \194\183 "
 function M.Codex()
 	local C = A.Codex
 	if type(C) ~= "table" or type(C.IsLoaded) ~= "function" then return nil, "missing" end
-	if C.IsLoaded() then return C end
+	-- 1.4.0 (revisión): y sus partes (objetos, PNJ y misiones), ya que se van a
+	-- usar: fuera de combate, ya; en combate, al terminar (Codex.Preload).
+	if C.IsLoaded() then
+		if C.Preload then C.Preload() end
+		return C
+	end
 	if InCombatLockdown() then return nil, "combat" end
 	local ok, motivo = C.Load()
+	if ok and C.IsLoaded() and C.Preload then C.Preload() end
 	if ok and C.IsLoaded() then return C end
 	return nil, motivo or "missing"
 end
@@ -390,4 +396,5 @@ function M.Desempacar(v)
 	return id, c > 0 and c / 100 or nil
 end
 
-function M.num(v, d) return type(v) == "number" and v or (d or 0) end
+-- 1.4.0: un secreto no es un número que se pueda usar (antes pasaba tal cual).
+function M.num(v, d) if N.Secreto(v) then return d or 0 end return type(v) == "number" and v or (d or 0) end

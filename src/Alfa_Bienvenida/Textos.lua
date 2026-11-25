@@ -4,6 +4,30 @@
 local ADDON, M = ...
 
 M.EN = {
+	-- 1.4.0 (interfaz)
+	["Tu bando"] = "Your faction",
+	["Vestir a Alfa de tu bando"] = "Dress Alfa in your faction",
+	["Los colores, el emblema y el saludo de la Horda o la Alianza en todas las ventanas de Alfa."] = "The colors, emblem and greeting of the Horde or the Alliance in every Alfa window.",
+	-- 1.4.0 (interfaz)
+	["Alto contraste"] = "High contrast",
+	["Texto blanco, fondos opacos y bordes marcados en todas las ventanas de Alfa, en cualquier estilo. Se suma a la letra grande y a los colores para daltonismo."] = "White text, solid backgrounds and clear borders in every Alfa window, in any style. It adds to the bigger text and the colorblind colors.",
+	["La manada firme"] = "The steady pack",
+	["Alfa se viste de tu bando: rojo sangre y madera para la Horda, azul real y piedra para la Alianza, con su saludo en Hoy."] = "Alfa dresses in your faction: blood red and wood for the Horde, royal blue and stone for the Alliance, with its greeting in Today.",
+	["Dos pantallas, rehecho: tableros grandes y claros, y al volver a una pantalla todo queda como estaba."] = "Two screens, redone: big, clear boards, and back on one screen everything stays as it was.",
+	["«Tu sesión» en Hoy: tu tiempo, tu XP por hora y el oro que ganaste, siempre al día."] = "\"Your session\" in Today: your time, your XP per hour and the gold you earned, always up to date.",
+	["La campanita junta tus avisos por día y por módulo, y Esc cierra cualquier ventana de Alfa."] = "The bell groups your notifications by day and by module, and Esc closes any Alfa window.",
+	["Busca con tus palabras: «mochila», «teclas» o «fuente» te llevan al ajuste, y Enter va directo."] = "Search in your own words: \"backpack\", \"keys\" or \"font\" take you to the setting, and Enter goes straight there.",
+	["Para leer mejor: «Alto contraste», y el atajo de cada botón en su globo."] = "Easier to read: \"High contrast\", and each button's shortcut in its tooltip.",
+	["Reportar un error es más fácil: cada reporte lleva su código y puedes subir capturas."] = "Reporting a bug is easier: each report has its code and you can upload screenshots.",
+	["Enséñamelo"] = "Show me",
+	["Ya entendí"] = "Got it",
+	["Lo nuevo de la %s · %d de %d"] = "What's new in %s · %d of %d",
+	-- 1.4.0 (interfaz, 71): capturas en el formulario
+	["¿Tienes capturas? Súbelas en el formulario de capturas, con el código de tu reporte."] = "Got screenshots? Upload them in the screenshots form, with your report's code.",
+	["Subir capturas"] = "Upload screenshots",
+	["Una captura ayuda mucho: presiona %s y el juego la guarda en la carpeta Screenshots de tu WoW."] = "A screenshot helps a lot: press %s and the game saves it in the Screenshots folder of your WoW.",
+	["Pega este enlace en tu navegador, entra con tu cuenta de Google y sube hasta 5 capturas."] = "Paste this link in your browser, sign in with your Google account and upload up to 5 screenshots.",
+	["Código: %s"] = "Code: %s",
 	-- 1.3.9 (avisos): el reporte, el Centro de avisos, Lya y los errores con qué hacer
 	["¿Qué hacías cuando pasó? (opcional)"] = "What were you doing when it happened? (optional)",
 	["Por ejemplo: «abrí las bolsas en el banco y salió el error»."] = "For example: \"I opened my bags at the bank and the error showed up.\"",
@@ -1095,6 +1119,37 @@ M.EN = {
 	-- 1.3.9 (EscritorioAuto: el otro monitor a la izquierda)
 	["Si la ventana no empieza en la orilla izquierda de tu otro monitor (el de la izquierda), arrástrala ahí una vez; Windows la recordará."] = "If the window doesn't start at the left edge of your other monitor (the one on the left), drag it there once; Windows will remember it.",
 	["Tu otro monitor está:"] = "Your other monitor is:",
+	-- 1.4.0 (Dos pantallas rehecho: tablero, vista previa, noche)
+	["Normal"] = "Normal",
+	["Grande"] = "Large",
+	["Muy grande"] = "Very large",
+	["Una pantalla"] = "One screen",
+	["Esta sesión: %s"] = "This session: %s",
+	["Llegas en %s"] = "You arrive in %s",
+	["Probar 15 segundos"] = "Try for 15 seconds",
+	["Cerrar la vista previa"] = "Close the preview",
+	["Así queda tu escritorio"] = "This is how your desktop looks",
+	["Aquí sigue tu juego, y tus paneles al lado. Todavía no se movió nada: es solo para que lo veas."] = "Your game stays here, with your panels beside it. Nothing has moved yet: this is just so you can see it.",
+	["Aquí sigue tu juego, en tu monitor principal, y tus paneles en el otro. Todavía no se movió nada: es solo para que lo veas."] = "Your game stays here, on your main monitor, and your panels go on the other one. Nothing has moved yet: this is just so you can see it.",
+	["La vista previa se cierra sola en %d segundo."] = "The preview closes by itself in %d second.",
+	["La vista previa se cierra sola en %d segundos."] = "The preview closes by itself in %d seconds.",
+	["Ver cómo queda"] = "See how it looks",
+	["Pongo tu escritorio donde va a quedar, sin mover nada del juego, para que lo veas antes."] = "I put your desktop where it will go, without moving anything in the game, so you can see it first.",
+	["Primero míralo sin mover nada con «Ver cómo queda». Luego «Probar»: si algo se ve raro, no toques nada y en 15 segundos vuelvo a como estaba."] = "First look at it without moving anything with “See how it looks”. Then “Try”: if something looks odd, don't touch anything and in 15 seconds I'll put it back as it was.",
+	["Tamaño de los paneles"] = "Panel size",
+	["Más grande se lee mejor desde lejos; más chico cabe más."] = "Larger reads better from a distance; smaller fits more.",
+	["Una noche de Alfa detrás de los paneles: cielo, estrellas, la luna y el lobo. Apágalo si quieres ver lo que haya detrás."] = "An Alfa night behind the panels: sky, stars, the moon and the wolf. Turn it off if you want to see what's behind.",
+	-- 1.4.0 (Reparar mi pantalla: EscritorioReparar.lua)
+	["Reparar mi pantalla"] = "Repair my screen",
+	["Reparar"] = "Repair",
+	["Si después de usar Dos pantallas la ventana o la interfaz del juego quedaron de otro tamaño, las dejo como estaban."] = "If after using Two screens the game window or interface ended up a different size, I put them back as they were.",
+	["¿Reparo tu pantalla?"] = "Shall I repair your screen?",
+	["Sí, reparar"] = "Yes, repair",
+	["Dejo la ventana del juego y el tamaño de la interfaz como estaban antes de usar Dos pantallas. La pantalla parpadea un momento."] = "I'll put the game window and the interface size back as they were before using Two screens. The screen will flicker for a moment.",
+	["Pongo el juego en «ventana a pantalla completa» y la interfaz en su tamaño automático, como viene el juego. La pantalla parpadea un momento."] = "I'll set the game to “windowed fullscreen” and the interface to its automatic size, as the game comes. The screen will flicker for a moment.",
+	["Reparando tu pantalla: vuelve como estaba antes de Dos pantallas."] = "Repairing your screen: it goes back to how it was before Two screens.",
+	["No pude dejar tu pantalla exactamente como estaba. Prueba «Reparar mi pantalla» (/alfa pantallas reparar) o revisa Esc > Sistema > Gráficos."] = "I couldn't put your screen back exactly as it was. Try “Repair my screen” (/alfa pantallas reparar) or check Esc > System > Graphics.",
+	["Alfa en tu segundo monitor (también: probar, volver, editar, reparar)"] = "Alfa on your second monitor (also: probar, volver, editar, reparar)",
 	-- 1.3.9 (módulos)
 	["Cerrar mis misiones"] = "Close my quests",
 	["Tu diario está vacío"] = "Your quest log is empty",
@@ -1181,3 +1236,54 @@ M.EN["Arriba va lo más útil y abajo los detalles. Lo que cambies se guarda sol
 
 -- 1.3.9 (interfaz): textos nuevos
 M.EN["¿Dudas? Escribe /alfa ayuda y Lya te explica esta página con sus preguntas."] = "Questions? Type /alfa ayuda and Lya explains this page with its questions."
+
+-- 1.4.0 (78/79): todo se mueve (Acomodar.lua, Kit/Movible.lua)
+M.EN["Las placas de la flecha"] = "The arrow's cards"
+M.EN["«Llegaste», «Usa tu piedra de hogar» y los viajes salen aquí."] = "\"You made it\", \"Use your hearthstone\" and trips show up here."
+M.EN["Los avisos de Hoy"] = "Today's alerts"
+M.EN["Así sale un aviso de Hoy."] = "This is how a Today alert looks."
+M.EN["La tarjeta de raros"] = "The rare card"
+M.EN["Aquí sale la tarjeta de un raro cerca."] = "The card for a nearby rare shows up here."
+M.EN["El aviso del barco"] = "The boat alert"
+M.EN["Aquí sale el aviso de barcos y zepelines."] = "The boat and zeppelin alert shows up here."
+M.EN["La barra del lanzado"] = "The cast bar"
+M.EN["«¡Sal de ahí!»"] = "\"Get out of there!\""
+M.EN["Aquí sale «¡Sal de ahí!»."] = "\"Get out of there!\" shows up here."
+M.EN["«¿Todos listos?»"] = "\"Everyone ready?\""
+M.EN["Aquí sale quién falta antes de empezar."] = "Who's missing before you start shows up here."
+M.EN["El cronómetro de mazmorra"] = "The dungeon timer"
+M.EN["Aquí sale el cronómetro de la mazmorra."] = "The dungeon timer shows up here."
+M.EN["La línea del cronómetro"] = "The timer line"
+M.EN["Aquí sale la línea corta del cronómetro."] = "The short timer line shows up here."
+M.EN["El resumen de la mazmorra"] = "The dungeon summary"
+M.EN["Aquí sale el resumen al terminar una mazmorra."] = "The summary shows up here when you finish a dungeon."
+M.EN["El botón flotante de Alfa"] = "Alfa's floating button"
+M.EN["El cronómetro de vuelo"] = "The flight timer"
+M.EN["Tus instancias"] = "Your instances"
+M.EN["El panel del grupo"] = "The group panel"
+M.EN["Arrástralo para moverlo. Clic derecho: vuelve a su lugar."] = "Drag it to move it. Right-click: back to its place."
+M.EN["Rueda del ratón: más grande o más chico."] = "Mouse wheel: bigger or smaller."
+M.EN["Ahora no está a la vista: lo acomodas y sale ahí la próxima vez."] = "It's not on screen right now: place it and it shows up there next time."
+M.EN["¿Seguro? Otra vez"] = "Sure? Click again"
+M.EN["Volver todo a su lugar"] = "Put everything back"
+M.EN["Imán a la rejilla y al centro"] = "Snap to the grid and center"
+M.EN["Arrastra lo que quieras: se pega a la rejilla, a los bordes y al centro. Clic derecho en uno: vuelve a su lugar."] = "Drag whatever you want: it snaps to the grid, the edges and the center. Right-click one: it goes back to its place."
+M.EN["Los recuadros punteados son lo que ahora no está a la vista, con una muestra."] = "The faint boxes are things not on screen right now, with a preview."
+M.EN["La flecha y sus placas, tu guía, los avisos, los anuncios, Lya, la pesca, Combate, Curación y más: los arrastras a donde quieras, con imán a la rejilla. También con /alfa acomodar."] = "The arrow and its cards, your guide, alerts, announcements, Lya, fishing, Combat, Healing and more: drag them wherever you like, snapping to a grid. Also with /alfa acomodar."
+M.EN["Mayús + arrastrar"] = "Shift + drag"
+M.EN["Fuera de combate, con Mayús apretada arrastras cualquier cosa de Alfa sin entrar a «Acomodar la pantalla»."] = "Out of combat, hold Shift to drag anything of Alfa's without opening \"Arrange your screen\"."
+M.EN["Cada personaje con su acomodo"] = "Each character with its own layout"
+M.EN["Lo que acomodes se guarda solo para este personaje. La flecha ya recuerda su lugar en cada uno."] = "What you arrange is saved for this character only. The arrow already remembers its place on each one."
+M.EN["Las placas van con la flecha"] = "The cards go with the arrow"
+M.EN["«Llegaste», «Usa tu piedra de hogar» y los viajes salen donde está la flecha. Apágalo para ponerlas en otro lugar."] = "\"You made it\", \"Use your hearthstone\" and trips show up where the arrow is. Turn it off to put them somewhere else."
+-- 1.4.0 (82, 84): la ventana, la portada de Hoy y la bienvenida de la 1.4
+M.EN["Anuncios nuevos"] = "New announcements"
+M.EN["Cada pueblo, zona, nivel, barco o raro se anuncia en el centro de tu pantalla, con una presentación nueva."] = "Every town, zone, level, boat or rare is announced in the middle of your screen, with a brand-new look."
+M.EN["Mueve todo"] = "Move everything"
+M.EN["Arrastra la flecha, sus placas, el rastreador, Lya, los avisos y más a donde quieras con «Acomodar», o con Mayús y arrastrar."] = "Drag the arrow, its cards, the tracker, Lya, notices and more wherever you like with \"Arrange\", or with Shift and drag."
+M.EN["Tu temporada"] = "Your season"
+M.EN["Tu aventura desde que usas Alfa: niveles, mazmorras, peces, oro y récords, lista para compartir."] = "Your adventure since you started using Alfa: levels, dungeons, fish, gold and records, ready to share."
+M.EN["Alfa se ve nuevo"] = "Alfa looks new"
+M.EN["La ventana de Alfa, nueva: barra lateral, la portada de Hoy con tu día y cambios de página suaves."] = "Alfa's window, redone: a sidebar, Today's cover with your day, and smooth page changes."
+M.EN["Bienvenido a Alfa %s"] = "Welcome to Alfa %s"
+M.EN["Alfa cambió por fuera y por dentro. Prueba cada novedad con un clic, o deja que te las enseñe una por una."] = "Alfa changed inside and out. Try each new thing with one click, or let me show them to you one by one."

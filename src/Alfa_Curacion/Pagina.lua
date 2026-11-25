@@ -684,6 +684,13 @@ local function grupos(ui, padre)
 		return K.Desplegable(fila, { clave = ID .. ".crecer", ancho = 160, opciones = {
 			{ valor = "abajo", texto = L["Abajo"] }, { valor = "derecha", texto = L["La derecha"] } } })
 	end })
+	-- 1.4.0 (40): medidas propias solo, en grupo y en banda (Tamanos.lua).
+	marcos:Fila({ titulo = L["Medidas según tu grupo"], control = interruptor("porTamano"), hija = true, activa = activo,
+		texto = L["Solo, en grupo y en banda recuerdan sus propias medidas: ajústalas estando ahí."]
+			.. ((M.Tamanos and M.Tamanos.Texto() ~= "") and ("\n" .. M.Tamanos.Texto()) or "") })
+	marcos:Fila({ titulo = L["Banda compacta"], hija = true, activa = function() return activo() and N.Get(ID, "porTamano") ~= false end,
+		texto = L["En banda, marcos chicos (72 × 26) para que quepan los 40."],
+		control = function(fila) return K.Boton(fila, L["Usar"], function() if M.Tamanos then M.Tamanos.BandaCompacta() end M.Avisar() end, { tipo = "secundario", tam = "chico" }) end })
 	marcos:Fila({ titulo = L["Orden"], hija = true, activa = activo, control = function(fila)
 		return K.Desplegable(fila, { clave = ID .. ".orden", ancho = 160, opciones = {
 			{ valor = "grupo", texto = L["Por grupo"] }, { valor = "rol", texto = L["Por rol"] },
@@ -711,6 +718,10 @@ local function grupos(ui, padre)
 		texto = L["Arriba a la derecha, el ícono de magia, maldición, veneno o enfermedad. Al pasar el ratón te dice qué clic lo quita."] })
 	-- 1.3.6: «hechizo de apoyo» en vez de «buff».
 	fila(L["Le falta tu hechizo de apoyo"], "buffs", L["Un punto azul abajo a la derecha si a ese compañero le falta tu hechizo de apoyo (el que le das antes de pelear). Se revisa fuera de combate."])
+	-- 1.4.0 (41): el ícono a la izquierda de tus marcos (SinBuff.lua).
+	muestran:Fila({ titulo = L["Ícono de quién no lo tiene"], control = interruptor("buffIcono"), hija = true,
+		activa = function() return activo() and N.Get(ID, "buffs") and true or false end,
+		texto = L["A la izquierda de tus marcos, tu hechizo de apoyo con cuántos no lo tienen; al pasar el ratón, quiénes. Fuera de combate."] })
 	fila(L["Tanque en apuros"], "tanque", L["El marco del tanque late en rojo cuando le queda menos del 40 % de vida."])
 	-- 1.3.7 (Peligro.lua)
 	fila(L["En peligro"], "peligro", L["Un borde rojo suave respira alrededor de quien baja del 35 % de vida, para verlo a la primera."])
@@ -842,6 +853,8 @@ local CONTROLES = {
 	toggle("tipoPerjuicio", L["Ícono del tipo de perjuicio"], L["Arriba a la derecha, el ícono de magia, maldición, veneno o enfermedad. Al pasar el ratón te dice qué clic lo quita."], "debuff type icon, dispel", true),
 	-- 1.3.6: «hechizo de apoyo» en vez de «buff».
 	toggle("buffs", L["Le falta tu hechizo de apoyo"], L["Un punto azul abajo a la derecha si a ese compañero le falta tu hechizo de apoyo (el que le das antes de pelear). Se revisa fuera de combate."], "missing buffs, buff, hechizo de apoyo, fortitude, mark of the wild, arcane intellect, blessing"),
+	toggle("buffIcono", L["Ícono de quién no lo tiene"], L["A la izquierda de tus marcos, tu hechizo de apoyo con cuántos no lo tienen; al pasar el ratón, quiénes. Fuera de combate."], "missing buff icon, who is missing, count", true),
+	toggle("porTamano", L["Medidas según tu grupo"], L["Solo, en grupo y en banda recuerdan sus propias medidas: ajústalas estando ahí."], "raid size profiles, solo, party, raid, frame size per group", true),
 	toggle("tanque", L["Tanque en apuros"], L["El marco del tanque late en rojo cuando le queda menos del 40 % de vida."], "tank alert, low health"),
 	toggle("peligro", L["En peligro"], L["Un borde rojo suave respira alrededor de quien baja del 35 % de vida, para verlo a la primera."], "low health, danger, red, alert"),
 	toggle("mana", L["Maná de los curanderos"], L["Arriba de tus marcos, el maná de quienes curan en tu grupo. Se destaca al terminar cada pelea."], "healer mana, group mana"),
@@ -862,6 +875,8 @@ N.Modulo({
 	ajustes = M.AJUSTES,
 	controles = CONTROLES,
 	construir = construir,
+	-- 1.4.0 (revisión): y las medidas de cada situación (solo, grupo, banda).
+	restablecer = { fn = function() if M.Tamanos and M.Tamanos.Restablecer then M.Tamanos.Restablecer() end end },
 })
 
 -- Para la página Hoy (Alfa_Inicio): el asistente, a la vista de quien cura.

@@ -36,7 +36,7 @@ local FLECHA = "Interface\\Minimap\\MinimapArrow"
 -- Maps/TravelPins.lua: los de tu facción y los neutrales, verdes si ya los
 -- conoces y ámbar con "?" si no) entran con el continente entero.
 local CAPAS_MOTOR = {
-	{ "maps.services", 7 }, { "quests.available", 4 }, { "quests.objectives", 3.5 }, { "quests.turnin", 3.5 },
+	{ "maps.services", 7 }, { "mundo.provisiones", 5 }, { "mundo.entrenadores", 5 }, { "quests.available", 4 }, { "quests.objectives", 3.5 }, { "quests.turnin", 3.5 },
 	{ "mundo.salidas", 6 }, { "mundo.portales", 3 }, { "mundo.porDescubrir", 2.5 },
 	{ "rares.treasure", 4 }, { "rares.rare", 3.5 }, { "mundo.peligros", 3 }, { "mundo.misionesColor", 3 }, { "maps.inns", 3.5 }, { "maps.docks", 2.2 }, { "maps.taxi", 1.5 }, { "mundo.vuelosFaltan", 1.5 },
 	{ "maps.dungeons", 1.6 }, { "nav.upcoming", 1.6 }, { "nav.goals", 2.5 }, { "nav.spots", 3 }, { "nav.route", 1.4 },
@@ -634,7 +634,7 @@ end
 
 -- Un aro que crece y se desvanece, una y otra vez (tu lugar y el destino
 -- del camino, Trayecto.lua). de, a: su escala al empezar y al terminar.
-local function latir(marco, de, a, segs)
+local function latir(marco, de, a, segs, alfa)
 	if not marco.CreateAnimationGroup then return end
 	local ag = marco:CreateAnimationGroup()
 	ag:SetLooping("REPEAT")
@@ -649,7 +649,7 @@ local function latir(marco, de, a, segs)
 	if s.SetSmoothing then s:SetSmoothing("OUT") end
 	local f = ag:CreateAnimation("Alpha")
 	if f.SetFromAlpha then
-		f:SetFromAlpha(0.95)
+		f:SetFromAlpha(alfa or 0.95)
 		f:SetToAlpha(0)
 	end
 	f:SetDuration(segs)
@@ -685,7 +685,8 @@ local function dibujarYo()
 		yo.pulso.t = yo.pulso:CreateTexture(nil, "BACKGROUND")
 		yo.pulso.t:SetTexture(NAV .. "ring")
 		yo.pulso.t:SetAllPoints()
-		latir(yo.pulso, 0.9, 2.6, 2)
+		-- 1.4.0 (72): un respiro lento y tenue, no un parpadeo (Toxic: «el marcador parpadea»).
+		latir(yo.pulso, 1, 1.8, 3.2, 0.4)
 		yo.halo = yo:CreateTexture(nil, "BACKGROUND")
 		yo.halo:SetTexture(MAPA .. "glow")
 		yo.halo:SetSize(60, 60)
@@ -812,9 +813,13 @@ function Mc.PrepararDatos()
 	local Pe = M.Peligros
 	if X.IsLoaded() then
 		if Pe and A.Get("mundo.peligros") ~= false and not Pe.Listo() then Pe.Pronto(0) end
+		-- 1.4.0: tus entrenadores y tus provisiones (Servicios.lua).
+		local Sv = M.Servicios
+		if Sv and (A.Get("mundo.entrenadores") ~= false or A.Get("mundo.provisiones") ~= false) and not Sv.Listo() then Sv.Pronto(0) end
 		return
 	end
-	if A.Get("maps.dungeonPins") or A.Get("maps.servicePins") or A.Get("rares.worldRares") or A.Get("rares.worldTreasures") or A.Get("mundo.peligros") then
+	if A.Get("maps.dungeonPins") or A.Get("maps.servicePins") or A.Get("rares.worldRares") or A.Get("rares.worldTreasures") or A.Get("mundo.peligros")
+		or A.Get("mundo.entrenadores") ~= false or A.Get("mundo.provisiones") ~= false then
 		pcall(X.Load)
 	end
 end

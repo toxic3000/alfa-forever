@@ -78,6 +78,9 @@ local AJUSTES = {
 	-- "auto": la profesión de recolección que tiene tu personaje (tipoRuta);
 	-- lo que elijas en "Tipo" se guarda y manda.
 	rutaTipo = "auto", rutaRecurso = "todos",
+	avisoNuevo = true, -- 1.4.0 (diario): un recurso nuevo al subir tu habilidad (Avisos.lua)
+	avisoHerramienta = true, -- 1.4.0 (diario): el pico o el cuchillo que falta (Avisos.lua)
+	juntaRuta = true, -- 1.4.0 (Junta.lua): los pasos «Junta N de X» usan la ruta corta de Alfa
 }
 
 local function porciento(v) return floor(v * 100 + 0.5) .. " %" end
@@ -98,6 +101,12 @@ local BUSCAR = {
 	buscable("toggle", "soloHabilidad", L["Solo lo que ya puedes recolectar"]),
 	buscable("toggle", "agrupar", L["Juntar nodos cercanos al alejar"]),
 	buscable("toggle", "base", L["Usar la base de datos incluida"]),
+	buscable("toggle", "avisoNuevo", L["Avisar al poder recolectar algo nuevo"], nil,
+		{ search = "new node, skill up, mining, herbalism, recurso nuevo, ya puedes minar" }),
+	buscable("toggle", "avisoHerramienta", L["Avisar si te falta el pico o el cuchillo"], nil,
+		{ search = "mining pick, skinning knife, tool, pico, cuchillo, herramienta" }),
+	buscable("toggle", "juntaRuta", L["Guiar los pasos de juntar con una ruta corta"], nil,
+		{ search = "collect, gather route, tin ore, juntar, mena, ruta corta, guía" }),
 }
 for _, tipo in ipairs(M.TIPOS) do
 	BUSCAR[#BUSCAR + 1] = buscable("toggle", tipo, R.NombreTipo(tipo), nil, {
@@ -320,6 +329,13 @@ local function numeros()
 			texto = L["en %s"]:format(N.Duracion(dur)) },
 	}
 	if ph then out[#out + 1] = { variante = "compacta", icono = "ic-reloj", titulo = L["Por hora"], valor = miles(ph) } end
+	-- 1.4.0 (plan 48): lo que vale lo que juntaste (subasta o comerciante) y por hora.
+	local oro = R.ValorSesion(s)
+	if oro > 0 then
+		local t = { variante = "compacta", icono = "ic-oro", titulo = L["Oro estimado"], valor = N.DineroTexto(oro, true) }
+		if dur >= 300 then t.texto = L["≈ %s por hora"]:format(N.DineroTexto(floor(oro / (dur / 3600) + 0.5), true)) end
+		out[#out + 1] = t
+	end
 	for _, tipo in ipairs(M.TIPOS) do
 		local n = tonumber(s.tipos[tipo]) or 0
 		if n > 0 then out[#out + 1] = { variante = "compacta", icono = ICONO_TIPO[tipo], titulo = R.NombreTipo(tipo), valor = miles(n) } end
@@ -491,6 +507,8 @@ local function datosSesiones(P)
 			local detalle = N.Duracion(dur)
 			local ph = porHora(tonumber(s.total) or 0, dur)
 			if ph then detalle = detalle .. DOT .. L["%s por hora"]:format(miles(ph)) end
+			local oro = R.ValorSesion(s)
+			if oro > 0 then detalle = detalle .. DOT .. L["≈ %s"]:format(N.DineroTexto(oro, true)) end
 			out[#out + 1] = { nombre = date("%d/%m/%Y %H:%M", tonumber(s.inicio) or 0), detalle = detalle, valor = miles(s.total) }
 		end
 	end
@@ -566,11 +584,18 @@ local function grupos(padre)
 	que:Fila({ titulo = L["Solo lo que ya puedes recolectar"], control = interruptor("soloHabilidad"),
 		texto = L["Esconde lo que pide más habilidad de la que tienes. Sin esto se ve gris y tenue."] })
 
+	que:Fila({ titulo = L["Avisar al poder recolectar algo nuevo"], control = interruptor("avisoNuevo"),
+		texto = L["Al subir Minería o Herboristería al nivel de otro recurso, un aviso con «Llévame» a la zona más cercana de tu nivel."] })
+	que:Fila({ titulo = L["Avisar si te falta el pico o el cuchillo"], control = interruptor("avisoHerramienta"),
+		texto = L["Si el juego no te deja minar o desollar por la herramienta, Alfa te dice qué falta y dónde se compra."] })
+
 	local mapa = K.GrupoAjustes(padre, { titulo = L["En el mapa"] })
 	mapa:Fila({ titulo = L["Juntar nodos cercanos al alejar"], control = interruptor("agrupar"),
 		texto = L["Los nodos que se pisarían en pantalla van en un solo pin con su cantidad. Al acercar el mapa se separan."] })
 	mapa:Fila({ titulo = L["Usar la base de datos incluida"], control = interruptor("base"),
 		texto = L["Los nodos que trae Alfa. Sin esto solo ves los que tú descubriste."] })
+	mapa:Fila({ titulo = L["Guiar los pasos de juntar con una ruta corta"], control = interruptor("juntaRuta"),
+		texto = L["Cuando tu guía pide juntar un mineral o una hierba, la flecha te lleva por las vetas más cercanas de una zona de tu nivel, empezando por la más cercana."] })
 
 	local datos = K.GrupoAjustes(padre, { titulo = L["Tus datos"] })
 	datos.conteo = datos:Fila({ titulo = L["Lo que conoce Alfa"], texto = "",

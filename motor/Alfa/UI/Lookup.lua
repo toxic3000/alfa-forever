@@ -1572,6 +1572,9 @@ function UI.ShowLookup(opts)
 	-- section knows at once whether it is there.
 	local C = ns.Codex
 	if C and C.Load and not (C.IsLoaded and C.IsLoaded()) and not lookupOff() then C.Load() end
+	-- Alfa 1.4.0 (revisión): y sus partes (objetos, PNJ y misiones), fuera de
+	-- combate; en combate, al terminar (Codex.Preload).
+	if C and C.Preload and C.IsLoaded and C.IsLoaded() then C.Preload() end
 	if q ~= nil then
 		cancelPending()
 		query = q

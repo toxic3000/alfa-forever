@@ -279,7 +279,28 @@ function W.Tooltip(owner, anchor, title, lines)
 			end
 		end
 	end
+	-- Alfa 1.4.0 (58): el atajo de teclado de un botón (owner.psTecla, el
+	-- nombre de su acción en Bindings.xml), si tiene una tecla puesta.
+	local tecla = W.TeclaDe and W.TeclaDe(owner)
+	if tecla then
+		local r, g, b = Theme.Color("accent")
+		GameTooltip:AddLine(string.format(ns.T and ns.T("Atajo: %s") or "Atajo: %s", tecla), r, g, b, true)
+	end
 	GameTooltip:Show()
+end
+
+-- Alfa 1.4.0 (58): la tecla puesta para la acción de un botón (psTecla), con
+-- su nombre del juego («Ctrl-F»), o nil.
+function W.TeclaDe(owner)
+	local accion = type(owner) == "table" and rawget(owner, "psTecla")
+	if type(accion) ~= "string" or not GetBindingKey then return nil end
+	local ok, k = pcall(GetBindingKey, accion)
+	if not ok or type(k) ~= "string" or k == "" then return nil end
+	if GetBindingText then
+		local ok2, t = pcall(GetBindingText, k)
+		if ok2 and type(t) == "string" and t ~= "" then return t end
+	end
+	return k
 end
 
 function W.HideTooltip(owner)
@@ -2482,7 +2503,8 @@ local function navButton(f, i)
 			-- Flat: the accent at 10 % across the row, the bar at its edge.
 			local r, g, bb = Theme.Accent()
 			t:SetWidth(w)
-			gradient(t, r, g, bb, 0.1, r, g, bb, 0.1)
+			-- (Alfa 1.4.0: llamaba a un `gradient` global que no existe; un color parejo)
+			t:SetVertexColor(r, g, bb, 0.1)
 		else
 			t:SetWidth(w)
 			if t.SetGradient and CreateColor then
@@ -2663,6 +2685,13 @@ local function layoutBody(f)
 		local T = W.TOP
 		f.Content:SetPoint("TOPLEFT", tabs and f.TabRow or f.PillRow, "BOTTOMLEFT", 0, 0)
 		f.Content:SetPoint("BOTTOMRIGHT", f.Footer, foot and "TOPRIGHT" or "BOTTOMRIGHT", 0, 0)
+		if rawget(f, "psLateral") then
+			-- 1.4.0 (82): la cabecera de la página y la fila de pastillas miden lo que traen.
+			local ph = f.PageHead:GetHeight() or W.SIDE.pageHead
+			local pr = f.PillRow:GetHeight() or 0
+			f.psViewH = f:GetHeight() - 2 - T.header - ph - pr - (tabs and T.tabs or 0) - (foot and T.footer or 0)
+			return
+		end
 		f.psViewH = f:GetHeight() - 2 - T.header - T.nav - T.pills - (tabs and T.tabs or 0) - (foot and T.footer or 0)
 		return
 	end
@@ -2925,6 +2954,14 @@ end
 
 local TOP = { width = 940, height = 700, header = 76, nav = 54, pills = 46, tabs = 36, footer = 52, emblem = 40 }
 W.TOP = TOP
+-- Alfa 1.4.0 (82): la ventana con barra lateral (opts.lateral): el lobo y
+-- ALFA arriba de la barra, las secciones en columna con su ícono, Avisos y
+-- Ajustes abajo; a la derecha, tu personaje y el buscador, y la cabecera de
+-- la página (su ícono, el título en grande y para qué sirve). La columna de
+-- la página mide lo mismo que antes (la ventana crece lo que mide la barra),
+-- así que ninguna página cambia de ancho.
+local SIDE = { width = 200, row = 40, gap = 2, pad = 12, pageHead = 74, icon = 40 }
+W.SIDE = SIDE
 local tops = setmetatable({}, { __mode = "k" }) -- main windows, for the character card's events
 
 local function T(es) return ns.T and ns.T(es) or es end
@@ -2969,9 +3006,97 @@ end
 -- item with `right` at the window's right edge (Settings). The active key is
 -- marked. When the labels do not fit, the buttons keep their glyph alone
 -- (the label is their tooltip).
+-- 1.4.0 (82): un botón de la barra lateral: su ícono y su nombre en una
+-- fila; el elegido sobre un lavado del acento con su barra a la izquierda
+-- (en los estilos del juego, la selección del juego).
+local function sideButton(f, i)
+	local b = f.sectionButtons[i]
+	if b then return b end
+	b = CreateFrame("Button", nil, f.Nav)
+	b:SetHeight(SIDE.row)
+	local c = Theme.CUT.control
+	b.Ground = Theme.CutShape(b, c, c, "BACKGROUND", -6)
+	b.Lit = Theme.CutShape(b, c, c, "HIGHLIGHT", 0)
+	b.Bar = W.Tex(b, "ARTWORK", nil, "accent")
+	b.Bar:SetWidth(3)
+	b.Bar:SetPoint("TOPLEFT", b, "TOPLEFT", 0, -8)
+	b.Bar:SetPoint("BOTTOMLEFT", b, "BOTTOMLEFT", 0, 8)
+	b.Icon = b:CreateTexture(nil, "ARTWORK")
+	b.Icon:SetSize(18, 18)
+	b.Icon:SetPoint("LEFT", b, "LEFT", 14, 0)
+	b.Label = W.Text(b, "body", "textDim")
+	b.Label:SetJustifyH("LEFT")
+	b.Label:SetWordWrap(true)
+	if b.Label.SetMaxLines then b.Label:SetMaxLines(2) end
+	b.Label:SetPoint("LEFT", b.Icon, "RIGHT", 12, 0)
+	b.Label:SetPoint("RIGHT", b, "RIGHT", -30, 0)
+	b.Dot = W.Tex(b, "OVERLAY", "circle", "warning")
+	b.Dot:SetSize(6, 6)
+	b.Dot:SetPoint("RIGHT", b, "RIGHT", -12, 0)
+	b.Dot:Hide()
+	W.Painter(b, function(self)
+		self.Lit:SetColor(Theme.Wash("hover"))
+		local r, g, bb = Theme.Accent()
+		self.Ground:SetColor(r, g, bb, Theme.SkinKey() == "alfa" and 0.13 or 0.10)
+		local kit = Theme.KitRowLit and Theme.KitRowLit(self, self.psOn and true or false, "navLit", 6)
+		self.Ground:SetShown(self.psOn and not kit and true or false)
+		self.Bar:SetShown(self.psOn and not kit and true or false)
+	end)
+	b:SetScript("OnClick", function(self) if f.psOnSection then f.psOnSection(self.psKey) end end)
+	b:SetScript("OnEnter", simpleTip)
+	b:SetScript("OnLeave", hideTip)
+	b.psTipAnchor = "ANCHOR_RIGHT"
+	f.sectionButtons[i] = b
+	return b
+end
+
+-- Las secciones en la barra lateral: de arriba hacia abajo; las de `right`
+-- (Avisos y Ajustes) abajo de todo, tras una línea.
+local function sideSections(f, items, active)
+	local nav = f.Nav
+	local x, ancho = SIDE.pad, SIDE.width - SIDE.pad * 2
+	local y, abajo = 6, {}
+	for i, item in ipairs(items) do
+		local b = sideButton(f, i)
+		local on = item.key == active
+		b.psKey, b.psOn = item.key, on
+		b.psTip = item.tip
+		b.Icon:SetTexture(Theme.Media(item.icon or "compact"))
+		b.Label:SetText(item.label or "")
+		W.Color(b.Icon, on and "accent" or "textDim")
+		W.Color(b.Label, on and "text" or "navRest")
+		Theme.Font(b.Label, on and "heading" or "body")
+		b.Dot:SetShown(item.dot and true or false)
+		b:SetWidth(ancho)
+		b:ClearAllPoints()
+		if item.right then
+			abajo[#abajo + 1] = b
+		else
+			b:SetPoint("TOPLEFT", nav, "TOPLEFT", x, -y)
+			y = y + SIDE.row + SIDE.gap
+		end
+		if painters[b] then painters[b](b) end
+		b:Show()
+	end
+	-- Abajo: en el orden de la lista, el primero hasta abajo.
+	local yb = 8
+	for _, b in ipairs(abajo) do
+		b:SetPoint("BOTTOMLEFT", nav, "BOTTOMLEFT", x, yb)
+		yb = yb + SIDE.row + SIDE.gap
+	end
+	if f.SideRule then
+		f.SideRule:ClearAllPoints()
+		f.SideRule:SetPoint("BOTTOMLEFT", nav, "BOTTOMLEFT", x + 4, yb + 4)
+		f.SideRule:SetPoint("BOTTOMRIGHT", nav, "BOTTOMLEFT", x + ancho - 4, yb + 4)
+		f.SideRule:SetShown(#abajo > 0)
+	end
+	for i = #items + 1, #f.sectionButtons do f.sectionButtons[i]:Hide() end
+end
+
 function W.ShellSections(f, items, active, onSelect)
 	if not rawget(f, "Nav") then return end
 	f.psOnSection = onSelect
+	if rawget(f, "psLateral") then return sideSections(f, items, active) end
 	local room = f:GetWidth() - 32
 	local need = 0
 	for i, item in ipairs(items) do
@@ -3065,10 +3190,12 @@ local PILL_GAP, PILL_ROW_GAP = 6, 6
 local function placePills(f)
 	local row = f.PillRow
 	-- Alfa 1.3.7: f.psPillLeft deja lugar a la izquierda (el «‹» de volver).
-	local first = SHELL.pad - 6 + (rawget(f, "psPillLeft") or 0)
+	local lateral = rawget(f, "psLateral")
+	local first = SHELL.pad - 6 + (not lateral and rawget(f, "psPillLeft") or 0)
 	local maxX = (row:GetWidth() or 0) - SHELL.pad + 6
 	local x, y, rows = first, 0, 1
 	local top = (TOP.pills - PILL_H) / 2
+	if lateral then top = 0 end
 	for _, b in ipairs(f.pillButtons) do
 		if b:IsShown() then
 			local w = b:GetWidth()
@@ -3082,13 +3209,66 @@ local function placePills(f)
 	end
 	f.psPillRows = rows
 	local h = TOP.pills + (rows - 1) * (PILL_H + PILL_ROW_GAP)
+	-- 1.4.0 (82): con la barra lateral, sin pastillas la fila no ocupa lugar
+	-- (el título ya está en la cabecera de la página).
+	if lateral then
+		local alguna = false
+		for _, b in ipairs(f.pillButtons) do if b:IsShown() then alguna = true break end end
+		if not alguna then h = 0.01 else h = PILL_H + 14 + (rows - 1) * (PILL_H + PILL_ROW_GAP) end
+	end
 	if math.abs((row:GetHeight() or 0) - h) > 0.5 then row:SetHeight(h) end
 	return x
 end
 
 -- The pill row: the pills from the pad, then the subtitle in what is left;
 -- without pills, the title and the subtitle after it.
+-- 1.4.0 (82): la cabecera de la página con la barra lateral: el ícono de la
+-- sección en su ficha, el título grande y, debajo, para qué sirve (hasta dos
+-- líneas, entero: la cabecera crece con él y la página baja).
+local function layoutPageHead(f)
+	local head, pad = f.PageHead, SHELL.pad
+	local left = pad + (rawget(f, "psPillLeft") or 0)
+	local icon = f.PageIcon
+	local conIcono = icon and rawget(f, "psPageIcon") ~= nil
+	if icon then
+		icon:ClearAllPoints()
+		icon:SetPoint("TOPLEFT", head, "TOPLEFT", left, -16)
+		icon:SetShown(conIcono)
+		if conIcono then icon.Glyph:SetTexture(Theme.Media(f.psPageIcon)) end
+	end
+	local x = left + (conIcono and SIDE.icon + 14 or 0)
+	f.Title:ClearAllPoints()
+	f.Subtitle:ClearAllPoints()
+	f.Title:SetPoint("TOPLEFT", head, "TOPLEFT", x, -14)
+	f.Title:SetShown((f.Title:GetText() or "") ~= "")
+	local ancho = (head:GetWidth() or 0) - x - pad
+	if ancho < 40 then ancho = (f.BodyWidth or 600) - (x - pad) end
+	f.Subtitle:SetPoint("TOPLEFT", f.Title, "BOTTOMLEFT", 0, -4)
+	f.Subtitle:SetWidth(ancho)
+	f.Subtitle:SetWordWrap(true)
+	if f.Subtitle.SetMaxLines then f.Subtitle:SetMaxLines(0) end
+	f.Subtitle:SetText(f.psSubtitle or "")
+	local sub = (f.psSubtitle or "") ~= ""
+	f.Subtitle:SetShown(sub)
+	local th = math.ceil(f.Title:GetStringHeight() or 22)
+	if th < 20 then th = 26 end
+	local sh = sub and math.ceil(f.Subtitle:GetStringHeight() or 15) or 0
+	-- Más de dos líneas no caben con aire: se queda en el «?» de Lya (Options).
+	local linea = math.ceil((select(2, f.Subtitle:GetFont()) or 12) * 1.35)
+	if sub and sh > linea * 2 + 2 then
+		f.Subtitle:Hide()
+		f.psSubtitleHidden = true
+		sh = 0
+	else
+		f.psSubtitleHidden = nil
+	end
+	local h = math.max(SIDE.pageHead - 8, 14 + th + (sh > 0 and 4 + sh or 0) + 14)
+	if math.abs((head:GetHeight() or 0) - h) > 0.5 then head:SetHeight(h) end
+	if f.Content then layoutBody(f) end
+end
+
 local function layoutPillRow(f)
+	if rawget(f, "psLateral") then return layoutPageHead(f) end
 	local row, pad = f.PillRow, SHELL.pad
 	local last
 	for _, b in ipairs(f.pillButtons) do if b:IsShown() then last = b end end
@@ -3155,6 +3335,13 @@ function W.ShellPills(f, pills, active, onSelect)
 			layoutPillRow(f)
 		end)
 	end
+end
+
+-- 1.4.0 (82): el ícono de la cabecera de la página (nil: sin ícono).
+function W.ShellPageIcon(f, icon)
+	if not rawget(f, "PageIcon") then return end
+	f.psPageIcon = icon
+	layoutPageHead(f)
 end
 
 function W.TopTitle(f, title, subtitle)
@@ -3310,10 +3497,27 @@ if ns.RegisterEvent then
 end
 Theme.OnChanged(refreshCharacters)
 
+-- 1.4.0: the window always fits the screen. With the side bar it is 1140 wide:
+-- on 4:3 or 5:4 (UIParent 960-1024 wide), or with a big "Menu scale", its right
+-- side (the X and the search box) fell off the screen. The scale the player
+-- chose is a ceiling, never more than what fits (16 px to spare).
+function W.FitScale(f, want)
+	want = tonumber(want) or 1
+	local pw, ph = UIParent and UIParent:GetWidth(), UIParent and UIParent:GetHeight()
+	local w, h = f:GetWidth(), f:GetHeight()
+	pw, ph, w, h = tonumber(pw), tonumber(ph), tonumber(w), tonumber(h)
+	if not (pw and ph and w and h) or w <= 0 or h <= 0 or pw <= 16 or ph <= 16 then return want end
+	local fit = math.min((pw - 16) / w, (ph - 16) / h)
+	if fit < want then want = math.max(0.5, fit) end
+	return want
+end
+
 local function buildTop(name, opts)
-	local Wd, Hd = opts.width or TOP.width, opts.height or TOP.height
+	local side = opts.lateral and SIDE.width or 0
+	local Wd, Hd = (opts.width or TOP.width) + side, opts.height or TOP.height
 	local f = CreateFrame("Frame", name, ns.UIParent)
 	f.psTop = true
+	f.psLateral = opts.lateral and true or nil
 	f:SetSize(Wd, Hd)
 	f:SetPoint("CENTER", UIParent, "CENTER", 0, 20)
 	f:SetFrameStrata("HIGH")
@@ -3338,9 +3542,27 @@ local function buildTop(name, opts)
 	main:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -1, 1)
 	f.Main = main
 
+	-- 1.4.0 (82): la barra lateral, de arriba abajo de la ventana.
+	if side > 0 then
+		local s = CreateFrame("Frame", nil, main)
+		s:SetPoint("TOPLEFT", main, "TOPLEFT", 0, 0)
+		s:SetPoint("BOTTOMLEFT", main, "BOTTOMLEFT", 0, 0)
+		s:SetWidth(side)
+		W.Fill(s, "sidebar")
+		s.Glow = W.Haze(s, { width = side, height = 220 })
+		local edge = W.Divider(s, true)
+		edge:SetPoint("TOPRIGHT", s, "TOPRIGHT", 0, 0)
+		edge:SetPoint("BOTTOMRIGHT", s, "BOTTOMRIGHT", 0, 0)
+		local brandRule = W.Divider(s)
+		brandRule:SetPoint("TOPLEFT", s, "TOPLEFT", SIDE.pad, -TOP.header)
+		brandRule:SetPoint("TOPRIGHT", s, "TOPRIGHT", -SIDE.pad, -TOP.header)
+		draggable(s)
+		f.Side = s
+	end
+
 	-- Header: the wolf, ALFA, the character, the search, close.
 	local head = CreateFrame("Frame", nil, main)
-	head:SetPoint("TOPLEFT", main, "TOPLEFT", 0, 0)
+	head:SetPoint("TOPLEFT", main, "TOPLEFT", side, 0)
 	head:SetPoint("TOPRIGHT", main, "TOPRIGHT", 0, 0)
 	head:SetHeight(TOP.header)
 	draggable(head)
@@ -3348,13 +3570,18 @@ local function buildTop(name, opts)
 	-- Another skin's header band (Alfa's own look has none).
 	f.Band = Theme.Band(head, "BACKGROUND", -5)
 	f.Band:SetAllPoints(head)
-	f.Band:SetTexCoord(Theme.BandCoords(Wd - 2, TOP.header))
-	f.Haze = W.Haze(head, { width = (Wd - 2) * 0.9, height = TOP.header })
-	f.Emblem = W.Tex(head, "ARTWORK", "emblem", "accent")
+	f.Band:SetTexCoord(Theme.BandCoords(Wd - side - 2, TOP.header))
+	f.Haze = W.Haze(head, { width = (Wd - side - 2) * 0.9, height = TOP.header })
+	local marca = f.Side or head
+	f.Emblem = W.Tex(marca, "ARTWORK", "emblem", "accent")
 	f.Emblem:SetSize(TOP.emblem, TOP.emblem)
-	f.Emblem:SetPoint("LEFT", head, "LEFT", 18, 0)
+	if f.Side then
+		f.Emblem:SetPoint("LEFT", f.Side, "TOPLEFT", 20, -TOP.header / 2)
+	else
+		f.Emblem:SetPoint("LEFT", head, "LEFT", 18, 0)
+	end
 	-- ALFA in spaced capitals: the one word set that way.
-	f.Brand = W.Text(head, "display", "text")
+	f.Brand = W.Text(marca, "display", "text")
 	f.Brand:SetText("A L F A")
 	f.Brand:SetPoint("LEFT", f.Emblem, "RIGHT", 12, 0)
 	f.Close = W.IconButton(head, "close", 28, L["Close"], function() f:Hide() end, 14)
@@ -3367,7 +3594,11 @@ local function buildTop(name, opts)
 	-- The character card: a raised panel with the class's stripe.
 	local card = CreateFrame("Frame", nil, head)
 	card:SetHeight(52)
-	card:SetPoint("LEFT", f.Brand, "RIGHT", 24, 0)
+	if f.Side then
+		card:SetPoint("LEFT", head, "LEFT", SHELL.pad - 8, 0)
+	else
+		card:SetPoint("LEFT", f.Brand, "RIGHT", 24, 0)
+	end
 	card:SetPoint("RIGHT", f.Search, "LEFT", -18, 0)
 	Theme.Skin(card, "panel")
 	card.Stripe = W.Tex(card, "ARTWORK", nil, "class")
@@ -3402,23 +3633,54 @@ local function buildTop(name, opts)
 	W.Rim(f)
 
 	-- The sections.
-	local nav = CreateFrame("Frame", nil, main)
-	nav:SetPoint("TOPLEFT", head, "BOTTOMLEFT", 0, 0)
-	nav:SetPoint("TOPRIGHT", head, "BOTTOMRIGHT", 0, 0)
-	nav:SetHeight(TOP.nav)
-	draggable(nav)
+	local nav = CreateFrame("Frame", nil, f.Side or main)
+	local over = head
+	if f.Side then
+		-- 1.4.0 (82): en la barra lateral, bajo el lobo y ALFA.
+		nav:SetPoint("TOPLEFT", f.Side, "TOPLEFT", 0, -(TOP.header + 10))
+		nav:SetPoint("BOTTOMRIGHT", f.Side, "BOTTOMRIGHT", 0, 6)
+		f.SideRule = W.Divider(nav)
+		-- La cabecera de la página: su ícono, el título grande y para qué sirve.
+		local ph = CreateFrame("Frame", nil, main)
+		ph:SetPoint("TOPLEFT", head, "BOTTOMLEFT", 0, 0)
+		ph:SetPoint("TOPRIGHT", head, "BOTTOMRIGHT", 0, 0)
+		ph:SetHeight(SIDE.pageHead)
+		draggable(ph)
+		f.PageHead = ph
+		local pi = CreateFrame("Frame", nil, ph)
+		pi:SetSize(SIDE.icon, SIDE.icon)
+		local c = Theme.CUT.control
+		pi.Ground = Theme.CutShape(pi, c, c, "BACKGROUND", 0)
+		pi.Glyph = pi:CreateTexture(nil, "ARTWORK")
+		pi.Glyph:SetSize(22, 22)
+		pi.Glyph:SetPoint("CENTER", pi, "CENTER", 0, 0)
+		W.Painter(pi, function(self)
+			local r, g, bb = Theme.Accent()
+			self.Ground:SetColor(r, g, bb, 0.16)
+			self.Glyph:SetVertexColor(r, g, bb, 1)
+		end)
+		pi:Hide()
+		f.PageIcon = pi
+		over = ph
+	else
+		nav:SetPoint("TOPLEFT", head, "BOTTOMLEFT", 0, 0)
+		nav:SetPoint("TOPRIGHT", head, "BOTTOMRIGHT", 0, 0)
+		nav:SetHeight(TOP.nav)
+		draggable(nav)
+		local navRule = W.Divider(nav)
+		navRule:SetPoint("BOTTOMLEFT", nav, "BOTTOMLEFT", 0, 0)
+		navRule:SetPoint("BOTTOMRIGHT", nav, "BOTTOMRIGHT", 0, 0)
+		over = nav
+	end
 	f.Nav = nav
-	local navRule = W.Divider(nav)
-	navRule:SetPoint("BOTTOMLEFT", nav, "BOTTOMLEFT", 0, 0)
-	navRule:SetPoint("BOTTOMRIGHT", nav, "BOTTOMRIGHT", 0, 0)
 
 	-- The pills (or the page's title and subtitle).
 	f.PillRow = CreateFrame("Frame", nil, main)
-	f.PillRow:SetPoint("TOPLEFT", nav, "BOTTOMLEFT", 0, 0)
-	f.PillRow:SetPoint("TOPRIGHT", nav, "BOTTOMRIGHT", 0, 0)
-	f.PillRow:SetHeight(TOP.pills)
-	f.Title = W.Text(f.PillRow, "title", "text")
-	f.Subtitle = W.Text(f.PillRow, "note", "textMuted")
+	f.PillRow:SetPoint("TOPLEFT", over, "BOTTOMLEFT", 0, 0)
+	f.PillRow:SetPoint("TOPRIGHT", over, "BOTTOMRIGHT", 0, 0)
+	f.PillRow:SetHeight(f.Side and 0.01 or TOP.pills)
+	f.Title = W.Text(f.PageHead or f.PillRow, f.Side and "pagina" or "title", "text")
+	f.Subtitle = W.Text(f.PageHead or f.PillRow, "note", "textMuted")
 
 	-- The page's tabs, under the pills.
 	f.TabRow = CreateFrame("Frame", nil, main)
@@ -3432,7 +3694,7 @@ local function buildTop(name, opts)
 	-- The footer: its bar (cut at the window's corner), the version and the
 	-- Discord mark.
 	f.Footer = CreateFrame("Frame", nil, main)
-	f.Footer:SetPoint("BOTTOMLEFT", main, "BOTTOMLEFT", 0, 0)
+	f.Footer:SetPoint("BOTTOMLEFT", main, "BOTTOMLEFT", side, 0)
 	f.Footer:SetPoint("BOTTOMRIGHT", main, "BOTTOMRIGHT", 0, 0)
 	f.Footer:SetHeight(TOP.footer)
 	W.Fill(f.Footer, "footer")
@@ -3461,20 +3723,25 @@ local function buildTop(name, opts)
 	f.Scroll:SetPoint("TOPLEFT", f.Content, "TOPLEFT", 0, -4)
 	f.Scroll:SetPoint("BOTTOMRIGHT", f.Content, "BOTTOMRIGHT", -4, 4)
 	f.Body = f.Scroll.Child
-	f.BodyWidth = Wd - 2 - SHELL.pad * 2
+	f.BodyWidth = Wd - side - 2 - SHELL.pad * 2
 	W.ShellTitle(f, opts.title, opts.subtitle)
 	W.ShellTabs(f, nil)
 	W.ShellFooter(f, nil, nil)
 
 	if opts.scalePath then
 		local function applyScale()
-			f:SetScale(ns.Get(opts.scalePath) or 1)
+			f:SetScale(W.FitScale(f, ns.Get(opts.scalePath) or 1))
 			if f:IsShown() then Theme.RetextLater(f) end
 		end
 		applyScale()
 		ns.On("SETTING_CHANGED", function(path)
 			if path == opts.scalePath or path == "" or path == "ui" then applyScale() end
 		end)
+		-- 1.4.0: a new resolution or UI scale refits the window.
+		if ns.RegisterEvent then
+			ns.RegisterEvent("DISPLAY_SIZE_CHANGED", applyScale)
+			ns.RegisterEvent("UI_SCALE_CHANGED", applyScale)
+		end
 	end
 	tops[f] = true
 	f:HookScript("OnShow", function(self)
@@ -3698,13 +3965,18 @@ function W.Shell(name, opts)
 
 	if opts.scalePath then
 		local function applyScale()
-			f:SetScale(ns.Get(opts.scalePath) or 1)
+			f:SetScale(W.FitScale(f, ns.Get(opts.scalePath) or 1))
 			if f:IsShown() then Theme.RetextLater(f) end
 		end
 		applyScale()
 		ns.On("SETTING_CHANGED", function(path)
 			if path == opts.scalePath or path == "" or path == "ui" then applyScale() end
 		end)
+		-- 1.4.0: a new resolution or UI scale refits the window.
+		if ns.RegisterEvent then
+			ns.RegisterEvent("DISPLAY_SIZE_CHANGED", applyScale)
+			ns.RegisterEvent("UI_SCALE_CHANGED", applyScale)
+		end
 	end
 	-- Every string the window shows is set again a frame later
 	-- (Theme.RetextLater): on a fresh start some drew blank.

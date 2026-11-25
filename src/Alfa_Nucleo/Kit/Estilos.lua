@@ -361,10 +361,47 @@ function K.AplicarEscala(v)
 	if K.num(v:GetScale(), 1) ~= e then v:SetScale(e) end
 end
 
+-- 1.4.0 (62): otras ventanas propias de Alfa que no son K.Ventana (las de
+-- Bolsas) siguen la misma escala: K.ConEscala(v) las anota y las escala ya.
+local propias = {}
+function K.ConEscala(v)
+	if not v then return end
+	propias[#propias + 1] = v
+	K.AplicarEscala(v)
+end
+
 local function escalarTodas()
 	for _, v in ipairs(K.VENTANAS or {}) do K.AplicarEscala(v) end
+	for _, v in ipairs(propias) do K.AplicarEscala(v) end
 end
 K.EscalarTodas = escalarTodas
+
+-- 1.4.0 (62): tu escala de Alfa se recuerda aparte (AlfaNucleoDB, «kit») y no
+-- se pierde con un restablecer general, un perfil o un respaldo que no la
+-- traen: vuelve sola. Un perfil que sí la trae manda.
+local function escalaGuardada()
+	local db = rawget(_G, "AlfaDB")
+	local s = type(db) == "table" and rawget(db, "settings")
+	local n = type(s) == "table" and rawget(s, "nucleo")
+	return type(n) == "table" and tonumber(rawget(n, "escalaVentanas")) or nil
+end
+K.EscalaGuardada = escalaGuardada
+
+local function recordarEscala()
+	local v = escalaGuardada()
+	if N and N.Datos then N.Datos("kit").escala = v end
+end
+
+local function recuperarEscala()
+	if escalaGuardada() ~= nil or not (N and N.Datos and A and A.Set) then return false end
+	local v = tonumber(N.Datos("kit").escala)
+	if not v or v == 1 then return false end
+	A.Set("nucleo.escalaVentanas", max(ESCALA_MIN, min(ESCALA_MAX, v)))
+	return true
+end
+K.RecuperarEscala = recuperarEscala
+-- Quien ya la tenía elegida: se anota al entrar.
+if A and A.OnLogin then A.OnLogin(function() if escalaGuardada() ~= nil then recordarEscala() end end) end
 
 ---------------------------------------------------------------------------
 -- 1.3.8: el estilo de temporada (opcional, apagado de fábrica)
@@ -460,7 +497,13 @@ end
 
 if A and A.On then
 	A.On("SETTING_CHANGED", function(path)
-		if path == "nucleo.escalaVentanas" then escalarTodas() end
+		if path == "nucleo.escalaVentanas" then
+			recordarEscala()
+			escalarTodas()
+		elseif path == "" or path == "nucleo" then
+			-- 1.4.0 (62): todo cambió de una vez (restablecer, perfil, respaldo).
+			if not recuperarEscala() then escalarTodas() end
+		end
 		if path == "nucleo.temporada" then
 			adornarTodas()
 			-- Lo elegiste tú: ya no se pregunta.

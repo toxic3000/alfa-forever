@@ -86,7 +86,12 @@ step("La campanita está en la barra, junto a Ajustes, y cuenta lo que no viste"
   check(aj ~= nil, "no está el botón de Ajustes")
   local p1, _, _, xb = b:GetPoint(1)
   local p2, _, _, xa = aj:GetPoint(1)
-  check(p1 == "RIGHT" and p2 == "RIGHT" and xb < xa, "la campanita no queda a la derecha, junto a Ajustes")
+  -- (1.4.0, 82: con la barra lateral, abajo de la barra, justo encima de Ajustes.)
+  if ns.UI.Options.frame.psLateral then
+    check(p1 == "BOTTOMLEFT" and p2 == "BOTTOMLEFT" and b:GetBottom() > aj:GetBottom(), "la campanita no queda abajo, junto a Ajustes")
+  else
+    check(p1 == "RIGHT" and p2 == "RIGHT" and xb < xa, "la campanita no queda a la derecha, junto a Ajustes")
+  end
   check(not (b.psCuenta and b.psCuenta:IsShown()), "sin avisos la campanita enseña un número")
   N.Perdido({ titulo = "Aviso uno", texto = "Algo pasó", icono = "ic-misiones" })
   N.Perdido({ titulo = "Aviso dos", texto = "Otra cosa" })

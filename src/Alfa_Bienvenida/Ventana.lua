@@ -226,8 +226,15 @@ end
 local function armarVolver(win)
 	volver = K.BotonIcono(win.Main or win, "chevron-left", function() Vt.Atras() end, { tam = 24, icono = 14, tipo = "secundario" })
 	local alto = (A.Widgets and A.Widgets.TOP and A.Widgets.TOP.pills) or 46
-	volver:SetPoint("TOPLEFT", win.Nav, "BOTTOMLEFT", 8, -floor((alto - 24) / 2))
-	volver:SetFrameLevel(win.PillRow:GetFrameLevel() + 5)
+	if rawget(win, "PageHead") then
+		-- 1.4.0 (82): con la barra lateral, junto al ícono de la cabecera de la página.
+		local pad = (A.Widgets and A.Widgets.SHELL and A.Widgets.SHELL.pad) or 32
+		volver:SetPoint("TOPLEFT", win.PageHead, "TOPLEFT", pad - 8, -24)
+		volver:SetFrameLevel(win.PageHead:GetFrameLevel() + 5)
+	else
+		volver:SetPoint("TOPLEFT", win.Nav, "BOTTOMLEFT", 8, -floor((alto - 24) / 2))
+		volver:SetFrameLevel(win.PillRow:GetFrameLevel() + 5)
+	end
 	volver:Hide()
 	volver.alfaHay = false
 	Vt.BotonVolver = volver

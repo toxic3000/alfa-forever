@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "1.3.9: the pack hunts better", "items": ["**Close my quests:** builds the best route with all your quests, zone by zone with turn-ins grouped; the ones no longer worth it go to \"For later\".", "**Alfa profession guides:** in stages, with the best zone, the cheapest recipe that still gives points and your materials. \"Reset this guide\" finds where you are.", "**Travel, rebuilt:** boats and zeppelins get their own card with the departure countdown, and clicking the arrow takes you to the next spot.", "**Report in one click:** the Big Bad Wolf lets you know when Alfa hits one of its own errors. Plus: a Horde and Alliance scoreboard and an inside map for dungeons."]}
+    "mapa": {"titulo": "1.4.0: the steady pack", "items": ["**Alfa looks new:** a window with a sidebar, a Today cover and cinematic announcements, always centered on screen.", "**Move everything:** `/alfa acomodar` or Shift + drag to place every Alfa element where you want it.", "**Your faction and your season:** the Horde or Alliance theme and `/alfa temporada` with your adventure in cards.", "**Faster and steadier:** guides by level range, Two screens without enlarging your interface, and ore routes near you."]}
   },
   "contraportada": {
     "titulo": "Join the pack",

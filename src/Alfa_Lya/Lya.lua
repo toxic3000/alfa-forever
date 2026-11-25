@@ -435,7 +435,7 @@ function UI.Foco(si)
 	f.Andar:SetScale(si and 0.6 or 1)
 	f.Base:SetAlpha(si and 0.4 or 1)
 	f:SetAlpha(alfa())
-	f:EnableMouse(not (si and combate))
+	f:EnableMouse(not combate)
 	if si then UI.Callar(true) end
 end
 function UI.EnFoco() return foco end
@@ -444,7 +444,9 @@ function UI.Combate(si)
 	combate = si and true or false
 	if not f then return end
 	f:SetAlpha(alfa())
-	f:EnableMouse(not (foco and combate))
+	-- 1.4.0 (control): en combate no atrapa clics nunca (antes solo en modo
+	-- foco): un clic a un bicho junto a ella llega al bicho.
+	f:EnableMouse(not combate)
 	if combate then
 		-- en combate no corre: aparece en su lugar (lo que iba a decir espera)
 		if llegando() then
@@ -497,7 +499,9 @@ local function menu()
 		  { valor = "guia", texto = L["¿En qué te ayudo?"], icono = "ic-info" },
 		  { valor = "silencio", texto = silencio and L["Quitar el silencio"] or L["Silenciar 1 hora"], icono = "ic-reloj" } },
 		{},
-		{ { valor = "frec", texto = L[A_FREC[SIGUE[frec] or "muchos"]], icono = "ic-filtro" },
+		-- 1.4.0 (64): «Solo lo importante» de un clic (y el mismo clic vuelve a
+		-- como estaba); muchos o pocos se eligen en sus ajustes.
+		{ { valor = "importante", texto = frec == "importantes" and L["Volver a platicar de todo"] or L["Solo lo importante"], icono = "ic-filtro" },
 		  -- 1.2.6: el tamaño de su letra, una fila que pasa al siguiente con cada clic
 		  -- («Háblame de mi gente» sigue en el botón de «Cuéntame algo»).
 		  { valor = "letra", texto = L[A_LETRA[SIGUE_LETRA[N.Get(ID, "letra")] or "enorme"]], icono = "ic-apariencia" } },
@@ -550,6 +554,9 @@ local function menu()
 			N.Set(ID, "letra", nueva)
 			if UI.Hablando() and actual then UI.Hablar(actual) end
 			confirmar(L[LETRAS[nueva]])
+		elseif v == "importante" then
+			local si = Ce.AlternarImportante()
+			confirmar(si and L["Listo: solo te digo lo importante. Con el mismo clic vuelvo a platicar."] or L["¡De vuelta! Te cuento todo otra vez."])
 		elseif v == "frec" then
 			local nueva = SIGUE[frec] or "muchos"
 			N.Set(ID, "frecuencia", nueva)
@@ -769,7 +776,17 @@ local function construirGlobo()
 	g:SetFrameStrata("MEDIUM")
 	g:SetFrameLevel(40)
 	g:SetClampedToScreen(true)
-	g:EnableMouse(true)
+	-- 1.4.0 (control, bug de Toxic: «cuando habla Lya no puedo mover la
+	-- cámara»): el globo solo «ve» el ratón (para el texto completo al pasar
+	-- por encima), no se queda con el clic: un clic o el arrastre de la cámara
+	-- que empiezan sobre él llegan al mundo, como si no estuviera. Sus botones
+	-- y su X sí se clican (son marcos aparte).
+	if g.SetMouseClickEnabled and g.SetMouseMotionEnabled then
+		g:SetMouseClickEnabled(false)
+		g:SetMouseMotionEnabled(true)
+	else
+		g:EnableMouse(false)
+	end
 	g:SetSize(ANCHO_MIN, 48)
 	g.caja = K.Caja(g, { fondo = "panel", borde = "lineaFuerte", corte = K.CORTE.panel })
 	g.Marca = K.Marca(g, K.CORTE.panel, "acento")
@@ -837,10 +854,16 @@ function UI.Acomodar()
 	end
 end
 
-local function vencer(mio)
+-- 1.4.0 (control): con el ratón encima espera, pero no para siempre (el
+-- cursor quieto sobre el globo mientras juegas lo dejaba en pantalla), y
+-- girando la cámara (el cursor escondido) no cuenta.
+local ESPERA_RATON = 8 -- veces de 2 s
+local function vencer(mio, vueltas)
 	if mio ~= turnoGlobo or not (g and g:IsShown()) then return end
-	if g:IsMouseOver() or (f and f:IsMouseOver()) then
-		K.Despues(2, function() vencer(mio) end)
+	vueltas = vueltas or 0
+	local girando = IsMouselooking and IsMouselooking() and true or false
+	if vueltas < ESPERA_RATON and not girando and (g:IsMouseOver() or (f and f:IsMouseOver())) then
+		K.Despues(2, function() vencer(mio, vueltas + 1) end)
 		return
 	end
 	UI.Callar()

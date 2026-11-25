@@ -275,7 +275,7 @@ local function actualizarPie()
 			local lo, hi = Geo.Niveles(zona)
 			local texto, col = Geo.TextoNiveles(lo, hi)
 			if texto and A.Get("maps.zoneLevels") then
-				K.Escribir(F.Niveles, format(L["Niveles %s"], texto))
+				K.Escribir(F.Niveles, format((lo and lo == hi) and L["Nivel %s"] or L["Niveles %s"], texto)) -- 1.4.0: «Nivel 60»
 				local T = A.Theme
 				local r, g, b = 1, 1, 1
 				if T and T.Color then r, g, b = T.Color(col or "quest") end

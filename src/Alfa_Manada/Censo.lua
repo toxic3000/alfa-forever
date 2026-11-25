@@ -147,7 +147,9 @@ function Ce.AlMensaje(clave, remitente, campos, canal)
 	if nivel and (nivel < 1 or nivel > 200) then nivel = nil end -- 0: no lo comparte
 	if mapa and (mapa <= 0 or mapa > 100000) then mapa = nil end
 	local d = datos()
-	d[clave] = { nombre = U.Mostrar(remitente), version = version, nivel = nivel, mapa = mapa, t = ahora() }
+	-- 1.4.0 (plan 9): f = el bando (la Red va por facción): el instalador cuenta los lobos de cada lado.
+	d[clave] = { nombre = U.Mostrar(remitente), version = version, nivel = nivel, mapa = mapa, t = ahora(),
+		f = N.FaccionLetra and N.FaccionLetra() or nil }
 	podar()
 	if A.Fire then A.Fire("ALFA_MANADA_CENSO") end
 	-- Alguien trae una versión más nueva que la tuya: se dice una vez por
@@ -305,15 +307,23 @@ local function llenar()
 	else
 		d.texto = #lista > 0 and L["Tienes la más nueva que se ve en tu hermandad."] or L["Todavía no llega nadie. Los lobos con Alfa aparecen al conectarse."]
 	end
+	-- 1.4.0 (83): sin hermandad (o apagado) no hay a quién preguntar: ni la
+	-- sección vacía con «Preguntar ahora» ni la insignia «1.4.0: 1» (eras tú).
+	local hay = activo() and U.EnHermandad() and true or false
 	local vs = {}
-	for _, x in ipairs(Ce.Versiones()) do vs[#vs + 1] = { format(L["%s: %d"], x.version, x.n), x.version == miVersion() and "acento" or "neutro" } end
+	if hay then
+		for _, x in ipairs(Ce.Versiones()) do
+			vs[#vs + 1] = { x.version .. " \194\183 " .. N.Plural(x.n, L["%d lobo"], L["%d lobos"]), x.version == miVersion() and "acento" or "neutro" }
+		end
+	end
 	d.insignias = vs
 	ui.estado:Set(d)
 	ui.sec:Set(L["Lobos de tu hermandad con Alfa"], { cuenta = #lista > 0 and format(L["%d conectados de %d"], conectados, #lista) or nil,
 		enlace = { texto = L["Preguntar ahora"], alClic = function() Ce.Preguntar() N.Una("manada.censo.ver", 4, llenar) end } })
+	K.Mostrar(ui.sec, hay)
 	ui.lista:Llenar(lista)
 	K.Mostrar(ui.lista, #lista > 0)
-	local h = ui.pila:Acomodar(v:AnchoCuerpo() - 2 * v.margen)
+	local h = ui.pila:Acomodar(v:AnchoCuerpo()) -- (1.4.0, 120: a todo lo ancho)
 	ui.pila:ClearAllPoints()
 	ui.pila:SetPoint("TOPLEFT", v.Cuerpo, "TOPLEFT", v.margen, -v.margen)
 	v:SetAltoContenido(h + 2 * v.margen)

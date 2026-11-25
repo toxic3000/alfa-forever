@@ -127,14 +127,55 @@ function Ll.FactorFaccion(mapa, fac)
 	return z == fac and 1.3 or 0.05
 end
 
+-- 1.4.0 (plan 73, Toxic: «buscando estaño en Los Humedales a nivel 33 me
+-- mandaba a casi 2,000 yardas»): las yardas de donde estás (c, wx, wy) al
+-- nodo más cercano de esas claves en una zona (los puntos de la base y los
+-- que descubriste). -> yardas | nil (otro continente o sin datos)
+function Ll.Distancia(claves, mapa, c, wx, wy)
+	local b = c and R.Limites(mapa)
+	if not (b and b.c == c) then return nil end
+	local mejor
+	local function medir(x, y)
+		local _, px, py = R.AlMundo(b, x, y)
+		local dx, dy = px - wx, py - wy
+		local d = dx * dx + dy * dy
+		if not mejor or d < mejor then mejor = d end
+	end
+	for _, clave in ipairs(claves or {}) do
+		local gr = grupo(clave)
+		for _, oid in ipairs(gr and gr.ids or {}) do
+			local xy = ((M.BASE or {})[oid] or {})[mapa]
+			if type(xy) == "string" then
+				for x, y in xy:gmatch("([%d%.]+),([%d%.]+)") do medir(tonumber(x), tonumber(y)) end
+			elseif type(xy) == "table" then
+				for i = 1, #xy - 1, 2 do medir(xy[i], xy[i + 1]) end
+			end
+		end
+	end
+	return mejor and math.sqrt(mejor) or nil
+end
+
+-- Cuánto vale una zona por lo lejos que está: la tuya (o junto a ti) entera;
+-- a 1,200 yardas, la mitad; en otro continente, poco.
+function Ll.FactorCerca(d, hayPosicion)
+	if not hayPosicion then return 1 end
+	if not d then return 0.25 end
+	return 1 / (1 + d / 1200)
+end
+
 -- op: { claves = { clave, ... }, anfitriones = { clave, ... } (cuentan la mitad),
---   nivel, faccion ("A" | "H"), actual (mapa donde estás) }
+--   nivel, faccion ("A" | "H"), actual (mapa donde estás), pos = { c, wx, wy } (dónde estás) }
 function Ll.Zonas(op)
 	op = op or {}
 	local p = jugador()
 	local nivel = op.nivel or p.level or 1
 	local fac = op.faccion or (p.faction == "Alliance" and "A") or (p.faction == "Horde" and "H") or nil
-	local actual = op.actual or (R.PosicionJugador and R.PosicionJugador()) or nil
+	local actual, pos = op.actual, op.pos
+	if not actual or not pos then
+		local m, _, _, c, wx, wy = R.PosicionJugador()
+		actual = actual or m
+		if not pos and c and wx then pos = { c, wx, wy } end
+	end
 	local por = {}
 	local function sumar(clave, campo, peso)
 		for mapa, n in pairs(Ll.Puntos(clave)) do
@@ -159,10 +200,15 @@ function Ll.Zonas(op)
 		z.min, z.max = nivelesDe(mapa)
 		lista[#lista + 1] = z
 	end
+	local todas = {}
+	for _, c in ipairs(op.claves or {}) do todas[#todas + 1] = c end
+	for _, c in ipairs(op.anfitriones or {}) do todas[#todas + 1] = c end
 	for _, z in ipairs(lista) do
 		local dens = (z.densidad and densMax > 0) and z.densidad / densMax or 0.5
+		-- 1.4.0: lo cerca que está el nodo más cercano de esa zona.
+		if pos and Ll.FactorFaccion(z.mapa, fac) > 0.1 then z.distancia = Ll.Distancia(todas, z.mapa, pos[1], pos[2], pos[3]) end
 		z.puntaje = z.efectivo * Ll.FactorFaccion(z.mapa, fac) * Ll.FactorNivel(z.min, z.max, nivel) * (0.7 + 0.3 * dens)
-			* (z.mapa == actual and 1.15 or 1)
+			* (z.mapa == actual and 1.15 or 1) * Ll.FactorCerca(z.distancia, pos ~= nil)
 	end
 	table.sort(lista, function(a, b)
 		if a.puntaje ~= b.puntaje then return a.puntaje > b.puntaje end
@@ -200,6 +246,11 @@ function Ll.Motivo(z, op)
 	local raro, anfitrion = op and op.claves and op.claves[1], op and op.anfitriones and op.anfitriones[1]
 	if raro and anfitrion and (z.anfitrion or 0) > 0 then
 		partes[2] = format(L["%s sale a veces en lugar de %s: aquí hay %d."], nombreNodo(raro), nombreNodo(anfitrion), z.anfitrion)
+	end
+	-- 1.4.0: lo cerca que está.
+	if z.distancia then
+		local d = A.FormatDistance and A.FormatDistance(z.distancia) or (floor(z.distancia + 0.5) .. " yd")
+		partes[#partes + 1] = format(L["El más cercano está a %s de ti."], d)
 	end
 	return table.concat(partes, " ")
 end
@@ -280,11 +331,22 @@ function Ll.Llevar(cosa, op)
 	local set = {}
 	for _, c in ipairs(pd.claves) do set[c] = true end
 	for _, c in ipairs(pd.anfitriones) do set[c] = true end
-	local ok, por = Ruta.Crear(pd.tipo, set, z.mapa, function(r) if r then Ruta.Guiar() end end)
+	-- 1.4.0 (plan 73): un circuito corto por las paradas más cercanas a ti
+	-- (o a tu lado de la zona), no la vuelta a toda la zona: para juntar N,
+	-- unas N × 0,75 + 6 paradas (cada veta da 1 a 3 y alguna estará vacía).
+	local cerca = op.todo and nil or (op.cuenta and max(10, min(30, math.ceil(op.cuenta * 0.75) + 6)) or 24)
+	local ok, por = Ruta.Crear(pd.tipo, set, z.mapa, function(r)
+		if r then
+			Ruta.Guiar()
+			if op.alListo then op.alListo(r, z) end
+		end
+	end, { cerca = cerca, deGuia = op.deGuia })
 	if not ok then return false, por end
 	local texto = Ll.Motivo(z, op)
 	local K = N.Kit
-	if K and K.Aviso then
+	if op.silencio then
+		-- quien pidió la ruta lo dice a su manera
+	elseif K and K.Aviso then
 		K.Aviso({ titulo = format(L["Ruta a %s"], nombreNodo(pd.claves[1])), texto = texto, icono = "ic-flecha", tono = "acento" })
 	else
 		N.Imprimir(texto)

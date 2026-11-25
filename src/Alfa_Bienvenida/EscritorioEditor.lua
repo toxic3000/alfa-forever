@@ -125,7 +125,9 @@ end
 ---------------------------------------------------------------------------
 local function cursor()
 	local x, y = GetCursorPosition()
-	local s = desk() and desk():GetEffectiveScale() or 1
+	-- 1.4.0: las celdas están en las unidades del área (pantallas.tamano la agranda).
+	local d = desk()
+	local s = d and (d.Area or d):GetEffectiveScale() or 1
 	return (tonumber(x) or 0) / s, (tonumber(y) or 0) / s
 end
 
@@ -219,7 +221,7 @@ end
 
 local function pintarAsa(a)
 	local r, g, b = K.Color(K.Clasico() and "oro" or "acento")
-	a.Fondo:SetColorTexture(r, g, b, a.sobre and 0.16 or 0.08)
+	a.Fondo:SetColorTexture(r, g, b, a.sobre and 0.12 or 0.03) -- 1.4.0: menos tinte verde encima de tus paneles
 	for _, t in ipairs(a.Bordes) do t:SetColorTexture(r, g, b, a.sobre and 1 or 0.7) end
 	a.Grip:SetVertexColor(r, g, b, 1)
 end

@@ -4,7 +4,7 @@ local ADDON, M = ...
 
 M.ID = "lya"
 -- Ajustes (AlfaDB.settings.lya); lya.pos se guarda al arrastrarla.
-M.AJUSTES = { mostrar = true, frecuencia = "muchos", minutos = 3, tamano = 64, sonido = false, bloqueado = false,
+M.AJUSTES = { mostrar = true, frecuencia = "muchos", frecuenciaAntes = "muchos", minutos = 3, tamano = 64, sonido = false, bloqueado = false,
 	-- Historias.lua: siempre | aveces | pedir | nunca; minutos entre historias; el final al entregar
 	historias = "aveces", minutosHistoria = 10, epilogo = true,
 	-- Dia.lua (1.2.5): un aullido al entregar una misión; aullar cuando sube de nivel alguien de tu grupo
@@ -29,10 +29,129 @@ M.AJUSTES = { mostrar = true, frecuencia = "muchos", minutos = 3, tamano = 64, s
 	-- (HoraReal.lua) y sus festejos de lo que logras con Alfa (Festejos.lua)
 	pausa = true, horaReal = true, festejos = true,
 	-- 1.3.9 (69): con un personaje nuevo, más tranquila en la primera hora (Cerebro.lua)
-	calmaNuevos = true }
+	calmaNuevos = true,
+	-- 1.4.0 (12): sus recuerdos («¿Te acuerdas de cuando…?»), sus días especiales
+	-- y el lore de tus misiones (Recuerdos.lua, LoreMisiones.lua)
+	recuerdos = true, loreMisiones = true }
 M.Avisar = function() end -- Pagina.lua la cambia: rehace la página si está a la vista
 
 M.EN = {
+	-- 1.4.0 (social): tu temporada, Lya 2.0 y La Jauría
+	["¡Hoy empezamos juntos!"] = "Today we started together!",
+	["¡%s días juntos!"] = "%s days together!",
+	["Desde el %s. Salimos a cazar %s."] = "Since %s. We went hunting on %s.",
+	["%d distinto"] = "%d different",
+	["%d distintos"] = "%d different",
+	["%d día"] = "%d day",
+	["%d días"] = "%d days",
+	["%d guía terminada"] = "%d guide finished",
+	["%d guías terminadas"] = "%d guides finished",
+	["%d mazmorra"] = "%d dungeon",
+	["%d mazmorras"] = "%d dungeons",
+	["%d peces"] = "%d fish",
+	["%d pez"] = "%d fish",
+	["%s de caza en %s con Alfa"] = "%s of hunting in %s with Alfa",
+	["%s de oro"] = "%s gold",
+	["%s jugados en total"] = "%s played in total",
+	["**Mi temporada con la manada** (Alfa, La Jauría)"] = "**My season with the pack** (Alfa, La Jauría)",
+	["Ahora solo te dice lo importante: al morir, al subir de nivel y tus logros. Un clic y vuelve a platicar como antes."] = "Right now she only tells you what matters: when you die, level up and your achievements. One click and she chats like before.",
+	["Algunos ogros tienen dos cabezas y discuten entre ellas. Los magos ogros son los listos… que no es decir mucho."] = "Some ogres have two heads that argue with each other. Ogre magi are the clever ones… which isn't saying much.",
+	["Antes de la Plaga, Lordaeron era el reino más grande de los humanos. Una peste en el grano lo cambió todo en pocas semanas."] = "Before the Scourge, Lordaeron was the greatest human kingdom. A plague in the grain changed everything in a few weeks.",
+	["Caer no cuenta; levantarse, sí."] = "Falling doesn't count; getting up does.",
+	["Copiar para Discord"] = "Copy for Discord",
+	["De tu misión de %s: %s"] = "About your quest with %s: %s",
+	["Diez días de caza contigo. Esto ya es costumbre, y me encanta."] = "Ten days of hunting with you. It's a habit now, and I love it.",
+	["El Martillo Crepuscular adora a los Dioses Antiguos y sueña con el fin del mundo. Sus túnicas moradas siempre traen problemas."] = "The Twilight's Hammer worships the Old Gods and dreams of the end of the world. Their purple robes always mean trouble.",
+	["El Sindicato son nobles caídos de Alterac que se volvieron ladrones. Siguen creyendo que el reino les pertenece."] = "The Syndicate are fallen nobles of Alterac turned thieves. They still think the kingdom belongs to them.",
+	["El clan Roca Negra fue el corazón de la vieja Horda. Hoy sus orcos siguen en la Montaña Roca Negra, fieles a la guerra."] = "The Blackrock clan was the heart of the old Horde. Its orcs still hold Blackrock Mountain, loyal to war.",
+	["El mundo"] = "The world",
+	["Estaba pensando en «%s», hace %s. Desde ahí supe que íbamos lejos."] = "I was thinking about \"%s\", %s ago. That's when I knew we'd go far.",
+	["Fue la Legión la que corrompió a los orcos con sangre de demonio. Por eso Thrall pelea tanto para que no vuelva a pasar."] = "It was the Legion that corrupted the orcs with demon blood. That's why Thrall fights so hard so it never happens again.",
+	["Guías"] = "Guides",
+	["Hay cinco Vuelos de dragones, cada uno con un don de los titanes. El negro, el de Alamuerte, es el que nunca deja de tramar algo."] = "There are five dragonflights, each with a gift from the titans. The black one, Deathwing's, never stops scheming.",
+	["Hoy cumplimos una semana cazando juntos. ¡Y apenas vamos empezando!"] = "Today makes one week hunting together. And we're just getting started!",
+	["La Cruzada Escarlata nació para pelear contra la Plaga, pero el odio la volvió loca: hoy ven enemigos en todos lados."] = "The Scarlet Crusade was born to fight the Scourge, but hatred drove it mad: now they see enemies everywhere.",
+	["La Legión Ardiente quiere quemar todos los mundos. Los sátiros de los bosques son elfos que le vendieron su alma."] = "The Burning Legion wants to burn every world. The satyrs in the woods are elves who sold it their souls.",
+	["La Plaga nació de un rey hecho de hielo: el Rey Exánime manda a sus muertos desde Rasganorte sin moverse de su trono."] = "The Scourge was born of a king made of ice: the Lich King commands his dead from Northrend without leaving his throne.",
+	["La manada te cuenta"] = "The pack tells you",
+	["Las arañas de Bosque del Ocaso y de Mulgore no son iguales: unas tejen en la sombra, otras en las cuevas. Ninguna comparte su cena."] = "The spiders of Duskwood and Mulgore aren't the same: some weave in the shadows, others in caves. None of them share dinner.",
+	["Las arpías fueron maldecidas hace mucho y desde entonces odian a todo el que pasa por sus riscos. Cuidado con sus chillidos."] = "The harpies were cursed long ago and ever since they hate anyone who passes their cliffs. Watch out for their shrieks.",
+	["Listo: solo te digo lo importante. Con el mismo clic vuelvo a platicar."] = "Done: I'll only tell you what matters. Same click and I'll chat again.",
+	["Llevas %s"] = "You have %s",
+	["Los Bucaneros Velasangre navegan por todo Azeroth. Bahía del Botín los aguanta porque ahí todo se compra y se vende."] = "The Bloodsail Buccaneers sail all over Azeroth. Booty Bay puts up with them because there, everything is bought and sold.",
+	["Los Defias eran albañiles honrados: reconstruyeron Ventormenta y nunca les pagaron. De ese coraje nació la Hermandad."] = "The Defias were honest stonemasons: they rebuilt Stormwind and were never paid. The Brotherhood was born of that anger.",
+	["Los Renegados son no-muertos que rompieron las cadenas de la Plaga. Sylvanas los guía desde Entrañas, bajo las ruinas de Lordaeron."] = "The Forsaken are undead who broke the Scourge's chains. Sylvanas leads them from the Undercity, beneath the ruins of Lordaeron.",
+	["Los centauros se dicen hijos de Cenarius, el semidiós del bosque. Sus clanes pelean entre ellos tanto como contra los demás."] = "The centaurs call themselves children of Cenarius, the forest demigod. Their clans fight each other as much as everyone else.",
+	["Los elementales son fuego, agua, tierra y aire con voluntad propia. Los chamanes les hablan con respeto; los demás, de lejitos."] = "Elementals are fire, water, earth and air with a will of their own. Shamans speak to them with respect; everyone else, from a distance.",
+	["Los enanos Hierro Negro sirven a Ragnaros, el señor del fuego, desde su ciudad en la Montaña Roca Negra. No les gusta que los visiten."] = "The Dark Iron dwarves serve Ragnaros, the Firelord, from their city in Blackrock Mountain. They don't like visitors.",
+	["Los furbolgs eran osos sabios y pacíficos. Muchos enloquecieron por una corrupción en sus bosques; los que quedan sanos agradecen la ayuda."] = "The furbolgs were wise, peaceful bears. Many went mad from a corruption in their forests; the healthy ones left are grateful for help.",
+	["Los gnolls son primos lejanos de las hienas y cazan en manada, como nosotras… pero sin modales."] = "Gnolls are distant cousins of hyenas and hunt in packs, like us… but without manners.",
+	["Los jabaespines nacieron de la sangre de Agamaggan, un semidiós jabalí. Por eso sus espinas son sagradas para ellos."] = "The quilboar were born from the blood of Agamaggan, a boar demigod. That's why their thorns are sacred to them.",
+	["Los kóbolds no se separan de su vela: dicen que la oscuridad de las minas está llena de cosas peores que ellos. «¡Tú no toma vela!»"] = "Kobolds never part with their candle: they say the darkness of the mines is full of things worse than them. \"You no take candle!\"",
+	["Los múrlocs hablan con gorgoteos y viven en las costas desde antes que nadie. Si oyes «mrglglgl», ya es tarde."] = "Murlocs speak in gurgles and have lived on the coasts longer than anyone. If you hear \"mrglglgl\", it's already too late.",
+	["Los naga eran elfos de la noche que se hundieron con la Fuente del Poder. Bajo el mar cambiaron… y volvieron con escamas."] = "The naga were night elves who sank with the Well of Eternity. Beneath the sea they changed… and came back with scales.",
+	["Los orcos cabalgan lobos desde Draenor. Para ellos, un lobo no es una montura: es un hermano de caza. Yo estoy de acuerdo."] = "Orcs have ridden wolves since Draenor. To them, a wolf isn't a mount: it's a hunting brother. I agree.",
+	["Los orcos llegaron de Draenor por el Portal Oscuro. Hoy, con Thrall, buscan honor y no la sangre de los demonios."] = "The orcs came from Draenor through the Dark Portal. Today, with Thrall, they seek honor, not demon blood.",
+	["Los raptores son listos y cazan en grupo. Los trols los domestican desde hace siglos: buenos compañeros, pero no tan bonitos como una loba."] = "Raptors are clever and hunt in groups. Trolls have tamed them for centuries: good companions, but not as pretty as a she-wolf.",
+	["Los silítidos son insectos al servicio de un Dios Antiguo dormido bajo Silithus. Su colmena es más grande de lo que parece."] = "The silithid are insects serving an Old God asleep beneath Silithus. Their hive is bigger than it looks.",
+	["Los troggs salieron de las profundidades cuando los enanos cavaron demasiado. Dicen que son un error de los titanes."] = "The troggs came out of the depths when the dwarves dug too deep. They say they're a mistake of the titans.",
+	["Los trols tuvieron imperios enormes antes que los humanos y los elfos. Zul'Gurub y Zul'Farrak son lo que queda de esa grandeza."] = "Trolls had huge empires before humans and elves. Zul'Gurub and Zul'Farrak are what's left of that glory.",
+	["Los worgs son lobos grandes y bravos. Ya sé que te los encargan, pero acuérdate: no todos los lobos son malos. Algunos te cuidan."] = "Worgs are big, fierce wolves. I know you get asked to hunt them, but remember: not all wolves are bad. Some look after you.",
+	["Mazmorras"] = "Dungeons",
+	["Medio año juntos. La manada ya no se imagina la caza sin ti."] = "Half a year together. The pack can't imagine the hunt without you anymore.",
+	["Mi mejor día: %d misiones"] = "My best day: %d quests",
+	["Mira «Tu temporada» (en mi página o con /alfa temporada): tus días de caza, misiones, mazmorras, peces, oro y récords, y un texto para presumirlo en Discord."] = "Look at \"Your season\" (on my page or with /alfa temporada): your hunting days, quests, dungeons, fish, gold and records, plus a text to show it off on Discord.",
+	["Misiones"] = "Quests",
+	["Momentos con Lya"] = "Moments with Lya",
+	["Niveles"] = "Levels",
+	["Oro ganado"] = "Gold earned",
+	["Peces"] = "Fish",
+	["Raros vistos"] = "Rares spotted",
+	["Salchichas para Lya"] = "Sausages for Lya",
+	["Salchichas para Lya: %d"] = "Sausages for Lya: %d",
+	["Solo lo importante"] = "Only what matters",
+	["Su líder se esconde bajo Villa Oscura, en Las Minas de la Muerte, construyendo un barco de guerra. Paciencia de lobo, pero mala."] = "Their leader hides under Moonbrook, in the Deadmines, building a warship. Wolf-like patience, but the bad kind.",
+	["Te las tiene bien contadas."] = "She's counted every one.",
+	["Tiempo de caza"] = "Hunting time",
+	["Tiempo"] = "Time",
+	["Todavía estamos juntando recuerdos. ¡Vamos a hacer algo que contar!"] = "We're still gathering memories. Let's go do something worth telling!",
+	["Todavía me debes la primera."] = "You still owe me the first one.",
+	["Trescientos sesenta y cinco días de caza. Un año de días contigo. ¡Auuu!"] = "Three hundred sixty-five days of hunting. A year's worth of days with you. Awooo!",
+	["Tu aventura"] = "Your adventure",
+	["Tu aventura desde que usas Alfa"] = "Your adventure since you started using Alfa",
+	["Tu aventura desde que usas Alfa, en tarjetas, y un texto para presumirla en Discord. También con /alfa temporada."] = "Your adventure since you started using Alfa, in cards, and a text to show it off on Discord. Also with /alfa temporada.",
+	["Tu mejor día"] = "Your best day",
+	["Tu mejor racha de pesca"] = "Your best fishing streak",
+	["Tu temporada"] = "Your season",
+	["Tu temporada con la manada"] = "Your season with the pack",
+	["Tus récords"] = "Your records",
+	["Un clic y Lya solo te dice lo importante: al morir, al subir de nivel y tus logros. Otro clic y vuelve a como estaba."] = "One click and Lya only tells you what matters: when you die, level up and your achievements. Another click and she's back as before.",
+	["Veces que te levantaste"] = "Times you got back up",
+	["Ventura y Cía. es de los goblins: talan, minan y venden lo que sea. Donde llegan sus máquinas, el bosque se queda calvo."] = "The Venture Co. belongs to the goblins: they log, mine and sell anything. Wherever their machines go, the forest ends up bald.",
+	["Ver"] = "View",
+	["Ver tu temporada"] = "See your season",
+	["Volver"] = "Back",
+	["Volver a platicar de todo"] = "Chat about everything again",
+	["Ya está seleccionado: Ctrl+C para copiar y pégalo en Discord. No lleva tu nombre ni tu reino."] = "It's already selected: Ctrl+C to copy, then paste it on Discord. It doesn't include your name or your realm.",
+	["de principio a fin"] = "start to finish",
+	["del %d al %d"] = "from %d to %d",
+	["entregadas"] = "turned in",
+	["muestra u oculta a Lya, tu loba compañera (también: ayuda, dia, semana, historia, historial, consejo, dato, historias, importante, recuerdo, temporada, ajustes)"] = "shows or hides Lya, your wolf companion (also: ayuda, dia, semana, historia, historial, consejo, dato, historias, importante, recuerdo, temporada, ajustes)",
+	["nivel %d"] = "level %d",
+	["terminadas"] = "finished",
+	["tu temporada con la manada: tu aventura desde que usas Alfa"] = "your season with the pack: your adventure since you started using Alfa",
+	["¡Auuu!"] = "Awooo!",
+	["¡Cien días de caza juntos! Eres de los que no se rinden."] = "A hundred days of hunting together! You're the kind who never gives up.",
+	["¡Cien días desde que empezamos! Mira todo lo que hemos hecho: está en «Tu temporada»."] = "A hundred days since we started! Look at everything we've done: it's in \"Your season\".",
+	["¡Cincuenta días de caza! Ya conozco tu paso de memoria."] = "Fifty days of hunting! I know your stride by heart now.",
+	["¡De vuelta! Te cuento todo otra vez."] = "I'm back! I'll tell you everything again.",
+	["¡Un año! Un año entero de caminos, misiones y salchichas. Te quiero mucho, compañero de caza."] = "A year! A whole year of roads, quests and sausages. I love you lots, hunting partner.",
+	["¡Un mes cazando juntos! Gracias por dejarme acompañarte. ¿Me das una salchicha de festejo?"] = "A month hunting together! Thanks for letting me come along. Celebration sausage?",
+	["«%s»… hace %s de eso. ¡Qué buena caza fue esa!"] = "\"%s\"… that was %s ago. What a great hunt that was!",
+	["¿Cuánto llevamos cazando juntos?"] = "How long have we been hunting together?",
+	["¿Te acuerdas de cuando pasó esto: «%s»? Ya van %s. Cómo crecimos."] = "Remember when this happened: \"%s\"? It's been %s. How we've grown.",
+	["¿Te acuerdas de «%s»? Fue hace %s. Yo lo recuerdo como si fuera ayer."] = "Remember \"%s\"? It was %s ago. I remember it like it was yesterday.",
+	["¿Vamos al lago?"] = "Off to the lake?",
 	-- 1.3.9 (avisos): el reporte, el Centro de avisos, Lya y los errores con qué hacer
 	["¿Qué hago ahora?"] = "What do I do now?",
 	["Primero, a reparar: tu equipo está al %d %%. Roto ya no te protege."] = "First, go repair: your gear is at %d %%. Broken gear doesn't protect you.",
@@ -1890,6 +2009,16 @@ M.EN = {
 	-- 1.3.7c (mundo): el brinco al llegar (Llegada.lua)
 	["Brincar al llegar"] = "Hop on arrival",
 	["Cuando llegas a donde apunta la flecha, Lya da un brinco de gusto. Sin palabras ni sonido."] = "When you reach where the arrow points, Lya gives a happy hop. No words, no sound.",
+	-- 1.4.0 (agente mundo)
+	["Vuelve a tu cuerpo"] = "Back to your body",
+	["Vuelve a tu cuerpo (%s corriendo)"] = "Back to your body (%s running)",
 }
 
+-- 1.4.0 (pulido)
+M.EN["Buscar «%s» en la Enciclopedia"] = "Search \"%s\" in the Encyclopedia"
+M.EN["Buscar en los ajustes"] = "Search the settings"
+M.EN["En los ajustes"] = "In settings"
+M.EN["No sé de eso todavía"] = "I don't know about that yet"
+M.EN["Puedo buscarlo por ti en otro lado, o pregúntale a la manada en el Discord."] = "I can look for it somewhere else for you, or ask the pack on Discord."
+M.EN["Prueba con otra palabra, o pregúntale a la manada en el Discord."] = "Try another word, or ask the pack on Discord."
 M.L = AlfaNucleo.Textos(M.EN)

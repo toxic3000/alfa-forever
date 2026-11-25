@@ -79,7 +79,7 @@ function Co.Lanza(u)
 	end
 	-- Lo secreto primero: un valor secreto no se compara (ni con nil).
 	if not M.Secreto(nombre) and nombre == nil then return nil end
-	if oficio == true then return nil end
+	if not M.Secreto(oficio) and oficio == true then return nil end
 	local x = { unidad = u, textura = tex, canal = canal }
 	if not M.Secreto(fin) and type(fin) == "number" then x.fin = fin / 1000 end
 	if M.Secreto(inmune) then

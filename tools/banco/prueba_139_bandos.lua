@@ -97,6 +97,8 @@ for _, k in ipairs({ "Active", "CurrentLeg", "NextLeg", "CurrentLabel", "Remaini
 for _, k in ipairs({ "Sample", "GetTarget", "HiddenWithGuide", "TomTomArrowGuides", "HandedOff", "IsHiddenState" }) do guardaNav[k] = Nav[k] end
 local escena = { estado = "muelle", kind = "boat" }
 local function montar()
+  -- 1.4.0 (69): la compacta es la de fábrica; aquí se prueba la grande (prueba_140_mundo prueba la compacta).
+  A.Set("nav.viajeCompacto", false)
   T.Active = function() return true end
   T.CurrentLeg = function()
     if escena.estado == "camino" then return { kind = "walk", to = { c = 0, wx = 0, wy = 0 } } end
@@ -117,6 +119,7 @@ local function montar()
   A.Set("nav.arrow", true)
 end
 local function desmontar()
+  A.Set("nav.viajeCompacto", nil)
   for k, fn in pairs(guardaT) do T[k] = fn end
   for k, fn in pairs(guardaNav) do Nav[k] = fn end
   sinHorario()
@@ -264,7 +267,8 @@ step("103: la temática por bando", function()
     local t = K.Bando()
     check(t and t.letra == l, l .. ": K.Bando() no da el tema")
     check(v.alfaTemaBando == t.clave, l .. ": la ventana no se vistió al prender (" .. tostring(v.alfaTemaBando) .. ")")
-    check(v.alfaBando and v.alfaBando.emblema:IsShown() and v.alfaBando.tira:IsShown(), l .. ": falta el emblema o la tira")
+    -- 1.4.0 (67): la tira cede su lugar a la cabecera con textura (salvo en Clásico WoW).
+    check(v.alfaBando and v.alfaBando.emblema:IsShown() and (v.alfaBando.tira:IsShown() or v.alfaBando.cab:IsShown()), l .. ": falta el emblema o la tira")
     check(not v.Cabecera.Linea:IsShown(), l .. ": la línea de la cabecera debe ceder su lugar a la tira")
     if FOTOS then
       local fondo = fondoNoche(v, 30, 30)
@@ -287,7 +291,7 @@ step("103: la temática por bando", function()
     K.QuitarAnuncio()
   end
   A.Set("nucleo.bando", false)
-  check(not v.alfaBando.tira:IsShown() and v.Cabecera.Linea:IsShown(), "al apagar, la ventana no vuelve a lo de siempre")
+  check(not v.alfaBando.tira:IsShown() and not v.alfaBando.cab:IsShown() and v.Cabecera.Linea:IsShown(), "al apagar, la ventana no vuelve a lo de siempre")
   v:Hide()
   -- La pregunta de una vez.
   local d = N.Datos("kit")

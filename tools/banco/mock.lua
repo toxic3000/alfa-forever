@@ -238,8 +238,14 @@ end
 function Frame:UnregisterEvent(ev) self._events[ev] = nil end
 function Frame:UnregisterAllEvents() self._events = {} end
 function Frame:IsEventRegistered(ev) return self._events[ev] == true end
-function Frame:EnableMouse(on) self._mouse = on end
+function Frame:EnableMouse(on) self._mouse = on; self._clic = on; self._movim = on end
 function Frame:IsMouseEnabled() return self._mouse end
+-- 1.4.0 (control): como el juego, el clic y el paso del ratón por separado
+-- (un marco que solo «ve» el ratón deja pasar el clic al mundo).
+function Frame:SetMouseClickEnabled(on) self._clic = on and true or false; self._mouse = self._clic or self._movim end
+function Frame:SetMouseMotionEnabled(on) self._movim = on and true or false; self._mouse = self._clic or self._movim end
+function Frame:IsMouseClickEnabled() if self._clic == nil then return self._mouse and true or false end return self._clic end
+function Frame:IsMouseMotionEnabled() if self._movim == nil then return self._mouse and true or false end return self._movim end
 function Frame:IsMouseOver() return false end
 function Frame:SetEnabled(on) self._enabled = on and true or false end
 function Frame:Enable() self._enabled = true end
@@ -312,7 +318,13 @@ function Frame:SetText(t)
     note("SetText", "Font not set (el texto no tiene letra)\n" .. debug.traceback())
   end
   if t ~= nil and type(t) ~= "string" and type(t) ~= "number" then note("SetText", "bad text " .. type(t) .. "\n" .. debug.traceback()) end
-  self._text = t ~= nil and tostring(t) or nil
+  -- 1.4.0: como Forever, un texto se acomoda (con su letra y la pantalla de
+  -- ese momento: BANCO_GEN_LETRA) solo cuando cambia; _lay guarda con qué.
+  local nuevo = t ~= nil and tostring(t) or nil
+  if self._kind == "FontString" and (nuevo ~= self._text or not self._lay) then
+    self._lay = { size = (self._font and self._font[2]) or 12, path = self._font and self._font[1], gen = rawget(_G, "BANCO_GEN_LETRA") or 0 }
+  end
+  self._text = nuevo
   if self._kind == "EditBox" then fire(self, "OnTextChanged", false) end
 end
 function Frame:SetFormattedText(f, ...)
@@ -331,7 +343,8 @@ function Frame:SetTextColor(r, g, b, a)
 end
 function Frame:GetTextColor() local c = self._tc or { 1, 1, 1, 1 } return c[1], c[2], c[3], c[4] end
 function Frame:SetShadowColor() end
-function Frame:SetShadowOffset() end
+function Frame:SetShadowOffset(x, y) self._sombra = { x or 0, y or 0 } end
+function Frame:GetShadowOffset() local s = self._sombra or { 0, 0 } return s[1], s[2] end
 function Frame:SetJustifyH(j) self._jh = j end
 function Frame:SetJustifyV(j) self._jv = j end
 function Frame:SetWordWrap(on) self._wrap = on and true or false end
@@ -405,7 +418,10 @@ function Frame:GetHorizontalScroll() return self._hs or 0 end
 function Frame:GetVerticalScrollRange() return 0 end
 function Frame:UpdateScrollChildRect() end
 function Frame:EnableMouseWheel() end
-function Frame:SetClipsChildren() end
+-- 1.4.0 (83): el dibujo recorta lo que se sale de un marco que recorta a sus
+-- hijos (como el juego), no solo de un ScrollFrame (dump.lua).
+function Frame:SetClipsChildren(on) self._clips = on and true or nil end
+function Frame:DoesClipChildren() return self._clips and true or false end
 -- Edit boxes
 function Frame:SetAutoFocus() end
 function Frame:SetFocus() self._focus = true; fire(self, "OnEditFocusGained") end
@@ -426,7 +442,8 @@ function Frame:SetMovable() end
 function Frame:SetResizable() end
 function Frame:StartMoving() end
 function Frame:StopMovingOrSizing() end
-function Frame:SetClampedToScreen() end
+function Frame:SetClampedToScreen(v) self._clamp = v and true or false end
+function Frame:IsClampedToScreen() return self._clamp or false end
 function Frame:SetClampRectInsets() end
 function Frame:SetToplevel() end
 function Frame:Raise() end

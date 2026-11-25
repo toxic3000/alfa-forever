@@ -41,7 +41,8 @@ M.Rastreador = Rs
 
 
 -- rutas.seguimientoCompleto: la vista amplia del rastreador (de fábrica, la compacta).
-A.RegisterDefaults(M.ID, { seguimientoCompleto = false, xpEntrega = true, rastreadorEsencial = true }) -- 1.3.9: rastreadorEsencial (71) -- 1.3.7: xpEntrega, «+1,250 XP» en cada entrega
+A.RegisterDefaults(M.ID, { seguimientoCompleto = false, xpEntrega = true, rastreadorEsencial = true,
+	avanceTiempo = true, recompensaGuia = true }) -- 1.4.0: avanceTiempo (25), recompensaGuia (28) -- 1.3.9: rastreadorEsencial (71) -- 1.3.7: xpEntrega, «+1,250 XP» en cada entrega
 
 local type, ipairs, pairs, tonumber, tostring = type, ipairs, pairs, tonumber, tostring
 local floor, max, min, format = math.floor, math.max, math.min, string.format
@@ -466,6 +467,10 @@ local function menuGuia(dueno)
 	op[#op + 1] = { valor = function() if M.Biblioteca then M.Biblioteca.Abrir({ pestanaNueva = true }) end end, texto = L["Abrir otra guía..."], icono = "ic-mas" }
 	op[#op + 1] = { valor = function() if M.Asistente then M.Asistente.Abrir() end end, texto = L["¿Qué quieres hacer?"], icono = "ic-lobo" }
 	op[#op + 1] = { valor = function() M.Cerrar.Ahora() end, texto = L["Cerrar mis misiones"], icono = "ic-misiones" }
+	-- 1.4.0 (32): tus guías terminadas, con fecha y tiempo (Historial.lua).
+	if M.Historial and #M.Historial.Lista() > 0 then
+		op[#op + 1] = { valor = function() M.Historial.Abrir() end, texto = L["Guías terminadas"], icono = "ic-exito" }
+	end
 	-- 1.3.0: el circuito de la zona y «Llévame a…» (Circuito.lua, Viaje.lua).
 	if M.Circuito and A.Get(M.ID .. ".circuito") ~= false then
 		op[#op + 1] = { valor = function() M.Circuito.Ahora() end, texto = L["Circuito de la zona"], icono = "ic-ruta" }
@@ -588,33 +593,69 @@ Rs.MenuMeta = menuMeta -- (para el banco)
 
 local function nuevoCx(padre) return { padre = padre, metas = {}, grupos = {}, cerca = {} } end
 
+-- 1.4.0 (80): cada meta con el ícono de lo que pide (en su ficha redonda):
+-- matar, conseguir, tomar, entregar, ir, hablar, usar... Hecha, la palomita.
+local ICONO_META = {
+	kill = "ic-raros", collect = "ic-bolsas", loot = "ic-bolsas", buy = "ic-oro", accept = "ic-misiones",
+	turnin = "ic-misiones", ["goto"] = "ic-cerca", travel = "ic-cerca", fly = "ic-ruta", fpath = "ic-ruta",
+	talk = "ic-personaje", interact = "ic-mando", use = "ic-oficios", learn = "ic-talentos", train = "ic-talentos",
+	hearth = "ic-hoy", level = "ic-nivel", fish = "ic-pesca", gather = "ic-recoleccion", complete = "ic-misiones",
+	rep = "ic-comunidad", wait = "ic-reloj", note = "ic-info", dungeon = "ic-mazmorra",
+}
+Rs.ICONO_META = ICONO_META
+function Rs.IconoMeta(g) return ICONO_META[type(g) == "table" and g.t or ""] or "ic-huella" end
+
+-- 1.4.0 (80): el conteo de una meta («0/7») va aparte, alineado a la
+-- derecha. Solo si la línea trae uno (una meta de varios objetivos lleva los
+-- suyos en su texto). -> línea sin el conteo, conteo, lleno | línea
+local function separarConteo(linea)
+	if type(linea) ~= "string" then return linea end
+	local s, e, color, cuenta = linea:find("  |c(%x%x%x%x%x%x%x%x)(%d+/%d+)|r")
+	if not s or linea:find("%d+/%d+", e + 1) or linea:sub(1, s - 1):find("%d+/%d+") then return linea end
+	local a, b = cuenta:match("^(%d+)/(%d+)$")
+	local lleno = tonumber(a) and tonumber(b) and tonumber(a) >= tonumber(b)
+	return linea:sub(1, s - 1) .. linea:sub(e + 1), cuenta, lleno
+end
+Rs.SepararConteo = separarConteo -- (para el banco)
+
+local IZQ_META = 26 -- 1.4.0 (80): el texto de una meta, tras su ficha
+
 local function filaMeta(cx, i)
 	local f = cx.metas[i]
 	if f then return f end
 	f = CreateFrame("Button", nil, cx.padre)
 	f:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 	f.Marca = CreateFrame("Frame", nil, f)
-	f.Marca:SetSize(12, 12)
-	f.Marca.caja = K.Caja(f.Marca, { fondo = "hundido", borde = "lineaFuerte", corte = K.CORTE.casilla })
+	f.Marca:SetSize(18, 18)
+	f.Marca.caja = K.Caja(f.Marca, { fondo = "acento", alfaFondo = 0.12, borde = "acento", alfaBorde = 0.3, corte = K.CORTE.casilla })
 	f.Marca.Ok = K.Icono(f.Marca, "ic-exito", 12, "acento")
 	f.Marca.Ok:SetPoint("CENTER")
 	f.Barra = K.Plano(f, "acento", "ARTWORK", 2)
 	f.Barra:SetWidth(2)
 	f.Texto = K.Texto(f, "cuerpo", "texto")
 	f.Texto:SetWordWrap(true)
+	f.Cuenta = K.Texto(f, "numero", "texto")
+	f.Cuenta:SetJustifyH("RIGHT")
+	f.Cuenta:SetWordWrap(false)
 	f.Sub = K.Texto(f, "pequeno", "textoTenue")
 	f.Sub:SetWordWrap(true)
-	f.Progreso = K.Progreso(f, { alto = 4 })
+	f.Progreso = K.Progreso(f, { alto = 3 })
 	f.velo = K.Velo(f, K.CORTE.control, 0.04)
 	f.velo:Hide()
-	f:SetScript("OnEnter", function(self)
-		self.velo:Show()
+	local function info(self)
 		local g = self.alfaMeta
-		if g and g.detail and g.detail ~= "" and not Rs.SinTraducir(g.detail) then
+		if self.alfaInfoEncima and g and g.detail and g.detail ~= "" and not Rs.SinTraducir(g.detail) then
 			K.MostrarInfo(self, U() and U().PlainGoalText and U().PlainGoalText(g) or "", g.detail)
 		end
+	end
+	f:SetScript("OnEnter", function(self)
+		self.velo:Show()
+		self.alfaInfoEncima = true
+		-- 1.4.0 (80): en el rastreador, al lado y solo si el ratón se queda.
+		local demora = K.DemoraInfo and K.DemoraInfo(self)
+		if demora then N.Una("rutas.infoMeta", demora, function() info(self) end) else info(self) end
 	end)
-	f:SetScript("OnLeave", function(self) self.velo:Hide() K.OcultarInfo(self) end)
+	f:SetScript("OnLeave", function(self) self.velo:Hide() self.alfaInfoEncima = nil K.OcultarInfo(self) end)
 	f:SetScript("OnClick", function(self, boton)
 		if boton == "RightButton" then return menuMeta(self) end
 		local g, s = self.alfaMeta, self.alfaPaso
@@ -670,8 +711,12 @@ local function pintarFila(cx, n, v, g, x, y, ancho, mapa, lineas, conSub, conBar
 	-- y ninguna lleva la raya de "ahora".
 	local actual = v.current == g.index and not cx.previa
 	local fuera = type(g.noDisponible) == "string" and g.noDisponible ~= ""
-	f.Marca.caja:Estilo({ fondo = hecha and "acento" or "hundido", alfaFondo = hecha and 0.18 or nil, borde = (hecha or actual) and "acento" or "lineaFuerte" })
-	f.Marca.Ok:SetShown(hecha)
+	-- 1.4.0 (80): la ficha con el ícono de la meta (hecha: la palomita en verde).
+	local tonoMarca = hecha and "exito" or ((actual and not fuera) and "acento" or "textoTenue")
+	f.Marca.caja:Estilo({ fondo = tonoMarca, alfaFondo = hecha and 0.18 or (actual and 0.16 or 0.08),
+		borde = tonoMarca, alfaBorde = (hecha or actual) and 0.45 or 0.25 })
+	K.SetIcono(f.Marca.Ok, hecha and "ic-exito" or Rs.IconoMeta(g), tonoMarca)
+	f.Marca.Ok:Show()
 	f.Barra:SetShown(actual)
 	local linea = u and u.GoalLine and u.GoalLine(g) or (g.text or "")
 	-- 1.3.7: lo que da una entrega («+1,250 XP») y si con ella subes (97).
@@ -685,13 +730,28 @@ local function pintarFila(cx, n, v, g, x, y, ancho, mapa, lineas, conSub, conBar
 		end
 	end
 	if xpTexto and not conSub then linea = linea .. "  \194\183  " .. xpTexto end
-	local tw = ancho - 20
+	local tw = ancho - IZQ_META
+	-- 1.4.0 (80): el conteo («0/7») a la derecha, en su columna.
+	local sinCuenta, cuenta, lleno = separarConteo(linea)
+	if cuenta and not hecha then
+		linea = sinCuenta
+		K.Escribir(f.Cuenta, cuenta)
+		K.ColorTexto(f.Cuenta, lleno and "exito" or ((fuera or cx.previa) and "textoTenue" or "texto"))
+		f.Cuenta:ClearAllPoints()
+		f.Cuenta:SetPoint("TOPRIGHT", f, "TOPRIGHT", 0, -2)
+		f.Cuenta:Show()
+		tw = tw - K.AnchoTexto(f.Cuenta) - K.ESP.s
+	else
+		if cuenta then linea = sinCuenta end
+		f.Cuenta:Hide()
+	end
 	K.Escribir(f.Texto, linea)
 	K.ColorTexto(f.Texto, (hecha or fuera or cx.previa or sinTerminar(g)) and "textoTenue" or "texto")
 	f.Texto:ClearAllPoints()
-	f.Texto:SetPoint("TOPLEFT", f, "TOPLEFT", 20, -2)
+	f.Texto:SetPoint("TOPLEFT", f, "TOPLEFT", IZQ_META, -2)
 	local h = 2 + K.Parrafo(f.Texto, tw, lineas)
 	if u and u.FitCounts then pcall(u.FitCounts, f.Texto) end
+	tw = ancho - IZQ_META
 	local sub
 	if conSub and (not hecha or fuera) then
 		sub = sublinea(g, mapa)
@@ -713,10 +773,17 @@ local function pintarFila(cx, n, v, g, x, y, ancho, mapa, lineas, conSub, conBar
 		end
 		if xpTexto then sub = sub and (sub .. "\n" .. xpTexto) or xpTexto end
 	end
+	-- 1.4.0 (28): qué recompensa elegir para tu clase (Recompensa.lua); en la
+	-- vista compacta también, solo en la meta de ahora.
+	if not hecha and not fuera and g.quest and (g.t == "turnin" or g.t == "accept") and M.Recompensa
+		and (conSub or actual) then
+		local elige = M.Recompensa.Texto(g)
+		if elige then sub = sub and (sub .. "\n" .. elige) or elige end
+	end
 	if sub and sub ~= "" then
 		K.Escribir(f.Sub, sub)
 		f.Sub:ClearAllPoints()
-		f.Sub:SetPoint("TOPLEFT", f, "TOPLEFT", 20, -(h + 2))
+		f.Sub:SetPoint("TOPLEFT", f, "TOPLEFT", IZQ_META, -(h + 2))
 		-- 1.3.7: con «Antes», el lugar y «Vale la pena» juntos ya no se corta
 		-- (79): una línea por parte y una de holgura por si alguna se dobla.
 		local _, partes = sub:gsub("\n", "")
@@ -728,7 +795,7 @@ local function pintarFila(cx, n, v, g, x, y, ancho, mapa, lineas, conSub, conBar
 	local frac = conBarra and not fuera and u and u.GoalBar and u.GoalBar(g)
 	if frac and not hecha then
 		f.Progreso:ClearAllPoints()
-		f.Progreso:SetPoint("TOPLEFT", f, "TOPLEFT", 20, -(h + 4))
+		f.Progreso:SetPoint("TOPLEFT", f, "TOPLEFT", IZQ_META, -(h + 4))
 		f.Progreso:Acomodar(tw)
 		f.Progreso:Set(frac)
 		f.Progreso:Show()
@@ -738,10 +805,10 @@ local function pintarFila(cx, n, v, g, x, y, ancho, mapa, lineas, conSub, conBar
 	end
 	h = h + 4
 	f.Marca:ClearAllPoints()
-	f.Marca:SetPoint("TOPLEFT", f, "TOPLEFT", 2, -4)
+	f.Marca:SetPoint("TOPLEFT", f, "TOPLEFT", 0, -2)
 	f.Barra:ClearAllPoints()
-	f.Barra:SetPoint("TOPLEFT", f, "TOPLEFT", -6, -2)
-	f.Barra:SetHeight(max(10, h - 6))
+	f.Barra:SetPoint("TOPLEFT", f, "TOPLEFT", x >= 6 and (1 - x) or -4, -1) -- (en el rastreador, en su borde)
+	f.Barra:SetHeight(max(10, h - 4))
 	f:ClearAllPoints()
 	f:SetPoint("TOPLEFT", cx.padre, "TOPLEFT", x, -y)
 	f:SetSize(ancho, h)
@@ -1022,17 +1089,37 @@ end
 -- minuto, en cuánto llegas («120 yd al norte · 1 min 20 s»).
 local function textoFlecha()
 	local t, tono, _, seg = Rs.Distancia()
-	if t and tono == "neutro" and seg and seg >= 60 then return t .. "  \194\183  " .. Rs.Tiempo(seg) end
-	return t
+	if t and tono == "neutro" and seg and seg >= 60 then return t .. "  \194\183  " .. Rs.Tiempo(seg), t, Rs.Tiempo(seg) end
+	return t, t, nil
+end
+
+-- 1.4.0 (80): la línea de la flecha, discreta: la distancia a la izquierda y
+-- el tiempo a la derecha (en su columna, como los conteos). Si no caben
+-- juntos, una sola línea con «·».
+local function escribirFlecha(fl, completo, dist, tiempo)
+	if tiempo then
+		K.Escribir(fl.Texto, dist)
+		K.Escribir(fl.Tiempo, tiempo)
+		fl.Tiempo:Show()
+		local libre = K.num(fl:GetWidth(), ANCHO) - IZQ_META - K.AnchoTexto(fl.Tiempo) - K.ESP.s
+		if K.AnchoTexto(fl.Texto) <= libre then
+			fl.Texto:SetPoint("RIGHT", fl.Tiempo, "LEFT", -K.ESP.s, 0)
+			return
+		end
+	end
+	fl.Tiempo:Hide()
+	fl.Texto:SetPoint("RIGHT", fl, "RIGHT", 0, 0)
+	K.Escribir(fl.Texto, completo)
 end
 
 -- Cada segundo, mientras el rastreador compacto se ve: solo el texto; si la
 -- línea aparece o se va, se acomoda todo.
 local function latido()
 	if not (F and F:IsShown() and ui.flecha) then return end
-	local t = ui.conFlecha and (compacto() or Rs.Plegada()) and textoFlecha() or nil
+	local t, dist, tiempo
+	if ui.conFlecha and (compacto() or Rs.Plegada()) then t, dist, tiempo = textoFlecha() end
 	if (t ~= nil) ~= ui.flecha:IsShown() then Rs.Luego() return end
-	if t then K.Escribir(ui.flecha.Texto, t) end
+	if t then escribirFlecha(ui.flecha, t, dist, tiempo) end
 end
 
 ---------------------------------------------------------------------------
@@ -1069,8 +1156,13 @@ local function construir()
 	F:EnableMouse(true)
 	F.caja = K.Caja(F, { fondo = "fondo", borde = "linea", corte = K.CORTE.panel })
 	F.caja:Estilo({ alfaFondo = 0.94 })
-	F.Marca = K.Marca(F, K.CORTE.panel, "acento", 28)
+	-- 1.4.0 (70): sin la rayita corta de arriba: la cabecera es una banda completa (Banda.lua).
 	cxR = nuevoCx(F)
+	-- 1.4.0 (80): los globos de ayuda del rastreador (la cabecera, sus botones,
+	-- las metas) salen a su lado, nunca encima de la cabecera ni de lo que hay
+	-- arriba, y solo si el ratón se queda un momento (Kit/Basicos.lua).
+	F.alfaInfoLado = F
+	F.alfaInfoDemora = 0.6
 
 	-- Cabecera (se arrastra)
 	local c = CreateFrame("Frame", nil, F)
@@ -1078,6 +1170,13 @@ local function construir()
 	c:SetPoint("TOPLEFT", F, "TOPLEFT", 0, 0)
 	c:SetPoint("TOPRIGHT", F, "TOPRIGHT", 0, 0)
 	c:SetHeight(CAB)
+	-- 1.4.0 (70): el título y sus datos adentro (sin Banda.lua, la rayita de antes)
+	if M.Banda then
+		c.Banda = M.Banda(c, K.CORTE.panel)
+		c.Banda:Acomodar(CAB)
+	else
+		F.Marca = K.Marca(F, K.CORTE.panel, "acento", 28)
+	end
 	c:EnableMouse(true)
 	c:RegisterForDrag("LeftButton")
 	c:SetScript("OnDragStart", function() c.alfaArrastre = true if not (A.DragLocked and A.DragLocked()) then F:StartMoving() end end)
@@ -1110,14 +1209,25 @@ local function construir()
 		return self.alfaNombre or L["Tu guía"], Rs.Plegada() and L["Clic: despliega la guía. Arrastra para moverla."]
 			or L["Clic: pliega la guía y deja solo el paso de ahora. Arrastra para moverla."]
 	end)
-	c.Linea = K.Linea(c, "linea")
-	c.Linea:SetPoint("BOTTOMLEFT", c, "BOTTOMLEFT", PAD, 0)
-	c.Linea:SetPoint("BOTTOMRIGHT", c, "BOTTOMRIGHT", -PAD, 0)
-	-- 1.3.7c: el avance de la guía en la línea de la cabecera (lo lleno es lo hecho).
+	-- (1.4.0: la línea de abajo es la de la banda, de lado a lado)
+	c.Linea = c.Banda and c.Banda.Abajo or K.Linea(c, "linea")
+	if not c.Banda then
+		c.Linea:SetPoint("BOTTOMLEFT", c, "BOTTOMLEFT", PAD, 0)
+		c.Linea:SetPoint("BOTTOMRIGHT", c, "BOTTOMRIGHT", -PAD, 0)
+	end
+	-- 1.3.7c: el avance de la guía en la línea de la cabecera (lo lleno es lo
+	-- hecho); 1.4.0 (70): en el borde de abajo de la banda, de lado a lado.
 	c.Avance = K.Progreso(c, { alto = 3, tono = "acento" })
-	c.Avance:SetPoint("BOTTOMLEFT", c, "BOTTOMLEFT", PAD, 0)
-	c.Avance:SetPoint("BOTTOMRIGHT", c, "BOTTOMRIGHT", -PAD, 0)
+	c.Avance:SetPoint("BOTTOMLEFT", c.Banda or c, "BOTTOMLEFT", c.Banda and 0 or PAD, 0)
+	c.Avance:SetPoint("BOTTOMRIGHT", c.Banda or c, "BOTTOMRIGHT", c.Banda and 0 or -PAD, 0)
 	c.Avance:Hide()
+	-- 1.4.0 (80): con la temática por bando, su tira (madera o piedra) bajo la
+	-- cabecera, como en las ventanas de Alfa y en los avisos.
+	if K.TiraBando then
+		c.Tira = K.TiraBando(c, 3, "ARTWORK")
+		c.Tira:SetPoint("TOPLEFT", c, "BOTTOMLEFT", 1, 0)
+		c.Tira:SetPoint("TOPRIGHT", c, "BOTTOMRIGHT", -1, 0)
+	end
 
 	ui.huellas = K.Huellas(F, { tam = 11, max = 16, gap = 4 })
 
@@ -1129,8 +1239,10 @@ local function construir()
 	b.Barra:Hide()
 	b.Franja = K.Plano(b, "acento", "ARTWORK", 1)
 	b.Franja:SetWidth(2)
-	b.Franja:SetPoint("TOPLEFT", b, "TOPLEFT", 0, -6)
-	b.Franja:SetPoint("BOTTOMLEFT", b, "BOTTOMLEFT", 0, 6)
+	-- 1.4.0 (70): de arriba abajo (antes, corta: 6 px adentro de cada lado),
+	-- desde el corte de la esquina.
+	b.Franja:SetPoint("TOPLEFT", b, "TOPLEFT", 1, -(K.CORTE.control + 1))
+	b.Franja:SetPoint("BOTTOMLEFT", b, "BOTTOMLEFT", 1, 1)
 	b.Icono = K.Icono(b, "ic-aviso", 16, "aviso")
 	b.Icono:SetPoint("TOPLEFT", b, "TOPLEFT", 10, -10)
 	b.Titulo = K.Texto(b, "etiqueta", "texto")
@@ -1149,7 +1261,8 @@ local function construir()
 			return
 		end
 		if type(d.cerrar) == "function" then d.cerrar() end
-		luego()
+		-- 1.4.0: `luego` es local más abajo; aquí era un global nil y la X tronaba.
+		if Rs.Luego then Rs.Luego() end
 	end, { tam = 18, ayuda = L["Cerrar"], ayudaTexto = L["No te lo vuelvo a sugerir en esta sesión."] })
 	b.Cerrar:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 	b.Cerrar:SetPoint("TOPRIGHT", b, "TOPRIGHT", -5, -5)
@@ -1181,7 +1294,11 @@ local function construir()
 	pl:SetScript("OnClick", function() if M.VistaPlanes then local d = M.Planes.Tarjeta() if d then M.VistaPlanes.Abrir(d.plan.id) end end end)
 	K.ConInfo(pl, L["Mi plan"], L["Clic: abre tu plan para verlo o cambiarlo."])
 
-	-- El paso
+	-- El paso (1.4.0, 80: con su sobretítulo «PASO 4 · AHORA»)
+	ui.sobrePaso = K.Texto(F, "mayus", "acento")
+	ui.sobrePaso:SetJustifyH("LEFT")
+	ui.sobrePaso:SetWordWrap(false)
+	ui.sobrePaso:Hide()
 	ui.paso = K.Texto(F, "subtitulo", "texto")
 	ui.paso:SetWordWrap(true)
 	-- 1.3.9 (73): clic derecho en el título del paso: el mismo menú que en sus metas.
@@ -1217,11 +1334,23 @@ local function construir()
 	local fl = CreateFrame("Frame", nil, F)
 	ui.flecha = fl
 	fl:SetHeight(16)
-	fl.Icono = K.Icono(fl, "ic-flecha", 12, "acento")
-	fl.Icono:SetPoint("LEFT", fl, "LEFT", 2, 0)
-	fl.Texto = K.Texto(fl, "pequeno", "textoSuave")
-	fl.Texto:SetPoint("LEFT", fl, "LEFT", 20, 0)
+	fl.Icono = K.Icono(fl, "ic-flecha", 11, "acento")
+	fl.Icono:SetPoint("LEFT", fl, "LEFT", 3, 0)
+	fl.Texto = K.Texto(fl, "pequeno", "textoTenue")
+	fl.Texto:SetPoint("LEFT", fl, "LEFT", IZQ_META, 0)
 	fl.Texto:SetPoint("RIGHT", fl, "RIGHT", 0, 0)
+	fl.Texto:SetJustifyH("LEFT")
+	fl.Texto:SetWordWrap(false)
+	-- 1.4.0 (80): el tiempo, a la derecha (en la columna de los conteos).
+	fl.Tiempo = K.Texto(fl, "pequeno", "textoTenue")
+	fl.Tiempo:SetPoint("RIGHT", fl, "RIGHT", 0, 0)
+	fl.Tiempo:SetJustifyH("RIGHT")
+	fl.Tiempo:SetWordWrap(false)
+	fl.Tiempo:Hide()
+	-- Una línea fina arriba la separa de las metas.
+	fl.Linea = K.Linea(fl, "linea")
+	fl.Linea:SetPoint("TOPLEFT", fl, "TOPLEFT", 0, 4)
+	fl.Linea:SetPoint("TOPRIGHT", fl, "TOPRIGHT", 0, 4)
 
 	-- Lo que la ruta agregó antes de la meta de ahora (una línea)
 	local an = CreateFrame("Frame", nil, F)
@@ -1398,8 +1527,19 @@ local function aviso(v, live)
 		local d = Rs.Sugerencia(M.Grupo and M.Grupo.Aviso(v, live))
 		if d then return d end
 	end
+	-- 1.4.0: la guía va atrás de tu nivel (MiNivel.lua, 26) y, en una guía de
+	-- oficio, lo que te falta para el tramo (Comprar.lua, 31).
+	do
+		local d = Rs.Sugerencia(M.MiNivel and M.MiNivel.Aviso(v, live) or nil)
+		if d then return d end
+		d = Rs.Sugerencia(M.Comprar and M.Comprar.Aviso(v, live) or nil)
+		if d then return d end
+	end
 	-- 1.2.8: con 2 o más misiones listas, ofrecer la vuelta a entregar.
 	local d = Rs.Sugerencia(Vt and Vt.Aviso() or nil)
+	if d then return d end
+	-- 1.4.0 (plan 31): en el paso de materiales de una guía de oficio, «Comprar lo que falta».
+	d = Rs.Sugerencia(M.OficiosComprar and M.OficiosComprar.Aviso(v, live) or nil)
 	if d then return d end
 	-- 1.3.8: tu camino pasa por una zona peligrosa (Peligro.lua) y un vuelo
 	-- que te ahorra camino (Grifo.lua).
@@ -1596,6 +1736,22 @@ end
 -- Pintar el rastreador
 ---------------------------------------------------------------------------
 
+-- 1.4.0 (25): «12 de 80 pasos · 15 % · ≈ 40 min» (largo) y sin el tiempo
+-- (medio). El tiempo sale de tu ritmo (Hora.Estimado: nil hasta que hay 5
+-- medidas). Ajuste rutas.avanceTiempo. -> largo, medio | nil
+function Rs.AvanceTexto(done, total)
+	done, total = M.num(done, 0), M.num(total, 0)
+	if total <= 0 or A.Get(M.ID .. ".avanceTiempo") == false then return nil end
+	local pct = floor(min(1, max(0, done / total)) * 100 + 0.0001)
+	if done < total and pct >= 100 then pct = 99 end
+	local medio = format(L["%d de %d pasos  ·  %d %%"], done, total, pct)
+	local H = M.Hora
+	local m = done < total and H and H.Estimado and H.Estimado() or nil
+	if not m then return medio, medio end
+	if m >= 60 then m = floor(m / 5 + 0.5) * 5 end
+	return medio .. "  \194\183  " .. format(L["≈ %s más"], N.Duracion(m * 60, true)), medio
+end
+
 -- El nombre de la guía y "Paso 12 de 80 · 15 %". -> nombre, línea, hechos, total
 local function resumenGuia(g, v)
 	local u = U()
@@ -1604,6 +1760,11 @@ local function resumenGuia(g, v)
 	-- la vista previa; "Paso 2" junto a "54 %" se contradecía).
 	local done, total = engine("GetProgress")
 	local linea = (total and total > 0) and format(L["%d de %d pasos hechos"], done or 0, total) or ""
+	-- 1.4.0 (25): el % y lo que te falta por tu ritmo (Hora.lua): «12 de 80
+	-- pasos · 15 % · ≈ 40 min». Lo que no quepa se quita (primero el tiempo).
+	local base = linea
+	local largo, medio = Rs.AvanceTexto(done, total)
+	if largo then linea, base = largo, medio end
 	-- Tu guarida (1.2.5, La Jauría): «· Guarida Colmillo» al final.
 	local Ma = rawget(_G, "AlfaManada")
 	local guarida = type(Ma) == "table" and type(Ma.Guarida) == "function" and Ma.Guarida()
@@ -1611,24 +1772,37 @@ local function resumenGuia(g, v)
 	if type(guarida) == "string" and guarida ~= "" then
 		linea = linea ~= "" and (linea .. "  \194\183  " .. guarida) or guarida
 	end
-	return nombre, linea, done, total, corta
+	-- Las que se prueban si no cabe: sin la guarida, sin el tiempo, solo los pasos.
+	local cortas = { corta }
+	if medio and medio ~= corta then cortas[#cortas + 1] = medio end
+	if base ~= corta and base ~= medio then cortas[#cortas + 1] = base end
+	return nombre, linea, done, total, corta, cortas
 end
 
 local function cabecera(g, v, hecha)
 	local c = ui.cab
-	local nombre, linea, done, total, corta = resumenGuia(g, v)
+	local nombre, linea, done, total, corta, cortas = resumenGuia(g, v)
 	-- 1.3.8: terminada, la cabecera lo dice (también con su tarjeta cerrada).
 	if hecha then
-		corta = corta ~= "" and (L["Terminada"] .. "  \194\183  " .. corta) or L["Terminada"]
-		linea = linea ~= "" and (L["Terminada"] .. "  \194\183  " .. linea) or L["Terminada"]
+		-- 1.4.0: terminada, sin el % ni el tiempo que falta (solo los pasos).
+		local solo = cortas and cortas[#cortas] or corta
+		corta = solo ~= "" and (L["Terminada"] .. "  \194\183  " .. solo) or L["Terminada"]
+		linea = corta
+		cortas = nil
 	end
 	c.alfaNombre = g and nombre or nil
-	K.Escribir(c.Titulo, nombre)
+	linea = linea or ""
+	K.Escribir(c.Titulo, nombre or "")
 	K.Escribir(c.Sub, linea)
-	-- Con la guarida, solo si cabe entera (nada de textos cortados).
-	if linea ~= corta and K.AnchoTexto(c.Sub) > (c.alfaAnchoTitulo or (ANCHO - 120)) then
-		linea = corta
-		K.Escribir(c.Sub, linea)
+	-- Con la guarida, solo si cabe entera (nada de textos cortados); 1.4.0: y
+	-- si aún no cabe, sin el tiempo y luego sin el %.
+	local tope = c.alfaAnchoTitulo or (ANCHO - 120)
+	for _, otra in ipairs(cortas or { corta }) do
+		if K.AnchoTexto(c.Sub) <= tope then break end
+		if otra ~= linea then
+			linea = otra
+			K.Escribir(c.Sub, linea)
+		end
 	end
 	-- 1.3.8: terminada y sin lugar para los pasos: solo «Terminada».
 	if hecha and linea ~= L["Terminada"] and K.AnchoTexto(c.Sub) > (c.alfaAnchoTitulo or (ANCHO - 120)) then
@@ -1640,6 +1814,8 @@ local function cabecera(g, v, hecha)
 	local hs = linea ~= "" and K.AltoTexto(c.Sub) or 0
 	ui.altoCab = max(CAB, 7 + ht + (hs > 0 and (2 + hs) or 0) + 7)
 	c:SetHeight(ui.altoCab)
+	if c.Banda then c.Banda:Acomodar(ui.altoCab) end
+	if c.Tira then c.Tira:Pintar() end
 	-- 1.3.7c: la barra del avance en lugar de la línea, con una guía de pasos.
 	local conBarra = c.Avance ~= nil and total ~= nil and total > 0
 	if conBarra then c.Avance:Set(done or 0, total) end
@@ -1953,7 +2129,7 @@ construirFin = function()
 	ui.fin = t
 	t.caja = K.Caja(t, { fondo = "panel", borde = "acento", corte = K.CORTE.tarjeta })
 	t.caja:Estilo({ alfaBorde = 0.5 })
-	t.Marca = K.Marca(t, K.CORTE.tarjeta, "acento", 24)
+	t.Banda = M.Banda and M.Banda(t, K.CORTE.tarjeta, { alfa = 0.12 }) -- 1.4.0 (70): banda completa con el lobo y el título
 	t.Lobo = t:CreateTexture(nil, "ARTWORK")
 	t.Lobo:SetSize(FIN_LOBO, FIN_LOBO)
 	t.Lobo:SetPoint("TOPLEFT", t, "TOPLEFT", FIN_PAD, -FIN_PAD)
@@ -2020,14 +2196,19 @@ local function pintarFin(d, ancho)
 	-- La columna del texto, a la derecha del lobo y antes de la X.
 	local x = FIN_PAD + FIN_LOBO + K.ESP.m
 	local tw = ancho - x - FIN_PAD - 14
+	-- 1.4.0 (70): el lobo, lo de arriba y el título juntos en la banda, el
+	-- texto centrado con el lobo.
 	K.Escribir(t.Sobre, K.Mayus(d.sobre or ""))
-	t.Sobre:ClearAllPoints()
-	t.Sobre:SetPoint("TOPLEFT", t, "TOPLEFT", x, -(FIN_PAD + 2))
-	local y = FIN_PAD + 2 + K.Parrafo(t.Sobre, tw)
+	local hs = K.Parrafo(t.Sobre, tw)
 	K.Escribir(t.Titulo, d.titulo or "")
+	local ht = K.Parrafo(t.Titulo, tw)
+	local arriba = FIN_PAD + max(0, floor((FIN_LOBO - (hs + 3 + ht)) / 2))
+	t.Sobre:ClearAllPoints()
+	t.Sobre:SetPoint("TOPLEFT", t, "TOPLEFT", x, -arriba)
 	t.Titulo:ClearAllPoints()
-	t.Titulo:SetPoint("TOPLEFT", t, "TOPLEFT", x, -(y + 3))
-	y = y + 3 + K.Parrafo(t.Titulo, tw)
+	t.Titulo:SetPoint("TOPLEFT", t, "TOPLEFT", x, -(arriba + hs + 3))
+	local y = max(arriba + hs + 3 + ht, FIN_PAD + FIN_LOBO) + FIN_PAD
+	if t.Banda then t.Banda:Acomodar(y) end
 	if d.texto and d.texto ~= "" then
 		K.Escribir(t.Texto, d.texto)
 		t.Texto:ClearAllPoints()
@@ -2125,7 +2306,7 @@ function Rs.Pintar()
 	-- 1.3.7c: plegada, solo el paso de ahora y la flecha.
 	if Rs.Plegada() and g and v then
 		for _, f in ipairs({ ui.huellas, ui.plan, ui.aviso, ui.vacio, ui.nota, ui.mas, ui.antes, ui.flecha,
-			ui.detalle, ui.omitir, ui.siguiente, ui.pieLinea }) do f:Hide() end
+			ui.detalle, ui.omitir, ui.siguiente, ui.pieLinea, ui.sobrePaso }) do f:Hide() end
 		ocultarPaso(cxR)
 		-- La meta de ahora, como en la compacta (con su clic); sin metas, el título.
 		local abiertas = metasAbiertas(v)
@@ -2140,14 +2321,15 @@ function Rs.Pintar()
 			y = y + K.Parrafo(ui.paso, ancho, 2) + 4
 		end
 		ui.conFlecha = live ~= nil
-		local t = ui.conFlecha and textoFlecha() or nil
+		local t, dist, tiempo
+		if ui.conFlecha then t, dist, tiempo = textoFlecha() end
 		if t then
-			K.Escribir(ui.flecha.Texto, t)
 			ui.flecha:ClearAllPoints()
-			ui.flecha:SetPoint("TOPLEFT", F, "TOPLEFT", x, -(y + 2))
+			ui.flecha:SetPoint("TOPLEFT", F, "TOPLEFT", x, -(y + 8))
 			ui.flecha:SetWidth(ancho)
+			escribirFlecha(ui.flecha, t, dist, tiempo)
 			ui.flecha:Show()
-			y = y + 20
+			y = y + 26
 		end
 		F:SetHeight(y + K.ESP.s)
 		return
@@ -2183,12 +2365,20 @@ function Rs.Pintar()
 		y = y + h + K.ESP.m
 	end
 	ui.paso:SetShown(not vacio)
+	ui.sobrePaso:SetShown(not vacio)
 	ui.nota:Hide()
 	ui.mas:Hide()
 	ui.flecha:Hide()
 	ui.conFlecha = false
 	ui.antes:Hide()
 	if not vacio then
+		-- 1.4.0 (80): «PASO 4 · AHORA» (o «solo mirando») sobre el paso, que va grande.
+		local num = numeroPaso(v.index)
+		K.Escribir(ui.sobrePaso, K.Mayus(previa and format(L["Paso %d · solo mirando"], num) or format(L["Paso %d · ahora"], num)))
+		ui.sobrePaso:ClearAllPoints()
+		ui.sobrePaso:SetPoint("TOPLEFT", F, "TOPLEFT", x, -(y + 2))
+		ui.sobrePaso:SetWidth(ancho)
+		y = y + 16
 		K.Escribir(ui.paso, tituloPaso(v))
 		ui.paso:ClearAllPoints()
 		ui.paso:SetPoint("TOPLEFT", F, "TOPLEFT", x, -y)
@@ -2208,14 +2398,15 @@ function Rs.Pintar()
 			-- El latido mira lo mismo: si no, repinta todo cada segundo. La
 			-- flecha va al paso que se ve (el motor), sea el de ahora u otro.
 			ui.conFlecha = live ~= nil
-			local t = ui.conFlecha and textoFlecha() or nil
+			local t, dist, tiempo
+			if ui.conFlecha then t, dist, tiempo = textoFlecha() end
 			if t then
-				K.Escribir(ui.flecha.Texto, t)
 				ui.flecha:ClearAllPoints()
-				ui.flecha:SetPoint("TOPLEFT", F, "TOPLEFT", x, -(y + 2))
+				ui.flecha:SetPoint("TOPLEFT", F, "TOPLEFT", x, -(y + 8))
 				ui.flecha:SetWidth(ancho)
+				escribirFlecha(ui.flecha, t, dist, tiempo)
 				ui.flecha:Show()
-				y = y + 20
+				y = y + 26
 			end
 			-- 1.3.9 (30): el objeto de misión, cuando estás cerca de su objetivo.
 			local yo = pintarObjeto(cxR, x, y + 2, ancho, true)

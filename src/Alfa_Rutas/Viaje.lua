@@ -43,7 +43,7 @@ local function mia(mascara)
 	return (mascara == 3) or (mascara == f)
 end
 
-local ICONO = { vuelo = "ic-ruta", posada = "ic-hogar", muelle = "ic-huella", tranvia = "ic-ruta", portal = "ic-cerca" }
+local ICONO = { vuelo = "ic-ruta", posada = "house", muelle = "ic-huella", tranvia = "ic-ruta", portal = "ic-cerca" }
 
 local cache
 function Vj.Destinos()

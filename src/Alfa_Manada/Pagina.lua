@@ -1065,7 +1065,9 @@ local function bloqueCitas(padre)
 			local hermandad = U.EnHermandad()
 			local activo = N.Get(ID, "citas") ~= false
 			b.Dia:SetOpciones(Ci.OpcionesDia())
-			for _, x in ipairs({ b.Que, b.Dia, b.Hora, b.Proponer }) do x:SetActivo(hermandad and activo) end
+			-- (1.4.0, 112: el botón apagado dice por qué)
+			local porque = not hermandad and Ci.MOTIVOS and Ci.MOTIVOS.hermandad and L[Ci.MOTIVOS.hermandad] or nil
+			for _, x in ipairs({ b.Que, b.Dia, b.Hora, b.Proponer }) do x:SetActivo(hermandad and activo, porque) end
 			local filas = {}
 			for _, c in ipairs(activo and Ci.Lista() or {}) do
 				local cuando = Ci.CuandoTexto(c.cuando)
@@ -1263,6 +1265,12 @@ local function bloqueSemana(padre)
 			for _, x in ipairs(lista) do filas[#filas + 1] = { nombre = x.nombre, dato = Lo.TextoCuenta(x) } end
 			local texto = on("semanaCompartir") and L["Tu semana se comparte con tu hermandad. Cada lobo suma; aquí nadie compite."]
 				or L["Tu semana solo la ves tú. Compártela en los ajustes de abajo para sumar con la manada."]
+			-- 1.4.0 (55): lo destacado de la semana y tus logros.
+			local dest = Lo.TextoDestacados and Lo.TextoDestacados()
+			if dest then texto = texto .. "\n" .. format(L["Lo destacado: %s"], dest) end
+			local logros = {}
+			for _, m in ipairs(Lo.Metas and Lo.Metas() or {}) do if m.hecho then logros[#logros + 1] = m.titulo end end
+			if #logros > 0 then texto = texto .. "\n" .. format(L["Tus logros de la semana: %s"], table.concat(logros, ", ")) end
 			return {
 				titulo = tot.lobos > 1 and format(L["Esta semana, entre %d lobos: %s"], tot.lobos, Lo.TextoCuenta(tot, ", "))
 					or format(L["Tu semana: %s"], Lo.TextoCuenta(tot, ", ")),
@@ -1618,6 +1626,17 @@ local function grupos(ui, padre)
 	-- 1.3.9: el censo de la hermandad (Censo.lua).
 	juntos:Fila({ titulo = L["Lobos con Alfa"], control = interruptor("censo"),
 		texto = L["Tu versión de Alfa a tu hermandad, para saber quién usa Alfa y quién debe actualizar. Tu nivel y tu zona solo si los compartes."] })
+	-- 1.4.0: la bienvenida (Bienvenida.lua) y tus logros de la semana (Logros.lua).
+	juntos:Fila({ titulo = L["Bienvenida a la manada"], control = interruptor("bienvenida"),
+		texto = L["Una tarjeta al entrar a una hermandad, y otra cuando llega un lobo con Alfa a la tuya, con «Darle la bienvenida»."] })
+	juntos:Fila({ titulo = L["Logros de la semana"], control = interruptor("semanaLogros"),
+		texto = L["Lya festeja cuando tu semana llega a una meta: misiones, peces o lobos ayudados."] })
+	-- 1.4.0 (116): los lobos que silenciaste, a la vista (Callados.lua).
+	ui.filaCallados = juntos:Fila({ titulo = L["Lobos silenciados"], texto = "",
+		control = function(fila)
+			ui.botonCallados = K.Boton(fila, L["Ver"], function() if M.Callados and M.Callados.Ventana then M.Callados.Ventana() end end, { tipo = "secundario" })
+			return ui.botonCallados
+		end })
 	-- 1.3.0: la manada crece.
 	local crece = K.GrupoAjustes(padre, { titulo = L["La manada crece"] })
 	crece:Fila({ titulo = L["Lugares para juntar"], control = interruptor("spots"), activa = function() return N.Get(ID, "notas") ~= false end,
@@ -1779,6 +1798,17 @@ local function llenar(ui)
 	ui.clan:Llenar()
 	ui.lya:Llenar()
 	ui.filaCompartir.alfaDatos.texto = textoCompartir()
+	-- 1.4.0 (116)
+	local Ca = M.Callados
+	if ui.filaCallados and ui.botonCallados and Ca then
+		local nc = #Ca.Lista()
+		ui.filaCallados.alfaDatos.texto = nc > 0
+			and N.Plural(nc, L["Silenciaste a %d lobo: sus avisos no te salen. Aquí ves a quién y se lo quitas cuando quieras."],
+				L["Silenciaste a %d lobos: sus avisos no te salen. Aquí ves a quiénes y se lo quitas cuando quieras."])
+			or L["Nadie. Desde la ficha de un lobo eliges «Silenciar sus avisos»; aquí se lo quitas cuando quieras."]
+		ui.botonCallados:SetTexto(nc > 0 and format(L["Ver (%d)"], nc) or L["Ver"])
+		ui.botonCallados:SetActivo(nc > 0, L["No silenciaste a ningún lobo."])
+	end
 	for _, g in ipairs(ui.ajustes) do g:Refrescar() end
 	ui.firma = firma(ui, gente)
 end

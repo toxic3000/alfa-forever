@@ -107,12 +107,12 @@ step("El asistente: pasos y dibujo", function()
   check(e.paso == 2, "no pasó al paso 2")
   As.Paso(3)
   As.Paso(9)
-  check(e.paso == 3, "el paso se sale del rango")
+  check(e.paso == 2, "el paso se sale del rango") -- 1.4.0: dos pasos
   As.Paso(2)
   SNAP("asistente-monitores", As.Ventana())
   As.Paso(1)
   SNAP("asistente-pantalla", As.Ventana())
-  As.Paso(3)
+  As.Paso(2)
   SNAP("asistente-probar", As.Ventana())
   As.Cerrar()
 end)
@@ -152,7 +152,7 @@ end)
 ---------------------------------------------------------------------------
 step("Probar y «Sí» guarda", function()
   As.Abrir()
-  As.Paso(3)
+  As.Paso(2)
   check(As.Probar(), "el botón Probar del asistente no prueba")
   check(not As.Visible(), "el asistente no se escondió mientras pruebas")
   _G.AlfaEscritorioConfirmar.Si:Click()
@@ -259,7 +259,8 @@ step("El editor: arrastrar, tamaño, imán, deshacer, catálogo y guardar como",
   -- 2.4 celdas a la izquierda y 0.6 hacia abajo: el imán lo deja en 2 y 1.
   Ed.Arrastrar("hoy", -cw * 2.4, ch * 0.6)
   c = Ed.CeldaDe("hoy")
-  check(c.x == x0 - 2 and c.y == y0 + 1, "el imán no pegó a la rejilla: " .. c.x .. "," .. c.y)
+  -- 1.4.0: Hoy va abajo en Aventura; el imán no lo saca de la rejilla.
+  check(c.x == x0 - 2 and c.y == math.min(Es.FILAS - c.h, y0 + 1), "el imán no pegó a la rejilla: " .. c.x .. "," .. c.y)
   check(Ed.PuedeDeshacer(), "no hay nada que deshacer")
   Ed.Deshacer()
   c = Ed.CeldaDe("hoy")
@@ -410,8 +411,9 @@ end)
 ---------------------------------------------------------------------------
 step("Guardar y volver a entrar (/reload)", function()
   Ed.Abrir()
-  Ed.Arrastrar("reloj", -Es.Celda() * 6, 0)
-  local c = Ed.CeldaDe("reloj")
+  -- 1.4.0: Aventura ya no trae el reloj (la hora va en la barra): se mueve Lya.
+  Ed.Arrastrar("lya", Es.Celda() * 6, 0)
+  local c = Ed.CeldaDe("lya")
   Ed.Cerrar()
   -- Lo que queda en AlfaNucleoDB y en los ajustes.
   check(type(AlfaNucleoDB.pantallas.dist.aventura) == "table", "los paneles de Aventura no quedaron guardados")
@@ -422,7 +424,7 @@ step("Guardar y volver a entrar (/reload)", function()
   Es.AlEntrar()
   correr(2)
   check(Es.Aplicado() ~= nil and cerca(UIParent:GetWidth(), 1920), "al entrar no se puso otra vez")
-  local d = Ed.CeldaDe("reloj")
+  local d = Ed.CeldaDe("lya")
   check(d and d.x == c.x and d.y == c.y, "el panel movido no volvió a su lugar")
   -- Una prueba a medias no se queda tras el /reload.
   Es.Volver()
@@ -521,9 +523,11 @@ C_VideoOptions = {
   SetGameWindowSize = function(x, y) pedido = { x, y } end,
 }
 -- RestartGx: el juego vuelve con la ventana pedida y avisa DISPLAY_SIZE_CHANGED.
+-- 1.4.0: maximizada o a pantalla completa, la ventana es la del monitor.
 RestartGx = function()
   reinicios = reinicios + 1
-  if pedido then PANTALLA_SIMULADA(pedido[1], pedido[2]) end
+  if cv.gxWindow == "0" or cv.gxMaximize == "1" then PANTALLA_SIMULADA(1920, 1080)
+  elseif pedido then PANTALLA_SIMULADA(pedido[1], pedido[2]) end
 end
 local function volverGraficos() FIRE_EVENT("DISPLAY_SIZE_CHANGED") correr(2) end
 
@@ -564,7 +568,8 @@ step("Dos pantallas en un clic", function()
   correr(16)
   check(not Es.Probando() and Es.Aplicado() == nil, "la prueba no terminó sola")
   check(Au.Fase() == nil and cv.gxWindow == "0" and cv.gxMaximize == "1" and reinicios == 2, "la ventana no volvió a su modo de antes")
-  check(pedido and pedido[1] == 1920 and pedido[2] == 1080, "la ventana no volvió a su tamaño de antes")
+  -- 1.4.0 (el bug de la escala): a pantalla completa no se le da tamaño fijo.
+  check(pedido and pedido[1] == 3840, "a la pantalla completa se le dio un tamaño fijo")
   volverGraficos()
   check(cerca(WorldFrame:GetWidth(), 1920) and Es.Aplicado() == nil, "quedó algo puesto después de volver")
   -- Otra vez, y «Sí»: queda guardado; «Volver a una pantalla» devuelve la ventana.

@@ -476,6 +476,14 @@ local REPETIDO = 120
 local dados = {}
 function U.Aviso(o)
 	if type(o) ~= "table" then return nil end
+	-- 1.4.0 (56): lo de un lobo que silenciaste no sale (o.de, o el remitente
+	-- del mensaje que se está leyendo: Red.lua).
+	local Ca = M.Callados
+	if Ca and Ca.Esta then
+		local de = o.de or (M.Red and M.Red.De and M.Red.De())
+		if de and Ca.Esta(de) then Ca.Contar() return nil end
+	end
+	o.de = nil
 	o.modulo = o.modulo or "manada"
 	o.icono = o.icono or "ic-manada"
 	local titulo, texto = o.titulo, o.texto

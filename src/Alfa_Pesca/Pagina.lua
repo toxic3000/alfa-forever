@@ -333,6 +333,10 @@ local function grupos(ui, padre)
 		texto = L["Al cerrar el modo pesca, cuánto sacaste mientras estuvo abierto."] })
 	barra:Fila({ titulo = L["Consejos mientras pescas"], control = interruptor("consejos"), activa = activa,
 		texto = L["Cuando se acaba tu cebo y no te queda otro, o cuando llegas al tope de tu rango de Pesca."] })
+	barra:Fila({ titulo = L["Recordar el cebo al acabarse"], control = interruptor("ceboRecordar"), activa = activa,
+		texto = L["Si te queda otro cebo, un aviso con el botón para ponerlo. Tu tecla de pesca también lo pone."] })
+	barra:Fila({ titulo = L["Meta de pesca del día"], control = interruptor("metaDia"), activa = activa,
+		texto = L["Cada día una meta chiquita (peces nuevos, capturas o bancos) en tu ventana de metas. Lya festeja cuando la cumples."] })
 	barra:Fila({ titulo = L["Ventana de metas"], control = interruptor("metasVentana"), activa = activa,
 		texto = L["Con el modo pesca abierto y alguna meta, la ventanita de metas se ve sola."] })
 	barra:Fila({ titulo = L["Ocultar la interfaz al pescar"], control = interruptor("ocultarUI"), activa = activa,
@@ -492,6 +496,8 @@ for _, c in ipairs({
 	toggle("resumen", L["Aviso con lo que sacas"], nil, nil, "catch toast, loot"),
 	toggle("resumenCerrar", L["Resumen al cerrar el modo"], L["Al cerrar el modo pesca, cuánto sacaste mientras estuvo abierto."], nil, "summary, session"),
 	toggle("consejos", L["Consejos mientras pescas"], L["Cuando se acaba tu cebo y no te queda otro, o cuando llegas al tope de tu rango de Pesca."], nil, "tips, lure, skill cap"),
+	toggle("ceboRecordar", L["Recordar el cebo al acabarse"], L["Si te queda otro cebo, un aviso con el botón para ponerlo. Tu tecla de pesca también lo pone."], nil, "lure reminder, bait, cebo"),
+	toggle("metaDia", L["Meta de pesca del día"], L["Cada día una meta chiquita (peces nuevos, capturas o bancos) en tu ventana de metas. Lya festeja cuando la cumples."], nil, "daily goal, fishing goal, meta del día"),
 	toggle("avisoPelear", L["Avisar si te atacan con la caña"], L["Al entrar en combate con la caña puesta, un aviso breve con cómo volver a tus armas."], nil, "combat, weapons, pvp"),
 	toggle("previa", L["Preguntar antes de pescar"], L["Al abrir el modo pesca, un cuadro para elegir tu caña, tu cebo y cómo quieres la barra. Si tienes una sola caña y ningún cebo, no sale."], nil, "pole, lure, before fishing, caña, cebo"),
 	toggle("avisoNivel", L["Avisar al subir de nivel de pescador"], nil, nil, "fishing level, angler level, nivel"),

@@ -56,6 +56,16 @@
 -- facción. Uno sin marca (un Alfa viejo) solo se acepta por la hermandad, el
 -- grupo o la banda, que ya son de tu facción. El canal oculto es uno por
 -- facción (Canal.lua): la otra ni lo oye.
+--
+-- 1.4.0 (16, la 1.3.x y la 1.4 se entienden): todo mensaje lleva, antes de
+-- la facción, la versión del idioma de la Red ("|^2", R.PROTO). Un Alfa
+-- 1.3.x lo ve como un campo de más al final y lo ignora (todos leen por
+-- posición); uno sin marca es de la versión 1. Lo que se sabe de cada lobo
+-- queda en R.VersionDe(clave) = { proto, version (del saludo 1H) }. Un tipo
+-- que no se conoce se ignora en silencio, y si leer un mensaje falla (un
+-- campo raro de una versión más nueva), se cuenta en R.diag.malos y no sale
+-- ningún error de Lua. Mientras se lee un mensaje, R.De() dice de quién es
+-- (Callados.lua no deja salir los avisos de un lobo que silenciaste).
 
 local ADDON, M = ...
 local N = AlfaNucleo
@@ -68,6 +78,8 @@ M.Red = R
 
 R.PREFIJO = "AlfaManada"
 local V = "1"
+R.PROTO = 2        -- (1.4.0) la versión del idioma de la Red: 1 = 1.3.x (sin marca), 2 = 1.4
+local LARGO = 255  -- lo más que deja mandar el juego en un mensaje de addon
 local TOPE, RAFAGA = 1, 3
 local FRENO = 3
 local ENVIO, REFRESCO, MOVER = 10, 240, 10
@@ -293,6 +305,9 @@ end))
 function R.Enviar(clave, texto, canal, destino, despedida)
 	if not R.PuedeEnviar(despedida) then return false end
 	R.Prefijo()
+	-- 1.4.0: la versión de la Red, antes de la facción (si cabe: un mensaje
+	-- largo sale sin ella y se lee como de la versión 1).
+	if type(texto) == "string" and #texto + 6 <= LARGO then texto = texto .. "|^" .. R.PROTO end
 	-- 1.3.8: todo lo de la manada lleva tu facción al final ("|~H" / "|~A");
 	-- quien es de la otra lo ignora (Núcleo, Faccion.lua).
 	if N.ConFaccion and type(texto) == "string" then texto = N.ConFaccion(texto) end
@@ -467,8 +482,68 @@ R.Oyentes = {}
 -- cada uno revisa su propio ajuste (Logros.lua, QuienTiene.lua).
 R.Libres = {}
 
+---------------------------------------------------------------------------
+-- (1.4.0) Quién habla qué versión, y de quién es lo que se está leyendo
+---------------------------------------------------------------------------
+
+local versiones, nVersiones = {}, 0 -- clave -> { proto, version, at }
+local MAX_VERSIONES = 300
+R.diag.malos = 0   -- mensajes que no se pudieron leer (se ignoran sin error)
+R.diag.nuevos = 0  -- mensajes de un Alfa con una Red más nueva que la tuya
+
+local function anotarVersion(clave, proto, version)
+	local v = versiones[clave]
+	if not v then
+		if nVersiones >= MAX_VERSIONES then
+			-- Lugar para alguien nuevo: se va quien lleva más tiempo callado.
+			local viejo, t = nil, math.huge
+			for k, x in pairs(versiones) do if x.at < t then viejo, t = k, x.at end end
+			if viejo then versiones[viejo] = nil nVersiones = nVersiones - 1 end
+		end
+		v = {}
+		versiones[clave] = v
+		nVersiones = nVersiones + 1
+	end
+	v.proto, v.at = proto, U.Ahora()
+	if version then v.version = version end
+end
+
+-- -> { proto = 1 | 2 | ..., version = "1.4.0" | nil } | nil: lo que se sabe de su Alfa.
+function R.VersionDe(clave)
+	local v = clave and versiones[clave]
+	if not v then return nil end
+	return { proto = v.proto, version = v.version }
+end
+
+-- ¿Su Alfa ya habla la 1.4 (o más nueva)? nil si nunca se le oyó.
+function R.EsNuevo(clave)
+	local v = clave and versiones[clave]
+	if not v then return nil end
+	return (v.proto or 1) >= 2
+end
+
+local actual -- la clave de quien mandó lo que se está leyendo ahora
+function R.De() return actual end
+R.RESPUESTAS = { R = true, D = true, B = true, U = true, K = true, h = true }
+
+-- (para el banco)
+function R.OlvidarVersiones() wipe(versiones) nVersiones = 0 end
+
+local procesar
+
 -- (evento, prefijo, texto, canal, remitente, destino, zona, número del canal, nombre del canal)
-local function alMensaje(_, prefijo, texto, canal, remitente, _, _, localID, nombreCanal)
+-- 1.4.0: un mensaje que no se puede leer nunca da un error de Lua: se cuenta y se ignora.
+local function alMensaje(...)
+	local ok, err = pcall(procesar, ...)
+	actual = nil
+	if not ok then
+		R.diag.malos = R.diag.malos + 1
+		R.diag.ultimoMalo = tostring(err):sub(1, 160)
+	end
+end
+R.AlMensaje = alMensaje -- (para el banco)
+
+procesar = function(_, prefijo, texto, canal, remitente, _, _, localID, nombreCanal)
 	if U.Secreto(prefijo) or U.Secreto(texto) or U.Secreto(canal) or U.Secreto(remitente) then return end
 	if prefijo ~= R.PREFIJO or type(texto) ~= "string" or type(remitente) ~= "string" then return end
 	local C = M.Canal
@@ -486,11 +561,20 @@ local function alMensaje(_, prefijo, texto, canal, remitente, _, _, localID, nom
 	if okYo and yo then return end
 	local clave = U.Clave(remitente)
 	if not clave or clave == U.MiClave() then return end
+	-- 1.4.0: la versión de la Red va al final (ya sin la facción); sin ella, la 1.
+	local proto = 1
+	local cuerpo, p = texto:match("^(.*)|%^(%d%d?)$")
+	if cuerpo then texto, proto = cuerpo, tonumber(p) or 1 end
 	-- (1.3.0) También minúsculas: las letras mayúsculas ya casi se acabaron y
 	-- un Alfa viejo descarta solo lo que no entiende.
 	local tipo, resto = texto:match("^" .. V .. "(%a)|?(.*)$")
 	if not tipo then return end
 	R.diag.recibidos = R.diag.recibidos + 1
+	if proto > R.PROTO then R.diag.nuevos = R.diag.nuevos + 1 end
+	anotarVersion(clave, proto)
+	-- (56) Las respuestas a lo que tú pediste (te abre la puerta, va a tu cita,
+	-- viene a tu llamado, tiene lo que buscas, su ficha) salen aunque lo silenciaras.
+	if not R.RESPUESTAS[tipo] then actual = clave end
 
 	-- "Quiero unirme", por susurro: respondo si soy de la hermandad del clan,
 	-- a cualquiera, una vez por minuto por persona.
@@ -524,6 +608,8 @@ local function alMensaje(_, prefijo, texto, canal, remitente, _, _, localID, nom
 	local G = M.Gente
 	local f = dividir(resto or "")
 	if tipo == "H" then
+		local ver = type(f[1]) == "string" and f[1]:match("^[%w%.%-]+$") and f[1]:sub(1, 16) or nil
+		if ver then anotarVersion(clave, proto, ver) end
 		G.Oido(clave, remitente, via, { version = f[1] })
 		-- Responde por donde hablo yo (un saludo de la hermandad, si hablo
 		-- por el canal, ya lo escuchó por el canal).

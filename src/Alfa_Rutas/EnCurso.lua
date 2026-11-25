@@ -164,10 +164,12 @@ function EC.Linea(it, sinTocada)
 	local partes = {}
 	if it.tipo == "plan" then
 		partes[#partes + 1] = format(L["%d de %d metas"], it.hechos or 0, it.total or 0)
-	elseif it.paso and it.pasos and it.pasos > 0 then
-		partes[#partes + 1] = format(L["Paso %d de %d"], min(it.paso, it.pasos), it.pasos)
+	-- 1.4.0 (83): primero lo hecho, como el rastreador y Hoy («12 de 22 pasos
+	-- hechos»); con pasos hechos fuera de orden «Paso 2 de 22 · 55 %» confundía.
 	elseif it.total and it.total > 0 then
 		partes[#partes + 1] = format(L["%d de %d pasos hechos"], it.hechos or 0, it.total)
+	elseif it.paso and it.pasos and it.pasos > 0 then
+		partes[#partes + 1] = format(L["Paso %d de %d"], min(it.paso, it.pasos), it.pasos)
 	elseif it.pasos and it.pasos > 0 then
 		partes[#partes + 1] = M.Plural(it.pasos, L["%d paso"], L["%d pasos"])
 	end

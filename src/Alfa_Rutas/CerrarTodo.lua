@@ -197,6 +197,12 @@ local function armarVentana()
 		Cr.SetFiltro(f)
 		Ct.Rehacer()
 	end })
+	-- 1.4.0 (30): al final, a la ciudad: entrenar y vender (Ciudad.lua).
+	v.Ciudad = K.Interruptor(c, { get = function() return A.Get(M.ID .. ".cerrarCiudad") == true end,
+		set = function(x) A.Set(M.ID .. ".cerrarCiudad", x and true or false) end })
+	v.CiudadTexto = K.Texto(c, "cuerpo", "texto")
+	v.CiudadTexto:SetWordWrap(true)
+	v.CiudadTexto:SetJustifyH("LEFT")
 	v.Sec1 = K.Texto(c, "mayus", "textoTenue")
 	v.Sec2 = K.Texto(c, "mayus", "textoTenue")
 	v.Accion = K.Boton(c, "", function() if v.alfaAccion then v.alfaAccion() end end, { tipo = "secundario", tam = "chico" })
@@ -253,7 +259,7 @@ function Ct.PintarYa()
 	local x, y = m, K.ESP.m
 	local fase = st.fase
 	local k = 1
-	for _, w in ipairs({ v.Sec1, v.Sec2, v.Accion, v.Filtros, v.Barra }) do w:Hide() end
+	for _, w in ipairs({ v.Sec1, v.Sec2, v.Accion, v.Filtros, v.Barra, v.Ciudad, v.CiudadTexto }) do w:Hide() end
 	-- Arriba: el lobo y lo grande.
 	local conLobo = fase ~= "resumen"
 	if conLobo then
@@ -295,6 +301,21 @@ function Ct.PintarYa()
 		local h = v.Filtros:Acomodar(ancho)
 		v.Filtros:Show()
 		y = y + h + K.ESP.m
+	end
+	-- 1.4.0 (30): «Al final, a la ciudad: entrenar y vender».
+	if fase == "resumen" and M.Ciudad then
+		v.Ciudad:SetValor(A.Get(M.ID .. ".cerrarCiudad") == true)
+		v.Ciudad:ClearAllPoints()
+		v.Ciudad:SetPoint("TOPLEFT", v.Cuerpo, "TOPLEFT", x, -y)
+		v.Ciudad:Show()
+		local sw = K.num(v.Ciudad:GetWidth(), 36) + K.ESP.s
+		K.Escribir(v.CiudadTexto, L["Al final, a la ciudad: entrenar y vender"])
+		v.CiudadTexto:ClearAllPoints()
+		local th = K.Parrafo(v.CiudadTexto, ancho - sw, 2)
+		local alto = max(K.num(v.Ciudad:GetHeight(), 18), th)
+		v.CiudadTexto:SetPoint("TOPLEFT", v.Cuerpo, "TOPLEFT", x + sw, -(y + max(0, (alto - th) / 2)))
+		v.CiudadTexto:Show()
+		y = y + alto + K.ESP.m
 	end
 	if fase == "resumen" or fase == "vacio" then
 		local lista = {}
@@ -549,7 +570,8 @@ function Ct.Empezar()
 		local dentro = {}
 		for qid in pairs(st.sello and st.sello.dentro or {}) do dentro[qid] = true end
 		pj().cerrarCuenta = { inicio = time and time() or 0, xp = 0, n = 0, total = st.info and st.info.misiones or 0,
-			dentro = dentro, hechas = {}, nivel = UnitLevel and UnitLevel("player") or nil, xp0 = xpDeAhora() }
+			dentro = dentro, hechas = {}, nivel = UnitLevel and UnitLevel("player") or nil, xp0 = xpDeAhora(),
+			ciudad = M.Ciudad and M.Ciudad.Prendido() or nil } -- 1.4.0 (30)
 		if v then v:Cerrar() end
 		Ct.PintarMapa()
 		if Cr.Lista then M.Avisar("CERRAR") end
@@ -586,6 +608,8 @@ local function festejar(c)
 		M.Aviso(L["¡Cerraste tu ruta!"], linea, { lobo = "aullando", importante = "siempre" })
 	end
 	Ct.PintarMapa()
+	-- 1.4.0 (30): y luego, a la ciudad (después del festejo).
+	if c.ciudad and M.Ciudad then N.Una("rutas.ciudadEmpezar", 8, function() M.Ciudad.Empezar() end) end
 end
 Ct.Festejar = festejar
 

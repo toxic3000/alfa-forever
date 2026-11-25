@@ -34,7 +34,7 @@ function Di.Tope()
 	local f = C_QuestLog and C_QuestLog.GetMaxNumQuestsCanAccept
 	if type(f) == "function" then
 		local ok, n = pcall(f)
-		n = ok and tonumber(N.Leer and N.Leer(n) or n) or nil
+		n = ok and tonumber(N.Leer(n)) or nil
 		if n and n > 0 then return n end
 	end
 	local g = tonumber(rawget(_G, "MAX_QUESTLOG_QUESTS"))
@@ -84,7 +84,7 @@ local function armar()
 	ventana = M.VentanaSimple({
 		nombre = "AlfaRutasDiario", titulo = L["Tu registro va lleno"], icono = "ic-misiones", ancho = 460, alto = 440,
 		altoFila = 44,
-		vacio = { lobo = "contento", titulo = L["Nada que convenga soltar"], texto = L["Todas tus misiones valen la pena. Entrega las listas para hacer lugar."] },
+		vacio = { lobo = "aullando", titulo = L["Nada que convenga soltar"], texto = L["Todas tus misiones valen la pena. Entrega las listas para hacer lugar."] },
 		crear = function(fila)
 			fila.Texto = K.Texto(fila, "cuerpo", "texto")
 			fila.Texto:SetPoint("TOPLEFT", fila, "TOPLEFT", 10, -6)

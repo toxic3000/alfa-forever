@@ -197,9 +197,28 @@ function Ruta.RecursosEn(mapID, tipo)
 	return out
 end
 
+-- 1.4.0 (plan 73): las `n` paradas más cercanas a (px, py), en su orden de
+-- la lista (para el circuito corto).
+local function lasMasCercanas(lista, n, px, py)
+	if not (n and px and #lista > n) then return lista end
+	local orden = {}
+	for k, p in ipairs(lista) do
+		local dx, dy = p.wx - px, p.wy - py
+		orden[k] = { p = p, d = dx * dx + dy * dy }
+	end
+	table.sort(orden, function(a, b) return a.d < b.d end)
+	local out = {}
+	for k = 1, n do out[k] = orden[k].p end
+	return out
+end
+Ruta.MasCercanas = lasMasCercanas
+
 -- Arma la ruta en la zona `mapID` (o la tuya) con el tipo y recurso
 -- elegidos. alListo(ruta) cuando termina. -> true | false, motivo
-function Ruta.Crear(tipo, recurso, mapID, alListo)
+-- op (1.4.0): { cerca = n (solo las n paradas más cercanas a ti), deGuia = true
+-- (la pidió un paso de guía: al cambiar de paso se suelta sin decir nada) }
+function Ruta.Crear(tipo, recurso, mapID, alListo, op)
+	op = op or {}
 	mapID = mapID or Ruta.ZonaActual()
 	if not mapID then return false, L["No sé en qué zona estás."] end
 	local idx = R.IndiceSiHay(mapID)
@@ -218,11 +237,14 @@ function Ruta.Crear(tipo, recurso, mapID, alListo)
 	local C = A.Compat
 	local c, px, py = C.GetPlayerWorldPosition()
 	if c ~= b.c then px, py = nil, nil end
+	local total = #lista
+	lista = lasMasCercanas(lista, op.cerca, px, py)
 	local desde = GetTime()
 	local co = coroutine.create(function()
 		local t, largo = ordenar(lista, px, py, desde)
 		local nueva = { mapa = mapID, c = b.c, tipo = tipo, recurso = recurso, n = #t, x = {}, y = {}, wx = {}, wy = {},
-			g = {}, cuenta = {}, largo = largo, siguiente = 1, guiando = false, creada = time() }
+			g = {}, cuenta = {}, largo = largo, siguiente = 1, guiando = false, creada = time(),
+			total = total, deGuia = op.deGuia and true or nil }
 		for k, v in ipairs(t) do
 			local p = lista[v]
 			nueva.x[k], nueva.y[k], nueva.wx[k], nueva.wy[k], nueva.g[k], nueva.cuenta[k] = p.x, p.y, p.wx, p.wy, p.g, p.n
@@ -362,8 +384,10 @@ local function vigilar()
 	-- La flecha pasó a otra cosa: la ruta deja de guiar.
 	if ruta.objetivo and Nav and Nav.GetTarget and Nav.GetTarget() ~= ruta.objetivo then
 		ruta.objetivo = nil
+		local deGuia = ruta.deGuia
 		parar()
-		N.Imprimir(L["La flecha ya no sigue tu ruta para juntar."]) -- 1.3.6: sin «farmeo»
+		-- 1.4.0: la que pidió un paso de guía se suelta callada al cambiar de paso.
+		if not deGuia then N.Imprimir(L["La flecha ya no sigue tu ruta para juntar."]) end -- 1.3.6: sin «farmeo»
 		return
 	end
 	local C = A.Compat
@@ -409,7 +433,8 @@ function Ruta.Guiar()
 	apuntar(k)
 	tomarGancho()
 	if not vigia then vigia = N.Ticker("recoleccion.ruta", 0.5, vigilar) end
-	if N.EmpezarRuta then N.EmpezarRuta() end -- cierra las ventanas de Alfa y muestra el seguimiento
+	-- cierra las ventanas de Alfa y muestra el seguimiento (1.4.0: no si la pidió el paso de guía que ya sigues)
+	if N.EmpezarRuta and not ruta.deGuia then N.EmpezarRuta() end
 	return true
 end
 

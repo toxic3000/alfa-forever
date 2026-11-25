@@ -329,6 +329,15 @@ function Ev.Mostrar(key, jefe)
 			poner((m.lista and (LISTO .. " ") or "- ") .. m.texto, m.lista and "exito" or "textoSuave")
 		end
 	end
+	-- 1.4.0 (43): lo que te sirve de este jefe (fuera de combate: se lee el botín).
+	local Pm = M.ParaMi
+	if Pm and not enCombate() and N.Get(ID, "paraMi") ~= false then
+		local ok, tuyos = pcall(Pm.DeJefe, key, jefe.nombre)
+		if ok and type(tuyos) == "table" and #tuyos > 0 then
+			y = y + 2
+			poner(format(L["Para ti: %s"], table.concat(tuyos, ", ", 1, min(3, #tuyos))), "exito")
+		end
+	end
 	for i = n + 1, #t.lineas do t.lineas[i]:Hide() end
 	t:SetHeight(y + PAD - 4)
 	t:Show()

@@ -2252,6 +2252,10 @@ function DS.Render()
 		renderEmpty(reason)
 		return
 	end
+	-- Alfa 1.4.0 (revisión): el botín y los jefes leen las partes del Codex: ya,
+	-- fuera de combate (en combate, al terminar).
+	local CX = ns.Codex
+	if CX and CX.Preload and CX.IsLoaded and CX.IsLoaded() then CX.Preload() end
 	home.Tool:Show()
 	segPaint()
 	local plevel = playerLevel()

@@ -88,6 +88,9 @@ M.AJUSTES = {
 	-- 1.3.9
 	avisoSemana = true,      -- al llegar a una zona del pez de la semana, un aviso (una vez por zona y semana)
 	pestanasTodas = false,   -- la ventana con sus ocho pestañas a la vista (apagado: cuatro y «Más»)
+	-- 1.4.0
+	ceboRecordar = true,     -- al acabarse el cebo, un recordatorio con el botón para poner otro
+	metaDia = true,          -- la meta de pesca del día y el festejo de Lya (MetaDia.lua)
 }
 
 _G["BINDING_NAME_" .. ACCION] = L["Pescar: lanzar y recoger"]
@@ -112,6 +115,7 @@ local E = {
 	modoPuesto = false,     -- sus teclas están puestas ahora
 	respaldo = nil,         -- CVar -> valor original, mientras están cambiados
 	puestos = {},           -- cvar en minúsculas -> { nombre, valor } que puso Alfa
+	soltadas = {},          -- 1.4.0: cvar en minúsculas que cambiaste tú: ya no la toca hasta cerrar
 	teclaPuesta = false,    -- la tecla está en INTERACTTARGET
 	clicArmado = nil,       -- "lanzar" | "recoger": BUTTON2 tomado por el doble clic
 	canal = nil,            -- GetTime() al empezar el canal de pesca
@@ -216,7 +220,7 @@ end
 function M.Pescando()
 	if not UnitChannelInfo then return false end
 	local ok, nombre, _, _, _, _, _, _, spell = pcall(UnitChannelInfo, "player")
-	if not ok or nombre == nil then return false end
+	if not ok or type(nombre) == "nil" then return false end -- 1.4.0: un secreto no se compara ni con nil
 	if legible(spell) and type(spell) == "number" and PESCA[spell] then return true end
 	return legible(nombre) and nombre == M.NombrePesca()
 end
@@ -509,27 +513,53 @@ local function deseadas()
 	return t
 end
 
+-- 1.4.0 (bug de Toxic: «ya no me deja regresar el audio»): las variables de
+-- sonido son de toda la cuenta (y del equipo), no de un personaje. El respaldo
+-- vivía por personaje: si el juego se cerraba de golpe con la pesca puesta y
+-- entrabas con otro personaje, nadie devolvía tu música, y al pescar con ese
+-- otro se guardaba «música en 0» como si fuera la tuya. Ahora el respaldo es
+-- de la cuenta (AlfaNucleoDB); el viejo por personaje se lee una vez y se suelta.
 local function guardarRespaldo()
-	local d = N.DatosPersonaje(ID)
+	local cuenta, pj = N.Datos(ID), N.DatosPersonaje(ID)
+	pj.respaldo = nil
 	if E.respaldo and next(E.respaldo) then
 		local c = {}
 		for k, v in pairs(E.respaldo) do c[k] = v end
-		d.respaldo = c
+		cuenta.respaldo = c
 	else
-		d.respaldo = nil
+		cuenta.respaldo = nil
+	end
+end
+
+local function leerRespaldo(t, r)
+	if type(t) ~= "table" then return end
+	for k, v in pairs(t) do
+		if type(k) == "string" and type(v) == "string" and r[k] == nil then r[k] = v end
 	end
 end
 
 local function recuperar()
 	if E.respaldo then return end
-	local d = N.DatosPersonaje(ID)
-	if type(d.respaldo) ~= "table" or next(d.respaldo) == nil then return end
 	local r = {}
-	for k, v in pairs(d.respaldo) do
-		if type(k) == "string" and type(v) == "string" then r[k] = v end
-	end
+	leerRespaldo(N.Datos(ID).respaldo, r)
+	leerRespaldo(N.DatosPersonaje(ID).respaldo, r)
 	E.respaldo = next(r) and r or nil
-	if E.respaldo then M.Restaurar() else d.respaldo = nil end
+	if E.respaldo then M.Restaurar() else guardarRespaldo() end
+end
+
+-- 1.4.0: ¿la cambiaste tú desde que Alfa la puso? Entonces manda la tuya: se
+-- suelta (ni se vuelve a poner ni se «devuelve» la vieja) hasta cerrar la
+-- pesca. No depende de CVAR_UPDATE (que según el menú trae otro nombre).
+local function soltarSiLaCambiaste(nombre, actual)
+	local k = nombre:lower()
+	local p = E.puestos[k]
+	if p and actual ~= nil and not igual(actual, p.valor) then
+		E.soltadas[k] = true
+		E.puestos[k] = nil
+		if E.respaldo then E.respaldo[nombre] = nil end
+		return true
+	end
+	return E.soltadas[k] and true or false
 end
 
 function M.Aplicar()
@@ -539,7 +569,7 @@ function M.Aplicar()
 	for _, par in ipairs(deseadas()) do
 		local nombre, valor = par[1], par[2]
 		local actual = leerCVar(nombre)
-		if actual ~= nil then
+		if actual ~= nil and not soltarSiLaCambiaste(nombre, actual) then
 			if E.respaldo[nombre] == nil then E.respaldo[nombre] = actual end
 			E.puestos[nombre:lower()] = { nombre = nombre, valor = valor }
 			if not igual(actual, valor) then ponerCVar(nombre, valor) end
@@ -573,12 +603,17 @@ function M.Restaurar()
 	local combate = enCombate()
 	for nombre, valor in pairs(r) do
 		if not (combate and protegida(nombre)) then
-			if not igual(leerCVar(nombre), valor) then ponerCVar(nombre, valor) end
+			-- 1.4.0: lo que cambiaste tú mientras pescabas se queda como lo dejaste.
+			local actual = leerCVar(nombre)
+			local p = E.puestos[nombre:lower()]
+			local tuya = p and actual ~= nil and not igual(actual, p.valor)
+			if not tuya and not igual(actual, valor) then ponerCVar(nombre, valor) end
 			r[nombre] = nil
 			E.puestos[nombre:lower()] = nil
 		end
 	end
 	if next(r) == nil then E.respaldo = nil end
+	if not E.modo and not E.respaldo then E.soltadas = {} end
 	guardarRespaldo()
 	-- Lo que el combate no dejó devolver, al salir (encolado una sola vez).
 	if E.respaldo and not E.restaurarPendiente then
@@ -592,12 +627,19 @@ end
 
 A.RegisterEvent("CVAR_UPDATE", function(_, nombre)
 	if escribiendo or type(nombre) ~= "string" or not E.respaldo then return end
-	local p = E.puestos[nombre:lower()]
+	local k = nombre:lower()
+	local p = E.puestos[k]
 	if not p then return end
 	local actual = leerCVar(p.nombre)
-	if actual == nil or igual(actual, p.valor) then return end
-	E.respaldo[p.nombre] = actual
-	E.puestos[nombre:lower()] = nil
+	if actual == nil then return end
+	-- La cambiaste tú: se queda la tuya y Alfa ya no la toca mientras pescas.
+	-- 1.4.0 (control): aunque quede igual a lo que puso la pesca (Ctrl+S apaga
+	-- efectos, ambiente y diálogos; si la pesca ya tenía el ambiente apagado,
+	-- al cerrar te lo volvía a prender encima de tu Ctrl+S). Lo que escribe
+	-- Alfa no llega aquí (escribiendo).
+	E.soltadas[k] = true
+	E.puestos[k] = nil
+	if E.respaldo then E.respaldo[p.nombre] = nil end
 	guardarRespaldo()
 end)
 
@@ -970,6 +1012,104 @@ A.RegisterEvent("PLAYER_LOGOUT", function()
 	if E.respaldo then M.Restaurar() end
 end)
 
+---------------------------------------------------------------------------
+-- 1.4.0: /alfa sonido («Devolver mi sonido»). Cierra el modo pesca, devuelve
+-- lo que Alfa guardó de antes de pescar y suelta ese respaldo; luego, lo que
+-- siga apagado o en cero (todo el sonido, general, música, ambiente, efectos y
+-- mascotas) vuelve a un valor normal. -> lista de { cvar, valor } que cambió
+---------------------------------------------------------------------------
+M.SONIDO_NORMAL = {
+	{ "Sound_EnableAllSound", "1", "enciende" },
+	{ "Sound_MasterVolume", "1.0", "volumen" },
+	{ "Sound_EnableMusic", "1", "enciende" },
+	{ "Sound_MusicVolume", "0.4", "volumen" },
+	{ "Sound_EnableAmbience", "1", "enciende" },
+	{ "Sound_AmbienceVolume", "0.6", "volumen" },
+	{ "Sound_EnableSFX", "1", "enciende" },
+	{ "Sound_SFXVolume", "1.0", "volumen" },
+	{ "Sound_EnablePetSounds", "1", "enciende", mascotas = true },
+}
+
+-- 1.4.0 (control): lo que pone la pesca para el corcho (deseadas). Si quedó
+-- así sin pescar y sin respaldo, es de la pesca (nadie lo pone en 3/2/60 a
+-- mano): vuelve al valor de fábrica del juego. Lo que tengas distinto no se
+-- toca. -> cuántas devolvió
+M.INTERACCION_PESCA = {
+	{ "SoftTargetInteract", "3" }, { "SoftTargetInteractArc", "2" }, { "SoftTargetInteractRange", "60" },
+	{ "SoftTargetIconGameObject", "1" },
+}
+function M.DevolverInteraccion()
+	if enCombate() or E.modo or M.Pescando() then return 0 end
+	if not igual(leerCVar("SoftTargetInteract"), "3") then return 0 end
+	local def = C_CVar and C_CVar.GetCVarDefault
+	if type(def) ~= "function" then return 0 end
+	local n = 0
+	for _, par in ipairs(M.INTERACCION_PESCA) do
+		local ok, fabrica = pcall(def, par[1])
+		if ok and type(fabrica) == "string" and igual(leerCVar(par[1]), par[2]) and not igual(fabrica, par[2])
+			and ponerCVar(par[1], fabrica) then
+			n = n + 1
+		end
+	end
+	return n
+end
+
+function M.DevolverSonido()
+	if enCombate() then
+		N.Imprimir(L["Tu sonido vuelve en cuanto salgas de combate."])
+		N.FueraDeCombate("pesca.devolverSonido", M.DevolverSonido)
+		return nil
+	end
+	cancelarRestaurar()
+	if E.modo then M.CerrarModo(true, true) end
+	-- Lo de antes de pescar (de esta sesión, de la cuenta y el viejo por personaje).
+	local r = {}
+	leerRespaldo(E.respaldo, r)
+	leerRespaldo(N.Datos(ID).respaldo, r)
+	leerRespaldo(N.DatosPersonaje(ID).respaldo, r)
+	local cambio = {}
+	for nombre, valor in pairs(r) do
+		if nombre:find("^Sound_") and not igual(leerCVar(nombre), valor) and ponerCVar(nombre, valor) then
+			cambio[#cambio + 1] = { nombre, valor }
+		end
+	end
+	-- Lo que no es de sonido (nombres, interacción) también vuelve.
+	for nombre, valor in pairs(r) do
+		if not nombre:find("^Sound_") and not igual(leerCVar(nombre), valor) then ponerCVar(nombre, valor) end
+	end
+	E.respaldo, E.puestos, E.soltadas = nil, {}, {}
+	guardarRespaldo()
+	-- 1.4.0 (control): la interacción que la pesca dejó puesta sin respaldo (un
+	-- cierre de golpe de una versión vieja): con SoftTargetInteract en 3, el
+	-- clic y la tecla de interactuar se van al objeto más cercano en 60 m.
+	cambio.interaccion = M.DevolverInteraccion()
+	-- Lo que siga mudo.
+	local mascotasCalladas = A.Get("comodidades.silenciarMascotas") == true
+	for _, s in ipairs(M.SONIDO_NORMAL) do
+		if not (s.mascotas and mascotasCalladas) then
+			local actual = tonumber(leerCVar(s[1]))
+			if actual ~= nil and actual <= 0 and ponerCVar(s[1], s[2]) then cambio[#cambio + 1] = { s[1], s[2] } end
+		end
+	end
+	return cambio
+end
+
+local function comandoSonido()
+	local cambio = M.DevolverSonido()
+	if not cambio then return end
+	if (tonumber(cambio.interaccion) or 0) > 0 then
+		N.Imprimir(L["También devolví tus clics a como los tiene el juego: la pesca los había dejado buscando objetos a lo lejos."])
+	end
+	if #cambio == 0 then
+		N.Imprimir(L["Tu sonido ya estaba como lo tenías: Alfa no tiene nada tuyo guardado ni apagado. Revisa el volumen en Opciones > Audio del juego."])
+	else
+		N.Imprimir(N.Plural(#cambio, L["Listo: te devolví tu sonido (%d ajuste). La música, el ambiente y los efectos ya se oyen."],
+			L["Listo: te devolví tu sonido (%d ajustes). La música, el ambiente y los efectos ya se oyen."]))
+	end
+end
+A.RegisterCommand("sonido", comandoSonido, L["Devolver mi sonido: música, ambiente, efectos y mascotas como estaban antes de Alfa"])
+A.RegisterCommand("audio", comandoSonido, L["lo mismo que /alfa sonido"], true)
+
 A.RegisterEvent("UPDATE_BINDINGS", function()
 	if E.teclaPuesta and not enCombate() and firma(teclasDeRecoger()) ~= E.firma then ponerTecla() end
 	M.Avisar("teclas")
@@ -1135,6 +1275,22 @@ end)
 -- llegaste al tope de tu rango. Una vez, nunca en combate.
 ---------------------------------------------------------------------------
 function M.CeboAcabado()
+	-- 1.4.0 (plan 50): te queda otro: el recordatorio con su botón seguro
+	-- (tu tecla de pesca también lo pone). Una vez por cebo que se acaba.
+	if E.modo and N.Kit and N.Kit.Aviso and opt("ceboRecordar") ~= false then
+		Eq.Marcar()
+		local c = Eq.MejorCebo()
+		local nombre = c and (c.nombre or (type(c.enlace) == "string" and c.enlace:match("%[(.-)%]")) or (M.V and M.V.NombreObjeto(c.id)))
+		if c and c.id and nombre then
+			local quedan = Eq.Cuenta and Eq.Cuenta(c.id) or 0
+			N.Kit.Aviso({ id = "pesca.ceboOtra", icono = M.ICONO and M.ICONO.cebo or "ic-pesca", tono = "aviso", duracion = 12,
+				titulo = L["Se acabó tu cebo"],
+				texto = format(quedan == 1 and L["Ponle otro: %s (te queda %d). Tu tecla de pesca también lo pone."]
+					or L["Ponle otro: %s (te quedan %d). Tu tecla de pesca también lo pone."], nombre, quedan),
+				accion = { texto = L["Poner cebo"], seguro = { type = "macro", macrotext = "/use [nocombat] item:" .. c.id .. "\n/use [nocombat] 16" } } })
+			return
+		end
+	end
 	if not (opt("consejos") and E.modo and N.Kit and N.Kit.Aviso) or E.avisoCebo then return end
 	Eq.Marcar()
 	if Eq.MejorCebo() then return end -- te queda otro: tu tecla lo pone
@@ -1285,7 +1441,9 @@ end
 -- "Experto 126/225" y su avance.
 function M.TextoHabilidad()
 	local r, mx, bono = M.Habilidad()
-	if not r then return L["Sin Pesca"], 0, 1, 0 end
+	-- 1.4.0 (83): «Sin Pesca» solo si de verdad no la sabes; si el juego aún
+	-- no da tu habilidad, decía «Sin Pesca · Pulsa Espacio para lanzar».
+	if not r then return M.SabePesca() == false and L["Sin Pesca"] or L["Pesca"], 0, 1, 0 end
 	local nombre = M.NombreRango(mx)
 	return format(L["%s %d/%d"], nombre, r, mx), r, max(1, mx), bono or 0
 end
@@ -1454,7 +1612,10 @@ A.RegisterEvent("PLAYER_ENTERING_WORLD", function(_, inicial)
 	local d = N.DatosPersonaje(ID)
 	if d.modo and habilitado() and not E.modo then
 		local enInstancia = IsInInstance and N.Leer((select(2, IsInInstance())))
-		if enInstancia and enInstancia ~= "none" then
+		-- 1.4.0 (bug del audio): sin la caña en la mano el modo no vuelve solo.
+		-- Antes se abría otra vez al entrar aunque ya no pescaras, te callaba la
+		-- música y el ambiente, y nada lo cerraba (no había cambio de arma).
+		if (enInstancia and enInstancia ~= "none") or not E.conCana then
 			d.modo = nil
 		else
 			N.FueraDeCombate(function()

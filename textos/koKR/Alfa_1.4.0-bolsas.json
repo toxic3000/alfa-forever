@@ -1,0 +1,23 @@
+{
+ "%s saldrá siempre en «%s». Suéltalo otra vez ahí para devolverlo a «%s».": "%s: 이제 항상 「%s」에 표시됩니다. 다시 거기에 놓으면 「%s」(으)로 돌아갑니다.",
+ "%s volvió a su sección de siempre.": "%s: 원래 구역으로 돌아갔습니다.",
+ "%s: %d de %d libres": "%s: %d/%d칸 비어 있음",
+ "Así quedarán tus bolsas": "가방이 이렇게 정리됩니다",
+ "Bolsa especial": "특수 가방",
+ "El juego decide el orden final.": "최종 순서는 게임이 정합니다.",
+ "Ese objeto": "그 아이템",
+ "Gemas": "보석",
+ "Inscripción": "주문각인",
+ "Lo que tiene candado se queda en su lugar.": "잠긴 아이템은 제자리에 있습니다.",
+ "Mejor que lo que llevas:": "착용 중인 것보다 좋음:",
+ "Menos": "접기",
+ "Más o menos así quedarán": "대략 이렇게 됩니다",
+ "Nada se mueve hasta que das clic.": "클릭하기 전에는 아무것도 움직이지 않습니다.",
+ "No hay nada que ordenar.": "정리할 것이 없습니다.",
+ "Peor que lo que llevas:": "착용 중인 것보다 나쁨:",
+ "Queda 1 casilla libre.": "빈 칸이 1개 남았습니다.",
+ "Quedan %d casillas libres.": "빈 칸이 %d개 남았습니다.",
+ "Suelta aquí un objeto para que siempre salga en esta sección.": "아이템을 여기에 놓으면 항상 이 구역에 표시됩니다.",
+ "Vender (%d)": "판매 (%d)",
+ "desde el final": "끝에서부터"
+}

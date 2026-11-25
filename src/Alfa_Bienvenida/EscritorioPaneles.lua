@@ -99,6 +99,13 @@ local function Filas(c)
 		local n = 0
 		for i, it in ipairs(lista) do
 			local f = self:Fila(i)
+			-- 1.4.0: el rol de la letra de la lista (las metas de la guía, en grande).
+			if f.rol ~= (self.rol or "cuerpo") then
+				f.rol = self.rol or "cuerpo"
+				K.Fuente(f.Texto, f.rol)
+				local t = f.rol == "cuerpo" and 14 or 18
+				f.Icono:SetSize(t, t)
+			end
 			K.SetIcono(f.Icono, it.icono or "ic-info", it.color or "textoSuave")
 			escribir(f.Valor, it.valor or "")
 			if it.colorValor then K.ColorTexto(f.Valor, it.colorValor) else K.ColorTexto(f.Valor, "texto") end
@@ -109,7 +116,7 @@ local function Filas(c)
 			local tw = max(20, ancho - 26 - vw - 8 - (it.punto and 10 or 0))
 			escribir(f.Texto, it.texto or "")
 			f.Texto:ClearAllPoints()
-			f.Texto:SetPoint("TOPLEFT", f, "TOPLEFT", 24, -5)
+			f.Texto:SetPoint("TOPLEFT", f, "TOPLEFT", f.rol ~= "cuerpo" and 28 or 24, -5)
 			local th = secreto(it.texto) and 16 or K.Parrafo(f.Texto, tw, it.lineas or 2)
 			if it.colorTexto then f.Texto:SetTextColor(it.colorTexto[1], it.colorTexto[2], it.colorTexto[3]) else K.ColorTexto(f.Texto, "texto") end
 			local sh = 0
@@ -237,9 +244,16 @@ local function Vacio(c)
 	v.Texto:SetJustifyH("CENTER")
 	function v:Poner(ancho, alto, titulo, linea, lobo, arriba)
 		self.Lobo:SetTexture(K.Lobo(lobo or "dormido"))
+		-- 1.4.0: en un panel principal y grande, el vacío también se lee de lejos.
+		local p = c:GetParent()
+		local grande = p and p.protagonista and ancho >= 300 and alto >= 220
+		local lw = grande and 72 or 40
+		self.Lobo:SetSize(lw, lw)
+		K.Fuente(self.Titulo, grande and "titulo" or "cuerpo")
+		K.Fuente(self.Texto, grande and "texto" or "nota")
 		K.Escribir(self.Titulo, titulo or "")
 		K.Escribir(self.Texto, linea or "")
-		local h = 40 + ESP.s + 16 + (linea and (4 + K.Parrafo(self.Texto, max(60, ancho - ESP.base), 3)) or 0)
+		local h = lw + ESP.s + K.AltoTexto(self.Titulo) + (linea and (4 + K.Parrafo(self.Texto, max(60, ancho - ESP.base), 3)) or 0)
 		self:ClearAllPoints()
 		self:SetPoint("TOP", c, "TOP", 0, -(arriba or max(0, floor((alto - h) / 2) - 8)))
 		self:SetSize(ancho, h)
@@ -337,7 +351,7 @@ local function siguientes(n)
 end
 
 Es.Registrar({ id = "rastreador", titulo = "Tu guía", icono = "ic-ruta", texto = "El paso de ahora, sus metas, cuánto falta y lo que sigue.",
-	forma = "lista", tam = { 8, 10 }, ritmo = 2,
+	forma = "lista", tam = { 8, 10 }, ritmo = 2, protagonista = true,
 	abrir = function() llamar(G("AlfaRuta"), "Pagina") end,
 	crear = function(p, c)
 		p.Guia = texto(c, "pequeno", "textoTenue")
@@ -391,12 +405,16 @@ Es.Registrar({ id = "rastreador", titulo = "Tu guía", icono = "ic-ruta", texto 
 		else
 			p.Avance:Hide()
 		end
-		K.Fuente(p.Paso, tam == "grande" and "titulo" or "subtitulo")
-		y = y + parrafo(p.Paso, c, 0, y, w, tam == "compacto" and 2 or 3, info.titulo) + ESP.s
+		-- 1.4.0: el paso de ahora, en letra de portada (se lee desde la silla).
+		K.Fuente(p.Paso, tam == "grande" and "portada" or (tam == "medio" and "titulo" or "subtitulo"))
+		y = y + parrafo(p.Paso, c, 0, y, w, tam == "compacto" and 2 or 3, info.titulo) + ESP.m
 		local metas = {}
 		for _, g in ipairs(info.metas or {}) do metas[#metas + 1] = { icono = VERBO[g.t] or "ic-huella", color = "acento", texto = g.texto } end
+		p.metas.rol = tam == "grande" and "subtitulo" or "cuerpo"
 		y = p.metas:Poner(metas, w, y, alto)
 		local d, tono = llamar(I, "Distancia")
+		-- Con el panel de la flecha a la vista, la distancia va allá (no repetida).
+		if Es.TienePanel("flecha") and Es.Marcos.flecha and Es.Marcos.flecha:IsShown() then d = nil end
 		if type(d) == "string" and y + 20 <= alto then
 			poner(p.Dist, c, 0, y + 2, w)
 			K.Escribir(p.Dist, d)
@@ -452,7 +470,7 @@ local function girar(p)
 end
 
 Es.Registrar({ id = "flecha", titulo = "La flecha", icono = "ic-flecha", texto = "Hacia dónde ir, cuánto falta y en cuánto llegas.",
-	forma = "flecha", tam = { 6, 6 }, ritmo = 1, enCombate = true,
+	forma = "flecha", tam = { 6, 6 }, ritmo = 1, enCombate = true, protagonista = true,
 	abrir = function() llamar(G("AlfaRuta"), "Pagina") end,
 	crear = function(p, c)
 		p.Aro = c:CreateTexture(nil, "BACKGROUND")
@@ -488,10 +506,16 @@ Es.Registrar({ id = "flecha", titulo = "La flecha", icono = "ic-flecha", texto =
 			return
 		end
 		p.vacio:Hide()
-		local lado = max(48, min(h - 8, floor(w * (tam == "compacto" and 0.36 or 0.42))))
+		-- 1.4.0: en un panel alto, la flecha arriba y en grande, y abajo la
+		-- distancia, el destino y cuánto tardas, centrados (se leen de lejos).
+		local alta = h >= w * 0.9 and w >= 150
+		local lado
+		if alta then lado = max(48, min(floor(w * 0.72), floor(h * 0.5)))
+		else lado = max(48, min(h - 8, floor(w * (tam == "compacto" and 0.36 or 0.42)))) end
 		local llego = tono == "exito"
 		p.Aro:ClearAllPoints()
-		p.Aro:SetPoint("LEFT", c, "LEFT", 0, 0)
+		if alta then p.Aro:SetPoint("TOP", c, "TOP", 0, -max(0, floor((h - lado - 118) / 2)))
+		else p.Aro:SetPoint("LEFT", c, "LEFT", 0, 0) end
 		p.Aro:SetSize(lado, lado)
 		p.Aro:Show()
 		p.Flecha:ClearAllPoints()
@@ -517,19 +541,45 @@ Es.Registrar({ id = "flecha", titulo = "La flecha", icono = "ic-flecha", texto =
 			grande = ok and type(s) == "string" and s or nil
 		end
 		grande = grande or (d and format(L["%d yardas"], floor(d + 0.5))) or txt
+		local destino = label or (type(t.label) == "string" and t.label) or txt
+		local vel = GetUnitSpeed and num(GetUnitSpeed("player")) or nil
+		if not vel or vel < 1 then vel = 7 end
+		local llega = (d and not llego) and format(L["Llegas en %s"], N.Duracion(max(1, d / vel), true)) or nil
+		if alta then
+			-- La distancia en letra de anuncio si cabe; si no, un escalón menos.
+			K.Fuente(p.Dist, "anuncio")
+			K.Escribir(p.Dist, grande)
+			if K.AnchoTexto(p.Dist) > w then K.Fuente(p.Dist, "cifra") end
+			local y = K.num(p.Aro:GetHeight(), lado) + max(0, floor((h - lado - 118) / 2)) + ESP.m
+			for _, fs in ipairs({ p.Dist, p.Destino, p.Llega }) do fs:SetJustifyH("CENTER") end
+			poner(p.Dist, c, 0, y, w)
+			K.ColorTexto(p.Dist, llego and "exito" or "texto")
+			y = y + K.AltoTexto(p.Dist) + ESP.xs
+			K.Fuente(p.Destino, "subtitulo")
+			y = y + parrafo(p.Destino, c, 0, y, w, 2, (d and not llego) and txt or destino) + ESP.xs
+			if llega then
+				K.Fuente(p.Llega, "cuerpo")
+				poner(p.Llega, c, 0, y, w)
+				K.Escribir(p.Llega, llega)
+			else
+				p.Llega:Hide()
+			end
+			return
+		end
+		for _, fs in ipairs({ p.Dist, p.Destino, p.Llega }) do fs:SetJustifyH("LEFT") end
 		K.Fuente(p.Dist, (tam == "compacto" or #grande > 12) and "titulo" or "cifra")
+		K.Fuente(p.Destino, "cuerpo")
+		K.Fuente(p.Llega, "nota")
+		p.Destino:SetWordWrap(false)
 		poner(p.Dist, c, x, max(0, floor(h / 2) - 34), tw)
 		K.Escribir(p.Dist, grande)
 		K.ColorTexto(p.Dist, llego and "exito" or "texto")
-		local destino = label or (type(t.label) == "string" and t.label) or txt
 		poner(p.Destino, c, x, max(0, floor(h / 2) - 4), tw)
 		escribir(p.Destino, (d and not llego) and txt or destino)
 		-- En cuánto llegas: a tu velocidad (corriendo si estás quieto).
-		if d and not llego then
-			local vel = GetUnitSpeed and num(GetUnitSpeed("player")) or nil
-			if not vel or vel < 1 then vel = 7 end
+		if llega then
 			poner(p.Llega, c, x, max(0, floor(h / 2) + 16), tw)
-			K.Escribir(p.Llega, format(L["Llegas en unos %s"], N.Duracion(max(1, d / vel), true)))
+			K.Escribir(p.Llega, llega)
 		else
 			p.Llega:Hide()
 		end
@@ -768,7 +818,8 @@ Es.Registrar({ id = "lya", titulo = "Lya", icono = "ic-lobo", texto = "Lo últim
 		local gh = th + ESP.s * 2 + 4
 		p.Globo:SetSize(gw, gh)
 		local y = gh + 4
-		if primero and primero.hora and primero.hora ~= "" then
+		-- 1.4.0: la hora solo si cabe sobre los botones (antes se encimaba en un panel bajo).
+		if primero and primero.hora and primero.hora ~= "" and y + 16 <= alto then
 			poner(p.Hora, c, gx, y, gw)
 			K.Escribir(p.Hora, primero.hora)
 			y = y + 16
@@ -776,7 +827,7 @@ Es.Registrar({ id = "lya", titulo = "Lya", icono = "ic-lobo", texto = "Lo últim
 			p.Hora:Hide()
 		end
 		local antes = {}
-		for i = 2, #hist do antes[#antes + 1] = { icono = "ic-huella", color = "textoTenue", texto = hist[i].texto, valor = hist[i].hora, colorValor = "textoTenue" } end
+		for i = 2, #hist do antes[#antes + 1] = { icono = "ic-huella", color = "textoTenue", texto = hist[i].texto, valor = hist[i].hora, colorValor = "textoTenue", lineas = 3 } end
 		if tam ~= "compacto" and #antes > 0 then p.filas:Poner(antes, w, y + ESP.s, alto) else p.filas:Ocultar() end
 	end })
 
@@ -812,7 +863,7 @@ local function filaMedidor(p, i, c)
 end
 
 Es.Registrar({ id = "medidor", titulo = "Medidor del grupo", icono = "ic-nivel", texto = "El daño o la curación de cada quien, en vivo.",
-	forma = "barras", tam = { 8, 8 }, ritmo = 1, enCombate = true,
+	forma = "barras", tam = { 8, 8 }, ritmo = 1, enCombate = true, protagonista = true,
 	abrir = function() llamar(G("AlfaCombate"), "Abrir") end,
 	menu = function(p)
 		local ops = {}
@@ -988,7 +1039,7 @@ Es.Registrar({ id = "pelea", titulo = "Tu última pelea", icono = "ic-lista", te
 -- Pesca
 ---------------------------------------------------------------------------
 Es.Registrar({ id = "pesca", titulo = "Pesca", icono = "ic-pesca", texto = "Cómo va tu lanzamiento, tu habilidad y tu sesión de pesca.",
-	forma = "cifras", tam = { 8, 8 }, ritmo = 2,
+	forma = "cifras", tam = { 8, 8 }, ritmo = 2, protagonista = true,
 	abrir = function() N.Abrir("pesca") end,
 	crear = function(p, c)
 		p.Estado = K.Texto(c, "subtitulo", "texto")
@@ -1245,7 +1296,7 @@ Es.Registrar({ id = "grupo", titulo = "Tu grupo", icono = "ic-manada", texto = "
 					f.Relleno:SetWidth(max(1, w * max(0, min(1, frac))))
 					f.Relleno:SetVertexColor(cr, cg, cb, 0.55)
 					f.Relleno:Show()
-					K.Escribir(f.Valor, muerto == true and L["Caído"] or format("%d%%", floor(frac * 100 + 0.5)))
+					K.Escribir(f.Valor, N.Si(muerto) and L["Caído"] or format("%d%%", floor(frac * 100 + 0.5)))
 				end
 				local lv = UnitLevel and num(UnitLevel(u))
 				K.Escribir(f.Pos, lv and tostring(lv) or "")

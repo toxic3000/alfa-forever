@@ -42,6 +42,9 @@ local DIARIO = {
 		disabled = function() return not N.Get(ID, "historia") end },
 	{ kind = "toggle", key = ID .. ".avisoEntrar", label = L["Avisarme al entrar a una mazmorra"],
 		help = L["Un aviso con sus jefes y lo que llevas vencido, con un clic a sus consejos."] },
+	{ kind = "toggle", key = ID .. ".paraMi", label = L["¿Qué cae aquí para mí?"],
+		help = L["Al entrar a una mazmorra, un aviso chico con cuántas mejoras hay para ti y de qué jefes. También con /alfa mazmorras parami."],
+		search = "loot for me, upgrades, what drops, botín, mejoras, para mí" },
 	{ kind = "toggle", key = ID .. ".meSirve", label = L["Solo el botín que me sirve"],
 		help = L["Oculta lo que tu clase no puede usar o no le conviene: armadura de otro tipo, armas que no usas, piezas sin nada para tu especialización."] },
 	{ kind = "toggle", label = L["Entradas en el minimapa"],
@@ -51,6 +54,10 @@ local DIARIO = {
 	-- 1.3.7
 	{ kind = "toggle", key = ID .. ".consumibles", label = L["Recordarme lo que me falta antes de un jefe"],
 		help = L["Al apuntar a un jefe (y al entrar a una banda): comida de bufo, frasco o elixir en banda, piedra de salud si hay brujo y tu munición. Un aviso chico, nunca en combate."] },
+	-- 1.4.0 (diario, 91)
+	{ kind = "toggle", key = ID .. ".ofrecerReiniciar", label = L["Ofrecer reiniciar la mazmorra al salir"],
+		help = L["Al salir de una mazmorra, si vas solo o diriges el grupo, un aviso con «Reiniciar» y cuántas instancias llevas en esta hora. También con /alfa mazmorras reiniciar."],
+		search = "reset instance, reset dungeon, reiniciar, repetir mazmorra" },
 	{ kind = "toggle", key = ID .. ".mapaDentro", label = L["Botón del mapa por dentro en el mapa del juego"],
 		help = L["Dentro de una mazmorra, el mapa del juego trae un botón para abrir su plano con zoom, sus pisos y tu avance por jefes. También con su tecla."] },
 	{ kind = "toggle", key = ID .. ".historial", label = L["Anotar el botín de mi grupo"],

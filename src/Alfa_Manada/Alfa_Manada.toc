@@ -11,6 +11,7 @@
 Textos.lua
 Clan.lua
 Util.lua
+Callados.lua
 Insignias.lua
 Retrato.lua
 Canal.lua
@@ -41,3 +42,4 @@ Marcador.lua
 Pagina.lua
 Manada.lua
 Censo.lua
+Bienvenida.lua

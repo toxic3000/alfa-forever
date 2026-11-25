@@ -350,4 +350,17 @@ M.EN = {
 	["Tus talentos ahora: %s."] = "Your talents now: %s.",
 	["Cambiar de mapa con tus talentos"] = "Switch maps with your talents",
 	["Si guardaste un mapa de clics con otros talentos, al cambiarlos Alfa pone ese mapa solo (fuera de combate)."] = "If you saved a click map with other talents, when you switch to them Alfa sets that map on its own (out of combat).",
+	-- 1.4.0 (agente mundo)
+	["tu hechizo de apoyo"] = "your support spell",
+	["Les falta %s"] = "Missing %s",
+	["Dáselo antes de pelear: cada marco con el punto azul lo necesita."] = "Give it before the fight: every frame with the blue dot needs it.",
+	["Medidas según tu grupo"] = "Sizes by group",
+	["Solo, en grupo y en banda recuerdan sus propias medidas: ajústalas estando ahí."] = "Solo, group and raid each remember their own sizes: adjust them while you're there.",
+	["Banda compacta"] = "Compact raid",
+	["En banda, marcos chicos (72 × 26) para que quepan los 40."] = "In a raid, small frames (72 × 26) so all 40 fit.",
+	["Ícono de quién no lo tiene"] = "Icon for who's missing it",
+	["A la izquierda de tus marcos, tu hechizo de apoyo con cuántos no lo tienen; al pasar el ratón, quiénes. Fuera de combate."] = "Left of your frames, your support spell with how many don't have it; on mouseover, who. Out of combat.",
+	["Solo"] = "Solo",
+	["En grupo"] = "In a group",
+	["En banda"] = "In a raid",
 }

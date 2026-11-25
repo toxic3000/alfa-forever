@@ -8,6 +8,12 @@
 local _, M = ...
 
 M.EN = {
+	-- 1.4.0 (bugs): «Reiniciar sesión» de los PE por hora (parche de QoL/Options.lua)
+	["Listo: tus PE por hora empiezan de cero."] = "Done: your XP per hour starts from zero.",
+	-- 1.4.0 (interfaz): «Restablecer todos los ajustes» (UI/Options.lua)
+	["Restablecer espera a que termine el combate."] = "Reset waits for combat to end.",
+	["Atajo: %s"] = "Shortcut: %s",
+	["Listo: %d ajustes volvieron a como venían. Tus guías y tu avance siguen igual."] = "Done: %d settings went back to how they came. Your guides and progress are the same.",
 	-- Ventana principal: secciones, cabecera y pie
 	["Hoy"] = "Today",
 	["Aventura"] = "Adventure",
@@ -46,6 +52,7 @@ M.EN = {
 	["Cerrar la ventana de Alfa"] = "Close the Alfa window",
 	["Acomodar la pantalla"] = "Arrange your screen",
 	["Dos pantallas"] = "Two screens",
+	["Reparar mi pantalla"] = "Repair my screen", -- 1.4.0
 	["Ventana de guía"] = "Guide window",
 	["Ocultar la flecha"] = "Hide the arrow",
 	["Medidor de daño"] = "Damage meter", -- 1.3.7: el menú de Alfa
@@ -282,4 +289,19 @@ M.EN = {
 	["llegas en %s"] = "arriving in %s",
 	["Flecha mínima"] = "Minimal arrow",
 	["Solo la flecha y la distancia: sin la meta, sin el tiempo y sin la tarjeta del camino al muelle."] = "Just the arrow and the distance: no goal, no time and no card on the way to the dock.",
+	-- 1.4.0 (agente mundo): la flecha de cada personaje y los horarios de La Jauría (Nav/Arrow.lua)
+	["Flecha de cada personaje"] = "Arrow per character",
+	["Horario medido por %s, de La Jauría"] = "Timed by %s, from La Jauría",
+	["Cerrar"] = "Close",
+	["Tarjeta de viaje compacta"] = "Compact travel card",
+	["Barcos, zepelines, vuelos y portales en dos renglones; el detalle al pasar el ratón. Se cierra con su X o con clic derecho."] = "Boats, zeppelins, flights and portals in two lines; the details on mouseover. Close it with its X or a right-click.",
+	["Clic derecho o la X: cerrarla"] = "Right-click or the X: close it",
+	["Al muelle"] = "To the dock",
+	["A la torre"] = "To the tower",
+	["Al andén"] = "To the platform",
+	["Al portal"] = "To the portal",
+	["Maestro de vuelo"] = "Flight master",
+	["Cada personaje recuerda dónde pusiste la flecha, su tamaño y si la escondiste. Apagado: la misma flecha para toda la cuenta."] = "Each character remembers where you put the arrow, its size and whether you hid it. Off: one arrow for the whole account.",
+	-- 1.4.0 (revisión): una guía de otro tramo pedida en combate (Core/Guides.lua, parche)
+	["Los pasos de esta guía se leen al salir de combate."] = "This guide's steps are read in once you leave combat.",
 }

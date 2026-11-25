@@ -1,0 +1,11 @@
+{
+	"%d lobo": "늑대 %d마리",
+	"Lo marcado con %s también está en el menú del juego.": "%s 표시된 항목은 게임 메뉴에도 있습니다.",
+	"Listo: tus PE por hora empiezan de cero.": "완료: 시간당 경험치를 처음부터 다시 셉니다.",
+	"Tu sonido vuelve en cuanto salgas de combate.": "전투가 끝나면 소리가 돌아옵니다.",
+	"Tu sonido ya estaba como lo tenías: Alfa no tiene nada tuyo guardado ni apagado. Revisa el volumen en Opciones > Audio del juego.": "소리는 이미 원래대로입니다: Alfa가 저장하거나 끈 것이 없습니다. 게임의 설정 > 소리에서 음량을 확인하세요.",
+	"Listo: te devolví tu sonido (%d ajuste). La música, el ambiente y los efectos ya se oyen.": "완료: 소리를 되돌렸습니다(설정 %d개). 음악, 환경음, 효과음이 다시 들립니다.",
+	"Listo: te devolví tu sonido (%d ajustes). La música, el ambiente y los efectos ya se oyen.": "완료: 소리를 되돌렸습니다(설정 %d개). 음악, 환경음, 효과음이 다시 들립니다.",
+	"Devolver mi sonido: música, ambiente, efectos y mascotas como estaban antes de Alfa": "내 소리 되돌리기: 음악, 환경음, 효과음, 소환수 소리를 Alfa 이전처럼",
+	"lo mismo que /alfa sonido": "/alfa sonido와 같음"
+}

@@ -71,6 +71,12 @@ function K.MostrarInfo(dueno, titulo, texto, opts)
 	info = info or armarInfo()
 	opts = opts or {}
 	if type(texto) == "table" then texto = table.concat(texto, "\n") end
+	-- 1.4.0 (58): el atajo de teclado del botón (dueno.alfaTecla), si tiene.
+	local tecla = K.TeclaJuego and rawget(dueno, "alfaTecla") and K.TeclaJuego(rawget(dueno, "alfaTecla"))
+	if tecla then
+		local linea = K.Tenir("acento", (K.L["Atajo: %s"]):format(tecla))
+		texto = (texto and texto ~= "") and (texto .. "\n" .. linea) or linea
+	end
 	local ancho = opts.ancho or K.ANCHO.info
 	local y = 10
 	info.Titulo:SetShown(titulo ~= nil and titulo ~= "")
@@ -92,7 +98,29 @@ function K.MostrarInfo(dueno, titulo, texto, opts)
 	info:ClearAllPoints()
 	local top = K.num(dueno:GetTop(), 0)
 	local alto = K.num(UIParent:GetHeight(), 768)
-	if top + y + 30 < alto then
+	-- 1.4.0 (80): junto a un marco (opts.lado, o el alfaInfoLado de quien lo
+	-- pide o de sus padres: el rastreador), al lado y nunca encima: a la
+	-- izquierda si cabe; si no, a la derecha. A la altura de quien lo pide.
+	local lado = opts.lado
+	if not lado then
+		local p = dueno
+		for _ = 1, 8 do
+			if type(p) ~= "table" then break end
+			local l = rawget(p, "alfaInfoLado")
+			if l then lado = l break end
+			p = p.GetParent and p:GetParent() or nil
+		end
+	end
+	if type(lado) == "table" and lado.GetLeft and lado:GetLeft() then
+		local izq = K.num(lado:GetLeft(), 0)
+		local arriba = min(top, K.num(lado:GetTop(), top))
+		local pt = (arriba - y - 10 < 0) and "BOTTOM" or "TOP"
+		if izq - ancho - 8 >= 0 then
+			info:SetPoint(pt .. "RIGHT", lado, pt == "TOP" and "TOPLEFT" or "BOTTOMLEFT", -8, pt == "TOP" and (arriba - K.num(lado:GetTop(), arriba)) or 0)
+		else
+			info:SetPoint(pt .. "LEFT", lado, pt == "TOP" and "TOPRIGHT" or "BOTTOMRIGHT", 8, pt == "TOP" and (arriba - K.num(lado:GetTop(), arriba)) or 0)
+		end
+	elseif top + y + 30 < alto then
 		info:SetPoint("BOTTOM", dueno, "TOP", 0, 6)
 	else
 		info:SetPoint("TOP", dueno, "BOTTOM", 0, -6)
@@ -108,6 +136,18 @@ function K.OcultarInfo(dueno)
 	end
 end
 
+-- 1.4.0 (80): la demora del globo de un marco o de sus padres (alfaInfoDemora, en s). -> s | nil
+function K.DemoraInfo(marco)
+	local p = marco
+	for _ = 1, 8 do
+		if type(p) ~= "table" then return nil end
+		local d = rawget(p, "alfaInfoDemora")
+		if type(d) == "number" and d > 0 then return d end
+		p = p.GetParent and p:GetParent() or nil
+	end
+	return nil
+end
+
 -- Información al pasar el ratón. titulo/texto: cadenas, o una función que
 -- devuelve titulo, texto (se lee al mostrarse).
 function K.ConInfo(marco, titulo, texto)
@@ -121,16 +161,56 @@ function K.ConInfo(marco, titulo, texto)
 		-- 1.3.0: «¿Qué es esto?» (Kit/Ayuda.lua) manda cuando está activa.
 		if K.SobreAyuda then K.SobreAyuda(self) end
 		if K.AyudaActiva and K.AyudaActiva() and K.MostrarAyuda and K.MostrarAyuda(self) then return end
-		local i = self.alfaInfo
-		local t, x = i[1], i[2]
-		if type(t) == "function" then t, x = t(self) end
-		if (t and t ~= "") or (x and x ~= "") then K.MostrarInfo(self, t, x) end
+		local function mostrar()
+			local i = self.alfaInfo
+			local t, x = i[1], i[2]
+			if type(t) == "function" then t, x = t(self) end
+			-- 1.4.0 (112): un botón apagado dice por qué.
+			local porque = K.PorQueDe(self)
+			if porque and not (type(x) == "string" and x:find(porque, 1, true)) then
+				local linea = K.Tenir("aviso", porque)
+				x = (type(x) == "string" and x ~= "") and (x .. "\n" .. linea) or linea
+			end
+			if (t and t ~= "") or (x and x ~= "") then K.MostrarInfo(self, t, x) end
+		end
+		-- 1.4.0 (80): dentro de un marco con alfaInfoDemora (el rastreador), el
+		-- globo sale solo si el ratón se queda ese rato (pasar por encima no lo abre).
+		local demora = K.DemoraInfo and K.DemoraInfo(self)
+		if demora and N.Una then
+			self.alfaInfoEncima = true
+			N.Una("kit.infoDemora", demora, function() if self.alfaInfoEncima then mostrar() end end)
+		else
+			mostrar()
+		end
 	end)
 	marco:HookScript("OnLeave", function(self)
+		self.alfaInfoEncima = nil
 		if K.FueraAyuda then K.FueraAyuda(self) end
 		K.OcultarInfo(self)
 	end)
 	return marco
+end
+
+-- 1.4.0 (112): el porqué de un control apagado. Un botón apagado no recibe
+-- el ratón: con porqué, sí (SetMotionScriptsWhileDisabled), solo para su
+-- globo; el clic sigue sin hacer nada. Sin globo propio, el globo lleva su
+-- nombre y debajo el porqué.
+--   K.PorQueApagado(control, porque | nil) ; K.PorQueDe(control) -> texto | nil
+function K.PorQueApagado(c, porque)
+	if type(c) ~= "table" then return end
+	porque = (type(porque) == "string" and porque ~= "") and porque or nil
+	if not porque and not rawget(c, "alfaPorque") then return end
+	c.alfaPorque = porque
+	if c.SetMotionScriptsWhileDisabled then pcall(c.SetMotionScriptsWhileDisabled, c, porque ~= nil) end
+	if porque and not rawget(c, "alfaConInfo") then
+		K.ConInfo(c, function(x) return x.Texto and x.Texto:GetText() or nil, nil end)
+	end
+end
+function K.PorQueDe(c)
+	local porque = type(c) == "table" and rawget(c, "alfaPorque")
+	if not porque then return nil end
+	if c.IsEnabled and c:IsEnabled() then return nil end
+	return porque
 end
 
 ---------------------------------------------------------------------------
@@ -231,7 +311,7 @@ local function pintarBoton(b)
 	-- 1.3.6: tablas fijas. Un tipo desconocido se pinta como secundario, pero
 	-- sin el borde del ratón encima (como antes: esa regla era solo del secundario).
 	local tipo = ESTILO[b.alfaTipo] and b.alfaTipo
-	b.caja:Estilo(tipo and (b.alfaSobre and CAJA_SOBRE[tipo] or CAJA_BOTON[tipo]) or CAJA_BOTON.secundario)
+	b.caja:Estilo(tipo and (b.alfaSobre and b:IsEnabled() and CAJA_SOBRE[tipo] or CAJA_BOTON[tipo]) or CAJA_BOTON.secundario)
 	local color = e[2]
 	if b.alfaTipo == "fantasma" and b.alfaSobre then color = "texto" end
 	K.ColorTexto(b.Texto, color)
@@ -295,6 +375,11 @@ function K.Boton(padre, texto, alClic, opts)
 	end)
 	if opts.ancho then b:SetWidth(opts.ancho) end
 	if opts.ayuda then K.ConInfo(b, opts.ayudaTitulo, opts.ayuda) end
+	-- 1.4.0 (58): opts.tecla = la acción de Bindings.xml: su tecla sale en el globo.
+	if opts.tecla then
+		b.alfaTecla = opts.tecla
+		if not opts.ayuda then K.ConInfo(b, function(x) return x.Texto:GetText(), nil end) end
+	end
 
 	function b:SetTexto(s)
 		K.Escribir(self.Texto, s or "")
@@ -307,9 +392,12 @@ function K.Boton(padre, texto, alClic, opts)
 		pintarBoton(self)
 		acomodarBoton(self)
 	end
-	function b:SetActivo(on)
+	-- 1.4.0 (112): apagado con su porqué: el globo lo dice al pasar el ratón
+	-- («Ya viste todo», «Necesitas una hermandad»...). Sin porqué, como antes.
+	function b:SetActivo(on, porque)
 		if on == false then self:Disable() else self:Enable() end
 		self:SetAlpha(on == false and 0.45 or 1)
+		K.PorQueApagado(self, on == false and porque or nil)
 		pintarBoton(self)
 	end
 	function b:AnchoNatural() return medirBoton(self) end
@@ -457,6 +545,7 @@ function K.BotonIcono(padre, icono, alClic, opts)
 	b:SetScript("OnEnter", function(self) self.alfaSobre = true pintarBotonIcono(self) end)
 	b:SetScript("OnLeave", function(self) self.alfaSobre = nil pintarBotonIcono(self) end)
 	if opts.ayuda then K.ConInfo(b, opts.ayuda, opts.ayudaTexto) end
+	if opts.tecla then b.alfaTecla = opts.tecla end -- 1.4.0 (58)
 	function b:SetIcono(nombre) self.alfaIcono = nombre pintarBotonIcono(self) end
 	function b:SetMarcado(on) self.alfaActivo = on and true or nil pintarBotonIcono(self) end
 	K.Pintar(b, pintarBotonIcono)
@@ -879,7 +968,14 @@ function K.Buscador(padre, opts)
 		if b.alEnter then K.Llamar(b.alEnter, b:Texto(), b) end
 		self:ClearFocus()
 	end)
-	e:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	-- 1.4.0 (119): Esc con algo escrito lo borra (sigues escribiendo); otro Esc sale del campo.
+	e:SetScript("OnEscapePressed", function(self)
+		if (self:GetText() or "") ~= "" and opts.escBorra ~= false then
+			b:SetTexto("")
+			return
+		end
+		self:ClearFocus()
+	end)
 	e:SetScript("OnEditFocusGained", function() b.alfaFoco = true pintarBuscador(b) end)
 	e:SetScript("OnEditFocusLost", function() b.alfaFoco = nil pintarBuscador(b) end)
 	b:EnableMouse(true)
@@ -1344,7 +1440,10 @@ end)
 -- vuelve si el ratón sigue encima.
 ---------------------------------------------------------------------------
 local seguro
-local ATRIB_SEGURO = { "type", "clickbutton", "macrotext" }
+-- 1.4.0 (diario): también "item" y "spell": sin ellos, un seguro { type =
+-- "item", item = ... } (la piedra de hogar del rastreador) o { type = "spell" }
+-- llegaba sin qué usar y el clic no hacía nada.
+local ATRIB_SEGURO = { "type", "clickbutton", "macrotext", "item", "spell" }
 local bajo = setmetatable({}, { __mode = "v" }) -- bajo.b: el botón con seguro bajo el ratón
 
 local function enCombate() return InCombatLockdown and InCombatLockdown() and true or false end

@@ -74,7 +74,7 @@ local function nombres(u)
 		if ok and completo == false then return nil end
 	end
 	local n = UnitName and UnitName(u)
-	if type(n) == "string" and n ~= "" and not secreto(n) then return n, n end
+	if not secreto(n) and type(n) == "string" and n ~= "" then return n, n end
 	return nil
 end
 

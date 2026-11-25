@@ -62,7 +62,7 @@ class Falso(http.server.BaseHTTPRequestHandler):
                 return self._responder(500, b"<html>error</html>")
             campos = urllib.parse.parse_qs(cuerpo.decode("ascii"), keep_blank_values=True, strict_parsing=True)
             campos = {k: v[0] for k, v in campos.items()}
-            if Falso.modo_form == "malo" or set(campos) != {F["tipo"], F["texto"], F["datos"], F["version"]} or \
+            if Falso.modo_form == "malo" or set(campos) != {F["tipo"], F["texto"], F["version"]} or \
                     campos[F["tipo"]] not in ("Error", "Mejora", "Comentario"):
                 return self._responder(400, b"<html>falta una respuesta obligatoria</html>")
             if Falso.esperas > 0:
@@ -171,8 +171,10 @@ def main() -> int:
         print("0. Constantes")
         revisar(F["url"].startswith("https://docs.google.com/forms/") and F["url"].endswith("/formResponse"),
                 "la URL del formulario está en BUZON_FORMULARIO")
-        revisar(len({F[k] for k in ("tipo", "texto", "datos", "version")}) == 4 and
-                all(F[k].startswith("entry.") for k in ("tipo", "texto", "datos", "version")), "los 4 entry.*")
+        revisar(len({F[k] for k in ("tipo", "texto", "version")}) == 3 and "datos" not in F and
+                all(F[k].startswith("entry.") for k in ("tipo", "texto", "version")), "los 3 entry.* (sin «Datos técnicos»)")
+        t = I.texto_formulario("mi texto", "Personaje: Toxic-Reino\nAlfa 1.4.0\nReino = Pozo", "r123", "pie")
+        revisar("Toxic" not in t and "Pozo" not in t and "Alfa 1.4.0" in t, "nunca manda las líneas de nombre ni reino")
 
         # 1. Cuatro reportes + uno ya enviado; otra cuenta con el archivo dañado
         print("1. Cuatro reportes pendientes al formulario")
@@ -191,9 +193,12 @@ def main() -> int:
         revisar(any(0.5 <= e <= 1.5 for e in esperado), "esperó lo que pidió el 429 (Retry-After)")
         for campos, (_tj, _t, tipo, suyo, datos) in zip(Falso.formulario, REPORTES):
             revisar(campos[F["tipo"]] == tipo, f"tipo «{tipo}»")
-            revisar(campos[F["texto"]] == suyo, f"lo que escribió el jugador: {suyo[:40]!r}")
-            revisar(campos[F["datos"]].startswith(datos) and "id r" in campos[F["datos"]],
-                    "los datos técnicos (más id y fecha)")
+            t = campos[F["texto"]]
+            antes, _, despues = t.partition("\n\n" + I.BUZON_SEPARADOR + "\n")
+            revisar(antes == suyo, f"lo que escribió el jugador: {suyo[:40]!r}")
+            revisar(despues.startswith("Código: r") and ("\n" + datos + "\n") in despues and "fecha " in despues,
+                    "tras «— Datos de Alfa —»: el código, los datos técnicos y la fecha")
+            revisar(len(t) <= I.BUZON_LETRAS, "el texto cabe en 1950 letras")
             revisar(campos[F["version"]] == "1.3.9", "la versión")
         revisar(res["marcados"] == 4 and res["sin_marcar"] == 0, "los marcó enviados")
         esperado_txt = original
@@ -225,7 +230,8 @@ def main() -> int:
         res = correr(base3, reg3)
         revisar(res["enviados"] == 5 and res["pendientes"] == 2, f"manda 5 y deja 2 para después ({res})")
         c0 = Falso.formulario[0]
-        revisar(len(c0[F["texto"]]) + len(c0[F["datos"]]) <= I.BUZON_LETRAS + 100, "recorta el reporte a 1950 letras")
+        revisar(len(c0[F["texto"]]) <= I.BUZON_LETRAS and I.BUZON_SEPARADOR in c0[F["texto"]] and "Código: r" in c0[F["texto"]],
+                "recorta el reporte a 1950 letras sin perder el código")
         res = correr(base3, reg3)
         revisar(res["enviados"] == 2, "a la siguiente manda los 2 que faltaban")
         res = correr(base3, reg3)

@@ -53,6 +53,23 @@ end
 
 local clave -- "Nombre-Reino" del personaje actual
 
+-- 1.4.0 (21): las secciones plegadas, por personaje. La primera vez, cada
+-- personaje empieza con las que ya tenías plegadas (las de la cuenta).
+--   D.Plegadas() -> { ["bolsas:equipo"] = true, ... }
+function D.Plegadas()
+	local d = D.Raiz()
+	local k = D.Clave and D.Clave()
+	if not k or k == "" then return d.ui.plegadas end
+	if type(rawget(d.ui, "plegadasPJ")) ~= "table" then d.ui.plegadasPJ = {} end
+	local t = d.ui.plegadasPJ[k]
+	if type(t) ~= "table" then
+		t = {}
+		for cat, v in pairs(d.ui.plegadas) do t[cat] = v end
+		d.ui.plegadasPJ[k] = t
+	end
+	return t
+end
+
 -- 1.3.7: con el reino vacío (Forever lo da así desde el 20/11/2026) la clave
 -- salía «Toxic-» y el mismo personaje quedaba dos veces en «Tus personajes»;
 -- N.Reino recuerda el que el juego le dio a este personaje. Solo con un reino

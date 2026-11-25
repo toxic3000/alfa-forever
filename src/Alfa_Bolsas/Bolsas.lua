@@ -61,7 +61,7 @@ M.AJUSTES = {
 	comparar = true,          -- 1.3.0: +/- contra lo que llevas, en el cuadro del equipo (Comparar.lua)
 	buscarTodos = true,       -- 1.3.0: buscar en todos tus personajes, en la página (Todos.lua)
 	acomodar = true,          -- 1.3.0: el botón «Acomodar» (Acomodar.lua)
-	barraConjuntos = true,    -- 1.3.7: un botón por conjunto junto a tu personaje (Cambio.lua)
+	barraConjuntos = false,   -- 1.4.0: apagado (tapaba las pestañas de Forever; migración 5). 1.3.7: un botón por conjunto junto a tu personaje (Cambio.lua)
 	nivelPersonaje = true,    -- 1.3.7: nivel de objeto y durabilidad en tu personaje y la inspección (Ranuras.lua)
 	atajos = true,            -- 1.3.7: «3 nuevos» y «1 mejora» en la búsqueda, a un clic (Atajos.lua)
 	separar = true,           -- 1.3.8: el botón «Separar»: subasta o vendedor (Separar.lua)
@@ -72,6 +72,8 @@ M.AJUSTES = {
 	sobra = true,             -- 1.3.9: el botón «Lo que me sobra»: vender o mandar a otro personaje (Sobra.lua)
 	ordenarModo = "juego",    -- 1.3.9: "juego" (el del juego) | "tipo" | "calidad" | "nombre" (Ordenar.lua)
 	ordenarCandado = false,   -- 1.3.9: Ordenar deja en su lugar lo que tiene candado (con el orden de Alfa)
+	porAbrir = true,          -- 1.4.0 (diario): «Abrir» lo que se abre y «Aprender» las recetas nuevas (Abrir.lua)
+	paraMisiones = true,      -- 1.4.0 (diario): lo que piden tus misiones y está en tu banco (ParaMisiones.lua)
 	deposito = "banco",       -- lo último que elegiste en "Depositar"
 }
 
@@ -168,6 +170,13 @@ local CONTROLES = {
 	{ kind = "toggle", key = clave("sobra"), label = L["Botón «Lo que me sobra»"],
 		help = L["En tus bolsas: lo que te sobra para venderlo de un clic con un comerciante o mandárselo a otro de tus personajes desde el buzón. Nunca toca lo que tiene candado."],
 		search = "leftovers, surplus, sell, send to alt, mail" },
+	-- 1.4.0 (diario)
+	{ kind = "toggle", key = clave("porAbrir"), label = L["Avisar lo que se abre, las recetas y las bolsas nuevas"],
+		help = L["Al conseguir una almeja o una caja que se abre, una receta que ya puedes aprender o una bolsa nueva, un aviso con «Abrir», «Aprender» o «Ponérmela» a un clic."],
+		search = "open, clam, container, lockbox, recipe, learn, abrir, almeja, receta, aprender" },
+	{ kind = "toggle", key = clave("paraMisiones"), label = L["Lo que piden tus misiones y está en tu banco"],
+		help = L["Si una misión pide algo que guardaste en el banco, Alfa te lo dice; con el banco abierto, «Sacarlo» lo pasa a tus bolsas."],
+		search = "quest items in bank, withdraw, banco, misión, sacar" },
 	{ kind = "toggle", key = clave("candadoCuenta"), label = L["Candados para toda la cuenta"], child = true, disabled = apagado("candado"),
 		help = L["Los candados que pongas valen también para tus otros personajes. Apagado, cada personaje tiene los suyos."],
 		search = "account wide lock, all characters" },

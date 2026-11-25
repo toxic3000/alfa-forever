@@ -85,6 +85,8 @@ local function ayuda()
 	A.Print("  /alfa rutas asistente  \194\183  " .. L["¿qué quieres hacer?"])
 	A.Print("  /alfa rutas guias  \194\183  " .. L["la biblioteca de guías"])
 	A.Print("  /alfa rutas seguir  \194\183  " .. L["sigue (o actualiza) tu ruta"])
+	A.Print("  /alfa rutas historial  \194\183  " .. L["tus guías terminadas, con fecha y tiempo"])
+	A.Print("  /alfa rutas nivel  \194\183  " .. L["salta a la parte de tu guía que va con tu nivel"])
 end
 
 A.RegisterCommand("rutas", function(resto)
@@ -103,6 +105,10 @@ A.RegisterCommand("rutas", function(resto)
 		M.Biblioteca.Abrir()
 	elseif sub == "seguir" then
 		M.Seguir(M.RutaActiva() or M.RutaEditada())
+	elseif sub == "historial" or sub == "terminadas" then -- 1.4.0 (32)
+		M.Historial.Abrir()
+	elseif sub == "minivel" or sub == "nivel" then -- 1.4.0 (26)
+		if not M.MiNivel.Saltar() then N.Imprimir(L["Tu guía no va atrás de tu nivel."]) end
 	else
 		ayuda()
 	end

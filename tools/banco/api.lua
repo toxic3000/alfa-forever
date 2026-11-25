@@ -266,6 +266,19 @@ function hooksecurefunc(t, name, fn)
   end
 end
 
+-- 1.4.0 (revisión): una carpeta del dist existe aunque no se haya cargado (los
+-- paquetes a pedido). BANCO_SIN_ADDON[nombre] = "falta" | "apagado" la quita o
+-- la apaga para una prueba (una instalación a medias).
+BANCO_SIN_ADDON = BANCO_SIN_ADDON or {}
+function BANCO_EXISTE(n)
+  if type(n) ~= "string" or BANCO_SIN_ADDON[n] == "falta" then return nil end
+  local m = ADDON_META[n]
+  if m then return m.LoadOnDemand == "1" and "1" or "0" end
+  local r = PY_ADDON_EXISTS and PY_ADDON_EXISTS(n)
+  if type(r) ~= "string" or r == "" then return nil end
+  return r
+end
+
 C_AddOns = {
   GetAddOnMetadata = GetAddOnMetadata,
   IsAddOnLoaded = function(n) return LOADED[n] and true or false, LOADED[n] and true or false end,
@@ -278,11 +291,11 @@ C_AddOns = {
       n = l[n]
     end
     local m = n and ADDON_META[n] if not m then return nil end return n, m.Title, m.Notes, true, nil, "INSECURE", false end,
-  GetAddOnEnableState = function(n) return ADDON_META[n] and 2 or 0 end,
-  IsAddOnLoadOnDemand = function() return false end,
-  LoadAddOn = function(n) if PERFIL_ON and not LOADED[n] then PERFIL_PIDIO = PERFIL_PIDIO or {}; local t0 = PERFIL_RELOJ(); local ok = PY_LOAD_ADDON(n); PERFIL_PIDIO[#PERFIL_PIDIO + 1] = { n, PERFIL_RELOJ() - t0, debug.traceback("", 2) }; return ok, (not ok) and "MISSING" or nil end if PY_LOAD_ADDON then local ok = PY_LOAD_ADDON(n) return ok, (not ok) and "MISSING" or nil end return false, "MISSING" end,
+  GetAddOnEnableState = function(n) if BANCO_SIN_ADDON[n] then return 0 end return BANCO_EXISTE(n) and 2 or 0 end,
+  IsAddOnLoadOnDemand = function(n) return BANCO_EXISTE(n) == "1" end,
+  LoadAddOn = function(n) if BANCO_SIN_ADDON[n] then return false, BANCO_SIN_ADDON[n] == "apagado" and "DISABLED" or "MISSING" end if coroutine.running() and PY_ADDON_FILES and not LOADED[n] then return BANCO_CARGAR(n) end if PERFIL_ON and not LOADED[n] then PERFIL_PIDIO = PERFIL_PIDIO or {}; local t0 = PERFIL_RELOJ(); local ok = PY_LOAD_ADDON(n); PERFIL_PIDIO[#PERFIL_PIDIO + 1] = { n, PERFIL_RELOJ() - t0, debug.traceback("", 2) }; return ok, (not ok) and "MISSING" or nil end if PY_LOAD_ADDON then local ok = PY_LOAD_ADDON(n) return ok, (not ok) and "MISSING" or nil end return false, "MISSING" end,
   EnableAddOn = function() end, DisableAddOn = function() end,
-  DoesAddOnExist = function(n) return ADDON_META[n] ~= nil end,
+  DoesAddOnExist = function(n) if BANCO_SIN_ADDON[n] == "falta" then return false end return BANCO_EXISTE(n) ~= nil end,
 }
 BANCO_ZONAS = {[1411] = "Durotar", [1412] = "Mulgore", [1413] = "Los Baldíos", [1414] = "Kalimdor", [1415] = "Reinos del Este", [1416] = "Montañas de Alterac", [1417] = "Tierras Altas de Arathi", [1418] = "Tierras Inhóspitas", [1419] = "Las Tierras Devastadas", [1420] = "Claros de Tirisfal", [1421] = "Bosque de Argénteos", [1422] = "Tierras de la Peste del Oeste", [1423] = "Tierras de la Peste del Este", [1424] = "Laderas de Trabalomas", [1425] = "Tierras del Interior", [1426] = "Dun Morogh", [1427] = "La Garganta de Fuego", [1428] = "Las Estepas Ardientes", [1429] = "Bosque de Elwynn", [1430] = "Paso de la Muerte", [1431] = "Bosque del Ocaso", [1432] = "Loch Modan", [1433] = "Montañas Crestagrana", [1434] = "Vega de Tuercespina", [1435] = "Pantano de las Penas", [1436] = "Páramos de Poniente", [1437] = "Los Humedales", [1438] = "Teldrassil", [1439] = "Costa Oscura", [1440] = "Vallefresno", [1441] = "Las Mil Agujas", [1442] = "Sierra Espolón", [1443] = "Desolace", [1444] = "Feralas", [1445] = "Marjal Revolcafango", [1446] = "Tanaris", [1447] = "Azshara", [1448] = "Frondavil", [1449] = "Cráter de Un'Goro", [1450] = "Claro de la Luna", [1451] = "Silithus", [1452] = "Cuna del Invierno", [1453] = "Ventormenta", [1454] = "Orgrimmar", [1455] = "Forjaz", [1456] = "Cima del Trueno", [1457] = "Darnassus", [1458] = "Entrañas"}
 -- Un mundo chico pero de verdad para el mapa de Alfa: Azeroth (947) con sus dos
@@ -458,6 +471,44 @@ end })
 
 function geterrorhandler() return function(e) NOTE("errorhandler", e) end end
 function seterrorhandler() end
+
+-- 1.4.0: cargar un addon a pedido desde una corrutina (el Codex por partes lo
+-- pide desde una tarea de Alfa_Rutas/Tareas.lua). En el juego se puede; en el
+-- banco, Python no debe volver a llamar a Lua mientras corre una corrutina
+-- (lupa usa la pila equivocada: «tuple indices must be integers»), así que
+-- Python solo da los archivos (PY_ADDON_FILES, run.py) y todo lo demás se hace
+-- aquí, igual que run.py: load_addon. -> ok, motivo
+function BANCO_CARGAR(n)
+  local datos = PY_ADDON_FILES(n)
+  if type(datos) ~= "string" or datos == "" then return false, "MISSING" end
+  local pos = 1
+  local function pedazo()
+    local dos = datos:find(":", pos, true)
+    local largo = tonumber(datos:sub(pos, dos - 1))
+    local s = datos:sub(dos + 1, dos + largo)
+    pos = dos + largo + 1
+    return s
+  end
+  if not ADDON_META[n] then
+    local meta = {}
+    for par in (pedazo() .. "\2"):gmatch("(.-)\2") do
+      local k, v = par:match("^(.-)\1(.*)$")
+      if k then meta[k] = v end
+    end
+    ADDON_META[n] = meta
+  else
+    pedazo()
+  end
+  LOADED[n] = true
+  local ns = NS_OF(n)
+  while pos <= #datos do
+    local ruta = pedazo()
+    local src = pedazo()
+    LOAD_FILE(ruta, src, n, ns)
+  end
+  FIRE_EVENT("ADDON_LOADED", n)
+  return true
+end
 
 function LOAD_FILE(name, src, addon, ns)
   local fn, err = loadstring(src, "@" .. name)

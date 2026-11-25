@@ -27,6 +27,36 @@ M.Barra = Barra
 
 local TAM, PASO = 30, 34
 Barra.ALTO = 44
+-- 1.4.0 (bug 1): el número de casillas de cada bolsa, con letra fija
+-- respecto a la casilla; todas las casillas de todas las barras, para
+-- rehacer su letra tras un cambio de pantalla (Botones.lua, B.Refrescar).
+local LETRA = 10
+Barra.LETRA = LETRA
+local todas = {}
+Barra.Todas = todas
+
+local function otraVez(fs)
+	local t = fs:GetText()
+	if t == nil or t == "" or (issecretvalue and issecretvalue(t)) then return end
+	fs:SetText(t .. " ")
+	fs:SetText(t)
+end
+
+-- La letra otra vez, de verdad (otro tamaño y luego el suyo) y su texto.
+function Barra.Refrescar()
+	local cara = K.Cara("semibold")
+	for _, b in ipairs(todas) do
+		pcall(b.Cuenta.SetFont, b.Cuenta, cara, LETRA + 1, "OUTLINE")
+		K.FuenteSegura(b.Cuenta, cara, LETRA, "OUTLINE")
+		otraVez(b.Cuenta)
+	end
+end
+
+function Barra.OtraVez()
+	for _, b in ipairs(todas) do
+		if b:IsVisible() then otraVez(b.Cuenta) end
+	end
+end
 
 local function cursorConObjeto() return CursorHasItem and CursorHasItem() and true or false end
 
@@ -145,7 +175,8 @@ local function casilla(barra, i)
 	b.Simbolo = K.Icono(b, "ic-mas", 14, "textoTenue")
 	b.Simbolo:SetPoint("CENTER")
 	b.Cuenta = b:CreateFontString(nil, "OVERLAY")
-	b.Cuenta:SetFont(K.Cara("semibold"), 10, "OUTLINE")
+	b.Cuenta:SetFont(K.Cara("semibold"), LETRA, "OUTLINE")
+	todas[#todas + 1] = b
 	b.Cuenta:SetPoint("BOTTOMRIGHT", b, "BOTTOMRIGHT", -2, 2)
 	b.Cuenta:SetJustifyH("RIGHT")
 	b.Uso = K.Progreso(b, { alto = 2 })

@@ -144,7 +144,7 @@ step("Raros de la manada y la guarida de un lobo", function()
   R.Via = function() return "hermandad" end
   local salidos = {}
   local envio = C_ChatInfo.SendAddonMessage
-  C_ChatInfo.SendAddonMessage = function(_, t, c, d) salidos[#salidos + 1] = { (t:gsub("|~[HA]$", "")), c, d } end
+  C_ChatInfo.SendAddonMessage = function(_, t, c, d) salidos[#salidos + 1] = { (t:gsub("|~[HA]$", ""):gsub("|%^%d+$", "")), c, d } end -- (1.4.0: sin la versión de la Red)
   local function cola() for _ = 1, 60 do FIRE(R.motor, "OnUpdate", 0.2) end end
   local ue, ug = UnitExists, UnitGUID
   local guid = { nameplate1 = "Creature-0-5250-0-7994-299-0000ABCDEF" }

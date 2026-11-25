@@ -137,7 +137,25 @@ VISTAS = [
      "Move or hide each part of Today; what's urgent rises on its own in a city or a dungeon."),
     ("shot-139i-primera-vez.png", "Cada página te dice para qué sirve", "La primera vez, una línea abajo y «Enséñame» para un recorrido de 3 pasos.",
      "The first time, a line at the bottom and \"Show me\" for a 3-step tour."),
+    # 1.4.0 (área ventana, n.º 86: BANCO_FOTOS=1 BANCO_ETAPA=galeria tools/banco/prueba_140_ventana.lua;
+    # las de otras áreas se copian de sus capturas). Con fondo nocturno (FONDO_NOCHE).
+    ("shot-140-ventana-hoy.png", "Alfa 1.4: una ventana nueva", "Barra lateral, la portada de Hoy con tu día y lo primero que conviene hacer, en grande.",
+     "A sidebar, Today's cover with your day and the first thing to do, front and center."),
+    ("shot-140-ventana-bienvenida.png", "Lo nuevo, con «Pruébalo»", "La primera vez en la 1.4, cada novedad en su tarjeta y a un clic de probarla.",
+     "The first time on 1.4, every new feature on its own card, one click away from trying it."),
+    ("shot-140-ventana-hoy-horda.png", "Alfa se viste de tu bando", "Madera y rojo sangre para la Horda, piedra y azul real para la Alianza.",
+     "Wood and blood red for the Horde, stone and royal blue for the Alliance."),
+    ("shot-140-ventana-ajustes.png", "Todo en su lugar", "Cada sección con su ícono, la página con su título grande y cambios suaves entre páginas.",
+     "Every section with its icon, each page with a big title and smooth page changes."),
+    ("shot-140-temporada.png", "Tu temporada con la manada", "Tu aventura desde que usas Alfa, en tarjetas y lista para compartir.",
+     "Your adventure since you started with Alfa, on cards and ready to share."),
+    ("shot-140-pantallas.png", "Dos pantallas, rehecho", "Tableros grandes y claros en tu otro monitor; al volver, todo queda como estaba.",
+     "Big, clear boards on your other monitor; switch back and everything is as it was."),
+    ("shot-140-mundo-viaje-boat-muelle.png", "Viajes más claros", "La tarjeta del barco, compacta y con su transporte bien dibujado.",
+     "The boat card, compact and with a clear drawing of the ride."),
 ]
+# 1.4.0 (86): las vistas de la 1.4 van sobre un cielo de noche (nada de verde liso).
+NOCHE = {a for a, *_ in VISTAS if a.startswith("shot-140-")}
 
 
 def fuente(nombre, tam):
@@ -154,6 +172,28 @@ def fondo_marca():
     brillo = brillo.filter(ImageFilter.GaussianBlur(220))
     verde = Image.new("RGB", (ANCHO, ALTO), (40, 70, 30))
     im.paste(verde, (0, 0), brillo)
+    return im
+
+
+def fondo_noche():
+    """1.4.0: cielo de noche, azul profundo con un brillo frío y estrellas."""
+    import random
+    im = Image.new("RGB", (ANCHO, ALTO), (9, 12, 20))
+    cielo = Image.new("RGB", (ANCHO, ALTO), (22, 30, 48))
+    mascara = Image.linear_gradient("L").resize((ANCHO, ALTO))
+    im = Image.composite(im, cielo, mascara)
+    brillo = Image.new("L", (ANCHO, ALTO), 0)
+    d = ImageDraw.Draw(brillo)
+    d.ellipse([-400, -500, 800, 400], fill=60)
+    d.ellipse([1100, 650, 2100, 1500], fill=30)
+    brillo = brillo.filter(ImageFilter.GaussianBlur(220))
+    im.paste(Image.new("RGB", (ANCHO, ALTO), (60, 80, 120)), (0, 0), brillo)
+    d = ImageDraw.Draw(im)
+    azar = random.Random(140)
+    for _ in range(140):
+        x, y = azar.randrange(ANCHO), azar.randrange(ALTO // 2)
+        v = azar.randrange(110, 230)
+        d.point((x, y), fill=(v, v, min(255, v + 15)))
     return im
 
 
@@ -191,8 +231,8 @@ AMPLIAR = {a: 1.7 for a, *_ in VISTAS if a.startswith("shot-137-")}
 AMPLIAR.update({"shot-138-flecha-barco.png": 1.7, "shot-138-candado-bolsas.png": 1.3, "shot-138-pesca-previa.png": 1.2})
 
 
-def enmarcar(vista, titulo, es, en, ampliar=1.0):
-    im = fondo_marca()
+def enmarcar(vista, titulo, es, en, ampliar=1.0, noche=False):
+    im = fondo_noche() if noche else fondo_marca()
     cabecera(im, titulo, es, en)
     caja_w, caja_h = ANCHO - 160, ALTO - 170 - 80
     v = vista.convert("RGB")
@@ -298,10 +338,24 @@ def main() -> int:
     if faltan:
         # 1.3.2: una vista que el banco no dibujó se queda con su imagen de antes.
         print("AVISO: sin vista nueva del banco, se queda la imagen de antes:", ", ".join(faltan))
+    # 1.4.0: nunca borra una imagen que la descripción de CurseForge (o unas
+    # notas ya publicadas) enlaza: esas direcciones tienen que seguir vivas.
+    desc = SALIDA.parent / "descripcion.md"
+    enlazadas = set()
+    if desc.exists():
+        import re as _re
+        enlazadas = set(_re.findall(r"galeria/([\w.\-]+\.png)", desc.read_text(encoding="utf-8")))
     for viejo in SALIDA.glob("*.png"):
+        if viejo.name in enlazadas:
+            continue
         if not any(viejo.name.endswith(a[len("shot-"):]) for a in faltan):
             viejo.unlink()
-    portada([Image.open(BANCO / "shot-g-rutas.png"), Image.open(BANCO / "shot-g-inicio.png")]).save(SALIDA / "00-portada.png")
+    # 1.4.0 (86): la portada con la ventana nueva, si el banco ya la dibujó.
+    atras = BANCO / "shot-140-ventana-rutas.png"
+    frente = BANCO / "shot-140-ventana-hoy.png"
+    if not (atras.exists() and frente.exists()):
+        atras, frente = BANCO / "shot-g-rutas.png", BANCO / "shot-g-inicio.png"
+    portada([Image.open(atras), Image.open(frente)]).save(SALIDA / "00-portada.png")
     banner().save(SALIDA / "00-banner.png")
     for i, (archivo, titulo, es, en) in enumerate(VISTAS, 1):
         if archivo in faltan:
@@ -310,7 +364,7 @@ def main() -> int:
         for prefijo in ("g-", "v-"):
             if nombre.startswith(prefijo):
                 nombre = nombre[len(prefijo):]
-        enmarcar(Image.open(BANCO / archivo), titulo, es, en, AMPLIAR.get(archivo, 1.0)).save(SALIDA / f"{i:02d}-{nombre}")
+        enmarcar(Image.open(BANCO / archivo), titulo, es, en, AMPLIAR.get(archivo, 1.0), archivo in NOCHE).save(SALIDA / f"{i:02d}-{nombre}")
     # capturas del juego, si las hay: curseforge/capturas/<nombre>.png|jpg -> galeria/juego-<nombre>.png
     if CAPTURAS.is_dir():
         for c in sorted(CAPTURAS.iterdir()):

@@ -4,6 +4,19 @@
 local _, M = ...
 
 M.EN = {
+	-- 1.4.0 (diario): mejoras del día a día
+	["Llévame"] = "Take me there",
+	["¡%s %d!"] = "%s %d!",
+	["Ya puedes minar %s."] = "You can now mine %s.",
+	["Ya puedes recoger %s."] = "You can now gather %s.",
+	["«Llévame» te lleva a la zona más cercana de tu nivel."] = "\"Take me there\" leads you to the nearest zone for your level.",
+	["Te falta la herramienta"] = "You're missing the tool",
+	["Necesitas %s en tus bolsas. Tienes uno en el banco: sácalo la próxima vez que pases."] = "You need %s in your bags. You have one in the bank: take it out next time you're there.",
+	["Necesitas %s en tus bolsas. Lo venden los comerciantes de suministros de oficios en las ciudades y los pueblos grandes."] = "You need %s in your bags. Trade supplies vendors sell it in cities and large towns.",
+	["Avisar al poder recolectar algo nuevo"] = "Tell me when I can gather something new",
+	["Avisar si te falta el pico o el cuchillo"] = "Tell me if I'm missing the pick or the knife",
+	["Al subir Minería o Herboristería al nivel de otro recurso, un aviso con «Llévame» a la zona más cercana de tu nivel."] = "When Mining or Herbalism reaches the level of a new resource, a notice with \"Take me there\" to the nearest zone for your level.",
+	["Si el juego no te deja minar o desollar por la herramienta, Alfa te dice qué falta y dónde se compra."] = "If the game won't let you mine or skin because of the tool, Alfa tells you what's missing and where to buy it.",
 	["Recolección"] = "Gathering",
 	["Minería"] = "Mining",
 	["Hierbas"] = "Herbs",
@@ -159,3 +172,14 @@ M.EN["La mejor zona: %s, %d puntos."] = "The best zone: %s, %d spots."
 M.EN["%s sale a veces en lugar de %s: aquí hay %d."] = "%s sometimes spawns instead of %s: there are %d here."
 M.EN["Ruta a %s"] = "Route to %s"
 M.EN["No encontré ese recurso en las zonas de tu facción."] = "I couldn't find that resource in your faction's zones."
+
+-- 1.4.0 (plan 73): la ruta corta de los pasos de juntar (Junta.lua)
+M.EN["Ruta corta en %s"] = "Short route in %s"
+M.EN["%d paradas cerca de ti, empezando por la más cercana. Al terminar el paso, la flecha vuelve a tu guía."] = "%d stops near you, starting with the closest. When the step is done, the arrow goes back to your guide."
+M.EN["Guiar los pasos de juntar con una ruta corta"] = "Guide gathering steps with a short route"
+M.EN["Cuando tu guía pide juntar un mineral o una hierba, la flecha te lleva por las vetas más cercanas de una zona de tu nivel, empezando por la más cercana."] = "When your guide asks you to gather an ore or an herb, the arrow takes you through the closest nodes in a zone for your level, starting with the nearest."
+M.EN["El más cercano está a %s de ti."] = "The closest one is %s from you."
+
+-- 1.4.0 (oficios)
+M.EN["Oro estimado"] = "Estimated gold"
+M.EN["≈ %s por hora"] = "≈ %s per hour"

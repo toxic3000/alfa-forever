@@ -36,7 +36,7 @@ local MODOS_HISTORIA = {
 	{ valor = "pedir", texto = L["Solo si le pido"] },
 	{ valor = "nunca", texto = L["Nunca"] },
 }
-local NOMBRE_MODO ={ muchos = L["Consejos: muchos"], pocos = L["Consejos: pocos"], importantes = L["Consejos: solo importantes"] }
+local CORTO_MODO = { muchos = L["Muchos"], pocos = L["Pocos"], importantes = L["Solo importantes"] }
 
 -- "2026-11-19" -> "19/11/2026"
 local function fechaBonita(f)
@@ -85,8 +85,24 @@ local function numeros()
 	local lista = {
 		{ variante = "compacta", icono = "ic-lista", titulo = L["Frases dichas"], valor = format(L["%d de %d"], n, total),
 			ayuda = L["Las que Lya ya te dijo sus tres veces. Con «Volver a mostrarlos» salen otra vez."] },
-		{ variante = "compacta", icono = "ic-reloj", titulo = NOMBRE_MODO[Ce.Frecuencia()] },
+		-- 1.4.0 (64): un clic y solo dice lo importante (otro clic, como estaba).
+		-- 1.4.0 (83): «Consejos: muchos» + «Solo lo importante» no cabían en la
+		-- tarjeta (salía «Consejos: ...»): el título dice qué es y el valor, cómo está.
+		{ variante = "compacta", icono = "ic-reloj", titulo = L["Consejos"],
+			valor = CORTO_MODO[Ce.Frecuencia()], colorValor = "acento",
+			alClic = function()
+				Ce.AlternarImportante()
+				M.Avisar()
+			end,
+			ayuda = Ce.SoloImportante() and L["Ahora solo te dice lo importante: al morir, al subir de nivel y tus logros. Un clic y vuelve a platicar como antes."]
+				or L["Un clic y Lya solo te dice lo importante: al morir, al subir de nivel y tus logros. Otro clic y vuelve a como estaba."] },
 	}
+	-- 1.4.0 (11): tu temporada con la manada (Temporada.lua).
+	local Te = M.Temporada
+	if Te then
+		lista[#lista + 1] = { variante = "compacta", icono = "ic-lobo", titulo = L["Tu temporada"], valor = L["Ver"], colorValor = "acento",
+			alClic = function() Te.Abrir() end, ayuda = L["Tu aventura desde que usas Alfa, en tarjetas, y un texto para presumirla en Discord. También con /alfa temporada."] }
+	end
 	local Hi = M.Historias
 	if Hi then
 		lista[#lista + 1] = { variante = "compacta", icono = "ic-misiones", titulo = L["Historias guardadas"], valor = tostring(Hi.Cuantas()),

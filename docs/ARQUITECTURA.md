@@ -84,13 +84,13 @@ N.Modulo({
 - **Paisaje y gráficos:** `src/Alfa_Vista` (Mundo > Paisaje y gráficos, `/alfa paisaje`) expone ajustes escondidos del juego (CVars), preajustes y filtros propios; otros módulos usan `AlfaVista.Abrir()`, `AlfaVista.AplicarPreset(nombre)` y `AlfaVista.Presets()` (ver su `LEEME.md`).
 - **Archivos:** cada módulo toca solo su carpeta. Si necesita algo del motor o del núcleo que no existe, lo dice en su reporte en lugar de editar otra carpeta.
 
-## El núcleo: lo que comparten los módulos (al día con la 1.3.9)
+## El núcleo: lo que comparten los módulos (al día con la 1.4.0)
 
 `src/Alfa_Nucleo/` (global `AlfaNucleo`, `N` en el código) junta lo que antes cada módulo hacía a su manera. Cada archivo explica su contrato arriba; lo principal:
 
 | Archivo | Qué da |
 |---|---|
-| `Nucleo.lua` | `N.Modulo`, `N.Get/Set`, `N.Datos/N.DatosPersonaje`, `N.Migracion(n, fn)` y `N.MigrarDesde(n)`, `N.Repintar`, `N.Reino`, `N.Imprimir`, `N.Dinero`, `N.Duracion`, `N.Plural`, `N.Secreto/N.Leer/N.Si/N.SiJuego` (valores secretos) |
+| `Nucleo.lua` | `N.Modulo`, `N.Get/Set`, `N.Datos/N.DatosPersonaje`, `N.Migracion(n, fn)` y `N.MigrarDesde(n)`, `N.Repintar`, `N.Reino`, `N.Imprimir`, `N.Dinero`, `N.Duracion`, `N.Plural`, `N.Secreto/N.Leer/N.LeerNumero/N.Si/N.SiJuego` (valores secretos) |
 | `Reloj.lua` (1.2.9) | Un solo reloj para todo lo que se repite: `N.Cada`, `N.Una`, `N.Ticker`, `N.Quitar`, `N.Tareas()`. Duerme sin tareas; modo combate (`N.DeFondo`), mazmorra (`N.DeAfuera`) y ligero (`N.Ligero`). 1.3.9: `N.VistaPaso(i)` y `N.Compartido(clave, seg, fn)`: una sola lectura de la guía por segundo para Hoy, el rastreador y el Escritorio |
 | `Eventos.lua` (1.3.5) | `N.DeUnidad(evento, unidades, fn)`, `N.Juntar(fn)` (una vez por cuadro), `N.PorPrefijo(prefijo, fn)` (un solo marco para los mensajes de addon, con el filtro de facción) |
 | `Entrada.lua` (1.3.3) | Entrar en silencio: `N.Entrando`, `N.GuardarAlEntrar`, `N.AlEntrar` |
@@ -98,6 +98,32 @@ N.Modulo({
 | `Faccion.lua` (1.3.8) | `N.ConFaccion`: todo lo de la Red de La Jauría lleva la marca de tu facción; lo de la otra no llega |
 | `Errores.lua` (1.2.9) e `Informe.lua` (1.3.9) | Los errores de Alfa atrapados (`N.Errores`, 30 a lo más) y los datos técnicos del reporte (`N.InformeTecnico`: módulos, modo, memoria, tareas, otros addons; `N.SinPrivado`: sin tu nombre, tu reino ni el de otros) |
 | `Kit/` | El kit visual de Alfa (`K.Ventana`, `K.Aviso`, `K.Anuncio`, `K.Pila`, `K.Texto`, `K.Parrafo`...): ver `docs/KIT.md` |
+
+## Un ayudante por cosa: dónde vive cada uno (al día con la 1.4.0)
+
+Antes de escribir un `local function` en un módulo, busca aquí si ya existe. Si lo que necesitas no está, súmalo al Núcleo (con su prueba) en vez de copiarlo en tu módulo.
+
+| Para… | Usa | No hagas |
+|---|---|---|
+| Saber si un valor del juego es secreto | `N.Secreto(v)` | `v ~= nil`, `if v`, `v == x` antes de preguntar |
+| Leer un valor que puede ser secreto | `N.Leer(v, otro)` | `N.Leer and N.Leer(v) or v`: el `or` devuelve el secreto (1.4.0: estaba en 5 archivos) |
+| Un número del juego (nivel, vida, velocidad…) | `N.LeerNumero(v, otro)` (1.4.0) | `tonumber(UnitLevel("player"))`: en el juego `tonumber` de un secreto da el mismo secreto y compararlo truena |
+| Un sí/no del juego | `N.Si(v)` / `N.SiJuego(fn, ...)` | `UnitAffectingCombat("player") == true` sin `N.Si` |
+| Un número para medir marcos | `K.num(v, d)` (1.4.0: también descarta secretos) | `v or 0` con lo que devuelve un marco |
+| Algo que se repite | `N.Cada / N.Una / N.Ticker / N.Quitar` (Reloj.lua) | `C_Timer.NewTicker`, un `OnUpdate` propio que no se esconde |
+| Esperar al fin del combate | `N.FueraDeCombate(clave, fn)` | `PLAYER_REGEN_ENABLED` suelto en cada módulo |
+| Esperar a que el jugador esté libre | `N.AlLibre(clave, fn, prioridad)` | avisos en medio de una pantalla de carga |
+| Dinero, tiempo, plurales | `N.Dinero`, `N.Duracion`, `N.Plural` | formatos a mano |
+| Un ícono | `K.Icono(p, "nombre")` con un nombre que exista en `Alfa/Media/UI` (`ic-*`, `sec-*`, `lobo-*` o los de siempre: `star`, `house`, `gear`…) | inventar `ic-algo`: sale un cuadro verde (`tools/texturas.py` lo revisa) |
+| La variante del lobo | `K.Lobo("normal" \| "atento" \| "aullando" \| "dormido" \| "vacio")` | otra palabra (`"contento"` no existe) |
+| Una tarea larga | `Tareas.Lanzar(clave, fn(ceder), fin)` (Rutas) / el trabajo por lotes de Enciclopedia | un bucle de miles de vueltas en un cuadro |
+| Datos del Codex que pueden no estar leídos | `Indice.Cargado(grupo)` (Rutas, 1.4.0): un dato que falta porque su parte no está leída no es «no existe» | tomar un `nil` del Codex como «está en una mazmorra» |
+
+Los `local function num(v)` que ya están en los módulos (unos 40, todos revisados en la 1.4.0: todos descartan secretos) se quedan; el código nuevo usa `N.LeerNumero`.
+
+Dos detalles que el banco no ve y las herramientas sí:
+- **Una función local usada antes de declararla** es un global `nil` en el juego («attempt to call a nil value»); en el banco, un global desconocido es un comodín que no truena. `tools/globales.py` lo encuentra en el bytecode (en la 1.4.0: `luego` en `Rutas/Rastreador.lua`, la X de las sugerencias; `gradient` en `Theme/Widgets.lua`).
+- **Una textura que no existe** sale verde o vacía, sin error. `tools/texturas.py`.
 
 ## Datos guardados y sus topes
 
@@ -126,6 +152,9 @@ Para medir los de una cuenta de verdad: `tools/banco/prueba_139_calidad.lua` (la
 | `perfil.py` | El perfil de la entrada y de un rato de juego (`--paginas`: cada página; `--veces N`: N corridas, el mínimo y la mediana). El mapa empieza cerrado, como en el juego |
 | `regresion.py` (1.3.9) | Prueba visual: captura cada página y algunas ventanas (`tools/banco/vistas.lua`) y las compara pieza por pieza con `tools/banco/referencia/vistas.json.gz`; lo que cambió sale como AVISO VISUAL con una imagen lado a lado (`tools/banco/shot-dif-*.png`). `--aceptar` al cerrar una versión |
 | `tools/banco/prueba_139_calidad.lua` | Todos los comandos `/alfa`, cada aviso en los 10 idiomas, el reporte sin datos privados, la sesión larga y la memoria de las páginas |
+| `texturas.py` (1.4.0) | Cada textura nombrada con un texto fijo (`"ic-…"`, `K.Lobo("…")`, `MEDIA .. "…"`, `"Interface\\AddOns\\Alfa…\\Media\\…"`, `viaje-*`) existe en el build. Lo corren `revisar.py` y `prueba.py` |
+| `globales.py` (1.4.0) | Globales por accidente, desde el bytecode de Lua 5.1: escritos sin `local` y leídos sin existir (una función local usada antes de declararla). Lo corren `revisar.py` y `prueba.py` |
+| `tools/banco/prueba_140_dia.lua` (1.4.0) | Un día de juego, siete veces: entrar, guía, misiones, «Cerrar mis misiones», barco, recolección, combate y mazmorra con secretos, morir, bolsas, pesca, Dos pantallas, cada página, `/reload`, salir. Falla con un error, una acción que el juego bloquearía (marco seguro tocado en combate, función restringida, `SendChatMessage` solo) o si los marcos, ganchos, tareas del reloj, tickers u `OnUpdate` crecen del sexto al séptimo día. `BANCO_DIA_FUGAS=1` dice quién crea cada marco nuevo |
 
 ## Reglas de Forever (no negociables)
 

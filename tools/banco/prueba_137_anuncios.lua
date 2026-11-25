@@ -479,8 +479,13 @@ step("La placa de llegada primero; la zona después y debajo", function()
   RUN_TIMERS(6)
   local a = actual()
   check(a and a.titulo == "Mulgore" and a.bajoPlaca, "la zona no salió debajo de la placa que se quedó")
+  -- 1.4.0 (77): debajo de la placa pero colgado de su ancla, centrado en la
+  -- pantalla (antes se colgaba de la placa y, con la flecha junto al mapa,
+  -- salía junto al mapa).
   local _, rel = anuncio():GetPoint(1)
-  check(rel == p, "la zona no quedó anclada debajo de la placa")
+  check(rel == K.AnclaAnuncio(), "la zona no quedó colgada de su ancla")
+  local l, _, w = anuncio():GetRect()
+  check(math.abs(l + w / 2 - 960) < 2, "la zona dejó el centro de la pantalla")
   -- Un barco no espera a la placa.
   limpiar()
   K.Anuncio({ estilo = "barco", titulo = "El barco a Trinquete ya viene" })

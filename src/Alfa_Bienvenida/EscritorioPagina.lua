@@ -62,12 +62,23 @@ local function grupos(padre)
 		control = function(f) return K.Boton(f, L["Abrir"], function() Es.AbrirAsistente(true) end, { tipo = "secundario", icono = "ic-ventana" }) end })
 	tuyo:Fila({ titulo = L["Cambiar el escritorio solo"], texto = L["En una mazmorra, pescando o en la subasta, Alfa pone los paneles que te sirven ahí."],
 		control = function(f) return K.Interruptor(f, { clave = ID .. ".auto", alCambiar = function() Es.RevisarContexto(true) end }) end })
-	tuyo:Fila({ titulo = L["Fondo del escritorio"], texto = L["Un fondo oscuro de Alfa detrás de los paneles. Apágalo si quieres ver lo que haya detrás."],
+	-- 1.4.0: el tamaño de los paneles y sus letras.
+	tuyo:Fila({ titulo = L["Tamaño de los paneles"], texto = L["Más grande se lee mejor desde lejos; más chico cabe más."],
+		control = function(f)
+			local ops = {}
+			for _, t in ipairs(Es.TAMANOS) do ops[#ops + 1] = { valor = t.valor, texto = L[t.texto] } end
+			return K.Desplegable(f, { ancho = 160, opciones = ops, get = function() return N.Get(ID, "tamano") end,
+				set = function(v) N.Set(ID, "tamano", v) Es.PonerEscala() end })
+		end })
+	tuyo:Fila({ titulo = L["Fondo del escritorio"], texto = L["Una noche de Alfa detrás de los paneles: cielo, estrellas, la luna y el lobo. Apágalo si quieres ver lo que haya detrás."],
 		control = function(f) return K.Interruptor(f, { clave = ID .. ".fondo", alCambiar = function() K.Repintar() end }) end })
 	tuyo:Fila({ titulo = L["El mapa dentro de su panel"], texto = L["El mapa de Alfa se pone solo dentro del panel «Mapa». Apagado, el panel dice dónde estás y lo abres con un clic."],
 		control = function(f) return K.Interruptor(f, { clave = ID .. ".mapaDentro" }) end })
 	tuyo:Fila({ titulo = L["Avisarme si mi ventana es de dos monitores"], texto = L["Una vez: si tu ventana es mucho más ancha que un monitor, Alfa te ofrece el escritorio."],
 		control = function(f) return K.Interruptor(f, { clave = ID .. ".ofrecer" }) end })
+	-- 1.4.0: si la ventana o la interfaz quedaron raras después de Dos pantallas.
+	tuyo:Fila({ titulo = L["Reparar mi pantalla"], texto = L["Si después de usar Dos pantallas la ventana o la interfaz del juego quedaron de otro tamaño, las dejo como estaban."],
+		control = function(f) return K.Boton(f, L["Reparar"], function() if M.EscritorioReparar then M.EscritorioReparar.Preguntar() end end, { tipo = "secundario", icono = "ic-ajustes" }) end })
 	-- Qué distribución va en cada momento.
 	local cuando = K.GrupoAjustes(padre, { titulo = L["Qué escritorio va en cada momento"] })
 	cuando.desplegables = {}
@@ -130,10 +141,14 @@ local CONTROLES = {
 	{ kind = "button", label = L["Volver a una pantalla"], button = L["Volver"], icon = "info",
 		help = L["El juego y su interfaz vuelven a toda la ventana, como siempre."],
 		onClick = function() Es.Apagar() end, search = "one screen, single monitor, reset screen, undo monitors, una pantalla, volver" },
+	{ kind = "button", label = L["Reparar mi pantalla"], button = L["Reparar"], icon = "info",
+		help = L["Si después de usar Dos pantallas la ventana o la interfaz del juego quedaron de otro tamaño, las dejo como estaban."],
+		onClick = function() if M.EscritorioReparar then M.EscritorioReparar.Preguntar() end end,
+		search = "repair screen, fix screen, ui scale, interface too big, window size, reparar pantalla, escala, interfaz grande, letra grande" },
 	{ kind = "toggle", key = ID .. ".auto", label = L["Cambiar el escritorio solo"],
 		help = L["En una mazmorra, pescando o en la subasta, Alfa pone los paneles que te sirven ahí."], search = "auto layout, switch layout, context, automatic, cambiar solo, distribucion" },
 	{ kind = "toggle", key = ID .. ".fondo", label = L["Fondo del escritorio"],
-		help = L["Un fondo oscuro de Alfa detrás de los paneles. Apágalo si quieres ver lo que haya detrás."], search = "desktop background, wallpaper, fondo" },
+		help = L["Una noche de Alfa detrás de los paneles: cielo, estrellas, la luna y el lobo. Apágalo si quieres ver lo que haya detrás."], search = "desktop background, wallpaper, fondo, noche" },
 	{ kind = "toggle", key = ID .. ".mapaDentro", label = L["El mapa dentro de su panel"],
 		help = L["El mapa de Alfa se pone solo dentro del panel «Mapa». Apagado, el panel dice dónde estás y lo abres con un clic."], search = "map panel, minimap, big map, mapa" },
 	{ kind = "toggle", key = ID .. ".moverMundo", label = L["Poner el mundo en el monitor principal"],
@@ -147,11 +162,11 @@ N.Modulo({
 	subtitulo = L["Alfa en tu segundo monitor, con paneles en vivo."],
 	comando = nil,
 	ajustes = { activo = false, lado = "derecha", proporcion = "16:9", medida = 70,
-		moverMundo = true, moverInterfaz = true, auto = true, ofrecer = true, fondo = true, mapaDentro = true,
+		moverMundo = true, moverInterfaz = true, auto = true, ofrecer = true, fondo = true, mapaDentro = true, tamano = "grande",
 		distribucion = "aventura" },
 	controles = CONTROLES,
 	construir = construir,
-	restablecer = { fn = function() if Es.Aplicado() then Es.Aplicar() end end },
+	restablecer = { fn = function() if Es.Aplicado() then Es.Aplicar() Es.PonerEscala() end end },
 })
 
 -- Lya lo explica.

@@ -3,7 +3,7 @@
 --   K.Ventana(opts)        ventana flotante que se mueve, recuerda su lugar y se cierra con Esc
 --   K.Desplazable(padre)   un área que se desplaza con la rueda (y su barra fina)
 --   K.Dialogo(opts)        diálogo modal sobre un velo (uno a la vez)
---   K.Aviso(opts)          aviso flotante arriba al centro (hasta 3, se van solos;
+--   K.Aviso(opts)          aviso flotante arriba, junto a la flecha (hasta 3, se van solos;
 --                          1.3.7: el cuarto espera su turno, y lo que no es
 --                          urgente espera a que el juego termine: Momentos.lua)
 -- Nada de esto es un marco protegido: se puede abrir y cerrar en combate.
@@ -26,6 +26,23 @@ local function cerrarConEsc(nombre)
 		table.insert(UISpecialFrames, nombre)
 	end
 end
+
+-- 1.4.0 (61): Esc cierra todas las ventanas de Alfa. Las del Kit (K.Ventana
+-- con nombre), las del motor (W.Shell) y las que ya se anotaban solas
+-- (Bolsas, Oro, el Mapa, Cerca) ya lo hacían; aquí van las propias que
+-- faltaban, por su nombre (un nombre que aún no existe no estorba). No van
+-- las que no deben: la flecha, el rastreador, Lya, los avisos y anuncios,
+-- los marcos de Combate y Curación, la barra de Pesca, la ventana de guía
+-- y Dos pantallas (se quitan con su propio botón).
+K.CERRAR_CON_ESC = {
+	"AlfaKitMenu",           -- los menús desplegables del Kit
+	"AlfaMazmorrasResumen",  -- el resumen al salir de una mazmorra
+	"AlfaBolsasPrevia",      -- la vista previa de «Ordenar» (al esconderse, se cancela)
+}
+function K.AnotarCerrarConEsc()
+	for _, n in ipairs(K.CERRAR_CON_ESC) do cerrarConEsc(n) end
+end
+if A and A.OnLogin then A.OnLogin(function() K.AnotarCerrarConEsc() end) end
 
 ---------------------------------------------------------------------------
 -- Área desplazable
@@ -336,6 +353,27 @@ local function armarDialogo()
 		if fn then K.Llamar(fn) end
 	end, { tipo = "fantasma" })
 	d.velo = velo
+	-- 1.4.0 (118): Enter acepta (salvo en uno de peligro: ahí solo el clic).
+	-- Las demás teclas siguen al juego (caminar, Esc...). Nunca en combate:
+	-- el velo no sale en una pelea y, si llegara una tecla, pasa de largo.
+	if d.EnableKeyboard and d.SetPropagateKeyboardInput then
+		d:EnableKeyboard(true)
+		d:SetPropagateKeyboardInput(true)
+		d:SetScript("OnKeyDown", function(self, tecla)
+			if InCombatLockdown and InCombatLockdown() then return end
+			local enter = tecla == "ENTER" or tecla == "NUMPADENTER"
+			if enter and not self.alfaPeligro and self.Aceptar:IsShown() and self.Aceptar:IsEnabled() then
+				self:SetPropagateKeyboardInput(false)
+				self.alfaEnter = true
+				self.Aceptar:Click()
+				return
+			end
+			self:SetPropagateKeyboardInput(true)
+		end)
+		velo:HookScript("OnShow", function()
+			if not (InCombatLockdown and InCombatLockdown()) then d:SetPropagateKeyboardInput(true) end
+		end)
+	end
 	velo:SetScript("OnHide", function()
 		if velo.alfaSinCancelar then return end
 		local fn = d.alCancelar
@@ -405,6 +443,7 @@ function K.Dialogo(o)
 	d.porCombate = nil
 	if previo then K.Llamar(previo) end
 	d.alAceptar, d.alCancelar = o.alAceptar, o.alCancelar
+	d.alfaPeligro = o.peligro and true or nil
 	if o.lobo then
 		d.Icono:SetTexture(K.Lobo(o.lobo))
 		d.Icono:SetVertexColor(K.Color(o.peligro and "peligro" or "acento"))
@@ -461,7 +500,8 @@ function K.CerrarDialogo()
 end
 
 ---------------------------------------------------------------------------
--- Avisos flotantes (toasts): arriba al centro, el más nuevo arriba, hasta 3.
+-- Avisos flotantes (toasts): arriba, a la izquierda de la flecha (1.4.0: su
+-- lugar se acomoda con «Acomodar»), el más nuevo arriba, hasta 3.
 -- Se van solos (no mientras el ratón está encima) o con su X.
 --   K.Aviso({ titulo, texto, icono, lobo, tono = "acento", duracion = 6,
 --             accion = { texto, alClic }, alCerrar = fn(aviso),
@@ -484,26 +524,41 @@ end
 local avisos, MAX_AVISOS = {}, 3
 local ancla
 
+-- 1.4.0 (81): un solo lugar para los avisos, arriba y a la izquierda de la
+-- flecha (la flecha va al centro, a -140; el rastreador, a la derecha): la
+-- pila nunca tapa a ninguno de los dos. El ancla tiene nombre
+-- (AlfaAvisosAncla) y se acomoda con «Acomodar» (K.Movible, clave
+-- "avisos"): aquí solo se pone su lugar de fábrica, una vez; nunca se mueve
+-- después (las tarjetas se anclan a ella).
+local ANCLA_X, ANCLA_Y = -118, -120
+K.AVISOS_LUGAR = { "TOPRIGHT", "TOP", ANCLA_X, ANCLA_Y }
+function K.AnclaAvisos()
+	if ancla then return ancla end
+	ancla = CreateFrame("Frame", "AlfaAvisosAncla", K.Raiz())
+	ancla:SetSize(K.ANCHO.aviso, 72)
+	ancla:SetPoint("TOPRIGHT", UIParent, "TOP", ANCLA_X, ANCLA_Y)
+	ancla:EnableMouse(false)
+	if K.Movible then pcall(K.Movible, ancla, "avisos", { nombre = L["Los avisos de Alfa"], muestra = L["Así se verá un aviso"] }) end
+	return ancla
+end
+
 -- 1.3.8: con un anuncio grande a la vista (Kit/Anuncio.lua), los avisos van
--- debajo de él: nunca se empalman.
-local ANCLA_Y = -110
-local function anclar()
-	if not ancla then return end
+-- debajo de él: nunca se empalman. 1.4.0: el ancla no se mueve; las tarjetas
+-- empiezan más abajo (solo si el anuncio de verdad cae sobre la pila).
+local function bajoAnuncio()
 	local an = rawget(_G, "AlfaAnuncio")
-	ancla:ClearAllPoints()
-	if type(an) == "table" and an.IsShown and an:IsShown() and not an.alfaSaliendo then
-		ancla:SetPoint("TOP", an, "BOTTOM", 0, -ESP.s)
-		ancla.alfaBajoAnuncio = true
-	else
-		ancla:SetPoint("TOP", UIParent, "TOP", 0, ANCLA_Y)
-		ancla.alfaBajoAnuncio = nil
-	end
+	if not (ancla and type(an) == "table" and an.IsShown and an:IsShown() and not an.alfaSaliendo) then return 0 end
+	local al, ar, ab = K.num(an:GetLeft(), 0), K.num(an:GetRight(), 0), K.num(an:GetBottom(), 0)
+	local pl, pr, pt = K.num(ancla:GetLeft(), 0), K.num(ancla:GetRight(), 0), K.num(ancla:GetTop(), 0)
+	if ar <= pl or al >= pr or ab >= pt then return 0 end
+	return pt - ab + ESP.s
 end
 local function recolocar()
-	anclar()
-	local y = 0
+	if not ancla then return end
+	local y = bajoAnuncio()
+	ancla.alfaBajoAnuncio = y > 0 or nil
 	for _, a in ipairs(avisos) do
-		if a:IsShown() then
+		if a.alfaVivo and a:IsShown() then
 			a:ClearAllPoints()
 			a:SetPoint("TOP", ancla, "TOP", 0, -y)
 			y = y + K.num(a:GetHeight(), 64) + ESP.s
@@ -511,10 +566,31 @@ local function recolocar()
 	end
 end
 
+-- 1.4.0 (81): ¿el cliente anima de verdad? (el banco no: ahí todo es al instante)
+local function animaDeVerdad(ag)
+	if type(ag) ~= "table" or type(ag.Play) ~= "function" then return false end
+	-- (como Entrada.lua y Momentos.lua: el banco prueba todo al instante, salvo BANCO_ANIMAR)
+	return not (rawget(_G, "FIRE_EVENT") ~= nil and rawget(_G, "BANCO_ANIMAR") ~= true)
+end
+
 local function quitar(a)
 	local vivo = a.alfaVivo
 	a.alfaVivo = nil
-	a:Hide()
+	-- 1.4.0 (81): se va suave (un desvanecido corto); sin animación, al instante.
+	if vivo and a:IsShown() and animaDeVerdad(a.salida) and not (InCombatLockdown and InCombatLockdown()) then
+		a:EnableMouse(false)
+		a.alfaSaliendo = true
+		a.entrada:Stop()
+		a.salida:Stop()
+		a.salida:Play()
+		-- (por si la animación no termina: el marco se escondió con su padre, etc.)
+		if C_Timer and C_Timer.After then
+			C_Timer.After(0.5, function() if a.alfaSaliendo and not a.alfaVivo then a.alfaSaliendo = nil a:Hide() end end)
+		end
+	else
+		a.alfaSaliendo = nil
+		a:Hide()
+	end
 	recolocar()
 	local fn = a.alfaAlCerrar
 	a.alfaAlCerrar = nil
@@ -539,6 +615,7 @@ local function ratonAvisos(on)
 end
 K.RatonAvisos = ratonAvisos -- (para el banco)
 function K.RecolocarAvisos() if ancla then recolocar() end end
+function K.Avisos() return avisos end -- (para el banco: los marcos de la pila, el más nuevo primero)
 function K.AvisosBajoAnuncio() return ancla ~= nil and ancla.alfaBajoAnuncio == true end
 do
 	local ev = CreateFrame("Frame")
@@ -547,47 +624,112 @@ do
 	ev:SetScript("OnEvent", function(_, evento) ratonAvisos(evento ~= "PLAYER_REGEN_DISABLED") end)
 end
 
+-- 1.4.0 (81): la tarjeta nueva, hermana del rastreador. Arriba, la banda de
+-- su módulo (el color y el ícono de su firma, su nombre en mayúsculas y la
+-- X), igual que la banda del título del rastreador; abajo, el ícono en una
+-- baldosa del mismo color, el título, el texto y los botones a la derecha
+-- (el principal al final). Entra deslizándose y se va desvanecida.
+local BANDA_AVISO = 22
+local BALDOSA_AVISO = 30
+K.AVISO_BANDA, K.AVISO_BALDOSA = BANDA_AVISO, BALDOSA_AVISO
+
 local function armarAviso()
-	if not ancla then
-		ancla = CreateFrame("Frame", nil, K.Raiz())
-		ancla:SetSize(K.ANCHO.aviso, 1)
-		ancla:SetPoint("TOP", UIParent, "TOP", 0, -110)
-	end
+	K.AnclaAvisos()
 	local a = CreateFrame("Button", nil, ancla)
-	a:SetFrameStrata("HIGH")
+	-- 1.4.0 (81): por encima de las ventanas de Alfa (HIGH): antes, con una
+	-- ventana abierta, la tarjeta salía entreverada con ella (niveles mezclados).
+	a:SetFrameStrata("DIALOG")
+	a:SetToplevel(true)
 	a:SetWidth(K.ANCHO.aviso)
 	a.caja = K.Caja(a, { fondo = "panel", borde = "lineaFuerte", corte = K.CORTE.panel })
-	a.Franja = K.Plano(a, "acento", "ARTWORK", 1)
-	a.Franja:SetWidth(3)
-	a.Franja:SetPoint("TOPLEFT", a, "TOPLEFT", 0, -K.CORTE.panel - 2)
-	a.Franja:SetPoint("BOTTOMLEFT", a, "BOTTOMLEFT", 0, K.CORTE.panel + 2)
-	a.Icono = a:CreateTexture(nil, "ARTWORK")
-	a.Icono:SetSize(28, 28)
-	a.Icono:SetPoint("TOPLEFT", a, "TOPLEFT", ESP.base, -ESP.m - 2)
-	-- 1.3.8: la firma del módulo (Kit/Firmas.lua): su ícono chico sobre un
-	-- disco oscuro, abajo a la derecha del ícono del aviso.
-	a.FirmaFondo = a:CreateTexture(nil, "ARTWORK", nil, 2)
-	a.FirmaFondo:SetTexture(K.Ruta("circle"))
-	a.FirmaFondo:SetSize(16, 16)
-	a.FirmaFondo:SetPoint("CENTER", a.Icono, "BOTTOMRIGHT", -1, 1)
-	a.FirmaFondo:SetVertexColor(K.Color("fondo"))
+	a.caja:Estilo({ alfaFondo = 0.96 })
+	-- La banda de arriba (como Alfa_Rutas/Banda.lua, aquí del color de la firma).
+	local bf = CreateFrame("Frame", nil, a)
+	bf:SetPoint("TOPLEFT", a, "TOPLEFT", 1, -1)
+	bf:SetPoint("TOPRIGHT", a, "TOPRIGHT", -1, -1)
+	bf:SetHeight(BANDA_AVISO - 1)
+	bf:EnableMouse(false)
+	a.Banda = bf
+	a.BandaFondo = K.Forma(bf, K.CORTE.panel, "BACKGROUND", -4, a)
+	a.BandaFondo:Corte(max(0, K.CORTE.panel - 1), 0)
+	a.Arriba = K.Plano(a, "acento", "ARTWORK", 3)
+	a.Arriba:SetHeight(2)
+	a.Arriba:SetPoint("TOPLEFT", bf, "TOPLEFT", max(0, K.CORTE.panel - 1), 0)
+	a.Arriba:SetPoint("TOPRIGHT", bf, "TOPRIGHT", 0, 0)
+	K.SoloCasa(a.Arriba)
+	a.BandaLinea = K.Linea(a, "linea")
+	a.BandaLinea:SetPoint("BOTTOMLEFT", bf, "BOTTOMLEFT", 0, 0)
+	a.BandaLinea:SetPoint("BOTTOMRIGHT", bf, "BOTTOMRIGHT", 0, 0)
+	if K.TiraBando then
+		a.Tira = K.TiraBando(a, 3, "ARTWORK")
+		a.Tira:SetPoint("TOPLEFT", bf, "BOTTOMLEFT", 0, 1)
+		a.Tira:SetPoint("TOPRIGHT", bf, "BOTTOMRIGHT", 0, 1)
+	end
+	-- 1.3.8 / 1.4.0: la firma del módulo (Kit/Firmas.lua): su ícono y su nombre en la banda.
 	a.Firma = a:CreateTexture(nil, "ARTWORK", nil, 3)
-	a.Firma:SetSize(11, 11)
-	a.Firma:SetPoint("CENTER", a.FirmaFondo, "CENTER", 0, 0)
-	a.Firma:Hide()
+	a.Firma:SetSize(12, 12)
+	a.Firma:SetPoint("LEFT", bf, "LEFT", ESP.m, 0)
+	a.FirmaNombre = K.Texto(a, "mayus", "acento")
+	a.FirmaNombre:SetPoint("LEFT", a.Firma, "RIGHT", 6, 0)
+	a.FirmaNombre:SetPoint("RIGHT", bf, "RIGHT", -30, 0)
+	a.FirmaNombre:SetJustifyH("LEFT")
+	a.FirmaNombre:SetWordWrap(false)
+	-- (el disco de la firma de la 1.3.8 ya no va: queda escondido por si alguien lo lee)
+	a.FirmaFondo = a:CreateTexture(nil, "ARTWORK", nil, 2)
+	a.FirmaFondo:SetSize(1, 1)
 	a.FirmaFondo:Hide()
+	-- La franja fina del lado, bajo la banda (del color de la firma).
+	a.Franja = K.Plano(a, "acento", "ARTWORK", 1)
+	a.Franja:SetWidth(2)
+	a.Franja:SetPoint("TOPLEFT", bf, "BOTTOMLEFT", 0, 0)
+	a.Franja:SetPoint("BOTTOMLEFT", a, "BOTTOMLEFT", 1, K.CORTE.panel + 1)
+	-- El ícono, en su baldosa.
+	a.Baldosa = CreateFrame("Frame", nil, a)
+	a.Baldosa:SetSize(BALDOSA_AVISO, BALDOSA_AVISO)
+	a.Baldosa:SetPoint("TOPLEFT", bf, "BOTTOMLEFT", ESP.m - 1, -ESP.s - 1)
+	a.Baldosa.caja = K.Caja(a.Baldosa, { fondo = "acento", alfaFondo = 0.14, borde = "acento", alfaBorde = 0.35, corte = K.CORTE.control })
+	a.Icono = a.Baldosa:CreateTexture(nil, "ARTWORK")
+	a.Icono:SetSize(18, 18)
+	a.Icono:SetPoint("CENTER", a.Baldosa, "CENTER", 0, 0)
 	a.Titulo = K.Texto(a, "encabezado", "texto")
 	a.Texto = K.Texto(a, "nota", "textoSuave")
 	-- El botón no se llama "Cerrar": a:Cerrar(turno) (abajo) es la función para quitar el aviso.
-	a.BotonCerrar = K.BotonIcono(a, "ic-cerrar", function() quitar(a) end, { tam = 22, icono = 10 })
-	a.BotonCerrar:SetPoint("TOPRIGHT", a, "TOPRIGHT", -6, -6)
+	a.BotonCerrar = K.BotonIcono(a, "ic-cerrar", function() quitar(a) end, { tam = 18, icono = 9, ayuda = L["Cerrar"] })
+	a.BotonCerrar:SetPoint("RIGHT", bf, "RIGHT", -4, 0)
+	-- Entra: aparece y se desliza 16 px desde la derecha. Sale: se desvanece.
 	local ag = a:CreateAnimationGroup()
 	local alfa = ag:CreateAnimation("Alpha")
 	alfa:SetFromAlpha(0)
 	alfa:SetToAlpha(1)
-	alfa:SetDuration(0.2)
+	alfa:SetDuration(0.22)
 	alfa:SetSmoothing("OUT")
+	alfa:SetOrder(2)
+	local oculto = ag:CreateAnimation("Alpha") -- (en el salto a la derecha, aún no se ve)
+	oculto:SetFromAlpha(0)
+	oculto:SetToAlpha(0)
+	oculto:SetDuration(0)
+	oculto:SetOrder(1)
+	local ida = ag:CreateAnimation("Translation")
+	ida:SetOffset(16, 0)
+	ida:SetDuration(0)
+	ida:SetOrder(1)
+	local vuelta = ag:CreateAnimation("Translation")
+	vuelta:SetOffset(-16, 0)
+	vuelta:SetDuration(0.22)
+	vuelta:SetSmoothing("OUT")
+	vuelta:SetOrder(2)
 	a.entrada = ag
+	local sal = a:CreateAnimationGroup()
+	local fuera = sal:CreateAnimation("Alpha")
+	fuera:SetFromAlpha(1)
+	fuera:SetToAlpha(0)
+	fuera:SetDuration(0.16)
+	fuera:SetSmoothing("IN")
+	sal:SetScript("OnFinished", function()
+		if a.alfaSaliendo and not a.alfaVivo then a:Hide() end
+		a.alfaSaliendo = nil
+	end)
+	a.salida = sal
 	function a:Cerrar(turno)
 		if turno and turno ~= self.turno then return end
 		if self.alfaVivo then quitar(self) end
@@ -893,44 +1035,67 @@ function K.Aviso(o)
 		for i, x in ipairs(avisos) do if x == a then table.remove(avisos, i) break end end
 	end
 	table.insert(avisos, 1, a)
-	local relleno, texto = K.Tono(o.tono or "acento")
-	-- 1.3.8: la franja lleva el color del módulo de donde viene (su firma) y
-	-- su ícono chico va junto al del aviso; el ícono sigue diciendo el tono.
+	local relleno = K.Tono(o.tono or "acento")
+	-- 1.3.8: la franja lleva el color del módulo de donde viene (su firma);
+	-- 1.4.0 (81): también la banda de arriba, con su ícono y su nombre. Sin
+	-- firma conocida, la de Alfa. El ícono del aviso sigue diciendo el tono.
 	local firma = K.FIRMAS and o.alfaFirma and K.FIRMAS[o.alfaFirma] or nil
-	K.ColorPlano(a.Franja, firma and o.tono ~= "peligro" and firma.color or relleno)
-	if o.lobo then a.Icono:SetTexture(K.Lobo(o.lobo)) else a.Icono:SetTexture(K.Ruta(o.icono or (firma and firma.icono) or "ic-aviso")) end
-	a.Icono:SetVertexColor(K.Color(relleno))
+	local fb = firma or (K.FIRMAS and K.FIRMAS.alfa) or { nombre = "Alfa", color = "acento", icono = "ic-lobo" }
+	local colorFirma = (o.tono == "peligro" or (o.tono and o.tono ~= "acento" and not firma)) and relleno or fb.color
+	K.ColorPlano(a.Franja, colorFirma)
+	K.ColorPlano(a.Arriba, colorFirma)
+	a.BandaFondo:Color(colorFirma, K.Clasico and K.Clasico() and 0.08 or 0.13)
+	a.Firma:SetTexture(K.Ruta(fb.icono or "ic-lobo"))
+	a.Firma:SetVertexColor(K.Color(colorFirma))
+	a.Firma:Show()
+	K.Escribir(a.FirmaNombre, K.Mayus and K.Mayus(L[fb.nombre or "Alfa"]) or L[fb.nombre or "Alfa"])
+	a.FirmaNombre:SetTextColor(K.Color(colorFirma))
+	a.FirmaFondo:Hide()
+	-- El ícono y su baldosa: del color de su firma; con un tono propio (bien,
+	-- cuidado, peligro), de ese tono.
+	local tonoIcono = (o.tono == nil or o.tono == "acento") and colorFirma or relleno
+	if o.lobo then a.Icono:SetTexture(K.Lobo(o.lobo)) else a.Icono:SetTexture(K.Ruta(o.icono or fb.icono or "ic-aviso")) end
+	a.Icono:SetVertexColor(K.Color(tonoIcono))
+	a.Icono:SetSize(o.lobo and 24 or 18, o.lobo and 24 or 18)
+	a.Baldosa.caja:Estilo({ fondo = tonoIcono, borde = tonoIcono, alfaFondo = 0.14, alfaBorde = 0.35 })
+	-- 1.4.0: con la temática por bando, su tira (madera o piedra) bajo la banda.
+	if a.Tira then a.Tira:Pintar() end
 	-- 1.3.9: una textura a color propia (el Lobo Malo de los errores): sin teñir.
 	if type(o.textura) == "string" then
 		a.Icono:SetTexture(o.textura)
 		a.Icono:SetVertexColor(1, 1, 1, 1)
-	end
-	local conFirma = firma ~= nil and firma.icono ~= (o.icono or (not o.lobo and firma.icono) or nil)
-		and not (o.lobo and o.alfaFirma == "lya") and type(o.textura) ~= "string"
-	a.Firma:SetShown(conFirma)
-	a.FirmaFondo:SetShown(conFirma)
-	if conFirma then
-		a.Firma:SetTexture(K.Ruta(firma.icono))
-		a.Firma:SetVertexColor(K.Color(firma.color))
+		a.Icono:SetSize(26, 26)
 	end
 	a.alfaFirma = o.alfaFirma or nil
-	local x = ESP.base + 28 + ESP.m
-	local tw = K.ANCHO.aviso - x - 30
+	local x = ESP.m + BALDOSA_AVISO + ESP.m
+	local tw = K.ANCHO.aviso - x - ESP.m - 2
+	local y0 = BANDA_AVISO + ESP.s + 1
 	K.Escribir(a.Titulo, o.titulo or "")
 	a.Titulo:ClearAllPoints()
-	a.Titulo:SetPoint("TOPLEFT", a, "TOPLEFT", x, -ESP.m - 2)
+	a.Titulo:SetPoint("TOPLEFT", a, "TOPLEFT", x, -y0)
 	-- 1.3.9 (98): el título en hasta 2 renglones y el texto en hasta 6: en
 	-- alemán, francés o ruso un aviso de 3 renglones en español se cortaba
 	-- (tools/banco/prueba_139_calidad.lua los mide en los 10 idiomas).
-	local y = ESP.m + 2 + K.Parrafo(a.Titulo, tw, 2)
+	local ht = (o.titulo or "") ~= "" and K.Parrafo(a.Titulo, tw, 2) or 0
+	local y = y0 + ht
 	K.Escribir(a.Texto, o.texto or "")
 	if (o.texto or "") ~= "" then
-		y = y + 3
+		y = y + (ht > 0 and 3 or 0)
 		a.Texto:ClearAllPoints()
 		a.Texto:SetPoint("TOPLEFT", a, "TOPLEFT", x, -y)
 		y = y + K.Parrafo(a.Texto, tw, 6)
 	end
+	-- Con un título corto y sin texto, el título se centra con la baldosa.
+	if ht > 0 and (o.texto or "") == "" and ht < BALDOSA_AVISO then
+		local dy = floor((BALDOSA_AVISO - ht) / 2)
+		a.Titulo:ClearAllPoints()
+		a.Titulo:SetPoint("TOPLEFT", a, "TOPLEFT", x, -(y0 + dy))
+		y = y0 + BALDOSA_AVISO
+	end
+	y = max(y, y0 + BALDOSA_AVISO)
 	-- Sus botones: o.accion, o.acciones (1.3.7: hasta dos, { texto, alClic | fn }).
+	-- 1.4.0 (81): a la derecha, el principal al final; si no caben juntos,
+	-- uno bajo otro (el principal arriba).
 	local botones = {}
 	if type(o.accion) == "table" then botones[1] = o.accion end
 	if type(o.acciones) == "table" then
@@ -941,24 +1106,40 @@ function K.Aviso(o)
 	end
 	a.alfaAccion = botones[1] and { texto = botones[1].texto, alClic = botones[1].alClic or botones[1].fn, seguro = botones[1].seguro } or nil
 	if botones[1] then
-		local w1 = ponerBoton(a, "Boton", botones[1], x, y + ESP.s)
+		local by = y + ESP.m - 2
+		local derecha = K.ANCHO.aviso - ESP.m
+		local w1 = ponerBoton(a, "Boton", botones[1], x, by)
 		if botones[2] then
-			local w2 = ponerBoton(a, "Boton2", botones[2], x + w1 + ESP.s, y + ESP.s)
-			-- Si no caben juntos, el segundo abajo.
-			if w1 + ESP.s + w2 > tw then
+			local w2 = ponerBoton(a, "Boton2", botones[2], x, by)
+			if w1 + ESP.s + w2 <= K.ANCHO.aviso - x - ESP.m then
+				a.Boton:ClearAllPoints()
+				a.Boton:SetPoint("TOPLEFT", a, "TOPLEFT", derecha - w1, -by)
 				a.Boton2:ClearAllPoints()
-				a.Boton2:SetPoint("TOPLEFT", a, "TOPLEFT", x, -(y + 2 * ESP.s + K.ALTO.botonChico))
-				y = y + ESP.s + K.ALTO.botonChico
+				a.Boton2:SetPoint("TOPLEFT", a, "TOPLEFT", derecha - w1 - ESP.s - w2, -by)
+			else
+				a.Boton:ClearAllPoints()
+				a.Boton:SetPoint("TOPLEFT", a, "TOPLEFT", x, -by)
+				a.Boton2:ClearAllPoints()
+				a.Boton2:SetPoint("TOPLEFT", a, "TOPLEFT", x, -(by + ESP.xs + K.ALTO.botonChico))
+				y = y + ESP.xs + K.ALTO.botonChico
 			end
-		elseif a.Boton2 then
-			a.Boton2:Hide()
+		else
+			if a.Boton2 then a.Boton2:Hide() end
+			if w1 <= K.ANCHO.aviso - x - ESP.m then
+				a.Boton:ClearAllPoints()
+				a.Boton:SetPoint("TOPLEFT", a, "TOPLEFT", derecha - w1, -by)
+			end
 		end
-		y = y + ESP.s + K.ALTO.botonChico
+		y = y + ESP.m - 2 + K.ALTO.botonChico
 	else
 		if a.Boton then a.Boton:Hide() end
 		if a.Boton2 then a.Boton2:Hide() end
 	end
-	a:SetHeight(max(y, ESP.m + 30) + ESP.m + 2)
+	a:SetHeight(y + ESP.m)
+	-- (uno que se iba desvaneciendo y vuelve a usarse: entero)
+	if a.salida then a.salida:Stop() end
+	a.alfaSaliendo = nil
+	a:SetAlpha(1)
 	a.alfaVivo = true
 	a.alfaLeido = nil
 	a.alfaAlCerrar = o.alCerrar

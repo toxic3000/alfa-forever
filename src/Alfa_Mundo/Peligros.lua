@@ -33,6 +33,7 @@ local CAPA = "mundo.peligros"
 Pe.CAPA = CAPA
 local LOTE = 300
 local PINES = 40
+local GRUPO = 6 -- 1.4.0 (72): % del mapa: los peligros más juntos que esto van en un solo pin con su número
 local CERCA = 4 -- % del mapa: apariciones más juntas que esto comparten pin
 
 local login = false
@@ -96,8 +97,22 @@ end
 -- 1.3.1: cada punto lleva su marco (f = "e": Era, como casi todo el Codex).
 -- Sin él, el mapa leía el punto como del juego y en las zonas que Forever
 -- movió el pin salía corrido. Solo se juntan puntos del mismo marco.
+-- 1.4.0 (72): un PNJ de tu facción (o de las dos) no es un peligro: en
+-- Forjaz salían decenas de calaveras sobre los guardias y los entrenadores
+-- (élites amistosos). Solo cuentan los que no te son amistosos.
+local FACCION = { Alliance = "A", Horde = "H" }
+local function amistoso(f)
+	if type(f) ~= "string" or f == "" then return false end
+	if f == "AH" then return true end
+	local mia = UnitFactionGroup and UnitFactionGroup("player")
+	mia = not secreto(mia) and FACCION[mia] or nil
+	return mia ~= nil and f:find(mia, 1, true) ~= nil
+end
+Pe.Amistoso = amistoso
+
 local function anotar(porZona, id, n)
 	if type(n) ~= "table" or n.instance or n.boss or not (n.elite or n.rare) then return end
+	if amistoso(n.faction) or (type(n.roles) == "table" and #n.roles > 0) then return end
 	if type(n.spawns) ~= "table" then return end
 	local zonas = {}
 	for _, s in ipairs(n.spawns) do
@@ -167,6 +182,9 @@ function Pe.Indexar(listo)
 end
 
 function Pe.Listo() return indice ~= nil end
+-- (para el banco) anotar una criatura del Codex y poner un índice armado a mano.
+Pe.Anotar = anotar
+function Pe.PonerIndice(t) indice = t end
 function Pe.Olvidar() indice, armando = nil, nil end
 
 -- Los peligros de una zona para tu nivel, los más peligrosos primero.
@@ -201,29 +219,83 @@ local function tipo(c)
 	return L["Élite"]
 end
 
+-- 1.4.0 (72): los peligros cercanos van juntos en un pin con su número
+-- (insignia), del color del peor; el cuadro dice quiénes son. Primero los
+-- de cerca de ti. Como mucho PINES pines.
+local function aqui(zona)
+	local Mp = C_Map
+	if not (Mp and Mp.GetPlayerMapPosition) then return nil end
+	local ok, pos = pcall(Mp.GetPlayerMapPosition, zona, "player")
+	if not (ok and pos) then return nil end
+	local x, y
+	if type(pos.GetXY) == "function" then x, y = pos:GetXY() else x, y = pos.x, pos.y end
+	if secreto(x) or secreto(y) or type(x) ~= "number" or type(y) ~= "number" then return nil end
+	return x * 100, y * 100
+end
+
+function Pe.Grupos(zona, nivel)
+	local grupos = {}
+	for _, e in ipairs(Pe.Lista(zona, nivel)) do
+		for _, pt in ipairs(e.c.puntos) do
+			local g
+			for _, h in ipairs(grupos) do
+				if h.f == pt.f and abs(h.x - pt.x) < GRUPO and abs(h.y - pt.y) < GRUPO then g = h break end
+			end
+			if g then
+				g.n = g.n + 1
+				if e.peligro == "alto" then g.peligro = "alto" end
+				if e.c.rare then g.raro = true end
+				local ya = false
+				for _, c in ipairs(g.criaturas) do if c == e.c then ya = true break end end
+				if not ya then g.criaturas[#g.criaturas + 1] = e.c end
+			else
+				grupos[#grupos + 1] = { x = pt.x, y = pt.y, f = pt.f, n = 1, peligro = e.peligro, raro = e.c.rare, criaturas = { e.c } }
+			end
+		end
+	end
+	local px, py = aqui(zona)
+	sort(grupos, function(a, b)
+		if a.peligro ~= b.peligro then return a.peligro == "alto" end
+		if px then
+			local da = (a.x - px) ^ 2 + (a.y - py) ^ 2
+			local db = (b.x - px) ^ 2 + (b.y - py) ^ 2
+			if da ~= db then return da < db end
+		end
+		return a.n > b.n
+	end)
+	return grupos
+end
+
 local function pines(zona)
 	local lista = {}
 	local alto, medio = color("danger"), color("warning")
-	for _, e in ipairs(Pe.Lista(zona)) do
-		local c, p = e.c, e.peligro
+	for _, g in ipairs(Pe.Grupos(zona)) do
+		if #lista >= PINES then break end
+		local p = g.peligro
 		local col = p == "alto" and alto or medio
-		local nombre = c.name or L["Criatura peligrosa"]
-		for _, pt in ipairs(c.puntos) do
-			if #lista >= PINES then return lista end
-			lista[#lista + 1] = {
-				map = zona, x = pt.x, y = pt.y, f = pt.f, icon = c.rare and "map:rare" or "map:kill", size = 14, color = col, ring = col,
-				priority = p == "alto" and 3 or 2, label = nombre,
-				tooltip = function(tip)
-					tip:SetText(nombre, rgb(p == "alto" and "danger" or "warning"))
-					tip:AddLine(format(L["%s, nivel %s"], tipo(c), textoNivel(c)), rgb("textDim"))
-					tip:AddLine(p == "alto" and L["Muy peligroso para tu nivel: mejor con grupo o rodéalo."]
-						or L["Pega fuerte: ve con cuidado y con la vida llena."], rgb(p == "alto" and "danger" or "text"))
-				end,
-			}
-		end
+		local primera = g.criaturas[1]
+		local nombre = g.n > 1 and format(L["%d peligros aquí"], g.n) or (primera.name or L["Criatura peligrosa"])
+		lista[#lista + 1] = {
+			map = zona, x = g.x, y = g.y, f = g.f, icon = g.raro and "map:rare" or "map:kill", size = g.n > 1 and 16 or 14,
+			color = col, ring = col, badge = g.n > 1 and g.n or nil,
+			priority = p == "alto" and 3 or 2, label = nombre,
+			tooltip = function(tip)
+				tip:SetText(nombre, rgb(p == "alto" and "danger" or "warning"))
+				for i, c in ipairs(g.criaturas) do
+					if i > 6 then
+						tip:AddLine(format(L["y %d más"], #g.criaturas - 6), rgb("textDim"))
+						break
+					end
+					tip:AddLine(format("%s  \194\183  %s", c.name or L["Criatura peligrosa"], format(L["%s, nivel %s"], tipo(c), textoNivel(c))), rgb("textDim"))
+				end
+				tip:AddLine(p == "alto" and L["Muy peligroso para tu nivel: mejor con grupo o rodéalo."]
+					or L["Pega fuerte: ve con cuidado y con la vida llena."], rgb(p == "alto" and "danger" or "text"))
+			end,
+		}
 	end
 	return lista
 end
+Pe.Pines = pines
 
 function Pe.Refrescar()
 	local Pins = A.Pins

@@ -119,7 +119,7 @@ step("Cuando caes: sin el motor, la flecha a tu cuerpo en 0-100; apagado, nada",
   check(puesto and puesto.map == 1411 and math.abs(puesto.x - 60) < 0.01 and math.abs(puesto.y - 40) < 0.01,
     "la flecha no quedó en tu cuerpo en 0-100")
   local c = dijo("no quedas débil", n)
-  check(c and c.acciones and c.acciones[1].texto == "Llévame a mi cuerpo", "sin el motor, falta «Llévame a mi cuerpo»")
+  check(c and c.acciones and c.acciones[1].texto == "Vuelve a tu cuerpo", "sin el motor, falta «Vuelve a tu cuerpo»") -- 1.4.0 (45): antes «Llévame a mi cuerpo»
   A.Set("lya.muerte", false)
   local n2 = #dichos
   conLya(function() FIRE_EVENT("PLAYER_DEAD") FIRE_EVENT("PLAYER_ALIVE") RUN_TIMERS(3) end)

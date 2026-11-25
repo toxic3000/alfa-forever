@@ -125,7 +125,7 @@ step("Llamar a la manada", function()
   R.Via = function() return "hermandad" end
   local salidos = {}
   local envio = C_ChatInfo.SendAddonMessage
-  C_ChatInfo.SendAddonMessage = function(_, t, c, d) salidos[#salidos + 1] = { (t:gsub("|~[HA]$", "")), c, d } end
+  C_ChatInfo.SendAddonMessage = function(_, t, c, d) salidos[#salidos + 1] = { (t:gsub("|~[HA]$", ""):gsub("|%^%d+$", "")), c, d } end -- (1.4.0: sin la versión de la Red)
   local ok = Ll.Llamar()
   for _ = 1, 60 do FIRE(R.motor, "OnUpdate", 0.2) end
   local a

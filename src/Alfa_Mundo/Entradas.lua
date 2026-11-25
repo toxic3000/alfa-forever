@@ -74,7 +74,7 @@ local function tipSalida(zona, nombre)
 		if texto then
 			local Maps = A.Maps
 			local col = Maps and type(Maps.LevelColor) == "function" and Maps.LevelColor(lo, hi, Geo.NivelJugador()) or "quest"
-			tip:AddLine(format(L["Niveles %s"], texto), rgb(col))
+			tip:AddLine(format((lo and lo == hi) and L["Nivel %s"] or L["Niveles %s"], texto), rgb(col)) -- 1.4.0: «Nivel 60»
 		end
 		tip:AddLine(L["En el mapa de Alfa, clic: seguirla con la flecha o guardarla como marcador."], rgb("textDim"))
 	end

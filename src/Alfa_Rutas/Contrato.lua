@@ -75,6 +75,14 @@ function R.TextoPlanCumplido(c)
 		or L["¡Plan cumplido! Te quedan %d misiones en tu registro: Alfa arma la ruta para cerrarlas."], n)
 end
 function R.TextoEmpezarDesde() return L["Empezar desde este paso"] end
+-- 1.4.0: «Comprar lo que falta» de la guía de oficio que sigues (Comprar.lua,
+-- 31) -> n | nil, motivo; tus guías terminadas (Historial.lua, 32); saltar a
+-- la parte de tu nivel (MiNivel.lua, 26) -> ok.
+function R.ComprarFalta() return M.Comprar.Agregar() end
+function R.FaltanOficio() return M.Comprar.Faltan() end
+function R.Historial() return M.Historial.Lista() end
+function R.AbrirHistorial() return M.Historial.Abrir() end
+function R.SaltarAMiNivel() return M.MiNivel.Saltar() end
 function R.Entregar() return M.EntregarListas() end -- 1.3.7: la misma manera en todos lados
 function R.Recoger() M.Recoger.Ahora() end
 function R.AgregarObjeto(itemID) return M.AgregarObjeto(itemID) end

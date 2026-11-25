@@ -153,6 +153,13 @@ local function opciones()
 			texto = L["Tienes misiones grises: mira cuáles ya no valen la pena y suéltalas para hacer espacio."],
 			alClic = function() M.Grises.Abrir() end }
 	end
+	-- 1.4.0 (32): tus guías terminadas, con fecha y tiempo.
+	local hechas = M.Historial and #M.Historial.Lista() or 0
+	if hechas > 0 then
+		out[#out + 1] = { icono = "ic-exito", titulo = L["Guías terminadas"],
+			texto = M.Plural(hechas, L["%d guía terminada, con su fecha y su tiempo."], L["%d guías terminadas, con su fecha y su tiempo."]),
+			alClic = function() M.Historial.Abrir() end }
+	end
 	local r = M.RutaActiva() or M.RutaEditada()
 	if r and #r.tramos > 0 then
 		out[#out + 1] = { icono = "ic-ruta", titulo = r.nombre, texto = M.Plural(#r.tramos, L["Tu ruta de %d tramo."], L["Tu ruta de %d tramos."]),
@@ -338,6 +345,10 @@ do
 			{ kind = "toggle", key = M.ID .. ".sugerirRutaGrupo", label = L["Sugerir rutas de mi grupo"],
 				help = L["En grupo, si un compañero lleva misiones que tú no, el rastreador te propone pedírselas y seguir su ruta."],
 				search = "group route, party quests, follow route, ruta de grupo" },
+			-- 1.4.0 (diario, 90)
+			{ kind = "toggle", key = M.ID .. ".aprenderTodo", label = L["«Aprender todo» en el entrenador"],
+				help = L["Con la ventana del entrenador abierta, un botón aprende de un clic todo lo que te alcanza, empezando por lo más barato."],
+				search = "trainer, train all, learn all, entrenador, aprender todo, hechizos" },
 		} })
 	if not ok and geterrorhandler then geterrorhandler()(err) end
 end
@@ -371,6 +382,36 @@ do
 			{ kind = "toggle", key = M.ID .. ".horarios", label = L["Horarios de barcos y zepelines en el mapa"],
 				help = L["Cada muelle con cuánto falta para que llegue su barco o zepelín."],
 				search = "boat schedule, zeppelin timer, countdown, transport" },
+		} })
+	if not ok and geterrorhandler then geterrorhandler()(err) end
+end
+
+-- 1.4.0: tu guía, más clara (25-31), en Ajustes > Misiones > Misiones.
+do
+	local LM = A.L or {}
+	local ok, err = A.RegisterOptions({ page = "questing", key = "questing", tab = LM["Quests"] or "Quests",
+		section = L["Tu guía, más clara"], controls = {
+			{ kind = "toggle", key = M.ID .. ".avanceTiempo", label = L["El avance y el tiempo que falta"],
+				help = L["En la cabecera del seguimiento: los pasos, el % y cuánto te falta por tu ritmo."],
+				search = "progress, percent, time left, eta, avance, tiempo" },
+			{ kind = "toggle", key = M.ID .. ".saltarNivel", label = L["Ofrecer «Saltar a mi nivel»"],
+				help = L["Si tu guía va atrás de tu nivel, el rastreador te ofrece ir a la parte que te toca."],
+				search = "skip to my level, behind, outleveled, saltar, nivel" },
+			{ kind = "toggle", key = M.ID .. ".avisoCadena", label = L["Avisar antes de abandonar una cadena"],
+				help = L["Al abandonar una misión que abre otras: cuántas siguen, su experiencia y el premio del final."],
+				search = "abandon quest, chain, follow up, cadena, abandonar" },
+			{ kind = "toggle", key = M.ID .. ".recompensaGuia", label = L["Qué recompensa elegir"],
+				help = L["En cada entrega, la recompensa que le sirve a tu clase (la mejora más grande)."],
+				search = "quest reward, choose reward, upgrade, recompensa" },
+			{ kind = "toggle", key = M.ID .. ".entregaMinimapa", label = L["Marcar en el minimapa a quien recibe la misión"],
+				help = L["Al acercarte a entregar una misión de tu guía, el minimapa marca al PNJ con su nombre."],
+				search = "turn in npc, minimap, quest giver, entregar, minimapa" },
+			{ kind = "toggle", key = M.ID .. ".cerrarCiudad", label = L["Al final, a la ciudad: entrenar y vender"],
+				help = L["Al cerrar tu ruta de «Cerrar mis misiones», la flecha te lleva a tu entrenador y a quien repara."],
+				search = "trainer, vendor, repair, city, ciudad, entrenar, vender" },
+			{ kind = "toggle", key = M.ID .. ".comprarFalta", label = L["«Comprar lo que falta» en las guías de oficio"],
+				help = L["En el paso de tus materiales, un botón que pasa lo que te falta a tu lista de compras."],
+				search = "profession, materials, shopping list, auction, comprar, materiales" },
 		} })
 	if not ok and geterrorhandler then geterrorhandler()(err) end
 end

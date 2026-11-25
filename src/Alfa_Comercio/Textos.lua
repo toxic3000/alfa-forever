@@ -4,6 +4,21 @@
 local _, M = ...
 
 M.EN = {
+	-- 1.4.0 (diario): mejoras del día a día
+	["¿Lo vendiste sin querer?"] = "Did you sell that by mistake?",
+	["Vendiste %s por %s."] = "You sold %s for %s.",
+	["Si fue sin querer, recómprala ahora: cuesta lo mismo."] = "If it was a mistake, buy it back now: it costs the same.",
+	["Recomprar"] = "Buy back",
+	["Ya no está en «Recompra»"] = "It's no longer in \"Buyback\"",
+	["El comerciante solo la guarda mientras sigues con él."] = "The vendor only keeps it while you're still with them.",
+	["Avisar si vendes algo valioso"] = "Warn me if I sell something valuable",
+	["Si le vendes al comerciante algo azul o mejor, un aviso con «Recomprar» por si fue sin querer."] = "If you sell something blue or better to a vendor, a notice with \"Buy back\" in case it was a mistake.",
+	["Alt+clic compra una pila"] = "Alt+click buys a stack",
+	["En el comerciante, Alt+clic sobre algo compra una pila entera (lo que te alcance y lo que tenga)."] = "At a vendor, Alt+click on an item buys a full stack (as much as you can afford and they have).",
+	["Compraste %d de %s por %s."] = "You bought %d of %s for %s.",
+	["No te alcanza para una pila."] = "You can't afford a stack.",
+	["El comerciante ya no tiene más."] = "The vendor has no more.",
+	["Eso se paga con otra cosa: cómpralo con el juego."] = "That's paid with something else: buy it the game's way.",
 	-- 1.3.9 (avisos): el reporte, el Centro de avisos, Lya y los errores con qué hacer
 	["No pude buscar el lugar más cercano. Prueba de nuevo en un momento; si sigue, /alfa diagnostico lo revisa."] = "I couldn't search for the nearest place. Try again in a moment; if it keeps happening, /alfa diagnostico checks it.",
 	-- Página y módulo
@@ -525,5 +540,36 @@ M.EN = {
 	["Ya puedes fabricar y ganar"] = "You can craft and earn now",
 	-- 1.3.9 (oficios)
 	["Guíame paso a paso"] = "Guide me step by step",
+	-- 1.4.0 (oficios)
+	["%s a %s c/u (suele valer %s) · te faltan %d"] = "%s at %s each (usually %s) · you need %d",
+	["Lo de tu lista, barato en la subasta"] = "Something on your list is cheap at the auction",
+	["%d cosas de tu lista, baratas en la subasta"] = "%d things on your list, cheap at the auction",
+	["Comercio > Tu lista de compras"] = "Trade > Your shopping list",
+	["Esta semana no anoté ventas ni compras de la subasta. Se anotan al tomar sus cartas del buzón."] = "No auction sales or purchases this week. They're noted when you take their letters from the mailbox.",
+	["Tu semana en la subasta: vendiste %s, compraste %s; te quedan %s."] = "Your week at the auction: you sold %s, bought %s; you keep %s.",
+	["Vendiste"] = "You sold",
+	["Compraste"] = "You bought",
+	["Tu receta"] = "Your recipe",
+	["«%s» ya está en verde: solo da puntos a veces y gastas materiales de más."] = "«%s» is now green: it only gives points sometimes and you waste materials.",
+	["Sigue con «%s», que todavía da puntos seguros."] = "Go on with «%s», which still gives sure points.",
+	["Ver la guía"] = "See the guide",
+	["Tu receta pasó a verde"] = "Your recipe turned green",
+	["Comercio > Oficios"] = "Trade > Professions",
+	["Tu semana en la subasta"] = "Your week at the auction",
+	["Sin ventas ni compras esta semana"] = "No sales or purchases this week",
+	["Lo que vendes y compras en la subasta se anota al tomar sus cartas del buzón."] = "What you sell and buy at the auction is noted when you take its letters from the mailbox.",
+	["Te quedaron %s esta semana"] = "You kept %s this week",
+	["Gastaste %s más de lo que vendiste"] = "You spent %s more than you sold",
+	["Vendiste %s (%s) y compraste %s (%s)."] = "You sold %s (%s) and bought %s (%s).",
+	["%d cosa"] = "%d thing",
+	["%d cosas"] = "%d things",
+	["7 días"] = "7 days",
+	["Venta"] = "Sale",
+	["Compra"] = "Purchase",
+	["Avisar si lo de tu lista sale barato"] = "Tell me if something on my list is cheap",
+	["Con la subasta abierta, un aviso cuando un material que te falta de tu lista cuesta por lo menos un 15 % menos de lo que suele valer."] = "With the auction open, a notice when a material you still need from your list costs at least 15% less than usual.",
+	["Avisar cuando una receta pasa a verde"] = "Tell me when a recipe turns green",
+	["Mientras subes un oficio, un aviso cuando la receta que haces ya solo da puntos a veces, y cuál sigue."] = "While you level a profession, a notice when the recipe you're making only gives points sometimes, and which one is next.",
+	["Lo que vendiste y compraste estos 7 días, en esta página. Se anota al tomar las cartas de la subasta del buzón. También: /alfa comercio semana."] = "What you sold and bought these 7 days, on this page. It's noted when you take the auction letters from the mailbox. Also: /alfa comercio semana.",
 }
 M.L = AlfaNucleo.Textos(M.EN)

@@ -1,0 +1,23 @@
+{
+ "%s saldrá siempre en «%s». Suéltalo otra vez ahí para devolverlo a «%s».": "%s将一直显示在「%s」。再次拖到那里即可还原到「%s」。",
+ "%s volvió a su sección de siempre.": "%s已回到原来的分区。",
+ "%s: %d de %d libres": "%s：%d/%d 空闲",
+ "Así quedarán tus bolsas": "背包整理后会是这样",
+ "Bolsa especial": "专业背包",
+ "El juego decide el orden final.": "最终顺序由游戏决定。",
+ "Ese objeto": "该物品",
+ "Gemas": "宝石",
+ "Inscripción": "铭文",
+ "Lo que tiene candado se queda en su lugar.": "上锁的物品留在原位。",
+ "Mejor que lo que llevas:": "比身上的好：",
+ "Menos": "收起",
+ "Más o menos así quedarán": "大致会是这样",
+ "Nada se mueve hasta que das clic.": "点击之前什么都不会移动。",
+ "No hay nada que ordenar.": "没有需要整理的东西。",
+ "Peor que lo que llevas:": "比身上的差：",
+ "Queda 1 casilla libre.": "只剩 1 个空格。",
+ "Quedan %d casillas libres.": "只剩 %d 个空格。",
+ "Suelta aquí un objeto para que siempre salga en esta sección.": "把物品拖到这里，它就会一直显示在这个分区。",
+ "Vender (%d)": "出售（%d）",
+ "desde el final": "从末尾开始"
+}

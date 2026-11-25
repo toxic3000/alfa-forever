@@ -1,0 +1,11 @@
+{
+	"%d lobo": "%d волк",
+	"Lo marcado con %s también está en el menú del juego.": "Отмеченное %s есть и в меню игры.",
+	"Listo: tus PE por hora empiezan de cero.": "Готово: опыт в час считается заново.",
+	"Tu sonido vuelve en cuanto salgas de combate.": "Звук вернётся, как только ты выйдешь из боя.",
+	"Tu sonido ya estaba como lo tenías: Alfa no tiene nada tuyo guardado ni apagado. Revisa el volumen en Opciones > Audio del juego.": "Звук уже был таким, как у тебя: Alfa ничего не сохранял и не выключал. Проверь громкость в меню игры: Настройки > Звук.",
+	"Listo: te devolví tu sonido (%d ajuste). La música, el ambiente y los efectos ya se oyen.": "Готово: звук возвращён (%d настройка). Музыка, окружение и эффекты снова слышны.",
+	"Listo: te devolví tu sonido (%d ajustes). La música, el ambiente y los efectos ya se oyen.": "Готово: звук возвращён (настроек: %d). Музыка, окружение и эффекты снова слышны.",
+	"Devolver mi sonido: música, ambiente, efectos y mascotas como estaban antes de Alfa": "Вернуть звук: музыка, окружение, эффекты и питомцы как до Alfa",
+	"lo mismo que /alfa sonido": "то же, что /alfa sonido"
+}

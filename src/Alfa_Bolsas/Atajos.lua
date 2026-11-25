@@ -60,14 +60,14 @@ end
 function Aj.Pintar(f, activo)
 	if not (f and f.Busca) then return end
 	if not f.alfaAtajos then
-		f.alfaAtajos = { nuevo = pildora(f, "nuevo", "acento", "ic-estrella"), mejora = pildora(f, "mejora", "exito", "ic-nivel") }
+		f.alfaAtajos = { nuevo = pildora(f, "nuevo", "acento", "star"), mejora = pildora(f, "mejora", "exito", "ic-nivel") }
 	end
 	local p = f.alfaAtajos
 	local nuevos, mejoras = tonumber(f.alfaNuevos) or 0, tonumber(f.alfaMejoras) or 0
 	local texto = f.Busca:Texto()
 	local escrita = texto ~= "" and texto ~= L["nuevo"] and texto ~= L["mejora"]
 	local quiere = activo and M.Get("atajos") ~= false and not escrita
-	local wN = quiere and nuevos > 0 and p.nuevo:Set(N.Plural(nuevos, L["%d nuevo"], L["%d nuevos"]), "acento", "ic-estrella") or 0
+	local wN = quiere and nuevos > 0 and p.nuevo:Set(N.Plural(nuevos, L["%d nuevo"], L["%d nuevos"]), "acento", "star") or 0
 	local wM = quiere and mejoras > 0 and p.mejora:Set(N.Plural(mejoras, L["%d mejora"], L["%d mejoras"]), "exito", "ic-nivel") or 0
 	-- ¿Caben? El campo empieza a 32 px y la X de borrar ocupa los últimos 30.
 	local ancho = K.num(f.Busca:GetWidth(), 0)

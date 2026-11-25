@@ -703,7 +703,9 @@ local function construir()
 	F:EnableMouse(true)
 	F:SetWidth(ANCHO)
 	F.caja = K.Caja(F, { fondo = "panel", borde = "lineaFuerte", corte = K.CORTE.panel, rol = "panel" })
-	F.Marca = K.Marca(F, K.CORTE.panel)
+	-- 1.4.0 (70): la cabecera es una banda completa (Banda.lua), no una rayita corta.
+	F.Banda = M.Banda and M.Banda(F, K.CORTE.panel)
+	if F.Banda then F.Banda:Acomodar(CAB - 3) else F.Marca = K.Marca(F, K.CORTE.panel) end
 	F.Cerrar = K.BotonIcono(F, "ic-cerrar", cerrar, { tam = 22, icono = 10, ayuda = L["Cerrar"] })
 	F.Cerrar:SetPoint("TOPRIGHT", F, "TOPRIGHT", -8, -8)
 	F.Atras = K.BotonIcono(F, "chevron-left", function() est.pagina = "inicio" pintar() end, { tam = 22, icono = 12, ayuda = L["Volver"] })
@@ -714,9 +716,11 @@ local function construir()
 	F.Sub = K.Texto(F, "pequeno", "textoTenue")
 	F.Sub:SetPoint("TOPLEFT", F, "TOPLEFT", 14, -30)
 	F.Sub:SetPoint("RIGHT", F, "RIGHT", -12, 0)
-	F.Linea = K.Linea(F, "linea")
-	F.Linea:SetPoint("TOPLEFT", F, "TOPLEFT", 12, -(CAB - 4))
-	F.Linea:SetPoint("TOPRIGHT", F, "TOPRIGHT", -12, -(CAB - 4))
+	F.Linea = F.Banda and F.Banda.Abajo or K.Linea(F, "linea")
+	if not F.Banda then
+		F.Linea:SetPoint("TOPLEFT", F, "TOPLEFT", 12, -(CAB - 4))
+		F.Linea:SetPoint("TOPRIGHT", F, "TOPRIGHT", -12, -(CAB - 4))
+	end
 	F:SetScript("OnHide", function()
 		if atrapa then atrapa:Hide() end
 		est.turno = est.turno + 1

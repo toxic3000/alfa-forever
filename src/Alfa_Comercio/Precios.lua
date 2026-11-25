@@ -255,16 +255,34 @@ end
 -- dice nada, y sin podar los datos guardados crecían para siempre (más lento
 -- al entrar y al salir del juego). Un reino sin nada reciente se borra.
 local PODAR_DIAS = 60
+-- 1.4.0: tope a la historia. Cada punto de la historia vale HISTORIA_DIAS
+-- días (la tendencia compara lo de ahora con lo reciente), y un reino guarda a
+-- lo más TOPE_OBJETOS objetos: si pasa, se van los vistos hace más tiempo.
+local HISTORIA_DIAS = 30
+local TOPE_OBJETOS = 8000
+M.TOPE_OBJETOS, M.HISTORIA_DIAS = TOPE_OBJETOS, HISTORIA_DIAS
+
+local function historiaReciente(s, desdeDia)
+	if type(s) ~= "string" then return nil end
+	local partes = {}
+	for dia, precio in s:gmatch("(%d+):(%d+)") do
+		if tonumber(dia) >= desdeDia then partes[#partes + 1] = dia .. ":" .. precio end
+	end
+	return #partes > 0 and table.concat(partes, ",") or nil
+end
+
 function M.Podar(ahora)
 	local d = M.Datos()
 	ahora = ahora or M.Ahora()
 	local limite = ahora - PODAR_DIAS * DIA
+	local desdeDia = floor((ahora - HISTORIA_DIAS * DIA) / DIA)
 	local quitados = 0
 	for clave, r in pairs(d.reinos) do
 		if type(r) ~= "table" then
 			d.reinos[clave] = nil
 		else
 			local quedan = 0
+			local vivos = {}
 			for id, e in pairs(type(r.p) == "table" and r.p or {}) do
 				local fecha = type(e) == "table" and tonumber(e[2]) or nil
 				if not fecha or fecha < limite then
@@ -273,7 +291,24 @@ function M.Podar(ahora)
 					quitados = quitados + 1
 				else
 					quedan = quedan + 1
+					vivos[#vivos + 1] = { id, fecha }
 				end
+			end
+			if type(r.h) == "table" then
+				for id, s in pairs(r.h) do
+					local nueva = type(r.p) == "table" and r.p[id] ~= nil and historiaReciente(s, desdeDia) or nil
+					if nueva ~= s then r.h[id] = nueva end
+				end
+			end
+			if quedan > TOPE_OBJETOS then
+				table.sort(vivos, function(a, b) return a[2] > b[2] end)
+				for i = TOPE_OBJETOS + 1, #vivos do
+					local id = vivos[i][1]
+					r.p[id] = nil
+					if type(r.h) == "table" then r.h[id] = nil end
+					quitados = quitados + 1
+				end
+				quedan = TOPE_OBJETOS
 			end
 			if quedan == 0 and not (type(r.pedido) == "number" and r.pedido >= limite) then d.reinos[clave] = nil end
 		end
@@ -327,11 +362,23 @@ end
 
 function M.JuntarReinoSinNombre()
 	local real, seguro = nombreReino()
-	if real == "?" or not seguro then return 0 end
+	if real == "?" then return 0 end
 	local d = M.Datos()
 	local n = 0
 	local C = A.Compat
 	local miFaccion = C and C.GetPlayerFaction and C.GetPlayerFaction()
+	-- 1.4.0: con el reino supuesto (el juego lo sigue dando vacío) también,
+	-- pero solo los precios y solo si en la cuenta no hay otro reino de tu
+	-- facción: así «?-Facción» no puede ser de otro reino. Las recetas
+	-- esperan a saberlo seguro.
+	if not seguro then
+		if type(miFaccion) ~= "string" then return 0 end
+		for clave in pairs(d.reinos) do
+			local reino, f
+			if type(clave) == "string" then reino, f = clave:match("^(.+)%-([^%-]+)$") end
+			if f == miFaccion and reino ~= "?" and reino ~= real then return 0 end
+		end
+	end
 	-- (primero las claves: agregar a una tabla mientras se recorre no se vale)
 	local sueltos = {}
 	for clave in pairs(d.reinos) do sueltos[#sueltos + 1] = clave end
@@ -357,7 +404,7 @@ function M.JuntarReinoSinNombre()
 	-- Recetas y Encantamiento: solo «TuNombre-?» pasa a «TuNombre-Reino»
 	-- (las de tus otros personajes esperan a que ellos entren).
 	local yo = M.NombrePersonaje()
-	if yo ~= "?" then
+	if yo ~= "?" and seguro then
 		local clave, nueva = yo .. "-?", yo .. "-" .. real
 		for _, campo in ipairs({ "recetas", "encantar" }) do
 			local t = type(d[campo]) == "table" and d[campo] or nil

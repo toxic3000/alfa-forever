@@ -1,0 +1,12 @@
+{
+ "%s: texto cortado «%s»": "%s: 잘린 글자 “%s”",
+ "%s: la ventana %s se sale de la pantalla": "%s: %s 창이 화면 밖으로 나가요",
+ "Revisar: paré porque empezó un combate. Nada cambió; vuelve a probar al terminar.": "점검: 전투가 시작돼서 멈췄어요. 바뀐 건 없어요. 전투가 끝나면 다시 해 보세요.",
+ "Revisar: %d páginas revisadas, todo bien.": "점검: %d개 페이지 확인, 모두 괜찮아요.",
+ "Revisar: %d páginas revisadas, %d cosas por arreglar:": "점검: %d개 페이지 확인, 고칠 것 %d개:",
+ "  … y %d más.": "  … 그리고 %d개 더.",
+ "%s: error de Lua (%s)": "%s: Lua 오류 (%s)",
+ "Revisar espera a que termine el combate.": "점검은 전투가 끝날 때까지 기다려요.",
+ "Revisar: voy a abrir %d páginas de Alfa, una por una. No juegues mientras tanto.": "점검: Alfa 페이지 %d개를 하나씩 열게요. 그동안 플레이하지 마세요.",
+ "abre cada página de Alfa y te dice solo lo que falla (errores, textos cortados, ventanas fuera de la pantalla)": "Alfa의 모든 페이지를 열어 문제만 알려 줘요 (오류, 잘린 글자, 화면 밖 창)"
+}

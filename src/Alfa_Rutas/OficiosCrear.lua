@@ -226,6 +226,68 @@ local function candidatas(piezas)
 	return cands, orden, inter, learns
 end
 
+-- 1.4.0 (plan 8): las recetas reales de Forever (Comercio las lee al abrir
+-- tu oficio: Of.RecetasJuego). Con ellas:
+--   * una receta de la guía sin colores (o sin reactivos) toma los del juego;
+--   * las que ya sabes y la guía no trae entran a competir por cada punto
+--     desde la habilidad con que las viste aprendidas (desde ahí las puedes
+--     hacer);
+--   * lo intermedio que sabes hacer (un rollo, una piedra) cuenta por lo que
+--     lleva, entre lo que rinde.
+-- -> cuántas recetas sumó
+local function sumarJuego(ctx, piezas, cands, orden, inter)
+	local lista = ctx.juego
+	if type(lista) ~= "table" or #lista == 0 then return 0 end
+	local porSpell, porItem = {}, {}
+	for _, r in ipairs(lista) do
+		if r.spell then porSpell[r.spell] = r end
+		if r.item and r.sabe then porItem[r.item] = porItem[r.item] or r end
+	end
+	local function meta(r, base)
+		local g = base and copia(base) or { t = "craft", spell = r.spell, item = r.item, skillLine = ctx.linea }
+		if not (type(g.reagents) == "table" and #g.reagents > 0) then g.reagents = r.reagents end
+		g.yellow, g.grey = g.yellow or r.yellow, g.grey or r.grey
+		g.spellName = g.spellName or r.n
+		g.itemName = g.itemName or r.n
+		g.juego = true
+		return g
+	end
+	local n = 0
+	-- La guía: lo que le faltaba.
+	for _, p in ipairs(piezas) do
+		if p.tipo == "craft" then
+			for _, g in ipairs(p.crafts) do
+				local r = g.spell and porSpell[g.spell]
+				if r and g.untilSkill and not cands[g.spell] and r.yellow and r.grey and r.grey > r.yellow then
+					local c = { spell = g.spell, goal = meta(r, g), desde = p.desde, i = #orden + 1, juego = true }
+					cands[g.spell] = c
+					orden[#orden + 1] = c
+					n = n + 1
+				end
+			end
+		end
+	end
+	-- Lo intermedio que sabes hacer.
+	for item, r in pairs(porItem) do
+		if not inter[item] and not ctx.compras[item] and type(r.reagents) == "table" and #r.reagents > 0 then
+			local g = meta(r)
+			g.rinde = r.q or 1
+			inter[item] = g
+		end
+	end
+	-- Las que ya sabes.
+	for _, r in ipairs(lista) do
+		if r.sabe and not cands[r.spell] and r.yellow and r.grey and r.grey > r.yellow and type(r.reagents) == "table" and #r.reagents > 0 then
+			local c = { spell = r.spell, goal = meta(r), desde = r.desde or ctx.rank or 1, i = #orden + 1, juego = true, sabida = true }
+			cands[r.spell] = c
+			orden[#orden + 1] = c
+			n = n + 1
+		end
+	end
+	return n
+end
+C.SumarJuego = sumarJuego
+
 -- Lo que cuesta un material: «precio» (subasta) o «peso» (materiales base).
 local function costoMaterial(ctx, op, id, hondo)
 	local memo = op.memo
@@ -236,6 +298,8 @@ local function costoMaterial(ctx, op, id, hondo)
 	if g and hondo < 3 then
 		v = 0
 		for _, r in ipairs(g.reagents) do v = v + (r.count or 1) * costoMaterial(ctx, op, r.item, hondo + 1) end
+		-- 1.4.0: lo que rinde una vez (una receta del juego que da varios).
+		v = v / max(1, g.rinde or 1)
 	elseif op.modo == "precio" then
 		v = Ofi.Precio(id) or 0
 	elseif ctx.compras[id] then
@@ -254,10 +318,13 @@ local function costoReceta(ctx, op, g)
 end
 
 -- ¿Todo tiene precio de subasta? (lo de los proveedores no hace falta)
+-- 1.4.0: solo cuentan las recetas de la guía; una del juego sin precios en
+-- el modo «precio» no compite (op.sinPrecio).
 local function conPrecios(ctx, op)
 	local Ofi = Of()
 	local visto = {}
-	local function base(id, hondo)
+	local base
+	function base(id, hondo)
 		if visto[id] ~= nil then return visto[id] end
 		local g = op.inter[id]
 		local ok
@@ -270,10 +337,24 @@ local function conPrecios(ctx, op)
 		visto[id] = ok
 		return ok
 	end
-	for _, c in ipairs(op.orden) do
+	local function todo(c)
 		for _, r in ipairs(c.goal.reagents or {}) do if not base(r.item, 0) then return false end end
+		return true
 	end
-	return #op.orden > 0
+	local hay = false
+	for _, c in ipairs(op.orden) do
+		if not (c.juego and c.sabida) then
+			hay = true
+			if not todo(c) then return false end
+		end
+	end
+	op.sinPrecio = {}
+	for _, c in ipairs(op.orden) do
+		if c.juego and c.sabida and not todo(c) then op.sinPrecio[c] = true end
+	end
+	if hay then return true end
+	for _, c in ipairs(op.orden) do if not op.sinPrecio[c] then return true end end
+	return false
 end
 
 -- El plan de un tramo: { { c, desde, hasta } }, costo | nil (sin receta para algún punto)
@@ -284,7 +365,7 @@ local function planTramo(ctx, op, n)
 	for x = t[1], t[2] - 1 do
 		local mejor, mejorV
 		for _, c in ipairs(op.orden) do
-			if c.desde <= x and (not c.nivel or (ctx.nivel or 1) >= c.nivel) then
+			if c.desde <= x and (not c.nivel or (ctx.nivel or 1) >= c.nivel) and not (op.modo == "precio" and op.sinPrecio and op.sinPrecio[c]) then
 				local p = prob(c.goal, x)
 				if p > 0 then
 					local v = c.costo / p
@@ -332,6 +413,7 @@ local function piezasDe(op, n, segs, usado)
 	for _, s in ipairs(segs) do
 		local g = copia(s.c.goal)
 		g.untilSkill = s.hasta
+		g.juego = nil
 		local veces = C.Veces(g, s.desde, s.desde)
 		local crafts, learns = {}, {}
 		for _, r in ipairs(g.reagents or {}) do
@@ -339,7 +421,8 @@ local function piezasDe(op, n, segs, usado)
 			if ig and ig.spell ~= g.spell then
 				local x = copia(ig)
 				x.untilSkill, x.yellow, x.grey = nil, nil, nil
-				x.count = max(1, ceil(veces * (r.count or 1) - 0.001))
+				x.count = max(1, ceil(veces * (r.count or 1) / max(1, ig.rinde or 1) - 0.001))
+				x.rinde, x.juego = nil, nil
 				crafts[#crafts + 1] = x
 				if ig.spell and not usado[ig.spell] and op.learns[ig.spell] then learns[#learns + 1] = op.learns[ig.spell] end
 				if ig.spell then usado[ig.spell] = true end
@@ -349,7 +432,7 @@ local function piezasDe(op, n, segs, usado)
 		if not usado[g.spell] and op.learns[g.spell] then learns[#learns + 1] = op.learns[g.spell] end
 		usado[g.spell] = true
 		out[#out + 1] = { tipo = "craft", pos = s.desde, desde = s.desde, hasta = s.hasta, tramo = n, crafts = crafts, learns = learns,
-			trasMision = s.c.mision ~= nil, optimizada = true }
+			trasMision = s.c.mision ~= nil, optimizada = true, sabida = s.c.sabida }
 	end
 	return out
 end
@@ -357,6 +440,7 @@ end
 -- -> piezas (las de la guía clásica en los tramos donde no sale más barato)
 function C.Optimizar(ctx, piezas)
 	local cands, orden, inter, learns = candidatas(piezas)
+	ctx.deJuego = sumarJuego(ctx, piezas, cands, orden, inter)
 	local op = { orden = orden, inter = inter, learns = learns, memo = {} }
 	op.modo = conPrecios(ctx, op) and "precio" or "peso"
 	local Ofi = Of()
@@ -474,6 +558,7 @@ local function materiales(ctx, n, hechosAntes)
 	local propios = {}
 	for _, g in ipairs(ctx.crafts[n] or {}) do if g.item then propios[g.item] = true end end
 	local lineas, metas = {}, {}
+	local comprar = {} -- 1.4.0 (plan 31): lo que se puede comprar en la subasta
 	local faltaAlgo = false
 	for _, id in ipairs(orden) do
 		if not propios[id] then
@@ -496,6 +581,7 @@ local function materiales(ctx, n, hechosAntes)
 					partes[#partes + 1] = format(L["%s tiene %d (mándalo por correo)"], quien[i].nombre or "?", quien[i].n)
 				end
 				if faltan > 0 then
+					if not ctx.compras[id] then comprar[#comprar + 1] = { id = id, n = necesita } end
 					partes[#partes + 1] = origen(ctx, id, hechosAntes)
 					local p = Ofi.Precio(id)
 					if p then partes[#partes + 1] = format(L["≈ %s c/u en la subasta"], N.DineroTexto(p, true)) end
@@ -525,7 +611,12 @@ local function materiales(ctx, n, hechosAntes)
 	local ahorro = C.Ahorro(ctx, n)
 	if ahorro then nota = ahorro .. "\n" .. nota end
 	if #metas == 0 then metas[1] = { t = "note", text = L["Nada que comprar ni juntar: sigue al siguiente paso."] } end
-	return Ofi.Paso(ctx, n, format(L["Tus materiales para %d–%d"], t[1], t[2]), nota, metas, t[2])
+	local s = Ofi.Paso(ctx, n, format(L["Tus materiales para %d–%d"], t[1], t[2]), nota, metas, t[2])
+	if #comprar > 0 then
+		ctx.comprarPaso = ctx.comprarPaso or {}
+		ctx.comprarPaso[s] = { tramo = n, hasta = t[2], lista = comprar }
+	end
+	return s
 end
 
 -- 1.3.9: «Unos 1,374 Thorium Bar en total (antes la guía clásica pedía
@@ -600,6 +691,8 @@ local function pasoReceta(ctx, pz)
 			lineas[#lineas + 1] = format(L["Primero %d %s (%s cada una): las usa la receta que sigue y también dan puntos."], g.count, Ofi.Tok(ctx, "item", g.item or 0, g.itemName), textoReactivos(ctx, g))
 		end
 	end
+	-- 1.4.0 (plan 8): una receta que la guía del motor no traía: la sabes y Alfa la leyó del juego.
+	if pz.sabida then lineas[#lineas + 1] = L["Ya la sabes: Alfa la vio en tu ventana de oficio y sale más barata por punto."] end
 	if ctx.of.yunque then lineas[#lineas + 1] = format(L["Junto a un yunque, con %s en tus bolsas."], Ofi.Tok(ctx, "item", ctx.of.herramienta)) end
 	return Ofi.Paso(ctx, pz.tramo, titulo or L["Haz la receta"], concat(lineas, " "), metas, hasta)
 end

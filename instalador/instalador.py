@@ -354,7 +354,6 @@ BUZON_FORMULARIO = {
     "url": "https://docs.google.com/forms/d/e/1FAIpQLSfCKW97uxmZL5ZGl5Ym4hLjUMTWt6O0N7TJgw6buSDMoRIXUA/formResponse",
     "tipo": "entry.832145550",       # Error | Mejora | Comentario (exactamente así)
     "texto": "entry.1889667288",     # lo que escribió el jugador
-    "datos": "entry.917548369",      # los datos técnicos (el resto del reporte)
     "version": "entry.1259972415",   # la versión de Alfa
 }
 BUZON_TIPOS = {"error": "Error", "mejora": "Mejora", "comentario": "Comentario"}
@@ -673,14 +672,41 @@ def separar_reporte(texto: str) -> tuple:
     return suyo, datos or "(sin datos)"
 
 
+# 1.4.0 (24/11/2026): el formulario ya no tiene la pregunta «Datos técnicos»: lo
+# técnico va al final del texto, tras esta línea, con el código del reporte primero.
+BUZON_SEPARADOR = "— Datos de Alfa —"
+# Líneas que nunca salen de la PC aunque el juego las hubiera dejado (Alfa ya
+# quita tu nombre y tu reino con N.SinPrivado; esto es la segunda red).
+_PRIVADO = re.compile(r"^\s*(personaje|nombre|reino|realm|character|name|jugador|player)\s*[:=]", re.I)
+
+
+def _sin_privado(texto: str) -> str:
+    return "\n".join(l for l in texto.splitlines() if not _PRIVADO.match(l))
+
+
+def texto_formulario(suyo: str, datos: str, codigo: str, pie: str, letras=BUZON_LETRAS) -> str:
+    """Lo que escribió el jugador y, tras «— Datos de Alfa —», «Código: <id>», los datos y el pie.
+    Cabe en `letras`: primero se recortan los datos y, si no basta, lo suyo."""
+    cabeza = f"{BUZON_SEPARADOR}\nCódigo: {codigo}"
+    datos = _sin_privado(datos).strip() or "(sin datos)"
+    fijo = len(cabeza) + len(pie) + 6
+    minimo = min(len(datos), 200)
+    if len(suyo) + fijo + minimo > letras:
+        suyo = suyo[:max(40, letras - fijo - minimo - 1)].rstrip() + "…"
+    resto = letras - len(suyo) - fijo
+    if len(datos) > resto:
+        datos = datos[:max(0, resto - 1)].rstrip() + "…"
+    return f"{suyo}\n\n{cabeza}\n{datos}\n\n{pie}"[:letras]
+
+
 def _buzon_formulario(r: _TablaLua) -> dict:
-    """Los campos del formulario de Google para un reporte."""
+    """Los campos del formulario de Google para un reporte (tipo, texto y versión)."""
     f = BUZON_FORMULARIO
     tipo = BUZON_TIPOS.get(_buzon_texto(r.campos.get("tipo"), 60).lower(), "Comentario")
     suyo, datos = separar_reporte(_buzon_texto(r.campos.get("texto"), BUZON_LETRAS))
-    extra = [f"id {_buzon_texto(r.campos.get('id'), 80) or '?'}", f"fecha {_buzon_fecha(r.campos.get('fecha'))}",
-             f"instalador {VERSION}"]
-    return {f["tipo"]: tipo, f["texto"]: suyo, f["datos"]: datos + "\n\n" + " · ".join(extra),
+    codigo = _buzon_texto(r.campos.get("id"), 80) or "?"
+    pie = f"fecha {_buzon_fecha(r.campos.get('fecha'))} · instalador {VERSION}"
+    return {f["tipo"]: tipo, f["texto"]: texto_formulario(suyo, datos, codigo, pie),
             f["version"]: _buzon_texto(r.campos.get("version"), 40) or "?"}
 
 
@@ -861,6 +887,228 @@ def enviar_buzon(forevers, webhook=None, registro=None, maximo=BUZON_MAX, espera
 
 def frase_buzon(n: int) -> str:
     return f"Envié {n} reporte{'s' if n != 1 else ''} a Toxic. ¡Gracias por ayudar a la manada!"
+
+
+# ---------------------------------------------------------------------------
+# Marcador por bando (Alfa 1.4.0, plan 9)
+# ---------------------------------------------------------------------------
+# En el juego, la Horda y la Alianza no se hablan por addon: cada lado solo
+# cuenta a los suyos (src/Alfa_Manada/Marcador.lua). El instalador ve los datos
+# guardados de todas las cuentas de esta PC y, con el juego cerrado, deja en
+# cada una el último número conocido de cada bando:
+#   AlfaNucleoDB.jauria.bandos[H|A] = { n, fecha, fuente = "instalador" }
+# El número de un bando es el más alto de:
+#   * lo que cada cuenta contó en vivo de ese bando (bandos[l].n y el máximo del
+#     día, de los últimos 30 días);
+#   * los lobos distintos que oyó el censo de La Jauría con esa marca de bando
+#     (AlfaNucleoDB.manada.censo[clave].f, de los últimos 30 días).
+# No manda nada a internet. Solo toca la tabla bandos; copia de respaldo antes.
+MARCADOR_DIAS = 30
+MARCADOR_LETRAS = ("H", "A")
+
+
+def _entero(v) -> "int | None":
+    try:
+        n = float(str(v))
+    except (TypeError, ValueError):
+        return None
+    if n != n or n in (float("inf"), float("-inf")):
+        return None
+    return int(n)
+
+
+def _campo(t, *ruta):
+    for k in ruta:
+        if not isinstance(t, _TablaLua):
+            return None
+        t = t.campos.get(k)
+    return t
+
+
+def _marcador_de(globales: dict, ahora: int) -> dict:
+    """Lo que sabe una cuenta: {letra: {"n", "fecha", "lobos": {clave: t}}}."""
+    db = globales.get(BUZON_GLOBAL)
+    desde = ahora - MARCADOR_DIAS * 86400
+    out = {l: {"n": 0, "fecha": 0, "lobos": {}} for l in MARCADOR_LETRAS}
+    bandos = _campo(db, "jauria", "bandos")
+    for l in MARCADOR_LETRAS:
+        b = _campo(bandos, l)
+        if not isinstance(b, _TablaLua) or b.campos.get("fuente") == "instalador":
+            continue   # lo que dejó el instalador no se vuelve a contar
+        fecha = _entero(b.campos.get("fecha")) or 0
+        if fecha < desde or fecha > ahora + 86400:
+            continue
+        n = max(_entero(b.campos.get("n")) or 0, _entero(b.campos.get("max")) or 0)
+        if 0 < n <= 100000:
+            out[l]["n"], out[l]["fecha"] = n, fecha
+    censo = _campo(db, "manada", "censo")
+    if isinstance(censo, _TablaLua):
+        for clave, x in censo.campos.items():
+            if not (isinstance(clave, str) and isinstance(x, _TablaLua)):
+                continue
+            l, t = x.campos.get("f"), _entero(x.campos.get("t")) or 0
+            if l in MARCADOR_LETRAS and desde <= t <= ahora + 86400:
+                lobos = out[l]["lobos"]
+                lobos[clave.lower()] = max(lobos.get(clave.lower(), 0), t)
+    return out
+
+
+def contar_bandos(archivos, ahora=None) -> dict:
+    """{letra: {"n", "fecha"}} juntando lo de todas las cuentas (sin el bando que nadie vio)."""
+    ahora = int(ahora if ahora is not None else time.time())
+    vivo = {l: (0, 0) for l in MARCADOR_LETRAS}
+    lobos = {l: {} for l in MARCADOR_LETRAS}
+    for archivo in archivos:
+        try:
+            crudo = pathlib.Path(archivo).read_bytes()
+            if b"jauria" not in crudo and b"censo" not in crudo:
+                continue
+            m = _marcador_de(leer_lua(crudo.decode("utf-8", "surrogateescape")), ahora)
+        except (OSError, _LuaMal, UnicodeError, RecursionError):
+            continue
+        for l in MARCADOR_LETRAS:
+            n, f = m[l]["n"], m[l]["fecha"]
+            if n > vivo[l][0] or (n == vivo[l][0] and f > vivo[l][1]):
+                vivo[l] = (n, f)
+            for clave, t in m[l]["lobos"].items():
+                lobos[l][clave] = max(lobos[l].get(clave, 0), t)
+    salida = {}
+    for l in MARCADOR_LETRAS:
+        n, fecha = vivo[l]
+        if len(lobos[l]) > n:
+            n = len(lobos[l])
+        fecha = max([fecha, *lobos[l].values()])
+        if n > 0:
+            salida[l] = {"n": n, "fecha": fecha}
+    return salida
+
+
+def _salto(texto: str) -> str:
+    return "\r\n" if "\r\n" in texto else "\n"
+
+
+def _tabla_texto(campos: list, nl: str) -> str:
+    """Una tabla como la escribe el juego: {\n["n"] = 5,\n...}."""
+    partes = []
+    for k, v in campos:
+        valor = f'"{v}"' if isinstance(v, str) else str(v)
+        partes.append(f'["{k}"] = {valor},')
+    return "{" + nl + nl.join(partes) + nl + "}"
+
+
+def _marcador_escribir(archivo: pathlib.Path, crudo: bytes, cuenta: dict) -> int:
+    """Deja en el archivo los bandos de `cuenta` que son más nuevos que los suyos.
+    -> cuántos bandos escribió (0 si no hizo falta o si algo no cuadra: el archivo queda igual)."""
+    try:
+        if archivo.read_bytes() != crudo:
+            return 0
+        texto = crudo.decode("utf-8", "surrogateescape")
+        globales = leer_lua(texto)
+        db = globales.get(BUZON_GLOBAL)
+        if not isinstance(db, _TablaLua):
+            return 0
+        nl = _salto(texto)
+        jauria = _campo(db, "jauria")
+        bandos = _campo(jauria, "bandos")
+        esperado = _plano(globales)
+        cambios = []   # (inicio, fin, texto nuevo)
+        nuevos = []
+        for l in MARCADOR_LETRAS:
+            c = cuenta.get(l)
+            if not c:
+                continue
+            viejo = _campo(bandos, l)
+            if isinstance(viejo, _TablaLua):
+                f = _entero(viejo.campos.get("fecha")) or 0
+                n = _entero(viejo.campos.get("n"))
+                if viejo.campos.get("fuente") == "instalador":
+                    # lo de una vez anterior: se cambia si hay algo distinto y no más viejo
+                    if (n, f) == (c["n"], c["fecha"]) or c["fecha"] < f:
+                        continue
+                elif c["fecha"] <= f:
+                    continue   # lo que esta cuenta contó en vivo es igual de nuevo o más
+            elif viejo is not None:
+                return 0
+            campos = [("n", c["n"]), ("fecha", c["fecha"]), ("fuente", "instalador")]
+            nuevos.append((l, campos, viejo))
+        if not nuevos:
+            return 0
+        # Lo que debe quedar.
+        esperado.setdefault(BUZON_GLOBAL, {})
+        eb = esperado[BUZON_GLOBAL].setdefault("jauria", {}).setdefault("bandos", {})
+        for l, campos, viejo in nuevos:
+            eb[l] = {k: (v if isinstance(v, str) else str(v)) for k, v in campos}
+        # Dónde va cada cosa.
+        if isinstance(bandos, _TablaLua):
+            a0 = jauria.lugar["bandos"][0]
+            for l, campos, viejo in nuevos:
+                if isinstance(viejo, _TablaLua):
+                    a, b = bandos.lugar[l]
+                    cambios.append((a, b, _tabla_texto(campos, nl)))
+                else:
+                    cambios.append((a0 + 1, a0 + 1, nl + f'["{l}"] = ' + _tabla_texto(campos, nl) + ","))
+        else:
+            if jauria is not None and not isinstance(jauria, _TablaLua):
+                return 0
+            dentro = nl.join(f'["{l}"] = ' + _tabla_texto(campos, nl) + "," for l, campos, _ in nuevos)
+            tabla_bandos = "{" + nl + dentro + nl + "}"
+            if isinstance(jauria, _TablaLua):
+                a0 = db.lugar["jauria"][0]
+                cambios.append((a0 + 1, a0 + 1, nl + '["bandos"] = ' + tabla_bandos + ","))
+            else:
+                m = re.search(r"(?m)^" + BUZON_GLOBAL + r"\s*=\s*\{", texto)
+                if not m:
+                    return 0
+                a0 = m.end() - 1
+                cambios.append((a0 + 1, a0 + 1, nl + '["jauria"] = {' + nl + '["bandos"] = ' + tabla_bandos + "," + nl + "},"))
+        nuevo = texto
+        for a, b, t in sorted(cambios, key=lambda x: x[0], reverse=True):
+            nuevo = nuevo[:a] + t + nuevo[b:]
+        if _plano(leer_lua(nuevo)) != esperado:
+            return 0
+        datos = nuevo.encode("utf-8", "surrogateescape")
+        respaldo = archivo.with_name(archivo.name + ".antes-del-marcador")
+        if respaldo.exists():
+            os.chmod(respaldo, 0o666)
+            respaldo.unlink()
+        respaldo.write_bytes(crudo)
+        if respaldo.read_bytes() != crudo:
+            return 0
+        tmp = archivo.with_name(archivo.name + ".alfa-marcador.tmp")
+        tmp.write_bytes(datos)
+        try:
+            os.replace(tmp, archivo)
+        except OSError:
+            try:
+                tmp.unlink()
+            except OSError:
+                pass
+            return 0
+        return len(nuevos) if archivo.read_bytes() == datos else 0
+    except (OSError, KeyError, AttributeError, TypeError, ValueError, _LuaMal, UnicodeError, RecursionError):
+        return 0
+
+
+def llevar_marcador(forevers, ahora=None) -> dict:
+    """Cuenta los lobos por bando de todas las cuentas y lo deja en cada una.
+    Llamar solo con el juego cerrado. Nunca lanza errores."""
+    res = {"cuentas": 0, "escritos": 0, "bandos": {}}
+    try:
+        archivos = archivos_buzon(forevers)
+        res["cuentas"] = len(archivos)
+        cuenta = contar_bandos(archivos, ahora)
+        res["bandos"] = {l: c["n"] for l, c in cuenta.items()}
+        if not cuenta:
+            return res
+        for archivo in archivos:
+            try:
+                crudo = archivo.read_bytes()
+            except OSError:
+                continue
+            res["escritos"] += _marcador_escribir(archivo, crudo, cuenta)
+    except Exception:  # noqa: BLE001 - el marcador nunca debe estorbar a la instalación
+        pass
+    return res
 
 
 # ---------------------------------------------------------------------------
@@ -1073,6 +1321,8 @@ def _ventana():
                 lugares = [f for f in [self.forever, *encontradas, *self.instaladas] if f]
                 res = enviar_buzon(list(dict.fromkeys(lugares)), self.webhook)
                 self.buzon_hecho = True
+                # 1.4.0: el marcador por bando (solo en tu PC, nada a internet).
+                llevar_marcador(list(dict.fromkeys(lugares)))
                 if res["enviados"]:
                     self._en_ventana(lambda n=res["enviados"]: self.mostrar_buzon(n))
             except Exception:  # noqa: BLE001 - el buzón nunca debe estorbar a la instalación
@@ -1319,6 +1569,7 @@ def solo_buzon(carpeta) -> int:
     print(res)
     if res["enviados"]:
         print(frase_buzon(res["enviados"]))
+    print("Marcador por bando:", llevar_marcador(forevers))
     return 0
 
 

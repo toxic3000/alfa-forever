@@ -82,10 +82,17 @@ local PARTES = { "Alfa", "Alfa_Nucleo", "Alfa_Bienvenida", "Alfa_Idioma", "Alfa_
 	"Alfa_Enciclopedia", "Alfa_Mazmorras", "Alfa_Mundo", "Alfa_Pesca", "Alfa_Recoleccion", "Alfa_Vista",
 	-- 1.3.6: y los paquetes de datos (guías, Codex, misiones, objetos, caminos):
 	-- «Revisar Alfa» los ofrece cuando faltan guías o datos.
-	"Alfa_Guides", "Alfa_Guides_Alliance", "Alfa_Guides_Horde", "Alfa_Codex", "Alfa_QuestDB", "Alfa_ItemDB", "Alfa_Nav" }
+	"Alfa_Guides", "Alfa_Guides_Alliance", "Alfa_Guides_Horde", "Alfa_Codex", "Alfa_QuestDB", "Alfa_ItemDB", "Alfa_Nav",
+	-- 1.4.0: los pasos de las guías por facción y tramo, los de cualquier nivel y
+	-- las dos partes del Codex (tools/tramos.py), que cargan a pedido.
+	"Alfa_Guides_Horde_Pasos1", "Alfa_Guides_Horde_Pasos2", "Alfa_Guides_Horde_Pasos3",
+	"Alfa_Guides_Alliance_Pasos1", "Alfa_Guides_Alliance_Pasos2", "Alfa_Guides_Alliance_Pasos3",
+	"Alfa_Guides_Pasos", "Alfa_Codex_Objetos", "Alfa_Codex_Mundo" }
 
 -- 1.3.6: sin estos (o sin las guías de tu facción) Alfa no tiene guías ni datos.
-local DATOS_ESENCIALES = { "Alfa_Guides", "Alfa_Codex", "Alfa_QuestDB", "Alfa_Nav" }
+local DATOS_ESENCIALES = { "Alfa_Guides", "Alfa_Codex", "Alfa_QuestDB", "Alfa_Nav",
+	-- 1.4.0: sin estos, las guías de oficios y demás salen sin pasos y las fichas del Codex vacías.
+	"Alfa_Guides_Pasos", "Alfa_Codex_Objetos", "Alfa_Codex_Mundo" }
 
 -- Los interruptores principales: si casi todos están apagados, algo pasó.
 local PRINCIPALES = { "bolsas.reemplazar", "curacion.activo", "combate.rotacion", "recoleccion.mapa", "pesca.activo",
@@ -186,7 +193,11 @@ local function partes(out)
 	local esenciales = {}
 	for i, n in ipairs(DATOS_ESENCIALES) do esenciales[i] = n end
 	local f = UnitFactionGroup and UnitFactionGroup("player")
-	if f == "Alliance" or f == "Horde" then esenciales[#esenciales + 1] = "Alfa_Guides_" .. f end
+	if f == "Alliance" or f == "Horde" then
+		esenciales[#esenciales + 1] = "Alfa_Guides_" .. f
+		-- 1.4.0: y los pasos de tus guías, por tramo de nivel.
+		for i = 1, 3 do esenciales[#esenciales + 1] = "Alfa_Guides_" .. f .. "_Pasos" .. i end
+	end
 	for _, n in ipairs(esenciales) do
 		if not existe(n) then faltan[#faltan + 1] = n end
 	end

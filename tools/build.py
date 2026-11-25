@@ -21,6 +21,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import parches  # noqa: E402
 import renombrar  # noqa: E402
 import diferir  # noqa: E402
+import tramos  # noqa: E402
 
 RAIZ = pathlib.Path(__file__).resolve().parent.parent
 TEXTO = {".lua": renombrar.cambiar_lua, ".xml": renombrar.cambiar_xml,
@@ -216,6 +217,15 @@ def main() -> int:
         print("GUÍAS QUE NO SE PUDIERON DIFERIR:", e)
         return 1
 
+    # Guías por tramo de nivel (1.4.0, tools/tramos.py): los pasos van a un
+    # paquete a pedido por tramo; al entrar solo se leen las fichas.
+    try:
+        tramos_hechos = tramos.partir(dist, cfg["version"])
+        codex_partes = tramos.partir_codex(dist, cfg["version"])
+    except tramos.NoEncaja as e:
+        print("GUÍAS QUE NO SE PUDIERON PARTIR POR TRAMO:", e)
+        return 1
+
     (dist / "NOTICE-ALFA.txt").write_text(
         f"Alfa {cfg['version']} - toxic3000 / La Jauria\n\n"
         f"Alfa es software libre bajo la GNU GPL version 3 (ver Alfa/LICENSE).\n"
@@ -230,7 +240,7 @@ def main() -> int:
         print("AVISO: falta el enlace de Discord de La Jauria en tools/alfa.json")
     print(f"OK dist/: {archivos} archivos de Polestar convertidos, "
           f"{len(parches.PARCHES)} parches, {propios} modulos propios, idioma elegible en {cambiadas} archivos, "
-          f"orillas limpias en {limpiadas} de {revisadas} texturas, {diferidas} guías diferidas")
+          f"orillas limpias en {limpiadas} de {revisadas} texturas, {diferidas} guías diferidas en {len(tramos_hechos)} paquetes de pasos, Codex en {len(codex_partes) + 1} partes")
     return 0
 
 

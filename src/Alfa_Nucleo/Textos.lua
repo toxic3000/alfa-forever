@@ -3,6 +3,46 @@
 local ADDON, M = ...
 
 M.EN = {
+	-- 1.4.0 (interfaz)
+	["¡Lok'tar, %s!"] = "Lok'tar, %s!",
+	["La Horda caza contigo hoy. Fuerza y honor."] = "The Horde hunts with you today. Strength and honor.",
+	["¡Por la Alianza, %s!"] = "For the Alliance, %s!",
+	["La Alianza camina contigo hoy. Luz y valor."] = "The Alliance walks with you today. Light and valor.",
+	["lobo"] = "wolf",
+	["Seguir"] = "Follow",
+	["Tu bando"] = "Your faction",
+	["Tu bando en Alfa"] = "Your faction in Alfa",
+	["Así se ven la Horda y la Alianza"] = "How the Horde and the Alliance look",
+	["Así se vería Alfa con cada bando. Al prenderla, Alfa se viste del tuyo al instante."] = "This is how Alfa would look with each faction. Turn it on and Alfa dresses in yours right away.",
+	["Vestir a Alfa de mi bando"] = "Dress Alfa in my faction",
+	["Quitar la temática"] = "Remove the theme",
+	["Escuchar"] = "Listen",
+	["Ver cómo se ve"] = "See how it looks",
+	["Así se ven los dos bandos"] = "How both factions look",
+	["La Horda en rojo sangre, bronce, hierro y madera; la Alianza en azul real, oro, plata y piedra."] = "The Horde in blood red, bronze, iron and wood; the Alliance in royal blue, gold, silver and stone.",
+	["Atajo: %s"] = "Shortcut: %s",
+	["Ayer"] = "Yesterday",
+	["Antes"] = "Earlier",
+	["El %s %d/%d"] = "%s %d/%d",
+	["domingo"] = "Sunday",
+	["lunes"] = "Monday",
+	["martes"] = "Tuesday",
+	["miércoles"] = "Wednesday",
+	["jueves"] = "Thursday",
+	["viernes"] = "Friday",
+	["sábado"] = "Saturday",
+	["Lo que Alfa te dijo, por día y por módulo"] = "What Alfa told you, by day and by module",
+	-- 1.4.0 (velocidad): /alfa revisar (Revisar.lua)
+	["%s: texto cortado «%s»"] = "%s: cut-off text “%s”",
+	["%s: la ventana %s se sale de la pantalla"] = "%s: the window %s goes off the screen",
+	["Revisar: paré porque empezó un combate. Nada cambió; vuelve a probar al terminar."] = "Check: I stopped because a fight started. Nothing changed; try again when it's over.",
+	["Revisar: %d páginas revisadas, todo bien."] = "Check: %d pages checked, all good.",
+	["Revisar: %d páginas revisadas, %d cosas por arreglar:"] = "Check: %d pages checked, %d things to fix:",
+	["  … y %d más."] = "  … and %d more.",
+	["%s: error de Lua (%s)"] = "%s: Lua error (%s)",
+	["Revisar espera a que termine el combate."] = "Check waits for combat to end.",
+	["Revisar: voy a abrir %d páginas de Alfa, una por una. No juegues mientras tanto."] = "Check: I'll open %d pages of Alfa, one by one. Don't play in the meantime.",
+	["abre cada página de Alfa y te dice solo lo que falla (errores, textos cortados, ventanas fuera de la pantalla)"] = "opens every page of Alfa and tells you only what fails (errors, cut-off text, windows off the screen)",
 	-- 1.3.9 (calidad): los datos técnicos del reporte (Informe.lua)
 	["Módulos: %s"] = "Modules: %s",
 	["apagados: %s"] = "turned off: %s",
@@ -123,6 +163,7 @@ M.EN = {
 	["Todos contra todos"] = "Free-for-all",
 	["Llegas a"] = "Now entering",
 	["Niveles %s"] = "Levels %s",
+	["Nivel %s"] = "Level %s",
 	["Zona peligrosa"] = "Dangerous zone",
 	["Zona de nivel %s: ve con cuidado"] = "Level %s zone: tread carefully",
 	["Un lugar para descansar"] = "A place to rest",
@@ -289,3 +330,47 @@ M.EN["Ocultar esta sugerencia"] = "Hide this suggestion"
 M.EN["«Ahora no» o «No volver a mostrar»."] = "\"Not now\" or \"Don't show again\"."
 M.EN["Ahora no"] = "Not now"
 M.EN["No volver a mostrar"] = "Don't show again"
+
+-- 1.4.0 (78): los nombres en «Acomodar la pantalla» (Kit/Movible.lua)
+M.EN["Los avisos de Alfa"] = "Alfa's alerts"
+M.EN["Así se verá un aviso"] = "This is how an alert will look"
+M.EN["Los anuncios"] = "Announcements"
+M.EN["Así se verá un anuncio"] = "This is how an announcement will look"
+-- 1.4.0 (77): los anuncios de muestra de la banda y del nivel 60 (Zonas.lua, «Probar»)
+M.EN["Núcleo de Magma"] = "Molten Core"
+M.EN["¡Nivel 60!"] = "Level 60!"
+M.EN["La manada aúlla"] = "The pack howls"
+M.EN["Llegaste a la cima, alfa. Lya está orgullosa de ti."] = "You reached the top, alpha. Lya is proud of you."
+M.EN["Al entrar, su nombre con sus niveles y sus jefes: morado en las mazmorras y ámbar con corona en las bandas. Una vez cada 30 minutos."] = "On the way in, its name with its levels and its bosses: purple for dungeons and amber with a crown for raids. Once every 30 minutes."
+-- 1.4.0 (77): el fondo de los anuncios (Zonas.lua, Ajustes > Estilo y sonido > Anuncios)
+M.EN["Fondo de los anuncios"] = "Announcement background"
+M.EN["Cómo se ve detrás del nombre: una placa de esquinas cortadas, una cinta de pendón, ornamentos finos a los lados, una sombra suave o nada más el texto con contorno."] = "What sits behind the name: a plate with cut corners, a pennant ribbon, fine ornaments on the sides, a soft shadow or just outlined text."
+M.EN["Sin fondo"] = "No background"
+M.EN["Descanso acumulado: %d%% de un nivel"] = "Rested: %d%% of a level"
+M.EN["Zona de nivel %s y tú eres %d: ve con cuidado"] = "Level %s zone and you are %d: be careful"
+-- 1.4.0 (pulido)
+M.EN["Tienes la calma hasta que salgas del juego."] = "Quiet mode is on until you leave the game."
+M.EN["Tienes la calma: faltan %s."] = "Quiet mode is on: %s left."
+M.EN["Tienes puesto el /dnd del juego: Alfa guarda lo que no es urgente."] = "You have the game's /dnd on: Alfa keeps whatever isn't urgent."
+M.EN["y %d más [plural]"] = "and %d more"
+M.EN["Escribe /dnd otra vez en el chat para quitarlo."] = "Type /dnd in chat again to turn it off."
+M.EN["Ya viste todo."] = "You've seen everything."
+M.EN["No hay avisos todavía."] = "No notices yet."
+M.EN["%d comando"] = "%d command"
+M.EN["%d comandos"] = "%d commands"
+M.EN["Busca un comando o lo que quieres hacer"] = "Search a command or what you want to do"
+M.EN["Clic en uno y queda escrito en tu chat."] = "Click one and it's typed in your chat."
+M.EN["Clic: lo dejo escrito en tu chat; pulsa Enter para usarlo."] = "Click: I'll type it in your chat; press Enter to use it."
+M.EN["Comandos de Alfa"] = "Alfa commands"
+M.EN["Ningún comando dice eso"] = "No command says that"
+M.EN["No conozco «/alfa %s». ¿Quisiste decir %s?"] = "I don't know \"/alfa %s\". Did you mean %s?"
+M.EN["No conozco «/alfa %s»."] = "I don't know \"/alfa %s\"."
+M.EN["Prueba con otra palabra, en español o en inglés."] = "Try another word, in Spanish or English."
+M.EN["Todo lo que puedes escribir después de /alfa"] = "Everything you can type after /alfa"
+M.EN["Todos los comandos: %s."] = "All commands: %s."
+M.EN["Ver todos"] = "See all"
+M.EN["todos los comandos de Alfa en una ventana, con buscador"] = "all of Alfa's commands in a window, with search"
+M.EN["Placa"] = "Plate"
+M.EN["Cinta"] = "Ribbon"
+M.EN["Filigrana"] = "Filigree"
+M.EN["Sombra suave"] = "Soft shadow"

@@ -6,6 +6,8 @@ Uso:  .venv/Scripts/python -I tools/revisar.py [carpeta ...]
 2. Manifiestos: cada archivo que nombra un .toc o un .xml existe, y cada
    dependencia (## Dependencies / RequiredDeps) es una carpeta de dist/.
 3. Nombre viejo: avisa si queda "Polestar" en el codigo de los modulos propios.
+4. Texturas nombradas con un texto fijo que no existen (tools/texturas.py, 1.4.0).
+5. Globales por accidente: escritos sin local o leidos sin existir (tools/globales.py, 1.4.0).
 Sale con codigo 1 si encuentra errores.
 """
 import os
@@ -86,6 +88,14 @@ def main() -> int:
                     archivo.read_bytes().decode("latin-1")) if tipo != "comentario")
                 if re.search(r"(?i)polestar", codigo):
                     errores.append(f"{archivo.relative_to(DIST)} dice Polestar fuera de comentarios")
+    # 1.4.0: texturas nombradas con un texto fijo que no existen (tools/texturas.py).
+    import texturas
+    texturas.DIST = DIST
+    errores += [f"textura: {m}" for m in texturas.revisar()]
+    # y los globales por accidente (tools/globales.py).
+    import globales
+    globales.DIST = DIST
+    errores += [f"global: {m}" for m in globales.revisar()]
     for e in errores:
         print("ERROR", e)
     print(f"{total} archivos Lua revisados en {len(carpetas)} carpetas: "

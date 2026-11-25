@@ -77,6 +77,10 @@ local function grupos(ui, padre)
 	leer:Fila({ titulo = L["Letra más grande"],
 		texto = L["Todo el texto de Alfa un poco más grande, en cada ventana. Se suma al tamaño de Ajustes > Apariencia."],
 		control = function(fila) return K.Interruptor(fila, { clave = "nucleo.letraGrande" }) end })
+	-- 1.4.0 (66): alto contraste (Kit/Tokens.lua, un retoque del tema).
+	leer:Fila({ titulo = L["Alto contraste"],
+		texto = L["Texto blanco, fondos opacos y bordes marcados en todas las ventanas de Alfa, en cualquier estilo. Se suma a la letra grande y a los colores para daltonismo."],
+		control = function(fila) return K.Interruptor(fila, { clave = "nucleo.altoContraste" }) end })
 	leer:Fila({ titulo = L["Colores para daltonismo"],
 		texto = L["Lo bueno en azul, los avisos en amarillo y el peligro en naranja, y los perjuicios con colores que se distinguen sin el rojo y el verde."],
 		control = function(fila) return K.Interruptor(fila, { clave = "nucleo.daltonico" }) end })
@@ -115,11 +119,28 @@ local function grupos(ui, padre)
 	-- 1.3.1: acomodar con el ratón lo de Alfa en tu pantalla (Acomodar.lua).
 	local acomodar = K.GrupoAjustes(padre, { titulo = L["Acomodar la pantalla"] })
 	acomodar:Fila({ titulo = L["Mueve lo de Alfa con el ratón"],
-		texto = L["Lya, tu guía, la flecha, los avisos, la pesca y los marcos de Combate y Curación: los arrastras a donde quieras. También con /alfa acomodar."],
+		texto = L["La flecha y sus placas, tu guía, los avisos, los anuncios, Lya, la pesca, Combate, Curación y más: los arrastras a donde quieras, con imán a la rejilla. También con /alfa acomodar."],
 		control = function(fila) return K.Boton(fila, L["Acomodar [pantalla]"], function()
 			if N.CerrarVentana then N.CerrarVentana() elseif A.UI and A.UI.Options and A.UI.Options.frame then A.UI.Options.frame:Hide() end
 			if M.Acomodar then M.Acomodar.Abrir() end
 		end, { tipo = "secundario", icono = "ic-ventana" }) end })
+	-- 1.4.0 (78): moverlo directo, por personaje y las placas de la flecha (Kit/Movible.lua).
+	acomodar:Fila({ titulo = L["Mayús + arrastrar"],
+		texto = L["Fuera de combate, con Mayús apretada arrastras cualquier cosa de Alfa sin entrar a «Acomodar la pantalla»."],
+		control = function(fila) return K.Interruptor(fila, { clave = "acomodar.conMayus" }) end })
+	acomodar:Fila({ titulo = L["Cada personaje con su acomodo"],
+		texto = L["Lo que acomodes se guarda solo para este personaje. La flecha ya recuerda su lugar en cada uno."],
+		control = function(fila) return K.Interruptor(fila, { clave = "acomodar.porPersonaje" }) end })
+	acomodar:Fila({ titulo = L["Las placas van con la flecha"],
+		texto = L["«Llegaste», «Usa tu piedra de hogar» y los viajes salen donde está la flecha. Apágalo para ponerlas en otro lugar."],
+		control = function(fila) return K.Interruptor(fila, {
+			get = function() local p = A.Get("nav.placasPos") return not (type(p) == "table" and p.point) end,
+			set = function(v)
+				if v then A.Set("nav.placasPos", nil) return end
+				local Nv = rawget(A, "Nav")
+				local Ar = type(Nv) == "table" and rawget(Nv, "arrow")
+				if type(Ar) == "table" and Ar.SepararPlacas then Ar.SepararPlacas() end
+			end }) end })
 
 	-- 1.3.0: la pantalla limpia (Alfa_Nucleo/Limpia.lua).
 	local Pl = N.PantallaLimpia
@@ -128,7 +149,7 @@ local function grupos(ui, padre)
 		texto = L["Con una tecla escondes lo del juego que no necesitas y quedan Alfa, tu rastreador y Lya. Otra pulsación lo devuelve todo."],
 		control = function(fila) return K.Atajo(fila, { accion = "ALFA_PANTALLA_LIMPIA", titulo = L["Pantalla limpia"], ancho = 150 }) end })
 	limpia:Fila({ titulo = L["Probar la pantalla limpia"], texto = L["También con /alfa limpia."],
-		control = function(fila) return K.Boton(fila, L["Probar"], function() if Pl then Pl.Alternar() end end, { tipo = "secundario", icono = "ic-lobo" }) end })
+		control = function(fila) return K.Boton(fila, L["Probar"], function() if Pl then Pl.Alternar() end end, { tipo = "secundario", icono = "ic-lobo", tecla = "ALFA_PANTALLA_LIMPIA" }) end })
 	-- 1.3.8: el modo Zen (Zen.lua).
 	limpia:Fila({ titulo = L["Modo Zen"],
 		texto = L["Una tecla esconde todo Alfa menos la flecha, para explorar o tomar capturas. Otra pulsación lo devuelve. También con /alfa zen."],
@@ -137,7 +158,7 @@ local function grupos(ui, padre)
 		control = function(fila) return K.Boton(fila, L["Probar"], function()
 			if N.CerrarVentana then N.CerrarVentana() end
 			if M.Zen then M.Zen.Alternar(true) end
-		end, { tipo = "secundario", icono = "ic-flecha" }) end })
+		end, { tipo = "secundario", icono = "ic-flecha", tecla = "ALFA_ZEN" }) end })
 	for _, g in ipairs(Pl and Pl.GRUPOS or {}) do
 		limpia:Fila({ titulo = K.L[g.nombre], hija = true,
 			texto = (g.id == "Barras" or g.id == "Retratos") and L["Si estás en combate, espera a que termine."] or nil,
@@ -362,8 +383,13 @@ local CONTROLES = {
 	{ kind = "toggle", key = "nucleo.letraGrande", label = L["Letra más grande"],
 		help = L["Todo el texto de Alfa un poco más grande, en cada ventana. Se suma al tamaño de Ajustes > Apariencia."],
 		search = "bigger text, large font, accessibility, readability, letra grande, accesibilidad" },
+	-- 1.4.0 (66)
+	{ kind = "toggle", key = "nucleo.altoContraste", label = L["Alto contraste"],
+		help = L["Texto blanco, fondos opacos y bordes marcados en todas las ventanas de Alfa, en cualquier estilo. Se suma a la letra grande y a los colores para daltonismo."],
+		search = "high contrast, contrast, accessibility, readability, alto contraste, accesibilidad, leer mejor, vista" },
 	-- 1.3.8
-	{ kind = "slider", key = "nucleo.escalaVentanas", label = L["Tamaño de las ventanas de Alfa"], min = 0.8, max = 1.3, step = 0.05,
+	-- 1.4.0 (62): tu escala de Alfa no se pierde al restablecer la página (noReset).
+	{ kind = "slider", key = "nucleo.escalaVentanas", label = L["Tamaño de las ventanas de Alfa"], min = 0.8, max = 1.3, step = 0.05, noReset = true,
 		format = function(v) return ("%d %%"):format(math.floor((v or 1) * 100 + 0.5)) end,
 		help = L["Agranda o achica las ventanas de Alfa enteras, aparte de la escala del juego. La ventana principal de Alfa tiene la suya en Apariencia."],
 		search = "window scale, size, bigger windows, smaller, zoom, escala, tamaño, ventanas grandes" },

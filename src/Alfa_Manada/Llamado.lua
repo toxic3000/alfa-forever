@@ -116,6 +116,7 @@ M.Red.Oyentes.A = function(clave, remitente, _, f, canal)
 		icono = "ic-manada", duracion = 20,
 		accion = { texto = L["¡Voy!"], alClic = function()
 			M.Red.Enviar("B:" .. clave, V .. "B", "WHISPER", U.Destino(remitente))
+			if M.Logros and M.Logros.Ayudar then M.Logros.Ayudar("llamado:" .. clave) end -- 1.4.0 (55)
 			local Nav = A.Nav
 			if Nav and Nav.SetTarget then
 				Nav.SetTarget(map, x, y, quien)

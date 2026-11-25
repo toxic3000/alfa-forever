@@ -121,8 +121,8 @@ local function candidatas(ctx, modo, quitar, idx, ceder, cuantas)
 	for k = 1, min(cuantas or 10, #pre) do
 		local c = pre[k]
 		local d = c.dador or ctx.pos
-		local obj, grupo, dentro = I.Objetivo(c.e, d)
-		if not dentro then
+		local obj, grupo, dentro, sinCargar = I.Objetivo(c.e, d)
+		if not dentro and not sinCargar then
 			local tiempo = I.Viaje(ctx.pos, d) + I.Viaje(d, obj or d) + I.Viaje(obj or d, c.fin) + I.Esfuerzo(c.e)
 			local v = valor(c.e, modo, nivel, true)
 			local s = v / (tiempo + 30)

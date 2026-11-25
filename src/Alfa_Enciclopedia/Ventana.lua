@@ -382,18 +382,27 @@ local function bloqueDatos(pila)
 		self.Seccion:SetWidth(w)
 		local y = self.Seccion:Acomodar(w) + ESP.xs
 		local cw = floor((w - ESP.l) / 2)
+		-- 1.4.0 (83): un dato largo («Druidas Garra Nocturna · Nivel 7») salía
+		-- «Druidas Gar...» en media columna: ese par va solo, a lo ancho.
+		local fila, col = 0, 0
 		for i = 1, self.alfaN do
 			local p = self.pares[i]
-			local colx = ((i - 1) % 2) * (cw + ESP.l)
-			local fy = y + floor((i - 1) / 2) * 24
+			local ew = math.min(K.AnchoTexto(p.E), floor(cw * 0.6))
+			local ancho = K.AnchoTexto(p.V) > cw - ew - ESP.s
+			if ancho and col == 1 then fila, col = fila + 1, 0 end
+			local colx = col * (cw + ESP.l)
+			local cwi = ancho and w or cw
+			local fy = y + fila * 24
 			p.E:ClearAllPoints()
 			p.E:SetPoint("LEFT", self, "TOPLEFT", colx, -(fy + 11))
 			K.Ajustar(p.E, floor(cw * 0.6))
 			p.V:ClearAllPoints()
-			p.V:SetPoint("RIGHT", self, "TOPLEFT", colx + cw, -(fy + 11))
-			K.Ajustar(p.V, cw - K.num(p.E:GetWidth(), 0) - ESP.s)
+			p.V:SetPoint("RIGHT", self, "TOPLEFT", colx + cwi, -(fy + 11))
+			K.Ajustar(p.V, cwi - K.num(p.E:GetWidth(), 0) - ESP.s)
+			if ancho or col == 1 then fila, col = fila + 1, 0 else col = 1 end
 		end
-		local h = y + math.ceil(self.alfaN / 2) * 24
+		if col == 1 then fila = fila + 1 end
+		local h = y + fila * 24
 		self:SetHeight(h)
 		return h
 	end
@@ -1015,6 +1024,20 @@ local VACIO_PREP = { lobo = "atento", titulo = L["Preparando la enciclopedia…"
 local filtrar
 local reloj -- el temporizador del avance mientras algo se prepara
 
+-- 1.4.0 (115): sin resultados, el estado vacío ofrece el camino: quitar los
+-- filtros (si hay) o borrar lo que escribiste.
+local function vacioSin(tipo, conFiltros)
+	local o = { lobo = VACIO_SIN.lobo, titulo = VACIO_SIN.titulo, texto = VACIO_SIN.texto }
+	if conFiltros and V.QuitarFiltrosDe then
+		o.texto = L["Con los filtros que elegiste no queda nada. Quítalos para ver todo lo que encontré."]
+		o.accion = { texto = L["Quitar los filtros"], icono = "ic-cerrar", alClic = function() V.QuitarFiltrosDe(tipo) end }
+	elseif (est.texto or "") ~= "" and ui.buscador then
+		o.accion = { texto = L["Borrar la búsqueda"], icono = "ic-cerrar", alClic = function() ui.buscador:SetTexto("") end }
+	end
+	return o
+end
+V.VacioSin = vacioSin
+
 local function avanceTexto(nombre)
 	local p = Cat.Avance(nombre)
 	return p and format("%d %%", floor(p * 100)) or ""
@@ -1112,7 +1135,7 @@ filtrar = function(elegir)
 		end
 		if mejor and mejor ~= tipo then return V.SetTipo(mejor) end
 	end
-	ui.lf.Lista.Vacio:Set(VACIO_SIN)
+	ui.lf.Lista.Vacio:Set(vacioSin(tipo, filtrosActivos(tipo)))
 	if elegir then
 		ui.lf:SetDatos(res, true)
 		local c = Cat.Col(tipo)
@@ -1166,17 +1189,21 @@ local function alternar(tipo, clave, texto, ayuda)
 	return b
 end
 
+-- (1.4.0, 115: también desde el estado vacío de la lista)
+function V.QuitarFiltrosDe(tipo)
+	est.filtros[tipo] = {}
+	for _, c in ipairs(barras[tipo] and barras[tipo].controles or {}) do
+		if c.SetValor then c:SetValor(false) end
+		if c.Pintar then c:Pintar() end
+	end
+	if barras[tipo] and barras[tipo].alQuitar then barras[tipo].alQuitar() end
+	acomodar()
+	filtrar()
+end
+
 local function quitarFiltros(tipo)
-	local b = K.Boton(ui.barra, L["Quitar filtros"], function()
-		est.filtros[tipo] = {}
-		for _, c in ipairs(barras[tipo].controles) do
-			if c.SetValor then c:SetValor(false) end
-			if c.Pintar then c:Pintar() end
-		end
-		if barras[tipo].alQuitar then barras[tipo].alQuitar() end
-		acomodar()
-		filtrar()
-	end, { tipo = "fantasma", tam = "chico", icono = "ic-cerrar" })
+	local b = K.Boton(ui.barra, L["Quitar filtros"], function() V.QuitarFiltrosDe(tipo) end,
+		{ tipo = "fantasma", tam = "chico", icono = "ic-cerrar" })
 	return b
 end
 

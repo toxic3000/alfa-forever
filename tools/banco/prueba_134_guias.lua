@@ -45,7 +45,8 @@ step("al entrar casi nada se arma", function()
   local total, diferidas = 0, 0
   for _, h in ipairs(G.List()) do
     total = total + 1
-    if rawget(G.Get(h.id) or {}, "stepsSrc") then diferidas = diferidas + 1 end
+    local g = G.Get(h.id) or {}
+    if rawget(g, "stepsSrc") or rawget(g, "stepsPart") then diferidas = diferidas + 1 end -- 1.4.0: o en su paquete de tramo
   end
   if diferidas < total * 0.9 then falla(("solo %d de %d guías vienen diferidas"):format(diferidas, total)) end
   local n, quien = armadas()

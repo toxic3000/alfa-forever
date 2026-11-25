@@ -311,6 +311,7 @@ M.EN = {
 	["Cambiaste %d ajustes aquí. Volver a ponerlos al entrar está apagado (Avanzado)."] = "You changed %d settings here. Reapplying them at login is off (Advanced).",
 	["Alfa mantiene %d ajustes tuyos y los vuelve a poner al entrar."] = "Alfa keeps %d of your settings and reapplies them at login.",
 	["La %s también está en el menú del juego."] = "The %s is also in the game menu.",
+	["Lo marcado con %s también está en el menú del juego."] = "Anything marked %s is also in the game menu.",
 	["Este cliente no tiene %d de estos ajustes: no se muestran."] = "This client lacks %d of these settings: they aren't shown.",
 	["Nada coincide"] = "Nothing matches",
 	["Prueba con otra palabra, como «pasto», «niebla» o «sombras»."] = "Try another word, like \"grass\", \"fog\" or \"shadows\".",

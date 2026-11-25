@@ -378,6 +378,12 @@ local BUILTIN = {
 		-- Alfa 1.3.9: la flecha mínima (Nav/Arrow.lua).
 		H({ kind = "toggle", key = "nav.arrowMinimo", label = ns.T("Flecha mínima"), help = ns.T("Solo la flecha y la distancia: sin la meta, sin el tiempo y sin la tarjeta del camino al muelle."),
 			search = "minimal arrow, compact, only distance, clean, flecha mínima, sencilla" }),
+		-- Alfa 1.4.0 (33): lugar, tamaño y si la escondiste, por personaje (Nav/Arrow.lua).
+		H({ kind = "toggle", key = "nav.flechaPorPersonaje", label = ns.T("Flecha de cada personaje"), help = ns.T("Cada personaje recuerda dónde pusiste la flecha, su tamaño y si la escondiste. Apagado: la misma flecha para toda la cuenta."),
+			search = "per character, position, size, hidden, por personaje, lugar, tamaño, escondida" }),
+		-- Alfa 1.4.0 (69): la tarjeta del viaje en dos renglones (Nav/Arrow.lua).
+		H({ kind = "toggle", key = "nav.viajeCompacto", label = ns.T("Tarjeta de viaje compacta"), help = ns.T("Barcos, zepelines, vuelos y portales en dos renglones; el detalle al pasar el ratón. Se cierra con su X o con clic derecho."),
+			search = "travel card, boat, zeppelin, flight, compact, small, close, tarjeta, viaje, compacta, barco, vuelo" }),
 		{ kind = "dropdown", key = "nav.distanceUnit", label = L["Distances"], help = L["How the arrow, map tooltips, rares and the death helper show distances."], search = "units, yards, metres, metric, distance",
 			choices = { { value = "yards", label = L["Yards (the game's unit)"] }, { value = "metres", label = L["Metres"] } } },
 		H({ kind = "toggle", key = "nav.arrivalSound", label = L["Arrival sound"], help = L["A soft chime when you reach a waypoint."], search = "sound, chime, audio, ding" }),
@@ -1047,7 +1053,13 @@ local function buildGuide(view)
 		local hasStep = info and not info.finished and info.num ~= nil
 		card.Step:SetShown(hasStep and true or false)
 		if hasStep then
-			W.SetChip(card.Step, info.count and string.format(T("Paso %d de %d"), info.num, info.count) or string.format(T("Paso %d"), info.num), "accent")
+			-- Alfa 1.4.0: con el avance de la guía (el del rastreador y Hoy): el paso
+			-- que sigue a los hechos, no el número dentro de la parte que se ve.
+			if info.total and info.total > 0 and info.done then
+				W.SetChip(card.Step, string.format(T("Paso %d de %d"), math.min(info.done + 1, info.total), info.total), "accent")
+			else
+				W.SetChip(card.Step, info.count and string.format(T("Paso %d de %d"), info.num, info.count) or string.format(T("Paso %d"), info.num), "accent")
+			end
 			card.Step:ClearAllPoints()
 			card.Step:SetPoint("TOPRIGHT", card, "TOPRIGHT", -14, -(y - 3))
 		end
@@ -1556,6 +1568,53 @@ local SPELLING = { color = "colour", colors = "colours", gray = "grey", meter = 
 local FILLER = {}
 for w in ("a an the of to in on at and or for my me i is it how do can turn off enable disable toggle set setting settings option options where want"):gmatch("%S+") do FILLER[w] = true end
 
+-- Alfa 1.4.0 (60): sinónimos. Una palabra buscada vale también por sus
+-- parecidas (en español y en inglés), con un poco menos de puntaje que la
+-- palabra misma: «teclas» encuentra los atajos, «mochila» las bolsas,
+-- «fuente» la letra, «facción» la temática de tu bando. Las claves y las
+-- palabras ya van dobladas (minúsculas, sin acentos).
+local SINONIMOS = {}
+do
+	local grupos = {
+		"teclas tecla atajo atajos keybind keybinds binding hotkey shortcut",
+		"letra letras fuente font texto tipografia",
+		"color colour colores acento tema",
+		"tema estilo skin theme apariencia look",
+		"tamano escala scale size grande zoom",
+		"sonido sonidos audio aullido sound ruido volumen",
+		"flecha arrow navegacion brujula",
+		"mapa map minimapa minimap",
+		"bolsas bags inventario mochila bolsa",
+		"oro gold dinero plata money",
+		"mision misiones quest quests",
+		"guia guias guide ruta rutas route",
+		"esconder ocultar hide quitar invisible",
+		"avisos aviso alertas notificaciones alerts notifications campanita",
+		"lya loba perrita mascota companera",
+		"bando faccion faction horda alianza horde alliance",
+		"daltonico daltonismo colorblind",
+		"contraste contrast accesibilidad accessibility leer",
+		"ventana ventanas window pantalla",
+		"pesca pescar fishing pez peces",
+		"chat mensajes chats",
+		"restablecer reset reiniciar fabrica defaults",
+		"idioma lenguaje language traduccion",
+		"talentos talents builds",
+		"curacion curar heal healing sanar",
+		"recoleccion recolectar minar mineria herboristeria gathering",
+	}
+	for _, g in ipairs(grupos) do
+		local ws = {}
+		for w in g:gmatch("%S+") do ws[#ws + 1] = w end
+		for _, w in ipairs(ws) do
+			local l = SINONIMOS[w] or {}
+			for _, x in ipairs(ws) do if x ~= w then l[#l + 1] = x end end
+			SINONIMOS[w] = l
+		end
+	end
+end
+O.SINONIMOS = SINONIMOS
+
 local LABEL, KEY, TERMS, PLACE, HELP = 1, 2, 3, 4, 5
 -- By field, the score of a match inside a word, a typo off, the word's start, the whole word.
 -- Alfa (1.3.2): el nombre de la página, la pestaña o la sección (PLACE) pesa
@@ -1670,6 +1729,7 @@ local function kindOf(m, t)
 end
 
 local qwords, qfiller, qpairs, seen = {}, {}, {}, {}
+local qsyn = {} -- Alfa 1.4.0 (60): los sinónimos de cada palabra buscada (memos) o false
 
 -- The query's words into qwords (memos) and qfiller, each word joined to
 -- the one before into qpairs. -> count
@@ -1680,6 +1740,14 @@ local function parseQuery(q)
 		n = n + 1
 		qwords[n], qfiller[n] = wordMemo(w), FILLER[w] or false
 		qpairs[n] = prev and wordMemo(prev .. w) or false
+		local sin = SINONIMOS[w]
+		if sin then
+			local l = {}
+			for i, x in ipairs(sin) do l[i] = wordMemo(x) end
+			qsyn[n] = l
+		else
+			qsyn[n] = false
+		end
 		if not FILLER[w] then needed = needed + 1 end
 		prev = w
 	end
@@ -1697,11 +1765,22 @@ local function scoreOf(c, nw)
 	for i = 1, nw do
 		local m, filler, best, phrase = qwords[i], qfiller[i], 0, 0
 		local pair = qpairs[i]
+		local sin = qsyn[i]
 		for j = 1, #tw do
 			local k = kindOf(m, tw[j])
 			if k == 4 or (k > 0 and not filler) then
 				local v = SCORE[tf[j]][k]
 				if v > best then best = v end
+			end
+			-- Alfa 1.4.0 (60): un sinónimo, entero o su comienzo, vale un poco menos.
+			if sin and not filler then
+				for _, sm in ipairs(sin) do
+					local ks = kindOf(sm, tw[j])
+					if ks >= 3 then
+						local v = floor(SCORE[tf[j]][ks] * 0.85)
+						if v > best then best = v end
+					end
+				end
 			end
 			if pair and tf[j] ~= HELP then
 				local pk = PHRASE[kindOf(pair, tw[j])] or 0
@@ -1831,7 +1910,8 @@ function O.Search(q)
 				local pname = O.PageLabel(p)
 				-- Alfa (1.3.2): el grupo que se llama como lo que buscas va primero.
 				best = best + placeBonus(nw, pname, T(t.name))
-				groups[#groups + 1] = { title = t.name ~= "" and (pname .. "  \194\183  " .. T(t.name)) or pname, controls = list, best = best, order = #groups + 1 }
+				groups[#groups + 1] = { title = t.name ~= "" and (pname .. "  \194\183  " .. T(t.name)) or pname, controls = list, best = best, order = #groups + 1,
+					pageKey = p.key, tabName = t.name } -- Alfa 1.4.0 (60): para ir directo al ajuste
 				count = count + #list
 			end
 		end
@@ -2144,6 +2224,7 @@ renderSearch = function()
 	if not searchView.psEnBusqueda and O.RefreshNav then O.RefreshNav() end
 	searchView.psEnBusqueda = true
 	if O.LyaHelp then O.LyaHelp(nil) end
+	if W.ShellPageIcon then W.ShellPageIcon(win, "search") end
 	W.ShellTitle(win, L["Search"], count == 1 and L["1 setting matches"] or string.format(L["%d settings match"], count))
 	W.ShellTabs(win, nil)
 	searchView:Show()
@@ -2257,6 +2338,16 @@ O.SectionOf = function(key)
 	return nil
 end
 
+-- 1.4.0 (82): el ícono de la cabecera de una página: el de su sección (Hoy,
+-- Aventura...), y en Ajustes el de la página misma.
+function O.IconoDePagina(p)
+	if not p then return nil end
+	local s = sectionOf(p)
+	local sec = s and porSeccion[s]
+	if sec and s ~= AJUSTES.key and sec.icon then return sec.icon end
+	return p.icon or (sec and sec.icon) or nil
+end
+
 -- Alfa 1.2.9: «Alfa sencillo» (AlfaNucleo.PaginaVisible) deja fuera de la
 -- barra lo que no es esencial; la página abierta siempre sale.
 local function listed(p)
@@ -2368,7 +2459,8 @@ local function pintarCampana(items)
 			local c = CreateFrame("Frame", nil, b)
 			c:SetHeight(13)
 			-- En la orilla de arriba, a la derecha del botón: no tapa el ícono ni el nombre.
-			c:SetPoint("TOPRIGHT", b, "TOPRIGHT", -2, 1)
+			-- (1.4.0, 82: en la barra lateral, a la derecha, a media fila.)
+			if win.psLateral then c:SetPoint("RIGHT", b, "RIGHT", -8, 0) else c:SetPoint("TOPRIGHT", b, "TOPRIGHT", -2, 1) end
 			c:SetFrameLevel(b:GetFrameLevel() + 3)
 			c.Fondo = W.Tex(c, "ARTWORK", "white", "warning")
 			c.Fondo:SetAllPoints(c)
@@ -2390,13 +2482,23 @@ local function pintarCampana(items)
 			local c = CreateFrame("Frame", nil, b)
 			c:SetSize(16, 16)
 			-- 1.3.9 (56): más arriba y a la izquierda: ya no tapa la «A» de Avisos.
-			c:SetPoint("CENTER", b.Icon, "TOPRIGHT", -2, 3)
+			-- (1.4.0, 82: en la barra lateral, a la derecha, a media fila.)
+			if win.psLateral then c:SetPoint("RIGHT", b, "RIGHT", -8, 0) else c:SetPoint("CENTER", b.Icon, "TOPRIGHT", -2, 3) end
 			c:SetFrameLevel(b:GetFrameLevel() + 3)
 			c.Fondo = W.Tex(c, "ARTWORK", "circle", "danger")
 			c.Fondo:SetAllPoints(c)
 			c.Texto = W.Text(c, "caption", "text")
 			c.Texto:SetPoint("CENTER", c, "CENTER", 0, 0)
 			b.psCuenta = c
+		end
+		-- 1.4.0 (117): su globo dice lo último que no viste y la calma (AlfaNucleo.LineasSinVer).
+		local Nu = es and rawget(_G, "AlfaNucleo")
+		if es and type(Nu) == "table" and type(Nu.LineasSinVer) == "function" then
+			local ok, lineas = pcall(Nu.LineasSinVer, 3)
+			b.psTipLines = (ok and type(lineas) == "string") and { lineas } or nil
+			b.psLineasCampana = true
+		elseif b.psLineasCampana then
+			b.psTipLines, b.psLineasCampana = nil, nil
 		end
 		if b.psCuenta then
 			if es and n > 0 then
@@ -2474,6 +2576,11 @@ local function lyaHelp(p)
 	-- entero en la fila, no sale (como cuando la fila no tiene lugar).
 	local sub = win.Subtitle
 	b.psTip, b.psTipLines = ns.T("Pregúntale a Lya"), nil
+	-- 1.4.0 (82): con la barra lateral, lo que no cupo en la cabecera sale aquí.
+	if rawget(win, "psSubtitleHidden") and b:IsShown() then
+		local texto = win.psSubtitle
+		if type(texto) == "string" and texto ~= "" then b.psTip, b.psTipLines = texto, { ns.T("Clic: pregúntale a Lya") } end
+	end
 	if sub and b:IsShown() and win.Title:IsShown() and sub.GetNumPoints then
 		for i = 1, sub:GetNumPoints() do
 			local pt, rel, _, _, y = sub:GetPoint(i)
@@ -2500,6 +2607,7 @@ O.LyaHelp = lyaHelp
 function O.RefreshNav()
 	renderNav()
 	if win and current and query == "" then
+		if W.ShellPageIcon then W.ShellPageIcon(win, O.IconoDePagina(current)) end
 		W.ShellTitle(win, O.PageLabel(current), T(current.subtitle))
 		lyaHelp(current)
 	end
@@ -2660,10 +2768,12 @@ pintarDeshacer = function()
 		or string.format(T("Vuelven los %d ajustes del último cambio a como estaban."), n) }
 end
 
-function O.ResetPage(p)
+function O.ResetPage(p, guardar)
 	if type(p) == "string" then p = pageByKey(p) end -- Alfa (1.3.2): también por su clave
 	if not p then return end
-	for _, key in ipairs((pageKeys(p))) do ns.Set(key, nil) end
+	for _, key in ipairs((pageKeys(p))) do
+		if not (guardar and guardar[key]) then ns.Set(key, nil) end
+	end
 	-- Toggles and sliders of state that is no setting go back to their default too.
 	for _, t in ipairs(p.tabs) do
 		for _, s in ipairs(t.sections) do
@@ -2682,6 +2792,42 @@ function O.ResetPage(p)
 			if w.psControl and not w.psControl.key and w.Refresh then w:Refresh() end
 		end
 	end
+end
+
+-- Alfa 1.4.0: «Restablecer todos los ajustes» (Acerca de > Mantenimiento).
+-- Antes llamaba a una función que no existía y no hacía nada. Ahora cada
+-- página vuelve a lo de fábrica como con su «Restablecer página»: respeta lo
+-- marcado noReset (Cómo ves Alfa) y corre lo que la página pone a mano (su
+-- restablecer.fn: el estilo y el acento). Se guardan aparte, y no cambian:
+--   * la escala de las ventanas de Alfa (nucleo.escalaVentanas, que se
+--     recuerda en AlfaNucleoDB «kit»; Kit/Estilos.lua);
+--   * tus guías, tu avance y lo que Alfa aprendió (no son ajustes).
+-- En combate no se hace (repinta todo Alfa): avisa y espera.
+-- -> cuántos ajustes volvieron, o false en combate
+local GUARDAR_AL_RESTABLECER = { ["nucleo.escalaVentanas"] = true }
+O.GUARDAR_AL_RESTABLECER = GUARDAR_AL_RESTABLECER
+function ns.ResetSettings()
+	if InCombatLockdown and InCombatLockdown() then
+		if ns.Print then ns.Print(T("Restablecer espera a que termine el combate.")) end
+		return false
+	end
+	local n = 0
+	for _, p in ipairs(pageList) do
+		for _, key in ipairs((pageKeys(p))) do
+			if not GUARDAR_AL_RESTABLECER[key] then n = n + 1 end
+		end
+		local ok, err = pcall(O.ResetPage, p, GUARDAR_AL_RESTABLECER)
+		if not ok and geterrorhandler then geterrorhandler()(err) end
+	end
+	-- La escala de Alfa, si un ajuste suelto la quitó, vuelve (Kit/Estilos.lua).
+	local Nu = rawget(_G, "AlfaNucleo")
+	local K = type(Nu) == "table" and Nu.Kit
+	if K and type(K.RecuperarEscala) == "function" then pcall(K.RecuperarEscala) end
+	O.OlvidarDeshacer()
+	if ns.Fire then ns.Fire("ALFA_RESTABLECIDO", n) end
+	if win and win:IsShown() and current then pcall(O.Select, current.key, currentTab and currentTab.name) end
+	if ns.Print then ns.Print(string.format(T("Listo: %d ajustes volvieron a como venían. Tus guías y tu avance siguen igual."), n)) end
+	return n
 end
 
 -- Show page `key` (and tab name), or the search results when searching.
@@ -2727,6 +2873,7 @@ function O.Select(key, tabName)
 		for i, tt in ipairs(list) do tabs[i] = { key = tt.name, label = tt.name == "" and O.PageLabel(p) or T(tt.name) } end
 	end
 	W.ShellTabs(win, tabs, t.name, function(name) O.Select(p.key, name) end)
+	if W.ShellPageIcon then W.ShellPageIcon(win, O.IconoDePagina(p)) end
 	W.ShellTitle(win, O.PageLabel(p), T(p.subtitle))
 	lyaHelp(p)
 	local h = view.Refresh()
@@ -2741,11 +2888,105 @@ function O.Select(key, tabName)
 	W.ScrollTo(win.Scroll, visto)
 	renderFooter(p)
 	-- Switching pages is frequent: a short fade, no movement.
-	Anim.To(view, "alpha", 0, 1, Anim.FAST, "out")
+	-- Alfa 1.4.0 (82): al cambiar de página, la nueva entra con un fundido y
+	-- un deslizamiento corto desde la derecha (O.Transicion); ui.reduceMotion
+	-- deja solo un fundido breve. Volver a la misma página no se anima.
+	O.Transicion(view, O.page ~= p)
 	O.page, O.view = p, view
 	-- Alfa (1.3.9, mejoras 35 y 53): la primera vez en cada página
 	-- (Alfa_Bienvenida/PrimeraVez.lua): su clave, la pestaña y su subtítulo.
 	if ns.Fire then ns.Fire("ALFA_PAGINA", p.key, t.name, T(p.subtitle or "")) end
+end
+
+-- Alfa 1.4.0 (82): la entrada de una página. La vista lleva dos anclas
+-- (arriba a la izquierda y a la derecha del cuerpo): el deslizamiento las
+-- corre juntas con Anim "value", que ui.reduceMotion deja en su lugar.
+O.TRANSICION = { dx = 14, dur = 0.22 }
+function O.Transicion(view, nueva)
+	if not (view and win) then return end
+	local body = win.Body
+	local function colocar(_, x)
+		view:ClearAllPoints()
+		view:SetPoint("TOPLEFT", body, "TOPLEFT", x, 0)
+		view:SetPoint("RIGHT", body, "RIGHT", x, 0)
+	end
+	view.psOnValue = colocar
+	if not nueva or Anim.Reduced() then
+		if Anim.IsRunning(view, "value") then Anim.Stop(view, "value") end
+		colocar(view, 0)
+		Anim.To(view, "alpha", nueva and 0 or 0.6, 1, Anim.FAST, "out")
+		return
+	end
+	Anim.To(view, "alpha", 0, 1, O.TRANSICION.dur, "out")
+	Anim.To(view, "value", O.TRANSICION.dx, 0, O.TRANSICION.dur, "out")
+end
+
+-- Alfa 1.4.0 (60): ir directo a un ajuste: abre su página y su pestaña, lo
+-- trae a la vista y lo resalta un momento. Enter en el buscador va al mejor
+-- resultado. -> true si lo encontró en la página
+function O.IrAlAjuste(c, pageKey, tabName)
+	if not (win and c and pageKey) then return false end
+	if win.Search and win.Search.GetText and win.Search:GetText() ~= "" then win.Search:SetText("") end
+	query = ""
+	O.Select(pageKey, tabName)
+	local view = O.view
+	local w
+	for _, x in pairs(view and view.cache or {}) do
+		if type(x) == "table" and x.psControl == c then w = x break end
+	end
+	-- Una página propia (Estilo y sonido, Hoy...) arma sus filas con el Kit:
+	-- la fila cuyo control guarda esa clave, o la que se llama igual.
+	if not w and view and view.GetChildren then
+		local label = labelOf(c)
+		local function buscar(f, prof)
+			if w or prof > 12 then return end
+			for _, h in ipairs({ f:GetChildren() }) do
+				local ctl = rawget(h, "Control")
+				local d = rawget(h, "alfaDatos")
+				if type(ctl) == "table" and ((c.key and rawget(ctl, "alfaClave") == c.key)
+					or (type(d) == "table" and label and d.titulo == label)) then
+					w = h
+					return
+				end
+				buscar(h, prof + 1)
+			end
+		end
+		buscar(view, 0)
+	end
+	if not (w and w.GetTop and view.GetTop) then return false end
+	local dy = (view:GetTop() or 0) - (w:GetTop() or 0)
+	if type(dy) == "number" and dy > 40 then W.ScrollTo(win.Scroll, math.max(0, dy - 40)) end
+	if not w.psResalte then
+		w.psResalte = w:CreateTexture(nil, "BACKGROUND", nil, 7)
+		w.psResalte:SetAllPoints(w)
+		w.psResalte:SetTexture(Theme.Media("white"))
+	end
+	local r, g, b = Theme.Color("accent")
+	w.psResalte:SetVertexColor(r, g, b, 0.18)
+	w.psResalte:Show()
+	O.resaltado = w
+	ns.After(1.6, function() if w.psResalte then w.psResalte:Hide() end end)
+	return true
+end
+
+function O.IrAlMejor(q)
+	local groups = O.Search(q or query)
+	local g = groups and groups[1]
+	local c = g and g.controls and g.controls[1]
+	if not c then return false end
+	return O.IrAlAjuste(c, g.pageKey, g.tabName)
+end
+
+-- Alfa 1.4.0 (114): abre la ventana ya buscando `text` (Pregúntale a Lya, sin
+-- respuesta, ofrece «Buscar en los ajustes»). -> true si se abrió
+function O.BuscarDesdeFuera(text)
+	if type(text) ~= "string" or text == "" then return false end
+	ns.Fire("SHOW_OPTIONS")
+	if not win then return false end
+	if win.Search and win.Search.SetText then win.Search:SetText(text) end
+	pendienteBusqueda = text
+	O.SetQuery(text)
+	return true
 end
 
 function O.SetQuery(text)
@@ -2784,7 +3025,9 @@ end
 -- setting. The Discord mark sits in its footer.
 local function build()
 	win = W.Shell("AlfaOptions", {
-		top = true, title = "", scalePath = "ui.menuScale", searchPlaceholder = { T("Buscar en Alfa"), L["Search"] },
+		-- 1.4.0 (82): con la barra lateral (W.SIDE): secciones en columna y la
+		-- cabecera de la página con su ícono y el título en grande.
+		top = true, lateral = true, title = "", scalePath = "ui.menuScale", searchPlaceholder = { T("Buscar en Alfa"), L["Search"] },
 		-- 1.3.6: busca cuando dejas de teclear (BUSCAR_ESPERA), no en cada letra:
 		-- con la primera letra se pintaban cientos de filas y, sin resultados,
 		-- las sugerencias recorrían todo en cada tecla. Borrar es al momento.
@@ -2802,6 +3045,15 @@ local function build()
 		end,
 	})
 	O.frame = win
+	-- Alfa 1.4.0 (60): Enter en el buscador va directo al mejor ajuste.
+	if win.Search and win.Search.HookScript then
+		win.Search:HookScript("OnEnterPressed", function(self)
+			local q = self.GetText and self:GetText() or ""
+			if type(q) == "string" and #q >= 2 then O.IrAlMejor(q) end
+		end)
+	end
+	-- Alfa 1.4.0 (58): la X dice la tecla que abre y cierra esta ventana.
+	if win.Close then win.Close.psTecla = "ALFA_OPTIONS" end
 	-- A gamepad moves through the page (UI/Gamepad.lua); LB / RB step the tabs.
 	if ns.Gamepad and ns.Gamepad.Register then
 		ns.Gamepad.Register(win, {
@@ -2935,6 +3187,10 @@ function O.MenuItems(anchor, opts)
 			if ns.Hidden and ns.Hidden() then ns.SetHidden(false) end
 			Escritorio.Abrir()
 		end }
+		-- 1.4.0: «Reparar mi pantalla», solo si usaste Dos pantallas.
+		if type(Escritorio.OfrecerReparar) == "function" and Escritorio.OfrecerReparar() and type(Escritorio.Reparar) == "function" then
+			items[#items + 1] = { text = T("Reparar mi pantalla"), icon = "window", onClick = function() Escritorio.Reparar() end }
+		end
 	end
 	items[#items + 1] = { text = T("Ventana de guía"), icon = "window", checked = ns.GuideShown and ns.GuideShown() or nil,
 		onClick = function() ns.Fire("TOGGLE_FRAME") end }

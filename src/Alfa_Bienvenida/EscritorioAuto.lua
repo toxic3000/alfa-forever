@@ -65,8 +65,15 @@ local function cvar(n)
 	v = ok and leer(v) or nil
 	return type(v) == "string" and v or nil
 end
+-- 1.4.0 (revisión): lo que cambia Alfa no cuenta como un cambio tuyo
+-- (EscritorioReparar.lua, Rp.AlCambiarJugador).
+local function propio()
+	local Rp = M.EscritorioReparar
+	if Rp and Rp.MarcarPropio then Rp.MarcarPropio() end
+end
 local function ponerCVar(n, v)
 	if v == nil or type(SetCVar) ~= "function" then return end
+	propio()
 	pcall(SetCVar, n, v)
 end
 
@@ -141,7 +148,7 @@ end
 ---------------------------------------------------------------------------
 local function reiniciar()
 	local r = rawget(_G, "RestartGx")
-	if type(r) == "function" then pcall(r) end
+	if type(r) == "function" then propio() pcall(r) end
 end
 
 -- La ventana a como estaba antes del clic (y se olvida lo anotado).
@@ -154,14 +161,25 @@ function Au.Revertir(porque)
 	end
 	datos().auto = nil
 	N.Quitar("pantallas.auto.espera")
+	-- 1.4.0 (el bug de la escala): todo vuelve con la foto completa de antes
+	-- (EscritorioReparar.lua): el tamaño solo a una ventana normal y antes de
+	-- los ajustes, un solo reinicio, y se revisa al volver los gráficos.
+	local Rp = M.EscritorioReparar
+	local foto = type(a.foto) == "table" and a.foto or (Rp and Rp.Antes())
+	if Rp and foto then
+		Rp.Restaurar(foto, porque)
+		return true
+	end
+	-- Lo anotado por la 1.3.9 (sin foto): sus tres ajustes, sin tamaño fijo
+	-- si estaba maximizada o a pantalla completa.
 	local antes = type(a.antes) == "table" and a.antes or {}
+	local V = video()
+	if antes.gxWindow == "1" and antes.gxMaximize == "0" and V and type(V.SetGameWindowSize) == "function" and tonumber(antes.w) and tonumber(antes.h) then
+		pcall(V.SetGameWindowSize, antes.w, antes.h)
+	end
 	ponerCVar("gxWindow", antes.gxWindow)
 	ponerCVar("gxMaximize", antes.gxMaximize)
 	ponerCVar("gxWindowedResolution", antes.gxWindowedResolution)
-	local V = video()
-	if V and type(V.SetGameWindowSize) == "function" and tonumber(antes.w) and tonumber(antes.h) then
-		pcall(V.SetGameWindowSize, antes.w, antes.h)
-	end
 	reiniciar()
 	if porque then N.Imprimir(porque) end
 	return true
@@ -220,13 +238,19 @@ function Au.UnClic(lado)
 	local V = video()
 	local w, h = Au.Ventana()
 	lado = LADOS[lado] and Au.PonerLado(lado) or Au.Lado()
+	-- 1.4.0: la foto completa de antes (modo de ventana, escala, tamaño), que
+	-- queda guardada hasta confirmar que todo volvió (EscritorioReparar.lua).
+	local Rp = M.EscritorioReparar
+	local foto = Rp and Rp.Foto() or nil
+	if Rp then foto = Rp.Guardar(foto) end
 	datos().auto = {
-		fase = "estirando", parte = plan.parte, W = plan.W, H = plan.H, lado = lado,
+		fase = "estirando", parte = plan.parte, W = plan.W, H = plan.H, lado = lado, foto = foto,
 		antes = { gxWindow = cvar("gxWindow"), gxMaximize = cvar("gxMaximize"),
 			gxWindowedResolution = cvar("gxWindowedResolution"), w = w, h = h },
 	}
 	ponerCVar("gxWindow", "1")
 	ponerCVar("gxMaximize", "0")
+	propio()
 	local ok = pcall(V.SetGameWindowSize, plan.W, plan.H)
 	if not ok then
 		Au.Revertir(L["Tu juego no dejó estirar la ventana: quedó como estaba. Puedes ajustarlo a mano en Ajustes > Dos pantallas."])

@@ -1085,7 +1085,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "La 1.3.9 : la meute chasse mieux", "items": ["**Terminer mes quêtes :** trace le meilleur itinéraire avec toutes tes quêtes, zone par zone et avec les rendus regroupés ; celles qui ne valent plus la peine vont dans « Pour plus tard ».", "**Guides de métier d’Alfa :** par paliers, avec la meilleure zone, la recette la moins chère qui donne encore des points et tes matériaux. « Réinitialiser ce guide » te situe tout seul.", "**Le voyage, refait :** le bateau et le zeppelin ont leur carte avec le compte à rebours du départ, et un clic sur la flèche t’emmène au lieu suivant.", "**Signaler en un clic :** le Grand Méchant Loup te prévient quand Alfa trouve une de ses erreurs. En plus : un tableau Horde et Alliance et la carte intérieure des donjons."]}
+    "mapa": {"titulo": "La 1.4.0 : la meute solide", "items": ["**Alfa fait peau neuve :** fenêtre avec barre latérale, couverture d’Aujourd’hui et annonces façon cinéma, toujours centrées.", "**Tout se déplace :** `/alfa acomodar` ou Maj + glisser pour placer chaque élément d’Alfa où tu veux.", "**Ta faction et ta saison :** le thème Horde ou Alliance et `/alfa temporada` avec ton aventure en cartes.", "**Plus rapide et plus solide :** guides par tranche de niveaux, Deux écrans sans agrandir l’interface et routes de minerai près de toi."]}
   },
   "contraportada": {
     "titulo": "Rejoignez la meute",

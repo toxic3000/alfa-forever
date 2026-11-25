@@ -705,6 +705,53 @@ local function bloqueCompras(padre)
 end
 
 ---------------------------------------------------------------------------
+-- 1.4.0 (plan 47): tu semana en la subasta (Semana.lua)
+---------------------------------------------------------------------------
+
+local MAX_SEMANA = 6
+
+local function bloqueSemana(padre)
+	local b = K.Pila(padre, { espacio = ESP.m })
+	b.Seccion = b:Agregar(K.Seccion(b, L["Tu semana en la subasta"]))
+	b.Tarjeta = b:Agregar(K.Tarjeta(b, { variante = "estado" }))
+	b.Panel = b:Agregar(panelDeFilas(b), { espacio = ESP.s })
+	function b:Llenar()
+		local s = M.Semana(7)
+		local d = { icono = "ic-oro", lineas = 3 }
+		if #s.lista == 0 then
+			d.titulo, d.tono = L["Sin ventas ni compras esta semana"], "neutro"
+			d.texto = L["Lo que vendes y compras en la subasta se anota al tomar sus cartas del buzón."]
+			d.estado = { texto = L["Vacía"], tono = "neutro" }
+		else
+			local neto = s.neto
+			d.titulo = format(neto >= 0 and L["Te quedaron %s esta semana"] or L["Gastaste %s más de lo que vendiste"], M.Dinero(math.abs(neto)))
+			d.tono = neto >= 0 and "exito" or "aviso"
+			d.texto = format(L["Vendiste %s (%s) y compraste %s (%s)."],
+				N.Plural(s.ventas, L["%d cosa"], L["%d cosas"]):format(s.ventas), M.Dinero(s.vendido),
+				N.Plural(s.compras, L["%d cosa"], L["%d cosas"]):format(s.compras), M.Dinero(s.comprado))
+			d.estado = { texto = L["7 días"], tono = "neutro" }
+		end
+		self.Seccion:Set(L["Tu semana en la subasta"], { cuenta = #s.lista > 0 and #s.lista or nil })
+		self.Tarjeta:Set(d)
+		local filas = {}
+		for i = 1, min(#s.lista, MAX_SEMANA) do
+			local m = s.lista[i]
+			local vendio = m.k == "v"
+			filas[i] = {
+				id = m.id, cantidad = m.q, nombre = m.n or L["Objeto"],
+				detalle = (vendio and L["Vendiste"] or L["Compraste"]) .. DOT .. M.Hace(m.t),
+				chip = vendio and L["Venta"] or L["Compra"], tono = vendio and "exito" or "neutro",
+				valor = (vendio and "+" or "-") .. M.Dinero(m.c or 0),
+			}
+		end
+		self.Panel:Llenar(filas)
+		K.Mostrar(self.Panel, #filas > 0)
+		K.Mostrar(self, M.Ajuste("semana") ~= false)
+	end
+	return b
+end
+
+---------------------------------------------------------------------------
 -- 1.2.9: Oficios de 1 a 300
 ---------------------------------------------------------------------------
 
@@ -783,8 +830,14 @@ local function grupos(padre)
 		texto = L["Cuando buscas algo en la subasta, Alfa guarda el precio más bajo que ves."] })
 	juego:Fila({ titulo = L["Gangas en la subasta"], control = function(f) return K.Interruptor(f, { clave = ruta("gangas") }) end,
 		texto = L["Te señala lo que cuesta menos de lo que suele valer o lo que deja ganancia al desencantarlo. La compra siempre es tuya."] })
+	juego:Fila({ titulo = L["Avisar si lo de tu lista sale barato"], control = function(f) return K.Interruptor(f, { clave = ruta("buscadosAviso") }) end,
+		texto = L["Con la subasta abierta, un aviso cuando un material que te falta de tu lista cuesta por lo menos un 15 % menos de lo que suele valer."] })
 	juego:Fila({ titulo = L["Avisar de cartas que vencen"], control = function(f) return K.Interruptor(f, { clave = ruta("buzonVence") }) end,
 		texto = L["Al abrir el buzón, un aviso si una carta con objetos vence en menos de 3 días."] })
+	juego:Fila({ titulo = L["Avisar si vendes algo valioso"], control = function(f) return K.Interruptor(f, { clave = ruta("recompra") }) end,
+		texto = L["Si le vendes al comerciante algo azul o mejor, un aviso con «Recomprar» por si fue sin querer."] })
+	juego:Fila({ titulo = L["Alt+clic compra una pila"], control = function(f) return K.Interruptor(f, { clave = ruta("pila") }) end,
+		texto = L["En el comerciante, Alt+clic sobre algo compra una pila entera (lo que te alcance y lo que tenga)."] })
 	juego:Fila({ titulo = L["Mandar a tu alt desde el buzón"], control = function(f) return K.Interruptor(f, { clave = ruta("buzonAlt") }) end,
 		texto = L["En la pestaña de enviar, un botón por cada lista: pone el nombre y adjunta lo de esa lista. El clic en «Enviar» es tuyo. Las listas: /alfa comercio alt."] })
 	juego:Fila({ titulo = L["Ayuda al subastar"], control = function(f) return K.Interruptor(f, { clave = ruta("vender") }) end,
@@ -805,6 +858,10 @@ local function grupos(padre)
 		texto = L["Lo que ya tienen en sus bolsas y su banco no sale como «falta», y cada material dice quién lo tiene."] })
 	compras:Fila({ titulo = L["Oficios de 1 a 300 en esta página"], control = function(f) return K.Interruptor(f, { clave = ruta("oficios") }) end,
 		texto = L["Tus oficios con su paso de ahora y la guía de cada uno. La guía también se abre con /alfa comercio oficios."] })
+	compras:Fila({ titulo = L["Avisar cuando una receta pasa a verde"], control = function(f) return K.Interruptor(f, { clave = ruta("avisoVerde") }) end,
+		texto = L["Mientras subes un oficio, un aviso cuando la receta que haces ya solo da puntos a veces, y cuál sigue."] })
+	compras:Fila({ titulo = L["Tu semana en la subasta"], control = function(f) return K.Interruptor(f, { clave = ruta("semana") }) end,
+		texto = L["Lo que vendiste y compraste estos 7 días, en esta página. Se anota al tomar las cartas de la subasta del buzón. También: /alfa comercio semana."] })
 	-- 1.3.0 (Fabricar.lua)
 	compras:Fila({ titulo = L["Qué fabricar con lo que tienes"], control = function(f) return K.Interruptor(f, { clave = ruta("fabricar") }) end,
 		texto = L["En tus recetas que dejan ganancia, primero las que ya puedes hacer con lo que llevas, y cuánto ganarías haciéndolas todas."] })
@@ -859,6 +916,7 @@ local function construir(view)
 	ui.compras = t:AgregarBloque(bloqueCompras(t.Extra))
 	ui.recetas = t:AgregarBloque(bloqueRecetas(t.Extra))
 	ui.oficios = t:AgregarBloque(bloqueOficios(t.Extra))
+	ui.semana = t:AgregarBloque(bloqueSemana(t.Extra))
 	ui.como = t:AgregarBloque(bloqueComo(t.Extra))
 	ui.ajustes = grupos(t.Extra)
 	for i, g in ipairs(ui.ajustes) do t:AgregarBloque(g, { espacio = i == 1 and ESP.xl or ESP.l }) end
@@ -871,6 +929,7 @@ local function construir(view)
 		ui.compras:Llenar()
 		ui.recetas:Llenar()
 		ui.oficios:Llenar()
+		ui.semana:Llenar()
 		ui.como:Llenar()
 		for _, g in ipairs(ui.ajustes) do g:Refrescar() end
 	end)
@@ -905,8 +964,24 @@ local CONTROLES = {
 	{ kind = "toggle", key = ruta("gangas"), label = L["Gangas en la subasta"],
 		help = L["Te señala lo que cuesta menos de lo que suele valer o lo que deja ganancia al desencantarlo. La compra siempre es tuya."],
 		search = "auction deals, bargains, cheap, flip, disenchant profit" },
+	{ kind = "toggle", key = ruta("buscadosAviso"), label = L["Avisar si lo de tu lista sale barato"],
+		help = L["Con la subasta abierta, un aviso cuando un material que te falta de tu lista cuesta por lo menos un 15 % menos de lo que suele valer."],
+		search = "shopping list, cheap, auction, deal, lista barata" },
+	{ kind = "toggle", key = ruta("avisoVerde"), label = L["Avisar cuando una receta pasa a verde"],
+		help = L["Mientras subes un oficio, un aviso cuando la receta que haces ya solo da puntos a veces, y cuál sigue."],
+		search = "recipe green, skill up, profession, receta verde" },
+	{ kind = "toggle", key = ruta("semana"), label = L["Tu semana en la subasta"],
+		help = L["Lo que vendiste y compraste estos 7 días, en esta página. Se anota al tomar las cartas de la subasta del buzón. También: /alfa comercio semana."],
+		search = "auction history, sales, purchases, week, ventas, compras" },
 	{ kind = "toggle", key = ruta("buzonVence"), label = L["Avisar de cartas que vencen"],
 		help = L["Al abrir el buzón, un aviso si una carta con objetos vence en menos de 3 días."], search = "mail expires, expiring mail" },
+	-- 1.4.0 (diario)
+	{ kind = "toggle", key = ruta("recompra"), label = L["Avisar si vendes algo valioso"],
+		help = L["Si le vendes al comerciante algo azul o mejor, un aviso con «Recomprar» por si fue sin querer."],
+		search = "buyback, sold by mistake, recomprar, vendí sin querer" },
+	{ kind = "toggle", key = ruta("pila"), label = L["Alt+clic compra una pila"],
+		help = L["En el comerciante, Alt+clic sobre algo compra una pila entera (lo que te alcance y lo que tenga)."],
+		search = "buy stack, alt click, merchant, comprar pila, comerciante" },
 	{ kind = "toggle", key = ruta("buzonAlt"), label = L["Mandar a tu alt desde el buzón"],
 		help = L["En la pestaña de enviar, un botón por cada lista: pone el nombre y adjunta lo de esa lista. El clic en «Enviar» es tuyo. Las listas: /alfa comercio alt."],
 		search = "mail alt, send to alt, mail lists, herbs to alchemist" },
@@ -957,6 +1032,11 @@ N.Modulo({
 		buzonAlt = true, -- 1.3.7: Envios.lua
 		listaCuenta = true, -- 1.3.8: ListaCuenta.lua
 		tooltipDetalle = false, -- 1.3.9: el consejo del cuadro en dos líneas (de fábrica, una; con Mayús, dos)
+		buscadosAviso = true, -- 1.4.0: lo de tu lista, barato en la subasta (Buscados.lua)
+		avisoVerde = true, -- 1.4.0: la receta que pasa a verde (RecetasVerde.lua)
+		semana = true, -- 1.4.0: tu semana en la subasta en esta página (Semana.lua)
+		recompra = true, -- 1.4.0 (diario): lo valioso que vendiste sin querer (Recompra.lua)
+		pila = true, -- 1.4.0 (diario): Alt+clic en el comerciante compra una pila (Pila.lua)
 	},
 	controles = CONTROLES,
 	construir = construir,
@@ -982,6 +1062,11 @@ local function comando(resto)
 	end
 	if verbo == "gangas" or verbo == "deals" then
 		M.ImprimirGangas()
+		return
+	end
+	-- 1.4.0: tu semana en la subasta (Semana.lua).
+	if verbo == "semana" or verbo == "week" then
+		M.ImprimirSemana()
 		return
 	end
 	if verbo == "precio" or verbo == "price" then

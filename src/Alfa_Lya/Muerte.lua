@@ -126,13 +126,30 @@ function Mu.Consejo()
 	return { motor = false, choice = choice, cuerpoYd = c.yd, cuerpoSeg = seg, sickness = s, mapa = c.mapa, x = c.x, y = c.y }
 end
 
+-- 1.4.0 (45): la flecha dice «Vuelve a tu cuerpo» y, debajo, cuánto tardas
+-- corriendo (la flecha lo calcula sola); al revivir se quita si sigue ahí.
+local flechaCuerpo -- el destino que puso Lya
 function Mu.Flecha(c)
 	c = c or Mu.Consejo()
 	local Nav = A.Nav
 	if not (type(c) == "table" and c.mapa and c.x and c.y and type(Nav) == "table" and type(Nav.SetTarget) == "function") then return false end
-	local t = Nav.SetTarget(c.mapa, c.x, c.y, L["Tu cuerpo"])
-	if t and type(Nav.StartTrip) == "function" then pcall(Nav.StartTrip, t, L["Tu cuerpo"], L["Lya"], "arrive") end
+	local nombre = L["Vuelve a tu cuerpo"]
+	if c.cuerpoSeg and c.cuerpoSeg > 0 then nombre = format(L["Vuelve a tu cuerpo (%s corriendo)"], tiempo(c.cuerpoSeg)) end
+	local t = Nav.SetTarget(c.mapa, c.x, c.y, nombre)
+	if t and type(Nav.StartTrip) == "function" then pcall(Nav.StartTrip, t, L["Vuelve a tu cuerpo"], L["Lya"], "arrive") end
+	flechaCuerpo = t or nil
 	return t and true or false
+end
+
+-- Al revivir, la flecha al cuerpo ya no sirve.
+function Mu.QuitarFlecha()
+	local Nav = A.Nav
+	if not (flechaCuerpo and type(Nav) == "table" and type(Nav.GetTarget) == "function") then flechaCuerpo = nil return false end
+	local ok, t = pcall(Nav.GetTarget)
+	local quitada = false
+	if ok and t == flechaCuerpo and type(Nav.ClearTarget) == "function" then quitada = pcall(Nav.ClearTarget) end
+	flechaCuerpo = nil
+	return quitada
 end
 
 local function texto(c)
@@ -166,7 +183,7 @@ function Mu.Aconsejar()
 	-- Sin el motor, Lya pone la flecha ella misma (si conviene el cuerpo).
 	if not c.motor and c.mapa then
 		if c.choice == "corpse" then Mu.Flecha(c) end
-		acciones = { { texto = L["Llévame a mi cuerpo"], fn = function() Mu.Flecha(c) end } }
+		acciones = { { texto = L["Vuelve a tu cuerpo"], fn = function() Mu.Flecha(c) end } }
 	end
 	local Ce = M.Cerebro
 	local ok = Ce and Ce.Decir({ texto = texto(c), importante = true, cara = "atenta", segundos = 16, lineas = 5, ancho = 360,
@@ -193,4 +210,4 @@ A.RegisterEvent("PLAYER_ALIVE", function()
 	A.After(2, function() intentar(mio, 1) end)
 end)
 A.RegisterEvent("PLAYER_DEAD", function() dicho = false end)
-A.RegisterEvent("PLAYER_UNGHOST", function() dicho = false turno = turno + 1 end)
+A.RegisterEvent("PLAYER_UNGHOST", function() dicho = false turno = turno + 1 Mu.QuitarFlecha() end)

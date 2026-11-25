@@ -43,8 +43,10 @@ local floor, random = math.floor, math.random
 local Ch = {}
 M.Charla = Ch
 
-local RONDA = { "lugar", "lore", "tuyo", "consejo", "momento", "lore", "tuyo", "salchichas" }
-local DATOS = { lugar = true, lore = true, tuyo = true } -- lo que respeta lya.historias
+-- 1.4.0 (12, Lya 2.0): «mision», el lore del tema de tus misiones (LoreMisiones.lua), y
+-- «recuerdo», «¿Te acuerdas de cuando…?» (Recuerdos.lua).
+local RONDA = { "lugar", "lore", "tuyo", "consejo", "momento", "mision", "lore", "tuyo", "recuerdo", "salchichas" }
+local DATOS = { lugar = true, lore = true, tuyo = true, mision = true } -- lo que respeta lya.historias
 
 local function reloj() return (GetServerTime and GetServerTime()) or (time and time()) or 0 end
 local function secreto(v) return issecretvalue and issecretvalue(v) or false end
@@ -300,7 +302,20 @@ local function salchichas(opts)
 	return false, por
 end
 
-local HACER = { lugar = lugar, lore = lore, tuyo = tuyo, consejo = consejo, momento = momento, salchichas = salchichas }
+local function mision(opts)
+	local Lm = M.LoreMisiones
+	if not (Lm and Lm.Algo) then return false end
+	return Lm.Algo(opts)
+end
+
+local function recuerdo(opts)
+	local Re = M.Recuerdos
+	if not (Re and Re.Algo) then return false end
+	return Re.Algo(opts)
+end
+
+local HACER = { lugar = lugar, lore = lore, tuyo = tuyo, consejo = consejo, momento = momento, salchichas = salchichas,
+	mision = mision, recuerdo = recuerdo }
 
 local function hacer(cat, pedido)
 	local fn = HACER[cat]

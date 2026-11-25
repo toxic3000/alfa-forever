@@ -147,6 +147,36 @@ function Li.AgregarOficio(linea, meta)
 	return true
 end
 
+-- 1.4.0 (plan 31): «Comprar lo que falta» de un tramo de una guía de oficio
+-- de Alfa (Alfa_Rutas/OficiosComprar.lua). lista = { { id, n }, ... }: lo que
+-- pide el tramo de cada material (lo que ya tienes se descuenta solo).
+-- Reemplaza la meta de ese oficio. -> true | false
+function Li.AgregarCompras(linea, lista, hasta)
+	linea = tonumber(linea)
+	if not linea or type(lista) ~= "table" then return false end
+	local r = {}
+	for _, x in ipairs(lista) do
+		local id, n = tonumber(x.id or x[1]), tonumber(x.n or x[2])
+		if id and n and n > 0 then
+			r[#r + 1] = id
+			r[#r + 1] = ceil(n)
+		end
+	end
+	if #r == 0 then return false end
+	local l = datos()
+	for i, m in ipairs(l.metas) do
+		if m.oficio == linea then table.remove(l.metas, i) break end
+	end
+	if #l.metas >= MAX_METAS then
+		N.Imprimir(L["Tu lista ya tiene 20 metas: termina o quita alguna primero."])
+		return false
+	end
+	l.metas[#l.metas + 1] = { oficio = linea, n = 1, r = r, q = 1, total = true, hasta = tonumber(hasta), guia = true, t = M.Ahora() }
+	foto(l)
+	cambio()
+	return true
+end
+
 function Li.Quitar(i)
 	local l = datos()
 	if not l.metas[i] then return false end
@@ -414,6 +444,7 @@ A.OnLogin(function() foto() end)
 AlfaComercio = type(AlfaComercio) == "table" and AlfaComercio or {}
 AlfaComercio.Lista = {
 	Agregar = Li.Agregar, AgregarOficio = Li.AgregarOficio, Quitar = Li.Quitar, Vaciar = Li.Vaciar,
+	AgregarCompras = function(...) return Li.AgregarCompras(...) end, -- 1.4.0
 	Metas = Li.Metas, Materiales = Li.Materiales, Completa = Li.Completa,
 }
 

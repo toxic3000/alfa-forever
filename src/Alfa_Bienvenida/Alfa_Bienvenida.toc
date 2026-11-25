@@ -23,10 +23,12 @@ Recorrido.lua
 Teclas.lua
 Acomodar.lua
 Escritorio.lua
+EscritorioFondo.lua
 EscritorioPaneles.lua
 EscritorioEditor.lua
 EscritorioAsistente.lua
 EscritorioAuto.lua
+EscritorioReparar.lua
 EscritorioPagina.lua
 Ventana.lua
 Zen.lua

@@ -42,7 +42,19 @@ local botones = {}
 
 local function Cj() return M.Conjuntos end
 local function enCombate() return M.EnCombate() end
-local function encendido() return M.Get("conjuntos") ~= false and M.Get("barraConjuntos") ~= false end
+-- 1.4.0: el panel ya no sale solo con tu ventana: solo si lo prendes
+-- (bolsas.barraConjuntos, apagado de fábrica). Tus conjuntos se cambian desde
+-- el botón de conjuntos de las bolsas de Alfa.
+local function encendido() return M.Get("conjuntos") ~= false and M.Get("barraConjuntos") == true end
+
+-- Migración 5 (1.4.0): el panel salía encima de las pestañas de la derecha de
+-- la ventana de tu personaje (Toxic lo reportó dos veces): se apaga a quien lo
+-- tenía prendido; quien lo quiera lo vuelve a prender en Bolsas.
+function Cb.Migracion140(db)
+	local s = type(db) == "table" and type(db.settings) == "table" and db.settings[M.ID]
+	if type(s) == "table" and s.barraConjuntos ~= nil then s.barraConjuntos = nil end
+end
+if N.Migracion then N.Migracion(5, Cb.Migracion140) end
 
 local function datos() return N.DatosPersonaje(M.ID) end
 function Cb.AlSalir()
@@ -156,6 +168,36 @@ local function margenes(ancla)
 end
 Cb.Margenes = margenes
 
+-- 1.4.0 (bug, reportado dos veces): Forever pone una columna de pestañas a la
+-- derecha de la ventana de tu personaje (personaje, reputación, habilidades...)
+-- y el panel salía encima de ellas. -> lo más a la derecha que se ve de esa
+-- ventana: sus hijos y nietos visibles (pestañas incluidas) y las pestañas con
+-- nombre del juego (CharacterFrameTab1.., PaperDollSidebarTab1..).
+local function bordeDerecho(ancla, desde)
+	local maxR = desde
+	local function mirar(f)
+		if type(f) ~= "table" or f == barra or not (f.IsVisible and f:IsVisible()) then return end
+		local ok, r = pcall(f.GetRight, f)
+		r = ok and tonumber(r)
+		if r and r > maxR and r < desde + 400 then maxR = r end
+	end
+	local function hijos(f, prof)
+		if prof > 2 or type(f) ~= "table" or not f.GetChildren then return end
+		local ok, t = pcall(function() return { f:GetChildren() } end)
+		if not ok then return end
+		for _, c in ipairs(t) do
+			mirar(c)
+			hijos(c, prof + 1)
+		end
+	end
+	hijos(ancla, 1)
+	for _, base in ipairs({ "CharacterFrameTab", "PaperDollSidebarTab" }) do
+		for i = 1, 12 do mirar(rawget(_G, base .. i)) end
+	end
+	return maxR
+end
+Cb.BordeDerecho = bordeDerecho
+
 -- Rehace los botones y sus macros, y muestra u oculta la barra. Solo fuera de combate.
 function Cb.Sitio(ancla)
 	if not barra or enCombate() or type(ancla) ~= "table" then return false end
@@ -164,10 +206,36 @@ function Cb.Sitio(ancla)
 	barra:SetScale(s / us)
 	local x, y = ancla.GetRight and ancla:GetRight(), ancla.GetTop and ancla:GetTop()
 	barra:ClearAllPoints()
+	-- 1.4.0: donde lo dejaste con «Acomodar la pantalla» (K.Movible).
+	local pos = datos().pos
+	if type(pos) == "table" and type(pos[1]) == "string" and tonumber(pos[2]) and tonumber(pos[3]) then
+		local k = max(0.01, s / us)
+		local raiz = K.Raiz and K.Raiz() or UIParent
+		barra:SetPoint(pos[1], raiz, pos[1], pos[2] / k, pos[3] / k)
+		if K.MovibleAdentro then K.MovibleAdentro("bolsas.conjuntos") end
+		return true
+	end
 	if type(x) == "number" and type(y) == "number" then
 		-- 1.3.9: afuera de lo que se ve de la ventana, con aire, alineada con su borde de arriba.
+		-- 1.4.0: y después de las pestañas de la derecha (nunca encima).
 		local der, arriba = margenes(ancla)
-		barra:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", x - der + AIRE, y - arriba - 12)
+		local borde = bordeDerecho(ancla, x - der)
+		-- (en las medidas de la ventana: la barra lleva su misma escala)
+		local pw = K.num(barra:GetWidth(), ANCHO)
+		local sw = K.num(UIParent:GetWidth(), 1920) * us / max(0.01, s)
+		if borde + AIRE + pw <= sw then
+			barra:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", borde + AIRE, y - arriba - 12)
+		else
+			-- Sin lugar a la derecha: debajo de la ventana, por fuera.
+			local b = K.num(ancla.GetBottom and ancla:GetBottom(), 0)
+			local l = K.num(ancla.GetLeft and ancla:GetLeft(), 0)
+			local abajo = 0
+			if type(ancla.GetHitRectInsets) == "function" then
+				local ok, _, _, _, ab = pcall(ancla.GetHitRectInsets, ancla)
+				if ok then abajo = max(0, K.num(ab, 0)) end
+			end
+			barra:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", l + 16, b + abajo - AIRE)
+		end
 	else
 		barra:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 400, -120)
 	end
@@ -186,6 +254,9 @@ function Cb.Armar()
 		barra = CreateFrame("Frame", "AlfaBolsasCambio", UIParent)
 		barra:SetSize(ANCHO + 2 * PAD, ALTO + CAB + 2 * PAD)
 		barra:SetFrameStrata("MEDIUM")
+		-- 1.4.0: donde la dejaste, pero nunca fuera de la pantalla (otra
+		-- resolución, otra escala o Dos pantallas).
+		barra:SetClampedToScreen(true)
 		barra:Hide()
 		-- 1.3.9: un panel con su encabezado, para que se vea de Alfa y a propósito.
 		barra.caja = K.Caja(barra, { fondo = "fondo", borde = "linea", corte = K.CORTE.panel })
@@ -197,6 +268,16 @@ function Cb.Armar()
 		barra.Titulo:SetJustifyH("LEFT")
 		K.Escribir(barra.Titulo, L["Tus conjuntos"])
 		K.Ajustar(barra.Titulo, ANCHO - 16)
+		-- 1.4.0: se acomoda arrastrando como todo lo de Alfa (por personaje).
+		if K.Movible then
+			K.Movible(barra, "bolsas.conjuntos", { nombre = L["Tus conjuntos"], porPersonaje = true, orden = 60,
+				guardar = function(_, pos) datos().pos = type(pos) == "table" and pos or nil end,
+				volver = function()
+					datos().pos = nil
+					local f = anclaPersonaje()
+					if type(f) == "table" then Cb.Sitio(f) end
+				end })
+		end
 	end
 	local n = 0
 	for i, c in ipairs(lista) do

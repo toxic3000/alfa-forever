@@ -261,6 +261,8 @@ step("Acomodar: mover a Lya con el ratón y regresarla con clic derecho", functi
   if Ly and Ly.UI and Ly.UI.Aplicar then Ly.UI.Aplicar() end
   local lya = rawget(_G, "AlfaLyaLoba")
   check(lya and lya:IsVisible(), "Lya no está a la vista para la prueba")
+  -- 1.4.0: sin el imán a la rejilla (Kit/Movible.lua), para leer el lugar exacto.
+  A.Set("acomodar.iman", false)
   local bloqueo = A.DragLocked
   check(Ac.Abrir(), "no se abrió")
   check(Ac.Activo(), "no quedó activo")

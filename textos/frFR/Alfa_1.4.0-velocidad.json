@@ -1,0 +1,12 @@
+{
+ "%s: texto cortado «%s»": "%s : texte coupé « %s »",
+ "%s: la ventana %s se sale de la pantalla": "%s : la fenêtre %s sort de l'écran",
+ "Revisar: paré porque empezó un combate. Nada cambió; vuelve a probar al terminar.": "Vérifier : je me suis arrêté car un combat a commencé. Rien n'a changé ; réessaie après.",
+ "Revisar: %d páginas revisadas, todo bien.": "Vérifier : %d pages vérifiées, tout va bien.",
+ "Revisar: %d páginas revisadas, %d cosas por arreglar:": "Vérifier : %d pages vérifiées, %d choses à corriger :",
+ "  … y %d más.": "  … et %d de plus.",
+ "%s: error de Lua (%s)": "%s : erreur Lua (%s)",
+ "Revisar espera a que termine el combate.": "Vérifier attend la fin du combat.",
+ "Revisar: voy a abrir %d páginas de Alfa, una por una. No juegues mientras tanto.": "Vérifier : je vais ouvrir %d pages d'Alfa, une par une. Ne joue pas pendant ce temps.",
+ "abre cada página de Alfa y te dice solo lo que falla (errores, textos cortados, ventanas fuera de la pantalla)": "ouvre chaque page d'Alfa et te dit seulement ce qui ne va pas (erreurs, textes coupés, fenêtres hors de l'écran)"
+}

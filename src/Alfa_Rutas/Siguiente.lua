@@ -57,7 +57,7 @@ function Sg.Buscar(sinId)
 	local Gd, E = A.Guides, A.Engine
 	local ok, lista = pcall(Gd.Suggestions)
 	if not ok or type(lista) ~= "table" then return nil end
-	local nivel = UnitLevel and tonumber(UnitLevel("player")) or 1
+	local nivel = UnitLevel and AlfaNucleo.LeerNumero(UnitLevel("player"), 1) -- 1.4.0: en mazmorras puede venir secreto
 	for _, id in ipairs(lista) do
 		if id ~= sinId and not (M.Guias and M.Guias.Especial and M.Guias.Especial(id)) then
 			local estado = E and E.GetGuideState and select(2, pcall(E.GetGuideState, id))

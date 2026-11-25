@@ -15,7 +15,12 @@
 --
 -- Mensajes (Red.lua, solo por susurro, con tu facción):
 --   1h|?                                          ¿me enseñas tu ficha?
---   1h|f|<nivel>|<CLASE>|<l>:<r>:<m>,...|<id>,... mi ficha (línea, habilidad, máximo; objetos)
+--   1h|f|<nivel>|<CLASE>|<l>:<r>:<m>,...|<id>,...|<guía>|<paso>
+--                                                 mi ficha (línea, habilidad, máximo; objetos;
+--                                                 1.4.0: la guía que sigo y su paso, 54)
+-- (1.4.0) Un Alfa 1.3.x no manda los dos últimos: la ficha dice que su Alfa no
+-- cuenta su guía. Con la tuya en la mano, «Seguir la misma» (Compartir.lua).
+-- Y «Silenciar sus avisos» (Callados.lua, 56).
 -- Un pedido por persona cada PEDIR s; una respuesta por persona cada RESPONDER s.
 --
 --   Fi.Pedir(f) -> ok   Fi.De(clave) -> ficha | nil   Fi.Mia() -> lo que contestarías
@@ -37,6 +42,7 @@ local PEDIR = 20      -- segundos entre dos pedidos a la misma persona
 local RESPONDER = 30  -- segundos entre dos respuestas a la misma persona
 local ESPERA = 8      -- segundos esperando su respuesta
 local OBJETOS = 12    -- objetos que fabricas, como mucho
+local LARGO = 230     -- (1.4.0) lo más que mide la ficha (la Red le suma su versión y la facción)
 local OFICIOS = { [164] = true, [165] = true, [171] = true, [182] = true, [185] = true, [186] = true, [197] = true,
 	[202] = true, [333] = true, [356] = true, [393] = true, [129] = true }
 local NOMBRES = { [164] = "Herrería", [165] = "Peletería", [171] = "Alquimia", [182] = "Herboristería", [185] = "Cocina",
@@ -99,14 +105,45 @@ function Fi.Mia()
 	local _, clase = nil, nil
 	if UnitClass then _, clase = UnitClass("player") end
 	clase = type(U.Leer(clase)) == "string" and clase or ""
-	return { nivel = num(UnitLevel and UnitLevel("player")) or 0, clase = clase, oficios = misOficios(), objetos = misObjetos() }
+	-- 1.4.0 (54): la guía que sigues y su paso (si sigues una).
+	local guia, paso
+	local R = rawget(_G, "AlfaRuta")
+	if type(R) == "table" and type(R.GuiaActual) == "function" then
+		local ok, g = pcall(R.GuiaActual)
+		if ok and type(g) == "table" and type(g.id) == "string" then
+			guia = g.id:gsub("[|%c]", "")
+			if guia == "" or #guia > 120 then guia = nil end
+		end
+	end
+	if guia then
+		local E = A.Engine
+		local ok, n = pcall(function() return E and E.GetStepIndex and E.GetStepIndex() end)
+		paso = ok and num(n) or nil
+	end
+	return { nivel = num(UnitLevel and UnitLevel("player")) or 0, clase = clase, oficios = misOficios(), objetos = misObjetos(),
+		guia = guia, paso = paso }
 end
 
 local function armar(m)
 	local of, ob = {}, {}
 	for _, o in ipairs(m.oficios) do of[#of + 1] = format("%d:%d:%d", o.linea, o.r, o.m) end
-	for _, o in ipairs(m.objetos) do ob[#ob + 1] = tostring(o.id) end
-	return format("%sh|f|%d|%s|%s|%s", V, m.nivel, m.clase, concat(of, ","), concat(ob, ","))
+	for _, o in ipairs(m.objetos or {}) do ob[#ob + 1] = tostring(o.id) end
+	local function texto(n, conGuia)
+		local t = format("%sh|f|%d|%s|%s|%s", V, m.nivel, m.clase, concat(of, ","), concat(ob, ",", 1, n))
+		if conGuia and m.guia then t = t .. "|" .. m.guia .. "|" .. tostring(m.paso or 0) end
+		return t
+	end
+	-- (1.4.0) Que quepa en un mensaje: primero se quitan objetos; si aun así no
+	-- cabe, sale sin la guía.
+	for n = #ob, 0, -1 do
+		local t = texto(n, true)
+		if #t <= LARGO then return t end
+	end
+	for n = #ob, 0, -1 do
+		local t = texto(n, false)
+		if #t <= LARGO then return t end
+	end
+	return texto(0, false)
 end
 Fi.Armar = armar
 
@@ -166,6 +203,12 @@ local function leerFicha(f)
 			if C_Item and C_Item.RequestLoadItemDataByID then pcall(C_Item.RequestLoadItemDataByID, id) end
 		end
 	end
+	-- 1.4.0 (54): la guía que sigue (un Alfa 1.3.x no la manda: nil).
+	local g = f[6]
+	if type(g) == "string" and g ~= "" and #g <= 120 and not g:find("%c") then
+		out.guia = g
+		out.paso = f[7] and f[7]:match("^%d+$") and tonumber(f[7]) or nil
+	end
 	return out
 end
 
@@ -223,7 +266,11 @@ function Fi.Texto(f)
 	if nivel then partes[#partes + 1] = format(L["Nivel %d"], nivel) end
 	if clase and clase ~= "" then partes[#partes + 1] = U.NombreClase(clase) end
 	if f.map then partes[#partes + 1] = U.NombreMapa(f.map) end
+	-- 1.4.0: qué Alfa usa (si se sabe por su saludo).
+	local ver = M.Red.VersionDe and M.Red.VersionDe(f.clave)
+	if ver and ver.version then partes[#partes + 1] = format(L["Alfa %s"], ver.version) end
 	local t = { cabeza = concat(partes, "  \194\183  ") }
+	t.guia, t.guiaId = Fi.TextoGuia(f, x)
 	if x then
 		local of = {}
 		for _, o in ipairs(x.oficios) do of[#of + 1] = format(L["%s: %d de %d"], nombreOficio(o.linea), o.r, o.m) end
@@ -254,6 +301,30 @@ function Fi.Texto(f)
 	return t
 end
 
+-- 1.4.0 (54): la guía que sigue, en palabras. -> texto | nil, id de la guía
+-- (solo si tú también la tienes: con ella, «Seguir la misma»).
+function Fi.TextoGuia(f, x)
+	x = x or (f and fichas[f.clave])
+	if not x then return nil end
+	if not x.guia then
+		local nuevo = M.Red.EsNuevo and M.Red.EsNuevo(f.clave)
+		if nuevo == false then return L["Su Alfa es de antes de la 1.4: no cuenta qué guía sigue."] end
+		return L["Ahora no sigue ninguna guía."]
+	end
+	local R = rawget(_G, "AlfaRuta")
+	local nombre = type(R) == "table" and type(R.NombreGuia) == "function" and R.NombreGuia(x.guia) or nil
+	if type(nombre) ~= "string" or nombre == "" then return L["Sigue una guía que tu Alfa no tiene (quizá es de la otra facción)."] end
+	if x.paso and x.paso > 0 then return format(L["Sigue «%s», en el paso %d."], nombre, x.paso), x.guia end
+	return format(L["Sigue «%s»."], nombre), x.guia
+end
+
+-- «Seguir la misma»: la guía de ese lobo, en tu Alfa.
+function Fi.SeguirSuGuia(f)
+	local _, id = Fi.TextoGuia(f)
+	if not (id and M.Compartir and M.Compartir.AceptarGuia) then return false end
+	return M.Compartir.AceptarGuia(id, f.nombre)
+end
+
 ---------------------------------------------------------------------------
 -- La ventana
 ---------------------------------------------------------------------------
@@ -266,11 +337,17 @@ local function armarVentana()
 	v.Cabeza = K.Texto(c, "nota", "textoSuave")
 	v.Estado = K.Texto(c, "nota", "textoTenue")
 	v.bloques = {}
-	for _, k in ipairs({ "oficios", "objetos", "lleva" }) do
+	for _, k in ipairs({ "guia", "oficios", "objetos", "lleva" }) do
 		local b = { Titulo = K.Texto(c, "subtitulo", "texto"), Texto = K.Texto(c, "texto", "textoSuave") }
 		b.Texto:SetWordWrap(true)
 		v.bloques[k] = b
 	end
+	K.Escribir(v.bloques.guia.Titulo, L["Su guía"])
+	-- 1.4.0 (54, 56): seguir su misma guía y silenciar sus avisos.
+	v.Misma = K.Boton(c, L["Seguir la misma"], function() if abierta then Fi.SeguirSuGuia(abierta) end end, { tipo = "secundario", tam = "chico", icono = "ic-flecha" })
+	v.Callar = K.Boton(c, L["Silenciar sus avisos"], function()
+		if abierta and M.Callados then M.Callados.Alternar(abierta.envio or abierta.nombre or abierta.clave) Fi.Pintar() end
+	end, { tipo = "secundario", tam = "chico", icono = "ic-filtro" })
 	K.Escribir(v.bloques.oficios.Titulo, L["Sus oficios"])
 	K.Escribir(v.bloques.objetos.Titulo, L["Puede fabricarte"])
 	K.Escribir(v.bloques.lleva.Titulo, L["Lleva"])
@@ -303,12 +380,19 @@ function Fi.Pintar()
 	end
 	poner(v.Cabeza, t.cabeza, 2)
 	poner(v.Estado, t.estado, 3)
-	for _, k in ipairs({ "oficios", "objetos", "lleva" }) do
+	v.Misma:Hide()
+	for _, k in ipairs({ "guia", "oficios", "objetos", "lleva" }) do
 		local b = v.bloques[k]
 		if t[k] then
 			y = y + K.ESP.s
 			poner(b.Titulo, b.Titulo:GetText(), 1)
 			poner(b.Texto, t[k], 12)
+			if k == "guia" and t.guiaId then
+				v.Misma:ClearAllPoints()
+				v.Misma:SetPoint("TOPLEFT", v.Cuerpo, "TOPLEFT", m, -y)
+				v.Misma:Show()
+				y = y + K.ALTO.botonChico + K.ESP.s
+			end
 		else
 			b.Titulo:Hide()
 			b.Texto:Hide()
@@ -333,6 +417,16 @@ function Fi.Pintar()
 			v.Guia:SetPoint("TOPLEFT", v.Compartir, "BOTTOMLEFT", 0, -K.ESP.s)
 			y = y + K.ALTO.botonChico + K.ESP.s
 		end
+		y = y + K.ALTO.botonChico + K.ESP.m
+	end
+	-- 1.4.0 (56): silenciar (o volver a oír) sus avisos.
+	local Ca = M.Callados
+	v.Callar:SetShown(Ca ~= nil)
+	if Ca then
+		local callado = Ca.Esta(f.clave)
+		v.Callar:SetTexto(callado and L["Volver a oír sus avisos"] or L["Silenciar sus avisos"])
+		v.Callar:ClearAllPoints()
+		v.Callar:SetPoint("TOPLEFT", v.Cuerpo, "TOPLEFT", m, -y)
 		y = y + K.ALTO.botonChico + K.ESP.m
 	end
 	v:SetAltoContenido(y)

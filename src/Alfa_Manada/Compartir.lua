@@ -188,6 +188,7 @@ function Co.Plan(f)
 		end
 	end
 	U.Decir(format(L["Le compartiste tu plan «%s» a %s."], pl.nombre or "?", f.nombre or "?"))
+	if M.Logros and M.Logros.Ayudar then M.Logros.Ayudar("plan:" .. clave) end -- 1.4.0 (55)
 	if puestas < total then
 		U.Decir(format(L["Tu plan es largo: se compartieron %d de %d metas."], puestas, total))
 	end
@@ -205,6 +206,7 @@ function Co.Guia(f)
 	local id = tostring(g.id):gsub("|", "")
 	if not M.Red.EnviarLibre("rg:" .. clave, format("%sr|g|%s|%d", V, id, paso), destino) then decir("red") return false, "red" end
 	U.Decir(format(L["Le compartiste tu guía «%s» a %s."], g.nombre or "?", f.nombre or "?"))
+	if M.Logros and M.Logros.Ayudar then M.Logros.Ayudar("guia:" .. clave) end -- 1.4.0 (55)
 	return true
 end
 

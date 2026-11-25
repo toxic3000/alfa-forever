@@ -96,6 +96,8 @@ N.Modulo({
 		tablonAviso = true, -- 1.3.8: la tarjeta «Me apunto» cuando un lobo busca grupo (Tablon.lua)
 		ficha = true, -- 1.3.8: contestar «tu ficha» (nivel, oficios, qué fabricas) a tu hermandad y tu grupo (Ficha.lua)
 		recibirRutas = true, -- 1.3.8: recibir el plan o la guía que te comparte un lobo (Compartir.lua)
+		bienvenida = true, -- 1.4.0 (52): la tarjeta al entrar a una hermandad y al llegar un lobo con Alfa (Bienvenida.lua)
+		semanaLogros = true, -- 1.4.0 (55): Lya festeja tus logros de la semana (Logros.lua)
 	},
 	construir = P.Construir,
 })
@@ -223,6 +225,8 @@ local function ayuda()
 		{ "/alfa nota <texto>", L["deja una nota en tu mapa donde estás"] },
 		{ "/alfa spot <texto>", L["marca un buen lugar para juntar donde estás"] },
 		{ "/alfa manada tablon <texto>", L["pon tu anuncio en el tablón de la manada"] },
+		{ "/alfa manada silenciar <nombre>", L["sus avisos ya no te salen (otra vez: vuelven)"] },
+		{ "/alfa manada silenciados", L["a quién silenciaste"] },
 	}) do
 		DEFAULT_CHAT_FRAME:AddMessage("  " .. hex .. l[1] .. "|r  " .. l[2])
 	end
@@ -247,6 +251,8 @@ local function estado()
 		L["Mensajes enviados: %d (frenados: %d) · recibidos: %d · en cola: %d"]:format(diag.enviados, diag.frenados, diag.recibidos, R.Pendientes()),
 	}
 	if diag.resultado ~= nil then lineas[#lineas + 1] = L["Último envío: %s por %s, respuesta %s"]:format(tostring(diag.ultimo), tostring(diag.por), tostring(diag.resultado)) end
+	-- 1.4.0 (16): la versión de la Red y lo que no se pudo leer (se ignora sin error).
+	lineas[#lineas + 1] = L["Versión de la Red: %d · mensajes que no se entendieron: %d · de un Alfa más nuevo: %d"]:format(R.PROTO or 1, diag.malos or 0, diag.nuevos or 0)
 	local env = R.UltimoEnvio()
 	if env then lineas[#lineas + 1] = L["Última posición enviada %s."]:format(U.Hace(env)) end
 	local manada, grupo = G.Cuentas()
@@ -288,6 +294,10 @@ A.RegisterCommand("manada", function(rest)
 		end
 	elseif cmd == "estado" or cmd == "status" then
 		estado()
+	elseif (cmd == "silenciar" or cmd == "mute" or cmd == "callar") and M.Callados then
+		if arg == "" then M.Callados.Decir() else M.Callados.Alternar(arg) end
+	elseif (cmd == "silenciados" or cmd == "muted") and M.Callados then
+		M.Callados.Decir()
 	elseif cmd == "cita" and M.Cita then
 		if arg == "" then P.Abrir() else
 			local que, cuando = M.Cita.Leer(arg)

@@ -32,6 +32,24 @@ for _, s in ipairs(M.SONIDOS) do
 	end)
 end
 
+-- 1.4.0 (control, «no puedo cambiar el audio»): si vuelves a prender uno de
+-- estos sonidos en Opciones > Audio, manda lo tuyo: Alfa apaga su opción (sin
+-- escribir nada) en vez de volver a callarlo en el siguiente repaso de los
+-- ajustes. Alfa solo escribe "0" con la opción prendida, así que un valor
+-- distinto de "0" siempre viene de ti (o del juego).
+local PORCVAR = {}
+for _, s in ipairs(M.SONIDOS) do PORCVAR[s.cvar:lower()] = s end
+A.RegisterEvent("CVAR_UPDATE", function(_, nombre, valor)
+	nombre = M.Legible(nombre)
+	local s = type(nombre) == "string" and PORCVAR[nombre:lower()]
+	if not s or not M.Get(s.clave) then return end
+	local v = M.LeerCVar(s.cvar)
+	if v == nil or tonumber(v) == 0 then return end
+	local d = N.Datos(M.ID)
+	if type(d.previos) == "table" then d.previos[s.cvar] = nil end
+	N.Set(M.ID, s.clave, false)
+end)
+
 ---------------------------------------------------------------------------
 -- Tu lista
 ---------------------------------------------------------------------------

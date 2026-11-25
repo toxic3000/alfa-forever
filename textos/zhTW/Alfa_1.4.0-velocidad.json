@@ -1,0 +1,12 @@
+{
+ "%s: texto cortado «%s»": "%s：文字被截斷「%s」",
+ "%s: la ventana %s se sale de la pantalla": "%s：視窗 %s 超出了螢幕",
+ "Revisar: paré porque empezó un combate. Nada cambió; vuelve a probar al terminar.": "檢查：因為開始戰鬥，我停下了。什麼都沒改；戰鬥結束後再試。",
+ "Revisar: %d páginas revisadas, todo bien.": "檢查：已檢查 %d 個頁面，一切正常。",
+ "Revisar: %d páginas revisadas, %d cosas por arreglar:": "檢查：已檢查 %d 個頁面，有 %d 處需要修正：",
+ "  … y %d más.": "  … 還有 %d 處。",
+ "%s: error de Lua (%s)": "%s：Lua 錯誤（%s）",
+ "Revisar espera a que termine el combate.": "檢查會等戰鬥結束。",
+ "Revisar: voy a abrir %d páginas de Alfa, una por una. No juegues mientras tanto.": "檢查：我會逐一開啟 Alfa 的 %d 個頁面。這段時間請不要操作。",
+ "abre cada página de Alfa y te dice solo lo que falla (errores, textos cortados, ventanas fuera de la pantalla)": "開啟 Alfa 的每個頁面，只告訴你出問題的地方（錯誤、被截斷的文字、超出螢幕的視窗）"
+}

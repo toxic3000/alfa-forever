@@ -162,7 +162,7 @@ end
 local function texto(fn)
 	if type(fn) ~= "function" then return nil end
 	local ok, v = pcall(fn)
-	if ok and type(v) == "string" and v ~= "" and not (issecretvalue and issecretvalue(v)) then return v end
+	if ok and not (issecretvalue and issecretvalue(v)) and type(v) == "string" and v ~= "" then return v end
 	return nil
 end
 

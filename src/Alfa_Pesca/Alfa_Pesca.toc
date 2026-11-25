@@ -27,5 +27,6 @@ VistaSesiones.lua
 Guia.lua
 VistaCocina.lua
 Metas.lua
+MetaDia.lua
 Jauria.lua
 Pagina.lua

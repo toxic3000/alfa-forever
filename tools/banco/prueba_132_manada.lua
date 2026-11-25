@@ -42,7 +42,7 @@ local function conRed(fn, sinCompartir)
   local via, envio, av, guild = R.Via, C_ChatInfo.SendAddonMessage, K.Aviso, IsInGuild
   R.Via = function() return "hermandad" end
   IsInGuild = function() return true end
-  C_ChatInfo.SendAddonMessage = function(_, t, c, d) salidos[#salidos + 1] = { (t:gsub("|~[HA]$", "")), c, d } end
+  C_ChatInfo.SendAddonMessage = function(_, t, c, d) salidos[#salidos + 1] = { (t:gsub("|~[HA]$", ""):gsub("|%^%d+$", "")), c, d } end -- (1.4.0: sin la versión de la Red)
   K.Aviso = function(o) avisos[#avisos + 1] = o return true end
   local ok, e = pcall(fn)
   R.Via, C_ChatInfo.SendAddonMessage, K.Aviso, IsInGuild = via, envio, av, guild
@@ -186,11 +186,14 @@ step("El menú de Lya dice lo que hace y Lya lo confirma en su globo", function(
     FIRE(f, "OnClick", "RightButton")
     local textos = {}
     for _, o in ipairs(opciones or {}) do if o.texto then textos[o.valor or "?"] = o.texto end end
-    check(textos.frec == "Menos consejos", "la fila de consejos no dice la acción: " .. tostring(textos.frec))
+    -- 1.4.0 (64): la fila de consejos es «Solo lo importante» de un clic (y vuelve).
+    check(textos.importante == "Solo lo importante", "la fila de consejos no dice la acción: " .. tostring(textos.importante))
     check(textos.letra == "Letra muy grande", "la fila de la letra no dice la acción: " .. tostring(textos.letra))
-    if alElegir then alElegir("frec") end
-    check(A.Get("lya.frecuencia") == "pocos", "«Menos consejos» no cambió a pocos")
-    check(dicho[#dicho] == "Consejos: pocos", "Lya no confirmó en su globo: " .. tostring(dicho[#dicho]))
+    if alElegir then alElegir("importante") end
+    check(A.Get("lya.frecuencia") == "importantes", "«Solo lo importante» no cambió a importantes")
+    check((dicho[#dicho] or ""):find("solo te digo lo importante", 1, true), "Lya no confirmó en su globo: " .. tostring(dicho[#dicho]))
+    if alElegir then alElegir("importante") end
+    check(A.Get("lya.frecuencia") == "muchos", "el mismo clic no volvió a como estaba: " .. tostring(A.Get("lya.frecuencia")))
     check(#impreso == 0, "la confirmación salió en el chat")
   end)
   K.Menu, Ly.Cerebro.Decir, N.Imprimir = menu, decir, imprimir

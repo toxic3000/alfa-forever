@@ -4,7 +4,7 @@
 
 Estrategia acordada el 15/11/2026: construir todo y probarlo en el juego al final. Mientras tanto, cada módulo pasa `revisar.py` y `humo.py`.
 
-**Estado del 24/11/2026 (1.3.9 en camino):** 19 módulos propios sobre el motor, publicados de la 1.0.0 a la 1.3.8; cada versión trae su prueba en el banco (`tools/banco/prueba_*.lua`, más de 100 escenas) y `tools/prueba.py` las corre todas. El plan de cada versión grande va aparte: `docs/PLAN-1.3.7.md` (200 mejoras) y `docs/PLAN-1.3.9.md` (106); lo que salió, en `CHANGELOG.md`; las notas para trabajar, en `CLAUDE.md`. Este archivo queda como la historia de las primeras rutas y la lista de pendientes de fondo (revisada el 24/11: lo ya hecho está marcado).
+**Estado del 24/11/2026 (1.4.0 en camino):** 19 módulos propios sobre el motor, publicados de la 1.0.0 a la 1.3.9; cada versión trae su prueba en el banco (`tools/banco/prueba_*.lua`, más de 100 escenas) y `tools/prueba.py` las corre todas. El plan de cada versión grande va aparte: `docs/PLAN-1.3.7.md` (200 mejoras) `docs/PLAN-1.3.9.md` (106) y `docs/PLAN-1.4.0.md`; lo que salió, en `CHANGELOG.md`; las notas para trabajar, en `CLAUDE.md`. Este archivo queda como la historia de las primeras rutas y la lista de pendientes de fondo (puesta en cero el 24/11 para la 1.4.0: lo hecho, marcado tras revisarlo en el código; lo que quedaba, pasado a `docs/PLAN-1.4.0.md` (sección «Pasados de PLAN.md») o descartado con su porqué. Aquí ya no quedan pendientes abiertos).
 
 **Estado del 16/11/2026:** los 11 módulos y el motor están construidos y en git. Todo junto da 473 archivos Lua en 40 carpetas sin errores de sintaxis, y los 12 módulos cargan juntos en la prueba de humo sin errores ni avisos. Cada módulo tiene su lista "Para verificar en el juego" en su `LEEME.md`. Siguiente paso: instalar con `tools/instalar.py --aplicar` (con WoW cerrado) y probar módulo por módulo.
 
@@ -33,7 +33,7 @@ Sale de una revisión del código del 18/11. En cada versión va primero lo que 
 - [x] Fundido de carga por tandas (`Lienzo.lua`: todo lo pedido en una colocación aparece junto). Las rampas `DETALLE`/`TERRENO` se quedan: el cruce entre capas es intencional.
 - [x] Recolección publica sus nodos en `Alfa.Pins` (`recoleccion.<tipo>`) para el mapa continuo.
 - [x] El ticker del minimapa de Recolección se detiene cuando la capa está oculta.
-- [ ] Máscaras de territorio de 512 o 1024: pendiente, no hay arte de origen de más resolución (las de OpenMap son de 256).
+- [descartado] Máscaras de territorio de 512 o 1024: no hay arte de origen de más resolución (las de OpenMap son de 256); agrandarlas sin arte nuevo no gana detalle.
 
 ### 1.1.9 — Ensayo general de la 1.2.0
 - [x] El buscador de Ajustes incluye Pesca, Comercio, Ruta, Bolsas, Combate, Curación, Lya y Estilo y sonido.
@@ -49,7 +49,7 @@ Sale de una revisión del código del 18/11. En cada versión va primero lo que 
 - [x] Mudar la configuración de cada jugador (`schema = 2`, con el modelo de `migradoBuilds`).
 - [x] Qué viene encendido de fábrica en Comodidades: las 5 recomendadas, el minimapa mejorado y las barras con el estilo de Alfa (decidió Toxic el 18/11; solo en instalaciones nuevas).
 - [x] Bienvenida y novedades que expliquen dónde quedó cada cosa; galería y anuncio nuevos.
-- [ ] Talentos, Raros, Personajes e Importar con `UI.HubKit`: pasa a la 1.2.2 (la 1.2.0 fue la versión estable y la 1.2.1 la del mapa: tu camino, el vuelo y el terreno sin pedazos).
+- [→ 1.4.0, P1] Talentos, Raros, Personajes e Importar con `UI.HubKit` (revisado el 24/11: `HubKit` solo lo usan el Buscador y las Mazmorras): pasó a la 1.2.2 (la 1.2.0 fue la versión estable y la 1.2.1 la del mapa: tu camino, el vuelo y el terreno sin pedazos).
 - [x] Insignias de La Jauría (idea de Toxic, 18/11): una chapita discreta (solo visual) junto al nombre de quien es de la manada, en el cuadro del jugador, La Jauría y el mapa. Solo para ciertas personas, no para todos los que usan Alfa. Decidido: una lista de personajes (nombre-reino) dentro del addon que Toxic pasa y mantiene (opción 1), con permiso de cada persona para salir en la lista.
 - [x] Mapa «en manada» (Toxic, 18/11): quien usa Alfa y comparte su ubicación (capa `manada.jauria` de `Alfa_Manada/Mapa.lua`, ya existe y es voluntaria) se ve con una huella pequeña de lobo, más chica que el pin de tu grupo; los de la lista de insignias llevan además su chapita. Sigue siendo voluntario: nadie aparece sin aceptar compartir.
 
@@ -95,7 +95,7 @@ Sale de una revisión del código del 18/11. En cada versión va primero lo que 
 - [x] Logo y marca de Alfa (`marca/`, `tools/marca.py`), con colores de La Jauría.
 - [x] Textos del motor que mencionan "Polestar Client" (avisos de actualización) y la página "Novedades", que hoy son de Polestar (1.1.6).
 - [x] Texto de "Acerca de" con la historia de Alfa y La Jauría (`ACERCA` en `tools/parches.py`).
-- [ ] Pasar tus ajustes de Polestar a Alfa (`PolestarDB` → `AlfaDB`) al instalar. (Al 24/11 no se hizo: Alfa empieza con ajustes propios; decidir con Toxic si aún hace falta.)
+- [descartado] Pasar tus ajustes de Polestar a Alfa (`PolestarDB` → `AlfaDB`) al instalar: Alfa lleva 20 versiones con ajustes propios (migraciones 1-4, perfiles, respaldos) y nadie llega hoy desde Polestar; mezclar ajustes de otro addon rompería lo ya configurado.
 - [x] Prueba en el juego, módulo por módulo, con /reload (Toxic prueba cada versión antes de publicarla).
 - [x] Página de CurseForge en español e inglés, repositorio público (GPL: el código debe estar disponible).
 
@@ -107,31 +107,31 @@ Sale de una revisión del código del 18/11. En cada versión va primero lo que 
 - [x] Choque: `behavior.closeSkipped` del motor puede cerrar la ventana antes de que "todas las misiones" de Comodidades actúe.
 - [x] Comodidades: cada grupo viene apagado; decidir con Toxic cuáles vienen encendidos (1.2.0: las 5 recomendadas).
 - [x] Páginas propias (Pesca, Comercio, Inicio): sus ajustes no salen en el buscador de opciones.
-- [~] Mundo: `AlfaMundo.ActivarCapa` ya existe; falta una proyección para pintar pines en el mapa continuo (Recolección solo pinta en mapas de zona).
+- [x] Mundo: la proyección existe (`AlfaMundo.RegistrarCapa` con `pines`: la usan Mazmorras, Pesca, La Jauría, la Enciclopedia y Rutas). [→ 1.4.0, P2] Falta que Recolección registre sus capas `recoleccion.<tipo>` ahí: hoy solo pinta en los mapas de zona.
 - [x] Acerca de: créditos visibles del código y los datos reutilizados bajo MIT.
 - [x] Núcleo: opción `alComando(rest)` en `N.Modulo` para comandos con argumentos (1.1.9).
 - [x] Motor: destino "persistente" en `Nav.SetTarget` para que Seguir (La Jauría) no se suelte cuando la guía cambia de paso.
 - [x] La Jauría: "Quiero unirme" lleva al Discord (sin oficiales con nombre de personaje en el código).
 - [x] Núcleo: `N.Repintar(id)` oficial para volver a dibujar una página propia (1.1.9).
-- [ ] Mazmorras: confirmar en el juego si Forever trae las CVars de avisos de jefes (la variante "Camelot" dice `HasBossWarnings = false`).
+- [x] Mazmorras: confirmar en el juego si Forever trae las CVars de avisos de jefes: pasó a la lista guiada `/alfa confirmar` (1.4.0, «Los avisos de jefes del juego»).
 - [x] Builds y Rutas: terminados y en git el 16/11.
 - [x] Mundo: Recolección debería publicar sus nodos en `Alfa.Pins` (id `recoleccion.<tipo>`) para verse en el mapa continuo.
 - [x] Idiomas: en Builds, "Protección" y "Restauración" son la misma clave para dos clases (guerrero/paladín, druida/chamán), pero en coreano y otros idiomas tienen nombres distintos. Separar las claves en español.
 - [x] Idiomas: las fechas "el %d/%d a las %s" llevan el orden día/mes del español; en coreano y chino conviene que el formato de fecha sea parte de la traducción.
-- [ ] Idiomas: nombres de hechizos que los traductores dejaron en inglés o marcaron como dudosos (lista en sus reportes); que los revise alguien nativo.
+- [→ 1.4.0, P3] Idiomas: nombres de hechizos que los traductores dejaron en inglés o marcaron como dudosos; que los revise alguien nativo (necesita gente de la comunidad).
 - [x] Bolsas: la búsqueda en ruso (y otros alfabetos) depende de minúsculas; `string.lower` de WoW no convierte el cirílico, así que buscar con mayúscula inicial puede no encontrar nada.
 
 ## Interfaz propia (diseño A, 16/11/2026)
 
 - [x] Tema, componentes, ventana principal con secciones, página Hoy por clase, ventana de guía, bienvenida, novedades, selector de guías, buscador y diario de mazmorras con acomodo propio (27 archivos en `motor/`).
-- [ ] En el centro de guías, las secciones Talentos, Raros, Personajes e Importar ya usan el ancho completo y píldoras, pero su acomodo interior sigue siendo el original.
+- [→ 1.4.0, P1] En el centro de guías, las secciones Talentos, Raros, Personajes e Importar ya usan el ancho completo y píldoras, pero su acomodo interior sigue siendo el original (junto con el `HubKit` de arriba).
 - [x] Términos: los textos del motor en esMX dicen "Calabozos"; los de Alfa dicen "Mazmorras". Hay que unificarlos.
-- [ ] Documentar `UI.HubKit` (piezas compartidas del centro de guías) en `docs/INTERFAZ.md`.
-- [ ] Revisar en el juego la lista "Qué revisar" de cada parte (esquinas cortadas, que quepan las píldoras, desplazamiento, mando).
+- [→ 1.4.0, P1] Documentar `UI.HubKit` (piezas compartidas del centro de guías) en `docs/INTERFAZ.md` (hoy solo está en la cabecera de `motor/Alfa/UI/Picker.lua`).
+- [x] Revisar en el juego la lista "Qué revisar" de cada parte: desde la 1.4.0 lo que solo se confirma jugando va en la lista guiada `/alfa confirmar` (`Alfa_Rutas/Confirmar.lua`), con su resultado en el reporte del Lobo Malo; el mando y las esquinas, en el 66 y el 76 de la 1.4.0.
 
 ## Pendientes de fondo (revisados el 24/11/2026, con números de `tools/perfil.py --veces 3`)
 
-- [ ] Cargar las guías por rango de niveles (pendiente desde la 1.3.2): `Alfa_Guides_Horde` pesa 10 MB y unos 30 archivos del motor recorren todas las guías.
-- [ ] La lectura al entrar sigue en unos 58 ms del banco (meta de la 1.3.9: 45). Lo que más pesa: el paquete de idioma que `Core/Locale.lua` carga al vuelo (unos 13 ms, casi todo compilar `Alfa_esMX`: `Texts.lua` 4 ms, `Names.lua` 3 ms, `Interface.lua` 2 ms) y el registro de las guías (`Alfa_Guides` 7 ms y `Alfa_Guides_Horde` 5 ms). Bajarlo pide diferir también los textos de las guías por idioma (hoy se arman todos para el título de cada guía en la lista).
-- [ ] Comercio: en la cuenta de Toxic, los precios con el reino vacío («?-Alliance», 742 KB de los 1.7 MB de `AlfaNucleoDB`) siguen junto a los de su reino: `M.JuntarReinoSinNombre` solo los junta cuando el juego dice el reino con seguridad.
-- [ ] Banco: el ancho de las letras CJK es una estimación (la prueba de avisos cuenta casi un cuadro por letra); confirmar en el juego los avisos en coreano y chino.
+- [→ 1.4.0, n.º 4] Cargar las guías por rango de niveles (pendiente desde la 1.3.2): `Alfa_Guides_Horde` pesa 10 MB y unos 30 archivos del motor recorren todas las guías.
+- [→ 1.4.0, n.º 4 y 5] La lectura al entrar sigue en unos 58 ms del banco (meta de la 1.3.9: 45). Lo que más pesa: el paquete de idioma que `Core/Locale.lua` carga al vuelo (unos 13 ms, casi todo compilar `Alfa_esMX`: `Texts.lua` 4 ms, `Names.lua` 3 ms, `Interface.lua` 2 ms) y el registro de las guías (`Alfa_Guides` 7 ms y `Alfa_Guides_Horde` 5 ms). Bajarlo pide diferir también los textos de las guías por idioma (hoy se arman todos para el título de cada guía en la lista).
+- [→ 1.4.0, n.º 6] Comercio: en la cuenta de Toxic, los precios con el reino vacío («?-Alliance», 742 KB de los 1.7 MB de `AlfaNucleoDB`) siguen junto a los de su reino: `M.JuntarReinoSinNombre` solo los junta cuando el juego dice el reino con seguridad.
+- [x] Banco: el ancho de las letras CJK es una estimación; confirmarlo en el juego pasó a `/alfa confirmar` («Avisos en coreano o chino»). (Antes: la prueba de avisos cuenta casi un cuadro por letra.)

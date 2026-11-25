@@ -424,13 +424,30 @@ local function llenar()
 	K.Mostrar(ui.secMods, #mods > 0)
 	K.Mostrar(ui.rejMods, #mods > 0)
 	ui.rejMods:Llenar(mods)
-	K.Mostrar(ui.vacio, #qs == 0 and #mods == 0)
+	-- 1.4.0 (114): sin respuesta, Lya ofrece buscarlo en la Enciclopedia o en los ajustes.
+	local sinNada = #qs == 0 and #mods == 0
+	if sinNada and ui.vacio.Set then
+		local q = ui.buscador and ui.buscador:Texto() or ""
+		local E = rawget(_G, "AlfaEnciclopedia")
+		local O = A.UI and A.UI.Options
+		local enc = q ~= "" and type(E) == "table" and type(E.Buscar) == "function" and {
+			texto = format(L["Buscar «%s» en la Enciclopedia"], q), corto = L["En la Enciclopedia"], icono = "ic-enciclopedia",
+			alClic = function() if v then v:Cerrar() end E.Buscar(q) end } or nil
+		local aj = q ~= "" and type(O) == "table" and type(O.BuscarDesdeFuera) == "function" and {
+			texto = L["Buscar en los ajustes"], corto = L["En los ajustes"], icono = "ic-ajustes",
+			alClic = function() if v then v:Cerrar() end O.BuscarDesdeFuera(q) end } or nil
+		ui.vacio:Set({ lobo = "atento", titulo = L["No sé de eso todavía"],
+			texto = (enc or aj) and L["Puedo buscarlo por ti en otro lado, o pregúntale a la manada en el Discord."]
+				or L["Prueba con otra palabra, o pregúntale a la manada en el Discord."],
+			accion = enc or aj, accion2 = enc and aj or nil })
+	end
+	K.Mostrar(ui.vacio, sinNada)
 	if v and v.alAcomodar then v.alAcomodar() end
 end
 
 local function acomodar()
 	if not (v and v:IsShown() and ui.pila) then return end
-	local ancho = v:AnchoCuerpo() - 2 * v.margen
+	local ancho = v:AnchoCuerpo() -- (1.4.0, 120: ya sin los márgenes; antes quedaba una franja vacía a la derecha)
 	local h = ui.pila:Acomodar(ancho)
 	ui.pila:ClearAllPoints()
 	ui.pila:SetPoint("TOPLEFT", v.Cuerpo, "TOPLEFT", v.margen, -v.margen)
@@ -457,12 +474,8 @@ local function armar()
 	ui.rejPreg = p:Agregar(K.Rejilla(p, { min = 300, variante = "compacta" }), { espacio = ESP.s })
 	ui.secMods = p:Agregar(K.Seccion(p, L["Todo lo que hay en Alfa"]), { espacio = ESP.l })
 	ui.rejMods = p:Agregar(K.Rejilla(p, { min = 220 }), { espacio = ESP.s })
-	local vacio = CreateFrame("Frame", nil, p)
-	vacio.Texto = K.Texto(vacio, "nota", "textoTenue")
-	vacio.Texto:SetPoint("TOPLEFT")
-	K.Escribir(vacio.Texto, L["No sé de eso todavía. Prueba con otra palabra, o pregúntale a la manada en el Discord."])
-	function vacio:Acomodar(ancho) local h = K.Parrafo(self.Texto, ancho) self:SetHeight(h) return h end
-	ui.vacio = p:Agregar(vacio, { espacio = ESP.l })
+	-- (1.4.0, 114: el estado vacío del Kit, con dónde más buscar)
+	ui.vacio = p:Agregar(K.Vacio(p, {}), { espacio = ESP.l })
 end
 
 local SALUDOS = {

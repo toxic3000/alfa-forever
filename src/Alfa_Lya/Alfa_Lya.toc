@@ -24,6 +24,10 @@ Guia.lua
 Aprende.lua
 Oficios.lua
 TuHistoria.lua
+Temporada.lua
+VentanaTemporada.lua
+Recuerdos.lua
+LoreMisiones.lua
 FinMazmorra.lua
 Muerte.lua
 Ahora.lua
