@@ -351,7 +351,6 @@ local function crearPlano(padre)
 		local w, h = K.num(self:GetWidth(), 1), K.num(self:GetHeight(), 1)
 		return x / e - l - w / 2, y / e - b - h / 2
 	end
-	ratonPlano(c, not enCombate())
 	c:SetScript("OnMouseWheel", function(self, delta)
 		if enCombate() then return end
 		local x, y = cursor(self)
@@ -374,6 +373,9 @@ local function crearPlano(padre)
 		self:SetScript("OnUpdate", nil)
 	end)
 	c:SetScript("OnHide", function(self) self.arrastre = nil self:SetScript("OnUpdate", nil) end)
+	-- 1.4.1: después de los scripts (ponerlos le prende ratón y rueda en el
+	-- juego): armado en combate, no se queda con la rueda de la cámara.
+	ratonPlano(c, not enCombate())
 	return c
 end
 Md.CrearPlano = crearPlano

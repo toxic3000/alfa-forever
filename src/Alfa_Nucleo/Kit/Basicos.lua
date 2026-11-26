@@ -1022,7 +1022,19 @@ K.CerrarMenu = cerrarMenu
 do
 	local ev = CreateFrame("Frame")
 	ev:RegisterEvent("PLAYER_REGEN_DISABLED")
-	ev:SetScript("OnEvent", function() cerrarMenu() end)
+	-- 1.4.1: un menú abierto YA en combate (el clic derecho del rastreador, Lya)
+	-- va sin capa: se cierra con un clic fuera de él, que sigue de largo al mundo.
+	ev:RegisterEvent("GLOBAL_MOUSE_DOWN")
+	ev:SetScript("OnEvent", function(_, evento)
+		if evento == "GLOBAL_MOUSE_DOWN" then
+			if menu and menu:IsShown() and menu.alfaSinCapa and not menu:IsMouseOver()
+				and not (menu.dueno and menu.dueno.IsMouseOver and menu.dueno:IsMouseOver()) then
+				cerrarMenu()
+			end
+			return
+		end
+		cerrarMenu()
+	end)
 end
 
 local function armarMenu()
@@ -1117,7 +1129,8 @@ function K.Menu(dueno, opciones, valor, alElegir, ancho)
 	else
 		menu:SetPoint("TOPLEFT", dueno, "BOTTOMLEFT", 0, -4)
 	end
-	atrapa:Show()
+	menu.alfaSinCapa = InCombatLockdown and InCombatLockdown() and true or nil
+	if not menu.alfaSinCapa then atrapa:Show() end
 	menu:Show()
 end
 

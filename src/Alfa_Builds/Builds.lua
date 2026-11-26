@@ -225,7 +225,7 @@ local function resumenCompras(plan, vivo)
 	local lineas = {}
 	for i, g in ipairs(orden) do
 		if i > 8 then
-			lineas[#lineas + 1] = format(L["... y %d talentos más"], #orden - 8)
+			lineas[#lineas + 1] = format(L["… y %d talentos más"], #orden - 8)
 			break
 		end
 		lineas[#lineas + 1] = "\226\128\162 " .. rangoTxt(g.nombre, g.desde, g.hasta, g.max)

@@ -87,7 +87,6 @@
  "Tus bolsas y tu banco en una sola ventana, y lo que lleva cada uno de tus personajes.": "Ваши сумки и банк в одном окне, а также то, что носит каждый ваш персонаж.",
  "Tus llaves junto a tus bolsas.": "Ваши ключи рядом с сумками.",
  "Tus personajes": "Ваши персонажи",
- "Un borde del color de la calidad: verde, azul, morado...": "Рамка цвета качества: зеленая, синяя, фиолетовая...",
  "Un marco dorado en lo que sirve para una misión (con «!» si empieza una).": "Золотая рамка на предметах для заданий (с «!», если предмет начинает задание).",
  "Una flecha verde en el equipo que es mejor que lo que llevas puesto, según tu clase y nivel.": "Зеленая стрелка на экипировке, которая лучше надетой, с учетом вашего класса и уровня.",
  "Una moneda sobre lo gris: lo que solo sirve para vender.": "Монетка на серых предметах: их можно только продать.",
@@ -121,5 +120,6 @@
  "raro": "редкий",
  "verde": "зеленый",
  "visto %s": "в игре: %s",
- "épico": "эпический"
+ "épico": "эпический",
+ "Un borde del color de la calidad: verde, azul, morado…": "Рамка цвета качества: зеленая, синяя, фиолетовая..."
 }

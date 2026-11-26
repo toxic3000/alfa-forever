@@ -1,7 +1,5 @@
 {
  "A los lados del modelo, un botón por ranura: un clic oculta esa pieza y otro la vuelve a poner.": "По бокам модели — кнопка для каждой ячейки: один щелчок скрывает эту вещь, второй возвращает ее.",
- "Abajo del modelo, elige lo que hace tu personaje (caminar, bailar, saludar...) y páusalo.": "Под моделью выбери, что делает твой персонаж (идет, танцует, машет...), и ставь на паузу.",
- "Abrir las comodidades (minimapa, cuadro de información, probador...)": "Открыть удобства (мини-карта, подсказка, примерочная...)",
  "Aceptar y entregar todas las misiones": "Принимать и сдавать все задания",
  "Agrega una línea con el objetivo de esa unidad; si te tiene a ti, lo dice.": "Добавляет строку с целью этого существа; если цель — ты, так и пишет.",
  "Alejar más la cámara": "Отдалять камеру сильнее",
@@ -107,5 +105,7 @@
  "Vitorear": "Ликование",
  "Voces de error": "Голосовые ошибки",
  "esta misión": "это задание",
- "¡Tú!": "Ты!"
+ "¡Tú!": "Ты!",
+ "Abajo del modelo, elige lo que hace tu personaje (caminar, bailar, saludar…) y páusalo.": "Под моделью выбери, что делает твой персонаж (идет, танцует, машет...), и ставь на паузу.",
+ "Abrir las comodidades (minimapa, cuadro de información, probador…)": "Открыть удобства (мини-карта, подсказка, примерочная...)"
 }

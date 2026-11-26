@@ -31,10 +31,8 @@
  "Botón «Buscar cerca» en el rastreador": "추적기의 «근처 찾기» 버튼",
  "Busca y elige un objeto.": "아이템을 검색해서 고르세요.",
  "Busca y elige una misión.": "퀘스트를 검색해서 고르세요.",
- "Buscar cerca (vuelo, posada, reparar...)": "근처 찾기 (비행, 여관, 수리...)",
  "Buscar cerca no está disponible.": "근처 찾기를 쓸 수 없습니다.",
  "Buscar cerca y tus planes": "근처 찾기와 내 계획",
- "Buscar cerca...": "근처 찾기...",
  "Buscar cerca:": "근처 찾기:",
  "Búscalo por su nombre; se cumple cuando lo tienes en tus bolsas.": "이름으로 검색하세요. 가방에 있으면 달성됩니다.",
  "Cambiar esta meta": "이 목표 변경",
@@ -74,7 +72,6 @@
  "El juego no da tu posición aquí (en una instancia, por ejemplo).": "여기서는 게임이 위치를 알려 주지 않습니다(예: 인스턴스 안).",
  "El maestro de vuelo, la posada, reparar, el banco y más, con la flecha.": "비행 조련사, 여관, 수리, 은행 등을 화살표로.",
  "El maestro de vuelo, la posada, reparar, el banco y más: el más cercano, con la flecha y la ruta.": "비행 조련사, 여관, 수리, 은행 등: 가장 가까운 곳을 화살표와 경로로.",
- "El maestro de vuelo, la posada, reparar, el banco... el más cercano (/alfa cerca ayuda).": "비행 조련사, 여관, 수리, 은행... 가장 가까운 곳 (/alfa cerca ayuda).",
  "El más cercano cuando le toque, por tiempo de camino.": "차례가 되면 이동 시간 기준으로 가장 가까운 곳.",
  "El más cercano, por tiempo de camino": "이동 시간 기준 가장 가까운 곳",
  "El objeto": "아이템",
@@ -201,7 +198,6 @@
  "Tu plan no tiene metas todavía": "계획에 아직 목표가 없습니다",
  "Tu propia lista de metas, en el orden que quieras: un objeto, oro, una profesión, un lugar, una misión, un nivel o una nota. Alfa las mide solas y te lleva a cada una.": "원하는 순서로 만드는 나만의 목표 목록: 아이템, 골드, 전문 기술, 장소, 퀘스트, 레벨, 메모. Alfa가 알아서 확인하고 하나씩 안내합니다.",
  "Tus habilidades nuevas": "새 기술",
- "Tus metas en tu orden: un objeto, oro, una profesión, un lugar...": "내 순서대로 정한 목표: 아이템, 골드, 전문 기술, 장소...",
  "Tus profesiones": "내 전문 기술",
  "Un aviso corto con el lugar, su zona y el tiempo de camino.": "장소, 지역, 이동 시간을 담은 짧은 알림.",
  "Un buzón": "우체통",
@@ -242,5 +238,9 @@
  "• Polestar, de The Polestar authors (GPL-3.0): el motor de guías, navegación y datos (github.com/fitzforge/polestar).": "• Polestar, 제작 The Polestar authors (GPL-3.0): 가이드, 길 찾기, 데이터 엔진 (github.com/fitzforge/polestar).",
  "• Shortest Path Forever, de Cillian Berragan (GPL-3.0-or-later): la navegación y los servicios cercanos.": "• Shortest Path Forever, 제작 Cillian Berragan (GPL-3.0-or-later): 길 찾기와 근처 서비스.",
  "• TerrainWorldMap, de Dramacydal (MIT): la tabla de mosaicos del terreno del mapa.": "• TerrainWorldMap, 제작 Dramacydal (MIT): 지도 지형 조각 표.",
- "• pfQuest, de shagu (MIT): datos de misiones, PNJ y objetos.": "• pfQuest, 제작 shagu (MIT): 퀘스트, NPC, 오브젝트 데이터."
+ "• pfQuest, de shagu (MIT): datos de misiones, PNJ y objetos.": "• pfQuest, 제작 shagu (MIT): 퀘스트, NPC, 오브젝트 데이터.",
+ "Buscar cerca (vuelo, posada, reparar…)": "근처 찾기 (비행, 여관, 수리...)",
+ "Buscar cerca…": "근처 찾기...",
+ "El maestro de vuelo, la posada, reparar, el banco… el más cercano (/alfa cerca ayuda).": "비행 조련사, 여관, 수리, 은행... 가장 가까운 곳 (/alfa cerca ayuda).",
+ "Tus metas en tu orden: un objeto, oro, una profesión, un lugar…": "내 순서대로 정한 목표: 아이템, 골드, 전문 기술, 장소..."
 }

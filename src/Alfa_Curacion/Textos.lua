@@ -18,7 +18,7 @@ M.EN = {
 
 	-- Preajustes
 	["Curandero"] = "Healer",
-	["Solo buffs"] = "Buffs only",
+	["Solo beneficios"] = "Buffs only",
 	["Básico"] = "Basic",
 	["Desde cero"] = "From scratch",
 	["Preajuste «%s» listo para tus clics."] = "Preset \"%s\" is ready on your clicks.",
@@ -219,7 +219,7 @@ M.EN = {
 	-- 1.3.0: curar y seleccionar, tus clics, perjuicios, buffs, tanque, maná y banda por grupos
 	["Curas"] = "Heals",
 	["Quitar perjuicios"] = "Remove debuffs",
-	["Buffs"] = "Buffs",
+	["Beneficios"] = "Buffs",
 	["Revivir"] = "Revive",
 	["Magia"] = "Magic",
 	["Maldición"] = "Curse",
@@ -364,3 +364,4 @@ M.EN = {
 	["En grupo"] = "In a group",
 	["En banda"] = "In a raid",
 }
+M.EN["Restablecer"] = "Reset" -- 1.4.1

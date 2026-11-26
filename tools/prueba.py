@@ -238,6 +238,14 @@ def main() -> int:
         print("GLOBAL", m)
     print(f"GLOBALES: {len(sueltos)} globales por accidente")
     malo = bool(sueltos) or malo
+    # 1.4.1: el mapa del código al día y cada archivo con su cabecera (tools/mapa.py).
+    import mapa
+    texto_mapa, sin_cabecera = mapa.armar()
+    for m in sin_cabecera:
+        print("SIN CABECERA", m)
+    atrasado = not mapa.SALIDA.exists() or mapa.SALIDA.read_text(encoding="utf-8") != texto_mapa
+    print(f"MAPA: {len(sin_cabecera)} archivos sin cabecera{', docs/MAPA.md atrasado (python -I tools/mapa.py)' if atrasado else ''}")
+    malo = bool(sin_cabecera) or atrasado or malo
     print("RESULTADO:", "con problemas" if malo else "todo bien")
     return 1 if malo else 0
 

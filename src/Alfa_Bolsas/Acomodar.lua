@@ -67,7 +67,7 @@ function Ac.Hacer()
 	if M.Lotes.Activo("vender") then M.Sugerencias.VenderChatarra() return true end
 	if M.Lotes.Activo("depositar") then M.Banco.Depositar() return true end
 	if M.EnCombate() then
-		N.Imprimir(L["No se puede en combate."])
+		N.Imprimir(L["Se puede al salir de combate."])
 		return false
 	end
 	local que = Ac.Que()

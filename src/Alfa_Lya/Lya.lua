@@ -810,6 +810,9 @@ local function construirGlobo()
 		end
 	end)
 	g:SetScript("OnLeave", function(self) K.OcultarInfo(self) end)
+	-- 1.4.1: otra vez, después de los scripts (ponerlos le prende el ratón en
+	-- el juego): el globo solo «ve» el ratón, nunca se queda con el clic.
+	if g.SetMouseClickEnabled then g:SetMouseClickEnabled(false) end
 
 	local entra = g:CreateAnimationGroup()
 	local a1 = entra:CreateAnimation("Alpha")

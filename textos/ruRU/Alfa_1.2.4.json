@@ -70,7 +70,6 @@
  "Ya estás en esa guarida.": "Ты уже в этом логове.",
  "Ya no está en esa guarida.": "Он больше не в этом логове.",
  "Ya puedes salir del grupo: la guarida se queda contigo.": "Можно выйти из группы: логово остаётся за тобой.",
- "tocando a la puerta...": "стучишь в дверь...",
  "¡Ya estás en la %s!": "Ты в: %s!",
  "%d misiones listas para entregar": "Готово к сдаче заданий: %d",
  "Ahora mismo te ayudaría con": "Прямо сейчас я помогла бы с этим",
@@ -163,5 +162,6 @@
  "Lya descansa. La llamas con /alfa lya o /alfa ayuda cuando quieras.": "Лия отдыхает. Позови её командой /alfa lya или /alfa ayuda.",
  "Lya te guía, un asistente más sencillo y las guaridas": "Лия ведёт тебя, настройка проще и логова",
  "Pregúntale a Lya: clic derecho en ella y «¿En qué te ayudo?». Te explica cada parte de Alfa y te lleva con un clic.": "Спроси Лию: правый клик по ней и «Чем помочь?». Она объяснит каждую часть Alfa и отведёт туда в один клик.",
- "La configuración es más visual: tres tarjetas para decidir cuánto te ayuda Alfa y tus extras en un mosaico.": "Настройка стала нагляднее: три карточки, чтобы решить, сколько помогает Alfa, и дополнения плиткой."
+ "La configuración es más visual: tres tarjetas para decidir cuánto te ayuda Alfa y tus extras en un mosaico.": "Настройка стала нагляднее: три карточки, чтобы решить, сколько помогает Alfa, и дополнения плиткой.",
+ "tocando a la puerta…": "стучишь в дверь..."
 }

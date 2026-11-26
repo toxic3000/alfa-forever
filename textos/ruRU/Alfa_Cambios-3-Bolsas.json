@@ -41,7 +41,6 @@
  "En vivo": "Вживую",
  "En vivo si estás con un banquero; si no, la última foto.": "Вживую, если вы у банкира; иначе — последний снимок.",
  "Entra al juego con él una vez.": "Зайдите в игру этим персонажем один раз.",
- "Equipo, consumibles, misiones, materiales... con encabezados que se pliegan.": "Снаряжение, расходуемые предметы, задания, материалы... под сворачиваемыми заголовками.",
  "Espacio y dinero": "Место и деньги",
  "Este banco no vende más espacio.": "Этот банк больше не продает место.",
  "Estás con un banquero: desde su ventana depositas lo que quieras con un clic.": "Вы у банкира: из его окна можно положить что угодно одним щелчком.",
@@ -134,5 +133,6 @@
  "Ya tienes las %d casillas de bolsa del banco. Para más espacio, pon bolsas más grandes en ellas.": "У вас уже все ячейки для сумок в банке (%d). Чтобы было больше места, положите в них сумки побольше.",
  "llena": "заполнена",
  "¿Comprar otra casilla del banco?": "Купить еще одну ячейку банка?",
- "¿Olvidar a este personaje?": "Забыть этого персонажа?"
+ "¿Olvidar a este personaje?": "Забыть этого персонажа?",
+ "Equipo, consumibles, misiones, materiales… con encabezados que se pliegan.": "Снаряжение, расходуемые предметы, задания, материалы... под сворачиваемыми заголовками."
 }

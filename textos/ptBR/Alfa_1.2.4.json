@@ -70,7 +70,6 @@
  "Ya estás en esa guarida.": "Você já está nessa toca.",
  "Ya no está en esa guarida.": "Ele não está mais nessa toca.",
  "Ya puedes salir del grupo: la guarida se queda contigo.": "Já pode sair do grupo: a toca fica com você.",
- "tocando a la puerta...": "batendo à porta...",
  "¡Ya estás en la %s!": "Você está na %s!",
  "%d misiones listas para entregar": "%d missões prontas para entregar",
  "Ahora mismo te ayudaría con": "Agora mesmo eu ajudaria você com",
@@ -163,5 +162,6 @@
  "Lya descansa. La llamas con /alfa lya o /alfa ayuda cuando quieras.": "A Lya descansa. Chame-a com /alfa lya ou /alfa ayuda quando quiser.",
  "Lya te guía, un asistente más sencillo y las guaridas": "A Lya guia você, uma configuração mais simples e as tocas",
  "Pregúntale a Lya: clic derecho en ella y «¿En qué te ayudo?». Te explica cada parte de Alfa y te lleva con un clic.": "Pergunte à Lya: botão direito nela e “Em que te ajudo?”. Ela explica cada parte do Alfa e leva você com um clique.",
- "La configuración es más visual: tres tarjetas para decidir cuánto te ayuda Alfa y tus extras en un mosaico.": "A configuração ficou mais visual: três cartões para decidir quanto o Alfa ajuda e seus extras num mosaico."
+ "La configuración es más visual: tres tarjetas para decidir cuánto te ayuda Alfa y tus extras en un mosaico.": "A configuração ficou mais visual: três cartões para decidir quanto o Alfa ajuda e seus extras num mosaico.",
+ "tocando a la puerta…": "batendo à porta..."
 }

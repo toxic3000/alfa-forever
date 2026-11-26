@@ -110,8 +110,10 @@ local function enganchar(f)
 	if type(f) ~= "table" or enganchados[f] or type(f.HookScript) ~= "function" then return end
 	if type(f.HasScript) == "function" and not f:HasScript("OnEnter") then return end
 	enganchados[f] = true
-	f:HookScript("OnEnter", alEntrar)
-	f:HookScript("OnLeave", alSalir)
+	-- 1.4.1: sin prenderles el ratón a las barras del juego (K.Enganchar): un
+	-- contenedor que no lo tomaba se volvía pared sobre el mundo.
+	K.Enganchar(f, "OnEnter", alEntrar)
+	K.Enganchar(f, "OnLeave", alSalir)
 end
 
 local NOMBRES = { "MainMenuExpBar", "ReputationWatchBar", "MainStatusTrackingBarContainer", "SecondaryStatusTrackingBarContainer" }

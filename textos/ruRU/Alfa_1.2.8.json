@@ -139,7 +139,6 @@
  "Los raros que cayeron hace poco": "Недавно убитые редкие",
  "Lya aprende": "Лия учится",
  "Lya apunta aquí tus pasos grandes: tu primera mazmorra, tus niveles, tu primera montura y más.": "Здесь Лия записывает твои большие шаги: первое подземелье, уровни, первое ездовое животное и не только.",
- "Lya apunta tus pasos grandes (tu primera mazmorra, tus niveles, tu primera montura...) y festeja cada página nueva.": "Лия записывает твои большие шаги (первое подземелье, уровни, первое ездовое животное...) и празднует каждую новую страницу.",
  "Lya lleva tu historia, aprende qué consejos ya no quieres y te avisa de tus oficios.": "Лия ведет твою историю, запоминает, какие советы тебе больше не нужны, и подсказывает о профессиях.",
  "Lya te cuenta cuánto tardaron, cuántas veces caíste y lo mejor que sacaste.": "Лия расскажет, сколько это заняло, сколько было падений и лучшую добычу.",
  "Lya vuelve a decirte todos esos consejos.": "Лия снова будет говорить все эти советы.",
@@ -200,7 +199,6 @@
  "Todavía no escribimos nada en tu historia. ¡Vamos a hacer algo grande!": "Мы еще ничего не написали в твоей истории. Давай сделаем что-то большое!",
  "Todos los que callaste": "Все отключенные",
  "Toma el dinero y los objetos de tus cartas, una por una. Las de pago contra entrega y las de un MJ se quedan para que las abras tú.": "Забирает деньги и предметы из твоих писем по одному. Письма с наложенным платежом и от ГМ остаются, чтобы ты открыл их сам.",
- "Tomando tus cartas...": "Забираю почту...",
  "Tomar todo": "Забрать все",
  "Treinta. La manada habla de ti.": "Тридцать. Стая говорит о тебе.",
  "Trescientos puntos. Eres maestro de tu oficio.": "Триста очков. Ты мастер своего дела.",
@@ -278,7 +276,9 @@
  "¿Quién va a %s?": "Кто идет: %s?",
  "¿Quién va?": "Кто идет?",
  "¿Qué dice la nota?": "Что написать в заметке?",
- "¿Qué hacemos? Una mazmorra, una misión...": "Что делаем? Подземелье, задание...",
  "• El logo, el lobo, Lya y los módulos propios de Alfa son de toxic3000 / La Jauría (GPL-3.0).": "• Логотип, волк, Лия и собственные модули Alfa принадлежат toxic3000 / La Jauría (GPL-3.0).",
- "• Los datos que trae Polestar también vienen de QuestieDB, Efficient Games (CC BY 4.0), VMaNGOS, CMaNGOS y Factoruide (GPL) y de ForeverLevelingBiS de Thunder (MIT); sus avisos están en cada LICENSE-DATA.txt.": "• Данные Polestar также взяты из QuestieDB, Efficient Games (CC BY 4.0), VMaNGOS, CMaNGOS и Factoruide (GPL) и из ForeverLevelingBiS от Thunder (MIT); их уведомления — в каждом LICENSE-DATA.txt."
+ "• Los datos que trae Polestar también vienen de QuestieDB, Efficient Games (CC BY 4.0), VMaNGOS, CMaNGOS y Factoruide (GPL) y de ForeverLevelingBiS de Thunder (MIT); sus avisos están en cada LICENSE-DATA.txt.": "• Данные Polestar также взяты из QuestieDB, Efficient Games (CC BY 4.0), VMaNGOS, CMaNGOS и Factoruide (GPL) и из ForeverLevelingBiS от Thunder (MIT); их уведомления — в каждом LICENSE-DATA.txt.",
+ "Lya apunta tus pasos grandes (tu primera mazmorra, tus niveles, tu primera montura…) y festeja cada página nueva.": "Лия записывает твои большие шаги (первое подземелье, уровни, первое ездовое животное...) и празднует каждую новую страницу.",
+ "Tomando tus cartas…": "Забираю почту...",
+ "¿Qué hacemos? Una mazmorra, una misión…": "Что делаем? Подземелье, задание..."
 }

@@ -392,6 +392,8 @@ NUM_CHAT_WINDOWS = 10
 for i = 1, NUM_CHAT_WINDOWS do
   local cf = i == 1 and DEFAULT_CHAT_FRAME or CreateFrame("Frame", "ChatFrame" .. i)
   cf:SetSize(430, 120)
+  cf:EnableMouse(true) -- 1.4.1: como el juego (enlaces y rueda del chat)
+  cf:EnableMouseWheel(true)
   if i > 2 then cf:Hide() end
   CreateFrame("Frame", "ChatFrame" .. i .. "Background", cf)
   local tab = CreateFrame("Button", "ChatFrame" .. i .. "Tab", UIParent)
@@ -418,6 +420,8 @@ do
 end
 ItemRefTooltip = CreateFrame("Frame", "ItemRefTooltip")
 Minimap = CreateFrame("Frame", "Minimap")
+Minimap:EnableMouse(true) -- 1.4.1: como el juego (clic para marcar, paso del ratón)
+Minimap:EnableMouseWheel(true)
 Minimap:SetSize(140, 140)
 WorldMapFrame = CreateFrame("Frame", "WorldMapFrame")
 ChatFrame1EditBox = CreateFrame("EditBox", "ChatFrame1EditBox")

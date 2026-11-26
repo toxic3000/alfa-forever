@@ -502,7 +502,7 @@ end
 local function guiarObjeto(m)
 	local Lk = M.Motor("Lookup")
 	if not (Lk and type(Lk.Guide) == "function") then
-		M.Aviso(Pl.Titulo(m), L["El motor no puede armar guías ahora."], { icono = "ic-aviso", tono = "aviso" })
+		M.Aviso(Pl.Titulo(m), L["Ahora no puedo armar la guía. Prueba en un momento; si sigue, cuéntanos con /alfa reportar."], { icono = "ic-aviso", tono = "aviso" })
 		return
 	end
 	if InCombatLockdown and InCombatLockdown() then
@@ -532,7 +532,7 @@ local function guiarObjeto(m)
 	local textos = {
 		tabs = L["Ya tienes seis guías abiertas: cierra una y vuelve a intentar."],
 		nosource = L["No se conoce de dónde sale."], noguide = L["No hay un camino que Alfa pueda guiar para esto."],
-		disabled = L["El buscador del motor está apagado (Ajustes > Descubrir): enciéndelo para que Alfa arme guías."],
+		disabled = L["El buscador de Alfa está apagado (Ajustes > Descubrimiento): enciéndelo y te armo la guía."],
 	}
 	local texto = ok and textos[motivo] or L["No pude armar la guía. Prueba otra vez en un momento; si sigue, cuéntanos con /alfa reportar."]
 	M.Aviso(Pl.Titulo(m), texto, { icono = "ic-aviso", tono = "aviso",

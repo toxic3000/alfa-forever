@@ -193,7 +193,7 @@ local function grupos(padre)
 	-- 1.2.8: tu historia, el fin de la mazmorra, tus oficios y lo que aprende.
 	local nota = K.GrupoAjustes(padre, { titulo = L["Lo que Lya nota"] })
 	nota:Fila({ titulo = L["Tu historia"], control = interruptor("historia"),
-		texto = L["Lya apunta tus pasos grandes (tu primera mazmorra, tus niveles, tu primera montura...) y festeja cada página nueva."] })
+		texto = L["Lya apunta tus pasos grandes (tu primera mazmorra, tus niveles, tu primera montura…) y festeja cada página nueva."] })
 	nota:Fila({ titulo = L["Al salir de una mazmorra"], control = interruptor("finMazmorra"), activa = visible,
 		texto = L["Lya te cuenta cuánto tardaron, cuántas veces caíste y lo mejor que sacaste."] })
 	nota:Fila({ titulo = L["Tus oficios"], control = interruptor("oficios"),
@@ -433,7 +433,7 @@ local CONTROLES = {
 		help = L["Al entregar una misión, Lya te ofrece contarte cómo terminó."], search = "quest epilogue, ending" },
 	-- 1.2.8
 	{ kind = "toggle", key = clave("historia"), label = L["Tu historia"],
-		help = L["Lya apunta tus pasos grandes (tu primera mazmorra, tus niveles, tu primera montura...) y festeja cada página nueva."], search = "diary, milestones, journal, history" },
+		help = L["Lya apunta tus pasos grandes (tu primera mazmorra, tus niveles, tu primera montura…) y festeja cada página nueva."], search = "diary, milestones, journal, history" },
 	{ kind = "toggle", key = clave("finMazmorra"), label = L["Al salir de una mazmorra"], disabled = no(visible),
 		help = L["Lya te cuenta cuánto tardaron, cuántas veces caíste y lo mejor que sacaste."], search = "dungeon summary, run, loot, deaths" },
 	{ kind = "toggle", key = clave("oficios"), label = L["Tus oficios"],

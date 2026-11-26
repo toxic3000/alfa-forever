@@ -112,7 +112,7 @@ local function nombre(e)
 end
 
 function Bn.Ponerla(e)
-	if M.EnCombate() then N.Imprimir(L["No se puede en combate."]) return false end
+	if M.EnCombate() then N.Imprimir(L["Se puede al salir de combate."]) return false end
 	local CI = rawget(_G, "C_Item")
 	local f = CI and CI.EquipItemByName or rawget(_G, "EquipItemByName")
 	if type(f) ~= "function" then return false end

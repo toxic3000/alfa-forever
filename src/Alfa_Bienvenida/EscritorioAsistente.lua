@@ -283,7 +283,7 @@ local function armar()
 	fila("auto", L["Cambiar el escritorio solo"],
 		L["En una mazmorra, pescando o en la subasta, Alfa pone los paneles que te sirven ahí."])
 	-- El pie
-	ui.Atras = K.Boton(v, L["Atrás"], function() As.Paso(est.paso - 1) end, { tipo = "secundario" })
+	ui.Atras = K.Boton(v, L["Atrás"], function() As.Paso(est.paso - 1) end, { tipo = "fantasma" })
 	ui.Siguiente = K.Boton(v, L["Siguiente"], function() As.Paso(est.paso + 1) end, { tipo = "primario" })
 	v:SetPie({ ui.Atras, ui.Siguiente })
 	-- Mientras pruebas, la ventana se esconde; vuelve si regresas a como estaba.

@@ -34,7 +34,6 @@
  "En la lista de %s: %s.": "В списке для %s: %s.",
  "cocina": "кулинария",
  "El clic en «Enviar» siempre es tuyo.": "Нажать «Отправить» — всегда за тобой.",
- "Poniendo %s en la carta...": "Кладу в письмо: %s...",
  "Preparar": "Подготовить",
  "Suelta lo que traes en el cursor y vuelve a intentarlo.": "Отпусти то, что держишь курсором, и попробуй снова.",
  "La carta ya está llena: manda esta y prepara otra.": "Письмо заполнено: отправь его и подготовь следующее.",
@@ -111,5 +110,6 @@
  "Nodos en el mapa del mundo: ocultos.": "Точки на карте мира: скрыты.",
  "Nodos en el mapa del mundo: visibles.": "Точки на карте мира: видны.",
  "Los recolectaste %d vez en total": "Всего собрано раз: %d",
- "Nodos en el minimapa: visibles.": "Точки на мини-карте: видны."
+ "Nodos en el minimapa: visibles.": "Точки на мини-карте: видны.",
+ "Poniendo %s en la carta…": "Кладу в письмо: %s..."
 }

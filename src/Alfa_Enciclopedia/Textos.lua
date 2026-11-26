@@ -353,14 +353,14 @@ M.EN = {
 	["Preparando %s… la ficha se completa sola."] = "Getting %s ready… the page fills in by itself.",
 
 	-- Guíame y Vincular
-	["El buscador del motor está apagado (Ajustes > Descubrir): enciéndelo para que Alfa arme guías."] = "The engine's Lookup is off (Settings > Discovery): turn it on so Alfa can build guides.",
+	["El buscador de Alfa está apagado (Ajustes > Descubrimiento): enciéndelo y te armo la guía."] = "The engine's Lookup is off (Settings > Discovery): turn it on so Alfa can build guides.",
 	["Ya tienes seis guías abiertas: cierra una y vuelve a intentar."] = "You already have six guides open: close one and try again.",
 	["Espera a terminar de entrar al juego."] = "Wait until you are fully logged in.",
 	["No se conoce de dónde sale."] = "Its source is unknown.",
 	["No hay un camino que Alfa pueda guiar para esto."] = "There is no path Alfa can guide for this.",
 	["No se sabe en qué lugar está."] = "Its location is unknown.",
 	["Se puede al salir de combate."] = "Possible once combat ends.",
-	["El motor no puede armar guías ahora."] = "The engine can't build guides right now.",
+	["Ahora no puedo armar la guía. Prueba en un momento; si sigue, cuéntanos con /alfa reportar."] = "The engine can't build guides right now.",
 	["Te llevo a la mejor fuente. Recuerda que una montura pide nivel, equitación y oro."] = "Taking you to the best source. Remember that a mount needs level, riding and gold.",
 	["Guía abierta en una pestaña nueva: sigue la flecha."] = "Guide opened in a new tab: follow the arrow.",
 	["No se pudo armar la guía (%s)."] = "The guide could not be built (%s).",
@@ -688,3 +688,4 @@ M.EN = {
 M.EN["Con los filtros que elegiste no queda nada. Quítalos para ver todo lo que encontré."] = "Nothing is left with the filters you picked. Remove them to see everything I found."
 M.EN["Quitar los filtros"] = "Remove the filters"
 M.EN["Borrar la búsqueda"] = "Clear the search"
+M.EN["No pude armar la guía. Prueba otra vez en un momento; si sigue, cuéntanos con /alfa reportar."] = "I couldn't build the guide. Try again in a moment; if it keeps happening, tell us with /alfa reportar." -- 1.4.1

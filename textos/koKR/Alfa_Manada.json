@@ -17,8 +17,6 @@
  "Avisa a tu hermandad que usas Alfa y escucha a los demás Alfa. Apagado, Alfa no envía ni recibe nada de nadie.": "길드에 Alfa 사용을 알리고 다른 Alfa 사용자의 신호를 받습니다. 끄면 Alfa는 누구와도 아무것도 주고받지 않습니다.",
  "Aún no eres de la manada": "아직 무리의 일원이 아닙니다",
  "Borra la lista de \"hace cuánto lo viste\" guardada en esta cuenta.": "이 계정에 저장된 \"마지막으로 본 시간\" 목록을 지웁니다.",
- "Buscando a un oficial...": "관리자를 찾는 중...",
- "Buscando su rastro...": "흔적을 찾는 중...",
  "Buscar por nombre": "이름으로 검색",
  "Clic: seguir con la flecha": "클릭: 화살표로 따라가기",
  "Compartes tu ubicación %s.": "%s 위치를 공유하고 있습니다.",
@@ -135,5 +133,7 @@
  "¿Le muestras a tu manada dónde estás?": "무리에게 내 위치를 보여 줄까요?",
  "¿Quieres cazar con nosotros? Pulsa el botón: Alfa busca a un oficial conectado y te abre un susurro con tu mensaje listo para que lo envíes con Intro.": "우리와 함께 사냥하시겠어요? 버튼을 누르면 Alfa가 접속 중인 관리자를 찾아, 메시지가 준비된 귓속말을 열어 줍니다. Enter로 보내기만 하면 됩니다.",
  "Última posición enviada %s.": "마지막 위치 전송: %s.",
- "Únete a La Jauría": "La Jauría에 가입하세요"
+ "Únete a La Jauría": "La Jauría에 가입하세요",
+ "Buscando a un oficial…": "관리자를 찾는 중...",
+ "Buscando su rastro…": "흔적을 찾는 중..."
 }

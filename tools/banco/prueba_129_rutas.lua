@@ -149,7 +149,7 @@ step("Un paso de nivel en la llegada: «Sube al nivel 30: te falta 20%»", funct
   con(A.Levels, { Player = function() return { level = 30, xp = 1120, xpMax = 1400 } end }, function()
     llegar(T, "search", vista, guia, function()
       local d = Arrow.Llegada()
-      check(d and d.accion == "Sube al nivel 30: te falta 20%", "el nivel no dice «Sube al nivel 30: te falta 20%»: " .. tostring(d and d.accion))
+      check(d and d.accion == "Sube al nivel 30: te falta 20 %", "el nivel no dice «Sube al nivel 30: te falta 20%»: " .. tostring(d and d.accion))
       check(d and d.barra, "el nivel no trae su barrita")
     end)
     vista.goals[1].xpLeft = 3000

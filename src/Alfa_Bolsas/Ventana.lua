@@ -1276,7 +1276,7 @@ local function menuDepositar(f, ancla)
 		Bc.Depositar()
 		return
 	end
-	if M.EnCombate() then N.Imprimir(L["No se puede en combate."]) return end
+	if M.EnCombate() then N.Imprimir(L["Se puede al salir de combate."]) return end
 	local cuentas, cats = Bc.Cuentas()
 	local ops = {}
 	for _, o in ipairs(Bc.OPCIONES) do
@@ -1376,7 +1376,7 @@ local function crear(tipo)
 	f.Vistas = {}
 	local VISTAS = {
 		{ "una", "ic-rejilla", L["Todo junto"], L["Cada casilla en su lugar, como en tus bolsas."] },
-		{ "categorias", "ic-lista", L["Por categorías"], L["Equipo, consumibles, misiones, materiales... con encabezados que se pliegan."] },
+		{ "categorias", "ic-lista", L["Por categorías"], L["Equipo, consumibles, misiones, materiales… con encabezados que se pliegan."] },
 		{ "bolsa", "ic-bolsas", L["Por bolsa"], L["Cada bolsa en su bloque, con su nombre y su espacio."] },
 	}
 	for i, v in ipairs(VISTAS) do
@@ -1396,7 +1396,7 @@ local function crear(tipo)
 	f.Franja = fr
 	f.Busca = K.Buscador(fr, { ayuda = L["Buscar"], alCambiar = function(texto) V.Buscar(f, texto) end })
 	-- 1.3.9: también lo que es (arma, material, comida...) y lo que Alfa sabe (candado, sin usar, sobra, subasta).
-	K.ConInfo(f.Busca, L["Buscar"], L["Por nombre, tipo o calidad (verde, azul...) y por nivel de objeto: 20, >20, 20-30. También por lo que es (arma, material, comida...) y por lo que Alfa sabe: mejora, nuevo, candado, sin usar, sobra, subasta. Con «-» delante quitas: -gris. Lo que coincide se resalta."])
+	K.ConInfo(f.Busca, L["Buscar"], L["Por nombre, tipo o calidad (verde, azul…) y por nivel de objeto: 20, >20, 20-30. También por lo que es (arma, material, comida…) y por lo que Alfa sabe: mejora, nuevo, candado, sin usar, sobra, subasta. Con «-» delante quitas: -gris. Lo que coincide se resalta."])
 	f.Coinciden = K.Texto(f.Busca, "pequeno", "textoTenue")
 	f.Coinciden:SetPoint("RIGHT", f.Busca, "RIGHT", -30, 0)
 	f.Coinciden:SetJustifyH("RIGHT")

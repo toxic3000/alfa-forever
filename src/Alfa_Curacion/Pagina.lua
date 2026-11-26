@@ -700,7 +700,7 @@ local function grupos(ui, padre)
 		activa = function() return activo() and (N.Get(ID, "orden") or "grupo") == "grupo" end,
 		texto = L["Cada grupo de la banda en su propia columna (o fila), como en la ventana de banda. Con el orden por grupo."] })
 	marcos:Fila({ titulo = L["Volver a su lugar"], texto = L["Pone los marcos donde estaban al instalar Alfa."], activa = activo,
-		control = function(fila) return K.Boton(fila, L["Reiniciar"], function() M.ReiniciarPosicion() end, { tipo = "secundario", tam = "chico" }) end })
+		control = function(fila) return K.Boton(fila, L["Restablecer"], function() M.ReiniciarPosicion() end, { tipo = "secundario", tam = "chico" }) end })
 
 	local color = M.GrupoColor(padre, activo)
 
@@ -830,7 +830,7 @@ local CONTROLES = {
 		choices = { { value = "grupo", label = L["Por grupo"] }, { value = "rol", label = L["Por rol"] },
 			{ value = "clase", label = L["Por clase"] }, { value = "nombre", label = L["Por nombre"] } }, search = "sort, order, role, class" },
 	toggle("porGrupos", L["En banda, un grupo por columna"], L["Cada grupo de la banda en su propia columna (o fila), como en la ventana de banda. Con el orden por grupo."], "raid groups, layout", true),
-	{ kind = "button", label = L["Volver a su lugar"], button = L["Reiniciar"], icon = "window", disabled = apagado,
+	{ kind = "button", label = L["Volver a su lugar"], button = L["Restablecer"], icon = "window", disabled = apagado,
 		help = L["Pone los marcos donde estaban al instalar Alfa."], onClick = function() M.ReiniciarPosicion() end, search = "reset position" },
 	-- 1.3.8: «Color de los marcos» (antes, «Color de clase» prendido o apagado).
 	{ kind = "dropdown", key = clave("colorModo"), label = L["Color de la barra"], disabled = apagado,

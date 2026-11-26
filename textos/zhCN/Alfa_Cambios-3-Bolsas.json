@@ -41,7 +41,6 @@
   "En vivo": "实时",
   "En vivo si estás con un banquero; si no, la última foto.": "在银行职员旁时为实时内容；否则显示最后的快照。",
   "Entra al juego con él una vez.": "用它登录游戏一次。",
-  "Equipo, consumibles, misiones, materiales... con encabezados que se pliegan.": "装备、消耗品、任务物品、材料……标题可折叠。",
   "Espacio y dinero": "空间和金钱",
   "Este banco no vende más espacio.": "这个银行不再出售更多空间。",
   "Estás con un banquero: desde su ventana depositas lo que quieras con un clic.": "你在银行职员旁：在其窗口中一键存放任何东西。",
@@ -134,5 +133,6 @@
   "Ya tienes las %d casillas de bolsa del banco. Para más espacio, pon bolsas más grandes en ellas.": "你已拥有全部 %d 个银行背包栏位。要更多空间，请在其中放入更大的背包。",
   "llena": "已满",
   "¿Comprar otra casilla del banco?": "购买另一个银行栏位？",
-  "¿Olvidar a este personaje?": "忘记这个角色？"
+  "¿Olvidar a este personaje?": "忘记这个角色？",
+  "Equipo, consumibles, misiones, materiales… con encabezados que se pliegan.": "装备、消耗品、任务物品、材料……标题可折叠。"
 }

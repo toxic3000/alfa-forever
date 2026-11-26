@@ -20,7 +20,6 @@
  "Azeroth": "Azeroth",
  "Barcos, zepelines y tranvía": "Navios, zepelins e metrô",
  "Botones de Alfa en el mapa del juego": "Botões do Alfa no mapa do jogo",
- "Buzones, entrenadores, banco, subasta, reparar...": "Caixas de correio, instrutores, banco, leilão, reparos...",
  "Cada cofre o tesoro conocido.": "Cada baú ou tesouro conhecido.",
  "Cada entrada de mazmorra y banda con su rango de niveles. Clic: su página; Mayús+clic: la flecha te lleva.": "Cada entrada de masmorra e raide com a faixa de níveis. Clique: a página dela; Shift+clique: a seta leva você até lá.",
  "Cada lugar conocido donde aparece un enemigo raro.": "Cada lugar conhecido onde aparece um inimigo raro.",
@@ -59,7 +58,6 @@
  "La tecla que abre el mapa del juego abre el de Alfa. Apágalo y vuelve a abrir el del juego. También puedes darle una tecla propia en Opciones > Teclado > Alfa.": "A tecla que abre o mapa do jogo abre o do Alfa. Desative para voltar ao do jogo. Você também pode dar a ele uma tecla própria em Opções > Atalhos > Alfa.",
  "Lo esencial": "O essencial",
  "Los mismos marcadores de misiones en el minimapa.": "Os mesmos marcadores de missões no minimapa.",
- "Los raros están apagados (página Descubrir).": "Os raros estão desativados (página Descoberta).",
  "Los raros también en el minimapa.": "Os raros também no minimapa.",
  "Los servicios también en el minimapa.": "Os serviços também no minimapa.",
  "Los tesoros también en el minimapa.": "Os tesouros também no minimapa.",
@@ -118,5 +116,7 @@
  "Vuelos, barcos y posadas también en el minimapa.": "Voos, navios e estalagens também no minimapa.",
  "Zonas": "Zonas",
  "Zonas de enemigos, objetos y lugares de las misiones de tu registro.": "Áreas de inimigos, itens e lugares das missões do seu registro.",
- "Zonas sin descubrir": "Áreas não descobertas"
+ "Zonas sin descubrir": "Áreas não descobertas",
+ "Buzones, entrenadores, banco, subasta, reparar…": "Caixas de correio, instrutores, banco, leilão, reparos...",
+ "Los raros están apagados (página Descubrimiento).": "Os raros estão desligados (página Descoberta)."
 }

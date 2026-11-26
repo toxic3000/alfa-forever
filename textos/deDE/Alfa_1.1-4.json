@@ -67,7 +67,6 @@
  "Tu última sesión: %s · %s": "Deine letzte Sitzung: %s · %s",
  "Tus bolsas piden auxilio (%d libres). Vende o tira lo que ya no uses.": "Deine Taschen rufen um Hilfe (%d frei). Verkauf oder wirf weg, was du nicht mehr brauchst.",
  "Tus habilidades nuevas": "Deine neuen Fähigkeiten",
- "Tus metas en tu orden: un objeto, oro, una profesión, un lugar...": "Deine Ziele in deiner Reihenfolge: ein Gegenstand, Gold, ein Beruf, ein Ort...",
  "Tus profesiones": "Deine Berufe",
  "Tus puntos": "Deine Punkte",
  "Un aviso corto con el lugar, su zona y el tiempo de camino.": "Ein kurzer Hinweis mit dem Ort, seiner Zone und der Reisezeit.",
@@ -242,5 +241,6 @@
  "• Polestar, de The Polestar authors (GPL-3.0): el motor de guías, navegación y datos (github.com/fitzforge/polestar).": "• Polestar, von The Polestar authors (GPL-3.0): die Engine für Guides, Navigation und Daten (github.com/fitzforge/polestar).",
  "• Shortest Path Forever, de Cillian Berragan (GPL-3.0-or-later): la navegación y los servicios cercanos.": "• Shortest Path Forever, von Cillian Berragan (GPL-3.0-or-later): die Navigation und die Dienste in der Nähe.",
  "• TerrainWorldMap, de Dramacydal (MIT): la tabla de mosaicos del terreno del mapa.": "• TerrainWorldMap, von Dramacydal (MIT): die Kacheltabelle des Kartengeländes.",
- "• pfQuest, de shagu (MIT): datos de misiones, PNJ y objetos.": "• pfQuest, von shagu (MIT): Daten zu Quests, NPCs und Objekten."
+ "• pfQuest, de shagu (MIT): datos de misiones, PNJ y objetos.": "• pfQuest, von shagu (MIT): Daten zu Quests, NPCs und Objekten.",
+ "Tus metas en tu orden: un objeto, oro, una profesión, un lugar…": "Deine Ziele in deiner Reihenfolge: ein Gegenstand, Gold, ein Beruf, ein Ort..."
 }

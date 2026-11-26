@@ -995,6 +995,7 @@
               {"cmd": "/alfa sesion", "texto": "Votre session du jour, dans la discussion."},
               {"cmd": "/alfa rendimiento", "texto": "La mémoire et le processeur qu'utilise chaque partie d'Alfa (et libère la mémoire qui ne sert plus)."},
               {"cmd": "/alfa diagnostico", "texto": "Vérifier Alfa : conflits avec d'autres addons, parties désactivées et réglages bizarres."},
+              {"cmd": "/alfa raton", "texto": "Si tu ne peux pas cliquer sur quelque chose du jeu ou tourner la caméra : indique ce qu'il y a sous ta souris et retire ce qui gêne d'Alfa."},
               {"cmd": "/alfa reportar", "texto": "Signaler un bug, une idée ou un commentaire, avec les erreurs capturées par Alfa."}
             ]}
           ]
@@ -1038,6 +1039,7 @@
             ]},
             {"t": "lista", "titulo": "Si ça ne marche toujours pas", "items": [
               "`/alfa diagnostico` (**Vérifier Alfa**) cherche les addons en conflit avec Alfa, les parties désactivées ou d'une autre version et les réglages bizarres, chacun avec sa correction en un clic.",
+              "Tu ne peux pas cliquer sur quelque chose du jeu, tourner la caméra ou zoomer ? Place ta souris dessus et tape `/alfa raton` : il te dit qui prend ton clic ; `/alfa raton arreglar` le retire aussitôt.",
               "Alfa garde ses propres erreurs : vous les voyez dans **Réglages > Style et son > Erreurs capturées**, pour les copier ou les effacer.",
               "Vos réglages ont disparu ? Revenez à l'une de vos sauvegardes dans **Réglages > Style et son > Sauvegardes**."
             ]},
@@ -1085,7 +1087,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "La 1.4.0 : la meute solide", "items": ["**Alfa fait peau neuve :** fenêtre avec barre latérale, couverture d’Aujourd’hui et annonces façon cinéma, toujours centrées.", "**Tout se déplace :** `/alfa acomodar` ou Maj + glisser pour placer chaque élément d’Alfa où tu veux.", "**Ta faction et ta saison :** le thème Horde ou Alliance et `/alfa temporada` avec ton aventure en cartes.", "**Plus rapide et plus solide :** guides par tranche de niveaux, Deux écrans sans agrandir l’interface et routes de minerai près de toi."]}
+    "mapa": {"titulo": "La 1.4.1 : la souris est à toi", "items": ["**Les clics reviennent :** tu peux cliquer sur des ennemis au loin, tourner la caméra, utiliser les onglets de métiers et régler le volume.", "**`/alfa raton` :** indique ce qu'il y a sous ta souris et retire aussitôt ce qui gêne d'Alfa.", "**Maj + glisser :** un cadre vert montre ce qui se déplace et disparaît quand tu relâches Maj.", "**Plus solide :** une révision de tout Alfa avec de nouveaux tests qui traquent ce genre de bug."]}
   },
   "contraportada": {
     "titulo": "Rejoignez la meute",

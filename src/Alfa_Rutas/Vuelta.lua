@@ -445,7 +445,7 @@ function Vt.Aviso()
 		titulo = format(L["Tienes %d misiones listas"], n),
 		texto = L["Alfa las ordena por el camino más corto y te lleva de una en una."],
 		uno = { L["Vuelta a entregar"], function() Vt.Empezar() end },
-		dos = { L["Después"], function() despues = n avisar() end } }
+		dos = { L["Ahora no"], function() despues = n avisar() end } }
 end
 
 -- 1.3.7: ¿ya estás entregando tus misiones? Con la vuelta en curso o con tu

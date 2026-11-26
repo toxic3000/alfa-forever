@@ -8,6 +8,19 @@
 local _, M = ...
 
 M.EN = {
+	-- 1.4.1: el elevador con la voz y la tarjeta de Alfa (Nav/Arrow.lua)
+	["Toma el elevador hacia %s"] = "Take the elevator %s",
+	["En el elevador hacia %s"] = "On the elevator going %s",
+	["¡El elevador ya está aquí! Sale en %s"] = "The elevator is here! It leaves in %s",
+	["Elevador hacia %s"] = "Elevator going %s",
+	["Ve al elevador"] = "Go to the elevator",
+	["Esperando el elevador"] = "Waiting for the elevator",
+	["¡El elevador ya está aquí!"] = "The elevator is here!",
+	["el elevador"] = "the elevator",
+	["Al elevador"] = "To the elevator",
+	["¡Ya casi llegas!"] = "Almost there!",
+	["arriba"] = "up",
+	["abajo"] = "down",
 	-- 1.4.0 (bugs): «Reiniciar sesión» de los PE por hora (parche de QoL/Options.lua)
 	["Listo: tus PE por hora empiezan de cero."] = "Done: your XP per hour starts from zero.",
 	-- 1.4.0 (interfaz): «Restablecer todos los ajustes» (UI/Options.lua)
@@ -21,6 +34,7 @@ M.EN = {
 	["Mundo"] = "World",
 	["Oficios"] = "Trades",
 	["Manada"] = "Pack",
+	["Entendido"] = "Got it",
 	["Ajustes"] = "Settings",
 	["Buscar ajustes"] = "Search settings",
 	["Buscar «%s» en la Enciclopedia"] = "Search \"%s\" in the Encyclopedia",
@@ -205,7 +219,7 @@ M.EN = {
 	["Llegas en unos %d min"] = "You get there in about %d min",
 	["%d de %d"] = "%d of %d",
 	["Sube al nivel %d"] = "Reach level %d",
-	["Sube al nivel %d: te falta %d%%"] = "Reach level %d: %d%% to go",
+	["Sube al nivel %d: te falta %d %%"] = "Reach level %d: %d%% to go",
 	["Sube al nivel %d: te faltan %s de experiencia"] = "Reach level %d: %s experience to go",
 	["Sube al nivel"] = "Reach level",
 	["%d (%d%% de la barra)"] = "%d (%d%% of the bar)",

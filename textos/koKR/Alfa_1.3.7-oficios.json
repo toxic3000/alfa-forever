@@ -34,7 +34,6 @@
  "En la lista de %s: %s.": "%s의 목록: %s.",
  "cocina": "요리",
  "El clic en «Enviar» siempre es tuyo.": "«보내기» 클릭은 항상 직접 해요.",
- "Poniendo %s en la carta...": "편지에 %s 넣는 중...",
  "Preparar": "준비",
  "Suelta lo que traes en el cursor y vuelve a intentarlo.": "커서에 든 것을 내려놓고 다시 해 보세요.",
  "La carta ya está llena: manda esta y prepara otra.": "편지가 가득 찼어요: 이걸 보내고 하나 더 준비하세요.",
@@ -111,5 +110,6 @@
  "Nodos en el mapa del mundo: ocultos.": "세계 지도 채집물: 숨김.",
  "Nodos en el mapa del mundo: visibles.": "세계 지도 채집물: 표시.",
  "Los recolectaste %d vez en total": "총 %d번 채집했어요",
- "Nodos en el minimapa: visibles.": "미니맵 채집물: 표시."
+ "Nodos en el minimapa: visibles.": "미니맵 채집물: 표시.",
+ "Poniendo %s en la carta…": "편지에 %s 넣는 중..."
 }

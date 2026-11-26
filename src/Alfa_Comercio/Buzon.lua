@@ -248,7 +248,7 @@ function Bz.Tomar()
 		return true
 	end
 	if enCombate() then
-		N.Imprimir(L["No se puede en combate."])
+		N.Imprimir(L["Se puede al salir de combate."])
 		return false
 	end
 	if not abierto then
@@ -329,7 +329,7 @@ function Bz.PintarProgreso()
 		p.Barra:Show()
 		p.Barra:Set(hechas / total)
 	else
-		K.Escribir(p.Texto, L["Cargando tus cartas..."])
+		K.Escribir(p.Texto, L["Cargando tus cartas…"])
 		p.Barra:Hide()
 	end
 	p:Show()
@@ -404,8 +404,8 @@ local BARRA_W, BARRA_H = 384, 40 -- 1.3.0: más ancha, para que quepa el resumen
 local function marcoBuzon() return rawget(_G, "MailFrame") end
 
 local function textoEstado()
-	if tomando then return L["Tomando tus cartas..."], "textoSuave" end
-	if pendiente or (abierto and not cargado) then return L["Cargando tus cartas..."], "textoSuave" end
+	if tomando then return L["Tomando tus cartas…"], "textoSuave" end
+	if pendiente or (abierto and not cargado) then return L["Cargando tus cartas…"], "textoSuave" end
 	-- El resumen se ve un rato y solo mientras el buzón siga igual.
 	local u = Bz.ultimo
 	if u and u.cartas == cuantas() and ((GetTime and GetTime() or 0) - (u.t or 0)) < 20 then

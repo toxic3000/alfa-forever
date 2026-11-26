@@ -228,10 +228,10 @@
  "Bordes suaves": "부드러운 가장자리",
  "Brillo máximo (nits)": "최대 밝기 (니트)",
  "Brillo normal (nits)": "기본 밝기 (니트)",
- "Buscar: pasto, niebla, sombras...": "검색: 풀, 안개, 그림자...",
  "Cada ajuste que Alfa cambió vuelve al valor que tenía antes. Los filtros no cambian.": "Alfa가 바꾼 설정은 모두 이전 값으로 돌아갑니다. 필터는 바뀌지 않습니다.",
  "Calidad de la niebla": "안개 품질",
  "Calidad de las sombras": "그림자 품질",
  "Cambiaste %d ajustes aquí. Volver a ponerlos al entrar está apagado (Avanzado).": "여기서 설정 %d개를 바꿨습니다. 접속할 때 다시 적용하기는 꺼져 있습니다(고급).",
- "Campo de visión": "시야각"
+ "Campo de visión": "시야각",
+ "Buscar: pasto, niebla, sombras…": "검색: 풀, 안개, 그림자..."
 }

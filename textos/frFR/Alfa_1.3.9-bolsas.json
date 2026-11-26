@@ -5,7 +5,6 @@
  "Al ordenar, lo que tiene candado se queda en su casilla y lo demás se acomoda alrededor.": "Au tri, ce qui est verrouillé reste à sa place et le reste s'organise autour.",
  "Botón «Lo que me sobra»": "Bouton « Mes restes »",
  "Como el juego": "Comme le jeu",
- "Como el juego, o el orden de Alfa: por tipo (equipo, consumibles, materiales... y la chatarra al final), por calidad o por nombre.": "Comme le jeu, ou l'ordre d'Alfa : par type (équipement, consommables, matériaux... et la camelote à la fin), par qualité ou par nom.",
  "Con «Separar», lo épico que tiene candado también sale con el martillo si vale más en la subasta. El candado sigue: no se vende ni se borra.": "Avec « Trier », les objets épiques verrouillés reçoivent aussi le marteau s'ils valent plus à l'hôtel des ventes. Le verrou reste : ils ne se vendent ni ne se détruisent.",
  "Cómo ordenar": "Comment trier",
  "Dejé de ordenar: el juego no soltó algunos objetos. Dale otra vez en un momento.": "J'ai arrêté de trier : le jeu n'a pas relâché certains objets. Réessaie dans un instant.",
@@ -24,7 +23,6 @@
  "No te sobra nada para vender.": "Il ne te reste rien à vendre.",
  "Por calidad": "Par qualité",
  "Por nombre": "Par nom",
- "Por nombre, tipo o calidad (verde, azul...) y por nivel de objeto: 20, >20, 20-30. También por lo que es (arma, material, comida...) y por lo que Alfa sabe: mejora, nuevo, candado, sin usar, sobra, subasta. Con «-» delante quitas: -gris. Lo que coincide se resalta.": "Par nom, type ou qualité (vert, bleu...) et par niveau d'objet : 20, >20, 20-30. Aussi par ce que c'est (arme, matériau, nourriture...) et par ce qu'Alfa sait : amélioration, nouveau, verrouillé, inutilisé, reste, enchères. Avec « - » devant, tu exclus : -gris. Ce qui correspond est mis en évidence.",
  "Por tipo": "Par type",
  "Quedan %d para otra carta.": "Il en reste %d pour une autre lettre.",
  "Sin que hagas nada: lo épico y legendario, lo de misiones, tu piedra de hogar, lo de tus conjuntos de equipo, tus herramientas de oficio (caña, pico, martillo, cuchillo) y lo que te lleva de viaje.": "Sans que tu fasses rien : l'épique et le légendaire, les objets de quête, ta pierre de foyer, les pièces de tes ensembles d'équipement, tes outils de métier (canne, pioche, marteau, couteau) et ce qui te fait voyager.",
@@ -51,5 +49,7 @@
  "vender": "vendre",
  "«Separar»: lo épico con candado a la subasta": "« Trier » : les épiques verrouillés aux enchères",
  "Si la ventana no empieza en la orilla izquierda de tu otro monitor (el de la izquierda), arrástrala ahí una vez; Windows la recordará.": "Si la fenêtre ne commence pas au bord gauche de ton autre écran (celui de gauche), fais-la glisser là une fois ; Windows s'en souviendra.",
- "Tu otro monitor está:": "Ton autre écran est :"
+ "Tu otro monitor está:": "Ton autre écran est :",
+ "Como el juego, o el orden de Alfa: por tipo (equipo, consumibles, materiales… y la chatarra al final), por calidad o por nombre.": "Comme le jeu, ou l'ordre d'Alfa : par type (équipement, consommables, matériaux... et la camelote à la fin), par qualité ou par nom.",
+ "Por nombre, tipo o calidad (verde, azul…) y por nivel de objeto: 20, >20, 20-30. También por lo que es (arma, material, comida…) y por lo que Alfa sabe: mejora, nuevo, candado, sin usar, sobra, subasta. Con «-» delante quitas: -gris. Lo que coincide se resalta.": "Par nom, type ou qualité (vert, bleu...) et par niveau d'objet : 20, >20, 20-30. Aussi par ce que c'est (arme, matériau, nourriture...) et par ce qu'Alfa sait : amélioration, nouveau, verrouillé, inutilisé, reste, enchères. Avec « - » devant, tu exclus : -gris. Ce qui correspond est mis en évidence."
 }

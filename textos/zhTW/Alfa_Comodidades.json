@@ -1,7 +1,5 @@
 {
  "A los lados del modelo, un botón por ranura: un clic oculta esa pieza y otro la vuelve a poner.": "模型兩側每個欄位各有一個按鈕：點一下隱藏該部位，再點一下穿回去。",
- "Abajo del modelo, elige lo que hace tu personaje (caminar, bailar, saludar...) y páusalo.": "在模型下方選擇角色的動作（走路、跳舞、揮手...），也可以暫停。",
- "Abrir las comodidades (minimapa, cuadro de información, probador...)": "開啟便利功能（小地圖、滑鼠提示、試衣間...）",
  "Aceptar y entregar todas las misiones": "接受並交付所有任務",
  "Agrega una línea con el objetivo de esa unidad; si te tiene a ti, lo dice.": "加上一行顯示該單位的目標；如果目標是你，也會註明。",
  "Alejar más la cámara": "鏡頭拉得更遠",
@@ -107,5 +105,7 @@
  "Vitorear": "歡呼",
  "Voces de error": "錯誤語音",
  "esta misión": "此任務",
- "¡Tú!": "你！"
+ "¡Tú!": "你！",
+ "Abajo del modelo, elige lo que hace tu personaje (caminar, bailar, saludar…) y páusalo.": "在模型下方選擇角色的動作（走路、跳舞、揮手...），也可以暫停。",
+ "Abrir las comodidades (minimapa, cuadro de información, probador…)": "開啟便利功能（小地圖、滑鼠提示、試衣間...）"
 }

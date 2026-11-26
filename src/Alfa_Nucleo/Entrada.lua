@@ -106,6 +106,12 @@ function N.PidioJugador()
 	if pidiendo > 0 then return true end
 	return ahora() - clicAlfa <= CLIC_VALE and enVentanaAlfa()
 end
+-- 1.4.1: ¿es la respuesta a un clic en una ventana de Alfa (no a un /alfa)?
+-- Entonces se contesta con un aviso junto a la ventana, no abajo en el chat.
+function N.RespuestaDeClic()
+	if pidiendo > 0 then return false end
+	return ahora() - clicAlfa <= CLIC_VALE and enVentanaAlfa()
+end
 
 local function avisar() if A and A.Fire then A.Fire("ALFA_ALENTRAR") end end
 

@@ -5,13 +5,9 @@
  "%d misiones": "%d Quests",
  "%d muertes": "%d Tode",
  "%d niveles": "%d Stufen",
- "%d%% de nivel": "%d%% einer Stufe",
- "%d%% de un nivel": "%d%% einer Stufe",
- "%s al %d%%": "%s bei %d%%",
  "%s al %d%%: ¡repara ya!": "%s bei %d%%: Sofort reparieren!",
  "%s está rota": "%s ist kaputt",
  "%s%% del nivel %d": "%s%% von Stufe %d",
- "%s: %d%%": "%s: %d%%",
  "1 espacio": "1 Platz",
  "1 habilidad por aprender": "1 Fähigkeit zu lernen",
  "1 misión": "1 Quest",
@@ -170,7 +166,6 @@
  "Vendedor": "Händler",
  "Ver mi diario": "Mein Tagebuch ansehen",
  "XP": "EP",
- "XP descansada: %d%% de un nivel": "Ruhebonus: %d%% einer Stufe",
  "XP ganada": "Erhaltene EP",
  "XP por hora": "EP pro Stunde",
  "XP por hora en cada sesión": "EP pro Stunde in jeder Sitzung",
@@ -195,5 +190,8 @@
  "¡Hola, %s!": "Hallo, %s!",
  "¡Repara tu equipo!": "Repariere deine Ausrüstung!",
  "¡Terminaste esta guía! Elige la siguiente y sigue subiendo con la manada.": "Du hast diesen Guide abgeschlossen! Wähle den nächsten und steig mit dem Rudel weiter auf.",
- "¿Borrar el diario?": "Tagebuch löschen?"
+ "¿Borrar el diario?": "Tagebuch löschen?",
+ "%d %% de nivel": "%d%% einer Stufe",
+ "%d %% de un nivel": "%d%% einer Stufe",
+ "%s al %d %%": "%s bei %d%%"
 }

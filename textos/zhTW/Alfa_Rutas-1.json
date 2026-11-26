@@ -36,8 +36,6 @@
  "Alfa arma al momento una guía para conseguirlo.": "Alfa 會立即建立取得它的指南。",
  "Alfa arma una guía con el orden más corto para terminar y entregar todas. Quita la marca de las que no quieras hacer, o tócales la X para abandonarlas.": "Alfa 會依最短的順序建立指南，帶你完成並繳交所有任務。取消勾選不想做的任務，或點它們的 X 來放棄。",
  "Alfa elige todo: misiones ordenadas por XP por distancia y tus misiones de clase.": "Alfa 會幫你挑好一切：依經驗值與距離的效率排序的任務，以及你的職業任務。",
- "Alfa está armando tu ruta...": "Alfa 正在建立你的路線...",
- "Alfa está eligiendo...": "Alfa 正在挑選...",
  "Alfa no conoce de dónde sale. Prueba en el Buscador.": "Alfa 不知道它從哪裡來。請試試查詢。",
  "Alfa no pudo armar el camino a %s (%s). Míralo en el Buscador.": "Alfa 無法建立前往 %s 的路線（%s）。請在查詢中查看。",
  "Alfa no sabe de dónde sale este objeto.": "Alfa 不知道這件物品從哪裡來。",
@@ -65,11 +63,9 @@
  "Busca el material en el catálogo y toca \"Agregar a mi ruta\": cambia este tramo.": "在目錄中找到材料並點「加入我的路線」：會替換這個路段。",
  "Busca por nombre: espada, mena, poción...": "依名稱搜尋：劍、礦石、藥水...",
  "Buscador": "查詢",
- "Buscando otras misiones...": "正在尋找其他任務...",
  "Buscar objetos": "搜尋物品",
  "Calidad": "品質",
  "Calidad (mejor primero)": "品質（由高到低）",
- "Cambiar nombre...": "重新命名...",
  "Cambiar objeto": "更換物品",
  "Cambiar por otra misión...": "換成其他任務...",
  "Cantidad": "數量",
@@ -218,5 +214,9 @@
  "Otras armas": "其他武器",
  "Otro material del catálogo...": "目錄中的其他材料...",
  "PNJ %d": "NPC %d",
- "Para abandonar": "要放棄的任務"
+ "Para abandonar": "要放棄的任務",
+ "Alfa está armando tu ruta…": "Alfa 正在建立你的路線...",
+ "Alfa está eligiendo…": "Alfa 正在挑選...",
+ "Buscando otras misiones…": "正在尋找其他任務...",
+ "Cambiar nombre…": "重新命名..."
 }

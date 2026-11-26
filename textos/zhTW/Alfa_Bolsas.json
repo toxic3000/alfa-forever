@@ -87,7 +87,6 @@
  "Tus bolsas y tu banco en una sola ventana, y lo que lleva cada uno de tus personajes.": "在同一個視窗中查看你的背包與銀行，以及每個角色身上的東西。",
  "Tus llaves junto a tus bolsas.": "把鑰匙顯示在背包旁邊。",
  "Tus personajes": "你的角色",
- "Un borde del color de la calidad: verde, azul, morado...": "以品質顏色顯示邊框：綠色、藍色、紫色...",
  "Un marco dorado en lo que sirve para una misión (con «!» si empieza una).": "任務需要的物品會有金色外框（能開始任務的物品會標上「!」）。",
  "Una flecha verde en el equipo que es mejor que lo que llevas puesto, según tu clase y nivel.": "依你的職業與等級，比身上裝備更好的裝備會顯示綠色箭頭。",
  "Una moneda sobre lo gris: lo que solo sirve para vender.": "灰色物品上會顯示硬幣：這些東西只能拿來賣。",
@@ -121,5 +120,6 @@
  "raro": "精良",
  "verde": "綠色",
  "visto %s": "上次上線：%s",
- "épico": "史詩"
+ "épico": "史詩",
+ "Un borde del color de la calidad: verde, azul, morado…": "以品質顏色顯示邊框：綠色、藍色、紫色..."
 }

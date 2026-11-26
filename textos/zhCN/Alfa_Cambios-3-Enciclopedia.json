@@ -61,9 +61,7 @@
   "Dónde está": "位置",
   "Dónde está cada uno, lo que vende, lo que suelta y sus misiones.": "每个人的位置、出售的物品、掉落和任务。",
   "Dónde se entrega": "交付地点",
-  "El buscador del motor está apagado (Ajustes > Descubrir): enciéndelo para que Alfa arme guías.": "引擎的查询已关闭（设置 > 发现）：请开启，让 Alfa 能生成指南。",
   "El mapa no se abre en combate.": "战斗中无法打开地图。",
-  "El motor no puede armar guías ahora.": "引擎现在无法生成指南。",
   "El paquete de datos de Alfa (Alfa_Codex) está desactivado: actívalo en la lista de addons y recarga.": "Alfa 的数据包（Alfa_Codex）已停用：请在插件列表中启用并重载。",
   "Elfos de la noche": "暗夜精灵",
   "Elige algo de la lista": "从列表中选择一项",
@@ -273,5 +271,7 @@
   "Élite": "精英",
   "Épico": "史诗",
   "Ídolo": "神像",
-  "élite": "精英"
+  "élite": "精英",
+  "Ahora no puedo armar la guía. Prueba en un momento; si sigue, cuéntanos con /alfa reportar.": "现在无法生成指南。稍后再试；若仍不行，请用 /alfa reportar 告诉我们。",
+  "El buscador de Alfa está apagado (Ajustes > Descubrimiento): enciéndelo y te armo la guía.": "Alfa 的搜索已关闭（设置 > 探索）：打开后我来生成指南。"
 }

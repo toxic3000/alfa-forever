@@ -138,7 +138,7 @@ local C = {
 		help = L["Cuando entras a una posada o ciudad, y cuando tu XP descansada se acaba."],
 		search = "descanso, descansada, posada, rested, rest, inn, xp" },
 	descansoBajo = { kind = "slider", key = "inicio.descansoBajo", label = L["Avisar cuando baje de"], min = 0, max = 50, step = 5,
-		format = function(v) return v <= 0 and L["Solo al acabarse"] or format(L["%d%% de nivel"], v) end, child = true,
+		format = function(v) return v <= 0 and L["Solo al acabarse"] or format(L["%d %% de nivel"], v) end, child = true,
 		disabled = apagado("recDescanso"), search = "descanso, descansada, rested, low" },
 	resumen = { kind = "dropdown", key = "inicio.resumen", label = L["Resumen de tu sesión anterior al entrar"],
 		help = L["Lo que ganaste la última vez que jugaste con este personaje."],
@@ -1062,7 +1062,7 @@ local function alertas()
 	if e.pct and e.pct <= durAviso then
 		local pct = floor(e.pct + 0.5)
 		local pieza = R.NombrePieza(e.slot) or R.NombreRanura(e.slot)
-		local det = pct <= 0 and format(L["%s está rota"], pieza) or format(L["%s al %d%%"], pieza, pct)
+		local det = pct <= 0 and format(L["%s está rota"], pieza) or format(L["%s al %d %%"], pieza, pct)
 		local otras = (e.gastadas or 1) - 1
 		if otras > 0 then det = det .. DOT .. (otras == 1 and L["y 1 pieza más"] or format(L["y %d piezas más"], otras)) end
 		local urgente = e.pct <= durUrg
@@ -2002,7 +2002,7 @@ local function nuevaHora(padre)
 				progreso = { actual = h.i - 1, total = n, huellas = true,
 					texto = format(L["Llevas %s de %s"], TM.Minutos(llevas), TM.Minutos(h.total)) },
 				accion = { texto = L["Llévame"], icono = "ic-flecha", alClic = function() TM.Ir(p) end },
-				secundaria = { texto = h.i >= n and L["Terminar"] or L["Siguiente"], alClic = function() TM.Siguiente() end },
+				secundaria = { texto = h.i >= n and L["Listo"] or L["Siguiente"], alClic = function() TM.Siguiente() end },
 				ayuda = L["«Llévame» pone la flecha en este paso; «Siguiente» lo da por hecho y te lleva al que sigue."] })
 			local lista = {}
 			-- Antes de una mazmorra: ¿llevas todo?

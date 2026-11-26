@@ -27,7 +27,7 @@ local CAMINOS = {
 	{ clave = "profesiones", icono = "ic-oficios", tono = "aviso", titulo = L["Profesiones"], texto = L["Sube tu profesión o junta sus materiales donde más hay."] },
 	{ clave = "oro", icono = "ic-oro", tono = "oro", titulo = L["Hacer oro"], texto = L["Misiones que dejan dinero y materiales que se venden bien."] },
 	{ clave = "mazmorras", icono = "ic-mazmorra", tono = "mazmorra", titulo = L["Mazmorras"], texto = L["La mazmorra para tu nivel, sus misiones y cómo llegar."] },
-	{ clave = "planes", icono = "ic-lista", tono = "acento", titulo = L["Mi propio plan"], texto = L["Tus metas en tu orden: un objeto, oro, una profesión, un lugar..."] },
+	{ clave = "planes", icono = "ic-lista", tono = "acento", titulo = L["Mi propio plan"], texto = L["Tus metas en tu orden: un objeto, oro, una profesión, un lugar…"] },
 }
 
 local function cerrar() if v then v:Cerrar() end end

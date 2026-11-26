@@ -621,7 +621,7 @@ local function grupos(padre)
 	local fuente = plegada({ titulo = L["Usar siempre la prioridad de Alfa"], hija = true, activa = si("rotacion"), control = interruptor("prioridadAlfa"),
 		texto = L["Sugiere con la prioridad de Alfa para tu clase. Apagado, usa la ayuda de Blizzard cuando el juego da una sugerencia que Alfa puede leer; en combate Forever la oculta, así que ahí sigue la de Alfa."] })
 	g1:Fila({ titulo = L["Volver a su lugar"], texto = L["Tus marcos de combate vuelven a su lugar de siempre."],
-		control = function(fila) return K.Boton(fila, L["Devolver"], function()
+		control = function(fila) return K.Boton(fila, L["Restablecer"], function()
 			M.ReiniciarPosiciones()
 			N.Imprimir(L["Tus marcos de combate volvieron a su lugar de siempre."])
 		end, { tipo = "secundario", tam = "chico" }) end })
@@ -860,7 +860,7 @@ local CONTROLES = {
 		c.needs = function() return R.Disponible() and true or false end
 		return c
 	end)(),
-	{ kind = "button", label = L["Volver a su lugar"], button = L["Devolver"], icon = "window",
+	{ kind = "button", label = L["Volver a su lugar"], button = L["Restablecer"], icon = "window",
 		help = L["Tus marcos de combate vuelven a su lugar de siempre."], onClick = function() M.ReiniciarPosiciones() end,
 		search = "reset position, move frames" },
 	toggle("avisos", L["Avisos de reacción"], L["Un aviso corto cuando se activa una habilidad que depende de lo que pasó, como Abrumar después de que el enemigo esquive."], nil,

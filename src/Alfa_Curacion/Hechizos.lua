@@ -154,7 +154,7 @@ M.H = H
 M.CATEGORIAS = {
 	{ id = "cura", nombre = L["Curas"] },
 	{ id = "quitar", nombre = L["Quitar perjuicios"] },
-	{ id = "buff", nombre = L["Buffs"] },
+	{ id = "buff", nombre = L["Beneficios"] },
 	{ id = "revivir", nombre = L["Revivir"] },
 }
 
@@ -408,7 +408,7 @@ local BUFFS = {
 
 M.PREAJUSTES = {
 	curar = { nombre = L["Curandero"], icono = "plus" },
-	buffs = { nombre = L["Solo buffs"], icono = "star" },
+	buffs = { nombre = L["Solo beneficios"], icono = "star" },
 	cero = { nombre = L["Desde cero"], icono = "reset" },
 }
 

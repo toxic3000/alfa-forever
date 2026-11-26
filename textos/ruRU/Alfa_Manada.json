@@ -17,8 +17,6 @@
  "Avisa a tu hermandad que usas Alfa y escucha a los demás Alfa. Apagado, Alfa no envía ni recibe nada de nadie.": "Сообщает гильдии, что вы используете Alfa, и слушает других пользователей Alfa. Если выключено, Alfa ничего ни от кого не отправляет и не получает.",
  "Aún no eres de la manada": "Вы еще не в стае",
  "Borra la lista de \"hace cuánto lo viste\" guardada en esta cuenta.": "Очищает список «когда видели в последний раз», сохраненный на этой учетной записи.",
- "Buscando a un oficial...": "Ищем офицера...",
- "Buscando su rastro...": "Ищем след...",
  "Buscar por nombre": "Поиск по имени",
  "Clic: seguir con la flecha": "Щелчок: следовать по стрелке",
  "Compartes tu ubicación %s.": "Вы делитесь местоположением %s.",
@@ -135,5 +133,7 @@
  "¿Le muestras a tu manada dónde estás?": "Показать стае, где вы?",
  "¿Quieres cazar con nosotros? Pulsa el botón: Alfa busca a un oficial conectado y te abre un susurro con tu mensaje listo para que lo envíes con Intro.": "Хотите охотиться с нами? Нажмите кнопку: Alfa найдет офицера в сети и откроет шепот с готовым сообщением — останется нажать Enter.",
  "Última posición enviada %s.": "Последнее положение отправлено %s.",
- "Únete a La Jauría": "Вступайте в La Jauría"
+ "Únete a La Jauría": "Вступайте в La Jauría",
+ "Buscando a un oficial…": "Ищем офицера...",
+ "Buscando su rastro…": "Ищем след..."
 }

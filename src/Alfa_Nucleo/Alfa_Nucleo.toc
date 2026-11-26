@@ -22,6 +22,7 @@ Kit\Tokens.lua
 Kit\Formas.lua
 Kit\Basicos.lua
 Kit\Movible.lua
+Kit\Raton.lua
 Kit\Ayuda.lua
 Kit\Bloques.lua
 Kit\Ventanas.lua

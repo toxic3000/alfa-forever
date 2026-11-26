@@ -182,7 +182,7 @@ function Gu.AlBanco(lista)
 		return false
 	end
 	if M.EnCombate() then
-		N.Imprimir(L["No se puede en combate."])
+		N.Imprimir(L["Se puede al salir de combate."])
 		return false
 	end
 	local plan = M.Banco.PlanCasillas(lista)
@@ -204,7 +204,7 @@ A.OnLogin(function()
 			respuesta = L["En Bolsas, «Qué guardar» te dice lo que sirve más en el banco: materiales de las recetas de tus otros personajes, lo que piden sus misiones y equipo que tu clase no usa. Con un banquero, «Al banco» y listo."] },
 		-- 1.3.0
 		{ id = "bolsas.conjuntos", icono = "ic-personaje", pregunta = L["¿Cómo cambio de equipo rápido?"],
-			respuesta = L["Guarda lo que llevas como un conjunto (curar, daño, pesca...) desde el botón de tus bolsas o en Bolsas, y póntelo con un clic. En combate te lo pongo al terminar."] },
+			respuesta = L["Guarda lo que llevas como un conjunto (curar, daño, pesca…) desde el botón de tus bolsas o en Bolsas, y póntelo con un clic. En combate te lo pongo al terminar."] },
 		{ id = "bolsas.comparar", icono = "ic-nivel", pregunta = L["¿Qué gano con esta pieza?"],
 			respuesta = L["Pásale el ratón: en su cuadro te digo lo que ganas y lo que pierdes contra lo que llevas puesto, con números. Lo primero es lo que más le sirve a tu clase."] },
 		{ id = "bolsas.buscarTodos", icono = "ic-buscar", pregunta = L["¿Quién de mis personajes tiene esto?"],

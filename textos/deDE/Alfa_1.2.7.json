@@ -78,7 +78,6 @@
  "Me quedo aquí sentadita contigo. Tres caídas no te hacen menos lobo. ¿Reparamos y pedimos ayuda?": "Ich setz mich hier zu dir. Drei Tode machen dich nicht weniger zum Wolf. Reparieren wir und bitten um Hilfe?",
  "Memoria de Alfa": "Alfas Speicher",
  "Márcalo con la calavera y todo tu grupo lo verá.": "Markier ihn mit dem Totenkopf, und deine ganze Gruppe sieht ihn.",
- "No se pudo importar": "Import fehlgeschlagen",
  "Omitiste un paso": "Du hast einen Schritt übersprungen",
  "Para marcarlo, clic derecho en su retrato y elige la calavera.": "Um ihn zu markieren: Rechtsklick auf sein Porträt und den Totenkopf wählen.",
  "Pedir ayuda a la manada": "Das Rudel um Hilfe bitten",
@@ -127,5 +126,6 @@
  "¡Ya estamos en la mazmorra! Deja que el tanque jale primero y quédate cerca de quien cura.": "Wir sind im Dungeon! Lass den Tank zuerst pullen und bleib nah bei deinem Heiler.",
  "¡Ñam! Con esta van %d. Eres mi persona favorita de todo Azeroth.": "Mampf! Das macht %d. Du bist mein Lieblingsmensch in ganz Azeroth.",
  "¿Ya te vas? Descansa bien. Yo me quedo vigilando hasta que vuelvas.": "Gehst du schon? Ruh dich gut aus. Ich halte Wache, bis du zurück bist.",
- "Ñam. Esto me da energía para cuidarte otras tres horas.": "Mampf. Das gibt mir Energie, um noch drei Stunden auf dich aufzupassen."
+ "Ñam. Esto me da energía para cuidarte otras tres horas.": "Mampf. Das gibt mir Energie, um noch drei Stunden auf dich aufzupassen.",
+ "No pude importar": "Import nicht möglich"
 }

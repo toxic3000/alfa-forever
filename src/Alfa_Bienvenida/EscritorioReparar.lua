@@ -339,7 +339,7 @@ local function armarCuadro()
 	f.Texto = K.Texto(f, "texto", "textoSuave")
 	f.Texto:SetJustifyH("LEFT")
 	f.Si = K.Boton(f, L["Sí, reparar"], function() f:Hide() Rp.Reparar() end, { tipo = "primario", icono = "ic-exito" })
-	f.No = K.Boton(f, L["Ahora no"], function() f:Hide() end, { tipo = "secundario" })
+	f.No = K.Boton(f, L["Ahora no"], function() f:Hide() end, { tipo = "fantasma" })
 	f:Hide()
 	return f
 end

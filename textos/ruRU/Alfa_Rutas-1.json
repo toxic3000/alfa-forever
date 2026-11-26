@@ -36,8 +36,6 @@
  "Alfa arma al momento una guía para conseguirlo.": "Alfa сразу составит гайд, чтобы это получить.",
  "Alfa arma una guía con el orden más corto para terminar y entregar todas. Quita la marca de las que no quieras hacer, o tócales la X para abandonarlas.": "Alfa составит гайд с самым коротким порядком, чтобы выполнить и сдать все. Снимите отметку с тех, что не хотите делать, или нажмите на их X, чтобы от них отказаться.",
  "Alfa elige todo: misiones ordenadas por XP por distancia y tus misiones de clase.": "Alfa выбирает все сам: задания по соотношению опыта к расстоянию и ваши классовые задания.",
- "Alfa está armando tu ruta...": "Alfa составляет ваш маршрут...",
- "Alfa está eligiendo...": "Alfa выбирает...",
  "Alfa no conoce de dónde sale. Prueba en el Buscador.": "Alfa не знает, откуда это берется. Попробуйте «Поиск».",
  "Alfa no pudo armar el camino a %s (%s). Míralo en el Buscador.": "Alfa не смог проложить путь к %s (%s). Посмотрите в «Поиске».",
  "Alfa no sabe de dónde sale este objeto.": "Alfa не знает, откуда берется этот предмет.",
@@ -65,11 +63,9 @@
  "Busca el material en el catálogo y toca \"Agregar a mi ruta\": cambia este tramo.": "Найдите материал в каталоге и нажмите «Добавить в мой маршрут»: этот этап изменится.",
  "Busca por nombre: espada, mena, poción...": "Поиск по названию: меч, руда, зелье...",
  "Buscador": "Поиск",
- "Buscando otras misiones...": "Ищем другие задания...",
  "Buscar objetos": "Искать предметы",
  "Calidad": "Качество",
  "Calidad (mejor primero)": "Качество (сначала лучшее)",
- "Cambiar nombre...": "Переименовать...",
  "Cambiar objeto": "Сменить предмет",
  "Cambiar por otra misión...": "Заменить другим заданием...",
  "Cantidad": "Количество",
@@ -159,5 +155,9 @@
  "Limpiar": "Очистить",
  "Lista para entregar": "Можно сдавать",
  "Listo: sigue la flecha para terminar y entregar tus misiones.": "Готово: следуйте за стрелкой, чтобы выполнить и сдать задания.",
- "Llaves": "Ключи"
+ "Llaves": "Ключи",
+ "Alfa está armando tu ruta…": "Alfa составляет ваш маршрут...",
+ "Alfa está eligiendo…": "Alfa выбирает...",
+ "Buscando otras misiones…": "Ищем другие задания...",
+ "Cambiar nombre…": "Переименовать..."
 }

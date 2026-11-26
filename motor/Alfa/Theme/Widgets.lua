@@ -2364,6 +2364,17 @@ local function buildModal()
 	end)
 	s:HookScript("OnShow", function(self) Anim.To(self, "alpha", 0, 1, Anim.FAST, "out") end)
 	modal = s
+	-- Alfa 1.4.1: en combate el velo de pantalla completa no se queda con el
+	-- ratón (el primer clic de la pelea y el giro de la cámara): el diálogo se
+	-- aparta sin cancelarse y vuelve al salir del combate.
+	if ns.RegisterEvent then
+		ns.RegisterEvent("PLAYER_REGEN_DISABLED", function()
+			if s:IsShown() then s.psApartado = true s:Hide() end
+		end)
+		ns.RegisterEvent("PLAYER_REGEN_ENABLED", function()
+			if s.psApartado then s.psApartado = nil if s.psSpec then s:Show() end end
+		end)
+	end
 end
 
 function W.Modal(spec)
@@ -2398,7 +2409,7 @@ function W.Modal(spec)
 	box:SetHeight(MODAL_PAD + th + body + 20 + MODAL_FOOT)
 	local a = box.Action
 	a.psDanger, a.psPrimary = spec.danger and true or false, not spec.danger
-	W.SetButtonText(a, spec.action or L["OK"])
+	W.SetButtonText(a, spec.action or (ns.T and ns.T("Entendido") or L["OK"])) -- Alfa 1.4.1: como el resto de Alfa
 	W.RepaintButton(a)
 	W.SetButtonText(box.Cancel, spec.cancel or L["Cancel"])
 	modal:Show()

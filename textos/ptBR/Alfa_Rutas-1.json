@@ -36,8 +36,6 @@
  "Alfa arma al momento una guía para conseguirlo.": "O Alfa monta na hora um guia para conseguir.",
  "Alfa arma una guía con el orden más corto para terminar y entregar todas. Quita la marca de las que no quieras hacer, o tócales la X para abandonarlas.": "O Alfa monta um guia com a ordem mais curta para terminar e entregar todas. Desmarque as que não quiser fazer, ou toque no X delas para abandoná-las.",
  "Alfa elige todo: misiones ordenadas por XP por distancia y tus misiones de clase.": "O Alfa escolhe tudo: missões ordenadas por XP por distância e suas missões de classe.",
- "Alfa está armando tu ruta...": "O Alfa está montando sua rota...",
- "Alfa está eligiendo...": "O Alfa está escolhendo...",
  "Alfa no conoce de dónde sale. Prueba en el Buscador.": "O Alfa não sabe de onde isso vem. Tente na Consulta.",
  "Alfa no pudo armar el camino a %s (%s). Míralo en el Buscador.": "O Alfa não conseguiu montar o caminho até %s (%s). Veja na Consulta.",
  "Alfa no sabe de dónde sale este objeto.": "O Alfa não sabe de onde vem este item.",
@@ -65,11 +63,9 @@
  "Busca el material en el catálogo y toca \"Agregar a mi ruta\": cambia este tramo.": "Busque o material no catálogo e toque em \"Adicionar à minha rota\": isso muda este trecho.",
  "Busca por nombre: espada, mena, poción...": "Busque pelo nome: espada, minério, poção...",
  "Buscador": "Consulta",
- "Buscando otras misiones...": "Procurando outras missões...",
  "Buscar objetos": "Buscar itens",
  "Calidad": "Qualidade",
  "Calidad (mejor primero)": "Qualidade (melhor primeiro)",
- "Cambiar nombre...": "Renomear...",
  "Cambiar objeto": "Trocar item",
  "Cambiar por otra misión...": "Trocar por outra missão...",
  "Cantidad": "Quantidade",
@@ -159,5 +155,9 @@
  "Limpiar": "Limpar",
  "Lista para entregar": "Pronta para entregar",
  "Listo: sigue la flecha para terminar y entregar tus misiones.": "Pronto: siga a seta para terminar e entregar suas missões.",
- "Llaves": "Chaves"
+ "Llaves": "Chaves",
+ "Alfa está armando tu ruta…": "O Alfa está montando sua rota...",
+ "Alfa está eligiendo…": "O Alfa está escolhendo...",
+ "Buscando otras misiones…": "Procurando outras missões...",
+ "Cambiar nombre…": "Renomear..."
 }

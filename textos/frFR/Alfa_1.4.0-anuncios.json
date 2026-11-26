@@ -3,11 +3,11 @@
   "Al entrar, su nombre con sus niveles y sus jefes: morado en las mazmorras y ámbar con corona en las bandas. Una vez cada 30 minutos.": "En entrant, son nom avec ses niveaux et ses boss : violet pour les donjons, ambre avec une couronne pour les raids. Une fois toutes les 30 minutes.",
   "Fondo de los anuncios": "Fond des annonces",
   "Sin fondo": "Sans fond",
-  "Descanso acumulado: %d%% de un nivel": "Repos accumulé : %d%% d'un niveau",
   "Zona de nivel %s y tú eres %d: ve con cuidado": "Zone de niveau %s et tu es %d : sois prudent",
   "Cómo se ve detrás del nombre: una placa de esquinas cortadas, una cinta de pendón, ornamentos finos a los lados, una sombra suave o nada más el texto con contorno.": "Ce qu'il y a derrière le nom : une plaque aux coins coupés, un ruban en fanion, de fins ornements sur les côtés, une ombre douce ou seulement le texte avec contour.",
   "Placa": "Plaque",
   "Cinta": "Ruban",
   "Filigrana": "Filigrane",
-  "Sombra suave": "Ombre douce"
+  "Sombra suave": "Ombre douce",
+  "XP descansada: %d %% de un nivel": "Repos accumulé : %d%% d'un niveau"
 }

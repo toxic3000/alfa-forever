@@ -567,7 +567,7 @@ local function pintarSub(f)
 		if e then
 			texto, color = lineaCorta(d.vista.tipo, e)
 		elseif f.alfaBuscando then
-			texto, color = L["Buscando..."], "textoTenue"
+			texto, color = L["Buscando…"], "textoTenue"
 		end
 	end
 	if not texto then texto, color = d.nota or L["Clic: la flecha te lleva"], "textoTenue" end
@@ -801,10 +801,10 @@ A.RegisterCommand("cerca", function(resto)
 	local linea = oficioDe(texto)
 	if linea then return Ce.Ir("trainer", linea) end
 	Ce.Ir(palabra)
-end, L["El maestro de vuelo, la posada, reparar, el banco... el más cercano (/alfa cerca ayuda)."])
+end, L["El maestro de vuelo, la posada, reparar, el banco… el más cercano (/alfa cerca ayuda)."])
 
 -- La tecla (Bindings.xml).
-BINDING_NAME_ALFA_RUTAS_CERCA = L["Buscar cerca (vuelo, posada, reparar...)"]
+BINDING_NAME_ALFA_RUTAS_CERCA = L["Buscar cerca (vuelo, posada, reparar…)"]
 
 ---------------------------------------------------------------------------
 -- AlfaCerca (global)

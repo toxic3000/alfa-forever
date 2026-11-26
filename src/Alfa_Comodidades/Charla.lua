@@ -296,8 +296,9 @@ local function botonDe(cf)
 			if not sobre then b:Hide() end
 		end)
 	end
-	cf:HookScript("OnEnter", mostrar)
-	cf:HookScript("OnLeave", quizaEsconder)
+	-- 1.4.1: sin prenderle el ratón a la ventana de chat (K.Enganchar).
+	N.Kit.Enganchar(cf, "OnEnter", mostrar)
+	N.Kit.Enganchar(cf, "OnLeave", quizaEsconder)
 	b:HookScript("OnLeave", quizaEsconder)
 	botones[cf] = b
 	return b

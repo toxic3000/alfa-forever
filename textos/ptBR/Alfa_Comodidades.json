@@ -1,7 +1,5 @@
 {
  "A los lados del modelo, un botón por ranura: un clic oculta esa pieza y otro la vuelve a poner.": "Dos lados do modelo, um botão por espaço: um clique esconde essa peça e outro a coloca de volta.",
- "Abajo del modelo, elige lo que hace tu personaje (caminar, bailar, saludar...) y páusalo.": "Embaixo do modelo, escolha o que seu personagem faz (andar, dançar, acenar...) e pause.",
- "Abrir las comodidades (minimapa, cuadro de información, probador...)": "Abrir as comodidades (minimapa, dica, provador...)",
  "Aceptar y entregar todas las misiones": "Aceitar e entregar todas as missões",
  "Agrega una línea con el objetivo de esa unidad; si te tiene a ti, lo dice.": "Adiciona uma linha com o alvo dessa unidade; se o alvo for você, ele avisa.",
  "Alejar más la cámara": "Afastar mais a câmera",
@@ -107,5 +105,7 @@
  "Vitorear": "Comemorar",
  "Voces de error": "Vozes de erro",
  "esta misión": "esta missão",
- "¡Tú!": "Você!"
+ "¡Tú!": "Você!",
+ "Abajo del modelo, elige lo que hace tu personaje (caminar, bailar, saludar…) y páusalo.": "Embaixo do modelo, escolha o que seu personagem faz (andar, dançar, acenar...) e pause.",
+ "Abrir las comodidades (minimapa, cuadro de información, probador…)": "Abrir as comodidades (minimapa, dica, provador...)"
 }

@@ -25,7 +25,6 @@
  "Antes de entregarla te falta: %s.": "Перед сдачей осталось: %s.",
  "Apagarlo": "Выключить",
  "Aprende Minería o Herboristería": "Изучите горное дело или травничество",
- "Armando «Cerrar mis misiones»...": "Составляем «Закрыть мои задания»...",
  "Avisar cuando queden": "Предупреждать, когда останется",
  "Avisar si la barra de una forma está vacía": "Предупреждать, если панель облика пуста",
  "Aún no está terminada: te falta %s.": "Еще не выполнено: осталось %s.",
@@ -122,5 +121,6 @@
  "Ábrela con su botón en la barra de menú del juego: la fila de botones pequeños de abajo a la derecha.": "Откройте его кнопкой на панели меню игры — это ряд маленьких кнопок справа внизу.",
  "Ábrela con tu tecla de talentos (%s) o desde el menú del juego.": "Откройте его клавишей талантов (%s) или через меню игры.",
  "Ábrela con tu tecla de talentos o desde el menú del juego.": "Откройте его клавишей талантов или через меню игры.",
- "Ábrela con tu tecla del Legado (%s) o con su botón en la barra de menú del juego.": "Откройте его клавишей «Наследия» (%s) или кнопкой на панели меню игры."
+ "Ábrela con tu tecla del Legado (%s) o con su botón en la barra de menú del juego.": "Откройте его клавишей «Наследия» (%s) или кнопкой на панели меню игры.",
+ "Armando «Cerrar mis misiones»…": "Составляем «Закрыть мои задания»..."
 }

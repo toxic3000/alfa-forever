@@ -61,9 +61,7 @@
  "Dónde está": "Wo es ist",
  "Dónde está cada uno, lo que vende, lo que suelta y sus misiones.": "Wo jeder ist, was er verkauft, was er fallen lässt und seine Quests.",
  "Dónde se entrega": "Wo man sie abgibt",
- "El buscador del motor está apagado (Ajustes > Descubrir): enciéndelo para que Alfa arme guías.": "„Nachschlagen“ im Kern ist aus (Einstellungen > Entdecken): Schalte es ein, damit Alfa Guides erstellen kann.",
  "El mapa no se abre en combate.": "Die Karte öffnet sich nicht im Kampf.",
- "El motor no puede armar guías ahora.": "Der Kern kann gerade keine Guides erstellen.",
  "El paquete de datos de Alfa (Alfa_Codex) está desactivado: actívalo en la lista de addons y recarga.": "Alfas Datenpaket (Alfa_Codex) ist deaktiviert: Aktiviere es in der Addon-Liste und lade neu.",
  "Elfos de la noche": "Nachtelfen",
  "Elige algo de la lista": "Wähle etwas aus der Liste",
@@ -273,5 +271,7 @@
  "Élite": "Elite",
  "Épico": "Episch",
  "Ídolo": "Götze",
- "élite": "Elite"
+ "élite": "Elite",
+ "Ahora no puedo armar la guía. Prueba en un momento; si sigue, cuéntanos con /alfa reportar.": "Ich kann den Guide gerade nicht bauen. Versuch es gleich noch mal; wenn es bleibt, sag es uns mit /alfa reportar.",
+ "El buscador de Alfa está apagado (Ajustes > Descubrimiento): enciéndelo y te armo la guía.": "Alfas Suche ist aus (Einstellungen > Entdeckung): schalte sie ein und ich baue dir den Guide."
 }

@@ -177,7 +177,7 @@ local GRUPOS = {
 		{ k = "probadorBotones", hija = "probador", titulo = L["Botones de objetos"],
 			texto = L["A los lados del modelo, un botón por ranura: un clic oculta esa pieza y otro la vuelve a poner."], buscar = "dressup item buttons, hide items, undress slot" },
 		{ k = "probadorAnimacion", hija = "probador", titulo = L["Control de animación"],
-			texto = L["Abajo del modelo, elige lo que hace tu personaje (caminar, bailar, saludar...) y páusalo."], buscar = "dressup animation, animation slider, pause model" },
+			texto = L["Abajo del modelo, elige lo que hace tu personaje (caminar, bailar, saludar…) y páusalo."], buscar = "dressup animation, animation slider, pause model" },
 	} },
 	{ titulo = L["Cámara"], existe = function() return M.ExisteCVar(M.CVAR_CAMARA) end, filas = {
 		{ k = "camara", titulo = L["Alejar más la cámara"],

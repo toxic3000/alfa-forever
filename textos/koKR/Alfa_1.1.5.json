@@ -25,7 +25,6 @@
  "Antes de entregarla te falta: %s.": "제출하기 전에 남은 것: %s.",
  "Apagarlo": "끄기",
  "Aprende Minería o Herboristería": "채광이나 약초채집을 배우세요",
- "Armando «Cerrar mis misiones»...": "«내 퀘스트 끝내기»를 만드는 중...",
  "Avisar cuando queden": "이만큼 남으면 알림",
  "Avisar si la barra de una forma está vacía": "형태의 단축바가 비어 있으면 알림",
  "Aún no está terminada: te falta %s.": "아직 완료되지 않았습니다. 남은 것: %s.",
@@ -122,5 +121,6 @@
  "Druidas, guerreros y pícaros: si tu barra de forma o de actitud está vacía, Alfa te avisa y la llena con un clic.": "드루이드, 전사, 도적: 변신이나 태세 단축바가 비어 있으면 Alfa가 알려 주고 클릭 한 번으로 채워 줍니다.",
  "Se acabó el aviso «Alfa_Builds se ha bloqueado…»: la ventana de talentos, el clic para lanzar y el Legado ahora los abre el juego, y tus hechizos se lanzan sin problema desde el libro.": "«Alfa_Builds 애드온이 차단되었습니다…» 경고는 이제 없습니다. 특성 창, 클릭 시전, 유산 창은 이제 게임이 직접 열고, 마법책에서도 주문이 문제없이 시전됩니다.",
  "Tu guía ya no te manda a entregar misiones sin terminar: primero te lleva a lo que falta, y «Cerrar mis misiones» se pone al día sola.": "가이드가 더 이상 끝나지 않은 퀘스트를 제출하러 보내지 않습니다. 먼저 남은 목표로 안내하고, «내 퀘스트 끝내기»는 알아서 최신 상태가 됩니다.",
- "Sin bloqueos y más claro": "차단 없이, 더 알기 쉽게"
+ "Sin bloqueos y más claro": "차단 없이, 더 알기 쉽게",
+ "Armando «Cerrar mis misiones»…": "«내 퀘스트 끝내기»를 만드는 중..."
 }

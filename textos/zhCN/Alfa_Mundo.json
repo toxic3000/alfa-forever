@@ -20,7 +20,6 @@
  "Azeroth": "艾泽拉斯",
  "Barcos, zepelines y tranvía": "船只、飞艇和矿道地铁",
  "Botones de Alfa en el mapa del juego": "游戏地图上的 Alfa 按钮",
- "Buzones, entrenadores, banco, subasta, reparar...": "邮箱、训练师、银行、拍卖行、修理……",
  "Cada cofre o tesoro conocido.": "每个已知的宝箱或宝藏。",
  "Cada entrada de mazmorra y banda con su rango de niveles. Clic: su página; Mayús+clic: la flecha te lleva.": "每个地下城和团队副本的入口及其等级范围。点击：打开其页面；Shift+点击：箭头带你过去。",
  "Cada lugar conocido donde aparece un enemigo raro.": "每个已知的稀有敌人出没地点。",
@@ -59,7 +58,6 @@
  "La tecla que abre el mapa del juego abre el de Alfa. Apágalo y vuelve a abrir el del juego. También puedes darle una tecla propia en Opciones > Teclado > Alfa.": "打开游戏地图的按键会改为打开 Alfa 地图。关闭此项即可恢复游戏地图。你也可以在“选项 > 按键设置 > Alfa”中为它设置单独的按键。",
  "Lo esencial": "基本内容",
  "Los mismos marcadores de misiones en el minimapa.": "在小地图上显示同样的任务标记。",
- "Los raros están apagados (página Descubrir).": "稀有已关闭（“发现”页面）。",
  "Los raros también en el minimapa.": "在小地图上也显示稀有。",
  "Los servicios también en el minimapa.": "在小地图上也显示服务。",
  "Los tesoros también en el minimapa.": "在小地图上也显示宝藏。",
@@ -118,5 +116,7 @@
  "Vuelos, barcos y posadas también en el minimapa.": "在小地图上也显示飞行点、船只和旅店。",
  "Zonas": "区域",
  "Zonas de enemigos, objetos y lugares de las misiones de tu registro.": "你任务日志中各任务的敌人区域、物品和地点。",
- "Zonas sin descubrir": "未探索区域"
+ "Zonas sin descubrir": "未探索区域",
+ "Buzones, entrenadores, banco, subasta, reparar…": "邮箱、训练师、银行、拍卖行、修理……",
+ "Los raros están apagados (página Descubrimiento).": "稀有怪已关闭（探索页面）。"
 }

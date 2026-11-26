@@ -215,7 +215,7 @@ function Banco.Depositar(clave, cat)
 		return
 	end
 	if M.EnCombate() then
-		N.Imprimir(L["No se puede en combate."])
+		N.Imprimir(L["Se puede al salir de combate."])
 		return
 	end
 	if clave ~= "categoria" then M.Set("deposito", clave) end
@@ -271,7 +271,7 @@ end
 
 function Banco.Comprar()
 	if M.EnCombate() then
-		N.Imprimir(L["No se puede en combate."])
+		N.Imprimir(L["Se puede al salir de combate."])
 		return
 	end
 	if not D.BancoAbierto() then

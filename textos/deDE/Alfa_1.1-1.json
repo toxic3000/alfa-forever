@@ -144,10 +144,8 @@
  "Busca y elige un objeto.": "Such und wähle einen Gegenstand.",
  "Busca y elige una misión.": "Such und wähle eine Quest.",
  "Buscar cerca": "In der Nähe suchen",
- "Buscar cerca (vuelo, posada, reparar...)": "In der Nähe suchen (Flug, Gasthaus, Reparatur...)",
  "Buscar cerca no está disponible.": "„In der Nähe suchen“ ist nicht verfügbar.",
  "Buscar cerca y tus planes": "In der Nähe suchen und deine Pläne",
- "Buscar cerca...": "In der Nähe suchen...",
  "Buscar cerca:": "In der Nähe suchen:",
  "Buscar cerca: vuelo, posada, banco…": "In der Nähe suchen: Flug, Gasthaus, Bank…",
  "Buzón": "Briefkasten",
@@ -244,5 +242,7 @@
  "Dentro de %s (mazmorra)": "In %s (Dungeon)",
  "Desbloquear posición": "Position entsperren",
  "Deseo de muerte: mucho más daño un rato; úsalo en peleas largas.": "Todeswunsch: eine Weile viel mehr Schaden; nutze ihn in langen Kämpfen.",
- "Desmarca las metas hechas de este personaje (las que ya se cumplen se vuelven a marcar solas).": "Hebt die Markierung der erledigten Ziele dieses Charakters auf (bereits erfüllte werden von selbst wieder markiert)."
+ "Desmarca las metas hechas de este personaje (las que ya se cumplen se vuelven a marcar solas).": "Hebt die Markierung der erledigten Ziele dieses Charakters auf (bereits erfüllte werden von selbst wieder markiert).",
+ "Buscar cerca (vuelo, posada, reparar…)": "In der Nähe suchen (Flug, Gasthaus, Reparatur...)",
+ "Buscar cerca…": "In der Nähe suchen..."
 }

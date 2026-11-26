@@ -327,6 +327,12 @@ function Ll.Llevar(cosa, op)
 	op.claves, op.anfitriones = pd.claves, pd.anfitriones
 	local zonas = Ll.Zonas(op)
 	local z = zonas[1]
+	-- 1.4.1: la zona que elegiste («Cerca de ti», «Recomendado» u otra).
+	if op.zona then
+		for _, x in ipairs(zonas) do if x.mapa == op.zona then z = x end end
+	elseif op.modo == "cerca" then
+		z = Ll.MasCerca(zonas) or z
+	end
 	if not z then return false, "zona" end
 	local set = {}
 	for _, c in ipairs(pd.claves) do set[c] = true end
@@ -355,7 +361,98 @@ function Ll.Llevar(cosa, op)
 	return true, z
 end
 
+---------------------------------------------------------------------------
+-- 1.4.1 (Toxic: «me sigues mandando al mismo lugar una y otra vez; que al
+-- elegir el material venga Buscar cerca o Ir al lugar recomendado, para
+-- saber a dónde me va a llevar, porque si es lejos implica dinero»): antes de
+-- salir, eliges. Cada opción dice la zona, lo lejos que está y si es a pie o
+-- si quizá necesites vuelo o barco (eso cuesta oro).
+---------------------------------------------------------------------------
+local LEJOS_A_PIE = 1600 -- yardas: más que esto, quizá te convenga volar
+
+-- La zona con el nodo más cercano a ti (en tu continente), de las que valen.
+function Ll.MasCerca(zonas)
+	local mejor
+	for _, z in ipairs(zonas or {}) do
+		if z.distancia and (not mejor or z.distancia < mejor.distancia) then mejor = z end
+	end
+	return mejor
+end
+
+-- Cómo se llega: { texto, lejos } — «320 yd, unos 1 min a pie»,
+-- «1,9 km: quizá te convenga volar (cuesta oro)», «En otro continente: barco o vuelo (cuesta oro)».
+function Ll.Viaje(z)
+	if not z then return nil end
+	if not z.distancia then
+		return { texto = L["En otro continente: barco o vuelo (cuesta oro)"], lejos = true }
+	end
+	local d = A.FormatDistance and A.FormatDistance(z.distancia) or (floor(z.distancia + 0.5) .. " yd")
+	local mins = max(1, floor(z.distancia / 7 / 60 + 0.5)) -- a pie, unas 7 yd/s
+	if z.distancia > LEJOS_A_PIE then
+		return { texto = format(L["%s: quizá te convenga volar (cuesta oro)"], d), lejos = true }
+	end
+	return { texto = format(L["%s, unos %d min a pie"], d, mins), lejos = false }
+end
+
+-- Las opciones para elegir: { { modo, zona, titulo, texto, icono }, ... }
+-- (la primera, «Cerca de ti»; luego «Recomendado» si es otra zona; luego hasta 3 más).
+function Ll.Opciones(cosa)
+	if type(cosa) == "string" and not grupo(cosa) then cosa = Ll.Buscar(cosa) end
+	local pd = Ll.Pedido(cosa)
+	if not pd then return {} end
+	local op = { claves = pd.claves, anfitriones = pd.anfitriones }
+	local zonas = Ll.Zonas(op)
+	local out, puestas = {}, {}
+	local function linea(z)
+		local partes = { nombreZona(z.mapa) }
+		if z.min and z.max then partes[#partes + 1] = format(L["nivel %d–%d"], z.min, z.max) end
+		partes[#partes + 1] = format(L["%d puntos"], z.puntos or 0)
+		return table.concat(partes, " · ")
+	end
+	local function poner(modo, z, titulo, icono)
+		if not z or puestas[z.mapa] then return end
+		puestas[z.mapa] = true
+		local v = Ll.Viaje(z)
+		out[#out + 1] = { modo = modo, zona = z.mapa, titulo = titulo, texto = linea(z) .. (v and (" · " .. v.texto) or ""),
+			lejos = v and v.lejos or false, icono = icono, z = z }
+	end
+	local cerca = Ll.MasCerca(zonas)
+	-- (si la más cercana es también la recomendada, se dice una vez y con las dos)
+	poner("cerca", cerca, (cerca and zonas[1] and cerca.mapa == zonas[1].mapa) and L["Cerca de ti y recomendado"] or L["Cerca de ti"], "ic-huella")
+	poner("recomendado", zonas[1], L["El lugar recomendado"], "ic-exito")
+	for i = 2, #zonas do
+		if #out >= 5 then break end
+		poner("zona", zonas[i], L["Otra zona"], "ic-mapa")
+	end
+	return out, op
+end
+
+-- El menú para elegir, colgado de un botón (la Enciclopedia, Comercio).
+-- Sin botón (o sin opciones para elegir), directo al lugar recomendado.
+function Ll.Elegir(cosa, dueno, alListo)
+	local K = N.Kit
+	local opciones = Ll.Opciones(cosa)
+	if #opciones <= 1 or not (dueno and K and K.Menu) then
+		local ok, z = Ll.Llevar(cosa, opciones[1] and { zona = opciones[1].zona } or nil)
+		if alListo then alListo(ok, z) end
+		return ok, z
+	end
+	local items = {}
+	for i, o in ipairs(opciones) do
+		items[i] = { valor = i, icono = o.icono, texto = o.titulo .. ": " .. o.texto }
+	end
+	K.Menu(dueno, items, nil, function(i)
+		local o = opciones[i]
+		if not o then return end
+		local ok, z = Ll.Llevar(cosa, { zona = o.zona })
+		if alListo then alListo(ok, z) end
+	end, 420)
+	return true, "menu"
+end
+
 AlfaRecoleccion = type(rawget(_G, "AlfaRecoleccion")) == "table" and rawget(_G, "AlfaRecoleccion") or {}
+AlfaRecoleccion.Opciones = function(cosa) return Ll.Opciones(cosa) end
+AlfaRecoleccion.Elegir = function(cosa, dueno, alListo) return Ll.Elegir(cosa, dueno, alListo) end
 AlfaRecoleccion.Llevar = function(cosa, op) return Ll.Llevar(cosa, op) end
 AlfaRecoleccion.Zonas = function(op) return Ll.Zonas(op) end
 AlfaRecoleccion.GruposDe = function(item) return Ll.GruposDe(item) end

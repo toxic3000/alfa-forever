@@ -110,7 +110,6 @@
  "Sin acción": "Без действия",
  "Sin tecla": "Без клавиши",
  "Solo": "Соло",
- "Solo buffs": "Только баффы",
  "Todavía no conoces sus hechizos: se llenan al aprenderlos.": "Вы еще не знаете этих заклинаний: они появятся, когда вы их изучите.",
  "Tu grupo y tu banda con su vida, para curar con un clic. Se cambia fuera de combate.": "Ваша группа и рейд со здоровьем, чтобы лечить одним щелчком. Меняется вне боя.",
  "Tu libro no tiene hechizos para aliados": "В вашей книге заклинаний нет заклинаний для союзников",
@@ -136,5 +135,6 @@
  "selecciona": "выбирает цель",
  "un hechizo": "заклинание",
  "¿Usar tu hechizo nuevo?": "Использовать новое заклинание?",
- "¿Usar «%s»?": "Использовать «%s»?"
+ "¿Usar «%s»?": "Использовать «%s»?",
+ "Solo beneficios": "Только положительные"
 }

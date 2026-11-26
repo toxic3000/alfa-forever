@@ -248,6 +248,8 @@ end
 
 local function empezar()
 	if not encendido() then return parar() end
+	-- 1.4.1: un reloj que ya no corre (otra tarea con la misma clave lo quitó) se rehace.
+	if reloj and reloj.IsCancelled and reloj:IsCancelled() then reloj = nil end
 	if not reloj then
 		reloj = N.Ticker("comercio.vender", 0.5, function() M.Seguro(Ve.Refrescar) end)
 	end
@@ -261,7 +263,7 @@ function M.Seguro(fn, ...)
 	return ok
 end
 
-A.RegisterEvent("AUCTION_HOUSE_SHOW", function() N.Una("comercio.vender", 0.2, empezar) end) -- 1.3.7: reloj de Alfa
+A.RegisterEvent("AUCTION_HOUSE_SHOW", function() N.Una("comercio.venderAbrir", 0.2, empezar) end) -- 1.3.7: reloj de Alfa
 A.RegisterEvent("AUCTION_HOUSE_CLOSED", parar)
 A.On("SETTING_CHANGED", function(path)
 	if path == M.ID .. ".vender" or path == M.ID .. ".precioBajo" then

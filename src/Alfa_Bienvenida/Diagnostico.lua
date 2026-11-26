@@ -383,7 +383,7 @@ local function armar()
 	ui.pila = K.Pila(v.Cuerpo, { espacio = ESP.m })
 	v:SetPie({
 		K.Boton(v, L["Revisar otra vez"], function() llenar() acomodar() end, { tipo = "secundario", icono = "ic-buscar" }),
-		K.Boton(v, L["Cerrar"], function() v:Cerrar() end, { tipo = "secundario" }),
+		K.Boton(v, L["Cerrar"], function() v:Cerrar() end, { tipo = "fantasma" }),
 	})
 end
 

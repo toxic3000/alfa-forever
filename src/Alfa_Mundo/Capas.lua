@@ -337,7 +337,7 @@ end
 
 local function ajuste(ruta) return function() return A.Get(ruta) and true or false end end
 local function conBase() return ajuste("qol.questDB")() , L["Necesita la base de misiones (página Misiones)."] end
-local function conRaros() return ajuste("rares.enabled")(), L["Los raros están apagados (página Descubrir)."] end
+local function conRaros() return ajuste("rares.enabled")(), L["Los raros están apagados (página Descubrimiento)."] end
 
 -- Lo esencial: siempre se queda en modo limpio.
 motor(G_ESENCIAL, "esencial.grupo", ID .. ".grupo", L["Tu grupo"],
@@ -423,7 +423,7 @@ motor(G_ENTRADAS, "viaje.barcos", "maps.dockPins", L["Barcos, zepelines y tranv�
 motor(G_VIAJE, "viaje.posadas", "maps.innPins", L["Posadas"],
 	L["Posaderos; se marca el de tu piedra de hogar."], MAPA .. "inn", "place")
 motor(G_VIAJE, "viaje.servicios", "maps.servicePins", L["Servicios"],
-	L["Buzones, entrenadores, banco, subasta, reparar..."], MAPA .. "mailbox", "npc")
+	L["Buzones, entrenadores, banco, subasta, reparar…"], MAPA .. "mailbox", "npc")
 -- 1.4.0 (35, 36): tus entrenadores y tus provisiones en tu zona (Servicios.lua).
 motor(G_VIAJE, "viaje.entrenadores", ID .. ".entrenadores", L["Tus entrenadores"],
 	L["El entrenador de tu clase y los de tus oficios en tu zona. Clic: la flecha te lleva."],

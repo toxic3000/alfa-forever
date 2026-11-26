@@ -506,7 +506,7 @@ function K.VistaBandos()
 			K.PintarVistaBandos()
 		end, { tipo = "primario", icono = "ic-apariencia" })
 		v.Escuchar = K.Boton(v, L["Escuchar"], function() K.SonarBando(nil, true) end, { tipo = "fantasma", icono = "ic-lobo" })
-		v.Cerrar_ = K.Boton(v, L["Cerrar"], function() v:Cerrar() end, { tipo = "secundario" })
+		v.Cerrar_ = K.Boton(v, L["Cerrar"], function() v:Cerrar() end, { tipo = "fantasma" })
 		vista = v
 	end
 	vista:Abrir()

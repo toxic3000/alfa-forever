@@ -411,7 +411,7 @@ function Cj.PedirNombre()
 		campo:SetPoint("TOPRIGHT", v.Cuerpo, "TOPRIGHT", -(v.margen or 16), -(v.margen or 16))
 		v.Campo = campo
 		v.Guardar = K.Boton(v, L["Guardar"], guardar, { tipo = "primario", icono = "ic-exito" })
-		v.Cancelar = K.Boton(v, L["Cancelar"], function() v:Cerrar() end, { tipo = "secundario" })
+		v.Cancelar = K.Boton(v, L["Cancelar"], function() v:Cerrar() end, { tipo = "fantasma" })
 		v:SetPie({ v.Cancelar, v.Guardar })
 		pedir = v
 	end

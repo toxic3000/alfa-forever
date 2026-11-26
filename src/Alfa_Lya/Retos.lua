@@ -65,13 +65,25 @@ Re.TIPOS = {
 -- Los tres de la semana: siempre misiones y raros; el tercero cambia.
 function Re.Elegir(semana)
 	local h = hash(semana or Re.Semana())
-	local terceros = { "mazmorras", "minutos" }
-	if nivel() < NIVEL_MAX then terceros[#terceros + 1] = "niveles" end
+	local terceros = { "mazmorras", "minutos", "niveles" }
 	local claves = { "misiones", "raros", terceros[(h % #terceros) + 1] }
 	local lista = {}
 	for i, k in ipairs(claves) do
 		local t = Re.TIPOS[k]
 		lista[i] = { clave = k, meta = t.metas[(floor(h / (i * 7)) % #t.metas) + 1] }
+	end
+	-- 1.4.1: «Sube N niveles» solo si te quedan esos niveles; si no, otro reto
+	-- fijo de la semana (antes el tercer reto se recalculaba con tu nivel de
+	-- ahora y cambiaba solo a media semana al llegar al tope).
+	local ult = lista[3]
+	if ult and ult.clave == "niveles" then
+		local r = datos()
+		local base = (r.semana == (semana or Re.Semana()) and tonumber(r.nivelInicio)) or nivel()
+		if NIVEL_MAX - base < ult.meta then
+			local k = (h % 2 == 0) and "mazmorras" or "minutos"
+			local t = Re.TIPOS[k]
+			lista[3] = { clave = k, meta = t.metas[(floor(h / 21) % #t.metas) + 1] }
+		end
 	end
 	return lista
 end
@@ -97,7 +109,8 @@ function Re.Lista()
 	local semana = Re.Semana()
 	local av = Re.Avance(semana)
 	local r = datos()
-	if r.semana ~= semana then r.semana, r.hechos = semana, {} end
+	if r.semana ~= semana then r.semana, r.hechos, r.nivelInicio = semana, {}, nivel() end
+	if r.nivelInicio == nil then r.nivelInicio = nivel() end
 	local out = {}
 	for i, e in ipairs(Re.Elegir(semana)) do
 		local t = Re.TIPOS[e.clave]

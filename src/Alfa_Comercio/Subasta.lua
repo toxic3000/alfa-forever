@@ -268,9 +268,9 @@ end
 
 -- -> el texto corto de la barra, su color, y el largo para su cuadro de información
 local function textoEstado()
-	if estado == "esperando" then return L["Pidiendo precios…"], "textoSuave", L["Pidiendo los precios a la subasta..."] end
+	if estado == "esperando" then return L["Pidiendo precios…"], "textoSuave", L["Pidiendo los precios a la subasta…"] end
 	if estado == "procesando" then
-		local t = L["Leyendo precios... %d%%"]:format(floor(progreso * 100 + 0.5))
+		local t = L["Leyendo precios… %d%%"]:format(floor(progreso * 100 + 0.5))
 		return t, "textoSuave", t
 	end
 	if mensaje then return mensaje, "texto", mensaje end
@@ -284,7 +284,7 @@ end
 -- El texto y el estado del botón de escanear (también lo usa la página).
 function M.BotonEscaneo()
 	local espera = M.EsperaEscaneo()
-	if estado ~= "listo" then return L["Escaneando..."], false end
+	if estado ~= "listo" then return L["Leyendo precios…"], false end
 	if espera > 0 then return L["Espera %s"]:format(minutos(espera)), false end
 	return L["Escanear con Alfa"], true
 end

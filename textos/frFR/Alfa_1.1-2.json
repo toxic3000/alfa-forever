@@ -35,7 +35,6 @@
  "El juego todavía no dio la lista de retos: ábrelo con la tecla Y.": "Le jeu n'a pas encore donné la liste des défis : ouvrez-le avec la touche Y.",
  "El maestro de vuelo, la posada, reparar, el banco y más, con la flecha.": "Le maître de vol, l'auberge, la réparation, la banque et plus, avec la flèche.",
  "El maestro de vuelo, la posada, reparar, el banco y más: el más cercano, con la flecha y la ruta.": "Le maître de vol, l'auberge, la réparation, la banque et plus : le plus proche, avec la flèche et l'itinéraire.",
- "El maestro de vuelo, la posada, reparar, el banco... el más cercano (/alfa cerca ayuda).": "Le maître de vol, l'auberge, la réparation, la banque... le plus proche (/alfa cerca ayuda).",
  "El marco de las barras de experiencia y reputación; el relleno conserva sus colores.": "Le cadre des barres d'expérience et de réputation ; le remplissage garde ses couleurs.",
  "El marco del menú del juego y de las bolsas, abajo a la derecha.": "Le cadre du menu du jeu et des sacs, en bas à droite.",
  "El minimapa": "La minicarte",
@@ -244,5 +243,6 @@
  "Luego cópialo con Ctrl+C.": "Copiez-le ensuite avec Ctrl+C.",
  "Lugar: %s": "Lieu : %s",
  "Lya": "Lya",
- "Lya en tu pantalla": "Lya sur ton écran"
+ "Lya en tu pantalla": "Lya sur ton écran",
+ "El maestro de vuelo, la posada, reparar, el banco… el más cercano (/alfa cerca ayuda).": "Le maître de vol, l'auberge, la réparation, la banque... le plus proche (/alfa cerca ayuda)."
 }

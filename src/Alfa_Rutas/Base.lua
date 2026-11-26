@@ -121,7 +121,8 @@ function M.XPListas()
 			if xp then r.xp, r.conocidas = r.xp + xp, r.conocidas + 1 end
 		end
 	end
-	local x, mx = UnitXP and tonumber(UnitXP("player")) or 0, UnitXPMax and tonumber(UnitXPMax("player")) or 0
+	-- 1.4.1: la experiencia puede llegar secreta en mazmorras (como el nivel).
+	local x, mx = UnitXP and N.LeerNumero(UnitXP("player"), 0) or 0, UnitXPMax and N.LeerNumero(UnitXPMax("player"), 0) or 0
 	r.faltan = mx > 0 and math.max(0, mx - x) or nil
 	r.subes = r.faltan ~= nil and r.xp > 0 and r.xp >= r.faltan
 	return r

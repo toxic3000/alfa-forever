@@ -304,7 +304,7 @@ M.EN = {
 	-- La ventana
 	["Paisaje y gráficos"] = "Landscape and graphics",
 	["Lo que el menú del juego no enseña, a tu gusto"] = "What the game menu doesn't show, your way",
-	["Buscar: pasto, niebla, sombras..."] = "Search: grass, fog, shadows...",
+	["Buscar: pasto, niebla, sombras…"] = "Search: grass, fog, shadows...",
 	["Estás en combate: lo que cambies se aplica en cuanto termine."] = "You're in combat: what you change applies as soon as it ends.",
 	["%d cambios esperan al combate."] = "%d changes are waiting for combat to end.",
 	["Alfa solo leyó tus valores: nada cambia hasta que toques un control."] = "Alfa only read your values: nothing changes until you touch a control.",

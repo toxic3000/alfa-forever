@@ -4,7 +4,6 @@
  "%d puntos": "%d pontos",
  "%d puntos libres": "%d pontos livres",
  "(todavía no la aprendes)": "(você ainda não aprendeu)",
- "... y %d talentos más": "... e mais %d talentos",
  "1. ¿Qué quieres hacer?": "1. O que você quer fazer?",
  "2. ¿Cómo te gusta jugar?": "2. Como você gosta de jogar?",
  "A distancia": "À distância",
@@ -92,7 +91,6 @@
  "Busca el arma de dos manos más lenta y fuerte: tus sellos pegan con ella.": "Procure a arma de duas mãos mais lenta e forte: seus selos batem com ela.",
  "Busca siempre el arco, arma de fuego o ballesta con más daño por segundo.": "Procure sempre o arco, a arma de fogo ou a besta com mais dano por segundo.",
  "Busca un escudo con valor de bloqueo alto: sube el daño de Embate con escudo.": "Procure um escudo com valor de bloqueio alto: aumenta o dano de Shield Slam.",
- "Buscando...": "Procurando...",
  "Buscar equipo para mi nivel": "Procurar equipamento para o meu nível",
  "Cabeza": "Cabeça",
  "Cada bloqueo te da ira: nunca te falta.": "Cada bloqueio dá raiva: nunca falta.",
@@ -118,5 +116,7 @@
  "Compartir": "Compartilhar",
  "Compartir un build": "Compartilhar uma build",
  "Compra los talentos del plan que te tocan hasta tu nivel. Antes te muestra qué va a cambiar.": "Compra os talentos do plano que cabem até o seu nível. Antes, mostra o que vai mudar.",
- "Con sonido": "Com som"
+ "Con sonido": "Com som",
+ "… y %d talentos más": "... e mais %d talentos",
+ "Buscando…": "Procurando..."
 }

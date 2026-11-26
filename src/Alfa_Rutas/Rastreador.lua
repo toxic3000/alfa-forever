@@ -464,7 +464,7 @@ local function menuGuia(dueno)
 		op[#op + 1] = { valor = function() if i ~= activa then engine("SelectTab", i) end end,
 			texto = (t.title or "?") .. (t.complete and ("  \194\183  " .. L["terminada"]) or ""), icono = i == activa and "ic-huella" or "ic-guia" }
 	end
-	op[#op + 1] = { valor = function() if M.Biblioteca then M.Biblioteca.Abrir({ pestanaNueva = true }) end end, texto = L["Abrir otra guía..."], icono = "ic-mas" }
+	op[#op + 1] = { valor = function() if M.Biblioteca then M.Biblioteca.Abrir({ pestanaNueva = true }) end end, texto = L["Abrir otra guía…"], icono = "ic-mas" }
 	op[#op + 1] = { valor = function() if M.Asistente then M.Asistente.Abrir() end end, texto = L["¿Qué quieres hacer?"], icono = "ic-lobo" }
 	op[#op + 1] = { valor = function() M.Cerrar.Ahora() end, texto = L["Cerrar mis misiones"], icono = "ic-misiones" }
 	-- 1.4.0 (32): tus guías terminadas, con fecha y tiempo (Historial.lua).
@@ -476,11 +476,11 @@ local function menuGuia(dueno)
 		op[#op + 1] = { valor = function() M.Circuito.Ahora() end, texto = L["Circuito de la zona"], icono = "ic-ruta" }
 	end
 	if M.Viaje and A.Get(M.ID .. ".llevame") ~= false then
-		op[#op + 1] = { valor = function() M.Viaje.Abrir() end, texto = L["Llévame a..."], icono = "ic-huella" }
+		op[#op + 1] = { valor = function() M.Viaje.Abrir() end, texto = L["Llévame a…"], icono = "ic-huella" }
 	end
 	-- Buscar cerca: en el menú solo si su lupa no está en la cabecera.
 	if M.Cerca and A.Get(M.ID .. ".cercaBoton") == false then
-		op[#op + 1] = { valor = function() M.Cerca.Menu(dueno) end, texto = L["Buscar cerca..."], icono = "ic-cerca" }
+		op[#op + 1] = { valor = function() M.Cerca.Menu(dueno) end, texto = L["Buscar cerca…"], icono = "ic-cerca" }
 	end
 	if activa and e then
 		op[#op + 1] = { valor = function() engine("CloseTab", activa) end, texto = L["Cerrar esta pestaña"], icono = "ic-cerrar" }
@@ -725,7 +725,8 @@ local function pintarFila(cx, n, v, g, x, y, ancho, mapa, lineas, conSub, conBar
 		local xp = M.XPMision(g.quest)
 		if xp then
 			xpTexto = format(L["+%s XP"], M.Miles(xp))
-			local x, mx = UnitXP and tonumber(UnitXP("player")) or 0, UnitXPMax and tonumber(UnitXPMax("player")) or 0
+			-- 1.4.1: la experiencia, como el nivel, puede llegar secreta en mazmorras.
+			local x, mx = UnitXP and N.LeerNumero(UnitXP("player"), 0) or 0, UnitXPMax and N.LeerNumero(UnitXPMax("player"), 0) or 0
 			if mx > 0 and xp >= mx - x then xpTexto = xpTexto .. "  \194\183  " .. L["¡Con esta subes de nivel!"] end
 		end
 	end
@@ -1446,7 +1447,7 @@ local function aviso(v, live)
 				est.fin = nil
 				if sig then M.Siguiente.Seguir(sig) elseif fin.Empezar then fin.Empezar() end
 			end, (m.next or sig) and L["Seguir con la siguiente"] or nil }, -- 1.3.8: el texto corto si no cabe
-			dos = { L["Después"], function() est.fin = nil if fin.Despues then fin.Despues() end Rs.Pintar() end } }
+			dos = { L["Ahora no"], function() est.fin = nil if fin.Despues then fin.Despues() end Rs.Pintar() end } }
 	end
 	local q, titulo = engine("LostQuestion")
 	if q then

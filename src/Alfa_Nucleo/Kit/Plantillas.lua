@@ -222,7 +222,7 @@ function K.Asistente(padre, opts)
 	a.Titulo = K.Texto(a, "titulo", "texto")
 	a.Texto = K.Texto(a, "texto", "textoSuave")
 	a.Linea = K.Linea(a, "linea")
-	a.BotonAtras = K.Boton(a, L["Atrás"], function() a:Atras() end, { tipo = "secundario" })
+	a.BotonAtras = K.Boton(a, L["Atrás"], function() a:Atras() end, { tipo = "fantasma" })
 	a.BotonSiguiente = K.Boton(a, L["Siguiente"], function() a:Siguiente() end, { tipo = "primario", conIcono = true })
 
 	local function pila(i)

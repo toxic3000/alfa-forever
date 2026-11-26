@@ -61,9 +61,7 @@
  "Dónde está": "Où c'est",
  "Dónde está cada uno, lo que vende, lo que suelta y sus misiones.": "Où se trouve chacun, ce qu'il vend, ce qu'il laisse tomber et ses quêtes.",
  "Dónde se entrega": "Où la rendre",
- "El buscador del motor está apagado (Ajustes > Descubrir): enciéndelo para que Alfa arme guías.": "La Recherche du moteur est désactivée (Réglages > Découverte) : activez-la pour qu'Alfa puisse créer des guides.",
  "El mapa no se abre en combate.": "La carte ne s'ouvre pas en combat.",
- "El motor no puede armar guías ahora.": "Le moteur ne peut pas créer de guides pour l'instant.",
  "El paquete de datos de Alfa (Alfa_Codex) está desactivado: actívalo en la lista de addons y recarga.": "Le pack de données d'Alfa (Alfa_Codex) est désactivé : activez-le dans la liste des addons et rechargez.",
  "Elfos de la noche": "Elfes de la nuit",
  "Elige algo de la lista": "Choisissez quelque chose dans la liste",
@@ -273,5 +271,7 @@
  "Élite": "Élite",
  "Épico": "Épique",
  "Ídolo": "Idole",
- "élite": "élite"
+ "élite": "élite",
+ "Ahora no puedo armar la guía. Prueba en un momento; si sigue, cuéntanos con /alfa reportar.": "Je ne peux pas préparer le guide pour l'instant. Réessaie dans un moment ; si ça continue, dis-le-nous avec /alfa reportar.",
+ "El buscador de Alfa está apagado (Ajustes > Descubrimiento): enciéndelo y te armo la guía.": "La recherche d'Alfa est désactivée (Réglages > Découverte) : active-la et je te prépare le guide."
 }

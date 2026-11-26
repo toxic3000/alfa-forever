@@ -31,7 +31,6 @@
  "El juego todavía no dio la lista de retos: ábrelo con la tecla Y.": "遊戲還沒有給出挑戰清單：按 Y 鍵開啟它。",
  "El maestro de vuelo, la posada, reparar, el banco y más, con la flecha.": "飛行管理員、旅店、修理、銀行等，箭頭帶你去。",
  "El maestro de vuelo, la posada, reparar, el banco y más: el más cercano, con la flecha y la ruta.": "飛行管理員、旅店、修理、銀行等：最近的那個，附箭頭與路線。",
- "El maestro de vuelo, la posada, reparar, el banco... el más cercano (/alfa cerca ayuda).": "飛行管理員、旅店、修理、銀行...最近的那個（/alfa cerca ayuda）。",
  "El marco de las barras de experiencia y reputación; el relleno conserva sus colores.": "經驗條與聲望條的邊框；填充部分保留原本的顏色。",
  "El marco del menú del juego y de las bolsas, abajo a la derecha.": "右下角遊戲選單與背包的邊框。",
  "El minimapa": "小地圖",
@@ -248,5 +247,6 @@
  "Lya se queda calladita una hora. Aquí sigue, cuidándote.": "Lya 安靜一小時。她還在這裡守著你。",
  "Lya te acompaña": "Lya 陪著你",
  "Lya te espera": "Lya 在等你",
- "Lya volvió. Dale clic cuando quieras un consejo.": "Lya 回來了。想聽建議時就點她。"
+ "Lya volvió. Dale clic cuando quieras un consejo.": "Lya 回來了。想聽建議時就點她。",
+ "El maestro de vuelo, la posada, reparar, el banco… el más cercano (/alfa cerca ayuda).": "飛行管理員、旅店、修理、銀行...最近的那個（/alfa cerca ayuda）。"
 }

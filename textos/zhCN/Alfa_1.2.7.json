@@ -78,7 +78,6 @@
  "Me quedo aquí sentadita contigo. Tres caídas no te hacen menos lobo. ¿Reparamos y pedimos ayuda?": "我就坐在这里陪你。倒下三次也不会让你不像狼。我们修理一下，再求助好吗？",
  "Memoria de Alfa": "Alfa 的内存",
  "Márcalo con la calavera y todo tu grupo lo verá.": "给它标上骷髅，全队都能看到。",
- "No se pudo importar": "无法导入",
  "Omitiste un paso": "你跳过了一步",
  "Para marcarlo, clic derecho en su retrato y elige la calavera.": "要标记它，右键点击它的头像并选择骷髅。",
  "Pedir ayuda a la manada": "向狼群求助",
@@ -127,5 +126,6 @@
  "¡Ya estamos en la mazmorra! Deja que el tanque jale primero y quédate cerca de quien cura.": "我们进地下城了！让坦克先拉怪，你待在治疗者附近。",
  "¡Ñam! Con esta van %d. Eres mi persona favorita de todo Azeroth.": "啊呜！这是第 %d 根了。你是全艾泽拉斯我最喜欢的人。",
  "¿Ya te vas? Descansa bien. Yo me quedo vigilando hasta que vuelvas.": "要走了吗？好好休息。我会一直守着，等你回来。",
- "Ñam. Esto me da energía para cuidarte otras tres horas.": "啊呜。这让我有力气再照顾你三个小时。"
+ "Ñam. Esto me da energía para cuidarte otras tres horas.": "啊呜。这让我有力气再照顾你三个小时。",
+ "No pude importar": "无法导入"
 }

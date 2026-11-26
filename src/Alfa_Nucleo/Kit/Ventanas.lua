@@ -38,6 +38,8 @@ K.CERRAR_CON_ESC = {
 	"AlfaKitMenu",           -- los menús desplegables del Kit
 	"AlfaMazmorrasResumen",  -- el resumen al salir de una mazmorra
 	"AlfaBolsasPrevia",      -- la vista previa de «Ordenar» (al esconderse, se cancela)
+	"AlfaEscritorioReparar", -- 1.4.1: «Reparar mi pantalla» (tiene «Ahora no»)
+	"AlfaCombateDetalle",    -- 1.4.1: la tarjeta de detalle del medidor (tiene X)
 }
 function K.AnotarCerrarConEsc()
 	for _, n in ipairs(K.CERRAR_CON_ESC) do cerrarConEsc(n) end
@@ -538,20 +540,42 @@ function K.AnclaAvisos()
 	ancla:SetSize(K.ANCHO.aviso, 72)
 	ancla:SetPoint("TOPRIGHT", UIParent, "TOP", ANCLA_X, ANCLA_Y)
 	ancla:EnableMouse(false)
+	-- 1.4.1: solo sostiene a los avisos; nunca toma el ratón (Kit/Raton.lua).
+	if K.SinRaton then K.SinRaton(ancla, "AlfaAvisosAncla") end
 	if K.Movible then pcall(K.Movible, ancla, "avisos", { nombre = L["Los avisos de Alfa"], muestra = L["Así se verá un aviso"] }) end
+	-- 1.4.1: cuando sale o se va un cuadro del juego de arriba, la pila se
+	-- acomoda (OnShow/OnHide no tocan el ratón del marco).
+	for _, n in ipairs(K.AVISOS_TAPAN or {}) do
+		local f = rawget(_G, n)
+		if type(f) == "table" and f.HookScript and not (f.IsForbidden and f:IsForbidden()) then
+			pcall(f.HookScript, f, "OnShow", function() if K.RecolocarAvisos then K.RecolocarAvisos() end end)
+			pcall(f.HookScript, f, "OnHide", function() if K.RecolocarAvisos then K.RecolocarAvisos() end end)
+		end
+	end
 	return ancla
 end
 
 -- 1.3.8: con un anuncio grande a la vista (Kit/Anuncio.lua), los avisos van
 -- debajo de él: nunca se empalman. 1.4.0: el ancla no se mueve; las tarjetas
 -- empiezan más abajo (solo si el anuncio de verdad cae sobre la pila).
-local function bajoAnuncio()
-	local an = rawget(_G, "AlfaAnuncio")
-	if not (ancla and type(an) == "table" and an.IsShown and an:IsShown() and not an.alfaSaliendo) then return 0 end
-	local al, ar, ab = K.num(an:GetLeft(), 0), K.num(an:GetRight(), 0), K.num(an:GetBottom(), 0)
-	local pl, pr, pt = K.num(ancla:GetLeft(), 0), K.num(ancla:GetRight(), 0), K.num(ancla:GetTop(), 0)
-	if ar <= pl or al >= pr or ab >= pt then return 0 end
+-- 1.4.1 (Toxic: «este mensaje se empalma con el de muerte»): lo mismo con
+-- los cuadros del juego de arriba (Liberar espíritu, invitaciones, «¿Seguro?»:
+-- StaticPopup1..4): la pila empieza debajo del más bajo que le caiga encima.
+local TAPAN = { "StaticPopup1", "StaticPopup2", "StaticPopup3", "StaticPopup4" }
+K.AVISOS_TAPAN = TAPAN
+local function bajo(f, pl, pr, pt)
+	if not (type(f) == "table" and f.IsShown and f:IsShown() and not f.alfaSaliendo) then return 0 end
+	if f.IsForbidden and f:IsForbidden() then return 0 end
+	local ok, al, ar, ab = pcall(function() return K.num(f:GetLeft(), 0), K.num(f:GetRight(), 0), K.num(f:GetBottom(), 0) end)
+	if not ok or ar <= pl or al >= pr or ab >= pt then return 0 end
 	return pt - ab + ESP.s
+end
+local function bajoAnuncio()
+	if not ancla then return 0 end
+	local pl, pr, pt = K.num(ancla:GetLeft(), 0), K.num(ancla:GetRight(), 0), K.num(ancla:GetTop(), 0)
+	local y = bajo(rawget(_G, "AlfaAnuncio"), pl, pr, pt)
+	for _, n in ipairs(TAPAN) do y = max(y, bajo(rawget(_G, n), pl, pr, pt)) end
+	return y
 end
 local function recolocar()
 	if not ancla then return end
@@ -739,6 +763,28 @@ local function armarAviso()
 	a:SetScript("OnClick", function(self)
 		local ac = self.alfaAccion
 		if ac and ac.alClic and not ac.seguro then K.Llamar(ac.alClic, self) quitar(self) end
+	end)
+	-- 1.4.1 (Toxic: «quería moverlo y no me deja»): arrastrar la tarjeta mueve
+	-- la pila entera (su ancla) y la deja ahí (como «Acomodar la pantalla»);
+	-- un clic sin arrastrar sigue siendo su acción. Nunca en combate.
+	a:RegisterForDrag("LeftButton")
+	a:SetScript("OnDragStart", function(self)
+		if (InCombatLockdown and InCombatLockdown()) or not ancla then return end
+		self.alfaArrastrando = true
+		ancla:SetMovable(true)
+		ancla:StartMoving()
+	end)
+	a:SetScript("OnDragStop", function(self)
+		if not self.alfaArrastrando then return end
+		self.alfaArrastrando = nil
+		ancla:StopMovingOrSizing()
+		if ancla.SetUserPlaced then pcall(ancla.SetUserPlaced, ancla, false) end
+		local l, b, w, h = ancla:GetRect()
+		if K.MovibleSoltar and l then
+			local k = K.num(ancla:GetEffectiveScale(), 1) / max(0.01, K.num(UIParent:GetEffectiveScale(), 1))
+			K.MovibleSoltar("avisos", l * k, b * k, w * k, h * k)
+		end
+		recolocar()
 	end)
 	return a
 end

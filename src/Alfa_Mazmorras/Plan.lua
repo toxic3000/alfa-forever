@@ -370,7 +370,7 @@ end
 local function porque(razon)
 	-- 1.3.7: el tope es de 12 y solo se llena con todas fijadas (Alfa_Rutas/EnCurso.lua).
 	if razon == "tabs" then return (AlfaRuta and AlfaRuta.TextoLleno and AlfaRuta.TextoLleno()) or L["Tienes seis guías abiertas: cierra una y vuelve a intentarlo."] end
-	if razon == "off" then return L["El diario de mazmorras del motor está apagado (Ajustes > Descubrir > Mazmorras)."] end
+	if razon == "off" then return L["El diario de mazmorras de Alfa está apagado (Ajustes > Descubrimiento > Mazmorras)."] end
 	if razon == "combat" then return L["Espera a salir de combate."] end
 	return format(L["No se pudo armar la guía (%s)."], tostring(razon or "?"))
 end

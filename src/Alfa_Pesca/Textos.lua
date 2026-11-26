@@ -201,12 +201,12 @@ M.EN = {
 	["Cocinando %d de %s"] = "Cooking %d of %s",
 
 	-- La ventana
-	["El buscador del motor está apagado (Ajustes > Descubrir): enciéndelo para que Alfa arme guías."] = "The engine's Lookup is off (Settings > Discover): turn it on so Alfa can build guides.",
+	["El buscador de Alfa está apagado (Ajustes > Descubrimiento): enciéndelo y te armo la guía."] = "The engine's Lookup is off (Settings > Discover): turn it on so Alfa can build guides.",
 	["Ya tienes seis guías abiertas: cierra una y vuelve a intentar."] = "You already have six guides open: close one and try again.",
 	["No se conoce de dónde sale."] = "Where it comes from is unknown.",
 	["No hay un camino que Alfa pueda guiar para esto."] = "There's no path Alfa can guide for this.",
 	["No se sabe en qué lugar está."] = "Its location is unknown.",
-	["El motor no puede armar guías ahora."] = "The engine can't build guides right now.",
+	["Ahora no puedo armar la guía. Prueba en un momento; si sigue, cuéntanos con /alfa reportar."] = "The engine can't build guides right now.",
 	["Se puede al salir de combate."] = "You can do this after combat.",
 	["No se pudo armar la guía."] = "The guide couldn't be built.",
 	["Guíame"] = "Guide me",
@@ -794,4 +794,6 @@ M.EN = {
 	["Meta del día: %s (%d de %d)"] = "Daily goal: %s (%d of %d)",
 	["Hoy: %s"] = "Today: %s",
 	["Una meta nueva cada día. Lya la festeja cuando la cumples."] = "A new goal every day. Lya celebrates when you reach it.",
+	-- 1.4.1
+	["Pulsa una tecla, un botón del ratón o la rueda (Esc cancela)"] = "Press a key, a mouse button or the wheel (Esc cancels)",
 }

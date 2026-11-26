@@ -995,6 +995,7 @@
               {"cmd": "/alfa sesion", "texto": "Deine heutige Sitzung, im Chat."},
               {"cmd": "/alfa rendimiento", "texto": "Wie viel Speicher und Prozessor jeder Teil von Alfa braucht (und gibt nicht mehr benötigten Speicher frei)."},
               {"cmd": "/alfa diagnostico", "texto": "Alfa prüfen: Konflikte mit anderen Addons, abgeschaltete Teile und seltsame Einstellungen."},
+              {"cmd": "/alfa raton", "texto": "Wenn du im Spiel etwas nicht anklicken oder die Kamera nicht drehen kannst: zeigt, was unter deiner Maus liegt, und entfernt, was von Alfa stört."},
               {"cmd": "/alfa reportar", "texto": "Einen Fehler, eine Verbesserung oder einen Kommentar melden, mit den Fehlern, die Alfa abgefangen hat."}
             ]}
           ]
@@ -1038,6 +1039,7 @@
             ]},
             {"t": "lista", "titulo": "Wenn es weiter hakt", "items": [
               "`/alfa diagnostico` (**Alfa prüfen**) sucht Addons, die mit Alfa kollidieren, abgeschaltete Teile oder solche einer anderen Version und seltsame Einstellungen, jeweils mit Lösung per Klick.",
+              "Kannst du etwas im Spiel nicht anklicken, die Kamera nicht drehen oder nicht zoomen? Zeig mit der Maus dorthin und tippe `/alfa raton`: es sagt dir, wer deinen Klick nimmt; `/alfa raton arreglar` entfernt es sofort.",
               "Alfa speichert seine eigenen Fehler: Du siehst sie unter **Einstellungen > Stil und Klang > Abgefangene Fehler**, zum Kopieren oder Löschen.",
               "Einstellungen verloren? Kehr zu einer deiner Sicherungen zurück, unter **Einstellungen > Stil und Klang > Sicherungen**."
             ]},
@@ -1085,7 +1087,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "Die 1.4.0: das feste Rudel", "items": ["**Alfa sieht neu aus:** Fenster mit Seitenleiste, Titelseite bei Heute und Ankündigungen im Kinostil, immer mittig.", "**Alles verschieben:** `/alfa acomodar` oder Umschalt + Ziehen, um jedes Alfa-Element zu platzieren.", "**Deine Fraktion und deine Saison:** das Horde- oder Allianz-Design und `/alfa temporada` mit deinem Abenteuer in Karten.", "**Schneller und stabiler:** Guides nach Stufenbereich, Zwei Bildschirme ohne vergrößerte Oberfläche und Erzrouten in deiner Nähe."]}
+    "mapa": {"titulo": "1.4.1: Die Maus gehört dir", "items": ["**Klicks sind zurück:** Gegner in der Ferne anklicken, Kamera drehen, Berufsreiter nutzen und Lautstärke ändern geht wieder.", "**`/alfa raton`:** zeigt, was unter deiner Maus liegt, und entfernt sofort, was von Alfa stört.", "**Umschalt + Ziehen:** ein grüner Rahmen zeigt, was sich bewegen lässt, und verschwindet beim Loslassen.", "**Stabiler:** eine Prüfung von ganz Alfa mit neuen Tests, die genau solche Fehler suchen."]}
   },
   "contraportada": {
     "titulo": "Komm ins Rudel",

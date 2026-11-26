@@ -414,7 +414,7 @@ local ultimoCasi, avisoCero, casiPendiente = 0, false, false
 
 function S.VerBolsas()
 	if M.EnCombate() then
-		N.Imprimir(L["No se puede en combate."])
+		N.Imprimir(L["Se puede al salir de combate."])
 		return
 	end
 	local V = M.Ventana

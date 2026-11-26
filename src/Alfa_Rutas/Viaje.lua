@@ -152,10 +152,10 @@ function Vj.Ir(d)
 	local nombre = d.nombre or L["Tu destino"]
 	local ok, t = pcall(Nav.SetTarget, d.map, d.x, d.y, nombre, d.f)
 	if not (ok and t) then return false, "flecha" end
-	if type(Nav.StartTrip) == "function" then pcall(Nav.StartTrip, t, nombre, L["Llévame a..."]) end
+	if type(Nav.StartTrip) == "function" then pcall(Nav.StartTrip, t, nombre, L["Llévame a…"]) end
 	viaje = { destino = d, objetivo = t }
 	M.Empezar()
-	M.Aviso(L["Llévame a..."], format(L["Vamos a %s: sigue la flecha."], nombre), { icono = "ic-huella" })
+	M.Aviso(L["Llévame a…"], format(L["Vamos a %s: sigue la flecha."], nombre), { icono = "ic-huella" })
 	return true
 end
 
@@ -201,21 +201,21 @@ local function llenar()
 		local total = 0
 		for _, p in ipairs(pasos) do total = total + p.segundos end
 		ventana.modo = "pasos"
-		ventana:Llenar(pasos, L["Llévame a..."], viaje.destino.nombre,
+		ventana:Llenar(pasos, L["Llévame a…"], viaje.destino.nombre,
 			format(L["Tu camino: %s, %s. Escribe arriba para ir a otro lugar."], M.Plural(#pasos, L["%d tramo"], L["%d tramos"]), M.Minutos(total)))
 		return
 	end
 	ventana.modo = "destinos"
 	local lista = Vj.Buscar(buscado)
-	ventana:Llenar(lista, L["Llévame a..."], M.Plural(#lista, L["%d lugar"], L["%d lugares"]),
+	ventana:Llenar(lista, L["Llévame a…"], M.Plural(#lista, L["%d lugar"], L["%d lugares"]),
 		L["Elige a dónde ir: Alfa arma el camino con vuelos, barcos, zepelines, portales y a pie."])
 end
 Vj.Refrescar = llenar
 
 local function armar()
 	ventana = M.VentanaSimple({
-		nombre = "AlfaRutasLlevame", titulo = L["Llévame a..."], icono = "ic-huella", ancho = 440, alto = 520,
-		buscador = { ayuda = L["Buscar un lugar..."], alCambiar = function(t) buscado = t or "" llenar() end },
+		nombre = "AlfaRutasLlevame", titulo = L["Llévame a…"], icono = "ic-huella", ancho = 440, alto = 520,
+		buscador = { ayuda = L["Buscar un lugar…"], alCambiar = function(t) buscado = t or "" llenar() end },
 		vacio = { lobo = "atento", titulo = L["No encontré ese lugar"], texto = L["Prueba con el nombre del pueblo o de la zona."] },
 		crear = function(fila)
 			fila.Icono = K.Icono(fila, "ic-ruta", 14, "acento")
@@ -261,7 +261,7 @@ end
 
 A.On("ROUTE_CHANGED", function() if ventana and ventana:IsShown() and ventana.modo ~= "destinos" then A.After(0.1, llenar) end end)
 
-BINDING_NAME_ALFA_RUTAS_LLEVAME = L["Llévame a... (el camino a cualquier lugar)"]
+BINDING_NAME_ALFA_RUTAS_LLEVAME = L["Llévame a… (el camino a cualquier lugar)"]
 
 A.RegisterCommand("llevame", function(resto)
 	local texto = type(resto) == "string" and resto:match("^%s*(.-)%s*$") or ""

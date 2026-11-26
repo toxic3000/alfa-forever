@@ -3,11 +3,11 @@
   "Al entrar, su nombre con sus niveles y sus jefes: morado en las mazmorras y ámbar con corona en las bandas. Una vez cada 30 minutos.": "進入時顯示名稱、等級和首領：地城為紫色，團隊副本為帶王冠的琥珀色。每 30 分鐘一次。",
   "Fondo de los anuncios": "通告背景",
   "Sin fondo": "無背景",
-  "Descanso acumulado: %d%% de un nivel": "休息加成：一級的 %d%%",
   "Zona de nivel %s y tú eres %d: ve con cuidado": "%s 級區域，而你是 %d 級：小心行事",
   "Cómo se ve detrás del nombre: una placa de esquinas cortadas, una cinta de pendón, ornamentos finos a los lados, una sombra suave o nada más el texto con contorno.": "名稱後面顯示什麼：切角銘牌、燕尾緞帶、兩側的細紋飾、柔和陰影，或只有帶描邊的文字。",
   "Placa": "銘牌",
   "Cinta": "緞帶",
   "Filigrana": "花飾",
-  "Sombra suave": "柔和陰影"
+  "Sombra suave": "柔和陰影",
+  "XP descansada: %d %% de un nivel": "休息加成：一級的 %d%%"
 }

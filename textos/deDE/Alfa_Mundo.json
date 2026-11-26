@@ -20,7 +20,6 @@
  "Azeroth": "Azeroth",
  "Barcos, zepelines y tranvía": "Schiffe, Zeppeline und Tiefenbahn",
  "Botones de Alfa en el mapa del juego": "Alfas Knöpfe auf der Spielkarte",
- "Buzones, entrenadores, banco, subasta, reparar...": "Briefkästen, Lehrer, Bank, Auktionshaus, Reparatur...",
  "Cada cofre o tesoro conocido.": "Jede bekannte Truhe und jeder bekannte Schatz.",
  "Cada entrada de mazmorra y banda con su rango de niveles. Clic: su página; Mayús+clic: la flecha te lleva.": "Jeder Dungeon- und Schlachtzugseingang mit seinem Stufenbereich. Klick: seine Seite; Umschalt+Klick: Der Pfeil führt dich hin.",
  "Cada lugar conocido donde aparece un enemigo raro.": "Jeder bekannte Ort, an dem ein seltener Gegner erscheint.",
@@ -59,7 +58,6 @@
  "La tecla que abre el mapa del juego abre el de Alfa. Apágalo y vuelve a abrir el del juego. También puedes darle una tecla propia en Opciones > Teclado > Alfa.": "Die Taste, die die Spielkarte öffnet, öffnet stattdessen Alfas Karte. Schalte es aus, um die Spielkarte zurückzubekommen. Du kannst ihr auch eine eigene Taste geben unter Optionen > Tastaturbelegung > Alfa.",
  "Lo esencial": "Das Wichtigste",
  "Los mismos marcadores de misiones en el minimapa.": "Dieselben Questmarkierungen auf der Minikarte.",
- "Los raros están apagados (página Descubrir).": "Rares sind ausgeschaltet (Seite Entdecken).",
  "Los raros también en el minimapa.": "Rares auch auf der Minikarte.",
  "Los servicios también en el minimapa.": "Dienste auch auf der Minikarte.",
  "Los tesoros también en el minimapa.": "Schätze auch auf der Minikarte.",
@@ -118,5 +116,7 @@
  "Vuelos, barcos y posadas también en el minimapa.": "Flüge, Schiffe und Gasthäuser auch auf der Minikarte.",
  "Zonas": "Gebiete",
  "Zonas de enemigos, objetos y lugares de las misiones de tu registro.": "Gegnerbereiche, Gegenstände und Orte für die Quests in deinem Questlog.",
- "Zonas sin descubrir": "Unentdeckte Gebiete"
+ "Zonas sin descubrir": "Unentdeckte Gebiete",
+ "Buzones, entrenadores, banco, subasta, reparar…": "Briefkästen, Lehrer, Bank, Auktionshaus, Reparatur...",
+ "Los raros están apagados (página Descubrimiento).": "Seltene Gegner sind aus (Seite Entdeckung)."
 }

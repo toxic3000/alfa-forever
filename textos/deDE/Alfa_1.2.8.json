@@ -139,7 +139,6 @@
  "Los raros que cayeron hace poco": "Kürzlich erlegte Rares",
  "Lya aprende": "Lya lernt",
  "Lya apunta aquí tus pasos grandes: tu primera mazmorra, tus niveles, tu primera montura y más.": "Lya notiert hier deine großen Schritte: dein erster Dungeon, deine Stufen, dein erstes Reittier und mehr.",
- "Lya apunta tus pasos grandes (tu primera mazmorra, tus niveles, tu primera montura...) y festeja cada página nueva.": "Lya notiert deine großen Schritte (dein erster Dungeon, deine Stufen, dein erstes Reittier...) und feiert jede neue Seite.",
  "Lya lleva tu historia, aprende qué consejos ya no quieres y te avisa de tus oficios.": "Lya führt deine Geschichte, lernt, welche Tipps du nicht mehr willst, und sagt dir Bescheid zu deinen Berufen.",
  "Lya te cuenta cuánto tardaron, cuántas veces caíste y lo mejor que sacaste.": "Lya sagt dir, wie lange es gedauert hat, wie oft du gefallen bist und das Beste, was du bekommen hast.",
  "Lya vuelve a decirte todos esos consejos.": "Lya sagt dir all diese Tipps wieder.",
@@ -200,7 +199,6 @@
  "Todavía no escribimos nada en tu historia. ¡Vamos a hacer algo grande!": "Wir haben noch nichts in deine Geschichte geschrieben. Lass uns etwas Großes tun!",
  "Todos los que callaste": "Alle stummgeschalteten",
  "Toma el dinero y los objetos de tus cartas, una por una. Las de pago contra entrega y las de un MJ se quedan para que las abras tú.": "Nimmt Geld und Gegenstände aus deinen Briefen, einen nach dem anderen. Nachnahme- und GM-Briefe bleiben, damit du sie selbst öffnest.",
- "Tomando tus cartas...": "Ich nehme deine Post...",
  "Tomar todo": "Alles nehmen",
  "Treinta. La manada habla de ti.": "Dreißig. Das Rudel spricht von dir.",
  "Trescientos puntos. Eres maestro de tu oficio.": "Dreihundert Punkte. Du bist ein Meister deines Fachs.",
@@ -278,7 +276,9 @@
  "¿Quién va a %s?": "Wer kommt mit: %s?",
  "¿Quién va?": "Wer kommt?",
  "¿Qué dice la nota?": "Was steht in der Notiz?",
- "¿Qué hacemos? Una mazmorra, una misión...": "Was machen wir? Ein Dungeon, eine Quest...",
  "• El logo, el lobo, Lya y los módulos propios de Alfa son de toxic3000 / La Jauría (GPL-3.0).": "• Das Logo, der Wolf, Lya und Alfas eigene Module sind von toxic3000 / La Jauría (GPL-3.0).",
- "• Los datos que trae Polestar también vienen de QuestieDB, Efficient Games (CC BY 4.0), VMaNGOS, CMaNGOS y Factoruide (GPL) y de ForeverLevelingBiS de Thunder (MIT); sus avisos están en cada LICENSE-DATA.txt.": "• Die Daten von Polestar stammen auch aus QuestieDB, Efficient Games (CC BY 4.0), VMaNGOS, CMaNGOS und Factoruide (GPL) sowie aus ForeverLevelingBiS von Thunder (MIT); ihre Hinweise stehen in jeder LICENSE-DATA.txt."
+ "• Los datos que trae Polestar también vienen de QuestieDB, Efficient Games (CC BY 4.0), VMaNGOS, CMaNGOS y Factoruide (GPL) y de ForeverLevelingBiS de Thunder (MIT); sus avisos están en cada LICENSE-DATA.txt.": "• Die Daten von Polestar stammen auch aus QuestieDB, Efficient Games (CC BY 4.0), VMaNGOS, CMaNGOS und Factoruide (GPL) sowie aus ForeverLevelingBiS von Thunder (MIT); ihre Hinweise stehen in jeder LICENSE-DATA.txt.",
+ "Lya apunta tus pasos grandes (tu primera mazmorra, tus niveles, tu primera montura…) y festeja cada página nueva.": "Lya notiert deine großen Schritte (dein erster Dungeon, deine Stufen, dein erstes Reittier...) und feiert jede neue Seite.",
+ "Tomando tus cartas…": "Ich nehme deine Post...",
+ "¿Qué hacemos? Una mazmorra, una misión…": "Was machen wir? Ein Dungeon, eine Quest..."
 }

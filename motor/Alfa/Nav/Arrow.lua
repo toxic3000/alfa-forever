@@ -819,7 +819,7 @@ local function metaDeLlegada(target)
 		local lvl = g and tonumber(g.level)
 		if lvl and falta and xpMax > 0 then
 			if falta <= xpMax then
-				d.accion = ns.T("Sube al nivel %d: te falta %d%%"):format(lvl, math.max(1, math.ceil(falta / xpMax * 100)))
+				d.accion = ns.T("Sube al nivel %d: te falta %d %%"):format(lvl, math.max(1, math.ceil(falta / xpMax * 100)))
 				d.cur, d.max, d.xp = xpMax - falta, xpMax, true
 			else
 				d.accion = ns.T("Sube al nivel %d: te faltan %s de experiencia"):format(lvl, BreakUpLargeNumbers and BreakUpLargeNumbers(falta) or tostring(falta))
@@ -1214,6 +1214,9 @@ local VIAJE = {
 	tram = { toma = "Toma el tranvía a %s", abordo = "En el tranvía a %s", aqui = "¡El tranvía ya está en el andén! Sale en %s" },
 	portal = { toma = "Cruza el portal a %s" },
 	fly = { toma = "Vuela a %s", debajo = "Habla con el maestro de vuelo" },
+	-- 1.4.1 (Toxic: «el mensaje del elevador sigue siendo el de Polestar»):
+	-- el elevador también va con la voz y la tarjeta de Alfa.
+	lift = { toma = "Toma el elevador hacia %s", abordo = "En el elevador hacia %s", aqui = "¡El elevador ya está aquí! Sale en %s" },
 }
 Arrow.VIAJE = VIAJE
 local VIAJE_ALTO = 16 -- la tercera línea («Llegas en…») cabe dentro del marco
@@ -1237,10 +1240,16 @@ local function duracionRedonda(secs)
 end
 
 local function destino(leg)
+	-- 1.4.1: el elevador dice «hacia arriba» o «hacia abajo» (como lo verías tú).
+	if leg.kind == "lift" then return leg.side == "top" and ns.T("abajo") or ns.T("arriba") end
 	local T = Nav.travel
 	local p = leg.to
 	local n = p and ((T and T.PlaceName and T.PlaceName(p)) or p.name)
-	if type(n) ~= "string" or n == "" then return nil end
+	if type(n) ~= "string" or n == "" then
+		-- 1.4.1: el elevador lleva arriba o abajo aunque el punto no tenga nombre.
+		if leg.kind == "lift" then return leg.side == "top" and ns.T("abajo") or ns.T("arriba") end
+		return nil
+	end
 	return n:match("^([^,]+)") or n
 end
 
@@ -1251,7 +1260,7 @@ function Arrow.TextoViaje(leg, secsTotal)
 	if not lugar then return nil end
 	local linea, debajo = ns.T(v.toma):format(lugar), v.debajo and ns.T(v.debajo) or nil
 	local X = ns.Transit
-	local id = type(leg.transport) == "table" and leg.transport.id or leg.transport
+	local id = type(leg.transport) == "table" and leg.transport.id or leg.transport or leg.lift -- (1.4.1: el elevador)
 	if v.abordo and X and id and X.NextDeparture then
 		local now = X.Now and X.Now() or 0
 		local riding = X.Riding and X.Riding(now)
@@ -1314,6 +1323,8 @@ local TARJETA = {
 		lugar = "el portal", corto = "Al portal" },
 	fly = { icono = "viaje-grifo", titulo = "Vuelo a %s", ir = "Ve con el maestro de vuelo", espera = "Habla con el maestro de vuelo",
 		lugar = "el maestro de vuelo", corto = "Maestro de vuelo" },
+	lift = { icono = "viaje-elevador", titulo = "Elevador hacia %s", ir = "Ve al elevador", espera = "Esperando el elevador",
+		aqui = "¡El elevador ya está aquí!", lugar = "el elevador", corto = "Al elevador", llegando = "¡Ya casi llegas!" },
 }
 Arrow.TARJETA = TARJETA
 local TJ_ANCHO, TJ_PAD, TJ_MEDALLA = 300, 10, 46
@@ -1471,6 +1482,14 @@ local function quitarTarjeta()
 		distText:Show()
 		labelText:Show()
 		if frame.SetClampRectInsets then frame:SetClampRectInsets(0, 0, 0, 0) end
+	elseif tarjetaVista ~= nil then
+		-- 1.4.1: la tarjeta ya estaba cerrada (a bordo): la distancia y la meta
+		-- vuelven igual (antes la flecha seguía sin «120 m» tras bajar del barco)
+		-- y la flecha vuelve a tomar el ratón.
+		distText:Show()
+		labelText:Show()
+		dial:Show()
+		if not Arrow.PL.aparte() then frame:EnableMouse(true) end
 	end
 	tarjetaVista = nil
 end
@@ -1485,7 +1504,7 @@ function Arrow.DatosTarjeta(leg, estado, secsTotal, yardas)
 	if not lugar then return nil end
 	local d = { estado = estado, kind = leg.kind, titulo = ns.T(v.titulo):format(lugar) }
 	local X = ns.Transit
-	local id = type(leg.transport) == "table" and leg.transport.id or leg.transport
+	local id = type(leg.transport) == "table" and leg.transport.id or leg.transport or leg.lift -- (1.4.1: el elevador)
 	local now = X and X.Now and X.Now() or 0
 	-- A bordo: el motor sabe cuándo llega.
 	if (estado == "muelle" or estado == "abordo") and X and X.Riding then
@@ -2018,6 +2037,13 @@ local function pintarViaje(leg, secsTotal)
 		frame:SetHitRectInsets((WIDTH - DIAL) / 2, (WIDTH - DIAL) / 2, 0, TEXT_H)
 		-- 1.4.0 (78): con la tarjeta aparte, el lugar vacío de la flecha no toma el ratón.
 		if Arrow.PL.aparte() then frame:EnableMouse(false) end
+		-- 1.4.1: la tarjeta cerrada (a bordo, su X o clic derecho) deja vacío el
+		-- lugar de la flecha: ni disco ni ratón (era un cuadro invisible que se
+		-- tragaba el clic y el giro de la cámara todo el viaje).
+		if tarjeta and tarjeta.alfaCerrada then
+			dial:Hide()
+			frame:EnableMouse(false)
+		end
 		return true
 	end
 	if not linea then
@@ -2892,7 +2918,16 @@ function Arrow.SetBusy(on)
 	dial:SetAlpha(a)
 	distText:SetAlpha(a)
 	labelText:SetAlpha(a)
-	if llegada then llegada.alfaVisible = a llegada:SetAlpha(a) end
+	if llegada then
+		llegada.alfaVisible = a
+		llegada:SetAlpha(a)
+		-- 1.4.1: con el reloj de arena la placa no se ve: su «Siguiente lugar»
+		-- tampoco toma el ratón (era un botón invisible que cambiaba el destino).
+		local sig = llegada.Siguiente
+		if sig and sig.EnableMouse and not (sig.IsProtected and sig:IsProtected()) then
+			sig:EnableMouse(not on and not (InCombatLockdown and InCombatLockdown()))
+		end
+	end
 	etaText:SetAlpha(a)
 	timerText:SetAlpha(a)
 end

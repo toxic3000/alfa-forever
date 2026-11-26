@@ -57,7 +57,6 @@
  "Drenar alma al rematar te da uno.": "영혼 흡수로 마무리하면 하나 얻습니다.",
  "El camino a la meta en el mapa del mundo y el minimapa: una línea o puntos donde caminas, líneas donde vuelas, navegas o montas, y los tramos que siguen más tenues.": "세계 지도와 미니맵에 목표까지의 길을 표시합니다. 걷는 곳은 선 또는 점, 비행·항해·탑승은 선으로 그리고, 이후 구간은 흐리게 그립니다.",
  "El juego no lo dice ahora.": "지금은 게임이 알려 주지 않습니다.",
- "El módulo Curación no está cargado.": "치유 모듈이 불러와지지 않았습니다.",
  "El objeto que usa el paso actual, o el objeto de misión que junta, brilla en tus bolsas. Un objeto que necesita un paso más adelante lleva un candado, para que no lo vendas.": "현재 단계에서 사용하는 아이템이나 수집하는 퀘스트 아이템이 가방에서 빛납니다. 이후 단계에 필요한 아이템에는 자물쇠가 표시되어 팔지 않게 됩니다.",
  "El tono de los fondos: Grafito es el de Alfa, Noche el más oscuro y Pizarra un gris neutro.": "배경 색조입니다. 흑연은 Alfa 기본, 밤은 가장 어둡고, 슬레이트는 중립적인 회색입니다.",
  "El árbol de ruta de Alfa, misiones que se liberan y un catálogo de objetos.": "Alfa 경로 트리, 새로 열리는 퀘스트, 아이템 목록.",
@@ -248,5 +247,6 @@
  "Usar esta guía": "이 가이드 사용",
  "Zona o raza": "지역 또는 종족",
  "mejor en %d": "최적 레벨 %d",
- "¿Qué buscas?": "무엇을 찾으세요?"
+ "¿Qué buscas?": "무엇을 찾으세요?",
+ "La página Curación está apagada.": "치유 페이지가 꺼져 있어요."
 }

@@ -110,7 +110,6 @@
  "Sin acción": "동작 없음",
  "Sin tecla": "키 없음",
  "Solo": "혼자",
- "Solo buffs": "강화 효과만",
  "Todavía no conoces sus hechizos: se llenan al aprenderlos.": "아직 이 프리셋의 주문을 모릅니다. 배우면 채워집니다.",
  "Tu grupo y tu banda con su vida, para curar con un clic. Se cambia fuera de combate.": "파티와 공격대의 생명력을 보여 주고 클릭 한 번으로 치유합니다. 전투 중이 아닐 때 바뀝니다.",
  "Tu libro no tiene hechizos para aliados": "마법책에 아군에게 쓸 주문이 없습니다",
@@ -136,5 +135,6 @@
  "selecciona": "대상 지정",
  "un hechizo": "주문",
  "¿Usar tu hechizo nuevo?": "새 주문을 쓸까요?",
- "¿Usar «%s»?": "«%s»을(를) 쓸까요?"
+ "¿Usar «%s»?": "«%s»을(를) 쓸까요?",
+ "Solo beneficios": "강화 효과만"
 }

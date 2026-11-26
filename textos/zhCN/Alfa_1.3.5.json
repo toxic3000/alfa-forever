@@ -7,5 +7,5 @@
  "Alfa está trabajando de más": "Alfa 工作量过大",
  "%s. Si notas el juego lento, prueba el «Modo ligero» en Ajustes > Estilo y sonido.": "%s。如果觉得游戏变慢，试试“设置 > 风格与声音”里的“轻量模式”。",
  "Al entrar, Alfa tardó %.0f ms en cargar sus archivos y %.0f ms en arrancar.": "登录时，Alfa 加载文件用了 %.0f 毫秒，启动用了 %.0f 毫秒。",
- "Midiendo cuánta memoria va juntando Alfa durante %d segundos...": "正在测量 Alfa 在 %d 秒内增加多少内存……"
+ "Midiendo cuánta memoria va juntando Alfa durante %d segundos…": "正在测量 Alfa 在 %d 秒内增加多少内存……"
 }

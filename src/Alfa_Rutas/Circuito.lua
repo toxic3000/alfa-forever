@@ -219,7 +219,7 @@ function Ci.Ahora()
 		M.Aviso(L["Circuito de la zona"], L["Se puede al salir de combate."], { icono = "ic-aviso", tono = "aviso" })
 		return false
 	end
-	M.Aviso(L["Armando el circuito de la zona..."], L["Alfa junta tus misiones y las de aquí y busca el camino más corto."], { icono = "ic-ruta" })
+	M.Aviso(L["Armando el circuito de la zona…"], L["Alfa junta tus misiones y las de aquí y busca el camino más corto."], { icono = "ic-ruta" })
 	Ci.Armar(function(def, motivo, n)
 		if not def then
 			local texto = (motivo == "vacio") and L["No hay misiones para ti en esta zona."]
@@ -229,7 +229,7 @@ function Ci.Ahora()
 		end
 		M.Guias.Olvidar(def.id)
 		if not M.Guias.Instalar(def) then
-			M.Aviso(L["No armé el circuito"], L["El motor no aceptó la guía."], { icono = "ic-aviso", tono = "aviso" })
+			M.Aviso(L["No armé el circuito"], L["No pude abrir la guía. Prueba en un momento; si sigue, cuéntanos con /alfa reportar."], { icono = "ic-aviso", tono = "aviso" })
 			return
 		end
 		local i, por = M.Guias.Abrir(def.id)

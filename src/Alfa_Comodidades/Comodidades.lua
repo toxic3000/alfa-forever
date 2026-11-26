@@ -208,4 +208,4 @@ end)
 ---------------------------------------------------------------------------
 function M.AbrirAjustes() N.Abrir(ID) end
 
-A.RegisterCommand("comodidades", function() M.AbrirAjustes() end, L["Abrir las comodidades (minimapa, cuadro de información, probador...)"])
+A.RegisterCommand("comodidades", function() M.AbrirAjustes() end, L["Abrir las comodidades (minimapa, cuadro de información, probador…)"])

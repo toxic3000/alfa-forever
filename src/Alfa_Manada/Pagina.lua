@@ -139,7 +139,7 @@ local function accion(ui, gente)
 		return {
 			icono = "ic-seguir", tono = "exito", sobre = U.Mayus(L["Siguiendo el rastro"]),
 			titulo = format(L["Vas tras %s"], f and conInsignia(f, s.nombre) or (s.nombre or "?")),
-			texto = (f and f.map and (lugar(f) .. ". ") or (L["Buscando su rastro..."] .. " "))
+			texto = (f and f.map and (lugar(f) .. ". ") or (L["Buscando su rastro…"] .. " "))
 				.. L["La flecha se mueve con su rastro y se detiene al llegar."],
 			accion = { texto = L["Dejar de seguir"], icono = "ic-cerrar", alClic = function() S.Parar() M.Avisar() end },
 			secundaria = invitable(f) and { texto = L["Invitar al grupo"], alClic = function() invitar(f) end } or nil,
@@ -466,7 +466,7 @@ local function bloqueClan(ui, padre)
 		local u = ui.unirse
 		local buscando = M.Red.Buscando()
 		K.Escribir(self.UnirseT, L["¿Quieres cazar con nosotros? Pulsa el botón: Alfa busca a un oficial conectado y te abre un susurro con tu mensaje listo para que lo envíes con Intro."])
-		self.Unirse:SetTexto(buscando and L["Buscando a un oficial..."] or L["Quiero unirme"])
+		self.Unirse:SetTexto(buscando and L["Buscando a un oficial…"] or L["Quiero unirme"])
 		self.Unirse:SetActivo(not buscando)
 		local como = U.TextoClan("comoUnirse") or ""
 		local estado = ""
@@ -799,7 +799,7 @@ local function bloqueGuaridas(padre)
 			K.Escribir(f.Nombre, g.etiqueta)
 			local dato = format(L["%d de la manada"], g.gente)
 			if g.abiertas > 0 then dato = dato .. DOT .. format(L["%d con la puerta abierta"], g.abiertas) end
-			if pedido and pedido.capa == g.capa then dato = dato .. DOT .. L["tocando a la puerta..."] end
+			if pedido and pedido.capa == g.capa then dato = dato .. DOT .. L["tocando a la puerta…"] end
 			K.Escribir(f.Dato, dato)
 			f.Ir.alfaCapa = g.capa
 			f.Ir:SetActivo(g.abiertas > 0 and not pedido)
@@ -1046,7 +1046,7 @@ local function bloqueCitas(padre)
 	local b = bloqueLista(padre, {
 		icono = "ic-reloj", sobre = L["Citas de la manada"],
 		controles = function(b)
-			b.Que = campoTexto(b, L["¿Qué hacemos? Una mazmorra, una misión..."], function() proponer(b) end)
+			b.Que = campoTexto(b, L["¿Qué hacemos? Una mazmorra, una misión…"], function() proponer(b) end)
 			b.Dia = K.Desplegable(b, { opciones = Ci.OpcionesDia(), valor = 0, ancho = 110 })
 			b.Hora = K.Desplegable(b, { opciones = Ci.OpcionesHora(), valor = 21 * 60, ancho = 100 })
 			b.Proponer = K.Boton(b, L["Proponer"], function() proponer(b) end, { tipo = "primario", icono = "ic-manada" })
@@ -1150,7 +1150,7 @@ local function bloqueNotas(padre)
 				local hace = U.Hace(U.Reloj() - (x.at or U.Reloj()))
 				if hace then partes[#partes + 1] = hace end
 				filas[#filas + 1] = { nombre = x.texto, dato = table.concat(partes, DOT), botones = {
-					{ texto = L["Llevarme"], alClic = function() No.Ir(x) end },
+					{ texto = L["Llévame"], alClic = function() No.Ir(x) end },
 					{ texto = L["Borrar"], alClic = function() No.Borrar(x.id) end },
 				} }
 			end
@@ -1200,9 +1200,9 @@ local function bloqueQuienTiene(padre)
 	local Qt = M.QuienTiene
 	local buscar
 	local b = bloqueLista(padre, {
-		icono = "ic-bolsas", sobre = L["¿Quién tiene...?"],
+		icono = "ic-bolsas", sobre = L["¿Quién tiene…?"],
 		controles = function(b)
-			b.Que = campoTexto(b, L["¿Qué buscas? Un objeto, un material..."], function() buscar(b) end)
+			b.Que = campoTexto(b, L["¿Qué buscas? Un objeto, un material…"], function() buscar(b) end)
 			b.Buscar = K.Boton(b, L["Buscar"], function() buscar(b) end, { tipo = "primario", icono = "ic-manada" })
 		end,
 		acomodar = function(b, xt, y, w)
@@ -1615,7 +1615,7 @@ local function grupos(ui, padre)
 	local juntos = K.GrupoAjustes(padre, { titulo = L["La manada unida"] })
 	juntos:Fila({ titulo = L["Cambiar de plano si está lleno"], control = interruptor("planoAviso"), activa = function() return on("compartir") end,
 		texto = L["Si tu plano se llena de cazadores, Lya te propone pasarte al de un lobo de la manada con su guarida abierta. Una vez cada 15 minutos."] })
-	juntos:Fila({ titulo = L["Contestar «¿Quién tiene...?»"], control = interruptor("quienTiene"),
+	juntos:Fila({ titulo = L["Contestar «¿Quién tiene…?»"], control = interruptor("quienTiene"),
 		texto = L["Si un lobo de tu hermandad busca un objeto que llevas, Alfa le dice cuántos tienes. Solo eso y solo cuando pregunta."] })
 	juntos:Fila({ titulo = L["Festejos de la manada"], control = interruptor("logros"),
 		texto = L["Lya festeja cuando un lobo de tu hermandad llega al nivel 60, consigue su primera montura o caza un raro."] })

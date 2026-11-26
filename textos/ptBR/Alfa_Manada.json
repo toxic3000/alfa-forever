@@ -17,8 +17,6 @@
  "Avisa a tu hermandad que usas Alfa y escucha a los demás Alfa. Apagado, Alfa no envía ni recibe nada de nadie.": "Avisa à sua guilda que você usa o Alfa e escuta os outros usuários do Alfa. Desativado, o Alfa não envia nem recebe nada de ninguém.",
  "Aún no eres de la manada": "Você ainda não é da matilha",
  "Borra la lista de \"hace cuánto lo viste\" guardada en esta cuenta.": "Apaga a lista de \"há quanto tempo você o viu\" salva nesta conta.",
- "Buscando a un oficial...": "Procurando um oficial...",
- "Buscando su rastro...": "Procurando o rastro...",
  "Buscar por nombre": "Buscar por nome",
  "Clic: seguir con la flecha": "Clique: seguir com a seta",
  "Compartes tu ubicación %s.": "Você compartilha sua localização %s.",
@@ -135,5 +133,7 @@
  "¿Le muestras a tu manada dónde estás?": "Mostrar à sua matilha onde você está?",
  "¿Quieres cazar con nosotros? Pulsa el botón: Alfa busca a un oficial conectado y te abre un susurro con tu mensaje listo para que lo envíes con Intro.": "Quer caçar com a gente? Clique no botão: o Alfa procura um oficial conectado e abre um sussurro com a sua mensagem pronta para enviar com Enter.",
  "Última posición enviada %s.": "Última posição enviada %s.",
- "Únete a La Jauría": "Entre em La Jauría"
+ "Únete a La Jauría": "Entre em La Jauría",
+ "Buscando a un oficial…": "Procurando um oficial...",
+ "Buscando su rastro…": "Procurando o rastro..."
 }

@@ -669,7 +669,7 @@ local function armar(lista, filtro, idx, ceder, alAvanzar)
 	if #ahora + #despues == 0 then
 		local dl = {}
 		for _, it in ipairs(fuera) do
-			if it.despues and not marcas[it.id] then dl[#dl + 1] = { id = it.id, titulo = it.titulo, por = it.despues, nivel = it.nivel, orden = it.despuesOrden } end
+			if it.despues and not marcas[it.id] then dl[#dl + 1] = { id = it.id, titulo = it.titulo, por = it.despues, nivel = it.nivel, orden = it.despuesOrden, puede = it.pm ~= nil } end
 		end
 		ordenarDespues(dl)
 		return nil, "nada", nil, nil, nil, { despues = dl }
@@ -767,7 +767,7 @@ local function armar(lista, filtro, idx, ceder, alAvanzar)
 	for qid in pairs(dentro) do xp = xp + M.num(M.XPMision(qid), 0) end
 	local despuesL = {}
 	for _, it in ipairs(fuera) do
-		if it.despues and not marcas[it.id] then despuesL[#despuesL + 1] = { id = it.id, titulo = it.titulo, por = it.despues, nivel = it.nivel, orden = it.despuesOrden } end
+		if it.despues and not marcas[it.id] then despuesL[#despuesL + 1] = { id = it.id, titulo = it.titulo, por = it.despues, nivel = it.nivel, orden = it.despuesOrden, puede = it.pm ~= nil } end
 	end
 	ordenarDespues(despuesL)
 	local info = { segundos = calc.segundos, zonas = calc.zonas, xp = xp, misiones = total, listas = listas, despues = despuesL }
@@ -839,7 +839,7 @@ function Cr.Instalar(def, notas, sello, callado)
 		end
 	end
 	if not M.Guias.Instalar(def) then
-		M.Aviso(L["No armé el plan"], L["El motor no aceptó la guía."], { icono = "ic-aviso", tono = "aviso" })
+		M.Aviso(L["No armé el plan"], L["No pude abrir la guía. Prueba en un momento; si sigue, cuéntanos con /alfa reportar."], { icono = "ic-aviso", tono = "aviso" })
 		return false, "motor"
 	end
 	pj().liberarSello = sello
@@ -871,7 +871,7 @@ end
 -- punta con su resumen (CerrarTodo.lua).
 function Cr.Ahora(filtro, alListo)
 	if filtro == nil and M.CerrarTodo then return M.CerrarTodo.Abrir({ origen = "ahora", alListo = alListo }) end
-	M.Aviso(L["Armando «Cerrar mis misiones»..."], L["Alfa mide los caminos (vuelos y piedra de hogar): tarda unos segundos."], { icono = "ic-misiones" })
+	M.Aviso(L["Armando «Cerrar mis misiones»…"], L["Alfa mide los caminos (vuelos y piedra de hogar): tarda unos segundos."], { icono = "ic-misiones" })
 	Cr.Armar({ filtro = filtro }, function(def, motivo, notas, sello)
 		if not def then
 			local texto = (motivo == "nada" or motivo == "vacio") and L["No tienes misiones para este plan con ese filtro."] or I.TextoMotivo(motivo)

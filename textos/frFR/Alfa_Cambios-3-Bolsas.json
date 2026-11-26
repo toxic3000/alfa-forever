@@ -41,7 +41,6 @@
  "En vivo": "En direct",
  "En vivo si estás con un banquero; si no, la última foto.": "En direct si vous êtes chez un banquier ; sinon, le dernier relevé.",
  "Entra al juego con él una vez.": "Connectez-vous une fois avec lui.",
- "Equipo, consumibles, misiones, materiales... con encabezados que se pliegan.": "Équipement, consommables, quêtes, matériaux... sous des en-têtes repliables.",
  "Espacio y dinero": "Place et argent",
  "Este banco no vende más espacio.": "Cette banque ne vend plus de place.",
  "Estás con un banquero: desde su ventana depositas lo que quieras con un clic.": "Vous êtes chez un banquier : depuis sa fenêtre, déposez ce que vous voulez en un clic.",
@@ -134,5 +133,6 @@
  "Ya tienes las %d casillas de bolsa del banco. Para más espacio, pon bolsas más grandes en ellas.": "Vous avez déjà les %d emplacements de sac de la banque. Pour plus de place, mettez-y des sacs plus grands.",
  "llena": "plein",
  "¿Comprar otra casilla del banco?": "Acheter un autre emplacement de banque ?",
- "¿Olvidar a este personaje?": "Oublier ce personnage ?"
+ "¿Olvidar a este personaje?": "Oublier ce personnage ?",
+ "Equipo, consumibles, misiones, materiales… con encabezados que se pliegan.": "Équipement, consommables, quêtes, matériaux... sous des en-têtes repliables."
 }

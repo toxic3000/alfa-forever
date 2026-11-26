@@ -53,7 +53,7 @@ local function E() return M.Motor("Engine") end
 local function CP() return M.Motor("Compat") end
 
 -- El estado del armado (uno a la vez).
-local st = { fase = nil, avance = 0, opts = {}, gen = 0 }
+local st = { fase = nil, avance = 0, opts = {}, gen = 0, elegidas = {} }
 function Ct.Estado() return st end
 
 ---------------------------------------------------------------------------
@@ -115,7 +115,9 @@ local function fila(padre)
 	f.Sub = K.Texto(f, "pequeno", "textoTenue")
 	f.Sub:SetWordWrap(true)
 	f.Entra = K.Interruptor(f, { alCambiar = function(on2)
-		if f.alfaId then Ct.Alternar(f.alfaId, on2) end
+		if not f.alfaId then return end
+		-- 1.4.1: en «Para después» la casilla elige; el botón de abajo las mete.
+		if f.alfaDespues then Ct.Elegir(f.alfaId, on2) else Ct.Alternar(f.alfaId, on2) end
 	end })
 	f.Boton = K.Boton(f, L["Meterla"], function()
 		if f.alfaId then Ct.Meter(f.alfaId) end
@@ -123,6 +125,7 @@ local function fila(padre)
 	-- d = { n, titulo, sub, icono, casilla = bool | nil, boton = bool }
 	function f:Set(d, ancho)
 		self.alfaId = d.id
+		self.alfaDespues = d.despues
 		local x = K.ESP.s
 		self.Num:SetShown(d.n ~= nil)
 		self.Icono:SetShown(d.n == nil and d.casilla == nil)
@@ -207,7 +210,7 @@ local function armarVentana()
 	v.Sec2 = K.Texto(c, "mayus", "textoTenue")
 	v.Accion = K.Boton(c, "", function() if v.alfaAccion then v.alfaAccion() end end, { tipo = "secundario", tam = "chico" })
 	v.filas = {}
-	v.Empezar = K.Boton(v, L["Empezar"], function() Ct.Empezar() end, { tipo = "primario", icono = "ic-seguir" })
+	v.Empezar = K.Boton(v, L["Empezar"], function() Ct.BotonEmpezar() end, { tipo = "primario", icono = "ic-seguir" })
 	v.Vista = K.Boton(v, L["Quitar algunas"], function()
 		st.vista = st.vista == "elegir" and "paradas" or "elegir"
 		Ct.Pintar()
@@ -348,22 +351,38 @@ function Ct.PintarYa()
 			y = texto(v.Sec2, K.Mayus(format(L["Para después (%d)"], #despues)), x, y, ancho, 1) + K.ESP.s
 			local l2 = {}
 			for _, d in ipairs(despues) do
-				l2[#l2 + 1] = { id = d.id, titulo = d.titulo, sub = d.por, icono = "ic-reloj", tono = "aviso", boton = true }
+				-- 1.4.1: una casilla para elegirla; la que no se ubica no puede entrar (sin casilla).
+				local sub = d.por
+				if d.puede == false then sub = (sub and (sub .. DOT) or "") .. L["no sé dónde se hace: no puede entrar"] end
+				local casilla
+				if d.puede ~= false then casilla = st.elegidas[d.id] == true end
+				l2[#l2 + 1] = { id = d.id, titulo = d.titulo, sub = sub, icono = "ic-reloj", tono = "aviso", despues = true, casilla = casilla }
 			end
 			y, k = filas(l2, k, x, y, ancho)
 		end
 	end
 	for i = k, #v.filas do v.filas[i]:Hide() end
 	v:SetAltoContenido(y + K.ESP.m)
-	-- El pie.
-	local listo = fase == "resumen" and st.def ~= nil and not st.midiendo
+	-- El pie. 1.4.1: con «Para después» elegidas, el botón grande las mete y
+	-- arranca la ruta (antes solo había «Meterla» una por una, y con «Todas
+	-- son para después» no había con qué empezar).
+	local n = Ct.NumElegidas()
+	local hayDespues = #(st.info and st.info.despues or {}) > 0
+	local te
+	if fase == "vacio" then
+		te = n > 0 and format(L["Armar la ruta con %d"], n) or L["Elige cuáles hacer"]
+	else
+		te = n > 0 and format(L["Sumar %d y empezar"], n) or L["Empezar"]
+	end
+	local listo = (fase == "resumen" and st.def ~= nil and not st.midiendo) or (fase == "vacio" and n > 0 and not st.midiendo)
 	v.Empezar:SetActivo(listo)
-	v.Empezar:SetShown(fase == "resumen")
+	v.Empezar:SetShown(fase == "resumen" or (fase == "vacio" and hayDespues))
 	v.Vista:SetShown(fase == "resumen")
 	local tv = st.vista == "elegir" and L["Ver paradas"] or L["Quitar algunas"]
-	if v.alfaVista ~= tv or v.alfaFasePie ~= fase then
-		v.alfaVista, v.alfaFasePie = tv, fase
+	if v.alfaVista ~= tv or v.alfaFasePie ~= fase or v.alfaTe ~= te then
+		v.alfaVista, v.alfaFasePie, v.alfaTe = tv, fase, te
 		v.Vista:SetTexto(tv)
+		v.Empezar:SetTexto(te)
 		v:SetPie({ v.Vista, v.Empezar }, { v.Cerrar2 })
 	end
 end
@@ -405,7 +424,7 @@ local function porQueVacio(info)
 			{ texto = L["Con todas"], alClic = function() Cr.SetFiltro("todas") Ct.Rehacer() end }, "atento"
 	end
 	if info and #(info.despues or {}) > 0 then
-		return L["Todas son para después"], L["Las que tienes no se pueden hacer ahora: abajo dice por qué. Mete la que quieras y Alfa la suma a la ruta."], nil, "atento"
+		return L["Todas son para después"], L["Abajo dice por qué no entran solas. Deja marcadas las que sí quieras hacer y dale a «Armar la ruta»."], nil, "atento"
 	end
 	return L["Nada que cerrar"], L["Ninguna de tus misiones entra a la ruta. Revisa «Quitar algunas»: quizá las apagaste."], nil, "atento"
 end
@@ -413,9 +432,18 @@ end
 local function alArmar(gen, def, motivo, notas, sello, info)
 	if gen ~= st.gen or st.cancelado then return end
 	if not def then
+		st.empezarAlArmar = nil
 		st.lista = Cr.Lista() or st.lista
 		if motivo == "nada" or motivo == "vacio" then
 			local g, l, ac, lobo = porQueVacio(info)
+			-- 1.4.1: si todas son para después, ya vienen elegidas (las que pueden
+			-- entrar): un clic en «Armar la ruta con N» y listo.
+			if not st.elegidasPuestas then
+				st.elegidasPuestas = true
+				for _, d in ipairs(info and info.despues or {}) do
+					if d.puede ~= false then st.elegidas[d.id] = true end
+				end
+			end
 			poner({ fase = "vacio", midiendo = false, def = nil, info = info or {}, grande = g, linea = l, accion = ac, lobo = lobo, paradas = {} })
 		elseif motivo == "combat" then
 			Ct.Esperar()
@@ -436,6 +464,12 @@ local function alArmar(gen, def, motivo, notas, sello, info)
 	end
 	poner({ fase = "resumen", midiendo = false, def = def, notas = notas, sello = sello, info = info or {}, paradas = paradas,
 		grande = Ct.TextoResumen(info), linea = linea, accion = nil, avance = 1 })
+	-- 1.4.1: «Armar la ruta con N» / «Sumar N y empezar»: ya armada, arranca sola.
+	if st.empezarAlArmar and not st.yaEmpezo then
+		st.empezarAlArmar = nil
+		Ct.Empezar()
+		return
+	end
 	if not on("cerrarResumen") and not st.yaEmpezo then Ct.Empezar() end
 end
 
@@ -510,6 +544,52 @@ function Ct.Alternar(qid, dentro)
 	N.Una("rutas.cerrarTodo.rehacer", 0.5, function() Ct.Rehacer() end)
 end
 
+-- 1.4.1: elegir de «Para después» (casillas) y meterlas todas de un clic.
+function Ct.Elegir(qid, si)
+	qid = tonumber(qid)
+	if not qid then return end
+	st.elegidas[qid] = si and true or nil
+	if v and v:IsShown() then Ct.Pintar() end
+end
+
+local function vivas()
+	local t = {}
+	for _, d in ipairs(st.info and st.info.despues or {}) do if d.puede ~= false then t[d.id] = true end end
+	return t
+end
+
+function Ct.NumElegidas()
+	local n, t = 0, vivas()
+	for qid in pairs(st.elegidas) do if t[qid] then n = n + 1 end end
+	return n
+end
+
+-- Mete las elegidas y arma; con empezar, la ruta arranca al quedar lista.
+function Ct.MeterElegidas(empezar)
+	local t, n = vivas(), 0
+	for qid in pairs(st.elegidas) do
+		if t[qid] then
+			if st.opts.solo then st.opts.solo[qid] = true end
+			pj().incluir[qid] = true
+			pj().marcas[qid] = nil
+			n = n + 1
+		end
+	end
+	st.elegidas = {}
+	if n == 0 then return false end
+	st.empezarAlArmar = empezar and true or nil
+	st.def = nil
+	M.Avisar("CERRAR")
+	Ct.Rehacer()
+	return true
+end
+
+-- El botón grande del pie.
+function Ct.BotonEmpezar()
+	if Ct.NumElegidas() > 0 then return Ct.MeterElegidas(true) end
+	return Ct.Empezar()
+end
+
 -- «Meterla»: una de «Para después» entra a la ruta (tú decides).
 function Ct.Meter(qid)
 	qid = tonumber(qid)
@@ -528,6 +608,7 @@ function Ct.Abrir(opts)
 	st.opts = opts
 	st.vista = "paradas"
 	st.def, st.info, st.paradas, st.accion, st.midiendo = nil, nil, nil, nil, false
+	st.elegidas, st.elegidasPuestas, st.empezarAlArmar = {}, false, nil
 	st.yaEmpezo = false
 	st.fase = "preparando"
 	if opts.filtro then

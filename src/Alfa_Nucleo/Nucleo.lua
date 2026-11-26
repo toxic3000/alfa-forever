@@ -488,6 +488,15 @@ function N.Imprimir(...)
 			local pidio = N.PidioJugador and N.PidioJugador()
 			if not pidio and N.YaSeVio and N.YaSeVio(t, 10) then return end
 			N.Visto(t, "chat")
+			-- 1.4.1 (homologar): la respuesta a un botón de una ventana de Alfa
+			-- sale como aviso, junto a la ventana, como en el resto de Alfa (antes
+			-- unas salían abajo en el chat y otras en un aviso). Lo de /alfa,
+			-- en el chat.
+			local K = N.Kit
+			if N.RespuestaDeClic and N.RespuestaDeClic() and K and K.Aviso then
+				local ok = K.Aviso({ titulo = "Alfa", texto = t, icono = "ic-info", duracion = 6, lya = false, pedido = true })
+				if ok then return end
+			end
 		end
 	end
 	A.Print(...)

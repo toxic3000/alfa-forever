@@ -162,10 +162,14 @@ local revisar
 local function enganchar(f)
 	if not (f and f.HookScript) or enganchados[f] then return end
 	enganchados[f] = true
-	f:HookScript("OnEnter", function() revisar() end)
+	-- 1.4.1: sin prenderle el ratón (K.Enganchar): MinimapCluster, el
+	-- contenedor grande de la esquina, se volvía una pared que se comía el
+	-- clic y el arrastre de la cámara en toda su área.
+	local K = N.Kit
+	K.Enganchar(f, "OnEnter", function() revisar() end)
 	-- Al pasar del minimapa a un botón suyo, el juego dice «salió» antes de «entró»:
 	-- se mira un momento después.
-	f:HookScript("OnLeave", function() N.Una("comodidades.minimapaSalio", 0.05, function() revisar() end) end)
+	K.Enganchar(f, "OnLeave", function() N.Una("comodidades.minimapaSalio", 0.05, function() revisar() end) end)
 end
 
 local function buscarEn(padre)

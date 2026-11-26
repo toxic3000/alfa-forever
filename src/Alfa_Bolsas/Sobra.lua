@@ -143,7 +143,7 @@ end
 ---------------------------------------------------------------------------
 
 function Sb.Vender()
-	if M.EnCombate() then N.Imprimir(L["No se puede en combate."]) return false end
+	if M.EnCombate() then N.Imprimir(L["Se puede al salir de combate."]) return false end
 	local Sg = S()
 	if not Sg then return false end
 	if M.Lotes.Activo("vender") then
@@ -180,8 +180,12 @@ function Sb.Vender()
 		alTerminar = function(hechos, total, corte)
 			if corte and corte ~= "cancelado" then
 				N.Imprimir(format(L["La venta se detuvo: vendiste %d de %d."], vendidos, total))
-			elseif vendidos > 0 then
+			elseif vendidos > 0 and vendidos >= #lista then
 				N.Imprimir(format(L["Vendiste lo que te sobraba: %s, por unos %s."], N.Plural(vendidos, L["%d objeto"], L["%d objetos"]), N.Dinero(r.valor, true)))
+			elseif vendidos > 0 then
+				-- 1.4.1: algo se saltó (un candado puesto a media venta): sin el
+				-- precio de toda la lista, que ya no es lo que vendiste.
+				N.Imprimir(format(L["Vendiste lo que te sobraba: %s."], N.Plural(vendidos, L["%d objeto"], L["%d objetos"])))
 			end
 			Sg.Invalidar()
 			M.Avisar("SUGERENCIAS")
@@ -210,7 +214,7 @@ local function adjuntosLibres()
 end
 
 function Sb.Mandar(nombre)
-	if M.EnCombate() then N.Imprimir(L["No se puede en combate."]) return false end
+	if M.EnCombate() then N.Imprimir(L["Se puede al salir de combate."]) return false end
 	local r = Sb.Lista()
 	local a
 	for _, x in ipairs(r.alts) do if x.nombre == nombre then a = x end end
@@ -269,7 +273,7 @@ end
 function Sb.Menu(ancla)
 	local K = N.Kit
 	if not (K and K.Menu) then return end
-	if M.EnCombate() then N.Imprimir(L["No se puede en combate."]) return end
+	if M.EnCombate() then N.Imprimir(L["Se puede al salir de combate."]) return end
 	local r = Sb.Lista()
 	local ops = {}
 	if #r.vender > 0 then

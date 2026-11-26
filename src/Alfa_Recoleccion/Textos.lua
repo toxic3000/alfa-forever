@@ -183,3 +183,14 @@ M.EN["El más cercano está a %s de ti."] = "The closest one is %s from you."
 -- 1.4.0 (oficios)
 M.EN["Oro estimado"] = "Estimated gold"
 M.EN["≈ %s por hora"] = "≈ %s per hour"
+-- 1.4.1: elegir a dónde ir por un material
+M.EN["En otro continente: barco o vuelo (cuesta oro)"] = "On another continent: boat or flight (costs gold)"
+M.EN["%s: quizá te convenga volar (cuesta oro)"] = "%s: you may want to fly (costs gold)"
+M.EN["%s, unos %d min a pie"] = "%s, about %d min on foot"
+M.EN["nivel %d–%d"] = "level %d–%d"
+M.EN["%d puntos"] = "%d spots"
+M.EN["Cerca de ti"] = "Near you"
+M.EN["Cerca de ti y recomendado"] = "Near you and recommended"
+M.EN["El lugar recomendado"] = "The recommended place"
+M.EN["Otra zona"] = "Another zone"
+M.EN["Guíame"] = "Guide me" -- 1.4.1

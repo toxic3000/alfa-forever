@@ -78,7 +78,6 @@
  "Me quedo aquí sentadita contigo. Tres caídas no te hacen menos lobo. ¿Reparamos y pedimos ayuda?": "여기 옆에 앉아 있을게요. 세 번 쓰러졌다고 늑대가 아닌 건 아니에요. 수리하고 도움을 청할까요?",
  "Memoria de Alfa": "Alfa 메모리",
  "Márcalo con la calavera y todo tu grupo lo verá.": "해골로 표시하면 파티 모두가 볼 수 있어요.",
- "No se pudo importar": "가져오지 못했어요",
  "Omitiste un paso": "단계를 건너뛰었어요",
  "Para marcarlo, clic derecho en su retrato y elige la calavera.": "표시하려면 초상화를 오른쪽 클릭하고 해골을 고르세요.",
  "Pedir ayuda a la manada": "무리에게 도움 청하기",
@@ -127,5 +126,6 @@
  "¡Ya estamos en la mazmorra! Deja que el tanque jale primero y quédate cerca de quien cura.": "던전에 왔어요! 탱커가 먼저 끌게 하고 치유사 가까이 있어요.",
  "¡Ñam! Con esta van %d. Eres mi persona favorita de todo Azeroth.": "냠! 이걸로 %d개째. 아제로스에서 제일 좋아하는 사람이에요.",
  "¿Ya te vas? Descansa bien. Yo me quedo vigilando hasta que vuelvas.": "벌써 가요? 푹 쉬어요. 돌아올 때까지 제가 지키고 있을게요.",
- "Ñam. Esto me da energía para cuidarte otras tres horas.": "냠. 이걸로 세 시간은 더 지켜 줄 힘이 나요."
+ "Ñam. Esto me da energía para cuidarte otras tres horas.": "냠. 이걸로 세 시간은 더 지켜 줄 힘이 나요.",
+ "No pude importar": "가져올 수 없었어요"
 }

@@ -20,7 +20,6 @@
  "Azeroth": "아제로스",
  "Barcos, zepelines y tranvía": "배, 비행선, 지하철",
  "Botones de Alfa en el mapa del juego": "게임 지도의 Alfa 버튼",
- "Buzones, entrenadores, banco, subasta, reparar...": "우체통, 전문가, 은행, 경매장, 수리...",
  "Cada cofre o tesoro conocido.": "알려진 모든 상자와 보물입니다.",
  "Cada entrada de mazmorra y banda con su rango de niveles. Clic: su página; Mayús+clic: la flecha te lleva.": "모든 던전과 공격대 입구를 레벨 범위와 함께 표시합니다. 클릭: 해당 페이지, Shift+클릭: 화살표가 안내합니다.",
  "Cada lugar conocido donde aparece un enemigo raro.": "희귀 몹이 나타나는 알려진 모든 위치입니다.",
@@ -59,7 +58,6 @@
  "La tecla que abre el mapa del juego abre el de Alfa. Apágalo y vuelve a abrir el del juego. También puedes darle una tecla propia en Opciones > Teclado > Alfa.": "게임 지도를 여는 키로 Alfa 지도가 열립니다. 끄면 게임 지도가 다시 열립니다. 설정 > 단축키 설정 > Alfa에서 따로 키를 지정할 수도 있습니다.",
  "Lo esencial": "핵심만",
  "Los mismos marcadores de misiones en el minimapa.": "같은 퀘스트 표시를 미니맵에도 표시합니다.",
- "Los raros están apagados (página Descubrir).": "희귀가 꺼져 있습니다(발견 페이지).",
  "Los raros también en el minimapa.": "희귀를 미니맵에도 표시합니다.",
  "Los servicios también en el minimapa.": "시설을 미니맵에도 표시합니다.",
  "Los tesoros también en el minimapa.": "보물을 미니맵에도 표시합니다.",
@@ -118,5 +116,7 @@
  "Vuelos, barcos y posadas también en el minimapa.": "비행, 배, 여관을 미니맵에도 표시합니다.",
  "Zonas": "지역",
  "Zonas de enemigos, objetos y lugares de las misiones de tu registro.": "퀘스트 목록에 있는 퀘스트의 적, 아이템, 장소 구역입니다.",
- "Zonas sin descubrir": "미발견 지역"
+ "Zonas sin descubrir": "미발견 지역",
+ "Buzones, entrenadores, banco, subasta, reparar…": "우체통, 전문가, 은행, 경매장, 수리...",
+ "Los raros están apagados (página Descubrimiento).": "희귀 몬스터가 꺼져 있어요 (발견 페이지)."
 }

@@ -3,11 +3,11 @@
   "Al entrar, su nombre con sus niveles y sus jefes: morado en las mazmorras y ámbar con corona en las bandas. Una vez cada 30 minutos.": "При входе — название, уровни и боссы: фиолетовым для подземелий и янтарным с короной для рейдов. Раз в 30 минут.",
   "Fondo de los anuncios": "Фон объявлений",
   "Sin fondo": "Без фона",
-  "Descanso acumulado: %d%% de un nivel": "Отдых: %d%% уровня",
   "Zona de nivel %s y tú eres %d: ve con cuidado": "Зона уровня %s, а у тебя %d: будь осторожен",
   "Cómo se ve detrás del nombre: una placa de esquinas cortadas, una cinta de pendón, ornamentos finos a los lados, una sombra suave o nada más el texto con contorno.": "Что за названием: табличка со срезанными углами, лента-вымпел, тонкие узоры по бокам, мягкая тень или только текст с обводкой.",
   "Placa": "Табличка",
   "Cinta": "Лента",
   "Filigrana": "Филигрань",
-  "Sombra suave": "Мягкая тень"
+  "Sombra suave": "Мягкая тень",
+  "XP descansada: %d %% de un nivel": "Отдых: %d%% уровня"
 }

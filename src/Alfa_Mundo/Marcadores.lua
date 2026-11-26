@@ -290,9 +290,8 @@ function Mk.SeguirPunto(mapa, x, y, nombre, marco, id)
 	seguido = id and { id = id, objetivo = t } or nil
 	if A.Get("nav.arrow") == false then
 		N.Imprimir(format(L["La ruta te lleva a %s. La flecha está apagada: enciéndela en Ajustes > Guía para verla."], nombre))
-	else
-		N.Imprimir(format(L["La flecha te lleva a %s."], nombre))
 	end
+	-- (1.4.1: con la flecha prendida, su tarjeta ya lo dice: nada más en el chat)
 	avisar()
 	-- Empieza el seguimiento: se cierran el mapa y las ventanas de Alfa y se
 	-- ve el rastreador (N.EmpezarRuta, del núcleo). Toda acción del jugador

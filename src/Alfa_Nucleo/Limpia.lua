@@ -8,7 +8,10 @@
 --   N.PantallaLimpia.Alternar([on])  -> bool (si quedó limpia)
 --   N.PantallaLimpia.Activa() -> bool
 --   N.PantallaLimpia.GRUPOS          los grupos que se pueden esconder
--- Solo transparencia (SetAlpha): nada se oculta ni se mueve. Un marco
+-- Solo transparencia (SetAlpha): nada se oculta ni se mueve. 1.4.1: lo que
+-- queda transparente tampoco toma el ratón (antes el chat, el minimapa y los
+-- botones invisibles se comían los clics al mundo y el giro de la cámara);
+-- al volver, cada marco recupera su ratón como estaba. Un marco
 -- protegido (barras, retratos) nunca se toca en combate: espera a que acabe
 -- (N.FueraDeCombate). Los ajustes: nucleo.limpia<Grupo> (true = se esconde).
 
@@ -29,7 +32,7 @@ local function chats()
 		t[#t + 1] = "ChatFrame" .. i
 		t[#t + 1] = "ChatFrame" .. i .. "Tab"
 		t[#t + 1] = "ChatFrame" .. i .. "ButtonFrame"
-		t[#t + 1] = "ChatFrame" .. i .. "EditBox"
+		-- (1.4.1: el cuadro de escribir no: al pulsar Enter escribías a ciegas)
 	end
 	return t
 end
@@ -59,6 +62,40 @@ end
 
 local activa = false
 local guardados = {} -- marco -> su transparencia de antes
+local ratones = {}   -- marco -> { clic, paso, rueda } de antes (1.4.1)
+
+-- 1.4.1: lo transparente no toma el ratón: el marco y sus hijos que lo tomen
+-- (nunca uno protegido: eso contaminaría las barras y los retratos).
+local function leer(f, metodo)
+	local m = f[metodo]
+	if type(m) ~= "function" then return false end
+	local ok, v = pcall(m, f)
+	return ok and v and true or false
+end
+local function sinRaton(f, prof)
+	if prof > 4 or type(f) ~= "table" or (f.IsForbidden and f:IsForbidden()) then return end
+	local okP, p = pcall(f.IsProtected, f)
+	if not (okP and p) and ratones[f] == nil then
+		local clic, paso, rueda = leer(f, "IsMouseClickEnabled"), leer(f, "IsMouseMotionEnabled"), leer(f, "IsMouseWheelEnabled")
+		if clic or paso or rueda then
+			ratones[f] = { clic, paso, rueda }
+			pcall(f.EnableMouse, f, false)
+			if f.EnableMouseWheel then pcall(f.EnableMouseWheel, f, false) end
+		end
+	end
+	if f.GetChildren then
+		local ok, hijos = pcall(function() return { f:GetChildren() } end)
+		if ok then for _, h in ipairs(hijos) do sinRaton(h, prof + 1) end end
+	end
+end
+local function devolverRatones()
+	for f, r in pairs(ratones) do
+		if f.SetMouseClickEnabled then pcall(f.SetMouseClickEnabled, f, r[1]) else pcall(f.EnableMouse, f, r[1] or r[2]) end
+		if f.SetMouseMotionEnabled then pcall(f.SetMouseMotionEnabled, f, r[2]) end
+		if f.EnableMouseWheel then pcall(f.EnableMouseWheel, f, r[3]) end
+		ratones[f] = nil
+	end
+end
 
 function Pl.Activa() return activa end
 function Pl.Esconde(id) return A.Get("nucleo.limpia" .. id) and true or false end
@@ -79,6 +116,7 @@ local function tocar(m, limpiar)
 			guardados[m] = (ok and type(a) == "number") and a or 1
 		end
 		pcall(m.SetAlpha, m, 0)
+		sinRaton(m, 0)
 	elseif guardados[m] ~= nil then
 		pcall(m.SetAlpha, m, guardados[m])
 		guardados[m] = nil
@@ -101,6 +139,7 @@ aplicar = function()
 	end
 	-- Un marco que dejó de estar en un grupo elegido vuelve como estaba.
 	if not activa then
+		devolverRatones()
 		for m, a in pairs(guardados) do
 			if not (protegido(m) and enCombate()) then
 				pcall(m.SetAlpha, m, a)

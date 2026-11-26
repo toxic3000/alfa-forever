@@ -41,7 +41,6 @@
  "En vivo": "Live",
  "En vivo si estás con un banquero; si no, la última foto.": "Live, wenn du bei einem Bankier bist; sonst der letzte Stand.",
  "Entra al juego con él una vez.": "Logg dich einmal mit ihm ein.",
- "Equipo, consumibles, misiones, materiales... con encabezados que se pliegan.": "Ausrüstung, Verbrauchsgüter, Questgegenstände, Materialien... unter einklappbaren Überschriften.",
  "Espacio y dinero": "Platz und Geld",
  "Este banco no vende más espacio.": "Diese Bank verkauft keinen weiteren Platz.",
  "Estás con un banquero: desde su ventana depositas lo que quieras con un clic.": "Du bist bei einem Bankier: In seinem Fenster lagerst du mit einem Klick ein, was du willst.",
@@ -134,5 +133,6 @@
  "Ya tienes las %d casillas de bolsa del banco. Para más espacio, pon bolsas más grandes en ellas.": "Du hast schon alle %d Taschenplätze der Bank. Für mehr Platz steck größere Taschen hinein.",
  "llena": "voll",
  "¿Comprar otra casilla del banco?": "Weiteren Bankplatz kaufen?",
- "¿Olvidar a este personaje?": "Diesen Charakter vergessen?"
+ "¿Olvidar a este personaje?": "Diesen Charakter vergessen?",
+ "Equipo, consumibles, misiones, materiales… con encabezados que se pliegan.": "Ausrüstung, Verbrauchsgüter, Questgegenstände, Materialien... unter einklappbaren Überschriften."
 }

@@ -139,7 +139,7 @@ local function opciones()
 			alClic = function() M.Circuito.Ahora() end }
 	end
 	if M.Viaje and A.Get(M.ID .. ".llevame") ~= false then
-		out[#out + 1] = { icono = "ic-huella", titulo = L["Llévame a..."], texto = L["A cualquier lugar: vuelos, barcos, zepelines, portales y a pie."],
+		out[#out + 1] = { icono = "ic-huella", titulo = L["Llévame a…"], texto = L["A cualquier lugar: vuelos, barcos, zepelines, portales y a pie."],
 			alClic = function() M.Viaje.Abrir() end }
 	end
 	local grises = M.Grises and M.Grises.Cuantas() or 0
@@ -376,7 +376,7 @@ do
 			{ kind = "toggle", key = M.ID .. ".mapaGrupo", label = L["Misiones de tu grupo en el mapa"],
 				help = L["En grupo, dónde está lo que pide cada misión y quién la lleva."],
 				search = "party quests, group map, members objectives" },
-			{ kind = "toggle", key = M.ID .. ".llevame", label = L["Llévame a..."],
+			{ kind = "toggle", key = M.ID .. ".llevame", label = L["Llévame a…"],
 				help = L["De donde estés a cualquier lugar, con vuelos, barcos, zepelines, portales y a pie, y la lista de tramos."],
 				search = "travel, take me to, route, boat, zeppelin, portal" },
 			{ kind = "toggle", key = M.ID .. ".horarios", label = L["Horarios de barcos y zepelines en el mapa"],

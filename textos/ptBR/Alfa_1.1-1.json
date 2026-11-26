@@ -144,10 +144,8 @@
  "Busca y elige un objeto.": "Busque e escolha um item.",
  "Busca y elige una misión.": "Busque e escolha uma missão.",
  "Buscar cerca": "Buscar perto",
- "Buscar cerca (vuelo, posada, reparar...)": "Buscar perto (voo, estalagem, reparo...)",
  "Buscar cerca no está disponible.": "Buscar perto não está disponível.",
  "Buscar cerca y tus planes": "Buscar perto e seus planos",
- "Buscar cerca...": "Buscar perto...",
  "Buscar cerca:": "Buscar perto:",
  "Buscar cerca: vuelo, posada, banco…": "Buscar perto: voo, estalagem, banco…",
  "Buzón": "Caixa de correio",
@@ -244,5 +242,7 @@
  "Dentro de %s (mazmorra)": "Dentro de %s (masmorra)",
  "Desbloquear posición": "Destravar posição",
  "Deseo de muerte: mucho más daño un rato; úsalo en peleas largas.": "Desejo de Morte: muito mais dano por um tempo; use em lutas longas.",
- "Desmarca las metas hechas de este personaje (las que ya se cumplen se vuelven a marcar solas).": "Desmarca as metas feitas deste personagem (as que já estão cumpridas voltam a ser marcadas sozinhas)."
+ "Desmarca las metas hechas de este personaje (las que ya se cumplen se vuelven a marcar solas).": "Desmarca as metas feitas deste personagem (as que já estão cumpridas voltam a ser marcadas sozinhas).",
+ "Buscar cerca (vuelo, posada, reparar…)": "Buscar perto (voo, estalagem, reparo...)",
+ "Buscar cerca…": "Buscar perto..."
 }

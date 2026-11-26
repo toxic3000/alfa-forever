@@ -501,6 +501,9 @@ function Kit.GridShown(owner)
 end
 
 ns.On("ALFA_HIDDEN", function(hidden) if hidden then Kit.HideGrid() end end)
+-- Alfa 1.4.1: su capa de pantalla completa se comería el primer clic de la
+-- pelea y el giro de la cámara: la cuadrícula se cierra al entrar en combate.
+if ns.RegisterEvent then ns.RegisterEvent("PLAYER_REGEN_DISABLED", function() Kit.HideGrid() end) end
 
 ---------------------------------------------------------------------------
 -- State
@@ -2213,7 +2216,7 @@ function P.RailItems()
 end
 
 function P.FootItems(onOptions)
-	local items = { { key = "Options", label = L["Options"], icon = "sliders", tip = L["Options"], onClick = onOptions } }
+	local items = { { key = "Options", label = T("Ajustes"), icon = "sliders", tip = T("Ajustes"), onClick = onOptions } }
 	for _, s in ipairs(sections) do
 		if s.foot then items[#items + 1] = { key = s.key, label = s.label or s.key, icon = s.icon } end
 	end

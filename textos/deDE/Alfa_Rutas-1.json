@@ -36,8 +36,6 @@
  "Alfa arma al momento una guía para conseguirlo.": "Alfa erstellt sofort einen Guide, um es zu bekommen.",
  "Alfa arma una guía con el orden más corto para terminar y entregar todas. Quita la marca de las que no quieras hacer, o tócales la X para abandonarlas.": "Alfa erstellt einen Guide mit der kürzesten Reihenfolge, um alle abzuschließen und abzugeben. Entferne den Haken bei denen, die du nicht machen willst, oder klick auf ihr X, um sie abzubrechen.",
  "Alfa elige todo: misiones ordenadas por XP por distancia y tus misiones de clase.": "Alfa wählt alles: Quests nach EP pro Wegstrecke sortiert und deine Klassenquests.",
- "Alfa está armando tu ruta...": "Alfa baut deine Route...",
- "Alfa está eligiendo...": "Alfa wählt aus...",
  "Alfa no conoce de dónde sale. Prueba en el Buscador.": "Alfa weiß nicht, woher es kommt. Versuch es mit „Nachschlagen“.",
  "Alfa no pudo armar el camino a %s (%s). Míralo en el Buscador.": "Alfa konnte den Weg zu %s (%s) nicht erstellen. Schau in „Nachschlagen“ nach.",
  "Alfa no sabe de dónde sale este objeto.": "Alfa weiß nicht, woher dieser Gegenstand kommt.",
@@ -65,11 +63,9 @@
  "Busca el material en el catálogo y toca \"Agregar a mi ruta\": cambia este tramo.": "Such das Material im Katalog und klick auf „Zu meiner Route hinzufügen“: Es ändert diese Etappe.",
  "Busca por nombre: espada, mena, poción...": "Nach Name suchen: Schwert, Erz, Trank...",
  "Buscador": "Nachschlagen",
- "Buscando otras misiones...": "Suche andere Quests...",
  "Buscar objetos": "Gegenstände suchen",
  "Calidad": "Qualität",
  "Calidad (mejor primero)": "Qualität (beste zuerst)",
- "Cambiar nombre...": "Umbenennen...",
  "Cambiar objeto": "Gegenstand ändern",
  "Cambiar por otra misión...": "Gegen andere Quest tauschen...",
  "Cantidad": "Menge",
@@ -108,5 +104,9 @@
  "El texto llegó cortado o cambiado: cópialo otra vez.": "Der Text kam gekürzt oder verändert an: Kopiere ihn erneut.",
  "Elige el material": "Wähle das Material",
  "Elige el objeto en el catálogo": "Wähle den Gegenstand im Katalog",
- "Elige el objeto en el catálogo y toca \"Agregar a mi ruta\".": "Wähle den Gegenstand im Katalog und klick auf „Zu meiner Route hinzufügen“."
+ "Elige el objeto en el catálogo y toca \"Agregar a mi ruta\".": "Wähle den Gegenstand im Katalog und klick auf „Zu meiner Route hinzufügen“.",
+ "Alfa está armando tu ruta…": "Alfa baut deine Route...",
+ "Alfa está eligiendo…": "Alfa wählt aus...",
+ "Buscando otras misiones…": "Suche andere Quests...",
+ "Cambiar nombre…": "Umbenennen..."
 }

@@ -110,7 +110,6 @@
  "Sin acción": "Aucune action",
  "Sin tecla": "Sans touche",
  "Solo": "Seul",
- "Solo buffs": "Buffs seulement",
  "Todavía no conoces sus hechizos: se llenan al aprenderlos.": "Vous ne connaissez pas encore ses sorts : ils se remplissent à mesure que vous les apprenez.",
  "Tu grupo y tu banda con su vida, para curar con un clic. Se cambia fuera de combate.": "Votre groupe et votre raid avec leur vie, pour soigner en un clic. Se change hors combat.",
  "Tu libro no tiene hechizos para aliados": "Votre grimoire n'a pas de sorts pour les alliés",
@@ -136,5 +135,6 @@
  "selecciona": "cible",
  "un hechizo": "un sort",
  "¿Usar tu hechizo nuevo?": "Utiliser votre nouveau sort ?",
- "¿Usar «%s»?": "Utiliser « %s » ?"
+ "¿Usar «%s»?": "Utiliser « %s » ?",
+ "Solo beneficios": "Bénéfices seulement"
 }

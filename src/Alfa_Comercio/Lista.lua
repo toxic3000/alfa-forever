@@ -326,7 +326,7 @@ function Li.Guiar(id)
 		end
 	end
 	if not (Lk and Lk.Guide) then
-		N.Imprimir(L["El motor no puede armar guías ahora."])
+		N.Imprimir(L["Ahora no puedo armar la guía. Prueba en un momento; si sigue, cuéntanos con /alfa reportar."])
 		return false
 	end
 	-- 1.3.7: la base de datos del motor se carga antes (sin ella siempre salía

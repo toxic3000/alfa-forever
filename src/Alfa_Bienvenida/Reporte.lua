@@ -825,7 +825,7 @@ local function armar()
 	ui.enviar = K.Boton(v, L["Enviar"], function() M.EnviarReporte() end, { tipo = "primario", icono = "ic-flecha" })
 	ui.navegador = K.Boton(v, L["Enviar ya por el navegador"], function() M.EnlaceReporte() end, { tipo = "secundario" })
 	ui.copiar = K.Boton(v, L["Copiar"], function() M.CopiarReporte() end, { tipo = "fantasma" })
-	v:SetPie({ ui.navegador, ui.enviar }, { K.Boton(v, L["Cerrar"], function() v:Cerrar() end, { tipo = "secundario" }), ui.copiar })
+	v:SetPie({ ui.navegador, ui.enviar }, { K.Boton(v, L["Cerrar"], function() v:Cerrar() end, { tipo = "fantasma" }), ui.copiar })
 end
 
 function M.AbrirReporte(tipo)

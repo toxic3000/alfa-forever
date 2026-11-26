@@ -7,5 +7,5 @@
  "Alfa está trabajando de más": "Alfa работает слишком много",
  "%s. Si notas el juego lento, prueba el «Modo ligero» en Ajustes > Estilo y sonido.": "%s. Если игра кажется медленной, попробуй «Лёгкий режим» в Настройки > Стиль и звук.",
  "Al entrar, Alfa tardó %.0f ms en cargar sus archivos y %.0f ms en arrancar.": "При входе Alfa загружала свои файлы %.0f мс и запускалась %.0f мс.",
- "Midiendo cuánta memoria va juntando Alfa durante %d segundos...": "Измеряю, сколько памяти набирает Alfa за %d секунд…"
+ "Midiendo cuánta memoria va juntando Alfa durante %d segundos…": "Измеряю, сколько памяти набирает Alfa за %d секунд…"
 }

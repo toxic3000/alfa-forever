@@ -34,7 +34,6 @@
  "En la lista de %s: %s.": "Na lista de %s: %s.",
  "cocina": "culinária",
  "El clic en «Enviar» siempre es tuyo.": "O clique em «Enviar» é sempre seu.",
- "Poniendo %s en la carta...": "Colocando %s na carta...",
  "Preparar": "Preparar",
  "Suelta lo que traes en el cursor y vuelve a intentarlo.": "Solte o que está no cursor e tente de novo.",
  "La carta ya está llena: manda esta y prepara otra.": "A carta está cheia: envie esta e prepare outra.",
@@ -111,5 +110,6 @@
  "Nodos en el mapa del mundo: ocultos.": "Nós no mapa-múndi: ocultos.",
  "Nodos en el mapa del mundo: visibles.": "Nós no mapa-múndi: visíveis.",
  "Los recolectaste %d vez en total": "Você coletou %d vez no total",
- "Nodos en el minimapa: visibles.": "Nós no minimapa: visíveis."
+ "Nodos en el minimapa: visibles.": "Nós no minimapa: visíveis.",
+ "Poniendo %s en la carta…": "Colocando %s na carta..."
 }

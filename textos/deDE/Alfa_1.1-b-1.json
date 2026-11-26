@@ -144,7 +144,6 @@
  "Buen lanzamiento": "Guter Wurf",
  "Busca una misión, un PNJ, una zona o una palabra…": "Such nach einer Quest, einem NPC, einer Zone oder einem Wort…",
  "Buscar en el diario": "Im Tagebuch suchen",
- "Buscar: pasto, niebla, sombras...": "Suche: Gras, Nebel, Schatten...",
  "Cada ajuste que Alfa cambió vuelve al valor que tenía antes. Los filtros no cambian.": "Jede Einstellung, die Alfa geändert hat, kehrt zu ihrem vorherigen Wert zurück. Die Filter ändern sich nicht.",
  "Cada domingo en Tuercespina: el primero en llevar 40 pescados sabrosos de los bancos especiales gana. También salen peces raros que se cambian por premios.": "Jeden Sonntag im Schlingendorntal: Wer als Erster 40 Gefleckte Leckerfische aus den besonderen Schwärmen abliefert, gewinnt. Außerdem gibt es seltene Fische, die man gegen Preise eintauschen kann.",
  "Cairne Pezuña de Sangre gobierna desde Cima del Trueno, aunque Magatha, de los Tótem Siniestro, no lo quiere tanto como aparenta.": "Cairne Bluthuf herrscht von Donnerfels aus, auch wenn Magatha von den Grimmtotem ihn nicht so sehr mag, wie sie vorgibt.",
@@ -233,5 +232,6 @@
  "Desde siempre": "Insgesamt",
  "Deshacer preajuste": "Voreinstellung rückgängig",
  "Después de": "Nach",
- "Desvanecer objetos lejanos": "Entfernte Objekte ausblenden"
+ "Desvanecer objetos lejanos": "Entfernte Objekte ausblenden",
+ "Buscar: pasto, niebla, sombras…": "Suche: Gras, Nebel, Schatten..."
 }

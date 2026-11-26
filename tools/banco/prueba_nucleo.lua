@@ -274,7 +274,7 @@ local Cu = ns("Alfa_Curacion")
 step("curación: «Básico» para una clase sin buffs, «Sin grupo»", function()
   if Cu.TieneBuffs("WARRIOR") then error("el guerrero no debería tener buffs para otros") end
   if Cu.NombrePreajuste("buffs", "WARRIOR") ~= "Básico" then error("sin buffs, «Solo buffs» no se llama Básico") end
-  if Cu.NombrePreajuste("buffs", "PRIEST") ~= "Solo buffs" then error("con buffs, el preajuste debe seguir llamándose Solo buffs") end
+  if Cu.NombrePreajuste("buffs", "PRIEST") ~= "Solo beneficios" then error("con buffs, el preajuste debe seguir llamándose Solo buffs") end
   local d = Cu.DescripcionPreajuste("buffs")
   if d:find("no tiene buffs", 1, true) then error("el texto de Básico se contradice: " .. d) end
   if Cu.TituloPreajuste("buffs") ~= "Básico" then error("el título de la tarjeta no dice Básico") end

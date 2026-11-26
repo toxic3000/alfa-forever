@@ -68,6 +68,15 @@ local function armarCaptura()
 		if k then terminarCaptura(prefijo() .. k) else terminarCaptura(nil) end
 	end)
 	f:SetScript("OnMouseWheel", function(_, d) terminarCaptura(prefijo() .. (d > 0 and "MOUSEWHEELUP" or "MOUSEWHEELDOWN")) end)
+	-- 1.4.1: la captura toma todo el ratón y el teclado mientras espera tu
+	-- tecla: que se vea (un velo con lo que espera), nunca una pared invisible.
+	local velo = f:CreateTexture(nil, "BACKGROUND")
+	velo:SetAllPoints(f)
+	velo:SetColorTexture(0, 0, 0, 0.45)
+	local aviso = K.Texto(f, "titulo", "acento")
+	aviso:SetPoint("CENTER", f, "CENTER", 0, 40)
+	aviso:SetJustifyH("CENTER")
+	aviso:SetText(L["Pulsa una tecla, un botón del ratón o la rueda (Esc cancela)"])
 	-- Si empieza un combate, la captura se cancela sin guardar nada (si no, se
 	-- comería la primera tecla de la pelea).
 	f:RegisterEvent("PLAYER_REGEN_DISABLED")
@@ -109,7 +118,8 @@ local function controlTecla(fila, clave)
 		self.alfaEsperando = true
 		self:Leer()
 		captura:Show()
-		K.Despues(8, function() if captura.control == self then terminarCaptura(nil) end end)
+		-- 1.4.1: un solo reloj (uno viejo cortaba una captura nueva antes de tiempo).
+		N.Una("pesca.captura", 8, function() if captura and captura.control == self then terminarCaptura(nil) end end)
 	end
 	K.ConInfo(b, L["Clic para asignar"], L["Haz clic y pulsa la tecla, un botón del ratón o la rueda (con Mayús, Ctrl o Alt si quieres). Esc cancela; clic derecho la quita."])
 	function b:Capturar() self.alClic(self, "LeftButton") end

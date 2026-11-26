@@ -64,7 +64,6 @@
  "Drenar alma al rematar te da uno.": "以吸取靈魂完成擊殺可獲得一個。",
  "El camino a la meta en el mapa del mundo y el minimapa: una línea o puntos donde caminas, líneas donde vuelas, navegas o montas, y los tramos que siguen más tenues.": "在世界地圖與小地圖上顯示通往目標的路線：步行處為線條或圓點，飛行、航行或搭乘處為線條，之後的路段較淡。",
  "El juego no lo dice ahora.": "遊戲目前沒有提供這項資訊。",
- "El módulo Curación no está cargado.": "「治療」模組未載入。",
  "El objeto que usa el paso actual, o el objeto de misión que junta, brilla en tus bolsas. Un objeto que necesita un paso más adelante lleva un candado, para que no lo vendas.": "目前步驟使用的物品，或它要收集的任務物品，會在你的背包中發光。之後步驟需要的物品會加上鎖頭，讓你不會賣掉它。",
  "El tono de los fondos: Grafito es el de Alfa, Noche el más oscuro y Pizarra un gris neutro.": "背景的色調：石墨是 Alfa 的預設色調，夜晚最暗，石板為中性灰。",
  "El árbol de ruta de Alfa, misiones que se liberan y un catálogo de objetos.": "Alfa 的路線樹、陸續解鎖的任務，以及物品目錄。",
@@ -248,5 +247,6 @@
  "y %d piezas más": "另有 %d 件",
  "y 1 pieza más": "另有 1 件",
  "¿Algo raro?": "發現異常？",
- "¿Qué buscas?": "你在找什麼？"
+ "¿Qué buscas?": "你在找什麼？",
+ "La página Curación está apagada.": "治療頁面已關閉。"
 }

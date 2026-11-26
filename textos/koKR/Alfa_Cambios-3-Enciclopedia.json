@@ -61,9 +61,7 @@
  "Dónde está": "위치",
  "Dónde está cada uno, lo que vende, lo que suelta y sus misiones.": "각각의 위치, 파는 것, 떨어뜨리는 것, 퀘스트.",
  "Dónde se entrega": "제출할 곳",
- "El buscador del motor está apagado (Ajustes > Descubrir): enciéndelo para que Alfa arme guías.": "엔진의 찾아보기가 꺼져 있습니다(설정 > 발견). Alfa가 가이드를 만들 수 있게 켜세요.",
  "El mapa no se abre en combate.": "전투 중에는 지도가 열리지 않습니다.",
- "El motor no puede armar guías ahora.": "지금은 엔진이 가이드를 만들 수 없습니다.",
  "El paquete de datos de Alfa (Alfa_Codex) está desactivado: actívalo en la lista de addons y recarga.": "Alfa 데이터 팩(Alfa_Codex)이 꺼져 있습니다. 애드온 목록에서 켜고 다시 불러오세요.",
  "Elfos de la noche": "나이트 엘프",
  "Elige algo de la lista": "목록에서 하나를 고르세요",
@@ -273,5 +271,7 @@
  "Élite": "정예",
  "Épico": "영웅",
  "Ídolo": "우상",
- "élite": "정예"
+ "élite": "정예",
+ "Ahora no puedo armar la guía. Prueba en un momento; si sigue, cuéntanos con /alfa reportar.": "지금은 가이드를 만들 수 없어요. 잠시 후 다시 해 보고, 계속되면 /alfa reportar 로 알려 주세요.",
+ "El buscador de Alfa está apagado (Ajustes > Descubrimiento): enciéndelo y te armo la guía.": "Alfa 검색이 꺼져 있어요 (설정 > 발견): 켜면 가이드를 만들어 드려요."
 }

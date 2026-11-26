@@ -70,7 +70,6 @@
  "Ya estás en esa guarida.": "이미 그 굴에 있어요.",
  "Ya no está en esa guarida.": "더는 그 굴에 없어요.",
  "Ya puedes salir del grupo: la guarida se queda contigo.": "이제 파티를 나가도 돼요. 굴은 그대로예요.",
- "tocando a la puerta...": "문을 두드리는 중...",
  "¡Ya estás en la %s!": "%s에 도착했어요!",
  "%d misiones listas para entregar": "반납할 퀘스트 %d개",
  "Ahora mismo te ayudaría con": "지금 이걸 도와줄 수 있어요",
@@ -163,5 +162,6 @@
  "Lya descansa. La llamas con /alfa lya o /alfa ayuda cuando quieras.": "리아가 쉬어요. 원할 때 /alfa lya 또는 /alfa ayuda로 불러요.",
  "Lya te guía, un asistente más sencillo y las guaridas": "리아의 안내, 더 쉬운 설정, 그리고 굴",
  "Pregúntale a Lya: clic derecho en ella y «¿En qué te ayudo?». Te explica cada parte de Alfa y te lleva con un clic.": "리아에게 묻기: 리아를 오른쪽 클릭하고 「무엇을 도와줄까?」. Alfa의 모든 부분을 설명하고 클릭 한 번으로 데려가요.",
- "La configuración es más visual: tres tarjetas para decidir cuánto te ayuda Alfa y tus extras en un mosaico.": "설정이 더 보기 쉬워졌어요. Alfa가 얼마나 도울지 세 장의 카드로 고르고, 추가 기능은 타일로 골라요."
+ "La configuración es más visual: tres tarjetas para decidir cuánto te ayuda Alfa y tus extras en un mosaico.": "설정이 더 보기 쉬워졌어요. Alfa가 얼마나 도울지 세 장의 카드로 고르고, 추가 기능은 타일로 골라요.",
+ "tocando a la puerta…": "문을 두드리는 중..."
 }

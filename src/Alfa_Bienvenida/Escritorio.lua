@@ -1091,6 +1091,16 @@ local function menuEscritorio(dueno)
 end
 Es.MenuEscritorio = menuEscritorio
 
+-- 1.4.1: el ratón del escritorio sigue a «Fondo» y a «Poner el mundo en el
+-- monitor principal» (sin fondo y con el mundo debajo, no toma el ratón).
+if A.On then
+	A.On("SETTING_CHANGED", function(ruta)
+		if desk and (ruta == ID .. ".fondo" or ruta == ID .. ".moverMundo" or ruta == ID or ruta == "") then
+			desk:EnableMouse(opt("fondo") ~= false or Es.MueveMundo())
+		end
+	end)
+end
+
 local function crearEscritorio()
 	desk = CreateFrame("Frame", "AlfaEscritorioMarco", K.Raiz())
 	desk:SetFrameStrata("BACKGROUND")
@@ -1105,6 +1115,9 @@ local function crearEscritorio()
 	if Es.ArmarCielo then Es.ArmarCielo(desk.Cielo) end
 	K.Pintar(desk, function(x)
 		x.Cielo:SetAlpha(opt("fondo") == false and 0 or 1)
+		-- 1.4.1: sin fondo y con el mundo debajo (sin moverlo), el escritorio
+		-- transparente no toma el ratón: era una pared sobre el mundo.
+		x:EnableMouse(opt("fondo") ~= false or (Es.MueveMundo and Es.MueveMundo()) and true or false)
 		if Es.PintarCielo then Es.PintarCielo(x.Cielo) end
 	end)
 	-- La barra de arriba.
@@ -1476,10 +1489,15 @@ A.RegisterEvent("PLAYER_REGEN_DISABLED", function()
 	-- 1.4.0: la vista previa se cierra al empezar una pelea (nada que tape el juego).
 	if vista then Es.CerrarVista() end
 	-- (1.3.8 revisión) «¿Se ve bien?» no toma el teclado en combate (antes del bloqueo).
-	if confirmar then confirmar:EnableKeyboard(false) end
+	if confirmar then
+		confirmar:EnableKeyboard(false)
+		-- 1.4.1: ni el ratón: su caja no se traga los clics de la pelea (sus botones siguen).
+		confirmar:EnableMouse(false)
+	end
 end)
 A.RegisterEvent("PLAYER_REGEN_ENABLED", function()
 	if confirmar and prueba then confirmar:EnableKeyboard(true) end
+	if confirmar then confirmar:EnableMouse(true) end
 end)
 
 ---------------------------------------------------------------------------

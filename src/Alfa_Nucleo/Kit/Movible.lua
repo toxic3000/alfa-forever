@@ -51,8 +51,9 @@
 -- Nunca se mueve un marco protegido en combate (queda para después, con
 -- N.FueraDeCombate). Mayús+arrastre directo sobre lo que está a la vista
 -- (fuera de combate, con acomodar.conMayus): solo mientras Mayús está
--- abajo toma el ratón lo que normalmente no lo toma; al soltar Mayús lo
--- devuelve. Sin Mayús, nada atrapa clics.
+-- abajo sale un tirador propio encima de lo que se ve; al soltar Mayús se
+-- esconde. Nunca se engancha nada al ratón del marco registrado (1.4.1).
+-- Sin Mayús, nada atrapa clics.
 
 local _, N = ...
 local K = N.Kit
@@ -277,15 +278,24 @@ local function fallo(err)
 	if h then h(err) end
 end
 
-local prestados = {} -- e -> el marco al que le prestamos el ratón mientras Mayús está abajo
-local enganchados = setmetatable({}, { __mode = "k" }) -- asa -> e (ya tiene sus ganchos)
+-- 1.4.1 (bug de Toxic: «no le puedo picar a un enemigo lejos, la cámara no
+-- se mueve, no puedo clicar las pestañas de profesiones ni el volumen»): en
+-- el juego, enganchar OnMouseDown/OnMouseUp a un marco le PRENDE el ratón. La
+-- 1.4.0 enganchaba esos scripts a las anclas invisibles (la de los anuncios,
+-- 560x150 arriba del centro; la de las placas de la flecha) y se volvían una
+-- pared que se tragaba el clic al mundo, el arrastre de la cámara y los clics
+-- de las ventanas del juego que caían debajo. Ahora el Kit NUNCA engancha
+-- nada al marco registrado ni a su asa: con Mayús abajo pone un «tirador»
+-- propio encima de lo que se ve, y al soltar Mayús lo esconde. Un marco
+-- escondido no toma el ratón: sin Mayús, Alfa no pone nada entre tú y el mundo.
+local tiradores = {} -- e -> su tirador (se crea la primera vez que hace falta)
 local empezarMayus, soltarMayus
 
 local function devolverRaton(e)
-	local f = prestados[e]
-	if not f or e.arrastrando then return end
-	prestados[e] = nil
-	if f.EnableMouse then f:EnableMouse(false) end
+	local t = tiradores[e]
+	if not t or e.arrastrando then return end
+	t:Hide()
+	t:ClearAllPoints()
 end
 
 local function conMayus()
@@ -293,7 +303,7 @@ local function conMayus()
 end
 K.MovibleConMayus = conMayus
 
--- Quién toma el ratón con Mayús: op.asa (lo que se ve) o el registrado.
+-- Quién se ve y se toma con Mayús: op.asa (lo que se ve) o el registrado.
 local function asaDe(e)
 	if not e.op.asa then return e.marco end
 	local ok, a = pcall(e.op.asa)
@@ -302,27 +312,69 @@ local function asaDe(e)
 end
 K.MovibleAsa = asaDe -- (para el banco)
 
--- Los ganchos de Mayús+arrastre en el asa (los del registrado, en unir).
-local function engancharAsa(e, a)
-	if a == e.marco or enganchados[a] == e or not a.HookScript then return end
-	enganchados[a] = e
-	a:HookScript("OnMouseDown", function(_, boton) if enganchados[a] == e then empezarMayus(e, boton) end end)
-	a:HookScript("OnMouseUp", function() if enganchados[a] == e then soltarMayus(e) end end)
-	a:HookScript("OnHide", function() if enganchados[a] == e then soltarMayus(e) end end)
+local function tiradorDe(e)
+	local t = tiradores[e]
+	if t then return t end
+	t = CreateFrame("Frame", nil, UIParent)
+	t:Hide()
+	t:SetFrameStrata("TOOLTIP")
+	t:SetFrameLevel(1)
+	-- Un borde fino: se ve qué se puede mover mientras tienes Mayús abajo.
+	local r, g, b = 0.55, 0.88, 0.31
+	if K.Color then
+		local ok, cr, cg, cb = pcall(K.Color, "acento")
+		if ok and tonumber(cr) then r, g, b = cr, cg, cb end
+	end
+	t.Fondo = t:CreateTexture(nil, "BACKGROUND")
+	t.Fondo:SetAllPoints()
+	t.Fondo:SetColorTexture(r, g, b, 0.10)
+	t.Bordes = {}
+	for i, lado in ipairs({ { "TOPLEFT", "TOPRIGHT", 0, 1 }, { "BOTTOMLEFT", "BOTTOMRIGHT", 0, 1 }, { "TOPLEFT", "BOTTOMLEFT", 1, 0 }, { "TOPRIGHT", "BOTTOMRIGHT", 1, 0 } }) do
+		local x = t:CreateTexture(nil, "BORDER")
+		x:SetColorTexture(r, g, b, 0.85)
+		x:SetPoint(lado[1])
+		x:SetPoint(lado[2])
+		if lado[3] == 1 then x:SetWidth(1) else x:SetHeight(1) end
+		t.Bordes[i] = x
+	end
+	t.alfaTirador = e.clave
+	t:SetScript("OnMouseDown", function(_, boton) empezarMayus(e, boton) end)
+	t:SetScript("OnMouseUp", function() soltarMayus(e) end)
+	t:SetScript("OnHide", function() if e.arrastrando then soltarMayus(e) end end)
+	-- Solo mientras se ve (Mayús abajo): si soltaste Mayús sin que llegara el
+	-- aviso (Alt+Tab) o lo de abajo se fue (un anuncio que terminó), se va.
+	t.alfaCuenta = 0
+	t:SetScript("OnUpdate", function(self, dt)
+		self.alfaCuenta = self.alfaCuenta + (dt or 0)
+		if self.alfaCuenta < 0.1 then return end
+		self.alfaCuenta = 0
+		if e.arrastrando then return end
+		local a = asaDe(e)
+		if not (IsShiftKeyDown and IsShiftKeyDown()) or not conMayus() or not (a and a:IsVisible()) or not K.MovibleVisible(e) then
+			devolverRaton(e)
+		end
+	end)
+	t:EnableMouse(true)
+	tiradores[e] = t
+	return t
 end
+K.MovibleTirador = function(e) if type(e) == "string" then e = REG[e] end return e and tiradores[e] or nil end -- (para el banco)
 
 local function prestarRaton()
 	local abajo = IsShiftKeyDown and IsShiftKeyDown() and conMayus()
 	if abajo and K.MovibleBuscar then K.MovibleBuscar() end
 	for _, e in ipairs(LISTA) do
 		if abajo then
-			local a = e.mayus and e.marco and not prestados[e] and K.MovibleVisible(e) and asaDe(e) or nil
+			local a = e.mayus and e.marco and K.MovibleVisible(e) and asaDe(e) or nil
 			if a and not (a.IsProtected and a:IsProtected()) then
-				engancharAsa(e, a)
-				if not (a.IsMouseEnabled and a:IsMouseEnabled()) then
-					prestados[e] = a
-					a:EnableMouse(true)
+				local t = tiradorDe(e)
+				if not t:IsShown() then
+					t:ClearAllPoints()
+					t:SetAllPoints(a)
+					t:Show()
 				end
+			else
+				devolverRaton(e)
 			end
 		else
 			devolverRaton(e)
@@ -396,12 +448,8 @@ local function unir(e, f)
 		aplicar(e)
 	end
 	-- Mayús+arrastre: solo a lo que no se arrastra ya por su cuenta.
+	-- (1.4.1: sin ganchos de ratón en el marco: lo toma su tirador, con Mayús)
 	e.mayus = e.op.mayus ~= false and not (f.GetScript and f:GetScript("OnDragStart"))
-	if e.mayus and f.HookScript then
-		f:HookScript("OnMouseDown", function(_, boton) empezarMayus(e, boton) end)
-		f:HookScript("OnMouseUp", function() soltarMayus(e) end)
-		f:HookScript("OnHide", function() soltarMayus(e) end)
-	end
 end
 
 local function resolver(e)

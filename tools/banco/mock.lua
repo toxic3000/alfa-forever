@@ -1,3 +1,10 @@
+-- 1.4.1: como el juego, string.upper/lower solo tocan A-Z (el Lua del banco en
+-- Windows usa el idioma del sistema y rompía el «…» y los acentos).
+do
+  local char, gsub = string.char, string.gsub
+  string.upper = function(s) return (gsub(s, "[a-z]", function(c) return char(c:byte() - 32) end)) end
+  string.lower = function(s) return (gsub(s, "[A-Z]", function(c) return char(c:byte() + 32) end)) end
+end
 -- A mocked WoW client for loading Alfa's engine and driving its windows.
 -- Frames keep their anchors and sizes and resolve real rectangles; font
 -- strings measure text roughly; unknown globals are "comodin" stand-ins.
@@ -30,11 +37,15 @@ local eventFrames = {}
 local named = {}
 UIP = nil
 
+RATON_DE_FABRICA = { Button = true, CheckButton = true, Slider = true, EditBox = true, ItemButton = true }
 local function newObj(kind, parent)
   local o = { _kind = kind, _parent = parent, _points = {}, _shown = true, _alpha = 1, _scripts = {}, _hooks = {},
     _events = {}, _level = parent and (rawget(parent, "_level") or 0) + 1 or 0, _children = {}, _scale = 1,
     _text = nil, _enabled = true }
   setmetatable(o, frame_mt)
+  -- 1.4.1: como el juego, un botón (y un deslizador, una casilla, un cuadro
+  -- de texto) nace tomando el ratón aunque no tenga nada dibujado.
+  if RATON_DE_FABRICA[kind] then o._mouse, o._clic, o._movim = true, true, true end
   if parent and rawget(parent, "_children") then table.insert(parent._children, o) end
   allFrames[#allFrames + 1] = o
   return o
@@ -213,7 +224,16 @@ function Frame:IsVisible()
 end
 function Frame:SetAlpha(a) self._alpha = a end
 function Frame:GetAlpha() return self._alpha end
-function Frame:GetEffectiveAlpha() return self._alpha end
+-- Como el juego: el alfa propio por el de cada padre (1.4.1).
+function Frame:GetEffectiveAlpha()
+  local a, x = 1, self
+  for _ = 1, 40 do
+    if not x then break end
+    a = a * (tonumber(rawget(x, "_alpha")) or 1)
+    x = rawget(x, "_parent")
+  end
+  return a
+end
 function Frame:SetScale(s) self._scale = s end
 function Frame:GetScale() return self._scale end
 function Frame:GetEffectiveScale() return 1 end
@@ -221,10 +241,25 @@ function Frame:SetFrameLevel(l) self._level = l end
 function Frame:GetFrameLevel() return self._level or 0 end
 function Frame:SetFrameStrata(s) self._strata = s end
 function Frame:GetFrameStrata() return self._strata or "MEDIUM" end
-function Frame:SetScript(s, fn) self._scripts[s] = fn end
+-- 1.4.1 (bug de Toxic: «no puedo picarle a un enemigo lejos, la cámara no se
+-- mueve, no puedo clicar las pestañas de profesiones ni el volumen»): como el
+-- juego, poner o enganchar un script del ratón PRENDE el ratón del marco solo.
+-- OnMouseDown/OnMouseUp/OnDoubleClick -> el clic; OnEnter/OnLeave -> el paso;
+-- OnMouseWheel -> la rueda. Así un HookScript("OnMouseDown") sobre un ancla
+-- invisible la volvía una pared que se traga el clic y el arrastre de la cámara.
+local RATON_IMPLICITO = { OnMouseDown = "_clic", OnMouseUp = "_clic", OnDoubleClick = "_clic",
+  OnEnter = "_movim", OnLeave = "_movim", OnMouseWheel = "_rueda" }
+local function ratonImplicito(self, s, fn)
+  local campo = fn and RATON_IMPLICITO[s]
+  if not campo then return end
+  rawset(self, campo, true)
+  if campo ~= "_rueda" then rawset(self, "_mouse", true) end
+  rawset(self, "_ratonPor", rawget(self, "_ratonPor") or debug.traceback("", 3):sub(1, 600))
+end
+function Frame:SetScript(s, fn) self._scripts[s] = fn; ratonImplicito(self, s, fn) end
 function Frame:GetScript(s) return self._scripts[s] end
 function Frame:HasScript(s) return true end
-function Frame:HookScript(s, fn) self._hooks[s] = self._hooks[s] or {}; table.insert(self._hooks[s], fn) end
+function Frame:HookScript(s, fn) self._hooks[s] = self._hooks[s] or {}; table.insert(self._hooks[s], fn); ratonImplicito(self, s, fn) end
 function Frame:RegisterEvent(ev) self._events[ev] = true; eventFrames[self] = true end
 -- Como el juego: un evento de unidad registrado para ciertas unidades solo
 -- llega por ellas (1.3.5, N.DeUnidad / ns.RegisterUnitOnly).
@@ -238,7 +273,7 @@ end
 function Frame:UnregisterEvent(ev) self._events[ev] = nil end
 function Frame:UnregisterAllEvents() self._events = {} end
 function Frame:IsEventRegistered(ev) return self._events[ev] == true end
-function Frame:EnableMouse(on) self._mouse = on; self._clic = on; self._movim = on end
+function Frame:EnableMouse(on) on = on and true or false; self._mouse = on; self._clic = on; self._movim = on end
 function Frame:IsMouseEnabled() return self._mouse end
 -- 1.4.0 (control): como el juego, el clic y el paso del ratón por separado
 -- (un marco que solo «ve» el ratón deja pasar el clic al mundo).
@@ -417,7 +452,9 @@ function Frame:SetHorizontalScroll(v) self._hs = v end
 function Frame:GetHorizontalScroll() return self._hs or 0 end
 function Frame:GetVerticalScrollRange() return 0 end
 function Frame:UpdateScrollChildRect() end
-function Frame:EnableMouseWheel() end
+function Frame:EnableMouseWheel(on) self._rueda = on and true or false end
+function Frame:EnableMouseMotion(on) self:SetMouseMotionEnabled(on) end
+function Frame:IsMouseWheelEnabled() return rawget(self, "_rueda") and true or false end
 -- 1.4.0 (83): el dibujo recorta lo que se sale de un marco que recorta a sus
 -- hijos (como el juego), no solo de un ScrollFrame (dump.lua).
 function Frame:SetClipsChildren(on) self._clips = on and true or nil end
@@ -481,6 +518,9 @@ function CreateFrame(kind, name, parent, template)
   if type(parent) == "string" then parent = named[parent] end
   local f = newObj(kind or "Frame", parent or UIP)
   if name then f._name = name; named[name] = f; _G[name] = f end
+  -- 1.4.1: de qué archivo salió (el barrido del ratón separa lo de Alfa).
+  local i = debug.getinfo(2, "S")
+  f._origen = i and i.short_src or "?"
   return f
 end
 

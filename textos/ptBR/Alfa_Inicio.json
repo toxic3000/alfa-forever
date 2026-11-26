@@ -5,13 +5,9 @@
  "%d misiones": "%d missões",
  "%d muertes": "%d mortes",
  "%d niveles": "%d níveis",
- "%d%% de nivel": "%d%% de nível",
- "%d%% de un nivel": "%d%% de um nível",
- "%s al %d%%": "%s a %d%%",
  "%s al %d%%: ¡repara ya!": "%s a %d%%: repare já!",
  "%s está rota": "%s está quebrado",
  "%s%% del nivel %d": "%s%% do nível %d",
- "%s: %d%%": "%s: %d%%",
  "1 espacio": "1 espaço",
  "1 habilidad por aprender": "1 habilidade para aprender",
  "1 misión": "1 missão",
@@ -170,7 +166,6 @@
  "Vendedor": "Mercador",
  "Ver mi diario": "Ver meu diário",
  "XP": "XP",
- "XP descansada: %d%% de un nivel": "XP de descanso: %d%% de um nível",
  "XP ganada": "XP ganha",
  "XP por hora": "XP por hora",
  "XP por hora en cada sesión": "XP por hora em cada sessão",
@@ -195,5 +190,8 @@
  "¡Hola, %s!": "Olá, %s!",
  "¡Repara tu equipo!": "Repare seu equipamento!",
  "¡Terminaste esta guía! Elige la siguiente y sigue subiendo con la manada.": "Você terminou este guia! Escolha o próximo e continue subindo com a matilha.",
- "¿Borrar el diario?": "Apagar o diário?"
+ "¿Borrar el diario?": "Apagar o diário?",
+ "%d %% de nivel": "%d%% de nível",
+ "%d %% de un nivel": "%d%% de um nível",
+ "%s al %d %%": "%s a %d%%"
 }

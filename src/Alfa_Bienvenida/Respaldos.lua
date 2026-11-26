@@ -70,7 +70,7 @@ local function restaurarYa(i)
 			icono = "ic-exito", accion = { texto = L["Recargar ahora"], alClic = function() if ReloadUI then ReloadUI() end end } })
 		if M.alCambiar then M.alCambiar() end
 	else
-		K.Aviso({ titulo = L["No se pudo restaurar"], texto = L["Ese respaldo ya no está."], icono = "ic-aviso", tono = "aviso" })
+		K.Aviso({ titulo = L["No pude restaurar"], texto = L["Ese respaldo ya no está."], icono = "ic-aviso", tono = "aviso" })
 	end
 	return ok
 end

@@ -33,7 +33,6 @@
  "Descubriste a %s (%s).": "%s 발견(%s).",
  "Desde nivel %d": "%d레벨부터",
  "Después de otra": "다른 퀘스트 다음",
- "El diario de mazmorras del motor está apagado (Ajustes > Descubrir > Mazmorras).": "엔진의 던전 도감이 꺼져 있습니다(설정 > 발견 > 던전).",
  "El diario de mazmorras está apagado": "던전 도감이 꺼져 있음",
  "El juego no dejó cambiar las demás.": "게임이 나머지를 바꾸지 못하게 했습니다.",
  "Empieza con %s, que se consigue en la mazmorra.": "시작 아이템: %s, 던전에서 얻습니다.",
@@ -173,5 +172,6 @@
  "el jefe %d": "우두머리 %d",
  "mejor a nivel %d": "%d레벨에 가장 좋음",
  "¡Completaste %s!": "%s 완료!",
- "«Prepárame» recoge solo las que ya puedes tomar y te lleva a la entrada.": "«준비하기»는 지금 받을 수 있는 퀘스트만 받고 입구로 안내합니다."
+ "«Prepárame» recoge solo las que ya puedes tomar y te lleva a la entrada.": "«준비하기»는 지금 받을 수 있는 퀘스트만 받고 입구로 안내합니다.",
+ "El diario de mazmorras de Alfa está apagado (Ajustes > Descubrimiento > Mazmorras).": "Alfa 던전 일지가 꺼져 있어요 (설정 > 발견 > 던전)."
 }

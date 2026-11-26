@@ -371,7 +371,7 @@ step("«Llévame a…»: los lugares de tu facción, el viaje y sus tramos", fun
     check(#Vj.Buscar("orgri") >= 2, "buscar «orgri» no encontró Orgrimmar")
     check(Vj.Ir(nombres["Orgrimmar, Durotar"]), "no empezó el viaje")
     check(puesto and puesto.x == 45 and puesto.label == "Orgrimmar, Durotar", "la flecha no apunta al destino")
-    check(viaje and viaje.t == T and viaje.l == "Llévame a...", "no empezó el viaje del motor")
+    check(viaje and viaje.t == T and viaje.l == "Llévame a…", "no empezó el viaje del motor")
     local p = Vj.Pasos()
     check(p and #p == 2 and p[2].texto == "Vuela a Orgrimmar" and p[1].actual, "los tramos no son los del motor")
     check(Vj.Abrir(), "no abrió la ventana")

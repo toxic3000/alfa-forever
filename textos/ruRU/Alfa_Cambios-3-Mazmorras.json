@@ -33,7 +33,6 @@
  "Descubriste a %s (%s).": "Открыт босс: %s (%s).",
  "Desde nivel %d": "С %d-го уровня",
  "Después de otra": "После другого задания",
- "El diario de mazmorras del motor está apagado (Ajustes > Descubrir > Mazmorras).": "Журнал подземелий движка выключен (Настройки > Открытия > Подземелья).",
  "El diario de mazmorras está apagado": "Журнал подземелий выключен",
  "El juego no dejó cambiar las demás.": "Игра не позволила изменить остальные.",
  "Empieza con %s, que se consigue en la mazmorra.": "Начинается с предмета %s, который добывается в подземелье.",
@@ -173,5 +172,6 @@
  "el jefe %d": "босс %d",
  "mejor a nivel %d": "лучше на %d-м уровне",
  "¡Completaste %s!": "Пройдено: %s!",
- "«Prepárame» recoge solo las que ya puedes tomar y te lleva a la entrada.": "«Подготовь меня» берет только те, что уже можно взять, и ведет ко входу."
+ "«Prepárame» recoge solo las que ya puedes tomar y te lleva a la entrada.": "«Подготовь меня» берет только те, что уже можно взять, и ведет ко входу.",
+ "El diario de mazmorras de Alfa está apagado (Ajustes > Descubrimiento > Mazmorras).": "Журнал подземелий Alfa выключен (Настройки > Открытия > Подземелья)."
 }

@@ -66,7 +66,14 @@ function J.Lanzo(unidad, id, ahora)
 	id = numero(id)
 	if not id then return end
 	ahora = ahora or GetTime()
-	if not pelea then J.Empieza(nil, unidad, ahora) end
+	if not pelea then
+		-- 1.4.1: un jefe que lanza algo en su diálogo antes del pull (tú fuera
+		-- de combate) no empieza una pelea fantasma que nunca termina.
+		local enPelea = InCombatLockdown and InCombatLockdown()
+		if not enPelea then enPelea = M.Legible(M.Llamar(UnitAffectingCombat, "player")) == true end
+		if not enPelea then return end
+		J.Empieza(nil, unidad, ahora)
+	end
 	if not pelea.clave then pelea.clave = claveDe(unidad) end
 	if not pelea.clave then return end
 	local antes = pelea.ultimo[id]

@@ -270,7 +270,7 @@ local function bloqueAcciones(pila)
 		local a = f.acciones or {}
 		local clave = f.kind .. ":" .. tostring(f.id)
 		self.Guiar:SetShown(a.guiar ~= nil)
-		self.Guiar.alClic = function() local ok, msg = a.guiar() aviso(ok, msg) end
+		self.Guiar.alClic = function(boton) local ok, msg = a.guiar(self.Guiar) aviso(ok, msg) end -- 1.4.1: el botón, para el menú de elegir a dónde
 		local puntos = a.mapa or {}
 		local conMapa = #puntos > 0 or a.mapaZona ~= nil
 		self.Mapa:SetShown(conMapa)
@@ -1519,7 +1519,7 @@ local function crear()
 	-- quedan arriba, fuera de la vista, sale fijo en la esquina de la ficha.
 	ui.guiaFija = K.Boton(ui.lf.Ficha, L["Guíame"], function()
 		local a = est.ficha and est.ficha.acciones
-		if a and a.guiar then local ok, msg = a.guiar() aviso(ok, msg) end
+		if a and a.guiar then local ok, msg = a.guiar(ui.guiaFija) aviso(ok, msg) end
 	end, { tipo = "primario", tam = "chico", icono = "ic-seguir" })
 	ui.guiaFija:SetPoint("TOPRIGHT", ui.lf.Ficha, "TOPRIGHT", -ESP.base - 10, -ESP.s)
 	ui.guiaFija:SetFrameLevel(ui.lf.FichaDesp:GetFrameLevel() + 20)

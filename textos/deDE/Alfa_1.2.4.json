@@ -70,7 +70,6 @@
  "Ya estás en esa guarida.": "Du bist schon in diesem Bau.",
  "Ya no está en esa guarida.": "Er ist nicht mehr in diesem Bau.",
  "Ya puedes salir del grupo: la guarida se queda contigo.": "Du kannst die Gruppe jetzt verlassen: Der Bau bleibt bei dir.",
- "tocando a la puerta...": "klopft an die Tür...",
  "¡Ya estás en la %s!": "Du bist im %s!",
  "%d misiones listas para entregar": "%d Quests bereit zur Abgabe",
  "Ahora mismo te ayudaría con": "Gerade könnte ich dir helfen mit",
@@ -163,5 +162,6 @@
  "Lya descansa. La llamas con /alfa lya o /alfa ayuda cuando quieras.": "Lya ruht. Ruf sie mit /alfa lya oder /alfa ayuda, wann du willst.",
  "Lya te guía, un asistente más sencillo y las guaridas": "Lya führt dich, eine einfachere Einrichtung und die Baue",
  "Pregúntale a Lya: clic derecho en ella y «¿En qué te ayudo?». Te explica cada parte de Alfa y te lleva con un clic.": "Frag Lya: Rechtsklick auf sie und „Wobei helfe ich dir?“. Sie erklärt jeden Teil von Alfa und bringt dich mit einem Klick hin.",
- "La configuración es más visual: tres tarjetas para decidir cuánto te ayuda Alfa y tus extras en un mosaico.": "Die Einrichtung ist anschaulicher: drei Karten dafür, wie viel Alfa dir hilft, und deine Extras als Kachelraster."
+ "La configuración es más visual: tres tarjetas para decidir cuánto te ayuda Alfa y tus extras en un mosaico.": "Die Einrichtung ist anschaulicher: drei Karten dafür, wie viel Alfa dir hilft, und deine Extras als Kachelraster.",
+ "tocando a la puerta…": "klopft an die Tür..."
 }

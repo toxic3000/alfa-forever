@@ -415,6 +415,10 @@ local function armarClic(modo)
 		SetOverrideBinding(clic, true, "BUTTON2", "INTERACTTARGET")
 	end
 	E.clicArmado = modo
+	-- 1.4.1 (cámara que «se setea»): si el soltar del clic derecho no llega
+	-- (una ventana que se abre encima, Alt+Tab), el clic derecho no se queda
+	-- tomado: se suelta solo en un momento y vuelve a girar la cámara.
+	if N.Una then N.Una("pesca.soltarClic", 1.5, function() if E.clicArmado then M.SoltarClic() end end) end
 	return true
 end
 
@@ -602,7 +606,13 @@ function M.Restaurar()
 	end
 	local combate = enCombate()
 	for nombre, valor in pairs(r) do
-		if not (combate and protegida(nombre)) then
+		-- 1.4.1: si mientras pescabas prendiste «Callar sonidos de mascotas» en
+		-- Comodidades, esa variable ya es suya: la pesca no la devuelve (antes
+		-- la volvía a prender y Comodidades apagaba su propia opción).
+		if nombre == "Sound_EnablePetSounds" and A.Get("comodidades.silenciarMascotas") == true then
+			r[nombre] = nil
+			E.puestos[nombre:lower()] = nil
+		elseif not (combate and protegida(nombre)) then
 			-- 1.4.0: lo que cambiaste tú mientras pescabas se queda como lo dejaste.
 			local actual = leerCVar(nombre)
 			local p = E.puestos[nombre:lower()]
@@ -629,7 +639,12 @@ A.RegisterEvent("CVAR_UPDATE", function(_, nombre)
 	if escribiendo or type(nombre) ~= "string" or not E.respaldo then return end
 	local k = nombre:lower()
 	local p = E.puestos[k]
-	if not p then return end
+	if not p then
+		-- 1.4.1: un sonido que Alfa no había puesto (el volumen general en 0
+		-- mientras pescas) también es tuyo: la pesca ya no lo vuelve a subir.
+		if k:find("^sound_") then E.soltadas[k] = true end
+		return
+	end
 	local actual = leerCVar(p.nombre)
 	if actual == nil then return end
 	-- La cambiaste tú: se queda la tuya y Alfa ya no la toca mientras pescas.
@@ -1155,6 +1170,9 @@ end)
 A.RegisterEvent("GLOBAL_MOUSE_UP", function(_, boton2)
 	if boton2 ~= "RightButton" or not E.clicArmado then return end
 	if E.clicArmado == "recoger" then
+		-- 1.4.1: el «abajo» lo tomó el giro de la cámara y el «arriba» se fue a
+		-- recoger: sin esto la cámara se quedaba siguiendo al ratón.
+		if MouselookStop then pcall(MouselookStop) end
 		M.SoltarClic()
 		return
 	end

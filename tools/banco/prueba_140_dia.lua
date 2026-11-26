@@ -665,6 +665,16 @@ step("de un día al siguiente nada crece", function()
   check(b.onupdate - a.onupdate <= 0, ("los OnUpdate que corren crecen cada día: %d -> %d"):format(a.onupdate, b.onupdate))
 end)
 
+-- 1.4.1: tras un día entero de juego, nada de Alfa es una pared invisible
+-- que se trague el clic, el arrastre de la cámara o la rueda (raton.lua).
+step("el ratón sigue siendo del jugador tras el día", function()
+  local o = Alfa.UI and Alfa.UI.Options and Alfa.UI.Options.frame
+  if o and o:IsShown() then o:Hide() end
+  RATON_ADELANTAR(15)
+  local p = RATON_BARRIDO("tras el día")
+  check(#p == 0, #p .. " problemas del ratón: " .. table.concat(p, " | ", 1, math.min(#p, 30)))
+end)
+
 step("salir", function()
   FIRE_EVENT("PLAYER_LEAVING_WORLD")
   FIRE_EVENT("PLAYER_LOGOUT")

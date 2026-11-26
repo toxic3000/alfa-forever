@@ -307,7 +307,7 @@ local function armarOferta()
 		{ valor = "derecha", texto = L["A la derecha"], icono = "chevron-right" },
 	}, valor = Au.Lado(), alCambiar = function(v) Au.PonerLado(v) end })
 	f.Si = K.Boton(f, L["Sí, en un clic"], function() f:Hide() Au.UnClic(f.Lado:Valor()) end, { tipo = "primario", icono = "ic-ventana" })
-	f.Ahora = K.Boton(f, L["Ahora no"], function() f:Hide() end, { tipo = "secundario" })
+	f.Ahora = K.Boton(f, L["Ahora no"], function() f:Hide() end, { tipo = "fantasma" })
 	f.Nunca = K.Boton(f, L["No volver a preguntar"], function()
 		datos().noPreguntar = true
 		f:Hide()

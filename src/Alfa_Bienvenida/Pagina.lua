@@ -247,7 +247,13 @@ local function grupos(ui, padre)
 		control = function(fila)
 			local b
 			b = K.Boton(fila, L["Borrar"], function()
-				elegir(b, function(n) Pf.Borrar(n) K.Aviso({ titulo = format(L["Borraste «%s»"], n), icono = "ic-cerrar" }) end)
+				elegir(b, function(n)
+					-- 1.4.1: borrar un perfil no se deshace: antes se pregunta (como en Curación).
+					K.Dialogo({ titulo = format(L["¿Borrar «%s»?"], n), texto = L["El perfil se borra para siempre. Tus ajustes de ahora no cambian."],
+						aceptar = L["Borrar"], peligro = true, alAceptar = function()
+							Pf.Borrar(n) K.Aviso({ titulo = format(L["Borraste «%s»"], n), icono = "ic-cerrar" })
+						end })
+				end)
 			end, { tipo = "secundario" })
 			return b
 		end })
@@ -288,7 +294,11 @@ local function grupos(ui, padre)
 	local filaErrores = errores:Fila({ titulo = L["Errores de Alfa"], texto = "",
 		control = function(fila) return K.Boton(fila, L["Copiar"], function() Rs.CopiarErrores() end, { tipo = "secundario" }) end })
 	errores:Fila({ titulo = L["Borrar la lista"], texto = L["Empieza de cero, por ejemplo después de mandar tu reporte."],
-		control = function(fila) return K.Boton(fila, L["Borrar"], function() Rs.BorrarErrores() end, { tipo = "secundario", icono = "ic-cerrar" }) end })
+		control = function(fila) return K.Boton(fila, L["Borrar"], function()
+			-- 1.4.1: son justo lo que sirve para un reporte: antes se pregunta.
+			K.Dialogo({ titulo = L["¿Borrar la lista de errores?"], texto = L["Si aún no mandas tu reporte, primero usa «Reportar»: los lleva solos."],
+				aceptar = L["Borrar"], peligro = true, alAceptar = function() Rs.BorrarErrores() end })
+		end, { tipo = "secundario", icono = "ic-cerrar" }) end })
 	local refrescarErrores = errores.Refrescar
 	function errores:Refrescar()
 		filaErrores.alfaDatos.texto = Rs.ResumenErrores() .. " " .. L["«Reportar» ya los lleva."]

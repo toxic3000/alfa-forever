@@ -423,7 +423,14 @@ local function construir()
 	ui.reco = ui.pila:Agregar(K.Tarjeta(ui.pila, { variante = "accion" }))
 	ui.seccion = ui.pila:Agregar(K.Seccion(ui.pila, L["Más guías"]))
 	ui.rejilla = ui.pila:Agregar(K.Rejilla(ui.pila, { min = 250, gap = K.ESP.base }), { espacio = K.ESP.m })
-	ui.vacio = ui.pila:Agregar(K.Vacio(ui.pila, { lobo = "vacio", titulo = L["No hay guías así"], texto = L["Prueba con otra palabra o elige Todas."] }))
+	ui.vacio = ui.pila:Agregar(K.Vacio(ui.pila, { lobo = "vacio", titulo = L["No hay guías así"], texto = L["Prueba con otra palabra o elige Todas."],
+		-- 1.4.1: el texto pide «Todas»: aquí está el botón.
+		accion = { texto = L["Ver todas"], icono = "ic-guia", alClic = function()
+			est.cat, est.buscar, est.cuantas, est.mision = "todas", "", PAGINA, nil
+			ui.cats:SetValor("todas")
+			if ui.buscar.SetTexto then pcall(ui.buscar.SetTexto, ui.buscar, "") end
+			B.Pintar()
+		end } }))
 	ui.mas = ui.pila:Agregar(K.Boton(ui.pila, L["Ver más"], function() est.cuantas = est.cuantas + PAGINA B.Pintar() end, { tipo = "secundario" }))
 	ui.mas.alfaAnchoPropio = true
 	v.alAcomodar = function() B.Pintar() end

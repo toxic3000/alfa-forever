@@ -57,7 +57,6 @@
  "Drenar alma al rematar te da uno.": "Seelendieb beim Todesstoß gibt dir einen.",
  "El camino a la meta en el mapa del mundo y el minimapa: una línea o puntos donde caminas, líneas donde vuelas, navegas o montas, y los tramos que siguen más tenues.": "Der Weg zum Ziel auf der Weltkarte und der Minikarte: eine Linie oder Punkte, wo du läufst, Linien, wo du fliegst, segelst oder reitest, und die folgenden Etappen blasser.",
  "El juego no lo dice ahora.": "Das Spiel verrät es gerade nicht.",
- "El módulo Curación no está cargado.": "Das Modul Heilung ist nicht geladen.",
  "El objeto que usa el paso actual, o el objeto de misión que junta, brilla en tus bolsas. Un objeto que necesita un paso más adelante lleva un candado, para que no lo vendas.": "Der Gegenstand, den der aktuelle Schritt benutzt, oder der Questgegenstand, den er sammelt, leuchtet in deinen Taschen. Ein Gegenstand, den ein späterer Schritt braucht, bekommt ein Schloss, damit du ihn nicht verkaufst.",
  "El tono de los fondos: Grafito es el de Alfa, Noche el más oscuro y Pizarra un gris neutro.": "Der Ton der Hintergründe: Graphit ist der von Alfa, Nacht der dunkelste und Schiefer ein neutrales Grau.",
  "El árbol de ruta de Alfa, misiones que se liberan y un catálogo de objetos.": "Alfas Routenbaum, Quests, sobald sie freigeschaltet werden, und ein Gegenstandskatalog.",
@@ -248,5 +247,6 @@
  "Usar esta guía": "Diesen Guide nutzen",
  "Zona o raza": "Gebiet oder Volk",
  "mejor en %d": "am besten bei %d",
- "¿Qué buscas?": "Was suchst du?"
+ "¿Qué buscas?": "Was suchst du?",
+ "La página Curación está apagada.": "Die Seite Heilung ist aus."
 }

@@ -1,7 +1,5 @@
 {
  "A los lados del modelo, un botón por ranura: un clic oculta esa pieza y otro la vuelve a poner.": "Neben dem Modell gibt es einen Knopf pro Platz: Ein Klick blendet das Teil aus, ein weiterer legt es wieder an.",
- "Abajo del modelo, elige lo que hace tu personaje (caminar, bailar, saludar...) y páusalo.": "Unter dem Modell wählst du, was dein Charakter tut (gehen, tanzen, winken...), und kannst es pausieren.",
- "Abrir las comodidades (minimapa, cuadro de información, probador...)": "Komfort öffnen (Minikarte, Tooltip, Anprobe...)",
  "Aceptar y entregar todas las misiones": "Alle Quests annehmen und abgeben",
  "Agrega una línea con el objetivo de esa unidad; si te tiene a ti, lo dice.": "Fügt eine Zeile mit dem Ziel dieser Einheit hinzu; wenn du es bist, steht das da.",
  "Alejar más la cámara": "Kamera weiter herauszoomen",
@@ -107,5 +105,7 @@
  "Vitorear": "Jubeln",
  "Voces de error": "Fehlerstimmen",
  "esta misión": "diese Quest",
- "¡Tú!": "Du!"
+ "¡Tú!": "Du!",
+ "Abajo del modelo, elige lo que hace tu personaje (caminar, bailar, saludar…) y páusalo.": "Unter dem Modell wählst du, was dein Charakter tut (gehen, tanzen, winken...), und kannst es pausieren.",
+ "Abrir las comodidades (minimapa, cuadro de información, probador…)": "Komfort öffnen (Minikarte, Tooltip, Anprobe...)"
 }

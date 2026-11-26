@@ -142,7 +142,7 @@ end
 
 -- "Guíame": la guía del motor a un objeto, PNJ o misión (tu clic).
 local MOTIVO = {
-	disabled = L["El buscador del motor está apagado (Ajustes > Descubrir): enciéndelo para que Alfa arme guías."],
+	disabled = L["El buscador de Alfa está apagado (Ajustes > Descubrimiento): enciéndelo y te armo la guía."],
 	tabs = L["Ya tienes seis guías abiertas: cierra una y vuelve a intentar."],
 	nosource = L["No se conoce de dónde sale."],
 	noguide = L["No hay un camino que Alfa pueda guiar para esto."],
@@ -151,7 +151,7 @@ local MOTIVO = {
 function V.Guiar(kind, id)
 	local Lk = A.Lookup
 	if not (Lk and Lk.Guide) then
-		K.Aviso({ titulo = L["Guíame"], texto = L["El motor no puede armar guías ahora."], icono = "ic-aviso", tono = "aviso" })
+		K.Aviso({ titulo = L["Guíame"], texto = L["Ahora no puedo armar la guía. Prueba en un momento; si sigue, cuéntanos con /alfa reportar."], icono = "ic-aviso", tono = "aviso" })
 		return false
 	end
 	if InCombatLockdown and InCombatLockdown() then

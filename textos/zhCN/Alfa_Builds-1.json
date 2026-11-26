@@ -4,7 +4,6 @@
  "%d puntos": "%d 点",
  "%d puntos libres": "%d 个未分配点数",
  "(todavía no la aprendes)": "（你还没有学会）",
- "... y %d talentos más": "……还有 %d 个天赋",
  "1. ¿Qué quieres hacer?": "1. 你想做什么？",
  "2. ¿Cómo te gusta jugar?": "2. 你喜欢怎么玩？",
  "A distancia": "远程",
@@ -92,7 +91,6 @@
  "Busca el arma de dos manos más lenta y fuerte: tus sellos pegan con ella.": "找速度最慢、伤害最高的双手武器：你的圣印靠它打出伤害。",
  "Busca siempre el arco, arma de fuego o ballesta con más daño por segundo.": "总是找每秒伤害最高的弓、枪械或弩。",
  "Busca un escudo con valor de bloqueo alto: sube el daño de Embate con escudo.": "找格挡值高的盾牌：能提高盾牌猛击的伤害。",
- "Buscando...": "搜索中...",
  "Buscar equipo para mi nivel": "查找适合我等级的装备",
  "Cabeza": "头部",
  "Cada bloqueo te da ira: nunca te falta.": "每次格挡都给你怒气：永远不缺怒气。",
@@ -113,5 +111,7 @@
  "Combate": "战斗",
  "Combate feral": "野性战斗",
  "Combate feral para subir": "野性战斗（升级）",
- "Combate para subir": "战斗（升级）"
+ "Combate para subir": "战斗（升级）",
+ "… y %d talentos más": "……还有 %d 个天赋",
+ "Buscando…": "搜索中..."
 }

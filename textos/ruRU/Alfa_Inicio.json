@@ -5,13 +5,9 @@
  "%d misiones": "Заданий: %d",
  "%d muertes": "Смертей: %d",
  "%d niveles": "Уровней: %d",
- "%d%% de nivel": "%d%% уровня",
- "%d%% de un nivel": "%d%% уровня",
- "%s al %d%%": "%s: %d%%",
  "%s al %d%%: ¡repara ya!": "%s: %d%% — срочно почините!",
  "%s está rota": "%s: сломано",
  "%s%% del nivel %d": "%s%% уровня %d",
- "%s: %d%%": "%s: %d%%",
  "1 espacio": "1 ячейка",
  "1 habilidad por aprender": "1 навык к изучению",
  "1 misión": "1 задание",
@@ -170,7 +166,6 @@
  "Vendedor": "Торговец",
  "Ver mi diario": "Открыть мой дневник",
  "XP": "Опыт",
- "XP descansada: %d%% de un nivel": "Опыт за отдых: %d%% уровня",
  "XP ganada": "Получено опыта",
  "XP por hora": "Опыт в час",
  "XP por hora en cada sesión": "Опыт в час за каждый сеанс",
@@ -195,5 +190,8 @@
  "¡Hola, %s!": "Привет, %s!",
  "¡Repara tu equipo!": "Почините экипировку!",
  "¡Terminaste esta guía! Elige la siguiente y sigue subiendo con la manada.": "Этот гайд пройден! Выбери следующий и продолжай расти вместе со стаей.",
- "¿Borrar el diario?": "Очистить дневник?"
+ "¿Borrar el diario?": "Очистить дневник?",
+ "%d %% de nivel": "%d%% уровня",
+ "%d %% de un nivel": "%d%% уровня",
+ "%s al %d %%": "%s: %d%%"
 }

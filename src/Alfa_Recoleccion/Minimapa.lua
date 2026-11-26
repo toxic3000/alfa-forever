@@ -58,9 +58,10 @@ local function pin(k)
 	P.Construir(f)
 	f:SetFrameLevel((Minimap:GetFrameLevel() or 1) + 4)
 	-- 1.3.7: en combate los puntos no toman el ratón (atrapaban los clics del minimapa).
-	f:EnableMouse(not (InCombatLockdown and InCombatLockdown()))
 	f:SetScript("OnEnter", alEntrar)
 	f:SetScript("OnLeave", alSalir)
+	-- 1.4.1: después de los scripts (ponerlos le prende el ratón en el juego).
+	f:EnableMouse(not (InCombatLockdown and InCombatLockdown()))
 	pool[k] = f
 	return f
 end

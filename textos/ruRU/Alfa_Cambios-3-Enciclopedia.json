@@ -61,9 +61,7 @@
  "Dónde está": "Где находится",
  "Dónde está cada uno, lo que vende, lo que suelta y sus misiones.": "Где находится каждый, что продает, что роняет и его задания.",
  "Dónde se entrega": "Где сдавать",
- "El buscador del motor está apagado (Ajustes > Descubrir): enciéndelo para que Alfa arme guías.": "«Поиск» движка выключен (Настройки > Открытия): включите его, чтобы Alfa составлял гайды.",
  "El mapa no se abre en combate.": "Карта не открывается в бою.",
- "El motor no puede armar guías ahora.": "Движок сейчас не может составлять гайды.",
  "El paquete de datos de Alfa (Alfa_Codex) está desactivado: actívalo en la lista de addons y recarga.": "Пакет данных Alfa (Alfa_Codex) отключен: включите его в списке модификаций и перезагрузите интерфейс.",
  "Elfos de la noche": "Ночные эльфы",
  "Elige algo de la lista": "Выберите что-нибудь из списка",
@@ -273,5 +271,7 @@
  "Élite": "Элитный",
  "Épico": "Эпический",
  "Ídolo": "Идол",
- "élite": "элитный"
+ "élite": "элитный",
+ "Ahora no puedo armar la guía. Prueba en un momento; si sigue, cuéntanos con /alfa reportar.": "Сейчас не могу собрать гайд. Попробуй чуть позже; если не пройдёт, напиши нам через /alfa reportar.",
+ "El buscador de Alfa está apagado (Ajustes > Descubrimiento): enciéndelo y te armo la guía.": "Поиск Alfa выключен (Настройки > Открытия): включи его, и я соберу гайд."
 }

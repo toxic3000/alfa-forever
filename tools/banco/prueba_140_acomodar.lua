@@ -262,27 +262,36 @@ step("Mayús+arrastre directo, sin atrapar clics fuera de él", function()
   local real = IsShiftKeyDown
   IsShiftKeyDown = function() return true end
   FIRE_EVENT("MODIFIER_STATE_CHANGED", "LSHIFT", 1)
-  check(f:IsMouseEnabled(), "con Mayús abajo no tomó el ratón")
-  FIRE(f, "OnMouseDown", "LeftButton")
+  -- 1.4.1: el marco nunca toma el ratón; con Mayús sale su tirador encima.
+  local t = K.MovibleTirador(e)
+  check(not f:IsMouseEnabled(), "con Mayús el marco mismo tomó el ratón (en el juego se queda tomado)")
+  check(t and t:IsVisible() and t:IsMouseEnabled(), "con Mayús abajo no salió el tirador")
+  if t then
+    local tl, tb, tw, th = t:GetRect()
+    local fl, fb, fw, fh = f:GetRect()
+    check(math.abs(tl - fl) < 1 and math.abs(tb - fb) < 1 and math.abs(tw - fw) < 1 and math.abs(th - fh) < 1, "el tirador no está encima del marco")
+    FIRE(t, "OnMouseDown", "LeftButton")
+  end
   f:ClearAllPoints()
   f:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", 64, 64)
-  FIRE(f, "OnMouseUp", "LeftButton")
+  if t then FIRE(t, "OnMouseUp", "LeftButton") end
   local g = K.MovibleGuardado("bancoMayus")
   check(g and cerca(g[2], 64) and cerca(g[3], 64), "Mayús+arrastre no guardó el lugar")
   IsShiftKeyDown = function() return false end
   FIRE_EVENT("MODIFIER_STATE_CHANGED", "LSHIFT", 0)
   check(not f:IsMouseEnabled(), "al soltar Mayús se quedó con el ratón (atraparía clics)")
+  check(not (t and t:IsVisible()), "al soltar Mayús el tirador siguió a la vista (atraparía clics)")
   -- En combate: nada se presta.
   local realC = InCombatLockdown
   InCombatLockdown = function() return true end
   IsShiftKeyDown = function() return true end
   FIRE_EVENT("MODIFIER_STATE_CHANGED", "LSHIFT", 1)
-  check(not f:IsMouseEnabled(), "en combate Mayús prestó el ratón")
+  check(not f:IsMouseEnabled() and not (t and t:IsVisible()), "en combate Mayús prestó el ratón")
   InCombatLockdown = realC
   -- Apagado el ajuste: tampoco.
   A.Set("acomodar.conMayus", false)
   FIRE_EVENT("MODIFIER_STATE_CHANGED", "LSHIFT", 1)
-  check(not f:IsMouseEnabled(), "con el ajuste apagado Mayús prestó el ratón")
+  check(not f:IsMouseEnabled() and not (t and t:IsVisible()), "con el ajuste apagado Mayús prestó el ratón")
   A.Set("acomodar.conMayus", nil)
   IsShiftKeyDown = real
   K.MovibleVolver(e)

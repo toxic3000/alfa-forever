@@ -82,6 +82,8 @@ function Ob.Listo(b)
 	local f = (C_Container and C_Container.GetItemCooldown) or rawget(_G, "GetItemCooldown")
 	if type(f) == "function" then
 		local ok, inicio, dura = pcall(f, b.itemID)
+		-- 1.4.1: en combate la recarga puede llegar secreta: no se compara.
+		if ok and issecretvalue and (issecretvalue(inicio) or issecretvalue(dura)) then return false end
 		if ok and type(dura) == "number" and dura > 1.5 and type(inicio) == "number" and inicio > 0 then return false end
 	end
 	return b.tint == "near"

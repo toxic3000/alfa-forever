@@ -514,7 +514,9 @@ local function lineaBajo(nombre, por)
 	if q and q.IsShown and q:IsShown() then
 		f:SetPoint("TOP", q, "BOTTOM", 0, -4)
 	else
-		f:SetPoint("TOP", UIParent, "TOP", 0, -140)
+		-- 1.4.1: sin la ventana de la misión, con los avisos (antes caía sobre la flecha).
+		local an = K.AnclaAvisos and K.AnclaAvisos()
+		if an then f:SetPoint("TOP", an, "BOTTOM", 0, -4) else f:SetPoint("TOP", UIParent, "TOP", 0, -140) end
 	end
 	f:Show()
 	return f

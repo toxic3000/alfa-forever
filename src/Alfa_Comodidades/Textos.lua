@@ -5,7 +5,7 @@ local ADDON, M = ...
 
 M.EN = {
 	-- Comodidades.lua
-	["Abrir las comodidades (minimapa, cuadro de información, probador...)"] = "Open the conveniences (minimap, tooltip, dressing room...)",
+	["Abrir las comodidades (minimapa, cuadro de información, probador…)"] = "Open the conveniences (minimap, tooltip, dressing room...)",
 
 	-- Cuadro.lua
 	["¡Tú!"] = "You!",
@@ -69,7 +69,7 @@ M.EN = {
 	["Botones de objetos"] = "Item buttons",
 	["A los lados del modelo, un botón por ranura: un clic oculta esa pieza y otro la vuelve a poner."] = "At the sides of the model, a button per slot: one click hides that piece and another puts it back.",
 	["Control de animación"] = "Animation control",
-	["Abajo del modelo, elige lo que hace tu personaje (caminar, bailar, saludar...) y páusalo."] = "Under the model, choose what your character does (walk, dance, wave...) and pause it.",
+	["Abajo del modelo, elige lo que hace tu personaje (caminar, bailar, saludar…) y páusalo."] = "Under the model, choose what your character does (walk, dance, wave...) and pause it.",
 	["Cámara"] = "Camera",
 	["Alejar más la cámara"] = "Zoom the camera out further",
 	["Lleva al máximo la distancia de la cámara (la de Opciones > Controles). Al apagarlo vuelve la que tenías."] = "Sets the camera distance (the one in Options > Controls) to its maximum. Turning it off brings yours back.",

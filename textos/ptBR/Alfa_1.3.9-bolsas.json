@@ -5,7 +5,6 @@
  "Al ordenar, lo que tiene candado se queda en su casilla y lo demás se acomoda alrededor.": "Ao organizar, o que tem cadeado fica no lugar e o resto se ajeita ao redor.",
  "Botón «Lo que me sobra»": "Botão “O que me sobra”",
  "Como el juego": "Como o jogo",
- "Como el juego, o el orden de Alfa: por tipo (equipo, consumibles, materiales... y la chatarra al final), por calidad o por nombre.": "Como o jogo, ou a ordem do Alfa: por tipo (equipamento, consumíveis, materiais... e a sucata no fim), por qualidade ou por nome.",
  "Con «Separar», lo épico que tiene candado también sale con el martillo si vale más en la subasta. El candado sigue: no se vende ni se borra.": "Com “Separar”, o épico com cadeado também recebe o martelo se vale mais no leilão. O cadeado continua: não se vende nem se destrói.",
  "Cómo ordenar": "Como organizar",
  "Dejé de ordenar: el juego no soltó algunos objetos. Dale otra vez en un momento.": "Parei de organizar: o jogo não soltou alguns itens. Tente de novo daqui a pouco.",
@@ -24,7 +23,6 @@
  "No te sobra nada para vender.": "Não te sobra nada para vender.",
  "Por calidad": "Por qualidade",
  "Por nombre": "Por nome",
- "Por nombre, tipo o calidad (verde, azul...) y por nivel de objeto: 20, >20, 20-30. También por lo que es (arma, material, comida...) y por lo que Alfa sabe: mejora, nuevo, candado, sin usar, sobra, subasta. Con «-» delante quitas: -gris. Lo que coincide se resalta.": "Por nome, tipo ou qualidade (verde, azul...) e por nível de item: 20, >20, 20-30. Também pelo que é (arma, material, comida...) e pelo que o Alfa sabe: melhoria, novo, cadeado, sem uso, sobra, leilão. Com “-” na frente você exclui: -cinza. O que coincide é destacado.",
  "Por tipo": "Por tipo",
  "Quedan %d para otra carta.": "Restam %d para outra carta.",
  "Sin que hagas nada: lo épico y legendario, lo de misiones, tu piedra de hogar, lo de tus conjuntos de equipo, tus herramientas de oficio (caña, pico, martillo, cuchillo) y lo que te lleva de viaje.": "Sem você fazer nada: o épico e o lendário, itens de missão, sua pedra de regresso, as peças dos seus conjuntos de equipamento, suas ferramentas de profissão (vara, picareta, martelo, faca) e o que te leva em viagem.",
@@ -51,5 +49,7 @@
  "vender": "vender",
  "«Separar»: lo épico con candado a la subasta": "“Separar”: épicos com cadeado para o leilão",
  "Si la ventana no empieza en la orilla izquierda de tu otro monitor (el de la izquierda), arrástrala ahí una vez; Windows la recordará.": "Se a janela não começar na borda esquerda do seu outro monitor (o da esquerda), arraste-a até lá uma vez; o Windows vai lembrar.",
- "Tu otro monitor está:": "Seu outro monitor está:"
+ "Tu otro monitor está:": "Seu outro monitor está:",
+ "Como el juego, o el orden de Alfa: por tipo (equipo, consumibles, materiales… y la chatarra al final), por calidad o por nombre.": "Como o jogo, ou a ordem do Alfa: por tipo (equipamento, consumíveis, materiais... e a sucata no fim), por qualidade ou por nome.",
+ "Por nombre, tipo o calidad (verde, azul…) y por nivel de objeto: 20, >20, 20-30. También por lo que es (arma, material, comida…) y por lo que Alfa sabe: mejora, nuevo, candado, sin usar, sobra, subasta. Con «-» delante quitas: -gris. Lo que coincide se resalta.": "Por nome, tipo ou qualidade (verde, azul...) e por nível de item: 20, >20, 20-30. Também pelo que é (arma, material, comida...) e pelo que o Alfa sabe: melhoria, novo, cadeado, sem uso, sobra, leilão. Com “-” na frente você exclui: -cinza. O que coincide é destacado."
 }

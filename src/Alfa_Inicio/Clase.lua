@@ -344,7 +344,7 @@ T.curacion = {
 	id = "curacion", glifo = "plus", titulo = L["Curación"], abrir = "curacion",
 	leer = function()
 		local on = N.Get("curacion", "activo")
-		if on == nil then return sinDato(L["El módulo Curación no está cargado."]) end
+		if on == nil then return sinDato(L["La página Curación está apagada."]) end
 		if on then return { valor = L["Marcos encendidos"], color = "success", detalle = L["Cura a tu grupo con un clic."] } end
 		return { valor = L["Marcos apagados"], color = "textMuted", detalle = L["Enciéndelos en la página Curación."] }
 	end,

@@ -110,7 +110,6 @@
  "Sin acción": "Sem ação",
  "Sin tecla": "Sem tecla",
  "Solo": "Sozinho",
- "Solo buffs": "Só buffs",
  "Todavía no conoces sus hechizos: se llenan al aprenderlos.": "Você ainda não conhece os feitiços dela: eles aparecem quando você os aprender.",
  "Tu grupo y tu banda con su vida, para curar con un clic. Se cambia fuera de combate.": "Seu grupo e sua raide com a vida de cada um, para curar com um clique. Muda fora de combate.",
  "Tu libro no tiene hechizos para aliados": "Seu grimório não tem feitiços para aliados",
@@ -136,5 +135,6 @@
  "selecciona": "seleciona",
  "un hechizo": "um feitiço",
  "¿Usar tu hechizo nuevo?": "Usar o seu feitiço novo?",
- "¿Usar «%s»?": "Usar “%s”?"
+ "¿Usar «%s»?": "Usar “%s”?",
+ "Solo beneficios": "Só benefícios"
 }

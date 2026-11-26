@@ -286,7 +286,7 @@ local function lineaDescanso()
 	local exh = tonumber(N.Leer(llamar(rawget(_G, "GetXPExhaustion"))))
 	local tope = tonumber(N.Leer(llamar(UnitXPMax, "player")))
 	if not (exh and tope and tope > 0 and exh > 0) then return nil end
-	return format(L["Descanso acumulado: %d%% de un nivel"], math.min(150, math.floor(exh / tope * 100 + 0.5)))
+	return format(L["XP descansada: %d %% de un nivel"], math.min(150, math.floor(exh / tope * 100 + 0.5)))
 end
 Z.LineaDescanso = lineaDescanso
 

@@ -1607,7 +1607,7 @@ M.EN = {
 	-- 1.2.8: su página
 	["Lo que Lya nota"] = "What Lya notices",
 	["Tu historia"] = "Your story",
-	["Lya apunta tus pasos grandes (tu primera mazmorra, tus niveles, tu primera montura...) y festeja cada página nueva."] = "Lya writes down your big steps (your first dungeon, your levels, your first mount...) and celebrates every new page.",
+	["Lya apunta tus pasos grandes (tu primera mazmorra, tus niveles, tu primera montura…) y festeja cada página nueva."] = "Lya writes down your big steps (your first dungeon, your levels, your first mount...) and celebrates every new page.",
 	["Al salir de una mazmorra"] = "When you leave a dungeon",
 	["Lya te cuenta cuánto tardaron, cuántas veces caíste y lo mejor que sacaste."] = "Lya tells you how long it took, how many times you fell and the best thing you got.",
 	["Cuando un oficio llega al tope de su rango, Lya te dice que ya puedes aprender el siguiente y dónde está tu instructor."] = "When a profession reaches its rank cap, Lya tells you that you can learn the next one and where your trainer is.",
@@ -2021,4 +2021,5 @@ M.EN["En los ajustes"] = "In settings"
 M.EN["No sé de eso todavía"] = "I don't know about that yet"
 M.EN["Puedo buscarlo por ti en otro lado, o pregúntale a la manada en el Discord."] = "I can look for it somewhere else for you, or ask the pack on Discord."
 M.EN["Prueba con otra palabra, o pregúntale a la manada en el Discord."] = "Try another word, or ask the pack on Discord."
+M.EN["Ahora no"] = "Not now" -- 1.4.1
 M.L = AlfaNucleo.Textos(M.EN)

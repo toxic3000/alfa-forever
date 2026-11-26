@@ -144,7 +144,6 @@
  "Buen lanzamiento": "拋得好",
  "Busca una misión, un PNJ, una zona o una palabra…": "搜尋任務、NPC、地區或關鍵字…",
  "Buscar en el diario": "在圖鑑中搜尋",
- "Buscar: pasto, niebla, sombras...": "搜尋：草、霧、陰影...",
  "Cada ajuste que Alfa cambió vuelve al valor que tenía antes. Los filtros no cambian.": "Alfa 變更過的每項設定都會恢復為之前的數值。濾鏡不會改變。",
  "Cada domingo en Tuercespina: el primero en llevar 40 pescados sabrosos de los bancos especiales gana. También salen peces raros que se cambian por premios.": "每週日在荊棘谷：第一個從特殊魚群中帶回 40 條美味魚的人獲勝。還會釣到稀有魚，可以換取獎品。",
  "Cairne Pezuña de Sangre gobierna desde Cima del Trueno, aunque Magatha, de los Tótem Siniestro, no lo quiere tanto como aparenta.": "凱恩·血蹄在雷霆崖統治，不過恐怖圖騰的瑪加薩並不像她表面上那樣敬愛他。",
@@ -248,5 +247,6 @@
  "Diez mil años atrás, Illidan creó en la cima de Hyjal un nuevo Pozo de la Eternidad, y sobre él se plantó Nordrassil.": "一萬年前，伊利丹在海加爾山頂創造了一口新的永恆之井，諾達希爾就種在它上面。",
  "Distancia a la que ciudades, torres y cuevas conservan su detalle.": "城市、塔樓與洞穴保留細節的距離。",
  "Distancia a la que el suelo conserva su forma completa.": "地面保留完整形狀的距離。",
- "Distancia de las placas": "名條距離"
+ "Distancia de las placas": "名條距離",
+ "Buscar: pasto, niebla, sombras…": "搜尋：草、霧、陰影..."
 }

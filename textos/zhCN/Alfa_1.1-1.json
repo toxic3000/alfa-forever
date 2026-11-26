@@ -144,10 +144,8 @@
  "Busca y elige un objeto.": "搜索并选择一件物品。",
  "Busca y elige una misión.": "搜索并选择一个任务。",
  "Buscar cerca": "搜索附近",
- "Buscar cerca (vuelo, posada, reparar...)": "搜索附近（飞行点、旅店、修理……）",
  "Buscar cerca no está disponible.": "搜索附近功能不可用。",
  "Buscar cerca y tus planes": "搜索附近与你的计划",
- "Buscar cerca...": "搜索附近……",
  "Buscar cerca:": "搜索附近：",
  "Buscar cerca: vuelo, posada, banco…": "搜索附近：飞行点、旅店、银行……",
  "Buzón": "邮箱",
@@ -248,5 +246,7 @@
  "Despojar más rápido": "更快拾取",
  "Después del combate": "战斗结束后",
  "Detalle de la guía": "指南详情",
- "Dibuja la ruta hasta tu objetivo: por dónde caminar, volar o navegar.": "绘制前往目标的路线：在哪里步行、飞行或乘船。"
+ "Dibuja la ruta hasta tu objetivo: por dónde caminar, volar o navegar.": "绘制前往目标的路线：在哪里步行、飞行或乘船。",
+ "Buscar cerca (vuelo, posada, reparar…)": "搜索附近（飞行点、旅店、修理……）",
+ "Buscar cerca…": "搜索附近……"
 }

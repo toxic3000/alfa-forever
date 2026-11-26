@@ -476,11 +476,11 @@ A.OnLogin(function()
 			{ id = "manada.plano", icono = "ic-manada", pregunta = L["¿Cómo me cambio de plano si hay mucha gente?"],
 				respuesta = L["Pulsa «Cambiar de plano» en La Jauría o escribe /alfa plano: le pido a un lobo con su guarida abierta en otro plano que te invite. Acepta, y al llegar sales del grupo."] },
 			{ id = "manada.quientiene", icono = "ic-bolsas", pregunta = L["¿Alguien de la manada tiene lo que busco?"],
-				respuesta = L["En La Jauría, en «¿Quién tiene...?», escribe el objeto y pulsa «Buscar». Te contestan los lobos de tu hermandad que lo permiten, con «Susurrar» para pedírselo."] },
+				respuesta = L["En La Jauría, en «¿Quién tiene…?», escribe el objeto y pulsa «Buscar». Te contestan los lobos de tu hermandad que lo permiten, con «Susurrar» para pedírselo."] },
 			{ id = "manada.semana", icono = "ic-reloj", pregunta = L["¿Qué hizo la manada esta semana?"],
 				respuesta = L["En La Jauría está «La semana de la manada»: misiones, raros, mazmorras y niveles de los lobos que la comparten. Nadie compite: todo suma."] },
 			-- 1.3.0
-			{ id = "manada.spots", icono = "ic-recoleccion", pregunta = L["¿Dónde farmea la manada?"],
+			{ id = "manada.spots", icono = "ic-recoleccion", pregunta = L["¿Dónde caza o recolecta la manada?"],
 				respuesta = L["Marca un buen lugar con «Buen lugar aquí» en La Jauría o /alfa spot. Sale dorado en tu mapa y, si lo compartes, también en el de tu hermandad."] },
 			{ id = "manada.tablon", icono = "ic-lista", pregunta = L["¿Cómo encuentro grupo en la manada?"],
 				respuesta = L["En La Jauría está «El tablón de la manada»: pon qué buscas y a tu hermandad le llega. Se quita solo en una hora."] },

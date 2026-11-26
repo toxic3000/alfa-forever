@@ -36,8 +36,6 @@
  "Alfa arma al momento una guía para conseguirlo.": "Alfa 会立即生成一份获取它的指南。",
  "Alfa arma una guía con el orden más corto para terminar y entregar todas. Quita la marca de las que no quieras hacer, o tócales la X para abandonarlas.": "Alfa 会按最短顺序生成一份指南，帮你完成并交付全部任务。取消勾选不想做的任务，或点击它们的 X 放弃。",
  "Alfa elige todo: misiones ordenadas por XP por distancia y tus misiones de clase.": "全部由 Alfa 挑选：按经验与距离之比排序的任务，再加上你的职业任务。",
- "Alfa está armando tu ruta...": "Alfa 正在生成你的路线...",
- "Alfa está eligiendo...": "Alfa 正在挑选...",
  "Alfa no conoce de dónde sale. Prueba en el Buscador.": "Alfa 不知道它从哪里获得。试试查询。",
  "Alfa no pudo armar el camino a %s (%s). Míralo en el Buscador.": "Alfa 无法生成前往%s的路线（%s）。请在查询中查看。",
  "Alfa no sabe de dónde sale este objeto.": "Alfa 不知道这件物品从哪里获得。",
@@ -65,11 +63,9 @@
  "Busca el material en el catálogo y toca \"Agregar a mi ruta\": cambia este tramo.": "在物品目录中找到材料，然后点击“加入我的路线”：会替换这个路段。",
  "Busca por nombre: espada, mena, poción...": "按名称搜索：剑、矿石、药水……",
  "Buscador": "查询",
- "Buscando otras misiones...": "正在寻找其他任务...",
  "Buscar objetos": "搜索物品",
  "Calidad": "品质",
  "Calidad (mejor primero)": "品质（高的在前）",
- "Cambiar nombre...": "重命名...",
  "Cambiar objeto": "更换物品",
  "Cambiar por otra misión...": "换成其他任务...",
  "Cantidad": "数量",
@@ -160,5 +156,9 @@
  "Lista para entregar": "可交还",
  "Listo: sigue la flecha para terminar y entregar tus misiones.": "完成：跟着箭头完成并交付你的任务。",
  "Llaves": "钥匙",
- "Lo más cercano está en %s. La guía te lleva de un nodo al siguiente.": "最近的在%s。指南会带你从一个采集点到下一个。"
+ "Lo más cercano está en %s. La guía te lleva de un nodo al siguiente.": "最近的在%s。指南会带你从一个采集点到下一个。",
+ "Alfa está armando tu ruta…": "Alfa 正在生成你的路线...",
+ "Alfa está eligiendo…": "Alfa 正在挑选...",
+ "Buscando otras misiones…": "正在寻找其他任务...",
+ "Cambiar nombre…": "重命名..."
 }

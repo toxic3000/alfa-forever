@@ -458,7 +458,7 @@ function F.Objeto(id)
 		if fl then f.mejor = { sobre = L["Lo mejor para ti"], titulo = fl.titulo, texto = unir(fl.texto, fl.valor, fl.viaje), ir = fl.ir, icono = fl.icono and fl.icono.ic } end
 	end
 
-	f.acciones.guiar = (type(curada) == "string" or mejor) and function() return F.Guiar(kind, id, mejor) end or nil
+	f.acciones.guiar = (type(curada) == "string" or mejor or F.EsRecoleccion(kind, id)) and function(dueno) return F.Guiar(kind, id, mejor, dueno, true) end or nil
 	f.acciones.mapa = puntosDe(f.secciones)
 	-- "Quiero este objeto" tiene un botón: Agregar a Mis planes (Alfa_Rutas,
 	-- una meta "conseguir este objeto" en tu plan de ahora). Agregar a mi
@@ -619,7 +619,7 @@ function F.Pnj(id, kindPedido)
 		seccion(f, "matar", L["Misiones que piden derrotarlo"], matar)
 	end
 
-	f.acciones.guiar = #filas > 0 and function() return F.Guiar(kind, id) end or nil
+	f.acciones.guiar = #filas > 0 and function(dueno) return F.Guiar(kind, id, nil, dueno) end or nil
 	f.acciones.mapa = puntosDe(f.secciones)
 	return f
 end
@@ -1058,7 +1058,7 @@ end
 -- Abre una guía: su pestaña si ya está, una nueva, o la de ahora.
 function F.AbrirGuia(gid)
 	local E = A.Engine
-	if not (E and gid) then return false, L["El motor no puede armar guías ahora."] end
+	if not (E and gid) then return false, L["Ahora no puedo armar la guía. Prueba en un momento; si sigue, cuéntanos con /alfa reportar."] end
 	if InCombatLockdown() then return false, L["Se puede al salir de combate."] end
 	local tabs = E.GetTabs and E.GetTabs() or {}
 	for i, t in ipairs(tabs) do
@@ -1073,7 +1073,7 @@ function F.AbrirGuia(gid)
 	elseif E.SetGuide then
 		E.SetGuide(gid)
 	else
-		return false, L["El motor no puede armar guías ahora."]
+		return false, L["Ahora no puedo armar la guía. Prueba en un momento; si sigue, cuéntanos con /alfa reportar."]
 	end
 	F.Empezar()
 	return true, L["Guía abierta en una pestaña nueva: sigue la flecha."]
@@ -1112,7 +1112,7 @@ end
 -- "Guíame": la guía del motor (Lookup.Guide) en una pestaña nueva; `fila`
 -- (opcional) guía a esa fuente en lugar de la mejor.
 local MOTIVO = {
-	disabled = L["El buscador del motor está apagado (Ajustes > Descubrir): enciéndelo para que Alfa arme guías."],
+	disabled = L["El buscador de Alfa está apagado (Ajustes > Descubrimiento): enciéndelo y te armo la guía."],
 	tabs = L["Ya tienes seis guías abiertas: cierra una y vuelve a intentar."],
 	login = L["Espera a terminar de entrar al juego."],
 	nosource = L["No se conoce de dónde sale."],
@@ -1137,13 +1137,36 @@ local function empezar()
 end
 F.Empezar = empezar
 
-function F.Guiar(kind, id, fila)
+-- 1.4.1: ¿un mineral o una hierba que se recolecta? (va por zonas, no a un punto)
+function F.EsRecoleccion(kind, id)
+	if kind ~= "item" then return false end
+	local AR = rawget(_G, "AlfaRecoleccion")
+	if not (type(AR) == "table" and type(AR.GruposDe) == "function") then return false end
+	local ok, g = pcall(AR.GruposDe, id)
+	return ok and type(g) == "table" and #g > 0 or false
+end
+
+-- porOmision: fila es solo la mejor fuente que eligió la ficha (no una que
+-- tocaste en la lista): un mineral o una hierba va por zonas igual (1.4.1:
+-- antes esa «mejor fuente» lo mandaba siempre al mismo punto).
+function F.Guiar(kind, id, fila, dueno, porOmision)
+	if porOmision and fila and F.EsRecoleccion(kind, id) then fila = nil end
 	local L2 = Lk()
-	if not (L2 and L2.Guide) then return false, L["El motor no puede armar guías ahora."] end
+	if not (L2 and L2.Guide) then return false, L["Ahora no puedo armar la guía. Prueba en un momento; si sigue, cuéntanos con /alfa reportar."] end
 	if InCombatLockdown() then return false, MOTIVO.combat end
 	-- 1.3.9 (oficios): un mineral o una hierba va a la mejor zona por tu nivel y
 	-- facción, con una ruta por sus puntos (Recolección, Llevar.lua), no a un punto suelto.
 	local AR = rawget(_G, "AlfaRecoleccion")
+	-- 1.4.1 (Toxic): con el botón a la mano, antes eliges a dónde: «Cerca de
+	-- ti», «El lugar recomendado» u otra zona, cada una con lo lejos que está.
+	if kind == "item" and not fila and dueno and type(AR) == "table" and type(AR.Elegir) == "function"
+		and type(AR.Opciones) == "function" then
+		local okO, ops = pcall(AR.Opciones, id)
+		if okO and type(ops) == "table" and #ops > 1 then
+			local okE = pcall(AR.Elegir, id, dueno, function(si) if si then empezar() end end)
+			if okE then return true end
+		end
+	end
 	if kind == "item" and not fila and type(AR) == "table" and type(AR.Llevar) == "function" then
 		local okR, si = pcall(AR.Llevar, id)
 		if okR and si then
@@ -1162,13 +1185,13 @@ function F.Guiar(kind, id, fila)
 			return true, L["Te llevo a la mejor fuente. Recuerda que una montura pide nivel, equitación y oro."]
 		end
 	end
-	if not ok then return false, tostring(gid) end
+	if not ok then return false, L["No pude armar la guía. Prueba otra vez en un momento; si sigue, cuéntanos con /alfa reportar."] end -- 1.4.1: nunca el error crudo
 	if gid then
 		empezar()
 		return true, L["Guía abierta en una pestaña nueva: sigue la flecha."]
 	end
 	if motivo == "tabs" then return false, sinLugar() end
-	return false, MOTIVO[motivo] or format(L["No se pudo armar la guía (%s)."], tostring(motivo or "?"))
+	return false, MOTIVO[motivo] or L["No pude armar la guía. Prueba otra vez en un momento; si sigue, cuéntanos con /alfa reportar."] -- 1.4.1: sin el motivo interno
 end
 
 -- El enlace en el chat: el del juego, o uno armado con el nombre del Codex.

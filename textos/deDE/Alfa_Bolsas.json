@@ -87,7 +87,6 @@
  "Tus bolsas y tu banco en una sola ventana, y lo que lleva cada uno de tus personajes.": "Deine Taschen und deine Bank in einem Fenster, und was jeder deiner Charaktere bei sich hat.",
  "Tus llaves junto a tus bolsas.": "Deine Schlüssel neben deinen Taschen.",
  "Tus personajes": "Deine Charaktere",
- "Un borde del color de la calidad: verde, azul, morado...": "Ein Rahmen in der Farbe der Qualität: grün, blau, lila...",
  "Un marco dorado en lo que sirve para una misión (con «!» si empieza una).": "Ein goldener Rahmen um Gegenstände für eine Quest (mit „!“, wenn einer eine startet).",
  "Una flecha verde en el equipo que es mejor que lo que llevas puesto, según tu clase y nivel.": "Ein grüner Pfeil auf Ausrüstung, die besser ist als deine angelegte, passend zu Klasse und Stufe.",
  "Una moneda sobre lo gris: lo que solo sirve para vender.": "Eine Münze auf grauen Gegenständen: die, die nur zum Verkaufen taugen.",
@@ -121,5 +120,6 @@
  "raro": "rar",
  "verde": "grün",
  "visto %s": "gesehen %s",
- "épico": "episch"
+ "épico": "episch",
+ "Un borde del color de la calidad: verde, azul, morado…": "Ein Rahmen in der Farbe der Qualität: grün, blau, lila..."
 }

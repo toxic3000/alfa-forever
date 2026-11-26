@@ -33,7 +33,6 @@
  "Descubriste a %s (%s).": "Du hast %s entdeckt (%s).",
  "Desde nivel %d": "Ab Stufe %d",
  "Después de otra": "Nach einer anderen",
- "El diario de mazmorras del motor está apagado (Ajustes > Descubrir > Mazmorras).": "Das Dungeonkompendium des Kerns ist aus (Einstellungen > Entdecken > Dungeons).",
  "El diario de mazmorras está apagado": "Das Dungeonkompendium ist aus",
  "El juego no dejó cambiar las demás.": "Das Spiel hat das Ändern der übrigen nicht erlaubt.",
  "Empieza con %s, que se consigue en la mazmorra.": "Sie beginnt mit %s, das man im Dungeon findet.",
@@ -173,5 +172,6 @@
  "el jefe %d": "Boss %d",
  "mejor a nivel %d": "am besten auf Stufe %d",
  "¡Completaste %s!": "Du hast %s abgeschlossen!",
- "«Prepárame» recoge solo las que ya puedes tomar y te lleva a la entrada.": "„Mach mich bereit“ nimmt nur die an, die du schon annehmen kannst, und bringt dich zum Eingang."
+ "«Prepárame» recoge solo las que ya puedes tomar y te lleva a la entrada.": "„Mach mich bereit“ nimmt nur die an, die du schon annehmen kannst, und bringt dich zum Eingang.",
+ "El diario de mazmorras de Alfa está apagado (Ajustes > Descubrimiento > Mazmorras).": "Alfas Dungeon-Tagebuch ist aus (Einstellungen > Entdeckung > Dungeons)."
 }

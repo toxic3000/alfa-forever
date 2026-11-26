@@ -139,7 +139,6 @@
  "Los raros que cayeron hace poco": "최근 쓰러진 희귀 몹",
  "Lya aprende": "리아가 배워요",
  "Lya apunta aquí tus pasos grandes: tu primera mazmorra, tus niveles, tu primera montura y más.": "리아가 여기에 당신의 큰 발걸음을 적어요: 첫 던전, 레벨, 첫 탈것 등.",
- "Lya apunta tus pasos grandes (tu primera mazmorra, tus niveles, tu primera montura...) y festeja cada página nueva.": "리아가 당신의 큰 발걸음(첫 던전, 레벨, 첫 탈것...)을 적고 새 페이지마다 축하해요.",
  "Lya lleva tu historia, aprende qué consejos ya no quieres y te avisa de tus oficios.": "리아가 당신의 이야기를 기록하고, 더 듣기 싫은 조언을 배우고, 전문 기술 소식을 알려 줘요.",
  "Lya te cuenta cuánto tardaron, cuántas veces caíste y lo mejor que sacaste.": "리아가 걸린 시간, 쓰러진 횟수, 가장 좋은 전리품을 알려 줘요.",
  "Lya vuelve a decirte todos esos consejos.": "리아가 그 조언들을 다시 모두 알려 줘요.",
@@ -200,7 +199,6 @@
  "Todavía no escribimos nada en tu historia. ¡Vamos a hacer algo grande!": "아직 당신의 이야기에 아무것도 안 적었어요. 뭔가 큰 걸 해 봐요!",
  "Todos los que callaste": "끈 조언 전부",
  "Toma el dinero y los objetos de tus cartas, una por una. Las de pago contra entrega y las de un MJ se quedan para que las abras tú.": "우편의 돈과 물품을 하나씩 받아요. 대금 청구 우편과 GM 우편은 직접 열도록 남겨 둬요.",
- "Tomando tus cartas...": "우편 받는 중...",
  "Tomar todo": "모두 받기",
  "Treinta. La manada habla de ti.": "서른. 무리가 당신 얘기를 해요.",
  "Trescientos puntos. Eres maestro de tu oficio.": "300점. 당신은 이 기술의 대가예요.",
@@ -278,7 +276,9 @@
  "¿Quién va a %s?": "%s, 누가 가요?",
  "¿Quién va?": "누가 가요?",
  "¿Qué dice la nota?": "메모에 뭐라고 적을까요?",
- "¿Qué hacemos? Una mazmorra, una misión...": "뭐 할까요? 던전, 퀘스트...",
  "• El logo, el lobo, Lya y los módulos propios de Alfa son de toxic3000 / La Jauría (GPL-3.0).": "• 로고, 늑대, 리아, Alfa 자체 모듈은 toxic3000 / La Jauría의 것이에요(GPL-3.0).",
- "• Los datos que trae Polestar también vienen de QuestieDB, Efficient Games (CC BY 4.0), VMaNGOS, CMaNGOS y Factoruide (GPL) y de ForeverLevelingBiS de Thunder (MIT); sus avisos están en cada LICENSE-DATA.txt.": "• Polestar의 데이터는 QuestieDB, Efficient Games(CC BY 4.0), VMaNGOS, CMaNGOS, Factoruide(GPL), 그리고 Thunder의 ForeverLevelingBiS(MIT)에서도 왔어요. 각 고지는 LICENSE-DATA.txt에 있어요."
+ "• Los datos que trae Polestar también vienen de QuestieDB, Efficient Games (CC BY 4.0), VMaNGOS, CMaNGOS y Factoruide (GPL) y de ForeverLevelingBiS de Thunder (MIT); sus avisos están en cada LICENSE-DATA.txt.": "• Polestar의 데이터는 QuestieDB, Efficient Games(CC BY 4.0), VMaNGOS, CMaNGOS, Factoruide(GPL), 그리고 Thunder의 ForeverLevelingBiS(MIT)에서도 왔어요. 각 고지는 LICENSE-DATA.txt에 있어요.",
+ "Lya apunta tus pasos grandes (tu primera mazmorra, tus niveles, tu primera montura…) y festeja cada página nueva.": "리아가 당신의 큰 발걸음(첫 던전, 레벨, 첫 탈것...)을 적고 새 페이지마다 축하해요.",
+ "Tomando tus cartas…": "우편 받는 중...",
+ "¿Qué hacemos? Una mazmorra, una misión…": "뭐 할까요? 던전, 퀘스트..."
 }

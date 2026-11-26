@@ -21,7 +21,7 @@ function M.Seguir(r, silencioso)
 				return M.Aviso(L["No armé tu ruta"], motivo == "vacio" and L["Quedó sin pasos: agrega tramos o recalcula."] or I.TextoMotivo(motivo), { icono = "ic-aviso", tono = "aviso" })
 			end
 			local ok = G.Instalar(def)
-			if not ok then return M.Aviso(L["No armé tu ruta"], L["El motor no aceptó la guía."], { icono = "ic-aviso", tono = "aviso" }) end
+			if not ok then return M.Aviso(L["No armé tu ruta"], L["No pude abrir la guía. Prueba en un momento; si sigue, cuéntanos con /alfa reportar."], { icono = "ic-aviso", tono = "aviso" }) end
 			local p = M.Personaje()
 			local previo = p.progreso[r.id]
 			p.activa = r.id
@@ -46,7 +46,7 @@ function M.Seguir(r, silencioso)
 	end
 	local plan = P.De(r)
 	if plan then return compilarCon(plan) end
-	M.Aviso(L["Alfa está armando tu ruta..."], L["Elige solo misiones que ya puedes tomar."], { icono = "ic-ruta" })
+	M.Aviso(L["Alfa está armando tu ruta…"], L["Elige solo misiones que ya puedes tomar."], { icono = "ic-ruta" })
 	P.Armar(r, function(nuevo, motivo)
 		if nuevo then compilarCon(nuevo) else M.Aviso(L["No armé tu ruta"], I.TextoMotivo(motivo), { icono = "ic-aviso", tono = "aviso" }) end
 	end)

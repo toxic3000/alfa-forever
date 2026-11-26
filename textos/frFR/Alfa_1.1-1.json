@@ -144,10 +144,8 @@
  "Busca y elige un objeto.": "Cherchez et choisissez un objet.",
  "Busca y elige una misión.": "Cherchez et choisissez une quête.",
  "Buscar cerca": "Chercher à proximité",
- "Buscar cerca (vuelo, posada, reparar...)": "Chercher à proximité (vol, auberge, réparation...)",
  "Buscar cerca no está disponible.": "Chercher à proximité n'est pas disponible.",
  "Buscar cerca y tus planes": "Chercher à proximité et vos plans",
- "Buscar cerca...": "Chercher à proximité...",
  "Buscar cerca:": "Chercher à proximité :",
  "Buscar cerca: vuelo, posada, banco…": "Chercher à proximité : vol, auberge, banque…",
  "Buzón": "Boîte aux lettres",
@@ -244,5 +242,7 @@
  "Dentro de %s (mazmorra)": "Dans %s (donjon)",
  "Desbloquear posición": "Déverrouiller la position",
  "Deseo de muerte: mucho más daño un rato; úsalo en peleas largas.": "Souhait mortel : beaucoup plus de dégâts pendant un moment ; utilisez-le dans les longs combats.",
- "Desmarca las metas hechas de este personaje (las que ya se cumplen se vuelven a marcar solas).": "Décoche les objectifs faits de ce personnage (ceux déjà remplis se recochent tout seuls)."
+ "Desmarca las metas hechas de este personaje (las que ya se cumplen se vuelven a marcar solas).": "Décoche les objectifs faits de ce personnage (ceux déjà remplis se recochent tout seuls).",
+ "Buscar cerca (vuelo, posada, reparar…)": "Chercher à proximité (vol, auberge, réparation...)",
+ "Buscar cerca…": "Chercher à proximité..."
 }

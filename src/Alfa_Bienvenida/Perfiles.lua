@@ -246,7 +246,7 @@ local function armarVentana()
 			K.Aviso({ titulo = L["Ajustes importados"], texto = t,
 				icono = "ic-exito", accion = { texto = L["Recargar ahora"], alClic = function() if ReloadUI then ReloadUI() end end } })
 		else
-			K.Aviso({ titulo = L["No se pudo importar"], texto = n == "vacio" and L["No pegaste nada."]
+			K.Aviso({ titulo = L["No pude importar"], texto = n == "vacio" and L["No pegaste nada."]
 				or L["Ese texto no es un perfil de Alfa. Copia el que da «Exportar» completo."], icono = "ic-aviso", tono = "aviso", lya = false })
 		end
 	end, { tipo = "primario", icono = "ic-exito" })
@@ -435,7 +435,7 @@ local function rendimiento()
 		N.Imprimir(L["Listo: Alfa soltó la memoria que ya no ocupaba."])
 		-- 1.3.5: y ahora mide la basura de los próximos segundos.
 		if Pf.MedirBasura(nombres, como == "perfilador" and cpu or nil) then
-			N.Imprimir(format(L["Midiendo cuánta memoria va juntando Alfa durante %d segundos..."], MIDE_SEG))
+			N.Imprimir(format(L["Midiendo cuánta memoria va juntando Alfa durante %d segundos…"], MIDE_SEG))
 		end
 		return antes, info
 	end

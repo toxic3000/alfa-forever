@@ -115,7 +115,7 @@ end
 
 local function instalarYAbrir(def, exito)
 	if not M.Guias.Instalar(def) then
-		M.Aviso(L["No armé la guía"], L["El motor no aceptó la guía."], { icono = "ic-aviso", tono = "aviso" })
+		M.Aviso(L["No armé la guía"], L["No pude abrir la guía. Prueba en un momento; si sigue, cuéntanos con /alfa reportar."], { icono = "ic-aviso", tono = "aviso" })
 		return false
 	end
 	local i, por = M.Guias.Abrir(def.id)
@@ -128,7 +128,7 @@ local function instalarYAbrir(def, exito)
 end
 
 function R.Ahora()
-	M.Aviso(L["Buscando misiones cerca..."], nil, { icono = "ic-misiones" })
+	M.Aviso(L["Buscando misiones cerca…"], nil, { icono = "ic-misiones" })
 	R.Armar(function(def, motivo, n)
 		if not def then
 			local texto = (motivo == "lleno" and L["Tu registro está lleno: cierra algunas misiones primero."])

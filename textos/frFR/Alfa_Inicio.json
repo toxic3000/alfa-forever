@@ -5,13 +5,9 @@
  "%d misiones": "%d quêtes",
  "%d muertes": "%d morts",
  "%d niveles": "%d niveaux",
- "%d%% de nivel": "%d%% de niveau",
- "%d%% de un nivel": "%d%% d'un niveau",
- "%s al %d%%": "%s à %d%%",
  "%s al %d%%: ¡repara ya!": "%s à %d%% : réparez vite !",
  "%s está rota": "%s est hors d'usage",
  "%s%% del nivel %d": "%s%% du niveau %d",
- "%s: %d%%": "%s : %d%%",
  "1 espacio": "1 emplacement",
  "1 habilidad por aprender": "1 compétence à apprendre",
  "1 misión": "1 quête",
@@ -170,7 +166,6 @@
  "Vendedor": "Marchand",
  "Ver mi diario": "Voir mon journal",
  "XP": "XP",
- "XP descansada: %d%% de un nivel": "XP de repos : %d%% d'un niveau",
  "XP ganada": "XP gagnée",
  "XP por hora": "XP par heure",
  "XP por hora en cada sesión": "XP par heure à chaque session",
@@ -195,5 +190,8 @@
  "¡Hola, %s!": "Bonjour, %s !",
  "¡Repara tu equipo!": "Répare ton équipement !",
  "¡Terminaste esta guía! Elige la siguiente y sigue subiendo con la manada.": "Tu as terminé ce guide ! Choisis le suivant et continue à monter avec la meute.",
- "¿Borrar el diario?": "Effacer le journal ?"
+ "¿Borrar el diario?": "Effacer le journal ?",
+ "%d %% de nivel": "%d%% de niveau",
+ "%d %% de un nivel": "%d%% d'un niveau",
+ "%s al %d %%": "%s à %d%%"
 }

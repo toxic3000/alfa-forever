@@ -240,7 +240,7 @@ local function tarjetaRuta()
 			d.titulo, d.tono = L["Tu ruta de %s en %s está lista"]:format(nombre, nombreZona(r.mapa)), "exito"
 			d.texto = (Ruta.Resumen(r) or "") .. ". " .. L["Pulsa Guiarme y la flecha te lleva de parada en parada desde la más cercana."]
 			d.estado = { texto = L["Lista"], tono = "exito" }
-			d.accion = { texto = L["Guiarme"], icono = "ic-seguir", alClic = function() Ruta.Guiar() end }
+			d.accion = { texto = L["Guíame"], icono = "ic-seguir", alClic = function() Ruta.Guiar() end }
 			d.secundaria = { texto = L["Borrar la ruta"], alClic = function() Ruta.Borrar() end }
 		end
 		return d

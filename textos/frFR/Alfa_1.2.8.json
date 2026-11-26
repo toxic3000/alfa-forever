@@ -139,7 +139,6 @@
  "Los raros que cayeron hace poco": "Les rares tués récemment",
  "Lya aprende": "Lya apprend",
  "Lya apunta aquí tus pasos grandes: tu primera mazmorra, tus niveles, tu primera montura y más.": "Lya note ici tes grands pas : ton premier donjon, tes niveaux, ta première monture et plus encore.",
- "Lya apunta tus pasos grandes (tu primera mazmorra, tus niveles, tu primera montura...) y festeja cada página nueva.": "Lya note tes grands pas (ton premier donjon, tes niveaux, ta première monture...) et fête chaque nouvelle page.",
  "Lya lleva tu historia, aprende qué consejos ya no quieres y te avisa de tus oficios.": "Lya tient ton histoire, apprend quels conseils tu ne veux plus et te prévient pour tes métiers.",
  "Lya te cuenta cuánto tardaron, cuántas veces caíste y lo mejor que sacaste.": "Lya te dit combien de temps ça a pris, combien de fois tu es tombé et le meilleur butin.",
  "Lya vuelve a decirte todos esos consejos.": "Lya te redit tous ces conseils.",
@@ -200,7 +199,6 @@
  "Todavía no escribimos nada en tu historia. ¡Vamos a hacer algo grande!": "On n'a encore rien écrit dans ton histoire. Faisons quelque chose de grand !",
  "Todos los que callaste": "Tous ceux en sourdine",
  "Toma el dinero y los objetos de tus cartas, una por una. Las de pago contra entrega y las de un MJ se quedan para que las abras tú.": "Prend l'argent et les objets de tes lettres, une par une. Celles en contre-remboursement et celles d'un MJ restent pour que tu les ouvres toi-même.",
- "Tomando tus cartas...": "Je prends ton courrier...",
  "Tomar todo": "Tout prendre",
  "Treinta. La manada habla de ti.": "Trente. La meute parle de toi.",
  "Trescientos puntos. Eres maestro de tu oficio.": "Trois cents points. Tu es un maître de ton métier.",
@@ -278,7 +276,9 @@
  "¿Quién va a %s?": "Qui vient à %s ?",
  "¿Quién va?": "Qui vient ?",
  "¿Qué dice la nota?": "Que dit la note ?",
- "¿Qué hacemos? Una mazmorra, una misión...": "On fait quoi ? Un donjon, une quête...",
  "• El logo, el lobo, Lya y los módulos propios de Alfa son de toxic3000 / La Jauría (GPL-3.0).": "• Le logo, le loup, Lya et les modules propres à Alfa sont de toxic3000 / La Jauría (GPL-3.0).",
- "• Los datos que trae Polestar también vienen de QuestieDB, Efficient Games (CC BY 4.0), VMaNGOS, CMaNGOS y Factoruide (GPL) y de ForeverLevelingBiS de Thunder (MIT); sus avisos están en cada LICENSE-DATA.txt.": "• Les données de Polestar viennent aussi de QuestieDB, Efficient Games (CC BY 4.0), VMaNGOS, CMaNGOS et Factoruide (GPL) et de ForeverLevelingBiS de Thunder (MIT) ; leurs mentions sont dans chaque LICENSE-DATA.txt."
+ "• Los datos que trae Polestar también vienen de QuestieDB, Efficient Games (CC BY 4.0), VMaNGOS, CMaNGOS y Factoruide (GPL) y de ForeverLevelingBiS de Thunder (MIT); sus avisos están en cada LICENSE-DATA.txt.": "• Les données de Polestar viennent aussi de QuestieDB, Efficient Games (CC BY 4.0), VMaNGOS, CMaNGOS et Factoruide (GPL) et de ForeverLevelingBiS de Thunder (MIT) ; leurs mentions sont dans chaque LICENSE-DATA.txt.",
+ "Lya apunta tus pasos grandes (tu primera mazmorra, tus niveles, tu primera montura…) y festeja cada página nueva.": "Lya note tes grands pas (ton premier donjon, tes niveaux, ta première monture...) et fête chaque nouvelle page.",
+ "Tomando tus cartas…": "Je prends ton courrier...",
+ "¿Qué hacemos? Una mazmorra, una misión…": "On fait quoi ? Un donjon, une quête..."
 }

@@ -155,7 +155,7 @@ function M.BloqueMisiones(padre, alCambiar)
 			if not T.Corriendo("cerrar:revisar") then
 				Cr.Revisar(function() if alCambiar then alCambiar() end end)
 			end
-			K.Escribir(self.Cargando, L["Revisando tu registro..."])
+			K.Escribir(self.Cargando, L["Revisando tu registro…"])
 			K.Mostrar(self.Cargando, true)
 			K.Mostrar(self.Barra, false)
 			K.Mostrar(self.Resumen, false)

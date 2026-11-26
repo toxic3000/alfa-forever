@@ -31,10 +31,8 @@
  "Botón «Buscar cerca» en el rastreador": "Кнопка «Найти рядом» в трекере",
  "Busca y elige un objeto.": "Найдите и выберите предмет.",
  "Busca y elige una misión.": "Найдите и выберите задание.",
- "Buscar cerca (vuelo, posada, reparar...)": "Найти рядом (полет, таверна, ремонт...)",
  "Buscar cerca no está disponible.": "«Найти рядом» недоступно.",
  "Buscar cerca y tus planes": "«Найти рядом» и ваши планы",
- "Buscar cerca...": "Найти рядом...",
  "Buscar cerca:": "Найти рядом:",
  "Búscalo por su nombre; se cumple cuando lo tienes en tus bolsas.": "Найдите его по названию; цель выполнена, когда он у вас в сумках.",
  "Cambiar esta meta": "Изменить эту цель",
@@ -74,7 +72,6 @@
  "El juego no da tu posición aquí (en una instancia, por ejemplo).": "Игра не сообщает здесь ваше положение (например, в подземелье).",
  "El maestro de vuelo, la posada, reparar, el banco y más, con la flecha.": "Распорядитель полетов, таверна, ремонт, банк и другое — со стрелкой.",
  "El maestro de vuelo, la posada, reparar, el banco y más: el más cercano, con la flecha y la ruta.": "Распорядитель полетов, таверна, ремонт, банк и другое: ближайший, со стрелкой и маршрутом.",
- "El maestro de vuelo, la posada, reparar, el banco... el más cercano (/alfa cerca ayuda).": "Распорядитель полетов, таверна, ремонт, банк... ближайший (/alfa cerca ayuda).",
  "El más cercano cuando le toque, por tiempo de camino.": "Ближайший, когда до него дойдет очередь, по времени пути.",
  "El más cercano, por tiempo de camino": "Ближайший по времени пути",
  "El objeto": "Предмет",
@@ -201,7 +198,6 @@
  "Tu plan no tiene metas todavía": "В вашем плане пока нет целей",
  "Tu propia lista de metas, en el orden que quieras: un objeto, oro, una profesión, un lugar, una misión, un nivel o una nota. Alfa las mide solas y te lleva a cada una.": "Ваш собственный список целей в любом порядке: предмет, золото, профессия, место, задание, уровень или заметка. Alfa сам отслеживает их и ведет вас к каждой.",
  "Tus habilidades nuevas": "Ваши новые способности",
- "Tus metas en tu orden: un objeto, oro, una profesión, un lugar...": "Ваши цели в вашем порядке: предмет, золото, профессия, место...",
  "Tus profesiones": "Ваши профессии",
  "Un aviso corto con el lugar, su zona y el tiempo de camino.": "Короткое оповещение с местом, его зоной и временем пути.",
  "Un buzón": "Почтовый ящик",
@@ -242,5 +238,9 @@
  "• Polestar, de The Polestar authors (GPL-3.0): el motor de guías, navegación y datos (github.com/fitzforge/polestar).": "• Polestar от The Polestar authors (GPL-3.0): движок гайдов, навигации и данных (github.com/fitzforge/polestar).",
  "• Shortest Path Forever, de Cillian Berragan (GPL-3.0-or-later): la navegación y los servicios cercanos.": "• Shortest Path Forever от Cillian Berragan (GPL-3.0-or-later): навигация и ближайшие услуги.",
  "• TerrainWorldMap, de Dramacydal (MIT): la tabla de mosaicos del terreno del mapa.": "• TerrainWorldMap от Dramacydal (MIT): таблица фрагментов рельефа карты.",
- "• pfQuest, de shagu (MIT): datos de misiones, PNJ y objetos.": "• pfQuest от shagu (MIT): данные о заданиях, NPC и объектах."
+ "• pfQuest, de shagu (MIT): datos de misiones, PNJ y objetos.": "• pfQuest от shagu (MIT): данные о заданиях, NPC и объектах.",
+ "Buscar cerca (vuelo, posada, reparar…)": "Найти рядом (полет, таверна, ремонт...)",
+ "Buscar cerca…": "Найти рядом...",
+ "El maestro de vuelo, la posada, reparar, el banco… el más cercano (/alfa cerca ayuda).": "Распорядитель полетов, таверна, ремонт, банк... ближайший (/alfa cerca ayuda).",
+ "Tus metas en tu orden: un objeto, oro, una profesión, un lugar…": "Ваши цели в вашем порядке: предмет, золото, профессия, место..."
 }

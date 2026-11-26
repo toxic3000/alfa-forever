@@ -304,6 +304,14 @@ for _, id in ipairs(PAGINAS) do
 end
 cerrarTodo()
 
+-- 1.4.1: después de clicar cada botón de cada página y cerrar todo, nada de
+-- Alfa se queda como pared invisible sobre el mundo (raton.lua).
+step("el ratón tras clicar todos los botones", function()
+  RATON_ADELANTAR(15)
+  local p = RATON_BARRIDO("tras los botones")
+  if #p > 0 then NOTE("1.4.1 ratón", #p .. " problemas del ratón: " .. table.concat(p, " | ", 1, math.min(#p, 30))) end
+end)
+
 print(string.format("SIN EFECTO (%d), para revisar a mano:", #sinEfecto))
 for _, s in ipairs(sinEfecto) do print("  - " .. s) end
 print(string.format("PRUEBA: botones, %d probados, %d con error, %d sin efecto, errores: %d", probados, conError, #sinEfecto, #ERRORS))

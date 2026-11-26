@@ -33,7 +33,6 @@
   "Descubriste a %s (%s).": "你发现了%s（%s）。",
   "Desde nivel %d": "%d 级起",
   "Después de otra": "需先完成另一个",
-  "El diario de mazmorras del motor está apagado (Ajustes > Descubrir > Mazmorras).": "引擎的地下城手册已关闭（设置 > 发现 > 地下城）。",
   "El diario de mazmorras está apagado": "地下城手册已关闭",
   "El juego no dejó cambiar las demás.": "游戏不允许更改其余选项。",
   "Empieza con %s, que se consigue en la mazmorra.": "从%s开始，可在地下城中获得。",
@@ -173,5 +172,6 @@
   "el jefe %d": "第 %d 个首领",
   "mejor a nivel %d": "最佳等级 %d",
   "¡Completaste %s!": "你完成了%s！",
-  "«Prepárame» recoge solo las que ya puedes tomar y te lleva a la entrada.": "“帮我准备”只会接取你现在能接的任务，并带你去入口。"
+  "«Prepárame» recoge solo las que ya puedes tomar y te lleva a la entrada.": "“帮我准备”只会接取你现在能接的任务，并带你去入口。",
+  "El diario de mazmorras de Alfa está apagado (Ajustes > Descubrimiento > Mazmorras).": "Alfa 的地下城日志已关闭（设置 > 探索 > 地下城）。"
 }

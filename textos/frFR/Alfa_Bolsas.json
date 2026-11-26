@@ -87,7 +87,6 @@
  "Tus bolsas y tu banco en una sola ventana, y lo que lleva cada uno de tus personajes.": "Vos sacs et votre banque dans une seule fenêtre, et ce que porte chacun de vos personnages.",
  "Tus llaves junto a tus bolsas.": "Vos clés à côté de vos sacs.",
  "Tus personajes": "Vos personnages",
- "Un borde del color de la calidad: verde, azul, morado...": "Une bordure de la couleur de la qualité : vert, bleu, violet...",
  "Un marco dorado en lo que sirve para una misión (con «!» si empieza una).": "Un cadre doré sur ce qui sert à une quête (avec « ! » si l'objet en commence une).",
  "Una flecha verde en el equipo que es mejor que lo que llevas puesto, según tu clase y nivel.": "Une flèche verte sur l'équipement meilleur que celui que vous portez, selon votre classe et votre niveau.",
  "Una moneda sobre lo gris: lo que solo sirve para vender.": "Une pièce sur les objets gris : ceux qui ne servent qu'à être vendus.",
@@ -121,5 +120,6 @@
  "raro": "rare",
  "verde": "vert",
  "visto %s": "vu %s",
- "épico": "épique"
+ "épico": "épique",
+ "Un borde del color de la calidad: verde, azul, morado…": "Une bordure de la couleur de la qualité : vert, bleu, violet..."
 }

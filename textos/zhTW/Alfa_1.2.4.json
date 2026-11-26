@@ -70,7 +70,6 @@
  "Ya estás en esa guarida.": "你已經在那個巢穴了。",
  "Ya no está en esa guarida.": "他已不在那個巢穴。",
  "Ya puedes salir del grupo: la guarida se queda contigo.": "現在可以離隊了：巢穴不會變。",
- "tocando a la puerta...": "正在敲門...",
  "¡Ya estás en la %s!": "你到了%s！",
  "%d misiones listas para entregar": "%d 個任務可交",
  "Ahora mismo te ayudaría con": "現在我可以幫你",
@@ -163,5 +162,6 @@
  "Lya descansa. La llamas con /alfa lya o /alfa ayuda cuando quieras.": "莉婭休息了。想找她就用 /alfa lya 或 /alfa ayuda。",
  "Lya te guía, un asistente más sencillo y las guaridas": "莉婭帶路、更簡單的設定和巢穴",
  "Pregúntale a Lya: clic derecho en ella y «¿En qué te ayudo?». Te explica cada parte de Alfa y te lleva con un clic.": "問問莉婭：右鍵她選「我能幫你什麼？」。她講解 Alfa 的每個部分，一點就帶你過去。",
- "La configuración es más visual: tres tarjetas para decidir cuánto te ayuda Alfa y tus extras en un mosaico.": "設定更直觀了：用三張卡片決定 Alfa 幫多少，額外功能用拼圖選。"
+ "La configuración es más visual: tres tarjetas para decidir cuánto te ayuda Alfa y tus extras en un mosaico.": "設定更直觀了：用三張卡片決定 Alfa 幫多少，額外功能用拼圖選。",
+ "tocando a la puerta…": "正在敲門..."
 }

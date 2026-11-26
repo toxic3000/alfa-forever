@@ -17,8 +17,6 @@
  "Avisa a tu hermandad que usas Alfa y escucha a los demás Alfa. Apagado, Alfa no envía ni recibe nada de nadie.": "Sagt deiner Gilde, dass du Alfa nutzt, und hört auf andere Alfa-Nutzer. Aus: Alfa sendet und empfängt gar nichts.",
  "Aún no eres de la manada": "Noch nicht im Rudel",
  "Borra la lista de \"hace cuánto lo viste\" guardada en esta cuenta.": "Löscht die auf diesem Account gespeicherte Liste „zuletzt gesehen“.",
- "Buscando a un oficial...": "Suche einen Offizier...",
- "Buscando su rastro...": "Suche die Spur...",
  "Buscar por nombre": "Nach Name suchen",
  "Clic: seguir con la flecha": "Klick: mit dem Pfeil folgen",
  "Compartes tu ubicación %s.": "Du teilst deinen Standort %s.",
@@ -135,5 +133,7 @@
  "¿Le muestras a tu manada dónde estás?": "Zeigst du deinem Rudel, wo du bist?",
  "¿Quieres cazar con nosotros? Pulsa el botón: Alfa busca a un oficial conectado y te abre un susurro con tu mensaje listo para que lo envíes con Intro.": "Willst du mit uns jagen? Drück den Knopf: Alfa sucht einen Offizier, der online ist, und öffnet ein Flüstern mit deiner fertigen Nachricht, die du mit Enter abschickst.",
  "Última posición enviada %s.": "Letzte Position gesendet %s.",
- "Únete a La Jauría": "Tritt La Jauría bei"
+ "Únete a La Jauría": "Tritt La Jauría bei",
+ "Buscando a un oficial…": "Suche einen Offizier...",
+ "Buscando su rastro…": "Suche die Spur..."
 }

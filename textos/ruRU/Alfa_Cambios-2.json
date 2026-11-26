@@ -57,7 +57,6 @@
  "Drenar alma al rematar te da uno.": "«Похищение души» при добивании дает один.",
  "El camino a la meta en el mapa del mundo y el minimapa: una línea o puntos donde caminas, líneas donde vuelas, navegas o montas, y los tramos que siguen más tenues.": "Путь к цели на карте мира и мини-карте: линия или точки — где идти пешком, линии — где лететь, плыть или ехать; последующие участки бледнее.",
  "El juego no lo dice ahora.": "Игра сейчас этого не сообщает.",
- "El módulo Curación no está cargado.": "Модуль «Исцеление» не загружен.",
  "El objeto que usa el paso actual, o el objeto de misión que junta, brilla en tus bolsas. Un objeto que necesita un paso más adelante lleva un candado, para que no lo vendas.": "Предмет, который использует текущий шаг, или собираемый предмет задания светится в сумках. Предмет, нужный на одном из следующих шагов, получает замок, чтобы ты его не продал.",
  "El tono de los fondos: Grafito es el de Alfa, Noche el más oscuro y Pizarra un gris neutro.": "Тон фона: «Графит» — фирменный тон Alfa, «Ночь» — самый темный, «Сланец» — нейтральный серый.",
  "El árbol de ruta de Alfa, misiones que se liberan y un catálogo de objetos.": "Дерево маршрутов Alfa, задания по мере открытия и каталог предметов.",
@@ -248,5 +247,6 @@
  "Usar esta guía": "Использовать этот гайд",
  "Zona o raza": "Зона или раса",
  "mejor en %d": "лучше всего на %d",
- "¿Qué buscas?": "Что ты ищешь?"
+ "¿Qué buscas?": "Что ты ищешь?",
+ "La página Curación está apagada.": "Страница «Лечение» выключена."
 }

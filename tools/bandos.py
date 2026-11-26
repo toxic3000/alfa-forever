@@ -3,7 +3,7 @@
 Uso:  python -I tools/bandos.py [hoja.png]   ->  src/Alfa_Nucleo/Media/*.tga
 
 Todo es dibujo propio (nada copiado del arte de Blizzard):
-  viaje-barco, -zepelin, -tranvia, -portal, -grifo, -murcielago (1.4.0: siluetas llenas)
+  viaje-barco, -zepelin, -tranvia, -portal, -grifo, -murcielago (1.4.0: siluetas llenas), -elevador (1.4.1)
       los transportes con el trazo de los iconos de Alfa (tools/iconos.py):
       blancos con transparencia, el juego los tiñe. 64 px.
   bando-horda       escudo redondo de hierro con canto de bronce, campo rojo y
@@ -105,8 +105,21 @@ def v_murcielago(l):
     l.borrar_punto(17.2, 8.6, 0.7)
 
 
+def v_elevador(l):
+    # 1.4.1: el elevador (Cima del Trueno, Entrañas): la viga de arriba, los
+    # dos cables, la cabina llena con su puerta y las flechas de subir y bajar.
+    l.linea((5, 3), (27, 3), w=2.4)
+    l.linea((11, 3), (11, 10), w=1.6)
+    l.linea((21, 3), (21, 10), w=1.6)
+    l.caja(7, 10, 25, 29, corte=2, lleno=True)
+    l.borrar((13, 14), (19, 14), (19, 29), (13, 29))
+    l.lleno((16, 15.5), (18.6, 19), (13.4, 19))
+    l.lleno((16, 27.5), (18.6, 24), (13.4, 24))
+
+
 TRANSPORTES = {"viaje-barco": v_barco, "viaje-zepelin": v_zepelin, "viaje-tranvia": v_tranvia,
-               "viaje-portal": v_portal, "viaje-grifo": v_grifo, "viaje-murcielago": v_murcielago}
+               "viaje-portal": v_portal, "viaje-grifo": v_grifo, "viaje-murcielago": v_murcielago,
+               "viaje-elevador": v_elevador}
 
 
 def transporte(fn, tam=64):

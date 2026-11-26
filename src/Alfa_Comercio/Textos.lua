@@ -44,7 +44,7 @@ M.EN = {
 	["Último escaneo %s · %s objetos con precio."] = "Last scan %s · %s items with a price.",
 	["%d de tus objetos aún no tienen precio de subasta."] = "%d of your items have no auction price yet.",
 	["Escanear ahora"] = "Scan now",
-	["Escaneando..."] = "Scanning...",
+	["Leyendo precios…"] = "Scanning...",
 	["Espera %s"] = "Wait %s",
 	["al comerciante"] = "to a vendor",
 	["Todos"] = "All",
@@ -70,7 +70,7 @@ M.EN = {
 	["Desencantar: ≈ %s por objeto%s. Pide Encantamiento %d."] = "Disenchant: ≈ %s per item%s. Needs Enchanting %d.",
 	["Faltan precios de algunos materiales."] = "Some materials have no price yet.",
 	["Receta: %s%s. Cada unidad rinde ≈ %s."] = "Recipe: %s%s. Each unit yields ≈ %s.",
-	["Comisión de la subasta estimada: %d%%."] = "Estimated auction house cut: %d%%.",
+	["Comisión de la subasta estimada: %d %%."] = "Estimated auction house cut: %d%%.",
 
 	-- Recetas
 	["Tus recetas que dejan ganancia"] = "Your recipes that make a profit",
@@ -82,7 +82,7 @@ M.EN = {
 	-- Cómo decide
 	["Cómo decide Alfa"] = "How Alfa decides",
 	["Para cada objeto Alfa compara tres caminos: venderlo al comerciante, ponerlo en la subasta o transformarlo (con una receta que conoces o desencantándolo)."] = "For each item Alfa compares three paths: selling it to a vendor, putting it up for auction, or turning it into something else (with a recipe you know, or by disenchanting it).",
-	["En la subasta cuenta el precio más bajo que vio, menos la comisión (%d%%, estimada). Al desencantar usa tablas del juego clásico, también estimadas."] = "For the auction house it counts the lowest price it saw, minus the cut (%d%%, estimated). For disenchanting it uses the classic game's tables, also estimated.",
+	["En la subasta cuenta el precio más bajo que vio, menos la comisión (%d %%, estimada). Al desencantar usa tablas del juego clásico, también estimadas."] = "For the auction house it counts the lowest price it saw, minus the cut (%d%%, estimated). For disenchanting it uses the classic game's tables, also estimated.",
 	["Recomienda el camino que te deja más oro, si gana por lo menos un 10 % a venderlo. Si nada da oro, te dice que lo guardes. Alfa nunca vende ni compra por ti."] = "It recommends the path that earns you the most gold, if it beats the vendor by at least 10%. If nothing earns gold, it tells you to keep it. Alfa never sells or buys for you.",
 
 	-- Ajustes
@@ -150,8 +150,8 @@ M.EN = {
 	["La subasta deja escanear todo cada 15 minutos. Falta %s."] = "The auction house allows a full scan every 15 minutes. %s to go.",
 	["La subasta no aceptó el escaneo. Intenta de nuevo más tarde."] = "The auction house didn't accept the scan. Try again later.",
 	["La subasta no respondió. Puede que aún esté en espera: intenta en unos minutos."] = "The auction house didn't answer. It may still be on cooldown: try again in a few minutes.",
-	["Pidiendo los precios a la subasta..."] = "Asking the auction house for prices...",
-	["Leyendo precios... %d%%"] = "Reading prices... %d%%",
+	["Pidiendo los precios a la subasta…"] = "Asking the auction house for prices...",
+	["Leyendo precios… %d%%"] = "Reading prices... %d%%",
 	["Aún no tienes precios. Pulsa «Escanear con Alfa»."] = "No prices yet. Press \"Scan with Alfa\".",
 	["Precios %s · %s objetos"] = "Prices %s · %s items",
 	["Se cerró la subasta antes de recibir los precios. Vuelve a intentarlo después."] = "The auction house closed before the prices arrived. Try again later.",
@@ -218,7 +218,7 @@ M.EN = {
 	["Una carta con objetos vence pronto"] = "A letter with items expires soon",
 	["%d cartas con objetos vencen pronto"] = "%d letters with items expire soon",
 	["La primera vence en %s. Tómala antes de que regrese a quien te la mandó o se pierda."] = "The first one expires in %s. Take it before it goes back to the sender or is lost.",
-	["Tomando tus cartas..."] = "Taking your mail...",
+	["Tomando tus cartas…"] = "Taking your mail...",
 	["No tienes cartas."] = "You have no mail.",
 	["1 carta"] = "1 letter",
 	["%d cartas"] = "%d letters",
@@ -337,7 +337,7 @@ M.EN = {
 	["JcJ"] = "PvP",
 	["botín del mundo"] = "world drop",
 	["Se puede al salir de combate."] = "You can do it once out of combat.",
-	["El motor no puede armar guías ahora."] = "The engine can't build guides right now.",
+	["Ahora no puedo armar la guía. Prueba en un momento; si sigue, cuéntanos con /alfa reportar."] = "The engine can't build guides right now.",
 	["No hay un camino que Alfa pueda guiar para esto."] = "There's no path Alfa can guide for this.",
 	["¡Tu lista de compras está completa!"] = "Your shopping list is complete!",
 	["Ya tienes todos los materiales. ¡A trabajar!"] = "You have all the materials. Get to work!",
@@ -413,7 +413,7 @@ M.EN = {
 	["¿Qué fabrico para ganar oro?"] = "What should I craft to make gold?",
 	["En Comercio, «Tus recetas que dejan ganancia» te dice cuánto deja cada receta con los precios de tu reino, y primero las que ya puedes hacer con lo que llevas."] = "In Trade, \"Your recipes that make a profit\" tells you how much each recipe earns with your realm's prices, with the ones you can already make first.",
 	-- 1.3.0: el buzón espera a que lleguen las cartas
-	["Cargando tus cartas..."] = "Loading your mail...",
+	["Cargando tus cartas…"] = "Loading your mail...",
 	-- 1.3.3: «Hazlo ya» cuenta solo lo de tus bolsas
 	["(con lo del banco: %d más)"] = "(with what's in the bank: %d more)",
 	-- 1.3.7: el buzón cuenta piezas, «Tomar todo» enseña cómo va
@@ -443,7 +443,7 @@ M.EN = {
 	["Mandar a tu alt"] = "Send to your alt",
 	["Preparar"] = "Prepare",
 	["Arma una lista: /alfa comercio alt <nombre> hierbas"] = "Make a list: /alfa comercio alt <name> herbs",
-	["Poniendo %s en la carta..."] = "Putting %s in the letter...",
+	["Poniendo %s en la carta…"] = "Putting %s in the letter...",
 	["El clic en «Enviar» siempre es tuyo."] = "The click on «Send» is always yours.",
 	["Aún no tienes listas. Ejemplo: /alfa comercio alt Nombre hierbas telas"] = "You don't have lists yet. Example: /alfa comercio alt Name herbs cloth",
 	["Tipos: hierbas, metal, telas, cuero, cocina, elemental, encantar, piezas. También un objeto (enlace o nombre)."] = "Types: herbs, metal, cloth, leather, cooking, elemental, enchanting, parts. Also an item (link or name).",

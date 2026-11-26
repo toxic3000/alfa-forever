@@ -995,6 +995,7 @@
               {"cmd": "/alfa sesion", "texto": "Today’s session, in chat."},
               {"cmd": "/alfa rendimiento", "texto": "How much memory and CPU each part of Alfa uses (and frees the memory it no longer needs)."},
               {"cmd": "/alfa diagnostico", "texto": "Check Alfa: clashes with other addons, parts turned off and odd settings."},
+              {"cmd": "/alfa raton", "texto": "If you can't click something in the game or turn the camera: tells you what's under your mouse and removes whatever of Alfa is in the way."},
               {"cmd": "/alfa reportar", "texto": "Report a bug, an idea or a comment, with the errors Alfa caught."}
             ]}
           ]
@@ -1038,6 +1039,7 @@
             ]},
             {"t": "lista", "titulo": "If it still fails", "items": [
               "`/alfa diagnostico` (**Check Alfa**) looks for addons that clash with Alfa, parts turned off or from another version and odd settings, each with a one-click fix.",
+              "Can't click something in the game, turn the camera or zoom? Point your mouse there and type `/alfa raton`: it tells you who is taking your click; `/alfa raton arreglar` removes it right away.",
               "Alfa keeps its own errors: see them in **Settings > Style and sound > Caught errors**, to copy or clear them.",
               "Lost your settings? Go back to one of your backups in **Settings > Style and sound > Backups**."
             ]},
@@ -1085,7 +1087,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "1.4.0: the steady pack", "items": ["**Alfa looks new:** a window with a sidebar, a Today cover and cinematic announcements, always centered on screen.", "**Move everything:** `/alfa acomodar` or Shift + drag to place every Alfa element where you want it.", "**Your faction and your season:** the Horde or Alliance theme and `/alfa temporada` with your adventure in cards.", "**Faster and steadier:** guides by level range, Two screens without enlarging your interface, and ore routes near you."]}
+    "mapa": {"titulo": "1.4.1: the mouse is yours", "items": ["**Clicks are back:** you can click far-away enemies, turn the camera, use the profession tabs and move the volume again.", "**`/alfa raton`:** tells you what's under your mouse and removes anything of Alfa in the way.", "**Shift + drag:** a green box shows what can move and goes away when you let go of Shift.", "**Sturdier:** a review of all of Alfa with new tests that hunt for this kind of bug."]}
   },
   "contraportada": {
     "titulo": "Join the pack",

@@ -33,7 +33,6 @@
  "Descubriste a %s (%s).": "Vous avez découvert %s (%s).",
  "Desde nivel %d": "Dès le niveau %d",
  "Después de otra": "Après une autre",
- "El diario de mazmorras del motor está apagado (Ajustes > Descubrir > Mazmorras).": "Le journal des donjons du moteur est désactivé (Réglages > Découverte > Donjons).",
  "El diario de mazmorras está apagado": "Le journal des donjons est désactivé",
  "El juego no dejó cambiar las demás.": "Le jeu n'a pas permis de modifier les autres.",
  "Empieza con %s, que se consigue en la mazmorra.": "Elle commence avec %s, qui s'obtient dans le donjon.",
@@ -173,5 +172,6 @@
  "el jefe %d": "le boss %d",
  "mejor a nivel %d": "idéal au niveau %d",
  "¡Completaste %s!": "Vous avez terminé %s !",
- "«Prepárame» recoge solo las que ya puedes tomar y te lleva a la entrada.": "« Préparez-moi » récupère seulement celles que vous pouvez déjà prendre et vous mène à l'entrée."
+ "«Prepárame» recoge solo las que ya puedes tomar y te lleva a la entrada.": "« Préparez-moi » récupère seulement celles que vous pouvez déjà prendre et vous mène à l'entrée.",
+ "El diario de mazmorras de Alfa está apagado (Ajustes > Descubrimiento > Mazmorras).": "Le journal des donjons d'Alfa est désactivé (Réglages > Découverte > Donjons)."
 }

@@ -25,7 +25,6 @@
  "Antes de entregarla te falta: %s.": "交付前还差：%s。",
  "Apagarlo": "关闭",
  "Aprende Minería o Herboristería": "学习采矿或草药学",
- "Armando «Cerrar mis misiones»...": "正在创建“完成我的任务”...",
  "Avisar cuando queden": "剩余几格时提醒",
  "Avisar si la barra de una forma está vacía": "某个形态的动作条为空时提醒",
  "Aún no está terminada: te falta %s.": "尚未完成：还差 %s。",
@@ -122,5 +121,6 @@
  "Druidas, guerreros y pícaros: si tu barra de forma o de actitud está vacía, Alfa te avisa y la llena con un clic.": "德鲁伊、战士和潜行者：如果你的形态或姿态动作条是空的，Alfa 会提醒你，并一键帮你填满。",
  "Se acabó el aviso «Alfa_Builds se ha bloqueado…»: la ventana de talentos, el clic para lanzar y el Legado ahora los abre el juego, y tus hechizos se lanzan sin problema desde el libro.": "不会再出现“Alfa_Builds 已被阻止……”的警告了：天赋窗口、点击施法和传承现在都由游戏自己打开，你的法术也能从法术书正常施放。",
  "Tu guía ya no te manda a entregar misiones sin terminar: primero te lleva a lo que falta, y «Cerrar mis misiones» se pone al día sola.": "你的指南不会再让你去交付没完成的任务：会先带你去完成剩下的部分，“完成我的任务”也会自动保持最新。",
- "Sin bloqueos y más claro": "不再被阻止，也更清楚"
+ "Sin bloqueos y más claro": "不再被阻止，也更清楚",
+ "Armando «Cerrar mis misiones»…": "正在创建“完成我的任务”..."
 }

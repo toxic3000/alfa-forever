@@ -5,13 +5,9 @@
  "%d misiones": "%d 个任务",
  "%d muertes": "%d 次死亡",
  "%d niveles": "%d 级",
- "%d%% de nivel": "%d%% 级",
- "%d%% de un nivel": "%d%% 级",
- "%s al %d%%": "%s剩 %d%%",
  "%s al %d%%: ¡repara ya!": "%s剩 %d%%：快去修理！",
  "%s está rota": "%s已损坏",
  "%s%% del nivel %d": "%s%%（%d 级）",
- "%s: %d%%": "%s：%d%%",
  "1 espacio": "1 格",
  "1 habilidad por aprender": "1 个技能可学",
  "1 misión": "1 个任务",
@@ -170,7 +166,6 @@
  "Vendedor": "商人",
  "Ver mi diario": "查看我的日志",
  "XP": "经验",
- "XP descansada: %d%% de un nivel": "精力充沛经验：%d%% 级",
  "XP ganada": "获得经验",
  "XP por hora": "每小时经验",
  "XP por hora en cada sesión": "每次游戏的每小时经验",
@@ -195,5 +190,8 @@
  "¡Hola, %s!": "你好，%s！",
  "¡Repara tu equipo!": "修理你的装备！",
  "¡Terminaste esta guía! Elige la siguiente y sigue subiendo con la manada.": "你完成了这个指南！选择下一个，和狼群一起继续升级吧。",
- "¿Borrar el diario?": "清除日志？"
+ "¿Borrar el diario?": "清除日志？",
+ "%d %% de nivel": "%d%% 级",
+ "%d %% de un nivel": "%d%% 级",
+ "%s al %d %%": "%s剩 %d%%"
 }

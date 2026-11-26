@@ -863,7 +863,7 @@ function Ce.Pedir()
 		Ce.Decir({ texto = n == 1 and L["Mientras entrabas te guardé una cosa."] or format(L["Mientras entrabas te guardé %d cosas."], n),
 			pedido = true, cara = "feliz", salto = true,
 			acciones = { { texto = format(L["¿Qué hay de nuevo? (%d)"], n), fn = function() Ce.QueHayDeNuevo() end },
-				{ texto = L["Luego"], fn = function() UI.Callar() end } } })
+				{ texto = L["Ahora no"], fn = function() UI.Callar() end } } })
 		return
 	end
 	if revisarContexto(true) then return end

@@ -240,7 +240,7 @@ En.AdjuntarUno = adjuntarUno
 
 function En.Preparar(nombre)
 	if enCombate() then
-		N.Imprimir(L["No se puede en combate."])
+		N.Imprimir(L["Se puede al salir de combate."])
 		return false
 	end
 	if not enviarVisible() then
@@ -361,7 +361,7 @@ function pintar()
 	local texto = p.estado
 	if #lista == 0 then texto = L["Arma una lista: /alfa comercio alt <nombre> hierbas"] end
 	if not texto and preparando then
-		texto = format(L["Poniendo %s en la carta..."], N.Plural(preparando.piezas, L["%d pieza"], L["%d piezas"]))
+		texto = format(L["Poniendo %s en la carta…"], N.Plural(preparando.piezas, L["%d pieza"], L["%d piezas"]))
 	end
 	texto = texto or L["El clic en «Enviar» siempre es tuyo."]
 	p.Estado:ClearAllPoints()

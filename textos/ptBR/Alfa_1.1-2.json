@@ -35,7 +35,6 @@
  "El juego todavía no dio la lista de retos: ábrelo con la tecla Y.": "O jogo ainda não deu a lista de desafios: abra-o com a tecla Y.",
  "El maestro de vuelo, la posada, reparar, el banco y más, con la flecha.": "O mestre de voo, a estalagem, reparos, o banco e mais, com a seta.",
  "El maestro de vuelo, la posada, reparar, el banco y más: el más cercano, con la flecha y la ruta.": "O mestre de voo, a estalagem, reparos, o banco e mais: o mais próximo, com a seta e a rota.",
- "El maestro de vuelo, la posada, reparar, el banco... el más cercano (/alfa cerca ayuda).": "O mestre de voo, a estalagem, reparos, o banco... o mais próximo (/alfa cerca ayuda).",
  "El marco de las barras de experiencia y reputación; el relleno conserva sus colores.": "A moldura das barras de experiência e reputação; o preenchimento mantém as cores.",
  "El marco del menú del juego y de las bolsas, abajo a la derecha.": "A moldura do menu do jogo e das bolsas, embaixo à direita.",
  "El minimapa": "O minimapa",
@@ -244,5 +243,6 @@
  "Luego cópialo con Ctrl+C.": "Depois copie com Ctrl+C.",
  "Lugar: %s": "Lugar: %s",
  "Lya": "Lya",
- "Lya en tu pantalla": "Lya na sua tela"
+ "Lya en tu pantalla": "Lya na sua tela",
+ "El maestro de vuelo, la posada, reparar, el banco… el más cercano (/alfa cerca ayuda).": "O mestre de voo, a estalagem, reparos, o banco... o mais próximo (/alfa cerca ayuda)."
 }

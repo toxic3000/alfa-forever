@@ -205,7 +205,7 @@ local function armar()
 	v.Copia = cuadroCopiar(c)
 	v.Copia:Hide()
 	v.Copiar = K.Boton(v, L["Copiar para Discord"], function() Vt.Copiar() end, { tipo = "primario", icono = "ic-comunidad" })
-	v.Cerrar2 = K.Boton(v, L["Cerrar"], function() v:Cerrar() end, { tipo = "secundario" })
+	v.Cerrar2 = K.Boton(v, L["Cerrar"], function() v:Cerrar() end, { tipo = "fantasma" })
 	v:SetPie({ v.Cerrar2, v.Copiar })
 	v.alAcomodar = function() Vt.Pintar() end
 	return v

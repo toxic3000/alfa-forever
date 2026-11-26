@@ -179,7 +179,7 @@ M.EN = {
 	["Se quita de tu lista. Si lo necesitas otra vez, vuelve a importar su cadena."] = "It's removed from your list. If you need it again, import its string again.",
 	-- Builds.lua
 	["Entendido"] = "Got it",
-	["... y %d talentos más"] = "... and %d more talents",
+	["… y %d talentos más"] = "... and %d more talents",
 	["No se pudo comprar: %s"] = "Couldn't buy: %s",
 	["No se aplicaron los talentos"] = "The talents weren't applied",
 	["Ahora no se puede"] = "Not possible right now",

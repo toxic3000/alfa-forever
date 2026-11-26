@@ -45,7 +45,7 @@ local function tramoHecho(t, pt)
 end
 
 local function resumen(t, pt)
-	if not pt then return est.ocupado and L["Alfa está eligiendo..."] or "" end
+	if not pt then return est.ocupado and L["Alfa está eligiendo…"] or "" end
 	local extra = (pt.antes and #pt.antes > 0) and ("  \194\183  " .. format(L["+%d de XP antes (nivel %d)"], #pt.antes, pt.nivel or 0)) or ""
 	local mis = M.Plural(#pt.quests, L["%d misión"], L["%d misiones"])
 	if t.rama == "xp" then return format(L["+%s XP"], M.Miles(pt.xp)) .. "  \194\183  " .. mis .. extra end
@@ -230,16 +230,16 @@ local function menuRuta(dueno)
 		end, texto = format(L["Plantilla: %s"], p.nombre), icono = p.icono }
 	end
 	if r then
-		op[#op + 1] = { valor = function() ventanaTexto("renombrar") end, texto = L["Cambiar nombre..."], icono = "ic-ajustes" }
+		op[#op + 1] = { valor = function() ventanaTexto("renombrar") end, texto = L["Cambiar nombre…"], icono = "ic-ajustes" }
 		op[#op + 1] = { valor = function()
 			local tramos = {}
 			for i, t in ipairs(r.tramos) do tramos[i] = M.Copia(t) end
 			M.NuevaRuta(format(L["%s (copia)"], r.nombre), tramos, r.plantilla)
 			rehacer()
 		end, texto = L["Duplicar"], icono = "ic-rejilla" }
-		op[#op + 1] = { valor = function() ventanaTexto("exportar") end, texto = L["Compartir..."], icono = "ic-manada" }
+		op[#op + 1] = { valor = function() ventanaTexto("exportar") end, texto = L["Compartir…"], icono = "ic-manada" }
 	end
-	op[#op + 1] = { valor = function() ventanaTexto("importar") end, texto = L["Importar..."], icono = "ic-mas" }
+	op[#op + 1] = { valor = function() ventanaTexto("importar") end, texto = L["Importar…"], icono = "ic-mas" }
 	if r then
 		op[#op + 1] = { valor = function()
 			K.Dialogo({ titulo = L["¿Borrar esta ruta?"], texto = format(L["%s se borra de todos tus personajes. No se puede deshacer."], r.nombre),
@@ -401,7 +401,7 @@ local function filaTramo(padre)
 		local enAlt = est.alt and est.alt.uid == t.uid
 		local p = I.Jugador()
 		if enAlt then
-			if not est.altLista then notas[#notas + 1] = L["Buscando otras misiones..."] end
+			if not est.altLista then notas[#notas + 1] = L["Buscando otras misiones…"] end
 			for _, c in ipairs(est.altLista or {}) do
 				local e = c.e
 				datos[#datos + 1] = { nivel = e.lvl, titulo = M.TituloMision(e.id),
@@ -589,7 +589,7 @@ function M.BloqueRutas(padre, alCambiar)
 			d.titulo, d.tono = L["Tu ruta está vacía"], "neutro"
 			d.texto = L["Agrega tramos arriba: Alfa elige las misiones por ti."]
 		elseif est.ocupado then
-			d.titulo, d.tono = L["Alfa está armando tu ruta..."], "acento"
+			d.titulo, d.tono = L["Alfa está armando tu ruta…"], "acento"
 			d.texto = L["Revisa miles de misiones para elegir las que sí puedes tomar: tarda unos segundos."]
 			d.estado = { texto = L["Armando"], tono = "acento" }
 		elseif plan then

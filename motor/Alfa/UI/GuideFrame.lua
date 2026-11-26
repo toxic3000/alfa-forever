@@ -4710,7 +4710,7 @@ local function openMenu(button)
 		{ separator = true },
 		{ text = L["Reset guide progress"], icon = "reset", confirm = true, disabled = not hasGuide, tip = L["Clears your manual check-offs and skipped steps in this guide from your last quest progress on. The guide stays where your quests put you."],
 			onClick = function() if E and E.ResetProgress then E.ResetProgress() end end },
-		{ text = L["Options"], icon = "gear", onClick = function() UI.ShowOptions() end },
+		{ text = ns.T("Ajustes"), icon = "gear", onClick = function() UI.ShowOptions() end },
 		{ text = L["Hide window"], icon = "close", onClick = function()
 			ns.Set("ui.shown", false)
 			ns.Print(L["Guide window hidden. Type /alfa to bring it back."])

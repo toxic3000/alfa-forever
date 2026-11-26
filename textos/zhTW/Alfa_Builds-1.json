@@ -4,7 +4,6 @@
  "%d puntos": "%d 點",
  "%d puntos libres": "%d 點未分配",
  "(todavía no la aprendes)": "（你還沒學會）",
- "... y %d talentos más": "...還有 %d 個天賦",
  "1. ¿Qué quieres hacer?": "1. 你想做什麼？",
  "2. ¿Cómo te gusta jugar?": "2. 你喜歡怎麼玩？",
  "A distancia": "遠程",
@@ -92,7 +91,6 @@
  "Busca el arma de dos manos más lenta y fuerte: tus sellos pegan con ella.": "找攻擊速度最慢、威力最強的雙手武器：你的聖印會依它造成傷害。",
  "Busca siempre el arco, arma de fuego o ballesta con más daño por segundo.": "一律找每秒傷害最高的弓、槍械或弩。",
  "Busca un escudo con valor de bloqueo alto: sube el daño de Embate con escudo.": "找格擋值高的盾牌：能提高盾牌猛擊的傷害。",
- "Buscando...": "搜尋中...",
  "Buscar equipo para mi nivel": "搜尋適合我等級的裝備",
  "Cabeza": "頭部",
  "Cada bloqueo te da ira: nunca te falta.": "每次格擋都會給你怒氣：永遠不缺怒氣。",
@@ -228,5 +226,7 @@
  "Escarcha": "冰霜",
  "Escarcha para subir": "冰霜（練等）",
  "Escribe el nombre debajo del ícono: útil mientras aprendes.": "在圖示下方顯示名稱：學習時很有用。",
- "Escudo y defensa: aguantas a todos los monstruos para que tu grupo no sufra.": "盾牌與防禦：扛住所有怪物，讓隊友不受傷害。"
+ "Escudo y defensa: aguantas a todos los monstruos para que tu grupo no sufra.": "盾牌與防禦：扛住所有怪物，讓隊友不受傷害。",
+ "… y %d talentos más": "...還有 %d 個天賦",
+ "Buscando…": "搜尋中..."
 }

@@ -4,7 +4,6 @@
  "%d puntos": "%d Punkte",
  "%d puntos libres": "%d freie Punkte",
  "(todavía no la aprendes)": "(noch nicht gelernt)",
- "... y %d talentos más": "... und %d weitere Talente",
  "1. ¿Qué quieres hacer?": "1. Was willst du machen?",
  "2. ¿Cómo te gusta jugar?": "2. Wie spielst du gern?",
  "A distancia": "Fernkampf",
@@ -92,7 +91,6 @@
  "Busca el arma de dos manos más lenta y fuerte: tus sellos pegan con ella.": "Such die langsamste und stärkste Zweihandwaffe: Deine Siegel treffen mit ihr.",
  "Busca siempre el arco, arma de fuego o ballesta con más daño por segundo.": "Such immer den Bogen, die Schusswaffe oder die Armbrust mit dem meisten Schaden pro Sekunde.",
  "Busca un escudo con valor de bloqueo alto: sube el daño de Embate con escudo.": "Such einen Schild mit hohem Blockwert: Er erhöht den Schaden von Schildschlag.",
- "Buscando...": "Suche...",
  "Buscar equipo para mi nivel": "Ausrüstung für meine Stufe suchen",
  "Cabeza": "Kopf",
  "Cada bloqueo te da ira: nunca te falta.": "Jeder Block gibt dir Wut: Sie geht dir nie aus.",
@@ -118,5 +116,7 @@
  "Compartir": "Teilen",
  "Compartir un build": "Einen Build teilen",
  "Compra los talentos del plan que te tocan hasta tu nivel. Antes te muestra qué va a cambiar.": "Kauft die Talente des Plans, die bis zu deiner Stufe dran sind. Vorher zeigt es dir, was sich ändert.",
- "Con sonido": "Mit Ton"
+ "Con sonido": "Mit Ton",
+ "… y %d talentos más": "... und %d weitere Talente",
+ "Buscando…": "Suche..."
 }

@@ -36,8 +36,6 @@
  "Alfa arma al momento una guía para conseguirlo.": "Alfa가 바로 얻는 방법 가이드를 만들어 줍니다.",
  "Alfa arma una guía con el orden más corto para terminar y entregar todas. Quita la marca de las que no quieras hacer, o tócales la X para abandonarlas.": "Alfa가 모두 완료하고 제출하는 가장 짧은 순서로 가이드를 만듭니다. 하지 않을 퀘스트는 체크를 해제하고, 포기하려면 X를 누르세요.",
  "Alfa elige todo: misiones ordenadas por XP por distancia y tus misiones de clase.": "Alfa가 모두 고릅니다: 거리 대비 경험치 순 퀘스트와 내 직업 퀘스트.",
- "Alfa está armando tu ruta...": "Alfa가 경로를 만드는 중...",
- "Alfa está eligiendo...": "Alfa가 고르는 중...",
  "Alfa no conoce de dónde sale. Prueba en el Buscador.": "Alfa가 출처를 모릅니다. 찾아보기에서 확인해 보세요.",
  "Alfa no pudo armar el camino a %s (%s). Míralo en el Buscador.": "Alfa가 %s(%s)까지 가는 길을 만들지 못했습니다. 찾아보기에서 확인하세요.",
  "Alfa no sabe de dónde sale este objeto.": "Alfa가 이 아이템의 출처를 모릅니다.",
@@ -65,11 +63,9 @@
  "Busca el material en el catálogo y toca \"Agregar a mi ruta\": cambia este tramo.": "목록에서 재료를 찾아 \"내 경로에 추가\"를 누르면 이 구간이 바뀝니다.",
  "Busca por nombre: espada, mena, poción...": "이름으로 검색: 검, 광석, 물약...",
  "Buscador": "찾아보기",
- "Buscando otras misiones...": "다른 퀘스트를 찾는 중...",
  "Buscar objetos": "아이템 검색",
  "Calidad": "품질",
  "Calidad (mejor primero)": "품질 (높은 것부터)",
- "Cambiar nombre...": "이름 바꾸기...",
  "Cambiar objeto": "아이템 바꾸기",
  "Cambiar por otra misión...": "다른 퀘스트로 바꾸기...",
  "Cantidad": "수량",
@@ -108,5 +104,9 @@
  "El texto llegó cortado o cambiado: cópialo otra vez.": "텍스트가 잘렸거나 바뀌었습니다. 다시 복사하세요.",
  "Elige el material": "재료 선택",
  "Elige el objeto en el catálogo": "목록에서 아이템 선택",
- "Elige el objeto en el catálogo y toca \"Agregar a mi ruta\".": "목록에서 아이템을 고르고 \"내 경로에 추가\"를 누르세요."
+ "Elige el objeto en el catálogo y toca \"Agregar a mi ruta\".": "목록에서 아이템을 고르고 \"내 경로에 추가\"를 누르세요.",
+ "Alfa está armando tu ruta…": "Alfa가 경로를 만드는 중...",
+ "Alfa está eligiendo…": "Alfa가 고르는 중...",
+ "Buscando otras misiones…": "다른 퀘스트를 찾는 중...",
+ "Cambiar nombre…": "이름 바꾸기..."
 }

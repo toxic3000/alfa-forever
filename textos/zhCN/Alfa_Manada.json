@@ -17,8 +17,6 @@
  "Avisa a tu hermandad que usas Alfa y escucha a los demás Alfa. Apagado, Alfa no envía ni recibe nada de nadie.": "让公会知道你在用 Alfa，并接收其他 Alfa 用户的消息。关闭后，Alfa 不会发送或接收任何内容。",
  "Aún no eres de la manada": "你还不是狼群的一员",
  "Borra la lista de \"hace cuánto lo viste\" guardada en esta cuenta.": "清除此账号保存的“上次见到”列表。",
- "Buscando a un oficial...": "正在寻找官员...",
- "Buscando su rastro...": "正在寻找其踪迹...",
  "Buscar por nombre": "按名字搜索",
  "Clic: seguir con la flecha": "点击：用箭头跟随",
  "Compartes tu ubicación %s.": "你正在%s共享位置。",
@@ -135,5 +133,7 @@
  "¿Le muestras a tu manada dónde estás?": "要让狼群知道你在哪里吗？",
  "¿Quieres cazar con nosotros? Pulsa el botón: Alfa busca a un oficial conectado y te abre un susurro con tu mensaje listo para que lo envíes con Intro.": "想和我们一起狩猎吗？点击按钮：Alfa 会寻找一位在线的官员，并为你打开填好消息的密语，按回车键即可发送。",
  "Última posición enviada %s.": "上次发送位置：%s。",
- "Únete a La Jauría": "加入 La Jauría"
+ "Únete a La Jauría": "加入 La Jauría",
+ "Buscando a un oficial…": "正在寻找官员...",
+ "Buscando su rastro…": "正在寻找其踪迹..."
 }

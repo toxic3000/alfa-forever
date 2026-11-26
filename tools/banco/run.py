@@ -49,6 +49,8 @@ def main() -> int:
     named((HERE / "mock.lua").read_text(encoding="utf-8"), "mock.lua")
     named((HERE / "api.lua").read_text(encoding="utf-8"), "api.lua")
     named((HERE / "dump.lua").read_text(encoding="utf-8"), "dump.lua")
+    named((HERE / "raton.lua").read_text(encoding="utf-8"), "raton.lua")  # 1.4.1: el barrido del ratón
+    named((HERE / "comun.lua").read_text(encoding="utf-8"), "comun.lua")  # 1.4.1: PASO, REVISA, PRUEBA_ENTRAR...
     g = lua.globals()
     for name in ADDONS:
         folder = DIST / name
@@ -173,7 +175,8 @@ def main() -> int:
         # 1.3.9: BANCO_CAPTURAS=<carpeta> deja las capturas ahí (tools/regresion.py).
         destino = pathlib.Path(os.environ["BANCO_CAPTURAS"]) if os.environ.get("BANCO_CAPTURAS") else HERE
         destino.mkdir(parents=True, exist_ok=True)
-        for name, snap in snaps.items():
+        g.SNAP_UTF8()  # 1.4.1: los textos con bytes rotos, como ERROR
+        for name, snap in snaps.items():
             entries = [dict(e.items()) for e in snap.entries.values()]
             rect = (snap.l, snap.b, snap.w, snap.h)
             out = destino / ("shot-%s.png" % name)

@@ -322,6 +322,8 @@ function K.AnclaAnuncio()
 	ancla:SetSize(560, 150)
 	ancla:SetFrameStrata("HIGH")
 	ancla:EnableMouse(false)
+	-- 1.4.1: solo sostiene al anuncio; nunca toma el ratón (Kit/Raton.lua).
+	if K.SinRaton then K.SinRaton(ancla, "AlfaAnuncioAncla") end
 	colocarAncla()
 	return ancla
 end
@@ -903,6 +905,8 @@ local function tocar(boton)
 	-- 1.4.0: Mayús+arrastre lo mueve (Kit/Movible.lua): ese clic no lo cierra.
 	if boton == "LeftButton" and IsShiftKeyDown and IsShiftKeyDown() and K.MovibleConMayus and K.MovibleConMayus() then return end
 	if boton == "RightButton" then cerrar() return end
+	-- 1.4.1: el clic que suelta un arrastre no lo cierra.
+	if f.alfaArrastre or (f.alfaArrastreFin and GetTime and GetTime() - f.alfaArrastreFin < 0.3) then return end
 	local fn = f.alfaClic
 	if fn and not enCombate() then
 		K.Llamar(fn)
@@ -1074,6 +1078,29 @@ local function armar()
 	f.Toque:SetSize(200, 120)
 	if f.Toque.RegisterForClicks then f.Toque:RegisterForClicks("LeftButtonUp", "RightButtonUp") end
 	f.Toque:SetScript("OnClick", function(_, boton) tocar(boton) end)
+	-- 1.4.1 (Toxic: «cualquier cosa se pueda mover»): arrastrar el anuncio lo
+	-- mueve (y lo guarda, como «Acomodar»), sin tener que usar Mayús; soltarlo
+	-- no lo cierra. Nunca en combate.
+	f.Toque:RegisterForDrag("LeftButton")
+	f.Toque:SetScript("OnDragStart", function()
+		if enCombate() or not ancla then return end
+		f.alfaArrastre = true
+		ancla:SetMovable(true)
+		ancla:StartMoving()
+	end)
+	f.Toque:SetScript("OnDragStop", function()
+		if not f.alfaArrastre then return end
+		ancla:StopMovingOrSizing()
+		if ancla.SetUserPlaced then pcall(ancla.SetUserPlaced, ancla, false) end
+		local l, b, w, h = ancla:GetRect()
+		if K.MovibleSoltar and l then
+			local k = num(ancla:GetEffectiveScale(), 1) / max(0.01, num(UIParent:GetEffectiveScale(), 1))
+			K.MovibleSoltar("anuncio", l * k, b * k, w * k, h * k)
+		end
+		-- (el clic que termina el arrastre no lo cierra)
+		f.alfaArrastreFin = GetTime and GetTime() or 0
+		f.alfaArrastre = nil
+	end)
 	f.X = K.BotonIcono(C, "ic-cerrar", function() cerrar() end, { tam = 18, icono = 10, ayuda = K.L and K.L["Cerrar"] or nil })
 	f.X:SetFrameLevel(f.Toque:GetFrameLevel() + 2)
 	-- 1.4.0 (Toxic: «la × queda flotando pegada al texto»): la × solo se ve al

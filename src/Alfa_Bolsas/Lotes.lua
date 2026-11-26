@@ -82,7 +82,7 @@ function Lotes.Iniciar(o)
 	if type(o) ~= "table" or type(o.nombre) ~= "string" or type(o.lista) ~= "table" then return false end
 	if tandas[o.nombre] then return false end
 	if M.EnCombate() then
-		N.Imprimir(L["No se puede en combate."])
+		N.Imprimir(L["Se puede al salir de combate."])
 		return false
 	end
 	local t = {

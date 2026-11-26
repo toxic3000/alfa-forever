@@ -33,7 +33,6 @@
  "Descubriste a %s (%s).": "Você descobriu %s (%s).",
  "Desde nivel %d": "A partir do nível %d",
  "Después de otra": "Depois de outra",
- "El diario de mazmorras del motor está apagado (Ajustes > Descubrir > Mazmorras).": "O diário de masmorras do motor está desativado (Opções > Descoberta > Masmorras).",
  "El diario de mazmorras está apagado": "O diário de masmorras está desativado",
  "El juego no dejó cambiar las demás.": "O jogo não deixou mudar as outras.",
  "Empieza con %s, que se consigue en la mazmorra.": "Começa com %s, que se consegue na masmorra.",
@@ -173,5 +172,6 @@
  "el jefe %d": "o chefe %d",
  "mejor a nivel %d": "melhor no nível %d",
  "¡Completaste %s!": "Você concluiu %s!",
- "«Prepárame» recoge solo las que ya puedes tomar y te lleva a la entrada.": "“Me prepare” pega só as que você já pode pegar e leva você à entrada."
+ "«Prepárame» recoge solo las que ya puedes tomar y te lleva a la entrada.": "“Me prepare” pega só as que você já pode pegar e leva você à entrada.",
+ "El diario de mazmorras de Alfa está apagado (Ajustes > Descubrimiento > Mazmorras).": "O diário de masmorras do Alfa está desligado (Ajustes > Descoberta > Masmorras)."
 }

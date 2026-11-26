@@ -20,7 +20,6 @@
  "Azeroth": "Азерот",
  "Barcos, zepelines y tranvía": "Корабли, дирижабли и подземный поезд",
  "Botones de Alfa en el mapa del juego": "Кнопки Alfa на карте игры",
- "Buzones, entrenadores, banco, subasta, reparar...": "Почтовые ящики, учителя, банк, аукцион, ремонт...",
  "Cada cofre o tesoro conocido.": "Каждый известный сундук или сокровище.",
  "Cada entrada de mazmorra y banda con su rango de niveles. Clic: su página; Mayús+clic: la flecha te lleva.": "Каждый вход в подземелье и рейд с диапазоном уровней. Щелчок: его страница; Shift+щелчок: стрелка поведет туда.",
  "Cada lugar conocido donde aparece un enemigo raro.": "Каждое известное место, где появляется редкий противник.",
@@ -59,7 +58,6 @@
  "La tecla que abre el mapa del juego abre el de Alfa. Apágalo y vuelve a abrir el del juego. También puedes darle una tecla propia en Opciones > Teclado > Alfa.": "Клавиша, открывающая карту игры, открывает карту Alfa. Выключите, и снова будет открываться карта игры. Можно также назначить ей свою клавишу в Настройки > Назначение клавиш > Alfa.",
  "Lo esencial": "Самое важное",
  "Los mismos marcadores de misiones en el minimapa.": "Те же маркеры заданий на мини-карте.",
- "Los raros están apagados (página Descubrir).": "Редкие выключены (страница «Открытия»).",
  "Los raros también en el minimapa.": "Редкие и на мини-карте.",
  "Los servicios también en el minimapa.": "Услуги и на мини-карте.",
  "Los tesoros también en el minimapa.": "Сокровища и на мини-карте.",
@@ -118,5 +116,7 @@
  "Vuelos, barcos y posadas también en el minimapa.": "Полеты, корабли и таверны и на мини-карте.",
  "Zonas": "Зоны",
  "Zonas de enemigos, objetos y lugares de las misiones de tu registro.": "Области с противниками, предметами и местами для заданий из вашего журнала.",
- "Zonas sin descubrir": "Неоткрытые области"
+ "Zonas sin descubrir": "Неоткрытые области",
+ "Buzones, entrenadores, banco, subasta, reparar…": "Почтовые ящики, учителя, банк, аукцион, ремонт...",
+ "Los raros están apagados (página Descubrimiento).": "Редкие выключены (страница «Открытия»)."
 }

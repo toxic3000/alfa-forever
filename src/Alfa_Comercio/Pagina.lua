@@ -197,7 +197,7 @@ local function lineasExtra(tip, g)
 		local quien = (re.propio or not re.quien) and "" or (" " .. L["(con %s)"]:format(re.quien))
 		tip:AddLine(L["Receta: %s%s. Cada unidad rinde ≈ %s."]:format(re.rec.n or "?", quien, M.Dinero(re.valor)), r, gg, b, true)
 	end
-	tip:AddLine(L["Comisión de la subasta estimada: %d%%."]:format(floor(M.Comision() * 100 + 0.5)), r, gg, b, true)
+	tip:AddLine(L["Comisión de la subasta estimada: %d %%."]:format(floor(M.Comision() * 100 + 0.5)), r, gg, b, true)
 end
 
 ---------------------------------------------------------------------------
@@ -807,7 +807,7 @@ local function bloqueComo(padre)
 			icono = "ic-info", tono = "neutro", titulo = L["Tres caminos para cada objeto"], lineas = 10,
 			texto = table.concat({
 				L["Para cada objeto Alfa compara tres caminos: venderlo al comerciante, ponerlo en la subasta o transformarlo (con una receta que conoces o desencantándolo)."],
-				L["En la subasta cuenta el precio más bajo que vio, menos la comisión (%d%%, estimada). Al desencantar usa tablas del juego clásico, también estimadas."]:format(floor(M.Comision() * 100 + 0.5)),
+				L["En la subasta cuenta el precio más bajo que vio, menos la comisión (%d %%, estimada). Al desencantar usa tablas del juego clásico, también estimadas."]:format(floor(M.Comision() * 100 + 0.5)),
 				L["Recomienda el camino que te deja más oro, si gana por lo menos un 10 % a venderlo. Si nada da oro, te dice que lo guardes. Alfa nunca vende ni compra por ti."],
 			}, " "),
 		})

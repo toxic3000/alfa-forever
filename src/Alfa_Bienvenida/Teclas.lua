@@ -100,7 +100,7 @@ local function armar()
 		subtitulo = L["Todas las teclas de Alfa en un lugar"], icono = "ic-ajustes", ancho = 600, alto = 540, desplazar = true })
 	v.alAcomodar = acomodar
 	ui.pila = K.Pila(v.Cuerpo, { espacio = ESP.m })
-	v:SetPie({ K.Boton(v, L["Cerrar"], function() v:Cerrar() end, { tipo = "secundario" }) })
+	v:SetPie({ K.Boton(v, L["Cerrar"], function() v:Cerrar() end, { tipo = "fantasma" }) })
 end
 
 function Tc.Abrir()

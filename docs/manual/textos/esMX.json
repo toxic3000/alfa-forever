@@ -995,6 +995,7 @@
               {"cmd": "/alfa sesion", "texto": "Tu sesión de hoy, en el chat."},
               {"cmd": "/alfa rendimiento", "texto": "Cuánta memoria y procesador usa cada parte de Alfa (y suelta la memoria que ya no ocupa)."},
               {"cmd": "/alfa diagnostico", "texto": "Revisar Alfa: choques con otros addons, partes apagadas y ajustes raros."},
+              {"cmd": "/alfa raton", "texto": "Si no puedes clicar algo del juego o girar la cámara: te dice qué hay bajo tu ratón y quita lo de Alfa que estorbe."},
               {"cmd": "/alfa reportar", "texto": "Reportar un error, una mejora o un comentario, con los errores que Alfa atrapó."}
             ]}
           ]
@@ -1038,6 +1039,7 @@
             ]},
             {"t": "lista", "titulo": "Si sigue fallando", "items": [
               "`/alfa diagnostico` (**Revisar Alfa**) busca addons que chocan con Alfa, partes apagadas o de otra versión y ajustes raros, cada uno con su arreglo a un clic.",
+              "¿No puedes clicar algo del juego, girar la cámara o hacer zoom? Pon el ratón ahí y escribe `/alfa raton`: te dice quién se queda con tu clic; `/alfa raton arreglar` lo quita al momento.",
               "Alfa guarda sus propios errores: los ves en **Ajustes > Estilo y sonido > Errores atrapados**, para copiarlos o borrarlos.",
               "¿Se perdieron tus ajustes? Vuelve a uno de tus respaldos en **Ajustes > Estilo y sonido > Respaldos**."
             ]},
@@ -1085,7 +1087,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "La 1.4.0: la manada firme", "items": ["**Alfa se ve nuevo:** ventana con barra lateral, portada de Hoy y anuncios de cine, siempre centrados en la pantalla.", "**Mueve todo:** `/alfa acomodar` o Mayús + arrastrar para poner cada cosa de Alfa donde la quieras.", "**Tu bando y tu temporada:** la temática de la Horda o la Alianza y `/alfa temporada` con tu aventura en tarjetas.", "**Más rápida y firme:** guías por tramo de nivel, Dos pantallas sin agrandar tu interfaz y la ruta de minerales cerca de ti."]}
+    "mapa": {"titulo": "La 1.4.1: el ratón es tuyo", "items": ["**Clics de vuelta:** ya puedes clicar enemigos a lo lejos, girar la cámara, usar las pestañas de profesiones y mover el volumen.", "**`/alfa raton`:** te dice qué hay bajo tu ratón y quita al momento lo de Alfa que estorbe.", "**Mayús + arrastrar:** un recuadro verde enseña lo que se mueve y se va al soltar Mayús.", "**Más firme:** una revisión de todo Alfa con pruebas nuevas que buscan este tipo de error."]}
   },
   "contraportada": {
     "titulo": "Únete a la manada",

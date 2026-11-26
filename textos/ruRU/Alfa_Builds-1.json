@@ -4,7 +4,6 @@
  "%d puntos": "Очков: %d",
  "%d puntos libres": "Свободных очков: %d",
  "(todavía no la aprendes)": "(еще не изучено)",
- "... y %d talentos más": "... и еще талантов: %d",
  "1. ¿Qué quieres hacer?": "1. Что вы хотите делать?",
  "2. ¿Cómo te gusta jugar?": "2. Как вам нравится играть?",
  "A distancia": "Дальний бой",
@@ -92,7 +91,6 @@
  "Busca el arma de dos manos más lenta y fuerte: tus sellos pegan con ella.": "Ищите самое медленное и сильное двуручное оружие: ваши печати бьют вместе с ним.",
  "Busca siempre el arco, arma de fuego o ballesta con más daño por segundo.": "Всегда ищите лук, огнестрельное оружие или арбалет с наибольшим уроном в секунду.",
  "Busca un escudo con valor de bloqueo alto: sube el daño de Embate con escudo.": "Ищите щит с высоким показателем блока: он повышает урон Мощного удара щитом.",
- "Buscando...": "Поиск...",
  "Buscar equipo para mi nivel": "Найти экипировку для моего уровня",
  "Cabeza": "Голова",
  "Cada bloqueo te da ira: nunca te falta.": "Каждый блок дает ярость: ее всегда хватает.",
@@ -128,5 +126,7 @@
  "Copia esta cadena y pásala a un amigo de la manada: con Alfa la pega en Importar y tiene el mismo build. Ctrl + C para copiar.": "Скопируйте эту строку и передайте другу из стаи: с Alfa он вставит ее в «Импорт» и получит тот же билд. Ctrl + C — скопировать.",
  "Crítico con hechizos": "Крит. эффект заклинаний",
  "Críticos enormes: matas antes de que te curen.": "Огромные критические удары: вы убиваете раньше, чем противника вылечат.",
- "Críticos más fuertes.": "Более сильные критические удары."
+ "Críticos más fuertes.": "Более сильные критические удары.",
+ "… y %d talentos más": "... и еще талантов: %d",
+ "Buscando…": "Поиск..."
 }

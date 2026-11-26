@@ -55,7 +55,6 @@
  "Tu última sesión: %s · %s": "你的上次遊戲：%s · %s",
  "Tus bolsas piden auxilio (%d libres). Vende o tira lo que ya no uses.": "你的背包在求救了（剩 %d 格）。賣掉或丟掉不再用的東西。",
  "Tus habilidades nuevas": "你的新技能",
- "Tus metas en tu orden: un objeto, oro, una profesión, un lugar...": "依你的順序排列目標：物品、金幣、專業、地點...",
  "Tus profesiones": "你的專業",
  "Tus puntos": "你的點數",
  "Un aviso corto con el lugar, su zona y el tiempo de camino.": "一則簡短提示，包含地點、所在地區與路程時間。",
@@ -230,5 +229,6 @@
  "• Polestar, de The Polestar authors (GPL-3.0): el motor de guías, navegación y datos (github.com/fitzforge/polestar).": "• Polestar，作者 The Polestar authors（GPL-3.0）：指南、導航與資料引擎（github.com/fitzforge/polestar）。",
  "• Shortest Path Forever, de Cillian Berragan (GPL-3.0-or-later): la navegación y los servicios cercanos.": "• Shortest Path Forever，作者 Cillian Berragan（GPL-3.0-or-later）：導航與附近服務。",
  "• TerrainWorldMap, de Dramacydal (MIT): la tabla de mosaicos del terreno del mapa.": "• TerrainWorldMap，作者 Dramacydal（MIT）：地圖地形圖塊表。",
- "• pfQuest, de shagu (MIT): datos de misiones, PNJ y objetos.": "• pfQuest，作者 shagu（MIT）：任務、NPC 與物品資料。"
+ "• pfQuest, de shagu (MIT): datos de misiones, PNJ y objetos.": "• pfQuest，作者 shagu（MIT）：任務、NPC 與物品資料。",
+ "Tus metas en tu orden: un objeto, oro, una profesión, un lugar…": "依你的順序排列目標：物品、金幣、專業、地點..."
 }

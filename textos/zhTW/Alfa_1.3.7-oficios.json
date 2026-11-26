@@ -34,7 +34,6 @@
  "En la lista de %s: %s.": "%s 的清單：%s。",
  "cocina": "烹飪",
  "El clic en «Enviar» siempre es tuyo.": "點擊「傳送」始終由你決定。",
- "Poniendo %s en la carta...": "正在把 %s 放進信裡...",
  "Preparar": "準備",
  "Suelta lo que traes en el cursor y vuelve a intentarlo.": "先放下游標上的東西再試一次。",
  "La carta ya está llena: manda esta y prepara otra.": "這封信滿了：寄出後再準備一封。",
@@ -111,5 +110,6 @@
  "Nodos en el mapa del mundo: ocultos.": "世界地圖上的採集點：已隱藏。",
  "Nodos en el mapa del mundo: visibles.": "世界地圖上的採集點：已顯示。",
  "Los recolectaste %d vez en total": "你總共採集了 %d 次",
- "Nodos en el minimapa: visibles.": "小地圖上的採集點：已顯示。"
+ "Nodos en el minimapa: visibles.": "小地圖上的採集點：已顯示。",
+ "Poniendo %s en la carta…": "正在把 %s 放進信裡..."
 }

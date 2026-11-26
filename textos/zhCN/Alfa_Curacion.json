@@ -110,7 +110,6 @@
  "Sin acción": "无动作",
  "Sin tecla": "无按键",
  "Solo": "单人",
- "Solo buffs": "仅增益效果",
  "Todavía no conoces sus hechizos: se llenan al aprenderlos.": "你还没学会这些法术：学会后会自动填入。",
  "Tu grupo y tu banda con su vida, para curar con un clic. Se cambia fuera de combate.": "显示你的小队和团队成员的生命值，一键治疗。需在非战斗状态下更改。",
  "Tu libro no tiene hechizos para aliados": "你的法术书中没有可对友方使用的法术",
@@ -136,5 +135,6 @@
  "selecciona": "选中目标",
  "un hechizo": "某个法术",
  "¿Usar tu hechizo nuevo?": "使用你的新法术？",
- "¿Usar «%s»?": "使用“%s”？"
+ "¿Usar «%s»?": "使用“%s”？",
+ "Solo beneficios": "仅增益效果"
 }

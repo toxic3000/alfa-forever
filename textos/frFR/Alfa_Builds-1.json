@@ -4,7 +4,6 @@
  "%d puntos": "%d points",
  "%d puntos libres": "%d points libres",
  "(todavía no la aprendes)": "(vous ne l'avez pas encore apprise)",
- "... y %d talentos más": "... et %d talents de plus",
  "1. ¿Qué quieres hacer?": "1. Que voulez-vous faire ?",
  "2. ¿Cómo te gusta jugar?": "2. Comment aimez-vous jouer ?",
  "A distancia": "À distance",
@@ -92,11 +91,12 @@
  "Busca el arma de dos manos más lenta y fuerte: tus sellos pegan con ella.": "Cherchez l'arme à deux mains la plus lente et la plus forte : vos sceaux frappent avec elle.",
  "Busca siempre el arco, arma de fuego o ballesta con más daño por segundo.": "Cherchez toujours l'arc, l'arme à feu ou l'arbalète avec le plus de dégâts par seconde.",
  "Busca un escudo con valor de bloqueo alto: sube el daño de Embate con escudo.": "Cherchez un bouclier avec une valeur de blocage élevée : il augmente les dégâts de Heurt de bouclier.",
- "Buscando...": "Recherche...",
  "Buscar equipo para mi nivel": "Trouver de l'équipement pour mon niveau",
  "Cabeza": "Tête",
  "Cada bloqueo te da ira: nunca te falta.": "Chaque blocage vous donne de la rage : vous n'en manquez jamais.",
  "Cada crítico hace sangrar.": "Chaque critique fait saigner.",
  "Cada golpe crítico deja al enemigo sangrando: daño extra sin hacer nada.": "Chaque coup critique fait saigner l'ennemi : des dégâts en plus sans rien faire.",
- "Cambiar de forma te quita lentitudes y raíces: úsalo para escapar.": "Changer de forme vous libère des ralentissements et des immobilisations : servez-vous-en pour fuir."
+ "Cambiar de forma te quita lentitudes y raíces: úsalo para escapar.": "Changer de forme vous libère des ralentissements et des immobilisations : servez-vous-en pour fuir.",
+ "… y %d talentos más": "... et %d talents de plus",
+ "Buscando…": "Recherche..."
 }

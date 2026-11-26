@@ -78,7 +78,6 @@
  "Me quedo aquí sentadita contigo. Tres caídas no te hacen menos lobo. ¿Reparamos y pedimos ayuda?": "Я посижу тут с тобой. Три смерти не делают тебя меньше волком. Починимся и попросим помощи?",
  "Memoria de Alfa": "Память Alfa",
  "Márcalo con la calavera y todo tu grupo lo verá.": "Отметь его черепом, и вся группа его увидит.",
- "No se pudo importar": "Не удалось импортировать",
  "Omitiste un paso": "Ты пропустил шаг",
  "Para marcarlo, clic derecho en su retrato y elige la calavera.": "Чтобы отметить, щелкни правой кнопкой по его портрету и выбери череп.",
  "Pedir ayuda a la manada": "Попросить стаю о помощи",
@@ -127,5 +126,6 @@
  "¡Ya estamos en la mazmorra! Deja que el tanque jale primero y quédate cerca de quien cura.": "Мы в подземелье! Пусть танк пуллит первым, а ты держись рядом с лекарем.",
  "¡Ñam! Con esta van %d. Eres mi persona favorita de todo Azeroth.": "Ням! С этой уже %d. Ты мой самый любимый человек во всем Азероте.",
  "¿Ya te vas? Descansa bien. Yo me quedo vigilando hasta que vuelvas.": "Уже уходишь? Отдыхай хорошо. Я посторожу, пока ты не вернешься.",
- "Ñam. Esto me da energía para cuidarte otras tres horas.": "Ням. Теперь у меня есть силы беречь тебя еще три часа."
+ "Ñam. Esto me da energía para cuidarte otras tres horas.": "Ням. Теперь у меня есть силы беречь тебя еще три часа.",
+ "No pude importar": "Не удалось импортировать"
 }

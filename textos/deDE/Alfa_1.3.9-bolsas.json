@@ -5,7 +5,6 @@
  "Al ordenar, lo que tiene candado se queda en su casilla y lo demás se acomoda alrededor.": "Beim Sortieren bleibt Gesperrtes auf seinem Platz, alles andere wird drumherum geordnet.",
  "Botón «Lo que me sobra»": "Knopf „Was übrig ist“",
  "Como el juego": "Wie das Spiel",
- "Como el juego, o el orden de Alfa: por tipo (equipo, consumibles, materiales... y la chatarra al final), por calidad o por nombre.": "Wie das Spiel oder Alfas Reihenfolge: nach Art (Ausrüstung, Verbrauchsgüter, Materialien ... und Plunder zuletzt), nach Qualität oder nach Name.",
  "Con «Separar», lo épico que tiene candado también sale con el martillo si vale más en la subasta. El candado sigue: no se vende ni se borra.": "Mit „Trennen“ bekommt gesperrte epische Ware auch den Hammer, wenn sie im Auktionshaus mehr wert ist. Die Sperre bleibt: Sie wird weder verkauft noch gelöscht.",
  "Cómo ordenar": "Wie sortieren",
  "Dejé de ordenar: el juego no soltó algunos objetos. Dale otra vez en un momento.": "Ich habe aufgehört zu sortieren: Das Spiel hat einige Gegenstände nicht freigegeben. Versuch es gleich noch einmal.",
@@ -24,7 +23,6 @@
  "No te sobra nada para vender.": "Du hast nichts übrig zum Verkaufen.",
  "Por calidad": "Nach Qualität",
  "Por nombre": "Nach Name",
- "Por nombre, tipo o calidad (verde, azul...) y por nivel de objeto: 20, >20, 20-30. También por lo que es (arma, material, comida...) y por lo que Alfa sabe: mejora, nuevo, candado, sin usar, sobra, subasta. Con «-» delante quitas: -gris. Lo que coincide se resalta.": "Nach Name, Art oder Qualität (grün, blau ...) und nach Gegenstandsstufe: 20, >20, 20-30. Auch danach, was es ist (Waffe, Material, Essen ...), und was Alfa weiß: Verbesserung, neu, gesperrt, unbenutzt, übrig, Auktion. Mit „-“ davor schließt du aus: -grau. Treffer werden hervorgehoben.",
  "Por tipo": "Nach Art",
  "Quedan %d para otra carta.": "%d bleiben für einen weiteren Brief.",
  "Sin que hagas nada: lo épico y legendario, lo de misiones, tu piedra de hogar, lo de tus conjuntos de equipo, tus herramientas de oficio (caña, pico, martillo, cuchillo) y lo que te lleva de viaje.": "Ohne dein Zutun: Episches und Legendäres, Questgegenstände, dein Ruhestein, die Teile deiner Ausrüstungssets, deine Berufswerkzeuge (Angel, Spitzhacke, Hammer, Messer) und was dich auf Reisen bringt.",
@@ -51,5 +49,7 @@
  "vender": "verkaufen",
  "«Separar»: lo épico con candado a la subasta": "„Trennen“: gesperrte Epics ins Auktionshaus",
  "Si la ventana no empieza en la orilla izquierda de tu otro monitor (el de la izquierda), arrástrala ahí una vez; Windows la recordará.": "Wenn das Fenster nicht am linken Rand deines anderen Monitors (des linken) beginnt, zieh es einmal dorthin; Windows merkt es sich.",
- "Tu otro monitor está:": "Dein anderer Monitor ist:"
+ "Tu otro monitor está:": "Dein anderer Monitor ist:",
+ "Como el juego, o el orden de Alfa: por tipo (equipo, consumibles, materiales… y la chatarra al final), por calidad o por nombre.": "Wie das Spiel oder Alfas Reihenfolge: nach Art (Ausrüstung, Verbrauchsgüter, Materialien ... und Plunder zuletzt), nach Qualität oder nach Name.",
+ "Por nombre, tipo o calidad (verde, azul…) y por nivel de objeto: 20, >20, 20-30. También por lo que es (arma, material, comida…) y por lo que Alfa sabe: mejora, nuevo, candado, sin usar, sobra, subasta. Con «-» delante quitas: -gris. Lo que coincide se resalta.": "Nach Name, Art oder Qualität (grün, blau ...) und nach Gegenstandsstufe: 20, >20, 20-30. Auch danach, was es ist (Waffe, Material, Essen ...), und was Alfa weiß: Verbesserung, neu, gesperrt, unbenutzt, übrig, Auktion. Mit „-“ davor schließt du aus: -grau. Treffer werden hervorgehoben."
 }

@@ -5,13 +5,9 @@
  "%d misiones": "퀘스트 %d개",
  "%d muertes": "%d번 죽음",
  "%d niveles": "%d레벨",
- "%d%% de nivel": "레벨의 %d%%",
- "%d%% de un nivel": "1레벨의 %d%%",
- "%s al %d%%": "%s %d%%",
  "%s al %d%%: ¡repara ya!": "%s %d%%: 지금 수리하세요!",
  "%s está rota": "%s 파손됨",
  "%s%% del nivel %d": "%s%% (레벨 %d)",
- "%s: %d%%": "%s: %d%%",
  "1 espacio": "1칸",
  "1 habilidad por aprender": "배울 기술 1개",
  "1 misión": "퀘스트 1개",
@@ -170,7 +166,6 @@
  "Vendedor": "상인",
  "Ver mi diario": "내 일지 보기",
  "XP": "경험치",
- "XP descansada: %d%% de un nivel": "휴식 경험치: 1레벨의 %d%%",
  "XP ganada": "얻은 경험치",
  "XP por hora": "시간당 경험치",
  "XP por hora en cada sesión": "세션별 시간당 경험치",
@@ -195,5 +190,8 @@
  "¡Hola, %s!": "안녕하세요, %s 님!",
  "¡Repara tu equipo!": "장비를 수리하세요!",
  "¡Terminaste esta guía! Elige la siguiente y sigue subiendo con la manada.": "이 가이드를 끝냈습니다! 다음 가이드를 골라 무리와 함께 계속 레벨을 올리세요.",
- "¿Borrar el diario?": "일지를 지울까요?"
+ "¿Borrar el diario?": "일지를 지울까요?",
+ "%d %% de nivel": "레벨의 %d%%",
+ "%d %% de un nivel": "1레벨의 %d%%",
+ "%s al %d %%": "%s %d%%"
 }

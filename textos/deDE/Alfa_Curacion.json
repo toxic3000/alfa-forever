@@ -110,7 +110,6 @@
  "Sin acción": "Keine Aktion",
  "Sin tecla": "Keine Taste",
  "Solo": "Solo",
- "Solo buffs": "Nur Buffs",
  "Todavía no conoces sus hechizos: se llenan al aprenderlos.": "Du kennst seine Zauber noch nicht: Sie füllen sich, sobald du sie lernst.",
  "Tu grupo y tu banda con su vida, para curar con un clic. Se cambia fuera de combate.": "Deine Gruppe und dein Schlachtzug mit ihrer Gesundheit, um mit einem Klick zu heilen. Änderung außerhalb des Kampfes.",
  "Tu libro no tiene hechizos para aliados": "Dein Zauberbuch hat keine Zauber für Verbündete",
@@ -136,5 +135,6 @@
  "selecciona": "visiert an",
  "un hechizo": "ein Zauber",
  "¿Usar tu hechizo nuevo?": "Deinen neuen Zauber nutzen?",
- "¿Usar «%s»?": "„%s“ nutzen?"
+ "¿Usar «%s»?": "„%s“ nutzen?",
+ "Solo beneficios": "Nur Stärkungszauber"
 }

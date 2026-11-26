@@ -228,10 +228,10 @@
  "Bordes suaves": "Мягкие края",
  "Brillo máximo (nits)": "Пиковая яркость (нит)",
  "Brillo normal (nits)": "Обычная яркость (нит)",
- "Buscar: pasto, niebla, sombras...": "Поиск: трава, туман, тени...",
  "Cada ajuste que Alfa cambió vuelve al valor que tenía antes. Los filtros no cambian.": "Каждая настройка, которую изменил Alfa, возвращается к прежнему значению. Фильтры не меняются.",
  "Calidad de la niebla": "Качество тумана",
  "Calidad de las sombras": "Качество теней",
  "Cambiaste %d ajustes aquí. Volver a ponerlos al entrar está apagado (Avanzado).": "Вы изменили здесь настроек: %d. Повторное применение при входе выключено (Дополнительно).",
- "Campo de visión": "Поле зрения"
+ "Campo de visión": "Поле зрения",
+ "Buscar: pasto, niebla, sombras…": "Поиск: трава, туман, тени..."
 }

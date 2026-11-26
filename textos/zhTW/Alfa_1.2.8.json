@@ -139,7 +139,6 @@
  "Los raros que cayeron hace poco": "最近被擊殺的稀有怪",
  "Lya aprende": "莉婭在學習",
  "Lya apunta aquí tus pasos grandes: tu primera mazmorra, tus niveles, tu primera montura y más.": "莉婭在這裡記下你的重要時刻：第一個地城、你的等級、第一隻坐騎等等。",
- "Lya apunta tus pasos grandes (tu primera mazmorra, tus niveles, tu primera montura...) y festeja cada página nueva.": "莉婭記下你的重要時刻（第一個地城、你的等級、第一隻坐騎……），並慶祝每一頁新篇章。",
  "Lya lleva tu historia, aprende qué consejos ya no quieres y te avisa de tus oficios.": "莉婭記錄你的故事，學會你不想再聽的建議，並提醒你的專業。",
  "Lya te cuenta cuánto tardaron, cuántas veces caíste y lo mejor que sacaste.": "莉婭告訴你花了多久、倒下幾次，以及你拿到最好的東西。",
  "Lya vuelve a decirte todos esos consejos.": "莉婭會再次告訴你所有這些建議。",
@@ -200,7 +199,6 @@
  "Todavía no escribimos nada en tu historia. ¡Vamos a hacer algo grande!": "你的故事還一頁都沒寫。我們去做點大事吧！",
  "Todos los que callaste": "所有已關閉的",
  "Toma el dinero y los objetos de tus cartas, una por una. Las de pago contra entrega y las de un MJ se quedan para que las abras tú.": "逐封拿取郵件中的金錢和物品。貨到付款的郵件和 GM 郵件會留給你自己開啟。",
- "Tomando tus cartas...": "正在拿取郵件...",
  "Tomar todo": "全部拿取",
  "Treinta. La manada habla de ti.": "三十級。狼群都在談論你。",
  "Trescientos puntos. Eres maestro de tu oficio.": "三百點。你已是這門專業的大師。",
@@ -278,7 +276,9 @@
  "¿Quién va a %s?": "誰要去%s？",
  "¿Quién va?": "誰要去？",
  "¿Qué dice la nota?": "筆記寫什麼？",
- "¿Qué hacemos? Una mazmorra, una misión...": "做什麼？地城、任務……",
  "• El logo, el lobo, Lya y los módulos propios de Alfa son de toxic3000 / La Jauría (GPL-3.0).": "• 標誌、狼、莉婭和 Alfa 自己的模組屬於 toxic3000 / La Jauría（GPL-3.0）。",
- "• Los datos que trae Polestar también vienen de QuestieDB, Efficient Games (CC BY 4.0), VMaNGOS, CMaNGOS y Factoruide (GPL) y de ForeverLevelingBiS de Thunder (MIT); sus avisos están en cada LICENSE-DATA.txt.": "• Polestar 的資料也來自 QuestieDB、Efficient Games（CC BY 4.0）、VMaNGOS、CMaNGOS 和 Factoruide（GPL），以及 Thunder 的 ForeverLevelingBiS（MIT）；它們的聲明在各個 LICENSE-DATA.txt 中。"
+ "• Los datos que trae Polestar también vienen de QuestieDB, Efficient Games (CC BY 4.0), VMaNGOS, CMaNGOS y Factoruide (GPL) y de ForeverLevelingBiS de Thunder (MIT); sus avisos están en cada LICENSE-DATA.txt.": "• Polestar 的資料也來自 QuestieDB、Efficient Games（CC BY 4.0）、VMaNGOS、CMaNGOS 和 Factoruide（GPL），以及 Thunder 的 ForeverLevelingBiS（MIT）；它們的聲明在各個 LICENSE-DATA.txt 中。",
+ "Lya apunta tus pasos grandes (tu primera mazmorra, tus niveles, tu primera montura…) y festeja cada página nueva.": "莉婭記下你的重要時刻（第一個地城、你的等級、第一隻坐騎……），並慶祝每一頁新篇章。",
+ "Tomando tus cartas…": "正在拿取郵件...",
+ "¿Qué hacemos? Una mazmorra, una misión…": "做什麼？地城、任務……"
 }

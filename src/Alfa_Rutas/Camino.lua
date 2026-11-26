@@ -35,7 +35,7 @@ local function construir()
 	ui.reco = ui.pila:Agregar(K.Tarjeta(ui.pila, { variante = "accion" }))
 	ui.seccion = ui.pila:Agregar(K.Seccion(ui.pila, L["Otros caminos"]))
 	ui.rej = ui.pila:Agregar(K.Rejilla(ui.pila, { min = 300, gap = K.ESP.base }), { espacio = K.ESP.m })
-	v:SetPie({ K.Boton(v, L["Después"], function() v:Cerrar() end, { tipo = "fantasma" }) })
+	v:SetPie({ K.Boton(v, L["Ahora no"], function() v:Cerrar() end, { tipo = "fantasma" }) })
 	v.alAcomodar = function() if v:IsShown() then ui.Acomodar() end end
 end
 

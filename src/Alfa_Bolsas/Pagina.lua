@@ -270,7 +270,7 @@ local function bloqueConjuntos(padre)
 		self.Seccion:Set(L["Tus conjuntos de equipo"], { cuenta = #lista > 0 and #lista or nil,
 			enlace = on and { texto = L["Guardar lo que llevas"], alClic = function(boton) Cj.MenuGuardar(boton or self.Seccion) end } or nil })
 		K.Escribir(self.Nota.Texto, #lista > 0 and L["Un clic te pone el conjunto (fuera de combate; en combate, al terminar). Lo que esté en el banco no se puede poner."]
-			or L["Guarda lo que llevas puesto con un nombre (curar, daño, pesca...) y vuelve a ponértelo con un clic. También desde el botón de tus bolsas."])
+			or L["Guarda lo que llevas puesto con un nombre (curar, daño, pesca…) y vuelve a ponértelo con un clic. También desde el botón de tus bolsas."])
 		local bolsas = Cj.LeerBolsas() -- 1.3.2: una sola lectura para todos
 		local actual = Cj.Puesto(bolsas)
 		local tarjetas = {}
@@ -606,7 +606,7 @@ local function grupos(padre)
 		texto = L["Los objetos se juntan al final de tus bolsas en lugar de al principio."] })
 	-- 1.3.9: tu orden y el candado (Ordenar.lua).
 	ordenar:Fila({ titulo = L["Cómo ordenar"], hija = true, activa = siempre("ordenar"),
-		texto = L["Como el juego, o el orden de Alfa: por tipo (equipo, consumibles, materiales... y la chatarra al final), por calidad o por nombre."],
+		texto = L["Como el juego, o el orden de Alfa: por tipo (equipo, consumibles, materiales… y la chatarra al final), por calidad o por nombre."],
 		control = function(fila)
 			return K.Desplegable(fila, { ancho = 170, opciones = {
 				{ valor = "juego", texto = L["Como el juego"] },
@@ -636,7 +636,7 @@ local function grupos(padre)
 		texto = L["En esta página, lo que te sirve más en el banco o con otro personaje: materiales de sus recetas, lo que piden sus misiones y equipo que tu clase no usa."] })
 	-- 1.3.0
 	equipo:Fila({ titulo = L["Conjuntos de equipo"], control = interruptor("conjuntos"),
-		texto = L["Guarda lo que llevas puesto con un nombre (curar, daño, pesca...) y póntelo con un clic, fuera de combate."] })
+		texto = L["Guarda lo que llevas puesto con un nombre (curar, daño, pesca…) y póntelo con un clic, fuera de combate."] })
 	-- 1.3.7
 	equipo:Fila({ titulo = L["Botones de tus conjuntos"], control = interruptor("barraConjuntos"), hija = true, activa = siempre("conjuntos"),
 		texto = L["Junto a la ventana de tu personaje, un botón por conjunto. En combate te cambia las armas al momento y lo demás al terminar. Clic derecho: ponértelo al salir de cada combate."] })
@@ -665,7 +665,7 @@ local function grupos(padre)
 
 	local marcas = K.GrupoAjustes(padre, { titulo = L["Marcas sobre cada objeto"] })
 	marcas:Fila({ titulo = L["Nivel de objeto"], control = interruptor("marcaNivel"), texto = L["El número abajo a la izquierda de cada pieza de equipo."] })
-	marcas:Fila({ titulo = L["Borde de calidad"], control = interruptor("marcaCalidad"), texto = L["Un borde del color de la calidad: verde, azul, morado..."] })
+	marcas:Fila({ titulo = L["Borde de calidad"], control = interruptor("marcaCalidad"), texto = L["Un borde del color de la calidad: verde, azul, morado…"] })
 	marcas:Fila({ titulo = L["Chatarra"], control = interruptor("marcaChatarra"), texto = L["Una moneda sobre lo gris y lo que marcaste como chatarra."] })
 	marcas:Fila({ titulo = L["Objetos nuevos"], control = interruptor("marcaNuevos"), texto = L["Brillan los objetos que acabas de conseguir, hasta que cierras las bolsas."] })
 	marcas:Fila({ titulo = L["Flecha de mejora"], control = interruptor("marcaMejora"), texto = L["Una flecha verde en el equipo que es mejor que lo que llevas puesto, según tu clase y nivel."] })

@@ -1,7 +1,5 @@
 {
  "A los lados del modelo, un botón por ranura: un clic oculta esa pieza y otro la vuelve a poner.": "모델 양옆에 부위마다 버튼이 있습니다. 한 번 클릭하면 그 부위를 숨기고, 다시 클릭하면 다시 입힙니다.",
- "Abajo del modelo, elige lo que hace tu personaje (caminar, bailar, saludar...) y páusalo.": "모델 아래에서 캐릭터의 동작(걷기, 춤추기, 손 흔들기...)을 고르고 일시 정지할 수 있습니다.",
- "Abrir las comodidades (minimapa, cuadro de información, probador...)": "편의 기능 열기 (미니맵, 툴팁, 미리보기 창...)",
  "Aceptar y entregar todas las misiones": "모든 퀘스트 수락 및 제출",
  "Agrega una línea con el objetivo de esa unidad; si te tiene a ti, lo dice.": "그 유닛의 대상을 한 줄 추가합니다. 대상이 나라면 그렇게 알려 줍니다.",
  "Alejar más la cámara": "카메라 더 멀리 빼기",
@@ -107,5 +105,7 @@
  "Vitorear": "환호",
  "Voces de error": "오류 음성",
  "esta misión": "이 퀘스트",
- "¡Tú!": "당신!"
+ "¡Tú!": "당신!",
+ "Abajo del modelo, elige lo que hace tu personaje (caminar, bailar, saludar…) y páusalo.": "모델 아래에서 캐릭터의 동작(걷기, 춤추기, 손 흔들기...)을 고르고 일시 정지할 수 있습니다.",
+ "Abrir las comodidades (minimapa, cuadro de información, probador…)": "편의 기능 열기 (미니맵, 툴팁, 미리보기 창...)"
 }

@@ -1,7 +1,5 @@
 {
  "A los lados del modelo, un botón por ranura: un clic oculta esa pieza y otro la vuelve a poner.": "De chaque côté du modèle, un bouton par emplacement : un clic masque cette pièce, un autre la remet.",
- "Abajo del modelo, elige lo que hace tu personaje (caminar, bailar, saludar...) y páusalo.": "Sous le modèle, choisis ce que fait ton personnage (marcher, danser, saluer...) et mets-le en pause.",
- "Abrir las comodidades (minimapa, cuadro de información, probador...)": "Ouvrir les commodités (minicarte, infobulle, cabine d'essayage...)",
  "Aceptar y entregar todas las misiones": "Accepter et rendre toutes les quêtes",
  "Agrega una línea con el objetivo de esa unidad; si te tiene a ti, lo dice.": "Ajoute une ligne avec la cible de cette unité ; si c'est toi, il le dit.",
  "Alejar más la cámara": "Éloigner davantage la caméra",
@@ -107,5 +105,7 @@
  "Vitorear": "Acclamer",
  "Voces de error": "Voix d'erreur",
  "esta misión": "cette quête",
- "¡Tú!": "Toi !"
+ "¡Tú!": "Toi !",
+ "Abajo del modelo, elige lo que hace tu personaje (caminar, bailar, saludar…) y páusalo.": "Sous le modèle, choisis ce que fait ton personnage (marcher, danser, saluer...) et mets-le en pause.",
+ "Abrir las comodidades (minimapa, cuadro de información, probador…)": "Ouvrir les commodités (minicarte, infobulle, cabine d'essayage...)"
 }

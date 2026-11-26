@@ -31,7 +31,6 @@
  "El juego todavía no dio la lista de retos: ábrelo con la tecla Y.": "游戏还没有给出挑战列表：按 Y 键打开它。",
  "El maestro de vuelo, la posada, reparar, el banco y más, con la flecha.": "飞行管理员、旅店、修理、银行等，箭头带你去。",
  "El maestro de vuelo, la posada, reparar, el banco y más: el más cercano, con la flecha y la ruta.": "飞行管理员、旅店、修理、银行等：最近的那个，附箭头和路线。",
- "El maestro de vuelo, la posada, reparar, el banco... el más cercano (/alfa cerca ayuda).": "飞行管理员、旅店、修理、银行……最近的那个（/alfa cerca ayuda）。",
  "El marco de las barras de experiencia y reputación; el relleno conserva sus colores.": "经验条和声望条的边框；填充部分保留原来的颜色。",
  "El marco del menú del juego y de las bolsas, abajo a la derecha.": "右下角游戏菜单和背包的边框。",
  "El minimapa": "小地图",
@@ -248,5 +247,6 @@
  "Lya se queda calladita una hora. Aquí sigue, cuidándote.": "Lya 安静一小时。她还在这里守着你。",
  "Lya te acompaña": "Lya 陪着你",
  "Lya te espera": "Lya 在等你",
- "Lya volvió. Dale clic cuando quieras un consejo.": "Lya 回来了。想听建议时就点她。"
+ "Lya volvió. Dale clic cuando quieras un consejo.": "Lya 回来了。想听建议时就点她。",
+ "El maestro de vuelo, la posada, reparar, el banco… el más cercano (/alfa cerca ayuda).": "飞行管理员、旅店、修理、银行……最近的那个（/alfa cerca ayuda）。"
 }

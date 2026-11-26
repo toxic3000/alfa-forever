@@ -174,7 +174,7 @@ local function avisarDurabilidad(peor, otras)
 	anotarDicho("reparar")
 	local pieza = R.NombrePieza(peor.slot) or R.NombreRanura(peor.slot)
 	local pct = floor(peor.pct + 0.5)
-	local linea = pct <= 0 and format(L["%s está rota"], pieza) or format(L["%s: %d%%"], pieza, pct)
+	local linea = pct <= 0 and format(L["%s está rota"], pieza) or format(L["%s: %d %%"], pieza, pct)
 	local txt = urgente and L["Si llega a 0 % se rompe y deja de darte sus estadísticas. Repara cuanto antes con un herrero o un vendedor que repare."]
 		or L["Repara con un herrero o un vendedor que repare antes de que se rompa."]
 	if otras > 0 then
@@ -682,7 +682,7 @@ local function revisarDescanso(entrar)
 			Aviso.Mostrar({
 				clave = "descanso", tipo = "exito", icono = "ic-hoy",
 				titulo = L["Estás descansando"],
-				linea = redondo >= 1 and format(L["XP descansada: %d%% de un nivel"], redondo) or L["Empiezas a juntar XP descansada"],
+				linea = redondo >= 1 and format(L["XP descansada: %d %% de un nivel"], redondo) or L["Empiezas a juntar XP descansada"],
 				texto = redondo >= 1 and L["En posadas y ciudades acumulas XP descansada: ganas el doble de XP por enemigo hasta gastarla. Si cierras sesión aquí, también se acumula."]
 					or L["Aquí juntas XP descansada poco a poco (más si cierras sesión aquí): luego ganas el doble por enemigo hasta gastarla."],
 			})
@@ -705,7 +705,7 @@ local function revisarDescanso(entrar)
 			Aviso.Mostrar({
 				clave = "descansoBajo", tipo = "info", icono = "ic-hoy",
 				titulo = r <= 0 and L["Se acabó tu XP descansada"] or L["Te queda poca XP descansada"],
-				linea = r <= 0 and L["Ahora ganas la XP normal"] or format(L["%d%% de un nivel"], floor(pct + 0.5)),
+				linea = r <= 0 and L["Ahora ganas la XP normal"] or format(L["%d %% de un nivel"], floor(pct + 0.5)),
 				texto = L["Para volver a acumularla, descansa (o cierra sesión) en una posada o una ciudad."],
 			})
 		end

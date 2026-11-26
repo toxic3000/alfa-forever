@@ -1,5 +1,71 @@
 # Cambios de Alfa
 
+## 1.4.1 — El ratón es tuyo: clics, cámara, volumen, profesiones, tus misiones y tus materiales (25/11/2026)
+
+Un parche de arreglos tras jugar la 1.4.0: Alfa ya no se queda con tus clics en ninguna parte de la pantalla, y una revisión completa del código con pruebas nuevas que buscan este tipo de error en todo Alfa.
+
+**Español**
+
+*Arreglos de lo que viste en el juego*
+- **Ya puedes clicar enemigos a lo lejos, girar la cámara, usar las pestañas de profesiones (tecla K) y mover el volumen.** El lugar invisible donde salen los anuncios (arriba del centro de la pantalla) se tragaba tus clics, el arrastre de la cámara y los clics de las ventanas del juego que caían debajo. Lo mismo pasaba con el lugar de los avisos y el de las placas de la flecha. Ya no toman el ratón nunca.
+- Mayús + arrastrar sigue moviendo lo de Alfa: mientras tienes Mayús abajo sale un recuadro verde sobre lo que se puede mover, y al soltar Mayús desaparece.
+- **«Cerrar mis misiones» con todas «para después»:** ahora vienen marcadas y el botón de abajo dice «Armar la ruta con N»: un clic arma la ruta y la empieza. Puedes desmarcar las que no quieras; en un resumen normal, marcar alguna cambia el botón a «Sumar N y empezar».
+- **Materiales: tú eliges a dónde ir.** En la Enciclopedia, «Guíame» de un mineral o una hierba ya no te manda siempre al mismo punto: te ofrece «Cerca de ti», «El lugar recomendado» y otras zonas, cada una con su nivel, cuántos puntos tiene, lo lejos que está y si es a pie o si quizá te convenga volar o tomar barco (cuesta oro).
+- **El elevador habla como Alfa:** su tramo sale en la tarjeta de viaje de Alfa con su propio dibujo («Elevador hacia arriba», «¡El elevador ya está aquí!»), ya no con el texto que venía del motor.
+- **Todo se mueve:** los avisos y los anuncios grandes se arrastran con el ratón (sin Mayús) y se quedan donde los dejes; y los avisos ya no se encima con «Liberar espíritu» ni con los demás cuadros del juego de arriba: bajan solos.
+- Nuevo `/alfa raton`: te dice qué hay bajo tu ratón y si alguna parte de Alfa tapa la pantalla sin verse; `/alfa raton arreglar` la quita al momento. Además, una guardia revisa sola que ninguna parte invisible de Alfa tome el ratón y, si pasa, lo corrige y lo anota en `/alfa errores`.
+- Comodidades ya no le prende el ratón al contenedor del minimapa ni a las ventanas de chat, y la barra de experiencia tampoco: ya no tapan clics al mundo.
+- «Pantalla limpia»: lo que se vuelve transparente ya no toma el ratón (antes el chat y el minimapa invisibles se comían los clics) y el cuadro para escribir del chat ya no se esconde.
+- Al viajar en barco o zepelín, cuando la tarjeta se cierra, la flecha ya no deja un cuadro invisible que se tragaba los clics todo el viaje, y al bajar vuelven la distancia y la meta.
+- Un menú abierto en plena pelea ya no tapa la pantalla; la cuadrícula de zonas y la confirmación de «Restablecer» se apartan al entrar en combate (la confirmación vuelve al terminar).
+- Pesca: con el doble clic derecho la cámara ya no se queda siguiendo al ratón, y el clic derecho se suelta solo si algo lo deja tomado; el volumen general que bajas a 0 mientras pescas se queda en 0; «Callar sonidos de mascotas» ya no se apaga sola al cerrar la pesca; al asignar una tecla, se ve un aviso mientras espera.
+- Dos pantallas: sin fondo y con el mundo debajo, el escritorio ya no tapa el mundo; «¿Se ve bien?» no se traga los clics de una pelea.
+- La flecha: «Siguiente lugar» ya no se puede clicar mientras está oculto por el reloj de arena; los pines de «Misiones de tu grupo» recuperan su aro y su prioridad.
+- Más arreglos: un objeto de misión y la experiencia ya no dan error con valores ocultos en combate o mazmorras; los temporizadores de jefe ya no empiezan con el diálogo antes de la pelea; el reto semanal de Lya ya no cambia solo a media semana; el aviso de venta ya no dice un precio que no fue; el panel de precios de la subasta sigue al día al abrirla dos veces.
+
+*Pulido y todo parejo*
+- Lo que contesta un botón de una ventana de Alfa sale en un aviso junto a la ventana, como en el resto de Alfa (antes unas respuestas salían abajo en el chat); lo que escribes con `/alfa` sigue en el chat.
+- Los mismos nombres en todos lados: «Ahora no» para dejar algo para luego, «Restablecer» para volver los marcos a su lugar, «Listo» al terminar un recorrido, «Ajustes» (no «Opciones») para la ventana de Alfa, «Entendido» en los avisos y «Se puede al salir de combate» cuando algo espera a la pelea.
+- «Cerrar», «Cancelar», «Ahora no» y «Atrás» se ven igual de discretos en todas las ventanas.
+- Los textos «…», los porcentajes («50 %») y las comillas «» iguales en todo Alfa; los mensajes de error ya no hablan de «el motor» ni muestran códigos: dicen qué hacer.
+- Borrar un perfil y borrar la lista de errores ahora preguntan antes.
+- La recompensa recomendada de una misión ya no cae encima de la flecha; Esc cierra «Reparar mi pantalla» y el detalle del medidor; «No hay guías así» trae su botón «Ver todas»; seguir un marcador ya no repite lo mismo en el chat.
+
+*Para quien cuida a Alfa*
+- El banco de pruebas imita al juego en lo que nos mordió: poner un evento del ratón a un marco le prende el ratón, los botones nacen tomándolo y el tiempo corre para las animaciones. Una prueba nueva (`prueba_141_raton.lua`) revisa la pantalla punto por punto en 15 momentos de una sesión, con ventanas del juego simuladas debajo (profesiones, Opciones > Audio, el chat); la de los botones y la de un día de juego terminan con el mismo barrido. Con el código de la 1.4.0, la prueba falla y nombra al culpable.
+- `docs/MAPA.md` (`tools/mapa.py`): el mapa del código, con «Si pasa esto, mira aquí» y qué pruebas tocan cada módulo; `tools/prueba.py` revisa que esté al día. `tools/nueva_version.py` abre una versión nueva en un paso, y `tools/banco/comun.lua` con su plantilla hacen más cortas las pruebas nuevas. `tools/renombrar_texto.py` cambia un texto en el código, su inglés y sus 7 traducciones a la vez.
+
+**English**
+
+*Fixes for what you saw in the game*
+- **You can click far-away enemies, turn the camera, use the profession tabs (K key) and move the volume again.** The invisible spot where announcements appear (above the center of the screen) was swallowing your clicks, camera drags and clicks on the game windows beneath it. The spot for alerts and the one for the arrow's plates did the same. They never take the mouse now.
+- Shift + drag still moves Alfa's pieces: while you hold Shift a green box shows over what can move, and it goes away when you let go.
+- **"Close my quests" when all are "for later":** they now come checked and the bottom button says "Build the route with N": one click builds the route and starts it. Uncheck the ones you don't want; in a normal summary, checking some turns the button into "Add N and start".
+- **Materials: you choose where to go.** In the Encyclopedia, "Guide me" for an ore or herb no longer always sends you to the same spot: it offers "Near you", "The recommended place" and other zones, each with its level, how many spots it has, how far it is and whether it's on foot or you may want to fly or take a boat (costs gold).
+- **The elevator speaks like Alfa:** its leg shows on Alfa's travel card with its own drawing ("Elevator going up", "The elevator is here!"), no longer with the text that came from the engine.
+- **Everything moves:** alerts and big announcements can be dragged with the mouse (no Shift needed) and stay where you leave them; and alerts no longer overlap "Release spirit" or the game's other top dialogs: they move down on their own.
+- New `/alfa raton`: tells you what is under your mouse and whether any part of Alfa is blocking the screen without being seen; `/alfa raton arreglar` removes it right away. A guard also checks on its own that no invisible part of Alfa takes the mouse, fixes it if it happens and logs it in `/alfa errores`.
+- Comforts no longer turns the mouse on for the minimap container or the chat windows, and neither does the experience bar: they no longer block clicks to the world.
+- "Clean screen": what turns transparent no longer takes the mouse (the invisible chat and minimap used to eat clicks) and the chat input box is no longer hidden.
+- On boats and zeppelins, when the card closes, the arrow no longer leaves an invisible box that swallowed clicks for the whole trip, and the distance and goal come back when you get off.
+- A menu opened mid-fight no longer covers the screen; the zone grid and the "Reset" confirmation step aside when combat starts (the confirmation comes back afterwards).
+- Fishing: with double right-click the camera no longer keeps following the mouse, and right-click lets go on its own if something leaves it held; master volume you lower to 0 while fishing stays at 0; "Mute pet sounds" no longer turns itself off when fishing ends; assigning a key now shows a notice while it waits.
+- Two screens: with no background and the world underneath, the desktop no longer covers the world; "Does it look right?" no longer swallows clicks during a fight.
+- The arrow: "Next spot" can't be clicked while it's hidden by the hourglass; "Your group's quests" pins get their ring and priority back.
+- More fixes: a quest item and experience no longer error with hidden values in combat or dungeons; boss timers no longer start with the dialogue before the pull; Lya's weekly challenge no longer changes by itself mid-week; the selling notice no longer states a price that wasn't; the auction price panel stays up to date when you open it twice.
+
+*Polish and consistency*
+- What a button in an Alfa window answers now shows in a notice next to the window, like the rest of Alfa (some answers used to go to the chat); what you type with `/alfa` stays in the chat.
+- The same names everywhere: "Not now" to leave something for later, "Reset" to put frames back, "Done" at the end of a tour, "Settings" (not "Options") for Alfa's window, "Got it" on notices and "You can do it once combat ends" when something waits for the fight.
+- "Close", "Cancel", "Not now" and "Back" look equally quiet in every window.
+- Ellipses, percentages ("50 %") and quotes look the same across Alfa; error messages no longer talk about "the engine" or show codes: they say what to do.
+- Deleting a profile and clearing the error list now ask first.
+- A quest's recommended reward no longer lands on top of the arrow; Esc closes "Repair my screen" and the meter's detail card; "No guides like that" has a "See all" button; following a marker no longer repeats itself in the chat.
+
+*For whoever looks after Alfa*
+- The test bench now mimics the game where it bit us: setting a mouse script on a frame turns its mouse on, buttons are born taking it, and time runs for animations. A new test (`prueba_141_raton.lua`) checks the screen point by point at 15 moments of a session, with simulated game windows underneath (professions, Options > Audio, chat); the buttons test and the full-day test end with the same sweep. With the 1.4.0 code, the test fails and names the culprit.
+- `docs/MAPA.md` (`tools/mapa.py`): the code map, with "If this happens, look here" and which tests touch each module; `tools/prueba.py` checks it's up to date. `tools/nueva_version.py` opens a new version in one step, and `tools/banco/comun.lua` with its template make new tests shorter. `tools/renombrar_texto.py` changes a text in the code, its English and its 7 translations at once.
+
 ## 1.4.0 — La manada firme: el cierre de la serie 1.3, más rápida, más sólida y con tu temporada (24/11/2026)
 
 Alfa cierra la serie 1.3 con lo que pediste después de jugarla: Dos pantallas rehecho y sin dejarte la interfaz agrandada, las bolsas y la flecha sin textos encimados, la ruta de minerales en la zona más cercana de tu nivel, la temática de tu bando que sí se nota, guías que cargan solo tu tramo, «Tu temporada con la manada», Lya 2.0 y una depuración completa del código con una prueba de un día de juego entero.

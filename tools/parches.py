@@ -741,12 +741,32 @@ PARCHES += [
 # Textos que se agregan al final de un archivo: las traducciones de lo nuevo.
 # Textos del motor que el paquete de idioma de Polestar deja en inglés.
 SIN_TRADUCIR_ES = {"Recorder": "Grabadora"}
+# 1.4.1 (Toxic: «el mensaje del elevador sigue siendo el de Polestar»): los
+# textos del motor que se leen al viajar, con la voz de Alfa (se agregan al
+# final del idioma: el último L[...] manda).
+VOZ_ALFA_ES = {
+    "Walk to the lift in %s": "Ve al elevador en %s",
+    "Walk to the lift": "Ve al elevador",
+    "Ride the elevator up": "Sube en el elevador",
+    "Ride the elevator down": "Baja en el elevador",
+    "Ride the elevator": "Toma el elevador",
+    "Lift here, leaves in %s": "¡El elevador ya está aquí! Sale en %s",
+    "Next lift in %s": "El próximo elevador sale en %s",
+    "%s, north lift": "%s, elevador norte",
+    "%s, south lift": "%s, elevador sur",
+    "%s, east lift": "%s, elevador este",
+    "%s, west lift": "%s, elevador oeste",
+    "Lift: average wait %s": "Elevador: sueles esperar %s",
+    "Lift to %s": "Elevador a %s",
+}
 
 AGREGADOS = [
     (f"Alfa_{loc}/Interface.lua",
      "\n-- Alfa: pagina Acerca de\n" + "".join(f'L["{n}"] = "{es}"\n' for _, n, es in ACERCA)
      + "-- Alfa: textos que el paquete dejaba en ingles\n"
-     + "".join(f'L["{en}"] = "{es}"\n' for en, es in SIN_TRADUCIR_ES.items()))
+     + "".join(f'L["{en}"] = "{es}"\n' for en, es in SIN_TRADUCIR_ES.items())
+     + "-- Alfa 1.4.1: los viajes con la voz de Alfa\n"
+     + "".join(f'L["{en}"] = "{es}"\n' for en, es in VOZ_ALFA_ES.items()))
     for loc in ("esMX", "esES")
 ]
 

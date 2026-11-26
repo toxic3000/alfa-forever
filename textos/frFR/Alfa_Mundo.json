@@ -20,7 +20,6 @@
  "Azeroth": "Azeroth",
  "Barcos, zepelines y tranvía": "Bateaux, zeppelins et tram",
  "Botones de Alfa en el mapa del juego": "Boutons d'Alfa sur la carte du jeu",
- "Buzones, entrenadores, banco, subasta, reparar...": "Boîtes aux lettres, maîtres, banque, hôtel des ventes, réparations...",
  "Cada cofre o tesoro conocido.": "Chaque coffre ou trésor connu.",
  "Cada entrada de mazmorra y banda con su rango de niveles. Clic: su página; Mayús+clic: la flecha te lleva.": "Chaque entrée de donjon et de raid avec sa tranche de niveaux. Clic : sa page ; Maj+clic : la flèche vous y mène.",
  "Cada lugar conocido donde aparece un enemigo raro.": "Chaque endroit connu où apparaît un ennemi rare.",
@@ -59,7 +58,6 @@
  "La tecla que abre el mapa del juego abre el de Alfa. Apágalo y vuelve a abrir el del juego. También puedes darle una tecla propia en Opciones > Teclado > Alfa.": "La touche qui ouvre la carte du jeu ouvre celle d'Alfa. Désactivez cette option pour retrouver la carte du jeu. Vous pouvez aussi lui donner sa propre touche dans Options > Raccourcis > Alfa.",
  "Lo esencial": "L'essentiel",
  "Los mismos marcadores de misiones en el minimapa.": "Les mêmes marqueurs de quête sur la minicarte.",
- "Los raros están apagados (página Descubrir).": "Les rares sont désactivés (page Découverte).",
  "Los raros también en el minimapa.": "Les rares aussi sur la minicarte.",
  "Los servicios también en el minimapa.": "Les services aussi sur la minicarte.",
  "Los tesoros también en el minimapa.": "Les trésors aussi sur la minicarte.",
@@ -118,5 +116,7 @@
  "Vuelos, barcos y posadas también en el minimapa.": "Vols, bateaux et auberges aussi sur la minicarte.",
  "Zonas": "Zones",
  "Zonas de enemigos, objetos y lugares de las misiones de tu registro.": "Zones d'ennemis, objets et lieux des quêtes de votre journal.",
- "Zonas sin descubrir": "Zones non découvertes"
+ "Zonas sin descubrir": "Zones non découvertes",
+ "Buzones, entrenadores, banco, subasta, reparar…": "Boîtes aux lettres, maîtres, banque, hôtel des ventes, réparations...",
+ "Los raros están apagados (página Descubrimiento).": "Les rares sont désactivés (page Découverte)."
 }

@@ -180,7 +180,7 @@ function Mg.Pines(datos)
 		local quienes = concat(d.quienes, ", ")
 		out[#out + 1] = {
 			map = d.p.map, x = d.p.x, y = d.p.y, f = d.p.f,
-			icon = d.p.entrega and "map:quest-turnin" or "map:kill", size = 14, -- 1.3.2: la entrega, con su ícono priority = 2, ring = rgb(d.tuya and "acento" or "aviso"),
+			icon = d.p.entrega and "map:quest-turnin" or "map:kill", size = 14, priority = 2, ring = rgb(d.tuya and "acento" or "aviso"), -- 1.3.2: la entrega, con su ícono (1.4.1: el aro y la prioridad estaban dentro del comentario)
 			color = rgb(d.tuya and "acento" or "aviso"), badge = tostring(#d.quienes),
 			tooltip = function(tip)
 				tip:SetText(d.titulo, K.Color("texto"))
