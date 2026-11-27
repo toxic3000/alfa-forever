@@ -28,7 +28,22 @@ D.TIPOS = {
 	{ clave = "dano", enum = "DamageDone", num = 0, texto = L["Daño"] },
 	{ clave = "cps", enum = "Hps", num = 3, texto = L["CPS"], porSeg = true, curacion = true },
 	{ clave = "curacion", enum = "HealingDone", num = 2, texto = L["Curación"], curacion = true },
+	-- 1.4.2: lo que también lleva el medidor del juego. «cuenta»: veces, no
+	-- cantidades (sin «por segundo»); «detalle»: el tipo con el que se lee el
+	-- detalle de cada quien (Detalle.lua).
+	{ clave = "recibido", enum = "DamageTaken", num = 7, texto = L["Daño recibido"], recibido = true, detalle = "DamageTaken" },
+	{ clave = "evitable", enum = "AvoidableDamageTaken", num = 8, texto = L["Daño evitable"], recibido = true, detalle = "AvoidableDamageTaken" },
+	{ clave = "cortes", enum = "Interrupts", num = 5, texto = L["Cortes"], cuenta = true, detalle = "Interrupts" },
+	{ clave = "limpiezas", enum = "Dispels", num = 6, texto = L["Limpiezas"], cuenta = true, detalle = "Dispels" },
 }
+-- 1.4.2: el número de cada tipo de Enum.DamageMeterType que Alfa conoce (por si el cliente no trae el Enum).
+D.NUM_TIPO = { DamageDone = 0, Dps = 1, HealingDone = 2, Hps = 3, Absorbs = 4, Interrupts = 5, Dispels = 6,
+	DamageTaken = 7, AvoidableDamageTaken = 8, Deaths = 9, EnemyDamageTaken = 10 }
+function D.EnumTipo(nombre)
+	local E = Enum and Enum.DamageMeterType
+	if E and type(E[nombre]) == "number" then return E[nombre] end
+	return D.NUM_TIPO[nombre]
+end
 local porClave = {}
 for _, t in ipairs(D.TIPOS) do porClave[t.clave] = t end
 function D.Tipo(clave) return porClave[clave] or porClave.dps end

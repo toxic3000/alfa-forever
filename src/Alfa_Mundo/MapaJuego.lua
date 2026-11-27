@@ -29,7 +29,7 @@ local K = N.Kit
 local T = A.Theme
 local Capas, Panel, V, Mc = M.Capas, M.Panel, M.Ventana, M.Marcas
 
-local type, ipairs, pcall, tostring = type, ipairs, pcall, tostring
+local type, ipairs, pcall, tostring, format = type, ipairs, pcall, tostring, string.format
 
 local MJ = {}
 M.MapaJuego = MJ
@@ -104,11 +104,29 @@ local function colocarBarra()
 	end
 end
 
+-- 1.4.2 (Toxic: «algunos íconos del mapa pueden ser molestos; quitarlos con
+-- un solo clic, en el mapa de la M»): el modo limpio ya existía, pero era un
+-- ícono sin texto junto a la lupa. Ahora es un botón que dice lo que hace:
+-- «Limpiar mapa» esconde los íconos de Alfa que no son esenciales (quedan tú,
+-- tu grupo, tus marcadores y la guía) y «Ver todo» los devuelve como estaban.
+local function pintarLimpio()
+	if not (barra and barra.Limpio) then return end
+	local on = Capas.Limpio()
+	barra.Limpio:SetTexto(on and L["Ver todo"] or L["Limpiar mapa"])
+	barra.Limpio:SetIcono(on and "ic-mapa" or "ic-filtro")
+	local n = Capas.CuantasOcultas()
+	K.ConInfo(barra.Limpio, on and L["Ver todo"] or L["Limpiar mapa"], on
+		and format(L["Escondí %d tipos de íconos de Alfa. Un clic y vuelven como estaban."], n)
+		or L["Esconde los íconos de Alfa que no son esenciales: quedan tú, tu grupo, tus marcadores y la guía. Un clic más y vuelven."])
+	barra:SetSize(2 + 26 + 2 + barra.Limpio:AnchoNatural() + 4 + barra.Abrir:GetWidth() + 3, 30)
+end
+MJ.PintarLimpio = pintarLimpio
+
 local function mostrarBarra()
 	if not barra then return end
 	local on = A.Get("mundo.botonMapa") ~= false and not oculto() and not mando()
 	barra:SetShown(on)
-	if on then barra.Limpio:SetMarcado(Capas.Limpio()) end
+	if on then pintarLimpio() end
 end
 
 local function crearBarra()
@@ -120,16 +138,18 @@ local function crearBarra()
 		Panel.Alternar(self, { punto = "TOPRIGHT", relativo = "BOTTOMRIGHT", x = 0, y = -4, mapa = mapaDelJuego() })
 	end, { tam = 26, icono = 15, ayuda = L["Capas de Alfa: elige qué se ve en el mapa"] })
 	barra.Capas:SetPoint("LEFT", barra, "LEFT", 2, 0)
-	barra.Limpio = K.BotonIcono(barra, "ic-descubrir", function() Capas.AlternarLimpio() end,
-		{ tam = 26, icono = 15, ayuda = L["Modo limpio: solo tú, tu grupo, tus marcadores y la guía"] })
-	barra.Limpio:SetPoint("LEFT", barra.Capas, "RIGHT", 0, 0)
+	barra.Limpio = K.Boton(barra, L["Limpiar mapa"], function()
+		Capas.AlternarLimpio()
+		pintarLimpio()
+	end, { tipo = "secundario", tam = "chico", icono = "ic-filtro" })
+	barra.Limpio:SetPoint("LEFT", barra.Capas, "RIGHT", 2, 0)
 	barra.Abrir = K.Boton(barra, L["Mapa de Alfa"], function() V.Abrir(mapaDelJuego()) end,
 		{ tipo = "acento", tam = "chico", icono = "ic-mundo",
 		  ayuda = L["Cambia al mapa de Alfa en esta zona: todo el mundo en un solo mapa, con zoom y tus marcadores."] })
 	barra.Abrir:SetPoint("LEFT", barra.Limpio, "RIGHT", 4, 0)
-	barra:SetSize(2 + 26 * 2 + 4 + barra.Abrir:GetWidth() + 3, 30)
 	colocarBarra()
 	mostrarBarra()
+	if Capas.AlCambiar then Capas.AlCambiar(pintarLimpio) end
 	-- La lupa se recoloca al abrir el mapa o cambiar su tamaño: los botones la
 	-- siguen. La vista del motor (Nav/MapCanvas.lua) lo avisa solo leyendo.
 	local MC = A.MapCanvas

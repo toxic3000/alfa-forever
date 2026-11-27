@@ -138,10 +138,12 @@ local function dibujar(forzar)
 			f.psIdx, f.psI = idx, i
 			local g = idx.g[i]
 			local tenue = not R.Puede(g)
-			P.Aplicar(f, g, tam, tenue, nil)
+			-- 1.4.2: lo que recolectaste hace poco, tenue (aún no vuelve).
+			local reciente = P.Reciente(idx.d[i]) ~= nil
+			P.Aplicar(f, g, tam, tenue, nil, reciente)
 			-- El juego dibuja tu flecha bajo todo lo del minimapa: lo que la tapa se aclara.
 			local r = FLECHA + tam * 0.5
-			f:SetAlpha((tenue and 0.6 or 1) * ((x * x + y * y < r * r) and 0.35 or 1))
+			f:SetAlpha(P.Alfa(tenue, reciente) * ((x * x + y * y < r * r) and 0.35 or 1))
 			f:ClearAllPoints()
 			f:SetPoint("CENTER", Minimap, "CENTER", x, y)
 			if not f:IsShown() then f:Show() end

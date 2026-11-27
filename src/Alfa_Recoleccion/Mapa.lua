@@ -40,6 +40,7 @@ local usados = 0
 -- La lista a pintar: pin k en (lx[k], ly[k]) con el grupo lg[k], lc[k] nodos,
 -- el nodo li[k] (uno solo) o la celda lk[k] (un grupo).
 local lx, ly, lg, lc, li, lk, ltenue = {}, {}, {}, {}, {}, {}, {}
+local lr = {} -- 1.4.2: el nodo se recolectó hace poco (Pines.lua, P.Reciente)
 local ln = 0
 local listaIdx                -- el índice de la zona de la lista
 local celdaX, celdaY = 1, 1   -- tamaño de la celda de agrupado (0..1 del mapa)
@@ -113,7 +114,8 @@ local function alEntrar(self)
 	raton = self
 	local k = self.psK
 	if not (k and listaIdx) then return end
-	local pista = not A.GamepadUI() and L["Clic: la flecha te lleva aquí."] or nil
+	-- 1.4.2: Mayús+clic arma la ruta por todos los de ese recurso en la zona.
+	local pista = not A.GamepadUI() and L["Clic: la flecha te lleva aquí. Mayús+clic: una ruta por todos los de este recurso en la zona."] or nil
 	if li[k] then
 		P.Info(self, listaIdx, li[k], pista)
 	else
@@ -158,10 +160,30 @@ A.RegisterEvent("GLOBAL_MOUSE_UP", function(_, boton)
 	if not (f and f == raton and boton == botonPresionado and boton == "LeftButton" and f:IsVisible()) then return end
 	local k = f.psK
 	if not (k and listaIdx and vista) then return end
+	if IsShiftKeyDown and IsShiftKeyDown() and Mapa.RutaDe(lg[k], listaIdx.mapa) then return end
 	local nombre = R.Nombre(lg[k])
 	if lc[k] and lc[k] > 1 then nombre = L["%s y %d más"]:format(nombre, lc[k] - 1) end
 	if M.Ruta and M.Ruta.LlevarA then M.Ruta.LlevarA(listaIdx.mapa, lx[k], ly[k], nombre) end
 end)
+
+-- 1.4.2: la ruta por todos los nodos de ese recurso en esa zona, y a guiar.
+-- -> true si se pudo armar (si no, lo dice y el clic sigue como siempre)
+function Mapa.RutaDe(g, mapa)
+	local gr = g and M.GRUPOS[g]
+	if not (gr and mapa and M.Ruta and M.Ruta.Crear) then return false end
+	if InCombatLockdown and InCombatLockdown() then return false end
+	local ok, motivo = M.Ruta.Crear(gr.tipo, gr.clave, mapa, function(r)
+		if r and r.n then
+			M.Ruta.Guiar()
+			N.Imprimir(L["Ruta de %s: %s"]:format(R.Nombre(g), M.Ruta.Resumen(r) or ""))
+		end
+	end)
+	if not ok then
+		N.Imprimir(motivo or L["No hay nodos conocidos en esta zona."])
+		return false
+	end
+	return true
+end
 
 local function colocar(f, x, y, s)
 	f:SetScale(s)
@@ -235,8 +257,9 @@ local function calcular()
 		li[ln] = c == 1 and i or nil
 		lk[ln] = clave
 		ltenue[ln] = not R.Puede(idx.g[i])
+		lr[ln] = (c == 1 and P.Reciente(idx.d[i]) ~= nil) or nil
 	end
-	for k = ln + 1, #lx do lx[k], ly[k], lg[k], lc[k], li[k], lk[k], ltenue[k] = nil, nil, nil, nil, nil, nil, nil end
+	for k = ln + 1, #lx do lx[k], ly[k], lg[k], lc[k], li[k], lk[k], ltenue[k], lr[k] = nil, nil, nil, nil, nil, nil, nil, nil end
 	for k in pairs(sumaX) do
 		if not cuentas[k] then sumaX[k], sumaY[k], primero[k] = nil, nil, nil end
 	end
@@ -258,7 +281,7 @@ local function pintar()
 			creados = creados + 1
 		end
 		f.psK = k
-		P.Aplicar(f, lg[k], TAM, ltenue[k], lc[k])
+		P.Aplicar(f, lg[k], TAM, ltenue[k], lc[k], lr[k])
 		f:SetFrameLevel(nivel)
 		colocar(f, lx[k], ly[k], s)
 		f:Show()

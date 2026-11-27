@@ -218,6 +218,13 @@ local function agregarAlMenu(root, qid)
 	-- 1.2.7: una gris que vale la pena, dicho en el menú.
 	local vale = M.GrisValiosa and M.GrisValiosa(qid)
 	if vale and root.CreateTitle then root:CreateTitle(vale) end
+	-- 1.4.2: la flecha a esa misión (su objetivo más cerca, o quien la recibe) (IrMision.lua).
+	local Ir = M.IrMision
+	if Ir and Ir.Encendido() then
+		local Cp = M.Motor("Compat")
+		local lista = Cp and Cp.IsQuestReadyForTurnIn and Cp.IsQuestReadyForTurnIn(qid)
+		root:CreateButton(lista and L["Alfa: llévame a entregarla"] or L["Alfa: llévame"], function() Ir.Ir(qid) end)
+	end
 	if Cr.EnPlan(qid) then
 		root:CreateButton(L["Alfa: quitar de Cerrar mis misiones"], function() R.QuitarMision(qid) end)
 	else

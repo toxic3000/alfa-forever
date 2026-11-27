@@ -46,7 +46,12 @@ local function infoFila(self)
 	end
 	local t = r.tipo
 	local lineas = {}
-	if t.porSeg then
+	-- 1.4.2: cortes y limpiezas son veces; el daño recibido, sin «por segundo».
+	if t.cuenta then
+		lineas[#lineas + 1] = format(L["%s: %s veces"], t.texto, D.Numero(x.valor))
+	elseif t.recibido then
+		lineas[#lineas + 1] = format("%s: %s", t.texto, D.Numero(x.valor))
+	elseif t.porSeg then
 		lineas[#lineas + 1] = format("%s: %s", t.texto, D.Numero(x.porSeg))
 		lineas[#lineas + 1] = format("%s: %s", t.curacion and L["Curación"] or L["Daño"], D.Numero(x.valor))
 	else
@@ -121,7 +126,8 @@ function M.PintarFila(f, x, r)
 	local principal, otro = x.valor, x.porSeg
 	if t.porSeg then principal, otro = x.porSeg, x.valor end
 	f.Valor:SetText(D.Numero(principal))
-	if f.alfaCompacta then f.Otro:SetText("") else f.Otro:SetText(D.Numero(otro)) end
+	-- 1.4.2: lo que se cuenta en veces o lo que recibes no lleva la otra cifra.
+	if f.alfaCompacta or t.cuenta or t.recibido then f.Otro:SetText("") else f.Otro:SetText(D.Numero(otro)) end
 	f.Yo:SetShown(x.yo and true or false)
 	K.ColorTexto(f.Pos, x.aparte and "acento" or "textoSuave")
 end
@@ -184,6 +190,9 @@ local function raton(on)
 	if not v then return end
 	on = on and true or false
 	v:EnableMouse(on)
+	-- 1.4.2: la rueda (cambiar lo que mide) también se suelta en combate: la
+	-- cámara es del jugador.
+	if v.EnableMouseWheel then v:EnableMouseWheel(on) end
 	v.Cerrar:EnableMouse(on)
 	for _, f in ipairs(v.filas) do f:EnableMouse(on) end
 	if v.Vacio.Boton then v.Vacio.Boton:EnableMouse(on) end
@@ -276,12 +285,21 @@ local function crear()
 		if peleando() then return end
 		brillar()
 		if M.Desbloqueado() then return end
-		K.MostrarInfo(self, L["Medidor de daño"], L["Arrástralo para moverlo. Clic en una barra: el detalle de esa persona. Clic derecho: qué se mide, anunciar y más."])
+		K.MostrarInfo(self, L["Medidor de daño"], L["Arrástralo para moverlo. Clic en una barra: el detalle de esa persona. Rueda del ratón: cambia lo que mide. Clic derecho: anunciar y más."])
 	end)
 	v:SetScript("OnLeave", function(self)
 		K.OcultarInfo(self)
 		pedirAtenuar()
 	end)
+	-- 1.4.2: la rueda sobre la gráfica pasa a lo siguiente que mide (DPS,
+	-- daño, curación, cortes...), sin abrir el menú. Solo fuera de combate:
+	-- raton() la suelta al empezar a pelear. SetScript la prende: se apaga
+	-- aquí mismo y raton() decide.
+	v:SetScript("OnMouseWheel", function(_, delta)
+		if peleando() or M.Desbloqueado() then return end
+		V.CambiarTipo(delta and delta < 0 and 1 or -1)
+	end)
+	if v.EnableMouseWheel then v:EnableMouseWheel(false) end
 	v:SetScript("OnHide", function()
 		N.Quitar("combate.medidorAtenuar")
 		if M.Detalle then M.Detalle.Cerrar() end
@@ -467,6 +485,19 @@ function V.Cerrar()
 	M.Avisar()
 end
 
+-- 1.4.2: lo siguiente (paso = 1) o lo de antes (paso = -1) que mide, en el
+-- orden de D.TIPOS, dando la vuelta. -> la clave nueva
+function V.CambiarTipo(paso)
+	local lista = D.TIPOS
+	local actual = M.Opt("tipo")
+	local i = 1
+	for k, t in ipairs(lista) do if t.clave == actual then i = k break end end
+	i = ((i - 1 + (paso or 1)) % #lista) + 1
+	local nuevo = lista[i].clave
+	M.SetOpt("tipo", nuevo)
+	return nuevo
+end
+
 -- /alfa dps y el menú de Alfa: a la vista o fuera.
 function V.Alternar()
 	if V.Abierta() then
@@ -504,6 +535,10 @@ function V.Opciones()
 	local hay = M.Resumen and M.Resumen.Ultima() ~= nil
 	o[#o + 1] = { valor = "pelea", texto = L["Ver mi última pelea"], icono = "ic-lista", apagada = not hay,
 		motivo = not hay and L["Todavía no hay una pelea que resumir."] or nil }
+	-- 1.4.2: lo que te tumbó la última vez (Caida.lua).
+	local cayo = M.Caida and M.Caida.Ultima() ~= nil
+	o[#o + 1] = { valor = "caida", texto = L["Ver lo que me tumbó"], icono = "ic-alerta", apagada = not cayo,
+		motivo = not cayo and L["Todavía no has caído en una pelea: aquí saldrá lo que te tumbó."] or nil }
 	-- 1.4.0 (42): su tamaño, por personaje.
 	local tam = V.Tamano()
 	for _, t in ipairs(V.TAMANOS) do
@@ -545,6 +580,7 @@ function V.Elegir(valor)
 	elseif valor == "anunciar" then D.Anunciar(M.Opt("sesion"), M.Opt("tipo"))
 	elseif valor == "cero" then D.PedirReiniciar()
 	elseif valor == "pelea" then if M.Resumen then M.Resumen.VerDeNuevo() end
+	elseif valor == "caida" then if M.Caida then M.Caida.Ver(true) end
 	elseif valor == "ajustes" then N.Abrir(M.ID)
 	elseif valor == "esconder" then V.Cerrar() end
 end

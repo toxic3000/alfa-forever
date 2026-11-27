@@ -798,6 +798,108 @@ end
 -- 6. Cómo decide Alfa y los ajustes
 ---------------------------------------------------------------------------
 
+-- 1.4.2: tus subastas (Subastas.lua): lo que tienes a la venta en toda tu cuenta.
+local MAX_SUBASTAS = 6
+local function bloqueSubastas(padre)
+	local b = K.Pila(padre, { espacio = ESP.m })
+	b.Seccion = b:Agregar(K.Seccion(b, L["Tus subastas"]))
+	b.Tarjeta = b:Agregar(K.Tarjeta(b, { variante = "estado" }))
+	b.Panel = b:Agregar(panelDeFilas(b), { espacio = ESP.s })
+	function b:Llenar()
+		local Su = M.Subastas
+		local r = Su.Resumen()
+		local todas = Su.Todas()
+		local d = { icono = "ic-oro", lineas = 3 }
+		if #todas == 0 then
+			d.titulo, d.tono = L["Nada a la venta"], "neutro"
+			d.texto = L["Cuando abras la casa de subastas, Alfa recordará lo que tienes a la venta, lo que ya se vendió y cuándo vence, en todos tus personajes."]
+			d.estado = { texto = L["Vacía"], tono = "neutro" }
+		else
+			d.titulo = format(L["%s a la venta, por unos %s"], N.Plural(r.activas, L["%d cosa"], L["%d cosas"]), M.Dinero(r.valor))
+			d.tono = r.vendidas > 0 and "exito" or "acento"
+			local partes = {}
+			if r.vendidas > 0 then partes[#partes + 1] = format(L["Ya se vendieron %d (%s): el dinero te espera en el buzón."], r.vendidas, M.Dinero(r.vendido)) end
+			if r.vencidas > 0 then partes[#partes + 1] = format(L["%d vencieron y vuelven por el buzón."], r.vencidas) end
+			if r.proxima then partes[#partes + 1] = format(L["La primera %s."], Su.Vence(r.proxima)) end
+			if r.personajes > 1 then partes[#partes + 1] = format(L["De %d de tus personajes."], r.personajes) end
+			d.texto = table.concat(partes, " ")
+			d.estado = r.vendidas > 0 and { texto = L["Vendidas"], tono = "exito" } or { texto = L["En venta"], tono = "acento" }
+		end
+		self.Seccion:Set(L["Tus subastas"], { cuenta = #todas > 0 and #todas or nil })
+		self.Tarjeta:Set(d)
+		local filas = {}
+		local ahora = M.Ahora()
+		for i = 1, min(#todas, MAX_SUBASTAS) do
+			local o = todas[i]
+			local quien = o.propio and "" or (tostring(o.nombre) .. DOT)
+			local vencida = o.v ~= 1 and o.fin and o.fin <= ahora
+			filas[i] = {
+				id = o.id, cantidad = o.q, nombre = o.n or L["Objeto"],
+				detalle = quien .. (o.v == 1 and L["Vendida: el dinero está en tu buzón"] or Su.Vence(o.fin)),
+				chip = o.v == 1 and L["Vendida"] or (vencida and L["Venció"] or L["En venta"]),
+				tono = o.v == 1 and "exito" or (vencida and "aviso" or "neutro"),
+				valor = o.u and M.Dinero(o.u * (o.q or 1)) or "—",
+			}
+		end
+		self.Panel:Llenar(filas)
+		K.Mostrar(self.Panel, #filas > 0)
+		K.Mostrar(self, M.Ajuste("subastas") ~= false)
+	end
+	return b
+end
+
+-- 1.4.2: «Siempre a la mano» (Reponer.lua): lo que el comerciante te repone con un clic.
+local CANTIDADES = { 5, 10, 20, 40, 60, 100, 200 }
+local function menuReponer(dueno, e)
+	local ops = {}
+	for _, n in ipairs(CANTIDADES) do ops[#ops + 1] = { valor = n, texto = format(L["Hasta %d"], n) } end
+	ops[#ops + 1] = { valor = 0, texto = L["Quitar de la lista"], icono = "ic-cerrar" }
+	K.Menu(dueno, ops, e.quieres, function(n) M.Reponer.Poner(e.id, n) end, 220)
+end
+
+local function bloqueReponer(padre)
+	local b = K.Pila(padre, { espacio = ESP.m })
+	b.Seccion = b:Agregar(K.Seccion(b, L["Siempre a la mano"]))
+	b.Tarjeta = b:Agregar(K.Tarjeta(b, { variante = "estado" }))
+	b.Panel = b:Agregar(panelDeFilas(b), { espacio = ESP.s })
+	function b:Llenar()
+		local lista = M.Reponer.Lista()
+		local d = { icono = "ic-comercio", lineas = 3 }
+		local faltan = 0
+		for _, e in ipairs(lista) do if e.tienes < e.quieres then faltan = faltan + 1 end end
+		if #lista == 0 then
+			d.titulo, d.tono = L["Nada «siempre a la mano» todavía"], "neutro"
+			d.texto = L["Si compras lo mismo en dos visitas, te pregunto si quieres tenerlo siempre; luego cada comerciante que lo venda te ofrece reponerlo con un clic. También: /alfa comercio reponer <objeto> <cantidad>."]
+			d.estado = { texto = L["Vacía"], tono = "neutro" }
+		elseif faltan > 0 then
+			d.titulo, d.tono = N.Plural(faltan, L["Te falta reponer %d cosa"], L["Te falta reponer %d cosas"]), "acento"
+			d.texto = L["El próximo comerciante que lo venda te lo ofrece con un clic. Clic en una fila: cambiar la cantidad o quitarla."]
+			d.estado = { texto = L["Por reponer"], tono = "acento" }
+		else
+			d.titulo, d.tono = L["Llevas todo lo de siempre"], "exito"
+			d.texto = L["Clic en una fila: cambiar la cantidad o quitarla."]
+			d.estado = { texto = L["Al día"], tono = "exito" }
+		end
+		self.Seccion:Set(L["Siempre a la mano"], { cuenta = #lista > 0 and #lista or nil })
+		self.Tarjeta:Set(d)
+		local filas = {}
+		for i, e in ipairs(lista) do
+			if i > MAX_MATERIALES then break end
+			local listo = e.tienes >= e.quieres
+			filas[i] = {
+				id = e.id, cantidad = e.tienes, nombre = tostring(e.nombre),
+				detalle = format(L["Llevas %d de %d"], e.tienes, e.quieres),
+				chip = listo and L["Al día"] or format(L["Faltan %d"], e.quieres - e.tienes), tono = listo and "exito" or "acento",
+				valor = "", alClic = function(fila) menuReponer(fila, e) end,
+			}
+		end
+		self.Panel:Llenar(filas)
+		K.Mostrar(self.Panel, #filas > 0)
+		K.Mostrar(self, M.Ajuste("reponer") ~= false)
+	end
+	return b
+end
+
 local function bloqueComo(padre)
 	local b = K.Pila(padre, { espacio = ESP.m })
 	b.Seccion = b:Agregar(K.Seccion(b, L["Cómo decide Alfa"]))
@@ -838,6 +940,16 @@ local function grupos(padre)
 		texto = L["Si le vendes al comerciante algo azul o mejor, un aviso con «Recomprar» por si fue sin querer."] })
 	juego:Fila({ titulo = L["Alt+clic compra una pila"], control = function(f) return K.Interruptor(f, { clave = ruta("pila") }) end,
 		texto = L["En el comerciante, Alt+clic sobre algo compra una pila entera (lo que te alcance y lo que tenga)."] })
+	-- 1.4.2: Reponer.lua, Reventa.lua y Subastas.lua
+	juego:Fila({ titulo = L["Reponer lo de siempre en el comerciante"], control = function(f) return K.Interruptor(f, { clave = ruta("reponer") }) end,
+		texto = L["Al hablar con un comerciante que vende lo que tienes «siempre a la mano», un aviso con lo que falta y «Comprar». La compra es tu clic."] })
+	juego:Fila({ titulo = L["También lo que falta de tu lista de compras"], hija = true, activa = function() return M.Ajuste("reponer") ~= false end,
+		control = function(f) return K.Interruptor(f, { clave = ruta("reponerLista") }) end,
+		texto = L["Si ese comerciante vende un material que te falta de tu lista (el hilo, el fundente), también te lo ofrece."] })
+	juego:Fila({ titulo = L["Avisar si el comerciante vende barato"], control = function(f) return K.Interruptor(f, { clave = ruta("reventa") }) end,
+		texto = L["Si un comerciante vende algo que en la subasta vale mucho más (ya con la comisión), un aviso lo dice. La compra siempre es tuya."] })
+	juego:Fila({ titulo = L["Recordar tus subastas"], control = function(f) return K.Interruptor(f, { clave = ruta("subastas") }) end,
+		texto = L["Lo que tienes a la venta, lo vendido y cuándo vence, en esta página y en el cuadro de cada objeto. Se lee al abrir la casa de subastas."] })
 	juego:Fila({ titulo = L["Mandar a tu alt desde el buzón"], control = function(f) return K.Interruptor(f, { clave = ruta("buzonAlt") }) end,
 		texto = L["En la pestaña de enviar, un botón por cada lista: pone el nombre y adjunta lo de esa lista. El clic en «Enviar» es tuyo. Las listas: /alfa comercio alt."] })
 	juego:Fila({ titulo = L["Ayuda al subastar"], control = function(f) return K.Interruptor(f, { clave = ruta("vender") }) end,
@@ -914,8 +1026,10 @@ local function construir(view)
 	ui.lista = t:AgregarBloque(bloqueLista(ui, t.Extra))
 	ui.precios = t:AgregarBloque(bloquePrecios(t.Extra))
 	ui.compras = t:AgregarBloque(bloqueCompras(t.Extra))
+	ui.reponer = t:AgregarBloque(bloqueReponer(t.Extra)) -- 1.4.2
 	ui.recetas = t:AgregarBloque(bloqueRecetas(t.Extra))
 	ui.oficios = t:AgregarBloque(bloqueOficios(t.Extra))
+	ui.subastas = t:AgregarBloque(bloqueSubastas(t.Extra)) -- 1.4.2
 	ui.semana = t:AgregarBloque(bloqueSemana(t.Extra))
 	ui.como = t:AgregarBloque(bloqueComo(t.Extra))
 	ui.ajustes = grupos(t.Extra)
@@ -927,8 +1041,10 @@ local function construir(view)
 		ui.lista:Llenar(datos, tot)
 		ui.precios:Llenar(tot)
 		ui.compras:Llenar()
+		ui.reponer:Llenar()
 		ui.recetas:Llenar()
 		ui.oficios:Llenar()
+		ui.subastas:Llenar()
 		ui.semana:Llenar()
 		ui.como:Llenar()
 		for _, g in ipairs(ui.ajustes) do g:Refrescar() end
@@ -982,6 +1098,19 @@ local CONTROLES = {
 	{ kind = "toggle", key = ruta("pila"), label = L["Alt+clic compra una pila"],
 		help = L["En el comerciante, Alt+clic sobre algo compra una pila entera (lo que te alcance y lo que tenga)."],
 		search = "buy stack, alt click, merchant, comprar pila, comerciante" },
+	-- 1.4.2
+	{ kind = "toggle", key = ruta("reponer"), label = L["Reponer lo de siempre en el comerciante"],
+		help = L["Al hablar con un comerciante que vende lo que tienes «siempre a la mano», un aviso con lo que falta y «Comprar». La compra es tu clic."],
+		search = "restock, reagents, ammo, water, reponer, siempre a la mano, comprar" },
+	{ kind = "toggle", key = ruta("reponerLista"), label = L["También lo que falta de tu lista de compras"], child = true,
+		help = L["Si ese comerciante vende un material que te falta de tu lista (el hilo, el fundente), también te lo ofrece."],
+		search = "shopping list, vendor, thread, flux, lista de compras" },
+	{ kind = "toggle", key = ruta("reventa"), label = L["Avisar si el comerciante vende barato"],
+		help = L["Si un comerciante vende algo que en la subasta vale mucho más (ya con la comisión), un aviso lo dice. La compra siempre es tuya."],
+		search = "vendor flip, cheap vendor, limited recipe, reventa, barato" },
+	{ kind = "toggle", key = ruta("subastas"), label = L["Recordar tus subastas"],
+		help = L["Lo que tienes a la venta, lo vendido y cuándo vence, en esta página y en el cuadro de cada objeto. Se lee al abrir la casa de subastas."],
+		search = "my auctions, sold, expired, mis subastas, vendidas" },
 	{ kind = "toggle", key = ruta("buzonAlt"), label = L["Mandar a tu alt desde el buzón"],
 		help = L["En la pestaña de enviar, un botón por cada lista: pone el nombre y adjunta lo de esa lista. El clic en «Enviar» es tuyo. Las listas: /alfa comercio alt."],
 		search = "mail alt, send to alt, mail lists, herbs to alchemist" },
@@ -1037,6 +1166,9 @@ N.Modulo({
 		semana = true, -- 1.4.0: tu semana en la subasta en esta página (Semana.lua)
 		recompra = true, -- 1.4.0 (diario): lo valioso que vendiste sin querer (Recompra.lua)
 		pila = true, -- 1.4.0 (diario): Alt+clic en el comerciante compra una pila (Pila.lua)
+		reponer = true, reponerLista = true, -- 1.4.2: «Siempre a la mano» (Reponer.lua)
+		reventa = true, -- 1.4.2: lo que el comerciante vende barato (Reventa.lua)
+		subastas = true, -- 1.4.2: tus subastas (Subastas.lua)
 	},
 	controles = CONTROLES,
 	construir = construir,
@@ -1062,6 +1194,11 @@ local function comando(resto)
 	end
 	if verbo == "gangas" or verbo == "deals" then
 		M.ImprimirGangas()
+		return
+	end
+	-- 1.4.2: «Siempre a la mano» (Reponer.lua).
+	if verbo == "reponer" or verbo == "restock" then
+		M.Reponer.Comando(arg)
 		return
 	end
 	-- 1.4.0: tu semana en la subasta (Semana.lua).

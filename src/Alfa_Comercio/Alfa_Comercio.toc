@@ -29,5 +29,8 @@ RecetasZona.lua
 Vender.lua
 Recompra.lua
 Pila.lua
+Subastas.lua
+Reponer.lua
+Reventa.lua
 VentanaOficios.lua
 Pagina.lua

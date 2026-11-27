@@ -4,6 +4,8 @@
 local ADDON, M = ...
 
 M.EN = {
+	-- 1.4.2 (economía)
+	["%d en la subasta"] = "%d at the auction house",
 	-- 1.4.0 (diario): mejoras del día a día
 	["%d cosa"] = "%d thing",
 	["%d cosas"] = "%d things",

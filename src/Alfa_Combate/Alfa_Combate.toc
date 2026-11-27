@@ -24,6 +24,7 @@ Efectos.lua
 Corte.lua
 Amenaza.lua
 Resumen.lua
+Caida.lua
 Panel.lua
 Medidor.lua
 Ventana.lua

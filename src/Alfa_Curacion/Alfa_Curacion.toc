@@ -19,5 +19,6 @@ Color.lua
 Peligro.lua
 Mana.lua
 Listos.lua
+Revivir.lua
 Pagina.lua
 Asistente.lua

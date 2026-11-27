@@ -277,6 +277,9 @@ local function mostrarLinea(key, jefe)
 	local nombre = type(jefe.nombre) == "string" and jefe.nombre or L["Jefe"]
 	local consejo = Ev.LoMasImportante(jefe, papel) or L["Sin consejos para este jefe: vayan con calma y escuchen al tanque."]
 	local texto = K.Tenir("acento", nombre) .. "  \194\183  " .. consejo
+	-- 1.4.2: si ya cayeron ante él en esta vuelta, en qué intento van (Intentos.lua).
+	local intento = Ev.Intento(key, jefe)
+	if intento then texto = K.Tenir("acento", nombre) .. "  \194\183  " .. K.Tenir("aviso", format(L["Intento %d"], intento)) .. "  \194\183  " .. consejo end
 	K.Escribir(tl.Texto, texto)
 	local ancho = math.floor(K.AnchoTexto(tl.Texto) + 0.5)
 	local w = max(LINEA_MIN, min(LINEA_MAX, ancho + 28 + 10))
@@ -285,6 +288,15 @@ local function mostrarLinea(key, jefe)
 	tl:Show()
 	if t then t:Hide() end
 	return true
+end
+
+-- 1.4.2: el número del intento que viene (2, 3...) si ya cayeron ante él en esta vuelta, o nil.
+function Ev.Intento(key, jefe)
+	local Iv = M.Intentos
+	if not (Iv and type(jefe) == "table" and N.Get(ID, "intentos") ~= false) then return nil end
+	local ok, n = pcall(Iv.EnVuelta, key, jefe.id)
+	if ok and type(n) == "number" and n > 0 then return n + 1 end
+	return nil
 end
 
 function Ev.Mostrar(key, jefe)
@@ -317,6 +329,9 @@ function Ev.Mostrar(key, jefe)
 		y = y + K.Parrafo(fs, tw, 3) + 4
 		fs:Show()
 	end
+	-- 1.4.2: en qué intento van, si ya cayeron ante él en esta vuelta (Intentos.lua).
+	local intento = Ev.Intento(key, jefe)
+	if intento then poner(format(L["Intento %d: repasen esto antes de jalar."], intento), "aviso") end
 	local consejos = Ev.Consejos(jefe, papel)
 	for _, c in ipairs(consejos) do poner("- " .. c, "texto") end
 	if #consejos == 0 then poner(L["Sin consejos para este jefe: vayan con calma y escuchen al tanque."], "textoSuave") end

@@ -365,3 +365,15 @@ M.EN = {
 	["En banda"] = "In a raid",
 }
 M.EN["Restablecer"] = "Reset" -- 1.4.1
+-- 1.4.2 (agente combate)
+M.EN["Faltan por revivir"] = "Still to resurrect"
+M.EN["Si sabes revivir, al terminar una pelea en grupo: quién quedó caído, con un botón para revivir a cada uno. El clic es tuyo."] = "If you can resurrect, after a group fight: who's still down, with a button to resurrect each one. The click is yours."
+M.EN["tu compañero"] = "your companion"
+M.EN["Revivir a %s"] = "Resurrect %s"
+M.EN["%s quedó caído"] = "%s is down"
+M.EN["Faltan por revivir: %d"] = "Still to resurrect: %d"
+M.EN["Tu %s lo levanta."] = "Your %s brings them back."
+M.EN["%s. Tu %s los levanta."] = "%s. Your %s brings them back."
+M.EN["Renacer tiene una recarga larga: guárdalo para quien más falta hace."] = "Rebirth has a long cooldown: save it for whoever is needed most."
+M.EN["¿A quién me falta revivir?"] = "Who do I still need to resurrect?"
+M.EN["Si sabes revivir, al terminar una pelea en grupo Alfa te dice quién quedó caído, con un botón para revivir a cada uno. El clic es tuyo: Alfa nunca lanza nada solo."] = "If you can resurrect, after a group fight Alfa tells you who's still down, with a button to resurrect each one. The click is yours: Alfa never casts anything on its own."

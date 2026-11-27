@@ -3,6 +3,18 @@
 local ADDON, M = ...
 
 M.EN = {
+	-- 1.4.2 (economía)
+	["Aún no pescas aquí. Cuando saques algo, te digo qué pica y en qué proporción."] = "You haven't fished here yet. When you catch something, I'll tell you what bites and how often.",
+	["De tus %d capturas en %s. Cada una vale unos %s."] = "From your %d catches in %s. Each one is worth about %s.",
+	["Tus lugares que más dejan"] = "Your most profitable spots",
+	["%s c/u"] = "%s each",
+	["%d capturas tuyas ahí."] = "%d of your catches there.",
+	["Qué pica en %s"] = "What bites in %s",
+	["Qué pica aquí"] = "What bites here",
+	["Sin capturas aquí"] = "No catches here",
+	["Lo que sale aquí según tus capturas, lo que vale cada una y tus lugares que más dejan."] = "What comes out here according to your catches, what each is worth and your most profitable spots.",
+	["En %s (%d capturas, unos %s cada una): %s."] = "In %s (%d catches, about %s each): %s.",
+	["Tus lugares que más dejan: %s."] = "Your most profitable spots: %s.",
 	-- 1.3.9 (avisos): el reporte, el Centro de avisos, Lya y los errores con qué hacer
 	["No pude armar la guía. Prueba otra vez en un momento; si sigue, cuéntanos con /alfa reportar."] = "I couldn't build the guide. Try again in a moment; if it keeps happening, tell us with /alfa reportar.",
 	-- Teclas, chat y comandos

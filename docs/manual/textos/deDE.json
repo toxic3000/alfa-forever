@@ -996,6 +996,7 @@
               {"cmd": "/alfa rendimiento", "texto": "Wie viel Speicher und Prozessor jeder Teil von Alfa braucht (und gibt nicht mehr benötigten Speicher frei)."},
               {"cmd": "/alfa diagnostico", "texto": "Alfa prüfen: Konflikte mit anderen Addons, abgeschaltete Teile und seltsame Einstellungen."},
               {"cmd": "/alfa raton", "texto": "Wenn du im Spiel etwas nicht anklicken oder die Kamera nicht drehen kannst: zeigt, was unter deiner Maus liegt, und entfernt, was von Alfa stört."},
+              {"cmd": "/alfa ficha", "texto": "Dein Steckbrief: dein Charakter in 3D, deine Werte, deine Berufe und alle deine Charaktere (mit «Foto machen»)."},
               {"cmd": "/alfa reportar", "texto": "Einen Fehler, eine Verbesserung oder einen Kommentar melden, mit den Fehlern, die Alfa abgefangen hat."}
             ]}
           ]
@@ -1087,7 +1088,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "1.4.1: Die Maus gehört dir", "items": ["**Klicks sind zurück:** Gegner in der Ferne anklicken, Kamera drehen, Berufsreiter nutzen und Lautstärke ändern geht wieder.", "**`/alfa raton`:** zeigt, was unter deiner Maus liegt, und entfernt sofort, was von Alfa stört.", "**Umschalt + Ziehen:** ein grüner Rahmen zeigt, was sich bewegen lässt, und verschwindet beim Loslassen.", "**Stabiler:** eine Prüfung von ganz Alfa mit neuen Tests, die genau solche Fehler suchen."]}
+    "mapa": {"titulo": "1.4.2: dein Jäger-Steckbrief", "items": ["**Dein Steckbrief:** dein Charakter in 3D mit Gold, Haltbarkeit, Taschen, Spielzeit und Berufen (`/alfa ficha`).", "**Deine Charaktere:** Stufe, Gold, Berufe und Berufs-Abklingzeiten deines ganzen Kontos.", "**Questobjekte markiert:** das Spiel zeigt, was du berühren musst, solange eine Quest es verlangt.", "**Heute passt alles:** die Werte der Titelseite passen immer in ihr Feld."]}
   },
   "contraportada": {
     "titulo": "Komm ins Rudel",

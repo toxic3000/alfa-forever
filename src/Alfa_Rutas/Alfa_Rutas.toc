@@ -43,7 +43,13 @@ Grifo.lua
 Entrenador.lua
 Foco.lua
 ObjetoMision.lua
+Senalar.lua
 Viaje.lua
+IrMision.lua
+ListaAviso.lua
+AlSubir.lua
+Pendientes.lua
+Flecha.lua
 Barcos.lua
 MapaGrupo.lua
 RutaGrupo.lua

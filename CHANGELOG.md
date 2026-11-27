@@ -1,5 +1,117 @@
 # Cambios de Alfa
 
+## 1.4.2 — Tu ficha de cazador (27/11/2026)
+
+Tu personaje en 3D con todo de un vistazo para presumirlo, la manada de tu cuenta junta, los objetos de misión señalados, el mapa limpio de un clic, 40 mejoras más y la portada de Hoy que ya no deja nada fuera de su recuadro.
+
+**Español**
+
+*Lo nuevo*
+- **Tu ficha** (`/alfa ficha` o un clic en el lobo de la portada de Hoy): tu personaje en 3D sobre la noche de Alfa (arrástralo para girarlo), tu nombre en el color de tu clase, nivel, raza, hermandad y zona; tu experiencia con lo descansado; tu oro, la durabilidad de tu equipo, el espacio en tus bolsas y tu tiempo jugado; tus oficios con su barra; y «Lo que sigue», con un botón para cada cosa. «Tomar foto» deja solo tu ficha a la vista y saca la captura para presumirla.
+- **Tus personajes:** en la misma ficha, cada personaje de tu cuenta que ya entró con Alfa, con su nivel, su oro, sus oficios, lo descansado y cuándo lo viste; arriba, el oro de todos juntos.
+- **Recargas de oficio:** transmutar, la tela lunar y el salero de cada personaje: cuál ya se puede usar y cuánto le falta a las demás.
+- **Los objetos de tus misiones, señalados:** mientras una misión te pide tocar algo (unas cajas, una planta), el juego marca con su ícono el objeto que tienes enfrente y tu tecla de interactuar lo toma. Al terminar la misión, tu configuración vuelve como estaba (Ajustes > Ruta).
+- **Limpiar el mapa con un clic:** en el mapa del juego (M), junto a la lupa, «Limpiar mapa» esconde los íconos de Alfa que no son esenciales; «Ver todo» los devuelve como estaban.
+
+*Tus misiones y la flecha*
+- Clic derecho en una misión de tu registro: «Alfa: llévame» pone la flecha en lo que te falta, o con quien la recibe si ya está lista.
+- «La misión más cerca»: de todo tu registro, la flecha va a lo más cercano por hacer o por entregar (tecla, `/alfa mision`, el menú del rastreador y el de la flecha).
+- «¡Lista para entregar!»: al terminar una misión que tu guía no entrega, un aviso dice con quién se entrega y te lleva de un clic.
+- Al subir de nivel sin guía, Alfa te dice qué misiones se abren cerca y la flecha te lleva con quien la da.
+- Al volver a una zona con misiones a medias: «Tienes 3 misiones sin terminar aquí», con «Llévame a la más cercana».
+- Clic derecho en la flecha: un menú con todo lo de la flecha (otro lugar, volver a la guía, Llévame a…, buscar cerca, esconderla…).
+- «Llévame a…» recuerda tus últimos destinos y los pone arriba; escribe y Enter te lleva al primero.
+- Teclas nuevas: La misión más cerca, Vuelta a entregar y Cerrar mis misiones.
+- Tu viaje sigue después de /reload: la flecha vuelve sola a tu misión o a tu destino.
+
+*Tu gente*
+- Cuando un amigo o alguien de tu hermandad se conecta, tu chat también dice su clase, su nivel, su zona y tu nota, con «[Invitar]» a un clic.
+- Invitar a quien te pide «inv» (apagado de fábrica): si un amigo o alguien de tu hermandad te susurra solo «inv», Alfa lo invita; nunca le contesta nada.
+- Lo que te escribieron mientras peleabas: al terminar la pelea (o al volver de ausente), un aviso te dice quién te susurró y qué, con «Responder».
+- En el chat, la flecha hacia arriba trae lo último que escribiste sin Alt, y las de los lados ya no giran a tu personaje (apagado de fábrica).
+- Clic derecho en un jugador > «Copiar el nombre», con todo y acentos.
+- El cuadro de información dice «Tu amigo» con tu nota, o si es tu amigo de Battle.net.
+- «Avisarme cuando se conecte»: clic derecho en un amigo o alguien de tu hermandad (o `/alfa avisame`), y al entrar te aviso con «Susurrar» e «Invitar».
+- Con quién cazaste (`/alfa companeros`): la gente de tus últimos grupos, con su clase, nivel y dónde cazaron, para invitarla otra vez.
+- Cuando te invita alguien con quien ya cazaste, un aviso te recuerda cuándo y dónde.
+
+*Combate, curación y mazmorras*
+- «¿Qué me tumbó?»: al caer, el golpe final, lo que más te pegó y de quién, y cuánto se podía evitar (`/alfa combate caida`).
+- El medidor también muestra daño recibido, daño evitable, cortes y limpiezas; la rueda del ratón sobre el medidor cambia lo que mide.
+- «Faltan por revivir»: si sabes revivir, al terminar una pelea en grupo te dice quién quedó caído, con un botón por cada uno (el clic es tuyo).
+- Alfa cuenta los intentos contra cada jefe: si caen, en qué intento van y lo que más importa para tu papel; al vencerlo, en qué intento fue. La tarjeta del jefe en vivo también lo dice.
+- La tarjeta de tu pelea dice cuántos hechizos cortaste, cuántos perjuicios quitaste, el daño evitable y cómo te fue contra la anterior; ya no se va mientras tienes el ratón encima.
+- `/alfa combate` con una palabra que no existe te dice cuáles hay.
+
+*Comercio, recolección y pesca*
+- «Siempre a la mano»: elige lo que quieres llevar siempre (agua, flechas, hilo) y cuánto; el comerciante que lo venda te lo repone con «Comprar». Si compras lo mismo dos veces, Alfa te pregunta una vez. Si vende un material de tu lista de compras, sale en el mismo aviso.
+- Tus subastas: lo que tienes a la venta, lo vendido y cuándo vence, en todos tus personajes (Comercio > Tus subastas); al abrir la subasta, un aviso de lo vendido.
+- Al subastar, «La última vez lo pusiste a…»; el cuadro de cada objeto cuenta también lo que tienes en la subasta.
+- Gangas del comerciante: si vende algo que en la subasta vale mucho más (ya con la comisión), un aviso lo dice.
+- «Subir Minería» (o Herboristería): te lleva a la mejor zona con lo que aún te da puntos, con su ruta.
+- Lo recolectado hace poco se ve tenue en el mapa y el minimapa; Mayús+clic en un pin arma la ruta por todos los de ese recurso en la zona.
+- «Qué pica aquí»: en el clic derecho de la barra de pesca, lo que sale donde pescas según tus capturas, lo que vale y tus mejores lugares.
+
+*Alfa limpio y en regla*
+- Revisamos todo lo que Alfa toma de otros proyectos: cada pieza tiene licencia libre, su aviso viaja en el paquete y su crédito está en «Acerca de» > Créditos y licencias. De los addons que nos inspiran tomamos solo ideas; el código, el arte y los textos son de La Jauría.
+
+*Arreglos de lo que viste en el juego*
+- La portada de Hoy: «1 h 48 min» (y cualquier dato largo) ya no se sale de su recuadro; los recuadros crecen lo necesario, todos iguales y alineados, y si aun así no cabe, la letra baja un poco.
+
+**English**
+
+*What's new*
+- **Your card** (`/alfa ficha` or a click on the wolf on Today's cover): your character in 3D on Alfa's night (drag to rotate it), your name in your class color, level, race, guild and zone; your experience with your rested bonus; your gold, your gear's durability, your bag space and your time played; your professions with their bars; and "What's next", with a button for each. "Take a photo" leaves only your card on screen and takes the screenshot so you can show it off.
+- **Your characters:** on the same card, every character on your account that has logged in with Alfa, with their level, gold, professions, rested bonus and when you last saw them; at the top, everyone's gold together.
+- **Profession cooldowns:** transmute, mooncloth and the salt shaker for each character: which one is ready and how long the others have left.
+- **Your quest objects, pointed out:** while a quest asks you to touch something (some crates, a plant), the game marks the object in front of you with its icon and your interact key takes it. When the quest is done, your settings go back to how they were (Settings > Route).
+- **Clean map in one click:** on the game map (M), next to the magnifier, "Clean map" hides Alfa's non-essential icons; "Show all" brings them back as they were.
+
+*Your quests and the arrow*
+- Right-click a quest in your log: "Alfa: take me there" points the arrow at what you still need, or at whoever takes it if it's ready.
+- "Nearest quest": the arrow goes to the closest thing to do or turn in across your whole log (keybind, `/alfa mision`, the tracker's and the arrow's menus).
+- "Ready to turn in!": when you finish a quest your guide won't turn in, a notice says who takes it and gets you there in one click.
+- On level up without a guide, Alfa tells you which quests open nearby and the arrow takes you to the giver.
+- Back in a zone with half-done quests: "You have 3 unfinished quests here", with "Take me to the nearest".
+- Right-click the arrow: a menu with everything arrow-related (another spot, back to the guide, Take me to…, search nearby, hide it…).
+- "Take me to…" remembers your latest destinations and puts them on top; type and press Enter to go to the first match.
+- New keybinds: Nearest quest, Turn-in run and Close out my quests.
+- Your trip survives /reload: the arrow returns to your quest or destination on its own.
+
+*Your people*
+- When a friend or guild member logs in, your chat also shows their class, level, zone and your note, with a one-click "[Invite]".
+- Invite whoever asks "inv" (off by default): if a friend or guild member whispers you just "inv", Alfa invites them; it never replies.
+- What people wrote while you were fighting: after the fight (or when you're back from away), a notice says who whispered and what, with "Reply".
+- In chat, the up arrow brings back what you last wrote without Alt, and the side arrows no longer turn your character (off by default).
+- Right-click a player > "Copy name", accents and all.
+- The tooltip says "Your friend" with your note, or whether they're a Battle.net friend.
+- "Tell me when they log in": right-click a friend or guild member (or `/alfa avisame`), and when they log in you get a notice with "Whisper" and "Invite".
+- Who you hunted with (`/alfa companeros`): the people from your latest groups, with class, level and where you hunted, to invite them again.
+- When someone you've hunted with invites you, a notice reminds you when and where.
+
+*Combat, healing and dungeons*
+- "What took me down?": when you die, the killing blow, what hit you hardest and from whom, and how much could have been avoided (`/alfa combate caida`).
+- The meter also shows damage taken, avoidable damage, interrupts and dispels; the mouse wheel over the meter changes what it measures.
+- "Still to resurrect": if you can resurrect, after a group fight Alfa tells you who's still down, with a button for each (the click is yours).
+- Alfa counts your attempts on each boss: on a wipe, which attempt you're on and what matters most for your role; on a kill, which attempt it was. The live boss card shows it too.
+- Your fight card shows interrupts, dispels, avoidable damage and how you did against your previous fight; it no longer disappears while your mouse is over it.
+- `/alfa combate` with an unknown word now lists the ones you can use.
+
+*Trade, gathering and fishing*
+- "Always on hand": pick what you always want to carry (water, arrows, thread) and how much; any vendor that sells it restocks it with "Buy". If you buy the same thing twice, Alfa asks you once. If the vendor sells a material from your shopping list, it shows up in the same notice.
+- Your auctions: what you have for sale, what sold and when it expires, on all your characters (Trade > Your auctions); when you open the auction house, a notice of what sold.
+- When auctioning, "Last time you listed it at…"; each item's tooltip also counts what you have at the auction house.
+- Vendor bargains: if a vendor sells something worth much more at the auction house (cut included), a notice says so.
+- "Level Mining" (or Herbalism): takes you to the best zone with what still gives you points, with its route.
+- What you gathered recently looks dim on the map and minimap; Shift+click a pin builds a route through all of that resource in the zone.
+- "What bites here": in the fishing bar's right-click, what comes out where you fish according to your catches, what it's worth and your best spots.
+
+*Alfa clean and by the rules*
+- We reviewed everything Alfa takes from other projects: every piece has a free license, its notice ships in the package and its credit is in "About" > Credits and licenses. From the addons that inspire us we take only ideas; the code, art and texts are La Jauría's own.
+
+*Fixes for what you saw in the game*
+- Today's cover: "1 h 48 min" (and any long value) no longer spills out of its box; the boxes grow as needed, all the same size and aligned, and if it still doesn't fit, the font goes down a little.
+
 ## 1.4.1 — El ratón es tuyo: clics, cámara, volumen, profesiones, tus misiones y tus materiales (25/11/2026)
 
 Un parche de arreglos tras jugar la 1.4.0: Alfa ya no se queda con tus clics en ninguna parte de la pantalla, y una revisión completa del código con pruebas nuevas que buscan este tipo de error en todo Alfa.

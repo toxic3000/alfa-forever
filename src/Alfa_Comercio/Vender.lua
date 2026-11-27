@@ -114,6 +114,8 @@ function Ve.Leer()
 	e.sugerido, e.fecha = sug, fecha
 	e.viejo = sug and M.Viejo(fecha) or false
 	e.historia, e.minimo, e.promedio, e.maximo = Ve.Historial(id)
+	-- 1.4.2: el último precio que le pusiste (Subastas.lua).
+	if M.Subastas then e.ultimo, e.ultimoT = M.Subastas.UltimoPrecio(id) end
 	-- Un precio para comparar: el sugerido o, sin él, el promedio de los días.
 	local ref = sug or e.promedio
 	local umbral = (tonumber(M.Ajuste("precioBajo")) or 30) / 100
@@ -145,6 +147,7 @@ local function crear()
 	panel.Valor = K.Texto(panel, "cifra", "texto")
 	panel.Detalle = K.Texto(panel, "nota", "textoSuave")
 	panel.Aviso = K.Texto(panel, "nota", "aviso")
+	panel.Ultima = K.Texto(panel, "nota", "textoSuave") -- 1.4.2
 	panel.Historia = K.Texto(panel, "pequeno", "textoTenue")
 	panel.Pie = K.Texto(panel, "pequeno", "textoTenue")
 	panel.barras = {}
@@ -182,6 +185,8 @@ local function pintar(e)
 		detalle = L["Aún no conozco su precio. Al buscarlo o escanear, Alfa lo aprende."]
 	end
 	poner(p.Detalle, detalle)
+	-- 1.4.2: «La última vez lo pusiste a 1o 20p c/u, hace 3 d.»
+	poner(p.Ultima, e.ultimo and format(L["La última vez lo pusiste a %s c/u, %s."], M.Dinero(e.ultimo), M.Hace(e.ultimoT)) or nil)
 	if e.bajo then
 		poner(p.Aviso, format(L["¡Ojo! Tu precio está %d %% por debajo de lo que vale."], floor(e.bajo * 100 + 0.5)))
 	else
@@ -227,7 +232,7 @@ end
 function Ve.Refrescar()
 	local e = Ve.Leer()
 	if not e then return ocultar() end
-	local clave = table.concat({ e.id, e.precio or 0, e.sugerido or 0, #(e.historia or {}), e.bajo and 1 or 0, M.version or 0 }, ":")
+	local clave = table.concat({ e.id, e.precio or 0, e.sugerido or 0, #(e.historia or {}), e.bajo and 1 or 0, M.version or 0, e.ultimo or 0 }, ":")
 	if estado and estado.clave == clave and panel and panel:IsShown() then return end
 	-- 1.3.8: un objeto con candado (Alfa_Bolsas, Candado.lua) en la subasta: un aviso.
 	if not (estado and estado.id == e.id) and AlfaBolsas and AlfaBolsas.AvisarCandado then

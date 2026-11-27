@@ -765,6 +765,25 @@ function K.AnchoTexto(fs)
 	return ceil(num(w))
 end
 
+-- 1.4.2 (Toxic: «el tiempo sale del recuadro»): que un texto de una línea
+-- quepa en `ancho`. Prueba los roles de la escala del Kit en orden (del más
+-- grande al más chico, p. ej. { "cifra", "titulo", "subtitulo" }) y se queda con
+-- el primero que cabe; si ni el más chico cabe, lo deja en ese con «…» al final
+-- (el texto completo en su cuadro de ayuda). -> el rol que quedó, true si cupo
+function K.Encajar(fs, ancho, roles)
+	ancho = max(1, floor(num(ancho, 1)))
+	roles = type(roles) == "table" and roles or { fs.alfaRol or "cuerpo" }
+	fs:SetWordWrap(false)
+	fs:SetWidth(0)
+	for _, rol in ipairs(roles) do
+		if fs.alfaRol ~= rol then K.Fuente(fs, rol) end
+		if K.AnchoTexto(fs) <= ancho then return rol, true end
+	end
+	-- (ni el más chico: se corta con «…» en vez de salirse)
+	fs:SetWidth(ancho)
+	return roles[#roles], false
+end
+
 function K.AltoTexto(fs)
 	if (fs:GetText() or "") == "" then return 0 end
 	return ceil(num(fs:GetStringHeight()))

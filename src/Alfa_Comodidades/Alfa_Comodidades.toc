@@ -25,4 +25,9 @@ Info.lua
 Recargas.lua
 Charla.lua
 Ids.lua
+Conexiones.lua
+Pedido.lua
+Pendientes.lua
+Flechas.lua
+CopiarNombre.lua
 Pagina.lua

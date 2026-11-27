@@ -81,6 +81,7 @@ local AJUSTES = {
 	avisoNuevo = true, -- 1.4.0 (diario): un recurso nuevo al subir tu habilidad (Avisos.lua)
 	avisoHerramienta = true, -- 1.4.0 (diario): el pico o el cuchillo que falta (Avisos.lua)
 	juntaRuta = true, -- 1.4.0 (Junta.lua): los pasos «Junta N de X» usan la ruta corta de Alfa
+	recientes = true, -- 1.4.2: lo que recolectaste hace poco se ve tenue (Pines.lua)
 }
 
 local function porciento(v) return floor(v * 100 + 0.5) .. " %" end
@@ -107,6 +108,9 @@ local BUSCAR = {
 		{ search = "mining pick, skinning knife, tool, pico, cuchillo, herramienta" }),
 	buscable("toggle", "juntaRuta", L["Guiar los pasos de juntar con una ruta corta"], nil,
 		{ search = "collect, gather route, tin ore, juntar, mena, ruta corta, guía" }),
+	-- 1.4.2
+	buscable("toggle", "recientes", L["Atenuar lo que recolectaste hace poco"], nil,
+		{ search = "respawn, recently gathered, harvested, recolectado, reaparece, tenue" }),
 }
 for _, tipo in ipairs(M.TIPOS) do
 	BUSCAR[#BUSCAR + 1] = buscable("toggle", tipo, R.NombreTipo(tipo), nil, {
@@ -265,10 +269,17 @@ local function tarjetaRuta()
 		if recurso == "todos" or x.clave == recurso then hay = hay + x.cuenta end
 	end
 	local nombre = nombreRecurso(tipo, recurso)
+	-- 1.4.2 (Subir.lua): la mejor zona para subir tu oficio, con su ruta.
+	local subir = (tipo == "mineria" or tipo == "hierbas") and M.Subir and R.Habilidad(tipo)
+		and (tonumber(R.Habilidad(tipo)) or 0) < M.Subir.TOPE and {
+			texto = L["Subir %s"]:format(M.Subir.NombreOficio(tipo)), icono = "ic-flecha",
+			alClic = function() M.Subir.Llevar(tipo) end } or nil
 	if hay < 3 then
 		d.titulo, d.tono = L["Pocos lugares de %s en %s"]:format(nombre, nombreZona(zona)), "aviso"
 		d.texto = L["Una ruta necesita al menos 3 lugares que tu habilidad alcance. Elige otro tipo o recurso abajo, o recolecta aquí: Alfa anota cada nodo que encuentras."]
+		if subir then d.texto = d.texto .. " " .. L["O deja que Alfa te lleve a la zona donde más subes tu oficio."] end
 		d.estado = { texto = hay == 1 and L["1 lugar"] or L["%d lugares"]:format(hay), tono = "aviso" }
+		d.accion = subir
 		return d
 	end
 	d.titulo, d.tono = L["Arma una ruta de %s en %s"]:format(nombre, nombreZona(zona)), "acento"
@@ -276,6 +287,7 @@ local function tarjetaRuta()
 	if V.aviso then d.tono = "aviso" end
 	d.estado = { texto = hay == 1 and L["1 lugar"] or L["%d lugares"]:format(hay), tono = V.aviso and "aviso" or "acento" }
 	d.accion = { texto = L["Crear ruta"], icono = "ic-ruta", alClic = crearRuta }
+	d.secundaria = subir
 	return d
 end
 
@@ -594,6 +606,8 @@ local function grupos(padre)
 		texto = L["Los nodos que se pisarían en pantalla van en un solo pin con su cantidad. Al acercar el mapa se separan."] })
 	mapa:Fila({ titulo = L["Usar la base de datos incluida"], control = interruptor("base"),
 		texto = L["Los nodos que trae Alfa. Sin esto solo ves los que tú descubriste."] })
+	mapa:Fila({ titulo = L["Atenuar lo que recolectaste hace poco"], control = interruptor("recientes"),
+		texto = L["Un nodo que recolectaste en los últimos minutos se ve tenue en el mapa y el minimapa (aún no vuelve), y su cuadro dice hace cuánto."] })
 	mapa:Fila({ titulo = L["Guiar los pasos de juntar con una ruta corta"], control = interruptor("juntaRuta"),
 		texto = L["Cuando tu guía pide juntar un mineral o una hierba, la flecha te lleva por las vetas más cercanas de una zona de tu nivel, empezando por la más cercana."] })
 
@@ -736,6 +750,9 @@ A.RegisterCommand("recoleccion", function(resto)
 		local texto = (resto or ""):match("^%s*%S+%s+(.+)$")
 		local ok = M.Llevar.Llevar(texto or "")
 		if not ok then N.Imprimir(L["No encontré ese recurso en las zonas de tu facción."]) end
+	-- 1.4.2: /alfa recoleccion subir [mineria|hierbas]: la mejor zona para subir tu oficio.
+	elseif orden == "subir" or orden == "skill" then
+		M.Subir.Llevar(TIPO_POR_PALABRA[arg or ""])
 	elseif orden == "parar" then
 		Ruta.Detener()
 	elseif orden == "mapa" or orden == "minimapa" then
@@ -749,7 +766,7 @@ A.RegisterCommand("recoleccion", function(resto)
 			N.Imprimir(ver and L["Nodos en el minimapa: visibles."] or L["Nodos en el minimapa: ocultos."])
 		end
 	else
-		N.Imprimir(L["Uso: /alfa recoleccion [ruta [mineria|hierbas|pesca|tesoros] | guiar | parar | mapa | minimapa]"])
+		N.Imprimir(L["Uso: /alfa recoleccion [ruta [mineria|hierbas|pesca|tesoros] | subir [mineria|hierbas] | guiar | parar | mapa | minimapa]"])
 	end
 end, L["Abre Recolección. Con «ruta», crea y sigue una ruta para juntar en tu zona."])
 

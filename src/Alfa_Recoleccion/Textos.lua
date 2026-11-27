@@ -4,6 +4,23 @@
 local _, M = ...
 
 M.EN = {
+	-- 1.4.2 (economía)
+	["Con %s %d te dan puntos: %s."] = "With %s %d these give you points: %s.",
+	["Lo verde (%s) a veces."] = "The green ones (%s) sometimes.",
+	["A subir %s"] = "Let's level %s",
+	["Atenuar lo que recolectaste hace poco"] = "Dim what you gathered recently",
+	["Subir %s"] = "Level %s",
+	["O deja que Alfa te lleve a la zona donde más subes tu oficio."] = "Or let Alfa take you to the zone where you level your profession the most.",
+	["Un nodo que recolectaste en los últimos minutos se ve tenue en el mapa y el minimapa (aún no vuelve), y su cuadro dice hace cuánto."] = "A node you gathered in the last few minutes looks dim on the map and minimap (it hasn't come back yet), and its tooltip says how long ago.",
+	["Uso: /alfa recoleccion [ruta [mineria|hierbas|pesca|tesoros] | subir [mineria|hierbas] | guiar | parar | mapa | minimapa]"] = "Usage: /alfa recoleccion [ruta [mineria|hierbas|pesca|tesoros] | subir [mineria|hierbas] | guiar | parar | mapa | minimapa]",
+	["Lo recolectaste hace un momento: aún no vuelve."] = "You gathered it a moment ago: it hasn't come back yet.",
+	["Lo recolectaste hace %d minuto: puede que aún no vuelva."] = "You gathered it %d minute ago: it may not be back yet.",
+	["Lo recolectaste hace %d minutos: puede que aún no vuelva."] = "You gathered it %d minutes ago: it may not be back yet.",
+	["Clic: la flecha te lleva aquí. Mayús+clic: una ruta por todos los de este recurso en la zona."] = "Click: the arrow takes you here. Shift+click: a route through all of this resource in the zone.",
+	["Ruta de %s: %s"] = "%s route: %s",
+	["Tu personaje no tiene ese oficio. Te lo enseña un instructor de profesión."] = "Your character doesn't have that profession. A profession trainer teaches it.",
+	["Tu oficio ya está al máximo. ¡Bien hecho!"] = "Your profession is already maxed. Well done!",
+	["No encontré una zona de tu facción con lo que te da puntos."] = "I couldn't find a zone of your faction with what gives you points.",
 	-- 1.4.0 (diario): mejoras del día a día
 	["Llévame"] = "Take me there",
 	["¡%s %d!"] = "%s %d!",

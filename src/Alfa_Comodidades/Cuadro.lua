@@ -7,6 +7,8 @@
 --     criatura, en rojo, amarillo o verde según su reacción).
 --   Rango de tu hermandad: para alguien de tu hermandad, una línea con su
 --     rango.
+--   Tu amigo (1.4.2, cuadroAmigo): «Tu amigo» con la nota que le pusiste en
+--     tu lista, o «Tu amigo de Battle.net».
 --   Ocultar en combate: el cuadro de las unidades del mundo (el que sale
 --     junto al ratón, no el de los marcos) no aparece en combate; con la
 --     opción de Mayús, mantener Mayús lo muestra.
@@ -86,10 +88,35 @@ local function lineaRango(tooltip, unidad)
 	A.Hooks.AddLine(tooltip, L["Rango en tu hermandad:"] .. " " .. rango, nil, 0.25, 1, 0.25)
 end
 
+-- 1.4.2: «Tu amigo» (y la nota que le pusiste en tu lista de amigos), o «Tu
+-- amigo de Battle.net»: para saber de un vistazo a quién conoces.
+local function lineaAmigo(tooltip, unidad)
+	if not opcion("cuadroAmigo") then return end
+	if not leer(UnitIsPlayer, unidad) or leer(UnitIsUnit, unidad, "player") then return end
+	local guid = leer(UnitGUID, unidad)
+	if type(guid) ~= "string" then return end
+	local F = rawget(_G, "C_FriendList")
+	if type(F) == "table" and leer(F.IsFriend, guid) then
+		local texto = L["Tu amigo"]
+		local nombre = leer(UnitName, unidad)
+		local info = type(nombre) == "string" and leer(F.GetFriendInfo, nombre)
+		local nota = type(info) == "table" and legible(info.notes)
+		if type(nota) == "string" and nota ~= "" then texto = texto .. ": «" .. nota .. "»" end
+		A.Hooks.AddLine(tooltip, texto, nil, 0.4, 0.75, 1)
+		return true
+	end
+	local B = rawget(_G, "C_BattleNet")
+	if type(B) == "table" and type(leer(B.GetGameAccountInfoByGUID, guid)) == "table" then
+		A.Hooks.AddLine(tooltip, L["Tu amigo de Battle.net"], nil, 0.4, 0.75, 1)
+		return true
+	end
+end
+
 local function lineas(tooltip, unidad)
 	if not M.Get("cuadro") or type(unidad) ~= "string" then return end
 	lineaObjetivo(tooltip, unidad)
 	lineaRango(tooltip, unidad)
+	lineaAmigo(tooltip, unidad)
 end
 
 ---------------------------------------------------------------------------
@@ -152,12 +179,12 @@ end)
 
 -- Las líneas solo se piden al motor la primera vez que hacen falta.
 local registrado = false
-M.AlCambiar({ "cuadro", "cuadroObjetivo", "cuadroRango" }, function()
-	if registrado or not (opcion("cuadroObjetivo") or opcion("cuadroRango")) then return end
+M.AlCambiar({ "cuadro", "cuadroObjetivo", "cuadroRango", "cuadroAmigo" }, function()
+	if registrado or not (opcion("cuadroObjetivo") or opcion("cuadroRango") or opcion("cuadroAmigo")) then return end
 	if A.Hooks and A.Hooks.UnitLines then
 		registrado = A.Hooks.UnitLines(ADDON, function(tooltip, unidad) M.Seguro(lineas, tooltip, unidad) end) and true or false
 	end
 end)
 
 -- Para pruebas.
-M.Cuadro = { Lineas = lineas, AlCuadroDeUnidad = alCuadroDeUnidad, ColorDe = colorDe }
+M.Cuadro = { Lineas = lineas, LineaAmigo = lineaAmigo, AlCuadroDeUnidad = alCuadroDeUnidad, ColorDe = colorDe }

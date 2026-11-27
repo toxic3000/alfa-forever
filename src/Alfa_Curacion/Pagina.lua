@@ -733,6 +733,8 @@ local function grupos(ui, padre)
 	-- 1.3.7 (Listos.lua): no depende de los marcos.
 	muestran:Fila({ titulo = L["Lo que falta en «¿Listos?»"], control = interruptor("listos"),
 		texto = L["Cuando alguien pregunta «¿Listos?»: tu comida, munición, equipo y espacio, y a quién le falta un hechizo de apoyo, con un botón para dar el tuyo. También con /alfa curacion listos."] })
+	muestran:Fila({ titulo = L["Faltan por revivir"], control = interruptor("revivir"),
+		texto = L["Si sabes revivir, al terminar una pelea en grupo: quién quedó caído, con un botón para revivir a cada uno. El clic es tuyo."] })
 	return { clics, marcos, color, muestran }
 end
 
@@ -865,6 +867,8 @@ local CONTROLES = {
 	{ kind = "toggle", key = clave("listos"), label = L["Lo que falta en «¿Listos?»"],
 		help = L["Cuando alguien pregunta «¿Listos?»: tu comida, munición, equipo y espacio, y a quién le falta un hechizo de apoyo, con un botón para dar el tuyo. También con /alfa curacion listos."],
 		search = "ready check, missing buffs, food, ammo, repair, bag space, fortitude, mark of the wild, intellect" },
+	toggle("revivir", L["Faltan por revivir"], L["Si sabes revivir, al terminar una pelea en grupo: quién quedó caído, con un botón para revivir a cada uno. El clic es tuyo."],
+		"resurrect, rez, dead party members, revive, redemption, ancestral spirit"),
 }
 
 N.Modulo({

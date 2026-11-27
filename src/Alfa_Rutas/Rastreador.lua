@@ -467,6 +467,10 @@ local function menuGuia(dueno)
 	op[#op + 1] = { valor = function() if M.Biblioteca then M.Biblioteca.Abrir({ pestanaNueva = true }) end end, texto = L["Abrir otra guía…"], icono = "ic-mas" }
 	op[#op + 1] = { valor = function() if M.Asistente then M.Asistente.Abrir() end end, texto = L["¿Qué quieres hacer?"], icono = "ic-lobo" }
 	op[#op + 1] = { valor = function() M.Cerrar.Ahora() end, texto = L["Cerrar mis misiones"], icono = "ic-misiones" }
+	-- 1.4.2: la flecha a lo más cerca de tu registro (IrMision.lua).
+	if M.IrMision then
+		op[#op + 1] = { valor = function() M.IrMision.MasCerca() end, texto = L["La misión más cerca"], icono = "ic-flecha" }
+	end
 	-- 1.4.0 (32): tus guías terminadas, con fecha y tiempo (Historial.lua).
 	if M.Historial and #M.Historial.Lista() > 0 then
 		op[#op + 1] = { valor = function() M.Historial.Abrir() end, texto = L["Guías terminadas"], icono = "ic-exito" }

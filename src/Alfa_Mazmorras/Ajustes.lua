@@ -58,6 +58,10 @@ local DIARIO = {
 	{ kind = "toggle", key = ID .. ".ofrecerReiniciar", label = L["Ofrecer reiniciar la mazmorra al salir"],
 		help = L["Al salir de una mazmorra, si vas solo o diriges el grupo, un aviso con «Reiniciar» y cuántas instancias llevas en esta hora. También con /alfa mazmorras reiniciar."],
 		search = "reset instance, reset dungeon, reiniciar, repetir mazmorra" },
+	-- 1.4.2
+	{ kind = "toggle", key = ID .. ".intentos", label = L["Contar los intentos contra cada jefe"],
+		help = L["Si el grupo cae ante un jefe, un aviso con el intento y lo que más importa de esa pelea para tu papel; al vencerlo, en qué intento fue. La tarjeta del jefe también dice en qué intento van."],
+		search = "wipe, wipes, attempts, boss tries, intentos, caímos" },
 	{ kind = "toggle", key = ID .. ".mapaDentro", label = L["Botón del mapa por dentro en el mapa del juego"],
 		help = L["Dentro de una mazmorra, el mapa del juego trae un botón para abrir su plano con zoom, sus pisos y tu avance por jefes. También con su tecla."] },
 	{ kind = "toggle", key = ID .. ".historial", label = L["Anotar el botín de mi grupo"],

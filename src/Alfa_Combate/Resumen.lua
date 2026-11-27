@@ -145,6 +145,12 @@ function Rs.Leer(dur)
 		r.golpes = tusGolpes(r.curas)
 		if r.curas then r.parte = tuParte("HealingDone", 2) else r.parte = tuParte("DamageDone", 0) end
 		r.golpe = golpeMayor()
+		-- 1.4.2: lo que también cuenta el medidor del juego de ti: cuántos
+		-- hechizos cortaste, cuántos perjuicios quitaste y el daño que recibiste
+		-- de lo que se podía evitar.
+		r.cortes = tuyo("Interrupts", 5)
+		r.limpiezas = tuyo("Dispels", 6)
+		r.evitable = tuyo("AvoidableDamageTaken", 8)
 		local d = r.dur or 0
 		if r.dano and not r.dps and d > 0 then r.dps = r.dano / d end
 		if r.cura and not r.cps and d > 0 then r.cps = r.cura / d end
@@ -201,6 +207,8 @@ local function crear()
 	f.Cerrar = K.BotonIcono(f.Fondo, "ic-cerrar", function() f:Hide() end, { tam = 16, ayuda = L["Cerrar"] })
 	f.Cerrar:SetPoint("TOPRIGHT", f, "TOPRIGHT", -4, -4)
 	f.Dano, f.Cura = fila(f.Fondo), fila(f.Fondo)
+	-- 1.4.2: cortes, limpiezas, daño evitable y la diferencia con la pelea de antes.
+	f.Cortes, f.Limpias, f.Evitable, f.Dif = fila(f.Fondo), fila(f.Fondo), fila(f.Fondo), fila(f.Fondo)
 	-- 1.3.7: tu mejor pelea, tu parte del grupo y tus golpes que más rindieron.
 	f.Record = K.Insignia(f.Fondo, "", "oro", { icono = "star" })
 	f.Record:Hide()
@@ -380,6 +388,40 @@ function Rs.PintarExtras(r, y)
 	return y
 end
 
+-- 1.4.2: cortaste, limpiaste, daño evitable y contra la pelea anterior. -> nueva y
+local function veces(n)
+	n = floor((tonumber(n) or 0) + 0.5)
+	return N.Plural(n, L["%d vez"], L["%d veces"])
+end
+function Rs.TextoDif(dif)
+	if type(dif) ~= "number" then return nil end
+	local pct = floor(dif * 100 + 0.5)
+	if pct > 0 then return format("+%d %%", pct) end
+	return format("%d %%", pct)
+end
+function Rs.PintarCuentas(r, y)
+	local c, l, e = tonumber(r.cortes), tonumber(r.limpiezas), tonumber(r.evitable)
+	y = ponerFila(f.Cortes, L["Hechizos que cortaste"], c and c > 0 and veces(c) or nil, y)
+	y = ponerFila(f.Limpias, L["Perjuicios que quitaste"], l and l > 0 and veces(l) or nil, y)
+	y = ponerFila(f.Evitable, L["Daño evitable que recibiste"], e and e > 0 and num(e) or nil, y)
+	if e and e > 0 then K.ColorTexto(f.Evitable.Valor, "aviso") end
+	local dt = Rs.TextoDif(r.dif)
+	y = ponerFila(f.Dif, L["Contra tu pelea anterior"], dt, y)
+	if dt then K.ColorTexto(f.Dif.Valor, r.dif >= 0 and "exito" or "textoSuave") end
+	return y
+end
+
+-- 1.4.2: la tarjeta no se va mientras la lees (el ratón encima): espera a que lo quites.
+Rs.DURA = DURA
+function Rs.Irse(hasta)
+	if not (f and f.alfaHasta == hasta) or M.Desbloqueado() then return end
+	if f:IsShown() and not M.EnCombate() and f.IsMouseOver and f:IsMouseOver() then
+		A.After(2, function() Rs.Irse(hasta) end)
+		return
+	end
+	f:Hide()
+end
+
 function Rs.Pintar(r)
 	crear()
 	f.Dura:SetText(M.Medidor and M.Medidor.Tiempo(r.dur) or "")
@@ -396,6 +438,7 @@ function Rs.Pintar(r)
 	end
 	y = ponerFila(f.Dano, L["Tu daño"], r.dano and r.dano > 0 and format(L["%s (%s por s)"], num(r.dano), num(r.dps or 0)) or nil, y)
 	y = ponerFila(f.Cura, L["Tu curación"], r.cura and r.cura > 0 and format(L["%s (%s por s)"], num(r.cura), num(r.cps or 0)) or nil, y)
+	y = Rs.PintarCuentas(r, y)
 	y = Rs.PintarExtras(r, y)
 	local g = Rs.TextoGolpe(r.golpe)
 	if not (r.dano and r.dano > 0) and not (r.cura and r.cura > 0) and not g then
@@ -418,7 +461,7 @@ function Rs.Pintar(r)
 	Rs.Colocar()
 	local hasta = GetTime() + DURA
 	f.alfaHasta = hasta
-	A.After(DURA, function() if f and f.alfaHasta == hasta and not M.Desbloqueado() then f:Hide() end end)
+	A.After(DURA, function() Rs.Irse(hasta) end)
 end
 
 ---------------------------------------------------------------------------
@@ -459,8 +502,12 @@ function Rs.Termina()
 		d.ultimaPelea = { dur = r.dur, dano = r.dano, dps = r.dps, cura = r.cura, cps = r.cps,
 			golpe = r.golpe and { nombre = r.golpe.nombre, quien = r.golpe.quien, cuanto = r.golpe.cuanto } or nil,
 			golpes = golpes, parte = r.parte, curas = r.curas, record = r.record or nil,
+			cortes = r.cortes, limpiezas = r.limpiezas, evitable = r.evitable,
 			cuando = time and time() or nil }
 		Rs.Anotar(d.ultimaPelea, d)
+		-- 1.4.2: cómo te fue contra la pelea de antes (del mismo tipo), en la tarjeta.
+		r.dif = Rs.Diferencia(1)
+		d.ultimaPelea.dif = r.dif
 		if mostrar then Rs.Pintar(r) end
 		M.Avisar()
 	end)

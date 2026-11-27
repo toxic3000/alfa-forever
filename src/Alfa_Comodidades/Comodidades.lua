@@ -64,6 +64,13 @@ M.AJUSTES = {
 	spam = false, spamRepetidos = true,
 	-- El ID en el cuadro (Ids.lua): con Mayús, o siempre (avanzado)
 	cuadroID = true, cuadroIDSiempre = false,
+	-- 1.4.2 (Tu gente): quién se conecta y dónde anda (Conexiones.lua), invitar a
+	-- quien te lo pide por susurro (Pedido.lua), lo que te escribieron mientras
+	-- peleabas (Pendientes.lua), las flechas en el chat (Flechas.lua), «Copiar el
+	-- nombre» (CopiarNombre.lua) y «Tu amigo» en el cuadro (Cuadro.lua).
+	conexiones = true, conexionesInvitar = true,
+	invitarSusurro = false, invitarSusurroTodos = false,
+	susurrosPendientes = true, chatFlechas = false, copiarNombre = true, cuadroAmigo = true,
 }
 
 -- Los valores por omisión, desde el principio (las partes los leen al

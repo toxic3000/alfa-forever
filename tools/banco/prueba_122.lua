@@ -127,6 +127,12 @@ step("se engancha a los menús de un jugador", function()
     local B = NS_OF("Alfa_Builds")
     local extra = 0
     for _, t in ipairs(B and B.Inspeccion and B.Inspeccion.MENUS or {}) do if t == tag then extra = 1 end end
+    -- 1.4.2: también «Avisarme cuando se conecte» (Manada/Vigilar.lua) y «Copiar el
+    -- nombre» (Comodidades/CopiarNombre.lua), con una sola línea entre todos.
+    local V, CN = NS_OF("Alfa_Manada").Vigilar, NS_OF("Alfa_Comodidades").CopiarNombre
+    for _, lista in ipairs({ V and V.MENUS or {}, CN and CN.MENUS or {} }) do
+      for _, t in ipairs(lista) do if t == tag then extra = extra + 1 end end
+    end
     check(REGISTRADOS[tag] and #REGISTRADOS[tag] == 1 + extra, "sin gancho (o doble) en " .. tag)
   end
   check(not REGISTRADOS.MENU_UNIT_SELF, "no debe engancharse a tu propio retrato")

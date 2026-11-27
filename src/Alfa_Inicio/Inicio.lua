@@ -340,6 +340,11 @@ end
 -- (nunca un verde liso). Se quita en los ajustes de Hoy (inicio.portada).
 -- (Era el saludo del bando de la 1.4.0, n.º 67: P.saludo sigue siendo él.)
 local PORTADA_CIFRA_W, PORTADA_CIFRA_H = 106, 64
+-- 1.4.2 (Toxic: «el tiempo sale del recuadro»): cada cifra mide lo que pide
+-- su dato (de PORTADA_CIFRA_W a PORTADA_CIFRA_MAX, todas iguales) y, si aun
+-- así no cabe, la letra baja un escalón de la escala (K.Encajar).
+local PORTADA_CIFRA_MAX, CIFRA_PAD = 168, 10
+local ROLES_CIFRA = { "cifra", "titulo", "subtitulo", "cuerpo" }
 
 local function saludoHora(nombre)
 	local h = tonumber(date("%H")) or 12
@@ -445,6 +450,11 @@ local function nuevoSaludo(padre)
 	b.Barra:SetPoint("BOTTOMLEFT", b, "BOTTOMLEFT", 0, 0)
 	b.Emblema = b:CreateTexture(nil, "ARTWORK")
 	b.Emblema:SetSize(60, 60)
+	-- 1.4.2: un clic en el lobo (o el emblema de tu bando) abre tu ficha (Ficha.lua).
+	b.Toque = CreateFrame("Button", nil, b)
+	b.Toque:SetAllPoints(b.Emblema)
+	b.Toque:SetScript("OnClick", function() if M.Ficha then M.Ficha.Abrir("yo") end end)
+	K.ConInfo(b.Toque, L["Tu ficha"], L["Tu personaje en 3D, tus cifras, tus oficios y todos tus personajes. También con /alfa ficha."])
 	b.Titulo = K.Texto(b, "portada", "texto")
 	b.Linea = K.Texto(b, "cuerpo", "texto")
 	b.Lema = K.Texto(b, "nota", "textoSuave")
@@ -504,19 +514,40 @@ local function nuevoSaludo(padre)
 		end
 		for i = #lista + 1, #self.cifras do self.cifras[i]:Hide() end
 		self.alfaN = #lista
+		-- Lo que pide cada una con la letra grande (para elegir el ancho).
+		local w = PORTADA_CIFRA_W
+		for i = 1, #lista do
+			local c = self.cifras[i]
+			if c.Valor.alfaRol ~= "cifra" then K.Fuente(c.Valor, "cifra") end
+			c.Valor:SetWidth(0)
+			local pide = math.max(K.AnchoTexto(c.Valor), 12 + 5 + K.AnchoTexto(c.Titulo)) + CIFRA_PAD * 2
+			if pide > w then w = pide end
+		end
+		self.alfaCifraW = math.min(PORTADA_CIFRA_MAX, w)
+	end
+	-- 1.4.2: cada cifra en su ancho, sin que nada se salga del recuadro.
+	function b:EncajarCifras(ancho)
+		for i = 1, self.alfaN or 0 do
+			local c = self.cifras[i]
+			K.Encajar(c.Valor, ancho - CIFRA_PAD * 2, ROLES_CIFRA)
+			K.Encajar(c.Titulo, ancho - CIFRA_PAD * 2 - 12 - 5, { "pequeno" })
+		end
 	end
 	-- Cada segundo con Hoy abierto: solo los valores (el alto no cambia).
 	-- -> true si cambió cuántas cifras hay (hay que acomodar).
 	function b:Repintar()
 		if not (self:IsShown() and self.alfaListo) then return false end
-		local antes = self.alfaN
+		local antes, antesW = self.alfaN, self.alfaCifraW
 		self:LlenarCifras()
-		return antes ~= self.alfaN
+		-- (si el dato creció y pide más ancho, se acomoda todo otra vez)
+		if antes == self.alfaN and antesW == self.alfaCifraW and self.alfaAnchoCifra then self:EncajarCifras(self.alfaAnchoCifra) end
+		return antes ~= self.alfaN or antesW ~= self.alfaCifraW
 	end
 	function b:Acomodar(ancho)
 		local pad = ESP.base + 4
 		local n = self.alfaN or 0
-		local wC = n * PORTADA_CIFRA_W + math.max(0, n - 1) * ESP.s
+		local cW = self.alfaCifraW or PORTADA_CIFRA_W
+		local wC = n * cW + math.max(0, n - 1) * ESP.s
 		-- Las cifras a la derecha si cabe el saludo junto a ellas; si no, debajo.
 		local junto = n > 0 and ancho - wC - pad * 2 - 60 - ESP.base - ESP.l >= 300
 		local x = pad + 60 + ESP.base
@@ -538,10 +569,11 @@ local function nuevoSaludo(padre)
 			local cx = ancho - pad - wC
 			for i = 1, n do
 				local c = self.cifras[i]
-				c:SetWidth(PORTADA_CIFRA_W)
+				c:SetWidth(cW)
 				c:ClearAllPoints()
-				c:SetPoint("TOPLEFT", self, "TOPLEFT", cx + (i - 1) * (PORTADA_CIFRA_W + ESP.s), -math.floor((alto - PORTADA_CIFRA_H) / 2))
+				c:SetPoint("TOPLEFT", self, "TOPLEFT", cx + (i - 1) * (cW + ESP.s), -math.floor((alto - PORTADA_CIFRA_H) / 2))
 			end
+			self.alfaAnchoCifra = cW
 		else
 			local cw = n > 0 and math.floor((ancho - pad * 2 - (n - 1) * ESP.s) / n) or 0
 			for i = 1, n do
@@ -551,7 +583,9 @@ local function nuevoSaludo(padre)
 				c:SetPoint("TOPLEFT", self, "TOPLEFT", pad + (i - 1) * (cw + ESP.s), -(alto - pad + ESP.s))
 			end
 			if n > 0 then alto = alto + ESP.s + PORTADA_CIFRA_H end
+			self.alfaAnchoCifra = cw
 		end
+		self:EncajarCifras(self.alfaAnchoCifra or cW)
 		self:SetSize(ancho, alto)
 		return alto
 	end

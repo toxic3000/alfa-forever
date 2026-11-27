@@ -87,6 +87,8 @@ local function ayuda()
 	A.Print("  /alfa rutas seguir  \194\183  " .. L["sigue (o actualiza) tu ruta"])
 	A.Print("  /alfa rutas historial  \194\183  " .. L["tus guías terminadas, con fecha y tiempo"])
 	A.Print("  /alfa rutas nivel  \194\183  " .. L["salta a la parte de tu guía que va con tu nivel"])
+	A.Print("  /alfa rutas nuevas  \194\183  " .. L["las misiones que se abren con tu nivel"]) -- 1.4.2
+	A.Print("  /alfa mision  \194\183  " .. L["la flecha a tu misión más cerca"]) -- 1.4.2
 end
 
 A.RegisterCommand("rutas", function(resto)
@@ -107,6 +109,10 @@ A.RegisterCommand("rutas", function(resto)
 		M.Seguir(M.RutaActiva() or M.RutaEditada())
 	elseif sub == "historial" or sub == "terminadas" then -- 1.4.0 (32)
 		M.Historial.Abrir()
+	elseif sub == "nuevas" then -- 1.4.2 (AlSubir.lua)
+		M.AlSubir.Abrir()
+	elseif sub == "cercana" or sub == "mision" then -- 1.4.2 (IrMision.lua)
+		M.IrMision.MasCerca()
 	elseif sub == "minivel" or sub == "nivel" then -- 1.4.0 (26)
 		if not M.MiNivel.Saltar() then N.Imprimir(L["Tu guía no va atrás de tu nivel."]) end
 	else

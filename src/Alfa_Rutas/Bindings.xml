@@ -5,4 +5,13 @@
 	<Binding name="ALFA_RUTAS_LLEVAME" category="Alfa" searchTags="BINDING_TAG_ALFA">
 		if AlfaRuta and AlfaRuta.AbrirLlevame then AlfaRuta.AbrirLlevame() end
 	</Binding>
+	<Binding name="ALFA_RUTAS_MAS_CERCA" category="Alfa" searchTags="BINDING_TAG_ALFA">
+		if AlfaRuta and AlfaRuta.MisionMasCerca then AlfaRuta.MisionMasCerca() end
+	</Binding>
+	<Binding name="ALFA_RUTAS_ENTREGAR" category="Alfa" searchTags="BINDING_TAG_ALFA">
+		if AlfaRuta and AlfaRuta.Entregar then AlfaRuta.Entregar() end
+	</Binding>
+	<Binding name="ALFA_RUTAS_CERRAR" category="Alfa" searchTags="BINDING_TAG_ALFA">
+		if AlfaRuta and AlfaRuta.CerrarTodo then AlfaRuta.CerrarTodo("tecla") end
+	</Binding>
 </Bindings>

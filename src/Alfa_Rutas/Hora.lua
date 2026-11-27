@@ -79,7 +79,8 @@ local function nombresDeAqui()
 end
 H.NombresDeAqui = nombresDeAqui
 
-function H.PendientesEnZona()
+-- 1.4.2: con `lista` (una tabla), también deja ahí sus questID (Pendientes.lua).
+function H.PendientesEnZona(lista)
 	local QL = C_QuestLog
 	local Cp = M.Motor("Compat")
 	if not (QL and QL.GetNumQuestLogEntries and QL.GetInfo and Cp) then return 0 end
@@ -99,6 +100,7 @@ function H.PendientesEnZona()
 				local q = Cp.Readable and Cp.Readable(info.questID) or info.questID
 				if type(q) == "number" and q > 0 and not secreto(q) and not Cp.IsQuestReadyForTurnIn(q) then
 					cuenta = cuenta + 1
+					if type(lista) == "table" then lista[#lista + 1] = q end
 				end
 			end
 		end

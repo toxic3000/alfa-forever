@@ -996,6 +996,7 @@
               {"cmd": "/alfa rendimiento", "texto": "Cuánta memoria y procesador usa cada parte de Alfa (y suelta la memoria que ya no ocupa)."},
               {"cmd": "/alfa diagnostico", "texto": "Revisar Alfa: choques con otros addons, partes desactivadas y ajustes raros."},
               {"cmd": "/alfa raton", "texto": "Si no puedes hacer clic en algo del juego o girar la cámara: te dice qué hay bajo tu ratón y quita lo de Alfa que estorbe."},
+              {"cmd": "/alfa ficha", "texto": "Tu ficha: tu personaje en 3D, tus cifras, tus oficios y todos tus personajes (con «Tomar foto»)."},
               {"cmd": "/alfa reportar", "texto": "Reportar un error, una mejora o un comentario, con los errores que Alfa ha atrapado."}
             ]}
           ]
@@ -1087,7 +1088,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "La 1.4.1: el ratón es tuyo", "items": ["**Clics de vuelta:** ya puedes hacer clic en enemigos lejanos, girar la cámara, usar las pestañas de profesiones y mover el volumen.", "**`/alfa raton`:** te dice qué hay bajo tu ratón y quita al momento lo de Alfa que estorbe.", "**Mayús + arrastrar:** un recuadro verde enseña lo que se mueve y se va al soltar Mayús.", "**Más firme:** una revisión de todo Alfa con pruebas nuevas que buscan este tipo de error."]}
+    "mapa": {"titulo": "La 1.4.2: tu ficha de cazador", "items": ["**Tu ficha:** tu personaje en 3D con tu oro, durabilidad, bolsas, tiempo jugado y oficios (`/alfa ficha`).", "**Tus personajes:** el nivel, el oro, los oficios y las recargas de oficio de toda tu cuenta.", "**Objetos de misión señalados:** el juego marca lo que tienes que tocar mientras una misión lo pide.", "**Hoy, sin nada fuera:** las cifras de la portada siempre caben en su recuadro."]}
   },
   "contraportada": {
     "titulo": "Únete a la manada",

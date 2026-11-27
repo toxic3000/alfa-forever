@@ -1578,3 +1578,5 @@ API.Distribucion = function() return distActual end
 API.EsAncha = function() return Es.EsAncha() end
 -- 1.3.9: otros módulos registran su panel (La Jauría: el marcador por bando).
 API.RegistrarPanel = function(def) return Es.Registrar(def) end
+-- 1.4.2: la noche de Alfa (estrellas, luna, colinas y el lobo) de fondo para otro marco (la ficha de Hoy).
+API.Cielo = function(c) if Es.ArmarCielo and not c.Cielo then Es.ArmarCielo(c) end if Es.PintarCielo then Es.PintarCielo(c) end return c.Cielo ~= nil end

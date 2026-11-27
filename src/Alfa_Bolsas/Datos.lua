@@ -674,10 +674,21 @@ function D.Sumas(id)
 	return banco, otros
 end
 
+-- 1.4.2: lo que tienes a la venta en la subasta (Alfa_Comercio, Subastas.lua).
+function D.EnSubasta(id)
+	local C = rawget(_G, "AlfaComercio")
+	if type(C) ~= "table" or type(C.EnSubasta) ~= "function" then return 0 end
+	local ok, n = pcall(C.EnSubasta, id)
+	return ok and tonumber(n) or 0
+end
+
 -- "Tienes 12 (Lobato: 7 en bolsas, Alt: 5 en banco)" -> texto | nil
+-- 1.4.2: "Tienes 15 (Lobato: 7 en bolsas, 3 en la subasta)"
 function D.LineaCuadro(id)
 	local total, partes = D.Conteo(id)
-	if total <= 0 then return nil end
+	local subasta = D.EnSubasta(tonumber(id))
+	if total + subasta <= 0 then return nil end
+	total = total + subasta
 	local trozos = {}
 	for _, p in ipairs(partes) do
 		local donde = {}
@@ -690,6 +701,7 @@ function D.LineaCuadro(id)
 		if p.otraFaccion then nombre = nombre .. " (" .. (p.r.faccion == "Alliance" and L["Alianza"] or L["Horda"]) .. ")" end
 		trozos[#trozos + 1] = nombre .. ": " .. table.concat(donde, L[" y "])
 	end
+	if subasta > 0 then trozos[#trozos + 1] = (L["%d en la subasta"]):format(subasta) end
 	local ar, ag, ab = M.Acento()
 	return M.Pintado((L["Tienes %d"]):format(total), ar, ag, ab) .. " (" .. table.concat(trozos, ", ") .. ")"
 end

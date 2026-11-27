@@ -897,6 +897,8 @@ AlfaPesca.Alternar = function() M.Alternar() end
 AlfaPesca.Abrir = function() return M.AbrirModo() end
 AlfaPesca.Cerrar = function() M.CerrarModo() end
 AlfaPesca.Activo = function() return E.modo end
+-- 1.4.2: ¿la pesca tiene puestas sus variables (la interacción, el sonido)? (Rutas/Senalar.lua no las toca entonces)
+AlfaPesca.TocaVariables = function() return E.respaldo ~= nil end
 -- 1.3.8: para el Escritorio de Alfa (el panel de pesca).
 AlfaPesca.Estado = function() return M.Estado() end
 AlfaPesca.Habilidad = function() return M.TextoHabilidad() end

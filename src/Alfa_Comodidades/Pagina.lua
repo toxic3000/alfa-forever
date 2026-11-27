@@ -113,6 +113,29 @@ local GRUPOS = {
 			buscar = "spam filter, gold sellers, gold spam, block spam, repeated messages" },
 		{ k = "spamRepetidos", hija = "spam", titulo = L["También los mensajes repetidos"],
 			texto = L["En los canales, la misma persona con el mismo mensaje en menos de un minuto sale una sola vez."], buscar = "repeated messages, duplicate messages, spam channel" },
+		-- 1.4.2 (Flechas.lua, CopiarNombre.lua)
+		{ k = "chatFlechas", titulo = L["Lo que escribiste antes, con las flechas"],
+			texto = L["Mientras escribes en el chat, la flecha hacia arriba trae lo último que escribiste (sin Alt), y las de los lados mueven el cursor en vez de girar a tu personaje."],
+			buscar = "chat history, arrow keys, alt arrow, edit box history, previous message" },
+		{ k = "copiarNombre", titulo = L["«Copiar el nombre» en el clic derecho"],
+			texto = L["Clic derecho en un jugador (su retrato, su nombre en el chat, tu grupo o tu hermandad) y «Copiar el nombre»: te lo deja listo para pegar, con todo y acentos."],
+			buscar = "copy name, copy player name, right click menu, unit popup" },
+	} },
+	-- 1.4.2: tu gente (Conexiones.lua, Pedido.lua, Pendientes.lua). Nada se envía solo.
+	{ titulo = L["Tu gente"], filas = {
+		{ k = "conexiones", titulo = L["Quién se conecta y dónde anda"],
+			texto = L["Cuando un amigo o alguien de tu hermandad se conecta, la línea de tu chat dice también su clase, su nivel, su zona y la nota que le pusiste."],
+			buscar = "friend online, guild member online, login message, come online, level, zone, note" },
+		{ k = "conexionesInvitar", hija = "conexiones", titulo = L["Con «Invitar» a un clic"],
+			texto = L["Al final de esa línea, «[Invitar]»: un clic y le llega la invitación a tu grupo."], buscar = "invite link, quick invite" },
+		{ k = "invitarSusurro", titulo = L["Invitar a quien te pide «inv»"],
+			texto = L["Si un amigo o alguien de tu hermandad te susurra solo «inv» (o «invítame», «invite»…), Alfa lo invita a tu grupo. No le contesta nada; en tu chat te dice lo que hizo."],
+			buscar = "auto invite, invite on whisper, whisper inv, keyword invite" },
+		{ k = "invitarSusurroTodos", hija = "invitarSusurro", titulo = L["También a quien no conoces"],
+			texto = L["Invita a cualquiera que te pida «inv», no solo a tus amigos y tu hermandad. Útil cuando armas grupo en el canal."], buscar = "invite anyone, strangers" },
+		{ k = "susurrosPendientes", titulo = L["Lo que te escribieron mientras peleabas"],
+			texto = L["Si te susurran en plena pelea o mientras estás ausente, al terminar un aviso te dice quién y qué, con «Responder» a un clic (lo envías tú)."],
+			buscar = "missed whispers, whispers in combat, afk whispers, reply" },
 	} },
 	-- 1.3.7: los números de las recargas (Recargas.lua).
 	{ titulo = L["Recargas"], filas = {
@@ -158,6 +181,8 @@ local GRUPOS = {
 			texto = L["Enciende los cambios de abajo en el cuadro que sale al pasar el ratón por un personaje o criatura."], buscar = "enhance tooltip, tooltip" },
 		{ k = "cuadroObjetivo", hija = "cuadro", titulo = L["Mostrar a quién apunta"],
 			texto = L["Agrega una línea con el objetivo de esa unidad; si te tiene a ti, lo dice."], buscar = "tooltip target, show target, unit target" },
+		{ k = "cuadroAmigo", hija = "cuadro", titulo = L["Mostrar si es tu amigo"],
+			texto = L["Para tus amigos, «Tu amigo» y la nota que le pusiste; también para tus amigos de Battle.net."], buscar = "friend tooltip, friend note, battle.net friend" },
 		{ k = "cuadroRango", hija = "cuadro", titulo = L["Mostrar el rango de tu hermandad"], texto = L["Para alguien de tu hermandad, agrega su rango."], buscar = "guild rank, tooltip rank" },
 		{ k = "cuadroCombate", hija = "cuadro", titulo = L["Ocultarlo en combate"],
 			texto = L["En combate no aparece el cuadro de los personajes y criaturas del mundo (el de los marcos sí)."], buscar = "hide tooltip in combat" },

@@ -996,6 +996,7 @@
               {"cmd": "/alfa rendimiento", "texto": "How much memory and CPU each part of Alfa uses (and frees the memory it no longer needs)."},
               {"cmd": "/alfa diagnostico", "texto": "Check Alfa: clashes with other addons, parts turned off and odd settings."},
               {"cmd": "/alfa raton", "texto": "If you can't click something in the game or turn the camera: tells you what's under your mouse and removes whatever of Alfa is in the way."},
+              {"cmd": "/alfa ficha", "texto": "Your card: your character in 3D, your numbers, your professions and all your characters (with \"Take a photo\")."},
               {"cmd": "/alfa reportar", "texto": "Report a bug, an idea or a comment, with the errors Alfa caught."}
             ]}
           ]
@@ -1087,7 +1088,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "1.4.1: the mouse is yours", "items": ["**Clicks are back:** you can click far-away enemies, turn the camera, use the profession tabs and move the volume again.", "**`/alfa raton`:** tells you what's under your mouse and removes anything of Alfa in the way.", "**Shift + drag:** a green box shows what can move and goes away when you let go of Shift.", "**Sturdier:** a review of all of Alfa with new tests that hunt for this kind of bug."]}
+    "mapa": {"titulo": "1.4.2: your hunter's card", "items": ["**Your card:** your character in 3D with your gold, durability, bags, time played and professions (`/alfa ficha`).", "**Your characters:** level, gold, professions and profession cooldowns across your account.", "**Quest objects pointed out:** the game marks what you need to touch while a quest asks for it.", "**Today, nothing spills out:** the cover's numbers always fit in their boxes."]}
   },
   "contraportada": {
     "titulo": "Join the pack",

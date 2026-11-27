@@ -127,13 +127,44 @@ Vj.Medir = medir
 -- Para el banco: los lugares se vuelven a leer.
 function Vj.Olvidar() cache = nil end
 
+-- 1.4.2: tus destinos recientes (los últimos RECIENTES, por personaje), arriba
+-- de la lista sin buscar, marcados «Reciente».
+local RECIENTES = 3
+local function recientes()
+	local d = M.Personaje()
+	if type(d.llevameRecientes) ~= "table" then d.llevameRecientes = {} end
+	return d.llevameRecientes
+end
+function Vj.Recientes() return recientes() end
+local function anotarReciente(d)
+	if type(d) ~= "table" or type(d.clave) ~= "string" then return end
+	local l = recientes()
+	for i = #l, 1, -1 do if l[i] == d.clave then table.remove(l, i) end end
+	table.insert(l, 1, d.clave)
+	while #l > RECIENTES do l[#l] = nil end
+end
+
 function Vj.Buscar(texto)
 	local q = M.Plegar(texto or "")
 	local out = {}
 	for _, d in ipairs(Vj.Destinos()) do
 		if q == "" or d.plegado:find(q, 1, true) then out[#out + 1] = d end
 	end
-	return medir(out)
+	out = medir(out)
+	if q ~= "" then
+		for _, d in ipairs(out) do d.reciente = nil end
+		return out
+	end
+	local orden = {}
+	for i, clave in ipairs(recientes()) do orden[clave] = i end
+	local arriba, resto = {}, {}
+	for _, d in ipairs(out) do
+		d.reciente = orden[d.clave] and true or nil
+		if d.reciente then arriba[#arriba + 1] = d else resto[#resto + 1] = d end
+	end
+	table.sort(arriba, function(a, b) return orden[a.clave] < orden[b.clave] end)
+	for _, d in ipairs(resto) do arriba[#arriba + 1] = d end
+	return arriba
 end
 
 -- «≈ 4 min» / «otro continente» / la zona, si no se sabe.
@@ -154,6 +185,9 @@ function Vj.Ir(d)
 	if not (ok and t) then return false, "flecha" end
 	if type(Nav.StartTrip) == "function" then pcall(Nav.StartTrip, t, nombre, L["Llévame a…"]) end
 	viaje = { destino = d, objetivo = t }
+	anotarReciente(d)
+	-- 1.4.2: el viaje sigue después de /reload (IrMision.lua).
+	if M.IrMision then M.IrMision.Recordar(t, { map = d.map, x = d.x, y = d.y, f = d.f, nombre = nombre, etiqueta = L["Llévame a…"] }) end
 	M.Empezar()
 	M.Aviso(L["Llévame a…"], format(L["Vamos a %s: sigue la flecha."], nombre), { icono = "ic-huella" })
 	return true
@@ -215,7 +249,9 @@ Vj.Refrescar = llenar
 local function armar()
 	ventana = M.VentanaSimple({
 		nombre = "AlfaRutasLlevame", titulo = L["Llévame a…"], icono = "ic-huella", ancho = 440, alto = 520,
-		buscador = { ayuda = L["Buscar un lugar…"], alCambiar = function(t) buscado = t or "" llenar() end },
+		-- 1.4.2: Enter te lleva al primero de la lista.
+		buscador = { ayuda = L["Buscar un lugar…"], alCambiar = function(t) buscado = t or "" llenar() end,
+			alEnter = function(t) Vj.IrAlPrimero(t) end },
 		vacio = { lobo = "atento", titulo = L["No encontré ese lugar"], texto = L["Prueba con el nombre del pueblo o de la zona."] },
 		crear = function(fila)
 			fila.Icono = K.Icono(fila, "ic-ruta", 14, "acento")
@@ -236,7 +272,8 @@ local function armar()
 			else
 				K.SetIcono(fila.Icono, ICONO[d.tipo] or "ic-ruta", "acento")
 				K.Escribir(fila.Texto, d.nombre)
-				K.Escribir(fila.Extra, Vj.Distancia(d)) -- 1.3.3: cuánto queda
+				-- 1.3.3: cuánto queda; 1.4.2: «Reciente» en tus últimos destinos.
+				K.Escribir(fila.Extra, d.reciente and (L["Reciente"] .. " \194\183 " .. Vj.Distancia(d)) or Vj.Distancia(d))
 				K.ColorTexto(fila.Texto, "texto")
 			end
 		end,
@@ -249,6 +286,22 @@ local function armar()
 			end
 		end,
 	})
+end
+
+-- 1.4.2: Enter en el buscador: al primero de lo que encontró.
+function Vj.IrAlPrimero(texto)
+	if not ventana or ventana.modo ~= "destinos" then return false end
+	local t = type(texto) == "string" and texto or buscado
+	if M.Plegar(t or "") == "" then return false end
+	local d = Vj.Buscar(t)[1]
+	if not d then return false end
+	if Vj.Ir(d) then
+		buscado = ""
+		if ventana.Buscador and ventana.Buscador.SetTexto then ventana.Buscador:SetTexto("") end
+		A.After(0.5, llenar)
+		return true
+	end
+	return false
 end
 
 function Vj.Abrir()

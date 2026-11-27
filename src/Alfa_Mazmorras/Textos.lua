@@ -486,3 +486,17 @@ M.EN = {
 	["Al entrar a una mazmorra, un aviso chico con cuántas mejoras hay para ti y de qué jefes. También con /alfa mazmorras parami."] = "When you enter a dungeon, a small notice with how many upgrades there are for you and from which bosses. Also with /alfa mazmorras parami.",
 	["y %d más"] = "and %d more",
 }
+-- 1.4.2 (agente combate)
+M.EN["Contar los intentos contra cada jefe"] = "Count the attempts on each boss"
+M.EN["Si el grupo cae ante un jefe, un aviso con el intento y lo que más importa de esa pelea para tu papel; al vencerlo, en qué intento fue. La tarjeta del jefe también dice en qué intento van."] = "If the group wipes on a boss, a notice with the attempt number and what matters most in that fight for your role; when you beat it, on which attempt. The boss card also shows which attempt you're on."
+M.EN["Intento %d"] = "Attempt %d"
+M.EN["Intento %d: repasen esto antes de jalar."] = "Attempt %d: go over this before the pull."
+M.EN["el jefe"] = "the boss"
+M.EN["¡Vencieron a %s al intento %d!"] = "You beat %s on attempt %d!"
+M.EN["La manada no se rinde."] = "The pack never gives up."
+M.EN["Van %d intentos. Respiren, esperen a que todos tengan maná y vuelvan."] = "%d attempts so far. Breathe, wait for everyone's mana and go again."
+M.EN["Primer intento. Respiren, esperen a que todos tengan maná y vuelvan."] = "First attempt. Breathe, wait for everyone's mana and go again."
+M.EN["Lo que más importa: %s"] = "What matters most: %s"
+M.EN["Cayeron ante %s"] = "Wiped on %s"
+M.EN["Caímos ante el jefe, ¿y ahora?"] = "We wiped on the boss, now what?"
+M.EN["Alfa lleva la cuenta de los intentos contra cada jefe y te dice lo que más importa de esa pelea para tu papel. Respiren, esperen el maná y vuelvan."] = "Alfa keeps count of the attempts on each boss and tells you what matters most in that fight for your role. Breathe, wait for mana and go again."

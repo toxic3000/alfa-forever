@@ -4,7 +4,7 @@
 --
 --   M.VentanaSimple(opts) -> ventana
 --     opts = { nombre, titulo, icono, ancho, alto, altoFila, crear(fila), pintar(fila, dato, i),
---              alClic(dato, i, boton), vacio = { titulo, texto, lobo }, buscador = { ayuda, alCambiar } }
+--              alClic(dato, i, boton), vacio = { titulo, texto, lobo }, buscador = { ayuda, alCambiar, alEnter } }
 --   ventana:Llenar(datos, titulo, subtitulo, linea)   abre (si no está) y pone la lista
 --   ventana.Linea: el texto de arriba (lo que explica la lista)
 
@@ -19,7 +19,8 @@ function M.VentanaSimple(opts)
 	v.Linea = K.Texto(cuerpo, "nota", "textoSuave")
 	v.Linea:SetWordWrap(true)
 	if opts.buscador then
-		v.Buscador = K.Buscador(cuerpo, { ayuda = opts.buscador.ayuda, alCambiar = opts.buscador.alCambiar })
+		-- 1.4.2: alEnter (Enter en el buscador), p. ej. ir al primero de la lista.
+		v.Buscador = K.Buscador(cuerpo, { ayuda = opts.buscador.ayuda, alCambiar = opts.buscador.alCambiar, alEnter = opts.buscador.alEnter })
 	end
 	-- 1.3.3: un botón arriba de la lista (opts.boton = { texto, alClic, peligro }),
 	-- que sale con v:Boton(texto) y se va con v:Boton(nil).

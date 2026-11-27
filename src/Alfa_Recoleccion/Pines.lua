@@ -49,12 +49,27 @@ function P.Construir(f)
 	return f
 end
 
+-- 1.4.2: lo que recolectaste hace poco todavía no vuelve (el juego tarda unos
+-- minutos en hacerlo reaparecer): su pin se ve tenue y su cuadro dice hace
+-- cuánto. Ajuste recoleccion.recientes (sí). -> minutos desde entonces | nil
+P.RECIENTE = 8 * 60
+function P.Reciente(rec, ahora)
+	if type(rec) ~= "table" or N.Get(R.ID, "recientes") == false then return nil end
+	local t = tonumber(rec.t)
+	if not t then return nil end
+	local s = (ahora or time()) - t
+	if s < 0 or s >= P.RECIENTE then return nil end
+	return math.floor(s / 60)
+end
+
 -- El pin f muestra el grupo g a `tam` unidades. tenue: tu habilidad no
--- alcanza. cuenta: cuántos nodos agrupa (nil o 1: uno solo).
-function P.Aplicar(f, g, tam, tenue, cuenta)
+-- alcanza. cuenta: cuántos nodos agrupa (nil o 1: uno solo). reciente
+-- (1.4.2): lo recolectaste hace poco.
+function P.Aplicar(f, g, tam, tenue, cuenta, reciente)
 	cuenta = cuenta and cuenta > 1 and cuenta or nil
-	if f.psG == g and f.psTam == tam and f.psTenue == tenue and f.psCuenta == cuenta then return end
-	f.psG, f.psTam, f.psTenue, f.psCuenta = g, tam, tenue, cuenta
+	reciente = reciente and true or nil
+	if f.psG == g and f.psTam == tam and f.psTenue == tenue and f.psCuenta == cuenta and f.psReciente == reciente then return end
+	f.psG, f.psTam, f.psTenue, f.psCuenta, f.psReciente = g, tam, tenue, cuenta, reciente
 	local gr = M.GRUPOS[g]
 	local tex, glifo = R.Icono(g)
 	f:SetSize(tam, tam)
@@ -69,14 +84,14 @@ function P.Aplicar(f, g, tam, tenue, cuenta)
 		f.icono:SetSize(tam, tam)
 		f.icono:SetVertexColor(1, 1, 1, 1)
 	end
-	if f.icono.SetDesaturated then f.icono:SetDesaturated(tenue and true or false) end
+	if f.icono.SetDesaturated then f.icono:SetDesaturated((tenue or reciente) and true or false) end
 	f.fondo:SetSize(tam * 1.2, tam * 1.2)
 	local sr, sg, sb = T.Color("scrim")
 	f.fondo:SetVertexColor(sr or 0.04, sg or 0.05, sb or 0.08, 0.82)
 	local c = gr and M.TIPO[gr.tipo] and M.TIPO[gr.tipo].color or { 1, 1, 1 }
 	f.aro:SetSize(tam * 1.42, tam * 1.42)
-	f.aro:SetVertexColor(c[1], c[2], c[3], tenue and 0.45 or 0.95)
-	f:SetAlpha(tenue and 0.6 or 1)
+	f.aro:SetVertexColor(c[1], c[2], c[3], reciente and 0.3 or (tenue and 0.45 or 0.95))
+	f:SetAlpha(P.Alfa(tenue, reciente))
 	if cuenta then
 		fuente(f.cuenta, math.max(8, math.floor(tam * 0.62 + 0.5)))
 		f.cuenta:SetText(cuenta > 99 and "99+" or tostring(cuenta))
@@ -85,6 +100,12 @@ function P.Aplicar(f, g, tam, tenue, cuenta)
 	else
 		f.cuenta:Hide()
 	end
+end
+
+-- Lo transparente de un pin: el recién recolectado, más que el que no alcanzas.
+function P.Alfa(tenue, reciente)
+	if reciente then return 0.38 end
+	return tenue and 0.6 or 1
 end
 
 ---------------------------------------------------------------------------
@@ -122,6 +143,12 @@ local function historia(tip, rec)
 		local cuando = fecha(rec.t)
 		if cuando then texto = texto .. "  ·  " .. L["última: %s"]:format(cuando) end
 		tip:AddLine(texto, 0.55, 0.85, 1)
+		-- 1.4.2: si fue hace poco, que no vayas en balde.
+		local min = P.Reciente(rec)
+		if min then
+			tip:AddLine(min < 1 and L["Lo recolectaste hace un momento: aún no vuelve."]
+				or N.Plural(min, L["Lo recolectaste hace %d minuto: puede que aún no vuelva."], L["Lo recolectaste hace %d minutos: puede que aún no vuelva."]), 1, 0.72, 0.3, true)
+		end
 	else
 		tip:AddLine(L["Todavía no lo recolectas"], 0.6, 0.6, 0.6)
 	end

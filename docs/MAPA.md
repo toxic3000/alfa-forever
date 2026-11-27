@@ -33,7 +33,7 @@ lo de «Si pasa esto, mira aquí» vive en `tools/mapa.py`). `tools/prueba.py` r
 
 ## Los módulos
 
-### `src/Alfa_Bienvenida/` — 28 archivos. 14.935 líneas
+### `src/Alfa_Bienvenida/` — 28 archivos. 14.937 líneas
 Pruebas que lo usan (34): `prueba_140_bugs.lua`, `prueba_140_dia.lua`, `prueba_140_interfaz.lua`, `prueba_140_misiones.lua`, `prueba_140_pantallas.lua`, `prueba_140_revision.lua`, `prueba_140_revision2.lua`, `prueba_140_ventana.lua` y más
 
 - `Acomodar.lua` — acomodar la pantalla (1.3.1; 1.4.0: todo se mueve)
@@ -65,8 +65,8 @@ Pruebas que lo usan (34): `prueba_140_bugs.lua`, `prueba_140_dia.lua`, `prueba_1
 - `Ventana.lua` — la ventana de Alfa, más cómoda (1.3.7)
 - `Zen.lua` — el modo Zen (1.3.8)
 
-### `src/Alfa_Bolsas/` — 33 archivos. 12.396 líneas
-Pruebas que lo usan (23): `prueba_139_bolsas.lua`, `prueba_139_revision.lua`, `prueba_140_bolsas.lua`, `prueba_140_bugs.lua`, `prueba_140_dia.lua`, `prueba_140_diario.lua`, `prueba_140_interfaz.lua`, `prueba_140_revision2.lua` y más
+### `src/Alfa_Bolsas/` — 33 archivos. 12.410 líneas
+Pruebas que lo usan (24): `prueba_139_revision.lua`, `prueba_140_bolsas.lua`, `prueba_140_bugs.lua`, `prueba_140_dia.lua`, `prueba_140_diario.lua`, `prueba_140_interfaz.lua`, `prueba_140_revision2.lua`, `prueba_142_economia.lua` y más
 
 - `Abrir.lua` — «Abrir» y «Aprender» en el momento 1.4.0 (diario, 92 y 93)
 - `Acomodar.lua` — acomodar con un clic 1.3.0
@@ -126,10 +126,11 @@ Pruebas que lo usan (7): `prueba_116.lua`, `prueba_120.lua`, `prueba_122.lua`, `
 - `Pesos.lua` — pesos de estadísticas de cada build
 - `Textos.lua` — textos en inglés El español es el idioma principal; esta tabla los traduce al inglés para los clientes que no son esMX ni esES
 
-### `src/Alfa_Combate/` — 22 archivos. 8.173 líneas
-Pruebas que lo usan (15): `prueba_137_medidor.lua`, `prueba_137_revision.lua`, `prueba_137c_personaje.lua`, `prueba_138_oficios.lua`, `prueba_139_modulos.lua`, `prueba_140_mundo.lua`, `prueba_140_pulido.lua`, `prueba_140_secretos.lua` y más
+### `src/Alfa_Combate/` — 23 archivos. 8.550 líneas
+Pruebas que lo usan (16): `prueba_137_revision.lua`, `prueba_137c_personaje.lua`, `prueba_138_oficios.lua`, `prueba_139_modulos.lua`, `prueba_140_mundo.lua`, `prueba_140_pulido.lua`, `prueba_140_secretos.lua`, `prueba_142_combate.lua` y más
 
 - `Amenaza.lua` — tu amenaza
+- `Caida.lua` — «¿Qué me tumbó?», lo que te tumbó al caer (1.4.2)
 - `Combate.lua` — Combate
 - `Corte.lua` — el aviso para cortar
 - `Cuenta.lua` — la cuenta para jalar
@@ -152,8 +153,8 @@ Pruebas que lo usan (15): `prueba_137_medidor.lua`, `prueba_137_revision.lua`, `
 - `Textos.lua` — textos en inglés para clientes que no son esMX/esES. El español es el idioma principal: aquí solo va su traducción
 - `Ventana.lua` — la ventana del medidor de daño
 
-### `src/Alfa_Comercio/` — 24 archivos. 7.743 líneas
-Pruebas que lo usan (19): `prueba_137d_datos.lua`, `prueba_138_candado.lua`, `prueba_138_oficios.lua`, `prueba_139_modulos.lua`, `prueba_140_diario.lua`, `prueba_140_oficios.lua`, `prueba_140_revision.lua`, `prueba_140_velocidad.lua` y más
+### `src/Alfa_Comercio/` — 27 archivos. 8.659 líneas
+Pruebas que lo usan (20): `prueba_138_candado.lua`, `prueba_138_oficios.lua`, `prueba_139_modulos.lua`, `prueba_140_diario.lua`, `prueba_140_oficios.lua`, `prueba_140_revision.lua`, `prueba_140_velocidad.lua`, `prueba_142_economia.lua` y más
 
 - `Buscados.lua` — lo de tu lista, barato en la subasta (1.4.0, plan 46;
 - `Buzon.lua` — el buzón 1.2.8
@@ -173,22 +174,28 @@ Pruebas que lo usan (19): `prueba_137d_datos.lua`, `prueba_138_candado.lua`, `pr
 - `RecetasVerde.lua` — la receta que pasa a verde (1.4.0, plan 51;
 - `RecetasZona.lua` — las recetas que te faltan cerca de ti 1.3.8
 - `Recompra.lua` — lo valioso que vendiste sin querer 1.4.0 (diario, 94)
+- `Reponer.lua` — «Siempre a la mano», reponer con un clic en el comerciante (1.4.2)
+- `Reventa.lua` — lo que el comerciante vende más barato que la subasta (1.4.2)
 - `Semana.lua` — tu semana en la subasta (1.4.0, plan 47;
 - `Subasta.lua` — escaneo completo de la subasta
+- `Subastas.lua` — tus subastas, lo que tienes a la venta (1.4.2)
 - `Textos.lua` — textos en inglés El español es el idioma principal: cada clave es el texto en español
 - `Tooltip.lua` — el consejo en el cuadro de cada objeto
 - `Vender.lua` — subastar fácil 1.2.9
 - `VentanaOficios.lua` — la ventana de oficios de 1 a 300 1.2.9
 
-### `src/Alfa_Comodidades/` — 19 archivos. 5.788 líneas
-Pruebas que lo usan (6): `prueba_128_rutas.lua`, `prueba_130_interfaz.lua`, `prueba_131_varios.lua`, `prueba_132_ajustes.lua`, `prueba_137_cierre.lua`, `prueba_137_comodidades.lua`
+### `src/Alfa_Comodidades/` — 24 archivos. 6.486 líneas
+Pruebas que lo usan (8): `prueba_122.lua`, `prueba_128_rutas.lua`, `prueba_130_interfaz.lua`, `prueba_131_varios.lua`, `prueba_132_ajustes.lua`, `prueba_137_cierre.lua`, `prueba_137_comodidades.lua`, `prueba_142_social.lua`
 
 - `Barras.lua` — las barras de abajo con el estilo de Alfa
 - `Charla.lua` — tu chat, más a la mano (1.3.7)
 - `Chat.lua` — el chat con el estilo de Alfa
 - `Comodidades.lua` — Comodidades
+- `Conexiones.lua` — quién se conecta, con su nivel, su clase y dónde anda (1.4.2)
+- `CopiarNombre.lua` — «Copiar el nombre» en el clic derecho de un jugador (1.4.2)
 - `Cuadro.lua` — el cuadro de información de las unidades (a quién apunta, rango de hermandad, ocultarlo en combate y verlo con Mayús)
 - `Estilo.lua` — el estilo de Alfa fuera de sus ventanas
+- `Flechas.lua` — lo que escribiste antes, con las flechas (1.4.2)
 - `Formas.lua` — la barra de una forma que está vacía
 - `Ids.lua` — el número (ID) en el cuadro de información (1.3.7)
 - `Info.lua` — la barra de información (1.3.7)
@@ -197,14 +204,16 @@ Pruebas que lo usan (6): `prueba_128_rutas.lua`, `prueba_130_interfaz.lua`, `pru
 - `MinimapaEstilo.lua` — el minimapa con el estilo de Alfa
 - `Misiones.lua` — aceptar y entregar todas las misiones
 - `Pagina.lua` — su página, hecha con el Kit
+- `Pedido.lua` — invitar a quien te lo pide por susurro (1.4.2)
+- `Pendientes.lua` — te escribieron mientras peleabas (1.4.2)
 - `Probador.lua` — el probador (botones de objetos y control de la animación)
 - `Recargas.lua` — números en las recargas de tus barras (1.3.7)
 - `Sonidos.lua` — silenciar sonidos molestos (grupos del juego y una lista propia)
 - `Textos.lua` — los textos en inglés (el español es el idioma principal y va escrito en el código)
 - `Vuelo.lua` — la siguiente parada del vuelo
 
-### `src/Alfa_Curacion/` — 14 archivos. 6.750 líneas
-Pruebas que lo usan (15): `prueba_137c_bugs.lua`, `prueba_137c_personaje.lua`, `prueba_138_curacion.lua`, `prueba_138_revision.lua`, `prueba_139_modulos.lua`, `prueba_139_revision.lua`, `prueba_140_mundo.lua`, `prueba_140_revision.lua` y más
+### `src/Alfa_Curacion/` — 15 archivos. 6.920 líneas
+Pruebas que lo usan (16): `prueba_137c_personaje.lua`, `prueba_138_curacion.lua`, `prueba_138_revision.lua`, `prueba_139_modulos.lua`, `prueba_139_revision.lua`, `prueba_140_mundo.lua`, `prueba_140_revision.lua`, `prueba_142_combate.lua` y más
 
 - `Asistente.lua` — el asistente de 3 pasos
 - `Color.lua` — el color de los marcos
@@ -217,6 +226,7 @@ Pruebas que lo usan (15): `prueba_137c_bugs.lua`, `prueba_137c_personaje.lua`, `
 - `Peligro.lua` — quién está en peligro, a la primera mirada
 - `Perfiles.lua` — tus mapas de clics guardados (1.3.9)
 - `Raton.lua` — el dibujo del ratón (1.3.9)
+- `Revivir.lua` — «Faltan por revivir», a quién del grupo levantar al terminar la pelea (1.4.2)
 - `SinBuff.lua` — quién no tiene tu hechizo de apoyo, en un ícono (1.4.0, mejora 41)
 - `Tamanos.lua` — las medidas de tus marcos según el tamaño del grupo (1.4.0, mejora 40)
 - `Textos.lua` — textos en inglés para clientes que no son esMX/esES. El español es el idioma principal: aquí solo va su traducción
@@ -240,8 +250,8 @@ Pruebas que lo usan (11): `prueba_137b_enciclopedia.lua`, `prueba_137e_planes.lu
 
 - `Idioma.lua` — el idioma de Alfa, aunque el juego esté en otro
 
-### `src/Alfa_Inicio/` — 16 archivos. 8.150 líneas
-Pruebas que lo usan (18): `prueba_137_hoy.lua`, `prueba_137_revision.lua`, `prueba_137b_bugs.lua`, `prueba_139_interfaz.lua`, `prueba_140_acomodar.lua`, `prueba_140_interfaz.lua`, `prueba_140_revision2.lua`, `prueba_140_ventana.lua` y más
+### `src/Alfa_Inicio/` — 17 archivos. 8.876 líneas
+Pruebas que lo usan (20): `prueba_137b_bugs.lua`, `prueba_139_interfaz.lua`, `prueba_140_acomodar.lua`, `prueba_140_interfaz.lua`, `prueba_140_revision2.lua`, `prueba_140_ventana.lua`, `prueba_142_ficha.lua`, `prueba_142_portada.lua` y más
 
 - `Acomodo.lua` — cómo se acomoda Hoy (1.3.9)
 - `Avisos.lua` — la tarjeta de aviso
@@ -250,6 +260,7 @@ Pruebas que lo usan (18): `prueba_137_hoy.lua`, `prueba_137_revision.lua`, `prue
 - `Camino.lua` — «Camino al 60» -- 1.2.9
 - `Clase.lua` — la tarjeta «Para tu <clase>»
 - `Comida.lua` — comida y agua -- 1.2.9
+- `Ficha.lua` — tu ficha de cazador (1.4.2)
 - `Inicio.lua` — la página Hoy, la portada de Alfa
 - `Jugado.lua` — tu tiempo jugado 1.3.7 (191)
 - `Listo.lua` — listo para la mazmorra -- 1.2.9
@@ -299,8 +310,8 @@ Pruebas que lo usan (33): `prueba_140_acomodar.lua`, `prueba_140_bugs.lua`, `pru
 - `VentanaHistorias.lua` — la ventana Historias
 - `VentanaTemporada.lua` — la ventana de tu temporada con la manada (1.4.0, 11)
 
-### `src/Alfa_Manada/` — 35 archivos. 13.205 líneas
-Pruebas que lo usan (24): `prueba_138_revision.lua`, `prueba_139_bandos.lua`, `prueba_139_modulos.lua`, `prueba_139_revision.lua`, `prueba_140_bugs.lua`, `prueba_140_pulido.lua`, `prueba_140_social.lua`, `prueba_insignias.lua` y más
+### `src/Alfa_Manada/` — 37 archivos. 13.796 líneas
+Pruebas que lo usan (25): `prueba_139_bandos.lua`, `prueba_139_modulos.lua`, `prueba_139_revision.lua`, `prueba_140_bugs.lua`, `prueba_140_pulido.lua`, `prueba_140_social.lua`, `prueba_142_social.lua`, `prueba_insignias.lua` y más
 
 - `Bienvenida.lua` — la bienvenida a la manada (1.4.0, 52)
 - `Botin.lua` — el botín de la manada (1.3.0)
@@ -310,6 +321,7 @@ Pruebas que lo usan (24): `prueba_138_revision.lua`, `prueba_139_bandos.lua`, `p
 - `Cerca.lua` — un lobo de la manada anda cerca (1.3.2)
 - `Cita.lua` — la cita de la manada (1.2.8)
 - `Clan.lua` — los datos del clan que se muestran en su página
+- `Companeros.lua` — con quién cazaste (1.4.2)
 - `Compartir.lua` — compartir tu plan o tu guía con un lobo (1.3.8)
 - `Ficha.lua` — la ficha de cada lobo (1.3.8)
 - `Gente.lua` — quién es quién. Tu grupo o banda (con la API del juego) y los usuarios de Alfa que aceptaron compartir su ubicación (lo que llega por Red.lua). Nada más: ni…
@@ -337,9 +349,10 @@ Pruebas que lo usan (24): `prueba_138_revision.lua`, `prueba_139_bandos.lua`, `p
 - `Tablon.lua` — el tablón de la manada (1.3.0)
 - `Textos.lua` — los textos en inglés (el español es el idioma principal y va escrito en el código)
 - `Util.lua` — piezas comunes del módulo (nombres, posiciones, distancias, tiempos, susurros e invitaciones)
+- `Vigilar.lua` — «Avisarme cuando se conecte» (1.4.2)
 
-### `src/Alfa_Mazmorras/` — 29 archivos. 7.786 líneas
-Pruebas que lo usan (8): `prueba_116.lua`, `prueba_129_lya.lua`, `prueba_137_mundo.lua`, `prueba_137_revision.lua`, `prueba_138_oficios.lua`, `prueba_139_modulos.lua`, `prueba_140_diario.lua`, `prueba_140_mundo.lua`
+### `src/Alfa_Mazmorras/` — 30 archivos. 7.982 líneas
+Pruebas que lo usan (9): `prueba_129_lya.lua`, `prueba_137_mundo.lua`, `prueba_137_revision.lua`, `prueba_138_oficios.lua`, `prueba_139_modulos.lua`, `prueba_140_diario.lua`, `prueba_140_mundo.lua`, `prueba_142_combate.lua` y más
 
 - `Ajustes.lua` — sus ajustes, en Ajustes > Descubrir > Mazmorras
 - `Avisos.lua` — los avisos de jefes del propio juego
@@ -361,6 +374,7 @@ Pruebas que lo usan (8): `prueba_116.lua`, `prueba_129_lya.lua`, `prueba_137_mun
 - `Cronometro.lua` — el cronómetro de las mazmorras (1.3.7)
 - `Datos.lua` — datos y progreso
 - `EnVivo.lua` — la mazmorra en vivo (1.2.9)
+- `Intentos.lua` — los intentos contra cada jefe (1.4.2)
 - `MapaDentro.lua` — el mapa por dentro (1.3.9)
 - `ParaMi.lua` — «¿Qué cae aquí para mí?» (1.4.0, mejora 43)
 - `Piezas.lua` — las piezas propias de la página, hechas con el Kit
@@ -371,8 +385,8 @@ Pruebas que lo usan (8): `prueba_116.lua`, `prueba_129_lya.lua`, `prueba_137_mun
 - `Textos.lua` — textos en inglés El español es el idioma principal: cada texto se escribe en español en el código, dentro de L["..."], y aquí va su traducción al inglés.…
 - `Vista.lua` — la página en la ventana de Alfa, hecha con el Kit
 
-### `src/Alfa_Mundo/` — 26 archivos. 10.191 líneas
-Pruebas que lo usan (16): `prueba_137_mundo.lua`, `prueba_137c_mundo.lua`, `prueba_137d_datos.lua`, `prueba_138_facciones.lua`, `prueba_138_mundo.lua`, `prueba_139_bandos.lua`, `prueba_140_diario.lua`, `prueba_140_mundo.lua` y más
+### `src/Alfa_Mundo/` — 26 archivos. 10.216 líneas
+Pruebas que lo usan (17): `prueba_137c_mundo.lua`, `prueba_137d_datos.lua`, `prueba_138_facciones.lua`, `prueba_138_mundo.lua`, `prueba_139_bandos.lua`, `prueba_140_diario.lua`, `prueba_140_mundo.lua`, `prueba_142_mapa.lua` y más
 
 - `Buscar.lua` — buscar un lugar por su nombre y la leyenda de las capas (1.3.9, mejora 78)
 - `Capas.lua` — un solo control de capas para todo lo que se pinta en los mapas
@@ -401,7 +415,7 @@ Pruebas que lo usan (16): `prueba_137_mundo.lua`, `prueba_137c_mundo.lua`, `prue
 - `Ventana.lua` — la ventana del mapa continuo
 - `VueloCerca.lua` — «Aquí cerca hay un vuelo que no conoces» 1.4.0 (diario, 99)
 
-### `src/Alfa_Nucleo/` — 29 archivos. 15.726 líneas
+### `src/Alfa_Nucleo/` — 29 archivos. 15.745 líneas
 Pruebas que lo usan (1): `prueba_121.lua`
 
 - `Comandos.lua` — los comandos de /alfa a la mano (1.4.0, 110 y 111)
@@ -434,9 +448,10 @@ Pruebas que lo usan (1): `prueba_121.lua`
 - `UltimaVez.lua` — «La última vez…» (1.3.8)
 - `Zonas.lua` — llegar a una zona se siente (1.3.7)
 
-### `src/Alfa_Pesca/` — 22 archivos. 9.995 líneas
-Pruebas que lo usan (12): `prueba_138_revision.lua`, `prueba_139_bolsas.lua`, `prueba_139_modulos.lua`, `prueba_140_bugs.lua`, `prueba_140_control.lua`, `prueba_140_oficios.lua`, `prueba_140_secretos.lua`, `prueba_141_raton.lua` y más
+### `src/Alfa_Pesca/` — 23 archivos. 10.224 líneas
+Pruebas que lo usan (13): `prueba_139_bolsas.lua`, `prueba_139_modulos.lua`, `prueba_140_bugs.lua`, `prueba_140_control.lua`, `prueba_140_oficios.lua`, `prueba_140_secretos.lua`, `prueba_141_raton.lua`, `prueba_142_economia.lua` y más
 
+- `Aqui.lua` — qué pica aquí y tus mejores lugares (1.4.2)
 - `Barra.lua` — la barra de pesca
 - `Cocina.lua` — cocina junto al agua
 - `Compat.lua` — Pesca
@@ -460,8 +475,8 @@ Pruebas que lo usan (12): `prueba_138_revision.lua`, `prueba_139_bolsas.lua`, `p
 - `VistaPescador.lua` — la pestaña Pescador
 - `VistaSesiones.lua` — la pestaña Sesiones
 
-### `src/Alfa_Recoleccion/` — 14 archivos. 11.572 líneas
-Pruebas que lo usan (9): `prueba_128_interfaz.lua`, `prueba_137_oficios.lua`, `prueba_139_oficios.lua`, `prueba_139_revision.lua`, `prueba_140_dia.lua`, `prueba_140_diario.lua`, `prueba_140_oficios.lua`, `prueba_141_materiales.lua` y más
+### `src/Alfa_Recoleccion/` — 15 archivos. 11.776 líneas
+Pruebas que lo usan (10): `prueba_137_oficios.lua`, `prueba_139_oficios.lua`, `prueba_139_revision.lua`, `prueba_140_dia.lua`, `prueba_140_diario.lua`, `prueba_140_oficios.lua`, `prueba_141_materiales.lua`, `prueba_142_economia.lua` y más
 
 - `Avisos.lua` — dos avisos en el momento justo 1.4.0 (diario, 96 y 97)
 - `Base.lua` — base de nodos de WoW Forever
@@ -476,11 +491,13 @@ Pruebas que lo usan (9): `prueba_128_interfaz.lua`, `prueba_137_oficios.lua`, `p
 - `Pines.lua` — el aspecto de un pin y su cuadro de información,). Lo comparten el mapa del mundo y el minimapa
 - `Recoleccion.lua` — nodos, rutas de farmeo e historial
 - `Ruta.lua` — la ruta de farmeo,)
+- `Subir.lua` — dónde subir tu Minería o tu Herboristería (1.4.2)
 - `Textos.lua` — textos en inglés para clientes que no son esMX/esES. El español es el idioma principal y va en el código, dentro de L["..."]
 
-### `src/Alfa_Rutas/` — 61 archivos. 24.527 líneas
-Pruebas que lo usan (38): `prueba_140_hud.lua`, `prueba_140_misiones.lua`, `prueba_140_oficios.lua`, `prueba_141_misiones.lua`, `prueba_botones.lua`, `prueba_humedales.lua`, `prueba_letras.lua`, `prueba_rutas.lua` y más
+### `src/Alfa_Rutas/` — 67 archivos. 25.684 líneas
+Pruebas que lo usan (40): `prueba_140_oficios.lua`, `prueba_141_misiones.lua`, `prueba_142_objetos.lua`, `prueba_142_rutas.lua`, `prueba_botones.lua`, `prueba_humedales.lua`, `prueba_letras.lua`, `prueba_rutas.lua` y más
 
+- `AlSubir.lua` — las misiones que se abren al subir de nivel (1.4.2)
 - `Asistente.lua` — el asistente "¿Qué quieres hacer?"
 - `Banda.lua` — la banda de color de los títulos 1.4.0 (70)
 - `Barcos.lua` — barcos y zepelines en el mapa, con su cuenta atrás 1.3.0
@@ -502,6 +519,7 @@ Pruebas que lo usan (38): `prueba_140_hud.lua`, `prueba_140_misiones.lua`, `prue
 - `EnCurso.lua` — «Lo que sigues» (1.3.7), todo lo que tienes en curso
 - `Entrega.lua` — el PNJ de la entrega, marcado en el minimapa 1.4.0 (29)
 - `Entrenador.lua` — «Aprender todo» en el entrenador 1.4.0 (diario, 90)
+- `Flecha.lua` — el clic derecho en la flecha, todo lo de la flecha a la mano (1.4.2)
 - `Foco.lua` — modo foco en el rastreador 1.2.9
 - `Grifo.lua` — «Toma el grifo» 1.3.8
 - `Grises.lua` — misiones grises que puedes soltar 1.3.0
@@ -511,7 +529,9 @@ Pruebas que lo usan (38): `prueba_140_hud.lua`, `prueba_140_misiones.lua`, `prue
 - `Hogar.lua` — «Piedra de hogar a tiempo» 1.2.8
 - `Hora.lua` — «Una hora de caza» y cuánto te falta -- 1.2.7
 - `Indice.lua` — el índice de misiones de este personaje y las piezas para medirlas (XP, oro estimado, dónde empiezan y terminan, cuánto camino y esfuerzo llevan) y para…
+- `IrMision.lua` — «Llévame» a cualquier misión de tu registro y «La misión más cerca» (1.4.2)
 - `Ligero.lua` — lo que se sabe sin el Codex 1.3.2
+- `ListaAviso.lua` — «¡Lista para entregar!», tu misión terminada con la flecha a un clic (1.4.2)
 - `MapaGrupo.lua` — el mapa de misiones de tu grupo 1.3.0
 - `MiNivel.lua` — «Saltar a mi nivel» 1.4.0 (26)
 - `Nivel.lua` — pasos de nivel claros 1.2.9
@@ -524,6 +544,7 @@ Pruebas que lo usan (38): `prueba_140_hud.lua`, `prueba_140_misiones.lua`, `prue
 - `Pagina.lua` — la página Ruta de la ventana de Alfa
 - `PaginaPlanes.lua` — la sección Planes de la ventana de Alfa (1.3.7,
 - `Peligro.lua` — «Zona peligrosa» 1.2.8
+- `Pendientes.lua` — «Tienes misiones aquí» al volver a una zona (1.4.2)
 - `Plan.lua` — el planificador. Elige las misiones de cada tramo, las ordena por el camino más corto con el planificador de paradas del motor (Dungeons.PlanStops, el mismo…
 - `Planes.lua` — Mis planes, listas de metas que arma el jugador
 - `Rastreador.lua` — el rastreador de pasos
@@ -532,6 +553,7 @@ Pruebas que lo usan (38): `prueba_140_hud.lua`, `prueba_140_misiones.lua`, `prue
 - `Restablecer.lua` — restablecer una guía y empezar desde un paso 1.3.9 (pedido de Toxic)
 - `RutaGrupo.lua` — seguir la ruta de alguien de tu grupo 1.3.3
 - `Rutas.lua` — las acciones de tus rutas propias (seguir una, agregarle un objeto) y el comando /alfa rutas
+- `Senalar.lua` — señalar los objetos de tus misiones (1.4.2)
 - `Siguiente.lua` — la siguiente guía, sola 1.2.9
 - `Tareas.lua` — trabajo en segundo plano. Leer miles de misiones u objetos de una vez congelaría el juego, así que cada trabajo corre en una corrutina que se reparte en…
 - `Textos.lua` — textos en inglés (el español es el idioma principal)

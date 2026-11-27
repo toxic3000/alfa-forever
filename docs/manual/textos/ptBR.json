@@ -996,6 +996,7 @@
               {"cmd": "/alfa rendimiento", "texto": "Quanta memória e processador cada parte do Alfa usa (e libera a memória que não usa mais)."},
               {"cmd": "/alfa diagnostico", "texto": "Revisar o Alfa: conflitos com outros addons, partes desligadas e opções estranhas."},
               {"cmd": "/alfa raton", "texto": "Se você não consegue clicar em algo do jogo ou girar a câmera: diz o que há sob o seu mouse e tira o que do Alfa estiver atrapalhando."},
+              {"cmd": "/alfa ficha", "texto": "Sua ficha: seu personagem em 3D, seus números, suas profissões e todos os seus personagens (com «Tirar foto»)."},
               {"cmd": "/alfa reportar", "texto": "Reportar um erro, uma melhoria ou um comentário, com os erros que o Alfa capturou."}
             ]}
           ]
@@ -1087,7 +1088,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "A 1.4.1: o mouse é seu", "items": ["**Cliques de volta:** você pode clicar em inimigos distantes, girar a câmera, usar as abas de profissões e mudar o volume.", "**`/alfa raton`:** diz o que há sob o seu mouse e tira na hora o que do Alfa atrapalhar.", "**Shift + arrastar:** um quadro verde mostra o que se move e some ao soltar o Shift.", "**Mais firme:** uma revisão de todo o Alfa com testes novos que procuram esse tipo de erro."]}
+    "mapa": {"titulo": "A 1.4.2: sua ficha de caçador", "items": ["**Sua ficha:** seu personagem em 3D com ouro, durabilidade, bolsas, tempo jogado e profissões (`/alfa ficha`).", "**Seus personagens:** nível, ouro, profissões e recargas de profissão de toda a conta.", "**Objetos de missão indicados:** o jogo marca o que você precisa tocar enquanto uma missão pede.", "**Hoje, nada sobra:** os números da capa sempre cabem no quadro."]}
   },
   "contraportada": {
     "titulo": "Entre para a matilha",

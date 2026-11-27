@@ -996,6 +996,7 @@
               {"cmd": "/alfa rendimiento", "texto": "La mémoire et le processeur qu'utilise chaque partie d'Alfa (et libère la mémoire qui ne sert plus)."},
               {"cmd": "/alfa diagnostico", "texto": "Vérifier Alfa : conflits avec d'autres addons, parties désactivées et réglages bizarres."},
               {"cmd": "/alfa raton", "texto": "Si tu ne peux pas cliquer sur quelque chose du jeu ou tourner la caméra : indique ce qu'il y a sous ta souris et retire ce qui gêne d'Alfa."},
+              {"cmd": "/alfa ficha", "texto": "Ta fiche : ton personnage en 3D, tes chiffres, tes métiers et tous tes personnages (avec «Prendre une photo»)."},
               {"cmd": "/alfa reportar", "texto": "Signaler un bug, une idée ou un commentaire, avec les erreurs capturées par Alfa."}
             ]}
           ]
@@ -1087,7 +1088,7 @@
     }
   ],
   "novedades": {
-    "mapa": {"titulo": "La 1.4.1 : la souris est à toi", "items": ["**Les clics reviennent :** tu peux cliquer sur des ennemis au loin, tourner la caméra, utiliser les onglets de métiers et régler le volume.", "**`/alfa raton` :** indique ce qu'il y a sous ta souris et retire aussitôt ce qui gêne d'Alfa.", "**Maj + glisser :** un cadre vert montre ce qui se déplace et disparaît quand tu relâches Maj.", "**Plus solide :** une révision de tout Alfa avec de nouveaux tests qui traquent ce genre de bug."]}
+    "mapa": {"titulo": "La 1.4.2 : ta fiche de chasseur", "items": ["**Ta fiche :** ton personnage en 3D avec ton or, ta durabilité, tes sacs, ton temps de jeu et tes métiers (`/alfa ficha`).", "**Tes personnages :** le niveau, l'or, les métiers et les temps de recharge de métier de tout ton compte.", "**Objets de quête signalés :** le jeu marque ce que tu dois toucher tant qu'une quête le demande.", "**Aujourd'hui, rien ne déborde :** les chiffres de la couverture tiennent toujours dans leur case."]}
   },
   "contraportada": {
     "titulo": "Rejoignez la meute",

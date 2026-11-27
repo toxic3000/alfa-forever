@@ -43,3 +43,5 @@ Pagina.lua
 Manada.lua
 Censo.lua
 Bienvenida.lua
+Vigilar.lua
+Companeros.lua

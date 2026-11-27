@@ -162,6 +162,31 @@ local function herramientas()
 		p.insignias[#p.insignias + 1] = { L["A pedido"], "neutro" }
 	end
 	out[#out + 1] = p
+	-- 1.4.2: lo que te tumbó la última vez (Caida.lua).
+	local Ca = M.Caida
+	local uc = Ca and Ca.Ultima()
+	local cd = { icono = "ic-alerta", titulo = L["Tu última caída"], lineas = 5 }
+	if uc then
+		local g = type(uc.golpes) == "table" and uc.golpes[1]
+		local f = type(uc.final) == "table" and uc.final
+		local partes = {}
+		if f and f.nombre then partes[#partes + 1] = f.quien and format(L["El golpe final: %s, de %s."], f.nombre, f.quien) or format(L["El golpe final: %s."], f.nombre) end
+		if g and g.nombre and not (f and f.nombre == g.nombre) then
+			partes[#partes + 1] = format(L["Lo que más te pegó: %s (%s)."], g.nombre, D.Numero(g.valor))
+		end
+		local total, ev = tonumber(uc.total) or 0, tonumber(uc.evitable) or 0
+		if total > 0 and ev > 0 then partes[#partes + 1] = format(L["Se podía evitar el %d %%."], floor(ev * 100 / total + 0.5)) end
+		cd.texto = #partes > 0 and table.concat(partes, " ") or L["El medidor del juego no tiene números de esta pelea."]
+		if uc.zona then cd.insignias = { { uc.zona, "neutro" } } end
+		cd.accion = { texto = L["Ver de nuevo"], alClic = aLaVista(function() return Ca.Ver(true) end, L["Así se ve en pantalla."]) }
+	else
+		cd.texto = L["Si caes en una pelea, aquí queda lo que te tumbó: el golpe final, lo que más te pegó y cuánto se podía evitar."]
+	end
+	if Ca and not M.Opt("caida") then
+		cd.insignias = cd.insignias or {}
+		cd.insignias[#cd.insignias + 1] = { L["A pedido"], "neutro" }
+	end
+	if Ca then out[#out + 1] = cd end
 	local corte = Co.Habilidad()
 	local c = { icono = "ic-alerta", titulo = L["Aviso para cortar"], lineas = 5 }
 	if corte then
@@ -684,6 +709,8 @@ local function grupos(padre)
 		texto = L["En grupo o en una instancia."] })
 	g5:Fila({ titulo = L["Yendo solo, peleas de al menos"], control = deslizador("resumenMinSolo", 0, 60, 5, segundos), hija = true, activa = si("resumen"),
 		texto = L["Cuando vas solo por el mundo, así no sale tras cada enemigo."] })
+	g5:Fila({ titulo = L["Al caer, lo que te tumbó"], control = interruptor("caida"),
+		texto = L["Si mueres en una pelea, un aviso con el golpe final, lo que más te pegó y cuánto se podía evitar. Apagado, se guarda igual y lo ves aquí arriba."] })
 	g5:Fila({ titulo = L["Recargas largas"], control = interruptor("recargas"),
 		texto = L["Tus habilidades que tardan en volver, en una barra discreta con lo que les falta."] })
 	g5:Fila({ titulo = L["Desde cuántos segundos"], control = segmentos("recargasMin", { 30, 60, 120 }), hija = true, activa = si("recargas") })
@@ -904,6 +931,8 @@ local CONTROLES = {
 	{ kind = "slider", key = clave("resumenMinSolo"), label = L["Yendo solo, peleas de al menos"], min = 0, max = 60, step = 5,
 		help = L["Cuando vas solo por el mundo, así no sale tras cada enemigo."],
 		format = segundos, child = true, disabled = no(si("resumen")), search = "fight summary solo minimum" },
+	toggle("caida", L["Al caer, lo que te tumbó"], L["Si mueres en una pelea, un aviso con el golpe final, lo que más te pegó y cuánto se podía evitar. Apagado, se guarda igual y lo ves aquí arriba."], nil,
+		"death recap, what killed me, died, muerte, que me mato"),
 	toggle("recargas", L["Recargas largas"], L["Tus habilidades que tardan en volver, en una barra discreta con lo que les falta."], nil,
 		"cooldowns, long cooldown bar, timers"),
 	{ kind = "dropdown", key = clave("recargasMin"), label = L["Desde cuántos segundos"], choices = numeros({ 30, 60, 120 }),

@@ -214,6 +214,16 @@ local function texto(d)
 	return d.nombre .. "  |cff9d9d9d" .. L["comunidad: te digo cómo"] .. "|r"
 end
 
+-- Una sola línea antes de lo de Alfa en el menú, aunque varias partes de Alfa
+-- agreguen lo suyo (1.4.2): la primera la pone, las demás no.
+local function lineaAlfa(raiz)
+	local t = rawget(_G, "AlfaMenuLinea")
+	if not t then t = setmetatable({}, { __mode = "k" }) AlfaMenuLinea = t end
+	if t[raiz] then return end
+	t[raiz] = true
+	if raiz.CreateDivider then raiz:CreateDivider() end
+end
+
 function I.Armar(etiqueta, raiz, contexto)
 	if not N.Get(ID, "invitarMenu") then return end
 	if type(raiz) ~= "table" or type(raiz.CreateButton) ~= "function" then return end
@@ -226,7 +236,7 @@ function I.Armar(etiqueta, raiz, contexto)
 	local entrar = v and v.abierta and not (mia and mia.capa == v.capa)
 	local destinos = I.Destinos(persona, etiqueta)
 	if #destinos == 0 and not entrar then return end
-	if raiz.CreateDivider then raiz:CreateDivider() end
+	lineaAlfa(raiz)
 	if entrar then
 		raiz:CreateButton(string.format(L["Pedir entrar a su guarida (%s)"], Gu.Nombre(v.capa)), function()
 			local ok, por = Gu.PedirA(persona.nombre)

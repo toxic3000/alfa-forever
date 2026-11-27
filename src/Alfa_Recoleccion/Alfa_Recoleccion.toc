@@ -21,4 +21,5 @@ Ruta.lua
 Llevar.lua
 Junta.lua
 Avisos.lua
+Subir.lua
 Recoleccion.lua

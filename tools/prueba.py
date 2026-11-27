@@ -238,6 +238,28 @@ def main() -> int:
         print("GLOBAL", m)
     print(f"GLOBALES: {len(sueltos)} globales por accidente")
     malo = bool(sueltos) or malo
+    # 1.4.2: cada aviso de licencia y cada crédito, en el paquete (tools/legal.py, docs/LEGAL.md).
+    import legal
+    legal.DIST = DIST
+    faltan_legal = legal.revisar()
+    for m in faltan_legal:
+        print("LEGAL", m)
+    print(f"LEGAL: {len(faltan_legal)} avisos o créditos que faltan")
+    malo = bool(faltan_legal) or malo
+    # 1.4.2: la trampa del secreto: «N.Leer(x) or x» devuelve el secreto (el «or»)
+    # cuando x lo es; así se coló un error en mazmorras. Se busca en todo el código.
+    import re
+    trampa = re.compile(r"N\.Leer(?:Numero)?\s*\(\s*([\w.]+)[^()]*\)\s+or\s+(?:tonumber\()?")
+    trampas = []
+    for base in ("src", "motor"):
+        for ruta in sorted((RAIZ / base).rglob("*.lua")):
+            for n, linea in enumerate(ruta.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
+                if trampa.search(linea) and not linea.lstrip().startswith("--"):
+                    trampas.append(f"{ruta.relative_to(RAIZ).as_posix()}:{n}")
+    for x in trampas:
+        print("TRAMPA DEL SECRETO", x)
+    print(f"SECRETOS: {len(trampas)} lecturas que devolverían el secreto")
+    malo = bool(trampas) or malo
     # 1.4.1: el mapa del código al día y cada archivo con su cabecera (tools/mapa.py).
     import mapa
     texto_mapa, sin_cabecera = mapa.armar()

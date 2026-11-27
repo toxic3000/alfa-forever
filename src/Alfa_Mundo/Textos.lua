@@ -390,3 +390,8 @@ M.EN = {
 	["Quien te vende comida y agua y quien te repara el equipo en tu zona. Clic: la flecha te lleva."] = "Who sells you food and water and who repairs your gear in your zone. Click: the arrow takes you.",
 	["Horarios de barcos con La Jauría"] = "Boat timetables with La Jauría",
 }
+-- 1.4.2: «Limpiar mapa» en el mapa de la M
+M.EN["Limpiar mapa"] = "Clean map"
+M.EN["Ver todo"] = "Show all"
+M.EN["Escondí %d tipos de íconos de Alfa. Un clic y vuelven como estaban."] = "I hid %d kinds of Alfa icons. One click and they come back as they were."
+M.EN["Esconde los íconos de Alfa que no son esenciales: quedan tú, tu grupo, tus marcadores y la guía. Un clic más y vuelven."] = "Hides Alfa's non-essential icons: you, your group, your markers and the guide stay. One more click and they come back."

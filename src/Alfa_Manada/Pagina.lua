@@ -1637,6 +1637,15 @@ local function grupos(ui, padre)
 			ui.botonCallados = K.Boton(fila, L["Ver"], function() if M.Callados and M.Callados.Ventana then M.Callados.Ventana() end end, { tipo = "secundario" })
 			return ui.botonCallados
 		end })
+	-- 1.4.2: avisarme cuando se conecte (Vigilar.lua) y con quién cazaste (Companeros.lua).
+	juntos:Fila({ titulo = L["«Avisarme cuando se conecte»"], control = interruptor("vigilar"),
+		texto = L["Clic derecho en un amigo o alguien de tu hermandad y «Avisarme cuando se conecte»: cuando entre, te lo digo con «Susurrar» e «Invitar». También /alfa avisame <nombre>."] })
+	juntos:Fila({ titulo = L["Recordar con quién cazaste"], control = interruptor("companeros"),
+		texto = L["Alfa recuerda a la gente de tus grupos para volver a invitarla, y te dice quién es cuando te invita alguien con quien ya cazaste."] })
+	juntos:Fila({ titulo = L["Con quién cazaste"], texto = L["Tus compañeros de los últimos grupos, con «Invitar» y «Susurrar». También /alfa companeros."],
+		control = function(fila)
+			return K.Boton(fila, L["Ver"], function() if M.Companeros then M.Companeros.Abrir() end end, { tipo = "secundario" })
+		end })
 	-- 1.3.0: la manada crece.
 	local crece = K.GrupoAjustes(padre, { titulo = L["La manada crece"] })
 	crece:Fila({ titulo = L["Lugares para juntar"], control = interruptor("spots"), activa = function() return N.Get(ID, "notas") ~= false end,

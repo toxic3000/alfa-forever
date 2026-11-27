@@ -34,7 +34,7 @@ local ID = "combate"
 M.ID = ID
 M.ICONO = "ic-nivel"
 
-local type, pairs, ipairs, pcall, floor, max, tonumber = type, pairs, ipairs, pcall, math.floor, math.max, tonumber
+local type, pairs, ipairs, pcall, floor, max, tonumber, format = type, pairs, ipairs, pcall, math.floor, math.max, tonumber, string.format
 
 M.AJUSTES = {
 	-- 1.3.9: la página con todos sus ajustes a la vista (apagado: lo de todos
@@ -609,13 +609,22 @@ local function comando(resto)
 		if M.Corte then M.Corte.Probar() end
 	elseif sub == "pelea" or sub == "resumen" then
 		if M.Resumen then M.Resumen.VerDeNuevo() end
+	elseif sub == "caida" or sub == "caída" or sub == "muerte" then
+		-- 1.4.2: lo que te tumbó la última vez (Caida.lua).
+		if M.Caida then M.Caida.Ver(true) end
 	elseif sub == "medidor" or sub == "dps" then
 		if M.Ventana then M.Ventana.Alternar() end
+	elseif sub then
+		-- 1.4.2: una palabra que no es de aquí ya no abre la página callada: dice cuáles hay.
+		N.Imprimir(format(L["«%s» no es algo de Combate. Prueba: %s."], sub, M.SUBCOMANDOS))
+		N.Abrir(ID)
 	else
 		N.Abrir(ID)
 	end
 end
-A.RegisterCommand("combate", comando, L["abre Combate (también: mover, aviso, corte, pelea, medidor)"])
+M.SUBCOMANDOS = "mover, aviso, corte, pelea, caida, medidor"
+M.Comando = comando
+A.RegisterCommand("combate", comando, L["abre Combate (también: mover, aviso, corte, pelea, caida, medidor)"])
 A.RegisterCommand("dps", function() if M.Ventana then M.Ventana.Alternar() end end, L["abre o cierra el medidor de daño"])
 
 -- Para otros módulos (Hoy, el menú): lo mínimo, sin tocar nada por dentro.
@@ -631,6 +640,8 @@ AlfaCombate = {
 	Texto = function(k) return L[k] end,
 	-- 1.3.0
 	UltimaPelea = function() return M.Resumen and M.Resumen.Ultima() end,
+	-- 1.4.2: lo que te tumbó la última vez (Caida.lua).
+	UltimaCaida = function() return M.Caida and M.Caida.Ultima() end,
 	Recargas = function() return M.Recargas and M.Recargas.Activas() end,
 	-- 1.3.8: el medidor para el Escritorio de Alfa (sin abrir la ventana): las
 	-- filas tal cual (lo secreto se pasa a SetText/SetValue, nunca se suma).

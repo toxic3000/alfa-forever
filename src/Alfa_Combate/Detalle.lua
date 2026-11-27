@@ -61,6 +61,8 @@ function Dt.Leer(x, r)
 	if total and total > 0 and out.valor and (r.cuantos or 0) > 1 then out.parte = out.valor / total end
 	local t = r.tipo or D.Tipo("dps")
 	out.curacion = t.curacion and true or false
+	-- 1.4.2: los tipos nuevos (recibido, evitable, cortes, limpiezas) se leen con el suyo.
+	out.tipo = t
 	local guid = x.guid
 	if M.Secreto(guid) then guid = nil end
 	local criatura = numero(x.criatura)
@@ -69,6 +71,7 @@ function Dt.Leer(x, r)
 		return out
 	end
 	local tipo = t.curacion and enumTipo("HealingDone", 2) or enumTipo("DamageDone", 0)
+	if t.detalle and D.EnumTipo then tipo = D.EnumTipo(t.detalle) or tipo end
 	local s
 	if r.sesion == "anterior" then
 		local ant = D.Anterior()
@@ -90,7 +93,7 @@ function Dt.Leer(x, r)
 		if v and v > 0 then
 			local id = numero(h.spellID)
 			todos[#todos + 1] = { id = id, valor = v,
-				nombre = id and id > 0 and M.NombreHechizo(id) or (t.curacion and L["Otras curas"] or L["Golpes cuerpo a cuerpo"]),
+				nombre = id and id > 0 and M.NombreHechizo(id) or (t.curacion and L["Otras curas"]) or (t.cuenta and L["Otros"]) or L["Golpes cuerpo a cuerpo"],
 				icono = id and id > 0 and M.IconoHechizo(id) or nil }
 			suma = suma + v
 			if v > tope then tope = v end
@@ -200,8 +203,13 @@ function Dt.Pintar(d, med)
 	local y = ESP.s + K.Tamano("etiqueta") + 6
 	-- «Daño 15.2 k · 184 por s · 32 % del grupo»
 	local partes = {}
-	if d.valor then partes[#partes + 1] = format("%s %s", d.curacion and L["Curación"] or L["Daño"], D.Numero(d.valor)) end
-	if d.porSeg then partes[#partes + 1] = format(L["%s por s"], D.Numero(d.porSeg)) end
+	local tp = type(d.tipo) == "table" and d.tipo or {}
+	if d.valor and tp.cuenta then
+		partes[#partes + 1] = format(L["%s: %s veces"], tp.texto or "", D.Numero(d.valor))
+	elseif d.valor then
+		partes[#partes + 1] = format("%s %s", (tp.recibido and tp.texto) or (d.curacion and L["Curación"]) or L["Daño"], D.Numero(d.valor))
+	end
+	if d.porSeg and not (tp.cuenta or tp.recibido) then partes[#partes + 1] = format(L["%s por s"], D.Numero(d.porSeg)) end
 	if #partes > 0 then
 		K.Escribir(f.Linea, table.concat(partes, "  \194\183  "))
 		f.Linea:ClearAllPoints()
@@ -212,7 +220,9 @@ function Dt.Pintar(d, med)
 		f.Linea:Hide()
 	end
 	if d.parte then
-		K.Escribir(f.ParteTexto, format(d.curacion and L["%s de la curación del grupo"] or L["%s del daño del grupo"], pct(d.parte)))
+		local tp = type(d.tipo) == "table" and d.tipo or {}
+		K.Escribir(f.ParteTexto, format((tp.cuenta or tp.recibido) and L["%s del total del grupo"]
+			or (d.curacion and L["%s de la curación del grupo"]) or L["%s del daño del grupo"], pct(d.parte)))
 		f.ParteTexto:ClearAllPoints()
 		f.ParteTexto:SetPoint("TOPLEFT", f, "TOPLEFT", x0, -y)
 		y = y + K.Parrafo(f.ParteTexto, w, 2) + 2
