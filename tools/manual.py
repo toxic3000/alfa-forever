@@ -77,7 +77,7 @@ NOVEDADES = {"mapa": "1.4.2"}
 
 # Capturas: id -> (archivo de origen, recorte (x0, y0, x1, y1) o None).
 # Con --capturas se copian a docs/manual/imagenes/<id>.png.
-VENTANA = (0, 4, 1175, 875)   # el banco deja una rayita verde arriba
+VENTANA = (0, 4, 1425, 875)   # 1.4.0: ventana con barra lateral (1425 de ancho); el banco deja una rayita verde arriba
 CAPTURAS = {
     "intro": ("tools/banco/shot-intro.png", (680, 40, 1720, 1010)),
     "inicio": ("tools/banco/shot-g-inicio.png", VENTANA),
@@ -116,9 +116,12 @@ CAPTURAS = {
 # Llamadas numeradas sobre una captura: (id, juego) -> [(x, y)] en pixeles del
 # archivo de ORIGEN (antes del recorte). El JSON trae la leyenda en el mismo orden.
 MARCAS = {
-    ("inicio", "ventana"): [(224, 20), (834, 32), (24, 110), (1019, 110), (26, 841)],
-    ("inicio", "hoy"): [(44, 250), (44, 489), (42, 627), (26, 706)],
-    ("rastreador", "partes"): [(232, 60), (346, 67), (366, 106), (240, 157), (141, 202), (241, 202)],
+    # 1.4.0: ventana con barra lateral (personaje, buscador, secciones, Avisos, Ajustes, Restablecer/Recargar)
+    ("inicio", "ventana"): [(600, 39), (1300, 49), (210, 246), (200, 768), (200, 836), (487, 841)],
+    # Hoy: saludo, cifras, tu siguiente paso, ¿Cuánto tiempo tienes?
+    ("inicio", "hoy"): [(840, 290), (1150, 192), (1000, 440), (660, 640)],
+    # Guía en pantalla: cabecera, Buscar cerca, + y ×, la meta, hacia dónde, el pie (al pasar el ratón)
+    ("rastreador", "partes"): [(228, 59), (347, 62), (391, 62), (370, 150), (252, 207), (400, 207)],
 }
 
 # Íconos de Alfa por nombre corto -> archivo ic-*.tga del motor

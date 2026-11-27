@@ -99,7 +99,7 @@
             ]},
             {"t": "consejo", "texto": "Envie de changer quelque chose plus tard ? Tapez `/alfa bienvenida` et le résumé s'ouvre : chaque étape a son bouton « Changer ». Si vous aimez décider de chaque détail, les listes habituelles sont toujours là, derrière **Régler un par un**."},
             {"t": "tarjetas", "cols": 2, "titulo": "Simple ou complet ?", "items": [
-              {"icono": "huella", "titulo": "Alfa simple", "texto": "Pour commencer : seulement Aujourd'hui, Itinéraire, Carte, Sacs, Talents et Lya en vue, et moins d'alertes. Le reste est toujours là quand vous le cherchez."},
+              {"icono": "huella", "titulo": "Alfa simple", "texto": "Pour commencer : seulement Aujourd'hui, Plans, Itinéraire, Carte, Sacs, Talents et Lya en vue, et moins d'alertes. Le reste est toujours là quand vous le cherchez."},
               {"icono": "lobo", "titulo": "Alfa complet", "texto": "Toutes les pages en vue : donjons, talents, combat, métiers, la meute et plus encore."}
             ]},
             {"t": "nota", "texto": "Si vous utilisiez déjà Alfa, vous restez en complet. Vous pouvez changer quand vous voulez dans **Réglages > Style et son**, sous « Comment tu vois Alfa »."},
@@ -129,33 +129,36 @@
           "lema": "Tout Alfa au même endroit : tapez /alfa.",
           "icono": "ventana",
           "bloques": [
-            {"t": "intro", "texto": "Tapez `/alfa` dans la discussion (ou cliquez sur le bouton d'Alfa de la minicarte) et la fenêtre principale s'ouvre. En haut, votre personnage ; en dessous, tout ce qu'Alfa sait faire, rangé en six sections, plus les Réglages."},
-            {"t": "img", "img": "inicio", "marcas": "ventana", "pie": "La fenêtre d'Alfa, ouverte sur Aujourd'hui.", "leyenda": [
+            {"t": "intro", "texto": "Tapez `/alfa` dans la discussion (ou cliquez sur le bouton d'Alfa de la minicarte) et la fenêtre principale s'ouvre. À gauche, la barre avec les sept sections d'Alfa et, en dessous, Alertes et Réglages ; en haut, votre personnage et la recherche."},
+            {"t": "img", "img": "inicio", "marcas": "ventana", "pie": "La fenêtre d'Alfa, ouverte sur Aujourd'hui, avec Alfa simple.", "leyenda": [
               "Votre personnage : nom, classe, niveau, expérience et repos.",
-              "Chercher un réglage : tapez ce que vous cherchez et Alfa vous emmène à l'option.",
-              "Les six sections : Aujourd'hui, Aventure, Personnage, Monde, Métiers et Meute.",
+              "Chercher dans Alfa : réglages, quêtes, rares et PNJ. Tapez, et un clic vous y emmène.",
+              "Les sections : Aujourd'hui, Plans, Aventure, Personnage, Monde, Métiers et Meute. Avec Alfa simple, seulement l'essentiel.",
+              "Alertes : ce qu'Alfa vous a signalé, avec l'heure et son bouton, au cas où vous auriez manqué quelque chose.",
               "Réglages : style, confort de jeu, quêtes et tout le reste.",
               "Réinitialiser la page et Recharger l'interface, si quelque chose s'affiche bizarrement."
             ]},
             {"t": "h", "texto": "Un seul menu d'Alfa"}, {"t": "lista", "items": ["**Clic** sur l'icône d'Alfa de la minicarte, son bouton flottant, sa ligne dans la liste des addons ou le bouton **Alfa** du menu [[Échap]] : la fenêtre s'ouvre sur la dernière page que vous avez vue.", "**Clic droit** sur l'un d'eux : le même menu, avec les sept sections de la fenêtre et leurs pages, plus **Demande à Lya**, **Arranger l'écran**, afficher ou masquer la flèche, **Masquer Alfa** et **Signaler un problème**."]}, {"t": "h", "texto": "Les sections"},
             {"t": "tarjetas", "cols": 2, "items": [
               {"icono": "hoy", "titulo": "Aujourd'hui", "texto": "Votre journée : la prochaine étape, l'urgent et votre classe."},
+              {"icono": "lista", "titulo": "Plans", "texto": "Les guides et les plans que vous suivez, à portée de main."},
               {"icono": "aventura", "titulo": "Aventure", "texto": "Itinéraire et guides, Donjons et Encyclopédie."},
               {"icono": "personaje", "titulo": "Personnage", "texto": "Talents, Combat, Soins, Sacs et Lya."},
               {"icono": "mundo", "titulo": "Monde", "texto": "La carte, Récolte, et Paysage et graphismes."},
               {"icono": "oficios", "titulo": "Métiers", "texto": "Commerce et Pêche."},
               {"icono": "manada", "titulo": "Meute", "texto": "La Jauría : votre groupe, ceux qui partagent et le clan."},
+              {"icono": "aviso", "titulo": "Alertes", "texto": "Ce qu'Alfa vous a signalé, avec l'heure et son bouton."},
               {"icono": "ajustes", "titulo": "Réglages", "texto": "Style et son, Confort de jeu, Quêtes et plus."},
-              {"icono": "buscar", "titulo": "Chercher un réglage", "texto": "Trouvez n'importe quelle option en tapant son nom."}
+              {"icono": "buscar", "titulo": "Chercher dans Alfa", "texto": "Trouvez n'importe quelle option, quête, rare ou PNJ en tapant son nom."}
             ]},
-            {"t": "nota", "texto": "Avec **Alfa simple**, vous ne voyez qu'Aujourd'hui, Itinéraire, Carte, Sacs, Talents et Lya, plus les Réglages, sans leurs pages avancées (comme celles des auteurs de guides). Le reste fonctionne toujours : ouvrez-le avec sa commande ou avec « Chercher un réglage »."},
+            {"t": "nota", "texto": "Avec **Alfa simple**, vous ne voyez qu'Aujourd'hui, Plans, Itinéraire, Carte, Sacs, Talents et Lya, plus les Réglages, sans leurs pages avancées (comme celles des auteurs de guides). Le reste fonctionne toujours : ouvrez-le avec sa commande ou avec « Chercher dans Alfa »."},
             {"t": "h", "texto": "Cinq styles"},
             {"t": "img", "img": "estilo", "pie": "Réglages > Style et son : votre style et les autres au choix."},
             {"t": "p", "texto": "Alfa s'habille comme vous voulez. **Alfa**, c'est du graphite aux coins coupés avec le vert de La Jauría ; **La Jauría nocturne**, un bleu de minuit avec un argent de lune ; **Feu de camp**, un charbon chaleureux avec l'orange des braises ; **WoW classique** reprend les cadres, les boutons et les polices du jeu, avec des titres dorés ; **Cristal** laisse voir le monde à travers des fonds transparents, avec la couleur d'accent de votre choix. Le style peut aussi habiller la discussion, la minicarte et vos barres d'action (dans Confort de jeu). Changez-le dans **Réglages > Style et son** ou avec `/alfa estilo`."},
             {"t": "consejo", "texto": "Chaque page a sa commande : `/alfa bolsas` ouvre Sacs et `/alfa mapa` ouvre la carte. La liste complète se trouve au chapitre « Raccourcis et commandes »."},
             {"t": "lista", "titulo": "Trois aides sur chaque page", "items": [
               "**Le « ? » à côté du titre.** Touchez-le et Lya vous explique cette page, en commençant par ses questions.",
-              "**Chercher un réglage cherche dans tout Alfa.** En plus des options, il trouve les quêtes, les rares et les PNJ : un clic ouvre leur fiche ou vous met la flèche.",
+              "**Chercher dans Alfa va au-delà des réglages.** Il trouve aussi les quêtes, les rares et les PNJ : un clic ouvre leur fiche ou vous met la flèche.",
               "**« C'est quoi ? »** Gardez [[Alt]] enfoncée et survolez n'importe quel bouton ou option d'Alfa : elle vous dit à quoi il sert."
             ]},
             {"t": "lya", "pose": "aullar2", "texto": "Tu savais que le loup hurle la première fois que tu ouvres la fenêtre d'Alfa à chaque session ? C'est un hurlement du jeu lui-même, alors il respecte ton volume. Si tu préfères le silence, ça se coupe dans Style et son."}
@@ -169,13 +172,14 @@
           "bloques": [
             {"t": "intro", "texto": "Aujourd'hui est la page d'accueil d'Alfa : la première chose que vous voyez en ouvrant la fenêtre. Elle réunit sur une seule page ce que vous avez à faire maintenant et met tout à portée de clic. Seul ce qui sert apparaît : si une partie n'a rien d'utile, elle ne s'affiche pas."},
             {"t": "img", "img": "inicio", "marcas": "hoy", "pie": "Aujourd'hui, en un coup d'œil.", "leyenda": [
+              "Le salut : votre personnage, son niveau et où vous êtes. Un clic sur le loup ouvre votre fiche.",
+              "Vos chiffres : votre session, votre guide et votre meute ; un clic sur chacun ouvre ce qui va avec.",
               "Votre prochaine étape : ce que demande votre guide, à quelle distance et où vous en êtes. **Suivre** vous met la flèche.",
-              "Récupérer des quêtes : celles de votre itinéraire qui sont près de vous.",
-              "« Autre chose aujourd'hui ? » : monter de niveau, métiers, faire de l'or ou donjons.",
-              "Alertes : seulement l'urgent, avec son bouton pour le régler."
+              "« Combien de temps as-tu ? » : choisissez votre moment et Alfa prépare le plan."
             ]},
             {"t": "h", "texto": "Ce que vous trouvez, de haut en bas"},
             {"t": "lista", "items": [
+              "**Le salut.** Tout en haut, votre personnage, son niveau et où vous êtes, avec trois chiffres : votre session, votre guide et votre meute. Un clic sur le loup ouvre votre fiche de chasseur (`/alfa ficha`).",
               "**Pendant votre connexion.** Ce qu'Alfa a gardé pour ne pas interrompre votre arrivée (votre séance précédente, sacs, équipement, talents, nouveautés, la meute connectée), chaque chose avec son bouton et son « Terminé ».", "**Votre prochaine étape.** L'étape de votre guide avec ses objectifs, la distance, votre progression et, selon votre rythme, le temps qu'il vous faut pour le terminer. **Suivre** affiche le guide et la flèche et ferme la fenêtre ; **Voir les étapes** ouvre la liste complète.",
               "**Terminer mes quêtes et Récupérer des quêtes.** Un clic prépare l'itinéraire pour rendre ce qui est prêt ou pour prendre les meilleures quêtes de la zone.",
               "**Une heure de chasse.** Vous ne savez pas quoi faire ? Alfa choisit pour vous ce qui rapporte le plus tout près : rendre ce qui est prêt, terminer les quêtes de votre zone ou en prendre de nouvelles.",
@@ -228,12 +232,12 @@
             ]},
             {"t": "h", "texto": "Votre guide à l'écran"},
             {"t": "img", "img": "rastreador", "ancho": "media", "marcas": "partes", "pie": "Le suivi : compact, avec seulement ce que vous faites maintenant.", "leyenda": [
-              "Votre guide et le nombre d'étapes faites.",
+              "Votre guide, le nombre d'étapes faites et sa progression. Un clic sur l'en-tête le replie ou le déplie.",
               "Chercher à proximité : vol, auberge, réparation, banque et plus.",
-              "Ce qu'il faut faire maintenant. Clic : la flèche ; clic droit : le cocher, le passer ou le voir dans l'Encyclopédie.",
+              "**+** : vos guides et plans (ouvrir un autre guide et plus). La **×** masque le guide.",
+              "Ce qu'il faut faire maintenant. Clic sur un objectif : la flèche ; clic droit : le cocher, le passer ou le voir dans l'Encyclopédie.",
               "Où vous allez.",
-              "**Voir le détail** : l'étape complète, avec tous ses objectifs, dans une autre fenêtre.",
-              "**Passer** saute l'étape (et pendant une minute vous pouvez **Annuler**) ; **Voir la suivante** vous laisse jeter un œil à la prochaine."
+              "Passez la souris sur votre guide et, en bas, apparaissent **Voir le détail** (l'étape complète, dans une autre fenêtre), **Passer** (pendant une minute vous pouvez **Annuler**) et **Voir la suivante**."
             ]},
             {"t": "h", "texto": "À l'arrivée"},
             {"t": "lista", "items": [
@@ -279,7 +283,7 @@
             {"t": "consejo", "texto": "Quand vous terminez une quête, votre chat dit « [Quête] est prête à être rendue » et, quand vous la rendez, « Quête terminée ! ». Si vous activez **Prévenir ton groupe** (dans Tes extras de la configuration), votre groupe le voit aussi ; c'est désactivé par défaut pour ne remplir le chat de personne."},
             {"t": "h", "texto": "Mes plans : vos propres objectifs"},
             {"t": "dos", "img": "planes", "pie": "Un plan est une liste d'objectifs dans l'ordre que vous voulez.", "lado": "izq", "prop": "50", "bloques": [
-              {"t": "p", "texto": "Créez une liste d'objectifs : obtenir un objet, réunir de l'or, monter un métier, aller à un endroit, faire une quête, atteindre un niveau ou une note libre. Ils se cochent tout seuls quand vous les remplissez et la flèche vous mène au suivant."},
+              {"t": "p", "texto": "Créez une liste d'objectifs : obtenir un objet, réunir de l'or, monter un métier, aller à un endroit, faire une quête, atteindre un niveau ou une note libre. Ils se cochent tout seuls quand vous les remplissez et la flèche vous mène au suivant. Les guides et les plans que vous suivez sont dans la section **Plans** de la fenêtre."},
               {"t": "p", "texto": "En panne d'idées ? Commencez avec un modèle : *Ma première monture*, *De l'or pour la monture*, *Préparer le donjon* ou *Monter cuisine et pêche ensemble*."}
             ]},
             {"t": "h", "texto": "Chercher à proximité"},
@@ -866,7 +870,7 @@
           "lema": "Tout se change, rien ne se perd.",
           "icono": "ajustes",
           "bloques": [
-            {"t": "intro", "texto": "Dans **Réglages** (en haut à droite de la fenêtre) se trouve tout ce qui peut se changer : le style, le confort de jeu, les quêtes, la carte et plus. Le plus rapide, c'est la recherche : tapez ce que vous voulez changer dans « Chercher un réglage » et Alfa vous emmène à l'option."},
+            {"t": "intro", "texto": "Dans **Réglages** (en bas à gauche, dans la barre de la fenêtre) se trouve tout ce qui peut se changer : le style, le confort de jeu, les quêtes, la carte et plus. Le plus rapide, c'est la recherche en haut : tapez ce que vous voulez changer dans « Chercher dans Alfa » et Alfa vous emmène à l'option."},
             {"t": "tarjetas", "cols": 2, "items": [
               {"icono": "apariencia", "titulo": "Style et son", "texto": "Les cinq styles, Alfa simple ou complet, le hurlement, le loup à la connexion, les annonces, mieux lire, l'écran épuré, arranger l'écran, vos raccourcis, vos profils, vos sauvegardes, « Vérifier Alfa », « Signaler » et les nouveautés."},
               {"icono": "comodidades", "titulo": "Confort de jeu", "texto": "De petites améliorations du jeu, au même endroit (chapitre suivant)."},
@@ -876,7 +880,7 @@
               {"icono": "info", "titulo": "À propos", "texto": "L'histoire d'Alfa et de La Jauría, le Discord à copier, la version et les crédits."}
             ]},
             {"t": "img", "img": "misiones", "pie": "Réglages > Quêtes : chaque option expliquée en une ligne."},
-            {"t": "consejo", "texto": "En bas à gauche, **Réinitialiser la page** remet les réglages de la page affichée comme à l'origine."},
+            {"t": "consejo", "texto": "En bas, à côté de **Recharger l'interface**, **Réinitialiser la page** remet les réglages de la page affichée comme à l'origine."},
             {"t": "h", "texto": "Mieux lire, écran épuré et vos raccourcis"},
             {"t": "lista", "items": [
               "**Texte plus grand.** Tout le texte d'Alfa un peu plus grand, dans chaque fenêtre.",
@@ -1050,9 +1054,9 @@
                 "Tapez `/alfa reportar`.",
                 "Choisissez **Bug**, **Amélioration** ou **Commentaire** et racontez-le avec vos mots.",
                 "Alfa ajoute ce qui aide à corriger : la version, la langue, votre classe et votre niveau, l'endroit où vous êtes et les erreurs qu'il a capturées. Il n'inclut ni votre nom ni votre royaume.",
-                "Appuyez sur **Tout sélectionner**, copiez avec [[Ctrl]]+[[C]] et collez-le dans le salon **#buzon-alfa** du Discord de La Jauría."
+                "Appuyez sur **Envoyer** : votre rapport part tout seul la prochaine fois que vous ouvrez **Instalar-Alfa.exe**. Vous voulez l'envoyer tout de suite ? **Envoyer par le navigateur** vous donne le lien avec tout déjà rempli. Vous avez des captures ? Utilisez **Envoyer des captures**, avec le code de votre rapport."
               ]},
-              {"t": "p", "texto": "Cette boîte est privée : seul le développeur d'Alfa lit ce que vous envoyez."}
+              {"t": "p", "texto": "Votre rapport arrive directement au développeur d'Alfa, et à personne d'autre. Si vous préférez Discord, **Copier** le prépare pour le salon **#buzon-alfa**."}
             ]},
             {"t": "enlace", "icono": "comunidad", "titulo": "Discord de La Jauría", "url": "https://discord.gg/hUNjA6BJwh", "texto": "Venez jouer avec la meute, demandez de l'aide et suivez chaque nouvelle version."},
             {"t": "p", "texto": "Vous pouvez aussi nous écrire dans les commentaires de CurseForge ou ouvrir un rapport sur GitHub : https://github.com/toxic3000/alfa-forever/issues"},

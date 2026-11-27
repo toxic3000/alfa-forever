@@ -2,7 +2,30 @@
 local LAYER = { BACKGROUND = 1, BORDER = 2, ARTWORK = 3, OVERLAY = 4, HIGHLIGHT = 9 }
 local STRATA = { BACKGROUND = 1, LOW = 2, MEDIUM = 3, HIGH = 4, DIALOG = 5, FULLSCREEN = 6, FULLSCREEN_DIALOG = 7, TOOLTIP = 8 }
 
+-- 1.4.2: el banco no corre el reloj de Anim, así que un fundido (la ventana de
+-- la 1.4.0 entra con uno) se quedaba en alfa 0 y la captura salía vacía. Antes
+-- de dibujar, cada animación que siga corriendo se lleva a su final.
+local function terminarAnimaciones(root, extra)
+  local A = rawget(_G, "Alfa")
+  local Anim = type(A) == "table" and rawget(A, "Anim")
+  if not (Anim and Anim.IsRunning and Anim.Stop) then return end
+  local O = A.UI and A.UI.Options
+  local lista = { root, O and O.frame, O and O.view }
+  for _, e in ipairs(extra or {}) do lista[#lista + 1] = e end
+  local function bajar(f, hondo)
+    if type(f) ~= "table" or hondo > 12 then return end
+    for _, k in ipairs({ "alpha", "value" }) do
+      if Anim.IsRunning(f, k) then pcall(Anim.Stop, f, k) end
+    end
+    for _, c in ipairs(rawget(f, "_children") or {}) do
+      if c._kind ~= "Texture" and c._kind ~= "FontString" then bajar(c, hondo + 1) end
+    end
+  end
+  for i = 1, #lista do bajar(lista[i], 0) end
+end
+
 function DUMP(root, extra)
+  terminarAnimaciones(root, extra)
   local out = {}
   local seq = 0
   local function strataOf(f)

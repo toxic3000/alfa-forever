@@ -16,37 +16,34 @@ Hecho por **toxic3000** y La Jauría — [Discord](https://discord.gg/hUNjA6BJwh
 
 <p align="center"><em>Cada entrada empieza con el lobo y la luna.</em></p>
 
-## Lo nuevo de la 1.3.8: la manada en dos pantallas
+## Lo nuevo de la 1.4.2: tu ficha de cazador
 
-Alfa en tu segundo monitor y 40 mejoras. [Todas las notas](CHANGELOG.md).
-
-| | |
-|---|---|
-| ![Alfa en tu segundo monitor](curseforge/galeria/38-138-pantallas.png) | ![Tu escritorio, a tu modo](curseforge/galeria/39-138-editor.png) |
-| **Dos pantallas** — el juego en tu monitor principal y en el otro tu guía, la flecha, el mapa, Hoy, Lya y más; se pone en un clic (`/alfa pantallas`). | **Tu escritorio, a tu modo** — arrastra los paneles sobre una rejilla con imán y agrega más desde el catálogo. |
-| ![Viajes en barco](curseforge/galeria/40-138-flecha-barco.png) | ![Antes de pescar](curseforge/galeria/41-138-pesca-previa.png) |
-| **Avisos que se sienten únicos** — el barco en la flecha: a dónde, cuándo sale y cuándo llegas; un solo mensaje por suceso. | **Antes de pescar** — elige tu caña, tu cebo y tu barra; Alfa lo recuerda por personaje. |
-| ![Tu nivel de pescador](curseforge/galeria/42-138-pesca-pescador.png) | ![Cómo se consigue cada objeto](curseforge/galeria/43-138-enc-lista-alfa.png) |
-| **Tu nivel de pescador** — del 1 al 60, con títulos, récords, el pez de la semana y tus sesiones. | **Enciclopedia con etiquetas** — cómo se consigue, de qué facción es y qué tan probable es que caiga. |
-| ![Candado](curseforge/galeria/44-138-candado-bolsas.png) | ![Curación a tu color](curseforge/galeria/45-138-curacion-todos.png) |
-| **Candado** — Alt+clic derecho: no se borra, no se vende por error y Alfa nunca lo toca. | **Curación a tu color** — por clase, un solo color o según la vida; «En peligro» es un borde suave. |
-
-Y además: la Horda y la Alianza, cada una por su lado; «Busco grupo» y la ficha de cada lobo en La Jauría; y el modo Zen (`/alfa zen`).
-
-## 1.3.7: la manada a tu ritmo
-
-200 correcciones y mejoras para que todo llegue a su tiempo.
+Tu ficha de personaje, el mapa limpio de un clic y 40 mejoras más. [Todas las notas](CHANGELOG.md).
 
 | | |
 |---|---|
-| ![Llegar a una zona](curseforge/galeria/31-137-zona.png) | ![Descubrir un lugar](curseforge/galeria/32-137-descubrir.png) |
-| **Cada zona se anuncia** — con su nombre, de quién es, sus niveles y su propia animación. | **Descubrir un lugar** — destello dorado, la experiencia que ganaste y un dato de Lya. |
-| ![Subir de nivel](curseforge/galeria/34-137-nivel.png) | ![Medidor de daño](curseforge/galeria/22-137-medidor.png) |
-| **Subir de nivel sin ventanas encimadas** — Alfa espera la animación del juego y te da un solo resumen. | **El daño de tu grupo** — sale solo en grupo, compacto y sin tapar tus barras. |
-| ![Tu oro](curseforge/galeria/30-137-oro.png) | ![De la pesca a la pelea](curseforge/galeria/35-137-pesca.png) |
-| **Tu oro, una sola vez** — y el de cada personaje a un clic, con tu oro por hora. | **De la pesca a la pelea** — un clic en la espada y tienes tus armas, incluso en plena pelea. |
-| ![Lo que me perdí](curseforge/galeria/36-137-perdi.png) | ![Barra de información](curseforge/galeria/37-137-info.png) |
-| **Avisos que esperan su turno** — `/alfa calma` para no molestar y «Lo que me perdí» para lo demás. | **Barra de información y recargas** — rendimiento, oro, equipo, bolsas y cuánto le falta a cada botón. |
+| ![Tu ficha](curseforge/galeria/56-142-ficha.png) | ![Tus personajes](curseforge/galeria/57-142-personajes.png) |
+| **Tu ficha** (`/alfa ficha`) — tu personaje en 3D, tu oro, tu equipo, tus oficios y lo que sigue; «Tomar foto» para presumirla. | **Toda tu manada** — cada personaje de tu cuenta con su nivel, su oro, sus oficios y sus recargas. |
+| ![Limpiar mapa](curseforge/galeria/59-142-mapa.png) | ![Lista para entregar](curseforge/galeria/60-142-lista.png) |
+| **El mapa limpio de un clic** — en la M, «Limpiar mapa» esconde los íconos que estorban y «Ver todo» los devuelve. | **Tus misiones y la flecha** — «Alfa: llévame», «La misión más cerca», «¡Lista para entregar!» y misiones nuevas al subir. |
+| ![Qué me tumbó](curseforge/galeria/62-142-caida.png) | ![Faltan por revivir](curseforge/galeria/64-142-revivir.png) |
+| **¿Qué me tumbó?** — al caer, el golpe final, lo que más te pegó y cuánto se podía evitar. | **Faltan por revivir** — al terminar la pelea, un botón por cada compañero caído; el clic es tuyo. |
+| ![Con quién cazaste](curseforge/galeria/65-142-companeros.png) | ![Siempre a la mano](curseforge/galeria/66-142-reponer.png) |
+| **Con quién cazaste** (`/alfa companeros`) — la gente de tus grupos, para volver a cazar juntos. | **Siempre a la mano** — el comerciante te repone agua, comida o flechas con un botón. |
+| ![Tus subastas](curseforge/galeria/67-142-subastas.png) | ![Qué pica aquí](curseforge/galeria/68-142-aqui.png) |
+| **Tus subastas** — lo que tienes a la venta, lo vendido y cuándo vence, en todos tus personajes. | **Qué pica aquí** — qué sale donde pescas, cuánto vale y tus mejores lugares. |
+
+Y además: el medidor mide daño recibido, evitable, cortes y limpiezas; los intentos contra cada jefe; quién se conecta y dónde anda; «Avisarme cuando se conecte»; tus susurros mientras peleabas; y la revisión legal de todo lo que Alfa toma de otros proyectos ([`docs/LEGAL.md`](docs/LEGAL.md)).
+
+## 1.4.1 y 1.4.0
+
+- **1.4.1, el ratón es tuyo:** los clics, la cámara y el volumen vuelven a ser tuyos (nada invisible de Alfa atrapa el ratón), «Cerrar mis misiones» con casillas, fuentes de materiales para elegir y el elevador en la flecha.
+- **1.4.0, la manada firme:** ventana con barra lateral y portada en Hoy, anuncios de cine, `/alfa acomodar` para mover todo, la temática de tu bando, `/alfa temporada`, guías por tramo de niveles y dos pantallas rehecho.
+
+| | |
+|---|---|
+| ![La ventana de Alfa](curseforge/galeria/49-140-ventana-hoy.png) | ![Tu bando](curseforge/galeria/51-140-ventana-hoy-horda.png) |
+| **Una ventana nueva** — barra lateral y la portada de Hoy con tu día. | **Tu bando** — madera y rojo para la Horda, piedra y azul para la Alianza. |
 
 ## Un vistazo
 
@@ -79,24 +76,27 @@ A mano: descarga `Alfa-<versión>.zip` de [Releases](https://github.com/toxic300
 
 | Comando | Módulo | Qué hace |
 |---|---|---|
-| `/alfa` | Ventana principal | Hoy, Aventura, Personaje, Mundo, Oficios y Manada, con Ajustes aparte; el ícono del minimapa y el botón Alfa del menú Esc abren lo mismo (clic derecho: el mismo menú); 3 estilos (Alfa, Clásico WoW, Cristal) que también visten el chat, el minimapa y las barras |
+| `/alfa` | Ventana principal | Barra lateral con Hoy, Planes, Aventura, Personaje, Mundo, Oficios y Manada, más Avisos y Ajustes; el ícono del minimapa y el botón Alfa del menú Esc abren lo mismo (clic derecho: el mismo menú); 3 estilos (Alfa, Clásico WoW, Cristal) que también visten el chat, el minimapa y las barras |
 | `/alfa bienvenida` | Bienvenida | Intro del lobo, idioma de Alfa (10 idiomas), qué es Alfa y cada opción automática como una pregunta |
+| `/alfa ficha` | Tu ficha | Tu personaje en 3D, tu oro, tu equipo, tus oficios, lo que sigue y todos tus personajes |
 | `/alfa inicio` | Hoy | "¿Qué hacemos hoy?", tu siguiente paso, entregar o recoger misiones, alertas, tu clase y tus números |
 | `/alfa rutas` | Ruta | Asistente de 4 caminos, seguimiento compacto con detalle aparte, biblioteca de guías, **Mis planes**, misiones previas agregadas solas, solo misiones que sí puedes hacer, vuelta a entregar y la mejor recompensa marcada |
+| `/alfa mision` | Tus misiones | La flecha a la misión más cercana de tu registro (o a la que nombres) |
 | `/alfa cerca` | Buscar cerca | Maestro de vuelo, posada, reparar, banco, buzón, subastas y entrenadores con flecha y ruta |
 | `/alfa enciclopedia` | Enciclopedia | Objetos, PNJ, misiones, zonas, raros, monturas y mascotas, con sus fuentes y "Guíame"; guía de los puntos del Legado |
 | `/alfa mazmorras` | Mazmorras | Para tu nivel con "Prepárame"; jefes, botín, misiones y consejos |
 | `/alfa builds` | Talentos | Qué poner ahora y por qué, con un clic; equipo y compartir |
-| `/alfa combate` · `/alfa dps` | Combate | Ayuda de rotación para las 27 especializaciones, objetivos de misión resaltados, avisos de reacción y medidor de daño |
-| `/alfa curacion` | Curación | Marcos para curar con clic y asistente de 3 pasos |
+| `/alfa combate` · `/alfa dps` | Combate | Ayuda de rotación para las 27 especializaciones, objetivos de misión resaltados, avisos de reacción, medidor (daño, recibido, evitable, cortes y limpiezas) y «¿Qué me tumbó?» (`/alfa combate caida`) |
+| `/alfa curacion` | Curación | Marcos para curar con clic, asistente de 3 pasos y «Faltan por revivir» |
 | `/alfa bolsas` | Bolsas | Tres vistas, banco con depositar rápido, objetos de misión que brillan, qué vender, tu oro por hora (el del buzón aparte) y el aviso de cartas por vencer |
-| `/alfa mapa` (o M) | Mundo | Mapa de todo el mundo con el terreno real, puntos de vuelo, entradas y salidas, marcadores propios y capas |
-| `/alfa recoleccion` | Recolección | Nodos, pines y rutas para juntar |
-| `/alfa comercio` | Comercio | Precios de la subasta y qué hacer con cada objeto |
-| `/alfa pesca` | Pesca | Modo pesca de una tecla (equipo, cebo, lanzar y recoger), barra, diario, logros, guía de 1 a 300 y cocina |
+| `/alfa mapa` (o M) | Mundo | Mapa de todo el mundo con el terreno real, puntos de vuelo, entradas y salidas, marcadores propios y capas; «Limpiar mapa» en la M |
+| `/alfa recoleccion` | Recolección | Nodos, pines y rutas para juntar; «Subir Minería» (`/alfa recoleccion subir`) |
+| `/alfa comercio` | Comercio | Precios de la subasta, qué hacer con cada objeto, Siempre a la mano (`/alfa comercio reponer`), tus subastas y gangas |
+| `/alfa pesca` | Pesca | Modo pesca de una tecla (equipo, cebo, lanzar y recoger), barra, diario, logros, guía de 1 a 300, cocina y «Qué pica aquí» (`/alfa pesca aqui`) |
 | `/alfa paisaje` | Paisaje y gráficos | Ajustes gráficos explicados, preajustes, deshacer y filtros de pantalla |
 | `/alfa lya` · `/alfa ayuda` | Lya | Una loba negra compañera: consejos, ánimo e historias de tus misiones y zonas; te dice los avisos, te responde «¿Cómo hago...?», lleva tu historia y te avisa de tus oficios. En memoria de una gran perrita |
 | `/alfa manada` · `/alfa cita` · `/alfa nota` | La Jauría | Tu grupo y quienes usan Alfa y aceptan que la manada los vea en el mapa; Seguir; llamar a la manada; guaridas; raros con reloj; citas; «¿Quién va?»; notas en tu mapa; «Un lobo de La Jauría anda cerca»; insignia y el clan |
+| `/alfa companeros` · `/alfa avisame` | Tu gente | Con quién cazaste, para volver a invitarlos, y un aviso cuando alguien se conecta |
 | `/alfa plano` | Cambiar de plano | Te pasa al plano de un lobo de la manada con su guarida abierta cuando el tuyo está lleno |
 | `/alfa camino` · `/alfa listo` | Hoy | El camino al 60 a tu ritmo y la revisión antes de la mazmorra |
 | `/alfa diagnostico` | Diagnóstico | Revisa choques con otros addons, partes apagadas y ajustes raros, con arreglo de un clic |
@@ -108,6 +108,9 @@ A mano: descarga `Alfa-<versión>.zip` de [Releases](https://github.com/toxic300
 | (Ajustes) | Comodidades | Minimapa, colores de clase, cuadro de información, barra de información, números en las recargas, hora y filtro de spam en el chat, IDs en el cuadro, probador, vuelo, misiones y sonidos |
 | `/alfa calma` · `/alfa perdi` | Avisos | No molestar (30 min, 1 h o la sesión) y «Lo que me perdí»: los últimos 30 avisos con su hora |
 | `/alfa pantallas` | Dos pantallas | El escritorio de Alfa en tu segundo monitor: tu guía, la flecha, el mapa, Hoy, Lya y tu grupo; se pone en un clic y lo editas arrastrando los paneles |
+| `/alfa acomodar` | Acomodar | Mueve cualquier cosa de Alfa con el ratón, con imán y «Volver a su lugar» |
+| `/alfa temporada` | Tu temporada | Tu aventura desde que usas Alfa, lista para compartir |
+| `/alfa raton` | Ratón | Dice qué toma tu clic y lo arregla con `/alfa raton arreglar` |
 | `/alfa zen` | Modo Zen | Esconde todo Alfa menos la flecha, para explorar o tomar capturas; otro toque lo devuelve |
 | `/alfa copiar` · `/alfa susurros` · `/alfa filtrado` | Chat | Copiar del chat, tu historial de susurros y lo que filtró el filtro de spam |
 

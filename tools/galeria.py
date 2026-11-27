@@ -153,9 +153,39 @@ VISTAS = [
      "Big, clear boards on your other monitor; switch back and everything is as it was."),
     ("shot-140-mundo-viaje-boat-muelle.png", "Viajes más claros", "La tarjeta del barco, compacta y con su transporte bien dibujado.",
      "The boat card, compact and with a clear drawing of the ride."),
+    # 1.4.2 (tools/banco/galeria142.lua): tu ficha y las 40 mejoras.
+    ("shot-142-ficha.png", "Tu ficha de cazador", "Tu personaje en 3D, tu oro, tu equipo, tus oficios y lo que sigue, para presumirlo.",
+     "Your character in 3D, your gold, gear, professions and what's next, ready to show off."),
+    ("shot-142-personajes.png", "Toda tu manada, junta", "Cada personaje de tu cuenta con su nivel, su oro y sus oficios, y el oro de todos.",
+     "Every character on your account with level, gold and professions, plus everyone's gold."),
+    ("shot-142-portada.png", "Hoy, sin nada fuera de lugar", "Los recuadros de la portada crecen lo necesario y nada se sale.",
+     "Today's cover boxes grow as needed and nothing spills out."),
+    ("shot-142-mapa.png", "Limpiar el mapa con un clic", "En la M, un clic esconde los íconos que estorban; otro clic y vuelven como estaban.",
+     "On the M map, one click hides the icons in your way; one more brings them back."),
+    ("shot-142-lista.png", "¡Lista para entregar!", "Terminas una misión por tu cuenta y Alfa te dice con quién se entrega, y te lleva.",
+     "Finish a quest on your own and Alfa tells you who takes it, and takes you there."),
+    ("shot-142-nuevas.png", "Misiones nuevas al subir", "Al subir de nivel ves las misiones que se acaban de abrir, la más cercana primero.",
+     "When you level up, see the quests that just opened, closest first."),
+    ("shot-142-caida.png", "¿Qué me tumbó?", "Al caer, el golpe final, lo que más te pegó y cuánto se podía evitar.",
+     "When you fall: the killing blow, what hit hardest and how much you could have avoided."),
+    ("shot-142-medidor.png", "El medidor mide más", "Daño recibido, daño evitable, cortes y limpiezas de toda tu manada.",
+     "Damage taken, avoidable damage, interrupts and dispels for your whole pack."),
+    ("shot-142-revivir.png", "Faltan por revivir", "Al terminar la pelea, un botón para levantar a cada compañero caído; el clic es tuyo.",
+     "After the fight, a button to raise each fallen friend; you make the click."),
+    ("shot-142-companeros.png", "Con quién cazaste", "Alfa recuerda a la gente de tus grupos para volver a cazar juntos.",
+     "Alfa remembers the people you grouped with, so you can hunt together again."),
+    ("shot-142-reponer.png", "Siempre a la mano", "El comerciante te repone el agua, la comida o las flechas de siempre con un botón.",
+     "The vendor restocks your usual water, food or arrows with one button."),
+    ("shot-142-subastas.png", "Tus subastas", "Lo que tienes a la venta, lo que ya se vendió y cuándo vence, en todos tus personajes.",
+     "What you have for sale, what already sold and when it expires, on all your characters."),
+    ("shot-142-aqui.png", "Qué pica aquí", "Qué sale donde pescas, cuánto vale y tus lugares que más dejan.",
+     "What bites where you fish, what it's worth and your best spots."),
 ]
 # 1.4.0 (86): las vistas de la 1.4 van sobre un cielo de noche (nada de verde liso).
-NOCHE = {a for a, *_ in VISTAS if a.startswith("shot-140-")}
+NOCHE = {a for a, *_ in VISTAS if a.startswith(("shot-140-", "shot-142-"))}
+# 1.4.2: los avisos y la barra del mapa son chicos; se agrandan para que se lean.
+AMPLIAR_142 = {"shot-142-mapa.png": 1.9, "shot-142-lista.png": 1.7, "shot-142-caida.png": 1.7,
+               "shot-142-revivir.png": 1.7, "shot-142-reponer.png": 1.8}
 
 
 def fuente(nombre, tam):
@@ -229,6 +259,25 @@ def cabecera(im, titulo, es, en):
 # este tanto para que se lean; las de antes se quedan como estaban.
 AMPLIAR = {a: 1.7 for a, *_ in VISTAS if a.startswith("shot-137-")}
 AMPLIAR.update({"shot-138-flecha-barco.png": 1.7, "shot-138-candado-bolsas.png": 1.3, "shot-138-pesca-previa.png": 1.2})
+AMPLIAR.update(AMPLIAR_142)
+
+
+def modelo_ficha(v):
+    """1.4.2: el banco no dibuja modelos 3D; en el recuadro del personaje de la
+    ficha va una nota honesta (el lobo de Alfa tenue y «Tu personaje en 3D»)."""
+    v = v.convert("RGB")
+    caja = (31, 151, 380, 675)
+    if v.width < caja[2] or v.height < caja[3]:
+        return v
+    d = ImageDraw.Draw(v)
+    lg = logo(150)
+    tenue = lg.copy()
+    tenue.putalpha(lg.split()[3].point(lambda a: int(a * 0.35)))
+    cx = (caja[0] + caja[2]) // 2
+    v.paste(tenue, (cx - tenue.width // 2, 300), tenue)
+    d.text((cx, 490), "Tu personaje en 3D", font=fuente("Inter-Medium.ttf", 20), fill=TENUE, anchor="mm")
+    d.text((cx, 520), "Your character in 3D", font=fuente("Inter-Regular.ttf", 16), fill=(110, 122, 112), anchor="mm")
+    return v
 
 
 def enmarcar(vista, titulo, es, en, ampliar=1.0, noche=False):
@@ -364,7 +413,10 @@ def main() -> int:
         for prefijo in ("g-", "v-"):
             if nombre.startswith(prefijo):
                 nombre = nombre[len(prefijo):]
-        enmarcar(Image.open(BANCO / archivo), titulo, es, en, AMPLIAR.get(archivo, 1.0), archivo in NOCHE).save(SALIDA / f"{i:02d}-{nombre}")
+        vista = Image.open(BANCO / archivo)
+        if archivo == "shot-142-ficha.png":
+            vista = modelo_ficha(vista)
+        enmarcar(vista, titulo, es, en, AMPLIAR.get(archivo, 1.0), archivo in NOCHE).save(SALIDA / f"{i:02d}-{nombre}")
     # capturas del juego, si las hay: curseforge/capturas/<nombre>.png|jpg -> galeria/juego-<nombre>.png
     if CAPTURAS.is_dir():
         for c in sorted(CAPTURAS.iterdir()):

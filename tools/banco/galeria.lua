@@ -11,6 +11,16 @@ end
 BANCO_LETRA = 0.64 -- margen: el banco mide las letras a ojo
 Alfa.Hidden = function() return false end
 FIRE_EVENT("PLAYER_LOGIN")
+-- 1.4.2: Lobato ya vio la bienvenida de esta versión (si no, la puerta de la
+-- configuración abre la bienvenida y las páginas salen vacías).
+do
+  local N, B = AlfaNucleo, AlfaBienvenida
+  if N and N.Datos then
+    N.Datos("bienvenida").respondio = B and B.VERSION or 99
+    N.Datos("bienvenida").versionVista = B and B.VersionAlfa and B.VersionAlfa() or "9.9.9"
+    N.Datos("bienvenida").recorrido = true
+  end
+end
 FIRE_EVENT("PLAYER_ENTERING_WORLD", true, false)
 RUN_TIMERS(10)
 -- Lobato ya terminó su bienvenida: sin la puerta de la configuración.

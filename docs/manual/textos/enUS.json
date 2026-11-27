@@ -99,7 +99,7 @@
             ]},
             {"t": "consejo", "texto": "Want to change something later? Type `/alfa bienvenida` and the summary opens: each step has its own “Change” button. If you like deciding every detail, the usual lists are still there, behind **Fine-tune one by one**."},
             {"t": "tarjetas", "cols": 2, "titulo": "Simple or full?", "items": [
-              {"icono": "huella", "titulo": "Simple Alfa", "texto": "To get started: only Today, Route, Map, Bags, Talents and Lya in view, and fewer alerts. Everything else is still there when you look for it."},
+              {"icono": "huella", "titulo": "Simple Alfa", "texto": "To get started: only Today, Plans, Route, Map, Bags, Talents and Lya in view, and fewer alerts. Everything else is still there when you look for it."},
               {"icono": "lobo", "titulo": "Full Alfa", "texto": "Every page in view: dungeons, talents, combat, professions, the pack and more."}
             ]},
             {"t": "nota", "texto": "If you already used Alfa, you stay on Full. Change it any time in **Settings > Style and sound**, under “How you see Alfa”."},
@@ -129,33 +129,36 @@
           "lema": "All of Alfa in one place: type /alfa.",
           "icono": "ventana",
           "bloques": [
-            {"t": "intro", "texto": "Type `/alfa` in chat (or click the Alfa button on the minimap) and the main window opens. Your character is at the top; below is everything Alfa can do, sorted into six sections plus Settings."},
-            {"t": "img", "img": "inicio", "marcas": "ventana", "pie": "The Alfa window, open on Today.", "leyenda": [
+            {"t": "intro", "texto": "Type `/alfa` in chat (or click the Alfa button on the minimap) and the main window opens. On the left is the bar with Alfa’s seven sections and, below them, Notices and Settings; at the top, your character and the search box."},
+            {"t": "img", "img": "inicio", "marcas": "ventana", "pie": "The Alfa window, open on Today, with Simple Alfa.", "leyenda": [
               "Your character: name, class, level, experience and rest.",
-              "Search settings: type what you’re looking for and Alfa takes you to the option.",
-              "The six sections: Today, Adventure, Character, World, Trades and Pack.",
+              "Search Alfa: settings, quests, rares and NPCs. Type, and one click takes you there.",
+              "The sections: Today, Plans, Adventure, Character, World, Trades and Pack. With Simple Alfa, only the essentials.",
+              "Notices: what Alfa told you, with its time and its button, in case you missed something.",
               "Settings: style, conveniences, quests and everything else.",
               "Reset page and Reload UI, in case something looks off."
             ]},
             {"t": "h", "texto": "One Alfa menu"}, {"t": "lista", "items": ["**Click** Alfa’s minimap icon, its floating button, its entry in the addon list or the **Alfa** button in the [[Esc]] menu: the window opens on the last page you saw.", "**Right-click** any of them: the same menu, with the window’s seven sections and their pages, plus **Ask Lya**, **Arrange your screen**, show or hide the arrow, **Hide Alfa** and **Report a problem**."]}, {"t": "h", "texto": "The sections"},
             {"t": "tarjetas", "cols": 2, "items": [
               {"icono": "hoy", "titulo": "Today", "texto": "Your day: the next step, what’s urgent and your class."},
+              {"icono": "lista", "titulo": "Plans", "texto": "The guides and plans you follow, close at hand."},
               {"icono": "aventura", "titulo": "Adventure", "texto": "Route and guides, Dungeons and Encyclopedia."},
               {"icono": "personaje", "titulo": "Character", "texto": "Talents, Combat, Healing, Bags and Lya."},
               {"icono": "mundo", "titulo": "World", "texto": "The map, Gathering, and Landscape and graphics."},
               {"icono": "oficios", "titulo": "Trades", "texto": "Trade and Fishing."},
               {"icono": "manada", "titulo": "Pack", "texto": "La Jauría: your group, those who share and the clan."},
+              {"icono": "aviso", "titulo": "Notices", "texto": "What Alfa told you, with its time and its button."},
               {"icono": "ajustes", "titulo": "Settings", "texto": "Style and sound, Conveniences, Questing and more."},
-              {"icono": "buscar", "titulo": "Search settings", "texto": "Find any option by typing its name."}
+              {"icono": "buscar", "titulo": "Search Alfa", "texto": "Find any option, quest, rare or NPC by typing its name."}
             ]},
-            {"t": "nota", "texto": "With **Simple Alfa** you only see Today, Route, Map, Bags, Talents and Lya, plus Settings, without its advanced pages (like the ones for guide authors). Everything else keeps working: open it with its command or with “Search settings”."},
+            {"t": "nota", "texto": "With **Simple Alfa** you only see Today, Plans, Route, Map, Bags, Talents and Lya, plus Settings, without its advanced pages (like the ones for guide authors). Everything else keeps working: open it with its command or with “Search Alfa”."},
             {"t": "h", "texto": "Five styles"},
             {"t": "img", "img": "estilo", "pie": "Settings > Style and sound: your style and the others to choose from."},
             {"t": "p", "texto": "Alfa dresses the way you like. **Alfa** is graphite with cut corners and La Jauría’s green; **La Jauría Night**, midnight blue with moonlit silver; **Campfire**, warm charcoal with the orange of embers; **Classic WoW** uses the game’s own frames, buttons and fonts, with gold titles; **Glass** lets the world show through transparent backgrounds, in the accent color you choose. The style can also dress the chat, the minimap and your action bars (in Conveniences). Change it in **Settings > Style and sound** or with `/alfa estilo`."},
             {"t": "consejo", "texto": "Every page has its own command: `/alfa bolsas` opens Bags and `/alfa mapa` opens the map. The full list is in the “Shortcuts and commands” chapter."},
             {"t": "lista", "titulo": "Three helpers on every page", "items": [
               "**The “?” next to the title.** Tap it and Lya explains that page, starting with its questions.",
-              "**Search settings searches all of Alfa.** Besides options, it finds quests, rares and NPCs: one click opens their page or sets the arrow.",
+              "**Search Alfa goes beyond settings.** It also finds quests, rares and NPCs: one click opens their page or sets the arrow.",
               "**“What’s this?”** Hold [[Alt]] and hover over any Alfa button or option: it tells you what it’s for."
             ]},
             {"t": "lya", "pose": "aullar2", "texto": "Did you know the wolf howls the first time you open the Alfa window each session? It’s a howl from the game itself, so it follows your volume. If you’d rather have silence, turn it off in Style and sound."}
@@ -169,13 +172,14 @@
           "bloques": [
             {"t": "intro", "texto": "Today is Alfa’s front page: the first thing you see when you open the window. It gathers what you should do right now on a single page and puts everything one click away. Only what’s useful shows up: if a part has nothing useful, it stays hidden."},
             {"t": "img", "img": "inicio", "marcas": "hoy", "pie": "Today, at a glance.", "leyenda": [
+              "The greeting: your character, their level and where you are. Click the wolf to open your card.",
+              "Your numbers: your session, your guide and your pack; click each one to open it.",
               "Your next step: what your guide asks, how far it is and how much you’ve done. **Follow** sets the arrow.",
-              "Pick up quests: the ones on your route that are close by.",
-              "Something else today?: level up, professions, make gold or dungeons.",
-              "Alerts: only what’s urgent, with a button to sort it out."
+              "How much time do you have?: pick your time and Alfa builds the plan."
             ]},
             {"t": "h", "texto": "What you’ll find, top to bottom"},
             {"t": "lista", "items": [
+              "**The greeting.** At the very top, your character, their level and where you are, with three numbers: your session, your guide and your pack. Click the wolf to open your hunter’s card (`/alfa ficha`).",
               "**While you were logging in.** What Alfa kept so it wouldn’t interrupt your login (your last session, bags, gear, talents, what’s new, the pack online), each with its button and its “Done”.", "**Your next step.** Your guide’s step with its goals, how far away it is, how much you’ve done and, at your pace, how long you need to finish it. **Follow** shows the guide and the arrow and closes the window; **See steps** opens the full list.",
               "**Close my quests and Pick up quests.** One click builds the route to turn in what you have ready or to grab the best quests in the zone.",
               "**An hour of hunting.** Not sure what to do? Alfa picks what pays off most nearby: turn in what’s ready, finish your zone’s quests or pick up new ones.",
@@ -228,12 +232,12 @@
             ]},
             {"t": "h", "texto": "Your guide on screen"},
             {"t": "img", "img": "rastreador", "ancho": "media", "marcas": "partes", "pie": "The tracker: compact, with only what you’re doing right now.", "leyenda": [
-              "Your guide and how many steps you’ve done.",
+              "Your guide, how many steps you’ve done and its progress. Click the header to fold or unfold it.",
               "Find nearby: flight, inn, repair, bank and more.",
-              "What’s up now. Click: the arrow; right-click: mark it, skip it or see it in the Encyclopedia.",
+              "**+**: your guides and plans (open another guide and more). The **×** hides the guide.",
+              "What’s up now. Click a goal: the arrow; right-click: mark it, skip it or see it in the Encyclopedia.",
               "Where you’re headed.",
-              "**See details**: the whole step, with all its goals, in another window.",
-              "**Skip** jumps over the step (and for a minute you can **Undo**); **See the next one** lets you peek at what’s coming."
+              "Hover over your guide and **See details** (the whole step, in another window), **Skip** (for a minute you can **Undo**) and **See the next one** show up below."
             ]},
             {"t": "h", "texto": "On arrival"},
             {"t": "lista", "items": [
@@ -279,7 +283,7 @@
             {"t": "consejo", "texto": "When you complete a quest, your chat says “[Quest] is ready to turn in” and, when you hand it in, “Quest complete!”. If you turn on **Tell your group** (in Your extras in the setup), your group sees it too; it comes off so nobody’s chat gets flooded."},
             {"t": "h", "texto": "My plans: your own goals"},
             {"t": "dos", "img": "planes", "pie": "A plan is a list of goals in whatever order you like.", "lado": "izq", "prop": "50", "bloques": [
-              {"t": "p", "texto": "Build a list of goals: get an item, save up gold, level a profession, go somewhere, do a quest, reach a level or write a free note. Goals check themselves off when you complete them, and the arrow takes you to the next one."},
+              {"t": "p", "texto": "Build a list of goals: get an item, save up gold, level a profession, go somewhere, do a quest, reach a level or write a free note. Goals check themselves off when you complete them, and the arrow takes you to the next one. The guides and plans you follow live in the window’s **Plans** section."},
               {"t": "p", "texto": "Out of ideas? Start from a template: *My first mount*, *Gold for the mount*, *Get ready for the dungeon* or *Level cooking and fishing together*."}
             ]},
             {"t": "h", "texto": "Find nearby"},
@@ -866,7 +870,7 @@
           "lema": "Change anything, lose nothing.",
           "icono": "ajustes",
           "bloques": [
-            {"t": "intro", "texto": "**Settings** (at the top right of the window) is home to everything you can change: the style, conveniences, quests, the map and more. The quickest way in is the search box: type what you want to change in “Search settings” and Alfa takes you to the option."},
+            {"t": "intro", "texto": "**Settings** (at the bottom left, in the window’s bar) is home to everything you can change: the style, conveniences, quests, the map and more. The quickest way in is the search box at the top: type what you want to change in “Search Alfa” and Alfa takes you to the option."},
             {"t": "tarjetas", "cols": 2, "items": [
               {"icono": "apariencia", "titulo": "Style and sound", "texto": "The five styles, Simple or Full Alfa, the howl, the wolf at login, the announcements, easier reading, the clean screen, arranging your screen, your shortcuts, your profiles, your backups, “Check Alfa”, “Report” and what’s new."},
               {"icono": "comodidades", "titulo": "Conveniences", "texto": "Small improvements to the game, all in one place (next chapter)."},
@@ -876,7 +880,7 @@
               {"icono": "info", "titulo": "About", "texto": "The story of Alfa and La Jauría, the Discord link to copy, the version and the credits."}
             ]},
             {"t": "img", "img": "misiones", "pie": "Settings > Questing: each option explained in one line."},
-            {"t": "consejo", "texto": "At the bottom left, **Reset page** puts the settings of the page you’re viewing back the way they came."},
+            {"t": "consejo", "texto": "At the bottom, next to **Reload UI**, **Reset page** puts the settings of the page you’re viewing back the way they came."},
             {"t": "h", "texto": "Easier reading, clean screen and your shortcuts"},
             {"t": "lista", "items": [
               "**Bigger text.** All of Alfa’s text a bit larger, in every window.",
@@ -1050,9 +1054,9 @@
                 "Type `/alfa reportar`.",
                 "Choose **Bug**, **Idea** or **Comment** and describe it in your own words.",
                 "Alfa adds what helps fix it: the version, the language, your class and level, where you are and the errors it caught. It doesn’t include your name or realm.",
-                "Press **Select all**, copy with [[Ctrl]]+[[C]] and paste it in the **#buzon-alfa** channel on La Jauría’s Discord."
+                "Press **Send**: your report goes out on its own the next time you open **Instalar-Alfa.exe**. Want to send it right away? **Send now via browser** gives you the link with everything filled in. Got screenshots? Use **Upload screenshots**, along with your report’s code."
               ]},
-              {"t": "p", "texto": "That mailbox is private: only Alfa’s developer reads what you send."}
+              {"t": "p", "texto": "Your report goes straight to Alfa’s developer and no one else. If you prefer Discord, **Copy** gets it ready for the **#buzon-alfa** channel."}
             ]},
             {"t": "enlace", "icono": "comunidad", "titulo": "La Jauría’s Discord", "url": "https://discord.gg/hUNjA6BJwh", "texto": "Come play with the pack, ask for help and hear about every new version."},
             {"t": "p", "texto": "You can also tell us in the CurseForge comments or open a report on GitHub: https://github.com/toxic3000/alfa-forever/issues"},
